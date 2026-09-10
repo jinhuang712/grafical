@@ -1,0 +1,19 @@
+{
+  "name": "grafical",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Diagram compiler for models and humans",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "check": "biome check ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.12",
+    "@types/node": "^22.20.2",
+    "typescript": "^7.0.2"
+  }
+}
