@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+
+# Render output: generated, never tracked.
+examples/.out/
+*.ir.json
+
+.DS_Store
+*.log
