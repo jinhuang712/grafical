@@ -4,50 +4,50 @@
 
 ## The Problem
 
-Getting an architecture diagram into a document, a review, and git goes wrong in the same six ways every time, in this order.
+Getting an architecture diagram into a document, through a review, and into git goes wrong in the same six ways every time, in this order.
 
 ### Writing it down: the diagram cannot say what we mean
 
-- There is no first-class notion of a layer, a band, or a panel. We approximate one with extra rectangles, and the result does not read as an architecture diagram.
-- Relationships stop at the node. "A calls B" is expressible; "A calls B on this interface" is not.
-- Coarse placement is not expressible. There is no way to say "this block sits on the left, that one below it" short of taking over every coordinate.
-- Styling is limited to picking a theme. A node carrying an icon, a title, a subtitle, and a status dot cannot be built.
+- There is no first-class notion of a layer, a band, or a panel. We fake one with extra rectangles, and the result does not read as an architecture diagram.
+- Relationships stop at the node. "A calls B" can be said. "A calls B on this interface" cannot.
+- Coarse placement cannot be said either. There is no way to state "this block sits on the left, that one below it" short of taking over every coordinate.
+- Styling means picking a theme. A node with an icon, a title, a subtitle, and a status dot cannot be built.
 
 ### Drawing: position and routing are out of control
 
-- Past a few dozen nodes position becomes unpredictable, and the picture on screen is not the picture in our head.
-- Edges cross nodes, sit on top of labels, and run across the whole canvas.
-- Intervening means owning every coordinate. There is no middle ground: constraints without coordinates.
+- Past a few dozen nodes, position becomes unpredictable. The picture on screen is not the picture in our head.
+- Edges cross nodes, sit on labels, and run across the whole canvas.
+- Intervening means owning every coordinate. There is no middle ground of constraints without coordinates.
 
 ### Editing: every step is pixel labor
 
-- Text width has to be estimated by hand (CJK ≈ 1em, Latin ≈ 0.6em). Estimate wrong and the label overflows, so containers get padded by guess.
+- Text width is estimated by hand (CJK ≈ 1em, Latin ≈ 0.6em). Estimate wrong and the label overflows, so containers get padded by guess.
 - Changing one label drags its position and its polyline bends along with it.
 - Return edges and labels collide by default, and we move them by hand.
-- Overflow becomes visible only after a render, so it is always found late.
+- Overflow shows up only after a render, so it is always found late.
 
 ### Iterating: a round is expensive and failure is total
 
-- A round is write, render, check, look — minutes each, and a diagram takes a dozen rounds.
-- Two rounds that fail to clear the same defect mean discarding the diagram and starting over.
+- A round is write, render, check, look. Each takes minutes, and a diagram takes a dozen rounds.
+- Two rounds that fail to clear the same defect mean throwing the diagram away and starting over.
 - Feedback says "overflow here, overlap there". It does not say whether the relationships are wrong or the placement is.
-- The target format has unstated limits — certain SVG features, text elements specifically. Violating one silently degrades the output to a flat image.
+- The target format has unstated limits, certain SVG features and text elements in particular. Break one and the output silently degrades to a flat image.
 
 ### Handing over: the path is long and brittle
 
-- Delivery means creating a document, writing the diagram into it, exporting, converting the format, and deleting the document — network round trips and version-specific branches.
+- Delivery means creating a document, writing the diagram into it, exporting, converting the format, and deleting the document. Network round trips and version-specific branches at every step.
 - Human edits and regeneration overwrite each other. There is no way to say "leave this part alone".
 
 ### Keeping it: nothing accumulates
 
 - The artifact is an image. It cannot be diffed, reviewed in a pull request, or regression-tested.
-- Styling and structure are redone for every diagram. Nothing is reusable as a template or a preset.
+- Styling and structure are redone for every diagram. Nothing survives as a template or a preset.
 
 ## The Idea
 
 > **A diagram is structure made visible. State the structure, and the picture follows.**
 
-A layered architecture diagram is not a graph. It is a structure — layers, bands, panels, boundaries — that uses space to say what belongs where. A graph layout engine does not know that, and it answers with a graph. A canvas tool knows it and makes you say it by hand. Nothing occupies the middle.
+A layered architecture diagram is not a graph. It is a structure of layers, bands, panels, and boundaries that uses space to say what belongs where. A graph layout engine does not know that, so it answers with a graph. A canvas tool knows it, and makes you say it by hand. Nothing occupies the middle.
 
 grafical occupies the middle. It is three things, and each has one job.
 
@@ -57,7 +57,7 @@ grafical occupies the middle. It is three things, and each has one job.
 | **the file** | Carries the structure, the human's decisions, the computed layout, and whatever it needs to look the same elsewhere | Depends on anything that did not travel |
 | **the human** | Reads the result and adjusts it | Lays anything out |
 
-The structure is usually written by a model, and it says three things: what exists, what belongs with what, what connects to what. It reads like this (syntax is illustrative):
+The structure is usually written by a model, and it says three things: what exists, what belongs with what, what connects to what. It reads like this (the syntax is illustrative):
 
 ```yaml
 title: 商品数据同步链路
@@ -79,9 +79,9 @@ Two surfaces read the same source. The caller's surface is a shell: text in, fil
 
 Three bets, each falsifiable.
 
-**1. Structure decides the picture.** Architects already draw layered diagrams the same way: rows for layers, columns for subsystems, boxes for units, lines for relations. That mapping is a convention, not a talent. If it can be written down — and it can — the picture can be computed, and nobody has to place anything.
+**1. Structure decides the picture.** Architects already draw layered diagrams the same way: rows for layers, columns for subsystems, boxes for units, lines for relations. That mapping is a convention, not a talent. If it can be written down, and it can, the picture can be computed, and nobody has to place anything.
 
-**2. Choices are the error surface.** Every distinction the caller has to make is a chance to get it wrong. So the vocabulary is small, fixed, and every word means one thing. Fewer choices is not an aesthetic; it is the mechanism by which a diagram comes out right the first time.
+**2. Choices are the error surface.** Every distinction the caller has to make is a chance to get it wrong. So the vocabulary is small and fixed, and every word means one thing. Fewer choices is not an aesthetic. It is the mechanism by which a diagram comes out right the first time.
 
 **3. An adjustment that survives is an adjustment worth making.** If changing a diagram means re-placing things, the human is the layout engine again. So an adjustment is recorded as a decision about the diagram, and it holds when everything else is recomputed.
 
@@ -96,22 +96,22 @@ One command, one file, one page.
 | `grafical render <file>` | Produces the picture: PNG and SVG. Same file, same bytes, anywhere |
 | `grafical check <file>` | Reports every defect with its location and what was expected, in a form a caller can act on |
 | `grafical review <file>` | Opens the page where a human adjusts the diagram, with the adjustments landing back in the file |
-| `.grf` | The file. Self-contained: structure, decisions, computed layout. Send it; it renders the same |
+| `.grf` | The file. Self-contained: structure, decisions, computed layout. Send it and it renders the same |
 
 One install command. No account, no server, no browser in the path from structure to picture.
 
 ## How We Will Know
 
-The compiler being correct is necessary and insufficient. The project succeeds only if a diagram comes out right the first time, so the targets are rates.
+A correct compiler is necessary and not sufficient. The project succeeds only if a diagram comes out right the first time, so the targets are rates.
 
 | Measure | Target | Kill threshold |
 |---|---|---|
 | First version usable without an adjustment | 70% | Below 50%: the vocabulary cannot carry real diagrams |
 | Human minutes per diagram | under 2 | Above 10: the human is still drawing |
-| Mechanical defects — overflow, overlap, edges crossing nodes | zero | Any: the compiler is not doing its job |
+| Mechanical defects: overflow, overlap, edges crossing nodes | zero | Any: the compiler is not doing its job |
 | Render time from the file | under 300 ms | Above 3 s: the loop is too slow to work in |
 
-The third row is a gate rather than a target: a diagram with a mechanical defect is not shipped, it is an error.
+The third row is a gate, not a target. A diagram with a mechanical defect is not shipped. It is an error.
 
 ## Plan
 

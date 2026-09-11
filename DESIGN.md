@@ -2,7 +2,7 @@
 
 > Established 2026-09-10.
 
-How the statements in PHILOSOPHY.md become a working design: what was chosen, why, and what was rejected. The rejected alternatives carry as much weight as the choices — they are usually the reason a current shape looks odd.
+How the statements in PHILOSOPHY.md become a working design: what was chosen, why, and what was rejected. The rejected alternatives carry as much weight as the choices. They are usually the reason a current shape looks odd.
 
 Decision IDs are permanent. A reversed decision keeps its ID and gains a note pointing at its replacement.
 
@@ -33,9 +33,9 @@ Decision IDs are permanent. A reversed decision keeps its ID and gains a note po
 
 ## The Shape
 
-A `.grf` file says what a system is made of and how the parts relate. One command turns it into a picture, another into a page a human can adjust. Every pixel of the result is computed.
+A `.grf` file says what a system is made of and how the parts relate. One command turns it into a picture. Another turns it into a page a human can adjust. Every pixel of the result is computed.
 
-There are two parties. grafical holds the structure, computes the layout, and draws. The human looks at the result and adjusts it. Who or what wrote the structure is not a party — the design is the same whether it came from a model, a script, or a hand.
+There are two parties. grafical holds the structure, computes the layout, and draws. The human looks at the result and adjusts it. Whoever wrote the structure is not a party: the design is the same whether it came from a model, a script, or a hand.
 
 ```text
         ┌─────────────── grafical ───────────────┐
@@ -52,7 +52,7 @@ everything travels in one file
 
 The product is a command (`grafical`), a document (`.grf`), and the engine that turns one into the other. The command is the only reader and writer of the document. The document is the only thing that travels. The engine is what makes the same document look the same anywhere.
 
-Rejected: a service, because nothing should have to be running for a diagram to exist. A library, because the interface for writing structure is a shell, not an API surface. A browser application, because a browser in that loop costs a round trip and the writer cannot see the result anyway.
+Rejected: a service, because nothing should have to be running for a diagram to exist. A library, because structure is written from a shell, not against an API. A browser application, because a browser in the loop costs a round trip, and the writer could not see the result anyway.
 
 ### D2 Two surfaces over one source
 
@@ -64,45 +64,45 @@ Rejected: one surface for both, because a machine cannot use a page and a human 
 
 ### D3 The input is structure, and nothing else
 
-Three statements, and no fourth: what exists, what belongs with what, what connects to what. Each one is a statement about the system. Everything the picture shows beyond that is grafical's to compute.
+Three statements, and no fourth: what exists, what belongs with what, what connects to what. Each is a statement about the system. Everything the picture shows beyond that is grafical's to compute.
 
-Rejected: allowing a coordinate "just in case", because one escape hatch becomes the normal path — that is the situation this project exists to leave. Style values, because an invented value carries no convention and the reader pays for it. Layout hints beyond coarse placement, because each one re-introduces a decision the engine should be making.
+Rejected: allowing a coordinate "just in case", because one escape hatch becomes the normal path, and that is the situation this project exists to leave. Style values, because an invented value carries no convention and the reader pays for it. Layout hints beyond coarse placement, because each one hands back a decision the engine should be making.
 
 ### D4 Layers are first-class, and they are why the picture is not a graph
 
-A layer is a named band that things belong to. Groups nest inside it. The picture is built from layers outward, which is why it reads as an architecture diagram and not as a node-link graph.
+A layer is a named band that things belong to. Groups nest inside it. The picture is built from the layers outward, which is why it reads as an architecture diagram and not as a node-link graph.
 
-Rejected: deriving bands from the graph, which is what a graph layout does and why its output is a graph rather than an architecture. Rows and columns as free-form containers, because they hand out a placement decision without giving it a name.
+Rejected: deriving bands from the graph, because that is what a graph layout does, and it is why its output is a graph rather than an architecture. Rows and columns as free-form containers, because they hand out a placement decision without giving it a name.
 
 ### D5 Kinds are enumerated; appearance is not part of the input
 
-A kind says what a thing is and therefore how it is drawn — a service, a store, a queue, an outside system, an actor. The list is short and it does not grow casually. Themes are chosen, not composed.
+A kind says what a thing is, and therefore how it is drawn: a service, a store, a queue, an outside system, an actor. The list is short and does not grow casually. Themes are chosen, not composed.
 
 Rejected: free-form appearance attributes, because an invented color is a convention the reader has to learn at the moment they read. Per-diagram themes, because the same system drawn twice should look the same.
 
 ### D6 No coordinate exists, anywhere
 
-Not in the source, not in the decisions, not in any operation. There is nothing to store and nothing to read back. This is not a restriction placed on an existing capability; the capability is absent.
+Not in the source, not in the decisions, not in any operation. There is nothing to store and nothing to read back. This is not a restriction placed on an existing capability. The capability is absent.
 
-Rejected: a nudge mode, a manual-override field, and a repair step after rendering — each is the same escape hatch wearing a different name, and each one converts a gap in the vocabulary into a pixel that nobody can explain later.
+Rejected: a nudge mode, a manual-override field, and a repair step after rendering. Each is the same escape hatch under a different name, and each turns a gap in the vocabulary into a pixel nobody can explain later.
 
 ## The File
 
 ### D7 One file carries everything
 
-A `.grf` holds what the diagram says, what the human decided about it, the layout that was computed, and whatever it needs in order to look the same elsewhere. Send it; the recipient renders the same picture.
+A `.grf` holds what the diagram says, what the human decided about it, the layout that was computed, and whatever it needs to look the same elsewhere. Send it, and the recipient renders the same picture.
 
-Rejected: a source plus a sidecar plus a cache, because three files where one will do is three chances for the human's work to be lost by losing one of them. External theme files, because then the picture depends on something that did not travel.
+Rejected: a source plus a sidecar plus a cache, because three files where one will do is three chances to lose the human's work by losing one of them. External theme files, because then the picture depends on something that did not travel.
 
 ### D8 The computed layout travels inside the file
 
 The layout is derived, so it can always be discarded and recomputed. When it is present, it wins. This is what makes the picture independent of the recipient's engine version, fonts, and platform: if the metrics differ, nothing moves.
 
-Rejected: pinning an engine version, because a version pin is a promise to keep rendering old layouts forever. Shipping fonts as a second artifact, because it is one more thing to send and to lose.
+Rejected: pinning an engine version, because a version pin is a promise to render old layouts forever. Shipping fonts as a second artifact, because it is one more thing to send and one more thing to lose.
 
 ### D9 A human's adjustments are decisions, stored in the file
 
-An adjustment is recorded as a decision about the diagram — this belongs to that layer, these two swap order, this relation is asynchronous. It travels with the file and it survives every later regeneration.
+An adjustment is recorded as a decision about the diagram: this belongs to that layer, these two swap order, this relation is asynchronous. It travels with the file and survives every later regeneration.
 
 Rejected: a separate override file, because whatever holds the human's work should be the thing they were sent. Session-only state, because work that disappears is work nobody will do.
 
@@ -112,13 +112,13 @@ Rejected: a separate override file, because whatever holds the human's work shou
 
 Layout happens before rendering, once, outside any renderer. Both surfaces consume the result, so the command's output and the page are the same picture.
 
-Rejected: letting the renderer lay out, because two renderers then produce two pictures, and anything the human adjusts stops meaning anything.
+Rejected: letting the renderer lay out, because two renderers would produce two pictures, and anything the human adjusted would stop meaning anything.
 
 ### D11 X6 draws. It does not lay out
 
 X6 supplies the parts that are hard to get right and already are: orthogonal and obstacle-avoiding routing, connectors, ports and anchors, text measurement and wrapping, and a registry of shapes. It has no layout engine, so the layered layout is ours to write.
 
-Rejected: writing a router, because X6's is better than anything we would write and routing is not where our value is. Using X6's editing plugins while writing structure, because they exist to serve a hand on a canvas.
+Rejected: writing a router, because X6's is better than anything we would write, and routing is not where our value is. Using X6's editing plugins while writing structure, because they exist to serve a hand on a canvas.
 
 ### D12 SVG-native shapes only
 
@@ -148,7 +148,7 @@ Rejected: a subcommand for every action, because a large surface is a large erro
 
 ### D16 A gesture resolves to a decision, or it does not happen
 
-Dragging a box in the page means one of the things the vocabulary can say — this belongs to that layer, this aligns with that, this comes before that. A gesture that resolves to nothing is not performed, and the box returns to where the diagram puts it.
+Dragging a box in the page means one of the things the vocabulary can say: this belongs to that layer, this aligns with that, this comes before that. A gesture that resolves to nothing is not performed, and the box returns to where the diagram puts it.
 
 Rejected: free positioning with a silent side effect, because an adjustment that cannot be named cannot be stored, reviewed, or kept.
 
@@ -172,7 +172,7 @@ Rejected: timestamps in output, unordered collections, and defaults that depend 
 
 ### D20 Stability starts at the first release
 
-Before the first release the format and the vocabulary are free to move. After it, adding is allowed and changing is a breaking change. A file that cannot be read is refused, never guessed at.
+Before the first release, the format and the vocabulary are free to move. After it, adding is allowed and changing is a breaking change. A file that cannot be read is refused, never guessed at.
 
 Rejected: promising compatibility from day one, because it would freeze the design before it is known to work. Reading an old file leniently, because a half-read diagram is worse than an absent one.
 
