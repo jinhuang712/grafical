@@ -113,6 +113,8 @@ Untracked: `node_modules/`, build output (`dist/`), render output (`examples/.ou
 
 Generated artifacts never enter the index. When an output is durable enough to be asserted against, it lives under a snapshot directory that is tracked on purpose.
 
-## Not yet applicable
+## Remote
 
-No remote, no tags, no releases. When a remote exists, pushing `main` is the whole flow. Tags and release automation stay out of scope until there is something to publish, and this file gets a section for them then.
+`origin` is `github.com/jinhuang712/grafical`, private. Pushing `main` is the whole flow: no pull requests, no release branching.
+
+Tags and release automation stay out of scope until there is something to publish. This file gets a section for them then.
