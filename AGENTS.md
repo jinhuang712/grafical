@@ -20,7 +20,9 @@ What each document holds is listed in [README.md](README.md). Each fact lives in
 
 ## The history before the rewrite
 
-Commits up to and including `36aeb98` (2026-09-11) contain an earlier design that was abandoned. Do not read, restore or quote those files as a source.
+Commits up to and including `f9af06e` (2026-09-11) contain an earlier design that was abandoned. Do not read, restore or quote those files as a source.
+
+The published history was rewritten on 2026-09-26 to remove a company name. An older clone may still hold the unrewritten commits. Never push, merge or force-push that history. Base new work on `origin/main`.
 
 ## Environment
 
