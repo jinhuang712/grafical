@@ -1,41 +1,35 @@
-# grafical Philosophy
+# Philosophy
 
-> Written 2026-09-10. Rewritten 2026-09-11.
+> Written 2026-10-11.
 
-This document sits above everything else in grafical. It is not a design, not a roadmap, not a list of features. Code, formats, and commands will change. These statements will not.
+These are the beliefs behind grafical. Commands, formats and code will change. These statements will not.
 
-Every design decision must trace back to one of them. When a decision conflicts with this document, the decision is wrong.
+Every decision in [DESIGN.md](DESIGN.md) traces back to one of them. If a decision contradicts one, the decision is wrong, or this file needs a deliberate, recorded change.
 
-## The first draft is the product
+## A diagram is built in steps
 
-grafical exists so that an agent, given a description of a system, produces a diagram a person would accept on the first render. Every later feature is measured against that: does it make the first draft better, or does it make fixing a bad draft easier? Only the first counts.
+Nobody draws a good diagram in one stroke. People place a box, add another, connect them, rename one, move one. grafical works the same way. Every change is a small operation with a name. Operations are the only way a diagram changes, and the file holds the result. Nothing is ever regenerated to change one thing.
 
-A draft with a mechanical defect is not a draft. Overflow, overlap, an edge through a node: these are reported to whoever produced the structure, with the place, the observation, and the expectation, in a form a program can act on. They are never left for a person to find.
+## Only what you name changes
 
-## What nobody has decided, grafical computes
+An operation changes what it names, and moves only what has to make room for it. Everything else stays where it was. A person who has learned where things are in a diagram should never have to learn it again because of a change somewhere else.
 
-A layout is a default, not a law. Every position, size, route, and style has a computed value until someone sets it. Once set, it stays set.
+## The engine owns every pixel
 
-This is what lets the author say only what the system is made of, what belongs together, and what connects to what, and still get a finished picture. It is also what lets a person change any of it afterwards. The computed value fills the gap. It never fights a decision.
+Callers state facts: what exists, which layer it is in, what comes before what, what aligns with what, what connects to what. The engine turns facts into positions, sizes and routes. No caller ever handles a coordinate. Allowed values are few and named, which is why the result looks consistent.
 
-## The last hand is not overwritten
+## The tool carries the taste
 
-An agent drafts. A person edits. The agent iterates on what the person left behind. They take turns on one file, and each turn changes only what it means to change.
+A good diagram must not depend on a strong model. The tool decides everything a model is likely to get wrong: spacing, alignment, type sizes, routing, colors. A model only chooses from short lists. The smaller the gap between a weak and a strong model, the better the tool is working.
 
-So a person's edit, however small or however free, survives every regeneration that does not touch it. An agent that changes the structure moves what the change requires and nothing else. The file always holds the latest state from either hand, and neither hand is asked to redo the other's work.
+## Mistakes are caught at the step that made them
 
-## Few words for the writer, every tool for the editor
-
-The writer is a model, and every distinction it is asked to make is a chance to be wrong. So the structure vocabulary is small, each word means one thing, and the default answer to "should it also say this?" is no.
-
-The editor is a person, and their cost is time, not error. So the page they edit in withholds nothing: drag, resize, restyle, add, remove, connect, undo, whatever a canvas tool can do. The two surfaces are deliberately unequal, because their users are.
+Every operation is checked when it arrives. A wrong ID, a missing layer or an overflowing label is reported at once, with what was expected and how to fix it. A diagram with a defect is never handed to a person as finished.
 
 ## The same file is the same picture
 
-A diagram is sent, kept, diffed, and rendered again years later. If the picture depends on who renders it, when, or with what, none of that work is safe.
+A diagram is kept, reviewed and rendered again much later. The same file renders the same picture on any machine. A newer grafical that would draw a file differently says so, and a file grafical cannot fully read is refused, never guessed at. The file lives in git, and changes to it read as operations.
 
-So the file carries everything the picture needs, including the layout that was computed and the edits that were made. Identical file, identical bytes, on any machine. From the first release on, the format only grows. A file that cannot be read is refused, never guessed at.
+## People and agents take the same steps
 
----
-
-Five statements, each of which can be tested against a decision. If a decision cannot be traced back to one of them, the decision is not yet justified.
+A person's drag and an agent's command become the same kind of operation on the same file. Neither overwrites the other's work, and each picks up where the other stopped. Stage 1 serves agents only, but nothing in it may close this door.

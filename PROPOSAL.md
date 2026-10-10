@@ -1,131 +1,116 @@
-# grafical
+# Proposal
 
-> A diagram compiler. Proposal written 2026-09-10.
+> Written 2026-10-11.
 
-## The Problem
+## The problem
 
-Getting an architecture diagram into a document, through a review, and into git goes wrong in the same six ways every time, in this order.
+A coding agent can read a codebase and explain how a system fits together. Turning that explanation into a diagram is where the work goes wrong. These are the problems, roughly in the order you hit them.
 
-### Writing it down: the diagram cannot say what we mean
+### Every fix redraws everything
 
-- There is no first-class notion of a layer, a band, or a panel. We fake one with extra rectangles, and the result does not read as an architecture diagram.
-- Relationships stop at the node. "A calls B" can be said. "A calls B on this interface" cannot.
-- Coarse placement cannot be said either. There is no way to state "this block sits on the left, that one below it" short of taking over every coordinate.
-- Styling means picking a theme. A node with an icon, a title, a subtitle, and a status dot cannot be built.
+Agents draw a diagram in one shot: they write the whole picture, render it, and hand it over. When something is wrong, the only way to fix it is to ask again, and the agent produces a new picture. Parts nobody asked about move or disappear. After a few rounds the diagram is often still wrong, and the rounds have cost minutes and many tokens each.
 
-### Drawing: position and routing are out of control
+### The result depends on the model
 
-- Past a few dozen nodes, position becomes unpredictable. The picture on screen is not the picture in our head.
-- Edges cross nodes, sit on labels, and run across the whole canvas.
-- Intervening means owning every coordinate. There is no middle ground of constraints without coordinates.
+A strong model can produce a good diagram. A weaker, cheaper model given the same request produces something broken, or something completely different each time. The quality comes from the model, so cheap models are not an option.
 
-### Editing: every step is pixel labor
+### The model places every box by hand
 
-- Text width is estimated by hand (CJK ≈ 1em, Latin ≈ 0.6em). Estimate wrong and the label overflows, so containers get padded by guess.
-- Changing one label drags its position and its polyline bends along with it.
-- Return edges and labels collide by default, and we move them by hand.
-- Overflow shows up only after a render, so it is always found late.
+Whatever the tool, the model ends up computing coordinates: where each box goes, how wide it is, where each line bends. Models are bad at this. The result has overlapping boxes, clipped text and lines through nodes. It also gets worse as the diagram grows, which is why tools that look good cap the number of nodes.
 
-### Iterating: a round is expensive and failure is total
+### Pretty or complete, not both
 
-- A round is write, render, check, look. Each takes minutes, and a diagram takes a dozen rounds.
-- Two rounds that fail to clear the same defect mean throwing the diagram away and starting over.
-- Feedback says "overflow here, overlap there". It does not say whether the relationships are wrong or the placement is.
-- The target format has unstated limits, certain SVG features and text elements in particular. Break one and the output silently degrades to a flat image.
+Tools that make diagrams look good do it by cutting content, and engineers lose the details they need. Tools that keep every detail produce boxes full of paragraphs that nobody can read at a glance.
 
-### Handing over: the path is long and brittle
+### Nothing can be adjusted after it is drawn
 
-- Delivery means creating a document, writing the diagram into it, exporting, converting the format, and deleting the document. Network round trips and version-specific branches at every step.
-- Human edits and regeneration overwrite each other. There is no way to say "leave this part alone".
+Most tools draw once and stop. The Lark board, for example, accepts an agent's changes only as a full rebuild or as additions on top. There is no way to change one node and keep the rest.
 
-### Keeping it: nothing accumulates
+### The diagram cannot be reviewed
 
-- The artifact is an image. It cannot be diffed, reviewed in a pull request, or regression-tested.
-- Styling and structure are redone for every diagram. Nothing survives as a template or a preset.
+The result is an image. It cannot be diffed in a pull request, kept in step with the code, or checked automatically. Mermaid can be diffed, but its look and its automatic layout are hard to control.
 
-## The Idea
+## What we measured
 
-> **A diagram is structure made visible. State the structure, and the picture follows.**
+On 2026-10-10 we ran a blind test. Four agents drew the same two services from the same fact brief. Two used the `diagram-design` agent skill and two used no tool. Two Opus judges scored the results without knowing which was which. There was one run per arm, so treat the numbers as a first signal.
 
-A layered architecture diagram is not a graph. It is a structure of layers, bands, panels, and boundaries that uses space to say what belongs where. A graph layout engine does not know that, so it answers with a graph. A canvas tool knows it, and makes you say it by hand. Nothing occupies the middle.
+| Arm | Score (of 50) | Tokens | Time |
+|---|---|---|---|
+| Opus, with the skill | 42 | 143.6k | 374 s |
+| Sonnet, with the skill | 42 | 142.8k | 314 s |
+| Opus, no tool | 34 | 77.1k | 151 s |
+| Sonnet, no tool | 32 | 83.4k | 131 s |
 
-grafical occupies the middle. It is three things, and each has one job.
+- Every run wrote its own script to compute coordinates.
+- The skill runs looked clean but hid details engineers need, such as the retry path and the admin entry points.
+- The no-tool runs kept the details, but the judges called them walls of text.
+- Two of the four runs contained a factual error.
+- One diagram cost two to six minutes and 77k to 144k tokens, before any change was requested.
 
-| | Job | Never |
-|---|---|---|
-| **grafical** | Computes every pixel: layout, size, text wrapping, routing, spacing, alignment | Invents meaning |
-| **the file** | Carries the structure, the human's decisions, the computed layout, and whatever it needs to look the same elsewhere | Depends on anything that did not travel |
-| **the human** | Reads the result and adjusts it | Lays anything out |
+## What we want
 
-The structure is usually written by a model, and it says three things: what exists, what belongs with what, what connects to what. It reads like this (the syntax is illustrative):
+- Change a diagram the way a person would: one small step at a time, where only what you named changes.
+- Get a diagram that looks like the architecture diagrams of large engineering teams: aligned, evenly spaced, consistent type sizes, without asking for it.
+- Draw big diagrams without the tool hiding information.
+- Make it cheap enough that a small model like Haiku can do it well.
+- Keep the diagram in git and review changes to it like code.
+- Later, let people and agents work on the same diagram, each picking up where the other stopped.
 
-```yaml
-title: 商品数据同步链路
-layers: [接入, 传输, 平台, 存储]
-nodes:
-  - { id: ttd,  label: TTD,   layer: 平台, kind: service }
-  - { id: mq,   label: Kafka, layer: 传输, kind: queue }
-  - { id: ods,  label: ODS,   layer: 存储, kind: store }
-edges:
-  - { from: ttd, to: mq,  kind: async, label: 事件 }
-  - { from: mq,  to: ods, kind: write }
-```
+## What we need
 
-Six lines carry what a hand-drawn version spends an afternoon on. There is no fourth kind of statement: no coordinate, no size, no color, no bend.
-
-Two surfaces read the same source. The caller's surface is a shell: text in, files out, no picture. The human's surface is a page: the picture, and gestures that resolve into decisions. Both read the same computed layout, so what the human adjusts is exactly what gets published.
-
-## Why It Should Work
-
-Three bets, each falsifiable.
-
-**1. Structure decides the picture.** Architects already draw layered diagrams the same way: rows for layers, columns for subsystems, boxes for units, lines for relations. That mapping is a convention, not a talent. If it can be written down, and it can, the picture can be computed, and nobody has to place anything.
-
-**2. Choices are the error surface.** Every distinction the caller has to make is a chance to get it wrong. So the vocabulary is small and fixed, and every word means one thing. Fewer choices is not an aesthetic. It is the mechanism by which a diagram comes out right the first time.
-
-**3. An adjustment that survives is an adjustment worth making.** If changing a diagram means re-placing things, the human is the layout engine again. So an adjustment is recorded as a decision about the diagram, and it holds when everything else is recomputed.
-
-Where this could fail: if the shape of an architecture diagram genuinely cannot be derived from its structure, then the middle does not exist, and everyone belongs on one side or the other. That is the first thing to test.
-
-## What Ships
-
-One command, one file, one page.
-
-| | |
+| Need | Meaning |
 |---|---|
-| `grafical render <file>` | Produces the picture: PNG and SVG. Same file, same bytes, anywhere |
-| `grafical check <file>` | Reports every defect with its location and what was expected, in a form a caller can act on |
-| `grafical review <file>` | Opens the page where a human adjusts the diagram, with the adjustments landing back in the file |
-| `.grf` | The file. Self-contained: structure, decisions, computed layout. Send it and it renders the same |
+| Atomic | Every change is one named operation that succeeds completely or not at all |
+| Stable | An operation moves what it names, plus only what has to make room |
+| Rebuildable | The same file always renders the same picture |
+| Versioned | The file lives in git, and changes read as operations |
+| Fast | A change takes seconds, not a regeneration |
+| Cheap | A first draft and each change use few tokens |
+| Model-tolerant | A weak model gets a good result, because the tool decides what the model would get wrong |
+| Discrete | Positions, sizes and spacing come from a small set of allowed values, never free pixels |
 
-One install command. No account, no server, no browser in the path from structure to picture.
+## How it should feel
 
-## How We Will Know
+You ask for a change, such as "put a cache between the API and the database". A few seconds later the cache is there, nothing else has moved, and the picture still looks finished. It should feel like directing a fast, careful designer, not like waiting to see what comes out this time.
 
-A correct compiler is necessary and not sufficient. The project succeeds only if a diagram comes out right the first time, so the targets are rates.
+## The idea
 
-| Measure | Target | Kill threshold |
+**A diagram is a set of discrete facts, built one step at a time.**
+
+Diagrams from large engineering teams look consistent because they use few values: nodes sit in rows, they align, they share a spacing scale and a type scale. All of that can be written down as facts: this node is in that layer, after that node, aligned under this one. None of it needs a coordinate.
+
+grafical gives agents a command-line tool whose operations state those facts. The engine owns everything else: measuring text, placing nodes, routing edges, and keeping every unrelated element where it was. After each step, it validates the change and checks the picture for defects, and reports any problem to the agent at once. [DESIGN.md](DESIGN.md) shows the full shape.
+
+In stage 2 a board joins as a second client of the same operations. A person's drag becomes an operation too, so people and agents take turns on one file.
+
+## Why it should work
+
+Three bets, each of which can be tested.
+
+1. **Discrete facts are enough.** A layered architecture diagram can be fully described by layers, order, groups, alignment and a few size and spacing steps. If that is true, the engine can compute a good picture and nobody has to place anything.
+2. **Small, named operations make weak models good.** Each operation asks the model for a few choices from a short list. The tool validates each choice immediately. A weak model that only has to choose well from short lists can match a strong one.
+3. **Stability can be built in.** If placement follows the facts, an operation can move only what depends on the facts it touched. Stability is then a property of the design, not something we tune for.
+
+## Where it could fail
+
+- Real architecture diagrams might need placements that layers, order and alignment cannot express. Then the vocabulary grows until it is as hard to use as coordinates.
+- Routing edges through the gaps between layers might not be enough for dense diagrams.
+- Many small operations might cost more round trips than one large rewrite. Batches are meant to prevent this, and benchmark 1 in [GOALS.md](GOALS.md) measures it.
+
+## Prior art
+
+Checked on 2026-10-10. Nothing combines operations that state facts, a layout the engine owns, stability under change, and a file that can be reviewed.
+
+| Tool | Has | Missing |
 |---|---|---|
-| First version usable without an adjustment | 70% | Below 50%: the vocabulary cannot carry real diagrams |
-| Human minutes per diagram | under 2 | Above 10: the human is still drawing |
-| Mechanical defects: overflow, overlap, edges crossing nodes | zero | Any: the compiler is not doing its job |
-| Render time from the file | under 300 ms | Above 3 s: the loop is too slow to work in |
+| LikeC4 | A text model, a layout engine, manual positions kept beside the text | Agents edit whole files, and its MCP server is read-only |
+| draw.io MCP servers | Atomic operations, ELK layout, a mature editor | Operations take coordinates, and ELK lays out everything again |
+| `mcp_excalidraw` | Atomic operations, browser edits synced back | No layout engine |
+| Lark board CLI | Dagre and flexbox layout | Agents can only rebuild or append, and edits never return to the source |
+| `diagram-design` skill | A strong visual style | The model computes coordinates, and the skill caps nodes at 9 |
 
-The third row is a gate, not a target. A diagram with a mechanical defect is not shipped. It is an error.
+Sources: the projects' READMEs and documentation, including [LikeC4's documentation](https://likec4.dev/llms-full.txt), [jgraph/drawio-mcp](https://github.com/jgraph/drawio-mcp), [lgazo/drawio-mcp-server](https://github.com/lgazo/drawio-mcp-server), [yctimlin/mcp_excalidraw](https://github.com/yctimlin/mcp_excalidraw), the `@larksuite/whiteboard-cli` package on npm, and the complexity budget in the `diagram-design` skill's `SKILL.md`.
 
-## Plan
+## Scope
 
-Four phases, in order. The loop comes first, so every later feature is exercised through the real path.
-
-1. **The loop.** Structure → layout → picture → page → an adjustment that survives. Nothing else.
-2. **The vocabulary.** Kinds, layers, relations, one theme, and a checker that makes mechanical defects impossible.
-3. **The page.** Adjustments as decisions, a view of what changed, undo.
-4. **Real documents.** Run it against the architecture documents we actually write, and let the numbers recalibrate the targets above.
-
-## Status
-
-Nothing is built. The problem, the criteria, and the design decisions are written down. The next step is phase 0, and its only question is whether such a diagram comes out right the first time.
-
-## Where to Look Next
-
-PHILOSOPHY.md holds what we believe. DESIGN.md holds the decisions those beliefs produced, and what was rejected.
+Stage 1 is the MVP, for agents. Stage 2 adds the board, for people. [ROADMAP.md](ROADMAP.md) has the phases, and [FEATURES.md](FEATURES.md) has what each stage contains.

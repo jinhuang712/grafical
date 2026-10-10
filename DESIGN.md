@@ -1,185 +1,257 @@
-# grafical Design Decisions
+# Design
 
-> Established 2026-09-10.
+> Started 2026-10-11.
 
-How the statements in PHILOSOPHY.md become a working design: what was chosen, why, and what was rejected. The rejected alternatives carry as much weight as the choices. They are usually the reason a current shape looks odd.
+How [PHILOSOPHY.md](PHILOSOPHY.md) becomes a working design: each decision, its reason, and what was rejected. The rejected options matter as much as the choices, because they explain why the design looks the way it does.
 
-Decision IDs are permanent. A reversed decision keeps its ID and gains a note pointing at its replacement.
+Decision IDs are permanent. A reversed decision keeps its ID and gains a note that points to its replacement.
+
+## The shape
+
+```text
+agent ──operations──> grafical
+                        ├── validate ──> operation errors ──> agent
+                        ├── apply ─────> diagram file (YAML, in git)
+                        ├── layout ────> positions, sizes, routes
+                        ├── check ─────> defects ──> agent
+                        └── render ────> SVG ──resvg──> PNG
+```
+
+In stage 2 the board becomes a second client of the same operations. Nothing else in this picture changes.
 
 ## Index
 
-| ID | Decision | From |
+| ID | Decision | Traces to |
 |---|---|---|
-| D1 | Three parts: a command, a document, an engine | — |
-| D2 | Two surfaces over one source | — |
-| D3 | The input is structure, and nothing else | Structure decides the picture |
-| D4 | Layers are first-class, and they are why the picture is not a graph | Structure decides the picture |
-| D5 | Kinds are enumerated; appearance is not part of the input | Less is more |
-| D6 | No coordinate exists, anywhere | Moving pixels is banned |
-| D7 | One file carries everything | — |
-| D8 | The computed layout travels inside the file | Structure decides the picture |
-| D9 | A human's adjustments are decisions, stored in the file | Drawing is a series of discrete actions |
-| D10 | grafical computes the layout; the renderer only draws | — |
-| D11 | X6 draws. It does not lay out | — |
-| D12 | SVG-native shapes only | — |
-| D13 | Rendering is headless | — |
-| D14 | PNG comes from rasterizing the SVG | — |
-| D15 | Three commands | Less is more |
-| D16 | A gesture resolves to a decision, or it does not happen | Drawing is a series of discrete actions |
-| D17 | Defects never reach the human | Errors are not for the human |
-| D18 | Valid output or an error; nothing in between | Less is more |
-| D19 | Same source, same bytes | — |
-| D20 | Stability starts at the first release | Less is more |
+| D1 | Operations are the only way to change a diagram | Built in steps |
+| D2 | Operations state facts, never coordinates | The engine owns every pixel |
+| D3 | A batch applies many operations at once, all or nothing | Built in steps |
+| D4 | Every element has a stable ID that the caller chooses | Only what you name changes |
+| D5 | Every operation is validated, and its errors say how to fix it | Mistakes are caught at the step |
+| D6 | Layout is described by discrete facts | The engine owns every pixel |
+| D7 | Layers are horizontal bands, stacked top to bottom | The tool carries the taste |
+| D8 | Kinds and styles are short, fixed lists | The tool carries the taste |
+| D9 | A person's adjustment will be an ordinary operation | People and agents take the same steps |
+| D10 | grafical owns placement, and placement is stable by construction | Only what you name changes |
+| D11 | Edges route orthogonally through the gaps between layers and nodes | The engine owns every pixel |
+| D12 | Text is measured from bundled fonts | The same file is the same picture |
+| D13 | grafical writes the SVG, and resvg rasterizes it | The same file is the same picture |
+| D14 | The checker runs on every write, and a defect fails the command | Mistakes are caught at the step |
+| D15 | Same file, same SVG bytes and PNG pixels | The same file is the same picture |
+| D16 | The command line comes first, with JSON output | Built in steps |
+| D17 | `show` gives agents a compact view of a diagram | The tool carries the taste |
+| D18 | Git is the history, and `diff` reports changes as operations | The same file is the same picture |
+| D19 | TypeScript on Node, with an engine that also runs in a browser | People and agents take the same steps |
+| D20 | X6 draws the board in stage 2, not the stage 1 output | The same file is the same picture |
+| D21 | MIT license, and dependencies must allow it | — |
+| D22 | The file records its format version, and the format only grows | The same file is the same picture |
+| D23 | The toolchain | — |
 
-## The Shape
+## Writing a diagram
 
-A `.grf` file says what a system is made of and how the parts relate. One command turns it into a picture. Another turns it into a page a human can adjust. Every pixel of the result is computed.
+### D1 Operations are the only way to change a diagram
 
-There are two parties. grafical holds the structure, computes the layout, and draws. The human looks at the result and adjusts it. Whoever wrote the structure is not a party: the design is the same whether it came from a model, a script, or a hand.
+Every change is a named operation: `node.add`, `edge.add`, `node.rename`, `layer.move`. grafical applies it to the diagram file. Agents never write the file directly. People may read it, but editing it by hand is not supported in stage 1. grafical validates the file on every load, and refuses a file that fails with the same errors an operation would get.
 
-```text
-        ┌─────────────── grafical ───────────────┐
-structure ──▶  layout  ──▶  drawing  ──▶  picture / page
-   ▲                                          │
-   └───────────── human's decisions ──────────┘
+Rejected: agents writing the whole file. That is the one-shot pattern this project exists to replace. Each rewrite can change parts nobody asked about, and a weak model rewrites more than it should.
 
-everything travels in one file
-```
+### D2 Operations state facts, never coordinates
 
-## Product Shape
+An operation says which layer, which position in the layer, which group, what to align with, and what to connect. No operation takes an x, a y, a width or a bend point.
 
-### D1 Three parts: a command, a document, an engine
+Rejected: coordinate operations, as offered by the draw.io and Excalidraw MCP servers. They move the hardest part of the work back to the model, which is exactly where the 2026-10-10 test failed.
 
-The product is a command (`grafical`), a document (`.grf`), and the engine that turns one into the other. The command is the only reader and writer of the document. The document is the only thing that travels. The engine is what makes the same document look the same anywhere.
+### D3 A batch applies many operations at once, all or nothing
 
-Rejected: a service, because nothing should have to be running for a diagram to exist. A library, because structure is written from a shell, not against an API. A browser application, because a browser in the loop costs a round trip, and the writer could not see the result anyway.
+`grafical apply` takes a list of operations. grafical validates each one in order, and applies the list only if every operation is valid and the result has no defect. Otherwise nothing changes, and the reply names the first operation that failed.
 
-### D2 Two surfaces over one source
+Rejected: one tool call per operation as the only path, because a 40-node diagram would take 40 model round trips. A free-form script, because it cannot be validated step by step.
 
-grafical's surface is the shell: text in, files out, no picture. The human's surface is a page: the picture, with gestures. Both read the same computed layout, so what the human adjusts is exactly what will be published.
+### D4 Every element has a stable ID that the caller chooses
 
-Rejected: one surface for both, because a machine cannot use a page and a human should not need a shell. A preview that approximates the export, because a human reviewing something other than the artifact is not reviewing.
+Layers, groups, nodes and edges each have an ID, such as `relay` or `kafka`. The caller picks it, and it never changes while the element exists. Renaming changes the label, not the ID. An edge ID defaults to `<from>-><to>` when the edge is created, with a suffix when the same pair is connected twice. A reversed edge keeps its ID.
 
-## What Goes In
+Rejected: generated IDs, because the agent would have to look them up before every operation. Matching by label, because a rename then breaks every reference. Structurizr's manual layouts are lost this way.
 
-### D3 The input is structure, and nothing else
+### D5 Every operation is validated, and its errors say how to fix it
 
-Three statements, and no fourth: what exists, what belongs with what, what connects to what. Each is a statement about the system. Everything the picture shows beyond that is grafical's to compute.
+An operation error has a code, the index of the operation, the field, what was found, what was expected, and a suggestion. An unknown ID suggests the closest existing IDs. A bad value lists the allowed values.
 
-Rejected: allowing a coordinate "just in case", because one escape hatch becomes the normal path, and that is the situation this project exists to leave. Style values, because an invented value carries no convention and the reader pays for it. Layout hints beyond coarse placement, because each one hands back a decision the engine should be making.
+Rejected: prose error messages, because an agent has to interpret them, and that costs a round. Accepting a doubtful operation with a warning, because the warning is easy to ignore and the error then surfaces later.
 
-### D4 Layers are first-class, and they are why the picture is not a graph
+## The model
 
-A layer is a named band that things belong to. Groups nest inside it. The picture is built from the layers outward, which is why it reads as an architecture diagram and not as a node-link graph.
+### D6 Layout is described by discrete facts
 
-Rejected: deriving bands from the graph, because that is what a graph layout does, and it is why its output is a graph rather than an architecture. Rows and columns as free-form containers, because they hand out a placement decision without giving it a name.
+A node's place is its layer, its order within the layer, its group, and an optional alignment with a node in another layer. Its size is a size step, and the box has that step's fixed width and height. The diagram's spacing is a density. The allowed values are listed in [FEATURES.md](FEATURES.md). The theme maps each value to pixels.
 
-### D5 Kinds are enumerated; appearance is not part of the input
+Rejected:
+- Free positions. They make every diagram look different and give a weak model too many ways to be wrong.
+- A general graph layout over a plain node and edge list, such as ELK layered or dagre. Those compute positions globally, so adding one node can reorder others.
+- Boxes that grow with their text. A longer label would push every layer below it down.
 
-A kind says what a thing is, and therefore how it is drawn: a service, a store, a queue, an outside system, an actor. The list is short and does not grow casually. Themes are chosen, not composed.
+### D7 Layers are horizontal bands, stacked top to bottom
 
-Rejected: free-form appearance attributes, because an invented color is a convention the reader has to learn at the moment they read. Per-diagram themes, because the same system drawn twice should look the same.
+A layered architecture diagram reads from top to bottom: callers, entry points, services, messaging, storage. Each layer is a band with a label. Nodes in a layer sit side by side in their order. A group draws a box around neighbouring nodes in one layer.
 
-### D6 No coordinate exists, anywhere
+Rejected for stage 1: groups that span several layers, and swimlanes. They are real needs, such as a "write side" and a "read side" column across layers, and they are listed under "Not yet decided".
 
-Not in the source, not in the decisions, not in any operation. There is nothing to store and nothing to read back. This is not a restriction placed on an existing capability. The capability is absent.
+### D8 Kinds and styles are short, fixed lists
 
-Rejected: a nudge mode, a manual-override field, and a repair step after rendering. Each is the same escape hatch under a different name, and each turns a gap in the vocabulary into a pixel nobody can explain later.
+Each node and each edge has a kind from a short list in [FEATURES.md](FEATURES.md). The theme decides how each kind looks. One emphasis value, `accent`, marks the one or two things a reader should see first. Stage 1 ships one theme.
 
-## The File
+Rejected: per-node colors and free style attributes. Every invented style is something the reader has to decode, and something a weak model can get wrong.
 
-### D7 One file carries everything
+### D9 A person's adjustment will be an ordinary operation
 
-A `.grf` holds what the diagram says, what the human decided about it, the layout that was computed, and whatever it needs to look the same elsewhere. Send it, and the recipient renders the same picture.
+In stage 2, a drag on the board becomes the same operation an agent would send, such as `node.move` or `node.align`. It changes the same facts, so the file has one kind of state, whoever made the change. If stage 2 needs a fact that stage 1 lacks, it is added under D22.
 
-Rejected: a source plus a sidecar plus a cache, because three files where one will do is three chances to lose the human's work by losing one of them. External theme files, because then the picture depends on something that did not travel.
+Rejected: a separate section for people's adjustments, reserved now and filled in stage 2. Without a defined schema, an empty section does not prevent a later format change, and a second kind of state would let people's and agents' changes disagree.
 
-### D8 The computed layout travels inside the file
+## The engine
 
-The layout is derived, so it can always be discarded and recomputed. When it is present, it wins. This is what makes the picture independent of the recipient's engine version, fonts, and platform: if the metrics differ, nothing moves.
+### D10 grafical owns placement, and placement is stable by construction
 
-Rejected: pinning an engine version, because a version pin is a promise to render old layouts forever. Shipping fonts as a second artifact, because it is one more thing to send and one more thing to lose.
+Placement follows the facts in a fixed order: layers from top to bottom, nodes in each layer by their order, box sizes from their steps, gaps from the density. Layers are left-aligned. No search or optimization takes part. An operation can therefore change only these, and benchmark 4 in [GOALS.md](GOALS.md) checks that nothing else changes:
 
-### D9 A human's adjustments are decisions, stored in the file
+- the element it names;
+- the nodes after it in the same layer, which shift sideways when it adds, removes or resizes a node;
+- the layers below it, which shift down when its layer changes height;
+- nodes aligned to a node that moved, and in turn the nodes after them in their own layer;
+- the routes of edges attached to anything that moved, and of edges that share a gap with a changed edge.
 
-An adjustment is recorded as a decision about the diagram: this belongs to that layer, these two swap order, this relation is asynchronous. It travels with the file and survives every later regeneration.
+An alignment that cannot hold together with the order in either layer is rejected as an operation error.
 
-Rejected: a separate override file, because whatever holds the human's work should be the thing they were sent. Session-only state, because work that disappears is work nobody will do.
+Rejected: optimizing placement to reduce edge crossings. It produces a better first picture, but any change can reshuffle everything. Order changes only when an operation asks for it. Centred layers, for now: centring shifts a whole layer whenever one of its nodes changes. This stays under "Not yet decided".
 
-## grafical
+### D11 Edges route orthogonally through the gaps between layers and nodes
 
-### D10 grafical computes the layout; the renderer only draws
+Edges run as horizontal and vertical segments. They travel between layers and between neighbouring nodes, never through a node. Labels sit on segments without overlapping nodes or other labels.
 
-Layout happens before rendering, once, outside any renderer. Both surfaces consume the result, so the command's output and the page are the same picture.
+Phase 0 compares two routers: our own router through the gaps, and `libavoid-js`, a WASM build of the Adaptagrams libavoid router. A router passes only if it meets all of these:
+- no edge crosses a node, and no labels collide;
+- adding one edge changes no other route outside D10's list;
+- it gives the same SVG bytes on macOS and Linux;
+- its license fits D21.
 
-Rejected: letting the renderer lay out, because two renderers would produce two pictures, and anything the human adjusted would stop meaning anything.
+The choice is recorded here.
 
-### D11 X6 draws. It does not lay out
+Rejected: ELK for routing. ELK layered computes its own placement, and according to ELK's documentation it cannot route orthogonally around nodes that are already placed. Its fixed-layout algorithm only reuses bend points it is given. Sources, checked on 2026-10-10: the [ELK fixed algorithm reference](https://eclipse.dev/elk/reference/algorithms/org-eclipse-elk-fixed.html) and the [ELK libavoid post](https://eclipse.dev/elk/blog/posts/2022/22-11-17-libavoid.html). Graphviz, because it is another placement engine and a native binary.
 
-X6 supplies the parts that are hard to get right and already are: orthogonal and obstacle-avoiding routing, connectors, ports and anchors, text measurement and wrapping, and a registry of shapes. It has no layout engine, so the layered layout is ours to write.
+### D12 Text is measured from bundled fonts
 
-Rejected: writing a router, because X6's is better than anything we would write, and routing is not where our value is. Using X6's editing plugins while writing structure, because they exist to serve a hand on a canvas.
+grafical ships its own fonts: Inter for Latin text and a Simplified Chinese subset of Noto Sans SC, both under the SIL Open Font License. Text width comes from those font files, never from the system. Labels wrap at spaces, hyphens, underscores and slashes in Latin text, and between characters in Chinese text. A label that still does not fit its box is a defect. Its fix is a larger size step or a shorter label.
 
-### D12 SVG-native shapes only
+Rejected: system fonts, because they differ between machines, and the same file would give a different picture. Measuring in a browser, because grafical runs without one.
 
-A node is drawn from SVG primitives. HTML and foreign-object content is excluded: it cannot be measured without a real layout engine, and it does not rasterize.
+### D13 grafical writes the SVG, and resvg rasterizes it
 
-Rejected: HTML nodes and framework-rendered nodes, because they work only in the one environment we are deliberately not depending on.
+The engine writes the SVG itself, with a fixed element and attribute order. `@resvg/resvg-js` turns it into a PNG using the same bundled fonts. No browser takes part.
 
-### D13 Rendering is headless
+Rejected: X6 for stage 1 output. Running it outside a browser is unproven, and it would make X6 a hard dependency before the board needs it. A headless browser, because it is slow and large.
 
-The command renders in-process: a DOM shim plus a canvas for text measurement. X6's own test suite already exercises exactly this path and asserts the SVG it produces, so the capability is proven rather than hoped for.
+### D14 The checker runs on every write, and a defect fails the command
 
-Rejected: a headless browser, because it costs hundreds of megabytes and seconds per render to produce a picture we can produce in-process.
+After each operation or batch, grafical lays out the diagram and checks it. A defect is one of these:
+- text that overflows its box;
+- two nodes that overlap;
+- an edge that crosses a node;
+- two labels that collide;
+- a character the bundled fonts cannot draw.
 
-### D14 PNG comes from rasterizing the SVG
+A write that leaves a defect fails and changes nothing. Each defect names its elements, what was found, what was expected, and an operation that would fix it.
 
-One renderer, one picture. The rasterizer's only job is to turn vectors into pixels.
+Rejected: warnings, because a picture with a known defect looks like success. Checking only at render time, because the error then surfaces long after the operation that caused it.
 
-Rejected: X6's own image export in Node, because it wants an image loader that a headless document does not have. A second renderer, for the same reason as D10.
+### D15 Same file, same SVG bytes and PNG pixels
 
-## The Interfaces
+Under one version of grafical, the same file gives the same SVG bytes and the same PNG pixels on any machine.
 
-### D15 Three commands
+The file is YAML with a fixed layout. Mappings have sorted keys. Layers, the nodes in a layer, and edges are ordered lists, so inserting a node changes one line, not an index on every later node. The SVG has a fixed order and no timestamps. Fonts are bundled. CI renders the fixtures on macOS and Linux and compares them.
 
-`render` produces the picture. `check` produces diagnostics for whoever wrote the structure. `review` opens the page for the human. Nothing else is needed to do the work.
+Rejected: anything that depends on the host, such as system fonts, locale, time or unordered collections. Numeric order indexes, because one insertion rewrites every later index and makes git diffs noisy.
 
-Rejected: a subcommand for every action, because a large surface is a large error surface. A long-running server, because the writing loop must not depend on one.
+## Interfaces
 
-### D16 A gesture resolves to a decision, or it does not happen
+### D16 The command line comes first, with JSON output
 
-Dragging a box in the page means one of the things the vocabulary can say: this belongs to that layer, this aligns with that, this comes before that. A gesture that resolves to nothing is not performed, and the box returns to where the diagram puts it.
+Each operation is a command, such as `grafical node add …`, and every command accepts `--json`. Every write reports the IDs it changed, any operation errors and any defects, so the agent does not need to read the diagram again. An MCP server comes later, as a thin wrapper over the same operations.
 
-Rejected: free positioning with a silent side effect, because an adjustment that cannot be named cannot be stored, reviewed, or kept.
+Rejected: an MCP server only, because the command line works in every agent and every shell script. A library API first, because agents use commands.
 
-### D17 Defects never reach the human
+### D17 `show` gives agents a compact view of a diagram
 
-A diagnostic names the location, what was observed, and what was expected, in a form that whoever wrote the structure can act on without guessing. The page never shows one.
+`grafical show` prints the layers, the nodes in order, the groups and the edges in a few lines, in the same vocabulary as the operations. `grafical guide` prints the operation reference within 3k tokens. Together they keep the fixed overhead within benchmark 3's budget.
 
-Rejected: warnings for the human to resolve, because the human did not produce the defect and fixing it is not their job. Prose messages, because a message that has to be interpreted costs a round.
+Rejected: having agents read the YAML file, because it holds more than they need and costs more tokens.
 
-### D18 Valid output or an error; nothing in between
+### D18 Git is the history, and `diff` reports changes as operations
 
-If the diagram would render wrong, it is refused. There is no partial, approximate, or degraded result.
+The file holds the current state only, and git keeps the history. `grafical diff` compares the file on disk with a git revision, `HEAD` by default, and reports the difference as operations, such as `node.rename relay` or `edge.add relay->kafka`.
 
-Rejected: emitting an image that mostly works, because it looks like success and removes the reason to fix anything.
+Rejected: an operation log inside the file, which could replay any past version. The file grows without limit, git merges get harder, and git already keeps the history.
 
-### D19 Same source, same bytes
+## Platform
 
-Identical input produces identical output, on any machine.
+### D19 TypeScript on Node, with an engine that also runs in a browser
 
-Rejected: timestamps in output, unordered collections, and defaults that depend on the host.
+grafical is written in TypeScript and runs on Node 24 or later. The engine (model, layout, routing, measurement and SVG writing) uses no Node-only APIs. The stage 2 board can then run the same engine in the browser while a person drags.
 
-### D20 Stability starts at the first release
+Rejected: Go, which builds a single binary, because the board would need a second engine or a large WASM build. Rust, because development is slower, and the stage 2 board still needs a browser build.
 
-Before the first release, the format and the vocabulary are free to move. After it, adding is allowed and changing is a breaking change. A file that cannot be read is refused, never guessed at.
+### D20 X6 draws the board in stage 2, not the stage 1 output
 
-Rejected: promising compatibility from day one, because it would freeze the design before it is known to work. Reading an old file leniently, because a half-read diagram is worse than an absent one.
+In stage 2, AntV X6 draws the board from the geometry the engine computes, and handles selection, dragging and snapping. Before stage 2 starts, X6 is compared again with React Flow. On 2026-10-10 the latest X6 release on npm was 3.1.8, under MIT, and its maintainers had made no public statement about its future.
 
-## Not Yet Decided
+Rejected: using X6 in stage 1, as explained in D13.
 
-- The syntax of the file: one line per statement, or a nested structure.
-- The layout algorithm, and what it guarantees about crossings and spacing.
-- The contents of the vocabulary: which kinds, which relations.
-- How the page reaches the human: a single file that opens, or a command that serves it.
-- Whether a layer can vary along two axes at once, which is what a swimlane asks for.
+### D21 MIT license, and dependencies must allow it
+
+grafical is MIT-licensed. Every dependency must allow use in an MIT project. Licenses below come from the npm registry on 2026-10-11, except where marked.
+
+| Dependency | License |
+|---|---|
+| `@resvg/resvg-js` | MPL-2.0 |
+| `commander` | MIT |
+| `zod` | MIT |
+| `yaml` | ISC |
+| `libavoid-js`, if D11 chooses it | LGPL-2.1-or-later, from its npm page |
+| `harfbuzzjs` or `fontkit` | Unverified: the registry timed out |
+| Inter, Noto Sans SC | SIL Open Font License |
+| `elkjs` | EPL-2.0 OR GPL-3.0-or-later. Not used, see D11 |
+
+### D22 The file records its format version, and the format only grows
+
+Every diagram file starts with `grafical: <format version>`. Until the first release, the format may change freely. After it, new fields may be added, and changing or removing one is a breaking change that needs a new major format version. A file with a newer format than the installed grafical understands is refused, never guessed at. A grafical release that changes the picture for an existing file says so in its release notes.
+
+Rejected: no version field, because a file could then not be told apart from an older or newer one. Reading unknown fields loosely, because a half-understood diagram is worse than a refused one.
+
+### D23 The toolchain
+
+| Tool | Use |
+|---|---|
+| TypeScript 7 | Language and type checking |
+| Node 24 or later | Runtime |
+| pnpm | Package manager |
+| `commander` | Command-line parsing |
+| `zod` | Operation schemas, validation and error details |
+| `yaml` | Reading and writing the diagram file |
+| `@resvg/resvg-js` | PNG output |
+| `harfbuzzjs` or `fontkit` | Text measurement, chosen in phase 0 |
+| vitest | Tests |
+| Biome | Lint and format |
+
+Rejected: a CLI framework with plugins, because grafical's command set is small and fixed.
+
+## Not yet decided
+
+- **Router:** our own router through the gaps, or `libavoid-js`. Phase 0 decides (D11).
+- **Text library:** `harfbuzzjs` or `fontkit`. Phase 0 decides (D12).
+- **Chinese subset:** which character set the Noto Sans SC subset covers. Candidates are GB 2312 (6,763 characters) and the Table of General Standard Chinese Characters (8,105 characters).
+- **Wide layers:** what happens when a layer is wider than the maximum diagram width. One option is a defect that tells the agent to split the layer. The other is wrapping the layer into rows, which moves nodes the operation did not name.
+- **Columns and swimlanes:** groups that span layers, such as a write side and a read side.
+- **Centred layers:** whether layers may be centred, and how D10 would count the shift.
+- **Exact lists:** node kinds, edge kinds, size steps and density values. Phase 2 settles them.
+- **File naming:** `<name>.grafical.yaml` is proposed.
+- **Undo:** whether undo exists outside git.
+- **Stage 2:** how the board reaches the file (a local server while the board is open is proposed), and how snap guides turn a drag into one operation.
