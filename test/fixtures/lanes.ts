@@ -1,5 +1,6 @@
-// Swimlanes (DESIGN.md D32): a checkout system drawn by owner as row lanes, and
-// by team as column lanes, with nodes outside every lane and an edge to a lane.
+// Swimlanes (DESIGN.md D32): a checkout system drawn by owner as row lanes, every
+// row in a lane (the owner chose a lane of its own for the stores, 2026-10-12),
+// and by team as column lanes, with nodes outside every lane and an edge to a lane.
 // Fictional systems. Boxes are sized by grafical (D27).
 
 import type { Diagram, DiagramNode, NodeKind } from "../../src/model/types.ts";
@@ -41,6 +42,7 @@ export const lanesRows: Diagram = {
     {
       id: "data",
       label: "Data",
+      lane: "stores",
       nodes: [node("ordersdb", "orders db", "store"), node("events", "order events", "queue")],
     },
   ],
@@ -48,6 +50,7 @@ export const lanesRows: Diagram = {
     { id: "customer", label: "Customer" },
     { id: "platform", label: "Platform team" },
     { id: "pay", label: "Payments team" },
+    { id: "stores", label: "Data stores" },
   ],
   edges: [
     e("web", "gateway", "call", "HTTPS"),
