@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { checkSvg } from "../../bench/geometry.ts";
 import { layout } from "../../src/layout/index.ts";
 import type { Diagram } from "../../src/model/types.ts";
@@ -11,6 +11,9 @@ import { dense } from "../fixtures/dense.ts";
 import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
 import { tiny } from "../fixtures/tiny.ts";
 import { generate } from "../fuzz/gen.ts";
+
+// Lays out many random diagrams: slower CI machines need more than the default 5 s.
+vi.setConfig({ testTimeout: 60_000 });
 
 let m: Measurer;
 beforeAll(async () => {

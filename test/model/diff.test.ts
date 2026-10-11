@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { diffDiagrams } from "../../src/model/diff.ts";
 import { applyOps, type Diagram, type Op } from "../../src/model/index.ts";
 import { writeDiagram } from "../../src/model/io.ts";
@@ -6,6 +6,9 @@ import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { generate } from "../fuzz/gen.ts";
+
+// Lays out many random diagrams: slower CI machines need more than the default 5 s.
+vi.setConfig({ testTimeout: 60_000 });
 
 let m: Measurer;
 beforeAll(async () => {
