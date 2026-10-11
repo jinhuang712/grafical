@@ -29,7 +29,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D4 | Every element has a stable ID that the caller chooses | Only the facts you name change |
 | D5 | Every operation is validated, and its errors say how to fix it | Mistakes are caught at the step |
 | D6 | Layout is described by discrete facts | The engine owns every pixel |
-| D7 | Layers are horizontal bands, stacked top to bottom | The tool carries the taste |
+| D7 | Layers are rows, and groups are the systems drawn around them | The tool carries the taste |
 | D8 | Kinds and styles are short, fixed lists | The tool carries the taste |
 | D9 | A person's adjustment will be an ordinary operation | People and agents take the same steps |
 | D10 | Layout is recomputed from the facts on every change, like a typesetter | Only the facts you name change |
@@ -47,6 +47,8 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D22 | The file records its format version, and the format only grows | The same file is the same picture |
 | D23 | The toolchain | — |
 | D24 | The engine picks a new node's slot, and `layer.tidy` reorders on request | The tool carries the taste |
+| D25 | The target look is a picture, and its rules are measured | The tool carries the taste |
+| D26 | Curation is coached, budgeted and shown | The tool carries the taste |
 
 ## Writing a diagram
 
@@ -91,15 +93,24 @@ Rejected:
 - A general graph layout over a plain node and edge list, such as ELK layered or dagre. Those compute positions globally, so adding one node can reorder others.
 - Boxes that grow with their text. A longer label would push every layer below it down.
 
-### D7 Layers are horizontal bands, stacked top to bottom
+### D7 Layers are rows, and groups are the systems drawn around them
 
-A layered architecture diagram reads from top to bottom: callers, entry points, services, messaging, storage. Each layer is a band with a label. Nodes in a layer sit side by side in their order. A group draws a box around neighbouring nodes in one layer.
+A layered architecture diagram reads from top to bottom: callers, entry points, services, messaging, storage. Each layer is a row, and the nodes in a layer sit side by side in their order. Rows are not drawn: no band, no row label in the picture. A layer's label stays in the file and in `show`, for agents.
 
-Rejected for stage 1: groups that span several layers, and swimlanes. They are real needs, such as a "write side" and a "read side" column across layers, and they are listed under "Not yet decided".
+A group is a system, such as "catalog-sync" around its relay, topics and pipelines. Its members may sit in several neighbouring rows. The engine draws the group as one box around them, with its label at the top left, and keeps every non-member out of the box. Groups do not nest in stage 1.
+
+This decision changed on 2026-10-11, after blind judging. The first version drew each layer as a labelled band and kept groups within one row. Two Opus judges scored a hand-drawn grouped target 57 of 60, and the engine's banded output 22 (D25).
+
+Rejected:
+- Labelled bands for every row. They frame the picture by row, which is rarely what a reader needs, and they use a column of width on labels.
+- Groups within one row only. A system almost always spans rows, so this could not draw the systems that make an architecture diagram readable.
+- Nested groups, for stage 1.
 
 ### D8 Kinds and styles are short, fixed lists
 
 Each node and each edge has a kind from a short list in [FEATURES.md](FEATURES.md). The theme decides how each kind looks. One emphasis value, `accent`, marks the one or two things a reader should see first. Stage 1 ships one theme.
+
+Edges use at most two line styles: solid for a call or a data read, dashed for a message through a queue. A legend in the top right names the styles the diagram uses, and only those.
 
 Rejected: per-node colors and free style attributes. Every invented style is something the reader has to decode, and something a weak model can get wrong.
 
@@ -115,7 +126,9 @@ Rejected: a separate section for people's adjustments, reserved now and filled i
 
 After every operation, grafical lays out the whole diagram again from the facts, the way LaTeX typesets a document again after every edit. Positions are never stored. Layout must be fast enough to feel instant: benchmark 11 in [GOALS.md](GOALS.md) allows 50 ms per operation in process.
 
-Placement follows the facts in a fixed order: layers from top to bottom, nodes in each layer by their order, box sizes from their steps, gaps from the density. Each layer is centred, and its nodes are spread evenly, so every row looks tidy. No search takes part, so the same facts always give the same picture.
+Placement follows the facts in a fixed order: layers from top to bottom, nodes in each layer by their order, box sizes from their steps, gaps from the density.
+
+**One column grid for the whole diagram.** Every node sits in a column of one grid shared by all rows, and the grid is centred. Within a row, columns follow node order. The engine chooses each node's column so that as many edges as possible run as one straight vertical segment, and so that every group's members fill a block of neighbouring columns with no outsider inside it. This replaces the first version's rows, each centred and spread on its own: those made almost every edge between rows jog sideways, which the judges read as staircases. The choice of columns is deterministic, so the same facts always give the same picture.
 
 **Stability means the structure stays, not the pixels.** An operation never changes a fact it does not name. The one exception is the slot of a node added without a position, which D24 chooses. Positions are compared relative to the shared centre line: when the canvas widens, everything shifts by the same amount, and that is not movement. After an operation, only these may move:
 - the elements it names;
@@ -167,7 +180,7 @@ The phase 0 router spike compared it with `libavoid-js` on the public brief (30 
 
 What phase 1 added to the router:
 - **Fewer crossings.** Gaps and port orders follow the neighbouring gaps, and each gutter orders its tracks. The public brief went from 68 crossings to 15. Most of that gain comes from node order, chosen by D24: with the spike's node orders, the router alone gives 45.
-- **Buses.** A fan-out of three or more unlabelled edges of one kind leaves a node side through one port and shares one trunk.
+- **Buses.** A fan-out of three or more unlabelled edges of one kind leaves a node side through one port and shares one trunk. D25 lowers this to two edges, and adds fan-ins: edges that share a target side arrive through one port.
 - **Room before squeezing.**
   - Ports and gap tracks keep 8 px clear of lines that enter the same gutter from the other side.
   - A gap holds as many tracks as fit 8 px apart.
@@ -227,6 +240,8 @@ After each operation or batch, grafical lays out the diagram and checks it. Each
 | An edge that crosses a node | Engine |
 | Two labels that collide | Engine |
 | Two edges that share a segment, so a reader cannot tell them apart | Engine |
+| A line that crosses text: a node, edge or group label | Engine |
+| A non-member inside a group's box | Engine |
 
 A write that leaves an agent-owned defect fails and changes nothing. The defect names its elements, what was found, what was expected, and an operation that would fix it.
 
@@ -335,11 +350,50 @@ Rejected:
 - Appending a node last when no position is given. The agent's order would then decide the crossings, and that order is the main reason a diagram looks messy.
 - Reordering automatically on every change, for the reason in D10.
 
+### D25 The target look is a picture, and its rules are measured
+
+On 2026-10-11 the owner judged the engine's first real output "cluttered, messy, lines are all over the place". An Opus designer then hand-drew three uncluttered versions of the public brief, using only what an engine could compute. Two blind Opus judges scored them against the engine's and a raw model's drafts, out of 60:
+
+| Picture | Score |
+|---|---|
+| Grouped systems (the target) | 57 |
+| Compact overview | 57 |
+| Layered, curated | 50 |
+| The engine, phase 1 | 22 |
+| A raw model | 17 |
+
+Both judges picked the grouped version. The compact one hid the messaging and retry mechanics that engineers want. The target is `bench/targets/catalog-sync-grouped.png`, with its SVG beside it. The engine must produce pictures like it from facts alone.
+
+The rules that make it uncluttered. The checker measures each one. A broken rule is reported by `grafical check --all`, and it does not block a write:
+1. **Size:** the canvas is at most 1024 px wide, so that text shows at full size in a document.
+2. **Grid:** every node centre sits on the column grid (D10). At least half the edges are one straight segment, and no edge has more than 2 bends.
+3. **Crossings:** at most 1 per 10 edges.
+4. **Bundling:** 2 or more edges that share a source side, or a target side, share one trunk, and no junction of the trunk looks like a crossing.
+5. **Corridors:** an edge that skips rows runs only in a column that is empty in every row it passes.
+6. **Styles:** at most two line styles and one accent (D8).
+7. **Edge labels:** at most 40% of edges carry one.
+8. **Clear text:** no line crosses any text: node, edge or group label. This one is an engine-owned defect (D14).
+
+Rejected:
+- Tuning against defect counts alone. The phase 1 engine had zero defects on 5,000 random diagrams and still scored 22 of 60.
+- The compact overview as the target. It is as clean, but it folds each system into one box.
+
+### D26 Curation is coached, budgeted and shown
+
+A good diagram leaves things out, and only the agent can decide what. grafical helps in three ways:
+- **Budget.** `grafical check` warns when a diagram has more than 16 nodes, and suggests merging nodes that share a group and all their edges. The warning does not block.
+- **Coaching.** `grafical guide` tells agents to merge what a reader does not need apart, such as several topics into one node, and to keep a diagram to one story.
+- **Honesty.** A diagram may carry a subtitle, one sentence under the title, and a footnote naming what it leaves out ("Not shown: …"). Both are facts in the file, set by operations.
+
+Rejected:
+- Refusing diagrams over a node count. Some diagrams need more, and a hard limit would push agents into merging things a reader needs apart.
+- Letting the engine drop nodes. That would change facts nobody named (PHILOSOPHY.md).
+
 ## Not yet decided
 
 - **Wide layers:** what happens when a layer is wider than the maximum diagram width. One option is a defect that tells the agent to split the layer. The other is wrapping the layer into rows, which moves nodes the operation did not name.
-- **Columns and swimlanes:** groups that span layers, such as a write side and a read side.
-- **Columns across layers:** nodes lining up in columns across several layers. Phase 1 settled single alignments (D10). Columns are open, together with swimlanes.
+- **Alignment on the column grid:** whether `node.align` is still needed, now that the engine puts every node on a shared column grid (D10), or becomes a column hint.
+- **Swimlanes:** vertical lanes across the whole diagram. Groups that span rows (D7) cover systems; full-height lanes are open.
 - **The layer order an agent picks:** in the phase 1 measuring run, Haiku put a "Dependencies" layer between the Kafka and Stores layers, and the store edges had to pass through it. Whether the engine should suggest or choose layer order, as D24 does for nodes, is open.
 - **Exact lists:** node kinds, edge kinds, size steps and density values. Phase 2 settles them.
 - **File naming:** `<name>.grafical.yaml` is proposed.

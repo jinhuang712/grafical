@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="648" viewBox="0 0 1024 648" role="img" aria-labelledby="target-title">
+<title id="target-title">catalog-sync and catalog-api: the target look (DESIGN.md D25)</title>
+<rect width="1024" height="648" fill="#ffffff"/>
+<rect x="32" y="184" width="352" height="312" rx="8" fill="#f5f6f8" stroke="#d5d9df" stroke-width="1"/>
+<text x="48" y="208" font-family="Inter" font-size="12" font-weight="600" fill="#4b525c" xml:space="preserve">catalog-sync</text>
+<text x="136.71" y="208" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">write side</text>
+<rect x="640" y="280" width="184" height="216" rx="8" fill="#f5f6f8" stroke="#d5d9df" stroke-width="1"/>
+<text x="656" y="304" font-family="Inter" font-size="12" font-weight="600" fill="#4b525c" xml:space="preserve">catalog-api</text>
+<text x="734.24" y="304" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">read side</text>
+<path d="M728 36L749 36" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M756 36L749 39L749 33Z" fill="#6f7681"/>
+<path d="M801.9 36L822.9 36" fill="none" stroke="#6f7681" stroke-width="1.25" stroke-dasharray="5 3"/>
+<path d="M829.9 36L822.9 39L822.9 33Z" fill="#6f7681"/>
+<path d="M292 152L292 217" fill="none" stroke="#6f7681" stroke-width="1.25" stroke-dasharray="5 3"/>
+<path d="M292 224L289 217L295 217Z" fill="#6f7681"/>
+<path d="M292 280L292 313" fill="none" stroke="#6f7681" stroke-width="1.25" stroke-dasharray="5 3"/>
+<path d="M292 320L289 313L295 313Z" fill="#6f7681"/>
+<path d="M292 376L292 409" fill="none" stroke="#6f7681" stroke-width="1.25" stroke-dasharray="5 3"/>
+<path d="M292 416L289 409L295 409Z" fill="#6f7681"/>
+<path d="M900 152L900 342Q900 348 894 348L807 348" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M800 348L807 345L807 351Z" fill="#6f7681"/>
+<path d="M732 376L732 409" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M732 416L729 409L735 409Z" fill="#6f7681"/>
+<path d="M148 280L148 294Q148 300 154 300L254 300Q260 300 260 306L260 313" fill="none" stroke="#6f7681" stroke-width="1.25" stroke-dasharray="5 3"/>
+<path d="M260 320L257 313L263 313Z" fill="#6f7681"/>
+<path d="M224 444L130 444Q124 444 124 438L124 383" fill="none" stroke="#6f7681" stroke-width="1.25" stroke-dasharray="5 3"/>
+<path d="M124 376L127 383L121 383Z" fill="#6f7681"/>
+<path d="M192 348L217 348" fill="none" stroke="#6f7681" stroke-width="1.25" stroke-dasharray="5 3"/>
+<path d="M224 348L217 351L217 345Z" fill="#6f7681"/>
+<path d="M360 444L433 444" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M440 444L433 447L433 441Z" fill="#6f7681"/>
+<path d="M664 444L591 444" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M584 444L591 441L591 447Z" fill="#6f7681"/>
+<path d="M292 472L292 545" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M292 552L289 545L295 545Z" fill="#6f7681"/>
+<path d="M292 516L130 516Q124 516 124 522L124 545" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M124 552L121 545L127 545Z" fill="#6f7681"/>
+<path d="M292 532L494 532Q500 532 500 538L500 545" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M500 552L497 545L503 545Z" fill="#6f7681"/>
+<path d="M732 472L732 545" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M732 552L729 545L735 545Z" fill="#6f7681"/>
+<path d="M732 516L894 516Q900 516 900 522L900 545" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M900 552L897 545L903 545Z" fill="#6f7681"/>
+<path d="M732 532L530 532Q524 532 524 538L524 545" fill="none" stroke="#6f7681" stroke-width="1.25"/>
+<path d="M524 552L521 545L527 545Z" fill="#6f7681"/>
+<rect x="297" y="162" width="53.74" height="14" rx="2" fill="#ffffff"/>
+<text x="300" y="172" font-family="Inter" font-size="11" font-weight="400" fill="#4b525c" xml:space="preserve">consume</text>
+<rect x="297" y="294" width="40.04" height="14" rx="2" fill="#f5f6f8"/>
+<text x="300" y="304" font-family="Inter" font-size="11" font-weight="400" fill="#4b525c" xml:space="preserve">by line</text>
+<rect x="175.43" y="286" width="41.14" height="14" rx="2" fill="#f5f6f8"/>
+<text x="178.43" y="296" font-family="Inter" font-size="11" font-weight="400" fill="#4b525c" xml:space="preserve">resync</text>
+<rect x="150.72" y="428" width="34.55" height="14" rx="2" fill="#f5f6f8"/>
+<text x="153.72" y="438" font-family="Inter" font-size="11" font-weight="400" fill="#4b525c" xml:space="preserve">failed</text>
+<rect x="391.42" y="428" width="41.16" height="14" rx="2" fill="#ffffff"/>
+<text x="394.42" y="438" font-family="Inter" font-size="11" font-weight="400" fill="#4b525c" xml:space="preserve">persist</text>
+<rect x="597.8" y="428" width="28.39" height="14" rx="2" fill="#ffffff"/>
+<text x="600.8" y="438" font-family="Inter" font-size="11" font-weight="400" fill="#4b525c" xml:space="preserve">Find</text>
+<text x="32" y="40" font-family="Inter" font-size="18" font-weight="600" fill="#1f2328" xml:space="preserve">catalog-sync and catalog-api</text>
+<text x="32" y="62" font-family="Inter" font-size="12" font-weight="400" fill="#6b727c" xml:space="preserve">Two Go services coupled only by the shared MongoDB catalog database.</text>
+<text x="764" y="40" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">call</text>
+<text x="837.9" y="40" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">Kafka message</text>
+<rect x="224" y="96" width="136" height="56" rx="6" fill="#fbf6ec" stroke="#cdbf9f" stroke-width="1"/>
+<text x="241.23" y="122" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">upstream topics</text>
+<text x="252.89" y="138" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">6 broker topics</text>
+<rect x="820" y="96" width="160" height="56" rx="28" fill="#f8f9fa" stroke="#b4bac3" stroke-width="1"/>
+<text x="866.66" y="122" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">API callers</text>
+<text x="842.03" y="138" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">storefront, promotions</text>
+<rect x="56" y="224" width="136" height="56" rx="6" fill="#ffffff" stroke="#b4bac3" stroke-width="1"/>
+<text x="85.42" y="250" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">admin HTTP</text>
+<text x="82.06" y="266" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">:7102, operators</text>
+<rect x="224" y="224" width="136" height="56" rx="6" fill="#ffffff" stroke="#b4bac3" stroke-width="1"/>
+<text x="250.18" y="250" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">catalog-relay</text>
+<text x="264.04" y="266" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">tier 1, :7101</text>
+<rect x="664" y="320" width="136" height="56" rx="6" fill="#ffffff" stroke="#b4bac3" stroke-width="1"/>
+<text x="692.2" y="346" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">API handlers</text>
+<text x="677.32" y="362" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">gRPC, HTTP, no auth</text>
+<rect x="56" y="320" width="136" height="56" rx="6" fill="#fbf6ec" stroke="#cdbf9f" stroke-width="1"/>
+<text x="73.7" y="346" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">catalog_retry_v1</text>
+<text x="78" y="362" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">re-sent when due</text>
+<rect x="224" y="320" width="136" height="56" rx="6" fill="#fbf6ec" stroke="#cdbf9f" stroke-width="1"/>
+<text x="259.84" y="346" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">line topics</text>
+<text x="240.8" y="362" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">goods_v1, tickets_v1</text>
+<rect x="224" y="416" width="136" height="56" rx="6" fill="#ffffff" stroke="#b4bac3" stroke-width="1"/>
+<text x="250.69" y="442" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">line pipelines</text>
+<text x="240.12" y="458" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">goods 10, tickets 20</text>
+<rect x="440" y="416" width="144" height="56" rx="6" fill="#eef3fd" stroke="#2f5fc4" stroke-width="1.5"/>
+<path d="M441 420Q512 426 583 420" fill="none" stroke="#2f5fc4" stroke-width="1"/>
+<text x="456.06" y="442" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">MongoDB catalog</text>
+<text x="469.42" y="458" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">goods_*, ticket_*</text>
+<rect x="664" y="416" width="136" height="56" rx="6" fill="#ffffff" stroke="#b4bac3" stroke-width="1"/>
+<text x="690.89" y="442" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">service, repo</text>
+<text x="680.3" y="458" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">assemble, Find only</text>
+<rect x="56" y="552" width="136" height="56" rx="6" fill="#ffffff" stroke="#9aa1ab" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="98.06" y="578" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">geo-svc</text>
+<text x="95.82" y="594" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">region tree</text>
+<rect x="224" y="552" width="136" height="56" rx="6" fill="#f0f2f5" stroke="#b4bac3" stroke-width="1"/>
+<path d="M225 556Q292 562 359 556" fill="none" stroke="#b4bac3" stroke-width="1"/>
+<text x="237.65" y="578" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">Postgres replicas</text>
+<text x="255.61" y="594" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">goods, tickets</text>
+<rect x="444" y="552" width="136" height="56" rx="6" fill="#ffffff" stroke="#9aa1ab" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="485.34" y="578" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">i18n-svc</text>
+<text x="474.86" y="594" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">translated text</text>
+<rect x="664" y="552" width="136" height="56" rx="6" fill="#f0f2f5" stroke="#b4bac3" stroke-width="1"/>
+<path d="M665 556Q732 562 799 556" fill="none" stroke="#b4bac3" stroke-width="1"/>
+<text x="702.22" y="578" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">inventory</text>
+<text x="689.01" y="594" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">MongoDB, stock</text>
+<rect x="832" y="552" width="136" height="56" rx="6" fill="#ffffff" stroke="#9aa1ab" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="854.89" y="578" font-family="Inter" font-size="13" font-weight="600" fill="#1f2328" xml:space="preserve">campaign-svc</text>
+<text x="861.7" y="594" font-family="Inter" font-size="11" font-weight="400" fill="#6b727c" xml:space="preserve">campaign tags</text>
+</svg>

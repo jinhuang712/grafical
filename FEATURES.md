@@ -36,6 +36,8 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 |---|---|---|
 | `diagram.title` | Set the title | stage 1 |
 | `diagram.density` | Set spacing: `compact`, `normal` or `airy` | stage 1 |
+| `diagram.subtitle` | Set or clear one sentence under the title (D26) | stage 1 |
+| `diagram.note` | Set or clear the footnote, such as "Not shown: …" (D26) | stage 1 |
 
 ### Layers
 
@@ -51,7 +53,8 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `group.add` | Draw a box around neighbouring nodes in one layer | stage 1 |
+| `group.add` | Draw a system box around nodes, which may sit in several neighbouring rows (D7) | stage 1 |
+| `group.join`, `group.leave` | Add a node to a group, or take it out | stage 1 |
 | `group.rename` | Change a group's label | stage 1 |
 | `group.remove` | Remove the box and keep its nodes | stage 1 |
 

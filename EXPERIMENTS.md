@@ -118,6 +118,10 @@ An ablation runs when its decision is built or questioned, not all at once.
 - **Records:** for each run, a summary of every metric above, the transcript, the final diagram file and picture, and their hashes. Raw runs go to `bench/runs/`, which is not tracked. Summary tables are committed under `bench/results/`.
 - **Versions:** each result records the Claude Code version, the model IDs and grafical's commit.
 - **Judging:** two Opus judges score each picture blind, each with its own random labels. They score accuracy, clarity, visual quality, defects, and fit in a doc at 1000 px wide, each from 1 to 5. That gives 25 points per judge and 50 in total. For E2 they also list what changed besides each request. They see only the brief, the request and the pictures.
+  - **Order**, a sixth criterion, scores clutter: few, straight, easy lines, no tangles or staircases, no line across text. With it a judge gives 30 points and a pair 60. It was added on 2026-10-11, after the owner called the phase 1 pictures "cluttered, messy, lines are all over the place" (DESIGN.md D25).
+  - The MVP bar in GOALS.md stays on the first five criteria, out of 50, so that it compares with its 2026-10-10 baseline.
+  - The D25 target picture is judged in every round as an anchor.
+- **The owner's ratings:** every round's pictures also go to the owner's rating page, made by `pnpm bench gallery`, under blind letters. The owner's ratings are read back and reported next to the judges' scores.
 - **Briefs:** there are two kinds.
   - Public briefs live in `bench/briefs/`. They describe fictional systems and drive fixtures, tests, CI and tuning. The first is [`catalog-sync.md`](bench/briefs/catalog-sync.md).
   - Private briefs describe real systems and never enter this repository. The private reference brief is the one from the 2026-10-10 test, used only to check the MVP bar so that its 42 of 50 baseline compares like with like. Runs on private briefs happen outside the repository, and only their scores are committed, never their content or pictures.

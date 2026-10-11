@@ -30,8 +30,20 @@ The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, 
 - a minimal benchmark harness (`pnpm bench`), as described in [EXPERIMENTS.md](EXPERIMENTS.md).
 
 Exit check:
-1. An agent builds the public brief `bench/briefs/catalog-sync.md` with these operations alone, and the PNG has zero defects.
-2. The smoke test in EXPERIMENTS.md has run, and its results are recorded. The smoke test informs phase 2. It has no pass mark, except that a result below a kill threshold in GOALS.md stops the project for a decision.
+1. An agent builds the public brief `bench/briefs/catalog-sync.md` with these operations alone, and the PNG has zero defects. Met on 2026-10-11 (Haiku, one run).
+2. The target look (phase 1b) is reached.
+3. The smoke test in EXPERIMENTS.md has run, and its results are recorded. The smoke test informs phase 2. It has no pass mark, except that a result below a kill threshold in GOALS.md stops the project for a decision.
+
+### Phase 1b: the target look
+
+Added on 2026-10-11. The phase 1 engine drew defect-free pictures that the owner and two Opus judges found cluttered: 22 of 60, against 57 for a hand-drawn target (DESIGN.md D25). Before the smoke test, the engine is rebuilt toward that target:
+- rows not drawn, and groups that span rows drawn as system boxes (D7);
+- one column grid, with columns chosen to straighten edges (D10);
+- two line styles and a legend (D8), and bundling from two edges, including fan-ins (D11);
+- the eight measured rules (D25), and lines never crossing text (D14);
+- subtitle, footnote, the node budget and coaching in `guide` (D26), and the operations for groups and the two texts (FEATURES.md).
+
+Exit check: Haiku builds the public brief through the command line, and two blind Opus judges score its picture at least 50 of 60 on the D25 rubric, with the target scored in the same round. Each picture is also shown on the owner's rating page.
 
 ### Phase 2: the vocabulary and stability
 
