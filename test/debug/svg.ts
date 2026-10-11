@@ -2,7 +2,7 @@
 // lands. It is not the product's look, and nothing depends on it.
 
 import { Resvg } from "@resvg/resvg-js";
-import type { Point, Scene } from "../../src/scene.ts";
+import type { PlacedText, Point, Scene } from "../../src/scene.ts";
 
 const r2 = (n: number) => String(Math.round(n * 100) / 100);
 
@@ -94,6 +94,63 @@ function arrow(pts: Point[]): string {
   const bx = tip.x - dx * len;
   const by = tip.y - dy * len;
   return `M${r2(tip.x)} ${r2(tip.y)} L${r2(bx - dy * half)} ${r2(by + dx * half)} L${r2(bx + dy * half)} ${r2(by - dx * half)} Z`;
+}
+
+const FAMILY: Record<string, string> = {
+  "inter-400": 'font-family="Inter" font-weight="400"',
+  "inter-600": 'font-family="Inter" font-weight="600"',
+  "noto-400": 'font-family="Noto Sans SC" font-weight="400"',
+  "noto-600": 'font-family="Noto Sans SC" font-weight="600"',
+};
+
+function realText(t: PlacedText, fill: string): string[] {
+  return t.runs.map(
+    (r) =>
+      `<text x="${r2(r.x)}" y="${r2(r.y)}" ${FAMILY[r.face] ?? ""} font-size="${r.size}" fill="${fill}" xml:space="preserve">${esc(r.text)}</text>`,
+  );
+}
+
+/**
+ * What the phase 1 renderer does not draw yet, in the target's paint: group
+ * boxes and labels behind everything, and the subtitle, legend and footnote in
+ * front. For viewing the layout through the real renderer before the phase 1b
+ * renderer lands; nothing depends on it.
+ */
+export function frameParts(s: Scene): { behind: string[]; front: string[] } {
+  const behind: string[] = [];
+  for (const g of s.groups ?? []) {
+    const r = g.rect;
+    behind.push(
+      `<rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.w)}" height="${r2(r.h)}" rx="8" fill="#f5f6f8" stroke="#d5d9df" stroke-width="1"/>`,
+      ...realText(g.label, "#4b525c"),
+    );
+  }
+  const front: string[] = [];
+  if (s.subtitle) front.push(...realText(s.subtitle, "#6b727c"));
+  for (const it of s.legend ?? []) {
+    const { x1, x2, y } = it.sample;
+    const dash = it.style === "dashed" ? ' stroke-dasharray="5 3"' : "";
+    front.push(
+      `<path d="M${r2(x1)} ${r2(y)}L${r2(x2 - 7)} ${r2(y)}" fill="none" stroke="#6f7681" stroke-width="1.25"${dash}/>`,
+      `<path d="M${r2(x2)} ${r2(y)}L${r2(x2 - 7)} ${r2(y + 3)}L${r2(x2 - 7)} ${r2(y - 3)}Z" fill="#6f7681"/>`,
+      ...realText(it.label, "#6b727c"),
+    );
+  }
+  if (s.note) front.push(...realText(s.note, "#6b727c"));
+  return { behind, front };
+}
+
+/**
+ * The phase 1 renderer's SVG of a scene without its rows, with frameParts added:
+ * the background stays first, groups come right after it, the rest at the end.
+ */
+export function withFrame(svg: string, s: Scene): string {
+  const { behind, front } = frameParts(s);
+  const lines = svg.trimEnd().split("\n");
+  const bg = lines.findIndex((l) => l.startsWith("<rect width="));
+  lines.splice(bg + 1, 0, ...behind);
+  lines.splice(lines.length - 1, 0, ...front);
+  return `${lines.join("\n")}\n`;
 }
 
 export function debugPng(svg: string, zoom = 1.5): Buffer {

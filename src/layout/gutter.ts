@@ -17,6 +17,9 @@
 // gutter of its path. When it has none left, its line takes a detour around the
 // crowd (placeDetours), which is always clear.
 //
+// The runs of one fan-out or fan-in carry the same `bus`: their stubs at one x are
+// the shared trunk, one line, and never count against each other.
+//
 // Vertical positions here are in "row px": row t lies at t * pitch. Assembly turns
 // them into absolute y once the gutter's height step is known.
 
@@ -165,10 +168,13 @@ function geometry(pitch: number) {
     if (rv >= 0 && rv === ru && v.hi - v.lo > EPS && u.hi - u.lo > EPS) {
       if (v.lo - sep < u.hi && u.lo < v.hi + sep) c += LINE;
     }
+    const oneBus = v.bus !== undefined && v.bus === u.bus;
     for (const s of v.stubs) {
       for (const t of u.stubs) {
         const d = Math.abs(s.x - t.x);
         if (d >= NEAR) continue;
+        // The runs of one fan-out or fan-in share their trunk's stub: one line.
+        if (oneBus && d < 0.5) continue;
         // Lines that enter from one boundary, or that need no row, are kept apart
         // across by the ports and tracks; only a true overlap counts between them.
         const opposite = s.top !== t.top && rv >= 0 && ru >= 0;

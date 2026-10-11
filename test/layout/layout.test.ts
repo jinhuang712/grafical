@@ -1,20 +1,26 @@
 import { createHash } from "node:crypto";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { check as checker } from "../../src/check/index.ts";
 import {
   chooseSlot,
   layout,
   layoutFramed,
   routeStats,
   validateAlignments,
+  validateGroups,
 } from "../../src/layout/index.ts";
 import type { Diagram, DiagramNode, Edge } from "../../src/model/types.ts";
+import type { Point, Scene, SceneEdge } from "../../src/scene.ts";
+import { createMeasurer } from "../../src/text/index.ts";
 import { createStubMeasurer } from "../../src/text/stub.ts";
+import type { Measurer } from "../../src/text/types.ts";
 import { e, n } from "../fixtures/build.ts";
 import { catalogSync } from "../fixtures/catalog-sync.ts";
+import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { dense } from "../fixtures/dense.ts";
 import { edgeCases } from "../fixtures/edge-cases.ts";
 import { tiny } from "../fixtures/tiny.ts";
-import { defects, mechanical } from "./checks.ts";
+import { defects, groupIntruders, mechanical, taste, textCrossings } from "./checks.ts";
 import {
   type Applied,
   addEdge,
@@ -31,11 +37,18 @@ const m = createStubMeasurer();
 const fixtures: [string, Diagram][] = [
   ["tiny", tiny],
   ["edge-cases", edgeCases],
+  ["catalog-sync-grouped", catalogSyncGrouped],
   ["catalog-sync", catalogSync],
   ["dense", dense],
 ];
 const crossings = (d: Diagram) => routeStats(layout(d, m).edges.map((x) => x.points)).crossings;
 const hash = (x: unknown) => createHash("sha256").update(JSON.stringify(x)).digest("hex");
+/** Every defect the engine owns, from the layout's own checks. */
+const engineOwned = (s: Scene) => [
+  ...mechanical(defects(s)).filter((x) => !x.startsWith("overflow")),
+  ...textCrossings(s).map((x) => `text crossing: ${x}`),
+  ...groupIntruders(s).map((x) => `group intruder: ${x}`),
+];
 
 describe("no mechanical defects", () => {
   for (const [name, d] of fixtures) {
@@ -43,8 +56,9 @@ describe("no mechanical defects", () => {
       const scene = layout(d, m);
       expect(scene.nodes).toHaveLength(d.layers.reduce((s, l) => s + l.nodes.length, 0));
       expect(scene.edges).toHaveLength(d.edges.length);
-      expect(mechanical(defects(scene))).toEqual([]);
+      expect(engineOwned(scene)).toEqual([]);
       expect(validateAlignments(d)).toEqual([]);
+      expect(validateGroups(d)).toEqual([]);
     });
   }
 
@@ -55,6 +69,136 @@ describe("no mechanical defects", () => {
     }
     // The phase 0 spike: 68 crossings on catalog-sync, libavoid-js 40.
     expect(crossings(catalogSync)).toBeLessThan(40);
+  });
+});
+
+describe("with the real measurer", () => {
+  let real: Measurer;
+  beforeAll(async () => {
+    real = await createMeasurer();
+  });
+  for (const [name, d] of fixtures) {
+    it(`${name} has no defect at all`, () => {
+      const scene = layout(d, real);
+      expect(checker(d, scene, real).map((x) => `${x.code} ${x.found}`)).toEqual([]);
+      expect([...mechanical(defects(scene)), ...engineOwned(scene)]).toEqual([]);
+    });
+  }
+});
+
+/** Points where lines of one fan-out leave in all four directions: a junction that reads as a crossing. */
+function crossLikeJunctions(edges: SceneEdge[]): string[] {
+  const out: string[] = [];
+  const buses = new Map<string, SceneEdge[]>();
+  for (const x of edges) {
+    if (x.label !== undefined) continue;
+    const key = `${x.from}:${x.kind}`;
+    buses.set(key, [...(buses.get(key) ?? []), x]);
+  }
+  for (const [key, members] of buses) {
+    if (members.length < 2) continue;
+    const dirs = new Map<string, Set<string>>();
+    const at = (p: Point) => `${p.x},${p.y}`;
+    const add = (p: Point, d: string) => dirs.set(at(p), (dirs.get(at(p)) ?? new Set()).add(d));
+    const corners = members.flatMap((x) => x.points);
+    for (const x of members) {
+      for (let i = 1; i < x.points.length; i++) {
+        const a = x.points[i - 1] as Point;
+        const b = x.points[i] as Point;
+        for (const p of corners) {
+          const onV = a.x === b.x && p.x === a.x;
+          const onH = a.y === b.y && p.y === a.y;
+          const lo = onV ? Math.min(a.y, b.y) : Math.min(a.x, b.x);
+          const hi = onV ? Math.max(a.y, b.y) : Math.max(a.x, b.x);
+          const t = onV ? p.y : p.x;
+          if (!(onV || onH) || t < lo || t > hi) continue;
+          if (t > lo) add(p, onV ? "up" : "left");
+          if (t < hi) add(p, onV ? "down" : "right");
+        }
+      }
+    }
+    for (const [p, set] of dirs) if (set.size === 4) out.push(`${key} at ${p}`);
+  }
+  return out;
+}
+
+describe("the target look (D25)", () => {
+  let scene: Scene;
+  beforeAll(async () => {
+    scene = layout(catalogSyncGrouped, await createMeasurer());
+  });
+  const edge = (id: string) => scene.edges.find((x) => x.id === id) as SceneEdge;
+  const node = (id: string) => scene.nodes.find((x) => x.id === id)?.rect;
+
+  it("meets the measured rules", () => {
+    const t = taste(scene);
+    console.log("catalog-sync-grouped:", JSON.stringify(t));
+    expect(t.width).toBeLessThanOrEqual(1024);
+    expect(t.straight).toBeGreaterThanOrEqual(0.5);
+    expect(t.maxBends).toBeLessThanOrEqual(2);
+    expect(t.crossings).toBeLessThanOrEqual(Math.floor(scene.edges.length / 10));
+    expect(t.corridorViolations).toBe(0);
+  });
+
+  it("puts every node on one grid of five columns", () => {
+    const centres = new Set(scene.nodes.map((x) => x.rect.x + x.rect.w / 2));
+    expect(centres.size).toBe(5);
+    // The chain from the upstream topics to the replicas is one straight line.
+    for (const id of ["upstream->relay", "relay->line_topics", "line_topics->pipelines"]) {
+      expect(edge(id).points).toHaveLength(2);
+    }
+  });
+
+  it("runs edges between neighbours straight sideways, with their labels", () => {
+    for (const id of ["pipelines->mongo", "service->mongo", "retry->line_topics"]) {
+      const pts = edge(id).points;
+      expect(pts).toHaveLength(2);
+      expect(pts[0]?.y).toBe(pts[1]?.y);
+    }
+    expect(
+      edge("pipelines->mongo")
+        .label?.runs.map((r) => r.text)
+        .join(""),
+    ).toBe("persist");
+  });
+
+  it("bundles fan-outs into one trunk, with no junction that reads as a crossing", () => {
+    for (const from of ["pipelines", "service"]) {
+      const ports = new Set(
+        scene.edges
+          .filter((x) => x.from === from && x.kind === "call" && x.label === undefined)
+          .map((x) => `${x.points[0]?.x},${x.points[0]?.y}`),
+      );
+      expect(ports.size).toBe(1);
+    }
+    expect(crossLikeJunctions(scene.edges)).toEqual([]);
+  });
+
+  it("draws each group as one box around its members, its label clear of lines", () => {
+    expect(scene.groups?.map((g) => [g.id, g.members.length])).toEqual([
+      ["catalog-sync", 5],
+      ["catalog-api", 2],
+    ]);
+    expect(groupIntruders(scene)).toEqual([]);
+    expect(textCrossings(scene)).toEqual([]);
+    for (const g of scene.groups ?? []) {
+      for (const id of g.members) {
+        const r = node(id);
+        if (r === undefined) throw new Error(id);
+        expect(r.x).toBeGreaterThanOrEqual(g.rect.x + 24);
+        expect(r.x + r.w).toBeLessThanOrEqual(g.rect.x + g.rect.w - 24);
+      }
+    }
+  });
+
+  it("has a subtitle, a footnote and a legend of the two line styles", () => {
+    expect(scene.subtitle?.runs.length).toBeGreaterThan(0);
+    expect(scene.note?.runs.length).toBeGreaterThan(0);
+    expect(scene.legend?.map((x) => x.style)).toEqual(["solid", "dashed"]);
+    const legendRight = Math.max(
+      ...(scene.legend ?? []).map((x) => x.label.bbox.x + x.label.bbox.w),
+    );
+    expect(legendRight).toBeLessThanOrEqual(scene.width - 32);
   });
 });
 
@@ -140,7 +284,8 @@ describe("edge cases", () => {
 
 describe("stability (D10)", () => {
   let ops = 0;
-  let alone = 0;
+  let moved = 0;
+  let routes = 0;
   const check = (before: Diagram, op: Applied) => {
     const r = d10(
       layoutFramed(before, m),
@@ -150,44 +295,57 @@ describe("stability (D10)", () => {
       op.named,
     );
     ops++;
-    alone += r.labelsAlone.length;
+    moved += r.moved.length;
+    routes += r.changedRoutes.length;
     return r.violations;
   };
   afterAll(() => {
-    console.log(`${ops} single operations: ${alone} labels moved although their route did not`);
-  });
-  const nodes = catalogSync.layers.flatMap((l) => l.nodes.map((x) => ({ node: x, layer: l.id })));
-
-  it("add a node to each layer", () => {
-    const out = catalogSync.layers.flatMap((l) =>
-      check(
-        catalogSync,
-        addNode(catalogSync, l.id, n(`new_${l.id}`, "new node", "service", "m"), m),
-      ).map((v) => `${l.id}: ${v}`),
+    console.log(
+      `${ops} single operations: ${(moved / ops).toFixed(1)} unnamed nodes and ${(routes / ops).toFixed(1)} routes moved per operation`,
     );
-    expect(out).toEqual([]);
   });
 
-  it("remove each node", () => {
-    const out = nodes.flatMap(({ node }) =>
-      check(catalogSync, removeNode(catalogSync, node.id)).map((v) => `${node.id}: ${v}`),
-    );
-    expect(out).toEqual([]);
-  });
+  for (const [name, d] of [
+    ["catalog-sync", catalogSync],
+    ["catalog-sync-grouped", catalogSyncGrouped],
+  ] as const) {
+    const nodes = d.layers.flatMap((l) => l.nodes.map((x) => ({ node: x, layer: l.id })));
 
-  it("rename each node, which moves nothing", () => {
-    for (const { node } of nodes) {
-      const op = renameNode(catalogSync, node.id, `${node.label} v2`);
-      const before = layout(catalogSync, m);
-      const after = layout(op.diagram, m);
-      expect(check(catalogSync, op)).toEqual([]);
-      const strip = (s: typeof before) => ({
-        ...s,
-        nodes: s.nodes.map((x) => ({ ...x, texts: x.id === node.id ? [] : x.texts })),
-      });
-      expect(hash(strip(after))).toEqual(hash(strip(before)));
-    }
-  });
+    it(`${name}: add a node to each layer`, () => {
+      const out = d.layers.flatMap((l) =>
+        check(d, addNode(d, l.id, n(`new_${l.id}`, "new node", "service", "m"), m)).map(
+          (v) => `${l.id}: ${v}`,
+        ),
+      );
+      expect(out).toEqual([]);
+    });
+
+    it(`${name}: remove each node`, () => {
+      const out = nodes.flatMap(({ node }) =>
+        check(d, removeNode(d, node.id)).map((v) => `${node.id}: ${v}`),
+      );
+      expect(out).toEqual([]);
+    });
+
+    it(`${name}: rename each node, which moves nothing`, () => {
+      for (const { node } of nodes) {
+        const op = renameNode(d, node.id, `${node.label} v2`);
+        const before = layout(d, m);
+        const after = layout(op.diagram, m);
+        expect(check(d, op)).toEqual([]);
+        const strip = (s: typeof before) => ({
+          ...s,
+          nodes: s.nodes.map((x) => ({ ...x, texts: x.id === node.id ? [] : x.texts })),
+        });
+        expect(hash(strip(after))).toEqual(hash(strip(before)));
+      }
+    });
+
+    it(`${name}: remove each edge`, () => {
+      const out = d.edges.flatMap((x) => check(d, removeEdge(d, x.id)).map((v) => `${x.id}: ${v}`));
+      expect(out).toEqual([]);
+    });
+  }
 
   it("move a node to another layer", () => {
     const moves: [string, string][] = [
@@ -218,30 +376,22 @@ describe("stability (D10)", () => {
     expect(out).toEqual([]);
   });
 
-  it("remove each edge", () => {
-    const out = catalogSync.edges.flatMap((x) =>
-      check(catalogSync, removeEdge(catalogSync, x.id)).map((v) => `${x.id}: ${v}`),
-    );
-    expect(out).toEqual([]);
-  });
-
-  it("add 40 random edges from a fixed seed, one at a time", () => {
+  it("add 40 random edges from a fixed seed, one at a time, without a defect", () => {
     let d = catalogSync;
     const out: string[] = [];
     let changed = 0;
-    let bystanders = 0;
-    let labels = 0;
+    let nodesMoved = 0;
     for (const x of randomEdges(catalogSync, 40, 7)) {
       const op = addEdge(d, x);
       const r = d10(layoutFramed(d, m), layoutFramed(op.diagram, m), d, op.diagram, op.named);
       out.push(...r.violations.map((v) => `${x.id}: ${v}`));
+      out.push(...engineOwned(layout(op.diagram, m)).map((v) => `${x.id}: ${v}`));
       changed += r.changedRoutes.length;
-      bystanders += r.bystanders.length;
-      labels += r.labelsAlone.length;
+      nodesMoved += r.moved.length;
       d = op.diagram;
     }
     console.log(
-      `40 random additions: ${(changed / 40).toFixed(1)} routes changed per addition, ${(bystanders / 40).toFixed(1)} of them only by sharing a channel; ${labels} labels moved although their route did not`,
+      `40 random additions: ${(changed / 40).toFixed(1)} routes and ${(nodesMoved / 40).toFixed(1)} nodes moved per addition`,
     );
     expect(out).toEqual([]);
   });
@@ -255,12 +405,14 @@ describe("determinism (D15)", () => {
   }
 
   it("the order of edges in the file decides nothing visible", () => {
-    const reversed = { ...dense, edges: [...dense.edges].reverse() };
-    const byId = (d: Diagram) =>
-      layout(d, m)
-        .edges.map((x) => [x.id, x] as const)
-        .sort((a, b) => (a[0] < b[0] ? -1 : 1));
-    expect(hash(byId(reversed))).toEqual(hash(byId(dense)));
+    for (const d of [dense, catalogSyncGrouped]) {
+      const reversed = { ...d, edges: [...d.edges].reverse() };
+      const byId = (x: Diagram) =>
+        layout(x, m)
+          .edges.map((y) => [y.id, y] as const)
+          .sort((a, b) => (a[0] < b[0] ? -1 : 1));
+      expect(hash(byId(reversed))).toEqual(hash(byId(d)));
+    }
   });
 });
 
@@ -318,6 +470,13 @@ describe("slot choice (D24)", () => {
     expect(chooseSlot(d, "loose", "y", m)).toBe(2);
   });
 
+  it("never splits a group while a slot keeps it whole", () => {
+    for (const l of catalogSyncGrouped.layers) {
+      const d = addNode(catalogSyncGrouped, l.id, n("x", "x", "service", "m"), m).diagram;
+      expect(validateGroups(d)).toEqual([]);
+    }
+  });
+
   it("is fast enough to run on every node.add", () => {
     const layer = dense.layers.find((l) => l.id === "collections");
     if (layer === undefined) throw new Error("no collections layer");
@@ -332,58 +491,20 @@ describe("slot choice (D24)", () => {
 });
 
 describe("alignment", () => {
-  const plain = (d: Diagram): Diagram => ({
-    ...d,
-    layers: d.layers.map((l) => ({ ...l, nodes: l.nodes.map(({ align: _, ...rest }) => rest) })),
-  });
-  /** A node's rect, relative to the centre line. */
-  const at = (f: ReturnType<typeof layoutFramed>, id: string) => {
+  /** A node's centre across, relative to the centre line. */
+  const centre = (f: ReturnType<typeof layoutFramed>, id: string) => {
     const r = f.scene.nodes.find((x) => x.id === id)?.rect;
     if (r === undefined) throw new Error(`no node ${id}`);
-    return { ...r, x: r.x - f.centre };
+    return r.x + r.w / 2 - f.centre;
   };
 
-  it("an aligned node sits under its target, and its row slides with it as one block", () => {
-    const aligned = layoutFramed(tiny, m);
-    const db = at(aligned, "db");
-    const api = at(aligned, "api");
-    expect(db.x + db.w / 2).toBe(api.x + api.w / 2);
-    // Every node of the row moved by the same amount, so its even spacing holds.
-    const before = layoutFramed(plain(tiny), m);
-    const slide = db.x - at(before, "db").x;
-    expect(slide).not.toBe(0);
-    expect(at(aligned, "queue").x - at(before, "queue").x).toBe(slide);
-    // The other layers did not move.
-    for (const id of ["web", "api", "worker"]) expect(at(aligned, id)).toEqual(at(before, id));
-  });
-
-  it("a second alignment in one row that needs another slide is reported", () => {
-    const d: Diagram = {
-      ...tiny,
-      layers: tiny.layers.map((l) =>
-        l.id === "storage"
-          ? {
-              ...l,
-              nodes: [
-                n("db", "orders db", "store", "l", { align: "api" }),
-                n("queue", "order events", "queue", "s", { align: "web" }),
-              ],
-            }
-          : l,
-      ),
-    };
-    const problems = validateAlignments(d);
-    expect(problems.map((p) => `${p.code} ${p.node}`)).toEqual(["alignment-conflict queue"]);
-    expect(problems[0]?.suggestion).toContain("remove the alignment of queue");
-    // The first alignment in row order holds, and the layout still runs.
-    const f = layoutFramed(d, m);
-    const db = at(f, "db");
-    const api = at(f, "api");
-    expect(db.x + db.w / 2).toBe(api.x + api.w / 2);
+  it("an aligned node sits in its target's column, directly under it", () => {
+    const f = layoutFramed(tiny, m);
+    expect(centre(f, "db")).toBe(centre(f, "api"));
     expect(mechanical(defects(f.scene))).toEqual([]);
   });
 
-  it("two alignments in one row that need the same slide both hold", () => {
+  it("two alignments in one row hold when the order allows both", () => {
     const d: Diagram = {
       ...tiny,
       layers: tiny.layers.map((l) =>
@@ -399,64 +520,61 @@ describe("alignment", () => {
       ),
     };
     expect(validateAlignments(d)).toEqual([]);
+    const f = layoutFramed(d, m);
+    expect(centre(f, "db")).toBe(centre(f, "api"));
+    expect(centre(f, "queue")).toBe(centre(f, "worker"));
   });
 
-  it("a row slides when the target of its alignment moves, and only then (D10)", () => {
-    const report = (op: Applied) =>
-      d10(layoutFramed(tiny, m), layoutFramed(op.diagram, m), tiny, op.diagram, op.named);
-    const before = layoutFramed(tiny, m);
-    // A node joins api's layer: api moves, and the storage row slides with it.
-    const joined = addNode(tiny, "services", n("cache", "cache", "store", "s"), m);
-    expect(report(joined).violations).toEqual([]);
-    const after = layoutFramed(joined.diagram, m);
-    const slide = at(after, "db").x - at(before, "db").x;
-    expect(slide).not.toBe(0);
-    expect(at(after, "queue").x - at(before, "queue").x).toBe(slide);
-    // A node joins the callers: api stays, and so does the storage row.
-    const other = addNode(tiny, "callers", n("cli", "cli", "actor", "s"), m);
-    expect(report(other).violations).toEqual([]);
-    const still = layoutFramed(other.diagram, m);
-    for (const id of ["db", "queue"]) expect(at(still, id)).toEqual(at(before, id));
+  it("an alignment against the order of the rows is reported", () => {
+    // db comes before queue, but queue's target comes before db's.
+    const d: Diagram = {
+      ...tiny,
+      layers: tiny.layers.map((l) =>
+        l.id === "storage"
+          ? {
+              ...l,
+              nodes: [
+                n("db", "orders db", "store", "l", { align: "worker" }),
+                n("queue", "order events", "queue", "s", { align: "api" }),
+              ],
+            }
+          : l,
+      ),
+    };
+    const problems = validateAlignments(d);
+    expect(problems.map((p) => `${p.code} ${p.node}`)).toEqual(["alignment-conflict queue"]);
+    expect(problems[0]?.suggestion).toContain("remove the alignment of queue");
+    // The first alignment in row order holds, and the layout still runs.
+    const f = layoutFramed(d, m);
+    expect(centre(f, "db")).toBe(centre(f, "worker"));
+    expect(mechanical(defects(f.scene))).toEqual([]);
   });
 
-  it("layers that would follow each other are reported", () => {
+  it("alignments that point at each other hold together", () => {
     const d: Diagram = {
       ...tiny,
       layers: [
-        {
-          id: "l1",
-          label: "L1",
-          nodes: [n("p", "p", "service", "m", { align: "q" }), n("s", "s", "service", "s")],
-        },
-        {
-          id: "l2",
-          label: "L2",
-          nodes: [n("q", "q", "service", "m"), n("r", "r", "service", "m", { align: "s" })],
-        },
+        { id: "l1", label: "L1", nodes: [n("p", "p", "service", "m", { align: "q" })] },
+        { id: "l2", label: "L2", nodes: [n("q", "q", "service", "m", { align: "p" })] },
       ],
       edges: [],
     };
-    expect(validateAlignments(d).map((p) => `${p.code} ${p.node}`)).toEqual(["alignment-cycle r"]);
+    expect(validateAlignments(d)).toEqual([]);
   });
-  it("reports unknown targets, the same layer, itself and cycles", () => {
+
+  it("reports unknown targets, the same layer and itself", () => {
     const d: Diagram = {
       ...tiny,
       layers: [
         {
           id: "l1",
           label: "L1",
-          nodes: [
-            n("p", "p", "service", "m", { align: "q" }),
-            n("s", "s", "service", "m", { align: "s" }),
-          ],
+          nodes: [n("s", "s", "service", "m", { align: "s" })],
         },
         {
           id: "l2",
           label: "L2",
-          nodes: [
-            n("q", "q", "service", "m", { align: "p" }),
-            n("r", "r", "service", "m", { align: "nope" }),
-          ],
+          nodes: [n("r", "r", "service", "m", { align: "nope" })],
         },
         {
           id: "l3",
@@ -470,13 +588,59 @@ describe("alignment", () => {
       validateAlignments(d)
         .map((p) => `${p.code} ${p.node}`)
         .sort(),
-    ).toEqual([
-      "alignment-cycle p",
-      "alignment-cycle q",
-      "same-layer t",
-      "self-alignment s",
-      "unknown-node r",
+    ).toEqual(["same-layer t", "self-alignment s", "unknown-node r"]);
+  });
+});
+
+describe("groups", () => {
+  const two = (rows: DiagramNode[][]): Diagram => ({
+    grafical: 1,
+    title: "G",
+    density: "normal",
+    layers: rows.map((nodes, i) => ({ id: `l${i}`, label: `L${i}`, nodes })),
+    groups: [
+      { id: "g", label: "system g" },
+      { id: "h", label: "system h" },
+    ],
+    edges: [],
+  });
+
+  it("a node between two members of a group is reported", () => {
+    const d = two([
+      [
+        n("a", "a", "service", "m", { group: "g" }),
+        n("x", "x", "service", "m"),
+        n("b", "b", "service", "m", { group: "g" }),
+      ],
     ]);
+    expect(validateGroups(d).map((p) => `${p.code} ${p.group} ${p.node}`)).toEqual([
+      "group-split g x",
+    ]);
+  });
+
+  it("groups that swap sides between rows are reported", () => {
+    const d = two([
+      [n("a", "a", "service", "m", { group: "g" }), n("b", "b", "service", "m", { group: "h" })],
+      [n("c", "c", "service", "m", { group: "h" }), n("d", "d", "service", "m", { group: "g" })],
+    ]);
+    expect(validateGroups(d).map((p) => `${p.code} ${p.group}`)).toEqual(["group-conflict h"]);
+    // The layout still runs, and boxes the group that holds.
+    const s = layout(d, m);
+    expect(s.groups?.map((g) => g.id)).toEqual(["g"]);
+    expect(groupIntruders(s)).toEqual([]);
+  });
+
+  it("a node beside a group in one row stays out of its box in every row", () => {
+    const d = two([
+      [n("a", "a", "service", "m", { group: "g" }), n("x", "x", "service", "m")],
+      [
+        n("b", "b", "service", "m", { group: "g" }),
+        n("c", "c", "service", "m", { group: "g" }),
+        n("d", "d", "service", "m", { group: "g" }),
+      ],
+    ]);
+    expect(validateGroups(d)).toEqual([]);
+    expect(groupIntruders(layout(d, m))).toEqual([]);
   });
 });
 
