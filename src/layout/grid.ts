@@ -87,6 +87,16 @@ export function buildGrid(d: Diagram): Grid {
     }
   }
 
+  // The nodes each node connects to, in any row.
+  const links: number[][] = Array.from({ length: N }, () => []);
+  for (const e of d.edges) {
+    const u = index.get(e.from);
+    const v = index.get(e.to);
+    if (u === undefined || v === undefined || u === v) continue;
+    links[u]?.push(v);
+    links[v]?.push(u);
+  }
+
   // Step 1: "left of" constraints, as node-level edges.
   const succ: number[][] = Array.from({ length: N }, () => []);
   for (const list of rows) {
@@ -133,14 +143,14 @@ export function buildGrid(d: Diagram): Grid {
   };
   const reservedOf = new Map<number, Set<number>>();
 
-  const tryJoin = (a: number, b: number, reserve: number[]): "joined" | "same" | "clash" => {
+  const tryJoin = (a: number, b: number): "joined" | "same" | "clash" => {
     const ca = cls[a] as number;
     const cb = cls[b] as number;
     if (ca === cb) return "same";
     const ra = rowsOf(ca);
     const rb = rowsOf(cb);
     for (const r of ra) if (rb.has(r)) return "clash";
-    const res = new Set([...(reservedOf.get(ca) ?? []), ...(reservedOf.get(cb) ?? []), ...reserve]);
+    const res = new Set([...(reservedOf.get(ca) ?? []), ...(reservedOf.get(cb) ?? [])]);
     for (const r of res) if (ra.has(r) || rb.has(r)) return "clash";
     if (reaches(ca, cb) || reaches(cb, ca)) return "clash";
     for (let i = 0; i < N; i++) if (cls[i] === cb) cls[i] = ca;
@@ -183,7 +193,7 @@ export function buildGrid(d: Diagram): Grid {
         expected: "a node in another layer",
         suggestion: `align ${id} with a node above or below it, or remove the alignment`,
       });
-    } else if (tryJoin(i, j, []) === "clash") {
+    } else if (tryJoin(i, j) === "clash") {
       const layer = d.layers[row[i] as number]?.id ?? "";
       alignProblems.push({
         code: "alignment-conflict",
@@ -196,6 +206,68 @@ export function buildGrid(d: Diagram): Grid {
       });
     }
   }
+
+  /**
+   * Keeps the column of node a's class empty in these rows, for a straight line
+   * through them. Each node of those rows takes the side its edges pull it to:
+   * the median column of the nodes it connects to, or its own column if it has
+   * none; the right side on a tie. Fails if a node of the class is in one of the
+   * rows, or the sides cannot hold.
+   */
+  const reserveRows = (a: number, rs: number[], added: [number, number][]): boolean => {
+    const c = cls[a] as number;
+    const own = rowsOf(c);
+    if (rs.some((r) => own.has(r))) return false;
+    const packed = pack(N, cls, row, succ, reservedOf).col;
+    const colOf = (x: number) => packed.get(cls[x] as number) ?? 0;
+    const at = packed.get(c) ?? 0;
+    const pull = (x: number) => {
+      const cs = (links[x] ?? []).map(colOf).sort((p, q) => p - q);
+      if (cs.length === 0) return colOf(x);
+      return (
+        ((cs[Math.floor((cs.length - 1) / 2)] ?? 0) + (cs[Math.floor(cs.length / 2)] ?? 0)) / 2
+      );
+    };
+    const before = (p: number, q: number): boolean => {
+      if ((succ[p] ?? []).includes(q)) return true;
+      if (reaches(cls[q] as number, cls[p] as number)) return false;
+      succ[p]?.push(q);
+      added.push([p, q]);
+      return true;
+    };
+    for (const r of rs) {
+      // The row splits once: the nodes before the split go left of the column.
+      // Splits are tried from the one that puts fewest nodes on the wrong side.
+      const list = rows[r] ?? [];
+      const packedSplit = list.filter((x) => colOf(x) < at).length;
+      const splits = Array.from({ length: list.length + 1 }, (_, k) => ({
+        k,
+        wrong: list.filter((x, i) => i < k !== pull(x) < at).length,
+      })).sort(
+        (p, q) =>
+          p.wrong - q.wrong ||
+          Math.abs(p.k - packedSplit) - Math.abs(q.k - packedSplit) ||
+          p.k - q.k,
+      );
+      let held = false;
+      for (const { k } of splits) {
+        const mark = added.length;
+        const left = list[k - 1];
+        const right = list[k];
+        if ((left === undefined || before(left, a)) && (right === undefined || before(a, right))) {
+          held = true;
+          break;
+        }
+        for (const [p, q] of added.splice(mark)) {
+          const l = succ[p] ?? [];
+          l.splice(l.lastIndexOf(q), 1);
+        }
+      }
+      if (!held) return false;
+    }
+    reservedOf.set(c, new Set([...(reservedOf.get(c) ?? []), ...rs]));
+    return true;
+  };
 
   // Step 2b: edges, best first.
   const maxRow = Math.max(0, ...rows.map((l) => l.length));
@@ -255,12 +327,24 @@ export function buildGrid(d: Diagram): Grid {
     for (let r = (row[hi] as number) + 1; r < (row[lo] as number); r++) reserve.push(r);
     const saved = [...cls];
     const savedRes = new Map([...reservedOf].map(([k, v]) => [k, new Set(v)]));
-    const res = tryJoin(hi, lo, reserve);
-    if (res !== "joined") continue;
-    if (pack(N, cls, row, succ, reservedOf).columns > limit) {
+    const added: [number, number][] = [];
+    const restore = () => {
       cls.splice(0, N, ...saved);
       reservedOf.clear();
       for (const [k, v] of savedRes) reservedOf.set(k, v);
+      for (const [a, b] of added) {
+        const list = succ[a] ?? [];
+        list.splice(list.lastIndexOf(b), 1);
+      }
+    };
+    const res = tryJoin(hi, lo);
+    if (res === "clash" || (res === "same" && reserve.length === 0)) continue;
+    if (reserve.length > 0 && !reserveRows(hi, reserve, added)) {
+      restore();
+      continue;
+    }
+    if (pack(N, cls, row, succ, reservedOf).columns > limit) {
+      restore();
       continue;
     }
     down[hi] = 1;
