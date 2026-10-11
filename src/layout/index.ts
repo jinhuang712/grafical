@@ -1,6 +1,7 @@
 // Layout entry point (DESIGN.md D10, D11, D24). The whole diagram is laid out again
 // from its facts on every call, in a fixed order and without search:
-// 1. across: each layer centred and spread evenly, then aligned nodes slid (place.ts);
+// 1. across: each layer centred and spread evenly, then slid as one block where a
+//    node in it is aligned (place.ts, align.ts);
 // 2. routes across: paths, ports, gap tracks and gutter rows (route.ts);
 // 3. down: the title, then bands and gutters top to bottom, each gutter taking the
 //    smallest height step its rows fit in;
@@ -34,7 +35,8 @@ export function layoutFramed(diagram: Diagram, m: Measurer): { scene: Scene; cen
 }
 
 /**
- * Alignments that cannot hold with the order of their layers (D10), and other
+ * Alignments that cannot hold (D10): a second alignment in one layer that needs
+ * a different slide, alignments that make layers follow each other, and other
  * alignment faults. The command line turns each into an operation error.
  */
 export function validateAlignments(diagram: Diagram): AlignmentProblem[] {

@@ -4,11 +4,11 @@
 //
 // The list, as checked here:
 // - nodes: the named ones; others in a layer whose contents changed, sideways only;
-//   layers whose band moved down or changed height, as one block; nodes aligned to
-//   a node that moved;
+//   layers whose band moved down or changed height, as one block; every node of a
+//   layer that holds a node aligned to a node that moved, sideways, as one block;
 // - edges that may change anywhere: the named ones, those attached to a node that
-//   moved, and those that pass through a layer whose contents changed (the gaps
-//   they pass through moved);
+//   moved, and those that pass through a layer whose contents changed or that
+//   slid (the gaps they pass through moved);
 // - every other edge may change only inside the channels (gutters and gaps) it
 //   shares with those, which covers ports on a shared node side;
 // - a label may move if its route changed. A label whose route did not change may
@@ -39,10 +39,15 @@ export interface Report {
   labelsAlone: string[];
 }
 
-const key = (r: Rect, c: number) => `${r.x - c},${r.y},${r.w},${r.h}`;
+/** Scene values have 2 decimals; a difference of two of them is rounded back to 2. */
+const r2 = (x: number) => Math.round(x * 100) / 100;
+const key = (r: Rect, c: number) => `${r2(r.x - c)},${r.y},${r.w},${r.h}`;
 
+/** What a layer holds: its nodes in order, their sizes and their alignments. */
 function contents(d: Diagram): Map<string, string> {
-  return new Map(d.layers.map((l) => [l.id, l.nodes.map((n) => `${n.id}:${n.size}`).join(",")]));
+  return new Map(
+    d.layers.map((l) => [l.id, l.nodes.map((n) => `${n.id}:${n.size}:${n.align ?? ""}`).join(",")]),
+  );
 }
 
 /** The channel a point lies in: a gutter, a gap beside nodes, or inside a node. */
@@ -128,11 +133,29 @@ export function d10(before: Framed, after: Framed, db: Diagram, da: Diagram, nam
     if (a === undefined) continue;
     if (key(b.rect, cb) !== key(a.rect, ca) || b.layer !== a.layer) moved.add(id);
   }
-  const allowedX = (id: string, layer: string): boolean => {
-    if (named.nodes.includes(id) || changedLayers.has(layer)) return true;
-    const t = alignOf.get(id);
-    return t !== undefined && moved.has(t) && allowedX(t, nodeA.get(t)?.layer ?? "");
+  // A layer may slide when its contents changed, or when one of its nodes is
+  // aligned to a node that moved and was allowed to (D10).
+  const layerOf = new Map(da.layers.flatMap((l) => l.nodes.map((x) => [x.id, l.id] as const)));
+  const sliding = new Map<string, boolean>();
+  const slides = (layer: string): boolean => {
+    const known = sliding.get(layer);
+    if (known !== undefined) return known;
+    sliding.set(layer, false);
+    let ok = changedLayers.has(layer);
+    for (const l of da.layers) {
+      if (l.id !== layer || ok) continue;
+      for (const x of l.nodes) {
+        const t = alignOf.get(x.id);
+        if (t === undefined || !moved.has(t)) continue;
+        const tl = layerOf.get(t) ?? "";
+        if (named.nodes.includes(t) || slides(tl)) ok = true;
+      }
+    }
+    sliding.set(layer, ok);
+    return ok;
   };
+  const allowedX = (id: string, layer: string): boolean =>
+    named.nodes.includes(id) || slides(layer);
   for (const id of moved) {
     const b = nodeB.get(id);
     const a = nodeA.get(id);
@@ -156,7 +179,7 @@ export function d10(before: Framed, after: Framed, db: Diagram, da: Diagram, nam
   const edgeB = new Map(sb.edges.map((e) => [e.id, e]));
   const edgeA = new Map(sa.edges.map((e) => [e.id, e]));
   const rel = (e: SceneEdge | undefined, c: number) =>
-    JSON.stringify(e?.points.map((p) => [p.x - c, p.y]) ?? null);
+    JSON.stringify(e?.points.map((p) => [r2(p.x - c), p.y]) ?? null);
   const free = new Set<string>(named.edges);
   for (const e of [...sb.edges, ...sa.edges]) {
     if (
@@ -168,7 +191,8 @@ export function d10(before: Framed, after: Framed, db: Diagram, da: Diagram, nam
       free.add(e.id);
     }
   }
-  for (const layer of changedLayers) {
+  // A layer that changed or slid moved its gaps, and so the lines through them.
+  for (const layer of new Set([...changedLayers, ...da.layers.map((l) => l.id).filter(slides)])) {
     for (const e of sb.edges) if (passesBand(sb, e.points, layer)) free.add(e.id);
     for (const e of sa.edges) if (passesBand(sa, e.points, layer)) free.add(e.id);
   }

@@ -1,7 +1,9 @@
 // Placement across (DESIGN.md D10): nodes by their order, box sizes from their size
-// steps, gaps from the density, each layer centred on one shared centre line.
-// Every x here is relative to that centre line, so a layer whose contents did not
-// change keeps its x values exactly, however wide the canvas becomes.
+// steps, gaps from the density, each layer centred on one shared centre line, then
+// slid as one block where an alignment asks for it (align.ts). Every x here is
+// relative to that centre line, so a layer whose contents did not change, and
+// whose aligned nodes' targets did not move, keeps its x values exactly, however
+// wide the canvas becomes.
 
 import type { Diagram, DiagramNode } from "../model/types.ts";
 import { BOX, SPACING } from "../theme/geometry.ts";
@@ -18,7 +20,7 @@ export interface PNode {
   x: number;
   w: number;
   h: number;
-  /** Left edge from even spreading alone, before any alignment. */
+  /** Left edge from even spreading alone, before its layer slides for an alignment. */
   natural: number;
 }
 
@@ -64,13 +66,8 @@ export function placeAcross(d: Diagram): Placement {
     const rowH = placed.length === 0 ? BOX.m.h : Math.max(...placed.map((n) => n.h));
     return { index, id: layer.id, label: layer.label, nodes: placed, rowH };
   });
-  const problems = resolveAlignments(layers, nodes, alignGap(d));
+  const problems = resolveAlignments(layers, nodes);
   return { layers, nodes, problems };
-}
-
-/** The least gap an aligned node keeps to its neighbours. */
-export function alignGap(d: Diagram): number {
-  return SPACING[d.density].nodeGap / 2;
 }
 
 export const centreX = (n: PNode): number => n.x + n.w / 2;
