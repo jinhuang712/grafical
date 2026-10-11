@@ -3,18 +3,38 @@
 // the text block sits, and where a line that ends at the box's side meets the
 // outline. Layout, the checker and the renderer all ask here, so they agree.
 
-import type { NodeKind } from "../model/types.ts";
+import type { NodeKind, SizeStep } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
-import { FRAME } from "./geometry.ts";
+import { BOX, DIAMOND, FRAME } from "./geometry.ts";
 
-/** The widest a line of a node's text may be, for a text block `blockH` tall. */
-export function lineRoom(_kind: NodeKind, w: number, _h: number, _blockH: number): number {
+/** The box a node of this kind and size step is laid out in. */
+export function nodeBox(kind: NodeKind, step: SizeStep): { w: number; h: number } {
+  return kind === "decision" ? DIAMOND[step] : BOX[step];
+}
+
+/**
+ * The widest a line of a node's text may be, for a text block `blockH` tall. In a
+ * diamond, a padded block of width tw and height th fits when tw/w + th/h <= 1,
+ * so a taller block leaves narrower lines.
+ */
+export function lineRoom(kind: NodeKind, w: number, h: number, blockH: number): number {
+  if (kind === "decision") {
+    return Math.max(0, w * (1 - (blockH + 2 * FRAME.textPadY) / h) - 2 * FRAME.textPad);
+  }
   return w - 2 * FRAME.textPad;
 }
 
 /** Does the text box `t` lie inside the room a node of this kind has for text (D14)? */
-export function textInside(_kind: NodeKind, r: Rect, t: Rect): boolean {
+export function textInside(kind: NodeKind, r: Rect, t: Rect): boolean {
   const e = 1e-6;
+  if (kind === "decision") {
+    // The corner of the box farthest from the middle, padded, stays inside the diamond.
+    const cx = r.x + r.w / 2;
+    const cy = r.y + r.h / 2;
+    const dx = Math.max(Math.abs(t.x - cx), Math.abs(t.x + t.w - cx)) + FRAME.textPad;
+    const dy = Math.max(Math.abs(t.y - cy), Math.abs(t.y + t.h - cy)) + FRAME.textPadY;
+    return dx / (r.w / 2) + dy / (r.h / 2) <= 1 + e;
+  }
   return (
     t.x >= r.x + FRAME.textPad - e &&
     t.y >= r.y + FRAME.textPadY - e &&
@@ -44,12 +64,29 @@ function storeInset(r: Rect, x: number): number {
   return ry - ry * Math.sqrt(1 - d * d);
 }
 
+/** Where a line along the box's side meets a diamond's slanted outline. */
+function diamondMeet(r: Rect, end: Point, next: Point): Point {
+  const cx = r.x + r.w / 2;
+  const cy = r.y + r.h / 2;
+  if (end.x === next.x) {
+    // Down into the top, or up into the bottom: the outline is this far in at x.
+    const inset = (r.h / 2) * Math.min(1, Math.abs(end.x - cx) / (r.w / 2));
+    return { x: end.x, y: next.y < end.y ? r.y + inset : r.y + r.h - inset };
+  }
+  if (end.y === next.y) {
+    const inset = (r.w / 2) * Math.min(1, Math.abs(end.y - cy) / (r.h / 2));
+    return { x: next.x < end.x ? r.x + inset : r.x + r.w - inset, y: end.y };
+  }
+  return end;
+}
+
 /**
  * Where a line meets the drawn outline, when its route ends at `end` on the box's
  * side and its next point is `next`. A box's outline is the box; a store's
- * curved top and bottom lie a little inside it.
+ * curved top and bottom lie a little inside it, and a diamond's sides slant in.
  */
 export function meetOutline(kind: NodeKind, r: Rect, end: Point, next: Point): Point {
+  if (kind === "decision") return diamondMeet(r, end, next);
   if (kind !== "store" || end.x !== next.x) return end;
   const inset = storeInset(r, end.x);
   if (inset === 0) return end;

@@ -9,7 +9,8 @@
 // round through the gutter below the row.
 
 import { DEFAULT_SIZE, type Diagram } from "../model/types.ts";
-import { BOX, ROUTE } from "../theme/geometry.ts";
+import { ROUTE } from "../theme/geometry.ts";
+import { nodeBox } from "../theme/shapes.ts";
 
 export interface SideSlot {
   /** y of the line, from the middle of the row. */
@@ -49,7 +50,8 @@ export function planSideways(
   d.layers.forEach((l, layer) => {
     l.nodes.forEach((n, order) => {
       // compute() has sized every node (size.ts).
-      if (!at.has(n.id)) at.set(n.id, { layer, order, h: BOX[n.size ?? DEFAULT_SIZE].h });
+      if (!at.has(n.id))
+        at.set(n.id, { layer, order, h: nodeBox(n.kind, n.size ?? DEFAULT_SIZE).h });
     });
   });
   const pairs = new Map<string, { left: string; right: string; h: number; ids: string[] }>();

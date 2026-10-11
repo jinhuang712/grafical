@@ -12,6 +12,17 @@ export const BOX: Record<SizeStep, { w: number; h: number }> = {
   l: { w: 184, h: 72 },
 };
 
+/**
+ * A decision's box per size step (D34). A diamond holds text only in its middle, so
+ * its box is larger than a plain box of the same step: medium fits "Within 30
+ * days?" on one line, large two short lines of about 115 px.
+ */
+export const DIAMOND: Record<SizeStep, { w: number; h: number }> = {
+  s: { w: 136, h: 64 },
+  m: { w: 184, h: 80 },
+  l: { w: 232, h: 96 },
+};
+
 export interface Spacing {
   /** Least horizontal space between neighbouring nodes in a row. */
   nodeGap: number;

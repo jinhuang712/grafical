@@ -4,6 +4,7 @@
 // would drop it, so every diagram that comes out is valid.
 
 import { validateAlignments, validateGroups } from "../../src/layout/index.ts";
+import { fits } from "../../src/layout/size.ts";
 import { checkEnds } from "../../src/model/ends.ts";
 import type { Op } from "../../src/model/index.ts";
 import { applyOps } from "../../src/model/index.ts";
@@ -197,7 +198,7 @@ export function generate(seed: number, m: Measurer): Generated {
   addContainerEdges(d, r, text);
   addLanes(d, r, text);
   addEdgeLooks(d, r);
-  addNodeKinds(d, r);
+  addNodeKinds(d, r, m);
 
   return { diagram: d, ops, rejected };
 }
@@ -206,12 +207,16 @@ export function generate(seed: number, m: Measurer): Generated {
 const FIRST_EDGE_KINDS = ["call", "async", "data"] as const;
 const FIRST_NODE_KINDS = ["service", "store", "queue", "external", "actor"] as const;
 
-/** Phase 1d's node kinds (D34), drawn last. */
-function addNodeKinds(d: Diagram, r: () => number): void {
+/**
+ * Phase 1d's node kinds (D34), drawn last. A diamond holds less text than a box, so a
+ * node becomes one only when its text still fits, as grafical refuses a write otherwise.
+ */
+function addNodeKinds(d: Diagram, r: () => number, m: Measurer): void {
   for (const n of d.layers.flatMap((l) => l.nodes)) {
     const x = r();
     if (x < 0.1) n.kind = "state";
     else if (x < 0.15) n.kind = "terminal";
+    else if (x < 0.2 && fits({ ...n, kind: "decision" }, n.size ?? "m", m)) n.kind = "decision";
   }
 }
 

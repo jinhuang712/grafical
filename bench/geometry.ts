@@ -47,6 +47,8 @@ interface Shape extends Box {
   closed: boolean;
   outlined: boolean;
   tag: string;
+  /** The corners of a closed shape with a slanted side, such as a diamond: tests use the outline, not the box. */
+  poly?: Pt[];
 }
 interface Line {
   index: number;
@@ -169,6 +171,57 @@ const shrink = (b: Box, d: number): Box => ({
 const at = (b: Box) =>
   `${Math.round(b.x)},${Math.round(b.y)} ${Math.round(b.w)}x${Math.round(b.h)}`;
 
+/** Does a closed outline have a slanted side? Boxes, pills and cylinders do not. */
+function slanted(points: Pt[]): boolean {
+  return points.some((p, k) => {
+    const q = points[(k + 1) % points.length] as Pt;
+    return Math.abs(q.x - p.x) > 0.5 && Math.abs(q.y - p.y) > 0.5;
+  });
+}
+
+/** Is p inside the convex outline, by more than `margin` from every side? */
+function insideConvex(p: Pt, poly: Pt[], margin: number): boolean {
+  let area = 0;
+  for (let k = 0; k < poly.length; k++) {
+    const a = poly[k] as Pt;
+    const b = poly[(k + 1) % poly.length] as Pt;
+    area += a.x * b.y - b.x * a.y;
+  }
+  const turn = Math.sign(area);
+  for (let k = 0; k < poly.length; k++) {
+    const a = poly[k] as Pt;
+    const b = poly[(k + 1) % poly.length] as Pt;
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    if (len === 0) continue;
+    const inward = (turn * ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x))) / len;
+    if (inward <= margin) return false;
+  }
+  return true;
+}
+
+/** Does the segment a-b run inside a shape: deeper than `port` into a box, or than 2 px into a slanted outline? */
+function throughShape(a: Pt, b: Pt, s: Shape, port: number): boolean {
+  if (s.poly === undefined) return crosses(a, b, shrink(s, port));
+  const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y)));
+  for (let k = 0; k <= steps; k++) {
+    const p = { x: a.x + ((b.x - a.x) * k) / steps, y: a.y + ((b.y - a.y) * k) / steps };
+    if (insideConvex(p, s.poly, 2)) return true;
+  }
+  return false;
+}
+
+/** Does the text box lie inside a shape, its outline if it has a slanted side? */
+function textInShape(t: Box, s: Shape): boolean {
+  if (s.poly === undefined) return inside(t, s, 1);
+  const corners = [
+    { x: t.x, y: t.y },
+    { x: t.x + t.w, y: t.y },
+    { x: t.x, y: t.y + t.h },
+    { x: t.x + t.w, y: t.y + t.h },
+  ];
+  return corners.every((p) => insideConvex(p, s.poly as Pt[], -1));
+}
+
 /** Does the segment a-b pass through the inside of r? Segments are axis-parallel or short. */
 function crosses(a: Pt, b: Pt, r: Box): boolean {
   if (r.w <= 0 || r.h <= 0) return false;
@@ -279,8 +332,11 @@ export function readSvg(
       if (points.length === 0) continue;
       box = bounds(points);
     }
-    if (closed) shapes.push({ ...box, closed, outlined, tag });
-    else if (outlined)
+    if (closed) {
+      const shape: Shape = { ...box, closed, outlined, tag };
+      if (points.length >= 3 && slanted(points)) shape.poly = points;
+      shapes.push(shape);
+    } else if (outlined)
       lines.push({ index: lines.length, points, dash: a["stroke-dasharray"] ?? "" });
   }
   return { shapes, lines, texts, size };
@@ -311,7 +367,7 @@ export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
       const p = l.points[k - 1] as Pt;
       const q = l.points[k] as Pt;
       for (const b of boxes) {
-        if (crosses(p, q, shrink(b, PORT))) {
+        if (throughShape(p, q, b, PORT)) {
           out.push({
             code: "edge-through-node",
             found: `line ${l.index} passes through the box at ${at(b)}`,
@@ -327,7 +383,7 @@ export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
           t.anchor.x > b.x && t.anchor.x < b.x + b.w && t.anchor.y > b.y && t.anchor.y < b.y + b.h,
       )
       .sort((a, b) => a.w * a.h - b.w * b.h)[0];
-    if (home !== undefined && !inside(t, home, 1)) {
+    if (home !== undefined && !textInShape(t, home)) {
       out.push({
         code: "overflow",
         found: `text "${t.text}" at ${at(t)} runs out of its box at ${at(home)}`,

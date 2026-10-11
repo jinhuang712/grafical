@@ -59,6 +59,15 @@ function nodeShape(n: SceneNode, P: Paint): string[] {
   const fill = n.accent ? p.accent.fill : kind.fill;
   const sw = n.accent ? p.accent.strokeWidth : p.strokeWidth;
   if (n.kind === "store") return cylinder(n.rect, fill, stroke, sw);
+  if (n.kind === "decision") {
+    const r = n.rect;
+    const cx = r.x + r.w / 2;
+    const cy = r.y + r.h / 2;
+    const d = `M${num(cx)} ${num(r.y)}L${num(r.x + r.w)} ${num(cy)}L${num(cx)} ${num(r.y + r.h)}L${num(r.x)} ${num(cy)}Z`;
+    return [
+      `<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="${num(sw)}"${dashAttr(kind.dash)}/>`,
+    ];
+  }
   // An actor and a terminal are pills; a state is rounder than a box (D34).
   const pill = n.kind === "actor" || n.kind === "terminal";
   const rx = pill ? n.rect.h / 2 : n.kind === "state" ? p.stateRadius : p.radius;

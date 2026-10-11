@@ -127,6 +127,7 @@ export const PAINT: Paint = {
       actor: { fill: "#f8f9fa", stroke: "#b4bac3" },
       state: { fill: "#ffffff", stroke: "#b4bac3" },
       terminal: { fill: "#e9edf2", stroke: "#9aa4b1" },
+      decision: { fill: "#ffffff", stroke: "#b4bac3" },
     },
     accent: { fill: "#eef3fd", stroke: "#2f5fc4", strokeWidth: 1.5 },
   },

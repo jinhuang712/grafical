@@ -8,6 +8,8 @@ import type { Measurer } from "../../src/text/types.ts";
 import { catalogSync } from "../fixtures/catalog-sync.ts";
 import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { dense } from "../fixtures/dense.ts";
+import { edgeLooks } from "../fixtures/edge-looks.ts";
+import { flowchart } from "../fixtures/flowchart.ts";
 import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
 import { tiny } from "../fixtures/tiny.ts";
 import { generate } from "../fuzz/gen.ts";
@@ -61,6 +63,18 @@ describe("the separate geometry check (benchmark 7)", () => {
     expect(codes(svg(lanes))).toEqual([]);
   });
 
+  it("reads a diamond by its outline: lines may reach its slanted sides, not its middle", () => {
+    const diamond = `<path d="M200 100L300 150L200 200L100 150Z" fill="#ffffff" stroke="#999999" stroke-width="1"/>`;
+    // Into the top tip, and onto the slanted side away from the tip: drawn on purpose.
+    expect(
+      codes(svg(`${diamond}\n${line("M200 20L200 100")}\n${line("M140 20L140 130")}`)),
+    ).toEqual([]);
+    expect(codes(svg(`${diamond}\n${line("M200 20L200 180")}`))).toEqual(["edge-through-node"]);
+    // Text in the middle fits; text in the box's corner is outside the diamond.
+    expect(codes(svg(`${diamond}\n${text(185, 155, "Ok?")}`))).toEqual([]);
+    expect(codes(svg(`${diamond}\n${text(104, 114, "Ok?")}`))).toEqual(["overflow"]);
+  });
+
   it("finds nothing in grafical's pictures of the fixtures and of random diagrams", () => {
     const found: string[] = [];
     const fixtures: [string, Diagram][] = [
@@ -71,6 +85,8 @@ describe("the separate geometry check (benchmark 7)", () => {
       ["lanes-rows", lanesRows],
       ["lanes-columns", lanesColumns],
       ["dark", { ...catalogSyncGrouped, style: "dark" }],
+      ["edge-looks", edgeLooks],
+      ["flowchart", flowchart],
     ];
     for (let seed = 1; seed <= 100; seed++)
       fixtures.push([`seed ${seed}`, generate(seed, m).diagram]);

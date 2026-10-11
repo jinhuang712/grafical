@@ -10,6 +10,7 @@
 import { laneRanks, laneRun } from "../model/lanes.ts";
 import { DEFAULT_SIZE, type Diagram, type DiagramNode } from "../model/types.ts";
 import { BOX, GROUP, LANE, ROUTE, SPACING } from "../theme/geometry.ts";
+import { nodeBox } from "../theme/shapes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import type { SideSlot } from "./side.ts";
@@ -106,7 +107,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     for (const node of layer.nodes) {
       if (nodes.has(node.id)) continue;
       // compute() has sized every node (size.ts).
-      const box = BOX[node.size ?? DEFAULT_SIZE];
+      const box = nodeBox(node.kind, node.size ?? DEFAULT_SIZE);
       const pn: PNode = {
         id: node.id,
         node,

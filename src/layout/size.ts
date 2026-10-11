@@ -6,8 +6,8 @@
 
 import type { Diagram, DiagramNode, NodeKind, SizeStep } from "../model/types.ts";
 import type { Line, Measurer } from "../text/types.ts";
-import { BOX, FRAME } from "../theme/geometry.ts";
-import { lineRoom } from "../theme/shapes.ts";
+import { FRAME } from "../theme/geometry.ts";
+import { lineRoom, nodeBox } from "../theme/shapes.ts";
 import { type TypeRamp, themeOf } from "../theme/themes.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 import { lineHeight } from "./text.ts";
@@ -22,13 +22,26 @@ export function nodeLines(
   m: Measurer,
   T: TypeRamp,
 ): { label: Line[]; sub: Line[]; room: number } {
-  const room = lineRoom(kind, w, h, 0);
-  return {
+  const wrap = (room: number) => ({
     label: m.wrap(label, T["node-label"], room),
     sub:
       sublabel === undefined || sublabel === "" ? [] : m.wrap(sublabel, T["node-sublabel"], room),
     room,
-  };
+  });
+  if (kind !== "decision") return wrap(lineRoom(kind, w, h, 0));
+  // A diamond's lines narrow as its text block grows, so wrap again until the block
+  // the lines were wrapped for holds them.
+  const lh = lineHeight("node-label", m, T);
+  const subLh = lineHeight("node-sublabel", m, T);
+  let blockH = lh;
+  let out = wrap(lineRoom(kind, w, h, blockH));
+  for (let k = 0; k < 4; k++) {
+    const need = out.label.length * lh + out.sub.length * subLh;
+    if (need <= blockH) break;
+    blockH = need;
+    out = wrap(lineRoom(kind, w, h, blockH));
+  }
+  return out;
 }
 
 /** Does the node's text fit a box of this step, by the checker's rule? */
@@ -38,7 +51,7 @@ export function fits(
   m: Measurer,
   T: TypeRamp = TYPE_RAMP,
 ): boolean {
-  const box = BOX[step];
+  const box = nodeBox(node.kind, step);
   const { label, sub, room } = nodeLines(node.kind, box.w, box.h, node.label, node.sublabel, m, T);
   if (label.length > FRAME.labelLines || sub.length > FRAME.sublabelLines) return false;
   if ([...label, ...sub].some((l) => l.width > room + 1e-6)) return false;

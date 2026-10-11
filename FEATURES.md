@@ -271,7 +271,7 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 
 | List | Values |
 |---|---|
-| Node kinds | `service`, `store`, `queue`, `external`, `actor`, `state` (rounded box), `terminal` (pill: a flowchart's start or end). Planned (D34): `decision`, `initial`, `final` |
+| Node kinds | `service`, `store`, `queue`, `external`, `actor`, `state` (rounded box), `terminal` (pill: a flowchart's start or end), `decision` (diamond). Planned (D34): `initial`, `final` |
 | Edge kinds | `call`, `async`, `data`, `link` (no arrowhead), `optional` (dotted) |
 | Size steps | `s`, `m`, `l` |
 | Density | `compact`, `normal`, `airy` |
