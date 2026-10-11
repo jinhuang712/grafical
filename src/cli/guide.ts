@@ -5,6 +5,7 @@
 export const GUIDE = `grafical: build diagrams by running commands. You state facts (row, order, system, connection), never coordinates; grafical lays out, checks, and refuses a change that leaves a label too long or a character it cannot draw.
 
 HOW TO DRAW A GOOD DIAGRAM (read this first)
+- A flowchart or a state machine? Read grafical guide flowchart (or state-machine) first.
 - One story per diagram, 12 to 16 nodes. 30 boxes is a dump, not a diagram.
 - Group nodes into systems. A group is one box around the nodes of one service or team, such as "catalog-sync"; its members may sit in neighbouring rows. Group every node except callers and outside dependencies. Never wrap one node in a group of its own name.
 - Merge what a reader does not need apart: six topics become one node "upstream topics" with sublabel "6 broker topics"; five callers become one actor "API callers" with sublabel "storefront, promotions"; ten pipelines become one node.
@@ -55,7 +56,7 @@ grafical edge remove <file> <id>; edge relabel <file> <id> [--label <text>]; edg
 grafical edge retarget <file> <id> [--from <end>] [--to <end>]   (id, kind and label stay)
 grafical apply <file> <batch.yaml>; show <file>; check <file> [--all]
 grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
-grafical guide
+grafical guide [flowchart | state-machine]
 
 RULES
 - ids: lowercase letters, digits, . _ -, starting with a letter or digit, one id space for everything. Ids never change; rename changes the label.
@@ -70,7 +71,7 @@ RULES
 - Defaults: kind service, edge kind call, density normal, sizing auto.
 
 VOCABULARY
-node kind: service, store, queue, external, actor, state (rounded), terminal (pill: Start or End), decision (diamond: a short question), initial and final (start dot, end ring)
+node kind: service, store, queue, external, actor; for flowcharts and state machines: terminal, decision, state, initial, final
 edge kind: call (request), async (message or event, dashed), data (data movement), optional (dotted), link (no arrowhead)
 size: s, m, l. density: compact, normal, airy
 
@@ -86,7 +87,7 @@ Other operations: positional arguments become fields of the same name (node.swap
 Add groups and lanes after their nodes.
 
 OUTPUT
-Success: ok changed: <ids>   (--json: {"ok":true,"changed":[...],"errors":[],"defects":[],"warnings":[]})
+Success: ok changed: <ids>   (--json: the same as one JSON object)
 Failure: failed, file unchanged, then one line per problem. Exit codes: 0 success, 1 an operation error or defect, 2 a usage error.
 A warning never blocks; weigh it: too-many-nodes (node merge), too-wide or crowded-layer (layer split), lonely-group, edge-crosses-layer (layer move), too-many-main-edges.
 
@@ -124,3 +125,86 @@ Write batch.yaml:
 - {op: edge.add, from: dispatcher, to: orders-db, label: persist}
 Then: grafical apply orders.grafical.yaml batch.yaml, grafical show orders.grafical.yaml, grafical render orders.grafical.yaml.
 `;
+
+/**
+ * `grafical guide <type>`: how to draw one diagram type with the same operations
+ * (DESIGN.md D34). Each stays under 3,000 characters, and its example is applied
+ * and checked by the tests, so it cannot drift from the tool.
+ */
+export const TYPE_GUIDES = {
+  flowchart: `FLOWCHART: the steps of one process and the decisions in it, top to bottom.
+
+- One row per step, in order. Begin with a terminal "Start" and finish with a terminal "End".
+- Kinds: terminal for Start and End; service for a step, named by what is done ("Issue refund"); decision for a question with a short answer ("Within 30 days?"). Keep questions to 3 words or so: a diamond holds less text than a box.
+- A decision has an edge out for each answer, labelled with the answer ("yes", "no"). Put the usual answer's next step directly below the decision, and the other beside it.
+- A loop goes back to an earlier step: an edge from the later step up to the earlier one.
+- Label no other edges. Name the line in the legend: diagram.legend with line solid and text "next step".
+- When several people or teams do the steps, put each one's steps in a lane (swimlane). Otherwise use no groups.
+
+EXAMPLE
+grafical new refund.grafical.yaml --title "Refund request"
+Write batch.yaml:
+- {op: layer.add, id: begin, label: Begin}
+- {op: layer.add, id: intake, label: Intake}
+- {op: layer.add, id: check, label: Check}
+- {op: layer.add, id: rule, label: Rule}
+- {op: layer.add, id: act, label: Act}
+- {op: layer.add, id: close, label: Close}
+- {op: node.add, id: start, layer: begin, label: Start, kind: terminal}
+- {op: node.add, id: form, layer: intake, label: Read the request}
+- {op: node.add, id: complete, layer: check, label: Details complete?, kind: decision}
+- {op: node.add, id: ask, layer: check, label: Ask for details}
+- {op: node.add, id: within, layer: rule, label: Within 30 days?, kind: decision}
+- {op: node.add, id: refund, layer: act, label: Issue refund}
+- {op: node.add, id: decline, layer: act, label: Decline}
+- {op: node.add, id: end, layer: close, label: End, kind: terminal}
+- {op: edge.add, from: start, to: form}
+- {op: edge.add, from: form, to: complete}
+- {op: edge.add, from: complete, to: ask, label: "no"}
+- {op: edge.add, from: ask, to: form}
+- {op: edge.add, from: complete, to: within, label: "yes"}
+- {op: edge.add, from: within, to: refund, label: "yes"}
+- {op: edge.add, from: within, to: decline, label: "no"}
+- {op: edge.add, from: refund, to: end}
+- {op: edge.add, from: decline, to: end}
+- {op: diagram.legend, line: solid, text: next step}
+Then: grafical apply refund.grafical.yaml batch.yaml, grafical render refund.grafical.yaml.
+`,
+  "state-machine": `STATE MACHINE: the states one thing passes through, and the events that move it.
+
+- Kinds: initial for the start dot, state for each state, final for the end ring. Name a state by what the thing is ("Paid", "On hold"). A dot's label is not drawn: call them start and end.
+- An edge is a transition, labelled with its event ("pay", "cancel"). A pair of states that go back and forth gets one edge each way.
+- Rows follow the thing's usual life: the start dot on top, the end ring at the bottom, the states in between in the order they usually happen. Put a detour (On hold, Cancelled) beside the usual path, not on it.
+- To mark the usual life, emphasize its edges: edge.emphasize with their ids.
+- Name the line in the legend: diagram.legend with line solid and text "transition".
+- Use no groups, unless states belong to clearly different phases.
+
+EXAMPLE
+grafical new order.grafical.yaml --title "Order states"
+Write batch.yaml:
+- {op: layer.add, id: begin, label: Begin}
+- {op: layer.add, id: new, label: New}
+- {op: layer.add, id: work, label: Work}
+- {op: layer.add, id: out, label: Out}
+- {op: layer.add, id: close, label: Close}
+- {op: node.add, id: start, layer: begin, label: start, kind: initial}
+- {op: node.add, id: placed, layer: new, label: Placed, kind: state}
+- {op: node.add, id: paid, layer: work, label: Paid, kind: state}
+- {op: node.add, id: held, layer: work, label: On hold, kind: state}
+- {op: node.add, id: shipped, layer: out, label: Shipped, kind: state}
+- {op: node.add, id: cancelled, layer: out, label: Cancelled, kind: state}
+- {op: node.add, id: end, layer: close, label: end, kind: final}
+- {op: edge.add, from: start, to: placed}
+- {op: edge.add, from: placed, to: paid, label: pay}
+- {op: edge.add, from: placed, to: cancelled, label: cancel}
+- {op: edge.add, from: paid, to: held, label: hold}
+- {op: edge.add, from: held, to: paid, label: release}
+- {op: edge.add, from: paid, to: shipped, label: ship}
+- {op: edge.add, from: shipped, to: end}
+- {op: edge.add, from: cancelled, to: end}
+- {op: diagram.legend, line: solid, text: transition}
+Then: grafical apply order.grafical.yaml batch.yaml, grafical render order.grafical.yaml.
+`,
+} as const;
+
+export type DiagramType = keyof typeof TYPE_GUIDES;

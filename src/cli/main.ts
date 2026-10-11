@@ -14,7 +14,7 @@ import { parseOp, parseOps } from "../model/ops.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
 import { atRevision, formatOps } from "./diff.ts";
-import { GUIDE } from "./guide.ts";
+import { type DiagramType, GUIDE, TYPE_GUIDES } from "./guide.ts";
 import {
   emit,
   failure,
@@ -758,13 +758,23 @@ function build(): Command {
       await viewer.close();
     });
 
-  json(program.command("guide").description("print the reference for agents")).action(
-    (opts: Opts) => {
-      if (opts.json === true)
-        process.stdout.write(`${JSON.stringify({ ok: true, guide: GUIDE })}\n`);
-      else process.stdout.write(GUIDE);
-    },
-  );
+  json(
+    program
+      .command("guide")
+      .description("print the reference for agents, or how to draw one diagram type")
+      .argument("[type]", Object.keys(TYPE_GUIDES).join(" or ")),
+  ).action((type: string | undefined, opts: Opts) => {
+    const guide = type === undefined ? GUIDE : TYPE_GUIDES[type as DiagramType];
+    if (guide === undefined) {
+      process.stderr.write(
+        `error: no guide for ${type}; expected one of ${Object.keys(TYPE_GUIDES).join(", ")}\n`,
+      );
+      process.exitCode = 2;
+      return;
+    }
+    if (opts.json === true) process.stdout.write(`${JSON.stringify({ ok: true, guide })}\n`);
+    else process.stdout.write(guide);
+  });
 
   return program;
 }
