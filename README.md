@@ -4,7 +4,7 @@ Architecture diagrams that coding agents build in small, checked steps.
 
 An agent builds a diagram one operation at a time: add a layer, add a node, connect two nodes, rename one. grafical places, sizes and routes everything. Each operation changes only what it names, and grafical lays out the picture again at once, like LaTeX after an edit, so it always looks tidy and never has to be redrawn from scratch. The diagram lives in one text file that you keep in git, and the same file always renders the same SVG and PNG.
 
-> **Status: design.** Nothing is implemented yet. This README describes the first release. Progress is tracked in [ROADMAP.md](ROADMAP.md).
+> **Status: stage 1, in development, not yet released.** The command line works: operations, groups, swimlanes, themes and a live viewer. `grafical diff` and the stage 1 benchmarks come next. Run it from a clone with `node src/cli/main.ts`. Progress is tracked in [ROADMAP.md](ROADMAP.md).
 
 ## Why
 
@@ -23,9 +23,9 @@ agent ──operations──> grafical ──writes──> diagram file (YAML, i
 - grafical turns those facts into a finished picture: aligned, evenly spaced, with consistent type sizes.
 - A mistake is reported at the step that made it, with a hint for the fix.
 
-## What it will look like
+## What it looks like
 
-The syntax below is illustrative. Phase 1 fixes it.
+[FEATURES.md](FEATURES.md) lists every command.
 
 ```sh
 grafical new arch.grafical.yaml --title "Event sync"
@@ -41,6 +41,12 @@ A later change is one more step, and only the renamed node changes:
 
 ```sh
 grafical node rename arch.grafical.yaml kafka --label "Kafka topics"
+```
+
+To watch an agent draw, open a window that redraws the picture on every change:
+
+```sh
+grafical view arch.grafical.yaml
 ```
 
 ## Documents
