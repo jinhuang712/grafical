@@ -202,3 +202,229 @@ export function escapeScene(): Scene {
   });
   return s;
 }
+
+type N = [
+  id: string,
+  kind: SceneNode["kind"],
+  x: number,
+  y: number,
+  w: number,
+  label: string,
+  lx: number,
+  sub: string,
+  sx: number,
+  accent?: boolean,
+];
+
+/** The target look (bench/targets/catalog-sync-grouped): groups, subtitle, legend, footnote. Fictional names. */
+export function groupedScene(): Scene {
+  const t = (
+    role: TextRole,
+    s: string,
+    x: number,
+    y: number,
+    size: number,
+    bold: boolean,
+    w: number,
+  ): PlacedText =>
+    placed(role, [run(s, bold ? "inter-600" : "inter-400", x, y, size)], {
+      x,
+      y: y - size,
+      w,
+      h: size + 4,
+    });
+  const rows: N[] = [
+    ["topics", "queue", 224, 96, 136, "upstream topics", 241.23, "6 broker topics", 252.89],
+    ["callers", "actor", 820, 96, 160, "API callers", 866.66, "storefront, promotions", 842.03],
+    ["admin", "service", 56, 224, 136, "admin HTTP", 85.42, ":7102, operators", 82.06],
+    ["relay", "service", 224, 224, 136, "catalog-relay", 250.18, "tier 1, :7101", 264.04],
+    ["handlers", "service", 664, 320, 136, "API handlers", 692.2, "gRPC, HTTP, no auth", 677.32],
+    ["retry", "queue", 56, 320, 136, "catalog_retry_v1", 73.7, "re-sent when due", 78],
+    ["lines", "queue", 224, 320, 136, "line topics", 259.84, "goods_v1, tickets_v1", 240.8],
+    ["pipes", "service", 224, 416, 136, "line pipelines", 250.69, "goods 10, tickets 20", 240.12],
+    ["mongo", "store", 440, 416, 144, "MongoDB catalog", 456.06, "goods_*, ticket_*", 469.42, true],
+    ["repo", "service", 664, 416, 136, "service, repo", 690.4, "assemble, Find only", 681.5],
+    ["geo", "external", 56, 552, 136, "geo-svc", 98.5, "region tree", 96.2],
+    ["pg", "store", 224, 552, 136, "Postgres replicas", 232.4, "goods, tickets", 255.61],
+  ];
+  const nodes: SceneNode[] = rows.map(([id, kind, x, y, w, label, lx, sub, sx, accent]) => ({
+    id,
+    layer: "l",
+    kind,
+    accent: accent === true,
+    rect: { x, y, w, h: 56 },
+    texts: [
+      t("node-label", label, lx, y + 26, 13, true, 90),
+      t("node-sublabel", sub, sx, y + 42, 11, false, 90),
+    ],
+  }));
+  const g = (
+    id: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    name: string,
+    nw: number,
+    side: string,
+    sx: number,
+    members: string[],
+  ) => ({
+    id,
+    rect: { x, y, w, h },
+    members,
+    label: placed(
+      "group-label",
+      [run(name, "inter-600", x + 16, y + 24, 12), run(side, "inter-400", sx, y + 24, 11)],
+      { x: x + 16, y: y + 12, w: nw, h: 16 },
+    ),
+  });
+  const e = (
+    id: string,
+    from: string,
+    to: string,
+    kind: "call" | "async" | "data",
+    pts: [number, number][],
+    label?: PlacedText,
+  ) => ({
+    id,
+    from,
+    to,
+    kind,
+    points: pts.map(([x, y]) => ({ x, y })),
+    ...(label ? { label } : {}),
+  });
+  return {
+    width: 1024,
+    height: 648,
+    title: t("title", "catalog-sync and catalog-api", 32, 40, 18, true, 300),
+    subtitle: t(
+      "subtitle",
+      "Two Go services coupled only by the shared MongoDB catalog database.",
+      32,
+      62,
+      12,
+      false,
+      440,
+    ),
+    note: t("note", "Not shown: retries, metrics.", 32, 632, 11, false, 150),
+    legend: [
+      {
+        style: "solid",
+        sample: { x1: 728, x2: 756, y: 36 },
+        label: t("legend", "call", 764, 40, 11, false, 24),
+      },
+      {
+        style: "dashed",
+        sample: { x1: 801.9, x2: 829.9, y: 36 },
+        label: t("legend", "Kafka message", 837.9, 40, 11, false, 80),
+      },
+    ],
+    layers: [],
+    groups: [
+      g("sync", 32, 184, 352, 312, "catalog-sync", 80, "write side", 136.71, [
+        "admin",
+        "relay",
+        "retry",
+        "lines",
+        "pipes",
+      ]),
+      g("api", 640, 280, 184, 216, "catalog-api", 80, "read side", 734.24, ["handlers", "repo"]),
+    ],
+    nodes,
+    edges: [
+      e(
+        "c1",
+        "topics",
+        "relay",
+        "async",
+        [
+          [292, 152],
+          [292, 224],
+        ],
+        t("edge-label", "consume", 300, 172, 11, false, 54),
+      ),
+      e(
+        "c2",
+        "relay",
+        "lines",
+        "async",
+        [
+          [292, 280],
+          [292, 320],
+        ],
+        t("edge-label", "by line", 300, 304, 11, false, 40),
+      ),
+      e("c3", "callers", "handlers", "call", [
+        [900, 152],
+        [900, 348],
+        [800, 348],
+      ]),
+      e("c4", "handlers", "repo", "call", [
+        [732, 376],
+        [732, 416],
+      ]),
+      e(
+        "c5",
+        "admin",
+        "lines",
+        "async",
+        [
+          [148, 280],
+          [148, 300],
+          [260, 300],
+          [260, 320],
+        ],
+        t("edge-label", "resync", 178.43, 296, 11, false, 36),
+      ),
+      e(
+        "c6",
+        "pipes",
+        "retry",
+        "async",
+        [
+          [224, 444],
+          [124, 444],
+          [124, 376],
+        ],
+        t("edge-label", "failed", 153.72, 438, 11, false, 30),
+      ),
+      e("c7", "retry", "lines", "async", [
+        [192, 348],
+        [224, 348],
+      ]),
+      e(
+        "c8",
+        "pipes",
+        "mongo",
+        "call",
+        [
+          [360, 444],
+          [440, 444],
+        ],
+        t("edge-label", "persist", 394.42, 438, 11, false, 36),
+      ),
+      e(
+        "c9",
+        "repo",
+        "mongo",
+        "call",
+        [
+          [664, 444],
+          [584, 444],
+        ],
+        t("edge-label", "Find", 600.8, 438, 11, false, 24),
+      ),
+      e("c10", "pipes", "geo", "call", [
+        [292, 472],
+        [292, 516],
+        [124, 516],
+        [124, 552],
+      ]),
+      e("c11", "pipes", "pg", "call", [
+        [292, 472],
+        [292, 552],
+      ]),
+    ],
+  };
+}
