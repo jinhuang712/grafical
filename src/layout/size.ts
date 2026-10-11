@@ -4,12 +4,32 @@
 // overflow rule (D14), so a node the engine sizes overflows only when its text
 // does not fit the large box either.
 
-import type { Diagram, DiagramNode, SizeStep } from "../model/types.ts";
-import type { Measurer } from "../text/types.ts";
+import type { Diagram, DiagramNode, NodeKind, SizeStep } from "../model/types.ts";
+import type { Line, Measurer } from "../text/types.ts";
 import { BOX, FRAME } from "../theme/geometry.ts";
+import { lineRoom } from "../theme/shapes.ts";
 import { type TypeRamp, themeOf } from "../theme/themes.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 import { lineHeight } from "./text.ts";
+
+/** A node's label and sublabel, wrapped to the room its shape gives its text (D34). */
+export function nodeLines(
+  kind: NodeKind,
+  w: number,
+  h: number,
+  label: string,
+  sublabel: string | undefined,
+  m: Measurer,
+  T: TypeRamp,
+): { label: Line[]; sub: Line[]; room: number } {
+  const room = lineRoom(kind, w, h, 0);
+  return {
+    label: m.wrap(label, T["node-label"], room),
+    sub:
+      sublabel === undefined || sublabel === "" ? [] : m.wrap(sublabel, T["node-sublabel"], room),
+    room,
+  };
+}
 
 /** Does the node's text fit a box of this step, by the checker's rule? */
 export function fits(
@@ -19,12 +39,7 @@ export function fits(
   T: TypeRamp = TYPE_RAMP,
 ): boolean {
   const box = BOX[step];
-  const room = box.w - 2 * FRAME.textPad;
-  const label = m.wrap(node.label, T["node-label"], room);
-  const sub =
-    node.sublabel === undefined || node.sublabel === ""
-      ? []
-      : m.wrap(node.sublabel, T["node-sublabel"], room);
+  const { label, sub, room } = nodeLines(node.kind, box.w, box.h, node.label, node.sublabel, m, T);
   if (label.length > FRAME.labelLines || sub.length > FRAME.sublabelLines) return false;
   if ([...label, ...sub].some((l) => l.width > room + 1e-6)) return false;
   const block =

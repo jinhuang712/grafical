@@ -9,6 +9,7 @@ import type { PlacedText, Point, Rect, Scene, SceneEdge, SceneGroup, SceneNode }
 import { FONT_FAMILY } from "../text/faces.ts";
 import { FRAME } from "../theme/geometry.ts";
 import { hasHead, PAINT, type Paint, STYLE_KIND } from "../theme/paint.ts";
+import { meetOutline } from "../theme/shapes.ts";
 
 /** At most 2 decimals, no trailing zeros, never "-0". */
 export function num(v: number): string {
@@ -91,19 +92,6 @@ function cylinder(r: Rect, fill: string, stroke: string, sw: number): string[] {
   ];
 }
 
-/**
- * How far below the box top (or above the box bottom) a store's outline lies at
- * x: the lid and the bottom are half-ellipses, so the outline leaves the box edge
- * away from the middle. 0 for every other kind.
- */
-function outlineInset(n: SceneNode, x: number): number {
-  if (n.kind !== "store") return 0;
-  const ry = FRAME.storeLid;
-  const hw = n.rect.w / 2;
-  const d = Math.min(1, Math.abs(x - (n.rect.x + hw)) / hw);
-  return ry - ry * Math.sqrt(1 - d * d);
-}
-
 /** The head is a small filled triangle with its tip at `tip`, pointing along `dir`. */
 function arrowHead(
   tip: Point,
@@ -170,18 +158,9 @@ function roundedPath(pts: Point[], P: Paint): string {
   return d;
 }
 
-/**
- * Moves an end that meets a store's top or bottom side onto its curved outline.
- * `next` is the route's point beside the end.
- */
+/** Moves a route's end from its box's side onto the drawn outline (D34). */
 function ontoOutline(end: Point, next: Point, n: SceneNode | undefined): Point {
-  if (n === undefined || end.x !== next.x) return end;
-  const inset = outlineInset(n, end.x);
-  if (inset === 0) return end;
-  if (Math.abs(end.y - n.rect.y) < 0.01 && next.y < end.y) return { x: end.x, y: end.y + inset };
-  const bottom = n.rect.y + n.rect.h;
-  if (Math.abs(end.y - bottom) < 0.01 && next.y > end.y) return { x: end.x, y: end.y - inset };
-  return end;
+  return n === undefined ? end : meetOutline(n.kind, n.rect, end, next);
 }
 
 /** The line stops at the arrowhead's base, if its kind has one (D8, D33). */

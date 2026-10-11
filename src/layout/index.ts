@@ -37,6 +37,7 @@ import type {
 import type { Measurer } from "../text/types.ts";
 import { BAND, FRAME, GROUP, LANE, ROUTE, SPACING, type Spacing } from "../theme/geometry.ts";
 import { lineStyle } from "../theme/paint.ts";
+import { textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { cutRoute, planEnds, refineEnds } from "./ends.ts";
@@ -51,7 +52,7 @@ import {
   routeAcross,
 } from "./route.ts";
 import { planSideways } from "./side.ts";
-import { withSizes } from "./size.ts";
+import { nodeLines, withSizes } from "./size.ts";
 import { routeStats } from "./stats.ts";
 import { lineBox, lineHeight, placeLine, placeLines } from "./text.ts";
 
@@ -823,8 +824,6 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   for (const x of sceneLanes) boxOf.set(x.id, x.rect);
   const factsById = new Map(facts.edges.map((e) => [e.id, e]));
 
-  const nodeLabelStyle = T["node-label"];
-  const subStyle = T["node-sublabel"];
   const nodeLh = lineHeight("node-label", m, T);
   const subLh = lineHeight("node-sublabel", m, T);
   const sceneNodes: SceneNode[] = [];
@@ -833,20 +832,17 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       const rect: Rect = { x: centre + n.x, y: nodeTop(l.index, n.h), w: n.w, h: n.h };
       const texts: PlacedText[] = [];
       if (withText) {
-        const room = n.w - 2 * FRAME.textPad;
-        const lines = m.wrap(n.node.label, nodeLabelStyle, room);
-        const sub =
-          n.node.sublabel === undefined || n.node.sublabel === ""
-            ? []
-            : m.wrap(n.node.sublabel, subStyle, room);
+        const { label: lines, sub } = nodeLines(
+          n.node.kind,
+          n.w,
+          n.h,
+          n.node.label,
+          n.node.sublabel,
+          m,
+          T,
+        );
         const block = lines.length * nodeLh + sub.length * subLh;
-        // A store's text drops below its lid, but keeps a lid's height from the bottom.
-        const slack = (rect.h - block) / 2;
-        const drop =
-          n.node.kind === "store"
-            ? Math.max(0, Math.min(FRAME.storeLid / 2, slack - FRAME.storeLid))
-            : 0;
-        const top = rect.y + slack + drop;
+        const top = textTop(n.node.kind, rect, block);
         const cx = rect.x + rect.w / 2;
         texts.push(placeLines("node-label", lines, cx, top, "middle", m, T));
         if (sub.length > 0) {

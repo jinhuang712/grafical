@@ -7,6 +7,7 @@ import { type Diagram, LINE_STYLES } from "../model/types.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { lineStyle } from "../theme/paint.ts";
+import { textInside } from "../theme/shapes.ts";
 import {
   collinearOverlap,
   inset,
@@ -71,7 +72,7 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
           expected: `at most ${max} ${max === 1 ? "line" : "lines"}`,
           fix: `${shorten}${bigger}`,
         });
-      } else if (!rectInside(t.bbox, box)) {
+      } else if (!textInside(n.kind, n.rect, t.bbox)) {
         out.push({
           code: "overflow",
           elements: [n.id],
