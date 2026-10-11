@@ -43,7 +43,7 @@ This repository is public. Names, hosts, topics, databases and architecture of r
 | `pnpm typecheck` | Type-check with `tsc --noEmit` | available |
 | `pnpm lint` | Lint and format check with Biome | available |
 | `pnpm test` | Run vitest. Passes while no tests exist | available |
-| `pnpm bench <baseline\|chain\|smoke\|judge\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` needs `--approved` | available |
+| `pnpm bench <baseline\|chain\|smoke\|judge\|gallery\|geometry\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` needs `--approved`. `geometry` checks every picture of a round for mechanical defects (benchmark 7) and costs nothing | available |
 
 A command added to `package.json` gets a row here in the same change.
 

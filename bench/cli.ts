@@ -9,10 +9,12 @@
 //   judge --round <name> [--judges 2]         score a round's pictures blind with Opus judges
 //   summary --round <name>                    write bench/results/<round>.md
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
+//   geometry --round <name>                   benchmark 7: check every step's picture's geometry
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { buildGallery, SITE } from "./gallery.ts";
+import { checkRound } from "./geometry.ts";
 import { runJudging } from "./judge.ts";
 import { loadChanges, prepareChainDir, RUNS, runChain, runStep } from "./run.ts";
 import { formatPlan, planSmoke } from "./smoke.ts";
@@ -104,6 +106,20 @@ function main(argv: string[]): void {
       );
       return;
     }
+    case "geometry": {
+      checkRound(round).then((found) => {
+        const counts = new Map<string, number>();
+        for (const g of found.values()) {
+          for (const d of g.defects) counts.set(d.code, (counts.get(d.code) ?? 0) + 1);
+        }
+        const failed = [...found].filter(([, g]) => g.error !== undefined).map(([k]) => k);
+        console.log(
+          `${found.size} pictures checked, ${[...found.values()].filter((g) => g.defects.length > 0).length} with a defect: ${JSON.stringify(Object.fromEntries(counts))}`,
+        );
+        if (failed.length > 0) console.log(`not checked: ${failed.join(", ")}`);
+      });
+      return;
+    }
     case "summary": {
       const out = writeSummary(round);
       mkdirSync(dirname(out.path), { recursive: true });
@@ -112,7 +128,9 @@ function main(argv: string[]): void {
       return;
     }
     default:
-      console.error("usage: pnpm bench <baseline|smoke|judge|summary> [options]");
+      console.error(
+        "usage: pnpm bench <baseline|smoke|chain|judge|gallery|geometry|summary> [options]",
+      );
       process.exit(2);
   }
 }

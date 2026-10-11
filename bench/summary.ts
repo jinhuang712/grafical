@@ -99,6 +99,24 @@ export function scoresByItem(round: string): Map<string, number> {
   return out;
 }
 
+/** Geometry defects in each picture, by `<chain>/<step>`, from `pnpm bench geometry` (benchmark 7). */
+export function geometryByItem(round: string): Map<string, number> {
+  const out = new Map<string, number>();
+  const top = join(RUNS, round);
+  if (!existsSync(top)) return out;
+  for (const chain of readdirSync(top)) {
+    const steps = join(top, chain, "steps");
+    if (!existsSync(steps)) continue;
+    for (const step of readdirSync(steps)) {
+      const file = join(steps, step, "geometry.json");
+      if (!existsSync(file)) continue;
+      const g = JSON.parse(readFileSync(file, "utf8")) as { defects: unknown[]; error?: string };
+      if (g.error === undefined) out.set(`${chain}/${step}`, g.defects.length);
+    }
+  }
+  return out;
+}
+
 /** `mean (min–max)` of the known values, and how many are unknown (null). */
 function nullable(values: (number | null)[]): string {
   const known = values.flatMap((v) => (v == null ? [] : [v]));
@@ -112,7 +130,11 @@ function groupBy<T>(xs: T[], key: (x: T) => string): Map<string, T[]> {
   return m;
 }
 
-export function buildTable(runs: Loaded[], scores: Map<string, number>): string {
+export function buildTable(
+  runs: Loaded[],
+  scores: Map<string, number>,
+  geometry: Map<string, number> = new Map(),
+): string {
   const header = [
     "Step",
     "Arm",
@@ -131,6 +153,7 @@ export function buildTable(runs: Loaded[], scores: Map<string, number>): string 
     "Off-tool",
     "Engine defects",
     "Agent defects",
+    "Geometry",
     "Picture",
     "Regens",
     "Score (/50)",
@@ -196,6 +219,10 @@ export function buildTable(runs: Loaded[], scores: Map<string, number>): string 
           : "n/a",
         arm === "grafical" ? nullable(rs.map((r) => r.engineDefects)) : "n/a",
         arm === "grafical" ? nullable(rs.map((r) => r.agentDefects)) : "n/a",
+        stat(
+          group.flatMap((g) => geometry.get(`${g.chain}/${g.record.step}`) ?? []),
+          1,
+        ),
         `${rs.filter((r) => r.diagramPngUpdated).length}/${rs.length}`,
         stat(
           rs.map((r) => r.regenerations),
@@ -289,7 +316,7 @@ export function buildReport(round: string): string {
     "",
     "Each cell is `mean (min–max)` over its runs. Raw numbers include Claude Code's fixed overhead.",
     "",
-    buildTable(runs, scoresByItem(round)),
+    buildTable(runs, scoresByItem(round), geometryByItem(round)),
     "",
     "### Cost of a whole chain (sum of the steps)",
     "",

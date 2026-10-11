@@ -41,7 +41,7 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 | Operation errors | Rejected operations ÷ all operations, and the retries until success | grafical's JSON output |
 | Score | Two blind Opus judges, five criteria from 1 to 5 each, 50 points in total | Judging, below |
 | Faithfulness | Invented components, and important items missing from the brief | Judges' checklist against the brief |
-| Mechanical defects | Overflow, overlap, edges through nodes, label collisions, edges sharing a segment | A geometry check on the rendered SVG that is separate from grafical's checker |
+| Mechanical defects | Overflow, overlap, edges through nodes, label collisions, edges sharing a segment | A geometry check on the rendered SVG that is separate from grafical's checker: `pnpm bench geometry` (bench/geometry.ts). It reads shapes only, and treats lines of one style that leave or reach one point as a bus or a fan-in |
 
 **Fixed overhead.** Every headless run carries Claude Code's own system prompt. Each round therefore starts with one empty run per model, and results are reported both as measured and minus that baseline.
 
