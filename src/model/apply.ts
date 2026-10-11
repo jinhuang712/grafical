@@ -575,9 +575,21 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
       })),
     };
   }
-  // Call point: when src/layout exports validateGroups(diagram), call it here like
-  // validateAlignments above and turn each problem into an operation error.
-  // Until then, group-gap is checked by checkIntegrity (schema.ts).
+  // A group the engine cannot box without a non-member inside is an operation error (D7).
+  // Rows with a gap between members are caught earlier, as group-gap (schema.ts).
+  const groupProblems = layoutModule.validateGroups(s.d);
+  if (groupProblems.length > 0) {
+    return {
+      errors: groupProblems.map((p) => ({
+        code: p.code,
+        index: last,
+        field: "group",
+        found: p.found,
+        expected: p.expected,
+        suggestion: p.suggestion,
+      })),
+    };
+  }
   if (s.d.groups !== undefined && s.d.groups.length === 0) delete s.d.groups;
   return { diagram: s.d, changed: s.changed };
 }

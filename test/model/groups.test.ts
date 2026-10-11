@@ -143,6 +143,21 @@ describe("group operations", () => {
     expect(fail(d, [{ op: "group.leave", nodes: ["b"] }])[0]?.code).toBe("group-gap");
   });
 
+  it("group-split: a non-member between members in one row is refused by the layout (D7)", () => {
+    const row = ok(empty, [
+      { op: "layer.add", id: "r", label: "R" },
+      { op: "node.add", id: "x", layer: "r", label: "X", last: true },
+      { op: "node.add", id: "y", layer: "r", label: "Y", last: true },
+      { op: "node.add", id: "z", layer: "r", label: "Z", last: true },
+    ]).diagram;
+    const e = fail(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "z"] }]);
+    expect(e[0]).toMatchObject({ code: "group-split", field: "group" });
+    expect(e[0]?.suggestion).toContain("y");
+    // Joining the node in between, or grouping neighbours, is fine.
+    ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y", "z"] }]);
+    ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y"] }]);
+  });
+
   it("node.remove keeps the group, even empty", () => {
     const d1 = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a"] }]).diagram;
     const d2 = ok(d1, [{ op: "node.remove", id: "a" }]).diagram;

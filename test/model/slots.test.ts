@@ -5,6 +5,7 @@ const calls: { edges: string[]; layer: string; node: string; layerNodes: string[
 
 vi.mock("../../src/layout/index.ts", () => ({
   validateAlignments: () => [],
+  validateGroups: () => [],
   layout: () => {
     throw new Error("not used");
   },
