@@ -43,7 +43,14 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 | Faithfulness | Invented components, and important items missing from the brief | Judges' checklist against the brief |
 | Mechanical defects | Overflow, overlap, edges through nodes, label collisions, edges sharing a segment | A geometry check on the rendered SVG that is separate from grafical's checker |
 
-**Fixed overhead.** Every headless run carries Claude Code's own system prompt. On 2026-10-11, a Haiku run that only replied "OK" reported 22,018 cache-write tokens, 11,421 cache-read tokens, $0.0046 and 2.1 s. Each round therefore starts with one such empty run per model, and results are reported both as measured and minus that baseline.
+**Fixed overhead.** Every headless run carries Claude Code's own system prompt. Each round therefore starts with one empty run per model, and results are reported both as measured and minus that baseline.
+
+| Empty run on Haiku, "reply OK" | Cache writes | Cache reads | Cost | Wall time |
+|---|---|---|---|---|
+| With the host's own setup, 2026-10-11 | 22,018 | 11,421 | $0.0046 | 2.1 s |
+| With `--safe-mode`, as the harness runs, 2026-10-11 | 4,265 | 13,129 | $0.0010 | 2.1 s |
+
+**Costs of a resumed session.** When a step resumes a session, `total_cost_usd` and `duration_api_ms` are running totals for the whole session, while token counts and wall time are per call. A step's cost is therefore its total minus the previous step's. This was measured in the phase 1 measuring run: the step totals rose by exactly what each step's tokens cost.
 
 ## Experiments
 
@@ -97,7 +104,17 @@ An ablation runs when its decision is built or questioned, not all at once.
 
 ## Harness
 
-- **Runner:** headless Claude Code, `claude -p --output-format stream-json --model <model> --max-budget-usd 1 --no-session-persistence`. Each run gets a new, empty working directory holding only the brief and its arm's tool, and the allowed tools are restricted to what that arm needs.
+- **Runner:** headless Claude Code, `claude -p --output-format stream-json --verbose --safe-mode --model <model> --max-budget-usd 1`.
+  - `--safe-mode` turns off the host's own customizations, so every run sees the same setup.
+  - E1 starts a session, and each E2 request resumes it.
+  - Each chain gets a new, empty working directory holding only the brief and, for the grafical arm, a `grafical` command.
+  - Both arms get the same tools: Bash, Read, Write and Edit. The prompt alone tells the grafical arm to draw with grafical, and the `offTool` metric counts any Bash command that draws another way.
+  - A first measuring run had allowed the grafical arm only `grafical *` commands. Claude Code then blocked `grafical apply …; echo`, and the agent fell back to one command per call.
+- **Measuring before a round:** `pnpm bench chain --arm <arm>` runs one chain, a first draft and its change requests, and prints each step's cost. Rule 4 below uses it.
+- **Each step also records:**
+  - whether a new picture exists;
+  - whether a change step changed the grafical diagram file at all. One measured step answered a move request with a single `show` call and still reported success;
+  - the engine-owned defects that `grafical check --all` finds.
 - **Records:** for each run, a summary of every metric above, the transcript, the final diagram file and picture, and their hashes. Raw runs go to `bench/runs/`, which is not tracked. Summary tables are committed under `bench/results/`.
 - **Versions:** each result records the Claude Code version, the model IDs and grafical's commit.
 - **Judging:** two Opus judges score each picture blind, each with its own random labels. They score accuracy, clarity, visual quality, defects, and fit in a doc at 1000 px wide, each from 1 to 5. That gives 25 points per judge and 50 in total. For E2 they also list what changed besides each request. They see only the brief, the request and the pictures.

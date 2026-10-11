@@ -43,7 +43,7 @@ This repository is public. Names, hosts, topics, databases and architecture of r
 | `pnpm typecheck` | Type-check with `tsc --noEmit` | available |
 | `pnpm lint` | Lint and format check with Biome | available |
 | `pnpm test` | Run vitest. Passes while no tests exist | available |
-| `pnpm bench` | Run the benchmark harness (EXPERIMENTS.md) | phase 1 |
+| `pnpm bench <baseline\|chain\|smoke\|judge\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` needs `--approved` | available |
 
 A command added to `package.json` gets a row here in the same change.
 
@@ -68,7 +68,10 @@ A command added to `package.json` gets a row here in the same change.
 - SVG output is compared byte for byte, as text snapshots.
 - PNG output is compared as decoded pixels, not as compressed bytes. D15 promises the same pixels, not the same PNG bytes.
 - Stability tests apply one operation and assert that nothing outside DESIGN.md D10's list changed position, size or route.
-- Fixtures live in `fixtures/`. Public benchmark briefs live in `bench/briefs/`.
+- Fixtures live in `test/fixtures/`. Public benchmark briefs live in `bench/briefs/`.
+- The fuzz test (`test/fuzz/`) lays out random diagrams from fixed seeds and asserts that none has an engine-owned defect (DESIGN.md D14). CI runs 500 seeds. Run more with `FUZZ_SEEDS=5000 pnpm test test/fuzz`. A failing seed becomes a fixture before it is fixed.
+- A change to layout or routing must keep the fuzz test, the stability tests and the replay of a real agent run (`test/layout/haiku.test.ts`) passing.
+- `node test/debug/check-fixtures.ts <dir>` lays out, checks and renders every fixture with the real engine, for looking at the pictures.
 
 ## Decisions and scope
 

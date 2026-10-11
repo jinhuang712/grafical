@@ -117,27 +117,30 @@ After every operation, grafical lays out the whole diagram again from the facts,
 
 Placement follows the facts in a fixed order: layers from top to bottom, nodes in each layer by their order, box sizes from their steps, gaps from the density. Each layer is centred, and its nodes are spread evenly, so every row looks tidy. No search takes part, so the same facts always give the same picture.
 
-**Stability means the structure stays, not the pixels.** An operation never changes a fact it does not name. The one exception is the slot of a node added without a position, which D24 chooses. After an operation, only these may move:
+**Stability means the structure stays, not the pixels.** An operation never changes a fact it does not name. The one exception is the slot of a node added without a position, which D24 chooses. Positions are compared relative to the shared centre line: when the canvas widens, everything shifts by the same amount, and that is not movement. After an operation, only these may move:
 - the elements it names;
-- the other nodes in each layer whose contents changed, which re-spread sideways and keep their order;
+- the other nodes in each layer whose contents changed, which re-spread sideways and keep their order. A layer's contents include its nodes' alignment facts;
+- a layer that has a node aligned to a node that moved, which slides sideways as one block;
 - the layers below a layer or gutter that changed height, which shift down as one block;
-- nodes aligned to a node that moved;
 - edges that share a gap with a changed edge, but only inside the gaps they share;
 - ports on a node side that a changed edge uses;
 - the labels of routes that changed;
 - the routes of edges attached to anything that moved.
 
-"Changed" does not cascade: an edge that moved only because it shares a gap does not make its own neighbours movable. A layer whose contents did not change never moves sideways. Benchmark 4 checks this list on every change.
+"Changed" does not cascade: an edge that moved only because it shares a gap does not make its own neighbours movable. Otherwise a layer never moves sideways. Benchmark 4 checks this list on every change.
 
-**Gutters grow in fixed steps.** The gutter between two layers has a height chosen from fixed steps. When its tracks no longer fit at the density's spacing, it grows to the next step, and the layers below shift down. Most edge additions therefore change no gutter height.
+One exception: when a gap between two nodes is full, the next edge in id order takes its next-best gap, and that can move a route outside the channels it shares with the changed edge.
 
-An alignment that cannot hold together with the order in either layer is rejected as an operation error.
+**Gutters grow in fixed steps.** The gutter between two layers has a height chosen from fixed steps. When its tracks or edge labels no longer fit at the density's spacing, it grows to the next step, and steps are added past the last one when needed. The layers below shift down. Most edge additions therefore change no gutter height. On the 500-diagram fuzz test, growing made 221 diagrams taller than a fixed gutter would, 23 of them by more than 20%. That is the price of never squeezing lines together.
+
+**Alignment.** An aligned node sits directly above or below its target. Its whole layer slides sideways as one block to put it there, and keeps its even spacing. Within one layer, the first alignment in node order holds. A later alignment that would need a different slide is rejected as `alignment-conflict`, and layers that would each slide to follow the other are rejected as `alignment-cycle`.
 
 Rejected:
 - Left-aligned layers that never re-spread. They keep more pixels still, but rows end up ragged, and the picture stops looking finished. The phase 0 router spike showed this.
 - Reordering nodes on every change to reduce crossings. It gives a better picture once, but any change can reshuffle the structure. Order is chosen once, when a node is added, or when an operation asks for it (D24).
 - Gutters that grow by any amount, because nearly every edge addition would then move the layers below.
 - A "gutter full" defect. Its fix (a larger density, fewer edges, a split layer) costs the agent a round, and moves more than growing would.
+- An aligned node that slides alone within its row's spacing, as phase 1 first built it. None of the three alignments in the public brief could hold that way.
 
 ### D11 Edges route orthogonally through the gaps, with our own router
 
@@ -162,10 +165,22 @@ The phase 0 router spike compared it with `libavoid-js` on the public brief (30 
 | Unrelated edges drawn on top of each other | 0 | 3 |
 | Crossings on the public brief | 68 | 40 |
 
-Before phase 1 ends, the router needs:
-- **Fewer crossings, within D10:** choose gaps and order ports by the neighbouring gaps, order tracks inside a gutter, and use a stable bus for fan-outs from one side.
-- **Label slots by rule:** fixed slots per channel, so that a label moves only with its own route, and a defect when no slot is free.
-- **Edge cases:** self-loops, several edges between one pair, the left-most gap, and arrowheads on close ports.
+What phase 1 added to the router:
+- **Fewer crossings.** Gaps and port orders follow the neighbouring gaps, and each gutter orders its tracks. The public brief went from 68 crossings to 15. Most of that gain comes from node order, chosen by D24: with the spike's node orders, the router alone gives 45.
+- **Buses.** A fan-out of three or more unlabelled edges of one kind leaves a node side through one port and shares one trunk.
+- **Room before squeezing.**
+  - Ports and gap tracks keep 8 px clear of lines that enter the same gutter from the other side.
+  - A gap holds as many tracks as fit 8 px apart.
+  - When a node side or a gap is overcrowded, a port or a track may sit 2 px off the 4 px grid, so that no two lines share an x.
+- **Labels by rule.** A label sits on its own run, or beside a straight stretch of its line. If no slot is clear, it does the first of these that works:
+  1. wrap onto 2 or 3 lines;
+  2. use another gutter on its path;
+  3. detour: its line steps out beyond the crowd onto new rows, and the label sits beside it.
+
+  On the fuzz test, 2.9% of labels wrapped. Detours appeared only in very dense diagrams: 60 of 500, with 153 labels between them.
+- **Edge cases:** self-loops, several edges between one pair, edges within a layer, edges that skip layers, and the left-most gap.
+
+The phase 1 fuzz test lays out 500 random diagrams with fixed seeds in CI, and more on request. None has an engine-owned defect (D14). Before the phase 1 robustness work, 48% had one. 35,000 seeds in all passed, which is evidence, not a proof.
 
 Rejected:
 - `libavoid-js`. It is LGPL-2.1-or-later, and its npm `latest` is a beta from one maintainer. It took 1.8 s at 50 nodes, too slow to lay out on every change, and it drew unrelated edges on top of each other. Its one advantage, fewer crossings, is the router's to earn in phase 1.
@@ -314,6 +329,8 @@ Node order within a layer decides most edge crossings, and it is exactly the kin
 
 `layer.tidy <layer>` reorders the nodes of one layer to reduce crossings. It runs once, as a named operation, so its changes are expected. Nothing reorders a layer otherwise (D10).
 
+The engine tries every slot with the real router and counts crossings. A 14-slot layer takes about 5 ms, so a cheaper estimate is not needed.
+
 Rejected:
 - Appending a node last when no position is given. The agent's order would then decide the crossings, and that order is the main reason a diagram looks messy.
 - Reordering automatically on every change, for the reason in D10.
@@ -322,7 +339,8 @@ Rejected:
 
 - **Wide layers:** what happens when a layer is wider than the maximum diagram width. One option is a defect that tells the agent to split the layer. The other is wrapping the layer into rows, which moves nodes the operation did not name.
 - **Columns and swimlanes:** groups that span layers, such as a write side and a read side.
-- **Alignment and even spreading:** how an alignment fact combines with spreading a layer evenly (D10), and whether nodes line up in columns across layers without a change in one layer moving another sideways. Phase 1 decides.
+- **Columns across layers:** nodes lining up in columns across several layers. Phase 1 settled single alignments (D10). Columns are open, together with swimlanes.
+- **The layer order an agent picks:** in the phase 1 measuring run, Haiku put a "Dependencies" layer between the Kafka and Stores layers, and the store edges had to pass through it. Whether the engine should suggest or choose layer order, as D24 does for nodes, is open.
 - **Exact lists:** node kinds, edge kinds, size steps and density values. Phase 2 settles them.
 - **File naming:** `<name>.grafical.yaml` is proposed.
 - **Undo:** whether undo exists outside git.
