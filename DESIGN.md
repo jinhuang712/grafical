@@ -180,7 +180,7 @@ The phase 0 router spike compared it with `libavoid-js` on the public brief (30 
 
 What phase 1 added to the router:
 - **Fewer crossings.** Gaps and port orders follow the neighbouring gaps, and each gutter orders its tracks. The public brief went from 68 crossings to 15. Most of that gain comes from node order, chosen by D24: with the spike's node orders, the router alone gives 45.
-- **Buses.** A fan-out of three or more unlabelled edges in one line style leaves a node side through one port and shares one trunk. A call and a data read are both solid (D8), so they share a trunk. D25 lowers this to two edges, and adds fan-ins: edges that share a target side arrive through one port.
+- **Buses.** A fan-out of three or more unlabelled edges in one line style leaves a node side through one port and shares one trunk. A call and a data read are both solid (D8), so they share a trunk. Members that pass the same rows choose one corridor together, so that the trunk passes those rows as one line and branches near its targets. D25 lowers this to two edges, and adds fan-ins: edges that share a target side arrive through one port.
 - **Room before squeezing.**
   - Ports and gap tracks keep 8 px clear of lines that enter the same gutter from the other side.
   - A gap holds as many tracks as fit 8 px apart.

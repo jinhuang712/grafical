@@ -499,16 +499,32 @@ function chooseGaps(
     const used = load.get(gapKey(gap));
     return used === undefined || used.has(key) || used.size < capacity(gap);
   };
+  // The members of a fan-out that pass the same rows choose one corridor together,
+  // so that their trunk passes those rows as one line and branches near its ends.
+  const mateKey = (pl: Plan) =>
+    pl.bus === undefined ? undefined : `${pl.bus.id}|${pl.between.join(",")}`;
+  const mates = new Map<string, Plan[]>();
+  for (const pl of plans) {
+    const k = mateKey(pl);
+    if (k === undefined || pl.between.length === 0) continue;
+    const list = mates.get(k);
+    if (list === undefined) mates.set(k, [pl]);
+    else list.push(pl);
+  }
+  const chosen = new Map<string, number>();
   for (const pl of plans) {
     if (pl.between.length === 0) continue;
     const xs = centreX(pl.u);
     const xt = centreX(pl.v);
+    const k = mateKey(pl);
+    const team = (k === undefined ? undefined : mates.get(k)) ?? [pl];
     // A corridor that one end's ports can reach straight saves that end a jog:
     // two bends at most instead of four (D25 rule 2).
     const reach = (n: PNode, lo: number, hi: number) =>
       hi >= n.x + ROUTE.portInset && lo <= n.x + n.w - ROUTE.portInset;
     // The line goes on into the lower end's top side, past any group label there.
     const lower = forbidTop.get(Math.max(pl.u.layer, pl.v.layer)) ?? [];
+    const taken = k === undefined ? undefined : chosen.get(k);
     const spans = corridors(pl.between, gapsByLayer)
       .flatMap(([lo, hi]) => freeParts(lo, hi, lower))
       .map(([lo, hi]) => ({
@@ -516,12 +532,17 @@ function chooseGaps(
         hi,
         travel:
           dist(xs, lo, hi) +
-          dist(xt, lo, hi) +
           (reach(pl.u, lo, hi) ? 0 : JOG) +
-          (reach(pl.v, lo, hi) ? 0 : JOG),
+          team.reduce((s, m) => s + dist(centreX(m.v), lo, hi) + (reach(m.v, lo, hi) ? 0 : JOG), 0),
         move: dist(xs, lo, hi),
       }))
-      .sort((a, b) => a.travel - b.travel || a.move - b.move || a.lo - b.lo);
+      .sort(
+        (a, b) =>
+          Number(b.lo === taken) - Number(a.lo === taken) ||
+          a.travel - b.travel ||
+          a.move - b.move ||
+          a.lo - b.lo,
+      );
     let done = false;
     for (const s of spans) {
       const gaps: Gap[] = [];
@@ -532,6 +553,7 @@ function chooseGaps(
       }
       if (gaps.length !== pl.between.length) continue;
       for (const gap of gaps) take(pl, gap);
+      if (k !== undefined) chosen.set(k, s.lo);
       // The line runs where an end's ports can meet it straight, if one can.
       const meet = (n: PNode, x: number) =>
         clamp(
