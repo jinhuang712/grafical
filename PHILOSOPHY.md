@@ -22,7 +22,13 @@ Like a typesetter, the engine lays out the whole picture again from the facts af
 
 ## The tool carries the taste
 
-A good diagram must not depend on a strong model. The tool decides everything a model is likely to get wrong: spacing, alignment, type sizes, routing, colors. A model only chooses from short lists. The smaller the gap between a weak and a strong model, the better the tool is working.
+A good-looking diagram must not depend on a strong model. The tool decides everything about the look that a model is likely to get wrong: spacing, alignment, type sizes, routing, colors. A model only chooses from short lists. The smaller the gap between a weak and a strong model in how the picture looks, the better the tool is working.
+
+## The engine arranges; the agent decides what the diagram says
+
+The engine is responsible for the picture: where boxes and lines go, how they are spaced and routed, and how they are drawn and styled. The agent is responsible for the content: what to include and how much, what to merge, what each box and line is called, whether the facts are correct, and whether the story reads well. The engine may tell the agent a fact that helps, such as "this row is wider than the page", but it never decides content for the agent.
+
+Added by the owner on 2026-10-11, after three judged rounds showed that the engine's work had reached the picture's layout while the remaining points were lost on what the agent chose to draw.
 
 ## Mistakes are caught at the step that made them
 
