@@ -159,7 +159,12 @@ export function buildTable(
     "Score (/50)",
   ];
   const rows = [`| ${header.join(" | ")} |`, `|${header.map(() => "---").join("|")}|`];
-  const cells = groupBy(runs, (r) => `${r.record.step}\t${r.record.arm}\t${r.record.modelAlias}`);
+  // A chain named `<task>.<arm>-...` drew its own task (E3, E4): its steps are cells of their own.
+  const task = (chain: string) => (chain.includes(".") ? `${chain.split(".")[0]} ` : "");
+  const cells = groupBy(
+    runs,
+    (r) => `${task(r.chain)}${r.record.step}\t${r.record.arm}\t${r.record.modelAlias}`,
+  );
   for (const [key, group] of [...cells].sort(([a], [b]) => a.localeCompare(b))) {
     const [step, arm, model] = key.split("\t") as [string, string, string];
     const rs = group.map((g) => g.record);
