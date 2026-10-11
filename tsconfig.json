@@ -11,8 +11,10 @@
     "noImplicitOverride": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "test"]
+  "include": ["src", "test", "bench"]
 }

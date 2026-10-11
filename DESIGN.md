@@ -218,7 +218,7 @@ Rejected: warnings, because a picture with a known defect looks like success. Ch
 
 Under one version of grafical, the same file gives the same SVG bytes and the same PNG pixels on any machine.
 
-The file is YAML with a fixed layout. Mappings have sorted keys. Layers, the nodes in a layer, and edges are ordered lists, so inserting a node changes one line, not an index on every later node. The SVG has a fixed order and no timestamps, and its numbers have fixed precision. Fonts are bundled, and resvg loads no system fonts. CI renders the fixtures on macOS and Linux and compares them.
+The file is YAML with a fixed layout. The keys of each mapping appear in one fixed order, shown in FEATURES.md, "The diagram file". Layers, the nodes in a layer, and edges are ordered lists, so inserting a node changes one line, not an index on every later node. The SVG has a fixed order and no timestamps, and its numbers have fixed precision. Fonts are bundled, and resvg loads no system fonts. CI renders the fixtures on macOS and Linux and compares them.
 
 On 2026-10-11 the phase 0 text spike rendered a mixed Chinese and Latin scene on macOS arm64 and Linux x64. The SVG bytes, the PNG pixels and even the PNG bytes were identical, in CI run 38114286868. The promise stays at pixels, because that is the safer one.
 
