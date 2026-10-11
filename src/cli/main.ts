@@ -2,7 +2,7 @@
 // The grafical command line (DESIGN.md D16). Exit codes: 0 success, 1 an
 // operation error or a defect, 2 a usage error.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
@@ -24,6 +24,7 @@ import {
   writeAtomic,
 } from "./pipeline.ts";
 import { showDiagram } from "./show.ts";
+import { openWindow, startViewer } from "./view.ts";
 
 type Opts = Record<string, unknown>;
 
@@ -622,6 +623,35 @@ function build(): Command {
     if (opts.json !== true) for (const f of files) process.stdout.write(`wrote ${f}\n`);
     process.exitCode = emit(report, opts.json === true, { files });
   });
+
+  program
+    .command("view")
+    .description("open a live view of the diagram, redrawn as it changes; Ctrl-C stops it")
+    .argument("<file>")
+    .option("--port <n>", "the local port to serve on; default: a free one")
+    .option("--no-open", "print the address instead of opening a window")
+    .action(async (file: string, opts: Opts) => {
+      const port = Number(opts.port ?? 0);
+      if (!Number.isInteger(port) || port < 0 || port > 65535) {
+        throw new CommanderError(
+          2,
+          "grafical.badPort",
+          `--port must be a whole number from 0 to 65535, got ${String(opts.port)}`,
+        );
+      }
+      // The file need not exist yet: the window can open before the agent starts drawing.
+      if (!existsSync(dirname(file))) {
+        throw new CommanderError(2, "grafical.noFolder", `no folder ${dirname(file)} to watch`);
+      }
+      const viewer = await startViewer(file, port);
+      process.stdout.write(`viewing ${file} at ${viewer.url} (Ctrl-C stops it)\n`);
+      if (opts.open !== false) openWindow(viewer.url);
+      await new Promise<void>((resolve) => {
+        process.once("SIGINT", resolve);
+        process.once("SIGTERM", resolve);
+      });
+      await viewer.close();
+    });
 
   json(program.command("guide").description("print the reference for agents")).action(
     (opts: Opts) => {

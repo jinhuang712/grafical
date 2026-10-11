@@ -459,6 +459,8 @@ Rejected:
 
 `grafical view <file>` serves the picture on a local port and opens it in a window, without browser tabs when Chrome is installed. The page redraws within a moment of every change to the file, from any process: the window shows what an agent is drawing while it draws. Elements that changed are marked briefly. The viewer only shows; editing on a board is stage 2. It keeps no log: the file and git hold the history.
 
+As built: the page is served on 127.0.0.1 only, on a free port unless `--port` names one, and receives each new picture over server-sent events. The viewer watches the diagram's folder, because a write replaces the file by renaming over it, and redraws when the file or a stylesheet changes. The picture is the same SVG that `render` writes, scaled to fit the window. Marks are boxes laid over it that fade in under two seconds: a new node or edge, changed text, a node that changed size, kind or accent, and an edge with new ends, kind or label. A node that only moved because the layout re-flowed is not marked. While the file cannot be read, the page keeps the last good picture and shows the errors. The viewer may start before the file exists, so a person can open the window and then ask an agent to draw. Defects and warnings are listed under the picture.
+
 Rejected:
 - Opening the viewer on every `new`. Benchmarks and scripts would open windows nobody watches.
 - A log of operations beside the file. The owner wants the live picture, and git already holds the history.
