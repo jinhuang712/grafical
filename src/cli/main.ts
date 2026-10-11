@@ -8,10 +8,12 @@ import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
 import { advise } from "../check/advice.ts";
 import { layout } from "../layout/index.ts";
+import { diffDiagrams } from "../model/diff.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
+import { atRevision, formatOps } from "./diff.ts";
 import { GUIDE } from "./guide.ts";
 import {
   emit,
@@ -599,6 +601,31 @@ function build(): Command {
       process.stdout.write(`${JSON.stringify({ ok: true, diagram: d })}\n`);
     } else {
       process.stdout.write(showDiagram(d));
+    }
+  });
+
+  json(
+    program
+      .command("diff")
+      .description("print how the file differs from a git revision, as a batch of operations")
+      .argument("<file>")
+      .argument("[rev]", "a git revision", "HEAD"),
+  ).action((file: string, rev: string, opts: Opts) => {
+    const now = loadDiagram(file);
+    if (isReport(now)) {
+      process.exitCode = emit(now, opts.json === true);
+      return;
+    }
+    const was = atRevision(file, rev);
+    if (was !== null && isReport(was)) {
+      process.exitCode = emit(was, opts.json === true);
+      return;
+    }
+    const ops = diffDiagrams(was, now);
+    if (opts.json === true) {
+      process.stdout.write(`${JSON.stringify({ ok: true, ops })}\n`);
+    } else {
+      process.stdout.write(formatOps(ops));
     }
   });
 

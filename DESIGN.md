@@ -289,6 +289,8 @@ Rejected: having agents read the YAML file, because it holds more than they need
 
 The file holds the current state only, and git keeps the history. `grafical diff` compares the file on disk with a git revision, `HEAD` by default, and reports the difference as operations, such as `node.rename relay` or `edge.add relay->kafka`.
 
+As built, 2026-10-12: the output is a YAML batch, one operation per line, such as `- { op: node.rename, id: relay, label: catalog relay }`, so `grafical apply` replays it on the revision's file and gets the file on disk; `--json` gives the same operations as a list. The operations come in an order in which each one is valid when it runs. A small edit comes back as exactly the operation that made it. Groups, lanes and edges keep creation order in the file and an operation can only append one, so any whose order changed are removed and added again; operations alone never change that order. A file the revision does not have comes back as `diagram.new` and the operations that build it. A test replays the differences between 120 pairs of random diagrams, both ways, file for file. Outside git, or at an unknown revision, the command fails with `not-in-git` or `bad-revision`.
+
 Rejected: an operation log inside the file, which could replay any past version. The file grows without limit, git merges get harder, and git already keeps the history.
 
 ## Platform
