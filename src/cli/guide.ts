@@ -8,6 +8,7 @@ HOW TO DRAW A GOOD DIAGRAM (read this first)
 - One story per diagram. Aim for 12 to 16 nodes. A diagram of 30 boxes is not a diagram; it is a dump. More than 16 nodes gives a warning that names merges.
 - Group nodes into systems. A group is one box around the nodes that belong to one service or team, such as "catalog-sync". Its members may sit in neighbouring rows. Put each node in a group unless it is a caller or an outside dependency. A group needs two or more nodes: never wrap one node in a group of its own name.
 - Merge what a reader does not need apart: six topics become one node "upstream topics" with sublabel "6 broker topics"; five callers become one actor "API callers" with sublabel "storefront, promotions"; ten pipelines become one node.
+- An edge may end at a group or a layer instead of a node. One edge from callers to the group "catalog-api" says they call that system, and replaces an edge to each part. An edge to a layer draws that row as a labelled band. Use it when the reader does not need the part.
 - Merge only nodes with the same edges. A merged box claims every edge of every member: merge geo-svc, which only A calls, with i18n-svc, which B calls too, and the picture says B calls geo-svc.
 - Draw each flow to its end. A retry topic needs its edge back to where messages are re-sent, or leave it out.
 - Put detail in the sublabel (port, tier, topic names, store name), not in extra boxes. Keep labels to 1 to 3 words and sublabels short.
@@ -40,7 +41,7 @@ grafical group join <file> <group> <node...>
 grafical group leave <file> <node...>
 grafical group rename <file> <id> --label <text>
 grafical group remove <file> <id>                    (members stay, ungrouped)
-grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>]
+grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>]   (from, to: node, group or layer)
 grafical edge remove <file> <id>
 grafical apply <file> <batch.yaml>
 grafical show <file>
@@ -50,7 +51,7 @@ grafical guide
 
 RULES
 - ids: lowercase letters, digits, . _ - ; start with a letter or digit. One id space for layers, groups, nodes and edges. The id never changes. Rename changes only the label.
-- A layer is a row; it is not drawn, but it orders the diagram. A new layer goes to the bottom unless --before or --after places it.
+- A layer is a row; it is not drawn unless an edge ends at it, but it orders the diagram. A new layer goes to the bottom unless --before or --after places it.
 - A node is in at most one group. group add --nodes, group join and group leave set that. A group's members must sit in neighbouring rows, with no row between them that has no member (error group-gap). An empty group draws nothing.
 - node add and node move without a position: grafical picks the slot with the fewest crossings. Add a node's edges in the same batch so they count. Give a position only when order matters, and at most one.
 - --align <node>: place this node directly above or below a node in another layer.
@@ -89,6 +90,7 @@ Fix the field named, using the suggestion. Codes:
 - conflicting-position: give only one of first, last, before, after. not-in-layer: before or after named a node in another layer.
 - align-same-layer: align needs a node in a different layer.
 - group-gap: a group skips a row. Put a member in that row, or regroup.
+- edge-inside: an edge joins a group or layer with something inside it. edge-blocked: a node shares a row with the group it points to, with nodes between them. empty-container: the group or layer holds no node.
 - too-many-accents: more than 2 accented nodes.
 - file-not-found, file-exists, newer-format, bad-yaml: problems with the file itself.
 

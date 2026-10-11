@@ -224,7 +224,7 @@ describe("edge.add and edge.remove", () => {
   it("reports unknown endpoints with suggestions, one error per end", () => {
     const e = fail(base, [{ op: "edge.add", from: "aa", to: "cc" }]);
     expect(e.map((x) => x.field)).toEqual(["from", "to"]);
-    expect(e[0]?.suggestion).toBe("closest nodes: a, b, c");
+    expect(e[0]?.suggestion).toBe("closest ids: a, b, c");
   });
   it("removes an edge, and rejects an unknown one", () => {
     const d = ok(base, [{ op: "edge.add", from: "a", to: "c" }]).diagram;

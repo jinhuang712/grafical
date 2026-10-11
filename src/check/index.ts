@@ -187,6 +187,9 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
   for (const g of scene.groups ?? []) {
     targets.push({ id: g.id, what: `the label of group ${g.id}`, text: g.label });
   }
+  for (const b of scene.bands ?? []) {
+    targets.push({ id: b.id, what: `the label of layer ${b.id}`, text: b.label });
+  }
   const named: [string, PlacedText | undefined][] = [
     ["subtitle", scene.subtitle],
     ["note", scene.note],

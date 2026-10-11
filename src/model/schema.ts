@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import type { OpError } from "../errors.ts";
+import { checkEnds } from "./ends.ts";
 import { ID_EDGE, ID_NODE, issuesToErrors } from "./issues.ts";
 import { suggestIds } from "./suggest.ts";
 import {
@@ -134,21 +135,8 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   d.edges.forEach((e, ei) => {
     claim(e.id, `edges[${ei}].id`);
   });
-  d.edges.forEach((e, ei) => {
-    for (const end of ["from", "to"] as const) {
-      if (!layerOf.has(e[end])) {
-        errors.push({
-          code: "unknown-node",
-          index,
-          field: `edges[${ei}].${end}`,
-          found: e[end],
-          expected: "the id of an existing node",
-          suggestion: suggestIds(e[end], nodeIds, "node"),
-        });
-      }
-    }
-  });
   errors.push(...checkGroups(d, index));
+  errors.push(...checkEnds(d, index));
   let accents = 0;
   d.layers.forEach((l, li) => {
     l.nodes.forEach((n, ni) => {

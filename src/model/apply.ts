@@ -5,6 +5,7 @@
 import type { OpError } from "../errors.ts";
 import * as layoutModule from "../layout/index.ts";
 import type { Measurer } from "../text/types.ts";
+import { endIds, endKind } from "./ends.ts";
 import type { EdgeAddOp, LayerAddOp, NodeAddOp, NodeMoveOp, Op, Position } from "./ops.ts";
 import { checkIntegrity, MAX_ACCENTS } from "./schema.ts";
 import { suggestIds } from "./suggest.ts";
@@ -168,6 +169,10 @@ function groupStep(s: State, op: Extract<Op, { op: `group.${string}` }>, i: numb
     d.groups = groups.filter((x) => x.id !== g.id);
     touch(s, g.id);
     setGroup(s, members, undefined);
+    // The edges that end at the group go with it, as a node's do (D28).
+    const gone = d.edges.filter((e) => e.from === g.id || e.to === g.id);
+    d.edges = d.edges.filter((e) => e.from !== g.id && e.to !== g.id);
+    touch(s, ...gone.map((e) => e.id));
   }
   return [];
 }
@@ -388,8 +393,18 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
 function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
   const d = s.d;
   const errors: OpError[] = [];
-  if (!findNode(d, op.from)) errors.push(unknownNode(d, op.from, i, "from"));
-  if (!findNode(d, op.to)) errors.push(unknownNode(d, op.to, i, "to"));
+  for (const field of ["from", "to"] as const) {
+    const end = op[field];
+    if (endKind(d, end) !== undefined) continue;
+    errors.push({
+      code: "unknown-node",
+      index: i,
+      field,
+      found: end,
+      expected: "the id of an existing node, group or layer",
+      suggestion: suggestIds(end, endIds(d), "id"),
+    });
+  }
   let id = op.id;
   if (id !== undefined) {
     const dup = dupError(d, id, i);

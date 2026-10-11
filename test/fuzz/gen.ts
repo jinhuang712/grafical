@@ -4,12 +4,14 @@
 // would drop it, so every diagram that comes out is valid.
 
 import { validateAlignments, validateGroups } from "../../src/layout/index.ts";
+import { checkEnds } from "../../src/model/ends.ts";
 import type { Op } from "../../src/model/index.ts";
 import { applyOps } from "../../src/model/index.ts";
 import {
   DENSITIES,
   type Diagram,
   EDGE_KINDS,
+  type Edge,
   NODE_KINDS,
   SIZE_STEPS,
 } from "../../src/model/types.ts";
@@ -191,8 +193,39 @@ export function generate(seed: number, m: Measurer): Generated {
   addGroups(d, r, text);
   if (chance(0.3)) d.subtitle = text(10, 70);
   if (chance(0.3)) d.note = `Not shown: ${text(5, 60)}`;
+  // Drawn last, so that every seed's diagram is the same as before up to here.
+  addContainerEdges(d, r, text);
 
   return { diagram: d, ops, rejected };
+}
+
+/**
+ * Up to three edges that end at a group or a layer (D28), each kept only if the
+ * model's end rules allow it, as an agent keeps only what grafical accepts.
+ */
+function addContainerEdges(
+  d: Diagram,
+  r: () => number,
+  text: (lo: number, hi: number) => string,
+): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  const count = r() < 0.5 ? 0 : int(1, 3);
+  const containers = [...(d.groups ?? []).map((g) => g.id), ...d.layers.map((l) => l.id)];
+  const nodes = d.layers.flatMap((l) => l.nodes.map((n) => n.id));
+  for (let i = 0; i < count; i++) {
+    if (containers.length === 0 || nodes.length === 0) break;
+    const c = containers[int(0, containers.length - 1)] as string;
+    const other =
+      r() < 0.7
+        ? (nodes[int(0, nodes.length - 1)] as string)
+        : (containers[int(0, containers.length - 1)] as string);
+    const [from, to] = r() < 0.5 ? [c, other] : [other, c];
+    const edge: Edge = { id: `c${i}`, from, to, kind: EDGE_KINDS[int(0, 2)] ?? "call" };
+    if (r() < 0.4) edge.label = text(2, 16);
+    const trial: Diagram = { ...d, edges: [...d.edges, edge] };
+    if (checkEnds(trial, 0).length > 0) continue;
+    d.edges = trial.edges;
+  }
 }
 
 /**

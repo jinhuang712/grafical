@@ -55,7 +55,7 @@ describe("file validation", () => {
     );
     const [e] = errorsOf(text);
     expect(e).toMatchObject({ code: "unknown-node", field: "edges[0].to", found: "kafak" });
-    expect(e?.suggestion).toBe("closest nodes: kafka, relay");
+    expect(e?.suggestion).toBe("closest ids: kafka, relay, a");
   });
 
   it("rejects an align to a node in the same layer", () => {

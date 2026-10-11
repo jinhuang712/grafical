@@ -16,6 +16,7 @@ import type {
   PlacedText,
   Rect,
   Scene,
+  SceneBand,
   SceneEdge,
   SceneGroup,
   SceneLayer,
@@ -23,9 +24,10 @@ import type {
   SceneNode,
 } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
-import { FRAME, GROUP, SPACING, type Spacing } from "../theme/geometry.ts";
+import { BAND, FRAME, GROUP, SPACING, type Spacing } from "../theme/geometry.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 import type { AlignmentProblem } from "./align.ts";
+import { cutRoute, planEnds, refineEnds } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import { placeAcross } from "./place.ts";
 import { assemble, type LabelBox, type LabelForm, round2, routeAcross } from "./route.ts";
@@ -272,7 +274,10 @@ const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
 });
 
 function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene; centre: number } {
-  const d = withSizes(facts, m);
+  const sized = withSizes(facts, m);
+  // Container ends route to a stand-in node and are cut at the container (D28).
+  const ends = planEnds(sized);
+  const d: Diagram = { ...sized, edges: ends.edges };
   const sp = SPACING[d.density];
 
   const labelStyle = TYPE_RAMP["edge-label"];
@@ -302,14 +307,59 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     groupLabelW: (id) => groupW.get(id) ?? 0,
   });
   const { layers, nodes, groups } = placement;
+  const routeEdges = refineEnds(sized, ends, nodes);
 
-  // Where no vertical line may pass: a group's label, above its first row, and the
-  // label of an edge that runs sideways, in the gap it crosses.
+  // Bands (D28): the layers an edge ends at, drawn across the content. Each band's
+  // label sits in its head above the row, at the content's left edge.
+  let contentLeft = Number.POSITIVE_INFINITY;
+  let contentRight = Number.NEGATIVE_INFINITY;
+  for (const n of nodes.values()) {
+    contentLeft = Math.min(contentLeft, n.x);
+    contentRight = Math.max(contentRight, n.x + n.w);
+  }
+  for (const g of groups) {
+    contentLeft = Math.min(contentLeft, g.x0);
+    contentRight = Math.max(contentRight, g.x1);
+  }
+  const bandStyle = TYPE_RAMP["layer-label"];
+  const bandRows = new Map<number, { id: string; label: string; labelX: number; labelW: number }>();
+  layers.forEach((l, i) => {
+    if (!ends.bands.has(l.id) || !Number.isFinite(contentLeft)) return;
+    // The label goes above the first stretch of its row with no node below it, so
+    // that no line into a node's top must cross it; failing that, left of the content.
+    const labelW = m.measure(l.label, bandStyle).width;
+    const need = labelW + 2 * GROUP.clear;
+    let edge = contentLeft - BAND.padX + BAND.labelInset - GROUP.clear;
+    let labelX: number | undefined;
+    for (const n of [...l.nodes, undefined]) {
+      const end = n === undefined ? contentRight + BAND.padX - BAND.labelInset + GROUP.clear : n.x;
+      if (end - edge >= need) {
+        labelX = edge + GROUP.clear;
+        break;
+      }
+      if (n !== undefined) edge = Math.max(edge, n.x + n.w);
+    }
+    labelX ??= contentLeft - BAND.padX - labelW - GROUP.clear;
+    bandRows.set(i, { id: l.id, label: l.label, labelX, labelW });
+  });
+  // A band reaches the label it carries, when that sits left of the content.
+  const bandLeft = Math.min(
+    contentLeft - BAND.padX,
+    ...[...bandRows.values()].map((b) => b.labelX - BAND.labelInset),
+  );
+
+  // Where no vertical line may pass: a group's or band's label, above its first
+  // row, and the label of an edge that runs sideways, in the gap it crosses.
   const forbidTop = new Map<number, [number, number][]>();
   for (const g of groups) {
     const list = forbidTop.get(g.top) ?? [];
     list.push([g.labelX - GROUP.labelClear, g.labelX + g.labelW + GROUP.labelClear]);
     forbidTop.set(g.top, list);
+  }
+  for (const [row, b] of bandRows) {
+    const list = forbidTop.get(row) ?? [];
+    list.push([b.labelX - GROUP.labelClear, b.labelX + b.labelW + GROUP.labelClear]);
+    forbidTop.set(row, list);
   }
   const forbidGap = new Map<string, [number, number][]>();
   for (const [id, x0] of placement.sideLabels) {
@@ -322,11 +372,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     list.push([x0 - GROUP.labelClear, x0 + w + GROUP.labelClear]);
     forbidGap.set(key, list);
   }
-  const routing = routeAcross(layers, nodes, d.edges, labelSizes, sp.trackPitch, {
+  const routing = routeAcross(layers, nodes, routeEdges, labelSizes, sp.trackPitch, {
     sideways,
     forbidTop,
     forbidGap,
     sideLabelX: placement.sideLabels,
+    alone: new Set(ends.ends.keys()),
   });
 
   // Across: the content is symmetric about the centre line.
@@ -341,6 +392,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   for (const g of groups) {
     see(g.x0);
     see(g.x1);
+  }
+  if (bandRows.size > 0) {
+    see(bandLeft);
+    see(contentRight + BAND.padX);
   }
   for (const [id, x0] of placement.sideLabels) {
     see(x0);
@@ -417,6 +472,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     lo < g.x1 + GROUP.clear && hi > g.x0 - GROUP.clear;
   /** Room the heads of the groups that start below gutter i still need, besides its tracks. */
   const headRoom = (i: number, tracks: number): number => {
+    // A band's head sits above its groups' heads, below the tracks, in full.
+    if (bandRows.has(i + 1)) return (startsAt(i + 1) ? GROUP.head : 0) + BAND.head;
     const starting = groups.filter((g) => g.top === i + 1);
     if (starting.length === 0) return 0;
     for (const g of starting) {
@@ -438,12 +495,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const endPads: number[] = [];
   let y = ceil4(headBottom + FRAME.titleGap);
   if (startsAt(0)) y += GROUP.head;
+  if (bandRows.has(0)) y += BAND.head;
   layers.forEach((l, i) => {
     rowTops.push(y);
     y += l.rowH;
     const rows = routing.rows[i] ?? 0;
     const last = i === layers.length - 1;
-    const pad = endsAt(i) ? GROUP.pad : 0;
+    const pad = (endsAt(i) ? GROUP.pad : 0) + (bandRows.has(i) ? BAND.pad : 0);
     const tracks = rows === 0 ? (last ? 0 : (sp.gutterSteps[0] ?? 48)) : gutterHeight(rows, sp);
     const head = last ? 0 : headRoom(i, tracks);
     gutterTops.push(y);
@@ -487,6 +545,21 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       : empty("group-label", centre + g.labelX, y0 + GROUP.labelTop);
     return { id: g.id, rect, label, members: g.members };
   });
+
+  const sceneBands: SceneBand[] = [...bandRows].map(([i, b]) => {
+    const y0 = (rowTops[i] ?? 0) - (startsAt(i) ? GROUP.head : 0) - BAND.head;
+    const y1 = (rowTops[i] ?? 0) + rowH(i) + (endsAt(i) ? GROUP.pad : 0) + BAND.pad;
+    const x0 = centre + bandLeft;
+    const rect: Rect = { x: x0, y: y0, w: contentRight + BAND.padX - bandLeft, h: y1 - y0 };
+    const label = withText
+      ? placeLine("layer-label", b.label, centre + b.labelX, y0 + BAND.labelTop, m)
+      : empty("layer-label", centre + b.labelX, y0 + BAND.labelTop);
+    return { id: b.id, rect, label };
+  });
+  const boxOf = new Map<string, Rect>();
+  for (const g of sceneGroups) boxOf.set(g.id, g.rect);
+  for (const b of sceneBands) boxOf.set(b.id, b.rect);
+  const factsById = new Map(facts.edges.map((e) => [e.id, e]));
 
   const nodeLabelStyle = TYPE_RAMP["node-label"];
   const subStyle = TYPE_RAMP["node-sublabel"];
@@ -535,7 +608,15 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   for (const e of d.edges) {
     const a = assembled.get(e.id);
     if (a === undefined) continue;
-    const edge: SceneEdge = { id: e.id, from: e.from, to: e.to, kind: e.kind, points: a.points };
+    // The scene names the edge's real ends; a container end's route stops at its box.
+    const real = factsById.get(e.id) ?? e;
+    let points = a.points;
+    const plan = ends.ends.get(e.id);
+    const toBox = plan?.to === undefined ? undefined : boxOf.get(plan.to.id);
+    const fromBox = plan?.from === undefined ? undefined : boxOf.get(plan.from.id);
+    if (toBox !== undefined) points = cutRoute(points, toBox, "end");
+    if (fromBox !== undefined) points = cutRoute(points, fromBox, "start");
+    const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
     if (a.label !== undefined && e.label !== undefined && withText) {
       const at = a.label;
       if (at.lines > 1) {
@@ -562,6 +643,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (note !== undefined) scene.note = note;
   scene.legend = legend;
   scene.groups = sceneGroups;
+  if (sceneBands.length > 0) scene.bands = sceneBands;
   return { scene: roundScene(scene), centre };
 }
 
@@ -612,6 +694,13 @@ function roundScene(s: Scene): Scene {
       rect: roundRect(g.rect),
       label: roundText(g.label),
       members: [...g.members],
+    }));
+  }
+  if (s.bands !== undefined) {
+    out.bands = s.bands.map((b) => ({
+      id: b.id,
+      rect: roundRect(b.rect),
+      label: roundText(b.label),
     }));
   }
   return out;

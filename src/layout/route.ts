@@ -39,6 +39,8 @@ export interface RouteExtra {
   forbidGap: Map<string, [number, number][]>;
   /** Left end of the label of each sideways edge that has one. */
   sideLabelX: Map<string, number>;
+  /** Edges routed to a stand-in for a container (D28): they never share a port or trunk. */
+  alone: Set<string>;
 }
 
 const NO_EXTRA: RouteExtra = {
@@ -46,6 +48,7 @@ const NO_EXTRA: RouteExtra = {
   forbidTop: new Map(),
   forbidGap: new Map(),
   sideLabelX: new Map(),
+  alone: new Set(),
 };
 
 export type Side = "top" | "bottom" | "left" | "right";
@@ -211,7 +214,7 @@ export function routeAcross(
     const pl = makePlan(edge, nodes, labels, extra);
     if (pl !== undefined) plans.push(pl);
   }
-  assignBuses(plans);
+  assignBuses(plans, extra.alone);
   chooseGaps(plans, gapsByLayer, extra.forbidTop);
   assignGapTracks(plans);
   chooseSideExits(plans, layers, extra.forbidTop);
@@ -430,11 +433,12 @@ function makePlan(
  * one port and one trunk. Of the rest, a fan-in of unlabelled edges in one style
  * into one node side arrives through one port.
  */
-function assignBuses(plans: Plan[]): void {
+function assignBuses(plans: Plan[], alone: Set<string>): void {
   const collect = (key: (pl: Plan) => string, skip: (pl: Plan) => boolean) => {
     const groups = new Map<string, Plan[]>();
     for (const pl of plans) {
       if (pl.kind === "neighbour" || pl.label !== undefined || pl.u === pl.v || skip(pl)) continue;
+      if (alone.has(pl.edge.id)) continue;
       const k = key(pl);
       const list = groups.get(k);
       if (list === undefined) groups.set(k, [pl]);

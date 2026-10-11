@@ -251,6 +251,13 @@ export function renderSvg(scene: Scene): string {
     `<rect width="${w}" height="${h}" fill="${PAINT.background}"/>`,
   );
 
+  const bp = PAINT.band;
+  for (const b of scene.bands ?? []) {
+    out.push(
+      `<rect ${rectAttrs(b.rect)} rx="${num(bp.radius)}" fill="${bp.fill}" stroke="${bp.stroke}" stroke-width="${num(bp.strokeWidth)}"/>`,
+      ...texts(b.label, PAINT.text.groupLabelMuted),
+    );
+  }
   for (const g of groups) out.push(...groupShapes(g));
 
   const lb = PAINT.edge.labelBackground;
@@ -274,8 +281,16 @@ export function renderSvg(scene: Scene): string {
           cy >= g.rect.y &&
           cy <= g.rect.y + g.rect.h,
       );
+      const inBand = (scene.bands ?? []).some(
+        (b) =>
+          cx >= b.rect.x &&
+          cx <= b.rect.x + b.rect.w &&
+          cy >= b.rect.y &&
+          cy <= b.rect.y + b.rect.h,
+      );
+      const behind = inGroup ? PAINT.group.fill : inBand ? PAINT.band.fill : lb.fill;
       out.push(
-        `<rect ${rectAttrs(bg)} rx="${num(lb.radius)}" fill="${inGroup ? PAINT.group.fill : lb.fill}"/>`,
+        `<rect ${rectAttrs(bg)} rx="${num(lb.radius)}" fill="${behind}"/>`,
         ...texts(e.label, PAINT.text.edgeLabel),
       );
     }

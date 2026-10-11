@@ -81,6 +81,20 @@ export const FRAME = {
   storeLid: 7,
 };
 
+/** A layer drawn as a band, because an edge ends at it (DESIGN.md D28). */
+export const BAND = {
+  /** Space between the band's sides and the content's left and right edges. */
+  padX: 16,
+  /** Space between the band's top and the top of its row, or of the group heads in it: the label sits in it. */
+  head: 32,
+  /** Space between the band's bottom and its row, or the bottom of the groups that end in it. */
+  pad: 16,
+  /** Distance from the band's top to the top of the label's line box. */
+  labelTop: 10,
+  /** Distance from the band's left side to the label. */
+  labelInset: 16,
+};
+
 /** System boxes (DESIGN.md D7). */
 export const GROUP = {
   /** Space between a group's box and its members, left, right and below. */

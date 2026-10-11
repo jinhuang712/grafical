@@ -37,6 +37,8 @@ export const PAINT = {
   },
   /** A system box behind its nodes (D7). Rows are not drawn. */
   group: { fill: "#f5f6f8", stroke: "#d5d9df", strokeWidth: 1, radius: 8 },
+  /** A layer an edge ends at, drawn behind its groups: lighter than a group (D28). */
+  band: { fill: "#fafbfc", stroke: "#dfe3e8", strokeWidth: 1, radius: 8 },
   node: {
     radius: 6,
     strokeWidth: 1,

@@ -77,7 +77,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `edge.add` | Connect two nodes, with an optional label and kind | stage 1 |
+| `edge.add` | Connect two ends, with an optional label and kind. An end is a node, a group or a layer (D28) | stage 1 |
 | `edge.relabel` | Change or clear the label | stage 1 |
 | `edge.kind` | Change the kind | stage 1 |
 | `edge.reverse` | Swap the direction. The ID stays | stage 1 |
@@ -118,7 +118,7 @@ grafical guide
 - `node add` without a position lets grafical pick the slot (D24). `node move --layer` without a position does the same.
 - `node add` without `--size` gets a medium box, or a large one when its text does not fit the medium box (D27). `node resize` without `--size` returns a node to that. With `diagram sizing fixed`, a node without a size is always medium.
 - `node remove` also removes the node's edges, and reports their ids.
-- An edge id defaults to `<from>-><to>` (D4).
+- An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group or a layer. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
 - A group's members must sit in neighbouring rows, or the write fails with `group-gap`. `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
 - A write over 16 nodes succeeds with a `too-many-nodes` warning that names merge candidates (D26). Warnings never change the exit code.
 - Every command accepts `--json`. Exit codes: 0 for success, 1 for an operation error or a defect, 2 for a usage error.

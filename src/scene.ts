@@ -64,6 +64,14 @@ export interface SceneGroup {
   members: string[];
 }
 
+/** A layer drawn as a band across the content, because an edge ends at it (D28). */
+export interface SceneBand {
+  /** The layer's id. */
+  id: string;
+  rect: Rect;
+  label: PlacedText;
+}
+
 /** One line style in the legend, with a short sample line (D8). */
 export interface SceneLegendItem {
   /** "solid": calls and data reads. "dashed": messages through a queue. */
@@ -106,6 +114,8 @@ export interface Scene {
   layers: SceneLayer[];
   /** System boxes, drawn behind nodes and edges (D7). */
   groups?: SceneGroup[];
+  /** Layers an edge ends at, drawn behind the groups. Absent when there are none. */
+  bands?: SceneBand[];
   nodes: SceneNode[];
   edges: SceneEdge[];
 }

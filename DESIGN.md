@@ -50,6 +50,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D25 | The target look is a picture, and its rules are measured | The tool carries the taste |
 | D26 | Curation is coached, budgeted and shown | The tool carries the taste |
 | D27 | A node with no size is sized to its text | The tool carries the taste |
+| D28 | An edge may end at a group or a layer | The tool carries the taste |
 
 ## Writing a diagram
 
@@ -96,7 +97,7 @@ Rejected:
 
 ### D7 Layers are rows, and groups are the systems drawn around them
 
-A layered architecture diagram reads from top to bottom: callers, entry points, services, messaging, storage. Each layer is a row, and the nodes in a layer sit side by side in their order. Rows are not drawn: no band, no row label in the picture. A layer's label stays in the file and in `show`, for agents.
+A layered architecture diagram reads from top to bottom: callers, entry points, services, messaging, storage. Each layer is a row, and the nodes in a layer sit side by side in their order. Rows are not drawn: no band, no row label in the picture. A layer's label stays in the file and in `show`, for agents. The one exception is a layer an edge ends at, drawn as a band (D28).
 
 A group is a system, such as "catalog-sync" around its relay, topics and pipelines. Its members may sit in several neighbouring rows. The engine draws the group as one box around them, with its label at the top left, and keeps every non-member out of the box. Groups do not nest in stage 1.
 
@@ -405,6 +406,25 @@ Rejected:
 - Auto size choosing the small box for short text. Boxes of three widths in one row look uneven, and the medium box is the target's grid.
 - Storing the chosen size in the file. A later rename could then not shrink the box, and the file would hold a value the engine derived.
 - A setting outside the diagram file, such as a user config. The same file would then draw differently on two machines.
+
+### D28 An edge may end at a group or a layer
+
+An edge joins two nodes, or a node and a container, or two containers. A container is a group, drawn as its system box (D7), or a layer. A layer an edge ends at is drawn as a band across the content, with its label in a head above the row, over the first stretch of the row with no node below it. One arrow to "catalog-api" says that callers call that system, without saying which part, and it replaces an arrow to each member.
+
+A container end is met at its top or bottom when the other end lies above or below all its rows, and at its side when the two share a row. The router knows only nodes, so a container end is routed to the node of the container that faces the other end, the one nearest it, and the route is cut where it meets the container's box. Such an edge never shares a port or a trunk with the stand-in's own edges.
+
+Three rules are facts, so they are operation errors:
+- `edge-inside`: neither end may lie inside the other. A node in a group, a group with a member in a layer, and a layer and a group that overlap all count.
+- `empty-container`: a container end must hold at least one node.
+- `edge-blocked`: an end that shares a row with a group must sit right beside it in one of those rows, with no node between.
+
+Removing a group removes the edges that end at it, as removing a node does.
+
+The owner asked for this on 2026-10-11: an arrow may point to a set, a layer or a swimlane. Swimlanes, vertical lanes across the whole diagram, are still open (see below).
+
+Rejected:
+- Routing a container end to the box's border directly. The router places ports and tracks around nodes. A stand-in reuses all of that, including the label slots and the side exits.
+- A label column for every band. D7 rejected one for every row. A band's label sits in its own head instead.
 
 ## Not yet decided
 
