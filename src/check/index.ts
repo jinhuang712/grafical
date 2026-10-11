@@ -164,6 +164,71 @@ function checkLabelCollision(scene: Scene, out: Found[]): void {
   }
 }
 
+/** An edge may graze a text box by this much before it counts as crossing it (D25 rule 8). */
+export const TEXT_TOLERANCE = 2;
+
+/**
+ * No edge segment crosses any text: node labels, other edges' labels, group
+ * labels, subtitle, note, title or legend. An edge's own label is exempt,
+ * because its segments run next to it by design.
+ */
+function checkTextCrossing(scene: Scene, out: Found[]): void {
+  const targets: { id: string; what: string; text: PlacedText; owner?: string }[] = [];
+  for (const n of scene.nodes) {
+    for (const t of n.texts) targets.push({ id: n.id, what: `the text of node ${n.id}`, text: t });
+  }
+  for (const e of scene.edges) {
+    if (e.label) {
+      targets.push({ id: e.id, what: `the label of edge ${e.id}`, text: e.label, owner: e.id });
+    }
+  }
+  for (const g of scene.groups ?? []) {
+    targets.push({ id: g.id, what: `the label of group ${g.id}`, text: g.label });
+  }
+  const named: [string, PlacedText | undefined][] = [
+    ["subtitle", scene.subtitle],
+    ["note", scene.note],
+    ["title", scene.title],
+  ];
+  for (const [id, t] of named) if (t) targets.push({ id, what: `the ${id}`, text: t });
+  for (const [i, item] of (scene.legend ?? []).entries()) {
+    targets.push({ id: `legend-${i}`, what: `legend item ${i + 1}`, text: item.label });
+  }
+  for (const e of scene.edges) {
+    const segs = segmentsOf(e.points);
+    for (const t of targets) {
+      if (t.owner === e.id) continue;
+      const box = inset(t.text.bbox, TEXT_TOLERANCE);
+      if (segs.some((s) => segmentCrossesRect(s, box))) {
+        out.push({
+          code: "text-crossing",
+          elements: [e.id, t.id],
+          found: `edge ${e.id} crosses ${t.what}`,
+          expected: "lines that never run through text",
+          fix: `none for the agent: the engine must route ${e.id} around the text`,
+        });
+      }
+    }
+  }
+}
+
+/** A node that is not a member lies inside a group's box (D7). */
+function checkGroupIntruder(scene: Scene, out: Found[]): void {
+  for (const g of scene.groups ?? []) {
+    const members = new Set(g.members);
+    for (const n of scene.nodes) {
+      if (members.has(n.id) || !rectsOverlap(n.rect, g.rect)) continue;
+      out.push({
+        code: "group-intruder",
+        elements: [g.id, n.id],
+        found: `node ${n.id} (${rectText(n.rect)}) lies inside group ${g.id} (${rectText(g.rect)}) but is not a member`,
+        expected: "only members inside a group box",
+        fix: `grafical node move <file> ${n.id} --layer <layer> --first (or --last), so the group box can close around its members`,
+      });
+    }
+  }
+}
+
 function sharedEndpoints(a: SceneEdge, b: SceneEdge): string[] {
   return [a.from, a.to].filter((id) => id === b.from || id === b.to);
 }
@@ -264,6 +329,8 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   }
 }
 
+export { measureTaste, type TasteReport, type TasteRule } from "./taste.ts";
+
 function compare(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
@@ -279,6 +346,8 @@ export function check(diagram: Diagram, scene: Scene, measurer: Measurer): Defec
   checkEdgeThroughNode(scene, out);
   checkLabelCollision(scene, out);
   checkEdgeOverlap(scene, out);
+  checkTextCrossing(scene, out);
+  checkGroupIntruder(scene, out);
   checkMissingGlyphs(diagram, measurer, out);
   const order = (d: Found): number => DEFECT_CODES.indexOf(d.code);
   return out
