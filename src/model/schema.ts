@@ -62,6 +62,7 @@ const edgeSchema = z.strictObject({
   to: nodeId,
   kind: z.enum(EDGE_KINDS).default(DEFAULT_EDGE_KIND),
   label: text.optional(),
+  both: z.boolean().optional(),
 });
 
 export const diagramSchema = z.strictObject({
@@ -107,6 +108,7 @@ function build(p: Parsed): Diagram {
   const edges: Edge[] = p.edges.map((e) => {
     const edge: Edge = { id: e.id, from: e.from, to: e.to, kind: e.kind };
     if (e.label !== undefined) edge.label = e.label;
+    if (e.both === true) edge.both = true;
     return edge;
   });
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };

@@ -71,6 +71,7 @@ export function describeOp(op: Op): string {
     // `diagram style dark`, not `diagram style style dark`.
     words.push(key === verb ? String(o[key]) : `${key} ${String(o[key])}`);
   }
+  if (o.both === true) words.push("both ends");
   if (o.off === true) words.push("off");
   return words.join(" ");
 }

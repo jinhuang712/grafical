@@ -196,10 +196,17 @@ function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>, P: Paint): stri
     ? arrowHead(tip, pts[pts.length - 2] as Point, kind.stroke, P)
     : undefined;
   if (head) pts[pts.length - 1] = head.base;
+  // A two-way edge gets a second head at its start (D33).
+  const tail =
+    e.both === true && hasHead(e.kind)
+      ? arrowHead(pts[0] as Point, pts[1] as Point, kind.stroke, P)
+      : undefined;
+  if (tail) pts[0] = tail.base;
   const out = [
     `<path d="${roundedPath(pts, P)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(paint.strokeWidth)}"${dashAttr(kind.dash)}/>`,
   ];
   if (head) out.push(head.d);
+  if (tail) out.push(tail.d);
   return out;
 }
 

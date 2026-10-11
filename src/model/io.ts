@@ -41,6 +41,7 @@ function layerOut(l: Layer): Record<string, unknown> {
 function edgeOut(e: Edge): Record<string, unknown> {
   const o: Record<string, unknown> = { id: e.id, from: e.from, to: e.to, kind: e.kind };
   if (e.label !== undefined) o.label = e.label;
+  if (e.both === true) o.both = true;
   return o;
 }
 

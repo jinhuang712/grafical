@@ -899,6 +899,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (toBox !== undefined) points = cutRoute(points, toBox, "end");
     if (fromBox !== undefined) points = cutRoute(points, fromBox, "start");
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
+    if (e.both === true) edge.both = true;
     if (a.label !== undefined && e.label !== undefined && withText) {
       const cutAt = [toBox, fromBox].filter((b): b is Rect => b !== undefined);
       const at = points === a.points ? a.label : besideRoute(points, a.label, cutAt, clearOf(e.id));
@@ -962,6 +963,7 @@ function roundScene(s: Scene): Scene {
         points: e.points.map((p) => ({ x: round2(p.x), y: round2(p.y) })),
       };
       if (e.label !== undefined) out.label = roundText(e.label);
+      if (e.both === true) out.both = true;
       return out;
     }),
   };

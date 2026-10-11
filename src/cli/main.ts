@@ -332,9 +332,14 @@ function build(): Command {
       .argument("<to>")
       .option("--id <id>", "default: <from>-><to>")
       .option("--label <text>")
-      .option("--kind <kind>", "call, async or data"),
+      .option("--kind <kind>", "call, async, data, optional or link")
+      .option("--both", "an arrowhead at both ends"),
   ).action(async (file: string, from: string, to: string, opts: Opts) => {
-    await write(file, { op: "edge.add", from, to, ...pick(opts, ["id", "label", "kind"]) }, opts);
+    await write(
+      file,
+      { op: "edge.add", from, to, ...pick(opts, ["id", "label", "kind", "both"]) },
+      opts,
+    );
   });
   json(
     edge.command("remove").description("remove an edge").argument("<file>").argument("<id>"),
@@ -357,9 +362,19 @@ function build(): Command {
       .description("change an edge's kind")
       .argument("<file>")
       .argument("<id>")
-      .argument("<kind>", "call, async or data"),
+      .argument("<kind>", "call, async, data, optional or link"),
   ).action(async (file: string, id: string, kind: string, opts: Opts) => {
     await write(file, { op: "edge.kind", id, kind }, opts);
+  });
+  json(
+    edge
+      .command("both")
+      .description("draw an arrowhead at both ends of an edge, or at one end again with --off")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--off"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "edge.both", id, ...pick(opts, ["off"]) }, opts);
   });
   json(
     edge

@@ -77,6 +77,7 @@ function edgeAdd(e: Edge): Op {
   const op: Op = { op: "edge.add", from: e.from, to: e.to, kind: e.kind };
   if (e.id !== defaultEdgeId(e)) op.id = e.id;
   if (e.label !== undefined) op.label = e.label;
+  if (e.both === true) op.both = true;
   return op;
 }
 
@@ -397,7 +398,10 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
           ? { op: "edge.relabel", id: e.id }
           : { op: "edge.relabel", id: e.id, label: e.label },
       );
+    // Both ends off before a kind turns into a link, and on only after it leaves one.
+    if (e.both !== true && was.both === true) ops.push({ op: "edge.both", id: e.id, off: true });
     if (e.kind !== was.kind) ops.push({ op: "edge.kind", id: e.id, kind: e.kind });
+    if (e.both === true && was.both !== true) ops.push({ op: "edge.both", id: e.id });
   }
   return ops;
 }

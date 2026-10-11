@@ -19,6 +19,7 @@ function edgeText(e: Edge): string {
   const plain = e.id === `${e.from}->${e.to}`;
   let s = plain ? e.id : `${e.id} (${e.from}->${e.to})`;
   if (e.kind !== "call") s += ` [${e.kind}]`;
+  if (e.both === true) s += " [both ends]";
   if (e.label !== undefined) s += ` ${e.label}`;
   return s;
 }

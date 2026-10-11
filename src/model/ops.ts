@@ -128,6 +128,8 @@ export interface EdgeAddOp {
   id?: string;
   label?: string;
   kind?: EdgeKind;
+  /** true: an arrowhead at both ends (D33). */
+  both?: boolean;
 }
 export interface EdgeRemoveOp {
   op: "edge.remove";
@@ -235,6 +237,13 @@ export interface EdgeReverseOp {
   op: "edge.reverse";
   id: string;
 }
+/** Draws an arrowhead at both ends of an edge, or at one end again (D33). */
+export interface EdgeBothOp {
+  op: "edge.both";
+  id: string;
+  /** true: one arrowhead again. */
+  off?: boolean;
+}
 /** Moves one or both ends of an edge; its id, kind and label stay. */
 export interface EdgeRetargetOp {
   op: "edge.retarget";
@@ -325,6 +334,7 @@ export type Op =
   | EdgeRelabelOp
   | EdgeKindOp
   | EdgeReverseOp
+  | EdgeBothOp
   | EdgeRetargetOp;
 
 export type OpName = Op["op"];
@@ -424,6 +434,7 @@ export const edgeAddSchema = z.strictObject({
   id: edgeId.optional(),
   label: text.optional(),
   kind: z.enum(EDGE_KINDS).optional(),
+  both: z.boolean().optional(),
 });
 export const edgeRemoveSchema = z.strictObject({ op: z.literal("edge.remove"), id: edgeId });
 export const diagramTitleSchema = z.strictObject({ op: z.literal("diagram.title"), text });
@@ -496,6 +507,11 @@ export const edgeKindSchema = z.strictObject({
   kind: z.enum(EDGE_KINDS),
 });
 export const edgeReverseSchema = z.strictObject({ op: z.literal("edge.reverse"), id: edgeId });
+export const edgeBothSchema = z.strictObject({
+  op: z.literal("edge.both"),
+  id: edgeId,
+  off: z.boolean().optional(),
+});
 export const edgeRetargetSchema = z.strictObject({
   op: z.literal("edge.retarget"),
   id: edgeId,
@@ -577,6 +593,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeRelabelSchema,
   edgeKindSchema,
   edgeReverseSchema,
+  edgeBothSchema,
   edgeRetargetSchema,
 ]);
 
@@ -624,6 +641,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.relabel": edgeRelabelSchema,
   "edge.kind": edgeKindSchema,
   "edge.reverse": edgeReverseSchema,
+  "edge.both": edgeBothSchema,
   "edge.retarget": edgeRetargetSchema,
 };
 

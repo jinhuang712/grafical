@@ -153,6 +153,8 @@ describe("the target look", () => {
     expect(as("optional")).toContain('stroke-dasharray="1.5 2.5"');
     expect(heads(as("optional"))).toBe(heads(as("data")));
     expect(heads(as("link"))).toBe(heads(as("data")) - 1);
+    const both = renderSvg({ ...s, edges: [{ ...data, both: true }], legend: [] });
+    expect(heads(both)).toBe(heads(as("data")) + 1);
   });
 
   it("rounds corners and puts the arrowhead 7px long at the end", () => {

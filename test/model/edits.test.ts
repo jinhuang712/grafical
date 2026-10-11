@@ -204,6 +204,30 @@ describe("edges", () => {
       fail(fx, [{ op: "edge.retarget", id: "callers->handlers", to: "nope" }])[0],
     ).toMatchObject({ code: "unknown-node", field: "to" });
   });
+
+  it("both draws arrowheads at both ends, and a link takes none (D33)", () => {
+    const d = ok(fx, [
+      { op: "edge.both", id: "pipelines->mongo" },
+      { op: "edge.add", from: "handlers", to: "geo", both: true },
+    ]);
+    roundTrips(d);
+    expect(edge(d, "pipelines->mongo")?.both).toBe(true);
+    expect(edge(d, "handlers->geo")?.both).toBe(true);
+    expect(writeDiagram(d)).toContain("both: true");
+    const scene = layout(d, m);
+    expect(scene.edges.find((e) => e.id === "pipelines->mongo")?.both).toBe(true);
+    const off = ok(d, [{ op: "edge.both", id: "pipelines->mongo", off: true }]);
+    expect(edge(off, "pipelines->mongo")?.both).toBeUndefined();
+    const link = ok(fx, [{ op: "edge.kind", id: "pipelines->mongo", kind: "link" }]);
+    expect(fail(link, [{ op: "edge.both", id: "pipelines->mongo" }])[0]?.code).toBe("both-on-link");
+    expect(
+      fail(fx, [{ op: "edge.add", from: "handlers", to: "geo", kind: "link", both: true }])[0],
+    ).toMatchObject({ code: "both-on-link", field: "both" });
+    expect(fail(d, [{ op: "edge.kind", id: "handlers->geo", kind: "link" }])[0]).toMatchObject({
+      code: "both-on-link",
+      field: "kind",
+    });
+  });
 });
 
 describe("groups", () => {
@@ -243,6 +267,7 @@ describe("parsing", () => {
       { op: "node.merge", nodes: ["a", "b"], id: "c", label: "C" },
       { op: "edge.relabel", id: "a->b", label: "x" },
       { op: "edge.kind", id: "a->b", kind: "async" },
+      { op: "edge.both", id: "a->b", off: true },
       { op: "edge.reverse", id: "a->b" },
       { op: "edge.retarget", id: "a->b", to: "c" },
       { op: "group.describe", id: "g", text: "t" },

@@ -114,6 +114,8 @@ export interface SceneEdge {
   /** Orthogonal polyline from the source port to the target port. The arrowhead sits at the last point. */
   points: Point[];
   label?: PlacedText;
+  /** true: a second arrowhead at the first point (D33). */
+  both?: boolean;
 }
 
 export interface Scene {

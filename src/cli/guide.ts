@@ -50,8 +50,8 @@ grafical group remove <file> <id>   (members stay, ungrouped)
 grafical group describe <file> <id> [--text <text>]   (a quieter second label, e.g. "write side")
 grafical group order <file> <id> --before <group> | --after <group>
 grafical lane add <file> <id> --label <text> [--members a,b]; lane join <file> <lane> <member...>; lane leave <file> <member...>; lane rename <file> <id> --label <text>; lane remove <file> <id>
-grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>]   (from, to: node, group, layer or lane)
-grafical edge remove <file> <id>; edge relabel <file> <id> [--label <text>]; edge kind <file> <id> <kind>; edge reverse <file> <id>
+grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>] [--both]   (from, to: node, group, layer or lane; --both: arrowheads at both ends)
+grafical edge remove <file> <id>; edge relabel <file> <id> [--label <text>]; edge kind <file> <id> <kind>; edge reverse <file> <id>; edge both <file> <id> [--off]
 grafical edge retarget <file> <id> [--from <end>] [--to <end>]   (id, kind and label stay)
 grafical apply <file> <batch.yaml>; show <file>; check <file> [--all]
 grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
@@ -81,7 +81,7 @@ node.add: id layer label kind sublabel size first last before after align accent
 node.move: id layer first last before after
 group.add: id label sublabel nodes (a list). group.join: group nodes (a list). group.leave: nodes (a list). lane.add: id label members (a list). lane.join: lane members (a list). lane.leave: members (a list)
 diagram.subtitle: text. diagram.note: text. Without text, they clear. diagram.sizing: mode (auto or fixed).
-edge.add: from to id label kind
+edge.add: from to id label kind both
 Other operations: positional arguments become fields of the same name (node.swap: a b; layer.split: id into label from; node.merge: id nodes label; node.kind: id kind; diagram.legend: line text).
 Add groups and lanes after their nodes.
 
@@ -92,7 +92,7 @@ A warning never blocks; weigh it: too-many-nodes (node merge), too-wide or crowd
 
 ERRORS
 error op <index> <code> <field>: found <value>; expected <what>; <suggestion>
-Fix the named field as the suggestion says. unknown-node, -layer, -group, -lane, -edge: the suggestion lists the closest ids. duplicate-id, bad-id, bad-value, missing-field, bad-type, unknown-field, empty-value, unknown-op: the command or item is malformed. conflicting-position: give one of first, last, before, after. group-gap: a group skips a row; put a member in that row, or regroup. edge-inside: an edge joins a container with something inside it. Others (not-in-layer, align-same-layer, edge-blocked, empty-container, lane-mixed, lane-gap, group-across-lanes, lane-to-lane, too-many-accents): follow the suggestion. file-not-found, file-exists, newer-format, bad-yaml: the file itself.
+Fix the named field as the suggestion says. unknown-node, -layer, -group, -lane, -edge: the suggestion lists the closest ids. duplicate-id, bad-id, bad-value, missing-field, bad-type, unknown-field, empty-value, unknown-op: the command or item is malformed. conflicting-position: give one of first, last, before, after. group-gap: a group skips a row; put a member in that row, or regroup. edge-inside: an edge joins a container with something inside it. Others (not-in-layer, align-same-layer, edge-blocked, empty-container, lane-mixed, lane-gap, group-across-lanes, lane-to-lane, too-many-accents, both-on-link): follow the suggestion. file-not-found, file-exists, newer-format, bad-yaml: the file itself.
 
 DEFECTS
 defect <code> [<elements>]: found <what>; expected <what>; fix: <an operation>

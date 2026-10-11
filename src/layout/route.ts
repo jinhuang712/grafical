@@ -455,9 +455,10 @@ function assignBuses(plans: Plan[], alone: Set<string>): void {
       .map((k) => ({ id: k, members: groups.get(k) ?? [], port: 0 }))
       .filter((b) => b.members.length >= ROUTE.busMin);
   };
+  // A two-way edge has an arrowhead at its start, so it never shares a trunk from there (D33).
   for (const bus of collect(
     (pl) => `${pl.u.id}:${pl.srcSide}:${lineStyle(pl.edge.kind)}`,
-    () => false,
+    (pl) => pl.edge.both === true,
   )) {
     for (const pl of bus.members) pl.bus = bus;
   }

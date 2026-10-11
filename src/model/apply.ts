@@ -561,9 +561,12 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
     id = `${op.from}->${op.to}`;
     for (let n = 2; unusedKind(d, id) !== undefined; n++) id = `${op.from}->${op.to}#${n}`;
   }
+  const kind = op.kind ?? DEFAULT_EDGE_KIND;
+  if (op.both === true && kind === "link") errors.push(bothOnLink(id, i, "both"));
   if (errors.length > 0) return errors;
-  const edge: Edge = { id, from: op.from, to: op.to, kind: op.kind ?? DEFAULT_EDGE_KIND };
+  const edge: Edge = { id, from: op.from, to: op.to, kind };
   if (op.label !== undefined) edge.label = op.label;
+  if (op.both === true) edge.both = true;
   d.edges.push(edge);
   touch(s, id);
   return [];
@@ -577,6 +580,18 @@ function badStyle(style: string, problem: string, i: number): OpError {
     found: style,
     expected: problem,
     suggestion: `one of ${Object.keys(THEMES).join(", ")}, or a stylesheet such as brand.grafical-style.yaml beside the diagram`,
+  };
+}
+
+/** A link has no direction, so it takes no arrowheads at all (D33). */
+function bothOnLink(id: string, i: number, field: string): OpError {
+  return {
+    code: "both-on-link",
+    index: i,
+    field,
+    found: `edge ${id} is a link`,
+    expected: "arrowheads only on a call, async, data or optional edge",
+    suggestion: `leave out both, or give ${id} another kind first`,
   };
 }
 
@@ -980,15 +995,22 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
     case "edge.relabel":
     case "edge.kind":
     case "edge.reverse":
+    case "edge.both":
     case "edge.retarget": {
       const e = d.edges.find((x) => x.id === op.id);
       if (!e) return [unknownEdge(d, op.id, i, "id")];
       if (op.op === "edge.relabel") {
         if (op.label === undefined) delete e.label;
         else e.label = op.label;
-      } else if (op.op === "edge.kind") e.kind = op.kind;
-      else if (op.op === "edge.reverse") [e.from, e.to] = [e.to, e.from];
-      else {
+      } else if (op.op === "edge.kind") {
+        if (op.kind === "link" && e.both === true) return [bothOnLink(e.id, i, "kind")];
+        e.kind = op.kind;
+      } else if (op.op === "edge.reverse") [e.from, e.to] = [e.to, e.from];
+      else if (op.op === "edge.both") {
+        if (op.off === true) delete e.both;
+        else if (e.kind === "link") return [bothOnLink(e.id, i, "id")];
+        else e.both = true;
+      } else {
         if (op.from === undefined && op.to === undefined) {
           return [
             {

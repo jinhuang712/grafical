@@ -77,6 +77,8 @@ export interface Edge {
   to: string;
   kind: EdgeKind;
   label?: string;
+  /** true: an arrowhead at both ends. A link has none (D33). */
+  both?: boolean;
 }
 
 export interface Diagram {

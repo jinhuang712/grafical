@@ -103,7 +103,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `edge.reverse` | Swap the direction. The ID stays | done |
 | `edge.remove` | Remove the edge | done |
 | `edge.retarget` | Move one or both ends of an edge. Its ID, kind and label stay | done |
-| `edge.both` | Draw arrowheads at both ends, or one end again (D33) | stage 1 |
+| `edge.both` | Draw arrowheads at both ends, or one end again. A link takes none (`both-on-link`) (D33) | done |
 | `edge.emphasize` | Draw edges thick, as the main path, or thin again (D33) | stage 1 |
 
 ## Command-line syntax
@@ -131,11 +131,12 @@ grafical node emphasize <file> <id> [--off]
 grafical node align <file> <id> [--to <node>]
 grafical node swap <file> <a> <b>
 grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--kind <kind>]
-grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>]
+grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>] [--both]
 grafical edge remove <file> <id>
 grafical edge relabel <file> <id> [--label <text>]
 grafical edge kind <file> <id> <kind>
 grafical edge reverse <file> <id>
+grafical edge both <file> <id> [--off]
 grafical edge retarget <file> <id> [--from <end>] [--to <end>]
 grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c]
 grafical group join <file> <group> <node...>
@@ -231,7 +232,7 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
+- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, and `both` appears only when true. A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ### The stylesheet file
