@@ -2,9 +2,13 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 const MAIN = resolve(import.meta.dirname, "../../src/cli/main.ts");
+
+// Each test spawns the command line several times, and each start loads the
+// fonts and the harfbuzz WASM: about 0.1 s locally, slower on CI runners.
+vi.setConfig({ testTimeout: 60_000 });
 
 let dir: string;
 beforeAll(() => {
