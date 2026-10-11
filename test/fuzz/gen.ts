@@ -3,6 +3,7 @@
 // model rejects (an alignment that cannot hold, say) is dropped, as an agent
 // would drop it, so every diagram that comes out is valid.
 
+import { validateAlignments, validateGroups } from "../../src/layout/index.ts";
 import type { Op } from "../../src/model/index.ts";
 import { applyOps } from "../../src/model/index.ts";
 import {
@@ -187,5 +188,59 @@ export function generate(seed: number, m: Measurer): Generated {
     }
   }
 
+  addGroups(d, r, text);
+  if (chance(0.3)) d.subtitle = text(10, 70);
+  if (chance(0.3)) d.note = `Not shown: ${text(5, 60)}`;
+
   return { diagram: d, ops, rejected };
+}
+
+/**
+ * Up to three groups (D7), each a block of neighbouring nodes in one to three
+ * neighbouring layers. The model has no group operations on this branch yet, so
+ * they are set on the diagram directly. A group that cannot be one box with the
+ * ones before it is dropped, as an agent would drop an operation that failed.
+ */
+function addGroups(d: Diagram, r: () => number, text: (lo: number, hi: number) => string): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  const count = r() < 0.4 ? 0 : int(1, 3);
+  const groups: { id: string; label: string }[] = [];
+  for (let g = 0; g < count; g++) {
+    if (d.layers.length === 0) break;
+    const top = int(0, d.layers.length - 1);
+    const bottom = Math.min(d.layers.length - 1, top + int(0, 2));
+    const id = `g${g}`;
+    const chosen: string[] = [];
+    let ok = true;
+    for (let li = top; li <= bottom && ok; li++) {
+      const free = (d.layers[li]?.nodes ?? []).map((n) => n.group === undefined);
+      const nodes = d.layers[li]?.nodes ?? [];
+      if (nodes.length === 0) {
+        ok = false;
+        break;
+      }
+      const start = int(0, nodes.length - 1);
+      const len = int(1, Math.min(3, nodes.length - start));
+      for (let k = start; k < start + len; k++) {
+        if (!free[k]) {
+          ok = false;
+          break;
+        }
+        chosen.push(nodes[k]?.id ?? "");
+      }
+    }
+    if (!ok || chosen.length === 0) continue;
+    const trial: Diagram = {
+      ...d,
+      groups: [...groups, { id, label: text(3, 14) }],
+      layers: d.layers.map((l) => ({
+        ...l,
+        nodes: l.nodes.map((n) => (chosen.includes(n.id) ? { ...n, group: id } : n)),
+      })),
+    };
+    if (validateGroups(trial).length > 0 || validateAlignments(trial).length > 0) continue;
+    groups.push({ id, label: trial.groups?.[groups.length]?.label ?? id });
+    d.layers = trial.layers;
+  }
+  if (groups.length > 0) d.groups = groups;
 }
