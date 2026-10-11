@@ -215,7 +215,8 @@
     if (!r) return false;
     if (task.kind === "draft") return DRAFT.every(([k]) => typeof r.scores?.[k] === "number");
     if (accepts(task)) return !!r.accept;
-    return !!(r.done && r.other && typeof r.quality === "number");
+    // A change too bad to rate gets quality 1 only: whether the request was done is not judged.
+    return !!(r.bad || (r.done && r.other && typeof r.quality === "number"));
   }
 
   // Each round in the menu says whether it is finished, or how many of its pictures are rated.
@@ -306,7 +307,7 @@
     if (!accepts(task)) {
       const worst = task.kind === "draft"
         ? { scores: Object.fromEntries(DRAFT.map(([k]) => [k, 1])) }
-        : { done: "no", other: "major", quality: 1 };
+        : { done: undefined, other: undefined, quality: 1 };
       const cleared = task.kind === "draft" ? { scores: undefined } : { done: undefined, other: undefined, quality: undefined };
       const line = document.createElement("div"); line.className = "toobad";
       const b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.disabled = ro;
