@@ -15,7 +15,7 @@ HOW TO DRAW A GOOD DIAGRAM (read this first)
 - Put detail (port, tier, topic names) in the sublabel, not in extra boxes. Labels 1 to 3 words, sublabels short.
 - Rows run top to bottom: callers, entry points, the system's inside, shared store, outside dependencies. Put the shared store between or below the systems that use it, so both reach it with short lines.
 - Connect neighbouring rows; avoid edges that skip rows.
-- Label only edges whose meaning is not obvious ("consume", "persist", "failed"). Leave "calls" and "reads" unlabelled. Use two edge kinds: call, and async for messages.
+- Label only edges whose meaning is not obvious ("consume", "persist", "failed"). Leave "calls" and "reads" unlabelled. Edge kinds: call, async for messages, optional for a call made only sometimes, link for "related" with no direction.
 - Use --accent on the one thing the story is about (usually the shared store). Use kind queue for topics, store for databases, external for things you do not own, actor for callers.
 - Set a subtitle (one sentence saying what the diagram shows) and a note that starts "Not shown: " and names what you left out.
 
@@ -31,7 +31,7 @@ grafical diagram subtitle <file> [--text <text>]; diagram note <file> [--text <t
 grafical diagram sizing <file> auto|fixed
 grafical diagram style <file> [<style>]   (default, dark, print, or <name>.grafical-style.yaml, as the user asks)
 grafical diagram title <file> --text <text>; diagram density <file> compact|normal|airy
-grafical diagram legend <file> solid|dashed [--text <text>]   (name a line style, e.g. "Kafka message")
+grafical diagram legend <file> solid|dashed|dotted|plain [--text <text>]   (name a line style, e.g. "Kafka message")
 grafical diagram tidy <file>   (reorder all layers once to untangle lines)
 grafical layer add <file> <id> --label <text> [--before <layer> | --after <layer>]
 grafical layer rename <file> <id> --label <text>; layer remove <file> <id> (empty only); layer tidy <file> <id>
@@ -71,7 +71,7 @@ RULES
 
 VOCABULARY
 node kind: service, store, queue, external, actor
-edge kind: call (request), async (message or event), data (data movement)
+edge kind: call (request), async (message or event, dashed), data (data movement), optional (dotted), link (no arrowhead)
 size: s, m, l. density: compact, normal, airy
 
 BATCH FILE

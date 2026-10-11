@@ -389,7 +389,7 @@ The rules that make it uncluttered. The checker measures each one. A broken rule
 3. **Crossings:** at most 1 per 10 edges.
 4. **Bundling:** 2 or more edges that share a source side, or a target side, share one trunk, and no junction of the trunk looks like a crossing.
 5. **Corridors:** an edge that skips rows runs only in a column that is empty in every row it passes.
-6. **Styles:** at most two line styles and one accent (D8).
+6. **Styles:** at most three line styles and one accent (D8). It was two until D33 added the dotted and plain lines on 2026-10-12.
 7. **Edge labels:** at most 40% of edges carry one.
 8. **Clear text:** no line crosses any text: node, edge or group label. This one is an engine-owned defect (D14).
 
@@ -499,7 +499,7 @@ Rejected:
 
 Decided by the owner on 2026-10-12, not yet built. In the stage 1 round every comment on grafical's pictures named the lines, and the owner's view was that the agent lacked the means to make a picture clear, not only that the router drew lines badly.
 
-- **Kinds.** The kind still decides the look (D8): `call` and `data` solid, `async` dashed, and two new kinds: `link`, solid with no arrowhead, for "related, no direction", and `optional`, dotted, for a call that happens only sometimes or a soft dependency.
+- **Kinds.** Built 2026-10-12. The kind still decides the look (D8): `call` and `data` solid, `async` dashed, and two new kinds: `link`, a plain line with no arrowhead, for "related, no direction", and `optional`, dotted with an arrowhead, for a call that happens only sometimes or a soft dependency. The legend names each style a diagram uses: by default "call or read", "message", "optional" and "related". A stylesheet may set the dash of `async` and `optional` lines.
 - **Per edge.** An edge may carry arrowheads at both ends (`both`), and may be emphasized, drawn thick, to mark the main path.
 - **Curves.** A stylesheet may set `paint.edge.shape: curved` (D30). Routes stay the same orthogonal routes through the gaps (D11); only the drawing turns their corners into curves, and a curve never enters a box.
 - **Sides.** A line may leave or enter a box on any of its four sides. One side may carry several lines, each in its own slot, evenly spaced, so that lines on one side never pile up or read as one. The engine chooses the side and the slot; the agent does not.

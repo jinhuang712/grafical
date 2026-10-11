@@ -168,7 +168,7 @@ export function generate(seed: number, m: Measurer): Generated {
   }
 
   function addEdge(from: string, to: string) {
-    const op: Op = { op: "edge.add", from, to, kind: pick(EDGE_KINDS) };
+    const op: Op = { op: "edge.add", from, to, kind: pick(FIRST_EDGE_KINDS) };
     if (chance(0.5)) op.label = text(2, 20);
     apply(op);
   }
@@ -197,8 +197,21 @@ export function generate(seed: number, m: Measurer): Generated {
   // Drawn last, so that every seed's diagram is the same as before up to here.
   addContainerEdges(d, r, text);
   addLanes(d, r, text);
+  addEdgeLooks(d, r);
 
   return { diagram: d, ops, rejected };
+}
+
+/** The edge kinds the generator picked before phase 1d, so that each seed's diagram stays the same. */
+const FIRST_EDGE_KINDS = ["call", "async", "data"] as const;
+
+/** Phase 1d's line looks (D33), drawn last: some edges become links or optional calls. */
+function addEdgeLooks(d: Diagram, r: () => number): void {
+  for (const e of d.edges) {
+    const x = r();
+    if (x < 0.1) e.kind = "link";
+    else if (x < 0.2) e.kind = "optional";
+  }
 }
 
 /**

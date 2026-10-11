@@ -72,7 +72,14 @@ export const diagramSchema = z.strictObject({
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
   sizing: z.enum(SIZINGS).optional(),
   style: text.optional(),
-  legend: z.strictObject({ solid: text.optional(), dashed: text.optional() }).optional(),
+  legend: z
+    .strictObject({
+      solid: text.optional(),
+      dashed: text.optional(),
+      dotted: text.optional(),
+      plain: text.optional(),
+    })
+    .optional(),
   layers: z.array(layerSchema).default([]),
   groups: z.array(groupSchema).default([]),
   lanes: z.array(laneSchema).default([]),

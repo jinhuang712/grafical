@@ -61,6 +61,8 @@ const DARK: Paint = {
       call: { stroke: "#8b949e" },
       async: { stroke: "#8b949e", dash: "5 3" },
       data: { stroke: "#8b949e" },
+      link: { stroke: "#8b949e" },
+      optional: { stroke: "#8b949e", dash: "1.5 2.5" },
     },
     arrow: { length: 7, halfWidth: 3 },
     cornerRadius: 6,
@@ -104,6 +106,8 @@ const PRINT: Paint = {
       call: { stroke: "#333333" },
       async: { stroke: "#333333", dash: "5 3" },
       data: { stroke: "#333333" },
+      link: { stroke: "#333333" },
+      optional: { stroke: "#333333", dash: "1.5 2.5" },
     },
     arrow: { length: 7, halfWidth: 3 },
     cornerRadius: 4,
@@ -163,7 +167,7 @@ function partial(example: unknown, path: string[]): z.ZodType {
   const entries = Object.entries(example as Record<string, unknown>);
   const shape: Record<string, z.ZodType> = {};
   for (const [k, v] of entries) shape[k] = partial(v, [...path, k]).optional();
-  // Any node kind may take a dashed border; only async edges are dashed (D8).
+  // Any node kind may take a dashed border; only async and optional edges have a dash pattern (D8, D33).
   if (path.length === 3 && path[0] === "node" && path[1] === "kinds") shape.dash = DASH.optional();
   return z.strictObject(shape);
 }

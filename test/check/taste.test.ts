@@ -196,10 +196,18 @@ describe("labels and line styles", () => {
     const half = [e("1", "call", true), e("2", "call", false)];
     expect(report(nodes, half).labelledShare.ok).toBe(false);
   });
-  it("counts solid for call and data, and dashed for async", () => {
+  it("counts one style per look, and allows at most three", () => {
     expect(report(nodes, [e("1", "call", false), e("2", "data", false)]).lineStyles.value).toBe(1);
     expect(report(nodes, [e("1", "call", false), e("2", "async", false)]).lineStyles.value).toBe(2);
     expect(report(nodes, [e("1", "call", false), e("2", "async", false)]).lineStyles.ok).toBe(true);
+    const four = [
+      e("1", "call", false),
+      e("2", "async", false),
+      e("3", "optional", false),
+      e("4", "link", false),
+    ];
+    expect(report(nodes, four).lineStyles.value).toBe(4);
+    expect(report(nodes, four).lineStyles.ok).toBe(false);
   });
   it("has nothing to measure on an empty diagram", () => {
     const r = report(nodes, []);

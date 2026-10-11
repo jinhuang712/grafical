@@ -8,7 +8,7 @@
 import type { PlacedText, Point, Rect, Scene, SceneEdge, SceneGroup, SceneNode } from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
 import { FRAME } from "../theme/geometry.ts";
-import { PAINT, type Paint, STYLE_KIND } from "../theme/paint.ts";
+import { hasHead, PAINT, type Paint, STYLE_KIND } from "../theme/paint.ts";
 
 /** At most 2 decimals, no trailing zeros, never "-0". */
 export function num(v: number): string {
@@ -182,7 +182,7 @@ function ontoOutline(end: Point, next: Point, n: SceneNode | undefined): Point {
   return end;
 }
 
-/** The line stops at the arrowhead's base. Only solid and dashed exist (D8). */
+/** The line stops at the arrowhead's base, if its kind has one (D8, D33). */
 function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>, P: Paint): string[] {
   const paint = P.edge;
   const kind: { stroke: string; dash?: string } = paint.kinds[e.kind];
@@ -192,7 +192,9 @@ function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>, P: Paint): stri
   const last = pts.length - 1;
   pts[last] = ontoOutline(pts[last] as Point, pts[last - 1] as Point, nodes.get(e.to));
   const tip = pts[pts.length - 1] as Point;
-  const head = arrowHead(tip, pts[pts.length - 2] as Point, kind.stroke, P);
+  const head = hasHead(e.kind)
+    ? arrowHead(tip, pts[pts.length - 2] as Point, kind.stroke, P)
+    : undefined;
   if (head) pts[pts.length - 1] = head.base;
   const out = [
     `<path d="${roundedPath(pts, P)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(paint.strokeWidth)}"${dashAttr(kind.dash)}/>`,
@@ -207,7 +209,9 @@ function legendShapes(scene: Scene, P: Paint): string[] {
   const stroke = paint.kinds.call.stroke;
   for (const item of scene.legend ?? []) {
     const { x1, x2, y } = item.sample;
-    const head = arrowHead({ x: x2, y }, { x: x1, y }, stroke, P);
+    const head = hasHead(STYLE_KIND[item.style])
+      ? arrowHead({ x: x2, y }, { x: x1, y }, stroke, P)
+      : undefined;
     const end = head ? head.base.x : x2;
     const dash = paint.kinds[STYLE_KIND[item.style]].dash;
     out.push(

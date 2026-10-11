@@ -278,6 +278,8 @@ const LEGEND_WORDS: Record<EdgeKind, string> = {
   call: "call",
   async: "message",
   data: "data read",
+  link: "related",
+  optional: "optional",
 };
 
 /** The legend's text for each line style the diagram uses (D8), in the diagram's wording if it sets one. */

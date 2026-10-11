@@ -6,7 +6,7 @@ export const FORMAT_VERSION = 1;
 export const NODE_KINDS = ["service", "store", "queue", "external", "actor"] as const;
 export type NodeKind = (typeof NODE_KINDS)[number];
 
-export const EDGE_KINDS = ["call", "async", "data"] as const;
+export const EDGE_KINDS = ["call", "async", "data", "link", "optional"] as const;
 export type EdgeKind = (typeof EDGE_KINDS)[number];
 
 export const SIZE_STEPS = ["s", "m", "l"] as const;
@@ -15,8 +15,11 @@ export type SizeStep = (typeof SIZE_STEPS)[number];
 export const DENSITIES = ["compact", "normal", "airy"] as const;
 export type Density = (typeof DENSITIES)[number];
 
-/** The line styles an edge is drawn in (D8): call and data are solid, async dashed. The legend names each. */
-export const LINE_STYLES = ["solid", "dashed"] as const;
+/**
+ * The line styles an edge is drawn in (D8, D33): call and data are solid, async dashed,
+ * optional dotted, and a link is a plain line with no arrowhead. The legend names each.
+ */
+export const LINE_STYLES = ["solid", "dashed", "dotted", "plain"] as const;
 export type LineStyleName = (typeof LINE_STYLES)[number];
 
 /** How the engine sizes a node that has no size (D27). */

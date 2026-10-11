@@ -13,7 +13,7 @@ export interface NodePaint {
 
 export interface EdgePaint {
   stroke: string;
-  /** Dash pattern of a dashed line. Only async edges are dashed (D8). */
+  /** Dash pattern of a dashed or dotted line: async and optional edges (D8, D33). */
   dash?: string;
 }
 
@@ -68,13 +68,31 @@ export interface Paint {
   };
 }
 
-/** The line style an edge kind is drawn in. The kind decides it (D8). */
+const STYLES: Record<EdgeKind, LineStyleName> = {
+  call: "solid",
+  async: "dashed",
+  data: "solid",
+  link: "plain",
+  optional: "dotted",
+};
+
+/** The line style an edge kind is drawn in. The kind decides it (D8, D33). */
 export function lineStyle(kind: EdgeKind): LineStyleName {
-  return kind === "async" ? "dashed" : "solid";
+  return STYLES[kind];
 }
 
 /** The kind whose paint draws a line style's sample in the legend. */
-export const STYLE_KIND: Record<LineStyleName, EdgeKind> = { solid: "call", dashed: "async" };
+export const STYLE_KIND: Record<LineStyleName, EdgeKind> = {
+  solid: "call",
+  dashed: "async",
+  dotted: "optional",
+  plain: "link",
+};
+
+/** A link says two things are related, with no direction, so it has no arrowhead (D33). */
+export function hasHead(kind: EdgeKind): boolean {
+  return kind !== "link";
+}
 
 export const PAINT: Paint = {
   background: "#ffffff",
@@ -111,6 +129,8 @@ export const PAINT: Paint = {
       call: { stroke: "#6f7681" },
       async: { stroke: "#6f7681", dash: "5 3" },
       data: { stroke: "#6f7681" },
+      link: { stroke: "#6f7681" },
+      optional: { stroke: "#6f7681", dash: "1.5 2.5" },
     },
     arrow: { length: 7, halfWidth: 3 },
     cornerRadius: 6,

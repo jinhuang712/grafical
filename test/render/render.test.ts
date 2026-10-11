@@ -142,6 +142,19 @@ describe("the target look", () => {
     expect(out.match(/<path d="M236 248[^>]*>/)?.[0]).not.toContain("dasharray");
   });
 
+  it("draws an optional edge dotted, and a link with no arrowhead (D33)", () => {
+    const s = mixedScene();
+    const data = s.edges.find((e) => e.kind === "data");
+    expect(data).toBeDefined();
+    if (data === undefined) return;
+    const heads = (out: string): number => (out.match(/Z" fill="#6f7681"\/>/g) ?? []).length;
+    const as = (kind: "data" | "optional" | "link") =>
+      renderSvg({ ...s, edges: [{ ...data, kind }], legend: [] });
+    expect(as("optional")).toContain('stroke-dasharray="1.5 2.5"');
+    expect(heads(as("optional"))).toBe(heads(as("data")));
+    expect(heads(as("link"))).toBe(heads(as("data")) - 1);
+  });
+
   it("rounds corners and puts the arrowhead 7px long at the end", () => {
     expect(svg).toContain('<path d="M900 152L900 342Q900 348 894 348L807 348"');
     expect(svg).toContain('<path d="M800 348L807 345L807 351Z" fill="#6f7681"/>');

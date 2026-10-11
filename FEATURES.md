@@ -154,7 +154,7 @@ grafical diagram note <file> [--text <text>]
 grafical diagram sizing <file> auto|fixed
 grafical diagram title <file> --text <text>
 grafical diagram density <file> compact|normal|airy
-grafical diagram legend <file> solid|dashed [--text <text>]
+grafical diagram legend <file> solid|dashed|dotted|plain [--text <text>]
 grafical diagram tidy <file>
 grafical diagram style <file> [<style>]
 grafical apply <file> <batch.yaml>
@@ -257,7 +257,7 @@ type:
   node-label: { size: 14, weight: 600 }
 ```
 
-- `paint` holds every colour, stroke width and corner radius, by role, under the same keys as the built-in themes. Any node kind may take a dashed border. Only `async` edges are dashed, because the kind decides the line style (D8).
+- `paint` holds every colour, stroke width and corner radius, by role, under the same keys as the built-in themes. Any node kind may take a dashed border. Only `async` and `optional` edges have a dash pattern, because the kind decides the line style (D8, D33).
 - `type` holds a size (6 to 48) and a weight (400 or 600, the bundled fonts' weights) per text role. Larger type changes the layout, and text that no longer fits its box is refused as overflow.
 - An unknown key, a malformed colour or a weight the fonts lack is refused with the path of the value.
 - A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
@@ -269,7 +269,7 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | List | Values |
 |---|---|
 | Node kinds | `service`, `store`, `queue`, `external`, `actor`. Planned (D34): `state`, `decision`, `terminal`, `initial`, `final` |
-| Edge kinds | `call`, `async`, `data`. Planned (D33): `link`, `optional` |
+| Edge kinds | `call`, `async`, `data`, `link` (no arrowhead), `optional` (dotted) |
 | Size steps | `s`, `m`, `l` |
 | Density | `compact`, `normal`, `airy` |
 | Emphasis | `accent`, at most 2 per diagram. Planned (D33): emphasized edges, drawn thick |

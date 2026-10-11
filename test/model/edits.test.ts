@@ -252,7 +252,7 @@ describe("parsing", () => {
       const parsed = parseOp(item, k);
       expect(Array.isArray(parsed), JSON.stringify(item)).toBe(false);
     }
-    expect((parseOp({ op: "diagram.legend", line: "dotted" }, 0) as OpError[])[0]?.code).toBe(
+    expect((parseOp({ op: "diagram.legend", line: "wavy" }, 0) as OpError[])[0]?.code).toBe(
       "bad-value",
     );
   });

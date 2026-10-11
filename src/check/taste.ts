@@ -26,7 +26,7 @@ export interface TasteReport {
   edgesOverBendLimit: TasteRule;
   /** Rule 7: the share of edges that carry a label. */
   labelledShare: TasteRule;
-  /** Rule 6: how many line styles the edges use ("solid" for call and data, "dashed" for async). */
+  /** Rule 6: how many line styles the edges use: solid, dashed, dotted or plain (D8, D33). */
   lineStyles: TasteRule;
   /** D26: the node count, against the budget. */
   nodeCount: TasteRule;
@@ -42,7 +42,7 @@ export const TASTE_LIMITS = {
   maxBends: 2,
   edgesOverBendLimit: 0,
   labelledShare: 0.4,
-  lineStyles: 2,
+  lineStyles: 3,
   nodeCount: 16,
   corridorViolations: 0,
 } as const;
