@@ -368,6 +368,16 @@ function build(): Command {
   });
   json(
     edge
+      .command("emphasize")
+      .description("draw edges thick, as the main path, or thin again with --off")
+      .argument("<file>")
+      .argument("<id...>")
+      .option("--off"),
+  ).action(async (file: string, edges: string[], opts: Opts) => {
+    await write(file, { op: "edge.emphasize", edges, ...pick(opts, ["off"]) }, opts);
+  });
+  json(
+    edge
       .command("both")
       .description("draw an arrowhead at both ends of an edge, or at one end again with --off")
       .argument("<file>")

@@ -11,6 +11,9 @@ import { TASTE_LIMITS } from "./taste.ts";
 /** A layer with more nodes than this is crowded. */
 export const CROWDED_LAYER = 5;
 
+/** A main path of up to this many edges never draws a warning, however few edges the diagram has. */
+export const MAIN_PATH_FREE = 3;
+
 /** Every warning for a diagram and its laid-out scene. */
 export function advise(d: Diagram, scene: Scene): Warning[] {
   const out = [...budgetWarnings(d)];
@@ -47,6 +50,18 @@ export function advise(d: Diagram, scene: Scene): Warning[] {
       found: `group ${g.id} holds one node, ${only}`,
       expected: "a group of two or more nodes",
       suggestion: `grafical group remove <file> ${g.id} (${only} stays), or group join a second node`,
+    });
+  }
+
+  // A main path stands out only against thin lines (D33).
+  const main = d.edges.filter((e) => e.accent === true);
+  if (main.length > MAIN_PATH_FREE && main.length * 3 > d.edges.length) {
+    out.push({
+      code: "too-many-main-edges",
+      found: `${main.length} of ${d.edges.length} edges are on the main path`,
+      expected: "at most a third of the edges, so that the main path stands out",
+      suggestion:
+        "grafical edge emphasize <file> <id...> --off on the edges a reader can follow without help",
     });
   }
 

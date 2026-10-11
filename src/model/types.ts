@@ -79,6 +79,8 @@ export interface Edge {
   label?: string;
   /** true: an arrowhead at both ends. A link has none (D33). */
   both?: boolean;
+  /** true: drawn thick, as part of the main path (D33). */
+  accent?: boolean;
 }
 
 export interface Diagram {

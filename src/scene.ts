@@ -91,6 +91,8 @@ export interface SceneLane {
 export interface SceneLegendItem {
   /** The line style the sample is drawn in (D8). */
   style: LineStyleName;
+  /** true: the main path's thick line (D33). */
+  main?: boolean;
   /** The sample line, left to right, at the label's middle height. */
   sample: { x1: number; x2: number; y: number };
   label: PlacedText;
@@ -116,6 +118,8 @@ export interface SceneEdge {
   label?: PlacedText;
   /** true: a second arrowhead at the first point (D33). */
   both?: boolean;
+  /** true: drawn thick, as part of the main path (D33). */
+  main?: boolean;
 }
 
 export interface Scene {

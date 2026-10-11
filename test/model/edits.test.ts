@@ -205,6 +205,25 @@ describe("edges", () => {
     ).toMatchObject({ code: "unknown-node", field: "to" });
   });
 
+  it("emphasize draws edges thick, as the main path, and the legend names it (D33)", () => {
+    const d = ok(fx, [{ op: "edge.emphasize", edges: ["pipelines->mongo", "service->mongo"] }]);
+    roundTrips(d);
+    expect(edge(d, "pipelines->mongo")?.accent).toBe(true);
+    expect(writeDiagram(d)).toContain("accent: true");
+    const scene = layout(d, m);
+    expect(scene.edges.filter((e) => e.main === true).map((e) => e.id)).toEqual([
+      "pipelines->mongo",
+      "service->mongo",
+    ]);
+    expect(scene.legend?.at(-1)).toMatchObject({ main: true });
+    const off = ok(d, [{ op: "edge.emphasize", edges: ["service->mongo"], off: true }]);
+    expect(edge(off, "service->mongo")?.accent).toBeUndefined();
+    expect(fail(fx, [{ op: "edge.emphasize", edges: ["nope"] }])[0]).toMatchObject({
+      code: "unknown-edge",
+      field: "edges",
+    });
+  });
+
   it("both draws arrowheads at both ends, and a link takes none (D33)", () => {
     const d = ok(fx, [
       { op: "edge.both", id: "pipelines->mongo" },
@@ -268,6 +287,7 @@ describe("parsing", () => {
       { op: "edge.relabel", id: "a->b", label: "x" },
       { op: "edge.kind", id: "a->b", kind: "async" },
       { op: "edge.both", id: "a->b", off: true },
+      { op: "edge.emphasize", edges: ["a->b"] },
       { op: "edge.reverse", id: "a->b" },
       { op: "edge.retarget", id: "a->b", to: "c" },
       { op: "group.describe", id: "g", text: "t" },

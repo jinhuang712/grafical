@@ -104,7 +104,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `edge.remove` | Remove the edge | done |
 | `edge.retarget` | Move one or both ends of an edge. Its ID, kind and label stay | done |
 | `edge.both` | Draw arrowheads at both ends, or one end again. A link takes none (`both-on-link`) (D33) | done |
-| `edge.emphasize` | Draw edges thick, as the main path, or thin again (D33) | stage 1 |
+| `edge.emphasize` | Draw edges thick, as the main path, or thin again. The legend names it "main path" (D33) | done |
 
 ## Command-line syntax
 
@@ -137,6 +137,7 @@ grafical edge relabel <file> <id> [--label <text>]
 grafical edge kind <file> <id> <kind>
 grafical edge reverse <file> <id>
 grafical edge both <file> <id> [--off]
+grafical edge emphasize <file> <id...> [--off]
 grafical edge retarget <file> <id> [--from <end>] [--to <end>]
 grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c]
 grafical group join <file> <group> <node...>
@@ -182,7 +183,8 @@ grafical guide
   - `too-wide`: the picture is wider than 1024 px, naming the widest layer to split (D29);
   - `crowded-layer`: a layer holds more than 5 nodes (D29);
   - `lonely-group`: a group holds one node;
-  - `edge-crosses-layer`: an edge's line threads between the nodes of a layer it does not connect (D29).
+  - `edge-crosses-layer`: an edge's line threads between the nodes of a layer it does not connect (D29);
+  - `too-many-main-edges`: more than three edges, and more than a third of them, are on the main path (D33).
 - Every command accepts `--json`. Exit codes: 0 for success, 1 for an operation error or a defect, 2 for a usage error.
 - `grafical guide` prints this reference, written for agents, within 3k tokens (D17).
 
@@ -232,7 +234,7 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, and `both` appears only when true. A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
+- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, and `both` and `accent` appear only when true. A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ### The stylesheet file
@@ -273,7 +275,7 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | Edge kinds | `call`, `async`, `data`, `link` (no arrowhead), `optional` (dotted) |
 | Size steps | `s`, `m`, `l` |
 | Density | `compact`, `normal`, `airy` |
-| Emphasis | `accent`, at most 2 per diagram. Planned (D33): emphasized edges, drawn thick |
+| Emphasis | `accent`: at most 2 nodes per diagram, and edges on the main path, drawn thick (D33) |
 | Line shape | Planned (D33): `curved`, set in a stylesheet |
 
 ## Output

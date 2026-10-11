@@ -455,15 +455,17 @@ function assignBuses(plans: Plan[], alone: Set<string>): void {
       .map((k) => ({ id: k, members: groups.get(k) ?? [], port: 0 }))
       .filter((b) => b.members.length >= ROUTE.busMin);
   };
-  // A two-way edge has an arrowhead at its start, so it never shares a trunk from there (D33).
+  // A two-way edge has an arrowhead at its start, so it never shares a trunk from there, and
+  // a main-path edge shares one only with main-path edges, which are as thick (D33).
+  const look = (pl: Plan) => `${lineStyle(pl.edge.kind)}${pl.edge.accent === true ? ":main" : ""}`;
   for (const bus of collect(
-    (pl) => `${pl.u.id}:${pl.srcSide}:${lineStyle(pl.edge.kind)}`,
+    (pl) => `${pl.u.id}:${pl.srcSide}:${look(pl)}`,
     (pl) => pl.edge.both === true,
   )) {
     for (const pl of bus.members) pl.bus = bus;
   }
   for (const fan of collect(
-    (pl) => `in ${pl.v.id}:${pl.dstSide}:${lineStyle(pl.edge.kind)}`,
+    (pl) => `in ${pl.v.id}:${pl.dstSide}:${look(pl)}`,
     (pl) => pl.bus !== undefined,
   )) {
     for (const pl of fan.members) pl.fanIn = fan;

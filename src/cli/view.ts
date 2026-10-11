@@ -58,7 +58,7 @@ export function describeOp(op: Op): string {
     if (typeof o[key] === "string") words.push(JSON.stringify(o[key]));
   }
   if (typeof o.layer === "string") words.push(`in ${o.layer}`);
-  for (const key of ["nodes", "members"]) {
+  for (const key of ["nodes", "members", "edges"]) {
     if (Array.isArray(o[key])) words.push((o[key] as string[]).join(", "));
   }
   const verb = String(o.op).split(".")[1];

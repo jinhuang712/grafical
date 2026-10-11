@@ -5,7 +5,13 @@ import type { Diagram } from "./types.ts";
 export const NODE_BUDGET = 16;
 
 export interface Warning {
-  code: "too-many-nodes" | "crowded-layer" | "lonely-group" | "edge-crosses-layer" | "too-wide";
+  code:
+    | "too-many-nodes"
+    | "crowded-layer"
+    | "lonely-group"
+    | "edge-crosses-layer"
+    | "too-wide"
+    | "too-many-main-edges";
   found: string;
   expected: string;
   /** Candidate merges, or what to do. */

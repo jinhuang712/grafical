@@ -283,9 +283,9 @@ const LEGEND_WORDS: Record<EdgeKind, string> = {
 };
 
 /** The legend's text for each line style the diagram uses (D8), in the diagram's wording if it sets one. */
-function legendItems(d: Diagram): { style: LineStyleName; text: string }[] {
+function legendItems(d: Diagram): { style: LineStyleName; text: string; main?: true }[] {
   const kinds = new Set(d.edges.map((e) => e.kind));
-  const out: { style: LineStyleName; text: string }[] = [];
+  const out: { style: LineStyleName; text: string; main?: true }[] = [];
   for (const style of LINE_STYLES) {
     const used = EDGE_KINDS.filter((k) => kinds.has(k) && lineStyle(k) === style);
     const first = used[0];
@@ -294,6 +294,8 @@ function legendItems(d: Diagram): { style: LineStyleName; text: string }[] {
     const plain = used.length > 1 ? "call or read" : LEGEND_WORDS[first];
     out.push({ style, text: d.legend?.[style] ?? plain });
   }
+  if (d.edges.some((e) => e.accent === true))
+    out.push({ style: "solid", text: "main path", main: true });
   return out;
 }
 
@@ -652,6 +654,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     items.forEach((it, i) => {
       legend.push({
         style: it.style,
+        ...(it.main === true ? { main: true } : {}),
         sample: { x1: x, x2: x + FRAME.legendSample, y: mid },
         label: placeLine(
           "legend",
@@ -900,6 +903,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (fromBox !== undefined) points = cutRoute(points, fromBox, "start");
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
     if (e.both === true) edge.both = true;
+    if (e.accent === true) edge.main = true;
     if (a.label !== undefined && e.label !== undefined && withText) {
       const cutAt = [toBox, fromBox].filter((b): b is Rect => b !== undefined);
       const at = points === a.points ? a.label : besideRoute(points, a.label, cutAt, clearOf(e.id));
@@ -964,6 +968,7 @@ function roundScene(s: Scene): Scene {
       };
       if (e.label !== undefined) out.label = roundText(e.label);
       if (e.both === true) out.both = true;
+      if (e.main === true) out.main = true;
       return out;
     }),
   };
@@ -973,6 +978,7 @@ function roundScene(s: Scene): Scene {
   if (s.legend !== undefined) {
     out.legend = s.legend.map((it) => ({
       style: it.style,
+      ...(it.main === true ? { main: true } : {}),
       sample: { x1: round2(it.sample.x1), x2: round2(it.sample.x2), y: round2(it.sample.y) },
       label: roundText(it.label),
     }));

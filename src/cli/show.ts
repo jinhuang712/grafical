@@ -20,6 +20,7 @@ function edgeText(e: Edge): string {
   let s = plain ? e.id : `${e.id} (${e.from}->${e.to})`;
   if (e.kind !== "call") s += ` [${e.kind}]`;
   if (e.both === true) s += " [both ends]";
+  if (e.accent === true) s += " [main]";
   if (e.label !== undefined) s += ` ${e.label}`;
   return s;
 }

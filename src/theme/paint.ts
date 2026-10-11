@@ -61,6 +61,8 @@ export interface Paint {
     strokeWidth: number;
     kinds: Record<EdgeKind, EdgePaint>;
     arrow: { length: number; halfWidth: number };
+    /** An edge on the main path: a thicker line and a larger arrowhead (D33). */
+    main: { strokeWidth: number; arrow: { length: number; halfWidth: number } };
     /** Radius of a rounded corner in a route. */
     cornerRadius: number;
     /** The patch behind an edge label, so the label stays readable over lines. */
@@ -133,6 +135,7 @@ export const PAINT: Paint = {
       optional: { stroke: "#6f7681", dash: "1.5 2.5" },
     },
     arrow: { length: 7, halfWidth: 3 },
+    main: { strokeWidth: 2.5, arrow: { length: 9, halfWidth: 4 } },
     cornerRadius: 6,
     labelBackground: { fill: "#ffffff", padX: 3, padY: 1, radius: 2 },
   },

@@ -205,13 +205,14 @@ export function generate(seed: number, m: Measurer): Generated {
 /** The edge kinds the generator picked before phase 1d, so that each seed's diagram stays the same. */
 const FIRST_EDGE_KINDS = ["call", "async", "data"] as const;
 
-/** Phase 1d's line looks (D33), drawn last: links, optional calls and two-way edges. */
+/** Phase 1d's line looks (D33), drawn last: links, optional calls, two-way edges and a main path. */
 function addEdgeLooks(d: Diagram, r: () => number): void {
   for (const e of d.edges) {
     const x = r();
     if (x < 0.1) e.kind = "link";
     else if (x < 0.2) e.kind = "optional";
     else if (x < 0.27) e.both = true;
+    if (r() < 0.08) e.accent = true;
   }
 }
 

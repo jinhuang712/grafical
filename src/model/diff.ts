@@ -379,9 +379,13 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (members !== undefined) ops.push({ op: "lane.join", lane: x.id, members });
   }
 
-  // 9. Edges that come, and the facts of the edges that stay.
+  // 9. Edges that come, and the facts of the edges that stay. The main path comes last.
+  const mainOn: string[] = [];
+  const mainOff: string[] = [];
   for (const e of a.edges) {
     const was = keptEdges.has(e.id) ? bEdges.get(e.id) : undefined;
+    if (e.accent === true && was?.accent !== true) mainOn.push(e.id);
+    if (e.accent !== true && was?.accent === true) mainOff.push(e.id);
     if (was === undefined) {
       ops.push(edgeAdd(e));
       continue;
@@ -403,5 +407,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (e.kind !== was.kind) ops.push({ op: "edge.kind", id: e.id, kind: e.kind });
     if (e.both === true && was.both !== true) ops.push({ op: "edge.both", id: e.id });
   }
+  if (mainOff.length > 0) ops.push({ op: "edge.emphasize", edges: mainOff, off: true });
+  if (mainOn.length > 0) ops.push({ op: "edge.emphasize", edges: mainOn });
   return ops;
 }

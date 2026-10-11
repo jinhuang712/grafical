@@ -1,6 +1,6 @@
 // Every line look (D8, D33): calls and data reads solid, messages dashed, an
 // optional read dotted, a two-way read and write, and a link with no arrowhead
-// between two related stores.
+// between two related stores. The upload path is the main path.
 
 import type { Diagram } from "../../src/model/types.ts";
 import { e, n } from "./build.ts";
@@ -31,9 +31,9 @@ export const edgeLooks: Diagram = {
     },
   ],
   edges: [
-    e("web", "api", "call", "HTTPS"),
-    e("api", "uploads", "async", "publish"),
-    e("uploads", "thumbs", "async", "consume"),
+    { ...e("web", "api", "call", "HTTPS"), accent: true },
+    { ...e("api", "uploads", "async", "publish"), accent: true },
+    { ...e("uploads", "thumbs", "async", "consume"), accent: true },
     e("api", "photos", "data", "write"),
     { ...e("thumbs", "photos", "data", "read, write"), both: true },
     e("api", "cache", "optional", "warm reads"),

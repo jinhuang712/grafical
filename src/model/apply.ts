@@ -988,6 +988,17 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, op.id);
       return [];
     }
+    case "edge.emphasize": {
+      const missing = op.edges.filter((id) => !d.edges.some((e) => e.id === id));
+      if (missing.length > 0) return missing.map((id) => unknownEdge(d, id, i, "edges"));
+      for (const e of d.edges) {
+        if (!op.edges.includes(e.id)) continue;
+        if (op.off === true) delete e.accent;
+        else e.accent = true;
+        touch(s, e.id);
+      }
+      return [];
+    }
     case "node.swap":
       return swapNodes(s, op, i);
     case "node.merge":

@@ -237,6 +237,13 @@ export interface EdgeReverseOp {
   op: "edge.reverse";
   id: string;
 }
+/** Draws edges thick, as the main path, or thin again (D33). */
+export interface EdgeEmphasizeOp {
+  op: "edge.emphasize";
+  edges: string[];
+  /** true: thin again. */
+  off?: boolean;
+}
 /** Draws an arrowhead at both ends of an edge, or at one end again (D33). */
 export interface EdgeBothOp {
   op: "edge.both";
@@ -335,6 +342,7 @@ export type Op =
   | EdgeKindOp
   | EdgeReverseOp
   | EdgeBothOp
+  | EdgeEmphasizeOp
   | EdgeRetargetOp;
 
 export type OpName = Op["op"];
@@ -507,6 +515,11 @@ export const edgeKindSchema = z.strictObject({
   kind: z.enum(EDGE_KINDS),
 });
 export const edgeReverseSchema = z.strictObject({ op: z.literal("edge.reverse"), id: edgeId });
+export const edgeEmphasizeSchema = z.strictObject({
+  op: z.literal("edge.emphasize"),
+  edges: z.array(edgeId).min(1),
+  off: z.boolean().optional(),
+});
 export const edgeBothSchema = z.strictObject({
   op: z.literal("edge.both"),
   id: edgeId,
@@ -594,6 +607,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeKindSchema,
   edgeReverseSchema,
   edgeBothSchema,
+  edgeEmphasizeSchema,
   edgeRetargetSchema,
 ]);
 
@@ -642,6 +656,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.kind": edgeKindSchema,
   "edge.reverse": edgeReverseSchema,
   "edge.both": edgeBothSchema,
+  "edge.emphasize": edgeEmphasizeSchema,
   "edge.retarget": edgeRetargetSchema,
 };
 

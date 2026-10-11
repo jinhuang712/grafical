@@ -34,6 +34,24 @@ describe("warnings (D29)", () => {
     expect(ws[0]?.suggestion).toContain("layer split <file> row");
   });
 
+  it("a main path of more than a third of the edges, and more than three (D33)", () => {
+    const ids = catalogSyncGrouped.edges.map((e) => e.id);
+    const third = Math.floor(ids.length / 3);
+    const ok = applyOps(
+      catalogSyncGrouped,
+      [{ op: "edge.emphasize", edges: ids.slice(0, third) }],
+      m,
+    );
+    const many = applyOps(
+      catalogSyncGrouped,
+      [{ op: "edge.emphasize", edges: ids.slice(0, third + 1) }],
+      m,
+    );
+    if ("errors" in ok || "errors" in many) throw new Error("expected the edges to exist");
+    expect(codes(ok.diagram)).toEqual([]);
+    expect(codes(many.diagram)).toEqual(["too-many-main-edges"]);
+  });
+
   it("a group of one node", () => {
     const d = build([
       { op: "layer.add", id: "row", label: "Row" },

@@ -51,7 +51,7 @@ grafical group describe <file> <id> [--text <text>]   (a quieter second label, e
 grafical group order <file> <id> --before <group> | --after <group>
 grafical lane add <file> <id> --label <text> [--members a,b]; lane join <file> <lane> <member...>; lane leave <file> <member...>; lane rename <file> <id> --label <text>; lane remove <file> <id>
 grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>] [--both]   (from, to: node, group, layer or lane; --both: arrowheads at both ends)
-grafical edge remove <file> <id>; edge relabel <file> <id> [--label <text>]; edge kind <file> <id> <kind>; edge reverse <file> <id>; edge both <file> <id> [--off]
+grafical edge remove <file> <id>; edge relabel <file> <id> [--label <text>]; edge kind <file> <id> <kind>; edge reverse <file> <id>; edge both <file> <id> [--off]; edge emphasize <file> <id...> [--off]   (thick: the main path)
 grafical edge retarget <file> <id> [--from <end>] [--to <end>]   (id, kind and label stay)
 grafical apply <file> <batch.yaml>; show <file>; check <file> [--all]
 grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
@@ -81,14 +81,14 @@ node.add: id layer label kind sublabel size first last before after align accent
 node.move: id layer first last before after
 group.add: id label sublabel nodes (a list). group.join: group nodes (a list). group.leave: nodes (a list). lane.add: id label members (a list). lane.join: lane members (a list). lane.leave: members (a list)
 diagram.subtitle: text. diagram.note: text. Without text, they clear. diagram.sizing: mode (auto or fixed).
-edge.add: from to id label kind both
+edge.add: from to id label kind both. edge.emphasize: edges (a list) off
 Other operations: positional arguments become fields of the same name (node.swap: a b; layer.split: id into label from; node.merge: id nodes label; node.kind: id kind; diagram.legend: line text).
 Add groups and lanes after their nodes.
 
 OUTPUT
 Success: ok changed: <ids>   (--json: {"ok":true,"changed":[...],"errors":[],"defects":[],"warnings":[]})
 Failure: failed, file unchanged, then one line per problem. Exit codes: 0 success, 1 an operation error or defect, 2 a usage error.
-A warning never blocks; weigh it: too-many-nodes (node merge), too-wide or crowded-layer (layer split), lonely-group, edge-crosses-layer (layer move).
+A warning never blocks; weigh it: too-many-nodes (node merge), too-wide or crowded-layer (layer split), lonely-group, edge-crosses-layer (layer move), too-many-main-edges.
 
 ERRORS
 error op <index> <code> <field>: found <value>; expected <what>; <suggestion>

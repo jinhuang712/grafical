@@ -107,7 +107,7 @@ function arrowHead(
   tip: Point,
   from: Point,
   fill: string,
-  P: Paint,
+  size: { length: number; halfWidth: number },
 ): { d: string; base: Point } | undefined {
   const dx = tip.x - from.x;
   const dy = tip.y - from.y;
@@ -115,10 +115,10 @@ function arrowHead(
   if (len === 0) return undefined;
   const ux = dx / len;
   const uy = dy / len;
-  const l = Math.min(P.edge.arrow.length, len);
+  const l = Math.min(size.length, len);
   const bx = tip.x - ux * l;
   const by = tip.y - uy * l;
-  const h = P.edge.arrow.halfWidth;
+  const h = size.halfWidth;
   return {
     d:
       `<path d="M${num(tip.x)} ${num(tip.y)}L${num(bx - uy * h)} ${num(by + ux * h)}` +
@@ -186,6 +186,7 @@ function ontoOutline(end: Point, next: Point, n: SceneNode | undefined): Point {
 function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>, P: Paint): string[] {
   const paint = P.edge;
   const kind: { stroke: string; dash?: string } = paint.kinds[e.kind];
+  const look = lineLook(e.main === true, P);
   const pts = simplify(e.points);
   if (pts.length < 2) return [];
   pts[0] = ontoOutline(pts[0] as Point, pts[1] as Point, nodes.get(e.from));
@@ -193,21 +194,29 @@ function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>, P: Paint): stri
   pts[last] = ontoOutline(pts[last] as Point, pts[last - 1] as Point, nodes.get(e.to));
   const tip = pts[pts.length - 1] as Point;
   const head = hasHead(e.kind)
-    ? arrowHead(tip, pts[pts.length - 2] as Point, kind.stroke, P)
+    ? arrowHead(tip, pts[pts.length - 2] as Point, kind.stroke, look.arrow)
     : undefined;
   if (head) pts[pts.length - 1] = head.base;
   // A two-way edge gets a second head at its start (D33).
   const tail =
     e.both === true && hasHead(e.kind)
-      ? arrowHead(pts[0] as Point, pts[1] as Point, kind.stroke, P)
+      ? arrowHead(pts[0] as Point, pts[1] as Point, kind.stroke, look.arrow)
       : undefined;
   if (tail) pts[0] = tail.base;
   const out = [
-    `<path d="${roundedPath(pts, P)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(paint.strokeWidth)}"${dashAttr(kind.dash)}/>`,
+    `<path d="${roundedPath(pts, P)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(look.strokeWidth)}"${dashAttr(kind.dash)}/>`,
   ];
   if (head) out.push(head.d);
   if (tail) out.push(tail.d);
   return out;
+}
+
+/** The width and arrowhead of a line: thicker on the main path (D33). */
+function lineLook(
+  main: boolean,
+  P: Paint,
+): { strokeWidth: number; arrow: { length: number; halfWidth: number } } {
+  return main ? P.edge.main : { strokeWidth: P.edge.strokeWidth, arrow: P.edge.arrow };
 }
 
 function legendShapes(scene: Scene, P: Paint): string[] {
@@ -216,13 +225,14 @@ function legendShapes(scene: Scene, P: Paint): string[] {
   const stroke = paint.kinds.call.stroke;
   for (const item of scene.legend ?? []) {
     const { x1, x2, y } = item.sample;
+    const look = lineLook(item.main === true, P);
     const head = hasHead(STYLE_KIND[item.style])
-      ? arrowHead({ x: x2, y }, { x: x1, y }, stroke, P)
+      ? arrowHead({ x: x2, y }, { x: x1, y }, stroke, look.arrow)
       : undefined;
     const end = head ? head.base.x : x2;
     const dash = paint.kinds[STYLE_KIND[item.style]].dash;
     out.push(
-      `<path d="M${num(x1)} ${num(y)}L${num(end)} ${num(y)}" fill="none" stroke="${stroke}" stroke-width="${num(paint.strokeWidth)}"${dashAttr(dash)}/>`,
+      `<path d="M${num(x1)} ${num(y)}L${num(end)} ${num(y)}" fill="none" stroke="${stroke}" stroke-width="${num(look.strokeWidth)}"${dashAttr(dash)}/>`,
     );
     if (head) out.push(head.d);
     out.push(...texts(item.label, P.text.legend));
