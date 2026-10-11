@@ -421,8 +421,6 @@ function newDiagram(op: Extract<Op, { op: "diagram.new" }>): Diagram {
   };
 }
 
-type AlignmentCheck = (d: Diagram, m: Measurer) => unknown;
-
 /** Once all operations are applied, nodes without a position take the engine's slot (D24). */
 function placePending(s: State, m: Measurer) {
   for (const p of s.pending) {
@@ -472,14 +470,19 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
   const last = Math.max(0, ops.length - 1);
   const broken = checkIntegrity(s.d, last);
   if (broken.length > 0) return { errors: broken };
-  // Call point for the layout's alignment check. It exists once the layout worker adds it.
-  const validateAlignments = (layoutModule as unknown as { validateAlignments?: AlignmentCheck })
-    .validateAlignments;
-  if (typeof validateAlignments === "function") {
-    const found = validateAlignments(s.d, m);
-    if (Array.isArray(found) && found.length > 0) {
-      return { errors: found.map((e: OpError) => ({ ...e, index: e.index ?? last })) };
-    }
+  // An alignment that cannot hold with the order of its layers is an operation error (D10).
+  const problems = layoutModule.validateAlignments(s.d);
+  if (problems.length > 0) {
+    return {
+      errors: problems.map((p) => ({
+        code: p.code,
+        index: last,
+        field: "align",
+        found: p.found,
+        expected: p.expected,
+        suggestion: p.suggestion,
+      })),
+    };
   }
   return { diagram: s.d, changed: s.changed };
 }

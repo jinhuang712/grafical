@@ -88,9 +88,10 @@ describe("node.add", () => {
         sublabel: ":9",
         accent: true,
         align: "a",
+        first: true,
       },
     ]);
-    expect(r.diagram.layers[1]?.nodes.at(-1)).toEqual({
+    expect(r.diagram.layers[1]?.nodes.find((n) => n.id === "n")).toEqual({
       id: "n",
       label: "N",
       kind: "queue",
@@ -171,7 +172,7 @@ describe("node.rename, node.move, node.remove", () => {
   });
   it("refuses a move that puts a node in the layer of its align target", () => {
     const d = ok(base, [
-      { op: "node.add", id: "n", layer: "bottom", label: "N", align: "a" },
+      { op: "node.add", id: "n", layer: "bottom", label: "N", align: "a", first: true },
     ]).diagram;
     expect(fail(d, [{ op: "node.move", id: "n", layer: "top" }])[0]?.code).toBe("align-same-layer");
     expect(fail(d, [{ op: "node.move", id: "a", layer: "bottom" }])[0]?.code).toBe(
@@ -191,11 +192,11 @@ describe("node.rename, node.move, node.remove", () => {
   });
   it("clears an align that pointed at a removed node, and reports the node", () => {
     const d = ok(base, [
-      { op: "node.add", id: "n", layer: "bottom", label: "N", align: "a" },
+      { op: "node.add", id: "n", layer: "bottom", label: "N", align: "a", first: true },
     ]).diagram;
     const r = ok(d, [{ op: "node.remove", id: "a" }]);
     expect(r.changed).toEqual(["a", "n"]);
-    expect(r.diagram.layers[1]?.nodes.at(-1)?.align).toBeUndefined();
+    expect(r.diagram.layers[1]?.nodes.find((n) => n.id === "n")?.align).toBeUndefined();
   });
 });
 
