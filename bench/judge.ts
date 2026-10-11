@@ -138,10 +138,10 @@ export function judgeArgs(prompt: string): string[] {
 }
 
 /** Every picture a round produced, with the request and the previous picture for E2 steps. */
-export function collectItems(round: string): Item[] {
+export function collectItems(round: string, runs = RUNS): Item[] {
   const changes = new Map(loadChanges().map((c) => [`e2-${c.id}`, c.request]));
   const items: Item[] = [];
-  const root = join(RUNS, round);
+  const root = join(runs, round);
   for (const chain of readdirSync(root).sort()) {
     const steps = join(root, chain, "steps");
     if (!existsSync(steps) || chain.startsWith("baseline")) continue;
@@ -171,10 +171,18 @@ export interface JudgedRow {
 }
 
 /** Runs every judge on every item. Real calls: only after the owner approved the cost. */
-export function runJudging(round: string, judgeCount: number): void {
-  const items = collectItems(round);
-  const brief = readFileSync(join(REPO, "bench", "briefs", "catalog-sync.md"), "utf8");
-  const base = join(RUNS, round, "judging");
+export function runJudging(
+  round: string,
+  judgeCount: number,
+  /** A round kept outside the repository, such as the MVP bar's on the private brief. */
+  where: { runs: string; brief: string } = {
+    runs: RUNS,
+    brief: join(REPO, "bench", "briefs", "catalog-sync.md"),
+  },
+): void {
+  const items = collectItems(round, where.runs);
+  const brief = readFileSync(where.brief, "utf8");
+  const base = join(where.runs, round, "judging");
   const keyDir = join(base, "keys"); // outside every judge's working directory
   mkdirSync(keyDir, { recursive: true });
   const rows: JudgedRow[] = [];

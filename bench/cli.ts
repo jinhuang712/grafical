@@ -6,7 +6,9 @@
 //   chain --arm <arm> [--model haiku] [--run 1] [--round <name>]
 //                                             one draft and its change requests, to measure a
 //                                             cell's cost before the owner approves a round.
-//   judge --round <name> [--judges 2]         score a round's pictures blind with Opus judges
+//   judge --round <name> [--judges 2] [--private]
+//                                             score a round's pictures blind with Opus judges;
+//                                             --private: a round on the private brief
 //   summary --round <name>                    write bench/results/<round>.md
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   benchmark 7: check every step's picture's geometry
@@ -22,7 +24,7 @@ import { runJudging } from "./judge.ts";
 import { chainName, loadChanges, prepareChainDir, RUNS, runChain, runStep } from "./run.ts";
 import { formatPlan, planSmoke } from "./smoke.ts";
 import { measureSpeed } from "./speed.ts";
-import { formatPart, PARTS, type Part, planPart } from "./stage1.ts";
+import { formatPart, PARTS, type Part, PRIVATE, planPart } from "./stage1.ts";
 import { writeSummary } from "./summary.ts";
 
 function flag(args: string[], name: string): string | undefined {
@@ -100,7 +102,11 @@ function main(argv: string[]): void {
       return;
     }
     case "judge": {
-      runJudging(round, Number(flag(args, "judges") ?? 2));
+      // --private: a round on the private reference brief, kept outside the repository.
+      const where = args.includes("--private")
+        ? { runs: join(PRIVATE, "runs"), brief: join(PRIVATE, "briefs", "reference.md") }
+        : undefined;
+      runJudging(round, Number(flag(args, "judges") ?? 2), where);
       return;
     }
     case "gallery": {
