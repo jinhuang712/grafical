@@ -154,12 +154,12 @@
   const accepts = (task) => task.kind === "intent" || task.kind === "look";
 
   const $ = (id) => document.getElementById(id);
-  const state = { rounds: [], round: null, manifest: null, ratings: {}, picks: {}, status: {}, reveals: {}, canWrite: true, db: null };
+  const state = { rounds: [], round: null, manifest: null, manifests: {}, ratings: {}, picks: {}, status: {}, reveals: {}, canWrite: true, db: null };
 
   function remember(key, value) { try { localStorage.setItem(key, value); } catch {} }
   function recall(key) { try { return localStorage.getItem(key); } catch { return null; } }
 
-  const ratingId = (task, letter) => `${state.round}__${task}__${letter}`;
+  const ratingId = (task, letter, round = state.round) => `${round}__${task}__${letter}`;
   const pickId = (task) => `${state.round}__${task}`;
 
   // Drops null and undefined fields, so a cleared choice disappears from the stored body.
@@ -210,15 +210,32 @@
 
   function notice(text) { const n = $("notice"); n.textContent = text; n.hidden = !text; }
 
-  function isComplete(task, letter) {
-    const r = state.ratings[ratingId(task.id, letter)];
+  function isComplete(task, letter, round = state.round) {
+    const r = state.ratings[ratingId(task.id, letter, round)];
     if (!r) return false;
     if (task.kind === "draft") return DRAFT.every(([k]) => typeof r.scores?.[k] === "number");
     if (accepts(task)) return !!r.accept;
     return !!(r.done && r.other && typeof r.quality === "number");
   }
 
+  // Each round in the menu says whether it is finished, or how many of its pictures are rated.
+  function markRounds() {
+    for (const o of $("round").options) {
+      const r = state.rounds.find((x) => x.id === o.value);
+      const m = state.manifests[o.value];
+      let mark = "";
+      if (state.status[o.value]?.done) mark = "finished";
+      else if (m && state.db) {
+        let total = 0, done = 0;
+        for (const t of m.tasks) for (const l of m.diagrams) { total++; if (isComplete(t, l, o.value)) done++; }
+        mark = done === total ? "all rated, not finished" : `${done} of ${total} rated`;
+      }
+      o.textContent = mark ? `${r.title} · ${mark}` : r.title;
+    }
+  }
+
   function progress() {
+    markRounds();
     const m = state.manifest; if (!m) return;
     let total = 0, done = 0;
     for (const t of m.tasks) for (const l of m.diagrams) { total++; if (isComplete(t, l)) done++; }
@@ -384,8 +401,8 @@
 
   async function loadRound(id) {
     state.round = id; remember("grafical-round", id);
-    const res = await fetch(`rounds/${id}.json`);
-    state.manifest = await res.json();
+    state.manifest = state.manifests[id] ?? await (await fetch(`rounds/${id}.json`)).json();
+    state.manifests[id] = state.manifest;
     render();
   }
 
@@ -394,6 +411,10 @@
   async function start() {
     const res = await fetch("rounds/index.json");
     state.rounds = await res.json();
+    // Every round loads up front, so the menu can count what is left in each.
+    await Promise.all(state.rounds.map(async (r) => {
+      try { state.manifests[r.id] = await (await fetch(`rounds/${r.id}.json`)).json(); } catch {}
+    }));
     const sel = $("round");
     for (const r of state.rounds) { const o = document.createElement("option"); o.value = r.id; o.textContent = r.title; sel.append(o); }
     // The newest round opens first when a round was added since the last visit;
