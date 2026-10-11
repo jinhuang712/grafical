@@ -9,6 +9,9 @@
     "url": "git+https://github.com/jinhuang712/grafical.git"
   },
   "type": "module",
+  "bin": {
+    "grafical": "src/cli/main.ts"
+  },
   "engines": {
     "node": ">=24"
   },
