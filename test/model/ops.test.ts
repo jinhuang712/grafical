@@ -8,6 +8,7 @@ import {
   parseOps,
   writeDiagram,
 } from "../../src/model/index.ts";
+import { NODE_KINDS } from "../../src/model/types.ts";
 import { createStubMeasurer } from "../../src/text/index.ts";
 
 const m = createStubMeasurer();
@@ -306,7 +307,7 @@ describe("parsing operations", () => {
       [1, "missing-field", "layer"],
       [2, "unknown-field", "extra"],
     ]);
-    expect(r[0]?.suggestion).toBe("allowed: service, store, queue, external, actor");
+    expect(r[0]?.suggestion).toBe(`allowed: ${NODE_KINDS.join(", ")}`);
   });
   it("rejects a batch that is not a list, and coordinates", () => {
     expect((parseOps({ op: "x" }) as OpError[])[0]?.code).toBe("bad-batch");

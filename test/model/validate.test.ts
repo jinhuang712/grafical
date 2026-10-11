@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { OpError } from "../../src/errors.ts";
 import { readDiagram } from "../../src/model/index.ts";
+import { NODE_KINDS } from "../../src/model/types.ts";
 
 function errorsOf(text: string): OpError[] {
   const r = readDiagram(text);
@@ -20,7 +21,7 @@ describe("file validation", () => {
       field: "layers[0].nodes[0].kind",
       found: "database",
     });
-    expect(e?.suggestion).toBe("allowed: service, store, queue, external, actor");
+    expect(e?.suggestion).toBe(`allowed: ${NODE_KINDS.join(", ")}`);
   });
 
   it("rejects an unknown size", () => {

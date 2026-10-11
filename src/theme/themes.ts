@@ -45,6 +45,7 @@ const DARK: Paint = {
   lane: { fill: "#0f1419", stroke: "#30363d", strokeWidth: 1, radius: 0, headFill: "#161b22" },
   node: {
     radius: 6,
+    stateRadius: 14,
     strokeWidth: 1,
     kinds: {
       service: { fill: "#1c2128", stroke: "#444c56" },
@@ -52,6 +53,8 @@ const DARK: Paint = {
       queue: { fill: "#2a2416", stroke: "#6b5a35" },
       external: { fill: "#1c2128", stroke: "#636e7b", dash: "4 3" },
       actor: { fill: "#1f242b", stroke: "#444c56" },
+      state: { fill: "#1c2128", stroke: "#444c56" },
+      terminal: { fill: "#262d36", stroke: "#636e7b" },
     },
     accent: { fill: "#132a4f", stroke: "#4c8dff", strokeWidth: 1.5 },
   },
@@ -91,6 +94,7 @@ const PRINT: Paint = {
   lane: { fill: "#ffffff", stroke: "#bdbdbd", strokeWidth: 1, radius: 0, headFill: "#eeeeee" },
   node: {
     radius: 4,
+    stateRadius: 10,
     strokeWidth: 1.25,
     kinds: {
       service: { fill: "#ffffff", stroke: "#555555" },
@@ -98,6 +102,8 @@ const PRINT: Paint = {
       queue: { fill: "#f7f7f7", stroke: "#555555" },
       external: { fill: "#ffffff", stroke: "#777777", dash: "4 3" },
       actor: { fill: "#f7f7f7", stroke: "#555555" },
+      state: { fill: "#ffffff", stroke: "#555555" },
+      terminal: { fill: "#e6e6e6", stroke: "#333333" },
     },
     accent: { fill: "#e6e6e6", stroke: "#111111", strokeWidth: 2 },
   },

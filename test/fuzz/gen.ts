@@ -13,7 +13,6 @@ import {
   type Diagram,
   EDGE_KINDS,
   type Edge,
-  NODE_KINDS,
   SIZE_STEPS,
 } from "../../src/model/types.ts";
 import type { Measurer } from "../../src/text/types.ts";
@@ -109,7 +108,7 @@ export function generate(seed: number, m: Measurer): Generated {
       id,
       layer,
       label: chance(0.15) ? text(2, 6) : `${pick(["svc", "db", "queue", "job", "api"])}-${i}`,
-      kind: pick(NODE_KINDS),
+      kind: pick(FIRST_NODE_KINDS),
       size: pick(SIZE_STEPS),
     };
     if (chance(0.3)) op.sublabel = chance(0.5) ? `:${7000 + i}` : text(2, 8);
@@ -198,12 +197,23 @@ export function generate(seed: number, m: Measurer): Generated {
   addContainerEdges(d, r, text);
   addLanes(d, r, text);
   addEdgeLooks(d, r);
+  addNodeKinds(d, r);
 
   return { diagram: d, ops, rejected };
 }
 
-/** The edge kinds the generator picked before phase 1d, so that each seed's diagram stays the same. */
+/** The kinds the generator picked before phase 1d, so that each seed's diagram stays the same. */
 const FIRST_EDGE_KINDS = ["call", "async", "data"] as const;
+const FIRST_NODE_KINDS = ["service", "store", "queue", "external", "actor"] as const;
+
+/** Phase 1d's node kinds (D34), drawn last. */
+function addNodeKinds(d: Diagram, r: () => number): void {
+  for (const n of d.layers.flatMap((l) => l.nodes)) {
+    const x = r();
+    if (x < 0.1) n.kind = "state";
+    else if (x < 0.15) n.kind = "terminal";
+  }
+}
 
 /** Phase 1d's line looks (D33), drawn last: links, optional calls, two-way edges and a main path. */
 function addEdgeLooks(d: Diagram, r: () => number): void {

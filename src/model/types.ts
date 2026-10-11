@@ -3,7 +3,15 @@
 
 export const FORMAT_VERSION = 1;
 
-export const NODE_KINDS = ["service", "store", "queue", "external", "actor"] as const;
+export const NODE_KINDS = [
+  "service",
+  "store",
+  "queue",
+  "external",
+  "actor",
+  "state",
+  "terminal",
+] as const;
 export type NodeKind = (typeof NODE_KINDS)[number];
 
 export const EDGE_KINDS = ["call", "async", "data", "link", "optional"] as const;

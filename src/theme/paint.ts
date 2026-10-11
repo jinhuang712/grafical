@@ -52,6 +52,8 @@ export interface Paint {
   lane: LanePaint;
   node: {
     radius: number;
+    /** The corner radius of a state, rounder than a box (D34). */
+    stateRadius: number;
     strokeWidth: number;
     kinds: Record<NodeKind, NodePaint>;
     /** The single accent colour: a border and a very light fill, on one or two nodes. */
@@ -115,6 +117,7 @@ export const PAINT: Paint = {
   lane: { fill: "#ffffff", stroke: "#d5d9df", strokeWidth: 1, radius: 0, headFill: "#f0f2f5" },
   node: {
     radius: 6,
+    stateRadius: 14,
     strokeWidth: 1,
     kinds: {
       service: { fill: "#ffffff", stroke: "#b4bac3" },
@@ -122,6 +125,8 @@ export const PAINT: Paint = {
       queue: { fill: "#fbf6ec", stroke: "#cdbf9f" },
       external: { fill: "#ffffff", stroke: "#9aa1ab", dash: "4 3" },
       actor: { fill: "#f8f9fa", stroke: "#b4bac3" },
+      state: { fill: "#ffffff", stroke: "#b4bac3" },
+      terminal: { fill: "#e9edf2", stroke: "#9aa4b1" },
     },
     accent: { fill: "#eef3fd", stroke: "#2f5fc4", strokeWidth: 1.5 },
   },

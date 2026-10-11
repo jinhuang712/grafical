@@ -515,7 +515,7 @@ Rejected:
 
 Decided by the owner on 2026-10-12, not yet built: C4 context and container diagrams, cloud and infrastructure, event flow, flowcharts, state machines, swimlane processes, dependency graphs, data flow and deployment.
 
-- **Kinds.** Five new node kinds: `state`, a rounded box; `decision`, a diamond; `terminal`, a pill with text, for a flowchart's Start and End; `initial`, a filled dot; and `final`, a ringed dot, for a state machine's start and end. C4, cloud, event flow, data flow, dependency graphs and swimlane processes need no new shapes.
+- **Kinds.** Five new node kinds: `state`, a rounded box; `decision`, a diamond; `terminal`, a pill with text, for a flowchart's Start and End; `initial`, a filled dot; and `final`, a ringed dot, for a state machine's start and end. C4, cloud, event flow, data flow, dependency graphs and swimlane processes need no new shapes. `state` and `terminal` were built on 2026-10-12: a state's corners are rounder than a box's, and a terminal is a pill like an actor but tinted, so the two never read alike.
 - **Nested groups.** A group may sit inside another group, up to three levels, as a region holds a network that holds hosts (`group add --in`). This reverses part of D7.
 - **Teaching.** `grafical guide <type>` teaches the agent one diagram type, so the main guide stays within its budget (D17).
 
