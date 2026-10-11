@@ -1,6 +1,6 @@
 # Roadmap
 
-> Written 2026-10-11. Phase 0 was done on 2026-10-11. Stage 1 is being built. Its end-to-end test and its benchmarks run once all of it is built (see "How stage 1 ends").
+> Written 2026-10-11. Phase 0 was done on 2026-10-11. Stage 1 is built, and its benchmarks ran on 2026-10-12 ([results](bench/results/stage1.md)). The MVP bar was not met, so stage 1 has not ended (see "How stage 1 ends").
 
 grafical ships in two stages. In stage 1, the MVP, agents draw through the command line. In stage 2, people and agents edit the same diagram on a board. Each phase has an exit check. On 2026-10-11 the owner decided to build all of stage 1 first and to run the checks together at the end, instead of gating each phase on the one before. Benchmarks and targets are defined in [GOALS.md](GOALS.md). What each stage contains is listed in [FEATURES.md](FEATURES.md).
 

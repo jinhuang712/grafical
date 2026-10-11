@@ -23,9 +23,9 @@ Cost: the phase 1b rounds cost about $0.01 per Haiku draft and $0.002 per change
 5. **Intent (benchmark 10):** the owner accepts at least 7 of the 10 loose-prompt drawings without changes. Below 5 means the guide must teach more about choosing what to draw.
 6. **MVP bar (goal 1):** probably not met. The phase 1b drafts on the public brief scored about 34 of 60 with the order criterion, about 28 of 50 without it, against a bar of 42 of 50. Met: phase 3 goes on to release. Not met: the split between the engine's and the agent's points says which side to work on.
 
-## Outcome so far, 2026-10-12
+## Outcome, 2026-10-12
 
-The runs and the MVP judging are done. The owner has rated the scale, intent and "how it looks" rounds; the E1, E2 and Opus ratings are not in yet. The rounds ran on commits f3d2cda to e67b36e, which differ only in the benchmark harness, not in grafical.
+The runs, the MVP judging and the owner's ratings are done. The rounds ran on commits f3d2cda to e67b36e, which differ only in the benchmark harness, not in grafical.
 
 **Cost:** $2.22 for 55 chains, and $0.80 for Opus judging (one $0.14 test call and the six MVP verdicts): $3.02 of the owner's $20.
 
@@ -43,13 +43,19 @@ Two Opus judges scored Haiku's three drafts of the private reference brief 40, 3
 
 Decision, as the expectation set it: the engine's side is the next work.
 
-### What was measured, and what the owner has rated
+### The owner's verdict: the arrows
+
+Every comment the owner left on a grafical picture names the lines: "the arrows" on each of the four drafts rated one by one, "arrows a mess" at 25 components, "way too many arrow labels" at 50, and, on all 30 of grafical's stage 1 pictures seen at once, "it all looked alright. the only thing is the arrows." The MVP judges' lost points are the same lines. The next work is the line routing.
+
+### What was measured, and what the owner rated
 
 - **E1 drafts:** all 9 Haiku drafts made a picture. Per draft, grafical cost $0.011 and took 48 s, against $0.007 and 47 s with no tool and $0.004 and 16 s with Mermaid. grafical refused 39% of draft calls (33–50%), down from 53–66% in phase 1b but far above the 5% target of benchmark 6.
+- **E1, the owner's scores (benchmark 1), out of 25:** grafical 24; Mermaid 5, 5 and 5; no tool 5, 5 and 5. Every Mermaid and no-tool draft was marked too bad to rate, so its 1 for accuracy and clarity is not a judgment of either: the expectation of "about level on accuracy and clarity" was not tested, because the owner would not read those pictures. Of grafical's three drafts one was rated alone, and the other two were seen with the rest of grafical's pictures (below).
 - **Mechanical defects (benchmark 7):** the separate geometry check found 0 in all 49 grafical pictures of the four public rounds.
 - **E2 changes:** a new picture in 17 of 24 grafical change steps, 22 of 24 Mermaid and 23 of 24 with no tool. Of grafical's 7 misses, 6 named something the draft had merged or listed as "Not shown" (Redis, auth-svc, the three upstream publishers, Kafka), and the agent asked instead of inventing it. That is the change script's known flaw, and it hits grafical hardest because its guide teaches merging. The seventh was grafical refusing a new row inside a group's rows (`group-gap`); the agent asked how to resolve it.
+- **E2, the owner's look:** the owner saw grafical's 24 change pictures, before and after, all at once rather than one by one, and wrote one comment on them with the drafts: "it all looked alright. the only thing is the arrows." No picture was flagged for things moving that should have stayed, so the trigger for a local column solver before release ("a lot" on more than a quarter of requests) is not met. The owner did not answer per picture, so this rests on one overall look. The Mermaid and no-tool change pictures were marked too bad to rate.
 - **Unnamed fact changes (benchmark 4, restated):** `grafical diff` between consecutive steps shows that every grafical change step changed only facts its own operations named: 0 unnamed changes. Twice the agent also moved a box to fit a new edge, by an operation of its own.
-- **Model gap:** an Opus draft cost $0.26 with grafical and $0.31 with no tool. The scores are the owner's.
+- **Model gap (benchmark 5): met.** The owner scored Opus's grafical drafts 24, 24 and 24 of 25, the same as Haiku's: a gap of 0, against a target of at most 4. Opus with no tool scored 5, 5 and 5, as did Haiku, so the gap without a tool cannot be read: both sit at the floor. An Opus draft cost $0.26 with grafical and $0.31 with no tool.
 - **Scale (benchmark 8): met on the briefs, not yet shown at 50 boxes.** All 27 drafts made a picture, and grafical's 9 have no mechanical defect. The owner rated them blind, out of 25:
 
   | Brief | grafical | Mermaid | No tool | grafical's boxes | grafical's clarity |
