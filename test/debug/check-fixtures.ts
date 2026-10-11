@@ -15,6 +15,7 @@ import { dense } from "../fixtures/dense.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 import { flowchart } from "../fixtures/flowchart.ts";
 import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
+import { stateMachine } from "../fixtures/state-machine.ts";
 import { tiny } from "../fixtures/tiny.ts";
 import { defects, groupIntruders, mechanical, taste, textCrossings } from "../layout/checks.ts";
 
@@ -31,6 +32,7 @@ for (const [name, d] of [
   ["lanes-columns", lanesColumns],
   ["edge-looks", edgeLooks],
   ["flowchart", flowchart],
+  ["state-machine", stateMachine],
 ] as const) {
   if (only !== undefined && only !== name) continue;
   const t0 = performance.now();

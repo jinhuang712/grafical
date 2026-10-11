@@ -217,6 +217,8 @@ function addNodeKinds(d: Diagram, r: () => number, m: Measurer): void {
     if (x < 0.1) n.kind = "state";
     else if (x < 0.15) n.kind = "terminal";
     else if (x < 0.2 && fits({ ...n, kind: "decision" }, n.size ?? "m", m)) n.kind = "decision";
+    else if (x < 0.23) n.kind = "initial";
+    else if (x < 0.26) n.kind = "final";
   }
 }
 

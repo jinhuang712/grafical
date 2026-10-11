@@ -5,10 +5,30 @@
 
 import type { NodeKind, SizeStep } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
-import { BOX, DIAMOND, FRAME } from "./geometry.ts";
+import { BOX, DIAMOND, DOT, FRAME, ROUTE } from "./geometry.ts";
 
-/** The box a node of this kind and size step is laid out in. */
+/** A state machine's start and end are dots: one size, and their label is not drawn (D34). */
+export function isDot(kind: NodeKind): boolean {
+  return kind === "initial" || kind === "final";
+}
+
+/** How far from a box's corners its ports keep. A box narrower than two insets, a dot, has its ports at its centre. */
+export function portInset(w: number): number {
+  return Math.min(ROUTE.portInset, w / 2);
+}
+
+/**
+ * How far from a box's corners its ports may reach, for what must keep clear of
+ * them, such as a group's label. A dot's several ports on one side spread over all
+ * of it, so the whole side counts.
+ */
+export function portReach(w: number): number {
+  return w < 2 * ROUTE.portInset ? 0 : ROUTE.portInset;
+}
+
+/** The box a node of this kind and size step is laid out in. A dot ignores the step. */
 export function nodeBox(kind: NodeKind, step: SizeStep): { w: number; h: number } {
+  if (isDot(kind)) return { w: DOT, h: DOT };
   return kind === "decision" ? DIAMOND[step] : BOX[step];
 }
 
@@ -80,6 +100,24 @@ function diamondMeet(r: Rect, end: Point, next: Point): Point {
   return end;
 }
 
+/** Where a line along the box's side meets a dot's round outline. */
+function circleMeet(r: Rect, end: Point, next: Point): Point {
+  const rad = r.w / 2;
+  const cx = r.x + rad;
+  const cy = r.y + rad;
+  if (end.x === next.x) {
+    const dx = Math.min(rad, Math.abs(end.x - cx));
+    const inset = rad - Math.sqrt(rad * rad - dx * dx);
+    return { x: end.x, y: next.y < end.y ? r.y + inset : r.y + r.h - inset };
+  }
+  if (end.y === next.y) {
+    const dy = Math.min(rad, Math.abs(end.y - cy));
+    const inset = rad - Math.sqrt(rad * rad - dy * dy);
+    return { x: next.x < end.x ? r.x + inset : r.x + r.w - inset, y: end.y };
+  }
+  return end;
+}
+
 /**
  * Where a line meets the drawn outline, when its route ends at `end` on the box's
  * side and its next point is `next`. A box's outline is the box; a store's
@@ -87,6 +125,7 @@ function diamondMeet(r: Rect, end: Point, next: Point): Point {
  */
 export function meetOutline(kind: NodeKind, r: Rect, end: Point, next: Point): Point {
   if (kind === "decision") return diamondMeet(r, end, next);
+  if (isDot(kind)) return circleMeet(r, end, next);
   if (kind !== "store" || end.x !== next.x) return end;
   const inset = storeInset(r, end.x);
   if (inset === 0) return end;

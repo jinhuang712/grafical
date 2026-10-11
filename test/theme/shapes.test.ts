@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { DIAMOND } from "../../src/theme/geometry.ts";
-import { lineRoom, meetOutline, nodeBox, textInside } from "../../src/theme/shapes.ts";
+import {
+  lineRoom,
+  meetOutline,
+  nodeBox,
+  portInset,
+  portReach,
+  textInside,
+} from "../../src/theme/shapes.ts";
 
 describe("node shapes (D34)", () => {
   const r = { x: 0, y: 0, w: 184, h: 80 };
@@ -19,6 +26,22 @@ describe("node shapes (D34)", () => {
     expect(textInside("decision", r, { x: 52, y: 32, w: 80, h: 16 })).toBe(true);
     expect(textInside("decision", r, { x: 10, y: 6, w: 40, h: 16 })).toBe(false);
     expect(textInside("service", r, { x: 10, y: 6, w: 40, h: 16 })).toBe(true);
+  });
+
+  it("gives a start and an end one small size, whatever the step", () => {
+    expect(nodeBox("initial", "l")).toEqual({ w: 24, h: 24 });
+    expect(nodeBox("final", "s")).toEqual({ w: 24, h: 24 });
+    // A dot's single port sits at its centre; its several ports may spread over it.
+    expect(portInset(24)).toBe(12);
+    expect(portReach(24)).toBe(0);
+    expect(portInset(136)).toBe(portReach(136));
+  });
+
+  it("moves a line's end onto a dot's round outline", () => {
+    const dot = { x: 0, y: 0, w: 24, h: 24 };
+    expect(meetOutline("final", dot, { x: 12, y: 0 }, { x: 12, y: -30 })).toEqual({ x: 12, y: 0 });
+    const off = meetOutline("final", dot, { x: 4, y: 0 }, { x: 4, y: -30 });
+    expect(off.y).toBeCloseTo(12 - Math.sqrt(144 - 64), 6);
   });
 
   it("moves a line's end from the box onto the diamond's slanted side", () => {

@@ -249,6 +249,19 @@ describe("edges", () => {
   });
 });
 
+describe("dots", () => {
+  it("a start and an end keep their label in the file, and draw none (D34)", () => {
+    const d = ok(fx, [
+      { op: "node.add", id: "begin", layer: "topics", label: "begin", kind: "initial", size: "l" },
+    ]);
+    roundTrips(d);
+    expect(node(d, "begin")).toMatchObject({ label: "begin", kind: "initial" });
+    const dot = layout(d, m).nodes.find((n) => n.id === "begin");
+    expect(dot?.rect.w).toBe(24);
+    expect(dot?.texts).toEqual([]);
+  });
+});
+
 describe("groups", () => {
   it("describe adds a quieter second label, drawn after the label", () => {
     const d = ok(fx, [{ op: "group.describe", id: "catalog-sync", text: "write side" }]);

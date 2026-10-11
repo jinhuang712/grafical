@@ -59,6 +59,19 @@ function nodeShape(n: SceneNode, P: Paint): string[] {
   const fill = n.accent ? p.accent.fill : kind.fill;
   const sw = n.accent ? p.accent.strokeWidth : p.strokeWidth;
   if (n.kind === "store") return cylinder(n.rect, fill, stroke, sw);
+  if (n.kind === "initial" || n.kind === "final") {
+    // A start is a filled dot; an end is a ring around a smaller dot.
+    const rad = n.rect.w / 2;
+    const cx = num(n.rect.x + rad);
+    const cy = num(n.rect.y + rad);
+    const out = [
+      `<circle cx="${cx}" cy="${cy}" r="${num(rad)}" fill="${fill}" stroke="${stroke}" stroke-width="${num(sw)}"/>`,
+    ];
+    if (n.kind === "final") {
+      out.push(`<circle cx="${cx}" cy="${cy}" r="${num(rad - 5)}" fill="${stroke}"/>`);
+    }
+    return out;
+  }
   if (n.kind === "decision") {
     const r = n.rect;
     const cx = r.x + r.w / 2;

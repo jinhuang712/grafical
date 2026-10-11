@@ -10,7 +10,7 @@
 import { laneRanks, laneRun } from "../model/lanes.ts";
 import { DEFAULT_SIZE, type Diagram, type DiagramNode } from "../model/types.ts";
 import { BOX, GROUP, LANE, ROUTE, SPACING } from "../theme/geometry.ts";
-import { nodeBox } from "../theme/shapes.ts";
+import { nodeBox, portReach } from "../theme/shapes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import type { SideSlot } from "./side.ts";
@@ -202,7 +202,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         .filter((m) => m.layer === top && (topEnds.get(m.id) ?? 0) > 0)
         .map((m) => ({
           col: m.col,
-          d: m.w / 2 - ROUTE.portInset + GROUP.labelClear + text.groupLabelW(g) + GROUP.labelInset,
+          d: m.w / 2 - portReach(m.w) + GROUP.labelClear + text.groupLabelW(g) + GROUP.labelInset,
         }));
     };
     // The left side of a group's box and of its label room, as terms from each member.
@@ -492,7 +492,6 @@ function laneSides(
  * for each group, the room its seat leaves: negative when no seat leaves enough.
  */
 function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, number>): number[] {
-  const inset = ROUTE.portInset;
   const clr = GROUP.labelClear;
   return groups.map((g) => {
     const row = (layers[g.top]?.nodes ?? []).filter(
@@ -501,27 +500,45 @@ function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, num
     let roomy: number | undefined;
     let best = g.labelX;
     let bestSlack = Number.NEGATIVE_INFINITY;
-    for (let x = g.x0 + GROUP.labelInset; x + g.labelW <= g.x1 - GROUP.labelInset + 1e-6; x += 4) {
+    let bestTotal = Number.NEGATIVE_INFINITY;
+    // Seats every 4 px, and the rightmost seat exactly: a box that grew for its label
+    // has room for it there, which the 4 px steps can miss.
+    const last = g.x1 - GROUP.labelInset - g.labelW;
+    const xs: number[] = [];
+    for (let x = g.x0 + GROUP.labelInset; x <= last + 1e-6; x += 4) xs.push(x);
+    if (xs.length > 0 && (xs[xs.length - 1] as number) < last - 1e-6) xs.push(last);
+    for (const x of xs) {
       const lo = x - clr;
       const hi = x + g.labelW + clr;
       let slack = Number.POSITIVE_INFINITY;
+      let total = 0;
       let centred = true;
       for (const n of row) {
-        const a = n.x + inset;
-        const b = n.x + n.w - inset;
+        const a = n.x + portReach(n.w);
+        const b = n.x + n.w - portReach(n.w);
         const c = centreX(n);
         if (c > lo - 1e-6 && c < hi + 1e-6) centred = false;
-        const room =
-          hi <= a || lo >= b ? b - a : Math.max(Math.min(b, lo) - a, b - Math.max(a, hi));
+        // A dot's ports sit at its centre or spread over all of it, so a label over
+        // any part of it leaves its lines no room (D34).
+        const clear = hi <= a || lo >= b;
+        const room = clear
+          ? b - a
+          : portReach(n.w) === 0
+            ? -1
+            : Math.max(Math.min(b, lo) - a, b - Math.max(a, hi));
         slack = Math.min(slack, room - ((topEnds.get(n.id) ?? 1) - 1) * ROUTE.portPitch);
+        total += room;
       }
       if (slack >= 0 && centred) {
         g.labelX = x;
         return slack;
       }
       if (slack >= 0) roomy ??= x;
-      if (slack > bestSlack) {
+      // When the most crowded member leaves every seat the same room, the seat that
+      // leaves the others the most room wins, so the label stays off their ports too.
+      if (slack > bestSlack || (slack === bestSlack && total > bestTotal)) {
         bestSlack = slack;
+        bestTotal = total;
         best = x;
       }
     }

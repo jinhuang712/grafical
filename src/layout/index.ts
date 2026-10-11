@@ -37,7 +37,7 @@ import type {
 import type { Measurer } from "../text/types.ts";
 import { BAND, FRAME, GROUP, LANE, ROUTE, SPACING, type Spacing } from "../theme/geometry.ts";
 import { lineStyle } from "../theme/paint.ts";
-import { textTop } from "../theme/shapes.ts";
+import { isDot, textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { cutRoute, planEnds, refineEnds } from "./ends.ts";
@@ -831,7 +831,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     for (const n of l.nodes) {
       const rect: Rect = { x: centre + n.x, y: nodeTop(l.index, n.h), w: n.w, h: n.h };
       const texts: PlacedText[] = [];
-      if (withText) {
+      // A dot's label stays in the file and in show, but is not drawn (D34).
+      if (withText && !isDot(n.node.kind)) {
         const { label: lines, sub } = nodeLines(
           n.node.kind,
           n.w,

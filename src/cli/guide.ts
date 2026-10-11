@@ -70,7 +70,7 @@ RULES
 - Defaults: kind service, edge kind call, density normal, sizing auto.
 
 VOCABULARY
-node kind: service, store, queue, external, actor, state (rounded), terminal (pill: Start or End), decision (diamond: a short question)
+node kind: service, store, queue, external, actor, state (rounded), terminal (pill: Start or End), decision (diamond: a short question), initial and final (start dot, end ring)
 edge kind: call (request), async (message or event, dashed), data (data movement), optional (dotted), link (no arrowhead)
 size: s, m, l. density: compact, normal, airy
 

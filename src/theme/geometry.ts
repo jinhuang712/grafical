@@ -17,6 +17,9 @@ export const BOX: Record<SizeStep, { w: number; h: number }> = {
  * its box is larger than a plain box of the same step: medium fits "Within 30
  * days?" on one line, large two short lines of about 115 px.
  */
+/** The one size of a state machine's start and end dots (D34). */
+export const DOT = 24;
+
 export const DIAMOND: Record<SizeStep, { w: number; h: number }> = {
   s: { w: 136, h: 64 },
   m: { w: 184, h: 80 },

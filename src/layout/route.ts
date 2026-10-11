@@ -25,6 +25,7 @@ import type { Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
 import { ROUTE } from "../theme/geometry.ts";
 import { lineStyle } from "../theme/paint.ts";
+import { portInset } from "../theme/shapes.ts";
 import { routeGutter } from "./gutter.ts";
 import { centreX, type PLayer, type PNode } from "./place.ts";
 import type { SideSlot } from "./side.ts";
@@ -541,7 +542,7 @@ function chooseGaps(
     // A corridor that one end's ports can reach straight saves that end a jog:
     // two bends at most instead of four (D25 rule 2).
     const reach = (n: PNode, lo: number, hi: number) =>
-      hi >= n.x + ROUTE.portInset && lo <= n.x + n.w - ROUTE.portInset;
+      hi >= n.x + portInset(n.w) && lo <= n.x + n.w - portInset(n.w);
     // The line goes on into the lower end's top side, past any group label there.
     const lower = forbidTop.get(Math.max(pl.u.layer, pl.v.layer)) ?? [];
     const taken = k === undefined ? undefined : chosen.get(k);
@@ -584,7 +585,7 @@ function chooseGaps(
         chi = clo;
       }
       const meet = (n: PNode, x: number, lo: number, hi: number) =>
-        clamp(x, Math.max(lo, n.x + ROUTE.portInset), Math.min(hi, n.x + n.w - ROUTE.portInset));
+        clamp(x, Math.max(lo, n.x + portInset(n.w)), Math.min(hi, n.x + n.w - portInset(n.w)));
       const straight = (lo: number, hi: number) =>
         reach(pl.u, lo, hi)
           ? meet(pl.u, xs, lo, hi)
@@ -788,8 +789,8 @@ function chooseSideExits(
         : next.x + next.w + pad
       : u.x + u.w + pad;
     const hi = left ? u.x - pad : next === undefined ? Number.POSITIVE_INFINITY : next.x - pad;
-    const plo = Math.max(lo, v.x + ROUTE.portInset);
-    const phi = Math.min(hi, v.x + v.w - ROUTE.portInset);
+    const plo = Math.max(lo, v.x + portInset(v.w));
+    const phi = Math.min(hi, v.x + v.w - portInset(v.w));
     if (phi < plo) continue;
     // The vertical part passes the group labels above the lower of the two rows.
     const spans = forbidTop.get(Math.max(u.layer, v.layer)) ?? [];
@@ -872,8 +873,8 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     if (list === undefined) sides.set(k, [end]);
     else list.push(end);
   };
-  const inset = ROUTE.portInset;
-  const within = (n: PNode, x: number) => clamp(x, n.x + inset, n.x + n.w - inset);
+  const within = (n: PNode, x: number) =>
+    clamp(x, n.x + portInset(n.w), n.x + n.w - portInset(n.w));
   /** A port that leans toward x, at most a quarter of the box from its centre. */
   const toward = (n: PNode, x: number) =>
     snap(centreX(n) + clamp(x - centreX(n), -n.w / 4, n.w / 4));
@@ -914,13 +915,13 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     } else if (pl.gaps.length > 0) {
       const toGap = pl.gapX[0] ?? pl.ideal[1] ?? centreX(v);
       const fromGap = pl.gapX[pl.gapX.length - 1] ?? pl.ideal[pl.ideal.length - 2] ?? centreX(u);
-      ds = step(toGap, u.x + inset, u.x + u.w - inset);
-      dt = step(fromGap, v.x + inset, v.x + v.w - inset);
+      ds = step(toGap, u.x + portInset(u.w), u.x + u.w - portInset(u.w));
+      dt = step(fromGap, v.x + portInset(v.w), v.x + v.w - portInset(v.w));
       if (ds === toGap) ws = STRAIGHT;
       if (dt === fromGap) wt = STRAIGHT;
     } else {
-      const lo = Math.max(u.x, v.x) + inset;
-      const hi = Math.min(u.x + u.w, v.x + v.w) - inset;
+      const lo = Math.max(u.x + portInset(u.w), v.x + portInset(v.w));
+      const hi = Math.min(u.x + u.w - portInset(u.w), v.x + v.w - portInset(v.w));
       if (hi >= lo) {
         // Straight, and clear of a group label on the lower node's top side.
         const lower = pl.kind === "down" ? v : u;

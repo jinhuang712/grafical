@@ -11,6 +11,7 @@ import { dense } from "../fixtures/dense.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 import { flowchart } from "../fixtures/flowchart.ts";
 import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
+import { stateMachine } from "../fixtures/state-machine.ts";
 import { tiny } from "../fixtures/tiny.ts";
 import { generate } from "../fuzz/gen.ts";
 
@@ -87,6 +88,7 @@ describe("the separate geometry check (benchmark 7)", () => {
       ["dark", { ...catalogSyncGrouped, style: "dark" }],
       ["edge-looks", edgeLooks],
       ["flowchart", flowchart],
+      ["state-machine", stateMachine],
     ];
     for (let seed = 1; seed <= 100; seed++)
       fixtures.push([`seed ${seed}`, generate(seed, m).diagram]);

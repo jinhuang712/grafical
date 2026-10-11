@@ -12,6 +12,8 @@ export const NODE_KINDS = [
   "state",
   "terminal",
   "decision",
+  "initial",
+  "final",
 ] as const;
 export type NodeKind = (typeof NODE_KINDS)[number];
 

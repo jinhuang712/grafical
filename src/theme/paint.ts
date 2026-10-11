@@ -128,6 +128,8 @@ export const PAINT: Paint = {
       state: { fill: "#ffffff", stroke: "#b4bac3" },
       terminal: { fill: "#e9edf2", stroke: "#9aa4b1" },
       decision: { fill: "#ffffff", stroke: "#b4bac3" },
+      initial: { fill: "#4b525c", stroke: "#4b525c" },
+      final: { fill: "#ffffff", stroke: "#4b525c" },
     },
     accent: { fill: "#eef3fd", stroke: "#2f5fc4", strokeWidth: 1.5 },
   },

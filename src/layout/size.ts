@@ -7,7 +7,7 @@
 import type { Diagram, DiagramNode, NodeKind, SizeStep } from "../model/types.ts";
 import type { Line, Measurer } from "../text/types.ts";
 import { FRAME } from "../theme/geometry.ts";
-import { lineRoom, nodeBox } from "../theme/shapes.ts";
+import { isDot, lineRoom, nodeBox } from "../theme/shapes.ts";
 import { type TypeRamp, themeOf } from "../theme/themes.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 import { lineHeight } from "./text.ts";
@@ -51,6 +51,8 @@ export function fits(
   m: Measurer,
   T: TypeRamp = TYPE_RAMP,
 ): boolean {
+  // A dot draws no text, so any label fits it.
+  if (isDot(node.kind)) return true;
   const box = nodeBox(node.kind, step);
   const { label, sub, room } = nodeLines(node.kind, box.w, box.h, node.label, node.sublabel, m, T);
   if (label.length > FRAME.labelLines || sub.length > FRAME.sublabelLines) return false;
