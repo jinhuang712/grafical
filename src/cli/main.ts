@@ -26,7 +26,7 @@ import {
   writeAtomic,
 } from "./pipeline.ts";
 import { showDiagram } from "./show.ts";
-import { openWindow, startViewer } from "./view.ts";
+import { openWindow, startViewer, windowSize } from "./view.ts";
 
 type Opts = Record<string, unknown>;
 
@@ -725,7 +725,7 @@ function build(): Command {
       }
       const viewer = await startViewer(file, port);
       process.stdout.write(`viewing ${file} at ${viewer.url} (Ctrl-C stops it)\n`);
-      if (opts.open !== false) openWindow(viewer.url);
+      if (opts.open !== false) openWindow(viewer.url, windowSize(viewer.size()));
       await new Promise<void>((resolve) => {
         process.once("SIGINT", resolve);
         process.once("SIGTERM", resolve);

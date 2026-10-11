@@ -3,7 +3,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { runWrite } from "../../src/cli/pipeline.ts";
-import { changedParts, type Frame, startViewer } from "../../src/cli/view.ts";
+import {
+  changedParts,
+  describeOp,
+  type Frame,
+  startViewer,
+  type ViewEvent,
+  windowSize,
+} from "../../src/cli/view.ts";
 import { layout } from "../../src/layout/index.ts";
 import { applyOps } from "../../src/model/apply.ts";
 import { writeDiagram } from "../../src/model/io.ts";
@@ -92,6 +99,40 @@ async function frames(url: string) {
   };
 }
 
+describe("the list of changes and the window", () => {
+  it("describes operations in a few words", () => {
+    expect(
+      describeOp({
+        op: "node.add",
+        id: "search",
+        layer: "services",
+        label: "search-api",
+        kind: "service",
+        after: "bff",
+      }),
+    ).toBe('node add search "search-api" in services');
+    expect(
+      describeOp({ op: "edge.add", from: "bff", to: "search", label: "query", kind: "call" }),
+    ).toBe('edge add bff → search "query"');
+    expect(describeOp({ op: "lane.join", lane: "webteam", members: ["search"] })).toBe(
+      "lane join webteam search",
+    );
+    expect(describeOp({ op: "diagram.style", style: "dark" })).toBe("diagram style dark");
+    expect(describeOp({ op: "node.emphasize", id: "payments", off: true })).toBe(
+      "node emphasize payments off",
+    );
+  });
+
+  it("sizes the window to the picture, within a small laptop screen", () => {
+    expect(windowSize()).toEqual({ width: 1200, height: 860 });
+    expect(windowSize({ width: 776, height: 440 })).toEqual({ width: 1108, height: 541 });
+    const huge = windowSize({ width: 3000, height: 1600 });
+    expect(huge.width).toBeLessThanOrEqual(1440);
+    expect(huge.height).toBeLessThanOrEqual(900);
+    expect(windowSize({ width: 200, height: 100 })).toEqual({ width: 760, height: 520 });
+  });
+});
+
 describe("startViewer", () => {
   it("serves the page and pushes a new picture when the file or its stylesheet changes", async () => {
     const file = join(dir, "live.grafical.yaml");
@@ -106,6 +147,9 @@ describe("startViewer", () => {
       expect(first.svg).toContain("orders-api");
       expect(first.changed).toEqual([]);
       expect(first.stale).toBe(false);
+      const history = (first as Frame & { history: ViewEvent[] }).history;
+      expect(history.map((e) => e.kind)).toEqual(["open"]);
+      expect(history[0]?.lines[0]).toBe("live.grafical.yaml: 5 boxes, 5 arrows");
 
       // An edit by another process, the way an agent makes it.
       expect(
@@ -114,6 +158,10 @@ describe("startViewer", () => {
       const renamed = await stream.next();
       expect(renamed.svg).toContain("orders-svc");
       expect(renamed.changed).toHaveLength(1);
+      expect(renamed.event).toMatchObject({
+        kind: "change",
+        lines: ['node rename api "orders-svc"'],
+      });
 
       // A broken file keeps the last good picture and says why.
       writeFileSync(file, "grafical: 1\nlayers: [");
@@ -121,6 +169,7 @@ describe("startViewer", () => {
       expect(broken.stale).toBe(true);
       expect(broken.svg).toBe(renamed.svg);
       expect(broken.problems.join("\n")).toMatch(/error/);
+      expect(broken.event?.kind).toBe("error");
 
       // A change to the stylesheet alone redraws the picture.
       const sheet = join(dir, "house.grafical-style.yaml");
@@ -132,6 +181,7 @@ describe("startViewer", () => {
       writeFileSync(sheet, 'grafical-style: 1\npaint:\n  background: "#f0f0e8"\n');
       const restyled = await stream.next();
       expect(restyled.svg).toContain("#f0f0e8");
+      expect(restyled.event?.lines).toEqual(["the stylesheet changed"]);
     } finally {
       stream.close();
       await viewer.close();

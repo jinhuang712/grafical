@@ -19,7 +19,7 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical show <file>` | Print a compact view of the diagram for agents | done |
 | `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (D14) | done |
 | `grafical render <file> [--svg <out>] [--png <out>]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file. `--scale` sets the PNG scale, from 1 to 4 | done |
-| `grafical view <file> [--port <n>] [--no-open]` | Open a window that shows the diagram as it is now, redrawn within a moment of every change, with the changed parts marked and the problems listed. Ctrl-C stops it (D31) | done |
+| `grafical view <file> [--port <n>] [--no-open]` | Open a window, sized to the diagram, that shows it as it is now, redrawn within a moment of every change, with the changed parts marked, a list of each change as operations, and the problems. Ctrl-C stops it (D31) | done |
 | `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file (D18) | done |
 | `grafical guide` | Print the operation reference for agents, within 3k tokens | done |
 | `grafical review <file>` | Open the board on the diagram | stage 2 |
