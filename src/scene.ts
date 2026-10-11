@@ -17,7 +17,16 @@ export interface Rect {
   h: number;
 }
 
-export type TextRole = "title" | "layer-label" | "node-label" | "node-sublabel" | "edge-label";
+export type TextRole =
+  | "title"
+  | "subtitle"
+  | "note"
+  | "legend"
+  | "group-label"
+  | "layer-label"
+  | "node-label"
+  | "node-sublabel"
+  | "edge-label";
 
 export interface PlacedRun {
   text: string;
@@ -36,9 +45,31 @@ export interface PlacedText {
   bbox: Rect;
 }
 
+/**
+ * A layer's row. Rows are not drawn (D7): the band and label stay in the scene
+ * for the checker and for debugging, and the renderer skips them.
+ */
 export interface SceneLayer {
   id: string;
   band: Rect;
+  label: PlacedText;
+}
+
+/** A system box around its member nodes (D7). */
+export interface SceneGroup {
+  id: string;
+  rect: Rect;
+  label: PlacedText;
+  /** Ids of the member nodes. */
+  members: string[];
+}
+
+/** One line style in the legend, with a short sample line (D8). */
+export interface SceneLegendItem {
+  /** "solid": calls and data reads. "dashed": messages through a queue. */
+  style: "solid" | "dashed";
+  /** The sample line, left to right, at the label's middle height. */
+  sample: { x1: number; x2: number; y: number };
   label: PlacedText;
 }
 
@@ -66,7 +97,15 @@ export interface Scene {
   width: number;
   height: number;
   title: PlacedText;
+  /** One sentence under the title (D26). */
+  subtitle?: PlacedText;
+  /** The footnote at the bottom (D26). */
+  note?: PlacedText;
+  /** The line styles the diagram uses, top right (D8). Empty when it has no edges. */
+  legend?: SceneLegendItem[];
   layers: SceneLayer[];
+  /** System boxes, drawn behind nodes and edges (D7). */
+  groups?: SceneGroup[];
   nodes: SceneNode[];
   edges: SceneEdge[];
 }

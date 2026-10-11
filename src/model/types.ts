@@ -26,6 +26,14 @@ export interface DiagramNode {
   accent?: boolean;
   /** The id of a node in another layer that this node sits directly above or below. */
   align?: string;
+  /** The id of the group (system) this node belongs to (D7). */
+  group?: string;
+}
+
+/** A system drawn as one box around its member nodes, which may sit in several neighbouring rows (D7). */
+export interface Group {
+  id: string;
+  label: string;
 }
 
 export interface Layer {
@@ -47,9 +55,15 @@ export interface Diagram {
   /** The format version (D22). */
   grafical: number;
   title: string;
+  /** One sentence under the title (D26). */
+  subtitle?: string;
+  /** A footnote, such as "Not shown: …" (D26). */
+  note?: string;
   density: Density;
   /** Ordered top to bottom. */
   layers: Layer[];
+  /** The systems, in creation order. Absent or empty: no groups. Members name their group (D7). */
+  groups?: Group[];
   /** Ordered: list order is creation order, and decides nothing visual. */
   edges: Edge[];
 }
