@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
+import { advise } from "../check/advice.ts";
 import { layout } from "../layout/index.ts";
-import { budgetWarnings } from "../model/budget.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
@@ -545,14 +545,15 @@ function build(): Command {
       process.exitCode = emit(d, opts.json === true);
       return;
     }
-    const defects = inspect(d, await createMeasurer(), opts.all === true);
+    const m = await createMeasurer();
+    const defects = inspect(d, m, opts.all === true);
     process.exitCode = emit(
       {
         ok: defects.length === 0,
         changed: [],
         errors: [],
         defects,
-        warnings: budgetWarnings(d),
+        warnings: advise(d, layout(d, m)),
       },
       opts.json === true,
     );
@@ -601,7 +602,7 @@ function build(): Command {
       changed: [],
       errors: [],
       defects,
-      warnings: budgetWarnings(d),
+      warnings: advise(d, scene),
     };
     if (opts.json !== true) for (const f of files) process.stdout.write(`wrote ${f}\n`);
     process.exitCode = emit(report, opts.json === true, { files });

@@ -94,7 +94,7 @@ Add groups after their nodes.
 OUTPUT
 Success: ok changed: <ids>   (--json: {"ok":true,"changed":[...],"errors":[],"defects":[],"warnings":[]})
 Failure: failed, file unchanged, then one line per problem. Exit codes: 0 success, 1 an operation error or defect (file unchanged), 2 a usage error.
-A warning does not block and does not change the exit code: warning too-many-nodes ... Candidate merges: a, b (same group, same edges). Merge them with node remove and one new node.
+A warning never blocks; weigh it: too-many-nodes (node merge), too-wide or crowded-layer (layer split), lonely-group, edge-crosses-layer (layer move).
 
 ERRORS
 error op <index> <code> <field>: found <value>; expected <what>; <suggestion>

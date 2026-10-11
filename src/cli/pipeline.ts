@@ -2,11 +2,12 @@
 // read, apply, lay out, check, and write only if nothing is wrong.
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { advise } from "../check/advice.ts";
 import { check } from "../check/index.ts";
 import type { Defect, OpError } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
-import { budgetWarnings, type Warning } from "../model/budget.ts";
+import type { Warning } from "../model/budget.ts";
 import { readDiagram, writeDiagram } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import type { Diagram } from "../model/types.ts";
@@ -161,6 +162,6 @@ export async function runWrite(file: string, ops: Op[], create = false): Promise
     changed: result.changed,
     errors: [],
     defects: [],
-    warnings: budgetWarnings(result.diagram),
+    warnings: advise(result.diagram, layout(result.diagram, m)),
   };
 }

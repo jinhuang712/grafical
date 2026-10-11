@@ -152,7 +152,12 @@ grafical guide
 - Clearing: `node describe`, `node align`, `edge relabel`, `group describe` and `diagram legend` without their value clear it.
 - An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group or a layer. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
 - A group's members must sit in neighbouring rows, or the write fails with `group-gap`. `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
-- A write over 16 nodes succeeds with a `too-many-nodes` warning that names merge candidates (D26). Warnings never change the exit code.
+- Warnings never block and never change the exit code. A write, `check` and `render` report them:
+  - `too-many-nodes`: more than 16 nodes, with merge candidates (D26);
+  - `too-wide`: the picture is wider than 1024 px, naming the widest layer to split (D29);
+  - `crowded-layer`: a layer holds more than 5 nodes (D29);
+  - `lonely-group`: a group holds one node;
+  - `edge-crosses-layer`: an edge's line threads between the nodes of a layer it does not connect (D29).
 - Every command accepts `--json`. Exit codes: 0 for success, 1 for an operation error or a defect, 2 for a usage error.
 - `grafical guide` prints this reference, written for agents, within 3k tokens (D17).
 
