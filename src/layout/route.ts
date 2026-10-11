@@ -852,13 +852,19 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     }
     for (const id of [...buses.keys()].sort(cmp)) {
       const entry = buses.get(id);
-      const representative = entry?.ends[0];
-      if (entry === undefined || representative === undefined) continue;
+      if (entry === undefined || entry.ends[0] === undefined) continue;
+      // A member that can run straight keeps its line straight: the trunk is
+      // that line, and the others branch off it. Otherwise the port sits at the
+      // members' median.
+      const straight = entry.ends
+        .filter((e) => e.weight > 1)
+        .sort((a, b) => Math.abs(a.desired - centreX(n)) - Math.abs(b.desired - centreX(n)))[0];
       slots.push({
-        ...representative,
-        desired: median(entry.ends.map((e) => e.desired).sort((a, b) => a - b)),
+        ...(straight ?? entry.ends[0]),
+        desired:
+          straight?.desired ?? median(entry.ends.map((e) => e.desired).sort((a, b) => a - b)),
         far: median(entry.ends.map((e) => e.far).sort((a, b) => a - b)),
-        weight: 1,
+        weight: straight === undefined ? 1 : STRAIGHT,
         key: `\u0001${id}`,
       });
     }
