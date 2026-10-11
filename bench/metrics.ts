@@ -13,6 +13,7 @@ export interface Turn {
   uncachedInput: number;
   cacheWrite: number;
   cacheRead: number;
+  /** As the stream reports it when the message starts: too low. The step total in `Metrics.tokens` is right. */
   output: number;
   /** cache reads ÷ (uncached input + cache writes + cache reads) */
   cacheHitRate: number;
@@ -327,7 +328,9 @@ export function computeMetrics(
   const uncachedInput = sum("uncachedInput");
   const cacheWrite = sum("cacheWrite");
   const cacheRead = sum("cacheRead");
-  const output = sum("output");
+  // A streamed message reports its output tokens as they stood when it started,
+  // so the per-turn sum undercounts. The result event holds the step's real total.
+  const output: number = result?.usage?.output_tokens ?? sum("output");
 
   const uses = toolUses(events);
   const toolCalls: Record<string, number> = {};

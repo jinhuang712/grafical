@@ -83,6 +83,13 @@ describe("tokens and cache hit rate", () => {
     expect(m.perTurn.map((t) => t.cacheHitRate)).toEqual([0, 1000 / 1205, 1200 / 1305]);
   });
 
+  it("takes output tokens from the result, because streamed messages undercount them", () => {
+    const withUsage = [...events.slice(0, -1), { ...result, usage: { output_tokens: 10_820 } }];
+    const m = computeMetrics(withUsage, { arm: "raw", kind: "draft" });
+    expect(m.tokens.output).toBe(10_820);
+    expect(m.tokens.fresh).toBe(20 + 1300 + 10_820);
+  });
+
   it("reads cost, time, turns, session and model from the result", () => {
     const m = computeMetrics(events, { arm: "raw", kind: "draft" });
     expect(m).toMatchObject({
