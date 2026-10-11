@@ -120,6 +120,90 @@ export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m:
   return best;
 }
 
+/** Most layouts `orderTogether` tries, so that a large batch stays fast. */
+const ORDER_TRIES = 1500;
+
+/**
+ * How bad the routes of a scene are, compared in order: crossings plus edges with
+ * more than two bends (D25 rule 2), then crossings, then bends, then length.
+ */
+function routeCost(scene: Scene): number[] {
+  let over = 0;
+  for (const e of scene.edges) {
+    let bends = 0;
+    for (let i = 2; i < e.points.length; i++) {
+      const a = e.points[i - 2];
+      const b = e.points[i - 1];
+      const c = e.points[i];
+      if (a === undefined || b === undefined || c === undefined) continue;
+      const straight = (a.x === b.x && b.x === c.x) || (a.y === b.y && b.y === c.y);
+      if (!straight) bends++;
+    }
+    if (bends > 2) over++;
+  }
+  const s = routeStats(scene.edges.map((e) => e.points));
+  return [s.crossings + over, s.crossings, s.bends, s.length];
+}
+
+function lower(a: number[], b: number[]): boolean {
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i] ?? 0;
+    const y = b[i] ?? 0;
+    if (Math.abs(x - y) > 1e-6) return x < y;
+  }
+  return false;
+}
+
+/**
+ * D24: the nodes one batch added without a position, ordered together. Each in
+ * turn tries every slot of its row and takes the one with the lowest route cost,
+ * while the cost drops. The other nodes keep their order, and no slot that splits
+ * a group or breaks an alignment is taken. Nodes are tried in the order given,
+ * slots from the first, so the result is the same on every machine.
+ */
+export function orderTogether(diagram: Diagram, ids: readonly string[], m: Measurer): Diagram {
+  let d = diagram;
+  const cost = (x: Diagram) => routeCost(compute(x, m, false).scene);
+  const checkAlign = d.layers.some((l) => l.nodes.some((n) => n.align !== undefined));
+  let best = cost(d);
+  let tries = 0;
+  for (let pass = 0; pass < 4 && tries < ORDER_TRIES; pass++) {
+    let moved = false;
+    for (const id of ids) {
+      const li = d.layers.findIndex((l) => l.nodes.some((n) => n.id === id));
+      const layer = d.layers[li];
+      const node = layer?.nodes.find((n) => n.id === id);
+      if (layer === undefined || node === undefined) continue;
+      const rest = layer.nodes.filter((n) => n.id !== id);
+      const at = layer.nodes.indexOf(node);
+      let pick: Diagram | undefined;
+      for (let slot = 0; slot <= rest.length && tries < ORDER_TRIES; slot++) {
+        if (slot === at) continue;
+        const nodes = [...rest.slice(0, slot), node, ...rest.slice(slot)];
+        if (splitsGroup(nodes)) continue;
+        const trial: Diagram = {
+          ...d,
+          layers: d.layers.map((l, i) => (i === li ? { ...l, nodes } : l)),
+        };
+        if (checkAlign && buildGrid(trial).alignProblems.length > 0) continue;
+        if (buildGrid(trial).groupProblems.length > 0) continue;
+        tries++;
+        const c = cost(trial);
+        if (lower(c, best)) {
+          best = c;
+          pick = trial;
+        }
+      }
+      if (pick !== undefined) {
+        d = pick;
+        moved = true;
+      }
+    }
+    if (!moved) break;
+  }
+  return d;
+}
+
 const ceil4 = (x: number) => Math.ceil(x / 4 - 1e-9) * 4;
 const ceil8 = (x: number) => Math.ceil(x / 8 - 1e-9) * 8;
 

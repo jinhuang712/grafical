@@ -512,17 +512,24 @@ function newDiagram(op: Extract<Op, { op: "diagram.new" }>): Diagram {
   return d;
 }
 
-/** Once all operations are applied, nodes without a position take the engine's slot (D24). */
+/**
+ * Once all operations are applied, nodes without a position take the engine's
+ * slot (D24): each in turn, then all of them together, so that a node added early
+ * in a batch can still move for the edges added after it.
+ */
 function placePending(s: State, m: Measurer) {
+  const ids: string[] = [];
   for (const p of s.pending) {
     const at = findNode(s.d, p.node);
     if (!at) continue;
+    ids.push(p.node);
     at.layer.nodes.splice(at.index, 1);
     const raw = layoutModule.chooseSlot(s.d, at.layer.id, p.node, m);
     const slot = Math.max(0, Math.min(at.layer.nodes.length, Math.trunc(raw)));
     at.layer.nodes.splice(slot, 0, at.node);
   }
   s.pending = [];
+  if (ids.length >= 2) s.d = layoutModule.orderTogether(s.d, ids, m);
 }
 
 /**
