@@ -35,12 +35,10 @@ export function debugSvg(s: Scene, opts: DebugOptions = {}): string {
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(s.width)}" height="${r2(s.height)}" viewBox="0 0 ${r2(s.width)} ${r2(s.height)}" font-family="Inter, Helvetica Neue, Helvetica, Arial, sans-serif">`,
   );
   out.push(`<rect width="${r2(s.width)}" height="${r2(s.height)}" fill="#ffffff"/>`);
-  for (const l of s.layers) {
-    out.push(
-      `<rect x="${r2(l.band.x)}" y="${r2(l.band.y)}" width="${r2(l.band.w)}" height="${r2(l.band.h)}" rx="6" fill="#f5f6f8"/>`,
-    );
-  }
-  const texts = [s.title, ...s.layers.map((l) => l.label)];
+  // Rows are not drawn (D7); groups are, behind everything else.
+  const frame = frameParts(s);
+  out.push(...frame.behind);
+  const texts = [s.title];
   for (const e of s.edges) {
     const st = EDGE[e.kind] ?? { stroke: "#555" };
     const d = e.points.map((p, i) => `${i === 0 ? "M" : "L"}${r2(p.x)} ${r2(p.y)}`).join(" ");
@@ -61,11 +59,7 @@ export function debugSvg(s: Scene, opts: DebugOptions = {}): string {
   for (const e of s.edges) if (e.label) texts.push(e.label);
   for (const t of texts) {
     const colour =
-      t.role === "layer-label" || t.role === "node-sublabel"
-        ? "#6b7280"
-        : t.role === "edge-label"
-          ? "#4b5260"
-          : "#1f2430";
+      t.role === "node-sublabel" ? "#6b7280" : t.role === "edge-label" ? "#4b5260" : "#1f2430";
     for (const r of t.runs) {
       const weight = r.face.endsWith("600") ? 600 : 400;
       out.push(
@@ -79,6 +73,7 @@ export function debugSvg(s: Scene, opts: DebugOptions = {}): string {
       );
     }
   }
+  out.push(...frame.front);
   out.push("</svg>");
   return `${out.join("\n")}\n`;
 }
