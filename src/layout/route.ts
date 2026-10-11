@@ -561,18 +561,24 @@ function chooseGaps(
       if (gaps.length !== pl.between.length) continue;
       for (const gap of gaps) take(pl, gap);
       if (k !== undefined) chosen.set(k, s.lo);
-      // The line runs where an end's ports can meet it straight, if one can.
-      const meet = (n: PNode, x: number) =>
-        clamp(
-          x,
-          Math.max(s.lo, n.x + ROUTE.portInset),
-          Math.min(s.hi, n.x + n.w - ROUTE.portInset),
-        );
-      const at = reach(pl.u, s.lo, s.hi)
-        ? meet(pl.u, xs)
-        : reach(pl.v, s.lo, s.hi)
-          ? meet(pl.v, xt)
-          : step(xs, s.lo, s.hi);
+      // The line runs where an end's ports can meet it straight, if one can, and
+      // keeps ROUTE.passClear from the nodes it passes where the corridor has room.
+      const extra = ROUTE.passClear - ROUTE.gapPad;
+      let clo = Number.isFinite(s.lo) ? s.lo + extra : s.lo;
+      let chi = Number.isFinite(s.hi) ? s.hi - extra : s.hi;
+      if (chi < clo) {
+        clo = (s.lo + s.hi) / 2;
+        chi = clo;
+      }
+      const meet = (n: PNode, x: number, lo: number, hi: number) =>
+        clamp(x, Math.max(lo, n.x + ROUTE.portInset), Math.min(hi, n.x + n.w - ROUTE.portInset));
+      const straight = (lo: number, hi: number) =>
+        reach(pl.u, lo, hi)
+          ? meet(pl.u, xs, lo, hi)
+          : reach(pl.v, lo, hi)
+            ? meet(pl.v, xt, lo, hi)
+            : undefined;
+      const at = straight(clo, chi) ?? straight(s.lo, s.hi) ?? step(xs, clo, chi);
       pl.ideal = [xs, ...gaps.map(() => at), xt];
       done = true;
       break;

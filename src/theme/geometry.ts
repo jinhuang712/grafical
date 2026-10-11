@@ -107,6 +107,8 @@ export const ROUTE = {
   portInset: 16,
   /** Least distance from a node to a vertical track in the gap beside it. */
   gapPad: 8,
+  /** Distance a line keeps from the nodes of a row it passes, where its corridor has room. */
+  passClear: 24,
   /** Distance between neighbouring vertical tracks in a gap. */
   gapPitch: 12,
   /** Least horizontal space between two runs on one gutter track. */
