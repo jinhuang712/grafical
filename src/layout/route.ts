@@ -185,6 +185,8 @@ const EPS = 1e-6;
 const TRACK_MIN = 8;
 /** Least distance between a port and a line on the far boundary of its gutter. */
 const CLEAR = 8;
+/** What a jog costs a corridor, in px of travel. */
+const JOG = 96;
 /** The weight of a port or gap track that keeps its line straight. */
 const STRAIGHT = 16;
 
@@ -491,11 +493,19 @@ function chooseGaps(plans: Plan[], gapsByLayer: Gap[][]): void {
     if (pl.between.length === 0) continue;
     const xs = centreX(pl.u);
     const xt = centreX(pl.v);
+    // A corridor that one end's ports can reach straight saves that end a jog:
+    // two bends at most instead of four (D25 rule 2).
+    const reach = (n: PNode, lo: number, hi: number) =>
+      hi >= n.x + ROUTE.portInset && lo <= n.x + n.w - ROUTE.portInset;
     const spans = corridors(pl.between, gapsByLayer)
       .map(([lo, hi]) => ({
         lo,
         hi,
-        travel: dist(xs, lo, hi) + dist(xt, lo, hi),
+        travel:
+          dist(xs, lo, hi) +
+          dist(xt, lo, hi) +
+          (reach(pl.u, lo, hi) ? 0 : JOG) +
+          (reach(pl.v, lo, hi) ? 0 : JOG),
         move: dist(xs, lo, hi),
       }))
       .sort((a, b) => a.travel - b.travel || a.move - b.move || a.lo - b.lo);
@@ -509,7 +519,18 @@ function chooseGaps(plans: Plan[], gapsByLayer: Gap[][]): void {
       }
       if (gaps.length !== pl.between.length) continue;
       for (const gap of gaps) take(pl, gap);
-      const at = step(xs, s.lo, s.hi);
+      // The line runs where an end's ports can meet it straight, if one can.
+      const meet = (n: PNode, x: number) =>
+        clamp(
+          x,
+          Math.max(s.lo, n.x + ROUTE.portInset),
+          Math.min(s.hi, n.x + n.w - ROUTE.portInset),
+        );
+      const at = reach(pl.u, s.lo, s.hi)
+        ? meet(pl.u, xs)
+        : reach(pl.v, s.lo, s.hi)
+          ? meet(pl.v, xt)
+          : step(xs, s.lo, s.hi);
       pl.ideal = [xs, ...gaps.map(() => at), xt];
       done = true;
       break;
