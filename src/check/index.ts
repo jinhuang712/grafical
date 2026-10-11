@@ -17,8 +17,14 @@ import {
   segmentsOf,
 } from "./geometry.ts";
 
-/** Text must stay this far inside its node's rect. */
+/** Text must stay this far inside its node's rect, left and right. */
 export const NODE_PADDING = 8;
+/**
+ * Text must stay this far inside its node's rect, top and bottom. It is smaller
+ * than the side padding because a text bbox is a line box: it already includes
+ * the fonts' ascent and descent, which reach well beyond the visible letters.
+ */
+export const NODE_PADDING_Y = 4;
 /** An edge may graze a node's rect by this much, at its ports. */
 export const PORT_TOLERANCE = 4;
 /** Two edges must share at least this much length to count as overlapping. */
@@ -40,7 +46,7 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Defect[]): void {
     for (const n of layer.nodes) model.set(n.id, { size: n.size, layer: layer.id });
   }
   for (const n of scene.nodes) {
-    const box = inset(n.rect, NODE_PADDING);
+    const box = inset(n.rect, NODE_PADDING, NODE_PADDING_Y);
     const info = model.get(n.id);
     for (const t of n.texts) {
       const isSub = t.role === "node-sublabel";
@@ -67,7 +73,7 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Defect[]): void {
           code: "overflow",
           elements: [n.id],
           found: `the ${what} of ${n.id} spans ${rectText(t.bbox)}, outside ${rectText(box)}`,
-          expected: `text inside the box with ${NODE_PADDING}px padding`,
+          expected: `text inside the box, ${NODE_PADDING}px from its sides and ${NODE_PADDING_Y}px from its top and bottom`,
           fix: isSub ? shorten : `${shorten}${bigger}`,
         });
       }
@@ -162,6 +168,15 @@ function sharedEndpoints(a: SceneEdge, b: SceneEdge): string[] {
   return [a.from, a.to].filter((id) => id === b.from || id === b.to);
 }
 
+/**
+ * The router draws a fan-out of unlabelled edges of one kind from one node as a
+ * bus: one trunk that branches (D11). Its members share segments on purpose, and
+ * a reader loses nothing, since they carry no label and the same kind.
+ */
+function isBus(a: SceneEdge, b: SceneEdge): boolean {
+  return a.from === b.from && a.kind === b.kind && !a.label && !b.label;
+}
+
 function checkEdgeOverlap(scene: Scene, out: Defect[]): void {
   const rects = new Map(scene.nodes.map((n) => [n.id, n.rect]));
   const edges = scene.edges;
@@ -169,6 +184,7 @@ function checkEdgeOverlap(scene: Scene, out: Defect[]): void {
     for (let j = i + 1; j < edges.length; j++) {
       const a = edges[i] as SceneEdge;
       const b = edges[j] as SceneEdge;
+      if (isBus(a, b)) continue;
       const shared = sharedEndpoints(a, b)
         .map((id) => rects.get(id))
         .filter((r): r is Rect => !!r);

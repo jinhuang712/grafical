@@ -86,6 +86,16 @@ describe("overflow", () => {
     expect(codes(run(scene([node("a", 40, 40, "short")])))).toEqual([]);
   });
 
+  it("allows a line box 4px from the top and bottom, but not closer", () => {
+    const s = scene([node("a", 40, 40, "short")]);
+    const n = s.nodes[0] as SceneNode;
+    const label = n.texts[0] as PlacedText;
+    n.texts = [{ ...label, bbox: { ...label.bbox, y: 45, h: 38 } }];
+    expect(codes(run(s))).toEqual([]);
+    n.texts = [{ ...label, bbox: { ...label.bbox, y: 42, h: 13 } }];
+    expect(codes(run(s))).toEqual(["overflow"]);
+  });
+
   it("fails text that is too wide, and suggests a real command", () => {
     const d = run(scene([node("a", 40, 40, "a very long label indeed")]));
     expect(codes(d)).toEqual(["overflow"]);
@@ -257,6 +267,24 @@ describe("edge-overlap", () => {
     const d = run(scene(nodes, [x, y]));
     expect(codes(d)).toEqual(["edge-overlap"]);
     expect(d[0]?.found).toContain("50px");
+  });
+  it("passes a bus: unlabelled edges of one kind from one node, sharing a trunk", () => {
+    const withE = [...nodes, node("e", 172, 240)];
+    const toD = edge("a->d", "a", "d", [
+      [100, 88],
+      [100, 150],
+      [360, 150],
+      [360, 240],
+    ]);
+    const toE = edge("a->e", "a", "e", [
+      [100, 88],
+      [100, 150],
+      [260, 150],
+      [260, 240],
+    ]);
+    expect(codes(run(scene(withE, [toD, toE])))).toEqual([]);
+    const async = { ...toE, kind: "async" as const };
+    expect(codes(run(scene(withE, [toD, async])))).toEqual(["edge-overlap"]);
   });
   it("passes a shared stretch shorter than 8px", () => {
     const x = edge("a->b", "a", "b", [

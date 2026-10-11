@@ -9,8 +9,8 @@ export interface Segment {
 
 export const EPS = 1e-6;
 
-export function inset(r: Rect, d: number): Rect {
-  return { x: r.x + d, y: r.y + d, w: r.w - 2 * d, h: r.h - 2 * d };
+export function inset(r: Rect, d: number, dy: number = d): Rect {
+  return { x: r.x + d, y: r.y + dy, w: r.w - 2 * d, h: r.h - 2 * dy };
 }
 
 /** True when the two rects share an area, not just an edge. */
