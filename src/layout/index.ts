@@ -13,7 +13,7 @@ import { FRAME, SPACING, type Spacing } from "../theme/geometry.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { placeAcross } from "./place.ts";
-import { assemble, type LabelBox, round2, routeAcross } from "./route.ts";
+import { assemble, type LabelBox, type LabelForm, round2, routeAcross } from "./route.ts";
 import { routeStats } from "./stats.ts";
 import { lineHeight, placeLine, placeLines } from "./text.ts";
 
@@ -73,6 +73,38 @@ export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m:
 
 const ceil4 = (x: number) => Math.ceil(x / 4 - 1e-9) * 4;
 
+/**
+ * An edge label on two and on three lines, each at the least width that wraps it
+ * onto that many, for a label that finds no clear slot on one line. A label that
+ * cannot break, or gets no narrower, has none.
+ */
+function narrower(text: string, width: number, m: Measurer): LabelForm[] {
+  const style = TYPE_RAMP["edge-label"];
+  const mt = m.metrics(style);
+  const out: LabelForm[] = [];
+  let widest = width;
+  for (const k of [2, 3]) {
+    let lo = width / k - 1;
+    let hi = width;
+    for (let i = 0; i < 8; i++) {
+      const mid = (lo + hi) / 2;
+      if (m.wrap(text, style, mid).length <= k) hi = mid;
+      else lo = mid;
+    }
+    const lines = m.wrap(text, style, hi);
+    const w = Math.max(...lines.map((l) => l.width));
+    if (lines.length < 2 || w >= widest - 1) continue;
+    out.push({
+      w,
+      h: (lines.length - 1) * mt.lineHeight + mt.ascent + mt.descent,
+      lines: lines.length,
+      maxWidth: hi,
+    });
+    widest = w;
+  }
+  return out;
+}
+
 /** The smallest gutter step that holds this many rows, growing past the last step by its last increment. */
 export function gutterHeight(rows: number, sp: Spacing): number {
   const need = (rows + 1) * sp.trackPitch;
@@ -94,10 +126,17 @@ function compute(d: Diagram, m: Measurer, withText: boolean): { scene: Scene; ce
   const labelMetrics = m.metrics(labelStyle);
   const labelSizes = new Map<string, LabelBox>();
   for (const e of d.edges) {
-    if (e.label === undefined || e.label === "") continue;
+    const text = e.label;
+    if (text === undefined || text === "") continue;
+    const w = m.measure(text, labelStyle).width;
+    let forms: LabelForm[] | undefined;
     labelSizes.set(e.id, {
-      w: m.measure(e.label, labelStyle).width,
+      w,
       h: labelMetrics.ascent + labelMetrics.descent,
+      narrower: () => {
+        forms ??= narrower(text, w, m);
+        return forms;
+      },
     });
   }
   const routing = routeAcross(layers, nodes, d.edges, labelSizes, sp.trackPitch);
@@ -215,7 +254,15 @@ function compute(d: Diagram, m: Measurer, withText: boolean): { scene: Scene; ce
     if (a === undefined) continue;
     const edge: SceneEdge = { id: e.id, from: e.from, to: e.to, kind: e.kind, points: a.points };
     if (a.label !== undefined && e.label !== undefined && withText) {
-      edge.label = placeLine("edge-label", e.label, a.label.x, a.label.y, m);
+      const at = a.label;
+      if (at.lines > 1) {
+        // A wrapped label: its lines centred on each other, its ink box at the slot.
+        const lines = m.wrap(e.label, labelStyle, at.maxWidth);
+        const lead = (labelMetrics.lineHeight - labelMetrics.ascent - labelMetrics.descent) / 2;
+        edge.label = placeLines("edge-label", lines, at.x + at.w / 2, at.y - lead, "middle", m);
+      } else {
+        edge.label = placeLine("edge-label", e.label, at.x, at.y, m);
+      }
     }
     sceneEdges.push(edge);
   }
