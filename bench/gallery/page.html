@@ -60,7 +60,7 @@
   .task-head h2 { font-size: 20px; margin: 0; font-weight: 600; text-wrap: balance; }
   .eyebrow { font: 12px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
   .request { margin: 8px 0 0; padding-left: 12px; border-left: 3px solid var(--accent); color: var(--ink); max-width: 75ch; }
-  .cards { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 16px; }
+  .cards { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 16px; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
   .card-head { display: flex; align-items: center; gap: 10px; }
   .letter { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; font: 600 15px var(--mono); background: var(--accent-soft); color: var(--accent); }
@@ -70,9 +70,11 @@
   .status.ok { border-color: var(--good); color: var(--good); }
   .shot { margin: 0; display: flex; flex-direction: column; gap: 4px; }
   .shot figcaption { font: 12px var(--mono); color: var(--muted); }
-  .shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: zoom-in; overflow: hidden; display: block; width: 100%; }
-  .shot img { display: block; width: 100%; height: auto; }
-  .shot.before { max-width: 260px; }
+  /* A preview fits a fixed box, so every card shows the whole picture at a glance; a click opens it full size. */
+  .shot { --thumb: 260px; }
+  .shot.before { --thumb: 150px; }
+  .shot button { padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: zoom-in; overflow: hidden; display: flex; align-items: center; justify-content: center; width: 100%; height: var(--thumb); }
+  .shot img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
   .shot .missing { padding: 24px; border: 1px dashed var(--line); border-radius: 6px; color: var(--muted); font-size: 14px; text-align: center; }
   .flag { font: 12px var(--mono); color: var(--warn); }
   .rows { display: grid; gap: 8px; }
@@ -93,11 +95,10 @@
   .finish { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
   .finish p { margin: 0; color: var(--muted); max-width: 65ch; }
   .lightbox { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, 0.88); overflow: auto; padding: 16px; cursor: zoom-out; }
-  .lightbox img { display: block; margin: 0 auto; max-width: none; background: #fff; }
+  .lightbox img { display: block; margin: 0 auto; max-width: 100%; height: auto; background: #fff; }
   .lightbox .close { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; }
   @media (max-width: 560px) {
     .row { grid-template-columns: 1fr; gap: 4px; }
-    .shot.before { max-width: 100%; }
   }
   @media (prefers-reduced-motion: no-preference) {
     .seg button, .btn { transition: background-color 120ms, border-color 120ms; }
@@ -246,7 +247,7 @@
 
   function shot(pic, caption, before) {
     const f = document.createElement("figure"); f.className = before ? "shot before" : "shot";
-    const c = document.createElement("figcaption"); c.textContent = caption; f.append(c);
+    const c = document.createElement("figcaption"); c.textContent = pic?.src ? `${caption}, click to enlarge` : caption; f.append(c);
     if (!pic?.src) {
       const d = document.createElement("div"); d.className = "missing"; d.textContent = "No picture at this step"; f.append(d); return f;
     }
