@@ -17,7 +17,7 @@
 - Diagram types other than layered architecture, such as sequence, ER or charts.
 - Real-time collaboration, accounts or a hosted service.
 - Importing Mermaid, draw.io or Excalidraw files.
-- Free colors or styles. Stage 1 has one theme.
+- Free colors or styles per element. A whole diagram takes its look from a theme or a shared stylesheet (added by the owner on 2026-10-11), but no operation colors one node or edge.
 - An MCP server. It comes later, as a thin wrapper over the same operations.
 
 ## Benchmarks

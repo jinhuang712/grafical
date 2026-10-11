@@ -51,6 +51,10 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D26 | Curation is coached, budgeted and shown | The tool carries the taste |
 | D27 | A node with no size is sized to its text | The tool carries the taste |
 | D28 | An edge may end at a group or a layer | The tool carries the taste |
+| D29 | Open questions settled by the owner | The engine arranges; the agent decides what the diagram says |
+| D30 | A diagram takes its look from a theme or a shared stylesheet | The tool carries the taste |
+| D31 | A live viewer shows the diagram as it is now | A diagram is built in steps |
+| D32 | Swimlanes run as rows or as columns | The engine arranges; the agent decides what the diagram says |
 
 ## Writing a diagram
 
@@ -426,13 +430,43 @@ Rejected:
 - Routing a container end to the box's border directly. The router places ports and tracks around nodes. A stand-in reuses all of that, including the label slots and the side exits.
 - A label column for every band. D7 rejected one for every row. A band's label sits in its own head instead.
 
+### D29 Open questions settled by the owner
+
+On 2026-10-11 the owner settled the questions that had stayed open since phase 0:
+- **Wide layers:** a layer wider than the page is a warning, not a defect, and `layer.split` moves the second half of a layer into a new layer below it. Rejected: a defect that blocks the write until the agent splits, because how to split is a content choice; wrapping the layer, because it moves nodes no operation named.
+- **The layer order an agent picks** stays the agent's choice. The engine warns when an edge crosses a layer whose nodes it does not connect. Rejected: the engine reordering layers, because which layer comes first is part of the story the agent tells.
+- **Alignment on the column grid:** `node.align` stays as it is. It joins two nodes in one column of the grid (D10).
+- **Exact lists:** the five node kinds, three edge kinds, three size steps and three densities stay as they are. Rejected: more node kinds, such as gateway or cache, because each new choice is one more a weak model can get wrong.
+- **File naming:** `<name>.grafical.yaml`.
+- **Undo:** git only. Every change is a commit that can be reverted. Rejected: a `grafical undo` command, which would duplicate git with less safety.
+
+### D30 A diagram takes its look from a theme or a shared stylesheet
+
+A theme sets every value of the look: the colors of each node kind, of groups, bands, lines and text; line widths; corner radii; and type sizes and weights. grafical ships a few built-in themes. A stylesheet file, `<name>.grafical-style.yaml`, starts from a built-in theme and overrides any of its values. A diagram names its theme or stylesheet in the file, `style: <name or relative path>`, and the default theme applies when it names none. Changing a stylesheet changes every diagram that names it, which is how a team keeps one look.
+
+An operation sets it (`diagram.style`, and `grafical new --style`), so that an agent can apply the look a person asks for in plain words before drawing. Layout reads the same values, so a theme with larger type changes the layout as well as the colors.
+
+The same file is the same picture still holds, read as: the same diagram file and the same stylesheet give the same picture (D15). Both live in git.
+
+Rejected:
+- Colors or styles on one node or edge (D8). A model would have to choose them, and the look would drift.
+- A stylesheet found by folder, without the diagram naming it. The diagram file would no longer say what decides its picture.
+- CSS. A stylesheet holds named values, not selectors, so that every value has one meaning and the engine can check it.
+
+### D31 A live viewer shows the diagram as it is now
+
+`grafical view <file>` serves the picture on a local port and opens it in a window, without browser tabs when Chrome is installed. The page redraws within a moment of every change to the file, from any process: the window shows what an agent is drawing while it draws. Elements that changed are marked briefly. The viewer only shows; editing on a board is stage 2. It keeps no log: the file and git hold the history.
+
+Rejected:
+- Opening the viewer on every `new`. Benchmarks and scripts would open windows nobody watches.
+- A log of operations beside the file. The owner wants the live picture, and git already holds the history.
+
+### D32 Swimlanes run as rows or as columns
+
+A swimlane is a labelled band that names who owns what. A diagram's lanes all run one way. Lanes that run as rows each span neighbouring layers, with the lane's label in a header on the left. Lanes that run as columns each span the whole height, with the label in a header on top, and each node joins at most one lane. A node, or a layer, may stay outside every lane. A group lies inside one lane. An edge may end at a lane (D28).
+
+Rejected: rows and columns in one diagram, as a grid of lanes and phases. It is the most expressive form and the most work, and no brief needs it yet.
+
 ## Not yet decided
 
-- **Wide layers:** what happens when a layer is wider than the maximum diagram width. One option is a defect that tells the agent to split the layer. The other is wrapping the layer into rows, which moves nodes the operation did not name.
-- **Alignment on the column grid:** whether `node.align` is still needed, now that the engine puts every node on a shared column grid (D10), or becomes a column hint.
-- **Swimlanes:** vertical lanes across the whole diagram. Groups that span rows (D7) cover systems; full-height lanes are open.
-- **The layer order an agent picks:** in the phase 1 measuring run, Haiku put a "Dependencies" layer between the Kafka and Stores layers, and the store edges had to pass through it. Whether the engine should suggest or choose layer order, as D24 does for nodes, is open.
-- **Exact lists:** node kinds, edge kinds, size steps and density values. Phase 2 settles them.
-- **File naming:** `<name>.grafical.yaml` is proposed.
-- **Undo:** whether undo exists outside git.
 - **Stage 2:** how the board reaches the file (a local server while the board is open is proposed), and how snap guides turn a drag into one operation.

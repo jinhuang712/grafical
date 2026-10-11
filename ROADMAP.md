@@ -1,8 +1,8 @@
 # Roadmap
 
-> Written 2026-10-11. Phase 0 was done on 2026-10-11. The current phase is phase 1. No product code exists yet.
+> Written 2026-10-11. Phase 0 was done on 2026-10-11. Stage 1 is being built. Its end-to-end test and its benchmarks run once all of it is built (see "How stage 1 ends").
 
-grafical ships in two stages. In stage 1, the MVP, agents draw through the command line. In stage 2, people and agents edit the same diagram on a board. Each phase ends with an exit check, and the next phase starts only after it passes. Benchmarks and targets are defined in [GOALS.md](GOALS.md). What each stage contains is listed in [FEATURES.md](FEATURES.md).
+grafical ships in two stages. In stage 1, the MVP, agents draw through the command line. In stage 2, people and agents edit the same diagram on a board. Each phase has an exit check. On 2026-10-11 the owner decided to build all of stage 1 first and to run the checks together at the end, instead of gating each phase on the one before. Benchmarks and targets are defined in [GOALS.md](GOALS.md). What each stage contains is listed in [FEATURES.md](FEATURES.md).
 
 ## Stage 1: the MVP
 
@@ -43,13 +43,21 @@ Added on 2026-10-11. The phase 1 engine drew defect-free pictures that the owner
 - the eight measured rules (D25), and lines never crossing text (D14);
 - subtitle, footnote, the node budget and coaching in `guide` (D26), and the operations for groups and the two texts (FEATURES.md).
 
-Exit check: Haiku builds the public brief through the command line, and two blind Opus judges score its picture at least 50 of 60 on the D25 rubric, with the target scored in the same round. Each picture is also shown on the owner's rating page.
+Exit check: Haiku builds the public brief through the command line, and two blind Opus judges score its picture at least 50 of 60 on the D25 rubric, with the target scored in the same round. Each picture is also shown on the owner's rating page. Since 2026-10-11 this is a target measured in the final benchmark, not a gate.
 
 First try, 2026-10-11: not met. Three Haiku drafts scored 31, 40 and 41, and the target 56. The causes are in [bench/results/phase1b.md](bench/results/phase1b.md).
 
 Second try, 2026-10-11, after the routing and sizing fixes: not met. The drafts scored 45, 38 and 28, and the target 57. Where the shared store sits now decides most of the gap: [bench/results/phase1b2.md](bench/results/phase1b2.md).
 
 Third try, 2026-10-11, with the shared store placed between the systems: not met. The drafts scored 29, 38 and 35, and the target 56. The judged score now turns on what Haiku chooses to draw: [bench/results/phase1b3.md](bench/results/phase1b3.md).
+
+### Phase 1c: what the owner added on 2026-10-11
+
+- **Edge ends at containers** (D28): an arrow may end at a group or a layer. Done.
+- **Swimlanes:** lanes that run as rows or as columns, one way per diagram, with nodes allowed outside every lane.
+- **Styling:** built-in themes and a shared stylesheet file that a diagram names, set by an operation, so that an agent can apply the theme a person asks for in plain words. Changing the stylesheet changes every diagram that uses it.
+- **A live viewer:** `grafical view <file>` opens a window that shows the diagram as it is now, and redraws it within a moment of every change an agent makes. It shows; it does not edit (editing is stage 2).
+- **Warnings the agent sees but that never block:** a picture wider than the page, a crowded row, a group of one node, and an edge that crosses a row of unrelated nodes.
 
 ### Phase 2: the vocabulary and stability
 
@@ -75,3 +83,10 @@ Stage 2 builds the board features in FEATURES.md. Before it starts:
 ## Later
 
 Items marked `later` in FEATURES.md are not scheduled. They are planned after stage 2, or earlier if benchmark results show one is needed.
+
+## How stage 1 ends
+
+1. Everything in phases 1b, 1c and 2 is built, with its tests.
+2. The end-to-end test and the benchmarks of phase 3 run together, within a $20 budget, mostly on Haiku. Opus runs only where the gap between Opus and Haiku is measured, and both models get the same prompt, word for word. The private reference brief is used for the MVP bar; its runs stay on the owner's machine, and only numbers are committed.
+3. Every picture goes to the owner's rating page. The owner rates the intent experiment (E3) in person.
+4. The exit checks of phases 1, 1b, 2 and 3 are read from those results.

@@ -104,6 +104,7 @@ An ablation runs when its decision is built or questioned, not all at once.
 
 ## Harness
 
+- **The same prompt for every model:** a run's prompt depends on its arm and step only, never on the model, so that Haiku and Opus get it word for word. A test pins this.
 - **Runner:** headless Claude Code, `claude -p --output-format stream-json --verbose --safe-mode --model <model> --max-budget-usd 1`.
   - `--safe-mode` turns off the host's own customizations, so every run sees the same setup.
   - E1 starts a session, and each E2 request resumes it.
@@ -121,6 +122,7 @@ An ablation runs when its decision is built or questioned, not all at once.
   - **Order**, a sixth criterion, scores clutter: few, straight, easy lines, no tangles or staircases, no line across text. With it a judge gives 30 points and a pair 60. It was added on 2026-10-11, after the owner called the phase 1 pictures "cluttered, messy, lines are all over the place" (DESIGN.md D25).
   - The MVP bar in GOALS.md stays on the first five criteria, out of 50, so that it compares with its 2026-10-10 baseline.
   - The D25 target picture is judged in every round as an anchor.
+  - **Two scores per picture** (from 2026-10-11, after the owner's principle that the engine arranges and the agent decides what the diagram says): an engine score, from order, visual quality, defects and fit (20 per judge), and an agent score, from accuracy and clarity (10 per judge). Results report both next to the total, so that a round shows which side lost its points.
 - **The owner's ratings:** every round's pictures also go to the owner's rating page, made by `pnpm bench gallery`, under blind letters. The owner's ratings are read back and reported next to the judges' scores.
 - **Briefs:** there are two kinds.
   - Public briefs live in `bench/briefs/`. They describe fictional systems and drive fixtures, tests, CI and tuning. The first is [`catalog-sync.md`](bench/briefs/catalog-sync.md).
@@ -142,3 +144,4 @@ An ablation runs when its decision is built or questioned, not all at once.
 | End of phase 1 | Smoke test: E1 and E2 on the public brief, grafical against a raw model, Haiku only, 3 runs each. It tests the core bet before phase 2 is built. E2 uses the four change types phase 1 supports: add a node between two others, move a node to another layer, rename a node, remove a node |
 | Phase 2 | E5 ablations, as their decisions are built |
 | Phase 3 | E1 to E4 with all arms and models, at least 3 runs each, and the MVP bar on the private reference brief |
+| End of stage 1 | Since 2026-10-11, the smoke test, E1 to E5 and the MVP bar run together once all of stage 1 is built (ROADMAP.md, "How stage 1 ends"). The owner set a $20 budget, mostly Haiku: Opus runs only for benchmark 5, the gap between Opus and Haiku. The owner rates E3 in person |
