@@ -231,6 +231,12 @@ export interface StepRecord extends Metrics {
   diagramPngUpdated: boolean;
   /** Finished with no error and a new picture. */
   complete: boolean;
+  /**
+   * The grafical arm's diagram file changed during the step. A change step
+   * that leaves it untouched made no edit, whatever the agent reported.
+   * null for the raw arm.
+   */
+  diagramChanged: boolean | null;
   /** `owner: "engine"` defects in the step's diagram. null for the raw arm, or if the check was unavailable. */
   engineDefects: number | null;
   /** `owner: "agent"` defects in the step's diagram. */
@@ -265,6 +271,8 @@ export function runStep(o: {
   });
   const pngFile = join(o.dir, "diagram.png");
   const pngBefore = existsSync(pngFile) ? sha256(pngFile) : null;
+  const yamlFile = join(o.dir, "diagram.grafical.yaml");
+  const yamlBefore = existsSync(yamlFile) ? sha256(yamlFile) : null;
   const stepDir = join(o.dir, "steps", o.spec.step);
   mkdirSync(stepDir, { recursive: true });
   const env = o.arm === "baseline" ? process.env : chainEnv(o.dir, o.arm);
@@ -307,6 +315,8 @@ export function runStep(o: {
     diagramPng,
     diagramPngUpdated,
     complete: metrics.finished && !metrics.isError && diagramPngUpdated,
+    diagramChanged:
+      o.arm === "grafical" ? (existsSync(yamlFile) ? sha256(yamlFile) : null) !== yamlBefore : null,
     engineDefects: defects.split?.engineDefects ?? null,
     agentDefects: defects.split?.agentDefects ?? null,
     defectCheckNote: defects.note,
