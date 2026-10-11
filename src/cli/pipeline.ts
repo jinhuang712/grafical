@@ -6,6 +6,7 @@ import { check } from "../check/index.ts";
 import type { Defect, OpError } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
+import { budgetWarnings, type Warning } from "../model/budget.ts";
 import { readDiagram, writeDiagram } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import type { Diagram } from "../model/types.ts";
@@ -17,6 +18,8 @@ export interface Report {
   changed: string[];
   errors: OpError[];
   defects: Defect[];
+  /** Non-blocking notes (D26). They never change the exit code. */
+  warnings?: Warning[];
 }
 
 export function oneLine(s: string): string {
@@ -35,6 +38,11 @@ export function formatReport(r: Report): string {
     if (e.suggestion) s += `; ${oneLine(e.suggestion)}`;
     out.push(s);
   }
+  for (const w of r.warnings ?? []) {
+    out.push(
+      `warning ${w.code}: found ${oneLine(w.found)}; expected ${oneLine(w.expected)}; ${oneLine(w.suggestion)}`,
+    );
+  }
   for (const d of r.defects) {
     out.push(
       `defect ${d.code} [${d.elements.join(", ")}]: found ${oneLine(d.found)}; expected ${oneLine(d.expected)}; fix: ${oneLine(d.fix)}`,
@@ -50,6 +58,7 @@ export function emit(report: Report, json: boolean, extra: Record<string, unknow
       changed: report.changed,
       errors: report.errors,
       defects: report.defects,
+      warnings: report.warnings ?? [],
       ...extra,
     };
     process.stdout.write(`${JSON.stringify(body)}\n`);
@@ -147,5 +156,11 @@ export async function runWrite(file: string, ops: Op[], create = false): Promise
   const defects = inspect(result.diagram, m);
   if (defects.length > 0) return { ok: false, changed: [], errors: [], defects };
   writeAtomic(file, writeDiagram(result.diagram));
-  return { ok: true, changed: result.changed, errors: [], defects: [] };
+  return {
+    ok: true,
+    changed: result.changed,
+    errors: [],
+    defects: [],
+    warnings: budgetWarnings(result.diagram),
+  };
 }

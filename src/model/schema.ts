@@ -37,7 +37,10 @@ const nodeSchema = z.strictObject({
   size: z.enum(SIZE_STEPS).default(DEFAULT_SIZE),
   accent: z.boolean().optional(),
   align: nodeId.optional(),
+  group: nodeId.optional(),
 });
+
+const groupSchema = z.strictObject({ id: nodeId, label: text });
 
 const layerSchema = z.strictObject({
   id: nodeId,
@@ -56,8 +59,11 @@ const edgeSchema = z.strictObject({
 export const diagramSchema = z.strictObject({
   grafical: z.number().int().min(1),
   title: text,
+  subtitle: text.optional(),
+  note: text.optional(),
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
   layers: z.array(layerSchema).default([]),
+  groups: z.array(groupSchema).default([]),
   edges: z.array(edgeSchema).default([]),
 });
 
@@ -72,6 +78,7 @@ function build(p: Parsed): Diagram {
       if (n.sublabel !== undefined) node.sublabel = n.sublabel;
       if (n.accent === true) node.accent = true;
       if (n.align !== undefined) node.align = n.align;
+      if (n.group !== undefined) node.group = n.group;
       return node;
     }),
   }));
@@ -80,7 +87,11 @@ function build(p: Parsed): Diagram {
     if (e.label !== undefined) edge.label = e.label;
     return edge;
   });
-  return { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
+  const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
+  if (p.subtitle !== undefined) d.subtitle = p.subtitle;
+  if (p.note !== undefined) d.note = p.note;
+  if (p.groups.length > 0) d.groups = p.groups.map((g) => ({ id: g.id, label: g.label }));
+  return d;
 }
 
 /**
@@ -114,6 +125,9 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       nodeIds.push(n.id);
     });
   });
+  (d.groups ?? []).forEach((g, gi) => {
+    claim(g.id, `groups[${gi}].id`);
+  });
   d.edges.forEach((e, ei) => {
     claim(e.id, `edges[${ei}].id`);
   });
@@ -131,6 +145,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       }
     }
   });
+  errors.push(...checkGroups(d, index));
   let accents = 0;
   d.layers.forEach((l, li) => {
     l.nodes.forEach((n, ni) => {
@@ -169,6 +184,53 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       suggestion: "keep accent on the one or two nodes a reader should see first",
     });
   }
+  return errors;
+}
+
+/** Group rules: members name an existing group, and a group's rows touch (D7). */
+function checkGroups(d: Diagram, index: number): OpError[] {
+  const errors: OpError[] = [];
+  const groups = d.groups ?? [];
+  const ids = groups.map((g) => g.id);
+  const rows = new Map<string, Set<number>>();
+  d.layers.forEach((l, li) => {
+    l.nodes.forEach((n, ni) => {
+      if (n.group === undefined) return;
+      if (!ids.includes(n.group)) {
+        errors.push({
+          code: "unknown-group",
+          index,
+          field: `layers[${li}].nodes[${ni}].group`,
+          found: n.group,
+          expected: "the id of an existing group",
+          suggestion: suggestIds(n.group, ids, "group"),
+        });
+        return;
+      }
+      const set = rows.get(n.group) ?? new Set<number>();
+      set.add(li);
+      rows.set(n.group, set);
+    });
+  });
+  groups.forEach((g, gi) => {
+    const set = rows.get(g.id);
+    if (set === undefined) return;
+    const used = [...set].sort((a, b) => a - b);
+    const lo = used[0] as number;
+    const hi = used[used.length - 1] as number;
+    const gaps: number[] = [];
+    for (let r = lo + 1; r < hi; r++) if (!set.has(r)) gaps.push(r);
+    if (gaps.length === 0) return;
+    const name = (r: number) => d.layers[r]?.id ?? String(r);
+    errors.push({
+      code: "group-gap",
+      index,
+      field: `groups[${gi}]`,
+      found: `${g.id} has members in layers ${used.map(name).join(", ")} but none in ${gaps.map(name).join(", ")}`,
+      expected: "members in neighbouring layers, with no empty layer between them",
+      suggestion: `put a member of ${g.id} in layer ${name(gaps[0] as number)}, or group join/leave nodes so ${g.id} covers neighbouring layers`,
+    });
+  });
   return errors;
 }
 

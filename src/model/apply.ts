@@ -39,6 +39,7 @@ function touch(s: State, ...ids: string[]) {
 
 function unusedKind(d: Diagram, id: string): string | undefined {
   if (d.layers.some((l) => l.id === id)) return "layer";
+  if ((d.groups ?? []).some((g) => g.id === id)) return "group";
   if (d.layers.some((l) => l.nodes.some((n) => n.id === id))) return "node";
   if (d.edges.some((e) => e.id === id)) return "edge";
   return undefined;
@@ -52,7 +53,7 @@ function dupError(d: Diagram, id: string, i: number): OpError | undefined {
     index: i,
     field: "id",
     found: id,
-    expected: "an id not used by any layer, node or edge",
+    expected: "an id not used by any layer, group, node or edge",
     suggestion: `${id} is already a ${kind}; choose another id`,
   };
 }
@@ -97,6 +98,79 @@ function unknownLayer(d: Diagram, id: string, i: number, field: string): OpError
       "layer",
     ),
   };
+}
+
+function unknownGroup(d: Diagram, id: string, i: number, field: string): OpError {
+  return {
+    code: "unknown-group",
+    index: i,
+    field,
+    found: id,
+    expected: "the id of an existing group",
+    suggestion: suggestIds(
+      id,
+      (d.groups ?? []).map((g) => g.id),
+      "group",
+    ),
+  };
+}
+
+/** The errors for listed nodes that do not exist. */
+function missingNodes(d: Diagram, ids: readonly string[], i: number): OpError[] {
+  return ids.filter((id) => !findNode(d, id)).map((id) => unknownNode(d, id, i, "nodes"));
+}
+
+function setGroup(s: State, ids: readonly string[], group: string | undefined) {
+  for (const id of ids) {
+    const at = findNode(s.d, id);
+    if (!at || at.node.group === group) continue;
+    if (group === undefined) delete at.node.group;
+    else at.node.group = group;
+    touch(s, id);
+  }
+}
+
+function groupStep(s: State, op: Extract<Op, { op: `group.${string}` }>, i: number): OpError[] {
+  const d = s.d;
+  const groups = d.groups ?? [];
+  if (op.op === "group.add") {
+    const errors: OpError[] = [];
+    const dup = dupError(d, op.id, i);
+    if (dup) errors.push(dup);
+    errors.push(...missingNodes(d, op.nodes ?? [], i));
+    if (errors.length > 0) return errors;
+    groups.push({ id: op.id, label: op.label });
+    d.groups = groups;
+    touch(s, op.id);
+    setGroup(s, op.nodes ?? [], op.id);
+    return [];
+  }
+  if (op.op === "group.leave") {
+    const errors = missingNodes(d, op.nodes, i);
+    if (errors.length > 0) return errors;
+    setGroup(s, op.nodes, undefined);
+    return [];
+  }
+  const key = op.op === "group.join" ? op.group : op.id;
+  const field = op.op === "group.join" ? "group" : "id";
+  const g = groups.find((x) => x.id === key);
+  if (!g) return [unknownGroup(d, key, i, field)];
+  if (op.op === "group.join") {
+    const errors = missingNodes(d, op.nodes, i);
+    if (errors.length > 0) return errors;
+    setGroup(s, op.nodes, g.id);
+  } else if (op.op === "group.rename") {
+    g.label = op.label;
+    touch(s, g.id);
+  } else {
+    const members = d.layers.flatMap((l) =>
+      l.nodes.filter((n) => n.group === g.id).map((n) => n.id),
+    );
+    d.groups = groups.filter((x) => x.id !== g.id);
+    touch(s, g.id);
+    setGroup(s, members, undefined);
+  }
+  return [];
 }
 
 function checkAlign(d: Diagram, nodeLayer: string, target: string, i: number): OpError | undefined {
@@ -351,6 +425,20 @@ function step(s: State, op: Op, i: number): OpError[] {
           suggestion: "diagram.new only creates a file: use grafical new",
         },
       ];
+    case "diagram.subtitle":
+    case "diagram.note": {
+      const field = op.op === "diagram.subtitle" ? "subtitle" : "note";
+      if (op.text === undefined) delete d[field];
+      else d[field] = op.text;
+      touch(s, field);
+      return [];
+    }
+    case "group.add":
+    case "group.join":
+    case "group.leave":
+    case "group.rename":
+    case "group.remove":
+      return groupStep(s, op, i);
     case "layer.add":
       return addLayer(s, op, i);
     case "node.add":
@@ -412,13 +500,16 @@ function step(s: State, op: Op, i: number): OpError[] {
 }
 
 function newDiagram(op: Extract<Op, { op: "diagram.new" }>): Diagram {
-  return {
+  const d: Diagram = {
     grafical: FORMAT_VERSION,
     title: op.title,
     density: op.density ?? DEFAULT_DENSITY,
     layers: [],
     edges: [],
   };
+  if (op.subtitle !== undefined) d.subtitle = op.subtitle;
+  if (op.note !== undefined) d.note = op.note;
+  return d;
 }
 
 /** Once all operations are applied, nodes without a position take the engine's slot (D24). */
@@ -484,5 +575,9 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
       })),
     };
   }
+  // Call point: when src/layout exports validateGroups(diagram), call it here like
+  // validateAlignments above and turn each problem into an operation error.
+  // Until then, group-gap is checked by checkIntegrity (schema.ts).
+  if (s.d.groups !== undefined && s.d.groups.length === 0) delete s.d.groups;
   return { diagram: s.d, changed: s.changed };
 }

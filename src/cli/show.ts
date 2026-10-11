@@ -8,6 +8,7 @@ function nodeText(n: DiagramNode): string {
   if (n.size !== "m") s += ` size=${n.size}`;
   if (n.accent === true) s += " accent";
   if (n.align !== undefined) s += ` align=${n.align}`;
+  if (n.group !== undefined) s += ` group=${n.group}`;
   if (n.sublabel !== undefined) s += ` sub=${JSON.stringify(n.sublabel)}`;
   return s;
 }
@@ -22,11 +23,19 @@ function edgeText(e: Edge): string {
 
 export function showDiagram(d: Diagram): string {
   const lines = [`diagram ${JSON.stringify(d.title)} density=${d.density}`];
+  if (d.subtitle !== undefined) lines.push(`subtitle ${JSON.stringify(d.subtitle)}`);
+  if (d.note !== undefined) lines.push(`note ${JSON.stringify(d.note)}`);
   for (const l of d.layers) {
     const nodes = l.nodes.length > 0 ? l.nodes.map(nodeText).join(" | ") : "(empty)";
     lines.push(`layer ${l.id} ${JSON.stringify(l.label)}: ${nodes}`);
   }
   if (d.layers.length === 0) lines.push("(no layers)");
+  for (const g of d.groups ?? []) {
+    const members = d.layers.flatMap((l) =>
+      l.nodes.filter((n) => n.group === g.id).map((n) => n.id),
+    );
+    lines.push(`group ${g.id} ${JSON.stringify(g.label)}: ${members.join(", ") || "(empty)"}`);
+  }
   lines.push(d.edges.length > 0 ? "edges:" : "edges: (none)");
   for (const e of d.edges) lines.push(edgeText(e));
   return `${lines.join("\n")}\n`;

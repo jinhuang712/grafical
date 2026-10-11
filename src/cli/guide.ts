@@ -1,148 +1,196 @@
-// `grafical guide`: the reference agents read instead of the docs (DESIGN.md D17).
+// `grafical guide`: the reference agents read instead of the docs (DESIGN.md D17, D26).
 // It is a constant, so its bytes never change between runs. Keep it under
 // 3,000 tokens (about 12,000 characters). Vocabulary lists come from FEATURES.md.
 
-export const GUIDE = `grafical: build architecture diagrams (layered boxes and arrows) by running commands. You state facts (layer, order, connection), never coordinates. grafical lays out the picture, checks it, and refuses any change that would leave a label too long or a character it cannot draw.
+export const GUIDE = `grafical: build architecture diagrams by running commands. You state facts (row, order, system, connection), never coordinates. grafical lays out the picture, checks it, and refuses any change that would leave a label too long or a character it cannot draw.
+
+HOW TO DRAW A GOOD DIAGRAM (read this first)
+- One story per diagram. Aim for 12 to 16 nodes. A diagram of 30 boxes is not a diagram; it is a dump. More than 16 nodes gives a warning that names merges.
+- Group nodes into systems. A group is one box around the nodes that belong to one service or team, such as "catalog-sync". Its members may sit in neighbouring rows. Put each node in a group unless it is a caller or an outside dependency.
+- Merge what a reader does not need apart: six topics become one node "upstream topics" with sublabel "6 broker topics"; five callers become one actor "API callers" with sublabel "storefront, promotions"; ten pipelines become one node.
+- Put detail in the sublabel (port, tier, topic names, store name), not in extra boxes. Keep labels to 1 to 3 words and sublabels short.
+- Rows run top to bottom: callers, entry points, the system's inside, shared store, outside dependencies. Put the shared store between or below the systems that use it, so both reach it with short lines.
+- Connect neighbouring rows. Avoid edges that skip rows; add a node or reorder rows instead.
+- Label only edges whose meaning is not obvious ("consume", "persist", "failed"). Leave "calls" and "reads" unlabelled. Use two edge kinds: call, and async for messages.
+- Use --accent on the one thing the story is about (usually the shared store). Use kind queue for topics, store for databases, external for things you do not own, actor for callers.
+- Set a subtitle (one sentence saying what the diagram shows) and a note that starts "Not shown: " and names what you left out.
 
 WORKFLOW
-1. grafical new <file> --title <text>
-2. add layers (horizontal bands, top to bottom), then nodes, then edges
-3. for many changes at once write a batch and run: grafical apply <file> <batch.yaml>
-4. grafical show <file> to see the current state, grafical render <file> to draw it
-Each write command reads the file, applies the change, lays out, checks, and writes the file only if there is no error and no defect you must fix. Otherwise the file is untouched and the exit code is 1. Never edit the file by hand. Name it <name>.grafical.yaml.
+1. grafical new <file> --title <text> --subtitle <text> --note <text>
+2. write one batch: layers, nodes, groups, edges. Apply: grafical apply <file> <batch.yaml>
+3. grafical show <file>, then grafical render <file> and LOOK at the PNG. Fix with single commands.
+Each write command reads the file, applies the change, lays out, checks, and writes only if there is no error and no defect you must fix. Otherwise the file is untouched and the exit code is 1. Never edit the file by hand. Name it <name>.grafical.yaml.
 
 COMMANDS (every command accepts --json)
-grafical new <file> --title <text> [--density compact|normal|airy]
+grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy]
+grafical diagram subtitle <file> [--text <text>]     (no --text clears it)
+grafical diagram note <file> [--text <text>]
 grafical layer add <file> <id> --label <text> [--before <layer> | --after <layer>]
 grafical node add <file> <id> --layer <layer> --label <text> [--kind <kind>] [--sublabel <text>]
     [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]
 grafical node rename <file> <id> --label <text>
 grafical node move <file> <id> [--layer <layer>] [--first | --last | --before <node> | --after <node>]
 grafical node remove <file> <id>
+grafical group add <file> <id> --label <text> [--nodes a,b,c]
+grafical group join <file> <group> <node...>
+grafical group leave <file> <node...>
+grafical group rename <file> <id> --label <text>
+grafical group remove <file> <id>                    (members stay, ungrouped)
 grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>]
 grafical edge remove <file> <id>
 grafical apply <file> <batch.yaml>
 grafical show <file>
-grafical check <file>
+grafical check <file> [--all]
 grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
 grafical guide
 
 RULES
-- ids: lowercase letters, digits, . _ - ; start with a letter or digit. One id space for layers, nodes and edges: no two may share an id. The id never changes. Rename changes only the label.
-- A new layer goes to the bottom unless --before or --after places it.
-- node add and node move without a position: grafical picks the slot with the fewest edge crossings. Add a node's edges in the same batch, so they count. Give --first, --last, --before or --after only when order matters. Give at most one.
-- node move needs --layer or a position. Position words refer to nodes in the target layer.
-- --align <node>: place this node directly above or below a node in another layer. The target must exist and be in another layer.
-- --accent marks a node a reader should see first. At most 2 per diagram. Use it sparingly.
-- node remove also removes the node's edges, and clears align on nodes aligned to it. All are listed as changed.
-- Edge id defaults to <from>-><to>, with #2, #3 added when that id is taken. Edges are directed, from -> to.
-- Labels: short. A long label overflows its box. Chinese text is fine. --sublabel adds a small second line, such as a port or a topic name.
+- ids: lowercase letters, digits, . _ - ; start with a letter or digit. One id space for layers, groups, nodes and edges. The id never changes. Rename changes only the label.
+- A layer is a row; it is not drawn, but it orders the diagram. A new layer goes to the bottom unless --before or --after places it.
+- A node is in at most one group. group add --nodes, group join and group leave set that. A group's members must sit in neighbouring rows, with no row between them that has no member (error group-gap). An empty group draws nothing.
+- node add and node move without a position: grafical picks the slot with the fewest crossings. Add a node's edges in the same batch so they count. Give a position only when order matters, and at most one.
+- --align <node>: place this node directly above or below a node in another layer.
+- --accent marks a node a reader should see first. At most 2 per diagram.
+- node remove also removes the node's edges and clears align on nodes aligned to it. A removed group's nodes stay.
+- Edge id defaults to <from>-><to>, with #2, #3 when taken. Edges are directed.
 - Defaults: kind service, size m, edge kind call, density normal.
 
 VOCABULARY
 node kind: service, store, queue, external, actor
-edge kind: call (synchronous request), async (message or event), data (data movement)
-size: s, m, l (box width and height)
-density: compact, normal, airy
+edge kind: call (request), async (message or event), data (data movement)
+size: s, m, l. density: compact, normal, airy
 
 BATCH FILE
-A YAML list. Each item has op: <noun>.<verb> and the same fields as the flags, in camelCase. Operations apply in order. If any fails, none apply, and the error names its index (counting from 0).
-Ops: layer.add, node.add, node.rename, node.move, node.remove, edge.add, edge.remove.
-Fields: layer.add: id label before after. node.add: id layer label kind sublabel size first last before after align accent. node.rename: id label. node.move: id layer first last before after. node.remove: id. edge.add: from to id label kind. edge.remove: id.
-Booleans are true. Unknown fields are errors.
+A YAML list. Each item has op: <noun>.<verb> and the same fields as the flags, in camelCase. Operations apply in order; if any fails, none apply and the error names its index (from 0). Unknown fields are errors. Booleans are true.
+layer.add: id label before after
+node.add: id layer label kind sublabel size first last before after align accent
+node.rename: id label. node.move: id layer first last before after. node.remove: id
+group.add: id label nodes (a list). group.join: group nodes (a list). group.leave: nodes (a list). group.rename: id label. group.remove: id
+diagram.subtitle: text. diagram.note: text. Without text, they clear.
+edge.add: from to id label kind. edge.remove: id
+Add groups after their nodes.
 
 OUTPUT
-Success, one line: ok changed: <ids>   (--json: {"ok":true,"changed":[...],"errors":[],"defects":[]})
-Failure: failed, file unchanged, then one line per problem.
-Exit codes: 0 success; 1 an operation error or a defect (file unchanged); 2 a usage error such as a missing flag.
+Success: ok changed: <ids>   (--json: {"ok":true,"changed":[...],"errors":[],"defects":[],"warnings":[]})
+Failure: failed, file unchanged, then one line per problem. Exit codes: 0 success, 1 an operation error or defect (file unchanged), 2 a usage error.
+A warning does not block and does not change the exit code: warning too-many-nodes ... Candidate merges: a, b (same group, same edges). Merge them with node remove and one new node.
 
 ERRORS
 error op <index> <code> <field>: found <value>; expected <what>; <suggestion>
-Fix the field named, using the suggestion, and run the command again. Codes:
-- unknown-node, unknown-layer, unknown-edge: the id does not exist. The suggestion lists the closest ids. Run show if unsure.
-- duplicate-id: the id is taken. Choose another.
-- bad-id: the id pattern is wrong. Use lowercase, digits and - . _
-- bad-value: not a known kind, size or density. The suggestion lists allowed values.
-- missing-field, bad-type, unknown-field, empty-value, unknown-op: the command or batch item is malformed. Use the field names above.
-- conflicting-position: give only one of first, last, before, after.
-- not-in-layer: before or after named a node in another layer. Use a node of the target layer.
+Fix the field named, using the suggestion. Codes:
+- unknown-node, unknown-layer, unknown-group, unknown-edge: the id does not exist. The suggestion lists the closest ids.
+- duplicate-id: taken. bad-id: wrong pattern. bad-value: not a known kind, size or density.
+- missing-field, bad-type, unknown-field, empty-value, unknown-op: the command or item is malformed.
+- conflicting-position: give only one of first, last, before, after. not-in-layer: before or after named a node in another layer.
 - align-same-layer: align needs a node in a different layer.
+- group-gap: a group skips a row. Put a member in that row, or regroup.
 - too-many-accents: more than 2 accented nodes.
 - file-not-found, file-exists, newer-format, bad-yaml: problems with the file itself.
 
 DEFECTS
 defect <code> [<elements>]: found <what>; expected <what>; fix: <an operation>
-A defect means the change would make the picture wrong, so nothing was written. Only two defects are yours to fix. Apply the fix line, or change the operation:
-- overflow: a label is too long for its box. Shorten it with node rename, or re-add the node with --size l.
+A defect means the change would make the picture wrong, so nothing was written. Two are yours to fix:
+- overflow: a label is too long. Shorten it with node rename, or use --size l.
 - missing-glyph: a character cannot be drawn. Replace it.
-Where lines and boxes go is grafical's job: you never fix overlapping lines or labels.
-grafical check <file> reports defects on an existing file and exits 1 if there are any.
+Where lines and boxes go is grafical's job.
 
-SHOW
-grafical show prints the diagram in this vocabulary: the title, one line per layer with its nodes in order as id "label" kind (plus size=, accent, align=, sub= when set), then the edges as id [kind] label. Edge kind is shown only when it is not call. Read it instead of the file.
-
-RENDER
-grafical render <file> writes <name>.svg and <name>.png beside the file, PNG at scale 2. --svg or --png alone writes only that one, to the path given. Look at the PNG after a batch of changes.
-
-EXAMPLE: a 3-layer diagram
-grafical new shop.grafical.yaml --title "Shop checkout"
+EXAMPLE: two systems around a shared store
+grafical new orders.grafical.yaml --title "Order desk and shipping" --subtitle "Two services coupled only by the shared orders database." --note "Not shown: payment retries, admin tools."
 Write batch.yaml:
 - op: layer.add
-  id: clients
-  label: Clients
+  id: callers
+  label: Callers
 - op: layer.add
-  id: services
-  label: Services
+  id: entry
+  label: Entry
 - op: layer.add
-  id: storage
-  label: Storage
+  id: core
+  label: Core
+- op: layer.add
+  id: store
+  label: Store
+- op: layer.add
+  id: deps
+  label: Dependencies
 - op: node.add
-  id: web
-  layer: clients
-  label: Web app
+  id: shoppers
+  layer: callers
+  label: Shoppers
+  sublabel: web, mobile
   kind: actor
 - op: node.add
-  id: api
-  layer: services
-  label: Order API
-  sublabel: ":8080"
-  accent: true
+  id: gateway
+  layer: entry
+  label: API gateway
+  sublabel: REST, :8080
 - op: node.add
-  id: billing
-  layer: services
-  label: Billing
-- op: node.add
-  id: orders-db
-  layer: storage
-  label: Orders DB
-  kind: store
+  id: checkout
+  layer: core
+  label: checkout
+  sublabel: validate, price
 - op: node.add
   id: events
-  layer: storage
-  label: Order events
+  layer: core
+  label: order topics
+  sublabel: 3 broker topics
   kind: queue
+- op: node.add
+  id: dispatcher
+  layer: core
+  label: dispatcher
+  sublabel: one per carrier
+- op: node.add
+  id: orders-db
+  layer: store
+  label: Orders DB
+  sublabel: orders, parcels
+  kind: store
+  accent: true
+- op: node.add
+  id: payments
+  layer: deps
+  label: payments-svc
+  kind: external
+- op: node.add
+  id: carriers
+  layer: deps
+  label: carrier APIs
+  kind: external
+- op: group.add
+  id: order-desk
+  label: order-desk
+  nodes: [gateway, checkout]
+- op: group.add
+  id: shipping
+  label: shipping
+  nodes: [events, dispatcher]
 - op: edge.add
-  from: web
-  to: api
-  label: checkout
+  from: shoppers
+  to: gateway
 - op: edge.add
-  from: api
-  to: billing
+  from: gateway
+  to: checkout
 - op: edge.add
-  from: api
-  to: orders-db
-  label: write
-  kind: data
-- op: edge.add
-  from: api
+  from: checkout
   to: events
   label: publish
   kind: async
-Then:
-grafical apply shop.grafical.yaml batch.yaml
-grafical show shop.grafical.yaml
-grafical render shop.grafical.yaml
-Single commands do the same one step at a time, for example:
-grafical node add shop.grafical.yaml cache --layer storage --label Redis --kind store
-grafical edge add shop.grafical.yaml api cache --label read
+- op: edge.add
+  from: events
+  to: dispatcher
+  kind: async
+- op: edge.add
+  from: checkout
+  to: orders-db
+- op: edge.add
+  from: dispatcher
+  to: orders-db
+  label: persist
+- op: edge.add
+  from: checkout
+  to: payments
+- op: edge.add
+  from: dispatcher
+  to: carriers
+Then: grafical apply orders.grafical.yaml batch.yaml, grafical show orders.grafical.yaml, grafical render orders.grafical.yaml.
 `;
