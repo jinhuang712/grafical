@@ -16,9 +16,9 @@ Each spike answers one question, and the answer is recorded in [DESIGN.md](DESIG
 | Which text library, `harfbuzzjs` or `fontkit`, measures the bundled fonts correctly? (D12) | Measured widths match the widths resvg draws within 1 px, for mixed Chinese and English labels |
 | Is the output deterministic? (D15) | The same file gives the same SVG bytes and the same PNG pixels on macOS and Linux |
 | Which Chinese character set does the font subset cover? (D12) | Chosen, with the subset's file size recorded |
-| Is the npm name `grafical` free? | Checked on the registry, or a new name chosen |
+| Is the npm name `grafical` free? | Done: the registry returned 404 for `grafical` on 2026-10-11 |
 
-Phase 0 also sets up the package: TypeScript, Biome, vitest, and CI on macOS and Linux.
+Phase 0 also sets up the package: TypeScript, Biome, vitest, and CI on macOS and Linux. Done on 2026-10-11.
 
 ### Phase 1: the loop
 

@@ -28,16 +28,16 @@ The published history was rewritten on 2026-09-26 to remove a company name. An o
 
 - Node 24 or later, pnpm. The full toolchain is DESIGN.md D23.
 - macOS is the main development machine. CI runs on macOS and Linux, because output must match on both (D15).
-- Nothing is implemented yet. Phase 0 adds the package setup.
+- The package is set up. No product code exists yet.
 
 ## Commands
 
 | Command | Does | Status |
 |---|---|---|
-| `pnpm install` | Install dependencies | phase 0 |
-| `pnpm typecheck` | Type-check with `tsc --noEmit` | phase 0 |
-| `pnpm lint` | Lint and format check with Biome | phase 0 |
-| `pnpm test` | Run vitest | phase 0 |
+| `pnpm install` | Install dependencies | available |
+| `pnpm typecheck` | Type-check with `tsc --noEmit` | available |
+| `pnpm lint` | Lint and format check with Biome | available |
+| `pnpm test` | Run vitest. Passes while no tests exist | available |
 | `pnpm bench` | Run the benchmark suite | phase 3 |
 
 A command added to `package.json` gets a row here in the same change.
