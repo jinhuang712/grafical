@@ -13,6 +13,7 @@ import { createMeasurer } from "../../src/text/index.ts";
 import { catalogSync } from "../fixtures/catalog-sync.ts";
 import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { dense } from "../fixtures/dense.ts";
+import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
 import { tiny } from "../fixtures/tiny.ts";
 import { defects, groupIntruders, mechanical, taste, textCrossings } from "../layout/checks.ts";
 import { withFrame } from "./svg.ts";
@@ -26,6 +27,8 @@ for (const [name, d] of [
   ["catalog-sync-grouped", catalogSyncGrouped],
   ["catalog-sync", catalogSync],
   ["dense", dense],
+  ["lanes-rows", lanesRows],
+  ["lanes-columns", lanesColumns],
 ] as const) {
   if (only !== undefined && only !== name) continue;
   const t0 = performance.now();
