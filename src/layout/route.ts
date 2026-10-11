@@ -24,6 +24,7 @@
 import type { Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
 import { ROUTE } from "../theme/geometry.ts";
+import { lineStyle } from "../theme/paint.ts";
 import { routeGutter } from "./gutter.ts";
 import { centreX, type PLayer, type PNode } from "./place.ts";
 import type { SideSlot } from "./side.ts";
@@ -418,8 +419,8 @@ function makePlan(
 }
 
 /**
- * A fan-out of unlabelled edges of one kind from one node side leaves as a bus:
- * one port and one trunk. Of the rest, a fan-in of unlabelled edges of one kind
+ * A fan-out of unlabelled edges in one line style from one node side leaves as a bus:
+ * one port and one trunk. Of the rest, a fan-in of unlabelled edges in one style
  * into one node side arrives through one port.
  */
 function assignBuses(plans: Plan[]): void {
@@ -438,13 +439,13 @@ function assignBuses(plans: Plan[]): void {
       .filter((b) => b.members.length >= ROUTE.busMin);
   };
   for (const bus of collect(
-    (pl) => `${pl.u.id}:${pl.srcSide}:${pl.edge.kind}`,
+    (pl) => `${pl.u.id}:${pl.srcSide}:${lineStyle(pl.edge.kind)}`,
     () => false,
   )) {
     for (const pl of bus.members) pl.bus = bus;
   }
   for (const fan of collect(
-    (pl) => `in ${pl.v.id}:${pl.dstSide}:${pl.edge.kind}`,
+    (pl) => `in ${pl.v.id}:${pl.dstSide}:${lineStyle(pl.edge.kind)}`,
     (pl) => pl.bus !== undefined,
   )) {
     for (const pl of fan.members) pl.fanIn = fan;

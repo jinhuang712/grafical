@@ -2,6 +2,7 @@
 // another module's job; these only keep the layout honest.
 
 import type { Point, Rect, Scene, SceneEdge } from "../../src/scene.ts";
+import { lineStyle } from "../../src/theme/paint.ts";
 
 export interface Seg {
   a: Point;
@@ -42,14 +43,19 @@ export function segmentHitsRect(s: Seg, r: Rect): boolean {
   return Math.min(hi, r.x + r.w) - Math.max(lo, r.x) > 1e-9;
 }
 
-/** Edges that share a source node and a kind may run together as a bus (D11). */
+/** Edges that share a source node and a line style may run together as a bus (D11). */
 export function sameBus(a: SceneEdge, b: SceneEdge): boolean {
-  return a.from === b.from && a.kind === b.kind;
+  return a.from === b.from && lineStyle(a.kind) === lineStyle(b.kind);
 }
 
-/** Unlabelled edges of one kind into one node may arrive through one port (D25 rule 4). */
+/** Unlabelled edges in one line style into one node may arrive through one port (D25 rule 4). */
 export function sameFanIn(a: SceneEdge, b: SceneEdge): boolean {
-  return a.to === b.to && a.kind === b.kind && a.label === undefined && b.label === undefined;
+  return (
+    a.to === b.to &&
+    lineStyle(a.kind) === lineStyle(b.kind) &&
+    a.label === undefined &&
+    b.label === undefined
+  );
 }
 
 function near(p: Point, r: Rect, d: number): boolean {

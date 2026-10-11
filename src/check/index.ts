@@ -5,6 +5,7 @@ import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import type { Diagram } from "../model/types.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
+import { lineStyle } from "../theme/paint.ts";
 import {
   collinearOverlap,
   inset,
@@ -234,12 +235,12 @@ function sharedEndpoints(a: SceneEdge, b: SceneEdge): string[] {
 }
 
 /**
- * The router draws a fan-out of unlabelled edges of one kind from one node as a
+ * The router draws a fan-out of unlabelled edges in one line style from one node as a
  * bus: one trunk that branches (D11). Its members share segments on purpose, and
- * a reader loses nothing, since they carry no label and the same kind.
+ * a reader loses nothing, since they carry no label and look the same.
  */
 function isBus(a: SceneEdge, b: SceneEdge): boolean {
-  return a.from === b.from && a.kind === b.kind && !a.label && !b.label;
+  return a.from === b.from && lineStyle(a.kind) === lineStyle(b.kind) && !a.label && !b.label;
 }
 
 function checkEdgeOverlap(scene: Scene, out: Found[]): void {

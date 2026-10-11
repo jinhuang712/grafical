@@ -3,6 +3,7 @@
 
 import type { Diagram } from "../model/types.ts";
 import type { Rect, Scene, SceneEdge } from "../scene.ts";
+import { lineStyle } from "../theme/paint.ts";
 import { EPS, type Segment, segmentsOf } from "./geometry.ts";
 
 /** One measured rule. `limit` is a maximum, except for `straightShare`, where it is a minimum. */
@@ -146,7 +147,7 @@ export function measureTaste(diagram: Diagram, scene: Scene): TasteReport {
   const bends = merged.map((s) => Math.max(0, s.length - 1));
   const straight = merged.filter((s) => s.length === 1).length;
   const labelled = edges.filter((e) => e.label).length;
-  const styles = new Set(edges.map((e) => (e.kind === "async" ? "dashed" : "solid")));
+  const styles = new Set(edges.map((e) => lineStyle(e.kind)));
   const nodeCount = diagram.layers.reduce((n, l) => n + l.nodes.length, 0);
   const crossings = countCrossings(edges);
   const crossLimit = Math.floor(total / 10 + 1e-9);

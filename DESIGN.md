@@ -180,7 +180,7 @@ The phase 0 router spike compared it with `libavoid-js` on the public brief (30 
 
 What phase 1 added to the router:
 - **Fewer crossings.** Gaps and port orders follow the neighbouring gaps, and each gutter orders its tracks. The public brief went from 68 crossings to 15. Most of that gain comes from node order, chosen by D24: with the spike's node orders, the router alone gives 45.
-- **Buses.** A fan-out of three or more unlabelled edges of one kind leaves a node side through one port and shares one trunk. D25 lowers this to two edges, and adds fan-ins: edges that share a target side arrive through one port.
+- **Buses.** A fan-out of three or more unlabelled edges in one line style leaves a node side through one port and shares one trunk. A call and a data read are both solid (D8), so they share a trunk. D25 lowers this to two edges, and adds fan-ins: edges that share a target side arrive through one port.
 - **Room before squeezing.**
   - Ports and gap tracks keep 8 px clear of lines that enter the same gutter from the other side.
   - A gap holds as many tracks as fit 8 px apart.
@@ -245,7 +245,7 @@ After each operation or batch, grafical lays out the diagram and checks it. Each
 
 A write that leaves an agent-owned defect fails and changes nothing. The defect names its elements, what was found, what was expected, and an operation that would fix it.
 
-Engine-owned defects are about where lines and boxes go, which no operation controls (D2). The engine must avoid them itself, with the room D10 allows: the next gutter step, more track or port separation, another label slot. If it still leaves one, that is an engine bug. The write goes ahead, the agent is never told, and `grafical check --all` reports it so that benchmarks and tests count it. The checker does not count the shared trunk of a bus as an overlap. A bus is a fan-out of unlabelled edges of one kind from one node (D11).
+Engine-owned defects are about where lines and boxes go, which no operation controls (D2). The engine must avoid them itself, with the room D10 allows: the next gutter step, more track or port separation, another label slot. If it still leaves one, that is an engine bug. The write goes ahead, the agent is never told, and `grafical check --all` reports it so that benchmarks and tests count it. The checker does not count the shared trunk of a bus as an overlap. A bus is a fan-out of unlabelled edges in one line style from one node (D11).
 
 Text is checked against its line box, which includes the fonts' full ascent and descent. The box must stay 8 px from the node's sides and 4 px from its top and bottom.
 

@@ -15,6 +15,12 @@ export interface EdgePaint {
   dash?: string;
 }
 
+/** The line style an edge kind is drawn in. Only two exist (D8). */
+export function lineStyle(kind: EdgeKind): "solid" | "dashed" {
+  const paint: EdgePaint = PAINT.edge.kinds[kind];
+  return paint.dash === undefined ? "solid" : "dashed";
+}
+
 export const PAINT = {
   background: "#ffffff",
   text: {
