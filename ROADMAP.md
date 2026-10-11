@@ -65,6 +65,8 @@ Everything else that FEATURES.md marks `stage 1`: the full operation set, `apply
 
 Exit check: benchmarks 4, 7 and 11 meet their targets. These three need no agent runs.
 
+First measurement, 2026-10-12: 7 and 11 met, and 4 not met. Unnamed nodes in unchanged rows move sideways after half of all single operations. The owner decides between a more local column solver and a restated target: [bench/results/phase2.md](bench/results/phase2.md).
+
 ### Phase 3: benchmark and release
 
 Extend the benchmark harness to every arm and experiment, then run E1 to E4 from EXPERIMENTS.md, with at least three runs per cell.
