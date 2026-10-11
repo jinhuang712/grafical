@@ -4,7 +4,7 @@
 import { check } from "../../src/check/index.ts";
 import { layout } from "../../src/layout/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
-import { ENGINE_OWNED, failures } from "./fuzz.ts";
+import { ENGINE_OWNED, failures, geometryFailures } from "./fuzz.ts";
 import { generate } from "./gen.ts";
 
 const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
@@ -18,7 +18,8 @@ let shown = 0;
 const t0 = performance.now();
 for (let seed = first; seed < first + seeds; seed++) {
   const { diagram } = generate(seed, m);
-  const found = failures(check(diagram, layout(diagram, m), m));
+  const scene = layout(diagram, m);
+  const found = [...failures(check(diagram, scene, m)), ...geometryFailures(scene)];
   if (found.length === 0) continue;
   failed++;
   for (const code of new Set(found.map((x) => x.code)))
