@@ -87,7 +87,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 Phase 1 builds this subset. `<file>` is a diagram file, named `<name>.grafical.yaml` by convention.
 
 ```sh
-grafical new <file> --title <text> [--density compact|normal|airy]
+grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy]
 grafical layer add <file> <id> --label <text> [--before <layer> | --after <layer>]
 grafical node add <file> <id> --layer <layer> --label <text> [--kind <kind>] [--sublabel <text>]
     [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]
@@ -96,6 +96,13 @@ grafical node move <file> <id> [--layer <layer>] [--first | --last | --before <n
 grafical node remove <file> <id>
 grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>]
 grafical edge remove <file> <id>
+grafical group add <file> <id> --label <text> [--nodes a,b,c]
+grafical group join <file> <group> <node...>
+grafical group leave <file> <node...>
+grafical group rename <file> <id> --label <text>
+grafical group remove <file> <id>
+grafical diagram subtitle <file> [--text <text>]
+grafical diagram note <file> [--text <text>]
 grafical apply <file> <batch.yaml>
 grafical show <file>
 grafical check <file> [--all]
@@ -107,6 +114,8 @@ grafical guide
 - `node add` without a position lets grafical pick the slot (D24). `node move --layer` without a position does the same.
 - `node remove` also removes the node's edges, and reports their ids.
 - An edge id defaults to `<from>-><to>` (D4).
+- A group's members must sit in neighbouring rows, or the write fails with `group-gap`. `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
+- A write over 16 nodes succeeds with a `too-many-nodes` warning that names merge candidates (D26). Warnings never change the exit code.
 - Every command accepts `--json`. Exit codes: 0 for success, 1 for an operation error or a defect, 2 for a usage error.
 - `grafical guide` prints this reference, written for agents, within 3k tokens (D17).
 
@@ -129,6 +138,8 @@ A batch file is a YAML list of operations. Each item has `op: <noun>.<verb>` and
 ```yaml
 grafical: 1
 title: Catalog sync
+subtitle: The write side fills MongoDB; the read side serves it.
+note: "Not shown: Redis name cache, auth-svc."
 density: normal
 layers:
   - id: ingest
@@ -138,9 +149,14 @@ layers:
         label: catalog-relay
         kind: service
         sublabel: tier 1, :7101
+        group: sync
       - id: kafka
         label: Kafka
         kind: queue
+        group: sync
+groups:
+  - id: sync
+    label: catalog-sync
 edges:
   - id: relay->kafka
     from: relay
@@ -149,7 +165,7 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. A field that holds its default (`size: m`, no accent, no alignment) is left out.
+- Keys appear in the order shown. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`. A field that holds its default (`size: m`, no accent, no alignment, no group) is left out, and so are an empty `groups` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ## Vocabulary
