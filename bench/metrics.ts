@@ -19,14 +19,23 @@ export interface Turn {
 }
 
 export interface GraficalStats {
-  /** Commands that change the diagram: new, layer, node, edge, apply. */
-  writes: number;
-  /** Writes that grafical rejected: an operation error, a defect, or a non-zero exit. */
-  rejected: number;
+  /** Tool calls that ran grafical: one per call, however many grafical commands it chains. */
+  calls: number;
+  /** Calls that grafical accepted. */
+  successes: number;
+  /** Successes that changed the diagram: layer, node, edge or apply (not guide, new, show, check or render). */
+  editSuccesses: number;
+  /** Calls that grafical refused with an operation error (or a non-zero exit with no report). */
+  opErrors: number;
+  /** Calls that grafical refused with a defect. */
+  defects: number;
+  /** Calls the harness refused before grafical ran: the result starts with "Permission to use". */
+  permissionDenials: number;
+  /** (opErrors + defects) / (calls - permissionDenials): how often grafical itself said no. */
   rejectedShare: number;
-  /** Writes issued right after a rejected write. */
+  /** Successful calls whose previous call on the same diagram failed, for any reason. */
   retries: number;
-  /** Rejected writes that a later write followed. */
+  /** Failed calls that a later call on the same diagram followed with a success. */
   recovered: number;
 }
 
@@ -37,9 +46,14 @@ export interface Metrics {
   finished: boolean;
   isError: boolean;
   subtype: string | null;
+  /** This step's own cost: the session total minus the previous step's session total. */
   costUsd: number;
+  /** The session's running total, as `total_cost_usd` reports it. */
+  sessionCostUsd: number;
   wallSeconds: number;
+  /** This step's own API time (`duration_api_ms` is a running total on a resumed session). */
   apiSeconds: number;
+  sessionApiSeconds: number;
   turns: number;
   toolCalls: Record<string, number>;
   toolCallTotal: number;
@@ -57,6 +71,8 @@ export interface Metrics {
   imageReads: number;
   /** null for the raw arm. */
   grafical: GraficalStats | null;
+  /** Hypothesis H4 audit, grafical arm only: Bash commands that draw by other means. */
+  offTool: number | null;
   /** Change requests answered by redrawing the whole diagram. Always 0 for a draft. */
   regenerations: number;
 }
@@ -135,9 +151,7 @@ export function perTurn(events: Event[]): Turn[] {
   return [...byId.values()];
 }
 
-const WRITE_COMMANDS = new Set(["new", "layer", "node", "edge", "apply"]);
-
-/** The grafical subcommand in a Bash command, or null. Looks at each `&&`/`;` part. */
+/** The grafical subcommand of each `&&`/`;`/newline part of a Bash command that starts with grafical. */
 function graficalCommands(command: string): string[] {
   const found: string[] = [];
   for (const part of command.split(/&&|\|\||;|\n/)) {
@@ -147,49 +161,115 @@ function graficalCommands(command: string): string[] {
   return found;
 }
 
-/** Whether grafical's reply says the write was rejected. Reads its JSON when it can. */
-function rejected(text: string, isError: boolean): boolean {
+/** The diagram file a grafical call works on; "?" when the command does not name one. */
+function diagramOf(command: string): string {
+  for (const part of command.split(/&&|\|\||;|\n/)) {
+    if (!/^\s*grafical\s/.test(part)) continue;
+    const m = /(\S+\.ya?ml)\b/.exec(part);
+    if (m) return (m[1] as string).replace(/^["']|["']$/g, "");
+  }
+  return "?";
+}
+
+const EDIT_COMMANDS = new Set(["layer", "node", "edge", "apply"]);
+
+export type Outcome = "success" | "opError" | "defect" | "denied";
+
+/**
+ * How one grafical call ended. The harness's refusal comes first: its text starts with
+ * "Permission to use". Then grafical's own report, as JSON or as the plain lines
+ * `error op ...` and `defect ...`. A failure with neither is an operation error.
+ */
+export function classify(text: string, isError: boolean): Outcome {
+  if (text.trimStart().startsWith("Permission to use")) return "denied";
   const start = text.indexOf("{");
   if (start >= 0) {
     try {
       const j = JSON.parse(text.slice(start));
-      if (j.ok === false) return true;
-      if (Array.isArray(j.errors) && j.errors.length > 0) return true;
-      if (Array.isArray(j.defects) && j.defects.length > 0) return true;
-      if (j.ok === true || Array.isArray(j.errors) || Array.isArray(j.defects)) return false;
+      if (Array.isArray(j.errors) && j.errors.length > 0) return "opError";
+      if (Array.isArray(j.defects) && j.defects.length > 0) return "defect";
+      if (j.ok === false) return "opError";
+      if (j.ok === true) return "success";
     } catch {
-      // Not JSON (the agent did not pass --json): fall back to the exit status.
+      // Not JSON (the agent did not pass --json): read the plain lines.
     }
   }
-  return isError;
+  if (/^error op /m.test(text)) return "opError";
+  if (/^defect /m.test(text)) return "defect";
+  if (/^failed, file unchanged/m.test(text)) return "opError";
+  return isError ? "opError" : "success";
 }
 
 export function graficalStats(events: Event[]): GraficalStats {
   const results = toolResults(events);
-  const outcomes: boolean[] = []; // true = rejected, in call order
+  const calls: { outcome: Outcome; diagram: string; edit: boolean }[] = [];
   for (const t of toolUses(events)) {
     if (t.name !== "Bash" || typeof t.input.command !== "string") continue;
-    const writes = graficalCommands(t.input.command).filter((c) => WRITE_COMMANDS.has(c));
-    if (writes.length === 0) continue;
+    const subcommands = graficalCommands(t.input.command);
+    if (subcommands.length === 0) continue;
     const r = results.get(t.id);
-    // A compound command counts once per write; its outcome is the command's.
-    const bad = r ? rejected(r.text, r.isError) : false;
-    for (let i = 0; i < writes.length; i++) outcomes.push(bad);
+    if (!r) continue; // a run cut off before the result: not a finished call
+    calls.push({
+      outcome: classify(r.text, r.isError),
+      diagram: diagramOf(t.input.command),
+      edit: subcommands.some((c) => EDIT_COMMANDS.has(c)),
+    });
   }
+  const count = (o: Outcome) => calls.filter((c) => c.outcome === o).length;
   let retries = 0;
   let recovered = 0;
-  outcomes.forEach((bad, i) => {
-    if (i > 0 && outcomes[i - 1]) retries++;
-    if (bad && i + 1 < outcomes.length) recovered++;
-  });
-  const bad = outcomes.filter(Boolean).length;
+  const last = new Map<string, Outcome>();
+  const openFailures = new Map<string, number>();
+  // Retries and recoveries are about edits: a `show` after a failure retries nothing.
+  for (const c of calls.filter((c) => c.edit)) {
+    const before = last.get(c.diagram);
+    if (c.outcome === "success") {
+      if (before !== undefined && before !== "success") retries++;
+      recovered += openFailures.get(c.diagram) ?? 0;
+      openFailures.delete(c.diagram);
+    } else {
+      openFailures.set(c.diagram, (openFailures.get(c.diagram) ?? 0) + 1);
+    }
+    last.set(c.diagram, c.outcome);
+  }
+  const rejected = count("opError") + count("defect");
   return {
-    writes: outcomes.length,
-    rejected: bad,
-    rejectedShare: ratio(bad, outcomes.length),
+    calls: calls.length,
+    successes: count("success"),
+    editSuccesses: calls.filter((c) => c.edit && c.outcome === "success").length,
+    opErrors: count("opError"),
+    defects: count("defect"),
+    permissionDenials: count("denied"),
+    rejectedShare: ratio(rejected, calls.length - count("denied")),
     retries,
     recovered,
   };
+}
+
+const INTERPRETER =
+  /^(?:sudo\s+|time\s+|\w+=\S*\s+)*(python3?|node|nodejs|deno|bun|ruby|perl|dot|neato|fdp|twopi|circo|rsvg-convert|convert|magick|inkscape|mmdc|d2|plantuml|java)(?:\s|$)/;
+const PICTURE_OUT = /(?:>>?|\btee\s+(?:-a\s+)?|\s-o\s*|--output[ =])\s*\S*\.(?:svg|png)\b/i;
+const COORDINATES = /<svg|viewBox|\b(?:x|y|cx|cy|x1|x2|y1|y2|width|height)\s*=\s*["']?\d/;
+
+/**
+ * Whether a Bash command draws by other means than grafical: it writes a .svg or .png,
+ * runs an interpreter or a drawing program, or writes coordinates. A part that starts
+ * with `grafical` is never counted, so `grafical render --png` is fine.
+ */
+export function offToolCommand(command: string): boolean {
+  for (const part of command.split(/&&|\|\||;|\n/)) {
+    if (/^\s*grafical\s/.test(part)) continue;
+    if (PICTURE_OUT.test(part) || COORDINATES.test(part)) return true;
+    for (const piece of part.split("|")) if (INTERPRETER.test(piece.trim())) return true;
+  }
+  return false;
+}
+
+export function offToolCount(events: Event[]): number {
+  return toolUses(events).filter(
+    (t) =>
+      t.name === "Bash" && typeof t.input.command === "string" && offToolCommand(t.input.command),
+  ).length;
 }
 
 const SOURCE_EXT = /\.(svg|html?|dot|gv|mmd|puml|py|js|mjs|ts)$/i;
@@ -220,9 +300,24 @@ export function regenerations(events: Event[], arm: "grafical" | "raw", kind: St
   return rewrote ? 1 : 0;
 }
 
+/**
+ * One step's share of a session total. On a resumed session `total_cost_usd` and
+ * `duration_api_ms` run on from the earlier steps, so the step's own part is the
+ * difference. A total below the previous one means a new session: it is the step's own.
+ */
+export function stepTotal(sessionTotal: number, previous: number | undefined): number {
+  if (previous === undefined || sessionTotal < previous) return sessionTotal;
+  return sessionTotal - previous;
+}
+
 export function computeMetrics(
   events: Event[],
-  o: { arm: "grafical" | "raw"; kind: StepKind },
+  o: {
+    arm: "grafical" | "raw";
+    kind: StepKind;
+    /** The session's running totals after the previous step. Omit for a first step. */
+    previous?: { costUsd: number; apiSeconds: number };
+  },
 ): Metrics {
   const init = events.find((e) => e.type === "system" && e.subtype === "init");
   const result = [...events].reverse().find((e) => e.type === "result");
@@ -244,15 +339,19 @@ export function computeMetrics(
       /\.(png|svg)$/i.test(t.input.file_path),
   ).length;
 
+  const sessionCostUsd: number = result?.total_cost_usd ?? 0;
+  const sessionApiSeconds = (result?.duration_api_ms ?? 0) / 1000;
   return {
     sessionId: result?.session_id ?? init?.session_id ?? null,
     model: init?.model ?? null,
     finished: result !== undefined,
     isError: result?.is_error === true,
     subtype: result?.subtype ?? null,
-    costUsd: result?.total_cost_usd ?? 0,
+    costUsd: stepTotal(sessionCostUsd, o.previous?.costUsd),
+    sessionCostUsd,
     wallSeconds: (result?.duration_ms ?? 0) / 1000,
-    apiSeconds: (result?.duration_api_ms ?? 0) / 1000,
+    apiSeconds: stepTotal(sessionApiSeconds, o.previous?.apiSeconds),
+    sessionApiSeconds,
     turns: result?.num_turns ?? turns.length,
     toolCalls,
     toolCallTotal: uses.length,
@@ -267,6 +366,7 @@ export function computeMetrics(
     perTurn: turns,
     imageReads,
     grafical: o.arm === "grafical" ? graficalStats(events) : null,
+    offTool: o.arm === "grafical" ? offToolCount(events) : null,
     regenerations: regenerations(events, o.arm, o.kind),
   };
 }

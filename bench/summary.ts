@@ -3,7 +3,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { JudgedRow } from "./judge.ts";
-import { REPO, RUNS, type StepRecord } from "./run.ts";
+import { stepTotal } from "./metrics.ts";
+import { loadChanges, REPO, RUNS, type StepRecord } from "./run.ts";
 
 /** Everything above this line in an existing results file (the expectation) is kept. */
 export const GENERATED_MARK =
@@ -20,6 +21,34 @@ export interface Loaded {
   record: StepRecord;
 }
 
+/** The order a chain ran its steps: the draft, then the change requests in script order. */
+function stepOrder(step: string): number {
+  if (step === "e1") return 0;
+  const i = loadChanges().findIndex((c) => `e2-${c.id}` === step);
+  return i >= 0 ? i + 1 : Number.MAX_SAFE_INTEGER;
+}
+
+/**
+ * Records written before the per-step cost fix hold the session's running total in `costUsd`
+ * and `apiSeconds` and have no `sessionCostUsd`. Give them the per-step values, in step order.
+ */
+export function normalizeChain(records: StepRecord[]): StepRecord[] {
+  const ordered = [...records].sort((a, b) => stepOrder(a.step) - stepOrder(b.step));
+  let previous: { costUsd: number; apiSeconds: number } | undefined;
+  return ordered.map((r) => {
+    if (r.sessionCostUsd !== undefined) return r;
+    const fixed = {
+      ...r,
+      sessionCostUsd: r.costUsd,
+      sessionApiSeconds: r.apiSeconds,
+      costUsd: stepTotal(r.costUsd, previous?.costUsd),
+      apiSeconds: stepTotal(r.apiSeconds, previous?.apiSeconds),
+    };
+    previous = { costUsd: fixed.sessionCostUsd, apiSeconds: fixed.sessionApiSeconds };
+    return fixed;
+  });
+}
+
 export function loadRound(round: string): { runs: Loaded[]; baselines: StepRecord[] } {
   const root = join(RUNS, round);
   const runs: Loaded[] = [];
@@ -27,10 +56,13 @@ export function loadRound(round: string): { runs: Loaded[]; baselines: StepRecor
   for (const chain of readdirSync(root).sort()) {
     const steps = join(root, chain, "steps");
     if (!existsSync(steps)) continue;
+    const records: StepRecord[] = [];
     for (const step of readdirSync(steps).sort()) {
       const file = join(steps, step, "metrics.json");
       if (!existsSync(file)) continue;
-      const record = JSON.parse(readFileSync(file, "utf8")) as StepRecord;
+      records.push(JSON.parse(readFileSync(file, "utf8")) as StepRecord);
+    }
+    for (const record of normalizeChain(records)) {
       if (record.arm === "baseline") baselines.push(record);
       else runs.push({ chain, record });
     }
@@ -67,6 +99,13 @@ export function scoresByItem(round: string): Map<string, number> {
   return out;
 }
 
+/** `mean (min–max)` of the known values, and how many are unknown (null). */
+function nullable(values: (number | null)[]): string {
+  const known = values.flatMap((v) => (v == null ? [] : [v]));
+  const gap = values.length - known.length;
+  return gap === 0 ? stat(known, 1) : `${stat(known, 1)}, ${gap} n/a`;
+}
+
 function groupBy<T>(xs: T[], key: (x: T) => string): Map<string, T[]> {
   const m = new Map<string, T[]>();
   for (const x of xs) m.set(key(x), [...(m.get(key(x)) ?? []), x]);
@@ -88,6 +127,11 @@ export function buildTable(runs: Loaded[], scores: Map<string, number>): string 
     "Cache hit (%)",
     "Image reads",
     "Op errors (%)",
+    "Denied",
+    "Off-tool",
+    "Engine defects",
+    "Agent defects",
+    "Picture",
     "Regens",
     "Score (/50)",
   ];
@@ -138,6 +182,21 @@ export function buildTable(runs: Loaded[], scores: Map<string, number>): string 
           1,
         ),
         arm === "grafical" ? stat(opErr, 1) : "n/a",
+        arm === "grafical"
+          ? stat(
+              rs.map((r) => r.grafical?.permissionDenials ?? 0),
+              1,
+            )
+          : "n/a",
+        arm === "grafical"
+          ? stat(
+              rs.map((r) => r.offTool ?? 0),
+              1,
+            )
+          : "n/a",
+        arm === "grafical" ? nullable(rs.map((r) => r.engineDefects)) : "n/a",
+        arm === "grafical" ? nullable(rs.map((r) => r.agentDefects)) : "n/a",
+        `${rs.filter((r) => r.diagramPngUpdated).length}/${rs.length}`,
         stat(
           rs.map((r) => r.regenerations),
           1,
@@ -147,6 +206,22 @@ export function buildTable(runs: Loaded[], scores: Map<string, number>): string 
     );
   }
   return rows.join("\n");
+}
+
+/** What a whole chain cost: the sum of its steps' own costs. */
+export function buildChainTable(runs: Loaded[]): string {
+  const lines = ["| Arm | Model | Chains | Chain cost ($) |", "|---|---|---|---|"];
+  const byChain = groupBy(runs, (r) => r.chain);
+  const cells = groupBy([...byChain.values()], (c) => {
+    const r = (c[0] as Loaded).record;
+    return `${r.arm}\t${r.modelAlias}`;
+  });
+  for (const [key, chains] of [...cells].sort(([a], [b]) => a.localeCompare(b))) {
+    const [arm, model] = key.split("\t") as [string, string];
+    const totals = chains.map((c) => c.reduce((sum, r) => sum + r.record.costUsd, 0));
+    lines.push(`| ${arm} | ${model} | ${chains.length} | ${stat(totals, 3)} |`);
+  }
+  return lines.join("\n");
 }
 
 /** E1 numbers minus the empty run of the same model: cost and fresh tokens. */
@@ -215,6 +290,10 @@ export function buildReport(round: string): string {
     "Each cell is `mean (min–max)` over its runs. Raw numbers include Claude Code's fixed overhead.",
     "",
     buildTable(runs, scoresByItem(round)),
+    "",
+    "### Cost of a whole chain (sum of the steps)",
+    "",
+    buildChainTable(runs),
     "",
     "### Draft (e1) minus the empty baseline",
     "",

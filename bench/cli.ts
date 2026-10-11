@@ -60,8 +60,12 @@ function main(argv: string[]): void {
       const changes = loadChanges().filter((c) => c.phase1);
       for (const chain of plan.chains) {
         const recs = runChain({ round, ...chain, changes });
+        // Each step's own cost; their sum is the chain's cost (the session total after the last step).
+        const total = recs.reduce((sum, r) => sum + r.costUsd, 0);
+        const missing = recs.filter((r) => !r.diagramPngUpdated).map((r) => r.step);
         console.log(
-          `${chain.arm} r${chain.run}: ${recs.map((r) => `${r.step} $${r.costUsd.toFixed(3)}`).join(", ")}`,
+          `${chain.arm} r${chain.run}: ${recs.map((r) => `${r.step} $${r.costUsd.toFixed(3)}`).join(", ")}; total $${total.toFixed(3)}` +
+            (missing.length > 0 ? `; no new diagram.png at ${missing.join(", ")}` : ""),
         );
       }
       return;
@@ -79,7 +83,7 @@ function main(argv: string[]): void {
       const recs = runChain({ round, arm, model, run, changes });
       for (const r of recs) {
         console.log(
-          `${r.step}: $${r.costUsd.toFixed(4)}, ${r.wallSeconds.toFixed(0)} s, ${r.turns} turns, error ${r.isError}`,
+          `${r.step}: $${r.costUsd.toFixed(4)} (session $${r.sessionCostUsd.toFixed(4)}), ${r.wallSeconds.toFixed(0)} s, ${r.turns} turns, error ${r.isError}, new diagram.png ${r.diagramPngUpdated}`,
         );
       }
       const total = recs.reduce((sum, r) => sum + r.costUsd, 0);

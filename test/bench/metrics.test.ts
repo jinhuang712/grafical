@@ -1,5 +1,15 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { computeMetrics, graficalStats, parseTranscript, perTurn } from "../../bench/metrics.ts";
+import {
+  classify,
+  computeMetrics,
+  graficalStats,
+  offToolCommand,
+  parseTranscript,
+  perTurn,
+  stepTotal,
+} from "../../bench/metrics.ts";
 
 type Usage = { in: number; cw: number; cr: number; out: number };
 
@@ -123,41 +133,201 @@ describe("tool calls and image reads", () => {
   });
 });
 
-describe("grafical operation errors and retries", () => {
+describe("grafical calls: errors, defects, denials, successes", () => {
   const call = (id: string, command: string) =>
     assistant(`m-${id}`, { in: 1, cw: 1, cr: 1, out: 1 }, [toolUse(id, "Bash", { command })]);
+  const denied =
+    "Permission to use Bash has been denied because Claude Code is running in don't ask mode.";
 
   const events = [
-    call("g", "grafical guide"), // not a write
+    call("g", "grafical guide"), // a success, but not an edit
     toolResult("g", "the guide"),
-    call("1", "grafical new d.yaml --title T --json"),
-    toolResult("1", '{"ok":true,"errors":[],"defects":[]}'),
-    call("2", "grafical node add d.yaml a --layer nope --label A --json"),
-    toolResult("2", '{"ok":false,"errors":[{"code":"unknown-layer","index":0}]}', true),
-    call("3", "grafical node add d.yaml a --layer top --label A --json"), // retry, ok
-    toolResult("3", '{"ok":true,"errors":[]}'),
-    call("4", "grafical node add d.yaml b --layer top --label B"), // no --json, exit 1
-    toolResult("4", "error: overflow", true),
-    call("5", "grafical node add d.yaml b --layer top --label B --size l"), // retry, rejected again
-    toolResult("5", '{"errors":[],"defects":[{"code":"overflow"}]}'),
-    call("6", "grafical render d.yaml --png diagram.png && grafical show d.yaml"), // not writes
-    toolResult("6", "ok"),
-    call("7", "grafical node add d.yaml b --layer top --label B --size s"), // retry, ok
-    toolResult("7", '{"ok":true}'),
+    call("1", "grafical node add d.yaml a --layer nope --label A --json"),
+    toolResult(
+      "1",
+      '{"ok":false,"errors":[{"code":"unknown-layer","index":0}],"defects":[]}',
+      true,
+    ),
+    call("2", "grafical node add d.yaml a --layer top --label A --json"), // retry, ok
+    toolResult("2", '{"ok":true,"changed":["a"],"errors":[],"defects":[]}'),
+    call("3", "grafical node add d.yaml b --layer top --label B"), // a defect, as plain text
+    toolResult("3", "Exit code 1\nfailed, file unchanged\ndefect overflow [b]: found x", true),
+    call("4", 'grafical apply d.yaml b.yaml; echo "exit $?"'), // the harness said no
+    toolResult("4", denied, true),
+    call("5", "grafical node add d.yaml b --layer top --label B --size s"), // retry, ok
+    toolResult("5", "ok changed: b"),
+    call("6", "grafical edge add d.yaml a b && grafical render d.yaml"), // one call, two commands
+    toolResult("6", "ok changed: a->b"),
+    call("7", "grafical node add d.yaml c --layer top"), // an operation error, as plain text
+    toolResult(
+      "7",
+      "Exit code 1\nfailed, file unchanged\nerror op 0 missing-label: found none",
+      true,
+    ),
+    call("8", "ls"), // not grafical
+    toolResult("8", "d.yaml"),
   ];
 
-  it("counts writes, rejections, retries and recoveries", () => {
+  it("counts per call, in four separate groups", () => {
     const s = graficalStats(events);
-    expect(s.writes).toBe(6);
-    expect(s.rejected).toBe(3);
-    expect(s.rejectedShare).toBe(0.5);
-    expect(s.retries).toBe(3); // calls 3, 5 and 7 each follow a rejected write
-    expect(s.recovered).toBe(3);
+    expect(s).toMatchObject({
+      calls: 8, // the chained call is one call
+      successes: 4,
+      editSuccesses: 3,
+      opErrors: 2,
+      defects: 1,
+      permissionDenials: 1,
+    });
+    expect(s.successes + s.opErrors + s.defects + s.permissionDenials).toBe(s.calls);
+  });
+
+  it("leaves denials out of the share grafical itself rejected", () => {
+    expect(graficalStats(events).rejectedShare).toBe(3 / 7);
+  });
+
+  it("counts a retry when an edit succeeds right after a failure on the same diagram", () => {
+    const s = graficalStats(events);
+    expect(s.retries).toBe(2); // calls 2 (after an error) and 5 (after a denial)
+    expect(s.recovered).toBe(3); // calls 1, 3 and 4 were followed by a success; call 7 was not
+  });
+
+  it("keeps different diagrams apart", () => {
+    const other = [
+      call("a", "grafical node add a.yaml x --layer l --label X"),
+      toolResult("a", "Exit code 1\nfailed, file unchanged\nerror op 0 unknown-layer", true),
+      call("b", "grafical node add b.yaml x --layer l --label X"),
+      toolResult("b", "ok changed: x"),
+    ];
+    expect(graficalStats(other).retries).toBe(0);
+  });
+
+  it("classifies a result", () => {
+    expect(classify(denied, true)).toBe("denied");
+    expect(classify('{"ok":true}', false)).toBe("success");
+    expect(classify("ok changed: a", false)).toBe("success");
+    expect(classify("boom", true)).toBe("opError");
   });
 
   it("is null for the raw arm and set for the grafical arm", () => {
     expect(computeMetrics(events, { arm: "raw", kind: "draft" }).grafical).toBeNull();
-    expect(computeMetrics(events, { arm: "grafical", kind: "draft" }).grafical?.writes).toBe(6);
+    expect(computeMetrics(events, { arm: "grafical", kind: "draft" }).grafical?.calls).toBe(8);
+  });
+});
+
+describe("off-tool drawing (hypothesis H4)", () => {
+  it("never counts a grafical call", () => {
+    expect(offToolCommand("grafical render d.yaml --png diagram.png")).toBe(false);
+    expect(
+      offToolCommand("grafical node add d.yaml a --layer l --label A && grafical check d.yaml"),
+    ).toBe(false);
+  });
+
+  it("counts writing a picture, an interpreter, a drawing program and coordinates", () => {
+    expect(offToolCommand("cat > out.svg <<'EOF'")).toBe(true);
+    expect(offToolCommand("echo hi > chart.png")).toBe(true);
+    expect(offToolCommand("python3 draw.py")).toBe(true);
+    expect(offToolCommand("cat d.yaml | node -e 'x'")).toBe(true);
+    expect(offToolCommand("dot -Tpng g.dot -o diagram.png")).toBe(true);
+    expect(offToolCommand('echo \'<rect x="10" y="20"/>\'')).toBe(true);
+  });
+
+  it("leaves reading and plain shell alone", () => {
+    expect(offToolCommand("cat brief.md; ls; echo done")).toBe(false);
+    expect(offToolCommand("cat > /tmp/batch.yaml <<'EOF'")).toBe(false);
+  });
+
+  it("counts per step, and only in the grafical arm", () => {
+    const events = [
+      assistant("a", { in: 1, cw: 1, cr: 1, out: 1 }, [
+        toolUse("1", "Bash", { command: "grafical render d.yaml" }),
+        toolUse("2", "Bash", { command: "python3 -c 'print(1)'" }),
+        toolUse("3", "Bash", { command: "cat > a.svg <<'EOF'" }),
+      ]),
+      result,
+    ];
+    expect(computeMetrics(events, { arm: "grafical", kind: "draft" }).offTool).toBe(2);
+    expect(computeMetrics(events, { arm: "raw", kind: "draft" }).offTool).toBeNull();
+  });
+});
+
+/** The real chain: Haiku with grafical on the fictional catalog-sync brief, trimmed to what the metrics read. */
+describe("a real measured chain (fixtures)", () => {
+  const STEPS = ["e1", "e2-add-node", "e2-move-node", "e2-rename-node", "e2-remove-node"];
+  const load = (step: string) =>
+    parseTranscript(
+      readFileSync(join(import.meta.dirname, "fixtures", "measure", `${step}.jsonl`), "utf8"),
+    );
+
+  it("e1: 65 tool calls, of which 64 ran grafical: 49 successes, 11 defects, 4 denials", () => {
+    const m = computeMetrics(load("e1"), { arm: "grafical", kind: "draft" });
+    expect(m.toolCallTotal).toBe(65);
+    expect(m.grafical).toMatchObject({
+      calls: 64,
+      successes: 49,
+      opErrors: 0,
+      defects: 11,
+      permissionDenials: 4,
+    });
+    // 45 of the successes changed the diagram; the other 4 are guide, new, show and check.
+    expect(m.grafical?.editSuccesses).toBe(45);
+    expect(m.grafical?.retries).toBe(3);
+    expect(m.offTool).toBe(0);
+  });
+
+  it("sums per-step costs to the session total", () => {
+    let previous: { costUsd: number; apiSeconds: number } | undefined;
+    const costs: number[] = [];
+    const wall: number[] = [];
+    const sessions: number[] = [];
+    for (const step of STEPS) {
+      const m = computeMetrics(load(step), {
+        arm: "grafical",
+        kind: step === "e1" ? "draft" : "change",
+        ...(previous ? { previous } : {}),
+      });
+      previous = { costUsd: m.sessionCostUsd, apiSeconds: m.sessionApiSeconds };
+      costs.push(m.costUsd);
+      wall.push(m.wallSeconds);
+      sessions.push(m.sessionCostUsd);
+    }
+    // The running totals the harness recorded before the fix.
+    expect(sessions.map((c) => c.toFixed(4))).toEqual([
+      "0.0309",
+      "0.0360",
+      "0.0375",
+      "0.0388",
+      "0.0402",
+    ]);
+    // The steps after the first cost the differences: $0.0051, $0.0015, $0.0013, $0.0014.
+    expect(costs.slice(1).map((c) => c.toFixed(4))).toEqual([
+      "0.0051",
+      "0.0015",
+      "0.0014",
+      "0.0014",
+    ]);
+    expect(costs.reduce((a, b) => a + b, 0)).toBeCloseTo(0.04021620000000001, 10);
+    // Wall time was already per call.
+    expect(wall.map((w) => Math.round(w))).toEqual([114, 14, 4, 6, 4]);
+  });
+});
+
+describe("a step's share of a session total", () => {
+  it("is the difference, and the whole total for a first step or a new session", () => {
+    expect(stepTotal(0.036, 0.0309)).toBeCloseTo(0.0051, 10);
+    expect(stepTotal(0.0309, undefined)).toBe(0.0309);
+    expect(stepTotal(0.01, 0.0309)).toBe(0.01);
+  });
+
+  it("records both the step's cost and the session's", () => {
+    const m = computeMetrics([result], {
+      arm: "raw",
+      kind: "change",
+      previous: { costUsd: 0.2, apiSeconds: 4 },
+    });
+    expect(m.costUsd).toBeCloseTo(0.05, 10);
+    expect(m.sessionCostUsd).toBe(0.25);
+    expect(m.apiSeconds).toBe(5);
+    expect(m.sessionApiSeconds).toBe(9);
   });
 });
 

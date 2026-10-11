@@ -25,10 +25,16 @@ export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const RUNS = join(REPO, "bench", "runs");
 const PROMPTS = join(REPO, "bench", "prompts");
 
-/** The tools each arm may use. `Bash(grafical *)` keeps the grafical arm from scripting a drawing. */
+/**
+ * The tools each arm may use: the same for both, so the comparison is fair. A narrower Bash
+ * made don't-ask mode refuse `grafical apply f.yaml b.yaml; echo $?`, and the agent fell back
+ * to one command per call. The grafical arm's prompt says to draw only with grafical, and the
+ * `offTool` metric audits that it did (hypothesis H4).
+ */
+const BOTH_ARMS_TOOLS = ["Bash", "Read", "Write", "Edit"];
 export const ALLOWED_TOOLS: Record<Arm, string[]> = {
-  grafical: ["Bash(grafical *)", "Read", "Write"],
-  raw: ["Bash", "Read", "Write", "Edit"],
+  grafical: BOTH_ARMS_TOOLS,
+  raw: BOTH_ARMS_TOOLS,
 };
 
 export interface Change {
@@ -180,8 +186,57 @@ export function versions(): { claude: string; grafical: string } {
   return { claude, grafical };
 }
 
+/** The defects of a diagram, split by who must fix them. */
+export interface DefectSplit {
+  engineDefects: number;
+  agentDefects: number;
+}
+
+/**
+ * Reads the output of `grafical check <file> --all --json`. null when it is not that report:
+ * an older CLI that has no `--all` prints nothing on stdout, or defects with no `owner`.
+ */
+export function parseCheckAll(stdout: string): DefectSplit | null {
+  let j: { defects?: { owner?: string }[] };
+  try {
+    j = JSON.parse(stdout);
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(j.defects)) return null;
+  if (j.defects.some((d) => d.owner !== "agent" && d.owner !== "engine")) return null;
+  const engineDefects = j.defects.filter((d) => d.owner === "engine").length;
+  return { engineDefects, agentDefects: j.defects.length - engineDefects };
+}
+
+/** Runs the check on the step's diagram. null counts, and the reason, when it cannot. */
+function checkAll(dir: string, file: string): { split: DefectSplit | null; note: string | null } {
+  if (!existsSync(join(dir, file))) return { split: null, note: `no ${file}` };
+  const res = spawnSync(join(dir, "bin", "grafical"), ["check", file, "--all", "--json"], {
+    cwd: dir,
+    encoding: "utf8",
+    timeout: 2 * 60 * 1000,
+  });
+  const split = parseCheckAll(res.stdout ?? "");
+  if (split) return { split, note: null };
+  const why = (res.stderr ?? "").trim().split("\n")[0] ?? "";
+  return { split: null, note: `check --all not available: ${why || `exit ${res.status}`}` };
+}
+
 export interface StepRecord extends Metrics {
   step: string;
+  /** Whether `diagram.png` existed when the step ended. False means the step did not deliver. */
+  diagramPng: boolean;
+  /** The picture is new: it did not exist before the step, or the step changed it. */
+  diagramPngUpdated: boolean;
+  /** Finished with no error and a new picture. */
+  complete: boolean;
+  /** `owner: "engine"` defects in the step's diagram. null for the raw arm, or if the check was unavailable. */
+  engineDefects: number | null;
+  /** `owner: "agent"` defects in the step's diagram. */
+  agentDefects: number | null;
+  /** Why the two counts above are null, when they are. */
+  defectCheckNote: string | null;
   arm: Arm | "baseline";
   modelAlias: string;
   claudeVersion: string;
@@ -196,6 +251,8 @@ export function runStep(o: {
   model: string;
   spec: StepSpec;
   resume?: string;
+  /** The session's running totals after the previous step; omit for a first step. */
+  previous?: { costUsd: number; apiSeconds: number };
   persist: boolean;
 }): StepRecord {
   const tools = o.arm === "baseline" ? [] : ALLOWED_TOOLS[o.arm];
@@ -206,6 +263,8 @@ export function runStep(o: {
     persist: o.persist,
     ...(o.resume ? { resume: o.resume } : {}),
   });
+  const pngFile = join(o.dir, "diagram.png");
+  const pngBefore = existsSync(pngFile) ? sha256(pngFile) : null;
   const stepDir = join(o.dir, "steps", o.spec.step);
   mkdirSync(stepDir, { recursive: true });
   const env = o.arm === "baseline" ? process.env : chainEnv(o.dir, o.arm);
@@ -234,10 +293,23 @@ export function runStep(o: {
   const metrics = computeMetrics(events, {
     arm: o.arm === "baseline" ? "raw" : o.arm,
     kind: o.spec.kind,
+    ...(o.previous ? { previous: o.previous } : {}),
   });
+  const diagramPng = existsSync(pngFile);
+  const diagramPngUpdated = diagramPng && sha256(pngFile) !== pngBefore;
+  const defects =
+    o.arm === "grafical"
+      ? checkAll(o.dir, "diagram.grafical.yaml")
+      : { split: null, note: "raw arm: no grafical diagram" };
   const v = versions();
   const record: StepRecord = {
     ...metrics,
+    diagramPng,
+    diagramPngUpdated,
+    complete: metrics.finished && !metrics.isError && diagramPngUpdated,
+    engineDefects: defects.split?.engineDefects ?? null,
+    agentDefects: defects.split?.agentDefects ?? null,
+    defectCheckNote: defects.note,
     step: o.spec.step,
     arm: o.arm,
     modelAlias: o.model,
@@ -261,6 +333,7 @@ export function runChain(o: {
   prepareChainDir(dir, o.arm);
   const records: StepRecord[] = [];
   let session: string | undefined;
+  let previous: { costUsd: number; apiSeconds: number } | undefined;
   for (const spec of chainSteps(o.arm, o.changes)) {
     // Every step but the last is resumed by the next, so it must stay on disk.
     const rec = runStep({
@@ -270,8 +343,10 @@ export function runChain(o: {
       spec,
       persist: o.changes.length > 0,
       ...(session ? { resume: session } : {}),
+      ...(previous ? { previous } : {}),
     });
     records.push(rec);
+    previous = { costUsd: rec.sessionCostUsd, apiSeconds: rec.sessionApiSeconds };
     session ??= rec.sessionId ?? undefined;
     if (!session) break; // no session id: a resume is impossible, report the failure instead
   }

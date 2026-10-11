@@ -11,11 +11,19 @@ import {
   draftPrompt,
   loadChanges,
   parseChanges,
+  parseCheckAll,
   prepareChainDir,
   REPO,
 } from "../../bench/run.ts";
 import { planSmoke } from "../../bench/smoke.ts";
-import { buildNetTable, buildTable, stat } from "../../bench/summary.ts";
+import {
+  buildChainTable,
+  buildNetTable,
+  buildTable,
+  type Loaded,
+  normalizeChain,
+  stat,
+} from "../../bench/summary.ts";
 
 describe("claude arguments", () => {
   const base = { prompt: "P", model: "haiku", tools: ["Read"], persist: false };
@@ -55,9 +63,10 @@ describe("arms and prompts", () => {
     expect(differing[0]).toContain("grafical guide");
   });
 
-  it("restricts the grafical arm's Bash to grafical", () => {
-    expect(ALLOWED_TOOLS.grafical).toContain("Bash(grafical *)");
-    expect(ALLOWED_TOOLS.grafical).not.toContain("Bash");
+  it("gives both arms the same tools, with full Bash", () => {
+    expect(ALLOWED_TOOLS.grafical).toEqual(ALLOWED_TOOLS.raw);
+    expect(ALLOWED_TOOLS.grafical).toContain("Bash");
+    expect(ALLOWED_TOOLS.grafical.some((t) => t.startsWith("Bash("))).toBe(false);
   });
 
   it("prepares a run directory with the brief, and a grafical wrapper only for that arm", () => {
@@ -132,6 +141,31 @@ describe("smoke plan", () => {
     );
     expect(out).toContain("runs (claude calls): 30");
     expect(out.match(/claude -p /g)).toHaveLength(30);
+    // Both arms get the same tools, and none is narrowed to `Bash(grafical *)`.
+    expect(out.match(/--allowedTools Bash,Read,Write,Edit/g)).toHaveLength(30);
+    expect(out).not.toContain("Bash(grafical");
+  });
+});
+
+describe("defect split from grafical check --all", () => {
+  it("counts engine and agent defects", () => {
+    const out = JSON.stringify({
+      ok: false,
+      changed: [],
+      errors: [],
+      defects: [{ owner: "engine" }, { owner: "agent" }, { owner: "engine" }],
+    });
+    expect(parseCheckAll(out)).toEqual({ engineDefects: 2, agentDefects: 1 });
+    expect(parseCheckAll('{"ok":true,"defects":[]}')).toEqual({
+      engineDefects: 0,
+      agentDefects: 0,
+    });
+  });
+
+  it("is null when the CLI has no --all yet: no output, or defects with no owner", () => {
+    expect(parseCheckAll("")).toBeNull();
+    expect(parseCheckAll('{"ok":false,"defects":[{"code":"x"}]}')).toBeNull();
+    expect(parseCheckAll("error: unknown option '--all'")).toBeNull();
   });
 });
 
@@ -156,7 +190,11 @@ describe("summary", () => {
       imageReads: 1,
       regenerations: 0,
       tokens: { fresh, cacheHitRate: hit },
-      grafical: arm === "grafical" ? { rejectedShare: 0.1 } : null,
+      grafical: arm === "grafical" ? { rejectedShare: 0.1, permissionDenials: 0 } : null,
+      offTool: arm === "grafical" ? 0 : null,
+      engineDefects: arm === "grafical" ? 2 : null,
+      agentDefects: arm === "grafical" ? 0 : null,
+      diagramPngUpdated: true,
     }) as unknown as StepRecord;
 
   it("formats mean and range", () => {
@@ -175,5 +213,33 @@ describe("summary", () => {
     const net = buildNetTable(runs, [rec(0.05, 400, 0.6)]);
     expect(net).toContain("0.150 (0.050–0.250)");
     expect(net).toContain("1600 (600–2600)");
+  });
+
+  it("sums a chain's per-step costs, and shows a step with no new picture", () => {
+    const step = (name: string, cost: number, png = true): Loaded => ({
+      chain: "grafical-haiku-r1",
+      record: { ...rec(cost, 1, 0.5, "grafical"), step: name, diagramPngUpdated: png },
+    });
+    const runs = [step("e1", 0.03, false), step("e2-add-node", 0.005)];
+    expect(buildChainTable(runs)).toContain("| grafical | haiku | 1 | 0.035 (0.035–0.035) |");
+    const table = buildTable(runs, new Map());
+    expect(table).toContain("0/1"); // e1 finished without diagram.png
+    expect(table).toContain("1/1");
+  });
+
+  it("turns old running-total records into per-step ones, in step order", () => {
+    const old = (name: string, total: number, api: number) =>
+      ({ step: name, arm: "grafical", costUsd: total, apiSeconds: api }) as unknown as StepRecord;
+    const fixed = normalizeChain([
+      old("e2-move-node", 0.0375, 124),
+      old("e1", 0.0309, 109),
+      old("e2-add-node", 0.036, 121),
+    ]);
+    expect(fixed.map((r) => r.step)).toEqual(["e1", "e2-add-node", "e2-move-node"]);
+    expect(fixed.map((r) => r.costUsd.toFixed(4))).toEqual(["0.0309", "0.0051", "0.0015"]);
+    expect(fixed.map((r) => r.sessionCostUsd)).toEqual([0.0309, 0.036, 0.0375]);
+    // New records already carry sessionCostUsd and are left alone.
+    const fresh = { ...old("e1", 0.01, 1), sessionCostUsd: 0.5 };
+    expect(normalizeChain([fresh])[0]?.costUsd).toBe(0.01);
   });
 });
