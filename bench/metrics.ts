@@ -72,7 +72,7 @@ export interface Metrics {
   imageReads: number;
   /** null for the raw arm. */
   grafical: GraficalStats | null;
-  /** Hypothesis H4 audit, grafical arm only: Bash commands that draw by other means. */
+  /** Hypothesis H4 audit, grafical and Mermaid arms: Bash commands that draw by other means than the arm's tool. */
   offTool: number | null;
   /** Change requests answered by redrawing the whole diagram. Always 0 for a draft. */
   regenerations: number;
@@ -247,29 +247,44 @@ export function graficalStats(events: Event[]): GraficalStats {
   };
 }
 
-const INTERPRETER =
-  /^(?:sudo\s+|time\s+|\w+=\S*\s+)*(python3?|node|nodejs|deno|bun|ruby|perl|dot|neato|fdp|twopi|circo|rsvg-convert|convert|magick|inkscape|mmdc|d2|plantuml|java)(?:\s|$)/;
+const PREFIX = String.raw`^(?:sudo\s+|time\s+|\w+=\S*\s+)*`;
+/** Programs that only draw. */
+const DRAWING_PROGRAM = new RegExp(
+  `${PREFIX}(dot|neato|fdp|twopi|circo|rsvg-convert|convert|magick|inkscape|mmdc|d2|plantuml)(?:\\s|$)`,
+);
+/** General interpreters: they draw only when the command names a picture or a drawing library. */
+const INTERPRETER = new RegExp(`${PREFIX}(python3?|node|nodejs|deno|bun|ruby|perl|java)(?:\\s|$)`);
+const DRAWING_WORD =
+  /\b(?:draw\w*|png|svg|pdf|matplotlib|pyplot|graphviz|pydot|networkx|PIL|cairo\w*|svgwrite|drawsvg|turtle|plotly|reportlab|canvas)\b/i;
 const PICTURE_OUT = /(?:>>?|\btee\s+(?:-a\s+)?|\s-o\s*|--output[ =])\s*\S*\.(?:svg|png)\b/i;
 const COORDINATES = /<svg|viewBox|\b(?:x|y|cx|cy|x1|x2|y1|y2|width|height)\s*=\s*["']?\d/;
 
 /**
- * Whether a Bash command draws by other means than grafical: it writes a .svg or .png,
- * runs an interpreter or a drawing program, or writes coordinates. A part that starts
- * with `grafical` is never counted, so `grafical render --png` is fine.
+ * Whether a Bash command draws by other means than the arm's own tool: it writes
+ * a .svg or .png, runs a drawing program, runs an interpreter on something that
+ * names a picture or a drawing library, or writes coordinates. A part that starts
+ * with the arm's tool is never counted, so `grafical render --png` is fine. An
+ * interpreter that edits a batch file draws nothing, and is not counted.
  */
-export function offToolCommand(command: string): boolean {
+export function offToolCommand(command: string, own = "grafical"): boolean {
   for (const part of command.split(/&&|\|\||;|\n/)) {
-    if (/^\s*grafical\s/.test(part)) continue;
+    if (new RegExp(`^\\s*${own}\\s`).test(part)) continue;
     if (PICTURE_OUT.test(part) || COORDINATES.test(part)) return true;
-    for (const piece of part.split("|")) if (INTERPRETER.test(piece.trim())) return true;
+    for (const piece of part.split("|")) {
+      const p = piece.trim();
+      if (DRAWING_PROGRAM.test(p)) return true;
+      if (INTERPRETER.test(p) && DRAWING_WORD.test(part)) return true;
+    }
   }
   return false;
 }
 
-export function offToolCount(events: Event[]): number {
+export function offToolCount(events: Event[], own = "grafical"): number {
   return toolUses(events).filter(
     (t) =>
-      t.name === "Bash" && typeof t.input.command === "string" && offToolCommand(t.input.command),
+      t.name === "Bash" &&
+      typeof t.input.command === "string" &&
+      offToolCommand(t.input.command, own),
   ).length;
 }
 
@@ -277,10 +292,14 @@ const SOURCE_EXT = /\.(svg|html?|dot|gv|mmd|puml|py|js|mjs|ts)$/i;
 
 /**
  * Change requests answered by redrawing the whole diagram. For grafical, a
- * `grafical new` in a change step. For the raw arm, a heuristic: a Write of a
- * diagram source file in a change step (an Edit alone is a patch).
+ * `grafical new` in a change step. For the raw and Mermaid arms, a heuristic: a
+ * Write of a diagram source file in a change step (an Edit alone is a patch).
  */
-export function regenerations(events: Event[], arm: "grafical" | "raw", kind: StepKind): number {
+export function regenerations(
+  events: Event[],
+  arm: "grafical" | "raw" | "mermaid",
+  kind: StepKind,
+): number {
   if (kind === "draft") return 0;
   const uses = toolUses(events);
   if (arm === "grafical") {
@@ -314,7 +333,7 @@ export function stepTotal(sessionTotal: number, previous: number | undefined): n
 export function computeMetrics(
   events: Event[],
   o: {
-    arm: "grafical" | "raw";
+    arm: "grafical" | "raw" | "mermaid";
     kind: StepKind;
     /** The session's running totals after the previous step. Omit for a first step. */
     previous?: { costUsd: number; apiSeconds: number };
@@ -369,7 +388,12 @@ export function computeMetrics(
     perTurn: turns,
     imageReads,
     grafical: o.arm === "grafical" ? graficalStats(events) : null,
-    offTool: o.arm === "grafical" ? offToolCount(events) : null,
+    offTool:
+      o.arm === "grafical"
+        ? offToolCount(events)
+        : o.arm === "mermaid"
+          ? offToolCount(events, "mmdc")
+          : null,
     regenerations: regenerations(events, o.arm, o.kind),
   };
 }

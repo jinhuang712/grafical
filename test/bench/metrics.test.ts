@@ -229,21 +229,29 @@ describe("off-tool drawing (hypothesis H4)", () => {
     ).toBe(false);
   });
 
-  it("counts writing a picture, an interpreter, a drawing program and coordinates", () => {
+  it("counts writing a picture, a drawing program, a drawing script and coordinates", () => {
     expect(offToolCommand("cat > out.svg <<'EOF'")).toBe(true);
     expect(offToolCommand("echo hi > chart.png")).toBe(true);
     expect(offToolCommand("python3 draw.py")).toBe(true);
-    expect(offToolCommand("cat d.yaml | node -e 'x'")).toBe(true);
+    expect(offToolCommand("python3 -c 'import matplotlib'")).toBe(true);
     expect(offToolCommand("dot -Tpng g.dot -o diagram.png")).toBe(true);
     expect(offToolCommand('echo \'<rect x="10" y="20"/>\'')).toBe(true);
   });
 
-  it("leaves reading and plain shell alone", () => {
+  it("leaves reading, plain shell and an interpreter that edits a batch file alone", () => {
     expect(offToolCommand("cat brief.md; ls; echo done")).toBe(false);
     expect(offToolCommand("cat > /tmp/batch.yaml <<'EOF'")).toBe(false);
+    expect(offToolCommand("python3 -c 'import yaml; fix(\"batch.yaml\")'")).toBe(false);
+    expect(offToolCommand("cat d.yaml | node -e 'x'")).toBe(false);
   });
 
-  it("counts per step, and only in the grafical arm", () => {
+  it("allows the Mermaid arm its own tool, and nothing else", () => {
+    expect(offToolCommand("mmdc -i diagram.mmd -o diagram.png", "mmdc")).toBe(false);
+    expect(offToolCommand("mmdc -i diagram.mmd -o diagram.png")).toBe(true);
+    expect(offToolCommand("cat > diagram.svg <<'EOF'", "mmdc")).toBe(true);
+  });
+
+  it("counts per step, in the grafical and Mermaid arms only", () => {
     const events = [
       assistant("a", { in: 1, cw: 1, cr: 1, out: 1 }, [
         toolUse("1", "Bash", { command: "grafical render d.yaml" }),
@@ -252,7 +260,9 @@ describe("off-tool drawing (hypothesis H4)", () => {
       ]),
       result,
     ];
-    expect(computeMetrics(events, { arm: "grafical", kind: "draft" }).offTool).toBe(2);
+    expect(computeMetrics(events, { arm: "grafical", kind: "draft" }).offTool).toBe(1);
+    // The SVG written by hand counts in both; neither interpreter call names a picture.
+    expect(computeMetrics(events, { arm: "mermaid", kind: "draft" }).offTool).toBe(1);
     expect(computeMetrics(events, { arm: "raw", kind: "draft" }).offTool).toBeNull();
   });
 });
