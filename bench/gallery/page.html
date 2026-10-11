@@ -364,8 +364,13 @@
     state.rounds = await res.json();
     const sel = $("round");
     for (const r of state.rounds) { const o = document.createElement("option"); o.value = r.id; o.textContent = r.title; sel.append(o); }
+    // The newest round opens first when a round was added since the last visit;
+    // otherwise the round the viewer last looked at.
     const saved = recall("grafical-round");
-    const first = state.rounds.find((r) => r.id === saved)?.id ?? state.rounds[state.rounds.length - 1]?.id;
+    const newest = state.rounds[state.rounds.length - 1]?.id;
+    const added = recall("grafical-rounds-seen") !== String(state.rounds.length);
+    remember("grafical-rounds-seen", String(state.rounds.length));
+    const first = (added ? undefined : state.rounds.find((r) => r.id === saved)?.id) ?? newest;
     if (first) { sel.value = first; await loadRound(first); }
     connect();
   }
