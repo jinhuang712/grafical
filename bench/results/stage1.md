@@ -59,7 +59,7 @@ The owner finished the "how it looks" round: 5 of 7 accepted.
 
 - Accepted: swimlanes as columns, the default, dark and print themes, and a custom stylesheet.
 - Rejected, swimlanes as rows: "why does the db not have a lane". The demo left its database row outside every lane, which a row lane allows but which reads as a gap. A row lane holds neighbouring rows only, so the row has to move up to join the Platform lane, or take a lane of its own; both versions were shown to the owner.
-- Rejected, the live viewer: the owner asked to see it work rather than a screenshot. It was opened on the owner's screen while seven edits ran.
+- Rejected, the live viewer: the owner asked to see it work rather than a screenshot. It was opened on the owner's screen while seven edits ran. The owner then asked for a list of changes beside the picture and a window that fits the diagram; with both built, the owner saw it run again and confirmed the window fit.
 
 ### Harness notes
 
