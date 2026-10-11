@@ -13,6 +13,7 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   writeFileSync,
 } from "node:fs";
@@ -353,9 +354,18 @@ export function runStep(o: {
   writeFileSync(transcript, res.stdout ?? "");
   if (res.stderr) writeFileSync(join(stepDir, "stderr.txt"), res.stderr);
 
-  // Keep what the agent made at this step; the next step overwrites diagram.png.
+  // Keep what the agent made at this step; the next step overwrites diagram.png. An
+  // agent may name its grafical file as the guide suggests, `<name>.grafical.yaml`.
   const hashes: Record<string, string> = { transcript: sha256(transcript) };
-  for (const f of ["diagram.png", "diagram.grafical.yaml", "diagram.svg", "diagram.mmd"]) {
+  const named = readdirSync(o.dir).filter((f) => f.endsWith(".grafical.yaml"));
+  const kept = new Set([
+    "diagram.png",
+    "diagram.grafical.yaml",
+    "diagram.svg",
+    "diagram.mmd",
+    ...named,
+  ]);
+  for (const f of kept) {
     const src = join(o.dir, f);
     if (existsSync(src)) {
       copyFileSync(src, join(stepDir, f));
