@@ -322,9 +322,31 @@ function compute(d: Diagram, m: Measurer, withText: boolean): { scene: Scene; ce
 
   // Down: rows and gutters. A gutter holds, top to bottom, the padding of the
   // groups whose last row is above it, its tracks, and the head of the groups
-  // whose first row is below it.
+  // whose first row is below it. A head may rise beside the tracks, as in the
+  // target, where no run, label or box of the gutter comes near the group; it
+  // then adds only what the tracks do not already give it.
   const startsAt = (r: number) => groups.some((g) => g.top === r);
   const endsAt = (r: number) => groups.some((g) => g.bottom === r);
+  const near = (g: (typeof groups)[number], lo: number, hi: number) =>
+    lo < g.x1 + GROUP.clear && hi > g.x0 - GROUP.clear;
+  /** Room the heads of the groups that start below gutter i still need, besides its tracks. */
+  const headRoom = (i: number, tracks: number): number => {
+    const starting = groups.filter((g) => g.top === i + 1);
+    if (starting.length === 0) return 0;
+    for (const g of starting) {
+      for (const v of routing.gutters[i] ?? []) {
+        if (v.row < 0) continue;
+        if (v.hi - v.lo > 1e-6 && near(g, v.lo, v.hi)) return GROUP.head;
+        if (v.label !== undefined && near(g, v.label.x0, v.label.x0 + v.label.w)) return GROUP.head;
+        if (v.detour !== undefined && near(g, v.detour.x, v.detour.x)) return GROUP.head;
+      }
+      for (const o of groups) if (o.bottom === i && near(g, o.x0, o.x1)) return GROUP.head;
+    }
+    const crowded = (layers[i]?.nodes ?? []).some((n) =>
+      starting.some((g) => near(g, n.x, n.x + n.w)),
+    );
+    return Math.max(0, GROUP.head + (crowded ? GROUP.clear : 0) - tracks);
+  };
   const rowTops: number[] = [];
   const gutterTops: number[] = [];
   const endPads: number[] = [];
@@ -336,8 +358,8 @@ function compute(d: Diagram, m: Measurer, withText: boolean): { scene: Scene; ce
     const rows = routing.rows[i] ?? 0;
     const last = i === layers.length - 1;
     const pad = endsAt(i) ? GROUP.pad : 0;
-    const head = !last && startsAt(i + 1) ? GROUP.head : 0;
     const tracks = rows === 0 ? (last ? 0 : (sp.gutterSteps[0] ?? 48)) : gutterHeight(rows, sp);
+    const head = last ? 0 : headRoom(i, tracks);
     gutterTops.push(y);
     endPads.push(pad);
     y += pad + tracks + head;
