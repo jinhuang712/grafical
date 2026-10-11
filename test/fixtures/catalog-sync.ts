@@ -1,6 +1,10 @@
 // The public brief bench/briefs/catalog-sync.md as a diagram: 6 layers, 30 nodes,
 // 41 edges. Write side on the left, read side on the right, the shared MongoDB
 // between them. Node orders follow the data, the way an engineer would draw it.
+// Two of the phase 0 spike's alignments hold: CatalogApiService under promotions,
+// and the goods pipeline under its topic. The spike's third, the catalog-api
+// service under its HTTP entry, needs the Processing row to slide by another
+// amount than the goods pipeline does, so it cannot hold with them (D10).
 
 import type { Diagram } from "../../src/model/types.ts";
 import { e, n } from "./build.ts";
@@ -39,7 +43,10 @@ export const catalogSync: Diagram = {
       nodes: [
         n("admin", "admin HTTP", "service", "m", { sublabel: "sync :7102" }),
         n("relay", "catalog-relay", "service", "m", { sublabel: "tier 1, :7101", accent: true }),
-        n("grpc", "CatalogApiService", "service", "m", { sublabel: "gRPC :7190" }),
+        n("grpc", "CatalogApiService", "service", "m", {
+          sublabel: "gRPC :7190",
+          align: "promotions",
+        }),
         n("http", "catalog-api HTTP", "service", "m", { sublabel: ":8080" }),
       ],
     },
@@ -57,7 +64,10 @@ export const catalogSync: Diagram = {
       label: "Processing",
       nodes: [
         n("full_load", "full-load job", "service", "m", { sublabel: "external trigger" }),
-        n("goods_pipe", "goods pipeline", "service", "m", { sublabel: "line 10" }),
+        n("goods_pipe", "goods pipeline", "service", "m", {
+          sublabel: "line 10",
+          align: "goods_v1",
+        }),
         n("retry_runner", "retry runner", "service", "m"),
         n("tickets_pipe", "tickets pipeline", "service", "m", { sublabel: "line 20" }),
         n("api_service", "catalog-api service", "service", "l", {
