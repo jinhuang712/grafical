@@ -324,9 +324,14 @@ function freeParts(lo: number, hi: number, spans: [number, number][]): [number, 
 /** How many vertical tracks a gap holds. Outer gaps are open, so they hold any number. */
 function capacity(gap: Gap): number {
   if (!Number.isFinite(gap.lo) || !Number.isFinite(gap.hi)) return Number.POSITIVE_INFINITY;
+  if (gap.forbid.length === 0) return Math.floor((gap.hi - gap.lo) / TRACK_MIN + EPS) + 1;
+  // Tracks sit on the 4 px grid, TRACK_MIN apart, outside the forbidden spans.
   let n = 0;
-  for (const [p, q] of freeParts(gap.lo, gap.hi, gap.forbid)) {
-    if (q >= p) n += Math.floor((q - p) / TRACK_MIN + EPS) + 1;
+  let last = Number.NEGATIVE_INFINITY;
+  for (let x = Math.ceil(gap.lo / 4 - EPS) * 4; x <= gap.hi + EPS; x += 4) {
+    if (x - last < TRACK_MIN - EPS || inSpans(x, gap.forbid)) continue;
+    n++;
+    last = x;
   }
   return n;
 }
