@@ -262,8 +262,8 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | PNG rendered by resvg, with no browser | stage 1 |
 | Bundled fonts: Inter, and a Simplified Chinese subset of Noto Sans SC | stage 1 |
 | Same SVG bytes and PNG pixels for the same file, on macOS and Linux | stage 1 |
-| One theme | stage 1 |
-| More themes, and brand colors and fonts | later |
+| Built-in themes `default`, `dark` and `print`, and stylesheet files (D30) | done |
+| Brand fonts | later |
 
 ## Stage 2: the board
 
