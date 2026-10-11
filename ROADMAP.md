@@ -45,6 +45,8 @@ Added on 2026-10-11. The phase 1 engine drew defect-free pictures that the owner
 
 Exit check: Haiku builds the public brief through the command line, and two blind Opus judges score its picture at least 50 of 60 on the D25 rubric, with the target scored in the same round. Each picture is also shown on the owner's rating page.
 
+First try, 2026-10-11: not met. Three Haiku drafts scored 31, 40 and 41, and the target 56. The causes are in [bench/results/phase1b.md](bench/results/phase1b.md).
+
 ### Phase 2: the vocabulary and stability
 
 Everything else that FEATURES.md marks `stage 1`: the full operation set, `apply`, `show`, `diff` and `guide`. The stability rule (D10) is enforced by tests. The separate geometry check for benchmark 7 is built.
