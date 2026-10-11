@@ -65,7 +65,7 @@ Everything else that FEATURES.md marks `stage 1`: the full operation set, `apply
 
 Exit check: benchmarks 4, 7 and 11 meet their targets. These three need no agent runs.
 
-First measurement, 2026-10-12: 7 and 11 met, and 4 not met. Unnamed nodes in unchanged rows move sideways after half of all single operations. The owner decides between a more local column solver and a restated target: [bench/results/phase2.md](bench/results/phase2.md).
+First measurement, 2026-10-12: 7 and 11 met, and 4 not met. Unnamed nodes in unchanged rows move sideways after half of all single operations. The owner restated benchmark 4 the same day: no unnamed fact changes, which holds, with sideways movement measured but not gated ([bench/results/phase2.md](bench/results/phase2.md)). The cross-platform gate of benchmark 11 waits for CI.
 
 ### Phase 3: benchmark and release
 

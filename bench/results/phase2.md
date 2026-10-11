@@ -2,7 +2,7 @@
 
 Rule 1 was broken: these numbers were measured while the checks were built, and no expectation was written first. The phase 2 exit check is benchmarks 4, 7 and 11 at their targets (ROADMAP.md). None of the three needs an agent run.
 
-## Outcome, 2026-10-12: 7 and 11 met, 4 not met
+## Outcome, 2026-10-12: 7 and 11 met; 4 not met, then restated and met
 
 | Benchmark | Target | Measured | Met |
 |---|---|---|---|
@@ -19,4 +19,8 @@ The column grid (D10) is solved again from the facts after every change, and one
 
 The measurement applies every single operation of the stability tests to the two fixtures (a node added to each layer, each node removed, each edge removed, 20 edges added) and counts, for each unnamed node, a sideways move relative to the centre line in a layer whose nodes and alignments did not change. D10's list allows sideways moves only in layers whose contents changed, or that hold a node aligned to one that moved.
 
-Remembering the last layout is not an option: the file alone decides the picture (D15). Meeting the target needs a column solver whose choices stay local to the change. That is open work, and the owner decides whether to do it before the stage 1 benchmarks or to restate the target.
+Remembering the last layout is not an option: the file alone decides the picture (D15). Meeting the target needs a column solver whose choices stay local to the change.
+
+## Decision, 2026-10-12
+
+The owner restated benchmark 4 (GOALS.md): 0 facts changed that no operation named, which the stability tests show in all 169 single operations and `grafical diff` can check on any change. Sideways movement in untouched rows is measured and reported, without a target. Under the restated target, benchmark 4 is met. The stage 1 judges' answer to "what else changed?" shows whether the movement hurts a reader.

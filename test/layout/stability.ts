@@ -6,7 +6,8 @@
 // - it keeps its place in its layer's order, and the picture draws the row's
 //   nodes left to right in that order;
 // - it keeps its group, and the picture draws it inside that group's box and in
-//   no other.
+//   no other;
+// - it keeps its lane and its alignment (D32, D10).
 // Movement is measured, not limited: how many nodes and routes moved, relative to
 // the centre line.
 
@@ -34,12 +35,28 @@ export interface Report {
 
 const r2 = (x: number) => Math.round(x * 100) / 100;
 
-/** Each node's layer, its index among the layer's nodes, and its group. */
-function facts(d: Diagram): Map<string, { layer: string; order: string[]; group: string }> {
-  const out = new Map<string, { layer: string; order: string[]; group: string }>();
+interface Facts {
+  layer: string;
+  order: string[];
+  group: string;
+  lane: string;
+  align: string;
+}
+
+/** Each node's layer, the layer's order, its group, its lane and its alignment. */
+function facts(d: Diagram): Map<string, Facts> {
+  const out = new Map<string, Facts>();
   for (const l of d.layers) {
     const order = l.nodes.map((n) => n.id);
-    for (const n of l.nodes) out.set(n.id, { layer: l.id, order, group: n.group ?? "" });
+    for (const n of l.nodes) {
+      out.set(n.id, {
+        layer: l.id,
+        order,
+        group: n.group ?? "",
+        lane: n.lane ?? l.lane ?? "",
+        align: n.align ?? "",
+      });
+    }
   }
   return out;
 }
@@ -84,6 +101,8 @@ export function d10(before: Framed, after: Framed, db: Diagram, da: Diagram, nam
     if (a === undefined || b === undefined) continue;
     if (a.layer !== b.layer) violations.push(`node ${id} changed layer`);
     if (a.group !== b.group) violations.push(`node ${id} changed group`);
+    if (a.lane !== b.lane) violations.push(`node ${id} changed lane`);
+    if (a.align !== b.align) violations.push(`node ${id} changed alignment`);
     const ob = within(b.order, kept).join(",");
     const oa = within(a.order, kept).join(",");
     if (a.layer === b.layer && ob !== oa) violations.push(`layer ${a.layer} changed order`);

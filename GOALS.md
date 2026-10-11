@@ -27,7 +27,7 @@
 | 1 | First draft | Blind score (of 50), wall time, tool calls | Haiku ≥ 42, ≤ 2 min, ≤ 10 tool calls | Haiku below 34, the no-tool score in the 2026-10-10 test |
 | 2 | Iteration | Seconds and tokens per change request, and the share done right the first time | ≤ 30 s and ≤ 15k tokens per change, ≥ 90% right | Slower or costlier than regenerating with no tool |
 | 3 | Token use | Fresh tokens Haiku uses per first draft through the command line, and the fixed overhead: reference text read before the first operation | ≤ 50k per draft, overhead ≤ 3k | Above the no-tool arm. The 2026-10-10 figure of about 80k was counted differently, so the phase 1 smoke test measures the no-tool arm again |
-| 4 | Stability | Elements whose position, size or route changed without being on DESIGN.md D10's list, per change | 0 | Any, once phase 2 is done |
+| 4 | Stability | Facts that changed although no operation named them (layer, order, group, lane, alignment), per change. Measured without a target: nodes that move sideways in rows whose contents did not change | 0 unnamed fact changes | Any |
 | 5 | Model gap | Opus score minus Haiku score on the same task | ≤ 4 | As large as the gap with no tool |
 | 6 | Operation errors | Share of operations rejected, and retries needed to recover | ≤ 5%, recovered within 1 retry | Above 20% |
 | 7 | Mechanical defects | Overflow, overlap, edges through nodes and label collisions, found by a separate geometry check on the rendered SVG, plus the judges' defect score | 0 found, judges' defect score ≥ 4 of 5 | Any defect in an output is a bug |
