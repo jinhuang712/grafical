@@ -10,6 +10,7 @@
 //   summary --round <name>                    write bench/results/<round>.md
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   benchmark 7: check every step's picture's geometry
+//   speed                                     benchmark 11: time one operation and one command
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -18,6 +19,7 @@ import { checkRound } from "./geometry.ts";
 import { runJudging } from "./judge.ts";
 import { loadChanges, prepareChainDir, RUNS, runChain, runStep } from "./run.ts";
 import { formatPlan, planSmoke } from "./smoke.ts";
+import { measureSpeed } from "./speed.ts";
 import { writeSummary } from "./summary.ts";
 
 function flag(args: string[], name: string): string | undefined {
@@ -120,6 +122,10 @@ function main(argv: string[]): void {
       });
       return;
     }
+    case "speed": {
+      measureSpeed().then((lines) => console.log(lines.join("\n")));
+      return;
+    }
     case "summary": {
       const out = writeSummary(round);
       mkdirSync(dirname(out.path), { recursive: true });
@@ -129,7 +135,7 @@ function main(argv: string[]): void {
     }
     default:
       console.error(
-        "usage: pnpm bench <baseline|smoke|chain|judge|gallery|geometry|summary> [options]",
+        "usage: pnpm bench <baseline|smoke|chain|judge|gallery|geometry|speed|summary> [options]",
       );
       process.exit(2);
   }
