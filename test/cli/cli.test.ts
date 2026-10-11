@@ -166,9 +166,15 @@ describe("write commands", () => {
       "--json",
     );
     expect(r.code).toBe(0);
-    expect(r.out).toBe('{"ok":true,"changed":["cache"],"errors":[],"defects":[]}\n');
+    expect(r.out).toBe('{"ok":true,"changed":["cache"],"errors":[],"defects":[],"warnings":[]}\n');
     const rm = run("node", "remove", "single.grafical.yaml", "cache", "--json");
-    expect(JSON.parse(rm.out)).toEqual({ ok: true, changed: ["cache"], errors: [], defects: [] });
+    expect(JSON.parse(rm.out)).toEqual({
+      ok: true,
+      changed: ["cache"],
+      errors: [],
+      defects: [],
+      warnings: [],
+    });
   });
 
   it("leaves the file untouched and exits 1 when an operation fails", () => {
@@ -263,7 +269,7 @@ describe("read commands", () => {
   it("check reports no defects on a good file", () => {
     const r = run("check", "single.grafical.yaml", "--json");
     expect(r.code).toBe(0);
-    expect(r.out).toBe('{"ok":true,"changed":[],"errors":[],"defects":[]}\n');
+    expect(r.out).toBe('{"ok":true,"changed":[],"errors":[],"defects":[],"warnings":[]}\n');
   });
 
   it("render writes the svg and the png beside the file", () => {

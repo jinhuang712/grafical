@@ -29,6 +29,42 @@ export interface DiagramNewOp {
   op: "diagram.new";
   title: string;
   density?: Density;
+  subtitle?: string;
+  note?: string;
+}
+export interface DiagramSubtitleOp {
+  op: "diagram.subtitle";
+  /** Absent: clear the subtitle. */
+  text?: string;
+}
+export interface DiagramNoteOp {
+  op: "diagram.note";
+  /** Absent: clear the note. */
+  text?: string;
+}
+export interface GroupAddOp {
+  op: "group.add";
+  id: string;
+  label: string;
+  nodes?: string[];
+}
+export interface GroupJoinOp {
+  op: "group.join";
+  group: string;
+  nodes: string[];
+}
+export interface GroupLeaveOp {
+  op: "group.leave";
+  nodes: string[];
+}
+export interface GroupRenameOp {
+  op: "group.rename";
+  id: string;
+  label: string;
+}
+export interface GroupRemoveOp {
+  op: "group.remove";
+  id: string;
 }
 export interface LayerAddOp {
   op: "layer.add";
@@ -77,6 +113,13 @@ export interface EdgeRemoveOp {
 
 export type Op =
   | DiagramNewOp
+  | DiagramSubtitleOp
+  | DiagramNoteOp
+  | GroupAddOp
+  | GroupJoinOp
+  | GroupLeaveOp
+  | GroupRenameOp
+  | GroupRemoveOp
   | LayerAddOp
   | NodeAddOp
   | NodeRenameOp
@@ -98,7 +141,36 @@ export const diagramNewSchema = z.strictObject({
   op: z.literal("diagram.new"),
   title: text,
   density: z.enum(DENSITIES).optional(),
+  subtitle: text.optional(),
+  note: text.optional(),
 });
+export const diagramSubtitleSchema = z.strictObject({
+  op: z.literal("diagram.subtitle"),
+  text: text.optional(),
+});
+export const diagramNoteSchema = z.strictObject({
+  op: z.literal("diagram.note"),
+  text: text.optional(),
+});
+const nodeList = z.array(nodeId).min(1);
+export const groupAddSchema = z.strictObject({
+  op: z.literal("group.add"),
+  id: nodeId,
+  label: text,
+  nodes: z.array(nodeId).optional(),
+});
+export const groupJoinSchema = z.strictObject({
+  op: z.literal("group.join"),
+  group: nodeId,
+  nodes: nodeList,
+});
+export const groupLeaveSchema = z.strictObject({ op: z.literal("group.leave"), nodes: nodeList });
+export const groupRenameSchema = z.strictObject({
+  op: z.literal("group.rename"),
+  id: nodeId,
+  label: text,
+});
+export const groupRemoveSchema = z.strictObject({ op: z.literal("group.remove"), id: nodeId });
 export const layerAddSchema = z.strictObject({
   op: z.literal("layer.add"),
   id: nodeId,
@@ -143,6 +215,13 @@ export const edgeRemoveSchema = z.strictObject({ op: z.literal("edge.remove"), i
 /** Parses one operation. A batch item is exactly this. */
 export const opSchema = z.discriminatedUnion("op", [
   diagramNewSchema,
+  diagramSubtitleSchema,
+  diagramNoteSchema,
+  groupAddSchema,
+  groupJoinSchema,
+  groupLeaveSchema,
+  groupRenameSchema,
+  groupRemoveSchema,
   layerAddSchema,
   nodeAddSchema,
   nodeRenameSchema,
@@ -154,6 +233,13 @@ export const opSchema = z.discriminatedUnion("op", [
 
 const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.new": diagramNewSchema,
+  "diagram.subtitle": diagramSubtitleSchema,
+  "diagram.note": diagramNoteSchema,
+  "group.add": groupAddSchema,
+  "group.join": groupJoinSchema,
+  "group.leave": groupLeaveSchema,
+  "group.rename": groupRenameSchema,
+  "group.remove": groupRemoveSchema,
   "layer.add": layerAddSchema,
   "node.add": nodeAddSchema,
   "node.rename": nodeRenameSchema,

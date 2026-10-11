@@ -7,6 +7,7 @@ import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
 import { layout } from "../layout/index.ts";
+import { budgetWarnings } from "../model/budget.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
@@ -31,6 +32,13 @@ function pick(opts: Opts, names: string[]): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const n of names) if (opts[n] !== undefined && opts[n] !== false) out[n] = opts[n];
   return out;
+}
+
+function splitIds(s: string): string[] {
+  return s
+    .split(",")
+    .map((x) => x.trim())
+    .filter((x) => x !== "");
 }
 
 const POSITION = ["first", "last", "before", "after"];
@@ -74,9 +82,78 @@ function build(): Command {
       .description("create an empty diagram file")
       .argument("<file>")
       .requiredOption("--title <text>", "diagram title")
-      .option("--density <density>", "compact, normal or airy"),
+      .option("--density <density>", "compact, normal or airy")
+      .option("--subtitle <text>", "one sentence under the title")
+      .option("--note <text>", 'a footnote, such as "Not shown: ..."'),
   ).action(async (file: string, opts: Opts) => {
-    await write(file, { op: "diagram.new", ...pick(opts, ["title", "density"]) }, opts, true);
+    const names = ["title", "density", "subtitle", "note"];
+    await write(file, { op: "diagram.new", ...pick(opts, names) }, opts, true);
+  });
+
+  const diagram = program.command("diagram").description("diagram-wide text");
+  for (const field of ["subtitle", "note"] as const) {
+    json(
+      diagram
+        .command(field)
+        .description(`set the ${field}; without --text, clear it`)
+        .argument("<file>")
+        .option("--text <text>"),
+    ).action(async (file: string, opts: Opts) => {
+      await write(file, { op: `diagram.${field}`, ...pick(opts, ["text"]) }, opts);
+    });
+  }
+
+  const group = program.command("group").description("group (system box) operations");
+  json(
+    group
+      .command("add")
+      .description("add a group, optionally with member nodes")
+      .argument("<file>")
+      .argument("<id>")
+      .requiredOption("--label <text>")
+      .option("--nodes <ids>", "comma-separated member node ids"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const raw: Record<string, unknown> = { op: "group.add", id, ...pick(opts, ["label"]) };
+    if (typeof opts.nodes === "string") raw.nodes = splitIds(opts.nodes);
+    await write(file, raw, opts);
+  });
+  json(
+    group
+      .command("join")
+      .description("put nodes into a group")
+      .argument("<file>")
+      .argument("<group>")
+      .argument("<node...>"),
+  ).action(async (file: string, g: string, nodes: string[], opts: Opts) => {
+    await write(file, { op: "group.join", group: g, nodes }, opts);
+  });
+  json(
+    group
+      .command("leave")
+      .description("take nodes out of their group")
+      .argument("<file>")
+      .argument("<node...>"),
+  ).action(async (file: string, nodes: string[], opts: Opts) => {
+    await write(file, { op: "group.leave", nodes }, opts);
+  });
+  json(
+    group
+      .command("rename")
+      .description("change a group's label")
+      .argument("<file>")
+      .argument("<id>")
+      .requiredOption("--label <text>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "group.rename", id, ...pick(opts, ["label"]) }, opts);
+  });
+  json(
+    group
+      .command("remove")
+      .description("remove a group; its nodes stay")
+      .argument("<file>")
+      .argument("<id>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "group.remove", id }, opts);
   });
 
   const layer = program.command("layer").description("layer operations");
@@ -222,7 +299,13 @@ function build(): Command {
     }
     const defects = inspect(d, await createMeasurer(), opts.all === true);
     process.exitCode = emit(
-      { ok: defects.length === 0, changed: [], errors: [], defects },
+      {
+        ok: defects.length === 0,
+        changed: [],
+        errors: [],
+        defects,
+        warnings: budgetWarnings(d),
+      },
       opts.json === true,
     );
   });
@@ -265,7 +348,13 @@ function build(): Command {
       writeAtomic(out, renderPng(svg, scale));
       files.push(out);
     }
-    const report = { ok: defects.length === 0, changed: [], errors: [], defects };
+    const report = {
+      ok: defects.length === 0,
+      changed: [],
+      errors: [],
+      defects,
+      warnings: budgetWarnings(d),
+    };
     if (opts.json !== true) for (const f of files) process.stdout.write(`wrote ${f}\n`);
     process.exitCode = emit(report, opts.json === true, { files });
   });

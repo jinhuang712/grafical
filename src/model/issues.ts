@@ -129,9 +129,12 @@ export function issuesToErrors(
 function knownKeys(raw: unknown, path: readonly PropertyKey[]): string[] {
   const last = path[path.length - 1];
   const parent = path[path.length - 2];
-  if (path.length === 0) return ["grafical", "title", "density", "layers", "edges"];
-  if (parent === "nodes") return ["id", "label", "kind", "sublabel", "size", "accent", "align"];
+  if (path.length === 0)
+    return ["grafical", "title", "subtitle", "note", "density", "layers", "groups", "edges"];
+  if (parent === "nodes")
+    return ["id", "label", "kind", "sublabel", "size", "accent", "align", "group"];
   if (last === undefined || typeof last === "number") {
+    if (parent === "groups") return ["id", "label"];
     if (parent === "layers") return ["id", "label", "nodes"];
     if (parent === "edges") return ["id", "from", "to", "kind", "label"];
   }
