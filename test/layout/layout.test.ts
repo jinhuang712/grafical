@@ -10,7 +10,7 @@ import {
   validateGroups,
 } from "../../src/layout/index.ts";
 import type { Diagram, DiagramNode, Edge } from "../../src/model/types.ts";
-import type { Point, Scene, SceneEdge } from "../../src/scene.ts";
+import type { Point, Rect, Scene, SceneEdge } from "../../src/scene.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import { createStubMeasurer } from "../../src/text/stub.ts";
 import type { Measurer } from "../../src/text/types.ts";
@@ -147,6 +147,17 @@ describe("the target look (D25)", () => {
     for (const id of ["upstream->relay", "relay->line_topics", "line_topics->pipelines"]) {
       expect(edge(id).points).toHaveLength(2);
     }
+  });
+
+  it("lets an edge to a node wholly to one side leave from that side, with one bend", () => {
+    // pipelines -> retry: retry sits up and to the left, with nothing between in the row.
+    const pts = edge("pipelines->retry").points;
+    const from = node("pipelines") as Rect;
+    const to = node("retry") as Rect;
+    expect(pts).toHaveLength(3);
+    expect(pts[0]).toEqual({ x: from.x, y: from.y + from.h / 2 });
+    expect(pts[1]?.y).toBe(pts[0]?.y);
+    expect(pts[2]).toEqual({ x: pts[1]?.x, y: to.y + to.h });
   });
 
   it("runs edges between neighbours straight sideways, with their labels", () => {

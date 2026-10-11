@@ -116,6 +116,11 @@ export interface Plan {
   side: SideSlot | undefined;
   /** The label of a sideways edge, in its row beside its line. */
   sideLabel: { x0: number; w: number; h: number } | undefined;
+  /**
+   * A side exit: the line leaves its source's left or right side at the middle of
+   * the row, and turns at this x into its target. Undefined for every other edge.
+   */
+  turn: number | undefined;
 }
 
 interface Bus {
@@ -209,7 +214,8 @@ export function routeAcross(
   assignBuses(plans);
   chooseGaps(plans, gapsByLayer, extra.forbidTop);
   assignGapTracks(plans);
-  assignPorts(plans, extra.forbidTop);
+  chooseSideExits(plans, layers, extra.forbidTop);
+  placePorts(plans, extra.forbidTop);
 
   // A label that its gutter cannot hold clear of every other line moves to the
   // next gutter of its path. Once it has tried them all, its line steps out of the
@@ -375,6 +381,7 @@ function makePlan(
     fanIn: undefined,
     side,
     sideLabel,
+    turn: undefined,
   };
   if (u.layer === v.layer) {
     if (side !== undefined) {
@@ -717,6 +724,92 @@ function assignGapTracks(plans: Plan[]): void {
   }
 }
 
+// Pass 2a': side exits ------------------------------------------------------
+
+/**
+ * An edge into the next row up or down, to a node wholly on one side of its
+ * source, leaves from that side of the source and turns once into the target: an
+ * L with one bend, where leaving from the bottom takes a Z with two. It needs the
+ * source's row clear between the two: no node and no gap track, and room for the
+ * turn beside the next node. Fan-outs and fan-ins keep their shared port, a node
+ * side takes one side exit at most, and a side with an edge to a neighbour takes
+ * none. The turn goes into the target's centre where it can, past group labels.
+ */
+function chooseSideExits(
+  plans: Plan[],
+  layers: PLayer[],
+  forbidTop: Map<number, [number, number][]>,
+): void {
+  const taken = new Set<string>();
+  for (const pl of plans) {
+    if (pl.kind !== "neighbour") continue;
+    taken.add(`${pl.u.id}:${pl.srcSide}`);
+    taken.add(`${pl.v.id}:${pl.dstSide}`);
+  }
+  const pad = ROUTE.corridorPad;
+  // One side exit per gap of a row, so that two never run along one line.
+  const gapsUsed = new Set<string>();
+  for (const pl of plans) {
+    const { u, v } = pl;
+    if (pl.kind !== "down" && pl.kind !== "up") continue;
+    if (pl.between.length > 0 || pl.bus !== undefined || pl.fanIn !== undefined) continue;
+    const left = v.x + v.w <= u.x;
+    const right = v.x >= u.x + u.w;
+    if (!left && !right) continue;
+    const side: Side = left ? "left" : "right";
+    if (taken.has(`${u.id}:${side}`)) continue;
+    const row = layers[u.layer]?.nodes ?? [];
+    const k = row.indexOf(u);
+    const next = row[left ? k - 1 : k + 1];
+    const lo = left
+      ? next === undefined
+        ? Number.NEGATIVE_INFINITY
+        : next.x + next.w + pad
+      : u.x + u.w + pad;
+    const hi = left ? u.x - pad : next === undefined ? Number.POSITIVE_INFINITY : next.x - pad;
+    const plo = Math.max(lo, v.x + ROUTE.portInset);
+    const phi = Math.min(hi, v.x + v.w - ROUTE.portInset);
+    if (phi < plo) continue;
+    // The vertical part passes the group labels above the lower of the two rows.
+    const spans = forbidTop.get(Math.max(u.layer, v.layer)) ?? [];
+    const x = nearestFree(centreX(v), plo, phi, spans);
+    if (x < plo - EPS || x > phi + EPS || inSpans(x, spans)) continue;
+    // No line runs up or down through the source's row between it and the turn.
+    const gk = left ? k : k + 1;
+    if (gapsUsed.has(`${u.layer}:${gk}`)) continue;
+    const a = Math.min(x, left ? u.x : u.x + u.w) - TRACK_MIN;
+    const b = Math.max(x, left ? u.x : u.x + u.w) + TRACK_MIN;
+    const crossed = plans.some((o) =>
+      o.gaps.some((g, j) => {
+        const gx = o.gapX[j];
+        return g.layer === u.layer && g.k === gk && gx !== undefined && gx > a && gx < b;
+      }),
+    );
+    if (crossed) continue;
+    pl.srcSide = side;
+    pl.turn = x;
+    taken.add(`${u.id}:${side}`);
+    gapsUsed.add(`${u.layer}:${gk}`);
+  }
+}
+
+/**
+ * Ports for every side. A side exit whose target port could not sit at its turn
+ * leaves from its bottom or top again, and the ports are placed anew, until every
+ * side exit meets its port straight.
+ */
+function placePorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): void {
+  for (;;) {
+    assignPorts(plans, forbidTop);
+    const off = plans.filter((pl) => pl.turn !== undefined && Math.abs(pl.dstPort - pl.turn) > EPS);
+    if (off.length === 0) return;
+    for (const pl of off) {
+      pl.turn = undefined;
+      pl.srcSide = pl.kind === "down" ? "bottom" : "top";
+    }
+  }
+}
+
 // Pass 2b: ports ------------------------------------------------------------
 
 interface End {
@@ -769,6 +862,21 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
       const y = pl.side?.offset ?? 0;
       pl.srcPort = y;
       pl.dstPort = y;
+      continue;
+    }
+    if (pl.turn !== undefined) {
+      // A side exit leaves from the middle of its side; only its target has a port.
+      pl.srcPort = 0;
+      push({
+        plan: pl,
+        src: false,
+        node: v,
+        side: pl.dstSide,
+        desired: pl.turn,
+        far: pl.turn,
+        weight: STRAIGHT,
+        key: "",
+      });
       continue;
     }
     let ds: number;
@@ -845,6 +953,11 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
       mark(above, gap.layer, { x, plan: pl });
       mark(below, gap.layer - 1, { x, plan: pl });
     });
+    // A side exit's turn crosses the boundary of its gutter on the source's side.
+    if (pl.turn !== undefined) {
+      if (pl.kind === "down") mark(above, pl.u.layer, { x: pl.turn, plan: pl });
+      else mark(below, pl.u.layer - 1, { x: pl.turn, plan: pl });
+    }
   }
 
   // Bottom sides first, clear of the gap tracks below them; then top sides, clear
@@ -1069,7 +1182,9 @@ function stubsOf(pl: Plan, j: number): [Stub, Stub] {
   const last = pl.gutters.length - 1;
   const entry: Stub =
     j === 0
-      ? { x: pl.srcPort, top: pl.srcSide === "bottom" }
+      ? pl.turn !== undefined
+        ? { x: pl.turn, top: pl.kind === "down" }
+        : { x: pl.srcPort, top: pl.srcSide === "bottom" }
       : { x: pl.gapX[j - 1] ?? 0, top: pl.kind === "down" };
   const exit: Stub =
     j === last
@@ -1254,10 +1369,18 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
       out.set(pl.edge.id, { points: simplify(pts), label });
       continue;
     }
-    const sy = pl.srcSide === "bottom" ? geo.top(u) + u.h : geo.top(u);
     const ty = pl.dstSide === "bottom" ? geo.top(v) + v.h : geo.top(v);
-    const pts: Point[] = [{ x: X(pl.srcPort), y: sy }];
+    const pts: Point[] = [];
     let cur = pl.srcPort;
+    if (pl.turn !== undefined) {
+      // A side exit: out of the side at the row's middle, then along the row to the turn.
+      const my = geo.rowMid(u.layer) + pl.srcPort;
+      pts.push({ x: X(pl.srcSide === "left" ? u.x : u.x + u.w), y: my }, { x: X(pl.turn), y: my });
+      cur = pl.turn;
+    } else {
+      const sy = pl.srcSide === "bottom" ? geo.top(u) + u.h : geo.top(u);
+      pts.push({ x: X(pl.srcPort), y: sy });
+    }
     let label: AssembledLabel | undefined;
     const last = pl.gutters.length - 1;
     pl.gutters.forEach((g, j) => {
