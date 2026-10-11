@@ -53,6 +53,14 @@ Decision, as the expectation set it: the engine's side is the next work.
 - **Scale:** all 27 drafts made a picture, and grafical's 9 have no mechanical defect at 10, 25 or 50 components. Haiku merged hard: one draft of the 50-component brief has 16 boxes.
 - **Intent:** 10 drawings wait for the owner's accept or reject.
 
+### The owner's look at the new features
+
+The owner finished the "how it looks" round: 5 of 7 accepted.
+
+- Accepted: swimlanes as columns, the default, dark and print themes, and a custom stylesheet.
+- Rejected, swimlanes as rows: "why does the db not have a lane". The demo left its database row outside every lane, which a row lane allows but which reads as a gap. A row lane holds neighbouring rows only, so the row has to move up to join the Platform lane, or take a lane of its own; both versions were shown to the owner.
+- Rejected, the live viewer: the owner asked to see it work rather than a screenshot. It was opened on the owner's screen while seven edits ran.
+
 ### Harness notes
 
 - Two scale drafts kept their file as `<name>.grafical.yaml`, as the guide suggests, so the step copies missed it; their files were checked by hand: 0 defects. Later rounds keep any `*.grafical.yaml`.
