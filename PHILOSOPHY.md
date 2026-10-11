@@ -10,13 +10,15 @@ Every decision in [DESIGN.md](DESIGN.md) traces back to one of them. If a decisi
 
 Nobody draws a good diagram in one stroke. People place a box, add another, connect them, rename one, move one. grafical works the same way. Every change is a small operation with a name. Operations are the only way a diagram changes, and the file holds the result. Nothing is ever regenerated to change one thing.
 
-## Only what you name changes
+## Only the facts you name change
 
-An operation changes what it names, and moves only what has to make room for it. Everything else stays where it was. A person who has learned where things are in a diagram should never have to learn it again because of a change somewhere else.
+An operation changes the facts it names, and no other fact. Which layer a node is in, its order, its group and its alignment stay as they are until an operation names them. Positions may shift so that the picture stays tidy, but the structure does not. A person who has learned the structure of a diagram never has to learn it again because of a change somewhere else.
 
 ## The engine owns every pixel
 
 Callers state facts: what exists, which layer it is in, what comes before what, what aligns with what, what connects to what. The engine turns facts into positions, sizes and routes. No caller ever handles a coordinate. Allowed values are few and named, which is why the result looks consistent.
+
+Like a typesetter, the engine lays out the whole picture again from the facts after every change, fast enough to feel instant, and re-spaces whatever the change affects so the diagram always looks tidy. Positions are computed, never stored.
 
 ## The tool carries the taste
 

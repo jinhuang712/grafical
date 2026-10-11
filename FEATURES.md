@@ -44,6 +44,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `layer.add` | Add a layer: at the top, at the bottom, or before or after another layer | stage 1 |
 | `layer.rename` | Change a layer's label | stage 1 |
 | `layer.move` | Change a layer's position | stage 1 |
+| `layer.tidy` | Reorder a layer's nodes to reduce edge crossings, once (D24) | stage 1 |
 | `layer.remove` | Remove an empty layer | stage 1 |
 
 ### Groups
@@ -58,7 +59,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node | stage 1 |
+| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the fewest crossings (D24) | stage 1 |
 | `node.rename` | Change the label. The ID stays. A label that does not fit fails with a suggested size step | stage 1 |
 | `node.describe` | Set or clear the sublabel, such as a port or a topic name | stage 1 |
 | `node.kind` | Change the kind | stage 1 |

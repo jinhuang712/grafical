@@ -49,7 +49,7 @@ On 2026-10-10 we ran a blind test. Four agents drew the same two services from t
 
 ## What we want
 
-- Change a diagram the way a person would: one small step at a time, where only what you named changes.
+- Change a diagram the way a person would: one small step at a time, where only what you named changes, and the picture re-spaces itself at once.
 - Get a diagram that looks like the architecture diagrams of large engineering teams: aligned, evenly spaced, consistent type sizes, without asking for it.
 - Draw big diagrams without the tool hiding information.
 - Make it cheap enough that a small model like Haiku can do it well.
@@ -61,7 +61,7 @@ On 2026-10-10 we ran a blind test. Four agents drew the same two services from t
 | Need | Meaning |
 |---|---|
 | Atomic | Every change is one named operation that succeeds completely or not at all |
-| Stable | An operation moves what it names, plus only what has to make room |
+| Stable | An operation changes only the facts it names. The picture re-spaces around the change, but layers, order and groups stay as you know them |
 | Rebuildable | The same file always renders the same picture |
 | Versioned | The file lives in git, and changes read as operations |
 | Fast | A change takes seconds, not a regeneration |
@@ -71,7 +71,7 @@ On 2026-10-10 we ran a blind test. Four agents drew the same two services from t
 
 ## How it should feel
 
-You ask for a change, such as "put a cache between the API and the database". A few seconds later the cache is there, nothing else has moved, and the picture still looks finished. It should feel like directing a fast, careful designer, not like waiting to see what comes out this time.
+You ask for a change, such as "put a cache between the API and the database". A few seconds later the cache is there, everything else is where you expect it, and the picture still looks finished. It should feel like editing a LaTeX document in Overleaf: you change the content, and the layout follows at once. It should not feel like waiting to see what comes out this time.
 
 ## The idea
 
@@ -79,7 +79,7 @@ You ask for a change, such as "put a cache between the API and the database". A 
 
 Diagrams from large engineering teams look consistent because they use few values: nodes sit in rows, they align, they share a spacing scale and a type scale. All of that can be written down as facts: this node is in that layer, after that node, aligned under this one. None of it needs a coordinate.
 
-grafical gives agents a command-line tool whose operations state those facts. The engine owns everything else: measuring text, placing nodes, routing edges, and keeping every unrelated element where it was. After each step, it validates the change and checks the picture for defects, and reports any problem to the agent at once. [DESIGN.md](DESIGN.md) shows the full shape.
+grafical gives agents a command-line tool whose operations state those facts. The engine owns everything else: measuring text, placing nodes, routing edges, and re-spacing the picture after every change so it stays tidy. After each step, it validates the change and checks the picture for defects, and reports any problem to the agent at once. [DESIGN.md](DESIGN.md) shows the full shape.
 
 In stage 2 a board joins as a second client of the same operations. A person's drag becomes an operation too, so people and agents take turns on one file.
 
@@ -89,7 +89,7 @@ Three bets, each of which can be tested.
 
 1. **Discrete facts are enough.** A layered architecture diagram can be fully described by layers, order, groups, alignment and a few size and spacing steps. If that is true, the engine can compute a good picture and nobody has to place anything.
 2. **Small, named operations make weak models good.** Each operation asks the model for a few choices from a short list. The tool validates each choice immediately. A weak model that only has to choose well from short lists can match a strong one.
-3. **Stability can be built in.** If placement follows the facts, an operation can move only what depends on the facts it touched. Stability is then a property of the design, not something we tune for.
+3. **Stability can be built in.** If the layout is recomputed from the facts after every change, and an operation can change only the facts it names, the structure a reader knows survives every change. Stability is then a property of the design, not something we tune for.
 
 ## Where it could fail
 

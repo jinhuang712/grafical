@@ -26,14 +26,14 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D1 | Operations are the only way to change a diagram | Built in steps |
 | D2 | Operations state facts, never coordinates | The engine owns every pixel |
 | D3 | A batch applies many operations at once, all or nothing | Built in steps |
-| D4 | Every element has a stable ID that the caller chooses | Only what you name changes |
+| D4 | Every element has a stable ID that the caller chooses | Only the facts you name change |
 | D5 | Every operation is validated, and its errors say how to fix it | Mistakes are caught at the step |
 | D6 | Layout is described by discrete facts | The engine owns every pixel |
 | D7 | Layers are horizontal bands, stacked top to bottom | The tool carries the taste |
 | D8 | Kinds and styles are short, fixed lists | The tool carries the taste |
 | D9 | A person's adjustment will be an ordinary operation | People and agents take the same steps |
-| D10 | grafical owns placement, and placement is stable by construction | Only what you name changes |
-| D11 | Edges route orthogonally through the gaps between layers and nodes | The engine owns every pixel |
+| D10 | Layout is recomputed from the facts on every change, like a typesetter | Only the facts you name change |
+| D11 | Edges route orthogonally through the gaps, with our own router | The engine owns every pixel |
 | D12 | Text is measured from bundled fonts | The same file is the same picture |
 | D13 | grafical writes the SVG, and resvg rasterizes it | The same file is the same picture |
 | D14 | The checker runs on every write, and a defect fails the command | Mistakes are caught at the step |
@@ -46,6 +46,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D21 | MIT license, and dependencies must allow it | — |
 | D22 | The file records its format version, and the format only grows | The same file is the same picture |
 | D23 | The toolchain | — |
+| D24 | The engine picks a new node's slot, and `layer.tidy` reorders on request | The tool carries the taste |
 
 ## Writing a diagram
 
@@ -110,33 +111,65 @@ Rejected: a separate section for people's adjustments, reserved now and filled i
 
 ## The engine
 
-### D10 grafical owns placement, and placement is stable by construction
+### D10 Layout is recomputed from the facts on every change, like a typesetter
 
-Placement follows the facts in a fixed order: layers from top to bottom, nodes in each layer by their order, box sizes from their steps, gaps from the density. Layers are left-aligned. No search or optimization takes part. An operation can therefore change only these, and benchmark 4 in [GOALS.md](GOALS.md) checks that nothing else changes:
+After every operation, grafical lays out the whole diagram again from the facts, the way LaTeX typesets a document again after every edit. Positions are never stored. Layout must be fast enough to feel instant: benchmark 11 in [GOALS.md](GOALS.md) allows 50 ms per operation in process.
 
-- the element it names;
-- the nodes after it in the same layer, which shift sideways when it adds, removes or resizes a node;
-- the layers below it, which shift down when its layer changes height;
-- nodes aligned to a node that moved, and in turn the nodes after them in their own layer;
-- the routes of edges attached to anything that moved, and of edges that share a gap with a changed edge.
+Placement follows the facts in a fixed order: layers from top to bottom, nodes in each layer by their order, box sizes from their steps, gaps from the density. Each layer is centred, and its nodes are spread evenly, so every row looks tidy. No search takes part, so the same facts always give the same picture.
+
+**Stability means the structure stays, not the pixels.** An operation never changes a fact it does not name. The one exception is the slot of a node added without a position, which D24 chooses. After an operation, only these may move:
+- the elements it names;
+- the other nodes in each layer whose contents changed, which re-spread sideways and keep their order;
+- the layers below a layer or gutter that changed height, which shift down as one block;
+- nodes aligned to a node that moved;
+- edges that share a gap with a changed edge, but only inside the gaps they share;
+- ports on a node side that a changed edge uses;
+- the labels of routes that changed;
+- the routes of edges attached to anything that moved.
+
+"Changed" does not cascade: an edge that moved only because it shares a gap does not make its own neighbours movable. A layer whose contents did not change never moves sideways. Benchmark 4 checks this list on every change.
+
+**Gutters grow in fixed steps.** The gutter between two layers has a height chosen from fixed steps. When its tracks no longer fit at the density's spacing, it grows to the next step, and the layers below shift down. Most edge additions therefore change no gutter height.
 
 An alignment that cannot hold together with the order in either layer is rejected as an operation error.
 
-Rejected: optimizing placement to reduce edge crossings. It produces a better first picture, but any change can reshuffle everything. Order changes only when an operation asks for it. Centred layers, for now: centring shifts a whole layer whenever one of its nodes changes. This stays under "Not yet decided".
+Rejected:
+- Left-aligned layers that never re-spread. They keep more pixels still, but rows end up ragged, and the picture stops looking finished. The phase 0 router spike showed this.
+- Reordering nodes on every change to reduce crossings. It gives a better picture once, but any change can reshuffle the structure. Order is chosen once, when a node is added, or when an operation asks for it (D24).
+- Gutters that grow by any amount, because nearly every edge addition would then move the layers below.
+- A "gutter full" defect. Its fix (a larger density, fewer edges, a split layer) costs the agent a round, and moves more than growing would.
 
-### D11 Edges route orthogonally through the gaps between layers and nodes
+### D11 Edges route orthogonally through the gaps, with our own router
 
-Edges run as horizontal and vertical segments. They travel between layers and between neighbouring nodes, never through a node. Labels sit on segments without overlapping nodes or other labels.
+Edges run as horizontal and vertical segments. They travel through the gutters between layers and the gaps between neighbouring nodes, never through a node. A label sits on or beside a segment of its own route, clear of nodes, other labels and other edges.
 
-Phase 0 compares two routers: our own router through the gaps, and `libavoid-js`, a WASM build of the Adaptagrams libavoid router. A router passes only if it meets all of these:
-- no edge crosses a node, and no labels collide;
-- adding one edge changes no other route outside D10's list;
-- it gives the same SVG bytes on macOS and Linux;
-- its license fits D21.
+grafical uses its own gap router. It works in three passes:
+1. **Path:** each edge's path through the gutters and gaps depends only on the placement and the edge itself.
+2. **Channels:** each gutter and gap assigns ports and tracks from the edges inside it alone.
+3. **Assembly:** each route is built from the chosen ports, tracks and gaps.
 
-The choice is recorded here.
+A change therefore spreads to another channel only through edges that use both.
 
-Rejected: ELK for routing. ELK layered computes its own placement, and according to ELK's documentation it cannot route orthogonally around nodes that are already placed. Its fixed-layout algorithm only reuses bend points it is given. Sources, checked on 2026-10-10: the [ELK fixed algorithm reference](https://eclipse.dev/elk/reference/algorithms/org-eclipse-elk-fixed.html) and the [ELK libavoid post](https://eclipse.dev/elk/blog/posts/2022/22-11-17-libavoid.html). Graphviz, because it is another placement engine and a native binary.
+The phase 0 router spike compared it with `libavoid-js` on the public brief (30 nodes, 41 edges) and on a 50-node variant. Evidence: `spikes/router/REPORT.md` on branch `spike/router`.
+
+| | Our gap router | `libavoid-js` 0.5.0-beta.5 |
+|---|---|---|
+| No edge through a node, no label collisions | Pass | Pass, after tuning |
+| Adding one edge stays inside D10's list (45 additions) | Pass | Pass |
+| Same SVG bytes on macOS and Linux | Pass | Pass |
+| License | MIT, our code | LGPL-2.1-or-later, with conditions on bundled builds |
+| Route time, 30 nodes and 50 nodes | 0.09 ms, 0.24 ms | 80 ms, 1,840 ms |
+| Unrelated edges drawn on top of each other | 0 | 3 |
+| Crossings on the public brief | 68 | 40 |
+
+Before phase 1 ends, the router needs:
+- **Fewer crossings, within D10:** choose gaps and order ports by the neighbouring gaps, order tracks inside a gutter, and use a stable bus for fan-outs from one side.
+- **Label slots by rule:** fixed slots per channel, so that a label moves only with its own route, and a defect when no slot is free.
+- **Edge cases:** self-loops, several edges between one pair, the left-most gap, and arrowheads on close ports.
+
+Rejected:
+- `libavoid-js`. It is LGPL-2.1-or-later, and its npm `latest` is a beta from one maintainer. It took 1.8 s at 50 nodes, too slow to lay out on every change, and it drew unrelated edges on top of each other. Its one advantage, fewer crossings, is the router's to earn in phase 1.
+- ELK for routing. ELK layered computes its own placement, and according to ELK's documentation it cannot route orthogonally around nodes that are already placed. Its fixed-layout algorithm only reuses bend points it is given. Sources, checked on 2026-10-10: the [ELK fixed algorithm reference](https://eclipse.dev/elk/reference/algorithms/org-eclipse-elk-fixed.html) and the [ELK libavoid post](https://eclipse.dev/elk/blog/posts/2022/22-11-17-libavoid.html). Graphviz, because it is another placement engine and a native binary.
 
 ### D12 Text is measured from bundled fonts
 
@@ -174,6 +207,7 @@ After each operation or batch, grafical lays out the diagram and checks it. A de
 - two nodes that overlap;
 - an edge that crosses a node;
 - two labels that collide;
+- two edges that share a segment, so a reader cannot tell them apart;
 - a character the bundled fonts cannot draw.
 
 A write that leaves a defect fails and changes nothing. Each defect names its elements, what was found, what was expected, and an operation that would fix it.
@@ -234,7 +268,7 @@ grafical is MIT-licensed. Every dependency must allow use in an MIT project. Lic
 | `commander` | MIT |
 | `zod` | MIT |
 | `yaml` | ISC |
-| `libavoid-js`, if D11 chooses it | LGPL-2.1-or-later, from its npm page |
+| `libavoid-js` | LGPL-2.1-or-later. Not used, see D11 |
 | `harfbuzzjs` | MIT |
 | `subset-font`, used only to build the font subsets | BSD-3-Clause |
 | Inter, Noto Sans SC | SIL Open Font License |
@@ -264,12 +298,21 @@ Rejected: no version field, because a file could then not be told apart from an 
 
 Rejected: a CLI framework with plugins, because grafical's command set is small and fixed.
 
+### D24 The engine picks a new node's slot, and `layer.tidy` reorders on request
+
+Node order within a layer decides most edge crossings, and it is exactly the kind of choice a weak model gets wrong. So when `node.add` gives no position, the engine places the node in the slot of its layer that gives the fewest crossings, and saves that slot as an ordinary order fact. In a batch, slots are chosen after every operation in the batch is applied, so edges added later in the same batch count. A tie goes to the last slot.
+
+`layer.tidy <layer>` reorders the nodes of one layer to reduce crossings. It runs once, as a named operation, so its changes are expected. Nothing reorders a layer otherwise (D10).
+
+Rejected:
+- Appending a node last when no position is given. The agent's order would then decide the crossings, and that order is the main reason a diagram looks messy.
+- Reordering automatically on every change, for the reason in D10.
+
 ## Not yet decided
 
-- **Router:** our own router through the gaps, or `libavoid-js`. Phase 0 decides (D11).
 - **Wide layers:** what happens when a layer is wider than the maximum diagram width. One option is a defect that tells the agent to split the layer. The other is wrapping the layer into rows, which moves nodes the operation did not name.
 - **Columns and swimlanes:** groups that span layers, such as a write side and a read side.
-- **Centred layers:** whether layers may be centred, and how D10 would count the shift.
+- **Alignment and even spreading:** how an alignment fact combines with spreading a layer evenly (D10), and whether nodes line up in columns across layers without a change in one layer moving another sideways. Phase 1 decides.
 - **Exact lists:** node kinds, edge kinds, size steps and density values. Phase 2 settles them.
 - **File naming:** `<name>.grafical.yaml` is proposed.
 - **Undo:** whether undo exists outside git.

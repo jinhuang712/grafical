@@ -1,6 +1,6 @@
 # Roadmap
 
-> Written 2026-10-11. Nothing is built yet. The current phase is phase 0.
+> Written 2026-10-11. Phase 0 was done on 2026-10-11. The current phase is phase 1. No product code exists yet.
 
 grafical ships in two stages. In stage 1, the MVP, agents draw through the command line. In stage 2, people and agents edit the same diagram on a board. Each phase ends with an exit check, and the next phase starts only after it passes. Benchmarks and targets are defined in [GOALS.md](GOALS.md). What each stage contains is listed in [FEATURES.md](FEATURES.md).
 
@@ -12,7 +12,7 @@ Each spike answers one question, and the answer is recorded in [DESIGN.md](DESIG
 
 | Question | Answered when | Status |
 |---|---|---|
-| Which router: our own router through the gaps, or `libavoid-js`? (D11) | One router meets all four conditions in D11 on the public brief `bench/briefs/catalog-sync.md` | Open |
+| Which router: our own router through the gaps, or `libavoid-js`? (D11) | One router meets all four conditions in D11 on the public brief `bench/briefs/catalog-sync.md` | Done 2026-10-11: our own gap router |
 | Which text library, `harfbuzzjs` or `fontkit`, measures the bundled fonts correctly? (D12) | Measured widths match the widths resvg draws within 1 px, for mixed Chinese and English labels | Done 2026-10-11: `harfbuzzjs` |
 | Is the output deterministic? (D15) | The same file gives the same SVG bytes and the same PNG pixels on macOS and Linux | Done 2026-10-11: identical |
 | Which Chinese character set does the font subset cover? (D12) | Chosen, with the subset's file size recorded | Done 2026-10-11: the 8,105-character table, about 2.75 MB per weight |
@@ -22,7 +22,11 @@ Phase 0 also sets up the package: TypeScript, Biome, vitest, and CI on macOS and
 
 ### Phase 1: the loop
 
-The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, `edge.add`, `check` and `render`.
+The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, `edge.add`, `check` and `render`. Underneath them:
+- layout recomputed on every change, with even spreading and gutters that grow in steps (D10);
+- the slot choice for new nodes (D24);
+- the router work listed in D11;
+- how alignment combines with even spreading (DESIGN.md, "Not yet decided").
 
 Exit check: an agent builds the public brief `bench/briefs/catalog-sync.md` with these operations alone, and the PNG has zero defects.
 
