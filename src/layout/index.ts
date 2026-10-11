@@ -1,24 +1,40 @@
-// Layout entry point (DESIGN.md D10, D11, D24). The whole diagram is laid out again
-// from its facts on every call, in a fixed order and without search:
-// 1. across: each layer centred and spread evenly, then slid as one block where a
-//    node in it is aligned (place.ts, align.ts);
+// Layout entry point (DESIGN.md D7, D10, D11, D24, D25). The whole diagram is laid
+// out again from its facts on every call, in a fixed order:
+// 1. across: every node on a column of one grid shared by all rows, columns chosen
+//    so that edges run straight, then spaced for boxes, groups and labels
+//    (grid.ts, place.ts);
 // 2. routes across: paths, ports, gap tracks and gutter rows (route.ts);
-// 3. down: the title, then bands and gutters top to bottom, each gutter taking the
-//    smallest height step its rows fit in;
-// 4. assembly of routes, labels and text.
+// 3. down: the title, subtitle and legend, then rows and gutters top to bottom,
+//    each gutter taking the smallest height step its rows fit in, plus the room
+//    group boxes need below their last row and above their first;
+// 4. assembly of routes, labels, group boxes, text and the footnote.
+// Rows are not drawn (D7): their bands and labels stay in the scene for the
+// checker and for debugging.
 
-import type { Diagram } from "../model/types.ts";
-import type { PlacedText, Rect, Scene, SceneEdge, SceneLayer, SceneNode } from "../scene.ts";
+import type { Diagram, DiagramNode } from "../model/types.ts";
+import type {
+  PlacedText,
+  Rect,
+  Scene,
+  SceneEdge,
+  SceneGroup,
+  SceneLayer,
+  SceneLegendItem,
+  SceneNode,
+} from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
-import { FRAME, SPACING, type Spacing } from "../theme/geometry.ts";
+import { FRAME, GROUP, SPACING, type Spacing } from "../theme/geometry.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 import type { AlignmentProblem } from "./align.ts";
+import { buildGrid, type GroupProblem } from "./grid.ts";
 import { placeAcross } from "./place.ts";
 import { assemble, type LabelBox, type LabelForm, round2, routeAcross } from "./route.ts";
+import { planSideways } from "./side.ts";
 import { routeStats } from "./stats.ts";
-import { lineHeight, placeLine, placeLines } from "./text.ts";
+import { lineBox, lineHeight, placeLine, placeLines } from "./text.ts";
 
 export type { AlignmentCode, AlignmentProblem } from "./align.ts";
+export type { GroupCode, GroupProblem } from "./grid.ts";
 export { type RouteStats, routeStats } from "./stats.ts";
 
 export function layout(diagram: Diagram, m: Measurer): Scene {
@@ -26,8 +42,8 @@ export function layout(diagram: Diagram, m: Measurer): Scene {
 }
 
 /**
- * The scene and the absolute x of the centre line every layer is centred on.
- * Stability (D10) is measured relative to that line: a wider canvas may shift
+ * The scene and the absolute x of the centre line the grid is centred on.
+ * Positions may be compared relative to that line: a wider canvas may shift
  * everything by the same amount.
  */
 export function layoutFramed(diagram: Diagram, m: Measurer): { scene: Scene; centre: number } {
@@ -35,18 +51,44 @@ export function layoutFramed(diagram: Diagram, m: Measurer): { scene: Scene; cen
 }
 
 /**
- * Alignments that cannot hold (D10): a second alignment in one layer that needs
- * a different slide, alignments that make layers follow each other, and other
- * alignment faults. The command line turns each into an operation error.
+ * Alignments that cannot hold (D10): an aligned node must share its target's
+ * column, and the order of a layer, another alignment or a group can put that
+ * column on the other side of its neighbours. Also unknown targets, targets in
+ * the same layer and a node aligned with itself. The command line turns each into
+ * an operation error.
  */
 export function validateAlignments(diagram: Diagram): AlignmentProblem[] {
-  return placeAcross(diagram).problems;
+  return buildGrid(diagram).alignProblems;
+}
+
+/**
+ * Groups that cannot be drawn as one box (D7): a group whose members are split
+ * by another node in a layer, and a group that another group or node would have
+ * to lie both left and right of. The command line turns each into an operation
+ * error.
+ */
+export function validateGroups(diagram: Diagram): GroupProblem[] {
+  return buildGrid(diagram).groupProblems;
+}
+
+/** Does any group have a non-member between two of its members in this row? */
+function splitsGroup(nodes: DiagramNode[]): boolean {
+  const seen = new Set<string>();
+  let current: string | undefined;
+  for (const n of nodes) {
+    if (n.group === current) continue;
+    if (n.group !== undefined && seen.has(n.group)) return true;
+    if (current !== undefined) seen.add(current);
+    current = n.group;
+  }
+  return false;
 }
 
 /**
  * D24: the index in its layer, counting the node's current position as removed,
  * that gives the fewest edge crossings. A tie goes to the last slot. Each slot is
- * tried with the real router.
+ * tried with the real router. A slot that would split a group is not taken while
+ * another slot keeps the groups whole.
  */
 export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m: Measurer): number {
   const li = diagram.layers.findIndex((l) => l.id === layerId);
@@ -55,9 +97,14 @@ export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m:
   const node = layer.nodes.find((n) => n.id === nodeId);
   const rest = layer.nodes.filter((n) => n.id !== nodeId);
   if (node === undefined) return rest.length;
-  let best = rest.length;
-  let fewest = Number.POSITIVE_INFINITY;
+  const whole: number[] = [];
   for (let slot = 0; slot <= rest.length; slot++) {
+    if (!splitsGroup([...rest.slice(0, slot), node, ...rest.slice(slot)])) whole.push(slot);
+  }
+  const slots = whole.length > 0 ? whole : Array.from({ length: rest.length + 1 }, (_, i) => i);
+  let best = slots[slots.length - 1] ?? rest.length;
+  let fewest = Number.POSITIVE_INFINITY;
+  for (const slot of slots) {
     const nodes = [...rest.slice(0, slot), node, ...rest.slice(slot)];
     const trial: Diagram = {
       ...diagram,
@@ -74,6 +121,7 @@ export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m:
 }
 
 const ceil4 = (x: number) => Math.ceil(x / 4 - 1e-9) * 4;
+const ceil8 = (x: number) => Math.ceil(x / 8 - 1e-9) * 8;
 
 /**
  * An edge label on two and on three lines, each at the least width that wraps it
@@ -119,13 +167,31 @@ export function gutterHeight(rows: number, sp: Spacing): number {
   return h;
 }
 
+/** The legend's text for each line style the diagram uses (D8). */
+function legendItems(d: Diagram): { style: "solid" | "dashed"; text: string }[] {
+  const kinds = new Set(d.edges.map((e) => e.kind));
+  const out: { style: "solid" | "dashed"; text: string }[] = [];
+  const call = kinds.has("call");
+  const data = kinds.has("data");
+  if (call || data) {
+    out.push({ style: "solid", text: call && data ? "call or read" : call ? "call" : "data read" });
+  }
+  if (kinds.has("async")) out.push({ style: "dashed", text: "message" });
+  return out;
+}
+
+const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
+  role,
+  runs: [],
+  bbox: { x, y, w: 0, h: 0 },
+});
+
 function compute(d: Diagram, m: Measurer, withText: boolean): { scene: Scene; centre: number } {
   const sp = SPACING[d.density];
-  const placement = placeAcross(d);
-  const { layers, nodes } = placement;
 
   const labelStyle = TYPE_RAMP["edge-label"];
   const labelMetrics = m.metrics(labelStyle);
+  const labelH = labelMetrics.ascent + labelMetrics.descent;
   const labelSizes = new Map<string, LabelBox>();
   for (const e of d.edges) {
     const text = e.label;
@@ -134,83 +200,184 @@ function compute(d: Diagram, m: Measurer, withText: boolean): { scene: Scene; ce
     let forms: LabelForm[] | undefined;
     labelSizes.set(e.id, {
       w,
-      h: labelMetrics.ascent + labelMetrics.descent,
+      h: labelH,
       narrower: () => {
         forms ??= narrower(text, w, m);
         return forms;
       },
     });
   }
-  const routing = routeAcross(layers, nodes, d.edges, labelSizes, sp.trackPitch);
+  const groupStyle = TYPE_RAMP["group-label"];
+  const groupW = new Map((d.groups ?? []).map((g) => [g.id, m.measure(g.label, groupStyle).width]));
+  const sideways = planSideways(d, (id) => labelSizes.get(id)?.w, labelH);
+  const placement = placeAcross(d, {
+    sideways,
+    edgeLabelW: (id) => labelSizes.get(id)?.w,
+    groupLabelW: (id) => groupW.get(id) ?? 0,
+  });
+  const { layers, nodes, groups } = placement;
+
+  // Where no vertical line may pass: a group's label, above its first row, and the
+  // label of an edge that runs sideways, in the gap it crosses.
+  const forbidTop = new Map<number, [number, number][]>();
+  for (const g of groups) {
+    const list = forbidTop.get(g.top) ?? [];
+    list.push([g.labelX - GROUP.labelClear, g.labelX + g.labelW + GROUP.labelClear]);
+    forbidTop.set(g.top, list);
+  }
+  const forbidGap = new Map<string, [number, number][]>();
+  for (const [id, x0] of placement.sideLabels) {
+    const slot = sideways.get(id);
+    const right = slot === undefined ? undefined : nodes.get(slot.right);
+    const w = labelSizes.get(id)?.w ?? 0;
+    if (right === undefined) continue;
+    const key = `${right.layer}:${right.order}`;
+    const list = forbidGap.get(key) ?? [];
+    list.push([x0 - GROUP.labelClear, x0 + w + GROUP.labelClear]);
+    forbidGap.set(key, list);
+  }
+  const routing = routeAcross(layers, nodes, d.edges, labelSizes, sp.trackPitch, {
+    sideways,
+    forbidTop,
+    forbidGap,
+    sideLabelX: placement.sideLabels,
+  });
 
   // Across: the content is symmetric about the centre line.
   let half = 0;
-  for (const n of nodes.values()) half = Math.max(half, Math.abs(n.x), Math.abs(n.x + n.w));
-  half += sp.nodeGap;
-  if (Number.isFinite(routing.minX)) half = Math.max(half, -routing.minX + 16);
-  if (Number.isFinite(routing.maxX)) half = Math.max(half, routing.maxX + 16);
+  const see = (x: number) => {
+    if (Number.isFinite(x)) half = Math.max(half, Math.abs(x));
+  };
+  for (const n of nodes.values()) {
+    see(n.x);
+    see(n.x + n.w);
+  }
+  for (const g of groups) {
+    see(g.x0);
+    see(g.x1);
+  }
+  for (const [id, x0] of placement.sideLabels) {
+    see(x0);
+    see(x0 + (labelSizes.get(id)?.w ?? 0));
+  }
+  if (Number.isFinite(routing.minX)) see(routing.minX - 16);
+  if (Number.isFinite(routing.maxX)) see(routing.maxX + 16);
   half = ceil4(Math.max(half, 80));
-  const contentLeft = sp.margin + FRAME.labelColumn;
-  const centre = contentLeft + half;
-  const contentRight = centre + half;
 
+  // The frame: title, subtitle and legend at the top, the footnote at the bottom.
   const title = withText
     ? placeLine("title", d.title, sp.margin, sp.margin, m)
-    : { role: "title" as const, runs: [], bbox: { x: sp.margin, y: sp.margin, w: 0, h: 0 } };
-  const titleH = ceil4(title.bbox.h);
-  const width = ceil4(Math.max(contentRight + sp.margin, 2 * sp.margin + title.bbox.w));
-
-  // Down: bands and gutters.
-  const layerLabelStyle = TYPE_RAMP["layer-label"];
-  const layerLabelLh = lineHeight("layer-label", m);
-  const bandTops: number[] = [];
-  const bandHs: number[] = [];
-  const gutterTops: number[] = [];
-  const gutterHs: number[] = [];
-  const layerLines = layers.map((l) =>
-    withText ? m.wrap(l.label, layerLabelStyle, FRAME.labelColumn - 2 * FRAME.labelPad) : [],
+    : empty("title", sp.margin, sp.margin);
+  const legendStyle = TYPE_RAMP.legend;
+  const items = withText ? legendItems(d) : [];
+  const itemW = items.map(
+    (it) => FRAME.legendSample + FRAME.legendLabelGap + m.measure(it.text, legendStyle).width,
   );
-  let y = sp.margin + titleH + FRAME.titleGap;
+  const legendW =
+    itemW.reduce((s, w) => s + w, 0) + Math.max(0, items.length - 1) * FRAME.legendItemGap;
+  const textW = Math.max(2 * half, FRAME.minTextWidth);
+  const subLines =
+    withText && d.subtitle !== undefined && d.subtitle !== ""
+      ? m.wrap(d.subtitle, TYPE_RAMP.subtitle, textW)
+      : [];
+  const noteLines =
+    withText && d.note !== undefined && d.note !== "" ? m.wrap(d.note, TYPE_RAMP.note, textW) : [];
+  const widest = (lines: { width: number }[]) => Math.max(0, ...lines.map((l) => l.width));
+  const width = ceil8(
+    Math.max(
+      2 * sp.margin + 2 * half,
+      2 * sp.margin + title.bbox.w + (items.length > 0 ? FRAME.legendGap + legendW : 0),
+      2 * sp.margin + widest(subLines),
+      2 * sp.margin + widest(noteLines),
+    ),
+  );
+  const centre = width / 2;
+
+  const titleBottom = title.bbox.y + ceil4(title.bbox.h);
+  const subtitle =
+    subLines.length > 0
+      ? placeLines("subtitle", subLines, sp.margin, titleBottom + FRAME.subtitleGap, "start", m)
+      : undefined;
+  const headBottom = subtitle !== undefined ? subtitle.bbox.y + subtitle.bbox.h : titleBottom;
+  const legend: SceneLegendItem[] = [];
+  {
+    const mid = title.bbox.y + title.bbox.h / 2;
+    const lh = lineBox("legend", m);
+    let x = width - sp.margin - legendW;
+    items.forEach((it, i) => {
+      legend.push({
+        style: it.style,
+        sample: { x1: x, x2: x + FRAME.legendSample, y: mid },
+        label: placeLine(
+          "legend",
+          it.text,
+          x + FRAME.legendSample + FRAME.legendLabelGap,
+          mid - lh / 2,
+          m,
+        ),
+      });
+      x += (itemW[i] ?? 0) + FRAME.legendItemGap;
+    });
+  }
+
+  // Down: rows and gutters. A gutter holds, top to bottom, the padding of the
+  // groups whose last row is above it, its tracks, and the head of the groups
+  // whose first row is below it.
+  const startsAt = (r: number) => groups.some((g) => g.top === r);
+  const endsAt = (r: number) => groups.some((g) => g.bottom === r);
+  const rowTops: number[] = [];
+  const gutterTops: number[] = [];
+  const endPads: number[] = [];
+  let y = ceil4(headBottom + FRAME.titleGap);
+  if (startsAt(0)) y += GROUP.head;
   layers.forEach((l, i) => {
-    const textH = (layerLines[i]?.length ?? 0) * layerLabelLh;
-    const bandH = ceil4(Math.max(l.rowH, textH) + 2 * sp.bandPadding);
-    bandTops.push(y);
-    bandHs.push(bandH);
-    y += bandH;
+    rowTops.push(y);
+    y += l.rowH;
     const rows = routing.rows[i] ?? 0;
     const last = i === layers.length - 1;
-    const gh =
-      rows === 0 && last ? 0 : rows === 0 ? (sp.gutterSteps[0] ?? 48) : gutterHeight(rows, sp);
+    const pad = endsAt(i) ? GROUP.pad : 0;
+    const head = !last && startsAt(i + 1) ? GROUP.head : 0;
+    const tracks = rows === 0 ? (last ? 0 : (sp.gutterSteps[0] ?? 48)) : gutterHeight(rows, sp);
     gutterTops.push(y);
-    gutterHs.push(gh);
-    y += gh;
+    endPads.push(pad);
+    y += pad + tracks + head;
   });
-  const height = ceil4(y + sp.margin);
+  let bottom = y;
+  const note =
+    noteLines.length > 0
+      ? placeLines("note", noteLines, sp.margin, ceil4(y + FRAME.noteGap), "start", m)
+      : undefined;
+  if (note !== undefined) bottom = note.bbox.y + note.bbox.h;
+  const height = ceil4(bottom + sp.margin);
 
-  const nodeTop = (layer: number, h: number) =>
-    (bandTops[layer] ?? 0) + ((bandHs[layer] ?? 0) - h) / 2;
+  const rowH = (i: number) => layers[i]?.rowH ?? 0;
+  const nodeTop = (layer: number, h: number) => (rowTops[layer] ?? 0) + (rowH(layer) - h) / 2;
   const assembled = assemble(routing, {
     centre,
     top: (n) => nodeTop(n.layer, n.h),
-    rowMid: (layer) => (bandTops[layer] ?? 0) + (bandHs[layer] ?? 0) / 2,
-    // Rows sit on fixed slots from the top of the gutter, so that a row keeps its
-    // place when rows are added below it.
-    trackY: (g, row) => (gutterTops[g] ?? 0) + (row + 1) * sp.trackPitch,
+    rowMid: (layer) => (rowTops[layer] ?? 0) + rowH(layer) / 2,
+    // Rows sit on fixed slots from the top of the gutter's tracks, so that a row
+    // keeps its place when rows are added below it.
+    trackY: (g, row) => (gutterTops[g] ?? 0) + (endPads[g] ?? 0) + (row + 1) * sp.trackPitch,
   });
 
+  const layerLabelStyle = TYPE_RAMP["layer-label"];
   const sceneLayers: SceneLayer[] = layers.map((l, i) => {
-    const top = bandTops[i] ?? 0;
-    const h = bandHs[i] ?? 0;
-    const lines = layerLines[i] ?? [];
-    const label = placeLines(
-      "layer-label",
-      lines,
-      sp.margin + FRAME.labelPad,
-      top + (h - lines.length * layerLabelLh) / 2,
-      "start",
-      m,
-    );
+    const top = rowTops[i] ?? 0;
+    const h = rowH(i);
+    const lines = withText ? m.wrap(l.label, layerLabelStyle, 2 * half) : [];
+    const label = placeLines("layer-label", lines, sp.margin, top, "start", m);
     return { id: l.id, band: { x: sp.margin, y: top, w: width - 2 * sp.margin, h }, label };
+  });
+
+  const sceneGroups: SceneGroup[] = groups.map((g) => {
+    const y0 = (rowTops[g.top] ?? 0) - GROUP.head;
+    const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + GROUP.pad;
+    const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
+    const label = withText
+      ? placeLine("group-label", g.label, centre + g.labelX, y0 + GROUP.labelTop, m)
+      : empty("group-label", centre + g.labelX, y0 + GROUP.labelTop);
+    return { id: g.id, rect, label, members: g.members };
   });
 
   const nodeLabelStyle = TYPE_RAMP["node-label"];
@@ -269,15 +436,19 @@ function compute(d: Diagram, m: Measurer, withText: boolean): { scene: Scene; ce
     sceneEdges.push(edge);
   }
 
-  const scene = roundScene({
+  const scene: Scene = {
     width,
     height,
     title,
     layers: sceneLayers,
     nodes: sceneNodes,
     edges: sceneEdges,
-  });
-  return { scene, centre };
+  };
+  if (subtitle !== undefined) scene.subtitle = subtitle;
+  if (note !== undefined) scene.note = note;
+  scene.legend = legend;
+  scene.groups = sceneGroups;
+  return { scene: roundScene(scene), centre };
 }
 
 function roundRect(r: Rect): Rect {
@@ -294,7 +465,7 @@ function roundText(t: PlacedText): PlacedText {
 
 /** Every coordinate in the scene, rounded to 2 decimals (D15). */
 function roundScene(s: Scene): Scene {
-  return {
+  const out: Scene = {
     width: round2(s.width),
     height: round2(s.height),
     title: roundText(s.title),
@@ -312,4 +483,22 @@ function roundScene(s: Scene): Scene {
       return out;
     }),
   };
+  if (s.subtitle !== undefined) out.subtitle = roundText(s.subtitle);
+  if (s.note !== undefined) out.note = roundText(s.note);
+  if (s.legend !== undefined) {
+    out.legend = s.legend.map((it) => ({
+      style: it.style,
+      sample: { x1: round2(it.sample.x1), x2: round2(it.sample.x2), y: round2(it.sample.y) },
+      label: roundText(it.label),
+    }));
+  }
+  if (s.groups !== undefined) {
+    out.groups = s.groups.map((g) => ({
+      id: g.id,
+      rect: roundRect(g.rect),
+      label: roundText(g.label),
+      members: [...g.members],
+    }));
+  }
+  return out;
 }

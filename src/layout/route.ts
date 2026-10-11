@@ -14,12 +14,38 @@
 //
 // Everything here is across only, in x relative to the centre line. Gutter rows are
 // counted here; their heights and every y come later, in assembly.
+//
+// For the target look (D25): edges between neighbours run straight sideways
+// (side.ts); two or more unlabelled edges of one kind that leave one node side
+// share a trunk, and two or more that arrive at one node side share a port; a path
+// that skips rows takes one corridor, an x that is free in every row it passes;
+// and no vertical line passes a group's label or the label of a sideways edge.
 
 import type { Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
 import { ROUTE } from "../theme/geometry.ts";
 import { routeGutter } from "./gutter.ts";
 import { centreX, type PLayer, type PNode } from "./place.ts";
+import type { SideSlot } from "./side.ts";
+
+/** What the router must keep clear of, from placement. */
+export interface RouteExtra {
+  /** Edges that run straight sideways between neighbours, and their lines. */
+  sideways: Map<string, SideSlot>;
+  /** x spans no vertical line may take where it enters a layer from above: group labels. */
+  forbidTop: Map<number, [number, number][]>;
+  /** x spans no track may take in a gap, by `${layer}:${k}`: labels of sideways edges. */
+  forbidGap: Map<string, [number, number][]>;
+  /** Left end of the label of each sideways edge that has one. */
+  sideLabelX: Map<string, number>;
+}
+
+const NO_EXTRA: RouteExtra = {
+  sideways: new Map(),
+  forbidTop: new Map(),
+  forbidGap: new Map(),
+  sideLabelX: new Map(),
+};
 
 export type Side = "top" | "bottom" | "left" | "right";
 
@@ -53,6 +79,8 @@ export interface Gap {
   /** Usable range for tracks. Outer gaps are open on their outer side. */
   lo: number;
   hi: number;
+  /** Spans inside the range that no track may take. */
+  forbid: [number, number][];
 }
 
 export interface Plan {
@@ -79,7 +107,14 @@ export interface Plan {
   label: LabelBox | undefined;
   /** Index into gutters of the gutter that carries the label. */
   labelAt: number;
+  /** The fan-out this edge leaves by: one port and one trunk. */
   bus: Bus | undefined;
+  /** The fan-in this edge arrives by: one port, each line joining it on its own row. */
+  fanIn: Bus | undefined;
+  /** Where a sideways edge runs. */
+  side: SideSlot | undefined;
+  /** The label of a sideways edge, in its row beside its line. */
+  sideLabel: { x0: number; w: number; h: number } | undefined;
 }
 
 interface Bus {
@@ -107,6 +142,8 @@ export interface Visit {
   row: number;
   /** A run that steps out beyond everything else in the gutter, to carry its label there. */
   detour?: Detour;
+  /** Runs of one fan-out or fan-in share their trunk's stub: their stubs at one x are one line. */
+  bus?: string | undefined;
 }
 
 /**
@@ -157,19 +194,19 @@ export function routeAcross(
   edges: Edge[],
   labels: Map<string, LabelBox>,
   pitch: number,
+  extra: RouteExtra = NO_EXTRA,
 ): Routing {
-  const gapsByLayer = layers.map((l) => gapsOf(l));
+  const gapsByLayer = layers.map((l) => gapsOf(l, extra));
   const sorted = [...edges].sort((a, b) => cmp(a.id, b.id));
-  const side = sideBySide(sorted, nodes, labels);
   const plans: Plan[] = [];
   for (const edge of sorted) {
-    const pl = makePlan(edge, nodes, labels, side);
+    const pl = makePlan(edge, nodes, labels, extra);
     if (pl !== undefined) plans.push(pl);
   }
   assignBuses(plans);
   chooseGaps(plans, gapsByLayer);
   assignGapTracks(plans);
-  assignPorts(plans);
+  assignPorts(plans, extra.forbidTop);
 
   // A label that its gutter cannot hold clear of every other line moves to the
   // next gutter of its path. Once it has tried them all, its line steps out of the
@@ -245,80 +282,75 @@ function step(x: number, lo: number, hi: number): number {
   return clamp(x + Math.sign(d) * ROUTE.minJog, lo, hi);
 }
 
-function gapsOf(l: PLayer): Gap[] {
+function gapsOf(l: PLayer, extra: RouteExtra): Gap[] {
   const pad = ROUTE.gapPad;
   const gaps: Gap[] = [];
+  const top = extra.forbidTop.get(l.index) ?? [];
+  const forbid = (k: number) => [...top, ...(extra.forbidGap.get(`${l.index}:${k}`) ?? [])];
   let lo = Number.NEGATIVE_INFINITY;
   l.nodes.forEach((n, k) => {
-    gaps.push({ layer: l.index, k, lo, hi: n.x - pad });
+    gaps.push({ layer: l.index, k, lo, hi: n.x - pad, forbid: forbid(k) });
     lo = n.x + n.w + pad;
   });
-  gaps.push({ layer: l.index, k: l.nodes.length, lo, hi: Number.POSITIVE_INFINITY });
+  const k = l.nodes.length;
+  gaps.push({ layer: l.index, k, lo, hi: Number.POSITIVE_INFINITY, forbid: forbid(k) });
   return gaps;
+}
+
+/** Is x inside one of the spans? */
+function inSpans(x: number, spans: [number, number][]): boolean {
+  return spans.some(([a, b]) => x > a - EPS && x < b + EPS);
+}
+
+/** The parts of [lo, hi] outside the spans, in order. */
+function freeParts(lo: number, hi: number, spans: [number, number][]): [number, number][] {
+  let parts: [number, number][] = [[lo, hi]];
+  for (const [a, b] of spans) {
+    const next: [number, number][] = [];
+    for (const [p, q] of parts) {
+      if (b <= p || a >= q) next.push([p, q]);
+      else {
+        if (a > p) next.push([p, a]);
+        if (b < q) next.push([b, q]);
+      }
+    }
+    parts = next;
+  }
+  return parts;
 }
 
 /** How many vertical tracks a gap holds. Outer gaps are open, so they hold any number. */
 function capacity(gap: Gap): number {
   if (!Number.isFinite(gap.lo) || !Number.isFinite(gap.hi)) return Number.POSITIVE_INFINITY;
-  return Math.floor((gap.hi - gap.lo) / TRACK_MIN + EPS) + 1;
+  let n = 0;
+  for (const [p, q] of freeParts(gap.lo, gap.hi, gap.forbid)) {
+    if (q >= p) n += Math.floor((q - p) / TRACK_MIN + EPS) + 1;
+  }
+  return n;
 }
 
 const gapKey = (g: Gap) => `${g.layer}:${g.k}`;
 
 // Pass 1: paths -------------------------------------------------------------
 
-/** The offsets of ports on a left or right side, from the middle of the row. */
-function sidePitch(count: number, h: number): number | undefined {
-  const room = h - 2 * ROUTE.portMin;
-  if ((count - 1) * ROUTE.portPitch <= room) return ROUTE.portPitch;
-  if ((count - 1) * TRACK_MIN <= room) return TRACK_MIN;
-  return undefined;
-}
-
-/**
- * The unlabelled edges between two neighbours that run straight across their gap.
- * The sides hold a few; the rest go round through the gutter below, as a u-turn.
- */
-function sideBySide(
-  edges: Edge[],
-  nodes: Map<string, PNode>,
-  labels: Map<string, LabelBox>,
-): Set<string> {
-  const pairs = new Map<string, Edge[]>();
-  for (const e of edges) {
-    const u = nodes.get(e.from);
-    const v = nodes.get(e.to);
-    if (u === undefined || v === undefined || u === v || u.layer !== v.layer) continue;
-    if (Math.abs(u.order - v.order) !== 1 || labels.has(e.id)) continue;
-    const key = u.order < v.order ? `${u.id}\u0000${v.id}` : `${v.id}\u0000${u.id}`;
-    const list = pairs.get(key);
-    if (list === undefined) pairs.set(key, [e]);
-    else list.push(e);
-  }
-  const out = new Set<string>();
-  for (const list of pairs.values()) {
-    const first = list[0];
-    const u = first === undefined ? undefined : nodes.get(first.from);
-    const v = first === undefined ? undefined : nodes.get(first.to);
-    if (u === undefined || v === undefined) continue;
-    const h = Math.min(u.h, v.h);
-    let count = list.length;
-    while (count > 0 && sidePitch(count, h) === undefined) count--;
-    for (const e of list.slice(0, count)) out.add(e.id);
-  }
-  return out;
-}
-
 function makePlan(
   edge: Edge,
   nodes: Map<string, PNode>,
   labels: Map<string, LabelBox>,
-  sideways: Set<string>,
+  extra: RouteExtra,
 ): Plan | undefined {
   const u = nodes.get(edge.from);
   const v = nodes.get(edge.to);
   if (u === undefined || v === undefined) return undefined;
-  const label = labels.get(edge.id);
+  const side = extra.sideways.get(edge.id);
+  // A sideways edge carries its label in its row, not in a gutter.
+  const label = side === undefined ? labels.get(edge.id) : undefined;
+  const box = labels.get(edge.id);
+  const x0 = extra.sideLabelX.get(edge.id);
+  const sideLabel =
+    side?.label !== undefined && box !== undefined && x0 !== undefined
+      ? { x0, w: box.w, h: box.h }
+      : undefined;
   const base = {
     edge,
     u,
@@ -332,9 +364,12 @@ function makePlan(
     label,
     labelAt: -1,
     bus: undefined,
+    fanIn: undefined,
+    side,
+    sideLabel,
   };
   if (u.layer === v.layer) {
-    if (sideways.has(edge.id)) {
+    if (side !== undefined) {
       const right = u.order < v.order;
       return {
         ...base,
@@ -375,62 +410,129 @@ function makePlan(
   };
 }
 
-/** A fan-out of unlabelled edges of one kind from one node side leaves as a bus. */
+/**
+ * A fan-out of unlabelled edges of one kind from one node side leaves as a bus:
+ * one port and one trunk. Of the rest, a fan-in of unlabelled edges of one kind
+ * into one node side arrives through one port.
+ */
 function assignBuses(plans: Plan[]): void {
-  const groups = new Map<string, Plan[]>();
-  for (const pl of plans) {
-    if (pl.kind === "neighbour" || pl.label !== undefined || pl.u === pl.v) continue;
-    const key = `${pl.u.id}:${pl.srcSide}:${pl.edge.kind}`;
-    const list = groups.get(key);
-    if (list === undefined) groups.set(key, [pl]);
-    else list.push(pl);
+  const collect = (key: (pl: Plan) => string, skip: (pl: Plan) => boolean) => {
+    const groups = new Map<string, Plan[]>();
+    for (const pl of plans) {
+      if (pl.kind === "neighbour" || pl.label !== undefined || pl.u === pl.v || skip(pl)) continue;
+      const k = key(pl);
+      const list = groups.get(k);
+      if (list === undefined) groups.set(k, [pl]);
+      else list.push(pl);
+    }
+    return [...groups.keys()]
+      .sort(cmp)
+      .map((k) => ({ id: k, members: groups.get(k) ?? [], port: 0 }))
+      .filter((b) => b.members.length >= ROUTE.busMin);
+  };
+  for (const bus of collect(
+    (pl) => `${pl.u.id}:${pl.srcSide}:${pl.edge.kind}`,
+    () => false,
+  )) {
+    for (const pl of bus.members) pl.bus = bus;
   }
-  for (const key of [...groups.keys()].sort(cmp)) {
-    const members = groups.get(key) ?? [];
-    if (members.length < ROUTE.busMin) continue;
-    const bus: Bus = { id: key, members, port: 0 };
-    for (const pl of members) pl.bus = bus;
+  for (const fan of collect(
+    (pl) => `in ${pl.v.id}:${pl.dstSide}:${pl.edge.kind}`,
+    (pl) => pl.bus !== undefined,
+  )) {
+    for (const pl of fan.members) pl.fanIn = fan;
   }
 }
 
+/** The x spans free in every one of these layers, given each layer's gaps. */
+function corridors(between: number[], gapsByLayer: Gap[][]): [number, number][] {
+  let spans: [number, number][] = [[Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY]];
+  for (const m of between) {
+    const next: [number, number][] = [];
+    for (const [a, b] of spans) {
+      for (const g of gapsByLayer[m] ?? []) {
+        if (g.hi < g.lo) continue;
+        for (const [p, q] of freeParts(g.lo, g.hi, g.forbid)) {
+          const lo = Math.max(a, p);
+          const hi = Math.min(b, q);
+          if (hi >= lo) next.push([lo, hi]);
+        }
+      }
+    }
+    spans = next;
+  }
+  return spans;
+}
+
 /**
- * The gap each path takes through each layer it crosses: the one that keeps the
- * line closest to its way, unless that gap is full. Edges choose in id order. The
- * outer gaps are never full, so every path finds one.
+ * The gaps each path takes through the layers it crosses. A path that skips rows
+ * takes one corridor: an x span that is free in every layer it passes, the one
+ * closest to its way, so that it passes them all as one straight line (D25 rule
+ * 5). Only when every corridor is full does it pick a gap per layer, each the one
+ * closest to its way. Edges choose in id order. The outer gaps are never full, so
+ * every path finds one.
  */
 function chooseGaps(plans: Plan[], gapsByLayer: Gap[][]): void {
   const load = new Map<string, Set<string>>();
+  const take = (pl: Plan, gap: Gap) => {
+    const key = trackKey(pl, [...pl.gaps, gap]);
+    pl.gaps.push(gap);
+    const k = gapKey(gap);
+    const used = load.get(k);
+    if (used === undefined) load.set(k, new Set([key]));
+    else used.add(key);
+  };
+  const room = (pl: Plan, gaps: Gap[], gap: Gap) => {
+    const key = trackKey(pl, [...gaps, gap]);
+    const used = load.get(gapKey(gap));
+    return used === undefined || used.has(key) || used.size < capacity(gap);
+  };
   for (const pl of plans) {
     if (pl.between.length === 0) continue;
     const xs = centreX(pl.u);
     const xt = centreX(pl.v);
+    const spans = corridors(pl.between, gapsByLayer)
+      .map(([lo, hi]) => ({
+        lo,
+        hi,
+        travel: dist(xs, lo, hi) + dist(xt, lo, hi),
+        move: dist(xs, lo, hi),
+      }))
+      .sort((a, b) => a.travel - b.travel || a.move - b.move || a.lo - b.lo);
+    let done = false;
+    for (const s of spans) {
+      const gaps: Gap[] = [];
+      for (const m of pl.between) {
+        const gap = (gapsByLayer[m] ?? []).find((g) => g.lo <= s.lo + EPS && g.hi >= s.hi - EPS);
+        if (gap === undefined || !room(pl, gaps, gap)) break;
+        gaps.push(gap);
+      }
+      if (gaps.length !== pl.between.length) continue;
+      for (const gap of gaps) take(pl, gap);
+      const at = step(xs, s.lo, s.hi);
+      pl.ideal = [xs, ...gaps.map(() => at), xt];
+      done = true;
+      break;
+    }
+    if (done) continue;
     const ideal = [xs];
     let cur = xs;
     for (const m of pl.between) {
       let best: Gap | undefined;
-      let bestKey = "";
       let bestCost = Number.POSITIVE_INFINITY;
       let bestMove = Number.POSITIVE_INFINITY;
       for (const gap of gapsByLayer[m] ?? []) {
-        if (gap.hi < gap.lo) continue;
-        const key = trackKey(pl, [...pl.gaps, gap]);
-        const used = load.get(gapKey(gap));
-        if (used !== undefined && !used.has(key) && used.size >= capacity(gap)) continue;
+        if (gap.hi < gap.lo || !room(pl, pl.gaps, gap)) continue;
         const travel = dist(cur, gap.lo, gap.hi) + dist(xt, gap.lo, gap.hi);
         const move = dist(cur, gap.lo, gap.hi);
         if (travel < bestCost - EPS || (Math.abs(travel - bestCost) <= EPS && move < bestMove)) {
           best = gap;
-          bestKey = key;
           bestCost = travel;
           bestMove = move;
         }
       }
       if (best === undefined) continue;
-      pl.gaps.push(best);
-      const k = gapKey(best);
-      const used = load.get(k);
-      if (used === undefined) load.set(k, new Set([bestKey]));
-      else used.add(bestKey);
+      take(pl, best);
       cur = step(cur, best.lo, best.hi);
       ideal.push(cur);
     }
@@ -520,8 +622,9 @@ function assignGapTracks(plans: Plan[]): void {
     const want = list.map((t) => t.ideal);
     const weights = list.map((t) => t.weight);
     let { lo, hi } = first.gap;
-    // An outer gap is open on one side: bound it near its tracks.
-    const reach = (list.length + 1) * ROUTE.portPitch;
+    // An outer gap is open on one side: bound it near its tracks, past any label.
+    const blocked = first.gap.forbid.reduce((s, [a, b]) => s + Math.max(0, b - a), 0);
+    const reach = (list.length + 1) * ROUTE.portPitch + blocked;
     lo = Math.max(lo, Math.min(...want) - reach);
     hi = Math.min(hi, Math.max(...want) + reach);
     const facing = placed.get(first.gap.layer - 1) ?? [];
@@ -531,18 +634,21 @@ function assignGapTracks(plans: Plan[]): void {
         (f) => Math.abs(f.x - x) >= radius || f.plans.some((p) => own.includes(p)),
       );
     };
+    // No track passes a label in this gap or a group label above it.
+    const free = (x: number) => !inSpans(x, first.gap.forbid);
     // The port pitch where the gap has room, so that lines from neighbouring ports
     // pass through it straight; closer where it has less.
     let xs: number[] | undefined;
     for (const radius of [CLEAR, CLEAR / 2]) {
       for (const pitch of [ROUTE.portPitch, ROUTE.gapPitch, TRACK_MIN]) {
-        xs = onGrid(want, weights, lo, hi, pitch, (i, x) => clear(i, x, radius));
+        xs = onGrid(want, weights, lo, hi, pitch, (i, x) => free(x) && clear(i, x, radius));
         if (xs !== undefined) break;
       }
       if (xs !== undefined) break;
     }
     // A full gap sits half a grid step off the tracks above it.
-    xs ??= onGrid(want, weights, lo, hi, TRACK_MIN, (i, x) => clear(i, x, 1), 2);
+    xs ??= onGrid(want, weights, lo, hi, TRACK_MIN, (i, x) => free(x) && clear(i, x, 1), 2);
+    xs ??= onGrid(want, weights, lo, hi, TRACK_MIN, (_, x) => free(x));
     xs ??= onGrid(want, weights, lo, hi, TRACK_MIN, () => true);
     xs ??= evenly(list.length, lo, hi);
     const mine = placed.get(first.gap.layer) ?? [];
@@ -577,7 +683,18 @@ interface Mark {
   plan: Plan;
 }
 
-function assignPorts(plans: Plan[]): void {
+/** The point on the 4 px grid nearest x, inside [lo, hi] and outside the spans; x if there is none. */
+function nearestFree(x: number, lo: number, hi: number, spans: [number, number][]): number {
+  const start = snap(clamp(x, lo, hi));
+  for (let d = 0; d <= hi - lo + 4; d += 4) {
+    for (const c of d === 0 ? [start] : [start - d, start + d]) {
+      if (c >= lo - EPS && c <= hi + EPS && !inSpans(c, spans)) return c;
+    }
+  }
+  return start;
+}
+
+function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): void {
   const sides = new Map<string, End[]>();
   const push = (end: End) => {
     const k = `${end.node.id}\u0000${end.side}`;
@@ -587,21 +704,15 @@ function assignPorts(plans: Plan[]): void {
   };
   const inset = ROUTE.portInset;
   const within = (n: PNode, x: number) => clamp(x, n.x + inset, n.x + n.w - inset);
+  /** A port that leans toward x, at most a quarter of the box from its centre. */
+  const toward = (n: PNode, x: number) =>
+    snap(centreX(n) + clamp(x - centreX(n), -n.w / 4, n.w / 4));
   for (const pl of plans) {
     const { u, v } = pl;
     if (pl.kind === "neighbour") {
-      for (const src of [true, false]) {
-        push({
-          plan: pl,
-          src,
-          node: src ? u : v,
-          side: src ? pl.srcSide : pl.dstSide,
-          desired: 0,
-          far: 0,
-          weight: 1,
-          key: "",
-        });
-      }
+      const y = pl.side?.offset ?? 0;
+      pl.srcPort = y;
+      pl.dstPort = y;
       continue;
     }
     let ds: number;
@@ -626,13 +737,18 @@ function assignPorts(plans: Plan[]): void {
       const lo = Math.max(u.x, v.x) + inset;
       const hi = Math.min(u.x + u.w, v.x + v.w) - inset;
       if (hi >= lo) {
-        ds = snap(clamp((centreX(u) + centreX(v)) / 2, lo, hi));
+        // Straight, and clear of a group label on the lower node's top side.
+        const lower = pl.kind === "down" ? v : u;
+        const spans = forbidTop.get(lower.layer) ?? [];
+        ds = nearestFree((centreX(u) + centreX(v)) / 2, lo, hi, spans);
         dt = ds;
         ws = STRAIGHT;
         wt = STRAIGHT;
       } else {
-        ds = within(u, centreX(v));
-        dt = within(v, centreX(u));
+        // A branch of a fan-out ends at its node's centre, and a line into a
+        // fan-in starts at its node's centre; other lines lean toward each other.
+        ds = pl.fanIn !== undefined ? snap(centreX(u)) : toward(u, centreX(v));
+        dt = pl.bus !== undefined ? snap(centreX(v)) : toward(v, centreX(u));
       }
     }
     push({
@@ -681,38 +797,24 @@ function assignPorts(plans: Plan[]): void {
   const order = [
     ...keys.filter((k) => sides.get(k)?.[0]?.side === "bottom"),
     ...keys.filter((k) => sides.get(k)?.[0]?.side === "top"),
-    ...keys.filter((k) => {
-      const s = sides.get(k)?.[0]?.side;
-      return s === "left" || s === "right";
-    }),
   ];
   for (const k of order) {
     const ends = sides.get(k) ?? [];
     const first = ends[0];
     if (first === undefined) continue;
     const n = first.node;
-    if (first.side === "left" || first.side === "right") {
-      ends.sort((a, b) => cmp(a.plan.edge.id, b.plan.edge.id));
-      const other = first.src ? first.plan.v : first.plan.u;
-      const pitch = sidePitch(ends.length, Math.min(n.h, other.h)) ?? TRACK_MIN;
-      ends.forEach((end, i) => {
-        const y = snap((i - (ends.length - 1) / 2) * pitch);
-        if (end.src) end.plan.srcPort = y;
-        else end.plan.dstPort = y;
-      });
-      continue;
-    }
-    // A bus leaves through one port, placed like a single end.
+    // A fan-out leaves through one port and a fan-in arrives through one, each
+    // placed like a single end.
     const slots: End[] = [];
-    const buses = new Map<string, { bus: Bus; ends: End[] }>();
+    const buses = new Map<string, { bus: Bus; ends: End[]; src: boolean }>();
     for (const end of ends) {
-      const bus = end.src ? end.plan.bus : undefined;
+      const bus = end.src ? end.plan.bus : end.plan.fanIn;
       if (bus === undefined) {
         slots.push({ ...end, key: end.plan.edge.id });
         continue;
       }
       const entry = buses.get(bus.id);
-      if (entry === undefined) buses.set(bus.id, { bus, ends: [end] });
+      if (entry === undefined) buses.set(bus.id, { bus, ends: [end], src: end.src });
       else entry.ends.push(end);
     }
     for (const id of [...buses.keys()].sort(cmp)) {
@@ -731,15 +833,18 @@ function assignPorts(plans: Plan[]): void {
 
     const g = first.side === "bottom" ? n.layer : n.layer - 1;
     const facing = (first.side === "bottom" ? below.get(g) : above.get(g)) ?? [];
-    const busOf = (pl: Plan) => pl.bus?.id;
+    const spans = first.side === "top" ? (forbidTop.get(n.layer) ?? []) : [];
+    const sameBus = (a: Plan, b: Plan) =>
+      (a.bus !== undefined && b.bus?.id === a.bus.id) ||
+      (a.fanIn !== undefined && b.fanIn?.id === a.fanIn.id);
     const allowed = (i: number, x: number, radius: number) => {
       const s = slots[i];
       if (s === undefined) return true;
+      if (inSpans(x, spans)) return false;
       const own = s.plan;
       for (const f of facing) {
         if (Math.abs(f.x - x) >= radius) continue;
-        if (f.plan === own) continue;
-        if (own.bus !== undefined && busOf(f.plan) === own.bus.id) continue;
+        if (f.plan === own || sameBus(own, f.plan)) continue;
         return false;
       }
       return true;
@@ -756,9 +861,11 @@ function assignPorts(plans: Plan[]): void {
         const entry = buses.get(s.key.slice(1));
         if (entry === undefined) return;
         entry.bus.port = x;
-        for (const pl of entry.bus.members) pl.srcPort = x;
-        mark(above, g, { x, plan: s.plan });
-        for (const pl of entry.bus.members) mark(above, g, { x, plan: pl });
+        for (const pl of entry.bus.members) {
+          if (entry.src) pl.srcPort = x;
+          else pl.dstPort = x;
+          if (first.side === "bottom") mark(above, g, { x, plan: pl });
+        }
         return;
       }
       if (s.src) s.plan.srcPort = x;
@@ -895,22 +1002,25 @@ export function onGrid(
 
 // Pass 2c: gutters ----------------------------------------------------------
 
+/** Where a path enters gutter j of its path, and where it leaves it. */
+function stubsOf(pl: Plan, j: number): [Stub, Stub] {
+  const last = pl.gutters.length - 1;
+  const entry: Stub =
+    j === 0
+      ? { x: pl.srcPort, top: pl.srcSide === "bottom" }
+      : { x: pl.gapX[j - 1] ?? 0, top: pl.kind === "down" };
+  const exit: Stub =
+    j === last
+      ? { x: pl.dstPort, top: pl.dstSide === "bottom" }
+      : { x: pl.gapX[j] ?? 0, top: pl.kind === "up" };
+  return [entry, exit];
+}
+
 function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<number>>): void {
   const shared = new Map<string, Visit>();
   for (const pl of plans) {
     if (pl.kind === "neighbour") continue;
     const last = pl.gutters.length - 1;
-    const stubsOf = (j: number): [Stub, Stub] => {
-      const entry: Stub =
-        j === 0
-          ? { x: pl.srcPort, top: pl.srcSide === "bottom" }
-          : { x: pl.gapX[j - 1] ?? 0, top: pl.kind === "down" };
-      const exit: Stub =
-        j === last
-          ? { x: pl.dstPort, top: pl.dstSide === "bottom" }
-          : { x: pl.gapX[j] ?? 0, top: pl.kind === "up" };
-      return [entry, exit];
-    };
     if (pl.label !== undefined) {
       // The longest run carries the label, unless its gutter could not hold it.
       const longest = (skip: Set<number> | undefined) => {
@@ -918,7 +1028,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
         let bestLen = -1;
         pl.gutters.forEach((_, j) => {
           if (skip?.has(j)) return;
-          const [a, b] = stubsOf(j);
+          const [a, b] = stubsOf(pl, j);
           const len = Math.abs(a.x - b.x);
           if (len >= bestLen - EPS) {
             best = j;
@@ -932,7 +1042,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
     }
     pl.visits = [];
     pl.gutters.forEach((g, j) => {
-      const [entry, exit] = stubsOf(j);
+      const [entry, exit] = stubsOf(pl, j);
       const list = gutters[g];
       if (list === undefined) return;
       const trunk = trunkKey(pl, j);
@@ -948,6 +1058,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
             hi: entry.x,
             label: undefined,
             row: -1,
+            bus: pl.bus?.id,
           };
           shared.set(trunk, visit);
           list.push(visit);
@@ -982,10 +1093,47 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
         label,
         row: -1,
       };
+      // The lines of a fan-in meet at its port, each on its own row.
+      if (pl.fanIn !== undefined && j === last) visit.bus = pl.fanIn.id;
       list.push(visit);
       pl.visits[j] = visit;
     });
   }
+  for (const visit of shared.values()) stagger(visit, gutters[visit.gutter]);
+}
+
+/**
+ * A trunk that goes on straight through its run, with branches on both sides,
+ * would meet them in a junction that reads as a crossing. The branches on each
+ * side then take a run of their own, on different rows (D25 rule 4).
+ */
+function stagger(visit: Visit, list: Visit[] | undefined): void {
+  const entry = visit.stubs[0];
+  if (entry === undefined || list === undefined) return;
+  const exits = visit.stubs.slice(1);
+  const on = (s: Stub) => Math.abs(s.x - entry.x) < EPS;
+  const straight = exits.some((s) => on(s) && s.top !== entry.top);
+  const left = exits.filter((s) => s.x < entry.x - EPS);
+  const right = exits.filter((s) => s.x > entry.x + EPS);
+  if (!straight || left.length === 0 || right.length === 0) return;
+  const part = (id: string, stubs: Stub[]): Visit => ({
+    ...visit,
+    id,
+    members: [],
+    stubs: [entry, ...stubs],
+    lo: Math.min(entry.x, ...stubs.map((s) => s.x)),
+    hi: Math.max(entry.x, ...stubs.map((s) => s.x)),
+  });
+  const a = part(`${visit.id} <`, [...left, ...exits.filter(on)]);
+  const b = part(`${visit.id} >`, right);
+  for (const m of visit.members) {
+    const exit = stubsOf(m.plan, m.j)[1];
+    const into = exit.x > entry.x + EPS ? b : a;
+    into.members.push(m);
+    m.plan.visits[m.j] = into;
+  }
+  const at = list.indexOf(visit);
+  if (at >= 0) list.splice(at, 1, a, b);
 }
 
 // Pass 3: assembly ----------------------------------------------------------
@@ -1028,7 +1176,20 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
         const mx = (pts[0]?.x ?? 0) / 2 + (pts[1]?.x ?? 0) / 2;
         pts.splice(1, 0, { x: mx, y: ys }, { x: mx, y: yt });
       }
-      out.set(pl.edge.id, { points: simplify(pts), label: undefined });
+      const sl = pl.sideLabel;
+      const mode = pl.side?.label;
+      const label =
+        sl === undefined || mode === undefined
+          ? undefined
+          : {
+              x: X(sl.x0),
+              y: mode === "above" ? ys - ROUTE.labelGap - sl.h : ys + ROUTE.labelGap,
+              w: sl.w,
+              h: sl.h,
+              lines: 1,
+              maxWidth: Number.POSITIVE_INFINITY,
+            };
+      out.set(pl.edge.id, { points: simplify(pts), label });
       continue;
     }
     const sy = pl.srcSide === "bottom" ? geo.top(u) + u.h : geo.top(u);
