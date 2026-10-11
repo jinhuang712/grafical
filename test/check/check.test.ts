@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
 import type { Defect, DefectCode } from "../../src/errors.ts";
 import type { Diagram } from "../../src/model/types.ts";
-import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../../src/scene.ts";
+import type { PlacedText, Rect, Scene, SceneEdge, SceneGroup, SceneNode } from "../../src/scene.ts";
 import { createStubMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 
@@ -209,7 +209,8 @@ describe("label-collision", () => {
     const a = e1();
     a.label = label(340, 150);
     const d = run(scene(nodes, [a, e2()]));
-    expect(codes(d)).toEqual(["label-collision"]);
+    // The same fault is also a text crossing: the label is text (D25 rule 8).
+    expect(codes(d)).toEqual(["label-collision", "text-crossing"]);
     expect(d[0]?.elements).toEqual(["a->b", "c->d"]);
   });
   it("fails two labels that overlap", () => {
@@ -356,5 +357,120 @@ describe("owner", () => {
       ["overflow", "agent"],
       ["node-overlap", "engine"],
     ]);
+  });
+});
+
+describe("text-crossing", () => {
+  const nodes = [node("a", 40, 40), node("b", 40, 240)];
+  const down = (x = 100): SceneEdge =>
+    edge("a->b", "a", "b", [
+      [x, 88],
+      [x, 240],
+    ]);
+  const withEdge = (e: SceneEdge, extra: Partial<Scene> = {}): Scene => ({
+    ...scene(nodes, [e]),
+    ...extra,
+  });
+  const box = (role: PlacedText["role"], x: number, y: number): PlacedText =>
+    text(role, "words here", x, y);
+
+  it("passes an edge that clears every text", () => {
+    const s = withEdge(down(), { subtitle: box("subtitle", 200, 20), note: box("note", 200, 360) });
+    expect(codes(run(s))).toEqual([]);
+  });
+
+  it("allows a graze of up to 2px, and fails a deeper cut", () => {
+    const label = box("subtitle", 101, 120); // x 101..160, the edge at x=100 is 1px away
+    expect(codes(run(withEdge(down(), { subtitle: label })))).toEqual([]);
+    const cut = box("subtitle", 95, 120); // the edge runs 5px into the text, 3px past the tolerance
+    const d = run(withEdge(down(), { subtitle: cut }));
+    expect(codes(d)).toEqual(["text-crossing"]);
+    expect(d[0]?.owner).toBe("engine");
+    expect(d[0]?.elements).toEqual(["a->b", "subtitle"]);
+  });
+
+  it("fails an edge through a node's text, a group label, the note and a legend label", () => {
+    const through = (s: Scene): Defect[] => run(s);
+    const nodeText = withEdge(
+      edge("a->b", "a", "b", [
+        [56, 60],
+        [56, 240],
+      ]),
+    );
+    expect(codes(through(nodeText))).toEqual(["text-crossing"]);
+    const groupLabel = withEdge(down(), {
+      groups: [
+        {
+          id: "g",
+          rect: { x: 20, y: 100, w: 300, h: 120 },
+          label: { ...box("group-label", 90, 120) },
+          members: [],
+        },
+      ],
+    });
+    expect(through(groupLabel).map((d) => d.elements.join("|"))).toEqual(["a->b|g"]);
+    expect(codes(through(withEdge(down(), { note: box("note", 90, 150) })))).toEqual([
+      "text-crossing",
+    ]);
+    const legend = withEdge(down(), {
+      legend: [
+        {
+          style: "solid",
+          sample: { x1: 60, x2: 80, y: 130 },
+          label: box("legend", 90, 124),
+        },
+      ],
+    });
+    expect(through(legend).map((d) => d.elements.join("|"))).toEqual(["a->b|legend-0"]);
+  });
+
+  it("does not count an edge's own label, but does count another edge's", () => {
+    const own = down();
+    own.label = box("edge-label", 95, 140);
+    expect(codes(run(withEdge(own)))).not.toContain("text-crossing");
+    const other = edge("c->d", "a", "b", [
+      [110, 88],
+      [110, 240],
+    ]);
+    const s = scene(nodes, [own, other]);
+    expect(
+      run(s)
+        .filter((d) => d.code === "text-crossing")
+        .map((d) => d.elements),
+    ).toEqual([["c->d", "a->b"]]);
+  });
+});
+
+describe("group-intruder", () => {
+  const group = (members: string[]): SceneGroup => ({
+    id: "sys",
+    rect: { x: 20, y: 20, w: 200, h: 120 },
+    label: text("group-label", "sys", 36, 28),
+    members,
+  });
+  const withGroup = (members: string[]): Scene => ({
+    ...scene([node("a", 40, 60), node("b", 300, 60), node("c", 160, 90, "c", 60, 40)]),
+    groups: [group(members)],
+  });
+
+  it("passes when every node inside the box is a member", () => {
+    const s = withGroup(["a", "c"]);
+    expect(codes(run(s))).toEqual([]);
+  });
+
+  it("fails a non-member inside the box, and names the group and the node", () => {
+    const d = run(withGroup(["a"]));
+    expect(codes(d)).toContain("group-intruder");
+    const hit = d.filter((x) => x.code === "group-intruder");
+    expect(hit.map((x) => x.elements)).toEqual([["sys", "c"]]);
+    expect(hit[0]?.owner).toBe("engine");
+  });
+
+  it("passes a non-member that only touches the box", () => {
+    const s: Scene = {
+      ...scene([node("a", 40, 60), node("x", 220, 60)]),
+      groups: [group(["a"])],
+    };
+    expect(codes(run(s))).toEqual([]);
   });
 });
