@@ -339,6 +339,18 @@ describe("missing-glyph", () => {
     expect(found.map((f) => f.elements[0])).toEqual(["a", "a", "a->b", "l", "title"]);
     expect(found.some((f) => f.fix.startsWith("grafical node rename <file> a"))).toBe(true);
   });
+  it("fails a subtitle, note and group label with a missing glyph", () => {
+    const s = scene([node("a", 40, 40)]);
+    const d = diagramOf(s);
+    d.subtitle = "☃ subtitle";
+    d.note = "Not shown: ☃";
+    d.groups = [{ id: "g", label: "☃ system" }];
+    const found = check(d, s, withGlyphs);
+    expect(found.map((f) => f.elements[0])).toEqual(["g", "note", "subtitle"]);
+    expect(found.find((f) => f.elements[0] === "g")?.fix).toContain(
+      "grafical group rename <file> g",
+    );
+  });
 });
 
 describe("ordering", () => {

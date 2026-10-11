@@ -297,6 +297,26 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
     diagram.title,
     "replace the title with characters the fonts can draw: grafical new <file> --title <text>",
   );
+  add(
+    "subtitle",
+    "subtitle",
+    diagram.subtitle,
+    "grafical diagram subtitle <file> --text <text without these characters>",
+  );
+  add(
+    "note",
+    "note",
+    diagram.note,
+    "grafical diagram note <file> --text <text without these characters>",
+  );
+  for (const g of diagram.groups ?? []) {
+    add(
+      g.id,
+      "group label",
+      g.label,
+      `grafical group rename <file> ${g.id} --label <text without these characters>`,
+    );
+  }
   for (const layer of diagram.layers) {
     add(
       layer.id,
