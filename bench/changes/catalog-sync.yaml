@@ -13,7 +13,7 @@
 - id: move-node
   type: move a node to another layer
   phase1: true
-  request: Move Redis into the same layer as MongoDB.
+  request: Move Redis out of its current layer, into a new layer called "Cache" directly above the layer that holds MongoDB.
 
 - id: rename-node
   type: rename a node
