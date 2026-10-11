@@ -5,6 +5,7 @@ import type { OpError } from "../errors.ts";
 import { styleProblem, THEMES } from "../theme/themes.ts";
 import { checkEnds } from "./ends.ts";
 import { ID_EDGE, ID_NODE, issuesToErrors } from "./issues.ts";
+import { checkLanes } from "./lanes.ts";
 import { suggestIds } from "./suggest.ts";
 import {
   DEFAULT_DENSITY,
@@ -40,13 +41,17 @@ const nodeSchema = z.strictObject({
   accent: z.boolean().optional(),
   align: nodeId.optional(),
   group: nodeId.optional(),
+  lane: nodeId.optional(),
 });
 
 const groupSchema = z.strictObject({ id: nodeId, label: text, sublabel: text.optional() });
 
+const laneSchema = z.strictObject({ id: nodeId, label: text });
+
 const layerSchema = z.strictObject({
   id: nodeId,
   label: text,
+  lane: nodeId.optional(),
   nodes: z.array(nodeSchema).default([]),
 });
 
@@ -69,6 +74,7 @@ export const diagramSchema = z.strictObject({
   legend: z.strictObject({ solid: text.optional(), dashed: text.optional() }).optional(),
   layers: z.array(layerSchema).default([]),
   groups: z.array(groupSchema).default([]),
+  lanes: z.array(laneSchema).default([]),
   edges: z.array(edgeSchema).default([]),
 });
 
@@ -78,6 +84,7 @@ function build(p: Parsed): Diagram {
   const layers: Layer[] = p.layers.map((l) => ({
     id: l.id,
     label: l.label,
+    ...(l.lane === undefined ? {} : { lane: l.lane }),
     nodes: l.nodes.map((n) => {
       const node: DiagramNode = { id: n.id, label: n.label, kind: n.kind };
       if (n.sublabel !== undefined) node.sublabel = n.sublabel;
@@ -85,6 +92,7 @@ function build(p: Parsed): Diagram {
       if (n.accent === true) node.accent = true;
       if (n.align !== undefined) node.align = n.align;
       if (n.group !== undefined) node.group = n.group;
+      if (n.lane !== undefined) node.lane = n.lane;
       return node;
     }),
   }));
@@ -111,6 +119,7 @@ function build(p: Parsed): Diagram {
         : { id: g.id, label: g.label, sublabel: g.sublabel },
     );
   }
+  if (p.lanes.length > 0) d.lanes = p.lanes.map((x) => ({ id: x.id, label: x.label }));
   return d;
 }
 
@@ -148,10 +157,14 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   (d.groups ?? []).forEach((g, gi) => {
     claim(g.id, `groups[${gi}].id`);
   });
+  (d.lanes ?? []).forEach((x, i) => {
+    claim(x.id, `lanes[${i}].id`);
+  });
   d.edges.forEach((e, ei) => {
     claim(e.id, `edges[${ei}].id`);
   });
   errors.push(...checkGroups(d, index));
+  errors.push(...checkLanes(d, index));
   errors.push(...checkEnds(d, index));
   if (d.style !== undefined) {
     const problem = styleProblem(d.style);

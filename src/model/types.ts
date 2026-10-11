@@ -37,6 +37,8 @@ export interface DiagramNode {
   align?: string;
   /** The id of the group (system) this node belongs to (D7). */
   group?: string;
+  /** The lane this node lies in, when lanes run as columns (D32). */
+  lane?: string;
 }
 
 /** A system drawn as one box around its member nodes, which may sit in several neighbouring rows (D7). */
@@ -50,8 +52,20 @@ export interface Group {
 export interface Layer {
   id: string;
   label: string;
+  /** The lane this layer lies in, when lanes run as rows (D32). */
+  lane?: string;
   /** Ordered: list order is the order within the layer. */
   nodes: DiagramNode[];
+}
+
+/**
+ * A swimlane: a labelled band that names who owns what (D32). Its members name
+ * it: layers, when lanes run as rows, or nodes, when lanes run as columns. All
+ * lanes of a diagram run one way.
+ */
+export interface Lane {
+  id: string;
+  label: string;
 }
 
 export interface Edge {
@@ -81,6 +95,8 @@ export interface Diagram {
   layers: Layer[];
   /** The systems, in creation order. Absent or empty: no groups. Members name their group (D7). */
   groups?: Group[];
+  /** The swimlanes. Lanes that run as columns go left to right in this order (D32). */
+  lanes?: Lane[];
   /** Ordered: list order is creation order, and decides nothing visual. */
   edges: Edge[];
 }

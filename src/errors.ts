@@ -22,6 +22,7 @@ export const DEFECT_CODES = [
   "edge-overlap",
   "text-crossing",
   "group-intruder",
+  "lane-stray",
   "missing-glyph",
 ] as const;
 export type DefectCode = (typeof DEFECT_CODES)[number];
@@ -42,6 +43,7 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "edge-overlap": "engine",
   "text-crossing": "engine",
   "group-intruder": "engine",
+  "lane-stray": "engine",
 };
 
 /**

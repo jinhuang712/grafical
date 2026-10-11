@@ -41,6 +41,11 @@ export interface RouteExtra {
   sideLabelX: Map<string, number>;
   /** Edges routed to a stand-in for a container (D28): they never share a port or trunk. */
   alone: Set<string>;
+  /**
+   * Edges that never leave by a side: those to a column lane (D32), whose border
+   * runs the whole height and would leave a side exit only a stub.
+   */
+  noSideExit: Set<string>;
 }
 
 const NO_EXTRA: RouteExtra = {
@@ -49,6 +54,7 @@ const NO_EXTRA: RouteExtra = {
   forbidGap: new Map(),
   sideLabelX: new Map(),
   alone: new Set(),
+  noSideExit: new Set(),
 };
 
 export type Side = "top" | "bottom" | "left" | "right";
@@ -217,7 +223,7 @@ export function routeAcross(
   assignBuses(plans, extra.alone);
   chooseGaps(plans, gapsByLayer, extra.forbidTop);
   assignGapTracks(plans);
-  chooseSideExits(plans, layers, extra.forbidTop);
+  chooseSideExits(plans, layers, extra.forbidTop, extra.noSideExit);
   placePorts(plans, extra.forbidTop);
 
   // A label that its gutter cannot hold clear of every other line moves to the
@@ -749,6 +755,7 @@ function chooseSideExits(
   plans: Plan[],
   layers: PLayer[],
   forbidTop: Map<number, [number, number][]>,
+  noSideExit: Set<string>,
 ): void {
   const taken = new Set<string>();
   for (const pl of plans) {
@@ -763,6 +770,7 @@ function chooseSideExits(
     const { u, v } = pl;
     if (pl.kind !== "down" && pl.kind !== "up") continue;
     if (pl.between.length > 0 || pl.bus !== undefined || pl.fanIn !== undefined) continue;
+    if (noSideExit.has(pl.edge.id)) continue;
     const left = v.x + v.w <= u.x;
     const right = v.x >= u.x + u.w;
     if (!left && !right) continue;

@@ -12,6 +12,7 @@ export const TYPE_RAMP: Record<TextRole, TextStyle> = {
   "group-label": { size: 12, weight: 600 },
   "group-sublabel": { size: 12, weight: 400 },
   "layer-label": { size: 12, weight: 600 },
+  "lane-label": { size: 12, weight: 600 },
   "node-label": { size: 13, weight: 600 },
   "node-sublabel": { size: 11, weight: 400 },
   "edge-label": { size: 11, weight: 400 },

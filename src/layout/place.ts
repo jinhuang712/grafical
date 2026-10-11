@@ -1,13 +1,15 @@
 // Placement across (DESIGN.md D7, D10): every node sits on a column of one grid
 // shared by all rows (grid.ts). Each column gets an x from the room its nodes need:
 // box widths and the gap between neighbours, group boxes and the space between a
-// box and the nodes outside it, labels of edges that run sideways between
-// neighbours, and lines that pass a row through an empty column. Columns are
+// box and the nodes outside it, the space between column lanes (D32), labels of
+// edges that run sideways between neighbours, and lines that pass a row through
+// an empty column. Columns are
 // packed from the left, as close as that room allows, and the picture is centred
 // on one centre line. Every x here is relative to that line.
 
+import { laneRanks, laneRun } from "../model/lanes.ts";
 import { DEFAULT_SIZE, type Diagram, type DiagramNode } from "../model/types.ts";
-import { BOX, GROUP, ROUTE, SPACING } from "../theme/geometry.ts";
+import { BOX, GROUP, LANE, ROUTE, SPACING } from "../theme/geometry.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import type { SideSlot } from "./side.ts";
@@ -53,10 +55,20 @@ export interface PGroup {
   labelW: number;
 }
 
+/** A lane that runs as a column: its sides across. Lanes side by side share a side. */
+export interface PLane {
+  id: string;
+  label: string;
+  x0: number;
+  x1: number;
+}
+
 export interface Placement {
   layers: PLayer[];
   nodes: Map<string, PNode>;
   groups: PGroup[];
+  /** Column lanes that hold a node, left to right. Empty when lanes run as rows. */
+  lanes: PLane[];
   /** Left end of the label of each edge that runs sideways with a label. */
   sideLabels: Map<string, number>;
   problems: AlignmentProblem[];
@@ -70,6 +82,11 @@ export interface PlaceText {
   edgeLabelW: (id: string) => number | undefined;
   /** Width of a group's label. */
   groupLabelW: (id: string) => number;
+  /**
+   * Edges that meet a column lane beside it, by edge id: the lane, and the node
+   * that stands for the other end. The label sits between that node and the lane.
+   */
+  laneEnds?: Map<string, { lane: string; node: string }>;
 }
 
 const NO_TEXT: PlaceText = {
@@ -134,6 +151,19 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     if (u === undefined || v === undefined || u.layer === v.layer) continue;
     const top = u.layer > v.layer ? u : v;
     topEnds.set(top.id, (topEnds.get(top.id) ?? 0) + 1);
+  }
+  // Column lanes (D32), and the nodes outside them, as blocks in order across.
+  const ranks = laneRun(d) === "columns" ? laneRanks(d) : new Map<string, number>();
+  const laneIds = (d.lanes ?? []).map((x) => x.id);
+  const laneOrder: PNode[][] = [];
+  {
+    const byRank = new Map<number, PNode[]>();
+    for (const n of nodes.values()) {
+      const r = ranks.get(n.id);
+      if (r !== undefined) byRank.set(r, [...(byRank.get(r) ?? []), n]);
+    }
+    for (const r of [...byRank.keys()].sort((a, b) => a - b))
+      laneOrder.push(byRank.get(r) as PNode[]);
   }
   const columns = Math.max(1, grid.columns);
   let solved = solve(new Set());
@@ -232,6 +262,16 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         }
       }
     }
+    // Column lanes: the content of neighbouring lanes, boxes included, keeps twice
+    // a lane's padding apart, so that the side they share runs between.
+    for (let k = 1; k < laneOrder.length; k++) {
+      for (const a of laneOrder[k - 1] as PNode[]) {
+        for (const b of laneOrder[k] as PNode[]) {
+          for (const r of rightTerms(a, b))
+            for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + 2 * LANE.padX + s.d);
+        }
+      }
+    }
     // Labels of edges that run sideways between neighbours.
     for (const [id, slot] of text.sideways) {
       if (slot.label === undefined) continue;
@@ -242,6 +282,21 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const room = w + 2 * ROUTE.sideLabelPad;
       for (const r of rightTerms(a, b))
         for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + room + s.d);
+      // An edge that meets a lane beside it is drawn from the lane's side: its
+      // label's room lies between the node and every node of the lane.
+      const end = text.laneEnds?.get(id);
+      const x = end === undefined ? undefined : nodes.get(end.node);
+      const lane = end === undefined ? -1 : laneIds.indexOf(end.lane);
+      if (x === undefined || lane < 0) continue;
+      for (const m of laneOrder.find((ns) => ranks.get((ns[0] as PNode).id) === lane) ?? []) {
+        if (m.col < x.col) {
+          for (const r of rightTerms(m, x))
+            for (const s of leftTerms(x, m)) add(r.col, s.col, r.d + LANE.padX + room + s.d);
+        } else {
+          for (const r of rightTerms(x, m))
+            for (const s of leftTerms(m, x)) add(r.col, s.col, r.d + room + LANE.padX + s.d);
+        }
+      }
     }
     // A node two groups share sits in the gap between their boxes: its column's
     // centre is half a box gap past the box on each side (grid.ts puts its column
@@ -318,12 +373,27 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     lo = Math.min(lo, g.x0);
     hi = Math.max(hi, g.x1);
   }
+  // A lane that an edge meets beside it keeps its side close, so that the label's
+  // room lies outside it.
+  const hug = new Set<string>();
+  for (const [id, end] of text.laneEnds ?? []) {
+    if (text.sideways.get(id)?.label !== undefined) hug.add(end.lane);
+  }
+  const lanes = laneSides(d, laneOrder, ranks, groups, hug);
+  for (const l of lanes) {
+    lo = Math.min(lo, l.x0);
+    hi = Math.max(hi, l.x1);
+  }
   const centre = Number.isFinite(lo) ? Math.floor((lo + hi) / 8) * 4 : 0;
   for (const n of nodes.values()) n.x -= centre;
   for (const g of groups) {
     g.x0 -= centre;
     g.x1 -= centre;
     g.labelX -= centre;
+  }
+  for (const l of lanes) {
+    l.x0 -= centre;
+    l.x1 -= centre;
   }
 
   const byId = new Map(groups.map((g) => [g.id, g]));
@@ -336,14 +406,19 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     if (a === undefined || b === undefined || w === undefined) continue;
     const ga = groupOf(a);
     const gb = groupOf(b);
-    const left = ga !== undefined && ga !== gb ? (byId.get(ga)?.x1 ?? a.x + a.w) : a.x + a.w;
-    const right = gb !== undefined && ga !== gb ? (byId.get(gb)?.x0 ?? b.x) : b.x;
+    let left = ga !== undefined && ga !== gb ? (byId.get(ga)?.x1 ?? a.x + a.w) : a.x + a.w;
+    let right = gb !== undefined && ga !== gb ? (byId.get(gb)?.x0 ?? b.x) : b.x;
+    // Between a node and a lane it meets, the label sits between the node and the lane's side.
+    const lane = lanes.find((l) => l.id === text.laneEnds?.get(id)?.lane);
+    if (lane !== undefined && text.laneEnds?.get(id)?.node === slot.right) left = lane.x1;
+    if (lane !== undefined && text.laneEnds?.get(id)?.node === slot.left) right = lane.x0;
     sideLabels.set(id, (left + right) / 2 - w / 2);
   }
   return {
     layers,
     nodes,
     groups,
+    lanes,
     sideLabels,
     problems: grid.alignProblems,
     groupProblems: grid.groupProblems,
@@ -351,6 +426,61 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
 }
 
 export const centreX = (n: PNode): number => n.x + n.w / 2;
+
+/**
+ * The sides of each column lane that holds a node: its content's extent, boxes
+ * included, widened by its padding; between two lanes, the middle of the space
+ * between their contents, unless one of them hugs its content, because an edge
+ * meets it beside it. Blocks of nodes outside every lane are skipped.
+ */
+function laneSides(
+  d: Diagram,
+  blocks: PNode[][],
+  ranks: Map<string, number>,
+  groups: PGroup[],
+  hug: Set<string>,
+): PLane[] {
+  const lanes = d.lanes ?? [];
+  const boxOf = new Map(groups.flatMap((g) => g.members.map((m) => [m, g] as const)));
+  const extent = (ns: PNode[]) => {
+    let lo = Number.POSITIVE_INFINITY;
+    let hi = Number.NEGATIVE_INFINITY;
+    for (const n of ns) {
+      const g = boxOf.get(n.id);
+      lo = Math.min(lo, g?.x0 ?? n.x);
+      hi = Math.max(hi, g?.x1 ?? n.x + n.w);
+    }
+    return { lo, hi };
+  };
+  const inLanes = blocks.filter((b) => {
+    const r = ranks.get((b[0] as PNode).id) ?? -1;
+    return r >= 0 && r < lanes.length;
+  });
+  const spans = inLanes.map(extent);
+  const ids = inLanes.map(
+    (b) => (lanes[ranks.get((b[0] as PNode).id) as number] as { id: string }).id,
+  );
+  /** The side between the k-th lane and the next. */
+  const between = (k: number): number => {
+    const a = spans[k] as { hi: number };
+    const b = spans[k + 1] as { lo: number };
+    const left = hug.has(ids[k] as string);
+    const right = hug.has(ids[k + 1] as string);
+    if (left && !right) return a.hi + LANE.padX;
+    if (right && !left) return b.lo - LANE.padX;
+    return (a.hi + b.lo) / 2;
+  };
+  return inLanes.map((b, k) => {
+    const lane = lanes[ranks.get((b[0] as PNode).id) as number] as { id: string; label: string };
+    const { lo, hi } = spans[k] as { lo: number; hi: number };
+    return {
+      id: lane.id,
+      label: lane.label,
+      x0: k === 0 ? lo - LANE.padX : between(k - 1),
+      x1: k === inLanes.length - 1 ? hi + LANE.padX : between(k),
+    };
+  });
+}
 
 /**
  * Seats each group's label in the head of its box, where no line may then pass

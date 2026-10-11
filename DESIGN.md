@@ -413,18 +413,18 @@ Rejected:
 
 ### D28 An edge may end at a group or a layer
 
-An edge joins two nodes, or a node and a container, or two containers. A container is a group, drawn as its system box (D7), or a layer. A layer an edge ends at is drawn as a band across the content, with its label in a head above the row, over the first stretch of the row with no node below it. One arrow to "catalog-api" says that callers call that system, without saying which part, and it replaces an arrow to each member.
+An edge joins two nodes, or a node and a container, or two containers. A container is a group, drawn as its system box (D7), a layer, or a lane (D32). A layer an edge ends at is drawn as a band across the content, with its label in a head above the row, over the first stretch of the row with no node below it. One arrow to "catalog-api" says that callers call that system, without saying which part, and it replaces an arrow to each member.
 
 A container end is met at its top or bottom when the other end lies above or below all its rows, and at its side when the two share a row. The router knows only nodes, so a container end is routed to the node of the container that faces the other end, the one nearest it, and the route is cut where it meets the container's box. Such an edge never shares a port or a trunk with the stand-in's own edges.
 
 Three rules are facts, so they are operation errors:
-- `edge-inside`: neither end may lie inside the other. A node in a group, a group with a member in a layer, and a layer and a group that overlap all count.
+- `edge-inside`: neither end may lie inside the other. A node in a group, a group with a member in a layer, a layer and a group that overlap, a node or a layer in a lane, and a layer and a column lane, which always cross, all count.
 - `empty-container`: a container end must hold at least one node.
 - `edge-blocked`: an end that shares a row with a group must sit right beside it in one of those rows, with no node between.
 
-Removing a group removes the edges that end at it, as removing a node does.
+Removing a group or a lane removes the edges that end at it, as removing a node does.
 
-The owner asked for this on 2026-10-11: an arrow may point to a set, a layer or a swimlane. Swimlanes, vertical lanes across the whole diagram, are still open (see below).
+The owner asked for this on 2026-10-11: an arrow may point to a set, a layer or a swimlane. Lanes are containers too (D32); two lanes are never the two ends of one edge (`lane-to-lane`), because neighbouring lanes share a border and the line between them would have no length.
 
 Rejected:
 - Routing a container end to the box's border directly. The router places ports and tracks around nodes. A stand-in reuses all of that, including the label slots and the side exits.
@@ -469,7 +469,19 @@ Rejected:
 
 A swimlane is a labelled band that names who owns what. A diagram's lanes all run one way. Lanes that run as rows each span neighbouring layers, with the lane's label in a header on the left. Lanes that run as columns each span the whole height, with the label in a header on top, and each node joins at most one lane. A node, or a layer, may stay outside every lane. A group lies inside one lane. An edge may end at a lane (D28).
 
-Rejected: rows and columns in one diagram, as a grid of lanes and phases. It is the most expressive form and the most work, and no brief needs it yet.
+As built, 2026-10-12:
+- **The file.** A lane's members name it, as a group's do (D7): a layer carries `lane:` when lanes run as rows, a node when they run as columns. The way lanes run follows from which members name them, so it cannot disagree with them, and a file that has both is refused (`lane-mixed`). `lanes:` lists each lane's id and label after `groups`.
+- **The operations.** `lane.add`, `lane.join` and `lane.leave` take layer, node or group ids. A group stands for its layers or its nodes. While no lane has a member, the first layer or node decides the way, and groups alone mean columns.
+- **Row lanes.** A lane's layers must be neighbours (`lane-gap`), and a layer added between two layers of a lane joins it, as does the new layer of a split. The lanes share one header column on the left, as wide as the widest label up to 112 px, where labels wrap. The header sits left of everything the rows hold, lines included, and the picture centres on the whole block. A border between two lanes runs below the gutter's tracks, and the heads below it take their full room.
+- **Column lanes.** They go left to right in list order. The engine keeps every row in lane order, on every write and in layout: a node outside every lane sits right of the lanes, or left of them when it came first in its row. In the grid, every node of a lane lies left of every node of the next lane, so each lane takes a block of columns. Neighbouring lanes' contents, boxes included, keep 40 px apart, and their shared border runs in the middle. No vertical line runs within 8 px of a border.
+- **Groups.** A group lies inside one lane, or outside every lane (`group-across-lanes`).
+- **Edges.** An edge may end at a lane (D28). An edge to a column lane never leaves its source by a side, because the lane's full-height border would cut a side exit to a stub. One that meets a column lane beside it gets room for its label between the node and the lane, and the lane's border moves to that lane's side of the gap. A label that a cut left away from its line, or across the border, moves beside the line that remains, clear of boxes, lines and text.
+- **Checks.** A lane label outside its header is an overflow, which the agent fixes with `lane rename`. A node outside its lane, or inside a lane it is not in, is `lane-stray`, an engine-owned defect (D14). The fuzz test gives lanes to half its diagrams.
+
+Rejected:
+- Rows and columns in one diagram, as a grid of lanes and phases. It is the most expressive form and the most work, and no brief needs it yet.
+- Listing members on the lane. Every other membership in the file is named by the member, and `show` then prints it on the member's line.
+- A setting for the way lanes run. It would be one more fact that could disagree with the members.
 
 ## Not yet decided
 

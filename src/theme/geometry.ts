@@ -95,6 +95,22 @@ export const BAND = {
   labelInset: 16,
 };
 
+/** Swimlanes (DESIGN.md D32). */
+export const LANE = {
+  /** Space between a lane's side and the content in it, across. */
+  padX: 20,
+  /** Space between a lane's top or bottom and the content in it, down. */
+  pad: 16,
+  /** Widest a row lane's header may grow for its label; longer labels wrap. */
+  headMax: 112,
+  /** Space around a lane's label inside its header. */
+  labelInset: 12,
+  /** Distance from the header's top to the top of the label's line box. */
+  labelTop: 10,
+  /** Space kept between a column lane's side and any line that runs beside it. */
+  lineClear: 8,
+};
+
 /** System boxes (DESIGN.md D7). */
 export const GROUP = {
   /** Space between a group's box and its members, left, right and below. */

@@ -21,18 +21,20 @@ describe("fuzz", () => {
       let nodes = 0;
       let edges = 0;
       let groups = 0;
+      let lanes = 0;
       for (let seed = 1; seed <= seeds; seed++) {
         const { diagram } = generate(seed, m);
         nodes += diagram.layers.reduce((s, l) => s + l.nodes.length, 0);
         edges += diagram.edges.length;
         groups += diagram.groups?.length ?? 0;
+        lanes += diagram.lanes?.length ?? 0;
         const scene = layout(diagram, m);
         for (const x of [...failures(check(diagram, scene, m)), ...geometryFailures(scene)]) {
           found.push(`seed ${seed}: ${x.code} [${x.elements.join(", ")}] ${x.found}`);
         }
       }
       console.log(
-        `${seeds} diagrams, ${(nodes / seeds).toFixed(1)} nodes, ${(edges / seeds).toFixed(1)} edges and ${(groups / seeds).toFixed(1)} groups on average`,
+        `${seeds} diagrams, ${(nodes / seeds).toFixed(1)} nodes, ${(edges / seeds).toFixed(1)} edges, ${(groups / seeds).toFixed(1)} groups and ${(lanes / seeds).toFixed(1)} lanes on average`,
       );
       expect(found).toEqual([]);
     },

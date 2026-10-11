@@ -86,6 +86,24 @@ describe("grouped diagrams", () => {
     expect(read(f)).not.toContain("note");
   });
 
+  it("lane commands change the file, and a group joins a lane whole", () => {
+    const f = "orders.grafical.yaml";
+    expect(
+      run("lane", "add", f, "desk", "--label", "Desk team", "--members", "order-desk").code,
+    ).toBe(0);
+    expect(read(f)).toMatch(/lanes:\n {2}- id: desk\n {4}label: Desk team\n/);
+    expect(run("lane", "rename", f, "desk", "--label", "Order desk team").code).toBe(0);
+    expect(run("show", f).out).toContain(
+      'lane desk "Order desk team" (columns): gateway, checkout',
+    );
+    const mixed = run("lane", "join", f, "desk", "store");
+    expect(mixed.code).toBe(1);
+    expect(mixed.out).toContain("lane-mixed");
+    expect(run("lane", "leave", f, "order-desk").code).toBe(0);
+    expect(run("lane", "remove", f, "desk").out).toBe("ok changed: desk\n");
+    expect(read(f)).not.toContain("lane");
+  });
+
   it("warns above 16 nodes, in text and JSON, and exits 0", () => {
     const f = "big.grafical.yaml";
     run("new", f, "--title", "Big");

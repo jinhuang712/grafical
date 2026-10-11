@@ -1,7 +1,8 @@
 // The column grid (DESIGN.md D7, D10): every node gets a column of one grid shared
 // by all rows. Within a row, columns follow node order. The facts decide the
 // columns, deterministically, in four steps:
-// 1. Order: each row's nodes come left to right, and each group's members fill a
+// 1. Order: each row's nodes come left to right, each lane that runs as a column
+//    takes a block of columns of its own (D32), and each group's members fill a
 //    block of columns that no other node of the group's rows enters. These are
 //    "left of" constraints between nodes.
 // 2. Columns: nodes that share a column form a class. Alignment facts join
@@ -15,6 +16,7 @@
 //    nodes it connects to.
 // Pure: no measurement and no pixels. place.ts turns columns into x.
 
+import { laneRanks, laneRun } from "../model/lanes.ts";
 import type { Diagram } from "../model/types.ts";
 import type { AlignmentProblem } from "./align.ts";
 
@@ -103,6 +105,24 @@ export function buildGrid(d: Diagram): Grid {
   const succ: number[][] = Array.from({ length: N }, () => []);
   for (const list of rows) {
     for (let k = 1; k < list.length; k++) succ[list[k - 1] as number]?.push(list[k] as number);
+  }
+  // Column lanes: every node of a lane, in any row, lies left of every node of the
+  // next lane. Rows are already in lane order (layout sorts them), so no cycle forms.
+  if (laneRun(d) === "columns") {
+    const ranks = laneRanks(d);
+    const byRank = new Map<number, number[]>();
+    for (let i = 0; i < N; i++) {
+      const r = ranks.get(ids[i] as string) ?? 0;
+      byRank.set(r, [...(byRank.get(r) ?? []), i]);
+    }
+    const order = [...byRank.keys()].sort((a, b) => a - b);
+    for (let k = 1; k < order.length; k++) {
+      for (const a of byRank.get(order[k - 1] as number) ?? []) {
+        for (const b of byRank.get(order[k] as number) ?? []) {
+          if (!(succ[a] ?? []).includes(b)) succ[a]?.push(b);
+        }
+      }
+    }
   }
   const cls = Array.from({ length: N }, (_, i) => i);
   let stamp = 0;

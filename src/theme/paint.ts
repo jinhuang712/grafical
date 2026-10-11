@@ -24,6 +24,11 @@ export interface BoxPaint {
   radius: number;
 }
 
+/** A swimlane: its area, its border, and its header's fill. */
+export interface LanePaint extends BoxPaint {
+  headFill: string;
+}
+
 export interface Paint {
   background: string;
   text: {
@@ -34,6 +39,7 @@ export interface Paint {
     groupLabel: string;
     /** The lighter part of a group label, such as "write side", and a band's label. */
     groupLabelMuted: string;
+    laneLabel: string;
     nodeLabel: string;
     nodeSublabel: string;
     edgeLabel: string;
@@ -42,6 +48,8 @@ export interface Paint {
   group: BoxPaint;
   /** A layer an edge ends at, drawn behind its groups: lighter than a group (D28). */
   band: BoxPaint;
+  /** A swimlane, drawn behind everything else (D32). Lanes side by side share a border. */
+  lane: LanePaint;
   node: {
     radius: number;
     strokeWidth: number;
@@ -74,12 +82,14 @@ export const PAINT: Paint = {
     legend: "#6b727c",
     groupLabel: "#4b525c",
     groupLabelMuted: "#6b727c",
+    laneLabel: "#4b525c",
     nodeLabel: "#1f2328",
     nodeSublabel: "#6b727c",
     edgeLabel: "#4b525c",
   },
   group: { fill: "#f5f6f8", stroke: "#d5d9df", strokeWidth: 1, radius: 8 },
   band: { fill: "#fafbfc", stroke: "#dfe3e8", strokeWidth: 1, radius: 8 },
+  lane: { fill: "#ffffff", stroke: "#d5d9df", strokeWidth: 1, radius: 0, headFill: "#f0f2f5" },
   node: {
     radius: 6,
     strokeWidth: 1,

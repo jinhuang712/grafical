@@ -7,6 +7,7 @@ import { validateAlignments, validateGroups } from "../../src/layout/index.ts";
 import { checkEnds } from "../../src/model/ends.ts";
 import type { Op } from "../../src/model/index.ts";
 import { applyOps } from "../../src/model/index.ts";
+import { checkLanes, orderByLanes } from "../../src/model/lanes.ts";
 import {
   DENSITIES,
   type Diagram,
@@ -195,6 +196,7 @@ export function generate(seed: number, m: Measurer): Generated {
   if (chance(0.3)) d.note = `Not shown: ${text(5, 60)}`;
   // Drawn last, so that every seed's diagram is the same as before up to here.
   addContainerEdges(d, r, text);
+  addLanes(d, r, text);
 
   return { diagram: d, ops, rejected };
 }
@@ -225,6 +227,94 @@ function addContainerEdges(
     const trial: Diagram = { ...d, edges: [...d.edges, edge] };
     if (checkEnds(trial, 0).length > 0) continue;
     d.edges = trial.edges;
+  }
+}
+
+/**
+ * Lanes (D32) in half the seeds: as rows, runs of one to three neighbouring layers
+ * with some layers left out; as columns, two to four lanes over the nodes with
+ * some nodes left out, each group in its first member's lane. Alignments that
+ * column lanes make impossible are dropped, as an agent would drop them. Then up
+ * to two edges that end at a lane, each kept only if the model allows it.
+ */
+function addLanes(d: Diagram, r: () => number, text: (lo: number, hi: number) => string): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  const way = r();
+  if (way >= 0.5 || d.layers.length === 0) return;
+  const lanes: { id: string; label: string }[] = [];
+  const trial: Diagram = structuredClone(d);
+  if (way < 0.25) {
+    let at = 0;
+    while (at < trial.layers.length) {
+      const len = int(1, 3);
+      if (r() < 0.25) {
+        at += len;
+        continue;
+      }
+      const id = `lane${lanes.length}`;
+      lanes.push({ id, label: text(3, 14) });
+      for (const l of trial.layers.slice(at, at + len)) l.lane = id;
+      at += len;
+    }
+    // A group across two lanes takes the lane of its first layer for all its layers.
+    for (const g of trial.groups ?? []) {
+      const rows = trial.layers.filter((l) => l.nodes.some((n) => n.group === g.id));
+      const lane = rows[0]?.lane;
+      for (const l of rows) {
+        if (lane === undefined) delete l.lane;
+        else l.lane = lane;
+      }
+    }
+  } else {
+    const count = int(2, 4);
+    for (let i = 0; i < count; i++) lanes.push({ id: `lane${i}`, label: text(3, 14) });
+    for (const l of trial.layers) {
+      for (const n of l.nodes) {
+        if (r() < 0.15) continue;
+        n.lane = lanes[int(0, count - 1)]?.id as string;
+      }
+    }
+    const nodes = trial.layers.flatMap((l) => l.nodes);
+    for (const g of trial.groups ?? []) {
+      const members = nodes.filter((n) => n.group === g.id);
+      const lane = members[0]?.lane;
+      for (const n of members) {
+        if (lane === undefined) delete n.lane;
+        else n.lane = lane;
+      }
+    }
+  }
+  if (lanes.length === 0) return;
+  trial.lanes = lanes;
+  orderByLanes(trial);
+  for (const p of validateAlignments(trial)) {
+    for (const l of trial.layers) for (const n of l.nodes) if (n.id === p.node) delete n.align;
+  }
+  if (
+    checkLanes(trial, 0).length > 0 ||
+    validateAlignments(trial).length > 0 ||
+    validateGroups(trial).length > 0 ||
+    checkEnds(trial, 0).length > 0
+  ) {
+    return;
+  }
+  d.layers = trial.layers;
+  d.lanes = lanes;
+  const ends = [
+    ...d.layers.flatMap((l) => l.nodes.map((n) => n.id)),
+    ...(d.groups ?? []).map((g) => g.id),
+    ...d.layers.map((l) => l.id),
+  ];
+  const count = int(0, 2);
+  for (let i = 0; i < count; i++) {
+    const lane = lanes[int(0, lanes.length - 1)]?.id as string;
+    const other = ends[int(0, ends.length - 1)] as string;
+    const [from, to] = r() < 0.5 ? [lane, other] : [other, lane];
+    const edge: Edge = { id: `w${i}`, from, to, kind: EDGE_KINDS[int(0, 2)] ?? "call" };
+    if (r() < 0.4) edge.label = text(2, 16);
+    const next: Diagram = { ...d, edges: [...d.edges, edge] };
+    if (checkEnds(next, 0).length > 0) continue;
+    d.edges = next.edges;
   }
 }
 

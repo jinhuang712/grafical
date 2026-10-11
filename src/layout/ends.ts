@@ -4,6 +4,7 @@
 // met at its top or bottom when the other end lies above or below all its rows,
 // and at its side when the two share a row: then the facing node is the member
 // beside the other end. A layer, drawn as a band, is met at its top or bottom.
+// A lane (D32) is met like a group: at its border across rows, or at its side.
 
 import { endKind, endNodes, endRows, meeting } from "../model/ends.ts";
 import type { Diagram, Edge } from "../model/types.ts";
@@ -11,9 +12,9 @@ import type { Point, Rect } from "../scene.ts";
 import { centreX, type PNode } from "./place.ts";
 
 export interface ContainerEnd {
-  /** The group or layer id. */
+  /** The group, layer or lane id. */
   id: string;
-  kind: "group" | "layer";
+  kind: "group" | "layer" | "lane";
   /** The row whose nodes face the other end, and may stand in for the container. */
   row: number;
   /** Whether the other end lies across rows, or beside in a shared row. */
@@ -60,7 +61,7 @@ export function planEnds(d: Diagram): EndPlan {
     for (const side of ["from", "to"] as const) {
       const id = e[side];
       const kind = side === "from" ? fk : tk;
-      if (kind !== "group" && kind !== "layer") continue;
+      if (kind !== "group" && kind !== "layer" && kind !== "lane") continue;
       if (kind === "layer") bands.add(id);
       const own = side === "from" ? rf : rt;
       const other = side === "from" ? rt : rf;

@@ -255,6 +255,31 @@ export interface GroupOrderOp {
   before?: string;
   after?: string;
 }
+/** Members are layers (lanes then run as rows), nodes (as columns) or groups (D32). */
+export interface LaneAddOp {
+  op: "lane.add";
+  id: string;
+  label: string;
+  members?: string[];
+}
+export interface LaneJoinOp {
+  op: "lane.join";
+  lane: string;
+  members: string[];
+}
+export interface LaneLeaveOp {
+  op: "lane.leave";
+  members: string[];
+}
+export interface LaneRenameOp {
+  op: "lane.rename";
+  id: string;
+  label: string;
+}
+export interface LaneRemoveOp {
+  op: "lane.remove";
+  id: string;
+}
 
 export type Op =
   | DiagramNewOp
@@ -273,6 +298,11 @@ export type Op =
   | GroupRemoveOp
   | GroupDescribeOp
   | GroupOrderOp
+  | LaneAddOp
+  | LaneJoinOp
+  | LaneLeaveOp
+  | LaneRenameOp
+  | LaneRemoveOp
   | LayerAddOp
   | LayerRenameOp
   | LayerMoveOp
@@ -483,6 +513,24 @@ export const groupOrderSchema = z.strictObject({
   before: nodeId.optional(),
   after: nodeId.optional(),
 });
+export const laneAddSchema = z.strictObject({
+  op: z.literal("lane.add"),
+  id: nodeId,
+  label: text,
+  members: z.array(nodeId).optional(),
+});
+export const laneJoinSchema = z.strictObject({
+  op: z.literal("lane.join"),
+  lane: nodeId,
+  members: nodeList,
+});
+export const laneLeaveSchema = z.strictObject({ op: z.literal("lane.leave"), members: nodeList });
+export const laneRenameSchema = z.strictObject({
+  op: z.literal("lane.rename"),
+  id: nodeId,
+  label: text,
+});
+export const laneRemoveSchema = z.strictObject({ op: z.literal("lane.remove"), id: nodeId });
 
 /** Parses one operation. A batch item is exactly this. */
 export const opSchema = z.discriminatedUnion("op", [
@@ -510,6 +558,11 @@ export const opSchema = z.discriminatedUnion("op", [
   diagramTidySchema,
   groupDescribeSchema,
   groupOrderSchema,
+  laneAddSchema,
+  laneJoinSchema,
+  laneLeaveSchema,
+  laneRenameSchema,
+  laneRemoveSchema,
   layerRenameSchema,
   layerMoveSchema,
   layerRemoveSchema,
@@ -552,6 +605,11 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.tidy": diagramTidySchema,
   "group.describe": groupDescribeSchema,
   "group.order": groupOrderSchema,
+  "lane.add": laneAddSchema,
+  "lane.join": laneJoinSchema,
+  "lane.leave": laneLeaveSchema,
+  "lane.rename": laneRenameSchema,
+  "lane.remove": laneRemoveSchema,
   "layer.rename": layerRenameSchema,
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,

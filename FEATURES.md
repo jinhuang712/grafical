@@ -66,6 +66,15 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `group.describe` | Set or clear a second, quieter part of the group's label, such as "write side" | done |
 | `group.order` | Put a group's members before or after another group's, in every layer the two share | done |
 
+### Lanes
+
+| Operation | Does | Status |
+|---|---|---|
+| `lane.add` | Add a swimlane that names who owns what, optionally with members: layers (the lanes run as rows), nodes (as columns) or groups, which bring their layers or nodes (D32) | done |
+| `lane.join`, `lane.leave` | Put layers, nodes or groups into a lane, or take them out | done |
+| `lane.rename` | Change a lane's label | done |
+| `lane.remove` | Remove the lane and keep its members. Edges that end at the lane go with it | done |
+
 ### Nodes
 
 | Operation | Does | Status |
@@ -86,7 +95,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `edge.add` | Connect two ends, with an optional label and kind. An end is a node, a group or a layer (D28) | done |
+| `edge.add` | Connect two ends, with an optional label and kind. An end is a node, a group, a layer or a lane (D28, D32) | done |
 | `edge.relabel` | Change or clear the label | done |
 | `edge.kind` | Change the kind | done |
 | `edge.reverse` | Swap the direction. The ID stays | done |
@@ -131,6 +140,11 @@ grafical group rename <file> <id> --label <text>
 grafical group remove <file> <id>
 grafical group describe <file> <id> [--text <text>]
 grafical group order <file> <id> --before <group> | --after <group>
+grafical lane add <file> <id> --label <text> [--members a,b]
+grafical lane join <file> <lane> <member...>
+grafical lane leave <file> <member...>
+grafical lane rename <file> <id> --label <text>
+grafical lane remove <file> <id>
 grafical diagram subtitle <file> [--text <text>]
 grafical diagram note <file> [--text <text>]
 grafical diagram sizing <file> auto|fixed
@@ -154,7 +168,8 @@ grafical guide
 - `node merge` puts the new node where the first listed node was, keeps every edge of the merged nodes once, and drops the edges between them. It may reuse a merged node's id. Nodes aligned to a merged node lose the alignment.
 - `layer tidy` and `diagram tidy` reorder once, when asked (D24). They report every node that moved.
 - Clearing: `node describe`, `node align`, `edge relabel`, `group describe` and `diagram legend` without their value clear it.
-- An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group or a layer. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
+- An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group, a layer or a lane. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
+- A lane's members are layers or nodes, one way per diagram (`lane-mixed`). A row lane's layers must be neighbours (`lane-gap`), and a layer added between two layers of a lane joins it. Column lanes go left to right in creation order, and grafical keeps each row in that order: a node outside every lane sits right of the lanes, or left of them when it comes first in its row. A group lies in one lane (`group-across-lanes`) and joins with all its members. Two lanes are never the ends of one edge (`lane-to-lane`), and neither are a layer and a column lane (`edge-inside`). `lane remove` keeps the members and removes the edges that end at the lane.
 - A group's members must sit in neighbouring rows, or the write fails with `group-gap`. `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
 - Warnings never block and never change the exit code. A write, `check` and `render` report them:
   - `too-many-nodes`: more than 16 nodes, with merge candidates (D26);
@@ -211,7 +226,7 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`. A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, auto sizing) is left out, and so are an empty `groups` list, a missing subtitle and a missing note.
+- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ### The stylesheet file
@@ -278,7 +293,7 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 
 | Feature | Status |
 |---|---|
-| Groups that span layers, and swimlanes | later |
+| Lanes that run both ways in one diagram, as a grid of lanes and phases (D32) | later |
 | Other diagram types | later |
 | Import from Mermaid, draw.io and Excalidraw | later |
 | An MCP server | later |

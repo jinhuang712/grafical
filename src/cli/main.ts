@@ -187,6 +187,59 @@ function build(): Command {
     await write(file, { op: "group.remove", id }, opts);
   });
 
+  const lane = program.command("lane").description("swimlane operations (D32)");
+  json(
+    lane
+      .command("add")
+      .description("add a lane, optionally with members: layers (rows), nodes (columns) or groups")
+      .argument("<file>")
+      .argument("<id>")
+      .requiredOption("--label <text>")
+      .option("--members <ids>", "comma-separated layer, node or group ids"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const raw: Record<string, unknown> = { op: "lane.add", id, ...pick(opts, ["label"]) };
+    if (typeof opts.members === "string") raw.members = splitIds(opts.members);
+    await write(file, raw, opts);
+  });
+  json(
+    lane
+      .command("join")
+      .description("put layers, nodes or groups into a lane")
+      .argument("<file>")
+      .argument("<lane>")
+      .argument("<member...>"),
+  ).action(async (file: string, l: string, members: string[], opts: Opts) => {
+    await write(file, { op: "lane.join", lane: l, members }, opts);
+  });
+  json(
+    lane
+      .command("leave")
+      .description("take layers, nodes or groups out of their lane")
+      .argument("<file>")
+      .argument("<member...>"),
+  ).action(async (file: string, members: string[], opts: Opts) => {
+    await write(file, { op: "lane.leave", members }, opts);
+  });
+  json(
+    lane
+      .command("rename")
+      .description("change a lane's label")
+      .argument("<file>")
+      .argument("<id>")
+      .requiredOption("--label <text>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "lane.rename", id, ...pick(opts, ["label"]) }, opts);
+  });
+  json(
+    lane
+      .command("remove")
+      .description("remove a lane; its members stay")
+      .argument("<file>")
+      .argument("<id>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "lane.remove", id }, opts);
+  });
+
   const layer = program.command("layer").description("layer operations");
   json(
     layer
@@ -321,8 +374,8 @@ function build(): Command {
       .description("move one or both ends of an edge; its id, kind and label stay")
       .argument("<file>")
       .argument("<id>")
-      .option("--from <end>", "a node, group or layer")
-      .option("--to <end>", "a node, group or layer"),
+      .option("--from <end>", "a node, group, layer or lane")
+      .option("--to <end>", "a node, group, layer or lane"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.retarget", id, ...pick(opts, ["from", "to"]) }, opts);
   });

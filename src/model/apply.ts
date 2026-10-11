@@ -7,6 +7,7 @@ import * as layoutModule from "../layout/index.ts";
 import type { Measurer } from "../text/types.ts";
 import { styleProblem, THEMES } from "../theme/themes.ts";
 import { endIds, endKind } from "./ends.ts";
+import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
 import type { EdgeAddOp, LayerAddOp, NodeAddOp, NodeMoveOp, Op, Position } from "./ops.ts";
 import { checkIntegrity, MAX_ACCENTS } from "./schema.ts";
 import { suggestIds } from "./suggest.ts";
@@ -43,6 +44,7 @@ function touch(s: State, ...ids: string[]) {
 function unusedKind(d: Diagram, id: string): string | undefined {
   if (d.layers.some((l) => l.id === id)) return "layer";
   if ((d.groups ?? []).some((g) => g.id === id)) return "group";
+  if ((d.lanes ?? []).some((x) => x.id === id)) return "lane";
   if (d.layers.some((l) => l.nodes.some((n) => n.id === id))) return "node";
   if (d.edges.some((e) => e.id === id)) return "edge";
   return undefined;
@@ -56,7 +58,7 @@ function dupError(d: Diagram, id: string, i: number): OpError | undefined {
     index: i,
     field: "id",
     found: id,
-    expected: "an id not used by any layer, group, node or edge",
+    expected: "an id not used by any layer, group, lane, node or edge",
     suggestion: `${id} is already a ${kind}; choose another id`,
   };
 }
@@ -180,6 +182,145 @@ function groupStep(s: State, op: Extract<Op, { op: `group.${string}` }>, i: numb
   return [];
 }
 
+function unknownLane(d: Diagram, id: string, i: number, field: string): OpError {
+  return {
+    code: "unknown-lane",
+    index: i,
+    field,
+    found: id,
+    expected: "the id of an existing lane",
+    suggestion: suggestIds(
+      id,
+      (d.lanes ?? []).map((x) => x.id),
+      "lane",
+    ),
+  };
+}
+
+/**
+ * What lane members stand for: layers when lanes run as rows, nodes when they run
+ * as columns. A group stands for its layers or its nodes. While no lane has a
+ * member, the first layer or node decides; groups alone mean columns (D32).
+ */
+function laneTargets(
+  d: Diagram,
+  members: readonly string[],
+  i: number,
+  lane: string,
+): { run: LaneRun; layers: Layer[]; nodes: DiagramNode[] } | OpError[] {
+  const errors: OpError[] = [];
+  const layerIds = d.layers.map((l) => l.id);
+  const groupIds = (d.groups ?? []).map((g) => g.id);
+  let run = laneRun(d);
+  for (const id of members) {
+    if (run !== undefined) break;
+    if (layerIds.includes(id)) run = "rows";
+    else if (findNode(d, id)) run = "columns";
+  }
+  const settled = run ?? "columns";
+  const layers: Layer[] = [];
+  const nodes: DiagramNode[] = [];
+  for (const id of members) {
+    const layer = d.layers.find((l) => l.id === id);
+    const node = findNode(d, id);
+    if (groupIds.includes(id)) {
+      for (const l of d.layers) {
+        const mine = l.nodes.filter((n) => n.group === id);
+        if (mine.length === 0) continue;
+        if (settled === "rows") layers.push(l);
+        else nodes.push(...mine);
+      }
+    } else if (layer !== undefined) {
+      if (settled === "rows") layers.push(layer);
+      else
+        errors.push({
+          code: "lane-mixed",
+          index: i,
+          field: "members",
+          found: `${id} is a layer, and the lanes here run as columns`,
+          expected: "nodes or groups: lanes that run as columns hold nodes",
+          suggestion: `lane join <file> ${lane} ${layer.nodes.map((n) => n.id).join(" ") || "<node>"}`,
+        });
+    } else if (node !== undefined) {
+      if (settled === "columns") nodes.push(node.node);
+      else
+        errors.push({
+          code: "lane-mixed",
+          index: i,
+          field: "members",
+          found: `${id} is a node, and the lanes here run as rows`,
+          expected: "layers or groups: lanes that run as rows hold layers",
+          suggestion: `lane join <file> ${lane} ${node.layer.id}`,
+        });
+    } else {
+      errors.push({
+        code: "unknown-node",
+        index: i,
+        field: "members",
+        found: id,
+        expected: "the id of a layer, node or group",
+        suggestion: suggestIds(id, [...layerIds, ...nodeIds(d), ...groupIds], "id"),
+      });
+    }
+  }
+  return errors.length > 0 ? errors : { run: settled, layers, nodes };
+}
+
+/** Puts the targets in the lane, or out of every lane when `lane` is undefined. */
+function setLane(s: State, t: { layers: Layer[]; nodes: DiagramNode[] }, lane: string | undefined) {
+  for (const x of [...t.layers, ...t.nodes]) {
+    if (x.lane === lane) continue;
+    if (lane === undefined) delete x.lane;
+    else x.lane = lane;
+    touch(s, x.id);
+  }
+}
+
+function laneStep(s: State, op: Extract<Op, { op: `lane.${string}` }>, i: number): OpError[] {
+  const d = s.d;
+  const lanes = d.lanes ?? [];
+  if (op.op === "lane.add") {
+    const dup = dupError(d, op.id, i);
+    if (dup) return [dup];
+    const t = op.members === undefined ? undefined : laneTargets(d, op.members, i, op.id);
+    if (Array.isArray(t)) return t;
+    lanes.push({ id: op.id, label: op.label });
+    d.lanes = lanes;
+    touch(s, op.id);
+    if (t !== undefined) setLane(s, t, op.id);
+    return [];
+  }
+  if (op.op === "lane.leave") {
+    const t = laneTargets(d, op.members, i, "<lane>");
+    if (Array.isArray(t)) return t;
+    setLane(s, t, undefined);
+    return [];
+  }
+  const key = op.op === "lane.join" ? op.lane : op.id;
+  const lane = lanes.find((x) => x.id === key);
+  if (!lane) return [unknownLane(d, key, i, op.op === "lane.join" ? "lane" : "id")];
+  if (op.op === "lane.join") {
+    const t = laneTargets(d, op.members, i, lane.id);
+    if (Array.isArray(t)) return t;
+    setLane(s, t, lane.id);
+  } else if (op.op === "lane.rename") {
+    lane.label = op.label;
+    touch(s, lane.id);
+  } else {
+    d.lanes = lanes.filter((x) => x.id !== lane.id);
+    touch(s, lane.id);
+    for (const l of d.layers) {
+      if (l.lane === lane.id) setLane(s, { layers: [l], nodes: [] }, undefined);
+      setLane(s, { layers: [], nodes: l.nodes.filter((n) => n.lane === lane.id) }, undefined);
+    }
+    // The edges that end at the lane go with it, as a group's do (D28).
+    const gone = d.edges.filter((e) => e.from === lane.id || e.to === lane.id);
+    d.edges = d.edges.filter((e) => e.from !== lane.id && e.to !== lane.id);
+    touch(s, ...gone.map((e) => e.id));
+  }
+  return [];
+}
+
 function checkAlign(d: Diagram, nodeLayer: string, target: string, i: number): OpError | undefined {
   const at = findNode(d, target);
   if (!at) return unknownNode(d, target, i, "align");
@@ -284,7 +425,11 @@ function addLayer(s: State, op: LayerAddOp, i: number): OpError[] {
     else at = op.before !== undefined ? idx : idx + 1;
   }
   if (errors.length > 0) return errors;
-  d.layers.splice(at, 0, { id: op.id, label: op.label, nodes: [] });
+  const layer: Layer = { id: op.id, label: op.label, nodes: [] };
+  // A layer added inside a row lane's span joins the lane, so that the lane stays whole.
+  const above = d.layers[at - 1]?.lane;
+  if (above !== undefined && above === d.layers[at]?.lane) layer.lane = above;
+  d.layers.splice(at, 0, layer);
   touch(s, op.id);
   return [];
 }
@@ -404,7 +549,7 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
       index: i,
       field,
       found: end,
-      expected: "the id of an existing node, group or layer",
+      expected: "the id of an existing node, group, layer or lane",
       suggestion: suggestIds(end, endIds(d), "id"),
     });
   }
@@ -586,7 +731,9 @@ function splitLayer(s: State, op: Extract<Op, { op: "layer.split" }>, i: number)
     }
   }
   const moved = layer.nodes.splice(at);
-  d.layers.splice(k + 1, 0, { id: op.into, label: op.label, nodes: moved });
+  const into: Layer = { id: op.into, label: op.label, nodes: moved };
+  if (layer.lane !== undefined) into.lane = layer.lane;
+  d.layers.splice(k + 1, 0, into);
   touch(s, op.into, ...moved.map((n) => n.id));
   return [];
 }
@@ -643,6 +790,7 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
   if (op.sublabel !== undefined) node.sublabel = op.sublabel;
   if (parts.some((p) => p.accent === true)) node.accent = true;
   if (first.node.group !== undefined) node.group = first.node.group;
+  if (first.node.lane !== undefined) node.lane = first.node.lane;
   first.layer.nodes[first.index] = node;
   const merged = new Set(op.nodes);
   for (const id of op.nodes.slice(1)) {
@@ -861,7 +1009,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
             index: i,
             field,
             found: end,
-            expected: "the id of an existing node, group or layer",
+            expected: "the id of an existing node, group, layer or lane",
             suggestion: suggestIds(end, endIds(d), "id"),
           });
         }
@@ -922,6 +1070,12 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "group.rename":
     case "group.remove":
       return groupStep(s, op, i);
+    case "lane.add":
+    case "lane.join":
+    case "lane.leave":
+    case "lane.rename":
+    case "lane.remove":
+      return laneStep(s, op, i);
     case "layer.add":
       return addLayer(s, op, i);
     case "node.add":
@@ -1076,6 +1230,8 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
   }
   placePending(s, m);
   tidyLayers(s, m);
+  // Column lanes keep each row in lane order (D32).
+  touch(s, ...orderByLanes(s.d));
   const last = Math.max(0, ops.length - 1);
   const broken = checkIntegrity(s.d, last);
   if (broken.length > 0) return { errors: broken };
@@ -1109,5 +1265,6 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
     };
   }
   if (s.d.groups !== undefined && s.d.groups.length === 0) delete s.d.groups;
+  if (s.d.lanes !== undefined && s.d.lanes.length === 0) delete s.d.lanes;
   return { diagram: s.d, changed: s.changed };
 }

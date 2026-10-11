@@ -54,7 +54,7 @@ Third try, 2026-10-11, with the shared store placed between the systems: not met
 ### Phase 1c: what the owner added on 2026-10-11
 
 - **Edge ends at containers** (D28): an arrow may end at a group or a layer. Done.
-- **Swimlanes:** lanes that run as rows or as columns, one way per diagram, with nodes allowed outside every lane.
+- **Swimlanes:** lanes that run as rows or as columns, one way per diagram, with nodes allowed outside every lane. Done (D32).
 - **Styling:** built-in themes and a shared stylesheet file that a diagram names, set by an operation, so that an agent can apply the theme a person asks for in plain words. Changing the stylesheet changes every diagram that uses it. Done (D30).
 - **A live viewer:** `grafical view <file>` opens a window that shows the diagram as it is now, and redraws it within a moment of every change an agent makes. It shows; it does not edit (editing is stage 2). Done (D31).
 - **Warnings the agent sees but that never block:** a picture wider than the page, a crowded row, a group of one node, and an edge that crosses a row of unrelated nodes. Done (D29).

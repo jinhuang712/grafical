@@ -1,6 +1,7 @@
 // `grafical show`: a compact view of a diagram in the operations' own
 // vocabulary (DESIGN.md D17). One line per layer, then one line per edge.
 
+import { laneNodes, laneRun } from "../model/lanes.ts";
 import type { Diagram, DiagramNode, Edge } from "../model/types.ts";
 
 function nodeText(n: DiagramNode): string {
@@ -9,6 +10,7 @@ function nodeText(n: DiagramNode): string {
   if (n.accent === true) s += " accent";
   if (n.align !== undefined) s += ` align=${n.align}`;
   if (n.group !== undefined) s += ` group=${n.group}`;
+  if (n.lane !== undefined) s += ` lane=${n.lane}`;
   if (n.sublabel !== undefined) s += ` sub=${JSON.stringify(n.sublabel)}`;
   return s;
 }
@@ -32,7 +34,8 @@ export function showDiagram(d: Diagram): string {
   }
   for (const l of d.layers) {
     const nodes = l.nodes.length > 0 ? l.nodes.map(nodeText).join(" | ") : "(empty)";
-    lines.push(`layer ${l.id} ${JSON.stringify(l.label)}: ${nodes}`);
+    const lane = l.lane === undefined ? "" : ` lane=${l.lane}`;
+    lines.push(`layer ${l.id} ${JSON.stringify(l.label)}${lane}: ${nodes}`);
   }
   if (d.layers.length === 0) lines.push("(no layers)");
   for (const g of d.groups ?? []) {
@@ -43,6 +46,15 @@ export function showDiagram(d: Diagram): string {
     lines.push(
       `group ${g.id} ${JSON.stringify(g.label)}${sub}: ${members.join(", ") || "(empty)"}`,
     );
+  }
+  const run = laneRun(d);
+  for (const x of d.lanes ?? []) {
+    const members =
+      run === "rows"
+        ? d.layers.filter((l) => l.lane === x.id).map((l) => l.id)
+        : laneNodes(d, x.id);
+    const way = run === undefined ? "" : ` (${run})`;
+    lines.push(`lane ${x.id} ${JSON.stringify(x.label)}${way}: ${members.join(", ") || "(empty)"}`);
   }
   lines.push(d.edges.length > 0 ? "edges:" : "edges: (none)");
   for (const e of d.edges) lines.push(edgeText(e));

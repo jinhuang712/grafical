@@ -2,6 +2,7 @@
 // measurer, and returns every mechanical flaw, in a deterministic order.
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
+import { laneNodes } from "../model/lanes.ts";
 import type { Diagram } from "../model/types.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
@@ -80,6 +81,20 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
         });
       }
     }
+  }
+}
+
+/** A lane's label stays inside its header (D32). Row lane headers are narrow, so a long label can run out below. */
+function checkLaneLabels(scene: Scene, out: Found[]): void {
+  for (const x of scene.lanes ?? []) {
+    if (rectInside(x.label.bbox, x.head)) continue;
+    out.push({
+      code: "overflow",
+      elements: [x.id],
+      found: `the label of lane ${x.id} spans ${rectText(x.label.bbox)}, outside its header ${rectText(x.head)}`,
+      expected: "a lane label inside the lane's header",
+      fix: `grafical lane rename <file> ${x.id} --label <shorter text>`,
+    });
   }
 }
 
@@ -192,6 +207,9 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
   for (const b of scene.bands ?? []) {
     targets.push({ id: b.id, what: `the label of layer ${b.id}`, text: b.label });
   }
+  for (const x of scene.lanes ?? []) {
+    targets.push({ id: x.id, what: `the label of lane ${x.id}`, text: x.label });
+  }
   const named: [string, PlacedText | undefined][] = [
     ["subtitle", scene.subtitle],
     ["note", scene.note],
@@ -231,6 +249,26 @@ function checkGroupIntruder(scene: Scene, out: Found[]): void {
         found: `node ${n.id} (${rectText(n.rect)}) lies inside group ${g.id} (${rectText(g.rect)}) but is not a member`,
         expected: "only members inside a group box",
         fix: `grafical node move <file> ${n.id} --layer <layer> --first (or --last), so the group box can close around its members`,
+      });
+    }
+  }
+}
+
+/** Every node of a lane lies inside it, and no other node does (D32). */
+function checkLaneStray(diagram: Diagram, scene: Scene, out: Found[]): void {
+  for (const x of scene.lanes ?? []) {
+    const members = new Set(laneNodes(diagram, x.id));
+    for (const n of scene.nodes) {
+      const member = members.has(n.id);
+      if (member ? rectInside(n.rect, x.rect) : !rectsOverlap(n.rect, x.rect)) continue;
+      out.push({
+        code: "lane-stray",
+        elements: [x.id, n.id],
+        found: member
+          ? `node ${n.id} (${rectText(n.rect)}) is in lane ${x.id} (${rectText(x.rect)}) but lies outside it`
+          : `node ${n.id} (${rectText(n.rect)}) lies inside lane ${x.id} (${rectText(x.rect)}) but is not in it`,
+        expected: "every node of a lane inside it, and no other node",
+        fix: `none for the agent: the engine must place ${n.id} on the right side of the lane's border`,
       });
     }
   }
@@ -330,6 +368,14 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
       `grafical group describe <file> ${g.id} --text <text without these characters>`,
     );
   }
+  for (const x of diagram.lanes ?? []) {
+    add(
+      x.id,
+      "lane label",
+      x.label,
+      `grafical lane rename <file> ${x.id} --label <text without these characters>`,
+    );
+  }
   for (const line of ["solid", "dashed"] as const) {
     add(
       `legend-${line}`,
@@ -383,12 +429,14 @@ type Found = Omit<Defect, "owner">;
 export function check(diagram: Diagram, scene: Scene, measurer: Measurer): Defect[] {
   const out: Found[] = [];
   checkOverflow(diagram, scene, out);
+  checkLaneLabels(scene, out);
   checkNodeOverlap(scene, out);
   checkEdgeThroughNode(scene, out);
   checkLabelCollision(scene, out);
   checkEdgeOverlap(scene, out);
   checkTextCrossing(scene, out);
   checkGroupIntruder(scene, out);
+  checkLaneStray(diagram, scene, out);
   checkMissingGlyphs(diagram, measurer, out);
   const order = (d: Found): number => DEFECT_CODES.indexOf(d.code);
   return out

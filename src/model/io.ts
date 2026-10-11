@@ -27,11 +27,15 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
   if (n.accent === true) o.accent = true;
   if (n.align !== undefined) o.align = n.align;
   if (n.group !== undefined) o.group = n.group;
+  if (n.lane !== undefined) o.lane = n.lane;
   return o;
 }
 
 function layerOut(l: Layer): Record<string, unknown> {
-  return { id: l.id, label: l.label, nodes: l.nodes.map(nodeOut) };
+  const o: Record<string, unknown> = { id: l.id, label: l.label };
+  if (l.lane !== undefined) o.lane = l.lane;
+  o.nodes = l.nodes.map(nodeOut);
+  return o;
 }
 
 function edgeOut(e: Edge): Record<string, unknown> {
@@ -60,6 +64,9 @@ export function writeDiagram(d: Diagram): string {
         ? { id: g.id, label: g.label }
         : { id: g.id, label: g.label, sublabel: g.sublabel },
     );
+  }
+  if (d.lanes !== undefined && d.lanes.length > 0) {
+    out.lanes = d.lanes.map((x) => ({ id: x.id, label: x.label }));
   }
   out.edges = d.edges.map(edgeOut);
   return stringify(out, { lineWidth: 0, indent: 2, indentSeq: true, minContentWidth: 0 });

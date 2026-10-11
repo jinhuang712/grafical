@@ -6,31 +6,42 @@
 // 2. routes across: paths, ports, gap tracks and gutter rows (route.ts);
 // 3. down: the title, subtitle and legend, then rows and gutters top to bottom,
 //    each gutter taking the smallest height step its rows fit in, plus the room
-//    group boxes need below their last row and above their first;
+//    group boxes need below their last row and above their first, and the room
+//    of lane headers and borders (D32);
 // 4. assembly of routes, labels, group boxes, text and the footnote.
 // Rows are not drawn (D7): their bands and labels stay in the scene for the
 // checker and for debugging.
 
+import { laneRun, orderByLanes } from "../model/lanes.ts";
 import type { Diagram, DiagramNode } from "../model/types.ts";
 import type {
   PlacedText,
+  Point,
   Rect,
   Scene,
   SceneBand,
   SceneEdge,
   SceneGroup,
+  SceneLane,
   SceneLayer,
   SceneLegendItem,
   SceneNode,
 } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
-import { BAND, FRAME, GROUP, SPACING, type Spacing } from "../theme/geometry.ts";
+import { BAND, FRAME, GROUP, LANE, ROUTE, SPACING, type Spacing } from "../theme/geometry.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { cutRoute, planEnds, refineEnds } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import { placeAcross } from "./place.ts";
-import { assemble, type LabelBox, type LabelForm, round2, routeAcross } from "./route.ts";
+import {
+  type AssembledLabel,
+  assemble,
+  type LabelBox,
+  type LabelForm,
+  round2,
+  routeAcross,
+} from "./route.ts";
 import { planSideways } from "./side.ts";
 import { withSizes } from "./size.ts";
 import { routeStats } from "./stats.ts";
@@ -268,6 +279,84 @@ function legendItems(d: Diagram): { style: "solid" | "dashed"; text: string }[] 
   return out;
 }
 
+const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+
+/** Does the axis-parallel segment a-b pass through the inside of r? */
+function segmentHits(a: Point, b: Point, r: Rect): boolean {
+  if (a.y === b.y) {
+    return (
+      a.y > r.y && a.y < r.y + r.h && Math.max(a.x, b.x) > r.x && Math.min(a.x, b.x) < r.x + r.w
+    );
+  }
+  return a.x > r.x && a.x < r.x + r.w && Math.max(a.y, b.y) > r.y && Math.min(a.y, b.y) < r.y + r.h;
+}
+
+/**
+ * A label stays where the router put it while it still lies beside its line, clear. A
+ * route cut at a container (D28) can lose the part the label sat on, or leave
+ * the label across the container's border: the label then moves beside a part
+ * that remains, the longest first, above or below it, or right or left of it,
+ * at its middle or one of its ends, stepping away from it while other lines
+ * crowd it: the first place `free` accepts, clear of the border if one is,
+ * across it if not. Failing every place, it goes above or right of the middle of
+ * the longest part.
+ */
+function besideRoute(
+  points: Point[],
+  at: AssembledLabel,
+  boxes: Rect[],
+  free: (r: Rect) => boolean,
+): AssembledLabel {
+  const near = ROUTE.labelGap + 4;
+  const across = (r: Rect) =>
+    boxes.some(
+      (b) =>
+        overlaps(r, b) &&
+        !(r.x >= b.x && r.x + r.w <= b.x + b.w && r.y >= b.y && r.y + r.h <= b.y + b.h),
+    );
+  const parts: [Point, Point][] = [];
+  const keep = !across(at) && free(at);
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1] as Point;
+    const b = points[i] as Point;
+    const dx = Math.max(0, at.x - Math.max(a.x, b.x), Math.min(a.x, b.x) - (at.x + at.w));
+    const dy = Math.max(0, at.y - Math.max(a.y, b.y), Math.min(a.y, b.y) - (at.y + at.h));
+    if (keep && Math.max(dx, dy) <= near) return at;
+    parts.push([a, b]);
+  }
+  const span = ([a, b]: [Point, Point]) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  parts.sort((p, q) => span(q) - span(p));
+  // Right beside each part first; then, where other lines crowd it, stepping away
+  // from it, up to twice the label's size, past the lines in the way.
+  const besides = (away: number) =>
+    parts.flatMap(([a, b]) => {
+      const gap = ROUTE.labelGap + away;
+      if (a.y === b.y) {
+        const lo = Math.min(a.x, b.x);
+        const hi = Math.max(a.x, b.x);
+        const xs = [(lo + hi) / 2 - at.w / 2, lo + ROUTE.labelGap, hi - ROUTE.labelGap - at.w];
+        return [a.y - gap - at.h, a.y + gap].flatMap((y) => xs.map((x) => ({ x, y })));
+      }
+      const lo = Math.min(a.y, b.y);
+      const hi = Math.max(a.y, b.y);
+      const ys = [(lo + hi) / 2 - at.h / 2, lo + ROUTE.labelGap, hi - ROUTE.labelGap - at.h];
+      return [a.x + gap, a.x - gap - at.w].flatMap((x) => ys.map((y) => ({ x, y })));
+    });
+  const reach = 2 * Math.max(at.w, at.h);
+  const places = [];
+  for (let away = 0; away <= reach; away += 4) places.push(...besides(away));
+  // Clear of the container's border if it can be; else across it, which a label's patch covers.
+  for (const strict of [true, false]) {
+    for (const p of places) {
+      const r = { x: p.x, y: p.y, w: at.w, h: at.h };
+      if ((!strict || !across(r)) && free(r)) return { ...at, ...p };
+    }
+  }
+  const first = places[0];
+  return first === undefined ? at : { ...at, ...first };
+}
+
 const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
   role,
   runs: [],
@@ -279,6 +368,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const theme = themeOf(facts);
   const T = theme.type;
   const sized = withSizes(facts, m);
+  // Column lanes keep each row in lane order (D32); a file edited by hand may not.
+  orderByLanes(sized);
   // Container ends route to a stand-in node and are cut at the container (D28).
   const ends = planEnds(sized);
   const d: Diagram = { ...sized, edges: ends.edges };
@@ -316,10 +407,23 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     ]),
   );
   const sideways = planSideways(d, (id) => labelSizes.get(id)?.w, labelH);
+  // Edges that meet a column lane beside it (D32), and the node at their other end.
+  const laneEnds = new Map<string, { lane: string; node: string }>();
+  if (laneRun(d) === "columns") {
+    for (const e of d.edges) {
+      const plan = ends.ends.get(e.id);
+      for (const side of ["from", "to"] as const) {
+        const end = plan?.[side];
+        if (end?.kind !== "lane" || end.across) continue;
+        laneEnds.set(e.id, { lane: end.id, node: side === "from" ? e.to : e.from });
+      }
+    }
+  }
   const placement = placeAcross(d, {
     sideways,
     edgeLabelW: (id) => labelSizes.get(id)?.w,
     groupLabelW: (id) => groupW.get(id) ?? 0,
+    laneEnds,
   });
   const { layers, nodes, groups } = placement;
   const routeEdges = refineEnds(sized, ends, nodes);
@@ -376,6 +480,17 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     list.push([b.labelX - GROUP.labelClear, b.labelX + b.labelW + GROUP.labelClear]);
     forbidTop.set(row, list);
   }
+  // A column lane's sides run the whole height: no line runs along one.
+  const run = laneRun(d);
+  const colLanes = run === "columns" ? placement.lanes : [];
+  const laneSides = colLanes.flatMap((l, k) => (k === 0 ? [l.x0, l.x1] : [l.x1]));
+  if (laneSides.length > 0) {
+    for (const l of layers) {
+      const list = forbidTop.get(l.index) ?? [];
+      for (const x of laneSides) list.push([x - LANE.lineClear, x + LANE.lineClear]);
+      forbidTop.set(l.index, list);
+    }
+  }
   const forbidGap = new Map<string, [number, number][]>();
   for (const [id, x0] of placement.sideLabels) {
     const slot = sideways.get(id);
@@ -393,6 +508,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     forbidGap,
     sideLabelX: placement.sideLabels,
     alone: new Set(ends.ends.keys()),
+    noSideExit: new Set(
+      run === "columns"
+        ? [...ends.ends]
+            .filter(([, p]) => p.from?.kind === "lane" || p.to?.kind === "lane")
+            .map(([id]) => id)
+        : [],
+    ),
   });
 
   // Across: the content is symmetric about the centre line.
@@ -418,6 +540,55 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   }
   if (Number.isFinite(routing.minX)) see(routing.minX - 16);
   if (Number.isFinite(routing.maxX)) see(routing.maxX + 16);
+
+  // Lanes (D32). Row lanes share one header column, left of everything the rows
+  // hold, lines included. Column lanes have a header on top, as wide as the lane.
+  const laneStyle = T["lane-label"];
+  const laneLh = lineHeight("lane-label", m, T);
+  const rowLanes: { id: string; label: string; first: number; last: number }[] = [];
+  if (run === "rows") {
+    for (const lane of d.lanes ?? []) {
+      const rows = layers.filter((l) => d.layers[l.index]?.lane === lane.id).map((l) => l.index);
+      if (rows.length === 0) continue;
+      rowLanes.push({
+        id: lane.id,
+        label: lane.label,
+        first: rows[0] as number,
+        last: rows[rows.length - 1] as number,
+      });
+    }
+  }
+  let laneLeft = 0;
+  let laneRight = 0;
+  let headW = 0;
+  if (rowLanes.length > 0 && Number.isFinite(contentLeft)) {
+    const widest = Math.max(...rowLanes.map((x) => m.measure(x.label, laneStyle).width));
+    headW = ceil4(Math.min(widest, LANE.headMax) + 2 * LANE.labelInset);
+    let left = bandRows.size > 0 ? bandLeft : contentLeft;
+    let right = bandRows.size > 0 ? contentRight + BAND.padX : contentRight;
+    if (Number.isFinite(routing.minX)) left = Math.min(left, routing.minX);
+    if (Number.isFinite(routing.maxX)) right = Math.max(right, routing.maxX);
+    laneLeft = left - LANE.padX - headW;
+    laneRight = right + LANE.padX;
+    see(laneLeft);
+    see(laneRight);
+  }
+  const laneAt = (i: number) => rowLanes.find((x) => x.first <= i && i <= x.last)?.id;
+  const colLines = colLanes.map((l) =>
+    withText ? m.wrap(l.label, laneStyle, l.x1 - l.x0 - 2 * LANE.labelInset) : [],
+  );
+  const headH =
+    colLanes.length === 0
+      ? 0
+      : ceil4(2 * LANE.labelTop + Math.max(1, ...colLines.map((ls) => ls.length)) * laneLh);
+  for (const l of colLanes) {
+    see(l.x0);
+    see(l.x1);
+  }
+  // Row lanes hold everything across, header included: the picture centres on them,
+  // not on the centre line, so that the header's width is not mirrored as empty space.
+  const shift = rowLanes.length > 0 ? Math.round((laneLeft + laneRight) / 8) * 4 : 0;
+  if (rowLanes.length > 0) half = Math.max(shift - laneLeft, laneRight - shift);
   half = ceil4(Math.max(half, 80));
 
   // The frame: title, subtitle and legend at the top, the footnote at the bottom.
@@ -447,7 +618,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       2 * sp.margin + widest(noteLines),
     ),
   );
-  const centre = width / 2;
+  const centre = width / 2 - shift;
 
   const titleBottom = title.bbox.y + ceil4(title.bbox.h);
   const subtitle =
@@ -509,8 +680,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const gutterTops: number[] = [];
   const endPads: number[] = [];
   let y = ceil4(headBottom + FRAME.titleGap);
+  const lanesTop = y;
+  if (colLanes.length > 0) y += headH + LANE.pad;
+  if (laneAt(0) !== undefined) y += LANE.pad;
   if (startsAt(0)) y += GROUP.head;
   if (bandRows.has(0)) y += BAND.head;
+  /** Where a row lane's border crosses gutter i, between two rows in different lanes. */
+  const borders = new Map<number, number>();
   layers.forEach((l, i) => {
     rowTops.push(y);
     y += l.rowH;
@@ -518,11 +694,20 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const last = i === layers.length - 1;
     const pad = (endsAt(i) ? GROUP.pad : 0) + (bandRows.has(i) ? BAND.pad : 0);
     const tracks = rows === 0 ? (last ? 0 : (sp.gutterSteps[0] ?? 48)) : gutterHeight(rows, sp);
-    const head = last ? 0 : headRoom(i, tracks);
     gutterTops.push(y);
     endPads.push(pad);
+    if (!last && laneAt(i) !== laneAt(i + 1)) {
+      // The border runs below the gutter's tracks; heads below it take their full room.
+      y += pad + (rows === 0 ? LANE.pad : tracks);
+      borders.set(i, y);
+      y += LANE.pad + (startsAt(i + 1) ? GROUP.head : 0) + (bandRows.has(i + 1) ? BAND.head : 0);
+      return;
+    }
+    const head = last ? 0 : headRoom(i, tracks);
     y += pad + tracks + head;
   });
+  if (colLanes.length > 0 || laneAt(layers.length - 1) !== undefined) y += LANE.pad;
+  const lanesBottom = y;
   let bottom = y;
   const note =
     noteLines.length > 0
@@ -577,9 +762,44 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       : empty("layer-label", centre + b.labelX, y0 + BAND.labelTop);
     return { id: b.id, rect, label };
   });
+  const sceneLanes: SceneLane[] = [];
+  for (const x of rowLanes) {
+    const y0 = x.first === 0 ? lanesTop : (borders.get(x.first - 1) ?? 0);
+    const y1 = x.last === layers.length - 1 ? lanesBottom : (borders.get(x.last) ?? 0);
+    const rect: Rect = { x: centre + laneLeft, y: y0, w: laneRight - laneLeft, h: y1 - y0 };
+    const lx = rect.x + LANE.labelInset;
+    const lines = withText ? m.wrap(x.label, laneStyle, headW - 2 * LANE.labelInset) : [];
+    sceneLanes.push({
+      id: x.id,
+      run: "rows",
+      rect,
+      head: { x: rect.x, y: y0, w: headW, h: y1 - y0 },
+      label: placeLines("lane-label", lines, lx, y0 + LANE.labelTop, "start", m, T),
+    });
+  }
+  colLanes.forEach((l, k) => {
+    const rect: Rect = { x: centre + l.x0, y: lanesTop, w: l.x1 - l.x0, h: lanesBottom - lanesTop };
+    const cx = centre + (l.x0 + l.x1) / 2;
+    sceneLanes.push({
+      id: l.id,
+      run: "columns",
+      rect,
+      head: { x: rect.x, y: lanesTop, w: rect.w, h: headH },
+      label: placeLines(
+        "lane-label",
+        colLines[k] ?? [],
+        cx,
+        lanesTop + LANE.labelTop,
+        "middle",
+        m,
+        T,
+      ),
+    });
+  });
   const boxOf = new Map<string, Rect>();
   for (const g of sceneGroups) boxOf.set(g.id, g.rect);
   for (const b of sceneBands) boxOf.set(b.id, b.rect);
+  for (const x of sceneLanes) boxOf.set(x.id, x.rect);
   const factsById = new Map(facts.edges.map((e) => [e.id, e]));
 
   const nodeLabelStyle = T["node-label"];
@@ -625,6 +845,29 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     }
   }
 
+  // What a label moved off a cut route must keep clear of: boxes, lines, other labels and text.
+  const labelAt = new Map<string, Rect>();
+  for (const [id, a] of assembled) if (a.label !== undefined) labelAt.set(id, a.label);
+  const solid: Rect[] = [
+    ...sceneNodes.map((n) => n.rect),
+    ...sceneGroups.flatMap((g) => [g.label.bbox, ...(g.sublabel ? [g.sublabel.bbox] : [])]),
+    ...sceneBands.map((b) => b.label.bbox),
+    ...sceneLanes.map((x) => x.head),
+  ];
+  const clearOf = (id: string) => (r: Rect) => {
+    const pad = ROUTE.labelClear / 2;
+    const wide = { x: r.x - pad, y: r.y - pad, w: r.w + 2 * pad, h: r.h + 2 * pad };
+    if (solid.some((s) => overlaps(wide, s))) return false;
+    for (const [other, l] of labelAt) if (other !== id && overlaps(wide, l)) return false;
+    for (const [other, a] of assembled) {
+      if (other === id) continue;
+      for (let i = 1; i < a.points.length; i++) {
+        if (segmentHits(a.points[i - 1] as Point, a.points[i] as Point, wide)) return false;
+      }
+    }
+    return true;
+  };
+
   const sceneEdges: SceneEdge[] = [];
   for (const e of d.edges) {
     const a = assembled.get(e.id);
@@ -639,7 +882,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (fromBox !== undefined) points = cutRoute(points, fromBox, "start");
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
     if (a.label !== undefined && e.label !== undefined && withText) {
-      const at = a.label;
+      const cutAt = [toBox, fromBox].filter((b): b is Rect => b !== undefined);
+      const at = points === a.points ? a.label : besideRoute(points, a.label, cutAt, clearOf(e.id));
+      labelAt.set(e.id, at);
       if (at.lines > 1) {
         // A wrapped label: its lines centred on each other, its ink box at the slot.
         const lines = m.wrap(e.label, labelStyle, at.maxWidth);
@@ -666,6 +911,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   scene.groups = sceneGroups;
   if (theme !== DEFAULT_THEME) scene.paint = theme.paint;
   if (sceneBands.length > 0) scene.bands = sceneBands;
+  if (sceneLanes.length > 0) scene.lanes = sceneLanes;
   return { scene: roundScene(scene), centre };
 }
 
@@ -725,6 +971,15 @@ function roundScene(s: Scene): Scene {
       id: b.id,
       rect: roundRect(b.rect),
       label: roundText(b.label),
+    }));
+  }
+  if (s.lanes !== undefined) {
+    out.lanes = s.lanes.map((x) => ({
+      id: x.id,
+      run: x.run,
+      rect: roundRect(x.rect),
+      head: roundRect(x.head),
+      label: roundText(x.label),
     }));
   }
   return out;

@@ -15,6 +15,7 @@ export const ENGINE_OWNED: readonly DefectCode[] = [
   "edge-overlap",
   "text-crossing",
   "group-intruder",
+  "lane-stray",
 ];
 
 export function failures(defects: Defect[]): Defect[] {

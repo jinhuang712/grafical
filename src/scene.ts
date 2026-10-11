@@ -26,6 +26,7 @@ export type TextRole =
   | "group-label"
   | "group-sublabel"
   | "layer-label"
+  | "lane-label"
   | "node-label"
   | "node-sublabel"
   | "edge-label";
@@ -76,6 +77,16 @@ export interface SceneBand {
   label: PlacedText;
 }
 
+/** A swimlane (D32): its whole area, the header that holds its label, and the label. */
+export interface SceneLane {
+  id: string;
+  /** Rows: the header is on the left. Columns: on top. */
+  run: "rows" | "columns";
+  rect: Rect;
+  head: Rect;
+  label: PlacedText;
+}
+
 /** One line style in the legend, with a short sample line (D8). */
 export interface SceneLegendItem {
   /** "solid": calls and data reads. "dashed": messages through a queue. */
@@ -122,6 +133,7 @@ export interface Scene {
   groups?: SceneGroup[];
   /** Layers an edge ends at, drawn behind the groups. Absent when there are none. */
   bands?: SceneBand[];
+  lanes?: SceneLane[];
   nodes: SceneNode[];
   edges: SceneEdge[];
 }

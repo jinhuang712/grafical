@@ -245,7 +245,10 @@ export function renderSvg(scene: Scene): string {
   const groupNames = groups.map((g) => g.label.runs[0]?.text ?? g.id).join(", ");
   const nodeWord = scene.nodes.length === 1 ? "node" : "nodes";
   const edgeWord = scene.edges.length === 1 ? "edge" : "edges";
+  const lanes = scene.lanes ?? [];
+  const laneNames = lanes.map((x) => plain(x.label) || x.id).join(", ");
   const desc =
+    (lanes.length > 0 ? `Lanes: ${laneNames}. ` : "") +
     `Groups: ${groupNames || "none"}. ` +
     `${scene.nodes.length} ${nodeWord}, ${scene.edges.length} ${edgeWord}.`;
 
@@ -256,6 +259,16 @@ export function renderSvg(scene: Scene): string {
     `<rect width="${w}" height="${h}" fill="${P.background}"/>`,
   );
 
+  // Lanes lie behind everything else (D32); lanes side by side share a border.
+  const lp = P.lane;
+  const lane = `stroke="${lp.stroke}" stroke-width="${num(lp.strokeWidth)}"`;
+  for (const x of lanes) {
+    out.push(
+      `<rect ${rectAttrs(x.rect)} rx="${num(lp.radius)}" fill="${lp.fill}" ${lane}/>`,
+      `<rect ${rectAttrs(x.head)} rx="${num(lp.radius)}" fill="${lp.headFill}" ${lane}/>`,
+      ...texts(x.label, P.text.laneLabel),
+    );
+  }
   const bp = P.band;
   for (const b of scene.bands ?? []) {
     out.push(
@@ -293,7 +306,14 @@ export function renderSvg(scene: Scene): string {
           cy >= b.rect.y &&
           cy <= b.rect.y + b.rect.h,
       );
-      const behind = inGroup ? P.group.fill : inBand ? P.band.fill : lb.fill;
+      const inLane = lanes.some(
+        (x) =>
+          cx >= x.rect.x &&
+          cx <= x.rect.x + x.rect.w &&
+          cy >= x.rect.y &&
+          cy <= x.rect.y + x.rect.h,
+      );
+      const behind = inGroup ? P.group.fill : inBand ? P.band.fill : inLane ? P.lane.fill : lb.fill;
       out.push(
         `<rect ${rectAttrs(bg)} rx="${num(lb.radius)}" fill="${behind}"/>`,
         ...texts(e.label, P.text.edgeLabel),
