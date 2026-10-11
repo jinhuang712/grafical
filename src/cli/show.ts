@@ -26,6 +26,10 @@ export function showDiagram(d: Diagram): string {
   const lines = [`diagram ${JSON.stringify(d.title)} density=${d.density}${sizing}`];
   if (d.subtitle !== undefined) lines.push(`subtitle ${JSON.stringify(d.subtitle)}`);
   if (d.note !== undefined) lines.push(`note ${JSON.stringify(d.note)}`);
+  for (const line of ["solid", "dashed"] as const) {
+    const text = d.legend?.[line];
+    if (text !== undefined) lines.push(`legend ${line} ${JSON.stringify(text)}`);
+  }
   for (const l of d.layers) {
     const nodes = l.nodes.length > 0 ? l.nodes.map(nodeText).join(" | ") : "(empty)";
     lines.push(`layer ${l.id} ${JSON.stringify(l.label)}: ${nodes}`);
@@ -35,7 +39,10 @@ export function showDiagram(d: Diagram): string {
     const members = d.layers.flatMap((l) =>
       l.nodes.filter((n) => n.group === g.id).map((n) => n.id),
     );
-    lines.push(`group ${g.id} ${JSON.stringify(g.label)}: ${members.join(", ") || "(empty)"}`);
+    const sub = g.sublabel === undefined ? "" : ` sub=${JSON.stringify(g.sublabel)}`;
+    lines.push(
+      `group ${g.id} ${JSON.stringify(g.label)}${sub}: ${members.join(", ") || "(empty)"}`,
+    );
   }
   lines.push(d.edges.length > 0 ? "edges:" : "edges: (none)");
   for (const e of d.edges) lines.push(edgeText(e));

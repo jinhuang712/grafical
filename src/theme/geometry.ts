@@ -107,6 +107,8 @@ export const GROUP = {
   labelInset: 16,
   /** Least space between a box and a node outside it. */
   clear: 16,
+  /** Space between a group's label and its second, quieter part. */
+  sublabelGap: 10,
   /** Least space between two boxes side by side. */
   gap: 24,
   /** Space kept between a group's label and any line that passes it. */

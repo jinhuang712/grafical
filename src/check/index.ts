@@ -59,7 +59,7 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
       const lines = lineCount(t);
       const what = isSub ? "sublabel" : "label";
       const shorten = isSub
-        ? `shorten the ${what} of ${n.id}: remove the node and add it again with a shorter --sublabel`
+        ? `grafical node describe <file> ${n.id} --text <shorter text>`
         : `grafical node rename <file> ${n.id} --label <shorter text>`;
       const bigger = canGrow.has(n.id) ? `, or grafical node resize <file> ${n.id} --size l` : "";
       if (lines > max) {
@@ -186,6 +186,8 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
   }
   for (const g of scene.groups ?? []) {
     targets.push({ id: g.id, what: `the label of group ${g.id}`, text: g.label });
+    if (g.sublabel)
+      targets.push({ id: g.id, what: `the label of group ${g.id}`, text: g.sublabel });
   }
   for (const b of scene.bands ?? []) {
     targets.push({ id: b.id, what: `the label of layer ${b.id}`, text: b.label });
@@ -300,7 +302,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
     "title",
     "title",
     diagram.title,
-    "replace the title with characters the fonts can draw: grafical new <file> --title <text>",
+    "grafical diagram title <file> --text <text without these characters>",
   );
   add(
     "subtitle",
@@ -321,13 +323,27 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
       g.label,
       `grafical group rename <file> ${g.id} --label <text without these characters>`,
     );
+    add(
+      g.id,
+      "group sublabel",
+      g.sublabel,
+      `grafical group describe <file> ${g.id} --text <text without these characters>`,
+    );
+  }
+  for (const line of ["solid", "dashed"] as const) {
+    add(
+      `legend-${line}`,
+      "legend text",
+      diagram.legend?.[line],
+      `grafical diagram legend <file> ${line} --text <text without these characters>`,
+    );
   }
   for (const layer of diagram.layers) {
     add(
       layer.id,
       "layer label",
       layer.label,
-      `change the label of layer ${layer.id} to text without these characters`,
+      `grafical layer rename <file> ${layer.id} --label <text without these characters>`,
     );
     for (const n of layer.nodes) {
       add(
@@ -340,7 +356,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
         n.id,
         "sublabel",
         n.sublabel,
-        `remove ${n.id} and add it again with a --sublabel without these characters`,
+        `grafical node describe <file> ${n.id} --text <text without these characters>`,
       );
     }
   }
@@ -349,7 +365,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
       e.id,
       "edge label",
       e.label,
-      `grafical edge remove <file> ${e.id}, then add it again with a --label without these characters`,
+      `grafical edge relabel <file> ${e.id} --label <text without these characters>`,
     );
   }
 }

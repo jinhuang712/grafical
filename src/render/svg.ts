@@ -228,6 +228,7 @@ function groupShapes(g: SceneGroup): string[] {
       ),
     );
   }
+  if (g.sublabel) out.push(...texts(g.sublabel, PAINT.text.groupLabelMuted));
   return out;
 }
 

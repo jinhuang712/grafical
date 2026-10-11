@@ -1,6 +1,6 @@
 # Features
 
-What grafical does, as commands and operations, with the status of each. "Phase 1 syntax" below is fixed. The rest is illustrative until phase 2 fixes it. Decisions behind these features are in [DESIGN.md](DESIGN.md).
+What grafical does, as commands and operations, with the status of each. "Command-line syntax" below is what is built. Rows marked `stage 1` are planned, and their syntax is fixed when they are built. Decisions behind these features are in [DESIGN.md](DESIGN.md).
 
 | Status | Meaning |
 |---|---|
@@ -13,14 +13,14 @@ What grafical does, as commands and operations, with the status of each. "Phase 
 
 | Command | Does | Status |
 |---|---|---|
-| `grafical new <file> --title <text>` | Create an empty diagram | stage 1 |
-| `grafical <noun> <verb> <file> …` | Apply one operation, such as `grafical node add` | stage 1 |
-| `grafical apply <file> <batch.yaml>` | Apply a list of operations, all or nothing | stage 1 |
-| `grafical show <file>` | Print a compact view of the diagram for agents | stage 1 |
-| `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (D14) | stage 1 |
-| `grafical render <file> [--svg <out>] [--png <out>]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file. `--scale` sets the PNG scale, from 1 to 4 | stage 1 |
+| `grafical new <file> --title <text>` | Create an empty diagram | done |
+| `grafical <noun> <verb> <file> …` | Apply one operation, such as `grafical node add` | done |
+| `grafical apply <file> <batch.yaml>` | Apply a list of operations, all or nothing | done |
+| `grafical show <file>` | Print a compact view of the diagram for agents | done |
+| `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (D14) | done |
+| `grafical render <file> [--svg <out>] [--png <out>]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file. `--scale` sets the PNG scale, from 1 to 4 | done |
 | `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as operations | stage 1 |
-| `grafical guide` | Print the operation reference for agents, within 3k tokens | stage 1 |
+| `grafical guide` | Print the operation reference for agents, within 3k tokens | done |
 | `grafical review <file>` | Open the board on the diagram | stage 2 |
 | `grafical mcp` | Serve the same operations over MCP | later |
 
@@ -34,79 +34,108 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `diagram.title` | Set the title | stage 1 |
-| `diagram.density` | Set spacing: `compact`, `normal` or `airy` | stage 1 |
-| `diagram.sizing` | Set how a node with no size is sized: `auto`, to its text (the default), or `fixed`, always medium (D27) | stage 1 |
-| `diagram.subtitle` | Set or clear one sentence under the title (D26) | stage 1 |
-| `diagram.note` | Set or clear the footnote, such as "Not shown: …" (D26) | stage 1 |
+| `diagram.title` | Set the title | done |
+| `diagram.density` | Set spacing: `compact`, `normal` or `airy` | done |
+| `diagram.sizing` | Set how a node with no size is sized: `auto`, to its text (the default), or `fixed`, always medium (D27) | done |
+| `diagram.subtitle` | Set or clear one sentence under the title (D26) | done |
+| `diagram.note` | Set or clear the footnote, such as "Not shown: …" (D26) | done |
+| `diagram.legend` | Name a line style in the legend, such as "Kafka message" for dashed lines, or go back to the default wording | done |
+| `diagram.tidy` | Reorder every layer's nodes once, together, to reduce crossings (D24) | done |
 
 ### Layers
 
 | Operation | Does | Status |
 |---|---|---|
-| `layer.add` | Add a layer: at the top, at the bottom, or before or after another layer | stage 1 |
-| `layer.rename` | Change a layer's label | stage 1 |
-| `layer.move` | Change a layer's position | stage 1 |
-| `layer.tidy` | Reorder a layer's nodes to reduce edge crossings, once (D24) | stage 1 |
-| `layer.remove` | Remove an empty layer | stage 1 |
+| `layer.add` | Add a layer: at the top, at the bottom, or before or after another layer | done |
+| `layer.rename` | Change a layer's label | done |
+| `layer.move` | Change a layer's position | done |
+| `layer.tidy` | Reorder a layer's nodes to reduce edge crossings, once (D24) | done |
+| `layer.remove` | Remove an empty layer, and the edges that end at it | done |
+| `layer.split` | Move the second half of a layer, or its nodes from one node on, into a new layer below it (D29) | done |
 
 ### Groups
 
 | Operation | Does | Status |
 |---|---|---|
-| `group.add` | Draw a system box around nodes, which may sit in several neighbouring rows (D7) | stage 1 |
-| `group.join`, `group.leave` | Add a node to a group, or take it out | stage 1 |
-| `group.rename` | Change a group's label | stage 1 |
-| `group.remove` | Remove the box and keep its nodes | stage 1 |
+| `group.add` | Draw a system box around nodes, which may sit in several neighbouring rows (D7) | done |
+| `group.join`, `group.leave` | Add a node to a group, or take it out | done |
+| `group.rename` | Change a group's label | done |
+| `group.remove` | Remove the box and keep its nodes. Edges that end at the group go with it | done |
+| `group.describe` | Set or clear a second, quieter part of the group's label, such as "write side" | done |
+| `group.order` | Put a group's members before or after another group's, in every layer the two share | done |
 
 ### Nodes
 
 | Operation | Does | Status |
 |---|---|---|
-| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the fewest crossings (D24) | stage 1 |
-| `node.rename` | Change the label. The ID stays. A node grafical sizes grows or shrinks with its label (D27). A label that still does not fit fails with a suggested fix | stage 1 |
-| `node.describe` | Set or clear the sublabel, such as a port or a topic name | stage 1 |
-| `node.kind` | Change the kind | stage 1 |
-| `node.move` | Move to another layer, group or position | stage 1 |
-| `node.resize` | Set the size step, which fixes the box's width and height. Without a step, grafical sizes the box to its text again (D27) | stage 1 |
-| `node.align` | Place the node directly above or below a node in another layer. Fails if the alignment cannot hold with the order of either layer | stage 1 |
-| `node.emphasize` | Turn the accent on or off | stage 1 |
-| `node.remove` | Remove the node and its edges | stage 1 |
+| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the fewest crossings (D24) | done |
+| `node.rename` | Change the label. The ID stays. A node grafical sizes grows or shrinks with its label (D27). A label that still does not fit fails with a suggested fix | done |
+| `node.describe` | Set or clear the sublabel, such as a port or a topic name | done |
+| `node.kind` | Change the kind | done |
+| `node.move` | Move to another layer, group or position | done |
+| `node.resize` | Set the size step, which fixes the box's width and height. Without a step, grafical sizes the box to its text again (D27) | done |
+| `node.align` | Place the node directly above or below a node in another layer. Fails if the alignment cannot hold with the order of either layer | done |
+| `node.emphasize` | Turn the accent on or off | done |
+| `node.remove` | Remove the node and its edges | done |
+| `node.swap` | Two nodes trade places: layer and slot | done |
+| `node.merge` | Replace nodes with one new node that keeps all their edges, each once. Edges between them go | done |
 
 ### Edges
 
 | Operation | Does | Status |
 |---|---|---|
-| `edge.add` | Connect two ends, with an optional label and kind. An end is a node, a group or a layer (D28) | stage 1 |
-| `edge.relabel` | Change or clear the label | stage 1 |
-| `edge.kind` | Change the kind | stage 1 |
-| `edge.reverse` | Swap the direction. The ID stays | stage 1 |
-| `edge.remove` | Remove the edge | stage 1 |
+| `edge.add` | Connect two ends, with an optional label and kind. An end is a node, a group or a layer (D28) | done |
+| `edge.relabel` | Change or clear the label | done |
+| `edge.kind` | Change the kind | done |
+| `edge.reverse` | Swap the direction. The ID stays | done |
+| `edge.remove` | Remove the edge | done |
+| `edge.retarget` | Move one or both ends of an edge. Its ID, kind and label stay | done |
 
-## Phase 1 syntax
+## Command-line syntax
 
-Phase 1 builds this subset. `<file>` is a diagram file, named `<name>.grafical.yaml` by convention.
+This is the syntax built so far. `<file>` is a diagram file, named `<name>.grafical.yaml` by convention.
 
 ```sh
 grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy]
     [--sizing auto|fixed]
 grafical layer add <file> <id> --label <text> [--before <layer> | --after <layer>]
+grafical layer rename <file> <id> --label <text>
+grafical layer move <file> <id> --first | --last | --before <layer> | --after <layer>
+grafical layer remove <file> <id>
+grafical layer tidy <file> <id>
+grafical layer split <file> <id> <new-id> --label <text> [--from <node>]
 grafical node add <file> <id> --layer <layer> --label <text> [--kind <kind>] [--sublabel <text>]
     [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]
 grafical node rename <file> <id> --label <text>
 grafical node resize <file> <id> [--size s|m|l]
 grafical node move <file> <id> [--layer <layer>] [--first | --last | --before <node> | --after <node>]
 grafical node remove <file> <id>
+grafical node describe <file> <id> [--text <text>]
+grafical node kind <file> <id> <kind>
+grafical node emphasize <file> <id> [--off]
+grafical node align <file> <id> [--to <node>]
+grafical node swap <file> <a> <b>
+grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--kind <kind>]
 grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>]
 grafical edge remove <file> <id>
-grafical group add <file> <id> --label <text> [--nodes a,b,c]
+grafical edge relabel <file> <id> [--label <text>]
+grafical edge kind <file> <id> <kind>
+grafical edge reverse <file> <id>
+grafical edge retarget <file> <id> [--from <end>] [--to <end>]
+grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c]
 grafical group join <file> <group> <node...>
 grafical group leave <file> <node...>
 grafical group rename <file> <id> --label <text>
 grafical group remove <file> <id>
+grafical group describe <file> <id> [--text <text>]
+grafical group order <file> <id> --before <group> | --after <group>
 grafical diagram subtitle <file> [--text <text>]
 grafical diagram note <file> [--text <text>]
 grafical diagram sizing <file> auto|fixed
+grafical diagram title <file> --text <text>
+grafical diagram density <file> compact|normal|airy
+grafical diagram legend <file> solid|dashed [--text <text>]
+grafical diagram tidy <file>
 grafical apply <file> <batch.yaml>
 grafical show <file>
 grafical check <file> [--all]
@@ -118,6 +147,9 @@ grafical guide
 - `node add` without a position lets grafical pick the slot (D24). `node move --layer` without a position does the same.
 - `node add` without `--size` gets a medium box, or a large one when its text does not fit the medium box (D27). `node resize` without `--size` returns a node to that. With `diagram sizing fixed`, a node without a size is always medium.
 - `node remove` also removes the node's edges, and reports their ids.
+- `node merge` puts the new node where the first listed node was, keeps every edge of the merged nodes once, and drops the edges between them. It may reuse a merged node's id. Nodes aligned to a merged node lose the alignment.
+- `layer tidy` and `diagram tidy` reorder once, when asked (D24). They report every node that moved.
+- Clearing: `node describe`, `node align`, `edge relabel`, `group describe` and `diagram legend` without their value clear it.
 - An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group or a layer. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
 - A group's members must sit in neighbouring rows, or the write fails with `group-gap`. `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
 - A write over 16 nodes succeeds with a `too-many-nodes` warning that names merge candidates (D26). Warnings never change the exit code.

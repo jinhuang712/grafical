@@ -11,6 +11,8 @@ import {
   type Density,
   EDGE_KINDS,
   type EdgeKind,
+  LINE_STYLES,
+  type LineStyleName,
   NODE_KINDS,
   type NodeKind,
   SIZE_STEPS,
@@ -54,6 +56,7 @@ export interface GroupAddOp {
   op: "group.add";
   id: string;
   label: string;
+  sublabel?: string;
   nodes?: string[];
 }
 export interface GroupJoinOp {
@@ -125,24 +128,167 @@ export interface EdgeRemoveOp {
   id: string;
 }
 
+export interface DiagramTitleOp {
+  op: "diagram.title";
+  text: string;
+}
+export interface DiagramDensityOp {
+  op: "diagram.density";
+  density: Density;
+}
+/** The legend's text for one line style. Absent text: the default wording. */
+export interface DiagramLegendOp {
+  op: "diagram.legend";
+  line: LineStyleName;
+  text?: string;
+}
+/** Reorders every layer once, to untangle lines (D24). */
+export interface DiagramTidyOp {
+  op: "diagram.tidy";
+}
+export interface LayerRenameOp {
+  op: "layer.rename";
+  id: string;
+  label: string;
+}
+export interface LayerMoveOp {
+  op: "layer.move";
+  id: string;
+  first?: boolean;
+  last?: boolean;
+  before?: string;
+  after?: string;
+}
+export interface LayerRemoveOp {
+  op: "layer.remove";
+  id: string;
+}
+/** Reorders one layer's nodes once, to untangle lines (D24). */
+export interface LayerTidyOp {
+  op: "layer.tidy";
+  id: string;
+}
+/** Moves a layer's nodes from `from` on (or its second half) into a new layer below it (D29). */
+export interface LayerSplitOp {
+  op: "layer.split";
+  id: string;
+  into: string;
+  label: string;
+  from?: string;
+}
+export interface NodeDescribeOp {
+  op: "node.describe";
+  id: string;
+  /** Absent: clear the sublabel. */
+  text?: string;
+}
+export interface NodeKindOp {
+  op: "node.kind";
+  id: string;
+  kind: NodeKind;
+}
+export interface NodeEmphasizeOp {
+  op: "node.emphasize";
+  id: string;
+  /** true: turn the accent off. */
+  off?: boolean;
+}
+export interface NodeAlignOp {
+  op: "node.align";
+  id: string;
+  /** Absent: clear the alignment. */
+  to?: string;
+}
+/** Two nodes trade places: layer and slot. */
+export interface NodeSwapOp {
+  op: "node.swap";
+  a: string;
+  b: string;
+}
+/** Nodes become one new node, at the first one's place, that keeps all their edges. */
+export interface NodeMergeOp {
+  op: "node.merge";
+  nodes: string[];
+  id: string;
+  label: string;
+  sublabel?: string;
+  kind?: NodeKind;
+}
+export interface EdgeRelabelOp {
+  op: "edge.relabel";
+  id: string;
+  /** Absent: clear the label. */
+  label?: string;
+}
+export interface EdgeKindOp {
+  op: "edge.kind";
+  id: string;
+  kind: EdgeKind;
+}
+export interface EdgeReverseOp {
+  op: "edge.reverse";
+  id: string;
+}
+/** Moves one or both ends of an edge; its id, kind and label stay. */
+export interface EdgeRetargetOp {
+  op: "edge.retarget";
+  id: string;
+  from?: string;
+  to?: string;
+}
+export interface GroupDescribeOp {
+  op: "group.describe";
+  id: string;
+  /** Absent: clear the group's second, quieter label. */
+  text?: string;
+}
+/** Puts a group's members before or after another group's, in every layer they share. */
+export interface GroupOrderOp {
+  op: "group.order";
+  id: string;
+  before?: string;
+  after?: string;
+}
+
 export type Op =
   | DiagramNewOp
   | DiagramSizingOp
   | DiagramSubtitleOp
   | DiagramNoteOp
+  | DiagramTitleOp
+  | DiagramDensityOp
+  | DiagramLegendOp
+  | DiagramTidyOp
   | GroupAddOp
   | GroupJoinOp
   | GroupLeaveOp
   | GroupRenameOp
   | GroupRemoveOp
+  | GroupDescribeOp
+  | GroupOrderOp
   | LayerAddOp
+  | LayerRenameOp
+  | LayerMoveOp
+  | LayerRemoveOp
+  | LayerTidyOp
+  | LayerSplitOp
   | NodeAddOp
   | NodeRenameOp
   | NodeResizeOp
   | NodeMoveOp
   | NodeRemoveOp
+  | NodeDescribeOp
+  | NodeKindOp
+  | NodeEmphasizeOp
+  | NodeAlignOp
+  | NodeSwapOp
+  | NodeMergeOp
   | EdgeAddOp
-  | EdgeRemoveOp;
+  | EdgeRemoveOp
+  | EdgeRelabelOp
+  | EdgeKindOp
+  | EdgeReverseOp
+  | EdgeRetargetOp;
 
 export type OpName = Op["op"];
 
@@ -178,6 +324,7 @@ export const groupAddSchema = z.strictObject({
   op: z.literal("group.add"),
   id: nodeId,
   label: text,
+  sublabel: text.optional(),
   nodes: z.array(nodeId).optional(),
 });
 export const groupJoinSchema = z.strictObject({
@@ -237,6 +384,93 @@ export const edgeAddSchema = z.strictObject({
   kind: z.enum(EDGE_KINDS).optional(),
 });
 export const edgeRemoveSchema = z.strictObject({ op: z.literal("edge.remove"), id: edgeId });
+export const diagramTitleSchema = z.strictObject({ op: z.literal("diagram.title"), text });
+export const diagramDensitySchema = z.strictObject({
+  op: z.literal("diagram.density"),
+  density: z.enum(DENSITIES),
+});
+export const diagramLegendSchema = z.strictObject({
+  op: z.literal("diagram.legend"),
+  line: z.enum(LINE_STYLES),
+  text: text.optional(),
+});
+export const diagramTidySchema = z.strictObject({ op: z.literal("diagram.tidy") });
+export const layerRenameSchema = z.strictObject({
+  op: z.literal("layer.rename"),
+  id: nodeId,
+  label: text,
+});
+export const layerMoveSchema = z.strictObject({
+  op: z.literal("layer.move"),
+  id: nodeId,
+  ...position,
+});
+export const layerRemoveSchema = z.strictObject({ op: z.literal("layer.remove"), id: nodeId });
+export const layerTidySchema = z.strictObject({ op: z.literal("layer.tidy"), id: nodeId });
+export const layerSplitSchema = z.strictObject({
+  op: z.literal("layer.split"),
+  id: nodeId,
+  into: nodeId,
+  label: text,
+  from: nodeId.optional(),
+});
+export const nodeDescribeSchema = z.strictObject({
+  op: z.literal("node.describe"),
+  id: nodeId,
+  text: text.optional(),
+});
+export const nodeKindSchema = z.strictObject({
+  op: z.literal("node.kind"),
+  id: nodeId,
+  kind: z.enum(NODE_KINDS),
+});
+export const nodeEmphasizeSchema = z.strictObject({
+  op: z.literal("node.emphasize"),
+  id: nodeId,
+  off: z.boolean().optional(),
+});
+export const nodeAlignSchema = z.strictObject({
+  op: z.literal("node.align"),
+  id: nodeId,
+  to: nodeId.optional(),
+});
+export const nodeSwapSchema = z.strictObject({ op: z.literal("node.swap"), a: nodeId, b: nodeId });
+export const nodeMergeSchema = z.strictObject({
+  op: z.literal("node.merge"),
+  nodes: z.array(nodeId).min(2),
+  id: nodeId,
+  label: text,
+  sublabel: text.optional(),
+  kind: z.enum(NODE_KINDS).optional(),
+});
+export const edgeRelabelSchema = z.strictObject({
+  op: z.literal("edge.relabel"),
+  id: edgeId,
+  label: text.optional(),
+});
+export const edgeKindSchema = z.strictObject({
+  op: z.literal("edge.kind"),
+  id: edgeId,
+  kind: z.enum(EDGE_KINDS),
+});
+export const edgeReverseSchema = z.strictObject({ op: z.literal("edge.reverse"), id: edgeId });
+export const edgeRetargetSchema = z.strictObject({
+  op: z.literal("edge.retarget"),
+  id: edgeId,
+  from: nodeId.optional(),
+  to: nodeId.optional(),
+});
+export const groupDescribeSchema = z.strictObject({
+  op: z.literal("group.describe"),
+  id: nodeId,
+  text: text.optional(),
+});
+export const groupOrderSchema = z.strictObject({
+  op: z.literal("group.order"),
+  id: nodeId,
+  before: nodeId.optional(),
+  after: nodeId.optional(),
+});
 
 /** Parses one operation. A batch item is exactly this. */
 export const opSchema = z.discriminatedUnion("op", [
@@ -257,6 +491,27 @@ export const opSchema = z.discriminatedUnion("op", [
   nodeRemoveSchema,
   edgeAddSchema,
   edgeRemoveSchema,
+  diagramTitleSchema,
+  diagramDensitySchema,
+  diagramLegendSchema,
+  diagramTidySchema,
+  groupDescribeSchema,
+  groupOrderSchema,
+  layerRenameSchema,
+  layerMoveSchema,
+  layerRemoveSchema,
+  layerTidySchema,
+  layerSplitSchema,
+  nodeDescribeSchema,
+  nodeKindSchema,
+  nodeEmphasizeSchema,
+  nodeAlignSchema,
+  nodeSwapSchema,
+  nodeMergeSchema,
+  edgeRelabelSchema,
+  edgeKindSchema,
+  edgeReverseSchema,
+  edgeRetargetSchema,
 ]);
 
 const SCHEMAS: Record<OpName, z.ZodType> = {
@@ -277,6 +532,27 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "node.remove": nodeRemoveSchema,
   "edge.add": edgeAddSchema,
   "edge.remove": edgeRemoveSchema,
+  "diagram.title": diagramTitleSchema,
+  "diagram.density": diagramDensitySchema,
+  "diagram.legend": diagramLegendSchema,
+  "diagram.tidy": diagramTidySchema,
+  "group.describe": groupDescribeSchema,
+  "group.order": groupOrderSchema,
+  "layer.rename": layerRenameSchema,
+  "layer.move": layerMoveSchema,
+  "layer.remove": layerRemoveSchema,
+  "layer.tidy": layerTidySchema,
+  "layer.split": layerSplitSchema,
+  "node.describe": nodeDescribeSchema,
+  "node.kind": nodeKindSchema,
+  "node.emphasize": nodeEmphasizeSchema,
+  "node.align": nodeAlignSchema,
+  "node.swap": nodeSwapSchema,
+  "node.merge": nodeMergeSchema,
+  "edge.relabel": edgeRelabelSchema,
+  "edge.kind": edgeKindSchema,
+  "edge.reverse": edgeReverseSchema,
+  "edge.retarget": edgeRetargetSchema,
 };
 
 export const OP_NAMES = Object.keys(SCHEMAS) as OpName[];

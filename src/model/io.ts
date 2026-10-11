@@ -46,9 +46,19 @@ export function writeDiagram(d: Diagram): string {
   if (d.note !== undefined) out.note = d.note;
   out.density = d.density;
   if (d.sizing === "fixed") out.sizing = "fixed";
+  if (d.legend !== undefined && Object.keys(d.legend).length > 0) {
+    const legend: Record<string, string> = {};
+    if (d.legend.solid !== undefined) legend.solid = d.legend.solid;
+    if (d.legend.dashed !== undefined) legend.dashed = d.legend.dashed;
+    out.legend = legend;
+  }
   out.layers = d.layers.map(layerOut);
   if (d.groups !== undefined && d.groups.length > 0) {
-    out.groups = d.groups.map((g) => ({ id: g.id, label: g.label }));
+    out.groups = d.groups.map((g) =>
+      g.sublabel === undefined
+        ? { id: g.id, label: g.label }
+        : { id: g.id, label: g.label, sublabel: g.sublabel },
+    );
   }
   out.edges = d.edges.map(edgeOut);
   return stringify(out, { lineWidth: 0, indent: 2, indentSeq: true, minContentWidth: 0 });

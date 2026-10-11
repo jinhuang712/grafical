@@ -121,9 +121,14 @@ function build(): Command {
       .argument("<file>")
       .argument("<id>")
       .requiredOption("--label <text>")
+      .option("--sublabel <text>", "a second, quieter part of the label")
       .option("--nodes <ids>", "comma-separated member node ids"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    const raw: Record<string, unknown> = { op: "group.add", id, ...pick(opts, ["label"]) };
+    const raw: Record<string, unknown> = {
+      op: "group.add",
+      id,
+      ...pick(opts, ["label", "sublabel"]),
+    };
     if (typeof opts.nodes === "string") raw.nodes = splitIds(opts.nodes);
     await write(file, raw, opts);
   });
@@ -264,6 +269,229 @@ function build(): Command {
     edge.command("remove").description("remove an edge").argument("<file>").argument("<id>"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.remove", id }, opts);
+  });
+  json(
+    edge
+      .command("relabel")
+      .description("set an edge's label; without --label, clear it")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--label <text>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "edge.relabel", id, ...pick(opts, ["label"]) }, opts);
+  });
+  json(
+    edge
+      .command("kind")
+      .description("change an edge's kind")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("<kind>", "call, async or data"),
+  ).action(async (file: string, id: string, kind: string, opts: Opts) => {
+    await write(file, { op: "edge.kind", id, kind }, opts);
+  });
+  json(
+    edge
+      .command("reverse")
+      .description("swap an edge's direction")
+      .argument("<file>")
+      .argument("<id>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "edge.reverse", id }, opts);
+  });
+  json(
+    edge
+      .command("retarget")
+      .description("move one or both ends of an edge; its id, kind and label stay")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--from <end>", "a node, group or layer")
+      .option("--to <end>", "a node, group or layer"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "edge.retarget", id, ...pick(opts, ["from", "to"]) }, opts);
+  });
+
+  json(
+    node
+      .command("describe")
+      .description("set a node's sublabel; without --text, clear it")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--text <text>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "node.describe", id, ...pick(opts, ["text"]) }, opts);
+  });
+  json(
+    node
+      .command("kind")
+      .description("change a node's kind")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("<kind>", "service, store, queue, external or actor"),
+  ).action(async (file: string, id: string, kind: string, opts: Opts) => {
+    await write(file, { op: "node.kind", id, kind }, opts);
+  });
+  json(
+    node
+      .command("emphasize")
+      .description("turn a node's accent on, or off with --off")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--off"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "node.emphasize", id, ...pick(opts, ["off"]) }, opts);
+  });
+  json(
+    node
+      .command("align")
+      .description("sit directly above or below a node; without --to, clear it")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--to <node>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "node.align", id, ...pick(opts, ["to"]) }, opts);
+  });
+  json(
+    node
+      .command("swap")
+      .description("two nodes trade places")
+      .argument("<file>")
+      .argument("<a>")
+      .argument("<b>"),
+  ).action(async (file: string, a: string, b: string, opts: Opts) => {
+    await write(file, { op: "node.swap", a, b }, opts);
+  });
+  json(
+    node
+      .command("merge")
+      .description("replace nodes with one new node that keeps all their edges")
+      .argument("<file>")
+      .argument("<id>", "the new node's id")
+      .requiredOption("--nodes <ids>", "comma-separated nodes to merge")
+      .requiredOption("--label <text>")
+      .option("--sublabel <text>")
+      .option("--kind <kind>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const raw: Record<string, unknown> = {
+      op: "node.merge",
+      id,
+      ...pick(opts, ["label", "sublabel", "kind"]),
+    };
+    if (typeof opts.nodes === "string") raw.nodes = splitIds(opts.nodes);
+    await write(file, raw, opts);
+  });
+
+  json(
+    layer
+      .command("rename")
+      .description("change a layer's label")
+      .argument("<file>")
+      .argument("<id>")
+      .requiredOption("--label <text>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "layer.rename", id, ...pick(opts, ["label"]) }, opts);
+  });
+  json(
+    layer
+      .command("move")
+      .description("move a layer up or down")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--first")
+      .option("--last")
+      .option("--before <layer>")
+      .option("--after <layer>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "layer.move", id, ...pick(opts, POSITION) }, opts);
+  });
+  json(
+    layer
+      .command("remove")
+      .description("remove an empty layer")
+      .argument("<file>")
+      .argument("<id>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "layer.remove", id }, opts);
+  });
+  json(
+    layer
+      .command("tidy")
+      .description("reorder a layer's nodes once, to untangle lines")
+      .argument("<file>")
+      .argument("<id>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "layer.tidy", id }, opts);
+  });
+  json(
+    layer
+      .command("split")
+      .description("move the second half of a layer, or from --from on, into a new layer below")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("<into>", "the new layer's id")
+      .requiredOption("--label <text>", "the new layer's label")
+      .option("--from <node>", "the first node to move"),
+  ).action(async (file: string, id: string, into: string, opts: Opts) => {
+    await write(file, { op: "layer.split", id, into, ...pick(opts, ["label", "from"]) }, opts);
+  });
+
+  json(
+    group
+      .command("describe")
+      .description("set a group's second, quieter label; without --text, clear it")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--text <text>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "group.describe", id, ...pick(opts, ["text"]) }, opts);
+  });
+  json(
+    group
+      .command("order")
+      .description("put a group's members before or after another group's, in every shared layer")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--before <group>")
+      .option("--after <group>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "group.order", id, ...pick(opts, ["before", "after"]) }, opts);
+  });
+
+  json(
+    diagram
+      .command("title")
+      .description("change the title")
+      .argument("<file>")
+      .requiredOption("--text <text>"),
+  ).action(async (file: string, opts: Opts) => {
+    await write(file, { op: "diagram.title", ...pick(opts, ["text"]) }, opts);
+  });
+  json(
+    diagram
+      .command("density")
+      .description("change the spacing")
+      .argument("<file>")
+      .argument("<density>", "compact, normal or airy"),
+  ).action(async (file: string, density: string, opts: Opts) => {
+    await write(file, { op: "diagram.density", density }, opts);
+  });
+  json(
+    diagram
+      .command("legend")
+      .description("name a line style in the legend; without --text, the default wording")
+      .argument("<file>")
+      .argument("<line>", "solid or dashed")
+      .option("--text <text>"),
+  ).action(async (file: string, line: string, opts: Opts) => {
+    await write(file, { op: "diagram.legend", line, ...pick(opts, ["text"]) }, opts);
+  });
+  json(
+    diagram
+      .command("tidy")
+      .description("reorder every layer once, to untangle lines")
+      .argument("<file>"),
+  ).action(async (file: string, opts: Opts) => {
+    await write(file, { op: "diagram.tidy" }, opts);
   });
 
   json(

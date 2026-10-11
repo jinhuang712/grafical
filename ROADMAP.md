@@ -22,7 +22,7 @@ Phase 0 also sets up the package: TypeScript, Biome, vitest, and CI on macOS and
 
 ### Phase 1: the loop
 
-The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, `edge.add`, `check` and `render`. For the smoke test it also adds `node.rename`, `node.move`, `node.remove` and `edge.remove`, so that changes can be made, and `apply`, `show` and `guide`, so that an agent's cost is measured on the real design. FEATURES.md, "Phase 1 syntax", fixes their syntax. Underneath them:
+The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, `edge.add`, `check` and `render`. For the smoke test it also adds `node.rename`, `node.move`, `node.remove` and `edge.remove`, so that changes can be made, and `apply`, `show` and `guide`, so that an agent's cost is measured on the real design. FEATURES.md, "Command-line syntax", gives their syntax. Underneath them:
 - layout recomputed on every change, with even spreading and gutters that grow in steps (D10);
 - the slot choice for new nodes (D24);
 - the router work listed in D11;

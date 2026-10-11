@@ -254,16 +254,17 @@ export function gutterHeight(rows: number, sp: Spacing): number {
   return h;
 }
 
-/** The legend's text for each line style the diagram uses (D8). */
+/** The legend's text for each line style the diagram uses (D8), in the diagram's wording if it sets one. */
 function legendItems(d: Diagram): { style: "solid" | "dashed"; text: string }[] {
   const kinds = new Set(d.edges.map((e) => e.kind));
   const out: { style: "solid" | "dashed"; text: string }[] = [];
   const call = kinds.has("call");
   const data = kinds.has("data");
   if (call || data) {
-    out.push({ style: "solid", text: call && data ? "call or read" : call ? "call" : "data read" });
+    const plain = call && data ? "call or read" : call ? "call" : "data read";
+    out.push({ style: "solid", text: d.legend?.solid ?? plain });
   }
-  if (kinds.has("async")) out.push({ style: "dashed", text: "message" });
+  if (kinds.has("async")) out.push({ style: "dashed", text: d.legend?.dashed ?? "message" });
   return out;
 }
 
@@ -299,7 +300,18 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     });
   }
   const groupStyle = TYPE_RAMP["group-label"];
-  const groupW = new Map((d.groups ?? []).map((g) => [g.id, m.measure(g.label, groupStyle).width]));
+  const groupSubStyle = TYPE_RAMP["group-sublabel"];
+  const labelW = (g: { label: string }) => m.measure(g.label, groupStyle).width;
+  // A group's label and its quieter second part take one span: lines keep clear of both.
+  const groupW = new Map(
+    (d.groups ?? []).map((g) => [
+      g.id,
+      labelW(g) +
+        (g.sublabel === undefined
+          ? 0
+          : GROUP.sublabelGap + m.measure(g.sublabel, groupSubStyle).width),
+    ]),
+  );
   const sideways = planSideways(d, (id) => labelSizes.get(id)?.w, labelH);
   const placement = placeAcross(d, {
     sideways,
@@ -543,7 +555,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const label = withText
       ? placeLine("group-label", g.label, centre + g.labelX, y0 + GROUP.labelTop, m)
       : empty("group-label", centre + g.labelX, y0 + GROUP.labelTop);
-    return { id: g.id, rect, label, members: g.members };
+    const out: SceneGroup = { id: g.id, rect, label, members: g.members };
+    const sub = d.groups?.find((x) => x.id === g.id)?.sublabel;
+    if (sub !== undefined && withText) {
+      const x = centre + g.labelX + labelW(g) + GROUP.sublabelGap;
+      out.sublabel = placeLine("group-sublabel", sub, x, y0 + GROUP.labelTop, m);
+    }
+    return out;
   });
 
   const sceneBands: SceneBand[] = [...bandRows].map(([i, b]) => {
@@ -694,6 +712,7 @@ function roundScene(s: Scene): Scene {
       rect: roundRect(g.rect),
       label: roundText(g.label),
       members: [...g.members],
+      ...(g.sublabel === undefined ? {} : { sublabel: roundText(g.sublabel) }),
     }));
   }
   if (s.bands !== undefined) {

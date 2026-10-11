@@ -23,6 +23,7 @@ export type TextRole =
   | "note"
   | "legend"
   | "group-label"
+  | "group-sublabel"
   | "layer-label"
   | "node-label"
   | "node-sublabel"
@@ -62,6 +63,8 @@ export interface SceneGroup {
   label: PlacedText;
   /** Ids of the member nodes. */
   members: string[];
+  /** The label's second, quieter part, such as "write side", after the label. */
+  sublabel?: PlacedText;
 }
 
 /** A layer drawn as a band across the content, because an edge ends at it (D28). */

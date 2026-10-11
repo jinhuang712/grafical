@@ -26,23 +26,37 @@ Each write command reads the file, applies the change, lays out, checks, and wri
 
 COMMANDS (every command accepts --json)
 grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy] [--sizing auto|fixed]
-grafical diagram subtitle <file> [--text <text>]     (no --text clears it)
+grafical diagram subtitle <file> [--text <text>]   (no --text clears it)
 grafical diagram note <file> [--text <text>]
 grafical diagram sizing <file> auto|fixed
+grafical diagram title <file> --text <text>; diagram density <file> compact|normal|airy
+grafical diagram legend <file> solid|dashed [--text <text>]   (name a line style, e.g. "Kafka message")
+grafical diagram tidy <file>   (reorder all layers once, to untangle lines)
 grafical layer add <file> <id> --label <text> [--before <layer> | --after <layer>]
+grafical layer rename <file> <id> --label <text>; layer remove <file> <id> (empty only); layer tidy <file> <id>
+grafical layer move <file> <id> --first | --last | --before <layer> | --after <layer>
+grafical layer split <file> <id> <new-id> --label <text> [--from <node>]   (second half, or from <node> on, to a new layer below)
 grafical node add <file> <id> --layer <layer> --label <text> [--kind <kind>] [--sublabel <text>]
     [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]
 grafical node rename <file> <id> --label <text>
 grafical node resize <file> <id> [--size s|m|l]   (no --size: grafical sizes it)
 grafical node move <file> <id> [--layer <layer>] [--first | --last | --before <node> | --after <node>]
 grafical node remove <file> <id>
-grafical group add <file> <id> --label <text> [--nodes a,b,c]
+grafical node describe <file> <id> [--text <text>]   (sublabel; no --text clears it)
+grafical node kind <file> <id> <kind>; node emphasize <file> <id> [--off]; node align <file> <id> [--to <node>]
+grafical node swap <file> <a> <b>
+grafical node merge <file> <new-id> --nodes a,b --label <text> [--sublabel <text>] [--kind <kind>]   (keeps all their edges)
+grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c]
 grafical group join <file> <group> <node...>
 grafical group leave <file> <node...>
 grafical group rename <file> <id> --label <text>
-grafical group remove <file> <id>                    (members stay, ungrouped)
+grafical group remove <file> <id>   (members stay, ungrouped)
+grafical group describe <file> <id> [--text <text>]   (a quieter second label, e.g. "write side")
+grafical group order <file> <id> --before <group> | --after <group>
 grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>]   (from, to: node, group or layer)
 grafical edge remove <file> <id>
+grafical edge relabel <file> <id> [--label <text>]; edge kind <file> <id> <kind>; edge reverse <file> <id>
+grafical edge retarget <file> <id> [--from <end>] [--to <end>]   (id, kind and label stay)
 grafical apply <file> <batch.yaml>
 grafical show <file>
 grafical check <file> [--all]
@@ -71,9 +85,10 @@ A YAML list. Each item has op: <noun>.<verb> and the same fields as the flags, i
 layer.add: id label before after
 node.add: id layer label kind sublabel size first last before after align accent
 node.rename: id label. node.resize: id size. node.move: id layer first last before after. node.remove: id
-group.add: id label nodes (a list). group.join: group nodes (a list). group.leave: nodes (a list). group.rename: id label. group.remove: id
-diagram.subtitle: text. diagram.note: text. Without text, they clear. diagram.sizing: mode (auto or fixed)
+group.add: id label sublabel nodes (a list). group.join: group nodes (a list). group.leave: nodes (a list). group.rename: id label. group.remove: id
+diagram.subtitle: text. diagram.note: text. Without text, they clear. diagram.sizing: mode (auto or fixed).
 edge.add: from to id label kind. edge.remove: id
+Other operations: positional arguments become fields of the same name (node.swap: a b; layer.split: id into label from; node.merge: id nodes label; node.kind: id kind; diagram.legend: line text).
 Add groups after their nodes.
 
 OUTPUT
@@ -97,7 +112,7 @@ Fix the field named, using the suggestion. Codes:
 DEFECTS
 defect <code> [<elements>]: found <what>; expected <what>; fix: <an operation>
 A defect means the change would make the picture wrong, so nothing was written. Two are yours to fix:
-- overflow: a label is too long even for the large box, or for the size you gave. Shorten it with node rename, or node resize --size l.
+- overflow: a label is too long even for the large box, or for the size you gave. Shorten it with node rename or node describe, or node resize --size l.
 - missing-glyph: a character cannot be drawn. Replace it.
 Where lines and boxes go is grafical's job.
 
@@ -116,9 +131,6 @@ Write batch.yaml:
 - op: layer.add
   id: store
   label: Store
-- op: layer.add
-  id: deps
-  label: Dependencies
 - op: node.add
   id: shoppers
   layer: callers
@@ -153,16 +165,6 @@ Write batch.yaml:
   sublabel: orders, parcels
   kind: store
   accent: true
-- op: node.add
-  id: payments
-  layer: deps
-  label: payments-svc
-  kind: external
-- op: node.add
-  id: carriers
-  layer: deps
-  label: carrier APIs
-  kind: external
 - op: group.add
   id: order-desk
   label: order-desk
@@ -193,11 +195,5 @@ Write batch.yaml:
   from: dispatcher
   to: orders-db
   label: persist
-- op: edge.add
-  from: checkout
-  to: payments
-- op: edge.add
-  from: dispatcher
-  to: carriers
 Then: grafical apply orders.grafical.yaml batch.yaml, grafical show orders.grafical.yaml, grafical render orders.grafical.yaml.
 `;

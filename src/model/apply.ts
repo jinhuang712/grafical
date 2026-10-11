@@ -31,6 +31,8 @@ interface State {
   changed: string[];
   /** Nodes that wait for an engine-chosen slot (D24), in operation order. */
   pending: Pending[];
+  /** Layers to reorder once the batch is applied (layer.tidy, diagram.tidy). */
+  tidy: Set<string>;
 }
 
 function touch(s: State, ...ids: string[]) {
@@ -421,8 +423,452 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
   return [];
 }
 
+function unknownEdge(d: Diagram, id: string, i: number, field: string): OpError {
+  return {
+    code: "unknown-edge",
+    index: i,
+    field,
+    found: id,
+    expected: "the id of an existing edge",
+    suggestion: suggestIds(
+      id,
+      d.edges.map((e) => e.id),
+      "edge",
+    ),
+  };
+}
+
+function conflicting(i: number, set: string[]): OpError {
+  return {
+    code: "conflicting-position",
+    index: i,
+    field: set.join(","),
+    found: set.join(", "),
+    expected: "at most one of first, last, before, after",
+    suggestion: "keep one",
+  };
+}
+
+function moveLayer(s: State, op: Extract<Op, { op: "layer.move" }>, i: number): OpError[] {
+  const d = s.d;
+  const from = d.layers.findIndex((l) => l.id === op.id);
+  if (from < 0) return [unknownLayer(d, op.id, i, "id")];
+  const set: string[] = [];
+  if (op.first === true) set.push("first");
+  if (op.last === true) set.push("last");
+  if (op.before !== undefined) set.push("before");
+  if (op.after !== undefined) set.push("after");
+  if (set.length !== 1) {
+    if (set.length > 1) return [conflicting(i, set)];
+    return [
+      {
+        code: "missing-field",
+        index: i,
+        field: "first,last,before,after",
+        found: "(none)",
+        expected: "one of first, last, before, after",
+      },
+    ];
+  }
+  const [layer] = d.layers.splice(from, 1) as [Layer];
+  let at = op.first === true ? 0 : d.layers.length;
+  const ref = op.before ?? op.after;
+  if (ref !== undefined) {
+    if (ref === op.id) {
+      d.layers.splice(from, 0, layer);
+      return [
+        {
+          code: "bad-reference",
+          index: i,
+          field: op.before !== undefined ? "before" : "after",
+          found: ref,
+          expected: "another layer",
+          suggestion: "a layer cannot be placed relative to itself",
+        },
+      ];
+    }
+    const k = d.layers.findIndex((l) => l.id === ref);
+    if (k < 0) {
+      d.layers.splice(from, 0, layer);
+      return [unknownLayer(d, ref, i, op.before !== undefined ? "before" : "after")];
+    }
+    at = op.before !== undefined ? k : k + 1;
+  }
+  d.layers.splice(at, 0, layer);
+  touch(s, op.id);
+  return [];
+}
+
+function removeLayer(s: State, op: Extract<Op, { op: "layer.remove" }>, i: number): OpError[] {
+  const d = s.d;
+  const k = d.layers.findIndex((l) => l.id === op.id);
+  const layer = d.layers[k];
+  if (layer === undefined) return [unknownLayer(d, op.id, i, "id")];
+  if (layer.nodes.length > 0) {
+    return [
+      {
+        code: "layer-not-empty",
+        index: i,
+        field: "id",
+        found: `layer ${op.id} holds ${layer.nodes.map((n) => n.id).join(", ")}`,
+        expected: "an empty layer",
+        suggestion: `node move or node remove its nodes first, or layer.split to reshape it`,
+      },
+    ];
+  }
+  d.layers.splice(k, 1);
+  touch(s, op.id);
+  const gone = d.edges.filter((e) => e.from === op.id || e.to === op.id);
+  d.edges = d.edges.filter((e) => e.from !== op.id && e.to !== op.id);
+  touch(s, ...gone.map((e) => e.id));
+  return [];
+}
+
+function splitLayer(s: State, op: Extract<Op, { op: "layer.split" }>, i: number): OpError[] {
+  const d = s.d;
+  const k = d.layers.findIndex((l) => l.id === op.id);
+  const layer = d.layers[k];
+  if (layer === undefined) return [unknownLayer(d, op.id, i, "id")];
+  const dup = dupError(d, op.into, i);
+  if (dup) return [{ ...dup, field: "into" }];
+  if (layer.nodes.length < 2) {
+    return [
+      {
+        code: "layer-too-small",
+        index: i,
+        field: "id",
+        found: `layer ${op.id} holds ${layer.nodes.length} node${layer.nodes.length === 1 ? "" : "s"}`,
+        expected: "a layer of two or more nodes",
+        suggestion: "add nodes first, or layer.add a new layer and node move into it",
+      },
+    ];
+  }
+  let at = Math.ceil(layer.nodes.length / 2);
+  if (op.from !== undefined) {
+    at = layer.nodes.findIndex((n) => n.id === op.from);
+    if (at < 0) {
+      const elsewhere = findNode(d, op.from);
+      if (!elsewhere) return [unknownNode(d, op.from, i, "from")];
+      return [
+        {
+          code: "not-in-layer",
+          index: i,
+          field: "from",
+          found: `${op.from} (layer ${elsewhere.layer.id})`,
+          expected: `a node in layer ${op.id}`,
+          suggestion: `nodes in ${op.id}: ${layer.nodes.map((n) => n.id).join(", ")}`,
+        },
+      ];
+    }
+    if (at === 0) {
+      return [
+        {
+          code: "bad-reference",
+          index: i,
+          field: "from",
+          found: op.from,
+          expected: `a node of ${op.id} other than its first, so that both layers keep a node`,
+          suggestion: `from: ${layer.nodes[1]?.id}`,
+        },
+      ];
+    }
+  }
+  const moved = layer.nodes.splice(at);
+  d.layers.splice(k + 1, 0, { id: op.into, label: op.label, nodes: moved });
+  touch(s, op.into, ...moved.map((n) => n.id));
+  return [];
+}
+
+function swapNodes(s: State, op: Extract<Op, { op: "node.swap" }>, i: number): OpError[] {
+  const d = s.d;
+  const a = findNode(d, op.a);
+  const b = findNode(d, op.b);
+  const errors: OpError[] = [];
+  if (!a) errors.push(unknownNode(d, op.a, i, "a"));
+  if (!b) errors.push(unknownNode(d, op.b, i, "b"));
+  if (errors.length > 0 || !a || !b) return errors;
+  if (op.a === op.b) {
+    return [
+      {
+        code: "bad-reference",
+        index: i,
+        field: "b",
+        found: op.b,
+        expected: "another node",
+        suggestion: "a node cannot swap with itself",
+      },
+    ];
+  }
+  a.layer.nodes[a.index] = b.node;
+  b.layer.nodes[b.index] = a.node;
+  s.pending = s.pending.filter((p) => p.node !== op.a && p.node !== op.b);
+  touch(s, op.a, op.b);
+  return [];
+}
+
+function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number): OpError[] {
+  const d = s.d;
+  const errors = missingNodes(d, op.nodes, i);
+  if (new Set(op.nodes).size !== op.nodes.length) {
+    errors.push({
+      code: "duplicate-id",
+      index: i,
+      field: "nodes",
+      found: op.nodes.join(", "),
+      expected: "each node once",
+      suggestion: "list each node to merge once",
+    });
+  }
+  if (!op.nodes.includes(op.id)) {
+    const dup = dupError(d, op.id, i);
+    if (dup) errors.push(dup);
+  }
+  if (errors.length > 0) return errors;
+  const parts = op.nodes.map((id) => findNode(d, id)?.node as DiagramNode);
+  const first = findNode(d, op.nodes[0] as string);
+  if (!first) return [];
+  const node: DiagramNode = { id: op.id, label: op.label, kind: op.kind ?? first.node.kind };
+  if (op.sublabel !== undefined) node.sublabel = op.sublabel;
+  if (parts.some((p) => p.accent === true)) node.accent = true;
+  if (first.node.group !== undefined) node.group = first.node.group;
+  first.layer.nodes[first.index] = node;
+  const merged = new Set(op.nodes);
+  for (const id of op.nodes.slice(1)) {
+    const at = findNode(d, id);
+    if (at) at.layer.nodes.splice(at.index, 1);
+  }
+  s.pending = s.pending.filter((p) => !merged.has(p.node));
+  touch(s, op.id, ...op.nodes);
+  // Alignments to a merged node are dropped, and the nodes reported.
+  for (const l of d.layers) {
+    for (const n of l.nodes) {
+      if (n.align !== undefined && merged.has(n.align)) {
+        delete n.align;
+        touch(s, n.id);
+      }
+    }
+  }
+  // The new node keeps every edge of the merged ones. Edges between them go, and
+  // edges that become the same (ends, kind and label) are kept once.
+  const seen = new Set<string>();
+  const kept: Edge[] = [];
+  for (const e of d.edges) {
+    const from = merged.has(e.from) ? op.id : e.from;
+    const to = merged.has(e.to) ? op.id : e.to;
+    if (from === op.id && to === op.id && (merged.has(e.from) || merged.has(e.to))) {
+      touch(s, e.id);
+      continue;
+    }
+    const key = `${from}\u0000${to}\u0000${e.kind}\u0000${e.label ?? ""}`;
+    if (seen.has(key)) {
+      touch(s, e.id);
+      continue;
+    }
+    seen.add(key);
+    if (from !== e.from || to !== e.to) {
+      touch(s, e.id);
+      kept.push({ ...e, from, to });
+    } else kept.push(e);
+  }
+  d.edges = kept;
+  return [];
+}
+
+function orderGroup(s: State, op: Extract<Op, { op: "group.order" }>, i: number): OpError[] {
+  const d = s.d;
+  const groups = d.groups ?? [];
+  if (!groups.some((g) => g.id === op.id)) return [unknownGroup(d, op.id, i, "id")];
+  const set: string[] = [];
+  if (op.before !== undefined) set.push("before");
+  if (op.after !== undefined) set.push("after");
+  if (set.length !== 1) {
+    if (set.length > 1) return [{ ...conflicting(i, set), expected: "one of before, after" }];
+    return [
+      {
+        code: "missing-field",
+        index: i,
+        field: "before,after",
+        found: "(none)",
+        expected: "one of before, after",
+      },
+    ];
+  }
+  const other = (op.before ?? op.after) as string;
+  const field = op.before !== undefined ? "before" : "after";
+  if (!groups.some((g) => g.id === other)) return [unknownGroup(d, other, i, field)];
+  let shared = false;
+  for (const l of d.layers) {
+    const mine = l.nodes.filter((n) => n.group === op.id);
+    if (mine.length === 0 || !l.nodes.some((n) => n.group === other)) continue;
+    shared = true;
+    const rest = l.nodes.filter((n) => n.group !== op.id);
+    const theirs = rest.map((n, k) => (n.group === other ? k : -1)).filter((k) => k >= 0);
+    const at =
+      op.before !== undefined ? (theirs[0] as number) : (theirs[theirs.length - 1] as number) + 1;
+    const next = [...rest.slice(0, at), ...mine, ...rest.slice(at)];
+    if (next.some((n, k) => n !== l.nodes[k])) touch(s, ...mine.map((n) => n.id));
+    l.nodes = next;
+  }
+  if (!shared) {
+    return [
+      {
+        code: "no-shared-layer",
+        index: i,
+        field,
+        found: `${op.id} and ${other} have no layer in common`,
+        expected: "two groups with members in at least one same layer",
+        suggestion: `node move the members of ${op.id} instead`,
+      },
+    ];
+  }
+  return [];
+}
+
+/** The newer operations: diagram settings, layers, node and edge edits, group order. */
+function editStep(s: State, op: Op, i: number): OpError[] | undefined {
+  const d = s.d;
+  switch (op.op) {
+    case "diagram.title":
+      d.title = op.text;
+      touch(s, "title");
+      return [];
+    case "diagram.density":
+      d.density = op.density;
+      touch(s, "density");
+      return [];
+    case "diagram.legend": {
+      const legend = { ...(d.legend ?? {}) };
+      if (op.text === undefined) delete legend[op.line];
+      else legend[op.line] = op.text;
+      if (Object.keys(legend).length > 0) d.legend = legend;
+      else delete d.legend;
+      touch(s, "legend");
+      return [];
+    }
+    case "diagram.tidy":
+      for (const l of d.layers) s.tidy.add(l.id);
+      return [];
+    case "layer.rename": {
+      const layer = d.layers.find((l) => l.id === op.id);
+      if (!layer) return [unknownLayer(d, op.id, i, "id")];
+      layer.label = op.label;
+      touch(s, op.id);
+      return [];
+    }
+    case "layer.move":
+      return moveLayer(s, op, i);
+    case "layer.remove":
+      return removeLayer(s, op, i);
+    case "layer.tidy":
+      if (!d.layers.some((l) => l.id === op.id)) return [unknownLayer(d, op.id, i, "id")];
+      s.tidy.add(op.id);
+      return [];
+    case "layer.split":
+      return splitLayer(s, op, i);
+    case "node.describe":
+    case "node.kind":
+    case "node.emphasize":
+    case "node.align": {
+      const at = findNode(d, op.id);
+      if (!at) return [unknownNode(d, op.id, i, "id")];
+      const n = at.node;
+      if (op.op === "node.describe") {
+        if (op.text === undefined) delete n.sublabel;
+        else n.sublabel = op.text;
+      } else if (op.op === "node.kind") n.kind = op.kind;
+      else if (op.op === "node.emphasize") {
+        if (op.off === true) delete n.accent;
+        else if (n.accent !== true) {
+          const count = d.layers.reduce((c, l) => c + l.nodes.filter((x) => x.accent).length, 0);
+          if (count >= MAX_ACCENTS) {
+            return [
+              {
+                code: "too-many-accents",
+                index: i,
+                field: "id",
+                found: `${count + 1} accented nodes`,
+                expected: `at most ${MAX_ACCENTS}`,
+                suggestion: "node emphasize <id> --off on another node first",
+              },
+            ];
+          }
+          n.accent = true;
+        }
+      } else if (op.to === undefined) delete n.align;
+      else {
+        const e = checkAlign(d, at.layer.id, op.to, i);
+        if (e) return [{ ...e, field: "to" }];
+        n.align = op.to;
+      }
+      touch(s, op.id);
+      return [];
+    }
+    case "node.swap":
+      return swapNodes(s, op, i);
+    case "node.merge":
+      return mergeNodes(s, op, i);
+    case "edge.relabel":
+    case "edge.kind":
+    case "edge.reverse":
+    case "edge.retarget": {
+      const e = d.edges.find((x) => x.id === op.id);
+      if (!e) return [unknownEdge(d, op.id, i, "id")];
+      if (op.op === "edge.relabel") {
+        if (op.label === undefined) delete e.label;
+        else e.label = op.label;
+      } else if (op.op === "edge.kind") e.kind = op.kind;
+      else if (op.op === "edge.reverse") [e.from, e.to] = [e.to, e.from];
+      else {
+        if (op.from === undefined && op.to === undefined) {
+          return [
+            {
+              code: "missing-field",
+              index: i,
+              field: "from,to",
+              found: "(none)",
+              expected: "from, to or both",
+            },
+          ];
+        }
+        const errors: OpError[] = [];
+        for (const field of ["from", "to"] as const) {
+          const end = op[field];
+          if (end === undefined || endKind(d, end) !== undefined) continue;
+          errors.push({
+            code: "unknown-node",
+            index: i,
+            field,
+            found: end,
+            expected: "the id of an existing node, group or layer",
+            suggestion: suggestIds(end, endIds(d), "id"),
+          });
+        }
+        if (errors.length > 0) return errors;
+        if (op.from !== undefined) e.from = op.from;
+        if (op.to !== undefined) e.to = op.to;
+      }
+      touch(s, op.id);
+      return [];
+    }
+    case "group.describe": {
+      const g = (d.groups ?? []).find((x) => x.id === op.id);
+      if (!g) return [unknownGroup(d, op.id, i, "id")];
+      if (op.text === undefined) delete g.sublabel;
+      else g.sublabel = op.text;
+      touch(s, op.id);
+      return [];
+    }
+    case "group.order":
+      return orderGroup(s, op, i);
+    default:
+      return undefined;
+  }
+}
+
 function step(s: State, op: Op, i: number): OpError[] {
   const d = s.d;
+  const edited = editStep(s, op, i);
+  if (edited !== undefined) return edited;
   switch (op.op) {
     case "diagram.new":
       return [
@@ -519,6 +965,9 @@ function step(s: State, op: Op, i: number): OpError[] {
       touch(s, op.id);
       return [];
     }
+    default:
+      // Every other operation is handled by editStep above.
+      return [];
   }
 }
 
@@ -556,6 +1005,20 @@ function placePending(s: State, m: Measurer) {
   if (ids.length >= 2) s.d = layoutModule.orderTogether(s.d, ids, m);
 }
 
+/** layer.tidy and diagram.tidy: the named layers reordered once, together (D24). */
+function tidyLayers(s: State, m: Measurer) {
+  if (s.tidy.size === 0) return;
+  const ids = s.d.layers.filter((l) => s.tidy.has(l.id)).flatMap((l) => l.nodes.map((n) => n.id));
+  const before = new Map(s.d.layers.flatMap((l) => l.nodes.map((n, k) => [n.id, k] as const)));
+  s.d = layoutModule.orderTogether(s.d, ids, m);
+  for (const l of s.d.layers) {
+    l.nodes.forEach((n, k) => {
+      if (before.get(n.id) !== k) touch(s, n.id);
+    });
+  }
+  s.tidy.clear();
+}
+
 /**
  * `diagram` is null only for `diagram.new`, which must be the single first
  * operation. Nothing is changed in the input. D24: nodes added or moved
@@ -582,13 +1045,14 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
     start = newDiagram(first);
     from = 1;
   } else start = structuredClone(diagram);
-  const s: State = { d: start, changed: [], pending: [] };
+  const s: State = { d: start, changed: [], pending: [], tidy: new Set() };
   for (let i = from; i < ops.length; i++) {
     const op = ops[i] as Op;
     const errors = step(s, op, i);
     if (errors.length > 0) return { errors };
   }
   placePending(s, m);
+  tidyLayers(s, m);
   const last = Math.max(0, ops.length - 1);
   const broken = checkIntegrity(s.d, last);
   if (broken.length > 0) return { errors: broken };

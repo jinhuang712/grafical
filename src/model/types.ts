@@ -15,6 +15,10 @@ export type SizeStep = (typeof SIZE_STEPS)[number];
 export const DENSITIES = ["compact", "normal", "airy"] as const;
 export type Density = (typeof DENSITIES)[number];
 
+/** The two line styles an edge is drawn in (D8): call and data are solid, async dashed. */
+export const LINE_STYLES = ["solid", "dashed"] as const;
+export type LineStyleName = (typeof LINE_STYLES)[number];
+
 /** How the engine sizes a node that has no size (D27). */
 export const SIZINGS = ["auto", "fixed"] as const;
 export type Sizing = (typeof SIZINGS)[number];
@@ -39,6 +43,8 @@ export interface DiagramNode {
 export interface Group {
   id: string;
   label: string;
+  /** A second, quieter part of the label, such as "write side". */
+  sublabel?: string;
 }
 
 export interface Layer {
@@ -67,6 +73,8 @@ export interface Diagram {
   density: Density;
   /** "fixed": a node with no size is a medium box, whatever its text. Absent: auto (D27). */
   sizing?: "fixed";
+  /** The legend's wording per line style, where it differs from the default. */
+  legend?: Partial<Record<LineStyleName, string>>;
   /** Ordered top to bottom. */
   layers: Layer[];
   /** The systems, in creation order. Absent or empty: no groups. Members name their group (D7). */

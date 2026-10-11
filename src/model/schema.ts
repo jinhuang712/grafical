@@ -41,7 +41,7 @@ const nodeSchema = z.strictObject({
   group: nodeId.optional(),
 });
 
-const groupSchema = z.strictObject({ id: nodeId, label: text });
+const groupSchema = z.strictObject({ id: nodeId, label: text, sublabel: text.optional() });
 
 const layerSchema = z.strictObject({
   id: nodeId,
@@ -64,6 +64,7 @@ export const diagramSchema = z.strictObject({
   note: text.optional(),
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
   sizing: z.enum(SIZINGS).optional(),
+  legend: z.strictObject({ solid: text.optional(), dashed: text.optional() }).optional(),
   layers: z.array(layerSchema).default([]),
   groups: z.array(groupSchema).default([]),
   edges: z.array(edgeSchema).default([]),
@@ -92,9 +93,21 @@ function build(p: Parsed): Diagram {
   });
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
   if (p.sizing === "fixed") d.sizing = "fixed";
+  if (p.legend !== undefined) {
+    const legend: NonNullable<Diagram["legend"]> = {};
+    if (p.legend.solid !== undefined) legend.solid = p.legend.solid;
+    if (p.legend.dashed !== undefined) legend.dashed = p.legend.dashed;
+    if (Object.keys(legend).length > 0) d.legend = legend;
+  }
   if (p.subtitle !== undefined) d.subtitle = p.subtitle;
   if (p.note !== undefined) d.note = p.note;
-  if (p.groups.length > 0) d.groups = p.groups.map((g) => ({ id: g.id, label: g.label }));
+  if (p.groups.length > 0) {
+    d.groups = p.groups.map((g) =>
+      g.sublabel === undefined
+        ? { id: g.id, label: g.label }
+        : { id: g.id, label: g.label, sublabel: g.sublabel },
+    );
+  }
   return d;
 }
 
