@@ -51,7 +51,7 @@ Decision, as the expectation set it: the engine's side is the next work.
 - **Unnamed fact changes (benchmark 4, restated):** `grafical diff` between consecutive steps shows that every grafical change step changed only facts its own operations named: 0 unnamed changes. Twice the agent also moved a box to fit a new edge, by an operation of its own.
 - **Model gap:** an Opus draft cost $0.26 with grafical and $0.31 with no tool. The scores are the owner's.
 - **Scale:** all 27 drafts made a picture, and grafical's 9 have no mechanical defect at 10, 25 or 50 components. Haiku merged hard: one draft of the 50-component brief has 16 boxes.
-- **Intent:** 10 drawings wait for the owner's accept or reject.
+- **Intent (benchmark 10): met.** The owner accepted 9 of the 10 loose-prompt drawings as they stood (target: at least 7). The one rejected, password reset, "the redis db kinda broke the flow": the line from the mailer to the email provider skips the store row, and Redis sits in its column, so the line walks around it. Keeping that column free would have widened the grid, which the column grid never does (D10).
 
 ### The owner's look at the new features
 
