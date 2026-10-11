@@ -31,14 +31,24 @@ export function addNode(d: Diagram, layerId: string, node: DiagramNode, m: Measu
   return { diagram: placeBySlot(d, layerId, node, m), named: { nodes: [node.id], edges: [] } };
 }
 
+/** Removes the node and its edges, and drops alignments to it, as the model does. */
 export function removeNode(d: Diagram, id: string): Applied {
   const gone = d.edges.filter((e) => e.from === id || e.to === id).map((e) => e.id);
+  const unaligned = d.layers.flatMap((l) => l.nodes.filter((n) => n.align === id).map((n) => n.id));
   return {
     diagram: {
-      ...withLayers(d, (nodes) => nodes.filter((n) => n.id !== id)),
+      ...withLayers(d, (nodes) =>
+        nodes
+          .filter((n) => n.id !== id)
+          .map((n) => {
+            if (n.align !== id) return n;
+            const { align: _, ...rest } = n;
+            return rest;
+          }),
+      ),
       edges: d.edges.filter((e) => !gone.includes(e.id)),
     },
-    named: { nodes: [id], edges: gone },
+    named: { nodes: [id, ...unaligned], edges: gone },
   };
 }
 

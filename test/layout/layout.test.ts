@@ -332,32 +332,32 @@ describe("slot choice (D24)", () => {
 });
 
 describe("alignment", () => {
-  it("an aligned node sits under its target, and its neighbours keep their slots", () => {
-    const framed = layoutFramed(tiny, m);
-    const scene = framed.scene;
-    const db = scene.nodes.find((x) => x.id === "db");
-    const api = scene.nodes.find((x) => x.id === "api");
-    if (db === undefined || api === undefined) throw new Error("fixture");
-    expect(db.rect.x + db.rect.w / 2).toBe(api.rect.x + api.rect.w / 2);
-    const plain = layoutFramed(
-      {
-        ...tiny,
-        layers: tiny.layers.map((l) => ({
-          ...l,
-          nodes: l.nodes.map(({ align: _, ...rest }) => rest),
-        })),
-      },
-      m,
-    );
-    // Relative to the centre line, the aligned node's neighbour has not moved.
-    const queue = (f: typeof framed) => {
-      const r = f.scene.nodes.find((x) => x.id === "queue")?.rect;
-      return r === undefined ? undefined : { ...r, x: r.x - f.centre };
-    };
-    expect(queue(framed)).toEqual(queue(plain));
+  const plain = (d: Diagram): Diagram => ({
+    ...d,
+    layers: d.layers.map((l) => ({ ...l, nodes: l.nodes.map(({ align: _, ...rest }) => rest) })),
+  });
+  /** A node's rect, relative to the centre line. */
+  const at = (f: ReturnType<typeof layoutFramed>, id: string) => {
+    const r = f.scene.nodes.find((x) => x.id === id)?.rect;
+    if (r === undefined) throw new Error(`no node ${id}`);
+    return { ...r, x: r.x - f.centre };
+  };
+
+  it("an aligned node sits under its target, and its row slides with it as one block", () => {
+    const aligned = layoutFramed(tiny, m);
+    const db = at(aligned, "db");
+    const api = at(aligned, "api");
+    expect(db.x + db.w / 2).toBe(api.x + api.w / 2);
+    // Every node of the row moved by the same amount, so its even spacing holds.
+    const before = layoutFramed(plain(tiny), m);
+    const slide = db.x - at(before, "db").x;
+    expect(slide).not.toBe(0);
+    expect(at(aligned, "queue").x - at(before, "queue").x).toBe(slide);
+    // The other layers did not move.
+    for (const id of ["web", "api", "worker"]) expect(at(aligned, id)).toEqual(at(before, id));
   });
 
-  it("an alignment that cannot hold with the order is reported", () => {
+  it("a second alignment in one row that needs another slide is reported", () => {
     const d: Diagram = {
       ...tiny,
       layers: tiny.layers.map((l) =>
@@ -365,26 +365,79 @@ describe("alignment", () => {
           ? {
               ...l,
               nodes: [
-                n("queue", "order events", "queue", "s"),
-                n("db", "orders db", "store", "l", { align: "worker" }),
+                n("db", "orders db", "store", "l", { align: "api" }),
+                n("queue", "order events", "queue", "s", { align: "web" }),
               ],
             }
-          : l.id === "services"
-            ? {
-                ...l,
-                nodes: [
-                  n("worker", "orders-worker", "service", "m"),
-                  n("api", "orders-api", "service", "m"),
-                ],
-              }
-            : l,
+          : l,
       ),
     };
-    expect(validateAlignments(d).map((p) => p.code)).toEqual(["alignment-blocked"]);
-    // The layout still runs, and leaves the node in its own slot.
-    expect(mechanical(defects(layout(d, m)))).toEqual([]);
+    const problems = validateAlignments(d);
+    expect(problems.map((p) => `${p.code} ${p.node}`)).toEqual(["alignment-conflict queue"]);
+    expect(problems[0]?.suggestion).toContain("remove the alignment of queue");
+    // The first alignment in row order holds, and the layout still runs.
+    const f = layoutFramed(d, m);
+    const db = at(f, "db");
+    const api = at(f, "api");
+    expect(db.x + db.w / 2).toBe(api.x + api.w / 2);
+    expect(mechanical(defects(f.scene))).toEqual([]);
   });
 
+  it("two alignments in one row that need the same slide both hold", () => {
+    const d: Diagram = {
+      ...tiny,
+      layers: tiny.layers.map((l) =>
+        l.id === "storage"
+          ? {
+              ...l,
+              nodes: [
+                n("db", "orders db", "store", "l", { align: "api" }),
+                n("queue", "order events", "queue", "s", { align: "worker" }),
+              ],
+            }
+          : l,
+      ),
+    };
+    expect(validateAlignments(d)).toEqual([]);
+  });
+
+  it("a row slides when the target of its alignment moves, and only then (D10)", () => {
+    const report = (op: Applied) =>
+      d10(layoutFramed(tiny, m), layoutFramed(op.diagram, m), tiny, op.diagram, op.named);
+    const before = layoutFramed(tiny, m);
+    // A node joins api's layer: api moves, and the storage row slides with it.
+    const joined = addNode(tiny, "services", n("cache", "cache", "store", "s"), m);
+    expect(report(joined).violations).toEqual([]);
+    const after = layoutFramed(joined.diagram, m);
+    const slide = at(after, "db").x - at(before, "db").x;
+    expect(slide).not.toBe(0);
+    expect(at(after, "queue").x - at(before, "queue").x).toBe(slide);
+    // A node joins the callers: api stays, and so does the storage row.
+    const other = addNode(tiny, "callers", n("cli", "cli", "actor", "s"), m);
+    expect(report(other).violations).toEqual([]);
+    const still = layoutFramed(other.diagram, m);
+    for (const id of ["db", "queue"]) expect(at(still, id)).toEqual(at(before, id));
+  });
+
+  it("layers that would follow each other are reported", () => {
+    const d: Diagram = {
+      ...tiny,
+      layers: [
+        {
+          id: "l1",
+          label: "L1",
+          nodes: [n("p", "p", "service", "m", { align: "q" }), n("s", "s", "service", "s")],
+        },
+        {
+          id: "l2",
+          label: "L2",
+          nodes: [n("q", "q", "service", "m"), n("r", "r", "service", "m", { align: "s" })],
+        },
+      ],
+      edges: [],
+    };
+    expect(validateAlignments(d).map((p) => `${p.code} ${p.node}`)).toEqual(["alignment-cycle r"]);
+  });
   it("reports unknown targets, the same layer, itself and cycles", () => {
     const d: Diagram = {
       ...tiny,

@@ -1,14 +1,16 @@
 // Alignment (DESIGN.md D6, D10): how `node.align` combines with even spreading.
 //
-// Every layer is first spread evenly and centred from its own contents alone. An
-// aligned node then slides sideways, alone, until its centre sits on its target's
-// centre. Its neighbours keep their slots. So a change in one layer moves another
-// layer's nodes only where they are aligned to a node that moved (D10).
+// Every layer is first spread evenly and centred from its own contents alone. A
+// layer with an aligned node then slides sideways as one block, keeping its even
+// spacing, until that node sits directly under or over its target. So a layer
+// moves sideways only when its own contents change, or when one of its nodes is
+// aligned to a node that moved (D10), and its order always holds.
 //
-// The alignment holds while the aligned node keeps at least `minGap` to both of its
-// neighbours, in the order of its layer. Otherwise it cannot hold with that order,
-// the layout leaves the node in its own slot, and the problem is reported so that
-// the operation that caused it fails.
+// One block takes one shift. The first alignment of a layer, in row order, decides
+// it; a later alignment in the same layer holds only if it needs the same shift.
+// Otherwise it cannot hold, and the problem is reported so that the operation
+// that caused it fails. A layer follows the layer its deciding target lies in, so
+// alignments that make two layers follow each other cannot all hold either.
 
 import type { PLayer, PNode } from "./place.ts";
 
@@ -17,7 +19,7 @@ export type AlignmentCode =
   | "same-layer"
   | "self-alignment"
   | "alignment-cycle"
-  | "alignment-blocked";
+  | "alignment-conflict";
 
 export interface AlignmentProblem {
   code: AlignmentCode;
@@ -30,11 +32,9 @@ export interface AlignmentProblem {
   suggestion: string;
 }
 
-export function resolveAlignments(
-  layers: PLayer[],
-  nodes: Map<string, PNode>,
-  minGap: number,
-): AlignmentProblem[] {
+const EPS = 1e-6;
+
+export function resolveAlignments(layers: PLayer[], nodes: Map<string, PNode>): AlignmentProblem[] {
   const problems: AlignmentProblem[] = [];
   const all = layers.flatMap((l) => l.nodes);
   const active = new Map<string, PNode>();
@@ -74,7 +74,7 @@ export function resolveAlignments(
     }
   }
 
-  // Chains are followed; a cycle cannot be resolved, so every node on it is reported.
+  // Nodes aligned with each other in a ring: none of them can hold.
   for (const n of all) {
     const path: string[] = [];
     let cur: string | undefined = n.id;
@@ -99,48 +99,67 @@ export function resolveAlignments(
     }
   }
 
-  for (;;) {
-    const memo = new Map<string, number>();
-    const xOf = (n: PNode): number => {
-      const known = memo.get(n.id);
-      if (known !== undefined) return known;
+  // Layer shifts, top layer first. A layer follows the target of its first
+  // alignment whose target layer is not already waiting on it.
+  const shift = new Map<number, number>();
+  const busy = new Set<number>();
+  const decider = new Map<number, PNode>();
+  const skipped = new Set<string>();
+  const centre = (n: PNode, s: number) => n.natural + s + n.w / 2;
+  const resolve = (li: number): number | undefined => {
+    const known = shift.get(li);
+    if (known !== undefined) return known;
+    if (busy.has(li)) return undefined;
+    busy.add(li);
+    let s = 0;
+    for (const n of layers[li]?.nodes ?? []) {
       const target = active.get(n.id);
-      const x = target === undefined ? n.natural : xOf(target) + target.w / 2 - n.w / 2;
-      memo.set(n.id, x);
-      return x;
-    };
-    for (const n of all) n.x = xOf(n);
-
-    const blocked: { n: PNode; other: PNode; gap: number }[] = [];
-    for (const layer of layers) {
-      for (let k = 1; k < layer.nodes.length; k++) {
-        const p = layer.nodes[k - 1];
-        const q = layer.nodes[k];
-        if (p === undefined || q === undefined) continue;
-        const gap = q.x - (p.x + p.w);
-        if (gap >= minGap) continue;
-        if (active.has(p.id)) blocked.push({ n: p, other: q, gap });
-        if (active.has(q.id)) blocked.push({ n: q, other: p, gap });
-      }
-    }
-    if (blocked.length === 0) break;
-    for (const b of blocked) {
-      const target = active.get(b.n.id);
       if (target === undefined) continue;
-      const shift = b.n.x - b.n.natural;
-      const layerId = layers[b.n.layer]?.id ?? "";
+      const ts = resolve(target.layer);
+      if (ts === undefined) {
+        skipped.add(n.id);
+        continue;
+      }
+      s = centre(target, ts) - centre(n, 0);
+      decider.set(li, n);
+      break;
+    }
+    busy.delete(li);
+    shift.set(li, s);
+    return s;
+  };
+  for (const l of layers) resolve(l.index);
+  for (const n of all) n.x = n.natural + (shift.get(n.layer) ?? 0);
+
+  // Every alignment that does not hold, with why.
+  for (const n of all) {
+    const target = active.get(n.id);
+    if (target === undefined) continue;
+    const off = n.x + n.w / 2 - (target.x + target.w / 2);
+    if (Math.abs(off) <= EPS) continue;
+    const layerId = layers[n.layer]?.id ?? "";
+    const other = decider.get(n.layer);
+    const otherTarget = other === undefined ? undefined : active.get(other.id);
+    const where = `${round(Math.abs(off))} px ${off < 0 ? "left" : "right"} of ${target.id}`;
+    if (other !== undefined && otherTarget !== undefined && !skipped.has(n.id)) {
       problems.push({
-        code: "alignment-blocked",
-        node: b.n.id,
+        code: "alignment-conflict",
+        node: n.id,
         target: target.id,
-        found:
-          b.gap < 0
-            ? `${b.n.id} would have to pass ${b.other.id} to sit ${verb(b.n, target)} ${target.id}`
-            : `${b.n.id} would sit ${round(b.gap)} px from ${b.other.id}, ${round(Math.abs(shift))} px ${shift < 0 ? "left" : "right"} of its slot`,
-        expected: `at least ${minGap} px between ${b.n.id} and its neighbours, in the order of layer ${layerId}`,
-        suggestion: `remove the alignment of ${b.n.id}, or move ${b.n.id} to the slot of layer ${layerId} that lies ${verb(b.n, target)} ${target.id}`,
+        found: `layer ${layerId} already slides to put ${other.id} ${verb(other, otherTarget)} ${otherTarget.id}, which leaves ${n.id} ${where}`,
+        expected: `alignments in layer ${layerId} that need the same slide; the first in the layer's order wins`,
+        suggestion: `remove the alignment of ${n.id}, or of ${other.id}`,
       });
-      active.delete(b.n.id);
+    } else {
+      const targetLayer = layers[target.layer]?.id ?? "";
+      problems.push({
+        code: "alignment-cycle",
+        node: n.id,
+        target: target.id,
+        found: `layer ${targetLayer} already follows layer ${layerId} through another alignment, which leaves ${n.id} ${where}`,
+        expected: "alignments that do not make two layers follow each other",
+        suggestion: `remove the alignment of ${n.id}`,
+      });
     }
   }
   return problems;
