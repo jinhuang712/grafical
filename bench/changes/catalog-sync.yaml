@@ -1,0 +1,46 @@
+# The fixed script of 8 change requests for E2 (EXPERIMENTS.md), about the
+# fictional catalog-sync system in bench/briefs/catalog-sync.md.
+# `phase1: true` marks the four types the phase 1 smoke test sends.
+# One flat list; each item has id, type, phase1 and request.
+# The requests name things from the brief. If a run's draft left one out,
+# the judges record that the request could not be done as written.
+
+- id: add-node
+  type: add a node between two others
+  phase1: true
+  request: Add a node called "Write buffer" between catalog-sync and MongoDB, so that catalog-sync reaches MongoDB through it.
+
+- id: move-node
+  type: move a node to another layer
+  phase1: true
+  request: Move Redis into the same layer as MongoDB.
+
+- id: rename-node
+  type: rename a node
+  phase1: true
+  request: Rename catalog-relay to catalog-router.
+
+- id: remove-node
+  type: remove a node
+  phase1: true
+  request: Remove auth-svc from the diagram, with its connections.
+
+- id: add-edge
+  type: add an edge
+  phase1: false
+  request: Add an edge from catalog-sync to campaign-svc, labelled "notify".
+
+- id: reverse-edge
+  type: reverse an edge
+  phase1: false
+  request: Reverse the direction of the edge between catalog-relay and Kafka.
+
+- id: group-nodes
+  type: group neighbouring nodes
+  phase1: false
+  request: Group inventory-svc, pricing-svc and merchant-portal in one box labelled "Upstream publishers".
+
+- id: compact
+  type: make the diagram more compact
+  phase1: false
+  request: Make the diagram more compact, without removing anything.
