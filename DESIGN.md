@@ -140,15 +140,32 @@ Rejected: ELK for routing. ELK layered computes its own placement, and according
 
 ### D12 Text is measured from bundled fonts
 
-grafical ships its own fonts: Inter for Latin text and a Simplified Chinese subset of Noto Sans SC, both under the SIL Open Font License. Text width comes from those font files, never from the system. Labels wrap at spaces, hyphens, underscores and slashes in Latin text, and between characters in Chinese text. A label that still does not fit its box is a defect. Its fix is a larger size step or a shorter label.
+grafical ships its own fonts, both under the SIL Open Font License, in Regular (400) and SemiBold (600):
+- Inter 4.1 for Latin text;
+- Noto Sans SC 2.004 for Chinese text, subset to the Table of General Standard Chinese Characters (8,105 characters) plus ASCII and common punctuation, and pinned to static weights from the variable font.
 
-Rejected: system fonts, because they differ between machines, and the same file would give a different picture. Measuring in a browser, because grafical runs without one.
+Each character is drawn from Inter if Inter has it, and from Noto Sans SC otherwise. `harfbuzzjs` shapes and measures the text from these files, never from the system. Labels wrap at spaces, hyphens, underscores and slashes in Latin text, and between characters in Chinese text. A label that still does not fit its box is a defect. Its fix is a larger size step or a shorter label.
+
+The phase 0 text spike measured 160 labels at 12 and 14 px. Widths from `harfbuzzjs` matched the widths resvg draws within 0.0001 px. Evidence: `spikes/text/REPORT.md` on branch `spike/text-measurement`.
+
+Before the first release, the font build must rewrite the subsets' name tables, which still say "Thin", and check the OFL reserved font name "Source".
+
+Rejected:
+- System fonts, because they differ between machines, and the same file would give a different picture.
+- Measuring in a browser, because grafical runs without one.
+- `fontkit`. It was just as accurate, but it is about 10 times slower and has had one npm release in two years. `harfbuzzjs` uses the same shaping engine that resvg ports.
+- The GB 2312 subset (6,763 characters). It is the older standard. The 8,105-character subset costs about 516 KB more per weight.
 
 ### D13 grafical writes the SVG, and resvg rasterizes it
 
 The engine writes the SVG itself, with a fixed element and attribute order. `@resvg/resvg-js` turns it into a PNG using the same bundled fonts. No browser takes part.
 
-Rejected: X6 for stage 1 output. Running it outside a browser is unproven, and it would make X6 a hard dependency before the board needs it. A headless browser, because it is slow and large.
+The writer splits each label into runs that use one font, and writes one `<text>` element per run, at x positions from its own measurements. resvg-js 2.6.2 does not choose a font per character: given a font stack, it draws the whole label from Noto Sans SC as soon as Inter lacks one of its characters. The phase 0 text spike measured errors of up to 15.67 px from this.
+
+Rejected:
+- One `<text>` element with a font stack, for the reason above.
+- X6 for stage 1 output. Running it outside a browser is unproven, and it would make X6 a hard dependency before the board needs it.
+- A headless browser, because it is slow and large.
 
 ### D14 The checker runs on every write, and a defect fails the command
 
@@ -167,7 +184,9 @@ Rejected: warnings, because a picture with a known defect looks like success. Ch
 
 Under one version of grafical, the same file gives the same SVG bytes and the same PNG pixels on any machine.
 
-The file is YAML with a fixed layout. Mappings have sorted keys. Layers, the nodes in a layer, and edges are ordered lists, so inserting a node changes one line, not an index on every later node. The SVG has a fixed order and no timestamps. Fonts are bundled. CI renders the fixtures on macOS and Linux and compares them.
+The file is YAML with a fixed layout. Mappings have sorted keys. Layers, the nodes in a layer, and edges are ordered lists, so inserting a node changes one line, not an index on every later node. The SVG has a fixed order and no timestamps, and its numbers have fixed precision. Fonts are bundled, and resvg loads no system fonts. CI renders the fixtures on macOS and Linux and compares them.
+
+On 2026-10-11 the phase 0 text spike rendered a mixed Chinese and Latin scene on macOS arm64 and Linux x64. The SVG bytes, the PNG pixels and even the PNG bytes were identical, in CI run 38114286868. The promise stays at pixels, because that is the safer one.
 
 Rejected: anything that depends on the host, such as system fonts, locale, time or unordered collections. Numeric order indexes, because one insertion rewrites every later index and makes git diffs noisy.
 
@@ -216,7 +235,8 @@ grafical is MIT-licensed. Every dependency must allow use in an MIT project. Lic
 | `zod` | MIT |
 | `yaml` | ISC |
 | `libavoid-js`, if D11 chooses it | LGPL-2.1-or-later, from its npm page |
-| `harfbuzzjs` or `fontkit` | Unverified: the registry timed out |
+| `harfbuzzjs` | MIT |
+| `subset-font`, used only to build the font subsets | BSD-3-Clause |
 | Inter, Noto Sans SC | SIL Open Font License |
 | `elkjs` | EPL-2.0 OR GPL-3.0-or-later. Not used, see D11 |
 
@@ -237,7 +257,8 @@ Rejected: no version field, because a file could then not be told apart from an 
 | `zod` | Operation schemas, validation and error details |
 | `yaml` | Reading and writing the diagram file |
 | `@resvg/resvg-js` | PNG output |
-| `harfbuzzjs` or `fontkit` | Text measurement, chosen in phase 0 |
+| `harfbuzzjs` | Text shaping and measurement |
+| `subset-font` | Building the bundled font subsets, at development time only |
 | vitest | Tests |
 | Biome | Lint and format |
 
@@ -246,8 +267,6 @@ Rejected: a CLI framework with plugins, because grafical's command set is small 
 ## Not yet decided
 
 - **Router:** our own router through the gaps, or `libavoid-js`. Phase 0 decides (D11).
-- **Text library:** `harfbuzzjs` or `fontkit`. Phase 0 decides (D12).
-- **Chinese subset:** which character set the Noto Sans SC subset covers. Candidates are GB 2312 (6,763 characters) and the Table of General Standard Chinese Characters (8,105 characters).
 - **Wide layers:** what happens when a layer is wider than the maximum diagram width. One option is a defect that tells the agent to split the layer. The other is wrapping the layer into rows, which moves nodes the operation did not name.
 - **Columns and swimlanes:** groups that span layers, such as a write side and a read side.
 - **Centred layers:** whether layers may be centred, and how D10 would count the shift.
