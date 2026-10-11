@@ -12,6 +12,7 @@ What each document holds is listed in [README.md](README.md). Each fact lives in
 | `PROPOSAL.md` | The problem, the bets or the prior art changes |
 | `PHILOSOPHY.md` | Only by the owner's deliberate decision |
 | `GOALS.md` | A target is met, missed or recalibrated. Only the owner changes the MVP bar |
+| `EXPERIMENTS.md` | A hypothesis, metric, experiment, harness rule or schedule changes |
 | `DESIGN.md` | A decision is made, reversed, or found to be still open |
 | `FEATURES.md` | A feature is added, changes status or is dropped, or a vocabulary list changes |
 | `ROADMAP.md` | A phase starts, ends or changes scope |
@@ -42,7 +43,7 @@ This repository is public. Names, hosts, topics, databases and architecture of r
 | `pnpm typecheck` | Type-check with `tsc --noEmit` | available |
 | `pnpm lint` | Lint and format check with Biome | available |
 | `pnpm test` | Run vitest. Passes while no tests exist | available |
-| `pnpm bench` | Run the benchmark suite | phase 3 |
+| `pnpm bench` | Run the benchmark harness (EXPERIMENTS.md) | phase 1 |
 
 A command added to `package.json` gets a row here in the same change.
 

@@ -22,13 +22,16 @@ Phase 0 also sets up the package: TypeScript, Biome, vitest, and CI on macOS and
 
 ### Phase 1: the loop
 
-The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, `edge.add`, `check` and `render`. Underneath them:
+The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, `edge.add`, `check` and `render`, plus `node.rename`, `node.move` and `node.remove` so that the smoke test can make changes. Underneath them:
 - layout recomputed on every change, with even spreading and gutters that grow in steps (D10);
 - the slot choice for new nodes (D24);
 - the router work listed in D11;
-- how alignment combines with even spreading (DESIGN.md, "Not yet decided").
+- how alignment combines with even spreading (DESIGN.md, "Not yet decided");
+- a minimal benchmark harness (`pnpm bench`), as described in [EXPERIMENTS.md](EXPERIMENTS.md).
 
-Exit check: an agent builds the public brief `bench/briefs/catalog-sync.md` with these operations alone, and the PNG has zero defects.
+Exit check:
+1. An agent builds the public brief `bench/briefs/catalog-sync.md` with these operations alone, and the PNG has zero defects.
+2. The smoke test in EXPERIMENTS.md has run, and its results are recorded. The smoke test informs phase 2. It has no pass mark, except that a result below a kill threshold in GOALS.md stops the project for a decision.
 
 ### Phase 2: the vocabulary and stability
 
@@ -38,9 +41,9 @@ Exit check: benchmarks 4, 7 and 11 meet their targets. These three need no agent
 
 ### Phase 3: benchmark and release
 
-Build the benchmark harness (`pnpm bench`), then run the full suite against the other arms, with at least three runs per arm.
+Extend the benchmark harness to every arm and experiment, then run E1 to E4 from EXPERIMENTS.md, with at least three runs per cell.
 
-Exit check: benchmarks 1, 2, 3, 5, 6, 8, 9 and 10 meet their targets. A recorded decision may recalibrate any target except the MVP bar in goal 1. Then release 0.1.0 on npm.
+Exit check: benchmarks 1, 2, 3, 5, 6, 8, 9, 10, 12, 13 and 14 meet their targets. A recorded decision may recalibrate any target except the MVP bar in goal 1. Then release 0.1.0 on npm.
 
 ## Stage 2: the board
 

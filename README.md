@@ -52,6 +52,7 @@ grafical node rename arch.grafical.yaml kafka --label "Kafka topics"
 | [GOALS.md](GOALS.md) | Goals, non-goals, benchmarks and their targets |
 | [DESIGN.md](DESIGN.md) | Numbered design decisions and what was rejected |
 | [FEATURES.md](FEATURES.md) | Commands and operations, with status |
+| [EXPERIMENTS.md](EXPERIMENTS.md) | Hypotheses, metrics, experiments, the harness and the rules for a result |
 | [ROADMAP.md](ROADMAP.md) | Stages, phases and exit checks |
 | [AGENTS.md](AGENTS.md) | How agents develop in this repository |
 | [GITFLOW.md](GITFLOW.md) | Git conventions |
