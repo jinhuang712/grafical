@@ -22,7 +22,11 @@ What each document holds is listed in [README.md](README.md). Each fact lives in
 
 Commits up to and including `f9af06e` (2026-09-11) contain an earlier design that was abandoned. Do not read, restore or quote those files as a source.
 
-The published history was rewritten on 2026-09-26 to remove a company name. An older clone may still hold the unrewritten commits. Never push, merge or force-push that history. Base new work on `origin/main`.
+The published history was rewritten on 2026-09-26 to remove a company name, and again on 2026-10-11 to remove internal service names. An older clone may still hold the unrewritten commits. Never push, merge or force-push that history. Base new work on `origin/main`.
+
+## Nothing internal enters this repository
+
+This repository is public. Names, hosts, topics, databases and architecture of real company systems never go into a file or a commit message. Benchmarks on real systems use private briefs kept outside the repository (GOALS.md, "How the benchmarks run"). Fixtures and examples use fictional systems.
 
 ## Environment
 
@@ -63,7 +67,7 @@ A command added to `package.json` gets a row here in the same change.
 - SVG output is compared byte for byte, as text snapshots.
 - PNG output is compared as decoded pixels, not as compressed bytes. D15 promises the same pixels, not the same PNG bytes.
 - Stability tests apply one operation and assert that nothing outside DESIGN.md D10's list changed position, size or route.
-- Fixtures live in `fixtures/`. Benchmark briefs live in `bench/briefs/`.
+- Fixtures live in `fixtures/`. Public benchmark briefs live in `bench/briefs/`.
 
 ## Decisions and scope
 

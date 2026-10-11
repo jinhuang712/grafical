@@ -12,7 +12,7 @@ Each spike answers one question, and the answer is recorded in [DESIGN.md](DESIG
 
 | Question | Answered when |
 |---|---|
-| Which router: our own router through the gaps, or `libavoid-js`? (D11) | One router meets all four conditions in D11 on the first benchmark brief |
+| Which router: our own router through the gaps, or `libavoid-js`? (D11) | One router meets all four conditions in D11 on the public brief `bench/briefs/catalog-sync.md` |
 | Which text library, `harfbuzzjs` or `fontkit`, measures the bundled fonts correctly? (D12) | Measured widths match the widths resvg draws within 1 px, for mixed Chinese and English labels |
 | Is the output deterministic? (D15) | The same file gives the same SVG bytes and the same PNG pixels on macOS and Linux |
 | Which Chinese character set does the font subset cover? (D12) | Chosen, with the subset's file size recorded |
@@ -24,7 +24,7 @@ Phase 0 also sets up the package: TypeScript, Biome, vitest, and CI on macOS and
 
 The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, `edge.add`, `check` and `render`.
 
-Exit check: an agent builds the first benchmark brief with these operations alone, and the PNG has zero defects.
+Exit check: an agent builds the public brief `bench/briefs/catalog-sync.md` with these operations alone, and the PNG has zero defects.
 
 ### Phase 2: the vocabulary and stability
 

@@ -4,7 +4,7 @@
 
 ## Goals for stage 1
 
-1. **The MVP bar.** Haiku, using only the command line, draws the first benchmark brief well enough to score at least 42 of 50 in blind judging, with zero mechanical defects. 42 is what the `diagram-design` skill scored with Opus and Sonnet on 2026-10-10.
+1. **The MVP bar.** Haiku, using only the command line, draws the private reference brief well enough to score at least 42 of 50 in blind judging, with zero mechanical defects. 42 is what the `diagram-design` skill scored with Opus and Sonnet on that brief on 2026-10-10.
 2. A change costs one batch: it takes seconds, uses few tokens, and moves nothing beyond what DESIGN.md D10 allows.
 3. No output ever contains a mechanical defect.
 4. The diagram file is the whole truth: the same file gives the same picture, and changes can be reviewed in git.
@@ -42,7 +42,9 @@ Stage 2 adds a benchmark for the time a person needs to make an adjustment. Its 
 
 ## How the benchmarks run
 
-- **Briefs:** each benchmark uses fixed fact briefs. The first brief covers the two services from the 2026-10-10 test.
+- **Briefs:** each benchmark uses fixed fact briefs. There are two kinds:
+  - Public briefs live in `bench/briefs/`. They describe fictional systems and drive fixtures, tests and CI. The first is [`catalog-sync.md`](bench/briefs/catalog-sync.md).
+  - Private briefs describe real systems and never enter this repository. The private reference brief is the one from the 2026-10-10 test. It is used only to check the MVP bar, so the 42 of 50 baseline compares like with like.
 - **Arms:** four tools, each on Haiku, Sonnet and Opus at medium effort:
   - a raw model with no tool;
   - the `diagram-design` skill;
