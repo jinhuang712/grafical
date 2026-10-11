@@ -385,7 +385,7 @@ Rejected:
 
 A good diagram leaves things out, and only the agent can decide what. grafical helps in three ways:
 - **Budget.** `grafical check` warns when a diagram has more than 16 nodes, and suggests merging nodes that share a group and all their edges. The warning does not block.
-- **Coaching.** `grafical guide` tells agents to merge what a reader does not need apart, such as several topics into one node, and to keep a diagram to one story.
+- **Coaching.** `grafical guide` tells agents to merge what a reader does not need apart, such as several topics into one node, and to keep a diagram to one story. It also says to merge only nodes with the same edges, because a merged box claims every edge of every member, and never to wrap one node in a group of its own name. Both were added on 2026-10-11, after the phase 1b judges found merged boxes that drew calls the brief does not have.
 - **Honesty.** A diagram may carry a subtitle, one sentence under the title, and a footnote naming what it leaves out ("Not shown: …"). Both are facts in the file, set by operations.
 
 Rejected:

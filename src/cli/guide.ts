@@ -6,8 +6,10 @@ export const GUIDE = `grafical: build architecture diagrams by running commands.
 
 HOW TO DRAW A GOOD DIAGRAM (read this first)
 - One story per diagram. Aim for 12 to 16 nodes. A diagram of 30 boxes is not a diagram; it is a dump. More than 16 nodes gives a warning that names merges.
-- Group nodes into systems. A group is one box around the nodes that belong to one service or team, such as "catalog-sync". Its members may sit in neighbouring rows. Put each node in a group unless it is a caller or an outside dependency.
+- Group nodes into systems. A group is one box around the nodes that belong to one service or team, such as "catalog-sync". Its members may sit in neighbouring rows. Put each node in a group unless it is a caller or an outside dependency. A group needs two or more nodes: never wrap one node in a group of its own name.
 - Merge what a reader does not need apart: six topics become one node "upstream topics" with sublabel "6 broker topics"; five callers become one actor "API callers" with sublabel "storefront, promotions"; ten pipelines become one node.
+- Merge only nodes with the same edges. A merged box claims every edge of every member: merge geo-svc, which only A calls, with i18n-svc, which B calls too, and the picture says B calls geo-svc.
+- Draw each flow to its end. A retry topic needs its edge back to where messages are re-sent, or leave it out.
 - Put detail in the sublabel (port, tier, topic names, store name), not in extra boxes. Keep labels to 1 to 3 words and sublabels short.
 - Rows run top to bottom: callers, entry points, the system's inside, shared store, outside dependencies. Put the shared store between or below the systems that use it, so both reach it with short lines.
 - Connect neighbouring rows. Avoid edges that skip rows; add a node or reorder rows instead.
