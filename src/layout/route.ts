@@ -206,7 +206,7 @@ export function routeAcross(
     if (pl !== undefined) plans.push(pl);
   }
   assignBuses(plans);
-  chooseGaps(plans, gapsByLayer);
+  chooseGaps(plans, gapsByLayer, extra.forbidTop);
   assignGapTracks(plans);
   assignPorts(plans, extra.forbidTop);
 
@@ -479,7 +479,11 @@ function corridors(between: number[], gapsByLayer: Gap[][]): [number, number][] 
  * closest to its way. Edges choose in id order. The outer gaps are never full, so
  * every path finds one.
  */
-function chooseGaps(plans: Plan[], gapsByLayer: Gap[][]): void {
+function chooseGaps(
+  plans: Plan[],
+  gapsByLayer: Gap[][],
+  forbidTop: Map<number, [number, number][]>,
+): void {
   const load = new Map<string, Set<string>>();
   const take = (pl: Plan, gap: Gap) => {
     const key = trackKey(pl, [...pl.gaps, gap]);
@@ -502,7 +506,10 @@ function chooseGaps(plans: Plan[], gapsByLayer: Gap[][]): void {
     // two bends at most instead of four (D25 rule 2).
     const reach = (n: PNode, lo: number, hi: number) =>
       hi >= n.x + ROUTE.portInset && lo <= n.x + n.w - ROUTE.portInset;
+    // The line goes on into the lower end's top side, past any group label there.
+    const lower = forbidTop.get(Math.max(pl.u.layer, pl.v.layer)) ?? [];
     const spans = corridors(pl.between, gapsByLayer)
+      .flatMap(([lo, hi]) => freeParts(lo, hi, lower))
       .map(([lo, hi]) => ({
         lo,
         hi,
