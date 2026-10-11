@@ -11,7 +11,7 @@
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { buildGallery, SITE } from "./gallery.ts";
 import { runJudging } from "./judge.ts";
 import { loadChanges, prepareChainDir, RUNS, runChain, runStep } from "./run.ts";
@@ -106,6 +106,7 @@ function main(argv: string[]): void {
     }
     case "summary": {
       const out = writeSummary(round);
+      mkdirSync(dirname(out.path), { recursive: true });
       writeFileSync(out.path, out.text);
       console.log(`wrote ${out.path}`);
       return;
