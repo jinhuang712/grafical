@@ -6,16 +6,21 @@ import { describe, expect, it } from "vitest";
 import type { StepRecord } from "../../bench/run.ts";
 import {
   ALLOWED_TOOLS,
+  ARMS,
+  chainName,
   chainSteps,
   claudeArgs,
   draftPrompt,
   loadChanges,
+  loadIntents,
+  MMDC_HOME,
   parseChanges,
   parseCheckAll,
   prepareChainDir,
   REPO,
 } from "../../bench/run.ts";
 import { planSmoke } from "../../bench/smoke.ts";
+import { PARTS, partCommands, planPart } from "../../bench/stage1.ts";
 import {
   buildChainTable,
   buildNetTable,
@@ -54,17 +59,22 @@ describe("claude arguments", () => {
 });
 
 describe("arms and prompts", () => {
-  it("the two arms' prompts differ only in the tool line", () => {
-    const g = draftPrompt("grafical").split("\n");
+  it("the arms' prompts differ only in the tool line", () => {
     const r = draftPrompt("raw").split("\n");
-    expect(g).toHaveLength(r.length);
-    const differing = g.filter((line, i) => line !== r[i]);
-    expect(differing).toHaveLength(1);
-    expect(differing[0]).toContain("grafical guide");
+    for (const [arm, tool] of [
+      ["grafical", "grafical guide"],
+      ["mermaid", "mmdc"],
+    ] as const) {
+      const a = draftPrompt(arm).split("\n");
+      expect(a).toHaveLength(r.length);
+      const differing = a.filter((line, i) => line !== r[i]);
+      expect(differing).toHaveLength(1);
+      expect(differing[0]).toContain(tool);
+    }
   });
 
-  it("gives both arms the same tools, with full Bash", () => {
-    expect(ALLOWED_TOOLS.grafical).toEqual(ALLOWED_TOOLS.raw);
+  it("gives every arm the same tools, with full Bash", () => {
+    for (const arm of ARMS) expect(ALLOWED_TOOLS[arm]).toEqual(ALLOWED_TOOLS.raw);
     expect(ALLOWED_TOOLS.grafical).toContain("Bash");
     expect(ALLOWED_TOOLS.grafical.some((t) => t.startsWith("Bash("))).toBe(false);
   });
@@ -81,6 +91,57 @@ describe("arms and prompts", () => {
     prepareChainDir(r, "raw");
     expect(existsSync(join(r, "bin"))).toBe(false);
     expect(() => prepareChainDir(r, "raw")).toThrow(/exists/);
+  });
+
+  it("gives a task its own brief, a loose prompt none, and the Mermaid arm an mmdc wrapper", () => {
+    const root = mkdtempSync(join(tmpdir(), "bench-"));
+    const s = join(root, "s");
+    prepareChainDir(s, "raw", { id: "scale-10", brief: "scale-10.md" });
+    expect(readFileSync(join(s, "brief.md"), "utf8")).toContain("notify");
+    const i = join(root, "i");
+    const intent = loadIntents()[0];
+    prepareChainDir(i, "grafical", intent);
+    expect(existsSync(join(i, "brief.md"))).toBe(false);
+    expect(chainSteps("grafical", [], intent)[0]?.prompt).toContain(intent?.request ?? "?");
+    expect(chainName("raw", "haiku", 2, intent)).toBe(`${intent?.id}.raw-haiku-r2`);
+    if (existsSync(join(MMDC_HOME, "node_modules", ".bin", "mmdc"))) {
+      const m = join(root, "m");
+      prepareChainDir(m, "mermaid");
+      expect(readFileSync(join(m, "bin", "mmdc"), "utf8")).toContain("puppeteer.json");
+    }
+  });
+
+  it("lists 10 loose prompts for E3, each about three sentences", () => {
+    const intents = loadIntents();
+    expect(intents).toHaveLength(10);
+    for (const t of intents) {
+      const sentences = (t.request ?? "").split(/[.!?](\s|$)/).filter((x) => x.trim().length > 3);
+      expect(sentences.length).toBeGreaterThanOrEqual(2);
+      expect(sentences.length).toBeLessThanOrEqual(4);
+    }
+  });
+});
+
+describe("stage 1 plan", () => {
+  it("has the parts and sizes the owner approved", () => {
+    const sizes = Object.fromEntries(PARTS.map((p) => [p, partCommands(planPart(p)).length]));
+    expect(sizes).toEqual({ e1e2: 81, opus: 6, scale: 27, intent: 10, mvp: 3 });
+    expect(planPart("mvp").runs).not.toContain(REPO);
+  });
+
+  it("gives every model the same prompt, word for word", () => {
+    const prompts = (part: "e1e2" | "opus") =>
+      new Map(
+        partCommands(planPart(part))
+          .filter((c) => c.step === "e1")
+          .map((c) => [c.chain.split("-")[0], c.argv[1]]),
+      );
+    const haiku = prompts("e1e2");
+    const opus = prompts("opus");
+    for (const [arm, prompt] of opus) {
+      expect(prompt).toBe(haiku.get(arm));
+      expect(prompt).not.toMatch(/haiku|opus|sonnet/i);
+    }
   });
 });
 

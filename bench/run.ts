@@ -1,9 +1,10 @@
 // Runs one chain of headless Claude Code calls: an E1 draft, then E2 change
 // requests that resume the same session (EXPERIMENTS.md, "Harness").
 //
-// A chain is (arm, model, run number). Its directory holds the brief, the
+// A chain is (task, arm, model, run number). Its directory holds the brief, the
 // tool and every step's files:
-//   bench/runs/<round>/<arm>-<model>-r<n>/steps/<step>/{transcript.jsonl,metrics.json,diagram.png}
+//   bench/runs/<round>/[<task>.]<arm>-<model>-r<n>/steps/<step>/{transcript.jsonl,metrics.json,diagram.png}
+// The task prefix is left out for the public catalog-sync brief, the E1 and E2 task.
 
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -15,11 +16,31 @@ import {
   readFileSync,
   writeFileSync,
 } from "node:fs";
+import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 import { computeMetrics, type Metrics, parseTranscript, type StepKind } from "./metrics.ts";
 
-export type Arm = "grafical" | "raw";
+export type Arm = "grafical" | "raw" | "mermaid";
+export const ARMS: Arm[] = ["grafical", "raw", "mermaid"];
+
+/**
+ * What a chain draws. Without a task: the public catalog-sync brief (E1, E2).
+ * With `brief`: another brief in bench/briefs/ (E4). With `request`: a loose
+ * prompt and no brief at all (E3). `briefFile` is an absolute path to a brief
+ * kept outside the repository, such as the private reference brief.
+ */
+export interface Task {
+  id: string;
+  brief?: string;
+  briefFile?: string;
+  request?: string;
+}
+
+/** Where mermaid-cli is installed for the Mermaid arm: outside the repository, with a puppeteer config. */
+export const MMDC_HOME =
+  process.env.GRAFICAL_BENCH_MMDC ?? join(homedir(), ".cache", "grafical-bench", "mermaid");
 
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const RUNS = join(REPO, "bench", "runs");
@@ -35,6 +56,14 @@ const BOTH_ARMS_TOOLS = ["Bash", "Read", "Write", "Edit"];
 export const ALLOWED_TOOLS: Record<Arm, string[]> = {
   grafical: BOTH_ARMS_TOOLS,
   raw: BOTH_ARMS_TOOLS,
+  mermaid: BOTH_ARMS_TOOLS,
+};
+
+/** The file each arm keeps its diagram in, whose change tells whether a change step edited it. */
+export const SOURCE_FILE: Record<Arm, string | null> = {
+  grafical: "diagram.grafical.yaml",
+  raw: null,
+  mermaid: "diagram.mmd",
 };
 
 export interface Change {
@@ -103,10 +132,23 @@ function prompt(name: string): string {
   return readFileSync(join(PROMPTS, name), "utf8").trim();
 }
 
-/** The E1 prompt. The two arms differ only in the line that names the tool. */
+/** The E1 prompt. The arms differ only in the line that names the tool. */
 export function draftPrompt(arm: Arm): string {
-  const toolLine = prompt(arm === "grafical" ? "tool-grafical.md" : "tool-raw.md");
-  return render(prompt("first-draft.md"), { TOOL_LINE: toolLine });
+  return render(prompt("first-draft.md"), { TOOL_LINE: prompt(`tool-${arm}.md`) });
+}
+
+/** The E3 prompt: the loose request, then the same tool line and deliverable as a draft. */
+export function intentPrompt(arm: Arm, request: string): string {
+  return render(prompt("intent.md"), { REQUEST: request, TOOL_LINE: prompt(`tool-${arm}.md`) });
+}
+
+/** The 10 loose prompts of E3, from bench/prompts/intent.yaml. */
+export function loadIntents(): Task[] {
+  const list = parse(readFileSync(join(PROMPTS, "intent.yaml"), "utf8")) as {
+    id: string;
+    prompt: string;
+  }[];
+  return list.map((x) => ({ id: x.id, request: x.prompt }));
 }
 
 export function changePrompt(n: number, total: number, request: string): string {
@@ -138,8 +180,9 @@ export function loadChanges(): Change[] {
 }
 
 /** The steps of one chain: the draft, then the change requests (the E2 part), in order. */
-export function chainSteps(arm: Arm, changes: Change[]): StepSpec[] {
-  const steps: StepSpec[] = [{ step: "e1", kind: "draft", prompt: draftPrompt(arm) }];
+export function chainSteps(arm: Arm, changes: Change[], task?: Task): StepSpec[] {
+  const first = task?.request ? intentPrompt(arm, task.request) : draftPrompt(arm);
+  const steps: StepSpec[] = [{ step: "e1", kind: "draft", prompt: first }];
   changes.forEach((c, i) => {
     steps.push({
       step: `e2-${c.id}`,
@@ -150,26 +193,46 @@ export function chainSteps(arm: Arm, changes: Change[]): StepSpec[] {
   return steps;
 }
 
-export function chainDir(round: string, arm: Arm, model: string, run: number): string {
-  return join(RUNS, round, `${arm}-${model}-r${run}`);
+/** A chain's directory name: `[<task>.]<arm>-<model>-r<run>`. */
+export function chainName(arm: Arm, model: string, run: number, task?: Task): string {
+  return `${task ? `${task.id}.` : ""}${arm}-${model}-r${run}`;
 }
 
-/** A new, empty directory with the brief and the arm's tool, and nothing else. */
-export function prepareChainDir(dir: string, arm: Arm): void {
+export function chainDir(round: string, arm: Arm, model: string, run: number, task?: Task): string {
+  return join(RUNS, round, chainName(arm, model, run, task));
+}
+
+function wrapper(dir: string, name: string, body: string): void {
+  mkdirSync(join(dir, "bin"), { recursive: true });
+  const file = join(dir, "bin", name);
+  writeFileSync(file, `#!/bin/sh\n${body}\n`);
+  chmodSync(file, 0o755);
+}
+
+/** A new, empty directory with the task's brief and the arm's tool, and nothing else. */
+export function prepareChainDir(dir: string, arm: Arm, task?: Task): void {
   if (existsSync(dir)) throw new Error(`run directory exists, refusing to reuse it: ${dir}`);
   mkdirSync(dir, { recursive: true });
-  copyFileSync(join(REPO, "bench", "briefs", "catalog-sync.md"), join(dir, "brief.md"));
-  if (arm === "grafical") {
-    mkdirSync(join(dir, "bin"));
-    const wrapper = join(dir, "bin", "grafical");
-    writeFileSync(wrapper, `#!/bin/sh\nexec node "${REPO}/src/cli/main.ts" "$@"\n`);
-    chmodSync(wrapper, 0o755);
+  if (!task?.request) {
+    const brief =
+      task?.briefFile ?? join(REPO, "bench", "briefs", task?.brief ?? "catalog-sync.md");
+    copyFileSync(brief, join(dir, "brief.md"));
+  }
+  if (arm === "grafical") wrapper(dir, "grafical", `exec node "${REPO}/src/cli/main.ts" "$@"`);
+  if (arm === "mermaid") {
+    const mmdc = join(MMDC_HOME, "node_modules", ".bin", "mmdc");
+    if (!existsSync(mmdc)) {
+      throw new Error(
+        `mermaid-cli is not installed in ${MMDC_HOME}: PUPPETEER_SKIP_DOWNLOAD=true npm install --prefix ${MMDC_HOME} @mermaid-js/mermaid-cli, then write ${join(MMDC_HOME, "puppeteer.json")} with the Chrome executablePath`,
+      );
+    }
+    wrapper(dir, "mmdc", `exec "${mmdc}" -p "${join(MMDC_HOME, "puppeteer.json")}" "$@"`);
   }
 }
 
 export function chainEnv(dir: string, arm: Arm): NodeJS.ProcessEnv {
   const env = { ...process.env };
-  if (arm === "grafical") env.PATH = `${join(dir, "bin")}:${process.env.PATH ?? ""}`;
+  if (arm !== "raw") env.PATH = `${join(dir, "bin")}:${process.env.PATH ?? ""}`;
   return env;
 }
 
@@ -232,9 +295,9 @@ export interface StepRecord extends Metrics {
   /** Finished with no error and a new picture. */
   complete: boolean;
   /**
-   * The grafical arm's diagram file changed during the step. A change step
-   * that leaves it untouched made no edit, whatever the agent reported.
-   * null for the raw arm.
+   * The arm's diagram file (grafical's YAML, Mermaid's .mmd) changed during the
+   * step. A change step that leaves it untouched made no edit, whatever the
+   * agent reported. null for the raw arm.
    */
   diagramChanged: boolean | null;
   /** `owner: "engine"` defects in the step's diagram. null for the raw arm, or if the check was unavailable. */
@@ -271,8 +334,9 @@ export function runStep(o: {
   });
   const pngFile = join(o.dir, "diagram.png");
   const pngBefore = existsSync(pngFile) ? sha256(pngFile) : null;
-  const yamlFile = join(o.dir, "diagram.grafical.yaml");
-  const yamlBefore = existsSync(yamlFile) ? sha256(yamlFile) : null;
+  const source = o.arm === "baseline" ? null : SOURCE_FILE[o.arm];
+  const sourceFile = source === null ? null : join(o.dir, source);
+  const sourceBefore = sourceFile && existsSync(sourceFile) ? sha256(sourceFile) : null;
   const stepDir = join(o.dir, "steps", o.spec.step);
   mkdirSync(stepDir, { recursive: true });
   // The exact prompt, so the rating page can show the request as the agent saw it.
@@ -291,7 +355,7 @@ export function runStep(o: {
 
   // Keep what the agent made at this step; the next step overwrites diagram.png.
   const hashes: Record<string, string> = { transcript: sha256(transcript) };
-  for (const f of ["diagram.png", "diagram.grafical.yaml", "diagram.svg"]) {
+  for (const f of ["diagram.png", "diagram.grafical.yaml", "diagram.svg", "diagram.mmd"]) {
     const src = join(o.dir, f);
     if (existsSync(src)) {
       copyFileSync(src, join(stepDir, f));
@@ -318,7 +382,9 @@ export function runStep(o: {
     diagramPngUpdated,
     complete: metrics.finished && !metrics.isError && diagramPngUpdated,
     diagramChanged:
-      o.arm === "grafical" ? (existsSync(yamlFile) ? sha256(yamlFile) : null) !== yamlBefore : null,
+      sourceFile === null
+        ? null
+        : (existsSync(sourceFile) ? sha256(sourceFile) : null) !== sourceBefore,
     engineDefects: defects.split?.engineDefects ?? null,
     agentDefects: defects.split?.agentDefects ?? null,
     defectCheckNote: defects.note,
@@ -340,13 +406,16 @@ export function runChain(o: {
   model: string;
   run: number;
   changes: Change[];
+  task?: Task;
+  /** Where the round's directory lives, when not under bench/runs (private briefs). */
+  runs?: string;
 }): StepRecord[] {
-  const dir = chainDir(o.round, o.arm, o.model, o.run);
-  prepareChainDir(dir, o.arm);
+  const dir = join(o.runs ?? RUNS, o.round, chainName(o.arm, o.model, o.run, o.task));
+  prepareChainDir(dir, o.arm, o.task);
   const records: StepRecord[] = [];
   let session: string | undefined;
   let previous: { costUsd: number; apiSeconds: number } | undefined;
-  for (const spec of chainSteps(o.arm, o.changes)) {
+  for (const spec of chainSteps(o.arm, o.changes, o.task)) {
     // Every step but the last is resumed by the next, so it must stay on disk.
     const rec = runStep({
       dir,

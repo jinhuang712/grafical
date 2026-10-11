@@ -11,15 +11,18 @@
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   benchmark 7: check every step's picture's geometry
 //   speed                                     benchmark 11: time one operation and one command
+//   stage1 --part <e1e2|opus|scale|intent|mvp> --dry-run | --approved [--only <chain>]
+//                                             the end of stage 1, one part at a time
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { buildGallery, SITE } from "./gallery.ts";
 import { checkRound } from "./geometry.ts";
 import { runJudging } from "./judge.ts";
-import { loadChanges, prepareChainDir, RUNS, runChain, runStep } from "./run.ts";
+import { chainName, loadChanges, prepareChainDir, RUNS, runChain, runStep } from "./run.ts";
 import { formatPlan, planSmoke } from "./smoke.ts";
 import { measureSpeed } from "./speed.ts";
+import { formatPart, PARTS, type Part, planPart } from "./stage1.ts";
 import { writeSummary } from "./summary.ts";
 
 function flag(args: string[], name: string): string | undefined {
@@ -122,6 +125,47 @@ function main(argv: string[]): void {
       });
       return;
     }
+    case "stage1": {
+      const part = flag(args, "part") as Part | undefined;
+      if (part === undefined || !PARTS.includes(part)) {
+        console.error(`stage1 needs --part ${PARTS.join("|")}`);
+        process.exit(2);
+      }
+      const plan = planPart(part);
+      const only = flag(args, "only");
+      if (only !== undefined) {
+        plan.chains = plan.chains.filter((c) => chainName(c.arm, c.model, c.run, c.task) === only);
+        if (plan.chains.length === 0) {
+          console.error(`no chain ${only} in part ${part}; --dry-run lists them`);
+          process.exit(2);
+        }
+      }
+      if (args.includes("--dry-run")) {
+        console.log(formatPart(plan));
+        return;
+      }
+      if (!args.includes("--approved")) {
+        console.error(
+          "Real runs cost money and the owner approves them (EXPERIMENTS.md, rule 4).\n" +
+            "Use --dry-run to see the plan, or --approved once the owner has approved the total.",
+        );
+        process.exit(2);
+      }
+      mkdirSync(join(plan.runs, plan.round), { recursive: true });
+      let spent = 0;
+      for (const c of plan.chains) {
+        const recs = runChain({ round: plan.round, runs: plan.runs, ...c });
+        const total = recs.reduce((sum, r) => sum + r.costUsd, 0);
+        spent += total;
+        const missing = recs.filter((r) => !r.diagramPngUpdated).map((r) => r.step);
+        console.log(
+          `${chainName(c.arm, c.model, c.run, c.task)}: $${total.toFixed(3)} in ${recs.length} steps` +
+            (missing.length > 0 ? `; no new diagram.png at ${missing.join(", ")}` : ""),
+        );
+      }
+      console.log(`part ${part}: $${spent.toFixed(3)} spent`);
+      return;
+    }
     case "speed": {
       measureSpeed().then((lines) => console.log(lines.join("\n")));
       return;
@@ -135,7 +179,7 @@ function main(argv: string[]): void {
     }
     default:
       console.error(
-        "usage: pnpm bench <baseline|smoke|chain|judge|gallery|geometry|speed|summary> [options]",
+        "usage: pnpm bench <baseline|smoke|chain|judge|gallery|geometry|speed|stage1|summary> [options]",
       );
       process.exit(2);
   }

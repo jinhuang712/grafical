@@ -1,0 +1,33 @@
+# The 10 loose prompts of E3 (EXPERIMENTS.md): about three sentences each, about
+# fictional systems, the way a person asks for a diagram. The owner accepts or
+# rejects each result without changes. One flat list; each item has id and prompt.
+
+- id: photo-upload
+  prompt: Draw our photo upload flow. The mobile app uploads to an upload API, which stores the original in object storage and puts a message on a queue. A resize worker reads the queue, writes thumbnails back to storage, and a CDN serves both.
+
+- id: password-reset
+  prompt: I need a diagram of password reset. The web app calls the auth service, which stores a one-time token in Redis and asks the mailer to email a link through an email provider. When the user opens the link, the auth service checks the token and updates the users database.
+
+- id: payment-webhooks
+  prompt: Show how we handle payment webhooks. The payment provider calls our webhook receiver, which checks the signature and writes the event to a Kafka topic. An order updater consumes it and marks the order paid in the orders database, and a receipts worker sends the receipt email.
+
+- id: search-indexing
+  prompt: Make an architecture diagram of product search. The catalog service publishes product changes to a queue, an indexer consumes them and updates Elasticsearch, and the search API answers queries from the web shop. Search API also logs queries to an analytics store.
+
+- id: chat
+  prompt: Diagram our chat backend. Clients keep a WebSocket to a gateway, which forwards messages to the chat service. The chat service stores messages in Cassandra, fans them out through Redis pub/sub to the other gateways, and sends push notifications to offline users through a push provider.
+
+- id: feature-flags
+  prompt: Please draw the feature flag system. Engineers change flags in an admin UI backed by a flags API and a Postgres database. Services read flags through an SDK that caches them and refreshes from a read-only edge endpoint every 30 seconds.
+
+- id: log-pipeline
+  prompt: Draw the logging pipeline. Agents on every host ship logs to a collector, the collector writes them to Kafka, and an indexer loads them into OpenSearch. Engineers search them in a dashboards UI, and a nightly job archives old indexes to object storage.
+
+- id: warehouse-orders
+  prompt: Show order fulfilment for our warehouse. The order service sends new orders to a fulfilment service, which reserves stock in the inventory service and creates a pick list. Pickers use a handheld app to confirm picks, and a shipping service buys labels from a carrier API.
+
+- id: video-transcode
+  prompt: I want a diagram of video processing. Creators upload through an upload service to a raw bucket, and a transcode scheduler starts jobs on a pool of transcode workers. Workers write renditions to a media bucket that the CDN serves, and update the video status in the catalog database.
+
+- id: sso-login
+  prompt: Draw how employees sign in to our internal tools with SSO. The tool redirects to our auth proxy, which sends them to the company identity provider and gets a signed assertion back. The proxy then sets a session cookie, keeps sessions in Redis, and passes the user's groups to the tool in a header.

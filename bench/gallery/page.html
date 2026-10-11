@@ -143,6 +143,8 @@
   ];
   const DONE = [["yes", "Yes", "good"], ["partly", "Partly", "warn"], ["no", "No", "bad"]];
   const OTHER = [["none", "Nothing", "good"], ["minor", "A little", "warn"], ["major", "A lot", "bad"]];
+  const ACCEPT = [["yes", "Accept", "good"], ["no", "Reject", "bad"]];
+  const KIND = { draft: "Draft", change: "Change", intent: "Loose prompt" };
 
   const $ = (id) => document.getElementById(id);
   const state = { rounds: [], round: null, manifest: null, ratings: {}, picks: {}, status: {}, reveals: {}, canWrite: true, db: null };
@@ -205,6 +207,7 @@
     const r = state.ratings[ratingId(task.id, letter)];
     if (!r) return false;
     if (task.kind === "draft") return DRAFT.every(([k]) => typeof r.scores?.[k] === "number");
+    if (task.kind === "intent") return !!r.accept;
     return !!(r.done && r.other && typeof r.quality === "number");
   }
 
@@ -282,6 +285,8 @@
       }
       const sum = DRAFT.reduce((s, [k]) => s + (typeof scores[k] === "number" ? scores[k] : 0), 0);
       const t = document.createElement("div"); t.className = "total"; t.textContent = `Total ${sum} of 25`; rows.append(t);
+    } else if (task.kind === "intent") {
+      rows.append(row("Accept as is?", "what you meant, no changes needed", segment(ACCEPT, r.accept ?? null, (v) => update({ accept: v ?? undefined }), ro)));
     } else {
       rows.append(row("Done right?", "the request itself", segment(DONE, r.done ?? null, (v) => update({ done: v ?? undefined }), ro)));
       rows.append(row("Anything else changed?", "beyond the request", segment(OTHER, r.other ?? null, (v) => update({ other: v ?? undefined }), ro)));
@@ -297,16 +302,23 @@
   function render() {
     const m = state.manifest; if (!m) return;
     $("brief").textContent = m.brief;
+    $("brief-box").hidden = !m.brief;
     const box = $("tasks"); const keepScroll = window.scrollY;
     const focusedId = document.activeElement?.id;
     box.innerHTML = "";
     for (const task of m.tasks) {
       const s = document.createElement("section"); s.className = "task";
       const head = document.createElement("div"); head.className = "task-head";
-      const eb = document.createElement("div"); eb.className = "eyebrow"; eb.textContent = task.kind === "draft" ? "E1" : "E2";
+      const eb = document.createElement("div"); eb.className = "eyebrow"; eb.textContent = KIND[task.kind] ?? task.kind;
       const h = document.createElement("h2"); h.textContent = task.title;
       head.append(eb, h); s.append(head);
       if (task.request) { const q = document.createElement("p"); q.className = "request"; q.textContent = task.request; s.append(q); }
+      if (task.brief) {
+        const d = document.createElement("details"); d.className = "brief";
+        const sm = document.createElement("summary"); sm.textContent = "The brief for this task";
+        const pre = document.createElement("pre"); pre.textContent = task.brief;
+        d.append(sm, pre); s.append(d);
+      }
       const cards = document.createElement("div"); cards.className = "cards";
       for (const l of m.diagrams) cards.append(card(task, l));
       s.append(cards);

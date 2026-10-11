@@ -78,13 +78,13 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 ### E3 Intent
 
 - **Question:** does a loose prompt of about three sentences give Haiku enough to draw what was meant?
-- **Input:** 10 loose prompts about fictional systems, in `bench/prompts/`.
+- **Input:** 10 loose prompts about fictional systems, in `bench/prompts/intent.yaml`. The agent gets the prompt and no brief.
 - **Measured:** the owner accepts or rejects each result without changes. Also cost and wall time.
 
 ### E4 Scale
 
 - **Question:** where does each arm break down?
-- **Input:** fictional briefs of 10, 25 and 50 nodes, in `bench/briefs/`.
+- **Input:** fictional briefs of 10, 25 and 50 components, `bench/briefs/scale-10.md`, `scale-25.md` and `scale-50.md`.
 - **Measured:** defects, clarity, score, cost.
 
 ### E5 Ablations
@@ -112,6 +112,8 @@ An ablation runs when its decision is built or questioned, not all at once.
   - Both arms get the same tools: Bash, Read, Write and Edit. The prompt alone tells the grafical arm to draw with grafical, and the `offTool` metric counts any Bash command that draws another way.
   - A first measuring run had allowed the grafical arm only `grafical *` commands. Claude Code then blocked `grafical apply …; echo`, and the agent fell back to one command per call.
 - **Measuring before a round:** `pnpm bench chain --arm <arm>` runs one chain, a first draft and its change requests, and prints each step's cost. Rule 4 below uses it.
+- **The end of stage 1:** `pnpm bench stage1 --part <e1e2|opus|scale|intent|mvp>` runs one part, `--dry-run` lists its chains and calls, and `--only <chain>` runs one chain to measure its cost first. The `mvp` part runs in `grafical-private/runs/`, outside the repository.
+- **The Mermaid arm** draws with `mmdc` (mermaid-cli), installed outside the repository in `~/.cache/grafical-bench/mermaid`, or `GRAFICAL_BENCH_MMDC`, with a puppeteer config that points at the local Chrome. It keeps its diagram in `diagram.mmd`.
 - **Each step also records:**
   - whether a new picture exists;
   - whether a change step changed the grafical diagram file at all. One measured step answered a move request with a single `show` call and still reported success;
@@ -124,6 +126,7 @@ An ablation runs when its decision is built or questioned, not all at once.
   - The D25 target picture is judged in every round as an anchor.
   - **Two scores per picture** (from 2026-10-11, after the owner's principle that the engine arranges and the agent decides what the diagram says): an engine score, from order, visual quality, defects and fit (20 per judge), and an agent score, from accuracy and clarity (10 per judge). Results report both next to the total, so that a round shows which side lost its points.
 - **The owner's ratings:** every round's pictures also go to the owner's rating page, made by `pnpm bench gallery`, under blind letters. The owner's ratings are read back and reported next to the judges' scores.
+  - From the end of stage 1 (owner, 2026-10-12): the owner's blind ratings are the final judge, and judging must stay cheap. Opus judges score only the MVP bar, whose 42 of 50 baseline came from Opus judges. Every other round is scored by the owner alone.
 - **Briefs:** there are two kinds.
   - Public briefs live in `bench/briefs/`. They describe fictional systems and drive fixtures, tests, CI and tuning. The first is [`catalog-sync.md`](bench/briefs/catalog-sync.md).
   - Private briefs describe real systems and never enter this repository. The private reference brief is the one from the 2026-10-10 test, used only to check the MVP bar so that its 42 of 50 baseline compares like with like. Runs on private briefs happen outside the repository, and only their scores are committed, never their content or pictures.
