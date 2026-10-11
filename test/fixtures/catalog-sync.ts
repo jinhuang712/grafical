@@ -1,0 +1,128 @@
+// The public brief bench/briefs/catalog-sync.md as a diagram: 6 layers, 30 nodes,
+// 41 edges. Write side on the left, read side on the right, the shared MongoDB
+// between them. Node orders follow the data, the way an engineer would draw it.
+
+import type { Diagram } from "../../src/model/types.ts";
+import { e, n } from "./build.ts";
+
+export const catalogSync: Diagram = {
+  grafical: 1,
+  title: "catalog-sync and catalog-api",
+  density: "normal",
+  layers: [
+    {
+      id: "upstream",
+      label: "Upstream and callers",
+      nodes: [
+        n("operators", "operators", "actor", "s", { sublabel: "ops, resync" }),
+        n("inventory", "inventory-svc", "external", "s"),
+        n("pricing", "pricing-svc", "external", "s"),
+        n("merchant", "merchant-portal", "external", "m"),
+        n("promotions", "promotions", "actor", "s", { sublabel: "snapshots" }),
+        n("storefront", "storefront", "actor", "s"),
+      ],
+    },
+    {
+      id: "topics",
+      label: "Upstream topics",
+      nodes: [
+        n("goods_topics", "goods change topics", "queue", "l", {
+          sublabel: "Item, Variant, Offer",
+        }),
+        n("ticket_topics", "ticket topics", "queue", "m", { sublabel: "SearchIndex, listing" }),
+        n("upstream_change", "UpstreamChangeTopic", "queue", "l", { sublabel: "name not final" }),
+      ],
+    },
+    {
+      id: "entry",
+      label: "Entry points",
+      nodes: [
+        n("admin", "admin HTTP", "service", "m", { sublabel: "sync :7102" }),
+        n("relay", "catalog-relay", "service", "m", { sublabel: "tier 1, :7101", accent: true }),
+        n("grpc", "CatalogApiService", "service", "m", { sublabel: "gRPC :7190" }),
+        n("http", "catalog-api HTTP", "service", "m", { sublabel: ":8080" }),
+      ],
+    },
+    {
+      id: "kafka",
+      label: "Kafka",
+      nodes: [
+        n("goods_v1", "catalog_goods_v1", "queue", "m"),
+        n("retry_v1", "catalog_retry_v1", "queue", "m"),
+        n("tickets_v1", "catalog_tickets_v1", "queue", "m"),
+      ],
+    },
+    {
+      id: "processing",
+      label: "Processing",
+      nodes: [
+        n("full_load", "full-load job", "service", "m", { sublabel: "external trigger" }),
+        n("goods_pipe", "goods pipeline", "service", "m", { sublabel: "line 10" }),
+        n("retry_runner", "retry runner", "service", "m"),
+        n("tickets_pipe", "tickets pipeline", "service", "m", { sublabel: "line 20" }),
+        n("api_service", "catalog-api service", "service", "l", {
+          sublabel: "assembly",
+          accent: true,
+        }),
+      ],
+    },
+    {
+      id: "stores",
+      label: "Stores and dependencies",
+      nodes: [
+        n("auth", "auth-svc", "external", "s"),
+        n("mongo_control", "Mongo control", "store", "m", { sublabel: "dlq, retry, jobs" }),
+        n("redis", "Redis", "store", "s", { sublabel: "name cache" }),
+        n("geo", "geo-svc", "external", "s"),
+        n("postgres", "Postgres replicas", "store", "m", { sublabel: "read-only" }),
+        n("mongo_catalog", "MongoDB catalog", "store", "l", { sublabel: "goods_*, ticket_*" }),
+        n("i18n", "i18n-svc", "external", "s"),
+        n("mongo_inventory", "Mongo inventory", "store", "m", { sublabel: "stock" }),
+        n("campaign", "campaign-svc", "external", "s"),
+      ],
+    },
+  ],
+  edges: [
+    e("inventory", "goods_topics", "async", "publish"),
+    e("pricing", "goods_topics", "async"),
+    e("merchant", "goods_topics", "async"),
+    e("goods_topics", "relay", "async", "consume"),
+    e("ticket_topics", "relay", "async"),
+    e("upstream_change", "relay", "async"),
+    e("operators", "admin", "call", "resync, ops"),
+    e("promotions", "grpc", "call", "snapshots"),
+    e("storefront", "grpc", "call"),
+    e("storefront", "http", "call", "GET"),
+    e("relay", "goods_v1", "async", "line:id"),
+    e("relay", "tickets_v1", "async"),
+    e("admin", "auth", "call", "auth check"),
+    e("admin", "goods_v1", "async", "resync"),
+    e("admin", "full_load", "call", "run"),
+    e("admin", "mongo_control", "data", "dlq ops"),
+    e("goods_v1", "goods_pipe", "async", "consume"),
+    e("tickets_v1", "tickets_pipe", "async", "consume"),
+    e("goods_pipe", "goods_v1", "async", "fanout"),
+    e("goods_pipe", "retry_v1", "async", "failed"),
+    e("tickets_pipe", "retry_v1", "async"),
+    e("retry_v1", "retry_runner", "async"),
+    e("retry_runner", "goods_v1", "async", "redrive"),
+    e("retry_runner", "tickets_v1", "async"),
+    e("retry_runner", "mongo_control", "data", "dlq after 5"),
+    e("full_load", "postgres", "data", "scan"),
+    e("full_load", "goods_v1", "async", "seed"),
+    e("full_load", "mongo_control", "data", "job state"),
+    e("goods_pipe", "postgres", "data", "fetch"),
+    e("goods_pipe", "redis", "data"),
+    e("goods_pipe", "geo", "call", "regions"),
+    e("goods_pipe", "i18n", "call"),
+    e("goods_pipe", "mongo_catalog", "data", "persist"),
+    e("tickets_pipe", "postgres", "data"),
+    e("tickets_pipe", "mongo_catalog", "data"),
+    e("grpc", "api_service", "call"),
+    e("http", "api_service", "call"),
+    e("api_service", "mongo_catalog", "data", "Find"),
+    e("api_service", "mongo_inventory", "data", "stock"),
+    e("api_service", "campaign", "call", "tags"),
+    e("api_service", "i18n", "call", "text"),
+  ],
+};
