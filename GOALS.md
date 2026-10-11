@@ -14,7 +14,7 @@
 
 - People editing on a board. That is stage 2.
 - Placing anything by coordinates, for anyone.
-- Diagram types other than layered architecture, such as sequence, ER or charts.
+- Diagram types that need a layout other than layered rows: sequence, entity-relationship and class diagrams, mind maps, timelines and charts. The types the layered engine can draw are in stage 1, added by the owner on 2026-10-12 (DESIGN.md D34).
 - Real-time collaboration, accounts or a hosted service.
 - Importing Mermaid, draw.io or Excalidraw files.
 - Free colors or styles per element. A whole diagram takes its look from a theme or a shared stylesheet (added by the owner on 2026-10-11), but no operation colors one node or edge.

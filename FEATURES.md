@@ -22,6 +22,7 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical view <file> [--port <n>] [--no-open]` | Open a window, sized to the diagram, that shows it as it is now, redrawn within a moment of every change, with the changed parts marked, a list of each change as operations, and the problems. Ctrl-C stops it (D31) | done |
 | `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file (D18) | done |
 | `grafical guide` | Print the operation reference for agents, within 3k tokens | done |
+| `grafical guide <type>` | Print how to draw one diagram type, such as a state machine or a flowchart (D34) | stage 1 |
 | `grafical review <file>` | Open the board on the diagram | stage 2 |
 | `grafical mcp` | Serve the same operations over MCP | later |
 
@@ -60,6 +61,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | Operation | Does | Status |
 |---|---|---|
 | `group.add` | Draw a system box around nodes, which may sit in several neighbouring rows (D7) | done |
+| `group.add --in` | Put the new group inside another group, up to three levels (D34) | stage 1 |
 | `group.join`, `group.leave` | Add a node to a group, or take it out | done |
 | `group.rename` | Change a group's label | done |
 | `group.remove` | Remove the box and keep its nodes. Edges that end at the group go with it | done |
@@ -101,6 +103,8 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `edge.reverse` | Swap the direction. The ID stays | done |
 | `edge.remove` | Remove the edge | done |
 | `edge.retarget` | Move one or both ends of an edge. Its ID, kind and label stay | done |
+| `edge.both` | Draw arrowheads at both ends, or one end again (D33) | stage 1 |
+| `edge.emphasize` | Draw edges thick, as the main path, or thin again (D33) | stage 1 |
 
 ## Command-line syntax
 
@@ -264,11 +268,12 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 
 | List | Values |
 |---|---|
-| Node kinds | `service`, `store`, `queue`, `external`, `actor` |
-| Edge kinds | `call`, `async`, `data` |
+| Node kinds | `service`, `store`, `queue`, `external`, `actor`. Planned (D34): `state`, `decision`, `terminal`, `initial`, `final` |
+| Edge kinds | `call`, `async`, `data`. Planned (D33): `link`, `optional` |
 | Size steps | `s`, `m`, `l` |
 | Density | `compact`, `normal`, `airy` |
-| Emphasis | `accent`, at most 2 per diagram |
+| Emphasis | `accent`, at most 2 per diagram. Planned (D33): emphasized edges, drawn thick |
+| Line shape | Planned (D33): `curved`, set in a stylesheet |
 
 ## Output
 
@@ -295,6 +300,6 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | Feature | Status |
 |---|---|
 | Lanes that run both ways in one diagram, as a grid of lanes and phases (D32) | later |
-| Other diagram types | later |
+| Diagram types that need a layout of their own: sequence, entity-relationship and class, mind map, timeline (D34) | later |
 | Import from Mermaid, draw.io and Excalidraw | later |
 | An MCP server | later |

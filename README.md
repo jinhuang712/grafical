@@ -4,7 +4,7 @@ Architecture diagrams that coding agents build in small, checked steps.
 
 An agent builds a diagram one operation at a time: add a layer, add a node, connect two nodes, rename one. grafical places, sizes and routes everything. Each operation changes only what it names, and grafical lays out the picture again at once, like LaTeX after an edit, so it always looks tidy and never has to be redrawn from scratch. The diagram lives in one text file that you keep in git, and the same file always renders the same SVG and PNG.
 
-> **Status: stage 1, in development, not yet released.** The command line works: operations, groups, swimlanes, themes, a live viewer and `grafical diff`. The stage 1 benchmarks ran on 2026-10-12: the MVP bar is not met yet, and the lines are what to fix ([results](bench/results/stage1.md)). Run it from a clone with `node src/cli/main.ts`. Progress is tracked in [ROADMAP.md](ROADMAP.md).
+> **Status: stage 1, in development, not yet released.** The command line works: operations, groups, swimlanes, themes, a live viewer and `grafical diff`. The stage 1 benchmarks ran on 2026-10-12: the MVP bar is not met yet ([results](bench/results/stage1.md)). Next come clearer lines and more diagram types, such as state machines and flowcharts ([roadmap](ROADMAP.md)). Run it from a clone with `node src/cli/main.ts`. Progress is tracked in [ROADMAP.md](ROADMAP.md).
 
 ## Why
 

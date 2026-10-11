@@ -55,6 +55,8 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D30 | A diagram takes its look from a theme or a shared stylesheet | The tool carries the taste |
 | D31 | A live viewer shows the diagram as it is now | A diagram is built in steps |
 | D32 | Swimlanes run as rows or as columns | The engine arranges; the agent decides what the diagram says |
+| D33 | Lines have a short list of looks, and meet a box on any side | The tool carries the taste |
+| D34 | Stage 1 draws every diagram type the layered engine can draw | The engine arranges; the agent decides what the diagram says |
 
 ## Writing a diagram
 
@@ -112,6 +114,8 @@ Rejected:
 - Groups within one row only. A system almost always spans rows, so this could not draw the systems that make an architecture diagram readable.
 - Nested groups, for stage 1.
 
+Reversed in part on 2026-10-12: groups nest, up to three levels, for deployment diagrams (D34).
+
 ### D8 Kinds and styles are short, fixed lists
 
 Each node and each edge has a kind from a short list in [FEATURES.md](FEATURES.md). The theme decides how each kind looks. One emphasis value, `accent`, marks the one or two things a reader should see first. Stage 1 ships one theme.
@@ -119,6 +123,8 @@ Each node and each edge has a kind from a short list in [FEATURES.md](FEATURES.m
 Edges use at most two line styles: solid for a call or a data read, dashed for a message through a queue. A legend in the top right names the styles the diagram uses, and only those.
 
 Rejected: per-node colors and free style attributes. Every invented style is something the reader has to decode, and something a weak model can get wrong.
+
+Changed on 2026-10-12: edges have more looks than two, still from short lists (D33).
 
 ### D9 A person's adjustment will be an ordinary operation
 
@@ -488,6 +494,34 @@ Rejected:
 - Rows and columns in one diagram, as a grid of lanes and phases. It is the most expressive form and the most work, and no brief needs it yet.
 - Listing members on the lane. Every other membership in the file is named by the member, and `show` then prints it on the member's line.
 - A setting for the way lanes run. It would be one more fact that could disagree with the members.
+
+### D33 Lines have a short list of looks, and meet a box on any side
+
+Decided by the owner on 2026-10-12, not yet built. In the stage 1 round every comment on grafical's pictures named the lines, and the owner's view was that the agent lacked the means to make a picture clear, not only that the router drew lines badly.
+
+- **Kinds.** The kind still decides the look (D8): `call` and `data` solid, `async` dashed, and two new kinds: `link`, solid with no arrowhead, for "related, no direction", and `optional`, dotted, for a call that happens only sometimes or a soft dependency.
+- **Per edge.** An edge may carry arrowheads at both ends (`both`), and may be emphasized, drawn thick, to mark the main path.
+- **Curves.** A stylesheet may set `paint.edge.shape: curved` (D30). Routes stay the same orthogonal routes through the gaps (D11); only the drawing turns their corners into curves, and a curve never enters a box.
+- **Sides.** A line may leave or enter a box on any of its four sides. One side may carry several lines, each in its own slot, evenly spaced, so that lines on one side never pile up or read as one. The engine chooses the side and the slot; the agent does not.
+- **Engine marks.** Where two lines cross, one hops over the other, so a crossing never reads as a join. Where lines merge on purpose, a dot marks the join. Parallel lines keep a gap.
+- **Hints.** In 49 stage 1 steps the agents never called `diagram tidy`, `layer tidy`, `node swap` or `node align`. A write now says when `diagram tidy` would remove crossings, which is a fact the engine may tell the agent (PHILOSOPHY.md).
+
+Rejected:
+- The agent choosing the side a line leaves by. Spreading lines tidily is the kind of choice a weak model gets wrong.
+- Free styles per edge, such as a colour or a dash pattern. The reader would have to decode each one.
+- Curves drawn freely, outside the routed channels. They could cross boxes and text, and the router could no longer keep lines apart.
+
+### D34 Stage 1 draws every diagram type the layered engine can draw
+
+Decided by the owner on 2026-10-12, not yet built: C4 context and container diagrams, cloud and infrastructure, event flow, flowcharts, state machines, swimlane processes, dependency graphs, data flow and deployment.
+
+- **Kinds.** Five new node kinds: `state`, a rounded box; `decision`, a diamond; `terminal`, a pill with text, for a flowchart's Start and End; `initial`, a filled dot; and `final`, a ringed dot, for a state machine's start and end. C4, cloud, event flow, data flow, dependency graphs and swimlane processes need no new shapes.
+- **Nested groups.** A group may sit inside another group, up to three levels, as a region holds a network that holds hosts (`group add --in`). This reverses part of D7.
+- **Teaching.** `grafical guide <type>` teaches the agent one diagram type, so the main guide stays within its budget (D17).
+
+Rejected, for stage 1:
+- Sequence diagrams, entity-relationship and class diagrams, mind maps and timelines. Each needs a layout family of its own, and the core diagram has not yet met the MVP bar.
+- A setting for the diagram's type. The kinds already say what is drawn.
 
 ## Not yet decided
 
