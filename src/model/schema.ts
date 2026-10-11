@@ -1,0 +1,209 @@
+// Validation of a diagram file (DESIGN.md D1, D5, D22).
+
+import { z } from "zod";
+import type { OpError } from "../errors.ts";
+import { ID_EDGE, ID_NODE, issuesToErrors } from "./issues.ts";
+import { suggestIds } from "./suggest.ts";
+import {
+  DEFAULT_DENSITY,
+  DEFAULT_EDGE_KIND,
+  DEFAULT_NODE_KIND,
+  DEFAULT_SIZE,
+  DENSITIES,
+  type Diagram,
+  type DiagramNode,
+  EDGE_KINDS,
+  type Edge,
+  FORMAT_VERSION,
+  type Layer,
+  NODE_KINDS,
+  SIZE_STEPS,
+} from "./types.ts";
+
+export const MAX_ACCENTS = 2;
+
+const ID_RE = /^[a-z0-9][a-z0-9._-]*$/;
+const EDGE_ID_RE = /^[a-z0-9][a-z0-9._-]*(->[a-z0-9][a-z0-9._-]*)?(#[0-9]+)?$/;
+
+export const nodeId = z.string().regex(ID_RE, { message: ID_NODE });
+export const edgeId = z.string().regex(EDGE_ID_RE, { message: ID_EDGE });
+export const text = z.string().min(1);
+
+const nodeSchema = z.strictObject({
+  id: nodeId,
+  label: text,
+  kind: z.enum(NODE_KINDS).default(DEFAULT_NODE_KIND),
+  sublabel: text.optional(),
+  size: z.enum(SIZE_STEPS).default(DEFAULT_SIZE),
+  accent: z.boolean().optional(),
+  align: nodeId.optional(),
+});
+
+const layerSchema = z.strictObject({
+  id: nodeId,
+  label: text,
+  nodes: z.array(nodeSchema).default([]),
+});
+
+const edgeSchema = z.strictObject({
+  id: edgeId,
+  from: nodeId,
+  to: nodeId,
+  kind: z.enum(EDGE_KINDS).default(DEFAULT_EDGE_KIND),
+  label: text.optional(),
+});
+
+export const diagramSchema = z.strictObject({
+  grafical: z.number().int().min(1),
+  title: text,
+  density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
+  layers: z.array(layerSchema).default([]),
+  edges: z.array(edgeSchema).default([]),
+});
+
+type Parsed = z.output<typeof diagramSchema>;
+
+function build(p: Parsed): Diagram {
+  const layers: Layer[] = p.layers.map((l) => ({
+    id: l.id,
+    label: l.label,
+    nodes: l.nodes.map((n) => {
+      const node: DiagramNode = { id: n.id, label: n.label, kind: n.kind, size: n.size };
+      if (n.sublabel !== undefined) node.sublabel = n.sublabel;
+      if (n.accent === true) node.accent = true;
+      if (n.align !== undefined) node.align = n.align;
+      return node;
+    }),
+  }));
+  const edges: Edge[] = p.edges.map((e) => {
+    const edge: Edge = { id: e.id, from: e.from, to: e.to, kind: e.kind };
+    if (e.label !== undefined) edge.label = e.label;
+    return edge;
+  });
+  return { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
+}
+
+/**
+ * The rules a schema cannot state: unique ids across layers, nodes and edges,
+ * edges that point at nodes, alignments across layers, and at most two accents.
+ * `index` is the operation index to put on each error.
+ */
+export function checkIntegrity(d: Diagram, index = 0): OpError[] {
+  const errors: OpError[] = [];
+  const seen = new Map<string, string>();
+  const claim = (id: string, where: string) => {
+    const first = seen.get(id);
+    if (first !== undefined) {
+      errors.push({
+        code: "duplicate-id",
+        index,
+        field: where,
+        found: id,
+        expected: "an id that is unique across layers, nodes and edges",
+        suggestion: `${id} is already used at ${first}; choose another id`,
+      });
+    } else seen.set(id, where);
+  };
+  const layerOf = new Map<string, string>();
+  const nodeIds: string[] = [];
+  d.layers.forEach((l, li) => {
+    claim(l.id, `layers[${li}].id`);
+    l.nodes.forEach((n, ni) => {
+      claim(n.id, `layers[${li}].nodes[${ni}].id`);
+      layerOf.set(n.id, l.id);
+      nodeIds.push(n.id);
+    });
+  });
+  d.edges.forEach((e, ei) => {
+    claim(e.id, `edges[${ei}].id`);
+  });
+  d.edges.forEach((e, ei) => {
+    for (const end of ["from", "to"] as const) {
+      if (!layerOf.has(e[end])) {
+        errors.push({
+          code: "unknown-node",
+          index,
+          field: `edges[${ei}].${end}`,
+          found: e[end],
+          expected: "the id of an existing node",
+          suggestion: suggestIds(e[end], nodeIds, "node"),
+        });
+      }
+    }
+  });
+  let accents = 0;
+  d.layers.forEach((l, li) => {
+    l.nodes.forEach((n, ni) => {
+      if (n.accent) accents++;
+      if (n.align === undefined) return;
+      const field = `layers[${li}].nodes[${ni}].align`;
+      const other = layerOf.get(n.align);
+      if (other === undefined) {
+        errors.push({
+          code: "unknown-node",
+          index,
+          field,
+          found: n.align,
+          expected: "the id of an existing node",
+          suggestion: suggestIds(n.align, nodeIds, "node"),
+        });
+      } else if (other === l.id) {
+        errors.push({
+          code: "align-same-layer",
+          index,
+          field,
+          found: `${n.align} (layer ${other})`,
+          expected: "a node in another layer",
+          suggestion: `${n.id} is in layer ${l.id} too; align to a node in a different layer`,
+        });
+      }
+    });
+  });
+  if (accents > MAX_ACCENTS) {
+    errors.push({
+      code: "too-many-accents",
+      index,
+      field: "accent",
+      found: `${accents} accented nodes`,
+      expected: `at most ${MAX_ACCENTS}`,
+      suggestion: "keep accent on the one or two nodes a reader should see first",
+    });
+  }
+  return errors;
+}
+
+/** Validates a parsed file. Returns the diagram, or every error found. */
+export function validateDiagram(raw: unknown): Diagram | OpError[] {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+    return [
+      {
+        code: "bad-file",
+        index: 0,
+        found: show(raw),
+        expected: "a mapping with grafical, title, density, layers and edges",
+      },
+    ];
+  }
+  const version = (raw as { grafical?: unknown }).grafical;
+  if (typeof version === "number" && Number.isInteger(version) && version > FORMAT_VERSION) {
+    return [
+      {
+        code: "newer-format",
+        index: 0,
+        field: "grafical",
+        found: String(version),
+        expected: `format ${FORMAT_VERSION} or older`,
+        suggestion: "upgrade grafical; a newer file is refused, never guessed at",
+      },
+    ];
+  }
+  const parsed = diagramSchema.safeParse(raw);
+  if (!parsed.success) return issuesToErrors(parsed.error.issues, raw, 0);
+  const diagram = build(parsed.data);
+  const errors = checkIntegrity(diagram);
+  return errors.length > 0 ? errors : diagram;
+}
+
+function show(v: unknown): string {
+  return v === null ? "null" : Array.isArray(v) ? "a list" : String(v);
+}
