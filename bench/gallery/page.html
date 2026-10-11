@@ -144,7 +144,9 @@
   const DONE = [["yes", "Yes", "good"], ["partly", "Partly", "warn"], ["no", "No", "bad"]];
   const OTHER = [["none", "Nothing", "good"], ["minor", "A little", "warn"], ["major", "A lot", "bad"]];
   const ACCEPT = [["yes", "Accept", "good"], ["no", "Reject", "bad"]];
-  const KIND = { draft: "Draft", change: "Change", intent: "Loose prompt" };
+  const KIND = { draft: "Draft", change: "Change", intent: "Loose prompt", look: "Look" };
+  // Loose prompts and the look of a feature are accepted or rejected as they stand.
+  const accepts = (task) => task.kind === "intent" || task.kind === "look";
 
   const $ = (id) => document.getElementById(id);
   const state = { rounds: [], round: null, manifest: null, ratings: {}, picks: {}, status: {}, reveals: {}, canWrite: true, db: null };
@@ -207,7 +209,7 @@
     const r = state.ratings[ratingId(task.id, letter)];
     if (!r) return false;
     if (task.kind === "draft") return DRAFT.every(([k]) => typeof r.scores?.[k] === "number");
-    if (task.kind === "intent") return !!r.accept;
+    if (accepts(task)) return !!r.accept;
     return !!(r.done && r.other && typeof r.quality === "number");
   }
 
@@ -285,7 +287,7 @@
       }
       const sum = DRAFT.reduce((s, [k]) => s + (typeof scores[k] === "number" ? scores[k] : 0), 0);
       const t = document.createElement("div"); t.className = "total"; t.textContent = `Total ${sum} of 25`; rows.append(t);
-    } else if (task.kind === "intent") {
+    } else if (accepts(task)) {
       rows.append(row("Accept as is?", "what you meant, no changes needed", segment(ACCEPT, r.accept ?? null, (v) => update({ accept: v ?? undefined }), ro)));
     } else {
       rows.append(row("Done right?", "the request itself", segment(DONE, r.done ?? null, (v) => update({ done: v ?? undefined }), ro)));

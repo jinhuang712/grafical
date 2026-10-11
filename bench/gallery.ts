@@ -48,7 +48,8 @@ interface Picture {
 
 export interface GalleryTask {
   id: string;
-  kind: "draft" | "change" | "intent";
+  /** "look": a picture of a feature for the owner to accept or reject, made outside this builder. */
+  kind: "draft" | "change" | "intent" | "look";
   title: string;
   /** The request as the agent saw it: a change step's, or an intent task's loose prompt. */
   request?: string;
