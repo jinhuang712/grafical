@@ -1,7 +1,6 @@
 // Lays out each fixture with the real measurer, runs the real checker and the
 // layout's own geometry checks, prints the measured rules of DESIGN.md D25, and
-// renders a PNG through the real renderer, with group boxes, subtitle, legend and
-// footnote added by the debug writer until the renderer draws them. Run with:
+// renders a PNG through the real renderer. Run with:
 //   node test/debug/check-fixtures.ts <out-dir> [fixture]
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -17,7 +16,6 @@ import { edgeLooks } from "../fixtures/edge-looks.ts";
 import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
 import { tiny } from "../fixtures/tiny.ts";
 import { defects, groupIntruders, mechanical, taste, textCrossings } from "../layout/checks.ts";
-import { withFrame } from "./svg.ts";
 
 const out = process.argv[2] ?? ".out/check";
 const only = process.argv[3];
@@ -37,7 +35,7 @@ for (const [name, d] of [
   const scene = layout(d, m);
   const t1 = performance.now();
   const found = check(d, scene, m);
-  const svg = withFrame(renderSvg({ ...scene, layers: [] }), scene);
+  const svg = renderSvg(scene);
   writeFileSync(join(out, `${name}.svg`), svg);
   writeFileSync(join(out, `${name}.png`), renderPng(svg, 2));
   const counts = new Map<string, number>();

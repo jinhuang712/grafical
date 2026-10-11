@@ -7,7 +7,6 @@ import { check } from "../../src/check/index.ts";
 import { layout } from "../../src/layout/index.ts";
 import { renderPng, renderSvg } from "../../src/render/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
-import { withFrame } from "../debug/svg.ts";
 import { failures, geometryFailures } from "./fuzz.ts";
 import { generate } from "./gen.ts";
 
@@ -23,7 +22,7 @@ console.log(
 );
 for (const x of found) console.log(`  ${x.code} [${x.elements.join(", ")}] ${x.found}`);
 mkdirSync(out, { recursive: true });
-const svg = withFrame(renderSvg({ ...scene, layers: [] }), scene);
+const svg = renderSvg(scene);
 writeFileSync(join(out, `seed-${seed}.svg`), svg);
 writeFileSync(join(out, `seed-${seed}.png`), renderPng(svg, 1));
 writeFileSync(join(out, `seed-${seed}.json`), JSON.stringify(diagram, null, 1));

@@ -135,19 +135,6 @@ export function frameParts(s: Scene): { behind: string[]; front: string[] } {
   return { behind, front };
 }
 
-/**
- * The phase 1 renderer's SVG of a scene without its rows, with frameParts added:
- * the background stays first, groups come right after it, the rest at the end.
- */
-export function withFrame(svg: string, s: Scene): string {
-  const { behind, front } = frameParts(s);
-  const lines = svg.trimEnd().split("\n");
-  const bg = lines.findIndex((l) => l.startsWith("<rect width="));
-  lines.splice(bg + 1, 0, ...behind);
-  lines.splice(lines.length - 1, 0, ...front);
-  return `${lines.join("\n")}\n`;
-}
-
 export function debugPng(svg: string, zoom = 1.5): Buffer {
   return new Resvg(svg, {
     fitTo: { mode: "zoom", value: zoom },
