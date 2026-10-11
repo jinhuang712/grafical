@@ -7,22 +7,28 @@
 import type { Diagram, DiagramNode, SizeStep } from "../model/types.ts";
 import type { Measurer } from "../text/types.ts";
 import { BOX, FRAME } from "../theme/geometry.ts";
+import { type TypeRamp, themeOf } from "../theme/themes.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 import { lineHeight } from "./text.ts";
 
 /** Does the node's text fit a box of this step, by the checker's rule? */
-export function fits(node: DiagramNode, step: SizeStep, m: Measurer): boolean {
+export function fits(
+  node: DiagramNode,
+  step: SizeStep,
+  m: Measurer,
+  T: TypeRamp = TYPE_RAMP,
+): boolean {
   const box = BOX[step];
   const room = box.w - 2 * FRAME.textPad;
-  const label = m.wrap(node.label, TYPE_RAMP["node-label"], room);
+  const label = m.wrap(node.label, T["node-label"], room);
   const sub =
     node.sublabel === undefined || node.sublabel === ""
       ? []
-      : m.wrap(node.sublabel, TYPE_RAMP["node-sublabel"], room);
+      : m.wrap(node.sublabel, T["node-sublabel"], room);
   if (label.length > FRAME.labelLines || sub.length > FRAME.sublabelLines) return false;
   if ([...label, ...sub].some((l) => l.width > room + 1e-6)) return false;
   const block =
-    label.length * lineHeight("node-label", m) + sub.length * lineHeight("node-sublabel", m);
+    label.length * lineHeight("node-label", m, T) + sub.length * lineHeight("node-sublabel", m, T);
   return block <= box.h - 2 * FRAME.textPadY + 1e-6;
 }
 
@@ -32,22 +38,27 @@ interface Sized {
   step: SizeStep;
 }
 
-// The answer depends only on the node's text and the measurer, so it is kept per
-// node object while its text is unchanged: slot choice lays out many trials.
-const cache = new WeakMap<Measurer, WeakMap<DiagramNode, Sized>>();
+// The answer depends only on the node's text, the measurer and the type sizes, so
+// it is kept per node object while those are unchanged: slot choice lays out many trials.
+const cache = new WeakMap<Measurer, WeakMap<DiagramNode, Sized & { ramp: TypeRamp }>>();
 
-function autoSize(node: DiagramNode, m: Measurer): SizeStep {
+function autoSize(node: DiagramNode, m: Measurer, T: TypeRamp): SizeStep {
   let byNode = cache.get(m);
   if (byNode === undefined) {
     byNode = new WeakMap();
     cache.set(m, byNode);
   }
   const hit = byNode.get(node);
-  if (hit !== undefined && hit.label === node.label && hit.sublabel === node.sublabel) {
+  if (
+    hit !== undefined &&
+    hit.ramp === T &&
+    hit.label === node.label &&
+    hit.sublabel === node.sublabel
+  ) {
     return hit.step;
   }
-  const step: SizeStep = fits(node, "m", m) ? "m" : "l";
-  byNode.set(node, { label: node.label, sublabel: node.sublabel, step });
+  const step: SizeStep = fits(node, "m", m, T) ? "m" : "l";
+  byNode.set(node, { label: node.label, sublabel: node.sublabel, step, ramp: T });
   return step;
 }
 
@@ -55,7 +66,7 @@ function autoSize(node: DiagramNode, m: Measurer): SizeStep {
 export function sizeOf(node: DiagramNode, d: Diagram, m: Measurer): SizeStep {
   if (node.size !== undefined) return node.size;
   if (d.sizing === "fixed") return "m";
-  return autoSize(node, m);
+  return autoSize(node, m, themeOf(d).type);
 }
 
 /** The diagram with every node's step filled in, for layout. The input is not changed. */

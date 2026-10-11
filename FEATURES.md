@@ -39,6 +39,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `diagram.sizing` | Set how a node with no size is sized: `auto`, to its text (the default), or `fixed`, always medium (D27) | done |
 | `diagram.subtitle` | Set or clear one sentence under the title (D26) | done |
 | `diagram.note` | Set or clear the footnote, such as "Not shown: …" (D26) | done |
+| `diagram.style` | Take the look from a built-in theme (`default`, `dark`, `print`) or a stylesheet file beside the diagram; without one, the default theme (D30) | done |
 | `diagram.legend` | Name a line style in the legend, such as "Kafka message" for dashed lines, or go back to the default wording | done |
 | `diagram.tidy` | Reorder every layer's nodes once, together, to reduce crossings (D24) | done |
 
@@ -97,7 +98,7 @@ This is the syntax built so far. `<file>` is a diagram file, named `<name>.grafi
 
 ```sh
 grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy]
-    [--sizing auto|fixed]
+    [--sizing auto|fixed] [--style <style>]
 grafical layer add <file> <id> --label <text> [--before <layer> | --after <layer>]
 grafical layer rename <file> <id> --label <text>
 grafical layer move <file> <id> --first | --last | --before <layer> | --after <layer>
@@ -136,6 +137,7 @@ grafical diagram title <file> --text <text>
 grafical diagram density <file> compact|normal|airy
 grafical diagram legend <file> solid|dashed [--text <text>]
 grafical diagram tidy <file>
+grafical diagram style <file> [<style>]
 grafical apply <file> <batch.yaml>
 grafical show <file>
 grafical check <file> [--all]
@@ -209,6 +211,34 @@ edges:
 
 - Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`. A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, auto sizing) is left out, and so are an empty `groups` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
+
+### The stylesheet file
+
+A diagram names its look with `style:`, right after `density`: a built-in theme, or a stylesheet's path relative to the diagram, ending in `.grafical-style.yaml` (D30).
+
+```yaml
+grafical-style: 1
+base: default          # default, dark or print: every value not given comes from it
+paint:
+  background: "#ffffff"
+  group: { fill: "#eef6f0", stroke: "#9cc7a8" }
+  node:
+    kinds:
+      store: { fill: "#f0f2f5", stroke: "#b4bac3" }
+    accent: { fill: "#fff4e5", stroke: "#d9822b" }
+  edge:
+    kinds:
+      call: { stroke: "#2f6f4f" }
+      async: { stroke: "#2f6f4f", dash: "4 3" }
+type:
+  title: { size: 22 }
+  node-label: { size: 14, weight: 600 }
+```
+
+- `paint` holds every colour, stroke width and corner radius, by role, under the same keys as the built-in themes. Any node kind may take a dashed border. Only `async` edges are dashed, because the kind decides the line style (D8).
+- `type` holds a size (6 to 48) and a weight (400 or 600, the bundled fonts' weights) per text role. Larger type changes the layout, and text that no longer fits its box is refused as overflow.
+- An unknown key, a malformed colour or a weight the fonts lack is refused with the path of the value.
+- A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
 
 ## Vocabulary
 

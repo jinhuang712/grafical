@@ -8,7 +8,7 @@
 import type { PlacedText, Point, Rect, Scene, SceneEdge, SceneGroup, SceneNode } from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
 import { FRAME } from "../theme/geometry.ts";
-import { PAINT } from "../theme/paint.ts";
+import { PAINT, type Paint } from "../theme/paint.ts";
 
 /** At most 2 decimals, no trailing zeros, never "-0". */
 export function num(v: number): string {
@@ -51,8 +51,8 @@ function dashAttr(dash: string | undefined): string {
   return dash ? ` stroke-dasharray="${dash}"` : "";
 }
 
-function nodeShape(n: SceneNode): string[] {
-  const p = PAINT.node;
+function nodeShape(n: SceneNode, P: Paint): string[] {
+  const p = P.node;
   const kind: { fill: string; stroke: string; dash?: string } = p.kinds[n.kind];
   const stroke = n.accent ? p.accent.stroke : kind.stroke;
   const fill = n.accent ? p.accent.fill : kind.fill;
@@ -103,17 +103,22 @@ function outlineInset(n: SceneNode, x: number): number {
 }
 
 /** The head is a small filled triangle with its tip at `tip`, pointing along `dir`. */
-function arrowHead(tip: Point, from: Point, fill: string): { d: string; base: Point } | undefined {
+function arrowHead(
+  tip: Point,
+  from: Point,
+  fill: string,
+  P: Paint,
+): { d: string; base: Point } | undefined {
   const dx = tip.x - from.x;
   const dy = tip.y - from.y;
   const len = Math.hypot(dx, dy);
   if (len === 0) return undefined;
   const ux = dx / len;
   const uy = dy / len;
-  const l = Math.min(PAINT.edge.arrow.length, len);
+  const l = Math.min(P.edge.arrow.length, len);
   const bx = tip.x - ux * l;
   const by = tip.y - uy * l;
-  const h = PAINT.edge.arrow.halfWidth;
+  const h = P.edge.arrow.halfWidth;
   return {
     d:
       `<path d="M${num(tip.x)} ${num(tip.y)}L${num(bx - uy * h)} ${num(by + ux * h)}` +
@@ -140,7 +145,7 @@ function simplify(points: Point[]): Point[] {
 }
 
 /** A route as a path with corners rounded by a quadratic curve. */
-function roundedPath(pts: Point[]): string {
+function roundedPath(pts: Point[], P: Paint): string {
   const first = pts[0] as Point;
   let d = `M${num(first.x)} ${num(first.y)}`;
   for (let i = 1; i < pts.length; i++) {
@@ -153,7 +158,7 @@ function roundedPath(pts: Point[]): string {
     }
     const inLen = Math.hypot(p.x - prev.x, p.y - prev.y);
     const outLen = Math.hypot(next.x - p.x, next.y - p.y);
-    const r = Math.min(PAINT.edge.cornerRadius, inLen / 2, outLen / 2);
+    const r = Math.min(P.edge.cornerRadius, inLen / 2, outLen / 2);
     const ax = p.x - ((p.x - prev.x) / inLen) * r;
     const ay = p.y - ((p.y - prev.y) / inLen) * r;
     const bx = p.x + ((next.x - p.x) / outLen) * r;
@@ -178,8 +183,8 @@ function ontoOutline(end: Point, next: Point, n: SceneNode | undefined): Point {
 }
 
 /** The line stops at the arrowhead's base. Only solid and dashed exist (D8). */
-function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>): string[] {
-  const paint = PAINT.edge;
+function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>, P: Paint): string[] {
+  const paint = P.edge;
   const kind: { stroke: string; dash?: string } = paint.kinds[e.kind];
   const pts = simplify(e.points);
   if (pts.length < 2) return [];
@@ -187,52 +192,51 @@ function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>): string[] {
   const last = pts.length - 1;
   pts[last] = ontoOutline(pts[last] as Point, pts[last - 1] as Point, nodes.get(e.to));
   const tip = pts[pts.length - 1] as Point;
-  const head = arrowHead(tip, pts[pts.length - 2] as Point, kind.stroke);
+  const head = arrowHead(tip, pts[pts.length - 2] as Point, kind.stroke, P);
   if (head) pts[pts.length - 1] = head.base;
   const out = [
-    `<path d="${roundedPath(pts)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(paint.strokeWidth)}"${dashAttr(kind.dash)}/>`,
+    `<path d="${roundedPath(pts, P)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(paint.strokeWidth)}"${dashAttr(kind.dash)}/>`,
   ];
   if (head) out.push(head.d);
   return out;
 }
 
-function legendShapes(scene: Scene): string[] {
+function legendShapes(scene: Scene, P: Paint): string[] {
   const out: string[] = [];
-  const paint = PAINT.edge;
+  const paint = P.edge;
   const stroke = paint.kinds.call.stroke;
   for (const item of scene.legend ?? []) {
     const { x1, x2, y } = item.sample;
-    const head = arrowHead({ x: x2, y }, { x: x1, y }, stroke);
+    const head = arrowHead({ x: x2, y }, { x: x1, y }, stroke, P);
     const end = head ? head.base.x : x2;
-    const dash = item.style === "dashed" ? paint.legendDash : undefined;
+    const dash = item.style === "dashed" ? paint.kinds.async.dash : undefined;
     out.push(
       `<path d="M${num(x1)} ${num(y)}L${num(end)} ${num(y)}" fill="none" stroke="${stroke}" stroke-width="${num(paint.strokeWidth)}"${dashAttr(dash)}/>`,
     );
     if (head) out.push(head.d);
-    out.push(...texts(item.label, PAINT.text.legend));
+    out.push(...texts(item.label, P.text.legend));
   }
   return out;
 }
 
-function groupShapes(g: SceneGroup): string[] {
-  const p = PAINT.group;
+function groupShapes(g: SceneGroup, P: Paint): string[] {
+  const p = P.group;
   const out = [
     `<rect ${rectAttrs(g.rect)} rx="${num(p.radius)}" fill="${p.fill}" stroke="${p.stroke}" stroke-width="${num(p.strokeWidth)}"/>`,
   ];
   for (const r of g.label.runs) {
     const light = FONT_FAMILY[r.face].weight < 600;
     out.push(
-      ...texts(
-        { ...g.label, runs: [r] },
-        light ? PAINT.text.groupLabelMuted : PAINT.text.groupLabel,
-      ),
+      ...texts({ ...g.label, runs: [r] }, light ? P.text.groupLabelMuted : P.text.groupLabel),
     );
   }
-  if (g.sublabel) out.push(...texts(g.sublabel, PAINT.text.groupLabelMuted));
+  if (g.sublabel) out.push(...texts(g.sublabel, P.text.groupLabelMuted));
   return out;
 }
 
 export function renderSvg(scene: Scene): string {
+  // The scene carries its theme's paint (D30); a scene without one is the default theme.
+  const P = scene.paint ?? PAINT;
   const w = num(scene.width);
   const h = num(scene.height);
   const out: string[] = [];
@@ -249,22 +253,22 @@ export function renderSvg(scene: Scene): string {
     `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img">`,
     `<title>${escapeXml(title)}</title>`,
     `<desc>${escapeXml(desc)}</desc>`,
-    `<rect width="${w}" height="${h}" fill="${PAINT.background}"/>`,
+    `<rect width="${w}" height="${h}" fill="${P.background}"/>`,
   );
 
-  const bp = PAINT.band;
+  const bp = P.band;
   for (const b of scene.bands ?? []) {
     out.push(
       `<rect ${rectAttrs(b.rect)} rx="${num(bp.radius)}" fill="${bp.fill}" stroke="${bp.stroke}" stroke-width="${num(bp.strokeWidth)}"/>`,
-      ...texts(b.label, PAINT.text.groupLabelMuted),
+      ...texts(b.label, P.text.groupLabelMuted),
     );
   }
-  for (const g of groups) out.push(...groupShapes(g));
+  for (const g of groups) out.push(...groupShapes(g, P));
 
-  const lb = PAINT.edge.labelBackground;
+  const lb = P.edge.labelBackground;
   const byId = new Map(scene.nodes.map((n) => [n.id, n]));
   for (const e of scene.edges) {
-    out.push(...edgeShapes(e, byId));
+    out.push(...edgeShapes(e, byId, P));
     if (e.label) {
       const b = e.label.bbox;
       const bg: Rect = {
@@ -289,27 +293,25 @@ export function renderSvg(scene: Scene): string {
           cy >= b.rect.y &&
           cy <= b.rect.y + b.rect.h,
       );
-      const behind = inGroup ? PAINT.group.fill : inBand ? PAINT.band.fill : lb.fill;
+      const behind = inGroup ? P.group.fill : inBand ? P.band.fill : lb.fill;
       out.push(
         `<rect ${rectAttrs(bg)} rx="${num(lb.radius)}" fill="${behind}"/>`,
-        ...texts(e.label, PAINT.text.edgeLabel),
+        ...texts(e.label, P.text.edgeLabel),
       );
     }
   }
 
   for (const n of scene.nodes) {
-    out.push(...nodeShape(n));
+    out.push(...nodeShape(n, P));
     for (const t of n.texts) {
-      out.push(
-        ...texts(t, t.role === "node-sublabel" ? PAINT.text.nodeSublabel : PAINT.text.nodeLabel),
-      );
+      out.push(...texts(t, t.role === "node-sublabel" ? P.text.nodeSublabel : P.text.nodeLabel));
     }
   }
 
-  out.push(...texts(scene.title, PAINT.text.title));
-  if (scene.subtitle) out.push(...texts(scene.subtitle, PAINT.text.subtitle));
-  out.push(...legendShapes(scene));
-  if (scene.note) out.push(...texts(scene.note, PAINT.text.note));
+  out.push(...texts(scene.title, P.text.title));
+  if (scene.subtitle) out.push(...texts(scene.subtitle, P.text.subtitle));
+  out.push(...legendShapes(scene, P));
+  if (scene.note) out.push(...texts(scene.note, P.text.note));
   out.push("</svg>");
   return `${out.join("\n")}\n`;
 }

@@ -73,6 +73,8 @@ export interface Diagram {
   density: Density;
   /** "fixed": a node with no size is a medium box, whatever its text. Absent: auto (D27). */
   sizing?: "fixed";
+  /** A built-in theme's name, or a stylesheet's path relative to the file (D30). Absent: the default theme. */
+  style?: string;
   /** The legend's wording per line style, where it differs from the default. */
   legend?: Partial<Record<LineStyleName, string>>;
   /** Ordered top to bottom. */

@@ -4,6 +4,7 @@
 
 import type { EdgeKind, NodeKind } from "./model/types.ts";
 import type { FontFace } from "./text/types.ts";
+import type { Paint } from "./theme/paint.ts";
 
 export interface Point {
   x: number;
@@ -105,6 +106,8 @@ export interface SceneEdge {
 }
 
 export interface Scene {
+  /** The paint of the diagram's theme (D30). Absent: the default theme. */
+  paint?: Paint;
   width: number;
   height: number;
   title: PlacedText;

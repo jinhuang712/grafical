@@ -5,10 +5,10 @@
 export const GUIDE = `grafical: build architecture diagrams by running commands. You state facts (row, order, system, connection), never coordinates. grafical lays out the picture, checks it, and refuses any change that would leave a label too long or a character it cannot draw.
 
 HOW TO DRAW A GOOD DIAGRAM (read this first)
-- One story per diagram. Aim for 12 to 16 nodes. A diagram of 30 boxes is not a diagram; it is a dump. More than 16 nodes gives a warning that names merges.
+- One story per diagram, 12 to 16 nodes. 30 boxes is a dump, not a diagram.
 - Group nodes into systems. A group is one box around the nodes that belong to one service or team, such as "catalog-sync". Its members may sit in neighbouring rows. Put each node in a group unless it is a caller or an outside dependency. A group needs two or more nodes: never wrap one node in a group of its own name.
 - Merge what a reader does not need apart: six topics become one node "upstream topics" with sublabel "6 broker topics"; five callers become one actor "API callers" with sublabel "storefront, promotions"; ten pipelines become one node.
-- An edge may end at a group or a layer instead of a node. One edge from callers to the group "catalog-api" says they call that system, and replaces an edge to each part. An edge to a layer draws that row as a labelled band. Use it when the reader does not need the part.
+- An edge may end at a group or a layer: one edge from callers to the group "catalog-api" replaces an edge to each part. An edge to a layer draws that row as a labelled band.
 - Merge only nodes with the same edges. A merged box claims every edge of every member: merge geo-svc, which only A calls, with i18n-svc, which B calls too, and the picture says B calls geo-svc.
 - Draw each flow to its end. A retry topic needs its edge back to where messages are re-sent, or leave it out.
 - Put detail in the sublabel (port, tier, topic names, store name), not in extra boxes. Keep labels to 1 to 3 words and sublabels short.
@@ -25,10 +25,11 @@ WORKFLOW
 Each write command reads the file, applies the change, lays out, checks, and writes only if there is no error and no defect you must fix. Otherwise the file is untouched and the exit code is 1. Never edit the file by hand. Name it <name>.grafical.yaml.
 
 COMMANDS (every command accepts --json)
-grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy] [--sizing auto|fixed]
+grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy] [--sizing auto|fixed] [--style <style>]
 grafical diagram subtitle <file> [--text <text>]   (no --text clears it)
 grafical diagram note <file> [--text <text>]
 grafical diagram sizing <file> auto|fixed
+grafical diagram style <file> [<style>]   (default, dark, print, or <name>.grafical-style.yaml: the look the user asks for)
 grafical diagram title <file> --text <text>; diagram density <file> compact|normal|airy
 grafical diagram legend <file> solid|dashed [--text <text>]   (name a line style, e.g. "Kafka message")
 grafical diagram tidy <file>   (reorder all layers once, to untangle lines)

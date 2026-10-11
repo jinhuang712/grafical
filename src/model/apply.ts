@@ -5,6 +5,7 @@
 import type { OpError } from "../errors.ts";
 import * as layoutModule from "../layout/index.ts";
 import type { Measurer } from "../text/types.ts";
+import { styleProblem, THEMES } from "../theme/themes.ts";
 import { endIds, endKind } from "./ends.ts";
 import type { EdgeAddOp, LayerAddOp, NodeAddOp, NodeMoveOp, Op, Position } from "./ops.ts";
 import { checkIntegrity, MAX_ACCENTS } from "./schema.ts";
@@ -423,6 +424,17 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
   return [];
 }
 
+function badStyle(style: string, problem: string, i: number): OpError {
+  return {
+    code: "bad-value",
+    index: i,
+    field: "style",
+    found: style,
+    expected: problem,
+    suggestion: `one of ${Object.keys(THEMES).join(", ")}, or a stylesheet such as brand.grafical-style.yaml beside the diagram`,
+  };
+}
+
 function unknownEdge(d: Diagram, id: string, i: number, field: string): OpError {
   return {
     code: "unknown-edge",
@@ -745,6 +757,16 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, "legend");
       return [];
     }
+    case "diagram.style": {
+      if (op.style === undefined) delete d.style;
+      else {
+        const problem = styleProblem(op.style);
+        if (problem !== undefined) return [badStyle(op.style, problem, i)];
+        d.style = op.style;
+      }
+      touch(s, "style");
+      return [];
+    }
     case "diagram.tidy":
       for (const l of d.layers) s.tidy.add(l.id);
       return [];
@@ -980,6 +1002,7 @@ function newDiagram(op: Extract<Op, { op: "diagram.new" }>): Diagram {
     edges: [],
   };
   if (op.sizing === "fixed") d.sizing = "fixed";
+  if (op.style !== undefined) d.style = op.style;
   if (op.subtitle !== undefined) d.subtitle = op.subtitle;
   if (op.note !== undefined) d.note = op.note;
   return d;

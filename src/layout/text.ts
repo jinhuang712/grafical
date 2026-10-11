@@ -4,16 +4,17 @@
 
 import type { PlacedText, Rect, TextRole } from "../scene.ts";
 import type { Line, Measurer } from "../text/types.ts";
+import type { TypeRamp } from "../theme/themes.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 
 /** The height one line of a role takes in a stack of lines. */
-export function lineHeight(role: TextRole, m: Measurer): number {
-  return m.metrics(TYPE_RAMP[role]).lineHeight;
+export function lineHeight(role: TextRole, m: Measurer, ramp: TypeRamp = TYPE_RAMP): number {
+  return m.metrics(ramp[role]).lineHeight;
 }
 
 /** The height of the ink box of one line: ascent plus descent. */
-export function lineBox(role: TextRole, m: Measurer): number {
-  const mt = m.metrics(TYPE_RAMP[role]);
+export function lineBox(role: TextRole, m: Measurer, ramp: TypeRamp = TYPE_RAMP): number {
+  const mt = m.metrics(ramp[role]);
   return mt.ascent + mt.descent;
 }
 
@@ -28,8 +29,9 @@ export function placeLines(
   top: number,
   align: "start" | "middle",
   m: Measurer,
+  ramp: TypeRamp = TYPE_RAMP,
 ): PlacedText {
-  const style = TYPE_RAMP[role];
+  const style = ramp[role];
   const mt = m.metrics(style);
   const ink = mt.ascent + mt.descent;
   const lead = (mt.lineHeight - ink) / 2;
@@ -65,8 +67,9 @@ export function placeLine(
   x: number,
   top: number,
   m: Measurer,
+  ramp: TypeRamp = TYPE_RAMP,
 ): PlacedText {
-  const style = TYPE_RAMP[role];
+  const style = ramp[role];
   const mt = m.metrics(style);
   const line = m.measure(text, style);
   return {

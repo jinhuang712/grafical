@@ -46,6 +46,7 @@ export function writeDiagram(d: Diagram): string {
   if (d.note !== undefined) out.note = d.note;
   out.density = d.density;
   if (d.sizing === "fixed") out.sizing = "fixed";
+  if (d.style !== undefined) out.style = d.style;
   if (d.legend !== undefined && Object.keys(d.legend).length > 0) {
     const legend: Record<string, string> = {};
     if (d.legend.solid !== undefined) legend.solid = d.legend.solid;

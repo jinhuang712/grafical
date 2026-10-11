@@ -2,6 +2,7 @@
 // read, apply, lay out, check, and write only if nothing is wrong.
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { advise } from "../check/advice.ts";
 import { check } from "../check/index.ts";
 import type { Defect, OpError } from "../errors.ts";
@@ -13,6 +14,12 @@ import type { Op } from "../model/ops.ts";
 import type { Diagram } from "../model/types.ts";
 import { createMeasurer } from "../text/index.ts";
 import type { Measurer } from "../text/types.ts";
+import {
+  parseStylesheet,
+  provideStylesheet,
+  styleProblem,
+  stylesheetRefs,
+} from "../theme/themes.ts";
 
 export interface Report {
   ok: boolean;
@@ -108,7 +115,34 @@ export function loadDiagram(file: string): Diagram | Report {
     return fileError("file-unreadable", file, "a readable file", String(err));
   }
   const d = readDiagram(text);
-  return Array.isArray(d) ? failure(d) : d;
+  if (Array.isArray(d)) return failure(d);
+  return loadStyles(file, stylesheetRefs(d, [])) ?? d;
+}
+
+/**
+ * Reads the stylesheets a diagram names, relative to its folder, and hands them
+ * to layout (D30). Returns a report for the first one that is missing or wrong.
+ * A style that is not a valid name is left for the model to refuse.
+ */
+export function loadStyles(file: string, refs: string[]): Report | undefined {
+  for (const ref of refs) {
+    if (styleProblem(ref) !== undefined) continue;
+    const path = join(dirname(file), ref);
+    if (!existsSync(path)) {
+      return fileError(
+        "style-not-found",
+        path,
+        "the stylesheet the diagram names",
+        `create ${ref} beside the diagram, or grafical diagram style <file> default`,
+      );
+    }
+    const theme = parseStylesheet(readFileSync(path, "utf8"), ref);
+    if (Array.isArray(theme)) {
+      return fileError("bad-stylesheet", path, "a valid stylesheet", theme.join("; "));
+    }
+    provideStylesheet(ref, theme);
+  }
+  return undefined;
 }
 
 export function isReport(x: Diagram | Report): x is Report {
@@ -151,6 +185,11 @@ export async function runWrite(file: string, ops: Op[], create = false): Promise
     if (isReport(loaded)) return loaded;
     base = loaded;
   }
+  const named = ops.map((op) =>
+    op.op === "diagram.style" || op.op === "diagram.new" ? op.style : undefined,
+  );
+  const styles = loadStyles(file, stylesheetRefs(base, named));
+  if (styles !== undefined) return styles;
   const m = await createMeasurer();
   const result = applyOps(base, ops, m);
   if ("errors" in result) return failure(result.errors);

@@ -34,8 +34,14 @@ export interface DiagramNewOp {
   title: string;
   density?: Density;
   sizing?: Sizing;
+  style?: string;
   subtitle?: string;
   note?: string;
+}
+/** The theme or stylesheet the diagram takes its look from (D30). Absent: the default theme. */
+export interface DiagramStyleOp {
+  op: "diagram.style";
+  style?: string;
 }
 /** How nodes with no size are sized (D27). */
 export interface DiagramSizingOp {
@@ -253,6 +259,7 @@ export interface GroupOrderOp {
 export type Op =
   | DiagramNewOp
   | DiagramSizingOp
+  | DiagramStyleOp
   | DiagramSubtitleOp
   | DiagramNoteOp
   | DiagramTitleOp
@@ -304,8 +311,13 @@ export const diagramNewSchema = z.strictObject({
   title: text,
   density: z.enum(DENSITIES).optional(),
   sizing: z.enum(SIZINGS).optional(),
+  style: text.optional(),
   subtitle: text.optional(),
   note: text.optional(),
+});
+export const diagramStyleSchema = z.strictObject({
+  op: z.literal("diagram.style"),
+  style: text.optional(),
 });
 export const diagramSizingSchema = z.strictObject({
   op: z.literal("diagram.sizing"),
@@ -476,6 +488,7 @@ export const groupOrderSchema = z.strictObject({
 export const opSchema = z.discriminatedUnion("op", [
   diagramNewSchema,
   diagramSizingSchema,
+  diagramStyleSchema,
   diagramSubtitleSchema,
   diagramNoteSchema,
   groupAddSchema,
@@ -517,6 +530,7 @@ export const opSchema = z.discriminatedUnion("op", [
 const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.new": diagramNewSchema,
   "diagram.sizing": diagramSizingSchema,
+  "diagram.style": diagramStyleSchema,
   "diagram.subtitle": diagramSubtitleSchema,
   "diagram.note": diagramNoteSchema,
   "group.add": groupAddSchema,

@@ -84,14 +84,29 @@ function build(): Command {
       .requiredOption("--title <text>", "diagram title")
       .option("--density <density>", "compact, normal or airy")
       .option("--sizing <sizing>", "auto (default) or fixed: how nodes without --size are sized")
+      .option(
+        "--style <style>",
+        "a theme (default, dark, print) or a <name>.grafical-style.yaml beside the file",
+      )
       .option("--subtitle <text>", "one sentence under the title")
       .option("--note <text>", 'a footnote, such as "Not shown: ..."'),
   ).action(async (file: string, opts: Opts) => {
-    const names = ["title", "density", "sizing", "subtitle", "note"];
+    const names = ["title", "density", "sizing", "style", "subtitle", "note"];
     await write(file, { op: "diagram.new", ...pick(opts, names) }, opts, true);
   });
 
   const diagram = program.command("diagram").description("diagram-wide settings and text");
+  json(
+    diagram
+      .command("style")
+      .description("take the look from a theme or a stylesheet; without one, the default theme")
+      .argument("<file>")
+      .argument("[style]", "default, dark, print, or a <name>.grafical-style.yaml beside the file"),
+  ).action(async (file: string, style: string | undefined, opts: Opts) => {
+    const raw: Record<string, unknown> = { op: "diagram.style" };
+    if (style !== undefined) raw.style = style;
+    await write(file, raw, opts);
+  });
   json(
     diagram
       .command("sizing")

@@ -25,7 +25,7 @@ import type {
 } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { BAND, FRAME, GROUP, SPACING, type Spacing } from "../theme/geometry.ts";
-import { TYPE_RAMP } from "../theme/type.ts";
+import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { cutRoute, planEnds, refineEnds } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
@@ -215,8 +215,8 @@ const ceil8 = (x: number) => Math.ceil(x / 8 - 1e-9) * 8;
  * onto that many, for a label that finds no clear slot on one line. A label that
  * cannot break, or gets no narrower, has none.
  */
-function narrower(text: string, width: number, m: Measurer): LabelForm[] {
-  const style = TYPE_RAMP["edge-label"];
+function narrower(text: string, width: number, m: Measurer, T: TypeRamp): LabelForm[] {
+  const style = T["edge-label"];
   const mt = m.metrics(style);
   const out: LabelForm[] = [];
   let widest = width;
@@ -275,13 +275,16 @@ const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
 });
 
 function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene; centre: number } {
+  // The diagram's theme decides the type sizes here and the paint in the scene (D30).
+  const theme = themeOf(facts);
+  const T = theme.type;
   const sized = withSizes(facts, m);
   // Container ends route to a stand-in node and are cut at the container (D28).
   const ends = planEnds(sized);
   const d: Diagram = { ...sized, edges: ends.edges };
   const sp = SPACING[d.density];
 
-  const labelStyle = TYPE_RAMP["edge-label"];
+  const labelStyle = T["edge-label"];
   const labelMetrics = m.metrics(labelStyle);
   const labelH = labelMetrics.ascent + labelMetrics.descent;
   const labelSizes = new Map<string, LabelBox>();
@@ -294,13 +297,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       w,
       h: labelH,
       narrower: () => {
-        forms ??= narrower(text, w, m);
+        forms ??= narrower(text, w, m, T);
         return forms;
       },
     });
   }
-  const groupStyle = TYPE_RAMP["group-label"];
-  const groupSubStyle = TYPE_RAMP["group-sublabel"];
+  const groupStyle = T["group-label"];
+  const groupSubStyle = T["group-sublabel"];
   const labelW = (g: { label: string }) => m.measure(g.label, groupStyle).width;
   // A group's label and its quieter second part take one span: lines keep clear of both.
   const groupW = new Map(
@@ -333,7 +336,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     contentLeft = Math.min(contentLeft, g.x0);
     contentRight = Math.max(contentRight, g.x1);
   }
-  const bandStyle = TYPE_RAMP["layer-label"];
+  const bandStyle = T["layer-label"];
   const bandRows = new Map<number, { id: string; label: string; labelX: number; labelW: number }>();
   layers.forEach((l, i) => {
     if (!ends.bands.has(l.id) || !Number.isFinite(contentLeft)) return;
@@ -419,9 +422,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
 
   // The frame: title, subtitle and legend at the top, the footnote at the bottom.
   const title = withText
-    ? placeLine("title", d.title, sp.margin, sp.margin, m)
+    ? placeLine("title", d.title, sp.margin, sp.margin, m, T)
     : empty("title", sp.margin, sp.margin);
-  const legendStyle = TYPE_RAMP.legend;
+  const legendStyle = T.legend;
   const items = withText ? legendItems(d) : [];
   const itemW = items.map(
     (it) => FRAME.legendSample + FRAME.legendLabelGap + m.measure(it.text, legendStyle).width,
@@ -431,10 +434,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const textW = Math.max(2 * half, FRAME.minTextWidth);
   const subLines =
     withText && d.subtitle !== undefined && d.subtitle !== ""
-      ? m.wrap(d.subtitle, TYPE_RAMP.subtitle, textW)
+      ? m.wrap(d.subtitle, T.subtitle, textW)
       : [];
   const noteLines =
-    withText && d.note !== undefined && d.note !== "" ? m.wrap(d.note, TYPE_RAMP.note, textW) : [];
+    withText && d.note !== undefined && d.note !== "" ? m.wrap(d.note, T.note, textW) : [];
   const widest = (lines: { width: number }[]) => Math.max(0, ...lines.map((l) => l.width));
   const width = ceil8(
     Math.max(
@@ -449,13 +452,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const titleBottom = title.bbox.y + ceil4(title.bbox.h);
   const subtitle =
     subLines.length > 0
-      ? placeLines("subtitle", subLines, sp.margin, titleBottom + FRAME.subtitleGap, "start", m)
+      ? placeLines("subtitle", subLines, sp.margin, titleBottom + FRAME.subtitleGap, "start", m, T)
       : undefined;
   const headBottom = subtitle !== undefined ? subtitle.bbox.y + subtitle.bbox.h : titleBottom;
   const legend: SceneLegendItem[] = [];
   {
     const mid = title.bbox.y + title.bbox.h / 2;
-    const lh = lineBox("legend", m);
+    const lh = lineBox("legend", m, T);
     let x = width - sp.margin - legendW;
     items.forEach((it, i) => {
       legend.push({
@@ -523,7 +526,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   let bottom = y;
   const note =
     noteLines.length > 0
-      ? placeLines("note", noteLines, sp.margin, ceil4(y + FRAME.noteGap), "start", m)
+      ? placeLines("note", noteLines, sp.margin, ceil4(y + FRAME.noteGap), "start", m, T)
       : undefined;
   if (note !== undefined) bottom = note.bbox.y + note.bbox.h;
   const height = ceil4(bottom + sp.margin);
@@ -539,12 +542,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     trackY: (g, row) => (gutterTops[g] ?? 0) + (endPads[g] ?? 0) + (row + 1) * sp.trackPitch,
   });
 
-  const layerLabelStyle = TYPE_RAMP["layer-label"];
+  const layerLabelStyle = T["layer-label"];
   const sceneLayers: SceneLayer[] = layers.map((l, i) => {
     const top = rowTops[i] ?? 0;
     const h = rowH(i);
     const lines = withText ? m.wrap(l.label, layerLabelStyle, 2 * half) : [];
-    const label = placeLines("layer-label", lines, sp.margin, top, "start", m);
+    const label = placeLines("layer-label", lines, sp.margin, top, "start", m, T);
     return { id: l.id, band: { x: sp.margin, y: top, w: width - 2 * sp.margin, h }, label };
   });
 
@@ -553,13 +556,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + GROUP.pad;
     const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
     const label = withText
-      ? placeLine("group-label", g.label, centre + g.labelX, y0 + GROUP.labelTop, m)
+      ? placeLine("group-label", g.label, centre + g.labelX, y0 + GROUP.labelTop, m, T)
       : empty("group-label", centre + g.labelX, y0 + GROUP.labelTop);
     const out: SceneGroup = { id: g.id, rect, label, members: g.members };
     const sub = d.groups?.find((x) => x.id === g.id)?.sublabel;
     if (sub !== undefined && withText) {
       const x = centre + g.labelX + labelW(g) + GROUP.sublabelGap;
-      out.sublabel = placeLine("group-sublabel", sub, x, y0 + GROUP.labelTop, m);
+      out.sublabel = placeLine("group-sublabel", sub, x, y0 + GROUP.labelTop, m, T);
     }
     return out;
   });
@@ -570,7 +573,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const x0 = centre + bandLeft;
     const rect: Rect = { x: x0, y: y0, w: contentRight + BAND.padX - bandLeft, h: y1 - y0 };
     const label = withText
-      ? placeLine("layer-label", b.label, centre + b.labelX, y0 + BAND.labelTop, m)
+      ? placeLine("layer-label", b.label, centre + b.labelX, y0 + BAND.labelTop, m, T)
       : empty("layer-label", centre + b.labelX, y0 + BAND.labelTop);
     return { id: b.id, rect, label };
   });
@@ -579,10 +582,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   for (const b of sceneBands) boxOf.set(b.id, b.rect);
   const factsById = new Map(facts.edges.map((e) => [e.id, e]));
 
-  const nodeLabelStyle = TYPE_RAMP["node-label"];
-  const subStyle = TYPE_RAMP["node-sublabel"];
-  const nodeLh = lineHeight("node-label", m);
-  const subLh = lineHeight("node-sublabel", m);
+  const nodeLabelStyle = T["node-label"];
+  const subStyle = T["node-sublabel"];
+  const nodeLh = lineHeight("node-label", m, T);
+  const subLh = lineHeight("node-sublabel", m, T);
   const sceneNodes: SceneNode[] = [];
   for (const l of layers) {
     for (const n of l.nodes) {
@@ -604,10 +607,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
             : 0;
         const top = rect.y + slack + drop;
         const cx = rect.x + rect.w / 2;
-        texts.push(placeLines("node-label", lines, cx, top, "middle", m));
+        texts.push(placeLines("node-label", lines, cx, top, "middle", m, T));
         if (sub.length > 0) {
           texts.push(
-            placeLines("node-sublabel", sub, cx, top + lines.length * nodeLh, "middle", m),
+            placeLines("node-sublabel", sub, cx, top + lines.length * nodeLh, "middle", m, T),
           );
         }
       }
@@ -641,9 +644,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         // A wrapped label: its lines centred on each other, its ink box at the slot.
         const lines = m.wrap(e.label, labelStyle, at.maxWidth);
         const lead = (labelMetrics.lineHeight - labelMetrics.ascent - labelMetrics.descent) / 2;
-        edge.label = placeLines("edge-label", lines, at.x + at.w / 2, at.y - lead, "middle", m);
+        edge.label = placeLines("edge-label", lines, at.x + at.w / 2, at.y - lead, "middle", m, T);
       } else {
-        edge.label = placeLine("edge-label", e.label, at.x, at.y, m);
+        edge.label = placeLine("edge-label", e.label, at.x, at.y, m, T);
       }
     }
     sceneEdges.push(edge);
@@ -661,6 +664,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (note !== undefined) scene.note = note;
   scene.legend = legend;
   scene.groups = sceneGroups;
+  if (theme !== DEFAULT_THEME) scene.paint = theme.paint;
   if (sceneBands.length > 0) scene.bands = sceneBands;
   return { scene: roundScene(scene), centre };
 }
@@ -697,6 +701,7 @@ function roundScene(s: Scene): Scene {
       return out;
     }),
   };
+  if (s.paint !== undefined) out.paint = s.paint;
   if (s.subtitle !== undefined) out.subtitle = roundText(s.subtitle);
   if (s.note !== undefined) out.note = roundText(s.note);
   if (s.legend !== undefined) {

@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import type { OpError } from "../errors.ts";
+import { styleProblem, THEMES } from "../theme/themes.ts";
 import { checkEnds } from "./ends.ts";
 import { ID_EDGE, ID_NODE, issuesToErrors } from "./issues.ts";
 import { suggestIds } from "./suggest.ts";
@@ -64,6 +65,7 @@ export const diagramSchema = z.strictObject({
   note: text.optional(),
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
   sizing: z.enum(SIZINGS).optional(),
+  style: text.optional(),
   legend: z.strictObject({ solid: text.optional(), dashed: text.optional() }).optional(),
   layers: z.array(layerSchema).default([]),
   groups: z.array(groupSchema).default([]),
@@ -93,6 +95,7 @@ function build(p: Parsed): Diagram {
   });
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
   if (p.sizing === "fixed") d.sizing = "fixed";
+  if (p.style !== undefined) d.style = p.style;
   if (p.legend !== undefined) {
     const legend: NonNullable<Diagram["legend"]> = {};
     if (p.legend.solid !== undefined) legend.solid = p.legend.solid;
@@ -150,6 +153,19 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   });
   errors.push(...checkGroups(d, index));
   errors.push(...checkEnds(d, index));
+  if (d.style !== undefined) {
+    const problem = styleProblem(d.style);
+    if (problem !== undefined) {
+      errors.push({
+        code: "bad-value",
+        index,
+        field: "style",
+        found: d.style,
+        expected: problem,
+        suggestion: `one of ${Object.keys(THEMES).join(", ")}, or a stylesheet such as brand.grafical-style.yaml beside the diagram`,
+      });
+    }
+  }
   let accents = 0;
   d.layers.forEach((l, li) => {
     l.nodes.forEach((n, ni) => {

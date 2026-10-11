@@ -448,6 +448,8 @@ An operation sets it (`diagram.style`, and `grafical new --style`), so that an a
 
 The same file is the same picture still holds, read as: the same diagram file and the same stylesheet give the same picture (D15). Both live in git.
 
+As built: the themes are `default`, `dark` (light lines on a dark ground) and `print` (greys with stronger lines). A stylesheet holds `grafical-style: 1`, an optional `base` theme, and partial `paint` and `type` values, each checked: colours as `#rrggbb`, type weights 400 or 600 only. Whether a line is solid or dashed follows its kind (D8), so a stylesheet can change the dash pattern of messages but cannot dash a call. The default theme draws exactly as before stylesheets existed.
+
 Rejected:
 - Colors or styles on one node or edge (D8). A model would have to choose them, and the look would drift.
 - A stylesheet found by folder, without the diagram naming it. The diagram file would no longer say what decides its picture.
