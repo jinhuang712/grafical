@@ -3,7 +3,7 @@
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import { laneNodes } from "../model/lanes.ts";
-import type { Diagram } from "../model/types.ts";
+import { type Diagram, LINE_STYLES } from "../model/types.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { lineStyle } from "../theme/paint.ts";
@@ -376,7 +376,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
       `grafical lane rename <file> ${x.id} --label <text without these characters>`,
     );
   }
-  for (const line of ["solid", "dashed"] as const) {
+  for (const line of LINE_STYLES) {
     add(
       `legend-${line}`,
       "legend text",

@@ -2,7 +2,7 @@
 // The layout produces it, the checker inspects it, the renderer draws it.
 // Coordinates are px, origin top left, y down.
 
-import type { EdgeKind, NodeKind } from "./model/types.ts";
+import type { EdgeKind, LineStyleName, NodeKind } from "./model/types.ts";
 import type { FontFace } from "./text/types.ts";
 import type { Paint } from "./theme/paint.ts";
 
@@ -89,8 +89,8 @@ export interface SceneLane {
 
 /** One line style in the legend, with a short sample line (D8). */
 export interface SceneLegendItem {
-  /** "solid": calls and data reads. "dashed": messages through a queue. */
-  style: "solid" | "dashed";
+  /** The line style the sample is drawn in (D8). */
+  style: LineStyleName;
   /** The sample line, left to right, at the label's middle height. */
   sample: { x1: number; x2: number; y: number };
   label: PlacedText;

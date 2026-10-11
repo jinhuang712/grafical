@@ -18,6 +18,7 @@ import {
   type Edge,
   FORMAT_VERSION,
   type Layer,
+  LINE_STYLES,
   NODE_KINDS,
   SIZE_STEPS,
   SIZINGS,
@@ -106,8 +107,10 @@ function build(p: Parsed): Diagram {
   if (p.style !== undefined) d.style = p.style;
   if (p.legend !== undefined) {
     const legend: NonNullable<Diagram["legend"]> = {};
-    if (p.legend.solid !== undefined) legend.solid = p.legend.solid;
-    if (p.legend.dashed !== undefined) legend.dashed = p.legend.dashed;
+    for (const line of LINE_STYLES) {
+      const text = p.legend[line];
+      if (text !== undefined) legend[line] = text;
+    }
     if (Object.keys(legend).length > 0) d.legend = legend;
   }
   if (p.subtitle !== undefined) d.subtitle = p.subtitle;

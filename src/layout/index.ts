@@ -13,7 +13,14 @@
 // checker and for debugging.
 
 import { laneRun, orderByLanes } from "../model/lanes.ts";
-import type { Diagram, DiagramNode } from "../model/types.ts";
+import {
+  type Diagram,
+  type DiagramNode,
+  EDGE_KINDS,
+  type EdgeKind,
+  LINE_STYLES,
+  type LineStyleName,
+} from "../model/types.ts";
 import type {
   PlacedText,
   Point,
@@ -29,6 +36,7 @@ import type {
 } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { BAND, FRAME, GROUP, LANE, ROUTE, SPACING, type Spacing } from "../theme/geometry.ts";
+import { lineStyle } from "../theme/paint.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { cutRoute, planEnds, refineEnds } from "./ends.ts";
@@ -265,17 +273,25 @@ export function gutterHeight(rows: number, sp: Spacing): number {
   return h;
 }
 
+/** A legend entry's default words for an edge kind (D8). */
+const LEGEND_WORDS: Record<EdgeKind, string> = {
+  call: "call",
+  async: "message",
+  data: "data read",
+};
+
 /** The legend's text for each line style the diagram uses (D8), in the diagram's wording if it sets one. */
-function legendItems(d: Diagram): { style: "solid" | "dashed"; text: string }[] {
+function legendItems(d: Diagram): { style: LineStyleName; text: string }[] {
   const kinds = new Set(d.edges.map((e) => e.kind));
-  const out: { style: "solid" | "dashed"; text: string }[] = [];
-  const call = kinds.has("call");
-  const data = kinds.has("data");
-  if (call || data) {
-    const plain = call && data ? "call or read" : call ? "call" : "data read";
-    out.push({ style: "solid", text: d.legend?.solid ?? plain });
+  const out: { style: LineStyleName; text: string }[] = [];
+  for (const style of LINE_STYLES) {
+    const used = EDGE_KINDS.filter((k) => kinds.has(k) && lineStyle(k) === style);
+    const first = used[0];
+    if (first === undefined) continue;
+    // Calls and data reads share the solid line.
+    const plain = used.length > 1 ? "call or read" : LEGEND_WORDS[first];
+    out.push({ style, text: d.legend?.[style] ?? plain });
   }
-  if (kinds.has("async")) out.push({ style: "dashed", text: d.legend?.dashed ?? "message" });
   return out;
 }
 

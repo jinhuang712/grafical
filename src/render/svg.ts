@@ -8,7 +8,7 @@
 import type { PlacedText, Point, Rect, Scene, SceneEdge, SceneGroup, SceneNode } from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
 import { FRAME } from "../theme/geometry.ts";
-import { PAINT, type Paint } from "../theme/paint.ts";
+import { PAINT, type Paint, STYLE_KIND } from "../theme/paint.ts";
 
 /** At most 2 decimals, no trailing zeros, never "-0". */
 export function num(v: number): string {
@@ -209,7 +209,7 @@ function legendShapes(scene: Scene, P: Paint): string[] {
     const { x1, x2, y } = item.sample;
     const head = arrowHead({ x: x2, y }, { x: x1, y }, stroke, P);
     const end = head ? head.base.x : x2;
-    const dash = item.style === "dashed" ? paint.kinds.async.dash : undefined;
+    const dash = paint.kinds[STYLE_KIND[item.style]].dash;
     out.push(
       `<path d="M${num(x1)} ${num(y)}L${num(end)} ${num(y)}" fill="none" stroke="${stroke}" stroke-width="${num(paint.strokeWidth)}"${dashAttr(dash)}/>`,
     );

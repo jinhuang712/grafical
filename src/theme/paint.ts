@@ -2,7 +2,7 @@
 // The SVG writer reads roles from a scene's paint and never holds a hex code itself.
 // PAINT is the default theme's paint; themes.ts holds the others.
 
-import type { EdgeKind, NodeKind } from "../model/types.ts";
+import type { EdgeKind, LineStyleName, NodeKind } from "../model/types.ts";
 
 export interface NodePaint {
   fill: string;
@@ -68,10 +68,13 @@ export interface Paint {
   };
 }
 
-/** The line style an edge kind is drawn in. Only two exist (D8), and the kind decides it. */
-export function lineStyle(kind: EdgeKind): "solid" | "dashed" {
+/** The line style an edge kind is drawn in. The kind decides it (D8). */
+export function lineStyle(kind: EdgeKind): LineStyleName {
   return kind === "async" ? "dashed" : "solid";
 }
+
+/** The kind whose paint draws a line style's sample in the legend. */
+export const STYLE_KIND: Record<LineStyleName, EdgeKind> = { solid: "call", dashed: "async" };
 
 export const PAINT: Paint = {
   background: "#ffffff",

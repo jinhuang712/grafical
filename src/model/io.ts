@@ -3,7 +3,7 @@
 import { parseDocument, stringify } from "yaml";
 import type { OpError } from "../errors.ts";
 import { validateDiagram } from "./schema.ts";
-import type { Diagram, DiagramNode, Edge, Layer } from "./types.ts";
+import { type Diagram, type DiagramNode, type Edge, type Layer, LINE_STYLES } from "./types.ts";
 
 export function readDiagram(text: string): Diagram | OpError[] {
   const doc = parseDocument(text, { uniqueKeys: true });
@@ -53,8 +53,10 @@ export function writeDiagram(d: Diagram): string {
   if (d.style !== undefined) out.style = d.style;
   if (d.legend !== undefined && Object.keys(d.legend).length > 0) {
     const legend: Record<string, string> = {};
-    if (d.legend.solid !== undefined) legend.solid = d.legend.solid;
-    if (d.legend.dashed !== undefined) legend.dashed = d.legend.dashed;
+    for (const line of LINE_STYLES) {
+      const text = d.legend[line];
+      if (text !== undefined) legend[line] = text;
+    }
     out.legend = legend;
   }
   out.layers = d.layers.map(layerOut);

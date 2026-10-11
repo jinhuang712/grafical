@@ -2,7 +2,7 @@
 // vocabulary (DESIGN.md D17). One line per layer, then one line per edge.
 
 import { laneNodes, laneRun } from "../model/lanes.ts";
-import type { Diagram, DiagramNode, Edge } from "../model/types.ts";
+import { type Diagram, type DiagramNode, type Edge, LINE_STYLES } from "../model/types.ts";
 
 function nodeText(n: DiagramNode): string {
   let s = `${n.id} ${JSON.stringify(n.label)} ${n.kind}`;
@@ -28,7 +28,7 @@ export function showDiagram(d: Diagram): string {
   const lines = [`diagram ${JSON.stringify(d.title)} density=${d.density}${sizing}`];
   if (d.subtitle !== undefined) lines.push(`subtitle ${JSON.stringify(d.subtitle)}`);
   if (d.note !== undefined) lines.push(`note ${JSON.stringify(d.note)}`);
-  for (const line of ["solid", "dashed"] as const) {
+  for (const line of LINE_STYLES) {
     const text = d.legend?.[line];
     if (text !== undefined) lines.push(`legend ${line} ${JSON.stringify(text)}`);
   }

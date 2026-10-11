@@ -10,7 +10,14 @@
 // new order puts out of step are removed and added again.
 
 import type { Op } from "./ops.ts";
-import type { Diagram, DiagramNode, Edge, Group, Lane } from "./types.ts";
+import {
+  type Diagram,
+  type DiagramNode,
+  type Edge,
+  type Group,
+  type Lane,
+  LINE_STYLES,
+} from "./types.ts";
 
 /** The longest common subsequence of two lists of ids, as a set. */
 function lcs(a: readonly string[], b: readonly string[]): Set<string> {
@@ -112,7 +119,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       a.style === undefined ? { op: "diagram.style" } : { op: "diagram.style", style: a.style },
     );
   }
-  for (const line of ["solid", "dashed"] as const) {
+  for (const line of LINE_STYLES) {
     const text = a.legend?.[line];
     if (text === b.legend?.[line]) continue;
     ops.push(

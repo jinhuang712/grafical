@@ -15,7 +15,7 @@ export type SizeStep = (typeof SIZE_STEPS)[number];
 export const DENSITIES = ["compact", "normal", "airy"] as const;
 export type Density = (typeof DENSITIES)[number];
 
-/** The two line styles an edge is drawn in (D8): call and data are solid, async dashed. */
+/** The line styles an edge is drawn in (D8): call and data are solid, async dashed. The legend names each. */
 export const LINE_STYLES = ["solid", "dashed"] as const;
 export type LineStyleName = (typeof LINE_STYLES)[number];
 
