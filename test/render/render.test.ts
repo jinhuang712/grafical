@@ -10,16 +10,16 @@ const pixels = (png: Uint8Array): string => sha(PNG.sync.read(Buffer.from(png)).
 // Pinned hashes. If the paint or the writer changes on purpose, update them.
 const EXPECTED = {
   mixed: {
-    svg: "74b21c5630e875f5947a342187467ed474bb5aa92d34d5f7d2672a3d1518f0e8",
-    png: "450a0c15387d0a16c686a1a48b4671e3dfe3d0ae4887a49c562936b391cb4ee3",
+    svg: "ddf24026752c81c28c351529cc4cd7f133c2875032cc2e35391bb3cf78e70bf6",
+    png: "c65fc21dc86c257554aeebbc7c5cec489d9377e01b442d82b12f73b86a69f453",
   },
   tiny: {
     svg: "d94079fdb03a36c371ffd7ec591b3c9f0913cd4a3b4675ce6a6113c61818707c",
     png: "fc6b4be4333c56e0a9850b48aa28016e984a512f5522508f523d6e17bcf75798",
   },
   grouped: {
-    svg: "5e1e353b239527f8810813a49c45911ab53f5a659b3ec68a3c695afa32fab071",
-    png: "97c0de98d70801116859b53542ee1308098c90622ff92f6941e0fb96453b19ae",
+    svg: "ef8e7013b6671cfbd351ae8c5b110acbc503d125555113889fd4ab447ef3494d",
+    png: "160905ec33375f75b04e58bb39ec2cc6fd139b0e3924c3194d374320e100231e",
   },
   escape: {
     svg: "8fd21fe8b59a88bb37c573a42527d6a241ddda5ba0875a04f711390a35c59f12",

@@ -419,7 +419,13 @@ function compute(d: Diagram, m: Measurer, withText: boolean): { scene: Scene; ce
             ? []
             : m.wrap(n.node.sublabel, subStyle, room);
         const block = lines.length * nodeLh + sub.length * subLh;
-        const top = rect.y + (rect.h - block) / 2;
+        // A store's text drops below its lid, but keeps a lid's height from the bottom.
+        const slack = (rect.h - block) / 2;
+        const drop =
+          n.node.kind === "store"
+            ? Math.max(0, Math.min(FRAME.storeLid / 2, slack - FRAME.storeLid))
+            : 0;
+        const top = rect.y + slack + drop;
         const cx = rect.x + rect.w / 2;
         texts.push(placeLines("node-label", lines, cx, top, "middle", m));
         if (sub.length > 0) {

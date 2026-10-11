@@ -43,8 +43,6 @@ export const PAINT = {
     } satisfies Record<NodeKind, NodePaint>,
     /** The single accent colour: a border and a very light fill, on one or two nodes. */
     accent: { fill: "#eef3fd", stroke: "#2f5fc4", strokeWidth: 1.5 },
-    /** The arc that hints at a cylinder on a store. */
-    storeArc: { stroke: "#b4bac3", inset: 4, sag: 3 },
   },
   edge: {
     strokeWidth: 1.25,

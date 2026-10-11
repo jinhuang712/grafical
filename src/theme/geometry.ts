@@ -72,6 +72,11 @@ export const FRAME = {
   labelLines: 2,
   /** Lines a sublabel may take before it overflows. */
   sublabelLines: 1,
+  /**
+   * Half the height of a store's elliptical lid and bottom: a store is drawn as a
+   * cylinder in its box. Its text sits up to half this lower, below the lid.
+   */
+  storeLid: 7,
 };
 
 /** System boxes (DESIGN.md D7). */

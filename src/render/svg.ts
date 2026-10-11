@@ -7,6 +7,7 @@
 
 import type { PlacedText, Point, Rect, Scene, SceneEdge, SceneGroup, SceneNode } from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
+import { FRAME } from "../theme/geometry.ts";
 import { PAINT } from "../theme/paint.ts";
 
 /** At most 2 decimals, no trailing zeros, never "-0". */
@@ -56,21 +57,49 @@ function nodeShape(n: SceneNode): string[] {
   const stroke = n.accent ? p.accent.stroke : kind.stroke;
   const fill = n.accent ? p.accent.fill : kind.fill;
   const sw = n.accent ? p.accent.strokeWidth : p.strokeWidth;
+  if (n.kind === "store") return cylinder(n.rect, fill, stroke, sw);
   const rx = n.kind === "actor" ? n.rect.h / 2 : p.radius;
-  const out = [
+  return [
     `<rect ${rectAttrs(n.rect)} rx="${num(rx)}" fill="${fill}" stroke="${stroke}" stroke-width="${num(sw)}"${dashAttr(kind.dash)}/>`,
   ];
-  if (n.kind === "store") {
-    const a = p.storeArc;
-    const y = n.rect.y + a.inset;
-    const x0 = n.rect.x + 1;
-    const x1 = n.rect.x + n.rect.w - 1;
-    const cx = n.rect.x + n.rect.w / 2;
-    out.push(
-      `<path d="M${num(x0)} ${num(y)}Q${num(cx)} ${num(y + a.sag * 2)} ${num(x1)} ${num(y)}" fill="none" stroke="${n.accent ? stroke : a.stroke}" stroke-width="${num(p.strokeWidth)}"/>`,
-    );
-  }
-  return out;
+}
+
+/**
+ * A store is a cylinder inside its box: straight sides, an elliptical lid seen
+ * from a little above, and the curved front of its bottom. The lid's back edge
+ * touches the box top and the bottom's front edge the box bottom, so lines meet
+ * the shape where they meet the box at its middle.
+ */
+function cylinder(r: Rect, fill: string, stroke: string, sw: number): string[] {
+  const ry = FRAME.storeLid;
+  const hw = r.w / 2;
+  const x0 = r.x;
+  const x1 = r.x + r.w;
+  const top = r.y + ry;
+  const bottom = r.y + r.h - ry;
+  const arc = (x: number, y: number, sweep: 0 | 1) =>
+    `A${num(hw)} ${num(ry)} 0 0 ${sweep} ${num(x)} ${num(y)}`;
+  const body =
+    `M${num(x0)} ${num(top)}${arc(x1, top, 1)}L${num(x1)} ${num(bottom)}` +
+    `${arc(x0, bottom, 1)}Z`;
+  const lid = `M${num(x0)} ${num(top)}${arc(x1, top, 0)}`;
+  return [
+    `<path d="${body}" fill="${fill}" stroke="${stroke}" stroke-width="${num(sw)}"/>`,
+    `<path d="${lid}" fill="none" stroke="${stroke}" stroke-width="${num(sw)}"/>`,
+  ];
+}
+
+/**
+ * How far below the box top (or above the box bottom) a store's outline lies at
+ * x: the lid and the bottom are half-ellipses, so the outline leaves the box edge
+ * away from the middle. 0 for every other kind.
+ */
+function outlineInset(n: SceneNode, x: number): number {
+  if (n.kind !== "store") return 0;
+  const ry = FRAME.storeLid;
+  const hw = n.rect.w / 2;
+  const d = Math.min(1, Math.abs(x - (n.rect.x + hw)) / hw);
+  return ry - ry * Math.sqrt(1 - d * d);
 }
 
 /** The head is a small filled triangle with its tip at `tip`, pointing along `dir`. */
@@ -134,12 +163,29 @@ function roundedPath(pts: Point[]): string {
   return d;
 }
 
+/**
+ * Moves an end that meets a store's top or bottom side onto its curved outline.
+ * `next` is the route's point beside the end.
+ */
+function ontoOutline(end: Point, next: Point, n: SceneNode | undefined): Point {
+  if (n === undefined || end.x !== next.x) return end;
+  const inset = outlineInset(n, end.x);
+  if (inset === 0) return end;
+  if (Math.abs(end.y - n.rect.y) < 0.01 && next.y < end.y) return { x: end.x, y: end.y + inset };
+  const bottom = n.rect.y + n.rect.h;
+  if (Math.abs(end.y - bottom) < 0.01 && next.y > end.y) return { x: end.x, y: end.y - inset };
+  return end;
+}
+
 /** The line stops at the arrowhead's base. Only solid and dashed exist (D8). */
-function edgeShapes(e: SceneEdge): string[] {
+function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>): string[] {
   const paint = PAINT.edge;
   const kind: { stroke: string; dash?: string } = paint.kinds[e.kind];
   const pts = simplify(e.points);
   if (pts.length < 2) return [];
+  pts[0] = ontoOutline(pts[0] as Point, pts[1] as Point, nodes.get(e.from));
+  const last = pts.length - 1;
+  pts[last] = ontoOutline(pts[last] as Point, pts[last - 1] as Point, nodes.get(e.to));
   const tip = pts[pts.length - 1] as Point;
   const head = arrowHead(tip, pts[pts.length - 2] as Point, kind.stroke);
   if (head) pts[pts.length - 1] = head.base;
@@ -208,8 +254,9 @@ export function renderSvg(scene: Scene): string {
   for (const g of groups) out.push(...groupShapes(g));
 
   const lb = PAINT.edge.labelBackground;
+  const byId = new Map(scene.nodes.map((n) => [n.id, n]));
   for (const e of scene.edges) {
-    out.push(...edgeShapes(e));
+    out.push(...edgeShapes(e, byId));
     if (e.label) {
       const b = e.label.bbox;
       const bg: Rect = {
