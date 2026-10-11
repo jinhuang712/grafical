@@ -1,12 +1,15 @@
-// Text measurement entry point. The real measurer loads the bundled fonts
-// through harfbuzzjs (DESIGN.md D12). Until it lands, this returns the stub.
+// Text measurement entry point (DESIGN.md D12). The real measurer shapes the
+// bundled fonts with harfbuzzjs. The stub stays for tests that need no fonts.
 
-import { createStubMeasurer } from "./stub.ts";
+import { loadFontBytes } from "./fonts.ts";
+import { createHarfbuzzMeasurer } from "./measurer.ts";
 import type { Measurer } from "./types.ts";
 
+export { FONT_FAMILY, FONT_FILES } from "./fonts.ts";
+export { createHarfbuzzMeasurer } from "./measurer.ts";
 export { createStubMeasurer } from "./stub.ts";
 export type { FontFace, Line, Measurer, Run, TextMetrics, TextStyle } from "./types.ts";
 
 export async function createMeasurer(): Promise<Measurer> {
-  return createStubMeasurer();
+  return createHarfbuzzMeasurer(loadFontBytes());
 }
