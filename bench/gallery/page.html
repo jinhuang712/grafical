@@ -88,6 +88,10 @@
   .seg button[aria-pressed="true"].warn { background: var(--warn); border-color: var(--warn); }
   .seg button[aria-pressed="true"].bad { background: var(--bad); border-color: var(--bad); }
   .seg button:disabled { cursor: default; opacity: 0.6; }
+  .toobad { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .toobad-hint { font-size: 12px; color: var(--muted); }
+  .toobad .btn { padding: 4px 10px; font-size: 14px; }
+  .toobad .btn[aria-pressed="true"] { background: var(--bad); border-color: var(--bad); color: var(--bg); }
   .total { font: 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
   textarea { width: 100%; min-height: 54px; resize: vertical; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; font-size: 14px; }
   .pick { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
@@ -281,19 +285,32 @@
     if (task.kind === "change") el.append(shot(p.before, "Before", true));
     el.append(shot(p.after, task.kind === "change" ? "After" : "Picture", false));
     const rows = document.createElement("div"); rows.className = "rows";
+    // One click rates a picture too poor to judge in detail; changing any single score afterwards drops the mark.
+    if (!accepts(task)) {
+      const worst = task.kind === "draft"
+        ? { scores: Object.fromEntries(DRAFT.map(([k]) => [k, 1])) }
+        : { done: "no", other: "major", quality: 1 };
+      const cleared = task.kind === "draft" ? { scores: undefined } : { done: undefined, other: undefined, quality: undefined };
+      const line = document.createElement("div"); line.className = "toobad";
+      const b = document.createElement("button"); b.type = "button"; b.className = "btn"; b.disabled = ro;
+      b.textContent = "Too bad to rate"; b.setAttribute("aria-pressed", String(!!r.bad));
+      b.addEventListener("click", () => update(r.bad ? { ...cleared, bad: undefined } : { ...worst, bad: true }));
+      const s = document.createElement("small"); s.className = "toobad-hint"; s.textContent = r.bad ? "every score set to the worst; click again to undo" : "sets every score to the worst";
+      line.append(b, s); rows.append(line);
+    }
     if (task.kind === "draft") {
       const scores = r.scores ?? {};
       for (const [k, label, hint] of DRAFT) {
-        rows.append(row(label, hint, segment(scale(), scores[k] ?? null, (v) => update({ scores: { ...scores, [k]: v ?? undefined } }), ro)));
+        rows.append(row(label, hint, segment(scale(), scores[k] ?? null, (v) => update({ scores: { ...scores, [k]: v ?? undefined }, bad: undefined }), ro)));
       }
       const sum = DRAFT.reduce((s, [k]) => s + (typeof scores[k] === "number" ? scores[k] : 0), 0);
       const t = document.createElement("div"); t.className = "total"; t.textContent = `Total ${sum} of 25`; rows.append(t);
     } else if (accepts(task)) {
       rows.append(row("Accept as is?", "what you meant, no changes needed", segment(ACCEPT, r.accept ?? null, (v) => update({ accept: v ?? undefined }), ro)));
     } else {
-      rows.append(row("Done right?", "the request itself", segment(DONE, r.done ?? null, (v) => update({ done: v ?? undefined }), ro)));
-      rows.append(row("Anything else changed?", "beyond the request", segment(OTHER, r.other ?? null, (v) => update({ other: v ?? undefined }), ro)));
-      rows.append(row("Quality now", "1 to 5", segment(scale(), r.quality ?? null, (v) => update({ quality: v ?? undefined }), ro)));
+      rows.append(row("Done right?", "the request itself", segment(DONE, r.done ?? null, (v) => update({ done: v ?? undefined, bad: undefined }), ro)));
+      rows.append(row("Anything else changed?", "beyond the request", segment(OTHER, r.other ?? null, (v) => update({ other: v ?? undefined, bad: undefined }), ro)));
+      rows.append(row("Quality now", "1 to 5", segment(scale(), r.quality ?? null, (v) => update({ quality: v ?? undefined, bad: undefined }), ro)));
     }
     el.append(rows);
     const ta = document.createElement("textarea"); ta.id = `comment-${id}`; ta.placeholder = "Comment (optional)"; ta.value = r.comment ?? ""; ta.disabled = ro;
