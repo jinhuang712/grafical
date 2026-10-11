@@ -5,8 +5,8 @@
 // their texts, title. Nodes come after edges so that ports look clean.
 
 import type { PlacedText, Point, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
+import { FONT_FAMILY } from "../text/faces.ts";
 import { PAINT } from "../theme/paint.ts";
-import { FACE_FONT } from "./faces.ts";
 
 /** At most 2 decimals, no trailing zeros, never "-0". */
 export function num(v: number): string {
@@ -33,7 +33,7 @@ function plain(t: PlacedText): string {
 
 function texts(t: PlacedText, fill: string): string[] {
   return t.runs.map((r) => {
-    const f = FACE_FONT[r.face];
+    const f = FONT_FAMILY[r.face];
     return (
       `<text x="${num(r.x)}" y="${num(r.y)}" font-family="${f.family}" font-size="${num(r.size)}" ` +
       `font-weight="${f.weight}" fill="${fill}" xml:space="preserve">${escapeXml(r.text)}</text>`

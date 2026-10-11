@@ -17,13 +17,7 @@ export const FONT_FILES: Record<FontFace, string> = {
   "noto-600": file("NotoSansSC-SemiBold.ttf"),
 };
 
-/** The family name and weight each face carries in the SVG and in resvg. */
-export const FONT_FAMILY: Record<FontFace, { family: string; weight: 400 | 600 }> = {
-  "inter-400": { family: "Inter", weight: 400 },
-  "inter-600": { family: "Inter", weight: 600 },
-  "noto-400": { family: "Noto Sans SC", weight: 400 },
-  "noto-600": { family: "Noto Sans SC", weight: 600 },
-};
+export { FONT_FAMILY } from "./faces.ts";
 
 /** Reads the four font files. */
 export function loadFontBytes(): Record<FontFace, Uint8Array> {
