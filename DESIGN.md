@@ -49,6 +49,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D24 | The engine picks a new node's slot, and `layer.tidy` reorders on request | The tool carries the taste |
 | D25 | The target look is a picture, and its rules are measured | The tool carries the taste |
 | D26 | Curation is coached, budgeted and shown | The tool carries the taste |
+| D27 | A node with no size is sized to its text | The tool carries the taste |
 
 ## Writing a diagram
 
@@ -391,6 +392,19 @@ A good diagram leaves things out, and only the agent can decide what. grafical h
 Rejected:
 - Refusing diagrams over a node count. Some diagrams need more, and a hard limit would push agents into merging things a reader needs apart.
 - Letting the engine drop nodes. That would change facts nobody named (PHILOSOPHY.md).
+
+### D27 A node with no size is sized to its text
+
+A node added without `--size` gets a medium box, or a large one when its text does not fit the medium box. The fit test is the checker's overflow rule (D14), so such a node overflows only when its text does not fit the large box either. The file stores no size for it, so the size is recomputed from the text on every layout (D10): a rename that shortens the label shrinks the box again. A node given a size keeps it, and `node.resize` sets or clears one.
+
+`sizing: fixed` in the file turns this off: a node without a size is always medium, as before, and text that does not fit is refused. It is a diagram fact, set by `grafical new --sizing` or `diagram.sizing`, because the file alone decides the picture (D15). Without it, sizing is auto.
+
+This was added on 2026-10-11. In the three phase 1b drafts, text overflow was the most common reason grafical refused Haiku's first batch, which it refused in 66% of draft calls. The fix it suggested was to remove the node and add it again larger.
+
+Rejected:
+- Auto size choosing the small box for short text. Boxes of three widths in one row look uneven, and the medium box is the target's grid.
+- Storing the chosen size in the file. A later rename could then not shrink the box, and the file would hold a value the engine derived.
+- A setting outside the diagram file, such as a user config. The same file would then draw differently on two machines.
 
 ## Not yet decided
 

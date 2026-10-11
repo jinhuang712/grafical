@@ -15,11 +15,16 @@ export type SizeStep = (typeof SIZE_STEPS)[number];
 export const DENSITIES = ["compact", "normal", "airy"] as const;
 export type Density = (typeof DENSITIES)[number];
 
+/** How the engine sizes a node that has no size (D27). */
+export const SIZINGS = ["auto", "fixed"] as const;
+export type Sizing = (typeof SIZINGS)[number];
+
 export interface DiagramNode {
   id: string;
   label: string;
   kind: NodeKind;
-  size: SizeStep;
+  /** Absent: the engine sizes the box to its text, unless the diagram's sizing is fixed (D27). */
+  size?: SizeStep;
   /** A second, smaller line, such as a port or a topic name. */
   sublabel?: string;
   /** Marks one of the one or two things a reader should see first. */
@@ -60,6 +65,8 @@ export interface Diagram {
   /** A footnote, such as "Not shown: …" (D26). */
   note?: string;
   density: Density;
+  /** "fixed": a node with no size is a medium box, whatever its text. Absent: auto (D27). */
+  sizing?: "fixed";
   /** Ordered top to bottom. */
   layers: Layer[];
   /** The systems, in creation order. Absent or empty: no groups. Members name their group (D7). */

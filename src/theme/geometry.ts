@@ -68,6 +68,8 @@ export const FRAME = {
    * never wrapped.
    */
   textPad: 8,
+  /** Vertical padding inside a box, the room the checker allows above and below text (D14). */
+  textPadY: 4,
   /** Lines a node label may take before it overflows. */
   labelLines: 2,
   /** Lines a sublabel may take before it overflows. */

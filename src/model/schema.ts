@@ -8,7 +8,6 @@ import {
   DEFAULT_DENSITY,
   DEFAULT_EDGE_KIND,
   DEFAULT_NODE_KIND,
-  DEFAULT_SIZE,
   DENSITIES,
   type Diagram,
   type DiagramNode,
@@ -18,6 +17,7 @@ import {
   type Layer,
   NODE_KINDS,
   SIZE_STEPS,
+  SIZINGS,
 } from "./types.ts";
 
 export const MAX_ACCENTS = 2;
@@ -34,7 +34,7 @@ const nodeSchema = z.strictObject({
   label: text,
   kind: z.enum(NODE_KINDS).default(DEFAULT_NODE_KIND),
   sublabel: text.optional(),
-  size: z.enum(SIZE_STEPS).default(DEFAULT_SIZE),
+  size: z.enum(SIZE_STEPS).optional(),
   accent: z.boolean().optional(),
   align: nodeId.optional(),
   group: nodeId.optional(),
@@ -62,6 +62,7 @@ export const diagramSchema = z.strictObject({
   subtitle: text.optional(),
   note: text.optional(),
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
+  sizing: z.enum(SIZINGS).optional(),
   layers: z.array(layerSchema).default([]),
   groups: z.array(groupSchema).default([]),
   edges: z.array(edgeSchema).default([]),
@@ -74,8 +75,9 @@ function build(p: Parsed): Diagram {
     id: l.id,
     label: l.label,
     nodes: l.nodes.map((n) => {
-      const node: DiagramNode = { id: n.id, label: n.label, kind: n.kind, size: n.size };
+      const node: DiagramNode = { id: n.id, label: n.label, kind: n.kind };
       if (n.sublabel !== undefined) node.sublabel = n.sublabel;
+      if (n.size !== undefined) node.size = n.size;
       if (n.accent === true) node.accent = true;
       if (n.align !== undefined) node.align = n.align;
       if (n.group !== undefined) node.group = n.group;
@@ -88,6 +90,7 @@ function build(p: Parsed): Diagram {
     return edge;
   });
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
+  if (p.sizing === "fixed") d.sizing = "fixed";
   if (p.subtitle !== undefined) d.subtitle = p.subtitle;
   if (p.note !== undefined) d.note = p.note;
   if (p.groups.length > 0) d.groups = p.groups.map((g) => ({ id: g.id, label: g.label }));

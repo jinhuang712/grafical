@@ -12,7 +12,6 @@ import {
   DEFAULT_DENSITY,
   DEFAULT_EDGE_KIND,
   DEFAULT_NODE_KIND,
-  DEFAULT_SIZE,
   type Diagram,
   type DiagramNode,
   type Edge,
@@ -312,12 +311,8 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
     if ("error" in slot) errors.push(slot.error);
   }
   if (errors.length > 0 || !layer) return errors;
-  const node: DiagramNode = {
-    id: op.id,
-    label: op.label,
-    kind: op.kind ?? DEFAULT_NODE_KIND,
-    size: op.size ?? DEFAULT_SIZE,
-  };
+  const node: DiagramNode = { id: op.id, label: op.label, kind: op.kind ?? DEFAULT_NODE_KIND };
+  if (op.size !== undefined) node.size = op.size;
   if (op.sublabel !== undefined) node.sublabel = op.sublabel;
   if (op.accent === true) node.accent = true;
   if (op.align !== undefined) node.align = op.align;
@@ -433,6 +428,11 @@ function step(s: State, op: Op, i: number): OpError[] {
       touch(s, field);
       return [];
     }
+    case "diagram.sizing":
+      if (op.mode === "fixed") d.sizing = "fixed";
+      else delete d.sizing;
+      touch(s, "sizing");
+      return [];
     case "group.add":
     case "group.join":
     case "group.leave":
@@ -451,6 +451,14 @@ function step(s: State, op: Op, i: number): OpError[] {
       const at = findNode(d, op.id);
       if (!at) return [unknownNode(d, op.id, i, "id")];
       at.node.label = op.label;
+      touch(s, op.id);
+      return [];
+    }
+    case "node.resize": {
+      const at = findNode(d, op.id);
+      if (!at) return [unknownNode(d, op.id, i, "id")];
+      if (op.size === undefined) delete at.node.size;
+      else at.node.size = op.size;
       touch(s, op.id);
       return [];
     }
@@ -507,6 +515,7 @@ function newDiagram(op: Extract<Op, { op: "diagram.new" }>): Diagram {
     layers: [],
     edges: [],
   };
+  if (op.sizing === "fixed") d.sizing = "fixed";
   if (op.subtitle !== undefined) d.subtitle = op.subtitle;
   if (op.note !== undefined) d.note = op.note;
   return d;

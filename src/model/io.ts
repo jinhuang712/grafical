@@ -23,7 +23,7 @@ export function readDiagram(text: string): Diagram | OpError[] {
 function nodeOut(n: DiagramNode): Record<string, unknown> {
   const o: Record<string, unknown> = { id: n.id, label: n.label, kind: n.kind };
   if (n.sublabel !== undefined) o.sublabel = n.sublabel;
-  if (n.size !== "m") o.size = n.size;
+  if (n.size !== undefined) o.size = n.size;
   if (n.accent === true) o.accent = true;
   if (n.align !== undefined) o.align = n.align;
   if (n.group !== undefined) o.group = n.group;
@@ -45,6 +45,7 @@ export function writeDiagram(d: Diagram): string {
   if (d.subtitle !== undefined) out.subtitle = d.subtitle;
   if (d.note !== undefined) out.note = d.note;
   out.density = d.density;
+  if (d.sizing === "fixed") out.sizing = "fixed";
   out.layers = d.layers.map(layerOut);
   if (d.groups !== undefined && d.groups.length > 0) {
     out.groups = d.groups.map((g) => ({ id: g.id, label: g.label }));

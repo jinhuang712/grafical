@@ -36,6 +36,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 |---|---|---|
 | `diagram.title` | Set the title | stage 1 |
 | `diagram.density` | Set spacing: `compact`, `normal` or `airy` | stage 1 |
+| `diagram.sizing` | Set how a node with no size is sized: `auto`, to its text (the default), or `fixed`, always medium (D27) | stage 1 |
 | `diagram.subtitle` | Set or clear one sentence under the title (D26) | stage 1 |
 | `diagram.note` | Set or clear the footnote, such as "Not shown: …" (D26) | stage 1 |
 
@@ -63,11 +64,11 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | Operation | Does | Status |
 |---|---|---|
 | `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the fewest crossings (D24) | stage 1 |
-| `node.rename` | Change the label. The ID stays. A label that does not fit fails with a suggested size step | stage 1 |
+| `node.rename` | Change the label. The ID stays. A node grafical sizes grows or shrinks with its label (D27). A label that still does not fit fails with a suggested fix | stage 1 |
 | `node.describe` | Set or clear the sublabel, such as a port or a topic name | stage 1 |
 | `node.kind` | Change the kind | stage 1 |
 | `node.move` | Move to another layer, group or position | stage 1 |
-| `node.size` | Set the size step, which fixes the box's width and height | stage 1 |
+| `node.resize` | Set the size step, which fixes the box's width and height. Without a step, grafical sizes the box to its text again (D27) | stage 1 |
 | `node.align` | Place the node directly above or below a node in another layer. Fails if the alignment cannot hold with the order of either layer | stage 1 |
 | `node.emphasize` | Turn the accent on or off | stage 1 |
 | `node.remove` | Remove the node and its edges | stage 1 |
@@ -88,10 +89,12 @@ Phase 1 builds this subset. `<file>` is a diagram file, named `<name>.grafical.y
 
 ```sh
 grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy]
+    [--sizing auto|fixed]
 grafical layer add <file> <id> --label <text> [--before <layer> | --after <layer>]
 grafical node add <file> <id> --layer <layer> --label <text> [--kind <kind>] [--sublabel <text>]
     [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]
 grafical node rename <file> <id> --label <text>
+grafical node resize <file> <id> [--size s|m|l]
 grafical node move <file> <id> [--layer <layer>] [--first | --last | --before <node> | --after <node>]
 grafical node remove <file> <id>
 grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>]
@@ -103,6 +106,7 @@ grafical group rename <file> <id> --label <text>
 grafical group remove <file> <id>
 grafical diagram subtitle <file> [--text <text>]
 grafical diagram note <file> [--text <text>]
+grafical diagram sizing <file> auto|fixed
 grafical apply <file> <batch.yaml>
 grafical show <file>
 grafical check <file> [--all]
@@ -112,6 +116,7 @@ grafical guide
 
 - A new layer goes to the bottom unless `--before` or `--after` places it.
 - `node add` without a position lets grafical pick the slot (D24). `node move --layer` without a position does the same.
+- `node add` without `--size` gets a medium box, or a large one when its text does not fit the medium box (D27). `node resize` without `--size` returns a node to that. With `diagram sizing fixed`, a node without a size is always medium.
 - `node remove` also removes the node's edges, and reports their ids.
 - An edge id defaults to `<from>-><to>` (D4).
 - A group's members must sit in neighbouring rows, or the write fails with `group-gap`. `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
@@ -165,7 +170,7 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`. A field that holds its default (`size: m`, no accent, no alignment, no group) is left out, and so are an empty `groups` list, a missing subtitle and a missing note.
+- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`. A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, auto sizing) is left out, and so are an empty `groups` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ## Vocabulary

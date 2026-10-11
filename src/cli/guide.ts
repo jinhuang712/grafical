@@ -24,13 +24,15 @@ WORKFLOW
 Each write command reads the file, applies the change, lays out, checks, and writes only if there is no error and no defect you must fix. Otherwise the file is untouched and the exit code is 1. Never edit the file by hand. Name it <name>.grafical.yaml.
 
 COMMANDS (every command accepts --json)
-grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy]
+grafical new <file> --title <text> [--subtitle <text>] [--note <text>] [--density compact|normal|airy] [--sizing auto|fixed]
 grafical diagram subtitle <file> [--text <text>]     (no --text clears it)
 grafical diagram note <file> [--text <text>]
+grafical diagram sizing <file> auto|fixed
 grafical layer add <file> <id> --label <text> [--before <layer> | --after <layer>]
 grafical node add <file> <id> --layer <layer> --label <text> [--kind <kind>] [--sublabel <text>]
     [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]
 grafical node rename <file> <id> --label <text>
+grafical node resize <file> <id> [--size s|m|l]   (no --size: grafical sizes it)
 grafical node move <file> <id> [--layer <layer>] [--first | --last | --before <node> | --after <node>]
 grafical node remove <file> <id>
 grafical group add <file> <id> --label <text> [--nodes a,b,c]
@@ -55,7 +57,8 @@ RULES
 - --accent marks a node a reader should see first. At most 2 per diagram.
 - node remove also removes the node's edges and clears align on nodes aligned to it. A removed group's nodes stay.
 - Edge id defaults to <from>-><to>, with #2, #3 when taken. Edges are directed.
-- Defaults: kind service, size m, edge kind call, density normal.
+- Size: leave --size out. grafical gives a medium box, or a large one when the text needs it, and resizes on rename. With sizing fixed, every node without --size is medium.
+- Defaults: kind service, edge kind call, density normal, sizing auto.
 
 VOCABULARY
 node kind: service, store, queue, external, actor
@@ -66,9 +69,9 @@ BATCH FILE
 A YAML list. Each item has op: <noun>.<verb> and the same fields as the flags, in camelCase. Operations apply in order; if any fails, none apply and the error names its index (from 0). Unknown fields are errors. Booleans are true.
 layer.add: id label before after
 node.add: id layer label kind sublabel size first last before after align accent
-node.rename: id label. node.move: id layer first last before after. node.remove: id
+node.rename: id label. node.resize: id size. node.move: id layer first last before after. node.remove: id
 group.add: id label nodes (a list). group.join: group nodes (a list). group.leave: nodes (a list). group.rename: id label. group.remove: id
-diagram.subtitle: text. diagram.note: text. Without text, they clear.
+diagram.subtitle: text. diagram.note: text. Without text, they clear. diagram.sizing: mode (auto or fixed)
 edge.add: from to id label kind. edge.remove: id
 Add groups after their nodes.
 
@@ -92,7 +95,7 @@ Fix the field named, using the suggestion. Codes:
 DEFECTS
 defect <code> [<elements>]: found <what>; expected <what>; fix: <an operation>
 A defect means the change would make the picture wrong, so nothing was written. Two are yours to fix:
-- overflow: a label is too long. Shorten it with node rename, or use --size l.
+- overflow: a label is too long even for the large box, or for the size you gave. Shorten it with node rename, or node resize --size l.
 - missing-glyph: a character cannot be drawn. Replace it.
 Where lines and boxes go is grafical's job.
 

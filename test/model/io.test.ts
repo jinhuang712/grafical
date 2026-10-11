@@ -55,7 +55,8 @@ describe("readDiagram and writeDiagram", () => {
       "grafical: 1\ntitle: T\nlayers:\n  - id: a\n    label: A\n    nodes:\n      - id: n\n        label: N\n",
     ) as Diagram;
     expect(d.density).toBe("normal");
-    expect(d.layers[0]?.nodes[0]).toEqual({ id: "n", label: "N", kind: "service", size: "m" });
+    // No size: the engine sizes the box to its text (D27).
+    expect(d.layers[0]?.nodes[0]).toEqual({ id: "n", label: "N", kind: "service" });
     const out = writeDiagram(d);
     expect(out).not.toContain("size");
     expect(out).not.toContain("accent");

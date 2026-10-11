@@ -14,7 +14,9 @@ import {
   NODE_KINDS,
   type NodeKind,
   SIZE_STEPS,
+  SIZINGS,
   type SizeStep,
+  type Sizing,
 } from "./types.ts";
 
 /** Where a node goes in its layer. At most one field is set. */
@@ -29,8 +31,14 @@ export interface DiagramNewOp {
   op: "diagram.new";
   title: string;
   density?: Density;
+  sizing?: Sizing;
   subtitle?: string;
   note?: string;
+}
+/** How nodes with no size are sized (D27). */
+export interface DiagramSizingOp {
+  op: "diagram.sizing";
+  mode: Sizing;
 }
 export interface DiagramSubtitleOp {
   op: "diagram.subtitle";
@@ -89,6 +97,12 @@ export interface NodeRenameOp {
   id: string;
   label: string;
 }
+export interface NodeResizeOp {
+  op: "node.resize";
+  id: string;
+  /** Absent: the engine sizes the node again (D27). */
+  size?: SizeStep;
+}
 export interface NodeMoveOp extends Position {
   op: "node.move";
   id: string;
@@ -113,6 +127,7 @@ export interface EdgeRemoveOp {
 
 export type Op =
   | DiagramNewOp
+  | DiagramSizingOp
   | DiagramSubtitleOp
   | DiagramNoteOp
   | GroupAddOp
@@ -123,6 +138,7 @@ export type Op =
   | LayerAddOp
   | NodeAddOp
   | NodeRenameOp
+  | NodeResizeOp
   | NodeMoveOp
   | NodeRemoveOp
   | EdgeAddOp
@@ -141,8 +157,13 @@ export const diagramNewSchema = z.strictObject({
   op: z.literal("diagram.new"),
   title: text,
   density: z.enum(DENSITIES).optional(),
+  sizing: z.enum(SIZINGS).optional(),
   subtitle: text.optional(),
   note: text.optional(),
+});
+export const diagramSizingSchema = z.strictObject({
+  op: z.literal("diagram.sizing"),
+  mode: z.enum(SIZINGS),
 });
 export const diagramSubtitleSchema = z.strictObject({
   op: z.literal("diagram.subtitle"),
@@ -195,6 +216,11 @@ export const nodeRenameSchema = z.strictObject({
   id: nodeId,
   label: text,
 });
+export const nodeResizeSchema = z.strictObject({
+  op: z.literal("node.resize"),
+  id: nodeId,
+  size: z.enum(SIZE_STEPS).optional(),
+});
 export const nodeMoveSchema = z.strictObject({
   op: z.literal("node.move"),
   id: nodeId,
@@ -215,6 +241,7 @@ export const edgeRemoveSchema = z.strictObject({ op: z.literal("edge.remove"), i
 /** Parses one operation. A batch item is exactly this. */
 export const opSchema = z.discriminatedUnion("op", [
   diagramNewSchema,
+  diagramSizingSchema,
   diagramSubtitleSchema,
   diagramNoteSchema,
   groupAddSchema,
@@ -225,6 +252,7 @@ export const opSchema = z.discriminatedUnion("op", [
   layerAddSchema,
   nodeAddSchema,
   nodeRenameSchema,
+  nodeResizeSchema,
   nodeMoveSchema,
   nodeRemoveSchema,
   edgeAddSchema,
@@ -233,6 +261,7 @@ export const opSchema = z.discriminatedUnion("op", [
 
 const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.new": diagramNewSchema,
+  "diagram.sizing": diagramSizingSchema,
   "diagram.subtitle": diagramSubtitleSchema,
   "diagram.note": diagramNoteSchema,
   "group.add": groupAddSchema,
@@ -243,6 +272,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "layer.add": layerAddSchema,
   "node.add": nodeAddSchema,
   "node.rename": nodeRenameSchema,
+  "node.resize": nodeResizeSchema,
   "node.move": nodeMoveSchema,
   "node.remove": nodeRemoveSchema,
   "edge.add": edgeAddSchema,

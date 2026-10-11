@@ -83,14 +83,24 @@ function build(): Command {
       .argument("<file>")
       .requiredOption("--title <text>", "diagram title")
       .option("--density <density>", "compact, normal or airy")
+      .option("--sizing <sizing>", "auto (default) or fixed: how nodes without --size are sized")
       .option("--subtitle <text>", "one sentence under the title")
       .option("--note <text>", 'a footnote, such as "Not shown: ..."'),
   ).action(async (file: string, opts: Opts) => {
-    const names = ["title", "density", "subtitle", "note"];
+    const names = ["title", "density", "sizing", "subtitle", "note"];
     await write(file, { op: "diagram.new", ...pick(opts, names) }, opts, true);
   });
 
-  const diagram = program.command("diagram").description("diagram-wide text");
+  const diagram = program.command("diagram").description("diagram-wide settings and text");
+  json(
+    diagram
+      .command("sizing")
+      .description("auto: size nodes without --size to their text; fixed: make them medium")
+      .argument("<file>")
+      .argument("<mode>", "auto or fixed"),
+  ).action(async (file: string, mode: string, opts: Opts) => {
+    await write(file, { op: "diagram.sizing", mode }, opts);
+  });
   for (const field of ["subtitle", "note"] as const) {
     json(
       diagram
@@ -201,6 +211,16 @@ function build(): Command {
       .requiredOption("--label <text>"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "node.rename", id, ...pick(opts, ["label"]) }, opts);
+  });
+  json(
+    node
+      .command("resize")
+      .description("set a node's box size; without --size, grafical sizes it to its text")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--size <size>", "s, m or l"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "node.resize", id, ...pick(opts, ["size"]) }, opts);
   });
   json(
     node

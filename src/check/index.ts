@@ -42,13 +42,17 @@ function lineCount(t: PlacedText): number {
 }
 
 function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
-  const model = new Map<string, { size: string; layer: string }>();
+  // A node may grow to l by node resize when it is not l already. One the engine
+  // sizes (D27) is already l when its text needs it, unless sizing is fixed.
+  const canGrow = new Set<string>();
   for (const layer of diagram.layers) {
-    for (const n of layer.nodes) model.set(n.id, { size: n.size, layer: layer.id });
+    for (const n of layer.nodes) {
+      const explicit = n.size !== undefined && n.size !== "l";
+      if (explicit || (n.size === undefined && diagram.sizing === "fixed")) canGrow.add(n.id);
+    }
   }
   for (const n of scene.nodes) {
     const box = inset(n.rect, NODE_PADDING, NODE_PADDING_Y);
-    const info = model.get(n.id);
     for (const t of n.texts) {
       const isSub = t.role === "node-sublabel";
       const max = isSub ? MAX_SUBLABEL_LINES : MAX_LABEL_LINES;
@@ -57,25 +61,22 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
       const shorten = isSub
         ? `shorten the ${what} of ${n.id}: remove the node and add it again with a shorter --sublabel`
         : `grafical node rename <file> ${n.id} --label <shorter text>`;
+      const bigger = canGrow.has(n.id) ? `, or grafical node resize <file> ${n.id} --size l` : "";
       if (lines > max) {
         out.push({
           code: "overflow",
           elements: [n.id],
           found: `the ${what} of ${n.id} has ${lines} lines`,
           expected: `at most ${max} ${max === 1 ? "line" : "lines"}`,
-          fix: shorten,
+          fix: `${shorten}${bigger}`,
         });
       } else if (!rectInside(t.bbox, box)) {
-        const bigger =
-          !isSub && info && info.size !== "l"
-            ? `, or remove ${n.id} and add it again with --size l`
-            : "";
         out.push({
           code: "overflow",
           elements: [n.id],
           found: `the ${what} of ${n.id} spans ${rectText(t.bbox)}, outside ${rectText(box)}`,
           expected: `text inside the box, ${NODE_PADDING}px from its sides and ${NODE_PADDING_Y}px from its top and bottom`,
-          fix: isSub ? shorten : `${shorten}${bigger}`,
+          fix: `${shorten}${bigger}`,
         });
       }
     }

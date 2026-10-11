@@ -30,6 +30,7 @@ import { buildGrid, type GroupProblem } from "./grid.ts";
 import { placeAcross } from "./place.ts";
 import { assemble, type LabelBox, type LabelForm, round2, routeAcross } from "./route.ts";
 import { planSideways } from "./side.ts";
+import { withSizes } from "./size.ts";
 import { routeStats } from "./stats.ts";
 import { lineBox, lineHeight, placeLine, placeLines } from "./text.ts";
 
@@ -270,7 +271,8 @@ const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
   bbox: { x, y, w: 0, h: 0 },
 });
 
-function compute(d: Diagram, m: Measurer, withText: boolean): { scene: Scene; centre: number } {
+function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene; centre: number } {
+  const d = withSizes(facts, m);
   const sp = SPACING[d.density];
 
   const labelStyle = TYPE_RAMP["edge-label"];

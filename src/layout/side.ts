@@ -8,7 +8,7 @@
 // it, the label of the lower one below it, both inside the row. The others go
 // round through the gutter below the row.
 
-import type { Diagram } from "../model/types.ts";
+import { DEFAULT_SIZE, type Diagram } from "../model/types.ts";
 import { BOX, ROUTE } from "../theme/geometry.ts";
 
 export interface SideSlot {
@@ -48,7 +48,8 @@ export function planSideways(
   const at = new Map<string, { layer: number; order: number; h: number }>();
   d.layers.forEach((l, layer) => {
     l.nodes.forEach((n, order) => {
-      if (!at.has(n.id)) at.set(n.id, { layer, order, h: BOX[n.size].h });
+      // compute() has sized every node (size.ts).
+      if (!at.has(n.id)) at.set(n.id, { layer, order, h: BOX[n.size ?? DEFAULT_SIZE].h });
     });
   });
   const pairs = new Map<string, { left: string; right: string; h: number; ids: string[] }>();

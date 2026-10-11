@@ -6,7 +6,7 @@
 // packed from the left, as close as that room allows, and the picture is centred
 // on one centre line. Every x here is relative to that line.
 
-import type { Diagram, DiagramNode } from "../model/types.ts";
+import { DEFAULT_SIZE, type Diagram, type DiagramNode } from "../model/types.ts";
 import { BOX, GROUP, ROUTE, SPACING } from "../theme/geometry.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
@@ -88,7 +88,8 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     const placed: PNode[] = [];
     for (const node of layer.nodes) {
       if (nodes.has(node.id)) continue;
-      const box = BOX[node.size];
+      // compute() has sized every node (size.ts).
+      const box = BOX[node.size ?? DEFAULT_SIZE];
       const pn: PNode = {
         id: node.id,
         node,

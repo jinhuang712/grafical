@@ -5,7 +5,7 @@ import type { Diagram, DiagramNode, Edge } from "../model/types.ts";
 
 function nodeText(n: DiagramNode): string {
   let s = `${n.id} ${JSON.stringify(n.label)} ${n.kind}`;
-  if (n.size !== "m") s += ` size=${n.size}`;
+  if (n.size !== undefined) s += ` size=${n.size}`;
   if (n.accent === true) s += " accent";
   if (n.align !== undefined) s += ` align=${n.align}`;
   if (n.group !== undefined) s += ` group=${n.group}`;
@@ -22,7 +22,8 @@ function edgeText(e: Edge): string {
 }
 
 export function showDiagram(d: Diagram): string {
-  const lines = [`diagram ${JSON.stringify(d.title)} density=${d.density}`];
+  const sizing = d.sizing === "fixed" ? " sizing=fixed" : "";
+  const lines = [`diagram ${JSON.stringify(d.title)} density=${d.density}${sizing}`];
   if (d.subtitle !== undefined) lines.push(`subtitle ${JSON.stringify(d.subtitle)}`);
   if (d.note !== undefined) lines.push(`note ${JSON.stringify(d.note)}`);
   for (const l of d.layers) {
