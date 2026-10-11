@@ -275,6 +275,8 @@ export function runStep(o: {
   const yamlBefore = existsSync(yamlFile) ? sha256(yamlFile) : null;
   const stepDir = join(o.dir, "steps", o.spec.step);
   mkdirSync(stepDir, { recursive: true });
+  // The exact prompt, so the rating page can show the request as the agent saw it.
+  writeFileSync(join(stepDir, "prompt.txt"), o.spec.prompt);
   const env = o.arm === "baseline" ? process.env : chainEnv(o.dir, o.arm);
   const res = spawnSync("claude", args, {
     cwd: o.dir,

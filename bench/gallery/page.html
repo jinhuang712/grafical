@@ -1,0 +1,397 @@
+<title>grafical Diagram Ratings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Layout: a sticky bench bar, then one section per task; diagram cards sit two abreast on wide screens. */
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --ink: #1c2230;
+    --muted: #5d6576;
+    --line: #d9dde5;
+    --accent: #2f5bd3;
+    --accent-soft: #e8eefc;
+    --good: #23824f;
+    --warn: #a86b00;
+    --bad: #b8352e;
+    --shadow: 0 1px 2px rgba(20, 30, 50, 0.06);
+    --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151c; --panel: #1a1f29; --ink: #e6e9f0; --muted: #9aa3b5; --line: #2d3442;
+      --accent: #8aa9ff; --accent-soft: #232e4a; --good: #5cc48b; --warn: #e0a73d; --bad: #f07a72;
+      --shadow: none; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12151c; --panel: #1a1f29; --ink: #e6e9f0; --muted: #9aa3b5; --line: #2d3442;
+    --accent: #8aa9ff; --accent-soft: #232e4a; --good: #5cc48b; --warn: #e0a73d; --bad: #f07a72;
+    --shadow: none; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
+  .wrap { max-width: 1280px; margin: 0 auto; padding-inline: 16px; padding-block: 0 64px; }
+  .bar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: var(--bg); border-bottom: 1px solid var(--line);
+  }
+  .bar-inner { max-width: 1280px; margin: 0 auto; padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+  h1 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: 0.01em; }
+  h1 span { color: var(--muted); font-weight: 400; }
+  .grow { flex: 1 1 auto; }
+  select, button, textarea { font: inherit; color: inherit; }
+  select { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; max-width: 100%; }
+  .progress { font: 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .progress b { color: var(--ink); font-weight: 500; }
+  .btn { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 500; }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .notice { margin: 16px 0 0; padding: 10px 14px; border-radius: 8px; background: var(--accent-soft); color: var(--ink); font-size: 14px; }
+  details.brief { margin-top: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+  details.brief summary { cursor: pointer; padding: 10px 14px; font-weight: 500; }
+  details.brief pre { margin: 0; padding: 0 14px 14px; white-space: pre-wrap; font: 13px/1.55 var(--mono); color: var(--muted); max-height: 420px; overflow: auto; }
+  section.task { margin-top: 36px; }
+  .task-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+  .task-head h2 { font-size: 20px; margin: 0; font-weight: 600; text-wrap: balance; }
+  .eyebrow { font: 12px var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .request { margin: 8px 0 0; padding-left: 12px; border-left: 3px solid var(--accent); color: var(--ink); max-width: 75ch; }
+  .cards { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .card-head { display: flex; align-items: center; gap: 10px; }
+  .letter { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; font: 600 15px var(--mono); background: var(--accent-soft); color: var(--accent); }
+  .card-head .who { font-weight: 600; }
+  .card-head .arm { font: 13px var(--mono); color: var(--muted); }
+  .status { margin-left: auto; font: 12px var(--mono); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .status.ok { border-color: var(--good); color: var(--good); }
+  .shot { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+  .shot figcaption { font: 12px var(--mono); color: var(--muted); }
+  .shot button { padding: 0; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: zoom-in; overflow: hidden; display: block; width: 100%; }
+  .shot img { display: block; width: 100%; height: auto; }
+  .shot.before { max-width: 260px; }
+  .shot .missing { padding: 24px; border: 1px dashed var(--line); border-radius: 6px; color: var(--muted); font-size: 14px; text-align: center; }
+  .flag { font: 12px var(--mono); color: var(--warn); }
+  .rows { display: grid; gap: 8px; }
+  .row { display: grid; grid-template-columns: minmax(0, 150px) 1fr; gap: 10px; align-items: center; }
+  .row .label { font-size: 14px; color: var(--muted); }
+  .row .label small { display: block; font-size: 12px; }
+  .seg { display: flex; flex-wrap: wrap; gap: 4px; }
+  .seg button { min-width: 38px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); cursor: pointer; font: 14px var(--mono); }
+  .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .seg button[aria-pressed="true"].good { background: var(--good); border-color: var(--good); }
+  .seg button[aria-pressed="true"].warn { background: var(--warn); border-color: var(--warn); }
+  .seg button[aria-pressed="true"].bad { background: var(--bad); border-color: var(--bad); }
+  .seg button:disabled { cursor: default; opacity: 0.6; }
+  .total { font: 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  textarea { width: 100%; min-height: 54px; resize: vertical; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; font-size: 14px; }
+  .pick { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .pick .label { font-weight: 500; }
+  .finish { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .finish p { margin: 0; color: var(--muted); max-width: 65ch; }
+  .lightbox { position: fixed; inset: 0; z-index: 20; background: rgba(10, 12, 18, 0.88); overflow: auto; padding: 16px; cursor: zoom-out; }
+  .lightbox img { display: block; margin: 0 auto; max-width: none; background: #fff; }
+  .lightbox .close { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; }
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 1fr; gap: 4px; }
+    .shot.before { max-width: 100%; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .seg button, .btn { transition: background-color 120ms, border-color 120ms; }
+  }
+</style>
+
+<div class="bar">
+  <div class="bar-inner">
+    <h1>grafical <span>diagram ratings</span></h1>
+    <label class="eyebrow" for="round">Round</label>
+    <select id="round"></select>
+    <div class="grow"></div>
+    <div class="progress" id="progress"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="notice" id="notice" hidden></div>
+  <details class="brief" id="brief-box">
+    <summary>The brief every agent drew from</summary>
+    <pre id="brief"></pre>
+  </details>
+  <div id="tasks"></div>
+  <div class="finish" id="finish" hidden>
+    <button class="btn primary" id="finish-btn" type="button">Finish this round</button>
+    <p id="finish-note">Rate every diagram, then finish the round. Claude then reads your ratings and reveals which tool drew each diagram.</p>
+  </div>
+</main>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button class="btn close" type="button" id="lightbox-close">Close</button>
+  <img id="lightbox-img" alt="">
+</div>
+
+<script>
+(() => {
+  const DRAFT = [
+    ["accuracy", "Accuracy", "matches the brief"],
+    ["clarity", "Clarity", "flow clear in 30 s"],
+    ["visual", "Visual quality", "hierarchy, spacing"],
+    ["defects", "Defects", "5 = none"],
+    ["fit", "Fit at 1000 px", "readable in a doc"],
+  ];
+  const DONE = [["yes", "Yes", "good"], ["partly", "Partly", "warn"], ["no", "No", "bad"]];
+  const OTHER = [["none", "Nothing", "good"], ["minor", "A little", "warn"], ["major", "A lot", "bad"]];
+
+  const $ = (id) => document.getElementById(id);
+  const state = { rounds: [], round: null, manifest: null, ratings: {}, picks: {}, status: {}, reveals: {}, canWrite: true, db: null };
+
+  function remember(key, value) { try { localStorage.setItem(key, value); } catch {} }
+  function recall(key) { try { return localStorage.getItem(key); } catch { return null; } }
+
+  const ratingId = (task, letter) => `${state.round}__${task}__${letter}`;
+  const pickId = (task) => `${state.round}__${task}`;
+
+  // Drops null and undefined fields, so a cleared choice disappears from the stored body.
+  function clean(obj) {
+    const out = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (v === null || v === undefined) continue;
+      out[k] = v && typeof v === "object" && !Array.isArray(v) ? clean(v) : v;
+    }
+    return out;
+  }
+
+  // One write at a time per document, and edits within a pause become one write.
+  // A document with an edit not yet saved keeps the local version when a snapshot arrives.
+  const timers = new Map();
+  const chains = new Map();
+  const generation = new Map();
+  function save(collection, id, body) {
+    if (!state.db || !state.canWrite) return;
+    const key = `${collection}/${id}`;
+    const gen = (generation.get(key) ?? 0) + 1;
+    generation.set(key, gen);
+    clearTimeout(timers.get(key));
+    timers.set(key, setTimeout(() => {
+      const prev = chains.get(key) ?? Promise.resolve();
+      const next = prev
+        .then(() => state.db.collection(collection).doc(id).set(clean(body)))
+        .then(() => { if (generation.get(key) === gen) generation.delete(key); })
+        .catch((e) => {
+          if (generation.get(key) === gen) generation.delete(key);
+          if (e && e.code === "invalid_argument") { state.canWrite = false; notice("Your ratings could not be saved: this view can only read them."); render(); }
+          else if (e && e.code === "unavailable") { notice("Saving paused: the store is briefly unavailable. Your next change will save again."); }
+          else if (e && e.code === "quota_exceeded") { notice("The ratings store is full."); }
+        });
+      chains.set(key, next);
+    }, 450));
+  }
+  const unsaved = (collection, id) => generation.has(`${collection}/${id}`);
+
+  // Rebuilding the page while someone types would move their caret, so a
+  // snapshot that arrives during typing waits until the field loses focus.
+  let renderLater = false;
+  function renderSoon() {
+    if (document.activeElement && document.activeElement.tagName === "TEXTAREA") { renderLater = true; progress(); return; }
+    render();
+  }
+  document.addEventListener("focusout", () => { if (renderLater) { renderLater = false; setTimeout(render, 0); } });
+
+  function notice(text) { const n = $("notice"); n.textContent = text; n.hidden = !text; }
+
+  function isComplete(task, letter) {
+    const r = state.ratings[ratingId(task.id, letter)];
+    if (!r) return false;
+    if (task.kind === "draft") return DRAFT.every(([k]) => typeof r.scores?.[k] === "number");
+    return !!(r.done && r.other && typeof r.quality === "number");
+  }
+
+  function progress() {
+    const m = state.manifest; if (!m) return;
+    let total = 0, done = 0;
+    for (const t of m.tasks) for (const l of m.diagrams) { total++; if (isComplete(t, l)) done++; }
+    $("progress").innerHTML = "";
+    const b = document.createElement("b"); b.textContent = `${done} of ${total}`;
+    $("progress").append(b, document.createTextNode(" rated"));
+    return { done, total };
+  }
+
+  function segment(options, value, onPick, disabled) {
+    const box = document.createElement("div"); box.className = "seg"; box.setAttribute("role", "group");
+    for (const [v, text, tone] of options) {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = text;
+      if (tone) b.classList.add(tone);
+      b.setAttribute("aria-pressed", String(value === v));
+      b.disabled = disabled;
+      b.addEventListener("click", () => onPick(value === v ? null : v));
+      box.append(b);
+    }
+    return box;
+  }
+  const scale = () => [1, 2, 3, 4, 5].map((n) => [n, String(n)]);
+
+  function row(label, hint, control) {
+    const r = document.createElement("div"); r.className = "row";
+    const l = document.createElement("div"); l.className = "label"; l.textContent = label;
+    if (hint) { const s = document.createElement("small"); s.textContent = hint; l.append(s); }
+    r.append(l, control); return r;
+  }
+
+  function shot(pic, caption, before) {
+    const f = document.createElement("figure"); f.className = before ? "shot before" : "shot";
+    const c = document.createElement("figcaption"); c.textContent = caption; f.append(c);
+    if (!pic?.src) {
+      const d = document.createElement("div"); d.className = "missing"; d.textContent = "No picture at this step"; f.append(d); return f;
+    }
+    const b = document.createElement("button"); b.type = "button"; b.title = "Open at full size";
+    const img = document.createElement("img"); img.src = pic.src; img.alt = caption; img.loading = "lazy";
+    b.append(img); b.addEventListener("click", () => openLightbox(pic.src));
+    f.append(b);
+    if (pic.unchanged && !before) { const w = document.createElement("div"); w.className = "flag"; w.textContent = "No new picture at this step: this is the previous one"; f.append(w); }
+    return f;
+  }
+
+  function card(task, letter) {
+    const id = ratingId(task.id, letter);
+    const r = state.ratings[id] ?? { round: state.round, task: task.id, letter, kind: task.kind };
+    const ro = !state.db || !state.canWrite;
+    const update = (patch) => {
+      const next = { ...r, ...patch, round: state.round, task: task.id, letter, kind: task.kind };
+      state.ratings[id] = next; save("ratings", id, next); render();
+    };
+    const el = document.createElement("article"); el.className = "card";
+    const head = document.createElement("div"); head.className = "card-head";
+    const badge = document.createElement("div"); badge.className = "letter"; badge.textContent = letter;
+    const who = document.createElement("div"); who.className = "who"; who.textContent = `Diagram ${letter}`;
+    head.append(badge, who);
+    const arm = state.reveals[state.round]?.key?.[letter];
+    if (arm) { const a = document.createElement("div"); a.className = "arm"; a.textContent = arm; head.append(a); }
+    const st = document.createElement("div"); st.className = "status"; const ok = isComplete(task, letter);
+    st.textContent = ok ? "rated" : "to rate"; if (ok) st.classList.add("ok"); head.append(st);
+    el.append(head);
+    const p = task.pictures[letter];
+    if (task.kind === "change") el.append(shot(p.before, "Before", true));
+    el.append(shot(p.after, task.kind === "change" ? "After" : "Picture", false));
+    const rows = document.createElement("div"); rows.className = "rows";
+    if (task.kind === "draft") {
+      const scores = r.scores ?? {};
+      for (const [k, label, hint] of DRAFT) {
+        rows.append(row(label, hint, segment(scale(), scores[k] ?? null, (v) => update({ scores: { ...scores, [k]: v ?? undefined } }), ro)));
+      }
+      const sum = DRAFT.reduce((s, [k]) => s + (typeof scores[k] === "number" ? scores[k] : 0), 0);
+      const t = document.createElement("div"); t.className = "total"; t.textContent = `Total ${sum} of 25`; rows.append(t);
+    } else {
+      rows.append(row("Done right?", "the request itself", segment(DONE, r.done ?? null, (v) => update({ done: v ?? undefined }), ro)));
+      rows.append(row("Anything else changed?", "beyond the request", segment(OTHER, r.other ?? null, (v) => update({ other: v ?? undefined }), ro)));
+      rows.append(row("Quality now", "1 to 5", segment(scale(), r.quality ?? null, (v) => update({ quality: v ?? undefined }), ro)));
+    }
+    el.append(rows);
+    const ta = document.createElement("textarea"); ta.id = `comment-${id}`; ta.placeholder = "Comment (optional)"; ta.value = r.comment ?? ""; ta.disabled = ro;
+    ta.addEventListener("input", () => { const next = { ...(state.ratings[id] ?? r), comment: ta.value, round: state.round, task: task.id, letter, kind: task.kind }; state.ratings[id] = next; save("ratings", id, next); });
+    el.append(ta);
+    return el;
+  }
+
+  function render() {
+    const m = state.manifest; if (!m) return;
+    $("brief").textContent = m.brief;
+    const box = $("tasks"); const keepScroll = window.scrollY;
+    const focusedId = document.activeElement?.id;
+    box.innerHTML = "";
+    for (const task of m.tasks) {
+      const s = document.createElement("section"); s.className = "task";
+      const head = document.createElement("div"); head.className = "task-head";
+      const eb = document.createElement("div"); eb.className = "eyebrow"; eb.textContent = task.kind === "draft" ? "E1" : "E2";
+      const h = document.createElement("h2"); h.textContent = task.title;
+      head.append(eb, h); s.append(head);
+      if (task.request) { const q = document.createElement("p"); q.className = "request"; q.textContent = task.request; s.append(q); }
+      const cards = document.createElement("div"); cards.className = "cards";
+      for (const l of m.diagrams) cards.append(card(task, l));
+      s.append(cards);
+      if (task.kind === "draft") {
+        const pk = document.createElement("div"); pk.className = "pick";
+        const lab = document.createElement("span"); lab.className = "label"; lab.textContent = "Which would you put in a design doc?";
+        const cur = state.picks[pickId(task.id)]?.pick ?? null;
+        const opts = [...m.diagrams.map((l) => [l, l]), ["none", "None"]];
+        pk.append(lab, segment(opts, cur, (v) => { const body = { round: state.round, task: task.id, pick: v ?? "" }; state.picks[pickId(task.id)] = body; save("picks", pickId(task.id), body); render(); }, !state.db || !state.canWrite));
+        s.append(pk);
+      }
+      box.append(s);
+    }
+    const pr = progress();
+    const fin = $("finish"); fin.hidden = false;
+    const finished = !!state.status[state.round]?.done;
+    const revealed = !!state.reveals[state.round];
+    const btn = $("finish-btn");
+    btn.disabled = !state.db || !state.canWrite || finished || (pr && pr.done < pr.total);
+    btn.textContent = finished ? "Round finished" : "Finish this round";
+    $("finish-note").textContent = revealed
+      ? "Revealed: each card now names the tool that drew it."
+      : finished
+        ? "Finished. Claude reads your ratings next and then reveals which tool drew each diagram."
+        : "Rate every diagram, then finish the round. Claude then reads your ratings and reveals which tool drew each diagram.";
+    window.scrollTo(0, keepScroll);
+    if (focusedId) { const f = document.getElementById(focusedId); if (f) f.focus({ preventScroll: true }); }
+  }
+
+  function openLightbox(src) { $("lightbox-img").src = src; $("lightbox").hidden = false; }
+  function closeLightbox() { $("lightbox").hidden = true; $("lightbox-img").removeAttribute("src"); }
+  $("lightbox").addEventListener("click", closeLightbox);
+  $("lightbox-close").addEventListener("click", closeLightbox);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("lightbox").hidden) closeLightbox(); });
+
+  $("finish-btn").addEventListener("click", async () => {
+    if (!state.db) return;
+    state.status[state.round] = { round: state.round, done: true };
+    render();
+    try { await state.db.collection("status").doc(state.round).set({ round: state.round, done: true }); }
+    catch { notice("Could not record that the round is finished. Try again in a moment."); delete state.status[state.round]; render(); }
+  });
+
+  async function loadRound(id) {
+    state.round = id; remember("grafical-round", id);
+    const res = await fetch(`rounds/${id}.json`);
+    state.manifest = await res.json();
+    render();
+  }
+
+  $("round").addEventListener("change", (e) => loadRound(e.target.value));
+
+  async function start() {
+    const res = await fetch("rounds/index.json");
+    state.rounds = await res.json();
+    const sel = $("round");
+    for (const r of state.rounds) { const o = document.createElement("option"); o.value = r.id; o.textContent = r.title; sel.append(o); }
+    const saved = recall("grafical-round");
+    const first = state.rounds.find((r) => r.id === saved)?.id ?? state.rounds[state.rounds.length - 1]?.id;
+    if (first) { sel.value = first; await loadRound(first); }
+    connect();
+  }
+
+  async function connect() {
+    const db = window.claude ? await window.claude.use("db") : null;
+    if (!db) { notice("Ratings need a signed-in claude.ai view of this page. You can look at the diagrams, but not rate them here."); render(); return; }
+    state.db = db;
+    const user = await window.claude.use("user");
+    const can = user ? await user.can("data.write") : null;
+    if (can === false) { state.canWrite = false; notice("You can look at these diagrams, but only the owner rates them."); }
+    // Snapshot bodies are frozen: copy them, and keep local edits that are not saved yet.
+    const merge = (collection, snap, local) => {
+      const out = {};
+      for (const d of snap.docs) out[d.id] = structuredClone(d.data());
+      for (const [id, body] of Object.entries(local)) if (unsaved(collection, id)) out[id] = body;
+      return out;
+    };
+    const fail = () => notice("The ratings store stopped answering. Reload the page to reconnect.");
+    db.collection("ratings").onSnapshot((s) => { state.ratings = merge("ratings", s, state.ratings); renderSoon(); }, fail);
+    db.collection("picks").onSnapshot((s) => { state.picks = merge("picks", s, state.picks); renderSoon(); }, fail);
+    db.collection("status").onSnapshot((s) => { state.status = merge("status", s, state.status); renderSoon(); }, fail);
+    db.collection("reveals").onSnapshot((s) => { state.reveals = merge("reveals", s, {}); renderSoon(); }, fail);
+    render();
+  }
+
+  start().catch(() => notice("The diagrams could not be loaded. Reload the page."));
+})();
+</script>
