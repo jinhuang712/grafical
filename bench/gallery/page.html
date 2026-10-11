@@ -94,6 +94,7 @@
   .toobad .btn[aria-pressed="true"] { background: var(--bad); border-color: var(--bad); color: var(--bg); }
   .total { font: 13px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
   textarea { width: 100%; min-height: 54px; resize: vertical; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; font-size: 14px; }
+  .overall textarea { margin-top: 12px; min-height: 160px; font-size: 15px; }
   .pick { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
   .pick .label { font-weight: 500; }
   .finish { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
@@ -149,12 +150,12 @@
   const DONE = [["yes", "Yes", "good"], ["partly", "Partly", "warn"], ["no", "No", "bad"]];
   const OTHER = [["none", "Nothing", "good"], ["minor", "A little", "warn"], ["major", "A lot", "bad"]];
   const ACCEPT = [["yes", "Accept", "good"], ["no", "Reject", "bad"]];
-  const KIND = { draft: "Draft", change: "Change", intent: "Loose prompt", look: "Look" };
+  const KIND = { draft: "Draft", change: "Change", intent: "Loose prompt", look: "Look", view: "To look at" };
   // Loose prompts and the look of a feature are accepted or rejected as they stand.
   const accepts = (task) => task.kind === "intent" || task.kind === "look";
 
   const $ = (id) => document.getElementById(id);
-  const state = { rounds: [], round: null, manifest: null, manifests: {}, ratings: {}, picks: {}, status: {}, reveals: {}, canWrite: true, db: null };
+  const state = { rounds: [], round: null, manifest: null, manifests: {}, ratings: {}, picks: {}, status: {}, reveals: {}, notes: {}, canWrite: true, db: null };
 
   function remember(key, value) { try { localStorage.setItem(key, value); } catch {} }
   function recall(key) { try { return localStorage.getItem(key); } catch { return null; } }
@@ -219,7 +220,18 @@
     return !!(r.bad || (r.done && r.other && typeof r.quality === "number"));
   }
 
-  // Each round in the menu says whether it is finished, or how many of its pictures are rated.
+  // A round of pictures only takes one comment on the whole round instead of a rating per picture.
+  function tally(m, round) {
+    if (m.overall) {
+      const has = !!state.notes[round]?.comment?.trim();
+      return { done: has ? 1 : 0, total: 1, text: has ? "comment written" : "one comment to write" };
+    }
+    let total = 0, done = 0;
+    for (const t of m.tasks) for (const l of m.diagrams) { total++; if (isComplete(t, l, round)) done++; }
+    return { done, total, text: `${done} of ${total} rated` };
+  }
+
+  // Each round in the menu says whether it is finished, or what is left in it.
   function markRounds() {
     for (const o of $("round").options) {
       const r = state.rounds.find((x) => x.id === o.value);
@@ -227,9 +239,8 @@
       let mark = "";
       if (state.status[o.value]?.done) mark = "finished";
       else if (m && state.db) {
-        let total = 0, done = 0;
-        for (const t of m.tasks) for (const l of m.diagrams) { total++; if (isComplete(t, l, o.value)) done++; }
-        mark = done === total ? "all rated, not finished" : `${done} of ${total} rated`;
+        const t = tally(m, o.value);
+        mark = t.done === t.total ? `${m.overall ? "comment written" : "all rated"}, not finished` : t.text;
       }
       o.textContent = mark ? `${r.title} · ${mark}` : r.title;
     }
@@ -238,12 +249,14 @@
   function progress() {
     markRounds();
     const m = state.manifest; if (!m) return;
-    let total = 0, done = 0;
-    for (const t of m.tasks) for (const l of m.diagrams) { total++; if (isComplete(t, l)) done++; }
+    const t = tally(m, state.round);
     $("progress").innerHTML = "";
-    const b = document.createElement("b"); b.textContent = `${done} of ${total}`;
-    $("progress").append(b, document.createTextNode(" rated"));
-    return { done, total };
+    if (m.overall) $("progress").textContent = t.text;
+    else {
+      const b = document.createElement("b"); b.textContent = `${t.done} of ${t.total}`;
+      $("progress").append(b, document.createTextNode(" rated"));
+    }
+    return t;
   }
 
   function segment(options, value, onPick, disabled) {
@@ -292,16 +305,19 @@
     const el = document.createElement("article"); el.className = "card";
     const head = document.createElement("div"); head.className = "card-head";
     const badge = document.createElement("div"); badge.className = "letter"; badge.textContent = letter;
-    const who = document.createElement("div"); who.className = "who"; who.textContent = `Diagram ${letter}`;
+    const who = document.createElement("div"); who.className = "who"; who.textContent = task.kind === "view" ? `Run ${letter}` : `Diagram ${letter}`;
     head.append(badge, who);
     const arm = state.reveals[state.round]?.key?.[letter];
     if (arm) { const a = document.createElement("div"); a.className = "arm"; a.textContent = arm; head.append(a); }
-    const st = document.createElement("div"); st.className = "status"; const ok = isComplete(task, letter);
-    st.textContent = ok ? "rated" : "to rate"; if (ok) st.classList.add("ok"); head.append(st);
     el.append(head);
     const p = task.pictures[letter];
-    if (task.kind === "change") el.append(shot(p.before, "Before", true));
-    el.append(shot(p.after, task.kind === "change" ? "After" : "Picture", false));
+    const paired = task.kind === "change" || !!p.before;
+    if (paired) el.append(shot(p.before, "Before", true));
+    el.append(shot(p.after, paired ? "After" : "Picture", false));
+    // A picture to look at has nothing to rate: the round takes one comment at the end.
+    if (task.kind === "view") return el;
+    const st = document.createElement("div"); st.className = "status"; const ok = isComplete(task, letter);
+    st.textContent = ok ? "rated" : "to rate"; if (ok) st.classList.add("ok"); head.append(st);
     const rows = document.createElement("div"); rows.className = "rows";
     // One click rates a picture too poor to judge in detail; changing any single score afterwards drops the mark.
     if (!accepts(task)) {
@@ -370,20 +386,41 @@
       }
       box.append(s);
     }
+    if (m.overall) {
+      const s = document.createElement("section"); s.className = "task overall";
+      const h = document.createElement("h2"); h.textContent = "Your comment on all of these";
+      const ta = document.createElement("textarea"); ta.id = `overall-${state.round}`;
+      ta.placeholder = "What works, what does not, and what to fix first";
+      ta.value = state.notes[state.round]?.comment ?? ""; ta.disabled = !state.db || !state.canWrite;
+      ta.addEventListener("input", () => {
+        const body = { round: state.round, comment: ta.value };
+        state.notes[state.round] = body; save("notes", state.round, body); finishState();
+      });
+      s.append(h, ta); box.append(s);
+    }
+    finishState();
+    window.scrollTo(0, keepScroll);
+    if (focusedId) { const f = document.getElementById(focusedId); if (f) f.focus({ preventScroll: true }); }
+  }
+
+  function finishState() {
+    const m = state.manifest;
     const pr = progress();
-    const fin = $("finish"); fin.hidden = false;
+    $("finish").hidden = false;
     const finished = !!state.status[state.round]?.done;
     const revealed = !!state.reveals[state.round];
     const btn = $("finish-btn");
     btn.disabled = !state.db || !state.canWrite || finished || (pr && pr.done < pr.total);
     btn.textContent = finished ? "Round finished" : "Finish this round";
-    $("finish-note").textContent = revealed
-      ? "Revealed: each card now names the tool that drew it."
-      : finished
-        ? "Finished. Claude reads your ratings next and then reveals which tool drew each diagram."
-        : "Rate every diagram, then finish the round. Claude then reads your ratings and reveals which tool drew each diagram.";
-    window.scrollTo(0, keepScroll);
-    if (focusedId) { const f = document.getElementById(focusedId); if (f) f.focus({ preventScroll: true }); }
+    $("finish-note").textContent = m.overall
+      ? finished
+        ? "Finished. Claude reads your comment next."
+        : "Write one comment on the whole round, then finish it. Claude then reads your comment."
+      : revealed
+        ? "Revealed: each card now names the tool that drew it."
+        : finished
+          ? "Finished. Claude reads your ratings next and then reveals which tool drew each diagram."
+          : "Rate every diagram, then finish the round. Claude then reads your ratings and reveals which tool drew each diagram.";
   }
 
   function openLightbox(src) { $("lightbox-img").src = src; $("lightbox").hidden = false; }
@@ -448,6 +485,7 @@
     db.collection("picks").onSnapshot((s) => { state.picks = merge("picks", s, state.picks); renderSoon(); }, fail);
     db.collection("status").onSnapshot((s) => { state.status = merge("status", s, state.status); renderSoon(); }, fail);
     db.collection("reveals").onSnapshot((s) => { state.reveals = merge("reveals", s, {}); renderSoon(); }, fail);
+    db.collection("notes").onSnapshot((s) => { state.notes = merge("notes", s, state.notes); renderSoon(); }, fail);
     render();
   }
 
