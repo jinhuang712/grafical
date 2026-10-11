@@ -111,9 +111,14 @@ export function writeAtomic(file: string, content: string | Uint8Array) {
   renameSync(tmp, file);
 }
 
-/** Lays out and checks a diagram. */
-export function inspect(d: Diagram, m: Measurer): Defect[] {
-  return check(d, layout(d, m), m);
+/**
+ * Lays out and checks a diagram. Without `all`, only the defects the agent can
+ * fix: engine-owned ones are the engine's to avoid, and only `check --all`
+ * reports them (D14).
+ */
+export function inspect(d: Diagram, m: Measurer, all = false): Defect[] {
+  const defects = check(d, layout(d, m), m);
+  return all ? defects : defects.filter((x) => x.owner === "agent");
 }
 
 /**

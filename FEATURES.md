@@ -17,7 +17,7 @@ What grafical does, as commands and operations, with the status of each. "Phase 
 | `grafical <noun> <verb> <file> …` | Apply one operation, such as `grafical node add` | stage 1 |
 | `grafical apply <file> <batch.yaml>` | Apply a list of operations, all or nothing | stage 1 |
 | `grafical show <file>` | Print a compact view of the diagram for agents | stage 1 |
-| `grafical check <file>` | Report defects | stage 1 |
+| `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (D14) | stage 1 |
 | `grafical render <file> [--svg <out>] [--png <out>]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file. `--scale` sets the PNG scale, from 1 to 4 | stage 1 |
 | `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as operations | stage 1 |
 | `grafical guide` | Print the operation reference for agents, within 3k tokens | stage 1 |
@@ -95,7 +95,7 @@ grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>
 grafical edge remove <file> <id>
 grafical apply <file> <batch.yaml>
 grafical show <file>
-grafical check <file>
+grafical check <file> [--all]
 grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
 grafical guide
 ```

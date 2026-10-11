@@ -1,7 +1,7 @@
 // Defect checker (DESIGN.md D14). Pure: it reads the diagram, the scene and a
 // measurer, and returns every mechanical flaw, in a deterministic order.
 
-import { DEFECT_CODES, type Defect } from "../errors.ts";
+import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import type { Diagram } from "../model/types.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
@@ -40,7 +40,7 @@ function lineCount(t: PlacedText): number {
   return new Set(t.runs.map((r) => r2(r.y))).size;
 }
 
-function checkOverflow(diagram: Diagram, scene: Scene, out: Defect[]): void {
+function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
   const model = new Map<string, { size: string; layer: string }>();
   for (const layer of diagram.layers) {
     for (const n of layer.nodes) model.set(n.id, { size: n.size, layer: layer.id });
@@ -81,7 +81,7 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Defect[]): void {
   }
 }
 
-function checkNodeOverlap(scene: Scene, out: Defect[]): void {
+function checkNodeOverlap(scene: Scene, out: Found[]): void {
   const nodes = scene.nodes;
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
@@ -100,7 +100,7 @@ function checkNodeOverlap(scene: Scene, out: Defect[]): void {
   }
 }
 
-function checkEdgeThroughNode(scene: Scene, out: Defect[]): void {
+function checkEdgeThroughNode(scene: Scene, out: Found[]): void {
   for (const e of scene.edges) {
     const segs = segmentsOf(e.points);
     for (const n of scene.nodes) {
@@ -119,7 +119,7 @@ function checkEdgeThroughNode(scene: Scene, out: Defect[]): void {
   }
 }
 
-function checkLabelCollision(scene: Scene, out: Defect[]): void {
+function checkLabelCollision(scene: Scene, out: Found[]): void {
   const labelled = scene.edges.filter((e): e is SceneEdge & { label: PlacedText } => !!e.label);
   for (const e of labelled) {
     const box = e.label.bbox;
@@ -177,7 +177,7 @@ function isBus(a: SceneEdge, b: SceneEdge): boolean {
   return a.from === b.from && a.kind === b.kind && !a.label && !b.label;
 }
 
-function checkEdgeOverlap(scene: Scene, out: Defect[]): void {
+function checkEdgeOverlap(scene: Scene, out: Found[]): void {
   const rects = new Map(scene.nodes.map((n) => [n.id, n.rect]));
   const edges = scene.edges;
   for (let i = 0; i < edges.length; i++) {
@@ -213,7 +213,7 @@ function checkEdgeOverlap(scene: Scene, out: Defect[]): void {
   }
 }
 
-function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Defect[]): void {
+function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   const add = (id: string, what: string, text: string | undefined, fix: string): void => {
     if (!text) return;
     const missing = m.missingGlyphs(text);
@@ -268,19 +268,32 @@ function compare(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
+/** A defect before its owner is filled in from its code. */
+type Found = Omit<Defect, "owner">;
+
+/** Every defect, agent-owned and engine-owned, in a deterministic order (D14). */
 export function check(diagram: Diagram, scene: Scene, measurer: Measurer): Defect[] {
-  const out: Defect[] = [];
+  const out: Found[] = [];
   checkOverflow(diagram, scene, out);
   checkNodeOverlap(scene, out);
   checkEdgeThroughNode(scene, out);
   checkLabelCollision(scene, out);
   checkEdgeOverlap(scene, out);
   checkMissingGlyphs(diagram, measurer, out);
-  const order = (d: Defect): number => DEFECT_CODES.indexOf(d.code);
-  return out.sort(
-    (a, b) =>
-      order(a) - order(b) ||
-      compare(a.elements.join("\u0000"), b.elements.join("\u0000")) ||
-      compare(a.found, b.found),
-  );
+  const order = (d: Found): number => DEFECT_CODES.indexOf(d.code);
+  return out
+    .sort(
+      (a, b) =>
+        order(a) - order(b) ||
+        compare(a.elements.join("\u0000"), b.elements.join("\u0000")) ||
+        compare(a.found, b.found),
+    )
+    .map((d) => ({
+      code: d.code,
+      owner: DEFECT_OWNER[d.code],
+      elements: d.elements,
+      found: d.found,
+      expected: d.expected,
+      fix: d.fix,
+    }));
 }

@@ -2,14 +2,14 @@
 // It is a constant, so its bytes never change between runs. Keep it under
 // 3,000 tokens (about 12,000 characters). Vocabulary lists come from FEATURES.md.
 
-export const GUIDE = `grafical: build architecture diagrams (layered boxes and arrows) by running commands. You state facts (layer, order, connection), never coordinates. grafical lays out the picture, checks it, and refuses any change that would leave a defect.
+export const GUIDE = `grafical: build architecture diagrams (layered boxes and arrows) by running commands. You state facts (layer, order, connection), never coordinates. grafical lays out the picture, checks it, and refuses any change that would leave a label too long or a character it cannot draw.
 
 WORKFLOW
 1. grafical new <file> --title <text>
 2. add layers (horizontal bands, top to bottom), then nodes, then edges
 3. for many changes at once write a batch and run: grafical apply <file> <batch.yaml>
 4. grafical show <file> to see the current state, grafical render <file> to draw it
-Each write command reads the file, applies the change, lays out, checks, and writes the file only if there is no error and no defect. Otherwise the file is untouched and the exit code is 1. Never edit the file by hand. Name it <name>.grafical.yaml.
+Each write command reads the file, applies the change, lays out, checks, and writes the file only if there is no error and no defect you must fix. Otherwise the file is untouched and the exit code is 1. Never edit the file by hand. Name it <name>.grafical.yaml.
 
 COMMANDS (every command accepts --json)
 grafical new <file> --title <text> [--density compact|normal|airy]
@@ -72,13 +72,10 @@ Fix the field named, using the suggestion, and run the command again. Codes:
 
 DEFECTS
 defect <code> [<elements>]: found <what>; expected <what>; fix: <an operation>
-A defect means the change would make the picture wrong, so nothing was written. Apply the fix line, or change the operation. Codes:
-- overflow: a label is wider than its box. Shorten the label with node rename, or re-add the node with --size l.
-- node-overlap: two nodes overlap. Move one to another layer or order.
-- edge-through-node: an edge crosses a node. Move the node, or reorder the layers.
-- label-collision: two labels collide. Shorten an edge label or reorder nodes.
-- edge-overlap: two edges share a segment. Reorder nodes or add an edge id and label.
+A defect means the change would make the picture wrong, so nothing was written. Only two defects are yours to fix. Apply the fix line, or change the operation:
+- overflow: a label is too long for its box. Shorten it with node rename, or re-add the node with --size l.
 - missing-glyph: a character cannot be drawn. Replace it.
+Where lines and boxes go is grafical's job: you never fix overlapping lines or labels.
 grafical check <file> reports defects on an existing file and exits 1 if there are any.
 
 SHOW

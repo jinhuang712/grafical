@@ -348,3 +348,13 @@ describe("ordering", () => {
     expect(run(s)).toEqual(d1);
   });
 });
+
+describe("owner", () => {
+  it("gives the agent what it can fix, and the engine the rest (D14)", () => {
+    const s = scene([node("b", 60, 40, "a very long label indeed"), node("a", 40, 40)]);
+    expect(run(s).map((d) => [d.code, d.owner])).toEqual([
+      ["overflow", "agent"],
+      ["node-overlap", "engine"],
+    ]);
+  });
+});

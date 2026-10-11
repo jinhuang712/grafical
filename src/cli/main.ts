@@ -209,14 +209,18 @@ function build(): Command {
   });
 
   json(
-    program.command("check").description("report defects in a diagram").argument("<file>"),
+    program
+      .command("check")
+      .description("report the defects you can fix; --all adds the engine's own")
+      .argument("<file>")
+      .option("--all", "also report engine-owned defects, which are engine bugs"),
   ).action(async (file: string, opts: Opts) => {
     const d = loadDiagram(file);
     if (isReport(d)) {
       process.exitCode = emit(d, opts.json === true);
       return;
     }
-    const defects = inspect(d, await createMeasurer());
+    const defects = inspect(d, await createMeasurer(), opts.all === true);
     process.exitCode = emit(
       { ok: defects.length === 0, changed: [], errors: [], defects },
       opts.json === true,

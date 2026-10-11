@@ -36,7 +36,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D11 | Edges route orthogonally through the gaps, with our own router | The engine owns every pixel |
 | D12 | Text is measured from bundled fonts | The same file is the same picture |
 | D13 | grafical writes the SVG, and resvg rasterizes it | The same file is the same picture |
-| D14 | The checker runs on every write, and a defect fails the command | Mistakes are caught at the step |
+| D14 | The checker runs on every write. A defect the agent can fix fails the command, and the engine avoids the rest | Mistakes are caught at the step |
 | D15 | Same file, same SVG bytes and PNG pixels | The same file is the same picture |
 | D16 | The command line comes first, with JSON output | Built in steps |
 | D17 | `show` gives agents a compact view of a diagram | The tool carries the taste |
@@ -200,19 +200,29 @@ Rejected:
 - X6 for stage 1 output. Running it outside a browser is unproven, and it would make X6 a hard dependency before the board needs it.
 - A headless browser, because it is slow and large.
 
-### D14 The checker runs on every write, and a defect fails the command
+### D14 The checker runs on every write. A defect the agent can fix fails the command, and the engine avoids the rest
 
-After each operation or batch, grafical lays out the diagram and checks it. A defect is one of these:
-- text that overflows its box;
-- two nodes that overlap;
-- an edge that crosses a node;
-- two labels that collide;
-- two edges that share a segment, so a reader cannot tell them apart;
-- a character the bundled fonts cannot draw.
+After each operation or batch, grafical lays out the diagram and checks it. Each defect has an owner: whoever can fix it.
 
-A write that leaves a defect fails and changes nothing. Each defect names its elements, what was found, what was expected, and an operation that would fix it.
+| Defect | Owner |
+|---|---|
+| Text that overflows its box | Agent: shorten the label or take a larger size step |
+| A character the bundled fonts cannot draw | Agent: replace it |
+| Two nodes that overlap | Engine |
+| An edge that crosses a node | Engine |
+| Two labels that collide | Engine |
+| Two edges that share a segment, so a reader cannot tell them apart | Engine |
 
-Rejected: warnings, because a picture with a known defect looks like success. Checking only at render time, because the error then surfaces long after the operation that caused it.
+A write that leaves an agent-owned defect fails and changes nothing. The defect names its elements, what was found, what was expected, and an operation that would fix it.
+
+Engine-owned defects are about where lines and boxes go, which no operation controls (D2). The engine must avoid them itself, with the room D10 allows: the next gutter step, more track or port separation, another label slot. If it still leaves one, that is an engine bug. The write goes ahead, the agent is never told, and `grafical check --all` reports it so that benchmarks and tests count it. The checker does not count the shared trunk of a bus as an overlap. A bus is a fan-out of unlabelled edges of one kind from one node (D11).
+
+Text is checked against its line box, which includes the fonts' full ascent and descent. The box must stay 8 px from the node's sides and 4 px from its top and bottom.
+
+Rejected:
+- Warnings for agent-owned defects, because a picture with a known defect looks like success.
+- Checking only at render time, because the error then surfaces long after the operation that caused it.
+- Failing the write on engine-owned defects, as D14 first said. The phase 1 measuring run showed the cost: Haiku met an edge overlap and a label collision that only the router could fix, retried 11 times, and gave up.
 
 ### D15 Same file, same SVG bytes and PNG pixels
 
