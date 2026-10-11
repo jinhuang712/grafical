@@ -39,6 +39,8 @@ export interface Grid {
   reserved: Map<number, Set<number>>;
   alignProblems: AlignmentProblem[];
   groupProblems: GroupProblem[];
+  /** Nodes outside every group that two or more groups use: they sit between those groups. */
+  shared: Set<string>;
 }
 
 interface Cand {
@@ -269,6 +271,61 @@ export function buildGrid(d: Diagram): Grid {
     return true;
   };
 
+  // A node outside every group that two or more groups use is where they meet,
+  // like the shared store between a write side and a read side. It is not lined
+  // up under either, and balance puts it between them.
+  const shared = new Uint8Array(N);
+  for (let i = 0; i < N; i++) {
+    if (groupOf[i] !== undefined) continue;
+    const gs = new Set<string>();
+    for (const j of links[i] ?? []) {
+      const g = groupOf[j];
+      if (g !== undefined) gs.add(g);
+    }
+    if (gs.size >= 2) shared[i] = 1;
+  }
+  // It takes a column of its own between the leftmost and the rightmost group it
+  // joins: right of every member of the one, left of every member of the other.
+  // Sides come from the order so far; constraints that would make a cycle are dropped.
+  {
+    const packed0 = pack(N, cls, row, succ, reservedOf).col;
+    const colOf = (i: number) => packed0.get(cls[i] as number) ?? 0;
+    const membersOf = new Map<string, number[]>();
+    for (let i = 0; i < N; i++) {
+      const g = groupOf[i];
+      if (g === undefined) continue;
+      const list = membersOf.get(g) ?? [];
+      list.push(i);
+      membersOf.set(g, list);
+    }
+    const mean = (g: string) => {
+      const ms = membersOf.get(g) ?? [];
+      return ms.reduce((t, m) => t + colOf(m), 0) / Math.max(1, ms.length);
+    };
+    for (let i = 0; i < N; i++) {
+      if (shared[i] === 0) continue;
+      const gs = [...new Set((links[i] ?? []).map((j) => groupOf[j]))]
+        .filter((g): g is string => g !== undefined)
+        .sort((a, b) => mean(a) - mean(b) || cmp(a, b));
+      const mine: [number, number][] = [];
+      const add = (a: number, b: number): boolean => {
+        if ((succ[a] ?? []).includes(b)) return true;
+        if (reaches(cls[b] as number, cls[a] as number)) return false;
+        succ[a]?.push(b);
+        mine.push([a, b]);
+        return true;
+      };
+      const ok =
+        (membersOf.get(gs[0] as string) ?? []).every((m) => add(m, i)) &&
+        (membersOf.get(gs[gs.length - 1] as string) ?? []).every((m) => add(i, m));
+      if (ok) continue;
+      for (const [a, b] of mine) {
+        const list = succ[a] ?? [];
+        list.splice(list.lastIndexOf(b), 1);
+      }
+    }
+  }
+
   // Step 2b: edges, best first.
   const maxRow = Math.max(0, ...rows.map((l) => l.length));
   const limit = Math.max(maxRow, pack(N, cls, row, succ, reservedOf).columns) + SLACK;
@@ -291,7 +348,8 @@ export function buildGrid(d: Diagram): Grid {
       else if (!list.includes(b)) list.push(b);
     }
   }
-  const cands: Cand[] = pairs.map(({ u, v, key }) => {
+  const joinable = pairs.filter(({ u, v }) => shared[u] === 0 && shared[v] === 0);
+  const cands: Cand[] = joinable.map(({ u, v, key }) => {
     const span = Math.abs((row[u] as number) - (row[v] as number));
     let score = span === 1 ? 10 : Math.max(1, 6 - span);
     for (const [a, b] of [
@@ -354,7 +412,7 @@ export function buildGrid(d: Diagram): Grid {
   // Steps 3 and 4.
   const packed = pack(N, cls, row, succ, reservedOf);
   const colOfClass = packed.col;
-  balance(N, cls, row, succ, reservedOf, colOfClass, pairs, packed.columns);
+  balance(N, cls, row, succ, reservedOf, colOfClass, pairs, packed.columns, shared);
 
   // Columns in use, renumbered from 0.
   const used = [...new Set([...colOfClass.values()])].sort((a, b) => a - b);
@@ -371,7 +429,9 @@ export function buildGrid(d: Diagram): Grid {
     for (const r of res) set.add(r);
     reserved.set(k, set);
   }
-  return { col, columns: used.length, reserved, alignProblems, groupProblems };
+  const sharedIds = new Set<string>();
+  for (let i = 0; i < N; i++) if (shared[i] === 1) sharedIds.add(ids[i] as string);
+  return { col, columns: used.length, reserved, alignProblems, groupProblems, shared: sharedIds };
 }
 
 /**
@@ -570,7 +630,8 @@ function pack(
 /**
  * Moves each class, within the room its constraints leave, to the column that
  * brings its edges closest to straight. Three sweeps, in class order; a tie keeps
- * the class where it is.
+ * the class where it is, except that a shared node (see buildGrid) takes the
+ * column nearest the middle of the nodes it connects to.
  */
 function balance(
   N: number,
@@ -581,7 +642,10 @@ function balance(
   col: Map<number, number>,
   pairs: { u: number; v: number }[],
   columns: number,
+  shared: Uint8Array,
 ): void {
+  const sharedClass = new Set<number>();
+  for (let i = 0; i < N; i++) if (shared[i] === 1) sharedClass.add(cls[i] as number);
   const classes = [...new Set(cls)].sort((a, b) => a - b);
   const preds = new Map<number, Set<number>>(classes.map((c) => [c, new Set<number>()]));
   const succs = new Map<number, Set<number>>(classes.map((c) => [c, new Set<number>()]));
@@ -624,12 +688,15 @@ function balance(
       for (const s of succs.get(c) ?? []) hi = Math.min(hi, (col.get(s) ?? 0) - 1);
       const cost = (k: number) => ls.reduce((t, o) => t + Math.abs(k - (col.get(o) ?? 0)), 0);
       const here = col.get(c) ?? 0;
+      const aim = sharedClass.has(c)
+        ? ls.reduce((t, o) => t + (col.get(o) ?? 0), 0) / ls.length
+        : here;
       let best = here;
       let bestCost = cost(here);
       for (let k = lo; k <= hi; k++) {
         if (k === here || clash(c, k)) continue;
         const v = cost(k);
-        if (v < bestCost || (v === bestCost && Math.abs(k - here) < Math.abs(best - here))) {
+        if (v < bestCost || (v === bestCost && Math.abs(k - aim) < Math.abs(best - aim) - 1e-9)) {
           best = k;
           bestCost = v;
         }

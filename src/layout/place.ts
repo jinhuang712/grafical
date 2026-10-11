@@ -243,6 +243,27 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       for (const r of rightTerms(a, b))
         for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + room + s.d);
     }
+    // A node two groups share sits in the gap between their boxes: its column's
+    // centre is half a box gap past the box on each side (grid.ts puts its column
+    // between theirs), so that both reach it alike and the picture grows no wider.
+    for (const id of grid.shared) {
+      const n = nodes.get(id);
+      if (n === undefined) continue;
+      const users = new Set<string>();
+      for (const e of d.edges) {
+        const other = e.from === id ? e.to : e.to === id ? e.from : undefined;
+        const g = other === undefined ? undefined : nodes.get(other)?.node.group;
+        if (g !== undefined && membersOf.has(g)) users.add(g);
+      }
+      for (const g of users) {
+        const ms = membersOf.get(g) ?? [];
+        if (ms.every((m) => m.col < n.col)) {
+          for (const m of ms) add(m.col, n.col, m.w / 2 + GROUP.pad + GROUP.gap / 2);
+        } else if (ms.every((m) => m.col > n.col)) {
+          for (const m of ms) add(n.col, m.col, GROUP.gap / 2 + GROUP.pad + m.w / 2);
+        }
+      }
+    }
     // A line that runs straight through a row where its column is empty.
     for (const [c, rows] of grid.reserved) {
       for (const r of rows) {
