@@ -3,6 +3,9 @@
 //   baseline --model haiku [--round <name>]   the empty task, once per model (about $0.005 on Haiku)
 //   smoke --dry-run [--round <name>]          print every command the smoke test would run
 //   smoke --approved [--round <name>]         run it. Only after the owner approved the cost.
+//   chain --arm <arm> [--model haiku] [--run 1] [--round <name>]
+//                                             one draft and its change requests, to measure a
+//                                             cell's cost before the owner approves a round.
 //   judge --round <name> [--judges 2]         score a round's pictures blind with Opus judges
 //   summary --round <name>                    write bench/results/<round>.md
 
@@ -61,6 +64,26 @@ function main(argv: string[]): void {
           `${chain.arm} r${chain.run}: ${recs.map((r) => `${r.step} $${r.costUsd.toFixed(3)}`).join(", ")}`,
         );
       }
+      return;
+    }
+    case "chain": {
+      const arm = flag(args, "arm");
+      if (arm !== "grafical" && arm !== "raw") {
+        console.error("chain needs --arm grafical or --arm raw");
+        process.exit(2);
+      }
+      const model = flag(args, "model") ?? "haiku";
+      const run = Number(flag(args, "run") ?? 1);
+      mkdirSync(join(RUNS, round), { recursive: true });
+      const changes = loadChanges().filter((c) => c.phase1);
+      const recs = runChain({ round, arm, model, run, changes });
+      for (const r of recs) {
+        console.log(
+          `${r.step}: $${r.costUsd.toFixed(4)}, ${r.wallSeconds.toFixed(0)} s, ${r.turns} turns, error ${r.isError}`,
+        );
+      }
+      const total = recs.reduce((sum, r) => sum + r.costUsd, 0);
+      console.log(`total: $${total.toFixed(4)}`);
       return;
     }
     case "judge": {
