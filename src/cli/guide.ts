@@ -5,7 +5,7 @@
 export const GUIDE = `grafical: build diagrams by running commands. You state facts (row, order, system, connection), never coordinates; grafical lays out, checks, and refuses a change that leaves a label too long or a character it cannot draw.
 
 HOW TO DRAW A GOOD DIAGRAM (read this first)
-- A flowchart or a state machine? Read grafical guide flowchart (or state-machine) first.
+- For a flowchart, state-machine, c4, cloud, deployment, event-flow, data-flow or dependency diagram, read grafical guide <type> first.
 - One story per diagram, 12 to 16 nodes. 30 boxes is a dump, not a diagram.
 - Group nodes into systems. A group is one box around the nodes of one service or team, such as "catalog-sync"; its members may sit in several rows. Group every node except callers and outside dependencies. Never wrap one node in a group of its own name.
 - Merge what a reader does not need apart: six topics become one node "upstream topics" with sublabel "6 broker topics"; five callers become one actor "API callers" with sublabel "storefront, promotions"; ten pipelines become one node.
@@ -56,7 +56,7 @@ grafical edge remove <file> <id>; edge relabel <file> <id> [--label <text>]; edg
 grafical edge retarget <file> <id> [--from <end>] [--to <end>]   (id, kind and label stay)
 grafical apply <file> <batch.yaml>; show <file>; check <file> [--all]
 grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
-grafical guide [flowchart | state-machine | swimlane]
+grafical guide [<type>]
 
 RULES
 - ids: lowercase letters, digits, . _ -, starting with a letter or digit, one id space for everything. Ids never change; rename changes the label.
@@ -240,6 +240,210 @@ Write batch.yaml:
 - {op: lane.add, id: support, label: Support, members: [review, email]}
 - {op: lane.add, id: finance, label: Finance, members: [refund]}
 Then: grafical apply refunds.grafical.yaml batch.yaml, grafical render refunds.grafical.yaml.
+`,
+  c4: `C4: a software system at one zoom. Context: the system as one box among people and other systems. Container: the system opened into its apps and stores.
+
+- People are actor nodes, other systems external nodes, the system or its containers service, store or queue nodes.
+- A node's label is its name, its sublabel its technology ("React", "Postgres").
+- Label every edge with what the source does ("places orders using", "reads and writes"). Name the line in the legend: diagram.legend with line solid and text "uses".
+- Rows: people on top, then what they use, then what that uses. Put an external system in the row of what uses it, beside it.
+- Container diagram: one group around the system's containers, named after the system, with sublabel "software system". People and other systems stay outside it.
+- One diagram, one zoom: never draw the system box and its own containers together.
+
+EXAMPLE
+grafical new bank.grafical.yaml --title "Internet banking: containers"
+Write batch.yaml:
+- {op: layer.add, id: people, label: People}
+- {op: layer.add, id: apps, label: Apps}
+- {op: layer.add, id: core, label: Core}
+- {op: layer.add, id: data, label: Data}
+- {op: node.add, id: customer, layer: people, label: Customer, kind: actor}
+- {op: node.add, id: web, layer: apps, label: Web app, sublabel: React}
+- {op: node.add, id: mobile, layer: apps, label: Mobile app, sublabel: iOS and Android}
+- {op: node.add, id: api, layer: core, label: API, sublabel: Java}
+- {op: node.add, id: mail, layer: core, label: Email system, kind: external}
+- {op: node.add, id: db, layer: data, label: Database, kind: store, sublabel: Postgres}
+- {op: node.add, id: mainframe, layer: data, label: Core banking, kind: external}
+- {op: group.add, id: bank, label: Internet banking, sublabel: software system, nodes: [web, mobile, api, db]}
+- {op: edge.add, from: customer, to: web, label: uses}
+- {op: edge.add, from: customer, to: mobile, label: uses}
+- {op: edge.add, from: web, to: api, label: calls}
+- {op: edge.add, from: mobile, to: api, label: calls}
+- {op: edge.add, from: api, to: db, label: reads and writes}
+- {op: edge.add, from: api, to: mail, label: sends email via}
+- {op: edge.add, from: api, to: mainframe, label: gets accounts from}
+- {op: diagram.legend, line: solid, text: uses}
+Then: grafical apply bank.grafical.yaml batch.yaml, grafical render bank.grafical.yaml.
+`,
+  cloud: `CLOUD: what runs where in a cloud: regions, networks, subnets and the services in them.
+
+- Boxes inside boxes: a group per region, a group per network in it (group add --in), a group per subnet in that. Three levels at most.
+- Kinds: service for compute, store for databases and buckets, queue for queues and streams, external for outside services, actor for users.
+- Name a node by its role ("orders API"); put the product in the sublabel ("containers", "Postgres").
+- Rows follow a request: users and the edge on top, then load balancers, compute, and data at the bottom.
+- Put each node in the innermost box it lives in. A managed service outside every network sits in the region only.
+- Label only edges that carry what a reader needs: a protocol, an event, a schedule.
+
+EXAMPLE
+grafical new shop.grafical.yaml --title "Shop in one region"
+Write batch.yaml:
+- {op: layer.add, id: entry, label: Entry}
+- {op: layer.add, id: front, label: Front}
+- {op: layer.add, id: back, label: Back}
+- {op: layer.add, id: base, label: Data}
+- {op: node.add, id: users, layer: entry, label: Shoppers, kind: actor}
+- {op: node.add, id: cdn, layer: entry, label: CDN, kind: external}
+- {op: node.add, id: lb, layer: front, label: Load balancer}
+- {op: node.add, id: servers, layer: front, label: Web servers, sublabel: containers}
+- {op: node.add, id: api, layer: back, label: Orders API}
+- {op: node.add, id: worker, layer: back, label: Fulfilment worker}
+- {op: node.add, id: db, layer: base, label: Orders db, kind: store, sublabel: Postgres}
+- {op: node.add, id: events, layer: base, label: Order events, kind: queue}
+- {op: node.add, id: backups, layer: base, label: Backups, kind: store, sublabel: object storage}
+- {op: group.add, id: region, label: eu-west, nodes: [backups]}
+- {op: group.add, id: vpc, label: shop network, in: region}
+- {op: group.add, id: public, label: public subnet, in: vpc, nodes: [lb, servers]}
+- {op: group.add, id: private, label: private subnet, in: vpc, nodes: [api, worker, db, events]}
+- {op: edge.add, from: users, to: cdn, label: pages}
+- {op: edge.add, from: users, to: lb, label: HTTPS}
+- {op: edge.add, from: lb, to: servers}
+- {op: edge.add, from: servers, to: api}
+- {op: edge.add, from: api, to: events, kind: async, label: publish}
+- {op: edge.add, from: events, to: worker, kind: async}
+- {op: edge.add, from: worker, to: db}
+- {op: edge.add, from: db, to: backups, kind: async, label: nightly}
+Then: grafical apply shop.grafical.yaml batch.yaml, grafical render shop.grafical.yaml.
+`,
+  deployment: `DEPLOYMENT: where each piece of software runs: environments, clusters or hosts, and what is deployed on them.
+
+- Boxes inside boxes: the environment ("production"), in it a cluster or host group (group add --in), in that a namespace or host. Three levels at most.
+- A deployed unit is a service node named by what it does, with its runtime and count in the sublabel ("3 pods", "2 VMs").
+- Databases, queues and outside services are store, queue and external nodes: in the box they run in, or outside every box when someone else runs them.
+- Rows follow a request from entry to storage. Label an edge only with what a reader needs: a protocol, a port.
+- To compare environments, draw one diagram for each.
+
+EXAMPLE
+grafical new pay.grafical.yaml --title "Payments in production"
+Write batch.yaml:
+- {op: layer.add, id: entry, label: Entry}
+- {op: layer.add, id: front, label: Front}
+- {op: layer.add, id: back, label: Back}
+- {op: layer.add, id: base, label: Data}
+- {op: node.add, id: users, layer: entry, label: Shoppers, kind: actor}
+- {op: node.add, id: ingress, layer: front, label: Ingress, sublabel: 2 pods}
+- {op: node.add, id: shop, layer: front, label: Storefront, sublabel: 4 pods}
+- {op: node.add, id: checkout, layer: back, label: Checkout, sublabel: 3 pods}
+- {op: node.add, id: pay, layer: back, label: Payments, sublabel: 2 pods}
+- {op: node.add, id: db, layer: base, label: Orders db, kind: store, sublabel: managed Postgres}
+- {op: node.add, id: psp, layer: base, label: Card processor, kind: external}
+- {op: group.add, id: prod, label: production, nodes: [db]}
+- {op: group.add, id: cluster, label: prod cluster, in: prod}
+- {op: group.add, id: webns, label: web namespace, in: cluster, nodes: [ingress, shop]}
+- {op: group.add, id: payns, label: payments namespace, in: cluster, nodes: [checkout, pay]}
+- {op: edge.add, from: users, to: ingress, label: HTTPS}
+- {op: edge.add, from: ingress, to: shop}
+- {op: edge.add, from: shop, to: checkout}
+- {op: edge.add, from: checkout, to: pay}
+- {op: edge.add, from: checkout, to: db}
+- {op: edge.add, from: pay, to: psp, label: card auth}
+Then: grafical apply pay.grafical.yaml batch.yaml, grafical render pay.grafical.yaml.
+`,
+  "event-flow": `EVENT FLOW: who publishes which events, where they go, and who reacts to them.
+
+- Producers on top, one queue node per topic or stream below them, consumers below that. A consumer that publishes again starts a new pair of rows.
+- Kinds: service for producers and consumers, queue for topics, store for what a consumer writes.
+- Edges into and out of a topic are async. Label a producer's edge with the event ("order placed"); a consumer's edge needs no label.
+- Name the line in the legend: diagram.legend with line dashed and text "event".
+- Emphasize the path of the event the diagram is about: edge.emphasize with its edges.
+
+EXAMPLE
+grafical new events.grafical.yaml --title "What happens after an order"
+Write batch.yaml:
+- {op: layer.add, id: make, label: Producers}
+- {op: layer.add, id: topics, label: Topics}
+- {op: layer.add, id: react, label: Consumers}
+- {op: layer.add, id: topics2, label: More topics}
+- {op: layer.add, id: react2, label: More consumers}
+- {op: node.add, id: checkout, layer: make, label: Checkout}
+- {op: node.add, id: orders, layer: topics, label: orders, kind: queue}
+- {op: node.add, id: stock, layer: react, label: Inventory}
+- {op: node.add, id: mailer, layer: react, label: Email}
+- {op: node.add, id: stats, layer: react, label: Analytics}
+- {op: node.add, id: reserved, layer: topics2, label: stock, kind: queue}
+- {op: node.add, id: warehouse, layer: topics2, label: Warehouse, kind: store}
+- {op: node.add, id: ship, layer: react2, label: Shipping}
+- {op: edge.add, from: checkout, to: orders, kind: async, label: order placed}
+- {op: edge.add, from: orders, to: stock, kind: async}
+- {op: edge.add, from: orders, to: mailer, kind: async}
+- {op: edge.add, from: orders, to: stats, kind: async}
+- {op: edge.add, from: stats, to: warehouse}
+- {op: edge.add, from: stock, to: reserved, kind: async, label: stock reserved}
+- {op: edge.add, from: reserved, to: ship, kind: async}
+- {op: edge.emphasize, edges: [checkout->orders, orders->stock, stock->reserved, reserved->ship]}
+- {op: diagram.legend, line: dashed, text: event}
+Then: grafical apply events.grafical.yaml batch.yaml, grafical render events.grafical.yaml.
+`,
+  "data-flow": `DATA FLOW: where data comes from, what changes it, and where it is kept.
+
+- Kinds: external for sources and sinks outside the system (people too), service for a process that changes data, store for where data rests.
+- Every edge is kind data, labelled with the data that moves ("card details", "receipt"). A process has at least one input and one output.
+- Rows follow the data: sources on top, processes in the middle, stores and sinks at the bottom. A store a process reads and writes takes an edge each way.
+- Name the line in the legend: diagram.legend with line solid and text "data".
+- Mark personal or secret data in its label ("card details, secret"), never with colour.
+
+EXAMPLE
+grafical new cards.grafical.yaml --title "Card payment data"
+Write batch.yaml:
+- {op: layer.add, id: source, label: Sources}
+- {op: layer.add, id: process, label: Processes}
+- {op: layer.add, id: rest, label: Stores and sinks}
+- {op: node.add, id: customer, layer: source, label: Customer, kind: external}
+- {op: node.add, id: checkout, layer: process, label: Take payment}
+- {op: node.add, id: report, layer: process, label: Build report}
+- {op: node.add, id: psp, layer: rest, label: Card processor, kind: external}
+- {op: node.add, id: orders, layer: rest, label: Orders, kind: store}
+- {op: node.add, id: finance, layer: rest, label: Finance team, kind: external}
+- {op: edge.add, from: customer, to: checkout, kind: data, label: "card details, secret"}
+- {op: edge.add, from: checkout, to: psp, kind: data, label: payment request}
+- {op: edge.add, from: checkout, to: orders, kind: data, label: order}
+- {op: edge.add, from: orders, to: report, kind: data, label: orders}
+- {op: edge.add, from: report, to: finance, kind: data, label: daily report}
+- {op: diagram.legend, line: solid, text: data}
+Then: grafical apply cards.grafical.yaml batch.yaml, grafical render cards.grafical.yaml.
+`,
+  dependency: `DEPENDENCY GRAPH: which parts need which, so that a reader sees what breaks when one fails or changes.
+
+- One node per module, package or service. Apps on top, what they use below, the base everything needs at the bottom: every edge points down, from what depends to what it depends on.
+- Kinds: service for modules and services, store and queue for shared infrastructure, external for third parties.
+- Edges carry no label: kind call for a hard dependency, kind optional for one that degrades gracefully.
+- Name the lines in the legend: diagram.legend with line solid and text "depends on", and with line dotted and text "optional".
+- Group by repository or team only when the question is about ownership.
+- A cycle is a finding: draw it, and name it in the subtitle.
+
+EXAMPLE
+grafical new deps.grafical.yaml --title "Shop modules"
+Write batch.yaml:
+- {op: layer.add, id: apps, label: Apps}
+- {op: layer.add, id: modules, label: Modules}
+- {op: layer.add, id: base, label: Base}
+- {op: node.add, id: storefront, layer: apps, label: storefront}
+- {op: node.add, id: admin, layer: apps, label: admin}
+- {op: node.add, id: cart, layer: modules, label: cart}
+- {op: node.add, id: auth, layer: modules, label: auth}
+- {op: node.add, id: catalog, layer: modules, label: catalog}
+- {op: node.add, id: db, layer: base, label: database, kind: store}
+- {op: node.add, id: cache, layer: base, label: cache, kind: store}
+- {op: edge.add, from: storefront, to: cart}
+- {op: edge.add, from: storefront, to: catalog}
+- {op: edge.add, from: storefront, to: auth}
+- {op: edge.add, from: admin, to: catalog}
+- {op: edge.add, from: cart, to: db}
+- {op: edge.add, from: catalog, to: db}
+- {op: edge.add, from: catalog, to: cache, kind: optional}
+- {op: edge.add, from: auth, to: db}
+- {op: diagram.legend, line: solid, text: depends on}
+- {op: diagram.legend, line: dotted, text: optional}
+Then: grafical apply deps.grafical.yaml batch.yaml, grafical render deps.grafical.yaml.
 `,
 } as const;
 
