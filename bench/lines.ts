@@ -5,9 +5,10 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { findHints } from "../src/check/hints.ts";
+import { findHints, improvements } from "../src/check/hints.ts";
 import { isReport, loadDiagram } from "../src/cli/pipeline.ts";
 import { arrangementCost, troubledEdges } from "../src/layout/index.ts";
+import { applyOps } from "../src/model/index.ts";
 import { createMeasurer } from "../src/text/index.ts";
 import { RUNS } from "./run.ts";
 
@@ -23,6 +24,8 @@ export interface LineMeasure {
   hintsLeft: number;
   hintsShown: number;
   hintsRun: number;
+  /** With --improve: problems, crossings and bends after `diagram improve` on the final diagram. */
+  improved?: { problems: number; crossings: number; bends: number; steps: number };
 }
 
 /** The hint commands grafical printed in a run, and those of them the agent ran afterwards. */
@@ -54,7 +57,7 @@ function hintUse(transcript: string): { shown: number; run: number } {
   return { shown: shown.size, run: ran.size };
 }
 
-export async function measureLines(round: string): Promise<LineMeasure[]> {
+export async function measureLines(round: string, improve = false): Promise<LineMeasure[]> {
   const m = await createMeasurer();
   const dir = join(RUNS, round);
   const out: LineMeasure[] = [];
@@ -68,7 +71,25 @@ export async function measureLines(round: string): Promise<LineMeasure[]> {
     const cost = arrangementCost(d, m);
     const transcript = join(home, "steps", "e1", "transcript.jsonl");
     const use = existsSync(transcript) ? hintUse(transcript) : { shown: 0, run: 0 };
+    let improved: LineMeasure["improved"];
+    if (improve) {
+      // What the agent would get by running diagram improve on its final diagram.
+      const taken = improvements(d, m);
+      const r = applyOps(
+        d,
+        taken.flatMap((h) => h.ops),
+        m,
+      );
+      const after = "errors" in r ? cost : arrangementCost(r.diagram, m);
+      improved = {
+        problems: after[0] ?? 0,
+        crossings: after[1] ?? 0,
+        bends: after[2] ?? 0,
+        steps: taken.length,
+      };
+    }
     out.push({
+      ...(improved !== undefined ? { improved } : {}),
       chain,
       task: chain.split(".")[0] ?? chain,
       nodes: d.layers.reduce((s, l) => s + l.nodes.length, 0),
@@ -89,12 +110,21 @@ export function formatLines(round: string, rows: LineMeasure[]): string {
   const lines = [`round ${round}: ${rows.length} diagrams`];
   for (const r of rows) {
     lines.push(
-      `  ${r.chain}: ${r.nodes} nodes, problems ${r.problems}, crossings ${r.crossings}, bends ${r.bends}, hints left ${r.hintsLeft}, hints shown ${r.hintsShown}, run ${r.hintsRun}`,
+      `  ${r.chain}: ${r.nodes} nodes, problems ${r.problems}, crossings ${r.crossings}, bends ${r.bends}, hints left ${r.hintsLeft}, hints shown ${r.hintsShown}, run ${r.hintsRun}` +
+        (r.improved
+          ? `; after improve (${r.improved.steps} steps): problems ${r.improved.problems}, crossings ${r.improved.crossings}, bends ${r.improved.bends}`
+          : ""),
     );
   }
   const f = (x: number) => x.toFixed(2);
   lines.push(
     `mean: problems ${f(mean(rows.map((r) => r.problems)))}, crossings ${f(mean(rows.map((r) => r.crossings)))}, bends ${f(mean(rows.map((r) => r.bends)))}, hints left ${f(mean(rows.map((r) => r.hintsLeft)))}; drafts shown a hint ${rows.filter((r) => r.hintsShown > 0).length}, of them ran one ${rows.filter((r) => r.hintsShown > 0 && r.hintsRun > 0).length}`,
   );
+  const imp = rows.filter((r) => r.improved !== undefined);
+  if (imp.length > 0) {
+    lines.push(
+      `after improve: problems ${f(mean(imp.map((r) => r.improved?.problems ?? 0)))}, crossings ${f(mean(imp.map((r) => r.improved?.crossings ?? 0)))}, bends ${f(mean(imp.map((r) => r.improved?.bends ?? 0)))}`,
+    );
+  }
   return lines.join("\n");
 }
