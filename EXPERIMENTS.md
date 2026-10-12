@@ -73,6 +73,7 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
   - reverse an edge;
   - group neighbouring nodes;
   - make the diagram more compact.
+- **Requests that name what a draft left out:** a request may name a component the draft merged into another or left out. Since 2026-10-12 (owner's decision, after six of grafical's seven stage 1 misses were such requests), the change prompt says to add it first and then make the change, so every arm is measured on the change itself.
 - **Measured, per request:** cost, wall time, tokens, cache hit rate, regenerations, whether the request was done right (judges), unnamed fact changes or other changes, and out-of-list movement.
 
 ### E3 Intent
