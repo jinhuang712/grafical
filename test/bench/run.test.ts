@@ -62,7 +62,7 @@ describe("arms and prompts", () => {
   it("the arms' prompts differ only in the tool line", () => {
     const r = draftPrompt("raw").split("\n");
     for (const [arm, tool] of [
-      ["grafical", "grafical guide"],
+      ["grafical", "grafical render"],
       ["mermaid", "mmdc"],
     ] as const) {
       const a = draftPrompt(arm).split("\n");
@@ -91,18 +91,6 @@ describe("arms and prompts", () => {
     prepareChainDir(r, "raw");
     expect(existsSync(join(r, "bin"))).toBe(false);
     expect(() => prepareChainDir(r, "raw")).toThrow(/exists/);
-  });
-
-  it("hides the type guides from a grafical arm that runs without them", () => {
-    const dir = join(mkdtempSync(join(tmpdir(), "bench-")), "g");
-    prepareChainDir(dir, "grafical", undefined, true, false);
-    const grafical = join(dir, "bin", "grafical");
-    const guide = execFileSync(grafical, ["guide"], { encoding: "utf8" });
-    expect(guide).toContain("grafical: build diagrams");
-    expect(guide).not.toContain("guide <type>");
-    expect(guide).not.toContain("guide swimlane");
-    expect(guide).not.toContain("guide [<type>]");
-    expect(() => execFileSync(grafical, ["guide", "c4"], { stdio: "pipe" })).toThrow();
   });
 
   it("gives a task its own brief, a loose prompt none, and the Mermaid arm an mmdc wrapper", () => {
@@ -148,8 +136,6 @@ describe("stage 1 plan", () => {
       hints2: 15,
       hints3: 15,
       hints4: 15,
-      guides: 30,
-      noguides: 30,
     });
     expect(planPart("mvp").runs).not.toContain(REPO);
   });

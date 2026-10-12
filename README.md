@@ -43,6 +43,8 @@ A later change is one more step, and only the renamed node changes:
 grafical node rename arch.grafical.yaml kafka --label "Kafka topics"
 ```
 
+An agent learns grafical from `grafical --help` and each command's `--help`; its prompt only has to say to draw with `grafical`.
+
 To watch an agent draw, open a window that redraws the picture on every change:
 
 ```sh

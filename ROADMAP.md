@@ -63,13 +63,13 @@ Third try, 2026-10-11, with the shared store placed between the systems: not met
 
 Added by the owner on 2026-10-12, after the stage 1 round, where every comment on grafical's pictures named the lines. Both parts are built together:
 - **Lines** (D33): the kinds `link` and `optional`, arrowheads at both ends, a thick main path, curved drawing from a stylesheet, lines that meet a box on any side with each in its own slot, hops at crossings, dots where lines merge, and a hint when `diagram tidy` would remove crossings.
-- **Diagram types** (D34): the node kinds `state`, `decision`, `terminal`, `initial` and `final`, groups nested up to three levels, and `grafical guide <type>`, for C4, cloud, event flow, flowcharts, state machines, swimlane processes, dependency graphs, data flow and deployment.
+- **Diagram types** (D34): the node kinds `state`, `decision`, `terminal`, `initial` and `final`, groups nested up to three levels, and teaching for each type, first as `grafical guide <type>` and then in the help (D36), for C4, cloud, event flow, flowcharts, state machines, swimlane processes, dependency graphs, data flow and deployment.
 
 Exit check: each new type has a fixture the owner has looked at, and the stage 1 benchmarks run again, with the MVP bar.
 
 ### Phase 2: the vocabulary and stability
 
-Everything else that FEATURES.md marks `stage 1`: the full operation set, `apply`, `show`, `diff` and `guide`. The stability rule (D10) is enforced by tests. The separate geometry check for benchmark 7 is built.
+Everything else that FEATURES.md marks `stage 1`: the full operation set, `apply`, `show`, `diff` and the reference for agents (`guide`, now the help, D36). The stability rule (D10) is enforced by tests. The separate geometry check for benchmark 7 is built.
 
 Exit check: benchmarks 4, 7 and 11 meet their targets. These three need no agent runs.
 

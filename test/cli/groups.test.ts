@@ -3,7 +3,6 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { GUIDE } from "../../src/cli/guide.ts";
 import { writeDiagram } from "../../src/model/io.ts";
 import { nested } from "../fixtures/nested.ts";
 
@@ -24,17 +23,20 @@ function run(...args: string[]) {
 }
 const read = (f: string) => readFileSync(join(dir, f), "utf8");
 
-// The example batch is taken from the guide itself, so the guide cannot drift from the tool.
-function guideExample() {
-  const start = GUIDE.indexOf("Write batch.yaml:\n") + "Write batch.yaml:\n".length;
-  const batch = GUIDE.slice(start, GUIDE.indexOf("\nThen:", start));
-  const line = GUIDE.split("\n").find((l) => l.startsWith("grafical new orders")) as string;
+// The example is taken from `grafical apply --help` as printed, so the help cannot drift
+// from the tool.
+function helpExample() {
+  const lines = run("apply", "--help")
+    .out.split("\n")
+    .map((l) => l.slice(2));
+  const line = lines.find((l) => l.startsWith("grafical new orders")) as string;
+  const batch = `${lines.filter((l) => l.startsWith("- {op: ")).join("\n")}\n`;
   return { batch, line };
 }
 
 describe("grouped diagrams", () => {
-  it("builds the guide's example with new and one apply, and show lists the groups", () => {
-    const { batch, line } = guideExample();
+  it("builds the example of apply --help with new and one apply, and show lists the groups", () => {
+    const { batch, line } = helpExample();
     // The example's new line, split into words that keep quoted text together.
     const args = [...line.matchAll(/"([^"]*)"|(\S+)/g)].map((m) => m[1] ?? (m[2] as string));
     const n = run(...args.slice(1));
@@ -124,10 +126,10 @@ describe("grouped diagrams", () => {
     expect(JSON.parse(small.out).warnings).toEqual([]);
   });
 
-  it("guide teaches the grouped style within the budget", () => {
-    expect(GUIDE.length).toBeLessThan(12000);
-    for (const w of ["group add", "diagram subtitle", "Not shown:", "sublabel"]) {
-      expect(GUIDE).toContain(w);
+  it("the help teaches the grouped style", () => {
+    const help = run("--help").out + run("apply", "--help").out + run("group", "add", "--help").out;
+    for (const w of ["group add", "subtitle", "Not shown:", "sublabel"]) {
+      expect(help).toContain(w);
     }
   });
 });

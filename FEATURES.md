@@ -21,8 +21,8 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical render <file> [--svg <out>] [--png <out>]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file. `--scale` sets the PNG scale, from 1 to 4 | done |
 | `grafical view <file> [--port <n>] [--no-open]` | Open a window, sized to the diagram, that shows it as it is now, redrawn within a moment of every change, with the changed parts marked, a list of each change as operations, and the problems. Ctrl-C stops it (D31) | done |
 | `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file (D18) | done |
-| `grafical guide` | Print the operation reference for agents, within 3k tokens | done |
-| `grafical guide <type>` | Print how to draw one diagram type: `flowchart`, `state-machine`, `swimlane`, `c4`, `cloud`, `deployment`, `event-flow`, `data-flow` and `dependency` (D34) | done |
+| `grafical --help`, `grafical <command> --help` | The reference for agents: how to work, what makes a diagram good, the diagram types, and for each command its options, guidelines, common mistakes, limits and an example (D36) | done |
+| `grafical guide [<type>]` | Print the reference, or how to draw one diagram type (D34) | dropped: the help replaced it (D36) |
 | `grafical review <file>` | Open the board on the diagram | stage 2 |
 | `grafical mcp` | Serve the same operations over MCP | later |
 
@@ -165,7 +165,6 @@ grafical check <file> [--all]
 grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
 grafical view <file> [--port <n>] [--no-open]
 grafical diff <file> [<git-rev>]
-grafical guide [flowchart | state-machine | swimlane | c4 | cloud | deployment | event-flow | data-flow | dependency]
 ```
 
 - A new layer goes to the bottom unless `--before` or `--after` places it.
@@ -186,7 +185,7 @@ grafical guide [flowchart | state-machine | swimlane | c4 | cloud | deployment |
   - `edge-crosses-layer`: an edge's line threads between the nodes of a layer it does not connect (D29);
   - `too-many-main-edges`: more than three edges, and more than a third of them, are on the main path (D33).
 - Every command accepts `--json`. Exit codes: 0 for success, 1 for an operation error or a defect, 2 for a usage error.
-- `grafical guide` prints this reference, written for agents, within 3k tokens (D17).
+- `grafical --help` and each command's `--help` carry this reference, written for agents (D36).
 
 A batch file is a YAML list of operations. Each item has `op: <noun>.<verb>` and the same fields as the command's flags, in camelCase:
 

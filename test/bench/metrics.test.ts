@@ -10,7 +10,7 @@ import {
   perTurn,
   stepTotal,
 } from "../../bench/metrics.ts";
-import { GUIDE } from "../../src/cli/guide.ts";
+import { PAGES } from "../../src/cli/help.ts";
 
 type Usage = { in: number; cw: number; cr: number; out: number };
 
@@ -148,8 +148,8 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     "Permission to use Bash has been denied because Claude Code is running in don't ask mode.";
 
   const events = [
-    call("g", "grafical guide"), // a success, but not an edit
-    toolResult("g", GUIDE), // it quotes the failure lines, with placeholders
+    call("g", "grafical apply --help"), // a success, but not an edit
+    toolResult("g", PAGES.apply?.after ?? ""), // it quotes the failure lines, with placeholders
     call("1", "grafical node add d.yaml a --layer nope --label A --json"),
     toolResult(
       "1",

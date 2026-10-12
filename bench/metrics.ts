@@ -24,7 +24,7 @@ export interface GraficalStats {
   calls: number;
   /** Calls that grafical accepted. */
   successes: number;
-  /** Successes that changed the diagram: layer, node, edge or apply (not guide, new, show, check or render). */
+  /** Successes that changed the diagram: layer, node, edge or apply (not help, new, show, check or render). */
   editSuccesses: number;
   /** Calls that grafical refused with an operation error (or a non-zero exit with no report). */
   opErrors: number;
@@ -180,7 +180,7 @@ export type Outcome = "success" | "opError" | "defect" | "denied";
  * How one grafical call ended. The harness's refusal comes first: its text starts with
  * "Permission to use". Then grafical's own report, as JSON or as the plain lines
  * `error op <index> ...` and `defect <code> [...`. A failure with neither is an
- * operation error. The guide quotes both lines with placeholders, `error op <index>`
+ * operation error. The help (the guide before it) quotes both lines with placeholders, `error op <index>`
  * and `defect <code>`, so a line counts only with a real index or code.
  */
 export function classify(text: string, isError: boolean): Outcome {
@@ -215,7 +215,9 @@ export function graficalStats(events: Event[]): GraficalStats {
     calls.push({
       outcome: classify(r.text, r.isError),
       diagram: diagramOf(t.input.command),
-      edit: subcommands.some((c) => EDIT_COMMANDS.has(c)),
+      // Reading a command's help changes nothing.
+      edit:
+        subcommands.some((c) => EDIT_COMMANDS.has(c)) && !/\s(--help|-h)\b/.test(t.input.command),
     });
   }
   const count = (o: Outcome) => calls.filter((c) => c.outcome === o).length;

@@ -1,1 +1,1 @@
-Use only the `grafical` command to draw: run `grafical guide` first, keep the diagram in `diagram.grafical.yaml`, and make the picture with `grafical render`. Do not write SVG, coordinates or layout scripts yourself.
+Use only the `grafical` command to draw: keep the diagram in `diagram.grafical.yaml`, and make the picture with `grafical render`. Do not write SVG, coordinates or layout scripts yourself.

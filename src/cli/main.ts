@@ -11,10 +11,11 @@ import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
+import { EDGE_KINDS, NODE_KINDS } from "../model/types.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
 import { atRevision, formatOps } from "./diff.ts";
-import { type DiagramType, GUIDE, TYPE_GUIDES } from "./guide.ts";
+import { PAGES, PROGRAM_ABOUT, PROGRAM_AFTER } from "./help.ts";
 import {
   emit,
   failure,
@@ -67,16 +68,34 @@ function renderName(file: string): string {
   return join(dirname(file), base);
 }
 
+/**
+ * Gives each command its help page (D36): the one-line description stays the summary in
+ * its parent's list, and the page's paragraph and sections show on its own help.
+ */
+function attachHelp(parent: Command, path: string[] = []): void {
+  for (const c of parent.commands) {
+    const at = [...path, c.name()];
+    const page = PAGES[at.join(" ")];
+    if (page?.about !== undefined) c.summary(c.description()).description(page.about);
+    if (page?.after !== undefined) c.addHelpText("after", page.after.trimEnd());
+    attachHelp(c, at);
+  }
+}
+
 function build(): Command {
   const program = new Command("grafical");
   program
-    .description("Build architecture diagrams in small, checked steps. Run `grafical guide`.")
+    .description(PROGRAM_ABOUT)
     .exitOverride()
     .configureOutput({
       writeOut: (s) => process.stdout.write(s),
       writeErr: (s) => process.stderr.write(s),
+      // The same help on every terminal, so that it is the same text for every agent.
+      getOutHelpWidth: () => 80,
+      getErrHelpWidth: () => 80,
     })
-    .showHelpAfterError(false);
+    .showHelpAfterError(false)
+    .addHelpText("after", PROGRAM_AFTER.trimEnd());
 
   const json = (c: Command): Command => c.option("--json", "print the report as JSON");
 
@@ -99,7 +118,9 @@ function build(): Command {
     await write(file, { op: "diagram.new", ...pick(opts, names) }, opts, true);
   });
 
-  const diagram = program.command("diagram").description("diagram-wide settings and text");
+  const diagram = program
+    .command("diagram")
+    .description("the title, subtitle, note, legend, look and spacing");
   json(
     diagram
       .command("style")
@@ -132,17 +153,17 @@ function build(): Command {
     });
   }
 
-  const group = program.command("group").description("group (system box) operations");
+  const group = program.command("group").description("boxes around the parts of one system");
   json(
     group
       .command("add")
       .description("add a group, optionally with member nodes, optionally inside another group")
       .argument("<file>")
       .argument("<id>")
-      .requiredOption("--label <text>")
+      .requiredOption("--label <text>", "the name, short, as a reader would say it")
       .option("--sublabel <text>", "a second, quieter part of the label")
-      .option("--nodes <ids>", "comma-separated member node ids")
-      .option("--in <group>", "the group it sits inside, up to three levels deep"),
+      .option("--nodes <ids>", "the members, comma-separated: a,b,c")
+      .option("--in <group>", "the group it sits inside"),
   ).action(async (file: string, id: string, opts: Opts) => {
     const raw: Record<string, unknown> = {
       op: "group.add",
@@ -182,7 +203,7 @@ function build(): Command {
       .description("change a group's label")
       .argument("<file>")
       .argument("<id>")
-      .requiredOption("--label <text>"),
+      .requiredOption("--label <text>", "the name, short, as a reader would say it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "group.rename", id, ...pick(opts, ["label"]) }, opts);
   });
@@ -201,14 +222,14 @@ function build(): Command {
     );
   });
 
-  const lane = program.command("lane").description("swimlane operations (D32)");
+  const lane = program.command("lane").description("swimlanes: bands that say who owns what");
   json(
     lane
       .command("add")
       .description("add a lane, optionally with members: layers (rows), nodes (columns) or groups")
       .argument("<file>")
       .argument("<id>")
-      .requiredOption("--label <text>")
+      .requiredOption("--label <text>", "the name, short, as a reader would say it")
       .option("--members <ids>", "comma-separated layer, node or group ids"),
   ).action(async (file: string, id: string, opts: Opts) => {
     const raw: Record<string, unknown> = { op: "lane.add", id, ...pick(opts, ["label"]) };
@@ -240,7 +261,7 @@ function build(): Command {
       .description("change a lane's label")
       .argument("<file>")
       .argument("<id>")
-      .requiredOption("--label <text>"),
+      .requiredOption("--label <text>", "the name, short, as a reader would say it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "lane.rename", id, ...pick(opts, ["label"]) }, opts);
   });
@@ -254,36 +275,36 @@ function build(): Command {
     await write(file, { op: "lane.remove", id }, opts);
   });
 
-  const layer = program.command("layer").description("layer operations");
+  const layer = program.command("layer").description("rows");
   json(
     layer
       .command("add")
       .description("add a layer, at the bottom unless placed")
       .argument("<file>")
       .argument("<id>")
-      .requiredOption("--label <text>")
-      .option("--before <layer>")
-      .option("--after <layer>"),
+      .requiredOption("--label <text>", "the name, short, as a reader would say it")
+      .option("--before <layer>", "just above this row")
+      .option("--after <layer>", "just below this row"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "layer.add", id, ...pick(opts, ["label", "before", "after"]) }, opts);
   });
 
-  const node = program.command("node").description("node operations");
+  const node = program.command("node").description("boxes");
   json(
     node
       .command("add")
       .description("add a node to a layer")
       .argument("<file>")
       .argument("<id>")
-      .requiredOption("--layer <layer>")
-      .requiredOption("--label <text>")
-      .option("--kind <kind>", "service, store, queue, external or actor")
-      .option("--sublabel <text>")
-      .option("--size <size>", "s, m or l")
-      .option("--first")
-      .option("--last")
-      .option("--before <node>")
-      .option("--after <node>")
+      .requiredOption("--layer <layer>", "the row")
+      .requiredOption("--label <text>", "the name, short, as a reader would say it")
+      .option("--kind <kind>", "what the box is: see Kinds below")
+      .option("--sublabel <text>", "a quieter second line: technology, port, count")
+      .option("--size <size>", "s, m or l; leave it out")
+      .option("--first", "the first place")
+      .option("--last", "the last place")
+      .option("--before <node>", "just before this node in the row")
+      .option("--after <node>", "just after this node in the row")
       .option("--align <node>", "sit directly above or below a node in another layer")
       .option("--accent", "mark as one of the nodes to see first"),
   ).action(async (file: string, id: string, opts: Opts) => {
@@ -296,7 +317,7 @@ function build(): Command {
       .description("change a node's label")
       .argument("<file>")
       .argument("<id>")
-      .requiredOption("--label <text>"),
+      .requiredOption("--label <text>", "the name, short, as a reader would say it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "node.rename", id, ...pick(opts, ["label"]) }, opts);
   });
@@ -316,11 +337,11 @@ function build(): Command {
       .description("move a node to another layer or position")
       .argument("<file>")
       .argument("<id>")
-      .option("--layer <layer>")
-      .option("--first")
-      .option("--last")
-      .option("--before <node>")
-      .option("--after <node>"),
+      .option("--layer <layer>", "the row to move it to")
+      .option("--first", "the first place")
+      .option("--last", "the last place")
+      .option("--before <node>", "just before this node in the row")
+      .option("--after <node>", "just after this node in the row"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "node.move", id, ...pick(opts, ["layer", ...POSITION]) }, opts);
   });
@@ -334,7 +355,7 @@ function build(): Command {
     await write(file, { op: "node.remove", id }, opts);
   });
 
-  const edge = program.command("edge").description("edge operations");
+  const edge = program.command("edge").description("lines");
   json(
     edge
       .command("add")
@@ -343,8 +364,8 @@ function build(): Command {
       .argument("<from>")
       .argument("<to>")
       .option("--id <id>", "default: <from>-><to>")
-      .option("--label <text>")
-      .option("--kind <kind>", "call, async, data, optional or link")
+      .option("--label <text>", "what the line means; leave it out when that is obvious")
+      .option("--kind <kind>", "see Kinds below")
       .option("--both", "an arrowhead at both ends"),
   ).action(async (file: string, from: string, to: string, opts: Opts) => {
     await write(
@@ -364,7 +385,7 @@ function build(): Command {
       .description("set an edge's label; without --label, clear it")
       .argument("<file>")
       .argument("<id>")
-      .option("--label <text>"),
+      .option("--label <text>", "what the line means; leave it out when that is obvious"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.relabel", id, ...pick(opts, ["label"]) }, opts);
   });
@@ -374,7 +395,7 @@ function build(): Command {
       .description("change an edge's kind")
       .argument("<file>")
       .argument("<id>")
-      .argument("<kind>", "call, async, data, optional or link"),
+      .argument("<kind>", EDGE_KINDS.join(", ")),
   ).action(async (file: string, id: string, kind: string, opts: Opts) => {
     await write(file, { op: "edge.kind", id, kind }, opts);
   });
@@ -384,7 +405,7 @@ function build(): Command {
       .description("draw edges thick, as the main path, or thin again with --off")
       .argument("<file>")
       .argument("<id...>")
-      .option("--off"),
+      .option("--off", "undo it"),
   ).action(async (file: string, edges: string[], opts: Opts) => {
     await write(file, { op: "edge.emphasize", edges, ...pick(opts, ["off"]) }, opts);
   });
@@ -394,7 +415,7 @@ function build(): Command {
       .description("draw an arrowhead at both ends of an edge, or at one end again with --off")
       .argument("<file>")
       .argument("<id>")
-      .option("--off"),
+      .option("--off", "undo it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.both", id, ...pick(opts, ["off"]) }, opts);
   });
@@ -435,7 +456,7 @@ function build(): Command {
       .description("change a node's kind")
       .argument("<file>")
       .argument("<id>")
-      .argument("<kind>", "service, store, queue, external or actor"),
+      .argument("<kind>", NODE_KINDS.join(", ")),
   ).action(async (file: string, id: string, kind: string, opts: Opts) => {
     await write(file, { op: "node.kind", id, kind }, opts);
   });
@@ -445,7 +466,7 @@ function build(): Command {
       .description("turn a node's accent on, or off with --off")
       .argument("<file>")
       .argument("<id>")
-      .option("--off"),
+      .option("--off", "undo it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "node.emphasize", id, ...pick(opts, ["off"]) }, opts);
   });
@@ -476,7 +497,7 @@ function build(): Command {
       .argument("<file>")
       .argument("<id>", "the new node's id")
       .requiredOption("--nodes <ids>", "comma-separated nodes to merge")
-      .requiredOption("--label <text>")
+      .requiredOption("--label <text>", "the name, short, as a reader would say it")
       .option("--sublabel <text>")
       .option("--kind <kind>"),
   ).action(async (file: string, id: string, opts: Opts) => {
@@ -495,7 +516,7 @@ function build(): Command {
       .description("change a layer's label")
       .argument("<file>")
       .argument("<id>")
-      .requiredOption("--label <text>"),
+      .requiredOption("--label <text>", "the name, short, as a reader would say it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "layer.rename", id, ...pick(opts, ["label"]) }, opts);
   });
@@ -505,10 +526,10 @@ function build(): Command {
       .description("move a layer up or down")
       .argument("<file>")
       .argument("<id>")
-      .option("--first")
-      .option("--last")
-      .option("--before <layer>")
-      .option("--after <layer>"),
+      .option("--first", "the first place")
+      .option("--last", "the last place")
+      .option("--before <layer>", "just above this row")
+      .option("--after <layer>", "just below this row"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "layer.move", id, ...pick(opts, POSITION) }, opts);
   });
@@ -559,8 +580,8 @@ function build(): Command {
       .description("put a group's members before or after another group's, in every shared layer")
       .argument("<file>")
       .argument("<id>")
-      .option("--before <group>")
-      .option("--after <group>"),
+      .option("--before <group>", "just before this group")
+      .option("--after <group>", "just after this group"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "group.order", id, ...pick(opts, ["before", "after"]) }, opts);
   });
@@ -772,24 +793,7 @@ function build(): Command {
       await viewer.close();
     });
 
-  json(
-    program
-      .command("guide")
-      .description("print the reference for agents, or how to draw one diagram type")
-      .argument("[type]", Object.keys(TYPE_GUIDES).join(" or ")),
-  ).action((type: string | undefined, opts: Opts) => {
-    const guide = type === undefined ? GUIDE : TYPE_GUIDES[type as DiagramType];
-    if (guide === undefined) {
-      process.stderr.write(
-        `error: no guide for ${type}; expected one of ${Object.keys(TYPE_GUIDES).join(", ")}\n`,
-      );
-      process.exitCode = 2;
-      return;
-    }
-    if (opts.json === true) process.stdout.write(`${JSON.stringify({ ok: true, guide })}\n`);
-    else process.stdout.write(guide);
-  });
-
+  attachHelp(program);
   return program;
 }
 

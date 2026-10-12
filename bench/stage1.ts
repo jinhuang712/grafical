@@ -11,8 +11,6 @@
 //   hints2  the same with `diagram improve` and the guide's step to run it
 //   hints3  the same with improve taking only safe hints
 //   hints4  the same with improve removed: the agent runs each hint itself
-//   guides, noguides  a prompt for each type guide (D34) and the public brief, with and
-//           without the type guides, grafical, Haiku, 3 runs, measured, not judged
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (EXPERIMENTS.md, "Harness").
@@ -44,8 +42,6 @@ export const PARTS = [
   "hints2",
   "hints3",
   "hints4",
-  "guides",
-  "noguides",
 ] as const;
 export type Part = (typeof PARTS)[number];
 
@@ -68,8 +64,6 @@ export interface PartPlan {
   chains: Chain[];
   /** false: the grafical tool prints no hints (D35). */
   hints?: boolean;
-  /** false: the grafical tool hides the type guides (D34). */
-  guides?: boolean;
 }
 
 /**
@@ -84,11 +78,6 @@ function hintTasks(): Task[] {
     ...loadIntents().filter((t) => t.id === "password-reset"),
     ...loadIntents("types.yaml").filter((t) => t.id === "refund-flow" || t.id === "order-states"),
   ];
-}
-
-/** The type guide comparison's tasks: a prompt for each guide, and the public brief. */
-function guideTasks(): Task[] {
-  return [{ id: "catalog-sync", brief: "catalog-sync.md" }, ...loadIntents("types.yaml")];
 }
 
 const SCALE: Task[] = [10, 25, 50].map((n) => ({ id: `scale-${n}`, brief: `scale-${n}.md` }));
@@ -147,12 +136,6 @@ export function planPart(part: Part): PartPlan {
     case "hints4":
       add(["grafical"], "haiku", runs3, hintTasks(), []);
       return { part, round: "p1d-hints4", runs: RUNS, chains };
-    case "guides":
-      add(["grafical"], "haiku", runs3, guideTasks(), []);
-      return { part, round: "p1d-guides", runs: RUNS, chains };
-    case "noguides":
-      add(["grafical"], "haiku", runs3, guideTasks(), []);
-      return { part, round: "p1d-noguides", runs: RUNS, chains, guides: false };
   }
 }
 

@@ -32,3 +32,7 @@ Problem lines in the three drafts: 8, 1 and 0 with the guides, 5, 3 and 3 withou
 ## Reading
 
 The models know the conventions; what they do not know is how grafical spells them. The type guides earn their place by that mapping: the right kind for each part, which edges to label, and the syntax of lanes and nesting.
+
+## Afterwards
+
+The owner then asked why an agent should learn grafical anywhere but its `--help`, the only thing a real agent finds. `grafical guide` was removed and its lessons moved into the help pages (DESIGN.md D36); the parts `guides` and `noguides` went with it, and commit 90deeef holds them.
