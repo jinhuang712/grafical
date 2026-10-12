@@ -23,7 +23,8 @@ HOW TO DRAW A GOOD DIAGRAM (read this first)
 WORKFLOW
 1. grafical new <file> --title <text> --subtitle <text> --note <text>
 2. write one batch: layers, nodes, groups, edges. Apply: grafical apply <file> <batch.yaml>
-3. grafical show <file>, then grafical render <file> and LOOK at the PNG. Fix with single commands, and run the hints you agree with.
+3. grafical show <file>, then grafical render <file> and LOOK at the PNG. Fix with single commands.
+4. If any output shows a hint line, run grafical diagram improve <file>, then render again. It takes the hints one by one while they make the lines better.
 A write applies, lays out and checks; on an error or a defect you must fix, the file is untouched and the exit code is 1. Never edit the file by hand. Name it <name>.grafical.yaml.
 
 COMMANDS (every command accepts --json)
@@ -34,6 +35,7 @@ grafical diagram style <file> [<style>]   (default, dark, print, or <name>.grafi
 grafical diagram title <file> --text <text>; diagram density <file> compact|normal|airy
 grafical diagram legend <file> solid|dashed|dotted|plain [--text <text>]   (name a line style, e.g. "Kafka message")
 grafical diagram tidy <file>   (reorder all layers once to untangle lines)
+grafical diagram improve <file>   (take the hints while they help)
 grafical layer add <file> <id> --label <text> [--before <layer> | --after <layer>]
 grafical layer rename <file> <id> --label <text>; layer remove <file> <id> (empty only); layer tidy <file> <id>
 grafical layer move <file> <id> --first | --last | --before <layer> | --after <layer>
@@ -87,7 +89,7 @@ Add groups after their nodes.
 OUTPUT
 Success: ok changed: <ids>   (--json: the same as one JSON object)
 Failure: failed, file unchanged, then one line per problem. Exit codes: 0 success, 1 an operation error or defect, 2 a usage error.
-hint: <gain>: <commands>: a rearrangement grafical measured to make the lines better (fewer crossings and bends). Run it unless it moves a node into a row where it does not belong.
+hint: <gain>: <commands>: a measured way to fewer crossings and bends. Step 4 takes it; skip it only if it moves a node into a row where it does not belong.
 A warning never blocks; weigh it: too-many-nodes (node merge), too-wide or crowded-layer (layer split), lonely-group, edge-crosses-layer (layer move), too-many-main-edges.
 
 ERRORS

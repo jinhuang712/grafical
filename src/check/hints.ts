@@ -145,3 +145,25 @@ export function findHints(d: Diagram, m: Measurer, limit = 3): Hint[] {
   }
   return out;
 }
+
+/** Most hints `diagram improve` takes one after another. */
+const IMPROVE_STEPS = 5;
+
+/**
+ * `grafical diagram improve` (D35): the first hint, then the first hint of the result,
+ * while there is one, at most five times. Returns the hints taken, in order; their
+ * operations, applied in that order, give the improved diagram.
+ */
+export function improvements(d: Diagram, m: Measurer): Hint[] {
+  const taken: Hint[] = [];
+  let cur = d;
+  for (let i = 0; i < IMPROVE_STEPS; i++) {
+    const [h] = findHints(cur, m, 1);
+    if (h === undefined) break;
+    const r = applyOps(cur, h.ops, m);
+    if ("errors" in r) break;
+    taken.push(h);
+    cur = r.diagram;
+  }
+  return taken;
+}

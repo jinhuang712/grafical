@@ -44,6 +44,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `diagram.style` | Take the look from a built-in theme (`default`, `dark`, `print`) or a stylesheet file beside the diagram; without one, the default theme (D30) | done |
 | `diagram.legend` | Name a line style in the legend, such as "Kafka message" for dashed lines, or go back to the default wording | done |
 | `diagram.tidy` | Reorder every layer's nodes once, together, to reduce crossings (D24) | done |
+| `diagram improve` | Take the hints one by one while they make the lines better, at most five, as ordinary operations in one batch (D35) | done |
 
 ### Layers
 
@@ -158,6 +159,7 @@ grafical diagram title <file> --text <text>
 grafical diagram density <file> compact|normal|airy
 grafical diagram legend <file> solid|dashed|dotted|plain [--text <text>]
 grafical diagram tidy <file>
+grafical diagram improve <file>
 grafical diagram style <file> [<style>]
 grafical apply <file> <batch.yaml>
 grafical show <file>

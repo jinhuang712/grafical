@@ -58,6 +58,16 @@ describe("type guides (D34)", () => {
     expect(json.hints[0].ops.length).toBeGreaterThan(0);
   });
 
+  it("diagram improve takes the hints until none is left, as ordinary operations (D35)", () => {
+    const ex = example(TYPE_GUIDES["state-machine"]);
+    const r = run("diagram", "improve", ex.file);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/^improved: /m);
+    expect(run("check", ex.file).out).not.toMatch(/^hint: /m);
+    const again = run("diagram", "improve", ex.file, "--json");
+    expect(JSON.parse(again.out)).toMatchObject({ ok: true, changed: [], improved: [] });
+  });
+
   it("names the types it knows when asked for another", () => {
     const r = run("guide", "sequence");
     expect(r.code).toBe(2);

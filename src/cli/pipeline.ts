@@ -31,6 +31,8 @@ export interface Report {
   warnings?: Warning[];
   /** Rearrangements measured to make the lines better, as commands (D35). Never applied by grafical. */
   hints?: Hint[];
+  /** The hints `diagram improve` took, in order (D35). */
+  improved?: Hint[];
 }
 
 /** The hints for a diagram, with its path in place of <file>, so each command runs as printed. */
@@ -65,6 +67,7 @@ export function formatReport(r: Report): string {
       `defect ${d.code} [${d.elements.join(", ")}]: found ${oneLine(d.found)}; expected ${oneLine(d.expected)}; fix: ${oneLine(d.fix)}`,
     );
   }
+  for (const h of r.improved ?? []) out.push(`improved: ${h.gain}: ${h.command}`);
   for (const h of r.hints ?? []) out.push(`hint: ${h.gain}: ${h.command}`);
   return `${out.join("\n")}\n`;
 }
@@ -78,6 +81,7 @@ export function emit(report: Report, json: boolean, extra: Record<string, unknow
       defects: report.defects,
       warnings: report.warnings ?? [],
       hints: report.hints ?? [],
+      ...(report.improved !== undefined ? { improved: report.improved } : {}),
       ...extra,
     };
     process.stdout.write(`${JSON.stringify(body)}\n`);
