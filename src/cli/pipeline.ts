@@ -68,7 +68,11 @@ export function formatReport(r: Report): string {
     );
   }
   for (const h of r.improved ?? []) out.push(`improved: ${h.gain}: ${h.command}`);
-  for (const h of r.hints ?? []) out.push(`hint: ${h.gain}: ${h.command}`);
+  // A hint diagram improve leaves to the agent says so: it moves a node among other kinds.
+  for (const h of r.hints ?? [])
+    out.push(
+      `hint: ${h.gain}: ${h.command}${h.safe ? "" : "   (moves a node among other kinds; run it yourself if its row does not matter)"}`,
+    );
   return `${out.join("\n")}\n`;
 }
 

@@ -4,7 +4,7 @@
 // because moving a node to another row can change what the picture says.
 
 import { arrangementCost, layout, troubledEdges } from "../layout/index.ts";
-import { applyOps, type Diagram, type Op } from "../model/index.ts";
+import { applyOps, type Diagram, type NodeKind, type Op } from "../model/index.ts";
 import type { Measurer } from "../text/types.ts";
 import { check } from "./index.ts";
 
@@ -15,7 +15,31 @@ export interface Hint {
   command: string;
   /** What gets better, measured. */
   gain: string;
+  /**
+   * Keeps every node among its own kind: a swap within a row, or a move into a row of
+   * the same family. `diagram improve` takes only these; the others need the agent's
+   * judgement of what its rows mean.
+   */
+  safe: boolean;
 }
+
+/**
+ * Kinds that belong in one row together. Agents read a row as a tier, and undo a move
+ * that puts a store among queues or a caller among services, so a safe hint never
+ * does; callers and outside systems are never moved at all.
+ */
+const FAMILY: Record<NodeKind, string> = {
+  service: "step",
+  state: "step",
+  decision: "step",
+  terminal: "step",
+  initial: "step",
+  final: "step",
+  store: "store",
+  queue: "queue",
+  actor: "edge",
+  external: "edge",
+};
 
 /**
  * Most rearrangements one search tries: 200 for a small diagram, fewer as it grows,
@@ -74,7 +98,7 @@ function commandOf(op: Op): string {
  * (D24). A row a move empties is removed with it. Every hint applies cleanly and
  * leaves no defect.
  */
-export function findHints(d: Diagram, m: Measurer, limit = 3): Hint[] {
+export function findHints(d: Diagram, m: Measurer, limit = 3, onlySafe = false): Hint[] {
   const troubled = troubledEdges(d, m);
   if (troubled.size === 0) return [];
   const rowOf = new Map<string, number>();
@@ -99,15 +123,15 @@ export function findHints(d: Diagram, m: Measurer, limit = 3): Hint[] {
   );
   const maxTries = triesFor(rowOf.size);
   const base = arrangementCost(d, m);
-  const tried: { ops: Op[]; cost: number[] }[] = [];
+  const tried: { ops: Op[]; cost: number[]; safe: boolean }[] = [];
   let tries = 0;
-  const attempt = (ops: Op[]) => {
+  const attempt = (ops: Op[], safe: boolean) => {
     if (tries >= maxTries) return;
     tries++;
     const r = applyOps(d, ops, m);
     if ("errors" in r) return;
     const cost = arrangementCost(r.diagram, m);
-    if (better(cost, base)) tried.push({ ops, cost });
+    if (better(cost, base)) tried.push({ ops, cost, safe });
   };
   for (const id of order) {
     const row = rowOf.get(id) as number;
@@ -116,14 +140,19 @@ export function findHints(d: Diagram, m: Measurer, limit = 3): Hint[] {
     for (const other of layer.nodes) {
       // Each pair once: from the node that sorts first, or from the only one in focus.
       if (other.id === id || (focus.has(other.id) && other.id < id)) continue;
-      attempt([{ op: "node.swap", a: id, b: other.id }]);
+      attempt([{ op: "node.swap", a: id, b: other.id }], true);
     }
+    const node = layer.nodes.find((n) => n.id === id);
+    if (node === undefined || FAMILY[node.kind] === "edge") continue;
     for (const to of [row - 1, row + 1]) {
       const target = d.layers[to];
       if (target === undefined) continue;
       const ops: Op[] = [{ op: "node.move", id, layer: target.id }];
       if (layer.nodes.length === 1) ops.push({ op: "layer.remove", id: layer.id });
-      attempt(ops);
+      attempt(
+        ops,
+        target.nodes.every((n) => FAMILY[n.kind] === FAMILY[node.kind]),
+      );
     }
   }
   // The best first; one hint per pair of nodes or node, so they do not repeat.
@@ -132,6 +161,7 @@ export function findHints(d: Diagram, m: Measurer, limit = 3): Hint[] {
   const seen = new Set<string>();
   for (const t of tried) {
     if (out.length >= limit) break;
+    if (onlySafe && !t.safe) continue;
     const key = JSON.stringify(t.ops);
     if (seen.has(key)) continue;
     seen.add(key);
@@ -141,6 +171,7 @@ export function findHints(d: Diagram, m: Measurer, limit = 3): Hint[] {
       ops: t.ops,
       command: t.ops.map(commandOf).join("; "),
       gain: gainText(t.cost, base),
+      safe: t.safe,
     });
   }
   return out;
@@ -150,15 +181,15 @@ export function findHints(d: Diagram, m: Measurer, limit = 3): Hint[] {
 const IMPROVE_STEPS = 5;
 
 /**
- * `grafical diagram improve` (D35): the first hint, then the first hint of the result,
- * while there is one, at most five times. Returns the hints taken, in order; their
+ * `grafical diagram improve` (D35): the first safe hint, then the first safe hint of the
+ * result, while there is one, at most five times. Returns the hints taken, in order; their
  * operations, applied in that order, give the improved diagram.
  */
 export function improvements(d: Diagram, m: Measurer): Hint[] {
   const taken: Hint[] = [];
   let cur = d;
   for (let i = 0; i < IMPROVE_STEPS; i++) {
-    const [h] = findHints(cur, m, 1);
+    const [h] = findHints(cur, m, 1, true);
     if (h === undefined) break;
     const r = applyOps(cur, h.ops, m);
     if ("errors" in r) break;

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { findHints } from "../../src/check/hints.ts";
+import { findHints, improvements } from "../../src/check/hints.ts";
 import { check } from "../../src/check/index.ts";
 import { arrangementCost, layout } from "../../src/layout/index.ts";
 import { applyOps, type Diagram } from "../../src/model/index.ts";
@@ -34,6 +34,16 @@ describe("hints (D35)", () => {
     const [h] = findHints(edgeLooks, m);
     expect(h?.command).toBe("grafical node move <file> uploads --layer entry");
     expect(h?.gain).toBe("lines with more than two bends 2 -> 0, bends 8 -> 2");
+  });
+
+  it("improve takes only hints that keep each node among its own kind", () => {
+    const [top] = findHints(edgeLooks, m);
+    // The queue would join the API's row: shown, marked, but left to the agent.
+    expect(top?.safe).toBe(false);
+    for (const h of improvements(edgeLooks, m)) expect(h.safe).toBe(true);
+    const [sm] = findHints(stateMachine, m);
+    expect(sm?.safe).toBe(true);
+    expect(improvements(stateMachine, m)[0]?.command).toBe(sm?.command);
   });
 
   it("removes the state machine's crossing", () => {
