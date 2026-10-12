@@ -312,7 +312,8 @@
     el.append(head);
     const p = task.pictures[letter];
     const paired = task.kind === "change" || !!p.before;
-    if (paired) el.append(shot(p.before, "Before", true));
+    // A change shows its before small; a picture to look at compares the two at one size.
+    if (paired) el.append(shot(p.before, "Before", task.kind !== "view"));
     el.append(shot(p.after, paired ? "After" : "Picture", false));
     // A picture to look at has nothing to rate: the round takes one comment at the end.
     if (task.kind === "view") return el;
