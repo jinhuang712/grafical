@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { check } from "../../src/check/index.ts";
 import type { OpError } from "../../src/errors.ts";
+import { layout } from "../../src/layout/index.ts";
 import {
   applyOps,
   budgetWarnings,
@@ -9,7 +11,7 @@ import {
   readDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
-import { createStubMeasurer } from "../../src/text/index.ts";
+import { createMeasurer, createStubMeasurer } from "../../src/text/index.ts";
 
 const m = createStubMeasurer();
 const empty: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
@@ -129,18 +131,21 @@ describe("group operations", () => {
     expect(fail(d1, [{ op: "group.rename", id: "zz", label: "x" }])[0]?.code).toBe("unknown-group");
   });
 
-  it("group-gap: members must sit in neighbouring rows", () => {
-    const e = fail(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a", "c"] }]);
-    expect(e[0]?.code).toBe("group-gap");
-    expect(e[0]?.suggestion).toContain("r2");
-    // A batch may pass through a gap and end fine.
-    const d = ok(base, [
-      { op: "group.add", id: "g", label: "G", nodes: ["a", "c"] },
-      { op: "group.join", group: "g", nodes: ["b"] },
-    ]).diagram;
-    expect(groupOf(d, "b")).toBe("g");
-    // Moving a node out of the middle opens a gap.
-    expect(fail(d, [{ op: "group.leave", nodes: ["b"] }])[0]?.code).toBe("group-gap");
+  it("a group's box spans a row it has no member in, and that row's nodes sit beside it (D7)", async () => {
+    const d = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a", "c"] }]).diagram;
+    const real = await createMeasurer();
+    const s = layout(d, real);
+    const box = s.groups?.find((x) => x.id === "g")?.rect;
+    const b = s.nodes.find((n) => n.id === "b")?.rect;
+    if (box === undefined || b === undefined) throw new Error("missing box");
+    // b's row lies within the box's height, and b outside its width.
+    expect(b.y).toBeGreaterThan(box.y);
+    expect(b.y + b.h).toBeLessThan(box.y + box.h);
+    expect(b.x >= box.x + box.w || b.x + b.w <= box.x).toBe(true);
+    expect(check(d, s, real)).toEqual([]);
+    // A member may leave the middle row too.
+    const d2 = ok(d, [{ op: "group.join", group: "g", nodes: ["b"] }]).diagram;
+    expect(groupOf(ok(d2, [{ op: "group.leave", nodes: ["b"] }]).diagram, "b")).toBeUndefined();
   });
 
   it("group-split: a non-member between members in one row is refused by the layout (D7)", () => {

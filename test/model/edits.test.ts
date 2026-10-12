@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import { check } from "../../src/check/index.ts";
 import type { OpError } from "../../src/errors.ts";
 import { layout, routeStats } from "../../src/layout/index.ts";
 import {
@@ -87,8 +88,9 @@ describe("layers", () => {
     ]);
     expect(d.layers.map((l) => l.id)).toEqual(["entry", "topics", "work", "deps", "sources"]);
     expect(d.layers[3]?.label).toBe("Outside");
-    // A move that would leave a group with an empty layer between its members is refused.
-    expect(fail(fx, [{ op: "layer.move", id: "deps", before: "work" }])[0]?.code).toBe("group-gap");
+    // A row moved between a group's rows: the box spans it, and its nodes stay beside the box (D7).
+    const moved = ok(fx, [{ op: "layer.move", id: "deps", before: "work" }]);
+    expect(check(moved, layout(moved, m), m)).toEqual([]);
     expect(fail(fx, [{ op: "layer.move", id: "deps" }])[0]?.code).toBe("missing-field");
     expect(fail(fx, [{ op: "layer.move", id: "deps", before: "nope" }])[0]?.code).toBe(
       "unknown-layer",

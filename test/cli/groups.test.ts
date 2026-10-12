@@ -67,12 +67,9 @@ describe("grouped diagrams", () => {
       "ok changed: g, a, b\n",
     );
     expect(run("group", "join", f, "g", "c").code).toBe(0);
-    const before = read(f);
-    const bad = run("group", "leave", f, "b");
-    expect(bad.code).toBe(1);
-    expect(bad.out).toContain("group-gap");
-    expect(bad.out).toContain("failed, file unchanged");
-    expect(read(f)).toBe(before);
+    // Leaving the middle row: the box still spans it (D7).
+    expect(run("group", "leave", f, "b").code).toBe(0);
+    expect(run("group", "join", f, "g", "b").code).toBe(0);
     expect(run("group", "join", f, "zz", "a").out).toContain("unknown-group");
     expect(run("group", "rename", f, "g", "--label", "Renamed").code).toBe(0);
     expect(run("group", "remove", f, "g").out).toBe("ok changed: g, a, b, c\n");
@@ -127,7 +124,7 @@ describe("grouped diagrams", () => {
 
   it("guide teaches the grouped style within the budget", () => {
     expect(GUIDE.length).toBeLessThan(12000);
-    for (const w of ["group add", "diagram subtitle", "Not shown:", "sublabel", "group-gap"]) {
+    for (const w of ["group add", "diagram subtitle", "Not shown:", "sublabel"]) {
       expect(GUIDE).toContain(w);
     }
   });

@@ -60,7 +60,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `group.add` | Draw a system box around nodes, which may sit in several neighbouring rows (D7) | done |
+| `group.add` | Draw a system box around nodes, which may sit in several rows (D7) | done |
 | `group.add --in` | Put the new group inside another group, up to three levels (D34) | stage 1 |
 | `group.join`, `group.leave` | Add a node to a group, or take it out | done |
 | `group.rename` | Change a group's label | done |
@@ -177,7 +177,7 @@ grafical guide [flowchart | state-machine | swimlane]
 - Clearing: `node describe`, `node align`, `edge relabel`, `group describe` and `diagram legend` without their value clear it.
 - An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group, a layer or a lane. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
 - A lane's members are layers or nodes, one way per diagram (`lane-mixed`). A row lane's layers must be neighbours (`lane-gap`), and a layer added between two layers of a lane joins it. Column lanes go left to right in creation order, and grafical keeps each row in that order: a node outside every lane sits right of the lanes, or left of them when it comes first in its row. A group lies in one lane (`group-across-lanes`) and joins with all its members. Two lanes are never the ends of one edge (`lane-to-lane`), and neither are a layer and a column lane (`edge-inside`). `lane remove` keeps the members and removes the edges that end at the lane.
-- A group's members must sit in neighbouring rows, or the write fails with `group-gap`. `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
+- A group's box spans every row from its top member to its bottom one, rows without a member included; the other nodes of those rows sit beside the box (D7). `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
 - Warnings never block and never change the exit code. A write, `check` and `render` report them:
   - `too-many-nodes`: more than 16 nodes, with merge candidates (D26);
   - `too-wide`: the picture is wider than 1024 px, naming the widest layer to split (D29);

@@ -242,12 +242,17 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     for (const [g, ms] of membersOf) {
       const top = Math.min(...ms.map((m) => m.layer));
       const bottom = Math.max(...ms.map((m) => m.layer));
+      const lo = Math.min(...ms.map((m) => m.col));
+      const hi = Math.max(...ms.map((m) => m.col));
       for (let r = top; r <= bottom; r++) {
         const list = layers[r]?.nodes ?? [];
         const at = list.map((n, k) => (groupOf(n) === g ? k : -1)).filter((k) => k >= 0);
-        if (at.length === 0) continue;
-        const left = list[(at[0] as number) - 1];
-        const right = list[(at[at.length - 1] as number) + 1];
+        // A row the box spans with no member keeps its nodes beside the box, as grid.ts
+        // put them: the last one left of its columns and the first one right of them.
+        const left =
+          at.length > 0 ? list[(at[0] as number) - 1] : list.filter((n) => n.col < lo).pop();
+        const right =
+          at.length > 0 ? list[(at[at.length - 1] as number) + 1] : list.find((n) => n.col > hi);
         const anyMember = ms[0] as PNode;
         if (left !== undefined) {
           const between = groupOf(left) !== undefined ? GROUP.gap : GROUP.clear;

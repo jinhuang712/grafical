@@ -7,7 +7,7 @@ export const GUIDE = `grafical: build diagrams by running commands. You state fa
 HOW TO DRAW A GOOD DIAGRAM (read this first)
 - A flowchart or a state machine? Read grafical guide flowchart (or state-machine) first.
 - One story per diagram, 12 to 16 nodes. 30 boxes is a dump, not a diagram.
-- Group nodes into systems. A group is one box around the nodes of one service or team, such as "catalog-sync"; its members may sit in neighbouring rows. Group every node except callers and outside dependencies. Never wrap one node in a group of its own name.
+- Group nodes into systems. A group is one box around the nodes of one service or team, such as "catalog-sync"; its members may sit in several rows. Group every node except callers and outside dependencies. Never wrap one node in a group of its own name.
 - Merge what a reader does not need apart: six topics become one node "upstream topics" with sublabel "6 broker topics"; five callers become one actor "API callers" with sublabel "storefront, promotions"; ten pipelines become one node.
 - An edge may end at a group or a layer: one edge from callers to the group "catalog-api" replaces an edge to each part. An edge to a layer draws that row as a labelled band.
 - Use lanes (swimlanes) only when ownership is part of the story: read grafical guide swimlane.
@@ -61,7 +61,7 @@ grafical guide [flowchart | state-machine | swimlane]
 RULES
 - ids: lowercase letters, digits, . _ -, starting with a letter or digit, one id space for everything. Ids never change; rename changes the label.
 - A layer is a row, drawn only when an edge ends at it. A new layer goes to the bottom unless --before or --after places it.
-- A node is in at most one group. A group's members must sit in neighbouring rows (error group-gap). An empty group draws nothing.
+- A node is in at most one group. A group's box spans every row from its top member to its bottom one; other nodes in those rows sit beside it. An empty group draws nothing.
 - node add and node move without a position: grafical picks the slot with the fewest crossings. Add a node's edges in the same batch so they count. Give a position only when order matters, and at most one.
 - --align <node>: place this node directly above or below a node in another layer. --accent: a node to see first, at most 2.
 - node remove also removes its edges and alignments to it.
@@ -94,7 +94,7 @@ A warning never blocks; weigh it: too-many-nodes (node merge), too-wide or crowd
 
 ERRORS
 error op <index> <code> <field>: found <value>; expected <what>; <suggestion>
-Fix the named field as the suggestion says. unknown-node, -layer, -group, -lane, -edge: the suggestion lists the closest ids. duplicate-id, bad-id, bad-value, missing-field, bad-type, unknown-field, empty-value, unknown-op: the command or item is malformed. conflicting-position: give one of first, last, before, after. group-gap: a group skips a row; put a member in that row, or regroup. edge-inside: an edge joins a container with something inside it. Others (not-in-layer, align-same-layer, edge-blocked, empty-container, lane-mixed, lane-gap, group-across-lanes, lane-to-lane, too-many-accents, both-on-link): follow the suggestion. file-not-found, file-exists, newer-format, bad-yaml: the file itself.
+Fix the named field as the suggestion says. unknown-node, -layer, -group, -lane, -edge: the suggestion lists the closest ids. duplicate-id, bad-id, bad-value, missing-field, bad-type, unknown-field, empty-value, unknown-op: the command or item is malformed. conflicting-position: give one of first, last, before, after. edge-inside: an edge joins a container with something inside it. Others (not-in-layer, align-same-layer, edge-blocked, empty-container, lane-mixed, lane-gap, group-across-lanes, lane-to-lane, too-many-accents, both-on-link): follow the suggestion. file-not-found, file-exists, newer-format, bad-yaml: the file itself.
 
 DEFECTS
 defect <code> [<elements>]: found <what>; expected <what>; fix: <an operation>

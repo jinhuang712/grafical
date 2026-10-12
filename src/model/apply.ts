@@ -1283,7 +1283,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
     };
   }
   // A group the engine cannot box without a non-member inside is an operation error (D7).
-  // Rows with a gap between members are caught earlier, as group-gap (schema.ts).
+  // A row between members that holds none is boxed over, its nodes beside the box.
   const groupProblems = layoutModule.validateGroups(s.d);
   if (groupProblems.length > 0) {
     return {

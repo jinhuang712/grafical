@@ -259,25 +259,6 @@ function checkGroups(d: Diagram, index: number): OpError[] {
       rows.set(n.group, set);
     });
   });
-  groups.forEach((g, gi) => {
-    const set = rows.get(g.id);
-    if (set === undefined) return;
-    const used = [...set].sort((a, b) => a - b);
-    const lo = used[0] as number;
-    const hi = used[used.length - 1] as number;
-    const gaps: number[] = [];
-    for (let r = lo + 1; r < hi; r++) if (!set.has(r)) gaps.push(r);
-    if (gaps.length === 0) return;
-    const name = (r: number) => d.layers[r]?.id ?? String(r);
-    errors.push({
-      code: "group-gap",
-      index,
-      field: `groups[${gi}]`,
-      found: `${g.id} has members in layers ${used.map(name).join(", ")} but none in ${gaps.map(name).join(", ")}`,
-      expected: "members in neighbouring layers, with no empty layer between them",
-      suggestion: `put a member of ${g.id} in layer ${name(gaps[0] as number)}, or group join/leave nodes so ${g.id} covers neighbouring layers`,
-    });
-  });
   return errors;
 }
 

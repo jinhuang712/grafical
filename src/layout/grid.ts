@@ -155,7 +155,7 @@ export function buildGrid(d: Diagram): Grid {
     return false;
   };
 
-  const groupProblems = groupConstraints(d, rows, ids, row, groupOf, succ, reaches, cls);
+  const groupProblems = groupConstraints(d, rows, ids, row, groupOf, succ, reaches, cls, links);
 
   // Classes: members, real rows and reserved rows.
   const rowsOf = (c: number): Set<number> => {
@@ -470,6 +470,7 @@ function groupConstraints(
   succ: number[][],
   reaches: (a: number, b: number) => boolean,
   cls: number[],
+  links: number[][],
 ): GroupProblem[] {
   const problems: GroupProblem[] = [];
   const groups = (d.groups ?? []).map((g) => g.id);
@@ -505,7 +506,24 @@ function groupConstraints(
     for (let r = r0; r <= r1 && failed === undefined; r++) {
       const list = rows[r] ?? [];
       const at = list.map((i, k) => (groupOf[i] === g ? k : -1)).filter((k) => k >= 0);
-      if (at.length === 0) continue;
+      if (at.length === 0) {
+        // A row inside the group's span with no member (D7): the box spans it, so each
+        // of its nodes sits wholly left or right of the box, the row keeping its order.
+        const split = gapSplit(list, ms, g, rows, groupOf, links, reaches, cls);
+        if (split === undefined) {
+          failed = conflict(d, g, ids[list[0] as number] as string);
+          break;
+        }
+        for (const [k, i] of list.entries()) {
+          for (const m of ms) {
+            if (k < split ? addEdge(i, m, mine) : addEdge(m, i, mine)) continue;
+            failed = conflict(d, g, ids[i] as string);
+            break;
+          }
+          if (failed !== undefined) break;
+        }
+        continue;
+      }
       const first = at[0] as number;
       const last = at[at.length - 1] as number;
       const stranger = list.slice(first, last + 1).find((i) => groupOf[i] !== g);
@@ -564,6 +582,54 @@ function groupConstraints(
     added.push({ group: g, edges: mine });
   }
   return problems;
+}
+
+/**
+ * Where a row with no member of a group, inside the group's span, splits around the
+ * box: the first `split` nodes go left of it, the rest right. Each node leans toward the
+ * side of the group where the nodes it connects to sit, in rows that hold members; a
+ * split no constraint forbids that agrees with most leanings wins, and with none,
+ * every node goes right. Undefined when no split can hold.
+ */
+function gapSplit(
+  list: number[],
+  members: number[],
+  g: string,
+  rows: number[][],
+  groupOf: (string | undefined)[],
+  links: number[][],
+  reaches: (a: number, b: number) => boolean,
+  cls: number[],
+): number | undefined {
+  const sideIn = (j: number): number => {
+    for (const r of rows) {
+      const k = r.indexOf(j);
+      if (k < 0) continue;
+      const at = r.map((i, x) => (groupOf[i] === g ? x : -1)).filter((x) => x >= 0);
+      if (at.length === 0 || groupOf[j] === g) return 0;
+      return k < (at[0] as number) ? -1 : k > (at[at.length - 1] as number) ? 1 : 0;
+    }
+    return 0;
+  };
+  const lean = list.map((i) => (links[i] ?? []).reduce((s, j) => s + sideIn(j), 0));
+  let best: number | undefined;
+  let bestScore = Number.NEGATIVE_INFINITY;
+  for (let split = 0; split <= list.length; split++) {
+    const ok = list.every((i, k) =>
+      members.every((m) =>
+        k < split
+          ? !reaches(cls[m] as number, cls[i] as number)
+          : !reaches(cls[i] as number, cls[m] as number),
+      ),
+    );
+    if (!ok) continue;
+    const score = lean.reduce((s, v, k) => s + (k < split ? -v : v), 0);
+    if (score > bestScore) {
+      bestScore = score;
+      best = split;
+    }
+  }
+  return best;
 }
 
 function conflict(d: Diagram, g: string, node?: string, other?: string): GroupProblem {
