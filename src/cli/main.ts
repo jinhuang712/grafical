@@ -19,6 +19,7 @@ import {
   emit,
   failure,
   fileError,
+  hintsFor,
   inspect,
   isReport,
   loadDiagram,
@@ -56,8 +57,8 @@ async function write(file: string, raw: Record<string, unknown>, opts: Opts, cre
   await finish(file, [op], opts, create);
 }
 
-async function finish(file: string, ops: Op[], opts: Opts, create = false) {
-  const report = await runWrite(file, ops, create);
+async function finish(file: string, ops: Op[], opts: Opts, create = false, hints = false) {
+  const report = await runWrite(file, ops, create, hints);
   process.exitCode = emit(report, opts.json === true);
 }
 
@@ -613,7 +614,8 @@ function build(): Command {
       process.exitCode = emit(failure(ops), opts.json === true);
       return;
     }
-    await finish(file, ops, opts);
+    // A batch is usually a draft or a large change: its report names better arrangements (D35).
+    await finish(file, ops, opts, false, true);
   });
 
   json(
@@ -675,6 +677,7 @@ function build(): Command {
         errors: [],
         defects,
         warnings: advise(d, layout(d, m)),
+        hints: hintsFor(d, file, m),
       },
       opts.json === true,
     );
@@ -724,6 +727,7 @@ function build(): Command {
       errors: [],
       defects,
       warnings: advise(d, scene),
+      hints: hintsFor(d, file, m),
     };
     if (opts.json !== true) for (const f of files) process.stdout.write(`wrote ${f}\n`);
     process.exitCode = emit(report, opts.json === true, { files });

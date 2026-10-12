@@ -166,7 +166,9 @@ describe("write commands", () => {
       "--json",
     );
     expect(r.code).toBe(0);
-    expect(r.out).toBe('{"ok":true,"changed":["cache"],"errors":[],"defects":[],"warnings":[]}\n');
+    expect(r.out).toBe(
+      '{"ok":true,"changed":["cache"],"errors":[],"defects":[],"warnings":[],"hints":[]}\n',
+    );
     const rm = run("node", "remove", "single.grafical.yaml", "cache", "--json");
     expect(JSON.parse(rm.out)).toEqual({
       ok: true,
@@ -174,6 +176,7 @@ describe("write commands", () => {
       errors: [],
       defects: [],
       warnings: [],
+      hints: [],
     });
   });
 
@@ -269,7 +272,9 @@ describe("read commands", () => {
   it("check reports no defects on a good file", () => {
     const r = run("check", "single.grafical.yaml", "--json");
     expect(r.code).toBe(0);
-    expect(r.out).toBe('{"ok":true,"changed":[],"errors":[],"defects":[],"warnings":[]}\n');
+    expect(r.out).toBe(
+      '{"ok":true,"changed":[],"errors":[],"defects":[],"warnings":[],"hints":[]}\n',
+    );
   });
 
   it("render writes the svg and the png beside the file", () => {

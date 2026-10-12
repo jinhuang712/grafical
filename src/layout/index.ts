@@ -168,6 +168,44 @@ function routeCost(scene: Scene): number[] {
   return [s.crossings + over, s.crossings, s.bends, s.length];
 }
 
+/** A diagram's route cost (see routeCost), laid out without text: for comparing arrangements (D24, D35). */
+export function arrangementCost(diagram: Diagram, m: Measurer): number[] {
+  return routeCost(compute(diagram, m, false).scene);
+}
+
+/** The edges whose routes cross another route, or bend more than twice (D25 rules 2 and 3). */
+export function troubledEdges(diagram: Diagram, m: Measurer): Set<string> {
+  const { scene } = compute(diagram, m, false);
+  const out = new Set<string>();
+  const segs: { id: string; v: boolean; at: number; lo: number; hi: number }[] = [];
+  for (const e of scene.edges) {
+    let bends = 0;
+    for (let i = 1; i < e.points.length; i++) {
+      const a = e.points[i - 1] as Point;
+      const b = e.points[i] as Point;
+      const c = e.points[i + 1];
+      if (c !== undefined && !((a.x === b.x && b.x === c.x) || (a.y === b.y && b.y === c.y)))
+        bends++;
+      if (a.x === b.x)
+        segs.push({ id: e.id, v: true, at: a.x, lo: Math.min(a.y, b.y), hi: Math.max(a.y, b.y) });
+      else if (a.y === b.y)
+        segs.push({ id: e.id, v: false, at: a.y, lo: Math.min(a.x, b.x), hi: Math.max(a.x, b.x) });
+    }
+    if (bends > 2) out.add(e.id);
+  }
+  for (const h of segs) {
+    if (h.v) continue;
+    for (const v of segs) {
+      if (!v.v || v.id === h.id) continue;
+      if (v.at > h.lo && v.at < h.hi && h.at > v.lo && h.at < v.hi) {
+        out.add(h.id);
+        out.add(v.id);
+      }
+    }
+  }
+  return out;
+}
+
 function lower(a: number[], b: number[]): boolean {
   for (let i = 0; i < a.length; i++) {
     const x = a[i] ?? 0;

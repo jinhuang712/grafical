@@ -48,9 +48,19 @@ describe("type guides (D34)", () => {
     });
   }
 
+  it("a hint after the state machine example names the file, ready to run (D35)", () => {
+    const ex = example(TYPE_GUIDES["state-machine"]);
+    const c = run("check", ex.file);
+    expect(c.out).toMatch(/^hint: .*crossings|^hint: .*bends/m);
+    expect(c.out).toContain(`grafical node move ${ex.file} `);
+    const json = JSON.parse(run("check", ex.file, "--json").out);
+    expect(json.hints.length).toBeGreaterThan(0);
+    expect(json.hints[0].ops.length).toBeGreaterThan(0);
+  });
+
   it("names the types it knows when asked for another", () => {
     const r = run("guide", "sequence");
     expect(r.code).toBe(2);
-    expect(r.err).toContain("flowchart, state-machine");
+    expect(r.err).toContain("flowchart, state-machine, swimlane");
   });
 });

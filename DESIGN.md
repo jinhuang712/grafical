@@ -57,6 +57,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D32 | Swimlanes run as rows or as columns | The engine arranges; the agent decides what the diagram says |
 | D33 | Lines have a short list of looks, and meet a box on any side | The tool carries the taste |
 | D34 | Stage 1 draws every diagram type the layered engine can draw | The engine arranges; the agent decides what the diagram says |
+| D35 | The engine names rearrangements that make the lines better, as commands | The engine arranges; the agent decides what the diagram says |
 
 ## Writing a diagram
 
@@ -522,6 +523,22 @@ Decided by the owner on 2026-10-12, not yet built: C4 context and container diag
 Rejected, for stage 1:
 - Sequence diagrams, entity-relationship and class diagrams, mind maps and timelines. Each needs a layout family of its own, and the core diagram has not yet met the MVP bar.
 - A setting for the diagram's type. The kinds already say what is drawn.
+
+### D35 The engine names rearrangements that make the lines better, as commands
+
+Decided on 2026-10-12. The owner rejected all three phase 1d milestone pictures for their lines ("rearranging would solve this problem") and asked that the drawing model, not a person, find the better drawing: "either theres a mechanism to allow the model to realize theres a better way of drawing this or we add more operations or make the operations more obvious to use". In stage 1, grafical's 25 drafts looked at their own picture 26 times and ran no command after any look, and 49 steps never called `diagram tidy`, `node swap` or `node align`.
+
+- **What the engine tries.** When a line crosses another or bends more than twice, the engine tries rearrangements of the nodes at the ends of such lines, or of every node in a diagram of at most 16: a swap with each node in its row, and a move into the row above or below, where it picks the slot (D24). A move that empties a row also removes the row. Each try is laid out and scored by the route cost of D24: crossings plus lines over two bends, then crossings, bends and length.
+- **What counts.** A rearrangement is a hint when it lowers the crossings plus lines over two bends, or keeps them and saves at least two bends without a new crossing. The best three are reported, each one applied for real first and dropped if it leaves a defect.
+- **How the agent sees it.** `apply`, `check` and `render` print `hint: <gain>: <commands>`, with the diagram's path filled in, and `--json` lists them with their operations. The guide tells the agent to run a hint unless it moves a node into a row where it does not belong.
+- **Cost.** A diagram of up to 16 nodes tries up to 200 rearrangements, in about 25 ms; a larger one fewer, about 1200 divided by its node count, nodes at the most troubled lines first, so that `check` stays within benchmark 11 at 50 nodes (343 ms).
+
+On the rejected pictures, the first hint for the photo-sharing diagram moves its upload queue beside the API (lines over two bends 2 -> 0, bends 8 -> 2), and the first for the state machine moves Cancelled up a row (its crossing goes). The flowchart has no hint: its faults, a line that should enter from the side and too little room before two lines merge, are the router's (D33).
+
+Rejected:
+- Applying the best rearrangement automatically. It changes order and rows, facts no operation named (D10), and a row move can change what the picture says, which is the agent's call.
+- Asking the agent to look harder. A model's eye is what the tool is meant not to depend on (PHILOSOPHY.md), and the agents already looked and changed nothing.
+- More operations for the agent to place lines by hand, such as a side for each end. Choosing sides is the engine's job (D33).
 
 ## Not yet decided
 

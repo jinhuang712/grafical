@@ -22,11 +22,11 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical view <file> [--port <n>] [--no-open]` | Open a window, sized to the diagram, that shows it as it is now, redrawn within a moment of every change, with the changed parts marked, a list of each change as operations, and the problems. Ctrl-C stops it (D31) | done |
 | `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file (D18) | done |
 | `grafical guide` | Print the operation reference for agents, within 3k tokens | done |
-| `grafical guide <type>` | Print how to draw one diagram type: `flowchart` and `state-machine` are done; the other types of D34 are planned | done |
+| `grafical guide <type>` | Print how to draw one diagram type: `flowchart`, `state-machine` and `swimlane` are done; the other types of D34 are planned | done |
 | `grafical review <file>` | Open the board on the diagram | stage 2 |
 | `grafical mcp` | Serve the same operations over MCP | later |
 
-Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON.
+Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also print up to three hints: rearrangements the engine measured to make the lines better, as commands ready to run (D35). grafical never applies them itself.
 
 ## Operations
 
@@ -165,7 +165,7 @@ grafical check <file> [--all]
 grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
 grafical view <file> [--port <n>] [--no-open]
 grafical diff <file> [<git-rev>]
-grafical guide [flowchart | state-machine]
+grafical guide [flowchart | state-machine | swimlane]
 ```
 
 - A new layer goes to the bottom unless `--before` or `--after` places it.

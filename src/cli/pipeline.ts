@@ -4,6 +4,7 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { advise } from "../check/advice.ts";
+import { findHints, type Hint } from "../check/hints.ts";
 import { check } from "../check/index.ts";
 import type { Defect, OpError } from "../errors.ts";
 import { layout } from "../layout/index.ts";
@@ -28,6 +29,14 @@ export interface Report {
   defects: Defect[];
   /** Non-blocking notes (D26). They never change the exit code. */
   warnings?: Warning[];
+  /** Rearrangements measured to make the lines better, as commands (D35). Never applied by grafical. */
+  hints?: Hint[];
+}
+
+/** The hints for a diagram, with its path in place of <file>, so each command runs as printed. */
+export function hintsFor(d: Diagram, file: string, m: Measurer): Hint[] {
+  const path = /^[\w./-]+$/.test(file) ? file : `"${file}"`;
+  return findHints(d, m).map((h) => ({ ...h, command: h.command.replaceAll("<file>", path) }));
 }
 
 export function oneLine(s: string): string {
@@ -56,6 +65,7 @@ export function formatReport(r: Report): string {
       `defect ${d.code} [${d.elements.join(", ")}]: found ${oneLine(d.found)}; expected ${oneLine(d.expected)}; fix: ${oneLine(d.fix)}`,
     );
   }
+  for (const h of r.hints ?? []) out.push(`hint: ${h.gain}: ${h.command}`);
   return `${out.join("\n")}\n`;
 }
 
@@ -67,6 +77,7 @@ export function emit(report: Report, json: boolean, extra: Record<string, unknow
       errors: report.errors,
       defects: report.defects,
       warnings: report.warnings ?? [],
+      hints: report.hints ?? [],
       ...extra,
     };
     process.stdout.write(`${JSON.stringify(body)}\n`);
@@ -169,7 +180,12 @@ export function inspect(d: Diagram, m: Measurer, all = false): Defect[] {
  * Applies operations to the file's diagram. With `create`, there is no file
  * yet: the first operation is diagram.new, and an existing file is refused.
  */
-export async function runWrite(file: string, ops: Op[], create = false): Promise<Report> {
+export async function runWrite(
+  file: string,
+  ops: Op[],
+  create = false,
+  hints = false,
+): Promise<Report> {
   let base: Diagram | null = null;
   if (create) {
     if (existsSync(file)) {
@@ -196,11 +212,13 @@ export async function runWrite(file: string, ops: Op[], create = false): Promise
   const defects = inspect(result.diagram, m);
   if (defects.length > 0) return { ok: false, changed: [], errors: [], defects };
   writeAtomic(file, writeDiagram(result.diagram));
-  return {
+  const report: Report = {
     ok: true,
     changed: result.changed,
     errors: [],
     defects: [],
     warnings: advise(result.diagram, layout(result.diagram, m)),
   };
+  if (hints) report.hints = hintsFor(result.diagram, file, m);
+  return report;
 }

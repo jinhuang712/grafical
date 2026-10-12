@@ -10,7 +10,7 @@ HOW TO DRAW A GOOD DIAGRAM (read this first)
 - Group nodes into systems. A group is one box around the nodes of one service or team, such as "catalog-sync"; its members may sit in neighbouring rows. Group every node except callers and outside dependencies. Never wrap one node in a group of its own name.
 - Merge what a reader does not need apart: six topics become one node "upstream topics" with sublabel "6 broker topics"; five callers become one actor "API callers" with sublabel "storefront, promotions"; ten pipelines become one node.
 - An edge may end at a group or a layer: one edge from callers to the group "catalog-api" replaces an edge to each part. An edge to a layer draws that row as a labelled band.
-- Use lanes (swimlanes) only when ownership is part of the story.
+- Use lanes (swimlanes) only when ownership is part of the story: read grafical guide swimlane.
 - Merge only nodes with the same edges. A merged box claims every edge of every member: merge geo-svc, which only A calls, with i18n-svc, which B calls too, and the picture says B calls geo-svc.
 - Draw each flow to its end. A retry topic needs its edge back to where messages are re-sent, or leave it out.
 - Put detail (port, tier, topic names) in the sublabel, not in extra boxes. Labels 1 to 3 words, sublabels short.
@@ -23,7 +23,7 @@ HOW TO DRAW A GOOD DIAGRAM (read this first)
 WORKFLOW
 1. grafical new <file> --title <text> --subtitle <text> --note <text>
 2. write one batch: layers, nodes, groups, edges. Apply: grafical apply <file> <batch.yaml>
-3. grafical show <file>, then grafical render <file> and LOOK at the PNG. Fix with single commands.
+3. grafical show <file>, then grafical render <file> and LOOK at the PNG. Fix with single commands, and run the hints you agree with.
 A write applies, lays out and checks; on an error or a defect you must fix, the file is untouched and the exit code is 1. Never edit the file by hand. Name it <name>.grafical.yaml.
 
 COMMANDS (every command accepts --json)
@@ -50,18 +50,16 @@ grafical group join <file> <group> <node...>; group leave <file> <node...>; grou
 grafical group remove <file> <id>   (members stay, ungrouped)
 grafical group describe <file> <id> [--text <text>]   (a quieter second label, e.g. "write side")
 grafical group order <file> <id> --before <group> | --after <group>
-grafical lane add <file> <id> --label <text> [--members a,b]; lane join <file> <lane> <member...>; lane leave <file> <member...>; lane rename <file> <id> --label <text>; lane remove <file> <id>
 grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>] [--both]   (from, to: node, group, layer or lane; --both: arrowheads at both ends)
 grafical edge remove <file> <id>; edge relabel <file> <id> [--label <text>]; edge kind <file> <id> <kind>; edge reverse <file> <id>; edge both <file> <id> [--off]; edge emphasize <file> <id...> [--off]   (thick: the main path)
 grafical edge retarget <file> <id> [--from <end>] [--to <end>]   (id, kind and label stay)
 grafical apply <file> <batch.yaml>; show <file>; check <file> [--all]
 grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
-grafical guide [flowchart | state-machine]
+grafical guide [flowchart | state-machine | swimlane]
 
 RULES
 - ids: lowercase letters, digits, . _ -, starting with a letter or digit, one id space for everything. Ids never change; rename changes the label.
 - A layer is a row, drawn only when an edge ends at it. A new layer goes to the bottom unless --before or --after places it.
-- Lane members are layers (lanes run as rows) or nodes (as columns, left to right in creation order), one way per diagram. A group joins whole.
 - A node is in at most one group. A group's members must sit in neighbouring rows (error group-gap). An empty group draws nothing.
 - node add and node move without a position: grafical picks the slot with the fewest crossings. Add a node's edges in the same batch so they count. Give a position only when order matters, and at most one.
 - --align <node>: place this node directly above or below a node in another layer. --accent: a node to see first, at most 2.
@@ -80,15 +78,16 @@ A YAML list. Each item has op: <noun>.<verb> and the same fields as the flags, i
 layer.add: id label before after
 node.add: id layer label kind sublabel size first last before after align accent
 node.move: id layer first last before after
-group.add: id label sublabel nodes (a list). group.join: group nodes (a list). group.leave: nodes (a list). lane.add: id label members (a list). lane.join: lane members (a list). lane.leave: members (a list)
+group.add: id label sublabel nodes (a list). group.join: group nodes (a list). group.leave: nodes (a list).
 diagram.subtitle: text. diagram.note: text. Without text, they clear. diagram.sizing: mode (auto or fixed).
 edge.add: from to id label kind both. edge.emphasize: edges (a list) off
 Other operations: positional arguments become fields of the same name (node.swap: a b; layer.split: id into label from; node.merge: id nodes label; node.kind: id kind; diagram.legend: line text).
-Add groups and lanes after their nodes.
+Add groups after their nodes.
 
 OUTPUT
 Success: ok changed: <ids>   (--json: the same as one JSON object)
 Failure: failed, file unchanged, then one line per problem. Exit codes: 0 success, 1 an operation error or defect, 2 a usage error.
+hint: <gain>: <commands>: a rearrangement grafical measured to make the lines better (fewer crossings and bends). Run it unless it moves a node into a row where it does not belong.
 A warning never blocks; weigh it: too-many-nodes (node merge), too-wide or crowded-layer (layer split), lonely-group, edge-crosses-layer (layer move), too-many-main-edges.
 
 ERRORS
@@ -204,6 +203,41 @@ Write batch.yaml:
 - {op: edge.add, from: cancelled, to: end}
 - {op: diagram.legend, line: solid, text: transition}
 Then: grafical apply order.grafical.yaml batch.yaml, grafical render order.grafical.yaml.
+`,
+  swimlane: `SWIMLANE: who owns which part. A lane is a labelled band; its members are rows (lanes run as rows) or nodes (lanes run as columns), one way per diagram.
+
+- Use lanes only when ownership is part of the story: teams, people or systems that each do their part of a process.
+- Lanes as columns suit a process that runs top to bottom: each step is a node in its owner's lane, and rows keep the order of the steps. Lanes as rows suit an architecture whose tiers each belong to someone: each row joins one lane.
+- A row lane holds neighbouring rows only. Column lanes run left to right in the order they were added; a node outside every lane sits to their right.
+- A group lies inside one lane and joins it whole. An edge may end at a lane, but never joins two lanes.
+
+COMMANDS
+grafical lane add <file> <id> --label <text> [--members a,b]
+grafical lane join <file> <lane> <member...>; lane leave <file> <member...>
+grafical lane rename <file> <id> --label <text>; lane remove <file> <id>
+Batch: lane.add: id label members (a list). lane.join: lane members (a list). lane.leave: members (a list). Add lanes after their nodes.
+Errors lane-mixed, lane-gap, group-across-lanes and lane-to-lane: follow the suggestion.
+
+EXAMPLE
+grafical new refunds.grafical.yaml --title "Refund handling"
+Write batch.yaml:
+- {op: layer.add, id: ask, label: Ask}
+- {op: layer.add, id: check, label: Check}
+- {op: layer.add, id: pay, label: Pay}
+- {op: layer.add, id: tell, label: Tell}
+- {op: node.add, id: request, layer: ask, label: Request refund}
+- {op: node.add, id: review, layer: check, label: Check the order}
+- {op: node.add, id: refund, layer: pay, label: Issue refund}
+- {op: node.add, id: email, layer: tell, label: Email customer}
+- {op: node.add, id: inbox, layer: tell, label: Read the email}
+- {op: edge.add, from: request, to: review}
+- {op: edge.add, from: review, to: refund}
+- {op: edge.add, from: refund, to: email}
+- {op: edge.add, from: email, to: inbox}
+- {op: lane.add, id: customer, label: Customer, members: [request, inbox]}
+- {op: lane.add, id: support, label: Support, members: [review, email]}
+- {op: lane.add, id: finance, label: Finance, members: [refund]}
+Then: grafical apply refunds.grafical.yaml batch.yaml, grafical render refunds.grafical.yaml.
 `,
 } as const;
 
