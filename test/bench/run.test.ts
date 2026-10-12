@@ -125,7 +125,15 @@ describe("arms and prompts", () => {
 describe("stage 1 plan", () => {
   it("has the parts and sizes the owner approved", () => {
     const sizes = Object.fromEntries(PARTS.map((p) => [p, partCommands(planPart(p)).length]));
-    expect(sizes).toEqual({ e1e2: 81, opus: 6, scale: 27, intent: 10, mvp: 3 });
+    expect(sizes).toEqual({
+      e1e2: 81,
+      opus: 6,
+      scale: 27,
+      intent: 10,
+      mvp: 3,
+      hints: 15,
+      nohints: 15,
+    });
     expect(planPart("mvp").runs).not.toContain(REPO);
   });
 

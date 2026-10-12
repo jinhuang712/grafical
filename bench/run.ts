@@ -144,8 +144,8 @@ export function intentPrompt(arm: Arm, request: string): string {
 }
 
 /** The 10 loose prompts of E3, from bench/prompts/intent.yaml. */
-export function loadIntents(): Task[] {
-  const list = parse(readFileSync(join(PROMPTS, "intent.yaml"), "utf8")) as {
+export function loadIntents(file = "intent.yaml"): Task[] {
+  const list = parse(readFileSync(join(PROMPTS, file), "utf8")) as {
     id: string;
     prompt: string;
   }[];
@@ -210,8 +210,11 @@ function wrapper(dir: string, name: string, body: string): void {
   chmodSync(file, 0o755);
 }
 
-/** A new, empty directory with the task's brief and the arm's tool, and nothing else. */
-export function prepareChainDir(dir: string, arm: Arm, task?: Task): void {
+/**
+ * A new, empty directory with the task's brief and the arm's tool, and nothing else.
+ * With `hints` false, the grafical arm's tool prints no hint lines (D35), for comparing.
+ */
+export function prepareChainDir(dir: string, arm: Arm, task?: Task, hints = true): void {
   if (existsSync(dir)) throw new Error(`run directory exists, refusing to reuse it: ${dir}`);
   mkdirSync(dir, { recursive: true });
   if (!task?.request) {
@@ -219,7 +222,15 @@ export function prepareChainDir(dir: string, arm: Arm, task?: Task): void {
       task?.briefFile ?? join(REPO, "bench", "briefs", task?.brief ?? "catalog-sync.md");
     copyFileSync(brief, join(dir, "brief.md"));
   }
-  if (arm === "grafical") wrapper(dir, "grafical", `exec node "${REPO}/src/cli/main.ts" "$@"`);
+  if (arm === "grafical" && hints)
+    wrapper(dir, "grafical", `exec node "${REPO}/src/cli/main.ts" "$@"`);
+  if (arm === "grafical" && !hints) {
+    wrapper(
+      dir,
+      "grafical",
+      `out=$(node "${REPO}/src/cli/main.ts" "$@"); code=$?\n[ -n "$out" ] && printf '%s\\n' "$out" | grep -v '^hint: '\nexit $code`,
+    );
+  }
   if (arm === "mermaid") {
     const mmdc = join(MMDC_HOME, "node_modules", ".bin", "mmdc");
     if (!existsSync(mmdc)) {
@@ -419,9 +430,11 @@ export function runChain(o: {
   task?: Task;
   /** Where the round's directory lives, when not under bench/runs (private briefs). */
   runs?: string;
+  /** false: the grafical tool prints no hints (D35). */
+  hints?: boolean;
 }): StepRecord[] {
   const dir = join(o.runs ?? RUNS, o.round, chainName(o.arm, o.model, o.run, o.task));
-  prepareChainDir(dir, o.arm, o.task);
+  prepareChainDir(dir, o.arm, o.task, o.hints ?? true);
   const records: StepRecord[] = [];
   let session: string | undefined;
   let previous: { costUsd: number; apiSeconds: number } | undefined;

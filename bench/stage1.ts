@@ -6,6 +6,8 @@
 //   scale   E4 drafts on the 10-, 25- and 50-component briefs: all three arms, Haiku, 3 runs
 //   intent  E3: the 10 loose prompts, grafical, Haiku, one run each; the owner accepts or rejects
 //   mvp     the MVP bar: the private reference brief, grafical, Haiku, 3 runs, kept outside the repo
+//   hints, nohints  phase 1d: five tasks with and without the engine's hints (D35),
+//           grafical, Haiku, 3 runs, measured by their lines, not by a person
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (EXPERIMENTS.md, "Harness").
@@ -26,7 +28,7 @@ import {
   type Task,
 } from "./run.ts";
 
-export const PARTS = ["e1e2", "opus", "scale", "intent", "mvp"] as const;
+export const PARTS = ["e1e2", "opus", "scale", "intent", "mvp", "hints", "nohints"] as const;
 export type Part = (typeof PARTS)[number];
 
 /** The private reference brief and its runs: outside the repository, never committed. */
@@ -46,6 +48,22 @@ export interface PartPlan {
   /** The parent of the round's directory. */
   runs: string;
   chains: Chain[];
+  /** false: the grafical tool prints no hints (D35). */
+  hints?: boolean;
+}
+
+/**
+ * The hint comparison's tasks: the public brief and the 25-component brief, whose stage 1
+ * drafts had the most crossing lines, the one loose prompt the owner rejected for a line,
+ * and the two new types.
+ */
+function hintTasks(): Task[] {
+  return [
+    { id: "catalog-sync", brief: "catalog-sync.md" },
+    { id: "scale-25", brief: "scale-25.md" },
+    ...loadIntents().filter((t) => t.id === "password-reset"),
+    ...loadIntents("types.yaml"),
+  ];
 }
 
 const SCALE: Task[] = [10, 25, 50].map((n) => ({ id: `scale-${n}`, brief: `scale-${n}.md` }));
@@ -89,6 +107,12 @@ export function planPart(part: Part): PartPlan {
         [],
       );
       return { part, round: "stage1-mvp", runs: join(PRIVATE, "runs"), chains };
+    case "hints":
+      add(["grafical"], "haiku", runs3, hintTasks(), []);
+      return { part, round: "p1d-hints", runs: RUNS, chains };
+    case "nohints":
+      add(["grafical"], "haiku", runs3, hintTasks(), []);
+      return { part, round: "p1d-nohints", runs: RUNS, chains, hints: false };
   }
 }
 

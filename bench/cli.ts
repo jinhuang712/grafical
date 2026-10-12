@@ -12,8 +12,9 @@
 //   summary --round <name>                    write bench/results/<round>.md
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   benchmark 7: check every step's picture's geometry
+//   lines --round <name>                      measure each final diagram's lines and hint use (D35)
 //   speed                                     benchmark 11: time one operation and one command
-//   stage1 --part <e1e2|opus|scale|intent|mvp> --dry-run | --approved [--only <chain>]
+//   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints> --dry-run | --approved [--only <chain>]
 //                                             the end of stage 1, one part at a time
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -21,6 +22,7 @@ import { dirname, join } from "node:path";
 import { buildGallery, SITE } from "./gallery.ts";
 import { checkRound } from "./geometry.ts";
 import { runJudging } from "./judge.ts";
+import { formatLines, measureLines } from "./lines.ts";
 import { chainName, loadChanges, prepareChainDir, RUNS, runChain, runStep } from "./run.ts";
 import { formatPlan, planSmoke } from "./smoke.ts";
 import { measureSpeed } from "./speed.ts";
@@ -131,6 +133,10 @@ function main(argv: string[]): void {
       });
       return;
     }
+    case "lines": {
+      measureLines(round).then((rows) => console.log(formatLines(round, rows)));
+      return;
+    }
     case "stage1": {
       const part = flag(args, "part") as Part | undefined;
       if (part === undefined || !PARTS.includes(part)) {
@@ -160,7 +166,12 @@ function main(argv: string[]): void {
       mkdirSync(join(plan.runs, plan.round), { recursive: true });
       let spent = 0;
       for (const c of plan.chains) {
-        const recs = runChain({ round: plan.round, runs: plan.runs, ...c });
+        const recs = runChain({
+          round: plan.round,
+          runs: plan.runs,
+          ...c,
+          ...(plan.hints === false ? { hints: false } : {}),
+        });
         const total = recs.reduce((sum, r) => sum + r.costUsd, 0);
         spent += total;
         const missing = recs.filter((r) => !r.diagramPngUpdated).map((r) => r.step);
@@ -185,7 +196,7 @@ function main(argv: string[]): void {
     }
     default:
       console.error(
-        "usage: pnpm bench <baseline|smoke|chain|judge|gallery|geometry|speed|stage1|summary> [options]",
+        "usage: pnpm bench <baseline|smoke|chain|judge|gallery|geometry|lines|speed|stage1|summary> [options]",
       );
       process.exit(2);
   }

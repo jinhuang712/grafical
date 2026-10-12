@@ -1,0 +1,9 @@
+# Loose prompts for the diagram types of D34, in the style of intent.yaml: about
+# three sentences each, about fictional processes. One flat list; each item has id
+# and prompt.
+
+- id: refund-flow
+  prompt: Draw the flowchart for our refund requests. Support reads the request, checks that the details are complete, and asks the customer for more if they are not. A refund within 30 days is issued, otherwise it is declined, and either way the customer is told.
+
+- id: order-states
+  prompt: Draw the state machine of an order. An order is placed, then either paid or cancelled; a paid order can go on hold and come back, and then it is shipped. Shipped and cancelled orders are done.
