@@ -101,6 +101,7 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 | D14 checking | A check after every write | One check at the end | Operation errors and retries |
 | D16 output | Compact JSON reports | Full reports | Tokens and cache hit rate |
 | D34 type guides | The type guides | No type guides: the main guide alone | Problem lines, refused writes, and whether a draft uses its type's kinds and parts. Ran 2026-10-12 (`bench/results/p1d-guides.md`); the guides then moved into the help (D36) |
+| D36 help | The guide, as round `p1d-guides` ran it | The help alone, the prompt naming only the `grafical` command (`stage1 --part help`) | The same, and whether agents open `--help` before their first write |
 
 An ablation runs when its decision is built or questioned, not all at once.
 

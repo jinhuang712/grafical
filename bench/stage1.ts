@@ -11,6 +11,8 @@
 //   hints2  the same with `diagram improve` and the guide's step to run it
 //   hints3  the same with improve taking only safe hints
 //   hints4  the same with improve removed: the agent runs each hint itself
+//   help    a prompt for each diagram type, the public brief and the 25-component brief,
+//           the agent learning grafical from its help alone (D36), Haiku, 3 runs
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (EXPERIMENTS.md, "Harness").
@@ -42,6 +44,7 @@ export const PARTS = [
   "hints2",
   "hints3",
   "hints4",
+  "help",
 ] as const;
 export type Part = (typeof PARTS)[number];
 
@@ -77,6 +80,15 @@ function hintTasks(): Task[] {
     { id: "scale-25", brief: "scale-25.md" },
     ...loadIntents().filter((t) => t.id === "password-reset"),
     ...loadIntents("types.yaml").filter((t) => t.id === "refund-flow" || t.id === "order-states"),
+  ];
+}
+
+/** The help round's tasks: those of the type guide round (p1d-guides), and a scale brief. */
+function helpTasks(): Task[] {
+  return [
+    { id: "catalog-sync", brief: "catalog-sync.md" },
+    ...loadIntents("types.yaml"),
+    { id: "scale-25", brief: "scale-25.md" },
   ];
 }
 
@@ -136,6 +148,9 @@ export function planPart(part: Part): PartPlan {
     case "hints4":
       add(["grafical"], "haiku", runs3, hintTasks(), []);
       return { part, round: "p1d-hints4", runs: RUNS, chains };
+    case "help":
+      add(["grafical"], "haiku", runs3, helpTasks(), []);
+      return { part, round: "p1d-help", runs: RUNS, chains };
   }
 }
 
