@@ -100,6 +100,7 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 | D24 slot choice | The engine picks the slot | New nodes go last | Score and crossings |
 | D14 checking | A check after every write | One check at the end | Operation errors and retries |
 | D16 output | Compact JSON reports | Full reports | Tokens and cache hit rate |
+| D34 type guides | The type guides | No type guides: the main guide alone (`stage1 --part guides`, `noguides`) | Problem lines, refused writes, and whether a draft uses its type's kinds and parts |
 
 An ablation runs when its decision is built or questioned, not all at once.
 

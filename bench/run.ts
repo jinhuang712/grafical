@@ -210,11 +210,24 @@ function wrapper(dir: string, name: string, body: string): void {
   chmodSync(file, 0o755);
 }
 
+/** Hides the type guides (D34): the main guide's pointers to them, and the guides. */
+const NO_GUIDES = {
+  refuse: `if [ "$1" = guide ]; then for a in "$@"; do case "$a" in guide|-*) ;; *) echo "error: too many arguments for 'guide'. Expected 0 arguments but got 1." >&2; exit 1;; esac; done; fi`,
+  filter: String.raw`sed -e '/^- For a flowchart, state-machine/d' -e 's/: read grafical guide swimlane\././' -e 's/^grafical guide \[<type>\]/grafical guide/'`,
+};
+
 /**
  * A new, empty directory with the task's brief and the arm's tool, and nothing else.
- * With `hints` false, the grafical arm's tool prints no hint lines (D35), for comparing.
+ * With `hints` false, the grafical arm's tool prints no hint lines (D35); with `guides`
+ * false, it hides the type guides (D34). Both are for comparing.
  */
-export function prepareChainDir(dir: string, arm: Arm, task?: Task, hints = true): void {
+export function prepareChainDir(
+  dir: string,
+  arm: Arm,
+  task?: Task,
+  hints = true,
+  guides = true,
+): void {
   if (existsSync(dir)) throw new Error(`run directory exists, refusing to reuse it: ${dir}`);
   mkdirSync(dir, { recursive: true });
   if (!task?.request) {
@@ -222,13 +235,22 @@ export function prepareChainDir(dir: string, arm: Arm, task?: Task, hints = true
       task?.briefFile ?? join(REPO, "bench", "briefs", task?.brief ?? "catalog-sync.md");
     copyFileSync(brief, join(dir, "brief.md"));
   }
-  if (arm === "grafical" && hints)
+  if (arm === "grafical" && hints && guides)
     wrapper(dir, "grafical", `exec node "${REPO}/src/cli/main.ts" "$@"`);
-  if (arm === "grafical" && !hints) {
+  if (arm === "grafical" && !(hints && guides)) {
+    const filters = [
+      ...(hints ? [] : ["grep -v '^hint: '"]),
+      ...(guides ? [] : [NO_GUIDES.filter]),
+    ];
     wrapper(
       dir,
       "grafical",
-      `out=$(node "${REPO}/src/cli/main.ts" "$@"); code=$?\n[ -n "$out" ] && printf '%s\\n' "$out" | grep -v '^hint: '\nexit $code`,
+      [
+        ...(guides ? [] : [NO_GUIDES.refuse]),
+        `out=$(node "${REPO}/src/cli/main.ts" "$@"); code=$?`,
+        `[ -n "$out" ] && printf '%s\\n' "$out" | ${filters.join(" | ")}`,
+        "exit $code",
+      ].join("\n"),
     );
   }
   if (arm === "mermaid") {
@@ -432,9 +454,11 @@ export function runChain(o: {
   runs?: string;
   /** false: the grafical tool prints no hints (D35). */
   hints?: boolean;
+  /** false: the grafical tool hides the type guides (D34). */
+  guides?: boolean;
 }): StepRecord[] {
   const dir = join(o.runs ?? RUNS, o.round, chainName(o.arm, o.model, o.run, o.task));
-  prepareChainDir(dir, o.arm, o.task, o.hints ?? true);
+  prepareChainDir(dir, o.arm, o.task, o.hints ?? true, o.guides ?? true);
   const records: StepRecord[] = [];
   let session: string | undefined;
   let previous: { costUsd: number; apiSeconds: number } | undefined;

@@ -1,9 +1,30 @@
 # Loose prompts for the diagram types of D34, in the style of intent.yaml: about
-# three sentences each, about fictional processes. One flat list; each item has id
-# and prompt.
+# three sentences each, about fictional processes, one or more per type guide. One
+# flat list; each item has id and prompt.
 
 - id: refund-flow
   prompt: Draw the flowchart for our refund requests. Support reads the request, checks that the details are complete, and asks the customer for more if they are not. A refund within 30 days is issued, otherwise it is declined, and either way the customer is told.
 
 - id: order-states
   prompt: Draw the state machine of an order. An order is placed, then either paid or cancelled; a paid order can go on hold and come back, and then it is shipped. Shipped and cancelled orders are done.
+
+- id: booking-c4
+  prompt: Draw a C4 container diagram of our booking app. Travellers use a web app and a mobile app, and both call one API, which keeps bookings in a database and sends confirmations through an outside email service. Hotels change their rooms through a partner portal that uses the same API.
+
+- id: photo-cloud
+  prompt: Draw the cloud diagram of our photo-sharing service. It runs in one region, in one network with a public subnet for the load balancer and a private subnet for the app servers and the database. Uploaded photos go to object storage, and a CDN serves them to users.
+
+- id: catalog-deployment
+  prompt: Draw the deployment diagram of our library catalog. Production runs the web frontend, the search API and a worker on a Kubernetes cluster, and staging runs the same three on a single VM. Each environment has its own managed Postgres database.
+
+- id: delivery-events
+  prompt: Draw the event flow of our food delivery orders. The order service publishes OrderPlaced, and the kitchen and billing services both consume it. The kitchen publishes MealReady for the courier service, and billing publishes PaymentFailed, which the order service handles.
+
+- id: steps-data-flow
+  prompt: Draw the data flow of our fitness tracker's step counts. Watches upload raw readings to an ingest service, which cleans them and writes them to a time-series store. A nightly job sums each day into a reports database, and the app reads it to show weekly charts.
+
+- id: checkout-dependencies
+  prompt: Draw the dependency graph of our checkout, so that we can see what breaks when one part fails. Checkout needs the cart, pricing and payments; pricing needs the catalog and promotions; payments needs the fraud check and an outside card processor. The cart and the catalog share one database.
+
+- id: laptop-swimlane
+  prompt: Draw a swimlane diagram of how a new hire gets a laptop. HR files the request, the manager approves the cost, and IT orders the laptop and sets it up. The new hire picks it up on the first day.
