@@ -26,7 +26,7 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical review <file>` | Open the board on the diagram | stage 2 |
 | `grafical mcp` | Serve the same operations over MCP | later |
 
-Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also print up to three hints: rearrangements the engine measured to make the lines better, as commands ready to run (D35). grafical never applies them itself.
+Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also say what to improve, `lines:` (the lines that cross, and those that bend more than twice), and print up to three hints: moves the engine measured to fix them, as commands ready to run (D35). The agent decides; grafical never applies them.
 
 ## Operations
 
@@ -44,7 +44,6 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `diagram.style` | Take the look from a built-in theme (`default`, `dark`, `print`) or a stylesheet file beside the diagram; without one, the default theme (D30) | done |
 | `diagram.legend` | Name a line style in the legend, such as "Kafka message" for dashed lines, or go back to the default wording | done |
 | `diagram.tidy` | Reorder every layer's nodes once, together, to reduce crossings (D24) | done |
-| `diagram improve` | Take the hints one by one while they make the lines better, at most five, as ordinary operations in one batch (D35) | done |
 
 ### Layers
 
@@ -159,7 +158,6 @@ grafical diagram title <file> --text <text>
 grafical diagram density <file> compact|normal|airy
 grafical diagram legend <file> solid|dashed|dotted|plain [--text <text>]
 grafical diagram tidy <file>
-grafical diagram improve <file>
 grafical diagram style <file> [<style>]
 grafical apply <file> <batch.yaml>
 grafical show <file>

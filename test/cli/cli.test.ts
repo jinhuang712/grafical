@@ -167,7 +167,7 @@ describe("write commands", () => {
     );
     expect(r.code).toBe(0);
     expect(r.out).toBe(
-      '{"ok":true,"changed":["cache"],"errors":[],"defects":[],"warnings":[],"hints":[]}\n',
+      '{"ok":true,"changed":["cache"],"errors":[],"defects":[],"warnings":[],"lines":{"points":0,"crossings":[],"bent":[]},"hints":[]}\n',
     );
     const rm = run("node", "remove", "single.grafical.yaml", "cache", "--json");
     expect(JSON.parse(rm.out)).toEqual({
@@ -176,6 +176,7 @@ describe("write commands", () => {
       errors: [],
       defects: [],
       warnings: [],
+      lines: { points: 0, crossings: [], bent: [] },
       hints: [],
     });
   });
@@ -273,7 +274,7 @@ describe("read commands", () => {
     const r = run("check", "single.grafical.yaml", "--json");
     expect(r.code).toBe(0);
     expect(r.out).toBe(
-      '{"ok":true,"changed":[],"errors":[],"defects":[],"warnings":[],"hints":[]}\n',
+      '{"ok":true,"changed":[],"errors":[],"defects":[],"warnings":[],"lines":{"points":0,"crossings":[],"bent":[]},"hints":[]}\n',
     );
   });
 

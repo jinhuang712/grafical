@@ -5,11 +5,12 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { findHints, improvements } from "../src/check/hints.ts";
+import { findHints, type Hint } from "../src/check/hints.ts";
 import { isReport, loadDiagram } from "../src/cli/pipeline.ts";
 import { arrangementCost, troubledEdges } from "../src/layout/index.ts";
-import { applyOps } from "../src/model/index.ts";
+import { applyOps, type Diagram } from "../src/model/index.ts";
 import { createMeasurer } from "../src/text/index.ts";
+import type { Measurer } from "../src/text/types.ts";
 import { RUNS } from "./run.ts";
 
 export interface LineMeasure {
@@ -24,7 +25,7 @@ export interface LineMeasure {
   hintsLeft: number;
   hintsShown: number;
   hintsRun: number;
-  /** With --improve: problems, crossings and bends after `diagram improve` on the final diagram. */
+  /** With --improve: problems, crossings and bends after following the safe hints on the final diagram. */
   improved?: { problems: number; crossings: number; bends: number; steps: number };
 }
 
@@ -57,6 +58,25 @@ function hintUse(transcript: string): { shown: number; run: number } {
   return { shown: shown.size, run: ran.size };
 }
 
+/**
+ * What an agent gets that follows the hints (D35): the first hint that keeps every node
+ * among its own kind, then the first such hint of the result, at most five times. The
+ * tool does not do this; an agent does, one command at a time, and this replays it.
+ */
+export function followHints(d: Diagram, m: Measurer): Hint[] {
+  const taken: Hint[] = [];
+  let cur = d;
+  for (let i = 0; i < 5; i++) {
+    const [h] = findHints(cur, m, 1, true);
+    if (h === undefined) break;
+    const r = applyOps(cur, h.ops, m);
+    if ("errors" in r) break;
+    taken.push(h);
+    cur = r.diagram;
+  }
+  return taken;
+}
+
 export async function measureLines(round: string, improve = false): Promise<LineMeasure[]> {
   const m = await createMeasurer();
   const dir = join(RUNS, round);
@@ -73,8 +93,8 @@ export async function measureLines(round: string, improve = false): Promise<Line
     const use = existsSync(transcript) ? hintUse(transcript) : { shown: 0, run: 0 };
     let improved: LineMeasure["improved"];
     if (improve) {
-      // What the agent would get by running diagram improve on its final diagram.
-      const taken = improvements(d, m);
+      // What the agent would get by following the hints on its final diagram.
+      const taken = followHints(d, m);
       const r = applyOps(
         d,
         taken.flatMap((h) => h.ops),

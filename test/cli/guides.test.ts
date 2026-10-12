@@ -58,14 +58,13 @@ describe("type guides (D34)", () => {
     expect(json.hints[0].ops.length).toBeGreaterThan(0);
   });
 
-  it("diagram improve takes the hints until none is left, as ordinary operations (D35)", () => {
+  it("tells the agent what to improve, and leaves the moves to it (D35)", () => {
     const ex = example(TYPE_GUIDES["state-machine"]);
-    const r = run("diagram", "improve", ex.file);
-    expect(r.code).toBe(0);
-    expect(r.out).toMatch(/^improved: /m);
-    expect(run("check", ex.file).out).not.toMatch(/^hint: /m);
-    const again = run("diagram", "improve", ex.file, "--json");
-    expect(JSON.parse(again.out)).toMatchObject({ ok: true, changed: [], improved: [] });
+    const out = run("check", ex.file).out;
+    expect(out).toMatch(/^lines: \d+ crossings?, \d+ lines? bending more than twice: /m);
+    expect(run("diagram", "improve", ex.file).code).toBe(2);
+    const json = JSON.parse(run("check", ex.file, "--json").out);
+    expect(json.lines.bent.length + json.lines.crossings.length).toBeGreaterThan(0);
   });
 
   it("names the types it knows when asked for another", () => {

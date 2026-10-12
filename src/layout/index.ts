@@ -173,10 +173,22 @@ export function arrangementCost(diagram: Diagram, m: Measurer): number[] {
   return routeCost(compute(diagram, m, false).scene);
 }
 
-/** The edges whose routes cross another route, or bend more than twice (D25 rules 2 and 3). */
-export function troubledEdges(diagram: Diagram, m: Measurer): Set<string> {
+/** What makes a diagram's lines hard to read (D25 rules 2 and 3): pairs that cross, and lines over two bends. */
+export interface LineTrouble {
+  /** Every point where two routes cross, as the route cost counts them (D24). */
+  points: number;
+  /** Pairs of edge ids whose routes cross, each pair once, in id order. */
+  crossings: [string, string][];
+  /** Edges that bend more than twice, with their bends, in id order. */
+  bent: { edge: string; bends: number }[];
+}
+
+/** The pairs of lines that cross, and the lines that bend more than twice (D35). */
+export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
   const { scene } = compute(diagram, m, false);
-  const out = new Set<string>();
+  const bent: { edge: string; bends: number }[] = [];
+  const pairs = new Set<string>();
+  let points = 0;
   const segs: { id: string; v: boolean; at: number; lo: number; hi: number }[] = [];
   for (const e of scene.edges) {
     let bends = 0;
@@ -191,19 +203,32 @@ export function troubledEdges(diagram: Diagram, m: Measurer): Set<string> {
       else if (a.y === b.y)
         segs.push({ id: e.id, v: false, at: a.y, lo: Math.min(a.x, b.x), hi: Math.max(a.x, b.x) });
     }
-    if (bends > 2) out.add(e.id);
+    if (bends > 2) bent.push({ edge: e.id, bends });
   }
   for (const h of segs) {
     if (h.v) continue;
     for (const v of segs) {
       if (!v.v || v.id === h.id) continue;
       if (v.at > h.lo && v.at < h.hi && h.at > v.lo && h.at < v.hi) {
-        out.add(h.id);
-        out.add(v.id);
+        points++;
+        pairs.add(JSON.stringify(h.id < v.id ? [h.id, v.id] : [v.id, h.id]));
       }
     }
   }
-  return out;
+  const byId = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+  return {
+    points,
+    crossings: [...pairs]
+      .map((p) => JSON.parse(p) as [string, string])
+      .sort((a, b) => byId(a[0], b[0]) || byId(a[1], b[1])),
+    bent: bent.sort((a, b) => byId(a.edge, b.edge)),
+  };
+}
+
+/** The edges whose routes cross another route, or bend more than twice (D25 rules 2 and 3). */
+export function troubledEdges(diagram: Diagram, m: Measurer): Set<string> {
+  const t = lineTrouble(diagram, m);
+  return new Set([...t.crossings.flat(), ...t.bent.map((b) => b.edge)]);
 }
 
 function lower(a: number[], b: number[]): boolean {

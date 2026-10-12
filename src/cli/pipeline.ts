@@ -7,7 +7,7 @@ import { advise } from "../check/advice.ts";
 import { findHints, type Hint } from "../check/hints.ts";
 import { check } from "../check/index.ts";
 import type { Defect, OpError } from "../errors.ts";
-import { layout } from "../layout/index.ts";
+import { type LineTrouble, layout, lineTrouble } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
 import type { Warning } from "../model/budget.ts";
 import { readDiagram, writeDiagram } from "../model/io.ts";
@@ -29,16 +29,39 @@ export interface Report {
   defects: Defect[];
   /** Non-blocking notes (D26). They never change the exit code. */
   warnings?: Warning[];
-  /** Rearrangements measured to make the lines better, as commands (D35). Never applied by grafical. */
+  /** What to improve: the lines that cross, and those that bend more than twice (D35). */
+  lines?: LineTrouble;
+  /** Moves measured to make the lines better, as commands (D35). The agent decides; grafical never applies them. */
   hints?: Hint[];
-  /** The hints `diagram improve` took, in order (D35). */
-  improved?: Hint[];
 }
 
-/** The hints for a diagram, with its path in place of <file>, so each command runs as printed. */
-export function hintsFor(d: Diagram, file: string, m: Measurer): Hint[] {
+/**
+ * What the engine tells the agent about its lines (D35): what to improve, and the
+ * moves it measured, with the diagram's path in place of <file>, so each command
+ * runs as printed.
+ */
+export function linesFeedback(
+  d: Diagram,
+  file: string,
+  m: Measurer,
+): { lines: LineTrouble; hints: Hint[] } {
   const path = /^[\w./-]+$/.test(file) ? file : `"${file}"`;
-  return findHints(d, m).map((h) => ({ ...h, command: h.command.replaceAll("<file>", path) }));
+  return {
+    lines: lineTrouble(d, m),
+    hints: findHints(d, m).map((h) => ({ ...h, command: h.command.replaceAll("<file>", path) })),
+  };
+}
+
+/** The `lines:` line: what crosses and what bends too much, the first few named. */
+function linesText(t: LineTrouble): string | undefined {
+  if (t.crossings.length === 0 && t.bent.length === 0) return undefined;
+  const parts = [
+    ...t.crossings.map(([a, b]) => `${a} crosses ${b}`),
+    ...t.bent.map((x) => `${x.edge} bends ${x.bends} times`),
+  ];
+  const shown = parts.slice(0, 6).join("; ");
+  const more = parts.length > 6 ? `; and ${parts.length - 6} more` : "";
+  return `lines: ${t.points} crossing${t.points === 1 ? "" : "s"}, ${t.bent.length} line${t.bent.length === 1 ? "" : "s"} bending more than twice: ${shown}${more}`;
 }
 
 export function oneLine(s: string): string {
@@ -67,12 +90,11 @@ export function formatReport(r: Report): string {
       `defect ${d.code} [${d.elements.join(", ")}]: found ${oneLine(d.found)}; expected ${oneLine(d.expected)}; fix: ${oneLine(d.fix)}`,
     );
   }
-  for (const h of r.improved ?? []) out.push(`improved: ${h.gain}: ${h.command}`);
-  // A hint diagram improve leaves to the agent says so: it moves a node among other kinds.
+  const lines = r.lines === undefined ? undefined : linesText(r.lines);
+  if (lines !== undefined) out.push(lines);
+  // A hint that puts a node among other kinds says so, for the agent to weigh.
   for (const h of r.hints ?? [])
-    out.push(
-      `hint: ${h.gain}: ${h.command}${h.safe ? "" : "   (moves a node among other kinds; run it yourself if its row does not matter)"}`,
-    );
+    out.push(`hint: ${h.gain}: ${h.command}${h.safe ? "" : "   (moves a node among other kinds)"}`);
   return `${out.join("\n")}\n`;
 }
 
@@ -84,8 +106,8 @@ export function emit(report: Report, json: boolean, extra: Record<string, unknow
       errors: report.errors,
       defects: report.defects,
       warnings: report.warnings ?? [],
+      lines: report.lines ?? { points: 0, crossings: [], bent: [] },
       hints: report.hints ?? [],
-      ...(report.improved !== undefined ? { improved: report.improved } : {}),
       ...extra,
     };
     process.stdout.write(`${JSON.stringify(body)}\n`);
@@ -227,6 +249,6 @@ export async function runWrite(
     defects: [],
     warnings: advise(result.diagram, layout(result.diagram, m)),
   };
-  if (hints) report.hints = hintsFor(result.diagram, file, m);
+  if (hints) Object.assign(report, linesFeedback(result.diagram, file, m));
   return report;
 }

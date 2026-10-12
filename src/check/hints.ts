@@ -16,17 +16,17 @@ export interface Hint {
   /** What gets better, measured. */
   gain: string;
   /**
-   * Keeps every node among its own kind: a swap within a row, or a move into a row of
-   * the same family. `diagram improve` takes only these; the others need the agent's
-   * judgement of what its rows mean.
+   * Keeps every node among its own kind: a swap within a row, a group moved past
+   * another, or a move into a row of the same family. A hint that is not safe is
+   * marked, for the agent to weigh against what its rows mean.
    */
   safe: boolean;
 }
 
 /**
  * Kinds that belong in one row together. Agents read a row as a tier, and undo a move
- * that puts a store among queues or a caller among services, so a safe hint never
- * does; callers and outside systems are never moved at all.
+ * that puts a store among queues or a caller among services, so such a move is marked;
+ * callers and outside systems are never moved at all.
  */
 const FAMILY: Record<NodeKind, string> = {
   service: "step",
@@ -192,26 +192,4 @@ export function findHints(d: Diagram, m: Measurer, limit = 3, onlySafe = false):
     });
   }
   return out;
-}
-
-/** Most hints `diagram improve` takes one after another. */
-const IMPROVE_STEPS = 5;
-
-/**
- * `grafical diagram improve` (D35): the first safe hint, then the first safe hint of the
- * result, while there is one, at most five times. Returns the hints taken, in order; their
- * operations, applied in that order, give the improved diagram.
- */
-export function improvements(d: Diagram, m: Measurer): Hint[] {
-  const taken: Hint[] = [];
-  let cur = d;
-  for (let i = 0; i < IMPROVE_STEPS; i++) {
-    const [h] = findHints(cur, m, 1, true);
-    if (h === undefined) break;
-    const r = applyOps(cur, h.ops, m);
-    if ("errors" in r) break;
-    taken.push(h);
-    cur = r.diagram;
-  }
-  return taken;
 }

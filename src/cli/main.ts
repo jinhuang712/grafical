@@ -7,7 +7,6 @@ import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
 import { advise } from "../check/advice.ts";
-import { improvements } from "../check/hints.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import type { Op } from "../model/ops.ts";
@@ -20,9 +19,9 @@ import {
   emit,
   failure,
   fileError,
-  hintsFor,
   inspect,
   isReport,
+  linesFeedback,
   loadDiagram,
   runWrite,
   writeAtomic,
@@ -592,39 +591,6 @@ function build(): Command {
     await write(file, { op: "diagram.tidy" }, opts);
   });
   json(
-    diagram
-      .command("improve")
-      .description("take the hints one by one while they make the lines better (D35)")
-      .argument("<file>"),
-  ).action(async (file: string, opts: Opts) => {
-    // The hints are found in memory and applied as one batch of ordinary operations (D1).
-    const d = loadDiagram(file);
-    if (isReport(d)) {
-      process.exitCode = emit(d, opts.json === true);
-      return;
-    }
-    const m = await createMeasurer();
-    const taken = improvements(d, m);
-    if (taken.length === 0) {
-      process.exitCode = emit(
-        { ok: true, changed: [], errors: [], defects: [], improved: [] },
-        opts.json === true,
-      );
-      return;
-    }
-    const report = await runWrite(
-      file,
-      taken.flatMap((h) => h.ops),
-      false,
-      true,
-    );
-    const path = /^[\w./-]+$/.test(file) ? file : `"${file}"`;
-    if (report.ok)
-      report.improved = taken.map((h) => ({ ...h, command: h.command.replaceAll("<file>", path) }));
-    process.exitCode = emit(report, opts.json === true);
-  });
-
-  json(
     program
       .command("apply")
       .description("apply a YAML list of operations, all or nothing")
@@ -647,7 +613,7 @@ function build(): Command {
       process.exitCode = emit(failure(ops), opts.json === true);
       return;
     }
-    // A batch is usually a draft or a large change: its report names better arrangements (D35).
+    // A batch is usually a draft or a large change: its report says what to improve (D35).
     await finish(file, ops, opts, false, true);
   });
 
@@ -710,7 +676,7 @@ function build(): Command {
         errors: [],
         defects,
         warnings: advise(d, layout(d, m)),
-        hints: hintsFor(d, file, m),
+        ...linesFeedback(d, file, m),
       },
       opts.json === true,
     );
@@ -760,7 +726,7 @@ function build(): Command {
       errors: [],
       defects,
       warnings: advise(d, scene),
-      hints: hintsFor(d, file, m),
+      ...linesFeedback(d, file, m),
     };
     if (opts.json !== true) for (const f of files) process.stdout.write(`wrote ${f}\n`);
     process.exitCode = emit(report, opts.json === true, { files });
