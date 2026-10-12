@@ -24,7 +24,7 @@
 
 import type { Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
-import { ROUTE } from "../theme/geometry.ts";
+import { GROUP, ROUTE } from "../theme/geometry.ts";
 import { lineStyle } from "../theme/paint.ts";
 import { portInset } from "../theme/shapes.ts";
 import { routeGutter } from "./gutter.ts";
@@ -48,6 +48,17 @@ export interface RouteExtra {
    * runs the whole height and would leave a side exit only a stub.
    */
   noSideExit: Set<string>;
+  /** Group boxes across, with the rows they span and the nodes inside them (D7, D34). */
+  boxes: Box[];
+}
+
+/** A group's box, as the router keeps lines out of it. */
+export interface Box {
+  x0: number;
+  x1: number;
+  top: number;
+  bottom: number;
+  members: Set<string>;
 }
 
 const NO_EXTRA: RouteExtra = {
@@ -57,6 +68,7 @@ const NO_EXTRA: RouteExtra = {
   sideLabelX: new Map(),
   alone: new Set(),
   noSideExit: new Set(),
+  boxes: [],
 };
 
 export type Side = "top" | "bottom" | "left" | "right";
@@ -231,8 +243,8 @@ export function routeAcross(
     if (pl !== undefined) plans.push(pl);
   }
   assignBuses(plans, extra.alone);
-  chooseGaps(plans, gapsByLayer, extra.forbidTop);
-  assignGapTracks(plans);
+  chooseGaps(plans, gapsByLayer, extra.forbidTop, extra.boxes);
+  assignGapTracks(plans, extra.boxes);
   chooseSideExits(plans, layers, extra.forbidTop, extra.noSideExit);
   chooseSideEntries(plans, layers, extra.forbidTop, extra.noSideExit);
   placePorts(plans, extra.forbidTop);
@@ -543,6 +555,33 @@ function certainCrossings(plans: Plan[], pl: Plan, x: number): number {
   return n;
 }
 
+/** A box holds neither end of the line: the line is a stranger to it. */
+function foreign(b: Box, pl: Plan): boolean {
+  return !b.members.has(pl.u.id) && !b.members.has(pl.v.id);
+}
+
+/**
+ * Where a line keeps out of in a row: the margin and the border of every group box
+ * that spans the row and holds neither of its ends, from a padding inside the border
+ * to a clearance outside it.
+ */
+function margins(boxes: Box[], pl: Plan, layer: number): [number, number][] {
+  return boxes
+    .filter((b) => b.top <= layer && b.bottom >= layer && foreign(b, pl))
+    .flatMap((b): [number, number][] => [
+      [b.x0 - CLEAR, b.x0 + GROUP.pad],
+      [b.x1 - GROUP.pad, b.x1 + CLEAR],
+    ]);
+}
+
+/** The group boxes a line would pass through at x that hold neither of its ends. */
+function foreignBoxes(boxes: Box[], pl: Plan, x: number): number {
+  return boxes.filter(
+    (b) =>
+      x > b.x0 && x < b.x1 && pl.between.some((m) => b.top <= m && b.bottom >= m) && foreign(b, pl),
+  ).length;
+}
+
 /** The x spans free in every one of these layers, given each layer's gaps. */
 function corridors(between: number[], gapsByLayer: Gap[][]): [number, number][] {
   let spans: [number, number][] = [[Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY]];
@@ -575,6 +614,7 @@ function chooseGaps(
   plans: Plan[],
   gapsByLayer: Gap[][],
   forbidTop: Map<number, [number, number][]>,
+  boxes: Box[],
 ): void {
   const load = new Map<string, Set<string>>();
   const take = (pl: Plan, gap: Gap) => {
@@ -630,7 +670,8 @@ function chooseGaps(
               s +
               dist(centreX(m.v), lo, hi) +
               (reach(m.v, lo, hi) ? 0 : JOG) +
-              CROSS * certainCrossings(plans, m, clamp(xs, lo, hi)),
+              CROSS * certainCrossings(plans, m, clamp(xs, lo, hi)) +
+              CROSS * foreignBoxes(boxes, m, clamp(xs, lo, hi)),
             0,
           ),
         move: dist(xs, lo, hi),
@@ -753,7 +794,7 @@ function byParting(a: [number, number, number], b: [number, number, number]): nu
   return sa - sb || (sa < 0 ? ia - ib : ib - ia) || xa - xb;
 }
 
-function assignGapTracks(plans: Plan[]): void {
+function assignGapTracks(plans: Plan[], boxes: Box[]): void {
   const gaps = new Map<string, Track[]>();
   for (const pl of plans) {
     pl.gaps.forEach((gap, j) => {
@@ -813,8 +854,15 @@ function assignGapTracks(plans: Plan[]): void {
     const want = list.map((t) => t.ideal);
     const weights = list.map((t) => t.weight);
     let { lo, hi } = first.gap;
-    // An outer gap is open on one side: bound it near its tracks, past any label.
-    const blocked = first.gap.forbid.reduce((s, [a, b]) => s + Math.max(0, b - a), 0);
+    // Each track keeps out of the margins of the groups its line is a stranger to.
+    const away = list.map((t) =>
+      t.members[0] === undefined ? [] : margins(boxes, t.members[0].pl, first.gap.layer),
+    );
+    // An outer gap is open on one side: bound it near its tracks, past any label and margin.
+    const blocked = [...first.gap.forbid, ...away.flat()].reduce(
+      (s, [a, b]) => s + Math.max(0, b - a),
+      0,
+    );
     const reach = (list.length + 1) * ROUTE.portPitch + blocked;
     lo = Math.max(lo, Math.min(...want) - reach);
     hi = Math.min(hi, Math.max(...want) + reach);
@@ -830,9 +878,19 @@ function assignGapTracks(plans: Plan[]): void {
     // The port pitch where the gap has room, so that lines from neighbouring ports
     // pass through it straight; closer where it has less.
     let xs: number[] | undefined;
-    for (const radius of [CLEAR, CLEAR / 2]) {
-      for (const pitch of [ROUTE.portPitch, ROUTE.gapPitch, TRACK_MIN]) {
-        xs = onGrid(want, weights, lo, hi, pitch, (i, x) => free(x) && clear(i, x, radius));
+    for (const outside of [true, false]) {
+      for (const radius of [CLEAR, CLEAR / 2]) {
+        for (const pitch of [ROUTE.portPitch, ROUTE.gapPitch, TRACK_MIN]) {
+          xs = onGrid(
+            want,
+            weights,
+            lo,
+            hi,
+            pitch,
+            (i, x) => free(x) && clear(i, x, radius) && !(outside && inSpans(x, away[i] ?? [])),
+          );
+          if (xs !== undefined) break;
+        }
         if (xs !== undefined) break;
       }
       if (xs !== undefined) break;

@@ -591,6 +591,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     forbidGap,
     sideLabelX: placement.sideLabels,
     alone: new Set(ends.ends.keys()),
+    boxes: placement.groups.map((g) => ({
+      x0: g.x0,
+      x1: g.x1,
+      top: g.top,
+      bottom: g.bottom,
+      members: new Set(g.members),
+    })),
     noSideExit: new Set(
       run === "columns"
         ? [...ends.ends]

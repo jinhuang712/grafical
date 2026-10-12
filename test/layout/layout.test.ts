@@ -178,6 +178,48 @@ describe("groups inside groups (D34)", () => {
   });
 });
 
+describe("lines past a group they do not belong to", () => {
+  it("run outside its box, not in its margin or along its border", async () => {
+    const d: Diagram = {
+      grafical: 1,
+      title: "Past a group",
+      density: "normal",
+      layers: [
+        { id: "top", label: "Top", nodes: [n("callers", "callers", "actor", "m")] },
+        {
+          id: "mid",
+          label: "Middle",
+          nodes: [
+            n("a", "relay", "service", "m", { group: "g" }),
+            n("b", "worker", "service", "m", { group: "g" }),
+          ],
+        },
+        {
+          id: "low",
+          label: "Low",
+          nodes: [n("store", "store", "store", "m"), n("db", "database", "store", "m")],
+        },
+      ],
+      groups: [{ id: "g", label: "pipeline" }],
+      edges: [e("a", "b", "call"), e("b", "store", "data"), e("callers", "db", "call")],
+    };
+    const scene = layout(d, await createMeasurer());
+    const box = scene.groups?.[0]?.rect as Rect;
+    const line = scene.edges.find((x) => x.id === "callers->db")?.points ?? [];
+    const down = line.flatMap((p, i) => {
+      const q = line[i + 1];
+      return q !== undefined &&
+        p.x === q.x &&
+        Math.min(p.y, q.y) < box.y + box.h &&
+        Math.max(p.y, q.y) > box.y
+        ? [p.x]
+        : [];
+    });
+    expect(down.length).toBeGreaterThan(0);
+    for (const x of down) expect(x < box.x - 4 || x > box.x + box.w + 4).toBe(true);
+  });
+});
+
 describe("the target look (D25)", () => {
   let scene: Scene;
   let m: Measurer;
