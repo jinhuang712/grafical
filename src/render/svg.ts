@@ -450,9 +450,25 @@ function legendShapes(scene: Scene, P: Paint): string[] {
   return out;
 }
 
-/** A box inside a box takes the other fill: group fill and background alternate by depth (D34). */
+/** A colour a share of the way from one #rrggbb colour to another. */
+function mix(from: string, to: string, share: number): string {
+  const channel = (c: string, k: number) => Number.parseInt(c.slice(1 + 2 * k, 3 + 2 * k), 16);
+  const hex = [0, 1, 2].map((k) => {
+    const v = Math.round(channel(from, k) + (channel(to, k) - channel(from, k)) * share);
+    return v.toString(16).padStart(2, "0");
+  });
+  return `#${hex.join("")}`;
+}
+
+/**
+ * A box inside a box is told apart by its fill (D34): the group fill and the
+ * background take turns by depth, or each level is a third of the way nearer the
+ * border colour.
+ */
 function groupFill(g: SceneGroup, P: Paint): string {
-  return (g.depth ?? 1) % 2 === 0 ? P.background : P.group.fill;
+  const depth = g.depth ?? 1;
+  if (P.nesting === "shade") return mix(P.group.fill, P.group.stroke, (depth - 1) / 3);
+  return depth % 2 === 0 ? P.background : P.group.fill;
 }
 
 function groupShapes(g: SceneGroup, P: Paint): string[] {

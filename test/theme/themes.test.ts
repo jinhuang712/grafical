@@ -73,6 +73,17 @@ type:
     expect(THEMES.default?.paint.edge.shape).toBe("orthogonal");
   });
 
+  it("tell nested boxes apart by alternating fills or by shades, and nothing else (D34)", () => {
+    const sheet = (nesting: string) =>
+      parseStylesheet(
+        `grafical-style: 1\npaint:\n  nesting: ${nesting}\n`,
+        "x.grafical-style.yaml",
+      );
+    expect((sheet("shade") as Theme).paint.nesting).toBe("shade");
+    expect((sheet("stripes") as string[]).join("\n")).toContain("paint.nesting");
+    expect(THEMES.default?.paint.nesting).toBe("alternate");
+  });
+
   it("a diagram names a built-in theme or a stylesheet beside it", () => {
     expect(styleProblem("dark")).toBeUndefined();
     expect(styleProblem("brand.grafical-style.yaml")).toBeUndefined();

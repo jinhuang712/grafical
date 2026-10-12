@@ -277,6 +277,7 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | Density | `compact`, `normal`, `airy` |
 | Emphasis | `accent`: at most 2 nodes per diagram, and edges on the main path, drawn thick (D33) |
 | Line shape | `orthogonal` (default) or `curved`, set in a stylesheet as `paint.edge.shape` (D33) |
+| Nested box fill | `alternate` (default): group fill and background in turn; `shade`: each level a shade nearer the border colour. Set in a stylesheet as `paint.nesting` (D34) |
 
 ## Output
 

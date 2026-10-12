@@ -1,9 +1,12 @@
 import { createHash } from "node:crypto";
 import { PNG } from "pngjs";
 import { describe, expect, it } from "vitest";
+import { layout } from "../../src/layout/index.ts";
 import { renderPng, renderSvg } from "../../src/render/index.ts";
 import type { Point, SceneEdge, SceneNode } from "../../src/scene.ts";
+import { createStubMeasurer } from "../../src/text/stub.ts";
 import { PAINT } from "../../src/theme/paint.ts";
+import { nested } from "../fixtures/nested.ts";
 import { escapeScene, groupedScene, mixedScene, tinyScene } from "./scenes.ts";
 
 const sha = (d: string | Uint8Array): string => createHash("sha256").update(d).digest("hex");
@@ -41,6 +44,23 @@ describe("determinism", () => {
       expect(pixels(renderPng(b, 2))).toBe(pixels(renderPng(a, 2)));
     });
   }
+});
+
+describe("boxes inside boxes (D34)", () => {
+  it("fills them by depth: the group fill and the background in turn, or shades", () => {
+    const scene = layout(nested, createStubMeasurer());
+    const fills = (svg: string) =>
+      [...svg.matchAll(/<rect [^>]*rx="8" fill="(#[0-9a-f]{6})" stroke="#d5d9df"/g)].map(
+        (x) => x[1],
+      );
+    expect(fills(renderSvg(scene))).toEqual(["#f5f6f8", "#ffffff", "#f5f6f8", "#f5f6f8"]);
+    expect(fills(renderSvg({ ...scene, paint: { ...PAINT, nesting: "shade" } }))).toEqual([
+      "#f5f6f8",
+      "#eaecf0",
+      "#e0e3e7",
+      "#e0e3e7",
+    ]);
+  });
 });
 
 describe("crossings and joins (D33)", () => {

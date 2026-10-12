@@ -41,6 +41,7 @@ const DARK: Paint = {
     edgeLabel: "#c5cad1",
   },
   group: { fill: "#161b22", stroke: "#30363d", strokeWidth: 1, radius: 8 },
+  nesting: "alternate",
   band: { fill: "#12171d", stroke: "#2a3038", strokeWidth: 1, radius: 8 },
   lane: { fill: "#0f1419", stroke: "#30363d", strokeWidth: 1, radius: 0, headFill: "#161b22" },
   node: {
@@ -94,6 +95,7 @@ const PRINT: Paint = {
     edgeLabel: "#333333",
   },
   group: { fill: "#f3f3f3", stroke: "#bdbdbd", strokeWidth: 1, radius: 6 },
+  nesting: "alternate",
   band: { fill: "#fafafa", stroke: "#d0d0d0", strokeWidth: 1, radius: 6 },
   lane: { fill: "#ffffff", stroke: "#bdbdbd", strokeWidth: 1, radius: 0, headFill: "#eeeeee" },
   node: {
@@ -178,9 +180,11 @@ const DASH = z
 const SIZE = z.number().min(0).max(64);
 
 const SHAPE = z.enum(["orthogonal", "curved"]);
+const NESTING = z.enum(["alternate", "shade"]);
 
 function partial(example: unknown, path: string[]): z.ZodType {
   if (path.join(".") === "edge.shape") return SHAPE;
+  if (path.join(".") === "nesting") return NESTING;
   if (typeof example === "number") return SIZE;
   if (typeof example === "string") return example.startsWith("#") ? COLOR : DASH;
   const entries = Object.entries(example as Record<string, unknown>);

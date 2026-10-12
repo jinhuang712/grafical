@@ -46,6 +46,12 @@ export interface Paint {
   };
   /** A system box behind its nodes (D7). Rows are not drawn. */
   group: BoxPaint;
+  /**
+   * How a box inside a box is told apart (D34). alternate: the fill and the
+   * background take turns by depth. shade: each level a shade nearer the border
+   * colour, which is darker on a light theme.
+   */
+  nesting: "alternate" | "shade";
   /** A layer an edge ends at, drawn behind its groups: lighter than a group (D28). */
   band: BoxPaint;
   /** A swimlane, drawn behind everything else (D32). Lanes side by side share a border. */
@@ -118,6 +124,7 @@ export const PAINT: Paint = {
     edgeLabel: "#4b525c",
   },
   group: { fill: "#f5f6f8", stroke: "#d5d9df", strokeWidth: 1, radius: 8 },
+  nesting: "alternate",
   band: { fill: "#fafbfc", stroke: "#dfe3e8", strokeWidth: 1, radius: 8 },
   lane: { fill: "#ffffff", stroke: "#d5d9df", strokeWidth: 1, radius: 0, headFill: "#f0f2f5" },
   node: {
