@@ -1,8 +1,9 @@
 // The SVG writer (DESIGN.md D13, D15). Fixed element and attribute order, no
 // timestamps, numbers with at most 2 decimals. Pure: no Node APIs.
 //
-// Draw order: background, groups, edges and their labels, nodes and their
-// texts, title, subtitle, legend, footnote. Layer rows are not drawn (D7).
+// Draw order: background, groups, edges and their labels, the dots where lines
+// merge, nodes and their texts, title, subtitle, legend, footnote. Layer rows are
+// not drawn (D7).
 // Nodes come after edges so that ports look clean.
 
 import type { PlacedText, Point, Rect, Scene, SceneEdge, SceneGroup, SceneNode } from "../scene.ts";
@@ -156,16 +157,87 @@ function simplify(points: Point[]): Point[] {
   return out;
 }
 
-/** A route as a path with corners rounded by a quadratic curve. */
-function roundedPath(pts: Point[], P: Paint): string {
+/** Radius of the hop a line makes over another where the two cross (D33). */
+const HOP = 4;
+
+/** The x where one horizontal stretch of a line, at y, crosses another line's vertical stretch. */
+interface Hop {
+  y: number;
+  xs: number[];
+}
+
+/**
+ * Where each line's horizontal stretches cross another line's vertical one (D33).
+ * The horizontal line hops there, so that a crossing never reads as a join.
+ */
+function hopsOf(edges: SceneEdge[]): Map<string, Hop[]> {
+  const across: { id: string; y: number; lo: number; hi: number }[] = [];
+  const down: { id: string; x: number; lo: number; hi: number }[] = [];
+  for (const e of edges) {
+    const pts = simplify(e.points);
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1] as Point;
+      const b = pts[i] as Point;
+      if (a.x === b.x)
+        down.push({ id: e.id, x: a.x, lo: Math.min(a.y, b.y), hi: Math.max(a.y, b.y) });
+      else if (a.y === b.y)
+        across.push({ id: e.id, y: a.y, lo: Math.min(a.x, b.x), hi: Math.max(a.x, b.x) });
+    }
+  }
+  const out = new Map<string, Hop[]>();
+  for (const h of across) {
+    const xs = down
+      .filter((v) => v.id !== h.id && v.x > h.lo && v.x < h.hi && h.y > v.lo && h.y < v.hi)
+      .map((v) => v.x);
+    if (xs.length === 0) continue;
+    const list = out.get(h.id) ?? [];
+    list.push({ y: h.y, xs: [...new Set(xs)].sort((a, b) => a - b) });
+    out.set(h.id, list);
+  }
+  return out;
+}
+
+/**
+ * A straight run of a route, hopping over the crossings on it. Crossings closer
+ * than a hop share one wider hop, and a crossing too near the run's ends for a
+ * hop is drawn plain.
+ */
+function straight(from: Point, to: Point, hops: Hop[]): string {
+  const end = `L${num(to.x)} ${num(to.y)}`;
+  const on = from.y === to.y ? hops.find((h) => h.y === from.y) : undefined;
+  if (on === undefined) return end;
+  const dir = Math.sign(to.x - from.x);
+  const xs = on.xs
+    .filter((x) => (x - from.x) * dir > HOP + 1 && (to.x - x) * dir > HOP + 1)
+    .sort((a, b) => (a - b) * dir);
+  let d = "";
+  for (let k = 0; k < xs.length; ) {
+    let last = k;
+    while (
+      last + 1 < xs.length &&
+      Math.abs((xs[last + 1] as number) - (xs[last] as number)) < 2 * HOP + 2
+    )
+      last++;
+    const a = (xs[k] as number) - dir * HOP;
+    const b = (xs[last] as number) + dir * HOP;
+    // Over the top: clockwise when running right, anticlockwise when running left.
+    d += `L${num(a)} ${num(from.y)}A${num(Math.abs(b - a) / 2)} ${num(HOP)} 0 0 ${dir > 0 ? 1 : 0} ${num(b)} ${num(from.y)}`;
+    k = last + 1;
+  }
+  return d + end;
+}
+
+/** A route as a path with corners rounded by a quadratic curve, hopping over crossings. */
+function roundedPath(pts: Point[], P: Paint, hops: Hop[] = []): string {
   const first = pts[0] as Point;
   let d = `M${num(first.x)} ${num(first.y)}`;
+  let at = first;
   for (let i = 1; i < pts.length; i++) {
     const p = pts[i] as Point;
     const prev = pts[i - 1] as Point;
     const next = pts[i + 1];
     if (!next) {
-      d += `L${num(p.x)} ${num(p.y)}`;
+      d += straight(at, p, hops);
       break;
     }
     const inLen = Math.hypot(p.x - prev.x, p.y - prev.y);
@@ -175,9 +247,63 @@ function roundedPath(pts: Point[], P: Paint): string {
     const ay = p.y - ((p.y - prev.y) / inLen) * r;
     const bx = p.x + ((next.x - p.x) / outLen) * r;
     const by = p.y + ((next.y - p.y) / outLen) * r;
-    d += `L${num(ax)} ${num(ay)}Q${num(p.x)} ${num(p.y)} ${num(bx)} ${num(by)}`;
+    d += `${straight(at, { x: ax, y: ay }, hops)}Q${num(p.x)} ${num(p.y)} ${num(bx)} ${num(by)}`;
+    at = { x: bx, y: by };
   }
   return d;
+}
+
+/** Whether p lies on the route. */
+function onRoute(pts: Point[], p: Point): boolean {
+  return pts.some((a, i) => {
+    const b = pts[i + 1];
+    if (b === undefined) return false;
+    if (a.x === b.x) return p.x === a.x && p.y >= Math.min(a.y, b.y) && p.y <= Math.max(a.y, b.y);
+    return p.y === a.y && p.x >= Math.min(a.x, b.x) && p.x <= Math.max(a.x, b.x);
+  });
+}
+
+/** Whether the straight stretch s-t runs along the route for some length. */
+function alongRoute(pts: Point[], s: Point, t: Point): boolean {
+  return pts.some((a, i) => {
+    const b = pts[i + 1];
+    if (b === undefined) return false;
+    if (s.x === t.x && a.x === b.x && a.x === s.x)
+      return (
+        Math.min(Math.max(a.y, b.y), Math.max(s.y, t.y)) -
+          Math.max(Math.min(a.y, b.y), Math.min(s.y, t.y)) >
+        0.5
+      );
+    if (s.y === t.y && a.y === b.y && a.y === s.y)
+      return (
+        Math.min(Math.max(a.x, b.x), Math.max(s.x, t.x)) -
+          Math.max(Math.min(a.x, b.x), Math.min(s.x, t.x)) >
+        0.5
+      );
+    return false;
+  });
+}
+
+/**
+ * Where a line leaves another it ran along, or joins one: a merge on purpose,
+ * such as the branch of a trunk, which a dot marks (D33).
+ */
+function joinsOf(edges: SceneEdge[]): { at: Point; edge: SceneEdge }[] {
+  const routes = edges.map((e) => ({ e, pts: simplify(e.points) }));
+  const out = new Map<string, { at: Point; edge: SceneEdge }>();
+  for (const b of routes) {
+    for (let i = 1; i < b.pts.length - 1; i++) {
+      const p = b.pts[i] as Point;
+      const before = b.pts[i - 1] as Point;
+      const after = b.pts[i + 1] as Point;
+      for (const a of routes) {
+        if (a === b || !onRoute(a.pts, p)) continue;
+        if (alongRoute(a.pts, before, p) !== alongRoute(a.pts, p, after))
+          out.set(`${p.x},${p.y}`, { at: p, edge: b.e });
+      }
+    }
+  }
+  return [...out.values()];
 }
 
 /** Moves a route's end from its box's side onto the drawn outline (D34). */
@@ -186,7 +312,12 @@ function ontoOutline(end: Point, next: Point, n: SceneNode | undefined): Point {
 }
 
 /** The line stops at the arrowhead's base, if its kind has one (D8, D33). */
-function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>, P: Paint): string[] {
+function edgeShapes(
+  e: SceneEdge,
+  nodes: Map<string, SceneNode>,
+  P: Paint,
+  hops: Hop[] = [],
+): string[] {
   const paint = P.edge;
   const kind: { stroke: string; dash?: string } = paint.kinds[e.kind];
   const look = lineLook(e.main === true, P);
@@ -207,7 +338,7 @@ function edgeShapes(e: SceneEdge, nodes: Map<string, SceneNode>, P: Paint): stri
       : undefined;
   if (tail) pts[0] = tail.base;
   const out = [
-    `<path d="${roundedPath(pts, P)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(look.strokeWidth)}"${dashAttr(kind.dash)}/>`,
+    `<path d="${roundedPath(pts, P, hops)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(look.strokeWidth)}"${dashAttr(kind.dash)}/>`,
   ];
   if (head) out.push(head.d);
   if (tail) out.push(tail.d);
@@ -304,8 +435,9 @@ export function renderSvg(scene: Scene): string {
 
   const lb = P.edge.labelBackground;
   const byId = new Map(scene.nodes.map((n) => [n.id, n]));
+  const hops = hopsOf(scene.edges);
   for (const e of scene.edges) {
-    out.push(...edgeShapes(e, byId, P));
+    out.push(...edgeShapes(e, byId, P, hops.get(e.id)));
     if (e.label) {
       const b = e.label.bbox;
       const bg: Rect = {
@@ -343,6 +475,13 @@ export function renderSvg(scene: Scene): string {
         ...texts(e.label, P.text.edgeLabel),
       );
     }
+  }
+
+  for (const j of joinsOf(scene.edges)) {
+    const r = lineLook(j.edge.main === true, P).strokeWidth + 1.5;
+    out.push(
+      `<circle cx="${num(j.at.x)}" cy="${num(j.at.y)}" r="${num(r)}" fill="${P.edge.kinds[j.edge.kind].stroke}"/>`,
+    );
   }
 
   for (const n of scene.nodes) {

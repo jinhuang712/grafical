@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { PNG } from "pngjs";
 import { describe, expect, it } from "vitest";
 import { renderPng, renderSvg } from "../../src/render/index.ts";
+import type { Point, SceneEdge } from "../../src/scene.ts";
 import { escapeScene, groupedScene, mixedScene, tinyScene } from "./scenes.ts";
 
 const sha = (d: string | Uint8Array): string => createHash("sha256").update(d).digest("hex");
@@ -18,8 +19,8 @@ const EXPECTED = {
     png: "fc6b4be4333c56e0a9850b48aa28016e984a512f5522508f523d6e17bcf75798",
   },
   grouped: {
-    svg: "ef8e7013b6671cfbd351ae8c5b110acbc503d125555113889fd4ab447ef3494d",
-    png: "160905ec33375f75b04e58bb39ec2cc6fd139b0e3924c3194d374320e100231e",
+    svg: "e9f23e192786118351230f0887c63f74d111afc994764f3a67aa99d52f054b71",
+    png: "0d6b7e26d15b4072cd587d03e89dcd159df79ad5fbbf34d673bca365182055a5",
   },
   escape: {
     svg: "8fd21fe8b59a88bb37c573a42527d6a241ddda5ba0875a04f711390a35c59f12",
@@ -39,6 +40,71 @@ describe("determinism", () => {
       expect(pixels(renderPng(b, 2))).toBe(pixels(renderPng(a, 2)));
     });
   }
+});
+
+describe("crossings and joins (D33)", () => {
+  /** Plain lines, which carry no arrowhead, alone on the tiny scene's canvas. */
+  const lines = (edges: SceneEdge[]): string => renderSvg({ ...tinyScene(), nodes: [], edges });
+  const edge = (id: string, points: Point[]): SceneEdge => ({
+    id,
+    from: "x",
+    to: "y",
+    kind: "link",
+    points,
+  });
+
+  it("hops the horizontal line over the vertical one where two lines cross", () => {
+    const svg = lines([
+      edge("across", [
+        { x: 20, y: 60 },
+        { x: 180, y: 60 },
+      ]),
+      edge("down", [
+        { x: 100, y: 20 },
+        { x: 100, y: 110 },
+      ]),
+    ]);
+    expect(svg).toContain('d="M20 60L96 60A4 4 0 0 1 104 60L180 60"');
+    expect(svg).toContain('d="M100 20L100 110"');
+    expect(svg).not.toContain("<circle ");
+  });
+
+  it("gives crossings closer than a hop one wider hop", () => {
+    const svg = lines([
+      edge("across", [
+        { x: 180, y: 60 },
+        { x: 20, y: 60 },
+      ]),
+      edge("one", [
+        { x: 96, y: 20 },
+        { x: 96, y: 110 },
+      ]),
+      edge("two", [
+        { x: 104, y: 20 },
+        { x: 104, y: 110 },
+      ]),
+    ]);
+    expect(svg).toContain('d="M180 60L108 60A8 4 0 0 0 92 60L20 60"');
+  });
+
+  it("marks with a dot where a branch leaves the line it ran along, and nowhere else", () => {
+    const svg = lines([
+      edge("long", [
+        { x: 20, y: 30 },
+        { x: 20, y: 60 },
+        { x: 180, y: 60 },
+        { x: 180, y: 100 },
+      ]),
+      edge("short", [
+        { x: 20, y: 30 },
+        { x: 20, y: 60 },
+        { x: 100, y: 60 },
+        { x: 100, y: 100 },
+      ]),
+    ]);
+    expect(svg.match(/<circle /g)).toHaveLength(1);
+    expect(svg).toContain('<circle cx="100" cy="60"');
+  });
 });
 
 describe("text", () => {
