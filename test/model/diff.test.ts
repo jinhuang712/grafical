@@ -5,6 +5,7 @@ import { writeDiagram } from "../../src/model/io.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
+import { nested } from "../fixtures/nested.ts";
 import { generate } from "../fuzz/gen.ts";
 
 // Lays out many random diagrams: slower CI machines need more than the default 5 s.
@@ -57,6 +58,19 @@ describe("diff as operations (D18)", () => {
       { op: "edge.remove", id: "pipelines->geo" },
       { op: "node.remove", id: "geo" },
     ]);
+  });
+
+  it("replays groups that move between groups, and removed groups that held others (D34)", () => {
+    const moved = edited(nested, [
+      { op: "group.join", group: "region", nodes: ["public"] },
+      { op: "group.leave", nodes: ["api"], up: true },
+    ]);
+    const gone = edited(nested, [{ op: "group.remove", id: "vpc" }]);
+    for (const b of [moved, gone, catalogSyncGrouped]) {
+      replays(nested, b);
+      replays(b, nested);
+    }
+    replays(null, nested);
   });
 
   it("replays to the same file, between any two diagrams and from nothing", () => {

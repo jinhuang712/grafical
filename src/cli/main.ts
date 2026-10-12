@@ -136,17 +136,18 @@ function build(): Command {
   json(
     group
       .command("add")
-      .description("add a group, optionally with member nodes")
+      .description("add a group, optionally with member nodes, optionally inside another group")
       .argument("<file>")
       .argument("<id>")
       .requiredOption("--label <text>")
       .option("--sublabel <text>", "a second, quieter part of the label")
-      .option("--nodes <ids>", "comma-separated member node ids"),
+      .option("--nodes <ids>", "comma-separated member node ids")
+      .option("--in <group>", "the group it sits inside, up to three levels deep"),
   ).action(async (file: string, id: string, opts: Opts) => {
     const raw: Record<string, unknown> = {
       op: "group.add",
       id,
-      ...pick(opts, ["label", "sublabel"]),
+      ...pick(opts, ["label", "sublabel", "in"]),
     };
     if (typeof opts.nodes === "string") raw.nodes = splitIds(opts.nodes);
     await write(file, raw, opts);
@@ -154,21 +155,26 @@ function build(): Command {
   json(
     group
       .command("join")
-      .description("put nodes into a group")
+      .description("put nodes, or groups with everything in them, into a group")
       .argument("<file>")
       .argument("<group>")
-      .argument("<node...>"),
+      .argument("<member...>"),
   ).action(async (file: string, g: string, nodes: string[], opts: Opts) => {
     await write(file, { op: "group.join", group: g, nodes }, opts);
   });
   json(
     group
       .command("leave")
-      .description("take nodes out of their group")
+      .description("take nodes or groups out of every group")
       .argument("<file>")
-      .argument("<node...>"),
+      .argument("<member...>")
+      .option("--up", "only one level out, into the group around the one they leave"),
   ).action(async (file: string, nodes: string[], opts: Opts) => {
-    await write(file, { op: "group.leave", nodes }, opts);
+    await write(
+      file,
+      { op: "group.leave", nodes, ...(opts.up === true ? { up: true } : {}) },
+      opts,
+    );
   });
   json(
     group
@@ -183,11 +189,16 @@ function build(): Command {
   json(
     group
       .command("remove")
-      .description("remove a group; its nodes stay")
+      .description("remove a group; its nodes and inner groups move into the group around it")
       .argument("<file>")
-      .argument("<id>"),
+      .argument("<id>")
+      .option("--out", "its nodes and inner groups leave every group instead"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "group.remove", id }, opts);
+    await write(
+      file,
+      { op: "group.remove", id, ...(opts.out === true ? { out: true } : {}) },
+      opts,
+    );
   });
 
   const lane = program.command("lane").description("swimlane operations (D32)");

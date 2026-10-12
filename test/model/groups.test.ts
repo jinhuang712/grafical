@@ -217,6 +217,66 @@ describe("group operations", () => {
   });
 });
 
+describe("groups inside groups (D34)", () => {
+  const parentOf = (d: Diagram, id: string) => d.groups?.find((g) => g.id === id)?.in;
+  const groupOfNode = (d: Diagram, id: string) =>
+    d.layers.flatMap((l) => l.nodes).find((n) => n.id === id)?.group;
+
+  it("adds a group inside another, and refuses a fourth level or a missing parent", () => {
+    const d = ok(nested, [{ op: "group.add", id: "zone", label: "zone b", in: "region" }]).diagram;
+    expect(parentOf(d, "zone")).toBe("region");
+    expect(
+      fail(nested, [{ op: "group.add", id: "rack", label: "rack", in: "private" }])[0]?.code,
+    ).toBe("group-too-deep");
+    expect(
+      fail(nested, [{ op: "group.add", id: "rack", label: "rack", in: "nope" }])[0],
+    ).toMatchObject({
+      code: "unknown-group",
+      field: "in",
+    });
+  });
+
+  it("moves a group, with everything in it, by join and leave", () => {
+    const joined = ok(nested, [{ op: "group.join", group: "region", nodes: ["public"] }]).diagram;
+    expect(parentOf(joined, "public")).toBe("region");
+    expect(groupOfNode(joined, "lb")).toBe("public");
+    const left = ok(nested, [{ op: "group.leave", nodes: ["public"] }]).diagram;
+    expect(parentOf(left, "public")).toBeUndefined();
+    const up = ok(nested, [{ op: "group.leave", nodes: ["public"], up: true }]).diagram;
+    expect(parentOf(up, "public")).toBe("region");
+    expect(fail(nested, [{ op: "group.join", group: "public", nodes: ["vpc"] }])[0]?.code).toBe(
+      "group-cycle",
+    );
+    const zone = ok(nested, [
+      { op: "group.add", id: "zone", label: "zone b", in: "region" },
+    ]).diagram;
+    expect(fail(zone, [{ op: "group.join", group: "zone", nodes: ["vpc"] }])[0]?.code).toBe(
+      "group-too-deep",
+    );
+  });
+
+  it("takes a node out of every group, or one level out with up", () => {
+    expect(
+      groupOfNode(ok(nested, [{ op: "group.leave", nodes: ["api"] }]).diagram, "api"),
+    ).toBeUndefined();
+    expect(
+      groupOfNode(ok(nested, [{ op: "group.leave", nodes: ["api"], up: true }]).diagram, "api"),
+    ).toBe("vpc");
+  });
+
+  it("moves a removed group's nodes and inner groups into the group around it, or out of every group", () => {
+    const d = ok(nested, [{ op: "group.remove", id: "vpc" }]).diagram;
+    expect(parentOf(d, "public")).toBe("region");
+    expect(parentOf(d, "private")).toBe("region");
+    const p = ok(nested, [{ op: "group.remove", id: "private" }]).diagram;
+    expect(groupOfNode(p, "api")).toBe("vpc");
+    const out = ok(nested, [{ op: "group.remove", id: "private", out: true }]).diagram;
+    expect(groupOfNode(out, "api")).toBeUndefined();
+    const all = ok(nested, [{ op: "group.remove", id: "vpc", out: true }]).diagram;
+    expect(parentOf(all, "public")).toBeUndefined();
+  });
+});
+
 describe("diagram.subtitle and diagram.note", () => {
   it("set, replace and clear", () => {
     const d1 = ok(base, [{ op: "diagram.subtitle", text: "Hello." }]).diagram;

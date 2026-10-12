@@ -46,9 +46,9 @@ grafical node move <file> <id> [--layer <layer>] [--first | --last | --before <n
 grafical node remove <file> <id>; node describe <file> <id> [--text <text>]   (sublabel; no --text clears it)
 grafical node kind <file> <id> <kind>; node emphasize <file> <id> [--off]; node align <file> <id> [--to <node>]
 grafical node swap <file> <a> <b>; node merge <file> <new-id> --nodes a,b --label <text> [--sublabel <text>] [--kind <kind>]   (keeps all their edges)
-grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c]
-grafical group join <file> <group> <node...>; group leave <file> <node...>; group rename <file> <id> --label <text>
-grafical group remove <file> <id>   (members stay, ungrouped)
+grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c] [--in <group>]   (--in: inside it, 3 deep at most)
+grafical group join <file> <group> <node or group...>; group leave <file> <node or group...> [--up]   (out of every group; --up: one level)
+grafical group rename <file> <id> --label <text>; group remove <file> <id> [--out]   (members move one level out; --out: ungrouped)
 grafical group describe <file> <id> [--text <text>]   (a quieter second label, e.g. "write side")
 grafical group order <file> <id> --before <group> | --after <group>
 grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>] [--both]   (from, to: node, group, layer or lane; --both: arrowheads at both ends)
@@ -79,7 +79,7 @@ A YAML list. Each item has op: <noun>.<verb> and the same fields as the flags, i
 layer.add: id label before after
 node.add: id layer label kind sublabel size first last before after align accent
 node.move: id layer first last before after
-group.add: id label sublabel nodes (a list). group.join: group nodes (a list). group.leave: nodes (a list).
+group.add: id label sublabel nodes (a list) in. group.join: group nodes (a list). group.leave: nodes (a list) up.
 diagram.subtitle: text. diagram.note: text. Without text, they clear. diagram.sizing: mode (auto or fixed).
 edge.add: from to id label kind both. edge.emphasize: edges (a list) off
 Other operations: positional arguments become fields of the same name (node.swap: a b; layer.split: id into label from; node.merge: id nodes label; node.kind: id kind; diagram.legend: line text).

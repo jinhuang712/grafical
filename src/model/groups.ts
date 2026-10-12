@@ -27,6 +27,11 @@ export function groupNodes(d: Diagram, id: string): DiagramNode[] {
   return d.layers.flatMap((l) => l.nodes.filter((n) => inGroup(d, n, id)));
 }
 
+/** How many levels a group and the groups inside it take: 1 with none inside it. */
+export function groupHeight(d: Diagram, id: string): number {
+  return 1 + Math.max(0, ...innerGroups(d, id).map((c) => groupHeight(d, c)));
+}
+
 /** The groups directly inside a group. */
 export function innerGroups(d: Diagram, id: string): string[] {
   return (d.groups ?? []).filter((g) => g.in === id).map((g) => g.id);

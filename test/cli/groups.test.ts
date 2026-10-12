@@ -4,6 +4,8 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { GUIDE } from "../../src/cli/guide.ts";
+import { writeDiagram } from "../../src/model/io.ts";
+import { nested } from "../fixtures/nested.ts";
 
 const MAIN = resolve(import.meta.dirname, "../../src/cli/main.ts");
 vi.setConfig({ testTimeout: 60_000 });
@@ -127,5 +129,24 @@ describe("grouped diagrams", () => {
     for (const w of ["group add", "diagram subtitle", "Not shown:", "sublabel"]) {
       expect(GUIDE).toContain(w);
     }
+  });
+});
+
+describe("groups inside groups on the command line (D34)", () => {
+  it("adds, moves and removes a group inside another, and show names where each sits", () => {
+    writeFileSync(join(dir, "shop.grafical.yaml"), writeDiagram(nested));
+    const f = "shop.grafical.yaml";
+    expect(run("group", "add", f, "zone", "--label", "zone b", "--in", "region").code).toBe(0);
+    expect(run("show", f).out).toContain('group zone "zone b" in=region: (empty)');
+    expect(run("group", "join", f, "zone", "backup").code).toBe(0);
+    expect(run("group", "leave", f, "public", "--up").code).toBe(0);
+    expect(run("show", f).out).toContain('group public "public subnet" in=region: lb, servers');
+    expect(run("group", "remove", f, "private", "--out").code).toBe(0);
+    expect(read(f)).not.toContain("group: private");
+    const deep = run("group", "add", f, "rack", "--label", "rack", "--in", "zone");
+    expect(deep.code).toBe(0);
+    const tooDeep = run("group", "add", f, "shelf", "--label", "shelf", "--in", "rack");
+    expect(tooDeep.code).not.toBe(0);
+    expect(tooDeep.err + tooDeep.out).toContain("group-too-deep");
   });
 });

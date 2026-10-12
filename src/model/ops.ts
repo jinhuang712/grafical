@@ -64,15 +64,21 @@ export interface GroupAddOp {
   label: string;
   sublabel?: string;
   nodes?: string[];
+  /** The group the new group sits inside (D34). */
+  in?: string;
 }
 export interface GroupJoinOp {
   op: "group.join";
   group: string;
+  /** Nodes, and groups that move inside this one with everything in them (D34). */
   nodes: string[];
 }
 export interface GroupLeaveOp {
   op: "group.leave";
+  /** Nodes or groups. */
   nodes: string[];
+  /** true: one level out, into the group around the one they leave. Absent: out of every group. */
+  up?: boolean;
 }
 export interface GroupRenameOp {
   op: "group.rename";
@@ -82,6 +88,8 @@ export interface GroupRenameOp {
 export interface GroupRemoveOp {
   op: "group.remove";
   id: string;
+  /** true: its nodes and inner groups leave every group. Absent: they move into the group around it. */
+  out?: boolean;
 }
 export interface LayerAddOp {
   op: "layer.add";
@@ -386,19 +394,28 @@ export const groupAddSchema = z.strictObject({
   label: text,
   sublabel: text.optional(),
   nodes: z.array(nodeId).optional(),
+  in: nodeId.optional(),
 });
 export const groupJoinSchema = z.strictObject({
   op: z.literal("group.join"),
   group: nodeId,
   nodes: nodeList,
 });
-export const groupLeaveSchema = z.strictObject({ op: z.literal("group.leave"), nodes: nodeList });
+export const groupLeaveSchema = z.strictObject({
+  op: z.literal("group.leave"),
+  nodes: nodeList,
+  up: z.boolean().optional(),
+});
 export const groupRenameSchema = z.strictObject({
   op: z.literal("group.rename"),
   id: nodeId,
   label: text,
 });
-export const groupRemoveSchema = z.strictObject({ op: z.literal("group.remove"), id: nodeId });
+export const groupRemoveSchema = z.strictObject({
+  op: z.literal("group.remove"),
+  id: nodeId,
+  out: z.boolean().optional(),
+});
 export const layerAddSchema = z.strictObject({
   op: z.literal("layer.add"),
   id: nodeId,

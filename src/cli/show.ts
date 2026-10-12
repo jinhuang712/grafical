@@ -45,8 +45,10 @@ export function showDiagram(d: Diagram): string {
       l.nodes.filter((n) => n.group === g.id).map((n) => n.id),
     );
     const sub = g.sublabel === undefined ? "" : ` sub=${JSON.stringify(g.sublabel)}`;
+    const inner = (d.groups ?? []).filter((x) => x.in === g.id).map((x) => `group ${x.id}`);
+    const where = g.in === undefined ? "" : ` in=${g.in}`;
     lines.push(
-      `group ${g.id} ${JSON.stringify(g.label)}${sub}: ${members.join(", ") || "(empty)"}`,
+      `group ${g.id} ${JSON.stringify(g.label)}${sub}${where}: ${[...members, ...inner].join(", ") || "(empty)"}`,
     );
   }
   const run = laneRun(d);

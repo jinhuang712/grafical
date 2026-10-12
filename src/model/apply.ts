@@ -7,7 +7,7 @@ import * as layoutModule from "../layout/index.ts";
 import type { Measurer } from "../text/types.ts";
 import { styleProblem, THEMES } from "../theme/themes.ts";
 import { endIds, endKind } from "./ends.ts";
-import { inGroup } from "./groups.ts";
+import { groupChain, groupHeight, inGroup, innerGroups, MAX_GROUP_DEPTH } from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
 import type { EdgeAddOp, LayerAddOp, NodeAddOp, NodeMoveOp, Op, Position } from "./ops.ts";
 import { checkIntegrity, MAX_ACCENTS } from "./schema.ts";
@@ -136,25 +136,86 @@ function setGroup(s: State, ids: readonly string[], group: string | undefined) {
   }
 }
 
+/** Sets the group a group sits in, or takes it out of every group (D34). */
+function setParent(s: State, id: string, parent: string | undefined) {
+  const g = s.d.groups?.find((x) => x.id === id);
+  if (g === undefined || g.in === parent) return;
+  if (parent === undefined) delete g.in;
+  else g.in = parent;
+  touch(s, id);
+}
+
+/** A group that would sit more than three deep, with what is inside it, or inside itself (D34). */
+function nestError(
+  d: Diagram,
+  id: string,
+  parent: string,
+  i: number,
+  field: string,
+): OpError | undefined {
+  const around = groupChain(d, parent);
+  if (around.includes(id)) {
+    return {
+      code: "group-cycle",
+      index: i,
+      field,
+      found: `${parent} sits inside ${id}`,
+      expected: "a group inside a group that is not inside it",
+      suggestion: `put ${id} in a group outside it, or take ${parent} out of ${id} first`,
+    };
+  }
+  const levels = around.length + groupHeight(d, id);
+  if (levels <= MAX_GROUP_DEPTH) return undefined;
+  return {
+    code: "group-too-deep",
+    index: i,
+    field,
+    found: `${id} in ${around.join(" in ")} makes ${levels} levels`,
+    expected: `groups at most ${MAX_GROUP_DEPTH} levels deep`,
+    suggestion: `put ${id} in a group further out, or none`,
+  };
+}
+
 function groupStep(s: State, op: Extract<Op, { op: `group.${string}` }>, i: number): OpError[] {
   const d = s.d;
   const groups = d.groups ?? [];
+  const isGroup = (id: string) => groups.some((x) => x.id === id);
+  /** Ids that are neither a node nor a group. */
+  const missing = (ids: readonly string[]) =>
+    missingNodes(
+      d,
+      ids.filter((id) => !isGroup(id)),
+      i,
+    );
   if (op.op === "group.add") {
     const errors: OpError[] = [];
     const dup = dupError(d, op.id, i);
     if (dup) errors.push(dup);
     errors.push(...missingNodes(d, op.nodes ?? [], i));
+    if (op.in !== undefined && !isGroup(op.in)) errors.push(unknownGroup(d, op.in, i, "in"));
     if (errors.length > 0) return errors;
-    groups.push({ id: op.id, label: op.label });
+    const deep = op.in === undefined ? undefined : nestError(d, op.id, op.in, i, "in");
+    if (deep) return [deep];
+    groups.push(
+      op.in === undefined
+        ? { id: op.id, label: op.label }
+        : { id: op.id, label: op.label, in: op.in },
+    );
     d.groups = groups;
     touch(s, op.id);
     setGroup(s, op.nodes ?? [], op.id);
     return [];
   }
   if (op.op === "group.leave") {
-    const errors = missingNodes(d, op.nodes, i);
+    const errors = missing(op.nodes);
     if (errors.length > 0) return errors;
-    setGroup(s, op.nodes, undefined);
+    // Out of every group, or one level out: into the group around the one it leaves.
+    const outer = (g: string | undefined) =>
+      op.up === true && g !== undefined ? groups.find((x) => x.id === g)?.in : undefined;
+    for (const id of op.nodes) {
+      if (isGroup(id)) setParent(s, id, outer(groups.find((x) => x.id === id)?.in));
+      else setGroup(s, [id], outer(findNode(d, id)?.node.group));
+    }
     return [];
   }
   const key = op.op === "group.join" ? op.group : op.id;
@@ -162,19 +223,30 @@ function groupStep(s: State, op: Extract<Op, { op: `group.${string}` }>, i: numb
   const g = groups.find((x) => x.id === key);
   if (!g) return [unknownGroup(d, key, i, field)];
   if (op.op === "group.join") {
-    const errors = missingNodes(d, op.nodes, i);
+    const errors = missing(op.nodes);
     if (errors.length > 0) return errors;
-    setGroup(s, op.nodes, g.id);
+    for (const id of op.nodes) {
+      if (!isGroup(id)) {
+        setGroup(s, [id], g.id);
+        continue;
+      }
+      const wrong = nestError(d, id, g.id, i, "nodes");
+      if (wrong) return [wrong];
+      setParent(s, id, g.id);
+    }
   } else if (op.op === "group.rename") {
     g.label = op.label;
     touch(s, g.id);
   } else {
+    // Its nodes and inner groups move into the group around it, or out of every group.
+    const into = op.op === "group.remove" && op.out === true ? undefined : g.in;
     const members = d.layers.flatMap((l) =>
       l.nodes.filter((n) => n.group === g.id).map((n) => n.id),
     );
+    for (const c of innerGroups(d, g.id)) setParent(s, c, into);
     d.groups = groups.filter((x) => x.id !== g.id);
     touch(s, g.id);
-    setGroup(s, members, undefined);
+    setGroup(s, members, into);
     // The edges that end at the group go with it, as a node's do (D28).
     const gone = d.edges.filter((e) => e.from === g.id || e.to === g.id);
     d.edges = d.edges.filter((e) => e.from !== g.id && e.to !== g.id);

@@ -61,10 +61,10 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | Operation | Does | Status |
 |---|---|---|
 | `group.add` | Draw a system box around nodes, which may sit in several rows (D7) | done |
-| `group.add --in` | Put the new group inside another group, up to three levels (D34) | stage 1 |
-| `group.join`, `group.leave` | Add a node to a group, or take it out | done |
+| `group.add --in` | Put the new group inside another group, up to three levels (D34) | done |
+| `group.join`, `group.leave` | Add a node to a group, or take it out. Either also moves a whole group into another or out (D34). `leave` takes members out of every group, or with `--up` one level out | done |
 | `group.rename` | Change a group's label | done |
-| `group.remove` | Remove the box and keep its nodes. Edges that end at the group go with it | done |
+| `group.remove` | Remove the box and keep its nodes. Its nodes and inner groups move into the group around it, or with `--out` out of every group (D34). Edges that end at the group go with it | done |
 | `group.describe` | Set or clear a second, quieter part of the group's label, such as "write side" | done |
 | `group.order` | Put a group's members before or after another group's, in every layer the two share | done |
 
@@ -139,11 +139,11 @@ grafical edge reverse <file> <id>
 grafical edge both <file> <id> [--off]
 grafical edge emphasize <file> <id...> [--off]
 grafical edge retarget <file> <id> [--from <end>] [--to <end>]
-grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c]
-grafical group join <file> <group> <node...>
-grafical group leave <file> <node...>
+grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c] [--in <group>]
+grafical group join <file> <group> <node or group...>
+grafical group leave <file> <node or group...> [--up]
 grafical group rename <file> <id> --label <text>
-grafical group remove <file> <id>
+grafical group remove <file> <id> [--out]
 grafical group describe <file> <id> [--text <text>]
 grafical group order <file> <id> --before <group> | --after <group>
 grafical lane add <file> <id> --label <text> [--members a,b]

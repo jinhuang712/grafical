@@ -181,7 +181,12 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
 
   // 3. Nodes, groups and lanes that go. Their edges went above.
   for (const id of bN.keys()) if (!aN.has(id)) ops.push({ op: "node.remove", id });
-  for (const g of goneGroups) ops.push({ op: "group.remove", id: g });
+  for (const g of goneGroups)
+    ops.push(
+      bGroups.get(g)?.in === undefined
+        ? { op: "group.remove", id: g }
+        : { op: "group.remove", id: g, out: true },
+    );
   for (const x of goneLanes) ops.push({ op: "lane.remove", id: x });
 
   // Alignments a move would break are cleared now and set again in step 7.
@@ -360,6 +365,14 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       if (x !== undefined) laneLeave.push(id);
       if (n.lane !== undefined) want(laneJoin, n.lane, id);
     }
+  }
+  // A group sits in the group it did before, if both are kept; a new group in none.
+  for (const g of aGroups) {
+    const before = keptGroups.has(g.id) ? bGroups.get(g.id)?.in : undefined;
+    const now = before !== undefined && keptGroups.has(before) ? before : undefined;
+    if (g.in === now) continue;
+    if (g.in === undefined) groupLeave.push(g.id);
+    else want(groupJoin, g.in, g.id);
   }
   for (const l of a.layers) {
     const x = laneOfLayer.get(l.id);
