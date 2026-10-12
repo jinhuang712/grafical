@@ -46,6 +46,8 @@ function hintUse(transcript: string): { shown: number; run: number } {
       if (c.type === "tool_use") {
         const cmd = String((c.input as Record<string, unknown> | undefined)?.command ?? "");
         for (const s of shown) if (strip(cmd).includes(s)) ran.add(s);
+        // `diagram improve` takes the hints shown so far (D35).
+        if (shown.size > 0 && /grafical diagram improve\b/.test(cmd)) ran.add("diagram improve");
       }
     }
   }
