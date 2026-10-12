@@ -134,7 +134,7 @@ function knownKeys(raw: unknown, path: readonly PropertyKey[]): string[] {
   if (parent === "nodes")
     return ["id", "label", "kind", "sublabel", "size", "accent", "align", "group"];
   if (last === undefined || typeof last === "number") {
-    if (parent === "groups") return ["id", "label"];
+    if (parent === "groups") return ["id", "label", "sublabel", "in"];
     if (parent === "layers") return ["id", "label", "nodes"];
     if (parent === "edges") return ["id", "from", "to", "kind", "label"];
   }

@@ -5,8 +5,8 @@
 // - it stays in its layer, and the picture draws it in that layer's row;
 // - it keeps its place in its layer's order, and the picture draws the row's
 //   nodes left to right in that order;
-// - it keeps its group, and the picture draws it inside that group's box and in
-//   no other;
+// - it keeps its group, and the picture draws it inside that group's box and the
+//   boxes around it (D34), and in no other;
 // - it keeps its lane and its alignment (D32, D10).
 // Movement is measured, not limited: how many nodes and routes moved, relative to
 // the centre line.

@@ -10,6 +10,7 @@
 //   stand between them in that row.
 
 import type { OpError } from "../errors.ts";
+import { groupNodes } from "./groups.ts";
 import { laneNodes, laneRun } from "./lanes.ts";
 import { suggestIds } from "./suggest.ts";
 import type { Diagram } from "./types.ts";
@@ -34,12 +35,11 @@ export function endIds(d: Diagram): string[] {
   ];
 }
 
-/** The node ids an end holds: itself for a node, its members for a group, its nodes for a layer or lane. */
+/** The node ids an end holds: itself for a node, its nodes through every level for a group, its nodes for a layer or lane. */
 export function endNodes(d: Diagram, id: string): string[] {
   const kind = endKind(d, id);
   if (kind === "node") return [id];
-  if (kind === "group")
-    return d.layers.flatMap((l) => l.nodes.filter((n) => n.group === id).map((n) => n.id));
+  if (kind === "group") return groupNodes(d, id).map((n) => n.id);
   if (kind === "layer") return d.layers.find((l) => l.id === id)?.nodes.map((n) => n.id) ?? [];
   if (kind === "lane") return laneNodes(d, id);
   return [];

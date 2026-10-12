@@ -6,6 +6,7 @@
 // its row, before the row's lane nodes. The engine keeps every row in that order.
 
 import type { OpError } from "../errors.ts";
+import { inGroup } from "./groups.ts";
 import { suggestIds } from "./suggest.ts";
 import type { Diagram, Layer } from "./types.ts";
 
@@ -135,7 +136,7 @@ function groupsAcross(d: Diagram, index: number): OpError[] {
     const lanes = new Set<string>();
     for (const l of d.layers) {
       for (const n of l.nodes) {
-        if (n.group === g.id) lanes.add((rows ? l.lane : n.lane) ?? "");
+        if (inGroup(d, n, g.id)) lanes.add((rows ? l.lane : n.lane) ?? "");
       }
     }
     if (lanes.size < 2) return;

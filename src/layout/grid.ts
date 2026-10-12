@@ -16,6 +16,7 @@
 //    nodes it connects to.
 // Pure: no measurement and no pixels. place.ts turns columns into x.
 
+import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
 import type { Diagram } from "../model/types.ts";
 import type { AlignmentProblem } from "./align.ts";
@@ -80,16 +81,19 @@ export function buildGrid(d: Diagram): Grid {
     rows.push(list);
   });
   const N = ids.length;
-  const groupOf: (string | undefined)[] = [];
+  // The groups around each node, innermost first (D34).
+  const chainOf: string[][] = Array.from({ length: N }, () => []);
   const alignOf: (string | undefined)[] = [];
   for (const l of d.layers) {
     for (const n of l.nodes) {
       const i = index.get(n.id);
-      if (i === undefined || groupOf[i] !== undefined || alignOf[i] !== undefined) continue;
-      groupOf[i] = n.group;
+      if (i === undefined || (chainOf[i] ?? []).length > 0 || alignOf[i] !== undefined) continue;
+      chainOf[i] = groupChain(d, n.group);
       alignOf[i] = n.align;
     }
   }
+  /** The outermost group around a node. */
+  const outerOf = (i: number): string | undefined => chainOf[i]?.[(chainOf[i]?.length ?? 0) - 1];
 
   // The nodes each node connects to, in any row.
   const links: number[][] = Array.from({ length: N }, () => []);
@@ -155,7 +159,7 @@ export function buildGrid(d: Diagram): Grid {
     return false;
   };
 
-  const groupProblems = groupConstraints(d, rows, ids, row, groupOf, succ, reaches, cls, links);
+  const groupProblems = groupConstraints(d, rows, ids, row, chainOf, succ, reaches, cls, links);
 
   // Classes: members, real rows and reserved rows.
   const rowsOf = (c: number): Set<number> => {
@@ -296,10 +300,10 @@ export function buildGrid(d: Diagram): Grid {
   // up under either, and balance puts it between them.
   const shared = new Uint8Array(N);
   for (let i = 0; i < N; i++) {
-    if (groupOf[i] !== undefined) continue;
+    if (outerOf(i) !== undefined) continue;
     const gs = new Set<string>();
     for (const j of links[i] ?? []) {
-      const g = groupOf[j];
+      const g = outerOf(j);
       if (g !== undefined) gs.add(g);
     }
     if (gs.size >= 2) shared[i] = 1;
@@ -312,7 +316,7 @@ export function buildGrid(d: Diagram): Grid {
     const colOf = (i: number) => packed0.get(cls[i] as number) ?? 0;
     const membersOf = new Map<string, number[]>();
     for (let i = 0; i < N; i++) {
-      const g = groupOf[i];
+      const g = outerOf(i);
       if (g === undefined) continue;
       const list = membersOf.get(g) ?? [];
       list.push(i);
@@ -324,7 +328,7 @@ export function buildGrid(d: Diagram): Grid {
     };
     for (let i = 0; i < N; i++) {
       if (shared[i] === 0) continue;
-      const gs = [...new Set((links[i] ?? []).map((j) => groupOf[j]))]
+      const gs = [...new Set((links[i] ?? []).map((j) => outerOf(j)))]
         .filter((g): g is string => g !== undefined)
         .sort((a, b) => mean(a) - mean(b) || cmp(a, b));
       const mine: [number, number][] = [];
@@ -457,30 +461,42 @@ export function buildGrid(d: Diagram): Grid {
 /**
  * Group constraints: in each row of a group's rows, its members are one block,
  * the nodes left of the block come before every member, and the nodes right of it
- * after every member. Groups that share rows keep their side of each other. A
- * group whose constraints cannot hold with the ones before it is reported, and
- * its constraints are left out.
+ * after every member. A group's members are its inner groups' nodes too, and the
+ * outer groups come first (D34). Groups that share rows, neither inside the other,
+ * keep their side of each other. A group whose constraints cannot hold with the
+ * ones before it is reported, and its constraints are left out.
  */
 function groupConstraints(
   d: Diagram,
   rows: number[][],
   ids: string[],
   row: number[],
-  groupOf: (string | undefined)[],
+  chainOf: string[][],
   succ: number[][],
   reaches: (a: number, b: number) => boolean,
   cls: number[],
   links: number[][],
 ): GroupProblem[] {
   const problems: GroupProblem[] = [];
-  const groups = (d.groups ?? []).map((g) => g.id);
+  const depth = (g: string) => groupChain(d, g).length;
+  const groups = (d.groups ?? [])
+    .map((g) => g.id)
+    .map((g, k) => ({ g, k }))
+    .sort((a, b) => depth(a.g) - depth(b.g) || a.k - b.k)
+    .map((x) => x.g);
   const members = new Map<string, number[]>();
-  groupOf.forEach((g, i) => {
-    if (g === undefined || !groups.includes(g)) return;
-    const list = members.get(g) ?? [];
-    list.push(i);
-    members.set(g, list);
+  chainOf.forEach((chain, i) => {
+    for (const g of chain) {
+      if (!groups.includes(g)) continue;
+      const list = members.get(g) ?? [];
+      list.push(i);
+      members.set(g, list);
+    }
   });
+  const isIn = (i: number, g: string) => chainOf[i]?.includes(g) === true;
+  /** Whether one of the two groups sits inside the other. */
+  const nested = (a: string, b: string) =>
+    groupChain(d, a).includes(b) || groupChain(d, b).includes(a);
   const added: { group: string; edges: [number, number][] }[] = [];
   const addEdge = (a: number, b: number, mine: [number, number][]): boolean => {
     if ((succ[a] ?? []).includes(b)) return true;
@@ -505,11 +521,11 @@ function groupConstraints(
     let failed: GroupProblem | undefined;
     for (let r = r0; r <= r1 && failed === undefined; r++) {
       const list = rows[r] ?? [];
-      const at = list.map((i, k) => (groupOf[i] === g ? k : -1)).filter((k) => k >= 0);
+      const at = list.map((i, k) => (isIn(i, g) ? k : -1)).filter((k) => k >= 0);
       if (at.length === 0) {
         // A row inside the group's span with no member (D7): the box spans it, so each
         // of its nodes sits wholly left or right of the box, the row keeping its order.
-        const split = gapSplit(list, ms, g, rows, groupOf, links, reaches, cls);
+        const split = gapSplit(list, ms, g, rows, chainOf, links, reaches, cls);
         if (split === undefined) {
           failed = conflict(d, g, ids[list[0] as number] as string);
           break;
@@ -526,7 +542,7 @@ function groupConstraints(
       }
       const first = at[0] as number;
       const last = at[at.length - 1] as number;
-      const stranger = list.slice(first, last + 1).find((i) => groupOf[i] !== g);
+      const stranger = list.slice(first, last + 1).find((i) => !isIn(i, g));
       if (stranger !== undefined) {
         const layer = d.layers[r]?.id ?? "";
         const s = ids[stranger] as string;
@@ -556,11 +572,12 @@ function groupConstraints(
     // Groups that share a row keep the side they have in it.
     for (const other of added) {
       if (failed !== undefined) break;
+      if (nested(g, other.group)) continue;
       const os = members.get(other.group) ?? [];
       let side = 0;
       for (const list of rows) {
-        const a = list.findIndex((i) => groupOf[i] === g);
-        const b = list.findIndex((i) => groupOf[i] === other.group);
+        const a = list.findIndex((i) => isIn(i, g));
+        const b = list.findIndex((i) => isIn(i, other.group));
         if (a >= 0 && b >= 0) {
           side = a < b ? -1 : 1;
           break;
@@ -596,7 +613,7 @@ function gapSplit(
   members: number[],
   g: string,
   rows: number[][],
-  groupOf: (string | undefined)[],
+  chainOf: string[][],
   links: number[][],
   reaches: (a: number, b: number) => boolean,
   cls: number[],
@@ -605,8 +622,8 @@ function gapSplit(
     for (const r of rows) {
       const k = r.indexOf(j);
       if (k < 0) continue;
-      const at = r.map((i, x) => (groupOf[i] === g ? x : -1)).filter((x) => x >= 0);
-      if (at.length === 0 || groupOf[j] === g) return 0;
+      const at = r.map((i, x) => (chainOf[i]?.includes(g) ? x : -1)).filter((x) => x >= 0);
+      if (at.length === 0 || chainOf[j]?.includes(g)) return 0;
       return k < (at[0] as number) ? -1 : k > (at[at.length - 1] as number) ? 1 : 0;
     }
     return 0;

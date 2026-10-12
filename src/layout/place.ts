@@ -7,6 +7,7 @@
 // packed from the left, as close as that room allows, and the picture is centred
 // on one centre line. Every x here is relative to that line.
 
+import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
 import { DEFAULT_SIZE, type Diagram, type DiagramNode } from "../model/types.ts";
 import { BOX, GROUP, LANE, ROUTE, SPACING } from "../theme/geometry.ts";
@@ -43,7 +44,9 @@ export interface PLayer {
 export interface PGroup {
   id: string;
   label: string;
-  /** Member ids, row by row, in order. */
+  /** The boxed group this one sits in (D34). */
+  parent?: string;
+  /** Member ids, its inner groups' included, row by row, in order. */
   members: string[];
   /** First and last layer of its members. */
   top: number;
@@ -125,23 +128,39 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     return { index, id: layer.id, label: layer.label, nodes: placed, rowH };
   });
 
-  // Groups that can be boxed, with their members.
+  // Groups that can be boxed, with their members, the nodes of their inner groups
+  // included (D34).
   const broken = new Set(grid.groupProblems.map((p) => p.group));
   const groupIds = (d.groups ?? []).map((g) => g.id).filter((g) => !broken.has(g));
+  /** The boxed groups around a node, innermost first. */
+  const chainOf = (n: PNode): string[] =>
+    groupChain(d, n.node.group).filter((g) => groupIds.includes(g));
   const membersOf = new Map<string, PNode[]>();
   for (const l of layers) {
     for (const n of l.nodes) {
-      const g = n.node.group;
-      if (g === undefined || !groupIds.includes(g)) continue;
-      const list = membersOf.get(g) ?? [];
-      list.push(n);
-      membersOf.set(g, list);
+      for (const g of chainOf(n)) {
+        const list = membersOf.get(g) ?? [];
+        list.push(n);
+        membersOf.set(g, list);
+      }
     }
   }
-  const groupOf = (n: PNode) => {
-    const g = n.node.group;
-    return g !== undefined && membersOf.has(g) ? g : undefined;
+  /** The outermost box around n that does not hold other, if any. */
+  const boxOf = (n: PNode, other?: PNode): string | undefined => {
+    const around = other === undefined ? [] : chainOf(other);
+    return chainOf(n)
+      .filter((g) => !around.includes(g))
+      .pop();
   };
+  /** The boxed group a group sits in. */
+  const parentOf = (g: string): string | undefined =>
+    groupChain(d, g)
+      .slice(1)
+      .find((x) => membersOf.has(x));
+  /** The boxed groups directly inside a group. */
+  const innerOf = (g: string): string[] => groupIds.filter((x) => parentOf(x) === g);
+  /** How many boxes lie between a member and the side of g's box, g's own included. */
+  const levels = (m: PNode, g: string) => chainOf(m).indexOf(g) + 1;
 
   // Lines that leave or enter a node by its top side: a group label above a
   // first-row member must leave them room.
@@ -205,25 +224,29 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
           d: m.w / 2 - portReach(m.w) + GROUP.labelClear + text.groupLabelW(g) + GROUP.labelInset,
         }));
     };
-    // The left side of a group's box and of its label room, as terms from each member.
-    const boxLeft = (g: string) =>
-      (membersOf.get(g) ?? []).map((m) => ({ col: m.col, d: m.w / 2 }));
+    /** The left side of a group's box, as terms x - d from each member: a box's padding per level. */
+    const leftEdge = (g: string) =>
+      (membersOf.get(g) ?? []).map((m) => ({ col: m.col, d: m.w / 2 + GROUP.pad * levels(m, g) }));
+    /**
+     * The right side of a group's box, as terms x + d: past each member by a box's
+     * padding per level, and past the label of the group and of each inner group.
+     */
+    const rightEdge = (g: string): { col: number; d: number }[] => [
+      ...(membersOf.get(g) ?? []).flatMap((m) => [
+        { col: m.col, d: m.w / 2 + GROUP.pad * levels(m, g) },
+        { col: m.col, d: -m.w / 2 - GROUP.pad * levels(m, g) + labelSpan(g) },
+      ]),
+      ...pastPorts(g),
+      ...innerOf(g).flatMap((c) => rightEdge(c).map((t) => ({ col: t.col, d: t.d + GROUP.pad }))),
+    ];
     /** Terms that give the right side of what lies left of a gap: a box, or a node. */
     const rightTerms = (n: PNode, other: PNode): { col: number; d: number }[] => {
-      const g = groupOf(n);
-      if (g === undefined || groupOf(other) === g) return [{ col: n.col, d: n.w / 2 }];
-      return [
-        ...(membersOf.get(g) ?? []).flatMap((m) => [
-          { col: m.col, d: m.w / 2 + GROUP.pad },
-          { col: m.col, d: -m.w / 2 - GROUP.pad + labelSpan(g) },
-        ]),
-        ...pastPorts(g),
-      ];
+      const g = boxOf(n, other);
+      return g === undefined ? [{ col: n.col, d: n.w / 2 }] : rightEdge(g);
     };
     const leftTerms = (n: PNode, other: PNode): { col: number; d: number }[] => {
-      const g = groupOf(n);
-      if (g === undefined || groupOf(other) === g) return [{ col: n.col, d: n.w / 2 }];
-      return boxLeft(g).map((t) => ({ col: t.col, d: t.d + GROUP.pad }));
+      const g = boxOf(n, other);
+      return g === undefined ? [{ col: n.col, d: n.w / 2 }] : leftEdge(g);
     };
     // Every node beside a group's members in a row keeps clear of its box, and so
     // does every other group's box.
@@ -231,9 +254,10 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       for (let k = 1; k < l.nodes.length; k++) {
         const a = l.nodes[k - 1] as PNode;
         const b = l.nodes[k] as PNode;
-        if (groupOf(a) === groupOf(b)) continue;
-        const both = groupOf(a) !== undefined && groupOf(b) !== undefined;
-        const between = both ? GROUP.gap : GROUP.clear;
+        const ga = boxOf(a, b);
+        const gb = boxOf(b, a);
+        if (ga === undefined && gb === undefined) continue;
+        const between = ga !== undefined && gb !== undefined ? GROUP.gap : GROUP.clear;
         for (const r of rightTerms(a, b))
           for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + between + s.d);
       }
@@ -246,7 +270,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const hi = Math.max(...ms.map((m) => m.col));
       for (let r = top; r <= bottom; r++) {
         const list = layers[r]?.nodes ?? [];
-        const at = list.map((n, k) => (groupOf(n) === g ? k : -1)).filter((k) => k >= 0);
+        const at = list.map((n, k) => (chainOf(n).includes(g) ? k : -1)).filter((k) => k >= 0);
         // A row the box spans with no member keeps its nodes beside the box, as grid.ts
         // put them: the last one left of its columns and the first one right of them.
         const left =
@@ -255,14 +279,14 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
           at.length > 0 ? list[(at[at.length - 1] as number) + 1] : list.find((n) => n.col > hi);
         const anyMember = ms[0] as PNode;
         if (left !== undefined) {
-          const between = groupOf(left) !== undefined ? GROUP.gap : GROUP.clear;
+          const between = boxOf(left, anyMember) !== undefined ? GROUP.gap : GROUP.clear;
           for (const r2 of rightTerms(left, anyMember)) {
-            for (const t of boxLeft(g)) add(r2.col, t.col, r2.d + between + GROUP.pad + t.d);
+            for (const t of leftEdge(g)) add(r2.col, t.col, r2.d + between + t.d);
           }
         }
         if (right !== undefined) {
-          const between = groupOf(right) !== undefined ? GROUP.gap : GROUP.clear;
-          for (const t of rightTerms(anyMember, right)) {
+          const between = boxOf(right, anyMember) !== undefined ? GROUP.gap : GROUP.clear;
+          for (const t of rightEdge(g)) {
             for (const s of leftTerms(right, anyMember)) add(t.col, s.col, t.d + between + s.d);
           }
         }
@@ -313,15 +337,17 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const users = new Set<string>();
       for (const e of d.edges) {
         const other = e.from === id ? e.to : e.to === id ? e.from : undefined;
-        const g = other === undefined ? undefined : nodes.get(other)?.node.group;
-        if (g !== undefined && membersOf.has(g)) users.add(g);
+        const o = other === undefined ? undefined : nodes.get(other);
+        const g = o === undefined ? undefined : boxOf(o);
+        if (g !== undefined) users.add(g);
       }
       for (const g of users) {
         const ms = membersOf.get(g) ?? [];
+        const pad = (m: PNode) => GROUP.pad * levels(m, g);
         if (ms.every((m) => m.col < n.col)) {
-          for (const m of ms) add(m.col, n.col, m.w / 2 + GROUP.pad + GROUP.gap / 2);
+          for (const m of ms) add(m.col, n.col, m.w / 2 + pad(m) + GROUP.gap / 2);
         } else if (ms.every((m) => m.col > n.col)) {
-          for (const m of ms) add(n.col, m.col, GROUP.gap / 2 + GROUP.pad + m.w / 2);
+          for (const m of ms) add(n.col, m.col, GROUP.gap / 2 + pad(m) + m.w / 2);
         }
       }
     }
@@ -343,17 +369,29 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     }
 
     for (const n of nodes.values()) n.x = (xs[n.col] ?? 0) - n.w / 2;
+    // Each box: past its members by a padding per level, past its label, and past
+    // each inner box by a padding.
+    const sides = new Map<string, [number, number]>();
+    const sideOf = (g: string): [number, number] => {
+      const known = sides.get(g);
+      if (known !== undefined) return known;
+      const ms = membersOf.get(g) ?? [];
+      const x0 = Math.min(...ms.map((m) => m.x - GROUP.pad * levels(m, g)));
+      const x1 = Math.max(
+        ...ms.map((m) => m.x + m.w + GROUP.pad * levels(m, g)),
+        x0 + labelSpan(g),
+        ...pastPorts(g).map((t) => (xs[t.col] ?? 0) + t.d),
+        ...innerOf(g).map((c) => sideOf(c)[1] + GROUP.pad),
+      );
+      sides.set(g, [x0, x1]);
+      return [x0, x1];
+    };
     const groups: PGroup[] = [];
     for (const g of groupIds) {
       const ms = membersOf.get(g);
       if (ms === undefined) continue;
-      const x0 = Math.min(...ms.map((m) => m.x)) - GROUP.pad;
-      const x1 = Math.max(
-        Math.max(...ms.map((m) => m.x + m.w)) + GROUP.pad,
-        x0 + labelSpan(g),
-        ...pastPorts(g).map((t) => (xs[t.col] ?? 0) + t.d),
-      );
-      groups.push({
+      const [x0, x1] = sideOf(g);
+      const box: PGroup = {
         id: g,
         label: d.groups?.find((x) => x.id === g)?.label ?? g,
         members: ms.map((m) => m.id),
@@ -363,7 +401,10 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         x1,
         labelX: x0 + GROUP.labelInset,
         labelW: text.groupLabelW(g),
-      });
+      };
+      const parent = parentOf(g);
+      if (parent !== undefined) box.parent = parent;
+      groups.push(box);
     }
     return { groups };
   }
@@ -410,10 +451,10 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     const b = nodes.get(slot.right);
     const w = text.edgeLabelW(id);
     if (a === undefined || b === undefined || w === undefined) continue;
-    const ga = groupOf(a);
-    const gb = groupOf(b);
-    let left = ga !== undefined && ga !== gb ? (byId.get(ga)?.x1 ?? a.x + a.w) : a.x + a.w;
-    let right = gb !== undefined && ga !== gb ? (byId.get(gb)?.x0 ?? b.x) : b.x;
+    const ga = boxOf(a, b);
+    const gb = boxOf(b, a);
+    let left = ga !== undefined ? (byId.get(ga)?.x1 ?? a.x + a.w) : a.x + a.w;
+    let right = gb !== undefined ? (byId.get(gb)?.x0 ?? b.x) : b.x;
     // Between a node and a lane it meets, the label sits between the node and the lane's side.
     const lane = lanes.find((l) => l.id === text.laneEnds?.get(id)?.lane);
     if (lane !== undefined && text.laneEnds?.get(id)?.node === slot.right) left = lane.x1;
@@ -447,7 +488,11 @@ function laneSides(
   hug: Set<string>,
 ): PLane[] {
   const lanes = d.lanes ?? [];
-  const boxOf = new Map(groups.flatMap((g) => g.members.map((m) => [m, g] as const)));
+  const boxOf = new Map(
+    groups
+      .filter((g) => g.parent === undefined)
+      .flatMap((g) => g.members.map((m) => [m, g] as const)),
+  );
   const extent = (ns: PNode[]) => {
     let lo = Number.POSITIVE_INFINITY;
     let hi = Number.NEGATIVE_INFINITY;

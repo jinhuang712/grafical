@@ -20,6 +20,7 @@ import { catalogSync } from "../fixtures/catalog-sync.ts";
 import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { dense } from "../fixtures/dense.ts";
 import { edgeCases } from "../fixtures/edge-cases.ts";
+import { nested } from "../fixtures/nested.ts";
 import { tiny } from "../fixtures/tiny.ts";
 import { defects, groupIntruders, mechanical, taste, textCrossings } from "./checks.ts";
 import {
@@ -41,6 +42,7 @@ const fixtures: [string, Diagram][] = [
   ["catalog-sync-grouped", catalogSyncGrouped],
   ["catalog-sync", catalogSync],
   ["dense", dense],
+  ["nested", nested],
 ];
 const crossings = (d: Diagram) => routeStats(layout(d, m).edges.map((x) => x.points)).crossings;
 const hash = (x: unknown) => createHash("sha256").update(JSON.stringify(x)).digest("hex");
@@ -122,6 +124,49 @@ function crossLikeJunctions(edges: SceneEdge[]): string[] {
   }
   return out;
 }
+
+describe("groups inside groups (D34)", () => {
+  let scene: Scene;
+  beforeAll(async () => {
+    scene = layout(nested, await createMeasurer());
+  });
+  const box = (id: string) => scene.groups?.find((g) => g.id === id);
+
+  it("draws each inner box inside its outer one, a padding clear of each side", () => {
+    for (const [inner, outer] of [
+      ["vpc", "region"],
+      ["public", "vpc"],
+      ["private", "vpc"],
+    ] as const) {
+      const a = box(inner)?.rect as Rect;
+      const b = box(outer)?.rect as Rect;
+      expect(a.x - b.x).toBeGreaterThanOrEqual(24);
+      expect(b.x + b.w - (a.x + a.w)).toBeGreaterThanOrEqual(24);
+      expect(a.y - b.y).toBeGreaterThanOrEqual(40);
+      expect(b.y + b.h - (a.y + a.h)).toBeGreaterThanOrEqual(24);
+    }
+    expect(scene.groups?.map((g) => [g.id, g.depth ?? 1])).toEqual([
+      ["region", 1],
+      ["vpc", 2],
+      ["public", 3],
+      ["private", 3],
+    ]);
+  });
+
+  it("counts an inner group's nodes as the outer one's, and lets no other node in", () => {
+    expect(box("region")?.members).toEqual([
+      "lb",
+      "servers",
+      "api",
+      "worker",
+      "db",
+      "queue",
+      "backup",
+    ]);
+    expect(groupIntruders(scene)).toEqual([]);
+    expect(textCrossings(scene)).toEqual([]);
+  });
+});
 
 describe("the target look (D25)", () => {
   let scene: Scene;

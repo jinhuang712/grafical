@@ -55,12 +55,14 @@ export interface DiagramNode {
   lane?: string;
 }
 
-/** A system drawn as one box around its member nodes, which may sit in several neighbouring rows (D7). */
+/** A system drawn as one box around its member nodes, which may sit in several rows (D7). */
 export interface Group {
   id: string;
   label: string;
   /** A second, quieter part of the label, such as "write side". */
   sublabel?: string;
+  /** The group this one sits inside, drawn as a box within its box (D34). */
+  in?: string;
 }
 
 export interface Layer {

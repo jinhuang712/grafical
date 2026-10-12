@@ -4,6 +4,7 @@
 
 import { budgetWarnings, type Warning } from "../model/budget.ts";
 import { endRows } from "../model/ends.ts";
+import { innerGroups } from "../model/groups.ts";
 import type { Diagram } from "../model/types.ts";
 import type { Scene } from "../scene.ts";
 import { TASTE_LIMITS } from "./taste.ts";
@@ -43,7 +44,7 @@ export function advise(d: Diagram, scene: Scene): Warning[] {
 
   for (const g of d.groups ?? []) {
     const members = d.layers.flatMap((l) => l.nodes.filter((n) => n.group === g.id));
-    if (members.length !== 1) continue;
+    if (members.length !== 1 || innerGroups(d, g.id).length > 0) continue;
     const only = members[0]?.id ?? "";
     out.push({
       code: "lonely-group",

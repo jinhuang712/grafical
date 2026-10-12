@@ -12,6 +12,7 @@ import {
   writeDiagram,
 } from "../../src/model/index.ts";
 import { createMeasurer, createStubMeasurer } from "../../src/text/index.ts";
+import { nested } from "../fixtures/nested.ts";
 
 const m = createStubMeasurer();
 const empty: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
@@ -71,6 +72,38 @@ describe("file format", () => {
     const r = readDiagram(writeDiagram(bad)) as OpError[];
     expect(r[0]?.code).toBe("unknown-group");
     expect(r[0]?.code).toBe("unknown-group");
+  });
+
+  it("round-trips a group inside a group, with in after the label (D34)", () => {
+    const text = writeDiagram(nested);
+    expect(text).toContain("  - id: vpc\n    label: shop network\n    in: region\n");
+    expect(readDiagram(text)).toEqual(nested);
+  });
+
+  it("rejects a group in a missing group, in itself, or four deep (D34)", () => {
+    const withGroups = (groups: NonNullable<Diagram["groups"]>) =>
+      readDiagram(writeDiagram({ ...nested, groups })) as OpError[];
+    const parents = (nested.groups ?? []).filter((g) => g.id !== "public" && g.id !== "private");
+    expect(
+      withGroups([
+        ...parents,
+        { id: "public", label: "P", in: "nope" },
+        { id: "private", label: "Q" },
+      ])[0]?.code,
+    ).toBe("unknown-group");
+    expect(
+      withGroups([
+        { id: "region", label: "R", in: "private" },
+        { id: "vpc", label: "V", in: "region" },
+        { id: "public", label: "P", in: "vpc" },
+        { id: "private", label: "Q", in: "vpc" },
+      ]).map((e) => e.code),
+    ).toContain("group-cycle");
+    expect(
+      withGroups([...(nested.groups ?? []), { id: "rack", label: "rack", in: "private" }]).map(
+        (e) => e.code,
+      ),
+    ).toEqual(["group-too-deep"]);
   });
 
   it("rejects a group id that another element uses", () => {

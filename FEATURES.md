@@ -234,7 +234,7 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, and `both` and `accent` appear only when true. A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
+- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A group's keys are `id`, `label`, `sublabel` and `in`, the group it sits inside (D34). A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, and `both` and `accent` appear only when true. A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ### The stylesheet file

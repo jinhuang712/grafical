@@ -63,10 +63,12 @@ export interface SceneGroup {
   id: string;
   rect: Rect;
   label: PlacedText;
-  /** Ids of the member nodes. */
+  /** Ids of the member nodes, the nodes of its inner groups included. */
   members: string[];
   /** The label's second, quieter part, such as "write side", after the label. */
   sublabel?: PlacedText;
+  /** How many boxes it sits in, itself counted, when it sits in another (D34). Absent: 1. */
+  depth?: number;
 }
 
 /** A layer drawn as a band across the content, because an edge ends at it (D28). */

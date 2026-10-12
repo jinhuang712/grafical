@@ -7,6 +7,7 @@ import * as layoutModule from "../layout/index.ts";
 import type { Measurer } from "../text/types.ts";
 import { styleProblem, THEMES } from "../theme/themes.ts";
 import { endIds, endKind } from "./ends.ts";
+import { inGroup } from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
 import type { EdgeAddOp, LayerAddOp, NodeAddOp, NodeMoveOp, Op, Position } from "./ops.ts";
 import { checkIntegrity, MAX_ACCENTS } from "./schema.ts";
@@ -225,7 +226,7 @@ function laneTargets(
     const node = findNode(d, id);
     if (groupIds.includes(id)) {
       for (const l of d.layers) {
-        const mine = l.nodes.filter((n) => n.group === id);
+        const mine = l.nodes.filter((n) => inGroup(d, n, id));
         if (mine.length === 0) continue;
         if (settled === "rows") layers.push(l);
         else nodes.push(...mine);

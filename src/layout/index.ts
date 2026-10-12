@@ -12,6 +12,7 @@
 // Rows are not drawn (D7): their bands and labels stay in the scene for the
 // checker and for debugging.
 
+import { groupChain } from "../model/groups.ts";
 import { laneRun, orderByLanes } from "../model/lanes.ts";
 import {
   type Diagram,
@@ -94,15 +95,12 @@ export function validateGroups(diagram: Diagram): GroupProblem[] {
   return buildGrid(diagram).groupProblems;
 }
 
-/** Does any group have a non-member between two of its members in this row? */
-function splitsGroup(nodes: DiagramNode[]): boolean {
-  const seen = new Set<string>();
-  let current: string | undefined;
-  for (const n of nodes) {
-    if (n.group === current) continue;
-    if (n.group !== undefined && seen.has(n.group)) return true;
-    if (current !== undefined) seen.add(current);
-    current = n.group;
+/** Does any group, its inner groups' nodes counted, have a non-member between two of its members in this row? */
+function splitsGroup(d: Diagram, nodes: DiagramNode[]): boolean {
+  const chains = nodes.map((n) => groupChain(d, n.group));
+  for (const g of new Set(chains.flat())) {
+    const at = chains.flatMap((c, k) => (c.includes(g) ? [k] : []));
+    if ((at[at.length - 1] ?? 0) - (at[0] ?? 0) + 1 !== at.length) return true;
   }
   return false;
 }
@@ -122,7 +120,8 @@ export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m:
   if (node === undefined) return rest.length;
   const whole: number[] = [];
   for (let slot = 0; slot <= rest.length; slot++) {
-    if (!splitsGroup([...rest.slice(0, slot), node, ...rest.slice(slot)])) whole.push(slot);
+    if (!splitsGroup(diagram, [...rest.slice(0, slot), node, ...rest.slice(slot)]))
+      whole.push(slot);
   }
   const slots = whole.length > 0 ? whole : Array.from({ length: rest.length + 1 }, (_, i) => i);
   let best = slots[slots.length - 1] ?? rest.length;
@@ -266,7 +265,7 @@ export function orderTogether(diagram: Diagram, ids: readonly string[], m: Measu
       for (let slot = 0; slot <= rest.length && tries < ORDER_TRIES; slot++) {
         if (slot === at) continue;
         const nodes = [...rest.slice(0, slot), node, ...rest.slice(slot)];
-        if (splitsGroup(nodes)) continue;
+        if (splitsGroup(d, nodes)) continue;
         const trial: Diagram = {
           ...d,
           layers: d.layers.map((l, i) => (i === li ? { ...l, nodes } : l)),
@@ -737,29 +736,37 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // whose first row is below it. A head may rise beside the tracks, as in the
   // target, where no run, label or box of the gutter comes near the group; it
   // then adds only what the tracks do not already give it.
-  const startsAt = (r: number) => groups.some((g) => g.top === r);
-  const endsAt = (r: number) => groups.some((g) => g.bottom === r);
+  // A box inside a box that starts in the same row has its head below the outer
+  // one's, and one that ends in the same row its padding above it (D34).
+  const heads = (g: (typeof groups)[number]): number =>
+    1 + Math.max(0, ...groups.filter((c) => c.parent === g.id && c.top === g.top).map(heads));
+  const pads = (g: (typeof groups)[number]): number =>
+    1 + Math.max(0, ...groups.filter((c) => c.parent === g.id && c.bottom === g.bottom).map(pads));
+  /** The heads stacked above row r, and the paddings below it. */
+  const headsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.top === r).map(heads));
+  const padsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.bottom === r).map(pads));
   const near = (g: (typeof groups)[number], lo: number, hi: number) =>
     lo < g.x1 + GROUP.clear && hi > g.x0 - GROUP.clear;
   /** Room the heads of the groups that start below gutter i still need, besides its tracks. */
   const headRoom = (i: number, tracks: number): number => {
     // A band's head sits above its groups' heads, below the tracks, in full.
-    if (bandRows.has(i + 1)) return (startsAt(i + 1) ? GROUP.head : 0) + BAND.head;
+    if (bandRows.has(i + 1)) return GROUP.head * headsAt(i + 1) + BAND.head;
     const starting = groups.filter((g) => g.top === i + 1);
     if (starting.length === 0) return 0;
+    const full = GROUP.head * headsAt(i + 1);
     for (const g of starting) {
       for (const v of routing.gutters[i] ?? []) {
         if (v.row < 0) continue;
-        if (v.hi - v.lo > 1e-6 && near(g, v.lo, v.hi)) return GROUP.head;
-        if (v.label !== undefined && near(g, v.label.x0, v.label.x0 + v.label.w)) return GROUP.head;
-        if (v.detour !== undefined && near(g, v.detour.x, v.detour.x)) return GROUP.head;
+        if (v.hi - v.lo > 1e-6 && near(g, v.lo, v.hi)) return full;
+        if (v.label !== undefined && near(g, v.label.x0, v.label.x0 + v.label.w)) return full;
+        if (v.detour !== undefined && near(g, v.detour.x, v.detour.x)) return full;
       }
-      for (const o of groups) if (o.bottom === i && near(g, o.x0, o.x1)) return GROUP.head;
+      for (const o of groups) if (o.bottom === i && near(g, o.x0, o.x1)) return full;
     }
     const crowded = (layers[i]?.nodes ?? []).some((n) =>
       starting.some((g) => near(g, n.x, n.x + n.w)),
     );
-    return Math.max(0, GROUP.head + (crowded ? GROUP.clear : 0) - tracks);
+    return Math.max(0, full + (crowded ? GROUP.clear : 0) - tracks);
   };
   const rowTops: number[] = [];
   const gutterTops: number[] = [];
@@ -768,7 +775,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const lanesTop = y;
   if (colLanes.length > 0) y += headH + LANE.pad;
   if (laneAt(0) !== undefined) y += LANE.pad;
-  if (startsAt(0)) y += GROUP.head;
+  y += GROUP.head * headsAt(0);
   if (bandRows.has(0)) y += BAND.head;
   /** Where a row lane's border crosses gutter i, between two rows in different lanes. */
   const borders = new Map<number, number>();
@@ -777,7 +784,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     y += l.rowH;
     const rows = routing.rows[i] ?? 0;
     const last = i === layers.length - 1;
-    const pad = (endsAt(i) ? GROUP.pad : 0) + (bandRows.has(i) ? BAND.pad : 0);
+    const pad = GROUP.pad * padsAt(i) + (bandRows.has(i) ? BAND.pad : 0);
     const tracks = rows === 0 ? (last ? 0 : (sp.gutterSteps[0] ?? 48)) : gutterHeight(rows, sp);
     gutterTops.push(y);
     endPads.push(pad);
@@ -785,7 +792,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       // The border runs below the gutter's tracks; heads below it take their full room.
       y += pad + (rows === 0 ? LANE.pad : tracks);
       borders.set(i, y);
-      y += LANE.pad + (startsAt(i + 1) ? GROUP.head : 0) + (bandRows.has(i + 1) ? BAND.head : 0);
+      y += LANE.pad + GROUP.head * headsAt(i + 1) + (bandRows.has(i + 1) ? BAND.head : 0);
       return;
     }
     const head = last ? 0 : headRoom(i, tracks);
@@ -821,14 +828,24 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     return { id: l.id, band: { x: sp.margin, y: top, w: width - 2 * sp.margin, h }, label };
   });
 
-  const sceneGroups: SceneGroup[] = groups.map((g) => {
-    const y0 = (rowTops[g.top] ?? 0) - GROUP.head;
-    const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + GROUP.pad;
+  const depthOf = (g: (typeof groups)[number]): number => {
+    const parent = groups.find((p) => p.id === g.parent);
+    return parent === undefined ? 1 : 1 + depthOf(parent);
+  };
+  // Outer boxes first, so that each is drawn under the boxes inside it.
+  const outerFirst = groups
+    .map((g, k) => ({ g, k }))
+    .sort((a, b) => depthOf(a.g) - depthOf(b.g) || a.k - b.k)
+    .map((x) => x.g);
+  const sceneGroups: SceneGroup[] = outerFirst.map((g) => {
+    const y0 = (rowTops[g.top] ?? 0) - GROUP.head * heads(g);
+    const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + GROUP.pad * pads(g);
     const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
     const label = withText
       ? placeLine("group-label", g.label, centre + g.labelX, y0 + GROUP.labelTop, m, T)
       : empty("group-label", centre + g.labelX, y0 + GROUP.labelTop);
     const out: SceneGroup = { id: g.id, rect, label, members: g.members };
+    if (depthOf(g) > 1) out.depth = depthOf(g);
     const sub = d.groups?.find((x) => x.id === g.id)?.sublabel;
     if (sub !== undefined && withText) {
       const x = centre + g.labelX + labelW(g) + GROUP.sublabelGap;
@@ -838,8 +855,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   });
 
   const sceneBands: SceneBand[] = [...bandRows].map(([i, b]) => {
-    const y0 = (rowTops[i] ?? 0) - (startsAt(i) ? GROUP.head : 0) - BAND.head;
-    const y1 = (rowTops[i] ?? 0) + rowH(i) + (endsAt(i) ? GROUP.pad : 0) + BAND.pad;
+    const y0 = (rowTops[i] ?? 0) - GROUP.head * headsAt(i) - BAND.head;
+    const y1 = (rowTops[i] ?? 0) + rowH(i) + GROUP.pad * padsAt(i) + BAND.pad;
     const x0 = centre + bandLeft;
     const rect: Rect = { x: x0, y: y0, w: contentRight + BAND.padX - bandLeft, h: y1 - y0 };
     const label = withText
@@ -1050,6 +1067,7 @@ function roundScene(s: Scene): Scene {
       label: roundText(g.label),
       members: [...g.members],
       ...(g.sublabel === undefined ? {} : { sublabel: roundText(g.sublabel) }),
+      ...(g.depth === undefined ? {} : { depth: g.depth }),
     }));
   }
   if (s.bands !== undefined) {

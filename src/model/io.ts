@@ -63,11 +63,12 @@ export function writeDiagram(d: Diagram): string {
   }
   out.layers = d.layers.map(layerOut);
   if (d.groups !== undefined && d.groups.length > 0) {
-    out.groups = d.groups.map((g) =>
-      g.sublabel === undefined
-        ? { id: g.id, label: g.label }
-        : { id: g.id, label: g.label, sublabel: g.sublabel },
-    );
+    out.groups = d.groups.map((g) => {
+      const o: Record<string, unknown> = { id: g.id, label: g.label };
+      if (g.sublabel !== undefined) o.sublabel = g.sublabel;
+      if (g.in !== undefined) o.in = g.in;
+      return o;
+    });
   }
   if (d.lanes !== undefined && d.lanes.length > 0) {
     out.lanes = d.lanes.map((x) => ({ id: x.id, label: x.label }));

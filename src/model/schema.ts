@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { OpError } from "../errors.ts";
 import { styleProblem, THEMES } from "../theme/themes.ts";
 import { checkEnds } from "./ends.ts";
+import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
 import { ID_EDGE, ID_NODE, issuesToErrors } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
 import { suggestIds } from "./suggest.ts";
@@ -17,6 +18,7 @@ import {
   EDGE_KINDS,
   type Edge,
   FORMAT_VERSION,
+  type Group,
   type Layer,
   LINE_STYLES,
   NODE_KINDS,
@@ -45,7 +47,12 @@ const nodeSchema = z.strictObject({
   lane: nodeId.optional(),
 });
 
-const groupSchema = z.strictObject({ id: nodeId, label: text, sublabel: text.optional() });
+const groupSchema = z.strictObject({
+  id: nodeId,
+  label: text,
+  sublabel: text.optional(),
+  in: nodeId.optional(),
+});
 
 const laneSchema = z.strictObject({ id: nodeId, label: text });
 
@@ -127,11 +134,12 @@ function build(p: Parsed): Diagram {
   if (p.subtitle !== undefined) d.subtitle = p.subtitle;
   if (p.note !== undefined) d.note = p.note;
   if (p.groups.length > 0) {
-    d.groups = p.groups.map((g) =>
-      g.sublabel === undefined
-        ? { id: g.id, label: g.label }
-        : { id: g.id, label: g.label, sublabel: g.sublabel },
-    );
+    d.groups = p.groups.map((g) => {
+      const group: Group = { id: g.id, label: g.label };
+      if (g.sublabel !== undefined) group.sublabel = g.sublabel;
+      if (g.in !== undefined) group.in = g.in;
+      return group;
+    });
   }
   if (p.lanes.length > 0) d.lanes = p.lanes.map((x) => ({ id: x.id, label: x.label }));
   return d;
@@ -234,30 +242,61 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   return errors;
 }
 
-/** Group rules: members name an existing group, and a group's rows touch (D7). */
+/**
+ * Group rules: members and inner groups name an existing group, and groups sit
+ * inside each other at most three deep, with no group inside itself (D7, D34).
+ */
 function checkGroups(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
   const groups = d.groups ?? [];
   const ids = groups.map((g) => g.id);
-  const rows = new Map<string, Set<number>>();
   d.layers.forEach((l, li) => {
     l.nodes.forEach((n, ni) => {
-      if (n.group === undefined) return;
-      if (!ids.includes(n.group)) {
-        errors.push({
-          code: "unknown-group",
-          index,
-          field: `layers[${li}].nodes[${ni}].group`,
-          found: n.group,
-          expected: "the id of an existing group",
-          suggestion: suggestIds(n.group, ids, "group"),
-        });
-        return;
-      }
-      const set = rows.get(n.group) ?? new Set<number>();
-      set.add(li);
-      rows.set(n.group, set);
+      if (n.group === undefined || ids.includes(n.group)) return;
+      errors.push({
+        code: "unknown-group",
+        index,
+        field: `layers[${li}].nodes[${ni}].group`,
+        found: n.group,
+        expected: "the id of an existing group",
+        suggestion: suggestIds(n.group, ids, "group"),
+      });
     });
+  });
+  groups.forEach((g, gi) => {
+    if (g.in === undefined) return;
+    if (!ids.includes(g.in)) {
+      errors.push({
+        code: "unknown-group",
+        index,
+        field: `groups[${gi}].in`,
+        found: g.in,
+        expected: "the id of an existing group",
+        suggestion: suggestIds(g.in, ids, "group"),
+      });
+      return;
+    }
+    const chain = groupChain(d, g.id);
+    const parent = groups.find((x) => x.id === chain[chain.length - 1])?.in;
+    if (parent !== undefined && chain.includes(parent)) {
+      errors.push({
+        code: "group-cycle",
+        index,
+        field: `groups[${gi}].in`,
+        found: `${g.id} sits inside itself: ${[...chain, parent].join(" in ")}`,
+        expected: "each group inside a group that is not inside it",
+        suggestion: `take ${g.id} out of ${g.in}`,
+      });
+    } else if (chain.length > MAX_GROUP_DEPTH) {
+      errors.push({
+        code: "group-too-deep",
+        index,
+        field: `groups[${gi}].in`,
+        found: `${chain.join(" in ")}: ${chain.length} levels`,
+        expected: `groups at most ${MAX_GROUP_DEPTH} levels deep`,
+        suggestion: `put ${g.id} in a group further out, or none`,
+      });
+    }
   });
   return errors;
 }

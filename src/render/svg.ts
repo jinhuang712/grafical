@@ -450,10 +450,15 @@ function legendShapes(scene: Scene, P: Paint): string[] {
   return out;
 }
 
+/** A box inside a box takes the other fill: group fill and background alternate by depth (D34). */
+function groupFill(g: SceneGroup, P: Paint): string {
+  return (g.depth ?? 1) % 2 === 0 ? P.background : P.group.fill;
+}
+
 function groupShapes(g: SceneGroup, P: Paint): string[] {
   const p = P.group;
   const out = [
-    `<rect ${rectAttrs(g.rect)} rx="${num(p.radius)}" fill="${p.fill}" stroke="${p.stroke}" stroke-width="${num(p.strokeWidth)}"/>`,
+    `<rect ${rectAttrs(g.rect)} rx="${num(p.radius)}" fill="${groupFill(g, P)}" stroke="${p.stroke}" stroke-width="${num(p.strokeWidth)}"/>`,
   ];
   for (const r of g.label.runs) {
     const light = FONT_FAMILY[r.face].weight < 600;
@@ -537,7 +542,8 @@ export function renderSvg(scene: Scene): string {
       };
       const cx = b.x + b.w / 2;
       const cy = b.y + b.h / 2;
-      const inGroup = groups.find(
+      // The innermost box the label sits in: boxes come outer first.
+      const inGroup = groups.findLast(
         (g) =>
           cx >= g.rect.x &&
           cx <= g.rect.x + g.rect.w &&
@@ -558,7 +564,13 @@ export function renderSvg(scene: Scene): string {
           cy >= x.rect.y &&
           cy <= x.rect.y + x.rect.h,
       );
-      const behind = inGroup ? P.group.fill : inBand ? P.band.fill : inLane ? P.lane.fill : lb.fill;
+      const behind = inGroup
+        ? groupFill(inGroup, P)
+        : inBand
+          ? P.band.fill
+          : inLane
+            ? P.lane.fill
+            : lb.fill;
       out.push(
         `<rect ${rectAttrs(bg)} rx="${num(lb.radius)}" fill="${behind}"/>`,
         ...texts(e.label, P.text.edgeLabel),
