@@ -1407,11 +1407,16 @@ const PORT_TIERS: { pitch: number; inset: number; clear: number }[] = [
   { pitch: 4, inset: 4, clear: CLEAR / 2 },
 ];
 
+/** The widest pitch the ports of one side spread to (D33). */
+const SPREAD_MAX = 48;
+
 /**
- * Ports along one side, in order. The preferred pitch and corner inset come first;
- * when they would bend a line that could run straight, the ports that do not keep a
- * line straight may come closer to the corner, and then closer to each other. A
- * port keeps clear of the lines on the far boundary of its gutter.
+ * Ports along one side, in order. They spread evenly over the side first, up to
+ * SPREAD_MAX apart, so that its lines never read as one bundle (D33); then the
+ * preferred pitch and corner inset; when those would bend a line that could run
+ * straight, the ports that do not keep a line straight may come closer to the
+ * corner, and then closer to each other. A port keeps clear of the lines on the
+ * far boundary of its gutter.
  */
 function portPositions(
   desired: number[],
@@ -1419,10 +1424,18 @@ function portPositions(
   n: PNode,
   allowed: (i: number, x: number, radius: number) => boolean,
 ): number[] {
+  const spread = Math.min(
+    SPREAD_MAX,
+    Math.floor((n.w - 2 * ROUTE.portInset) / Math.max(1, desired.length) / 4) * 4,
+  );
+  const tiers =
+    desired.length > 1 && spread > ROUTE.portPitch
+      ? [{ pitch: spread, inset: ROUTE.portInset, clear: CLEAR }, ...PORT_TIERS]
+      : PORT_TIERS;
   // Arrowheads need the least port pitch: below it, a side is crowded, and only
   // fitting counts.
   let first: number[] | undefined;
-  for (const t of PORT_TIERS) {
+  for (const t of tiers) {
     const xs = onGrid(desired, weights, n.x + t.inset, n.x + n.w - t.inset, t.pitch, (i, x) =>
       allowed(i, x, t.clear),
     );
