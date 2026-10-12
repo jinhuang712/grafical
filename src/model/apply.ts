@@ -20,6 +20,7 @@ import {
   type DiagramNode,
   type Edge,
   FORMAT_VERSION,
+  type Group,
   type Layer,
 } from "./types.ts";
 
@@ -196,11 +197,10 @@ function groupStep(s: State, op: Extract<Op, { op: `group.${string}` }>, i: numb
     if (errors.length > 0) return errors;
     const deep = op.in === undefined ? undefined : nestError(d, op.id, op.in, i, "in");
     if (deep) return [deep];
-    groups.push(
-      op.in === undefined
-        ? { id: op.id, label: op.label }
-        : { id: op.id, label: op.label, in: op.in },
-    );
+    const group: Group = { id: op.id, label: op.label };
+    if (op.sublabel !== undefined) group.sublabel = op.sublabel;
+    if (op.in !== undefined) group.in = op.in;
+    groups.push(group);
     d.groups = groups;
     touch(s, op.id);
     setGroup(s, op.nodes ?? [], op.id);

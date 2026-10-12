@@ -106,6 +106,13 @@ describe("file format", () => {
     ).toEqual(["group-too-deep"]);
   });
 
+  it("keeps the sublabel a group is added with", () => {
+    const d = ok(base, [
+      { op: "group.add", id: "g", label: "G", sublabel: "write side", nodes: ["a"] },
+    ]);
+    expect(d.diagram.groups?.[0]?.sublabel).toBe("write side");
+  });
+
   it("rejects a group id that another element uses", () => {
     const text = `${writeDiagram(base).replace("edges: []", "groups:\n  - id: a\n    label: X\nedges: []")}`;
     const r = readDiagram(text) as OpError[];
