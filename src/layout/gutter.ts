@@ -375,7 +375,8 @@ export function routeGutter(
   order.forEach((i, pos) => {
     const v = ranked[i];
     if (v === undefined) return;
-    let t0 = 0;
+    // A self-loop runs a row deeper, so that its arrowhead has room to turn back.
+    let t0 = v.members.some((m) => m.plan.u === m.plan.v) ? 1 : 0;
     for (const k of order.slice(0, pos)) {
       const u = ranked[k];
       if (u === undefined) continue;

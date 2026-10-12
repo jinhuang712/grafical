@@ -290,6 +290,15 @@ describe("edge cases", () => {
     });
   }
 
+  it("draws a self-loop wide and deep enough to read as a loop (D33)", () => {
+    const loop = layout(edgeCases, m).edges.find((x) => x.from === x.to);
+    const [a, b, c, d] = loop?.points ?? [];
+    expect(loop?.points).toHaveLength(4);
+    expect(Math.abs((c?.x ?? 0) - (b?.x ?? 0))).toBe(48);
+    expect((b?.y ?? 0) - (a?.y ?? 0)).toBeGreaterThanOrEqual(28);
+    expect(d?.y).toBe(a?.y);
+  });
+
   it("an empty layer that an edge passes through", () => {
     const d: Diagram = {
       ...base,

@@ -1199,9 +1199,10 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     let fs: number | undefined;
     let ft: number | undefined;
     if (u === v) {
+      // A self-loop's ends sit wide enough apart that it reads as a loop.
       const c = centreX(u);
-      ds = c - ROUTE.portPitch;
-      dt = c + ROUTE.portPitch;
+      ds = c - 1.5 * ROUTE.portPitch;
+      dt = c + 1.5 * ROUTE.portPitch;
     } else if (pl.kind === "uturn") {
       ds = within(u, centreX(v));
       dt = within(v, centreX(u));
