@@ -403,6 +403,7 @@ describe("stability (D10)", () => {
   for (const [name, d] of [
     ["catalog-sync", catalogSync],
     ["catalog-sync-grouped", catalogSyncGrouped],
+    ["nested", nested],
   ] as const) {
     const nodes = d.layers.flatMap((l) => l.nodes.map((x) => ({ node: x, layer: l.id })));
 
