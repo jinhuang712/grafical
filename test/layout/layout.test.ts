@@ -153,6 +153,16 @@ describe("groups inside groups (D34)", () => {
     ]);
   });
 
+  it("draws no box for an empty group inside another, and leaves the outer box as it was", async () => {
+    const empty = {
+      ...nested,
+      groups: [...(nested.groups ?? []), { id: "zone", label: "zone b", in: "region" }],
+    };
+    const drawn = layout(empty, await createMeasurer());
+    expect(drawn.groups?.map((g) => g.id)).toEqual(["region", "vpc", "public", "private"]);
+    expect(drawn.groups?.[0]?.rect).toEqual(box("region")?.rect);
+  });
+
   it("counts an inner group's nodes as the outer one's, and lets no other node in", () => {
     expect(box("region")?.members).toEqual([
       "lb",

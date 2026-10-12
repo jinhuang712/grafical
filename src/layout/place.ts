@@ -157,8 +157,9 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     groupChain(d, g)
       .slice(1)
       .find((x) => membersOf.has(x));
-  /** The boxed groups directly inside a group. */
-  const innerOf = (g: string): string[] => groupIds.filter((x) => parentOf(x) === g);
+  /** The boxed groups directly inside a group. An empty group draws no box. */
+  const innerOf = (g: string): string[] =>
+    groupIds.filter((x) => membersOf.has(x) && parentOf(x) === g);
   /** How many boxes lie between a member and the side of g's box, g's own included. */
   const levels = (m: PNode, g: string) => chainOf(m).indexOf(g) + 1;
 
