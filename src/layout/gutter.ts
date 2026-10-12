@@ -33,6 +33,8 @@ const HARD = 1000;
 const LABEL_HIT = 4;
 /** Each line inside a label's slot costs the slot as much as this many px of sliding. */
 const SLOT_LINE = 8;
+/** Each crossing a label's slot forces, by the order it fixes, costs this many px of sliding. */
+const SLOT_CROSS = 64;
 /** A line on another line weighs more than a line through a label: a free row always avoids it. */
 const LINE = 100;
 /** Rows a run may go below every run placed so far, besides the height of two labels. */
@@ -310,7 +312,15 @@ export function routeGutter(
         else if (k !== undefined && t) pairs.push([k, i]);
         else if (k !== undefined && b) pairs.push([i, k]);
       }
-      return { c, crossed, pairs, cost: c.score + SLOT_LINE * pairs.length };
+      // An order the slot fixes against the runs' own preference forces crossings.
+      let forced = 0;
+      for (const [a, b] of pairs) {
+        const above = ranked[a];
+        const under = ranked[b];
+        if (above === undefined || under === undefined) continue;
+        forced += Math.max(0, pairCost(above, under) - pairCost(under, above));
+      }
+      return { c, crossed, pairs, cost: c.score + SLOT_LINE * pairs.length + SLOT_CROSS * forced };
     });
   };
   const openSlots = (v: Visit, lab: VisitLabel) =>
