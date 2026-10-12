@@ -10,6 +10,7 @@ import {
   perTurn,
   stepTotal,
 } from "../../bench/metrics.ts";
+import { GUIDE } from "../../src/cli/guide.ts";
 
 type Usage = { in: number; cw: number; cr: number; out: number };
 
@@ -148,7 +149,7 @@ describe("grafical calls: errors, defects, denials, successes", () => {
 
   const events = [
     call("g", "grafical guide"), // a success, but not an edit
-    toolResult("g", "the guide"),
+    toolResult("g", GUIDE), // it quotes the failure lines, with placeholders
     call("1", "grafical node add d.yaml a --layer nope --label A --json"),
     toolResult(
       "1",

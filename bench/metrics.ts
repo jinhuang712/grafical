@@ -179,7 +179,9 @@ export type Outcome = "success" | "opError" | "defect" | "denied";
 /**
  * How one grafical call ended. The harness's refusal comes first: its text starts with
  * "Permission to use". Then grafical's own report, as JSON or as the plain lines
- * `error op ...` and `defect ...`. A failure with neither is an operation error.
+ * `error op <index> ...` and `defect <code> [...`. A failure with neither is an
+ * operation error. The guide quotes both lines with placeholders, `error op <index>`
+ * and `defect <code>`, so a line counts only with a real index or code.
  */
 export function classify(text: string, isError: boolean): Outcome {
   if (text.trimStart().startsWith("Permission to use")) return "denied";
@@ -195,8 +197,8 @@ export function classify(text: string, isError: boolean): Outcome {
       // Not JSON (the agent did not pass --json): read the plain lines.
     }
   }
-  if (/^error op /m.test(text)) return "opError";
-  if (/^defect /m.test(text)) return "defect";
+  if (/^error op \d+ /m.test(text)) return "opError";
+  if (/^defect [a-z][a-z-]* \[/m.test(text)) return "defect";
   if (/^failed, file unchanged/m.test(text)) return "opError";
   return isError ? "opError" : "success";
 }
