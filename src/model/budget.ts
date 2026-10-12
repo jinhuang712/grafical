@@ -58,7 +58,7 @@ export function budgetWarnings(d: Diagram): Warning[] {
   const count = d.layers.reduce((n, l) => n + l.nodes.length, 0);
   if (count <= NODE_BUDGET) return [];
   const merges = mergeCandidates(d);
-  const hint = "keep one story and about 12 to 16 nodes; merge nodes a reader does not need apart";
+  const hint = "keep one story: merge nodes a reader does not need apart, or make it two diagrams";
   return [
     {
       code: "too-many-nodes",
