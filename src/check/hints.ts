@@ -87,6 +87,11 @@ function commandOf(op: Op): string {
   if (op.op === "node.move")
     return `grafical node move <file> ${op.id} --layer ${quote(op.layer ?? "")}`;
   if (op.op === "layer.remove") return `grafical layer remove <file> ${op.id}`;
+  if (op.op === "group.order") {
+    return op.before !== undefined
+      ? `grafical group order <file> ${op.id} --before ${op.before}`
+      : `grafical group order <file> ${op.id} --after ${op.after ?? ""}`;
+  }
   return op.op;
 }
 
@@ -133,6 +138,18 @@ export function findHints(d: Diagram, m: Measurer, limit = 3, onlySafe = false):
     const cost = arrangementCost(r.diagram, m);
     if (better(cost, base)) tried.push({ ops, cost, safe });
   };
+  // A whole system moved past another keeps every node in its row and among its kind,
+  // and is often the only fix for a hub that a single node cannot leave its group to reach.
+  const groups = (d.groups ?? []).map((g) => g.id).sort();
+  if (troubled.size > 0) {
+    for (const a of groups) {
+      for (const b of groups) {
+        if (a === b) continue;
+        attempt([{ op: "group.order", id: a, before: b }], true);
+        attempt([{ op: "group.order", id: a, after: b }], true);
+      }
+    }
+  }
   for (const id of order) {
     const row = rowOf.get(id) as number;
     const layer = d.layers[row];
