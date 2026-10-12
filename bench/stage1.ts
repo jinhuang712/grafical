@@ -10,6 +10,7 @@
 //           grafical, Haiku, 3 runs, measured by their lines, not by a person
 //   hints2  the same with `diagram improve` and the guide's step to run it
 //   hints3  the same with improve taking only safe hints
+//   hints4  the same with improve removed: the agent runs each hint itself
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (EXPERIMENTS.md, "Harness").
@@ -40,6 +41,7 @@ export const PARTS = [
   "nohints",
   "hints2",
   "hints3",
+  "hints4",
 ] as const;
 export type Part = (typeof PARTS)[number];
 
@@ -131,6 +133,9 @@ export function planPart(part: Part): PartPlan {
     case "hints3":
       add(["grafical"], "haiku", runs3, hintTasks(), []);
       return { part, round: "p1d-hints3", runs: RUNS, chains };
+    case "hints4":
+      add(["grafical"], "haiku", runs3, hintTasks(), []);
+      return { part, round: "p1d-hints4", runs: RUNS, chains };
   }
 }
 

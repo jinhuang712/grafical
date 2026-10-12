@@ -15,7 +15,7 @@
 //   lines --round <name> [--improve]          measure each final diagram's lines and hint use (D35);
 //                                             --improve: also after diagram improve, run offline
 //   speed                                     benchmark 11: time one operation and one command
-//   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints|hints2|hints3> --dry-run | --approved [--only <chain>]
+//   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints|hints2|hints3|hints4> --dry-run | --approved [--only <chain>]
 //                                             the end of stage 1, one part at a time
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
