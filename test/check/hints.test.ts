@@ -5,10 +5,31 @@ import { arrangementCost, layout, lineTrouble } from "../../src/layout/index.ts"
 import { applyOps, type Diagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
+import { e, n } from "../fixtures/build.ts";
 import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 import { stateMachine } from "../fixtures/state-machine.ts";
 import { generate } from "../fuzz/gen.ts";
+
+/** Two rows of two services whose lines cross; swapping the lower two uncrosses them. */
+const crossed: Diagram = {
+  grafical: 1,
+  title: "Crossed",
+  density: "normal",
+  layers: [
+    {
+      id: "top",
+      label: "Top",
+      nodes: [n("a1", "A one", "service", "m"), n("a2", "A two", "service", "m")],
+    },
+    {
+      id: "bottom",
+      label: "Bottom",
+      nodes: [n("b1", "B one", "service", "m"), n("b2", "B two", "service", "m")],
+    },
+  ],
+  edges: [e("a1", "b2", "call"), e("a2", "b1", "call")],
+};
 
 // Each search lays out up to 200 arrangements.
 vi.setConfig({ testTimeout: 120_000 });
@@ -33,14 +54,14 @@ describe("hints (D35)", () => {
   it("names the rearrangement that straightens the photo-sharing lines", () => {
     const [h] = findHints(edgeLooks, m);
     expect(h?.command).toBe("grafical node move <file> uploads --layer entry");
-    expect(h?.gain).toBe("lines with more than two bends 2 -> 0, bends 8 -> 2");
+    expect(h?.gain).toBe("lines with more than two bends 1 -> 0, bends 6 -> 2");
   });
 
   it("marks a hint that moves a node among other kinds", () => {
     const [top] = findHints(edgeLooks, m);
     // The queue would join the API's row: shown, and marked for the agent to weigh.
     expect(top?.safe).toBe(false);
-    expect(findHints(stateMachine, m)[0]?.safe).toBe(true);
+    expect(findHints(crossed, m)[0]?.safe).toBe(true);
     expect(findHints(edgeLooks, m, 3, true).every((h) => h.safe)).toBe(true);
   });
 

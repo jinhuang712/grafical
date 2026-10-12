@@ -4,6 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { TYPE_GUIDES } from "../../src/cli/guide.ts";
+import { writeDiagram } from "../../src/model/io.ts";
+import { edgeLooks } from "../fixtures/edge-looks.ts";
 
 // Each example runs the real command line several times.
 vi.setConfig({ testTimeout: 60_000 });
@@ -48,22 +50,28 @@ describe("type guides (D34)", () => {
     });
   }
 
-  it("a hint after the state machine example names the file, ready to run (D35)", () => {
-    const ex = example(TYPE_GUIDES["state-machine"]);
-    const c = run("check", ex.file);
+  /** The photo-sharing diagram, where a line bends more than twice round the upload queue. */
+  function photos(): string {
+    writeFileSync(join(dir, "photos.grafical.yaml"), writeDiagram(edgeLooks));
+    return "photos.grafical.yaml";
+  }
+
+  it("a hint names the file, ready to run (D35)", () => {
+    const file = photos();
+    const c = run("check", file);
     expect(c.out).toMatch(/^hint: .*crossings|^hint: .*bends/m);
-    expect(c.out).toContain(`grafical node move ${ex.file} `);
-    const json = JSON.parse(run("check", ex.file, "--json").out);
+    expect(c.out).toContain(`grafical node move ${file} `);
+    const json = JSON.parse(run("check", file, "--json").out);
     expect(json.hints.length).toBeGreaterThan(0);
     expect(json.hints[0].ops.length).toBeGreaterThan(0);
   });
 
   it("tells the agent what to improve, and leaves the moves to it (D35)", () => {
-    const ex = example(TYPE_GUIDES["state-machine"]);
-    const out = run("check", ex.file).out;
+    const file = photos();
+    const out = run("check", file).out;
     expect(out).toMatch(/^lines: \d+ crossings?, \d+ lines? bending more than twice: /m);
-    expect(run("diagram", "improve", ex.file).code).toBe(2);
-    const json = JSON.parse(run("check", ex.file, "--json").out);
+    expect(run("diagram", "improve", file).code).toBe(2);
+    const json = JSON.parse(run("check", file, "--json").out);
     expect(json.lines.bent.length + json.lines.crossings.length).toBeGreaterThan(0);
   });
 
