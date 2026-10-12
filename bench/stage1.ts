@@ -8,6 +8,7 @@
 //   mvp     the MVP bar: the private reference brief, grafical, Haiku, 3 runs, kept outside the repo
 //   hints, nohints  phase 1d: five tasks with and without the engine's hints (D35),
 //           grafical, Haiku, 3 runs, measured by their lines, not by a person
+//   hints2  the same with `diagram improve` and the guide's step to run it
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (EXPERIMENTS.md, "Harness").
@@ -28,7 +29,16 @@ import {
   type Task,
 } from "./run.ts";
 
-export const PARTS = ["e1e2", "opus", "scale", "intent", "mvp", "hints", "nohints"] as const;
+export const PARTS = [
+  "e1e2",
+  "opus",
+  "scale",
+  "intent",
+  "mvp",
+  "hints",
+  "nohints",
+  "hints2",
+] as const;
 export type Part = (typeof PARTS)[number];
 
 /** The private reference brief and its runs: outside the repository, never committed. */
@@ -113,6 +123,9 @@ export function planPart(part: Part): PartPlan {
     case "nohints":
       add(["grafical"], "haiku", runs3, hintTasks(), []);
       return { part, round: "p1d-nohints", runs: RUNS, chains, hints: false };
+    case "hints2":
+      add(["grafical"], "haiku", runs3, hintTasks(), []);
+      return { part, round: "p1d-hints2", runs: RUNS, chains };
   }
 }
 

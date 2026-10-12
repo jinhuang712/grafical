@@ -38,7 +38,8 @@ function hintUse(transcript: string): { shown: number; run: number } {
     for (const c of content as Record<string, unknown>[]) {
       if (c.type === "tool_result") {
         const text = JSON.stringify(c.content ?? "");
-        for (const h of text.matchAll(/hint: [^:\\]*: ([^\\]*)/g)) {
+        // A hint's commands start with grafical; the guide's own line about hints does not.
+        for (const h of text.matchAll(/hint: [^:\\]*: (grafical [^\\]*)/g)) {
           for (const cmd of (h[1] ?? "").split("; ")) shown.add(strip(cmd.trim()));
         }
       }

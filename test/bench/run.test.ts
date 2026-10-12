@@ -133,6 +133,7 @@ describe("stage 1 plan", () => {
       mvp: 3,
       hints: 15,
       nohints: 15,
+      hints2: 15,
     });
     expect(planPart("mvp").runs).not.toContain(REPO);
   });
