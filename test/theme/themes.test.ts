@@ -61,6 +61,18 @@ type:
     expect(text).toContain("type.title.weight");
   });
 
+  it("take curved or orthogonal lines, and nothing else (D33)", () => {
+    const sheet = (shape: string) =>
+      parseStylesheet(
+        `grafical-style: 1\npaint:\n  edge: { shape: ${shape} }\n`,
+        "x.grafical-style.yaml",
+      );
+    expect((sheet("curved") as Theme).paint.edge.shape).toBe("curved");
+    expect((sheet("orthogonal") as Theme).paint.edge.shape).toBe("orthogonal");
+    expect((sheet("wavy") as string[]).join("\n")).toContain("paint.edge.shape");
+    expect(THEMES.default?.paint.edge.shape).toBe("orthogonal");
+  });
+
   it("a diagram names a built-in theme or a stylesheet beside it", () => {
     expect(styleProblem("dark")).toBeUndefined();
     expect(styleProblem("brand.grafical-style.yaml")).toBeUndefined();

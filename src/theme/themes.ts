@@ -73,6 +73,7 @@ const DARK: Paint = {
     arrow: { length: 7, halfWidth: 3 },
     main: { strokeWidth: 2.5, arrow: { length: 9, halfWidth: 4 } },
     cornerRadius: 6,
+    shape: "orthogonal",
     labelBackground: { fill: "#0f1419", padX: 3, padY: 1, radius: 2 },
   },
 };
@@ -125,6 +126,7 @@ const PRINT: Paint = {
     arrow: { length: 7, halfWidth: 3 },
     main: { strokeWidth: 2.5, arrow: { length: 9, halfWidth: 4 } },
     cornerRadius: 4,
+    shape: "orthogonal",
     labelBackground: { fill: "#ffffff", padX: 3, padY: 1, radius: 2 },
   },
 };
@@ -175,7 +177,10 @@ const DASH = z
   .regex(/^\d+(\.\d+)?( \d+(\.\d+)?)*$/, { message: "a dash pattern like 4 3" });
 const SIZE = z.number().min(0).max(64);
 
+const SHAPE = z.enum(["orthogonal", "curved"]);
+
 function partial(example: unknown, path: string[]): z.ZodType {
+  if (path.join(".") === "edge.shape") return SHAPE;
   if (typeof example === "number") return SIZE;
   if (typeof example === "string") return example.startsWith("#") ? COLOR : DASH;
   const entries = Object.entries(example as Record<string, unknown>);

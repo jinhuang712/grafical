@@ -276,7 +276,7 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | Size steps | `s`, `m`, `l` |
 | Density | `compact`, `normal`, `airy` |
 | Emphasis | `accent`: at most 2 nodes per diagram, and edges on the main path, drawn thick (D33) |
-| Line shape | Planned (D33): `curved`, set in a stylesheet |
+| Line shape | `orthogonal` (default) or `curved`, set in a stylesheet as `paint.edge.shape` (D33) |
 
 ## Output
 

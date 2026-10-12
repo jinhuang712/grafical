@@ -67,6 +67,11 @@ export interface Paint {
     main: { strokeWidth: number; arrow: { length: number; halfWidth: number } };
     /** Radius of a rounded corner in a route. */
     cornerRadius: number;
+    /**
+     * orthogonal: corners rounded by cornerRadius. curved: each corner as round as
+     * its two stretches and the room around it allow; the route stays the same (D33).
+     */
+    shape: "orthogonal" | "curved";
     /** The patch behind an edge label, so the label stays readable over lines. */
     labelBackground: { fill: string; padX: number; padY: number; radius: number };
   };
@@ -145,6 +150,7 @@ export const PAINT: Paint = {
     arrow: { length: 7, halfWidth: 3 },
     main: { strokeWidth: 2.5, arrow: { length: 9, halfWidth: 4 } },
     cornerRadius: 6,
+    shape: "orthogonal",
     labelBackground: { fill: "#ffffff", padX: 3, padY: 1, radius: 2 },
   },
 };

@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 import { PNG } from "pngjs";
 import { describe, expect, it } from "vitest";
 import { renderPng, renderSvg } from "../../src/render/index.ts";
-import type { Point, SceneEdge } from "../../src/scene.ts";
+import type { Point, SceneEdge, SceneNode } from "../../src/scene.ts";
+import { PAINT } from "../../src/theme/paint.ts";
 import { escapeScene, groupedScene, mixedScene, tinyScene } from "./scenes.ts";
 
 const sha = (d: string | Uint8Array): string => createHash("sha256").update(d).digest("hex");
@@ -85,6 +86,25 @@ describe("crossings and joins (D33)", () => {
       ]),
     ]);
     expect(svg).toContain('d="M180 60L108 60A8 4 0 0 0 92 60L20 60"');
+  });
+
+  it("rounds a corner as far as its stretches allow in the curved style (D33)", () => {
+    const curved = { ...PAINT, edge: { ...PAINT.edge, shape: "curved" as const } };
+    const zed = edge("z", [
+      { x: 20, y: 20 },
+      { x: 20, y: 60 },
+      { x: 180, y: 60 },
+      { x: 180, y: 110 },
+    ]);
+    // Half of the 40 px stretch down, then half of the 50 px stretch down.
+    expect(renderSvg({ ...tinyScene(), nodes: [], edges: [zed], paint: curved })).toContain(
+      'd="M20 20L20 40Q20 60 40 60L155 60Q180 60 180 85L180 110"',
+    );
+    // A box inside the first corner leaves it the orthogonal style's radius.
+    const box = { ...tinyScene().nodes[0], rect: { x: 26, y: 44, w: 10, h: 10 } } as SceneNode;
+    expect(renderSvg({ ...tinyScene(), nodes: [box], edges: [zed], paint: curved })).toContain(
+      'd="M20 20L20 54Q20 60 26 60L155 60',
+    );
   });
 
   it("marks with a dot where a branch leaves the line it ran along, and nowhere else", () => {

@@ -227,8 +227,77 @@ function straight(from: Point, to: Point, hops: Hop[]): string {
   return d + end;
 }
 
-/** A route as a path with corners rounded by a quadratic curve, hopping over crossings. */
-function roundedPath(pts: Point[], P: Paint, hops: Hop[] = []): string {
+/** What a curved corner keeps clear of: boxes and labels, and every line. */
+interface Room {
+  boxes: Rect[];
+  lines: { id: string; a: Point; b: Point }[];
+}
+
+/** Least distance a curved corner keeps from a box, a label or another line (D33). */
+const CURVE_CLEAR = 4;
+
+/** Whether the stretch a-b runs along the stretch c-d for some length. */
+function sameStretch(a: Point, b: Point, c: Point, d: Point): boolean {
+  if (a.x === b.x && c.x === d.x && a.x === c.x)
+    return (
+      Math.min(Math.max(a.y, b.y), Math.max(c.y, d.y)) -
+        Math.max(Math.min(a.y, b.y), Math.min(c.y, d.y)) >
+      0.5
+    );
+  if (a.y === b.y && c.y === d.y && a.y === c.y)
+    return (
+      Math.min(Math.max(a.x, b.x), Math.max(c.x, d.x)) -
+        Math.max(Math.min(a.x, b.x), Math.min(c.x, d.x)) >
+      0.5
+    );
+  return false;
+}
+
+/**
+ * Whether the corner at p, rounded from a to b, keeps clear of every box, label and
+ * line, except the lines that run along its own two stretches, such as a trunk's.
+ */
+function clearCorner(
+  id: string,
+  prev: Point,
+  p: Point,
+  next: Point,
+  a: Point,
+  b: Point,
+  room: Room,
+): boolean {
+  for (const t of [0.25, 0.5, 0.75]) {
+    const u = 1 - t;
+    const q = {
+      x: u * u * a.x + 2 * u * t * p.x + t * t * b.x,
+      y: u * u * a.y + 2 * u * t * p.y + t * t * b.y,
+    };
+    for (const r of room.boxes) {
+      if (
+        q.x > r.x - CURVE_CLEAR &&
+        q.x < r.x + r.w + CURVE_CLEAR &&
+        q.y > r.y - CURVE_CLEAR &&
+        q.y < r.y + r.h + CURVE_CLEAR
+      )
+        return false;
+    }
+    for (const l of room.lines) {
+      if (l.id === id || sameStretch(l.a, l.b, prev, p) || sameStretch(l.a, l.b, p, next)) continue;
+      const x = Math.min(Math.max(q.x, Math.min(l.a.x, l.b.x)), Math.max(l.a.x, l.b.x));
+      const y = Math.min(Math.max(q.y, Math.min(l.a.y, l.b.y)), Math.max(l.a.y, l.b.y));
+      if (Math.hypot(q.x - x, q.y - y) < CURVE_CLEAR) return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * A route as a path with corners rounded by a quadratic curve, hopping over
+ * crossings. In the curved style a corner is as round as half of each of its two
+ * stretches, halved while it would come near a box, a label or another line, and
+ * never less round than the orthogonal style (D33).
+ */
+function roundedPath(pts: Point[], P: Paint, hops: Hop[] = [], room?: Room, id = ""): string {
   const first = pts[0] as Point;
   let d = `M${num(first.x)} ${num(first.y)}`;
   let at = first;
@@ -242,11 +311,17 @@ function roundedPath(pts: Point[], P: Paint, hops: Hop[] = []): string {
     }
     const inLen = Math.hypot(p.x - prev.x, p.y - prev.y);
     const outLen = Math.hypot(next.x - p.x, next.y - p.y);
-    const r = Math.min(P.edge.cornerRadius, inLen / 2, outLen / 2);
-    const ax = p.x - ((p.x - prev.x) / inLen) * r;
-    const ay = p.y - ((p.y - prev.y) / inLen) * r;
-    const bx = p.x + ((next.x - p.x) / outLen) * r;
-    const by = p.y + ((next.y - p.y) / outLen) * r;
+    const ends = (r: number): [Point, Point] => [
+      { x: p.x - ((p.x - prev.x) / inLen) * r, y: p.y - ((p.y - prev.y) / inLen) * r },
+      { x: p.x + ((next.x - p.x) / outLen) * r, y: p.y + ((next.y - p.y) / outLen) * r },
+    ];
+    let r = Math.min(P.edge.cornerRadius, inLen / 2, outLen / 2);
+    if (P.edge.shape === "curved" && room !== undefined) {
+      let round = Math.min(inLen / 2, outLen / 2);
+      while (round > r && !clearCorner(id, prev, p, next, ...ends(round), room)) round /= 2;
+      if (round > r) r = round;
+    }
+    const [{ x: ax, y: ay }, { x: bx, y: by }] = ends(r);
     d += `${straight(at, { x: ax, y: ay }, hops)}Q${num(p.x)} ${num(p.y)} ${num(bx)} ${num(by)}`;
     at = { x: bx, y: by };
   }
@@ -317,6 +392,7 @@ function edgeShapes(
   nodes: Map<string, SceneNode>,
   P: Paint,
   hops: Hop[] = [],
+  room?: Room,
 ): string[] {
   const paint = P.edge;
   const kind: { stroke: string; dash?: string } = paint.kinds[e.kind];
@@ -338,7 +414,7 @@ function edgeShapes(
       : undefined;
   if (tail) pts[0] = tail.base;
   const out = [
-    `<path d="${roundedPath(pts, P, hops)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(look.strokeWidth)}"${dashAttr(kind.dash)}/>`,
+    `<path d="${roundedPath(pts, P, hops, room, e.id)}" fill="none" stroke="${kind.stroke}" stroke-width="${num(look.strokeWidth)}"${dashAttr(kind.dash)}/>`,
   ];
   if (head) out.push(head.d);
   if (tail) out.push(tail.d);
@@ -436,8 +512,21 @@ export function renderSvg(scene: Scene): string {
   const lb = P.edge.labelBackground;
   const byId = new Map(scene.nodes.map((n) => [n.id, n]));
   const hops = hopsOf(scene.edges);
+  const room: Room | undefined =
+    P.edge.shape === "curved"
+      ? {
+          boxes: [
+            ...scene.nodes.map((n) => n.rect),
+            ...scene.edges.flatMap((e) => (e.label ? [e.label.bbox] : [])),
+          ],
+          lines: scene.edges.flatMap((e) => {
+            const pts = simplify(e.points);
+            return pts.slice(1).map((b, i) => ({ id: e.id, a: pts[i] as Point, b }));
+          }),
+        }
+      : undefined;
   for (const e of scene.edges) {
-    out.push(...edgeShapes(e, byId, P, hops.get(e.id)));
+    out.push(...edgeShapes(e, byId, P, hops.get(e.id), room));
     if (e.label) {
       const b = e.label.bbox;
       const bg: Rect = {
