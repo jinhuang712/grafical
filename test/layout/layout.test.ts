@@ -5,6 +5,7 @@ import {
   chooseSlot,
   layout,
   layoutFramed,
+  lineTrouble,
   routeStats,
   validateAlignments,
   validateGroups,
@@ -124,8 +125,10 @@ function crossLikeJunctions(edges: SceneEdge[]): string[] {
 
 describe("the target look (D25)", () => {
   let scene: Scene;
+  let m: Measurer;
   beforeAll(async () => {
-    scene = layout(catalogSyncGrouped, await createMeasurer());
+    m = await createMeasurer();
+    scene = layout(catalogSyncGrouped, m);
   });
   const edge = (id: string) => scene.edges.find((x) => x.id === id) as SceneEdge;
   const node = (id: string) => scene.nodes.find((x) => x.id === id)?.rect;
@@ -150,14 +153,21 @@ describe("the target look (D25)", () => {
   });
 
   it("lets an edge to a node wholly to one side leave from that side, with one bend", () => {
-    // pipelines -> retry: retry sits up and to the left, with nothing between in the row.
-    const pts = edge("pipelines->retry").points;
+    // retry sits up and to the left of pipelines and geo down and to the left, with
+    // nothing between in the row; one of the two takes the left side.
     const from = node("pipelines") as Rect;
-    const to = node("retry") as Rect;
+    const mid = { x: from.x, y: from.y + from.h / 2 };
+    const out = scene.edges.filter(
+      (x) => x.from === "pipelines" && x.points[0]?.x === mid.x && x.points[0]?.y === mid.y,
+    );
+    expect(out.map((x) => x.id)).toHaveLength(1);
+    const [only] = out;
+    if (only === undefined) throw new Error("no side exit");
+    const to = node(only.to) as Rect;
+    const pts = only.points;
     expect(pts).toHaveLength(3);
-    expect(pts[0]).toEqual({ x: from.x, y: from.y + from.h / 2 });
-    expect(pts[1]?.y).toBe(pts[0]?.y);
-    expect(pts[2]).toEqual({ x: pts[1]?.x, y: to.y + to.h });
+    expect(pts[1]?.y).toBe(mid.y);
+    expect(pts[2]).toEqual({ x: pts[1]?.x, y: to.y > mid.y ? to.y : to.y + to.h });
   });
 
   it("runs edges between neighbours straight sideways, with their labels", () => {
@@ -173,16 +183,26 @@ describe("the target look (D25)", () => {
     ).toBe("persist");
   });
 
-  it("bundles fan-outs into one trunk, with no junction that reads as a crossing", () => {
+  it("gives each line of a fan-out a port of its own where the side has room (D33)", () => {
+    const crossings = lineTrouble(catalogSyncGrouped, m).crossings;
     for (const from of ["pipelines", "service"]) {
-      const ports = new Set(
-        scene.edges
-          .filter((x) => x.from === from && x.kind === "call" && x.label === undefined)
-          .map((x) => `${x.points[0]?.x},${x.points[0]?.y}`),
-      );
-      expect(ports.size).toBe(1);
+      const out = scene.edges.filter((x) => x.from === from);
+      const ports = new Set(out.map((x) => `${x.points[0]?.x},${x.points[0]?.y}`));
+      expect(out.length).toBeGreaterThan(2);
+      expect(ports.size).toBe(out.length);
+      const ids = new Set(out.map((x) => x.id));
+      expect(crossings.filter(([a, b]) => ids.has(a) && ids.has(b))).toEqual([]);
     }
-    expect(crossLikeJunctions(scene.edges)).toEqual([]);
+  });
+
+  it("merges a crowded side's fan-out into one trunk, with no junction that reads as a crossing", () => {
+    const crowded = layout(dense, m);
+    const out = crowded.edges.filter(
+      (x) => x.from === "goods_pipe" && x.kind === "data" && x.label === undefined,
+    );
+    expect(out.length).toBeGreaterThan(8);
+    expect(new Set(out.map((x) => `${x.points[0]?.x},${x.points[0]?.y}`)).size).toBe(1);
+    expect(crossLikeJunctions(crowded.edges)).toEqual([]);
   });
 
   it("draws each group as one box around its members, its label clear of lines", () => {

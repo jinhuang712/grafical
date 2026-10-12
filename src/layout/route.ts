@@ -16,10 +16,11 @@
 // counted here; their heights and every y come later, in assembly.
 //
 // For the target look (D25): edges between neighbours run straight sideways
-// (side.ts); two or more unlabelled edges of one kind that leave one node side
-// share a trunk, and two or more that arrive at one node side share a port; a path
-// that skips rows takes one corridor, an x that is free in every row it passes;
-// and no vertical line passes a group's label or the label of a sideways edge.
+// (side.ts); every line meets its node side at a port of its own, unless the side
+// has more lines than room, where unlabelled edges of one kind that leave it share
+// a trunk and those that arrive at it share a port (D33); a path that skips rows
+// takes one corridor, an x that is free in every row it passes; and no vertical
+// line passes a group's label or the label of a sideways edge.
 
 import type { Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
@@ -443,12 +444,26 @@ function makePlan(
   };
 }
 
+/** How many ports a node's top or bottom side holds at the port pitch. */
+function portsOn(n: PNode): number {
+  return Math.floor((n.w - 2 * portInset(n.w)) / ROUTE.portPitch) + 1;
+}
+
 /**
- * A fan-out of unlabelled edges in one line style from one node side leaves as a bus:
- * one port and one trunk. Of the rest, a fan-in of unlabelled edges in one style
- * into one node side arrives through one port.
+ * Every line meets its node side at a port of its own (D33), unless the side has
+ * more lines than slots. From such a side, a fan-out of unlabelled edges in one
+ * line style leaves as a bus: one port and one trunk. Of the rest, a fan-in of
+ * unlabelled edges in one style into such a side arrives through one port.
  */
 function assignBuses(plans: Plan[], alone: Set<string>): void {
+  const load = new Map<string, number>();
+  for (const pl of plans) {
+    if (pl.kind === "neighbour") continue;
+    for (const k of [`${pl.u.id}:${pl.srcSide}`, `${pl.v.id}:${pl.dstSide}`]) {
+      load.set(k, (load.get(k) ?? 0) + 1);
+    }
+  }
+  const roomy = (n: PNode, side: Side) => (load.get(`${n.id}:${side}`) ?? 0) <= portsOn(n);
   const collect = (key: (pl: Plan) => string, skip: (pl: Plan) => boolean) => {
     const groups = new Map<string, Plan[]>();
     for (const pl of plans) {
@@ -469,13 +484,13 @@ function assignBuses(plans: Plan[], alone: Set<string>): void {
   const look = (pl: Plan) => `${lineStyle(pl.edge.kind)}${pl.edge.accent === true ? ":main" : ""}`;
   for (const bus of collect(
     (pl) => `${pl.u.id}:${pl.srcSide}:${look(pl)}`,
-    (pl) => pl.edge.both === true,
+    (pl) => pl.edge.both === true || roomy(pl.u, pl.srcSide),
   )) {
     for (const pl of bus.members) pl.bus = bus;
   }
   for (const fan of collect(
     (pl) => `in ${pl.v.id}:${pl.dstSide}:${look(pl)}`,
-    (pl) => pl.bus !== undefined,
+    (pl) => pl.bus !== undefined || roomy(pl.v, pl.dstSide),
   )) {
     for (const pl of fan.members) pl.fanIn = fan;
   }
@@ -528,10 +543,11 @@ function chooseGaps(
     const used = load.get(gapKey(gap));
     return used === undefined || used.has(key) || used.size < capacity(gap);
   };
-  // The members of a fan-out that pass the same rows choose one corridor together,
-  // so that their trunk passes those rows as one line and branches near its ends.
+  // The unlabelled lines that leave one node side past the same rows choose one
+  // corridor together, so that they pass those rows side by side, or as one trunk,
+  // and part near their ends. A labelled line finds its own, where its label has room.
   const mateKey = (pl: Plan) =>
-    pl.bus === undefined ? undefined : `${pl.bus.id}|${pl.between.join(",")}`;
+    pl.label === undefined ? `${pl.u.id}:${pl.srcSide}|${pl.between.join(",")}` : undefined;
   const mates = new Map<string, Plan[]>();
   for (const pl of plans) {
     const k = mateKey(pl);
@@ -655,9 +671,32 @@ interface Track {
   key: string;
   members: { pl: Plan; j: number }[];
   ideal: number;
-  around: number;
+  /** Where the line comes from: its waypoint before this gap. */
+  from: number;
+  parting: [number, number, number];
   /** A track that continues the line above or below it straight weighs more. */
   weight: number;
+}
+
+/**
+ * Where a line leaves the corridor it takes through gap j: -1 to the left, 1 to
+ * the right, 0 on to its end; then at which waypoint, and toward which x. Of the
+ * lines that share a corridor, one that leaves it to the left must run left of
+ * those that go on, and one that leaves it sooner further out, or they cross.
+ */
+function parting(pl: Plan, j: number): [number, number, number] {
+  const at = pl.ideal[j + 1] ?? 0;
+  for (let i = j + 2; i < pl.ideal.length; i++) {
+    const x = pl.ideal[i] ?? at;
+    if (Math.abs(x - at) > EPS) return [Math.sign(x - at), i, x];
+  }
+  return [0, pl.ideal.length, at];
+}
+
+function byParting(a: [number, number, number], b: [number, number, number]): number {
+  const [sa, ia, xa] = a;
+  const [sb, ib, xb] = b;
+  return sa - sb || (sa < 0 ? ia - ib : ib - ia) || xa - xb;
 }
 
 function assignGapTracks(plans: Plan[]): void {
@@ -681,7 +720,8 @@ function assignGapTracks(plans: Plan[]): void {
         key: trunk ?? pl.edge.id,
         members: [{ pl, j }],
         ideal: pl.ideal[j + 1] ?? 0,
-        around: (pl.ideal[j] ?? 0) + (pl.ideal[j + 2] ?? 0),
+        from: pl.ideal[j] ?? 0,
+        parting: parting(pl, j),
         weight: pl.ideal[j + 1] === pl.ideal[j] ? STRAIGHT : 1,
       });
     });
@@ -707,7 +747,13 @@ function assignGapTracks(plans: Plan[]): void {
       t.ideal = clamp(prev.x, head.gap.lo, head.gap.hi);
       if (t.ideal === prev.x) t.weight = STRAIGHT;
     }
-    list.sort((a, b) => a.ideal - b.ideal || a.around - b.around || cmp(a.key, b.key));
+    list.sort(
+      (a, b) =>
+        a.ideal - b.ideal ||
+        a.from - b.from ||
+        byParting(a.parting, b.parting) ||
+        cmp(a.key, b.key),
+    );
     const first = list[0];
     if (first === undefined) continue;
     const want = list.map((t) => t.ideal);
@@ -755,13 +801,29 @@ function assignGapTracks(plans: Plan[]): void {
 // Pass 2a': side exits ------------------------------------------------------
 
 /**
+ * Whether a line other than pl runs across x in gutter g, judged from where the
+ * placement puts its ends and gaps. A side exit or side entry runs down the whole
+ * gutter at x, so such a line would cross it.
+ */
+function runsAcross(plans: Plan[], pl: Plan, g: number, x: number): boolean {
+  return plans.some((o) => {
+    if (o === pl || o.turn !== undefined || o.turnIn !== undefined) return false;
+    const j = o.gutters.indexOf(g);
+    if (j < 0) return false;
+    const a = o.ideal[j] ?? x;
+    const b = o.ideal[j + 1] ?? x;
+    return Math.min(a, b) < x - EPS && Math.max(a, b) > x + EPS;
+  });
+}
+
+/**
  * An edge into the next row up or down, to a node wholly on one side of its
  * source, leaves from that side of the source and turns once into the target: an
  * L with one bend, where leaving from the bottom takes a Z with two. It needs the
  * source's row clear between the two: no node and no gap track, and room for the
- * turn beside the next node. Fan-outs and fan-ins keep their shared port, a node
- * side takes one side exit at most, and a side with an edge to a neighbour takes
- * none. The turn goes into the target's centre where it can, past group labels.
+ * turn beside the next node, and no other line may run across the gutter at the
+ * turn. Fan-outs and fan-ins keep their shared port, a node side takes one side
+ * exit at most, and a side with an edge to a neighbour takes none. The turn goes into the target's centre where it can, past group labels.
  */
 function chooseSideExits(
   plans: Plan[],
@@ -816,6 +878,7 @@ function chooseSideExits(
       }),
     );
     if (crossed) continue;
+    if (runsAcross(plans, pl, pl.kind === "down" ? u.layer : u.layer - 1, x)) continue;
     pl.srcSide = side;
     pl.turn = x;
     taken.add(`${u.id}:${side}`);
@@ -829,8 +892,9 @@ function chooseSideExits(
  * straight out of the source's top or bottom, beside the target, and turns into the
  * target's facing side at the middle of its row: one bend, where a route through the
  * gutter takes two. The target's side must be free, the vertical part must run in
- * the open beside the target, clear of its neighbour and of every line through that
- * gap, and a line that would have joined a fan-in leaves it.
+ * the open beside the target, clear of its neighbour, of every line through that
+ * gap and of every other line's run across the gutter, and a line that would have
+ * joined a fan-in leaves it.
  */
 function chooseSideEntries(
   plans: Plan[],
@@ -895,6 +959,7 @@ function chooseSideEntries(
       }),
     );
     if (crossed) continue;
+    if (runsAcross(plans, pl, pl.kind === "down" ? u.layer : u.layer - 1, x)) continue;
     const fan = pl.fanIn;
     if (fan !== undefined) {
       fan.members = fan.members.filter((m) => m !== pl);
@@ -941,11 +1006,29 @@ interface End {
   side: Side;
   /** Where the port would like to be: toward the edge's next waypoint. */
   desired: number;
-  /** The far end's placement-only x: a tie-breaker. */
+  /** Where the line's run in this gutter ends: at the other port, a gap track or a turn. */
   far: number;
+  /** The run ends on the boundary this port is on: a u-turn or a self-loop. */
+  back: boolean;
   /** How much moving this port would cost: a port that keeps a line straight weighs more. */
   weight: number;
   key: string;
+}
+
+/**
+ * Where an end's run ends, as a place on a walk round the edge of its gutter that
+ * starts at the node's left corner: out along the node's own boundary to the left,
+ * across the far boundary from left to right, and back along the node's boundary
+ * from the right. Ports in this order, left to right, give runs that need not
+ * cross (D33).
+ */
+function around(e: End): [number, number] {
+  const n = e.node;
+  if (!e.back) return [1, e.far];
+  if (e.far < n.x) return [0, -e.far];
+  if (e.far > n.x + n.w) return [2, -e.far];
+  // A self-loop's two ends sit side by side.
+  return [1, centreX(n)];
 }
 
 /** A line on a gutter boundary that a port on the far boundary keeps clear of. */
@@ -996,6 +1079,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
         side: pl.srcSide,
         desired: pl.turnIn,
         far: pl.turnIn,
+        back: false,
         weight: STRAIGHT,
         key: "",
       });
@@ -1011,6 +1095,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
         side: pl.dstSide,
         desired: pl.turn,
         far: pl.turn,
+        back: false,
         weight: STRAIGHT,
         key: "",
       });
@@ -1020,6 +1105,9 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     let dt: number;
     let ws = 1;
     let wt = 1;
+    // Where the run from each end ends: the other end, unless the line passes gaps.
+    let fs: number | undefined;
+    let ft: number | undefined;
     if (u === v) {
       const c = centreX(u);
       ds = c - ROUTE.portPitch;
@@ -1034,6 +1122,8 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
       dt = step(fromGap, v.x + portInset(v.w), v.x + v.w - portInset(v.w));
       if (ds === toGap) ws = STRAIGHT;
       if (dt === fromGap) wt = STRAIGHT;
+      fs = toGap;
+      ft = fromGap;
     } else {
       const lo = Math.max(u.x + portInset(u.w), v.x + portInset(v.w));
       const hi = Math.min(u.x + u.w - portInset(u.w), v.x + v.w - portInset(v.w));
@@ -1052,13 +1142,15 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
         dt = pl.bus !== undefined ? snap(centreX(v)) : toward(v, centreX(u));
       }
     }
+    const back = pl.kind === "uturn";
     push({
       plan: pl,
       src: true,
       node: u,
       side: pl.srcSide,
       desired: ds,
-      far: centreX(v),
+      far: fs ?? dt,
+      back,
       weight: ws,
       key: "",
     });
@@ -1068,7 +1160,8 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
       node: v,
       side: pl.dstSide,
       desired: dt,
-      far: centreX(u),
+      far: ft ?? ds,
+      back,
       weight: wt,
       key: "",
     });
@@ -1142,11 +1235,17 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
         desired:
           straight?.desired ?? median(entry.ends.map((e) => e.desired).sort((a, b) => a - b)),
         far: median(entry.ends.map((e) => e.far).sort((a, b) => a - b)),
+        back: entry.ends.every((e) => e.back),
         weight: straight === undefined ? 1 : STRAIGHT,
         key: `\u0001${id}`,
       });
     }
-    slots.sort((a, b) => a.desired - b.desired || a.far - b.far || cmp(a.key, b.key));
+    // In the order of where each run ends, so that runs from one side need not cross.
+    slots.sort((a, b) => {
+      const [ga, ka] = around(a);
+      const [gb, kb] = around(b);
+      return ga - gb || ka - kb || cmp(a.key, b.key) || Number(b.src) - Number(a.src);
+    });
 
     const g = first.side === "bottom" ? n.layer : n.layer - 1;
     const facing = (first.side === "bottom" ? below.get(g) : above.get(g)) ?? [];
