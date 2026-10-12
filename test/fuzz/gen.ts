@@ -6,9 +6,11 @@
 import { validateAlignments, validateGroups } from "../../src/layout/index.ts";
 import { fits } from "../../src/layout/size.ts";
 import { checkEnds } from "../../src/model/ends.ts";
+import { MAX_GROUP_DEPTH } from "../../src/model/groups.ts";
 import type { Op } from "../../src/model/index.ts";
 import { applyOps } from "../../src/model/index.ts";
 import { checkLanes, orderByLanes } from "../../src/model/lanes.ts";
+import { checkIntegrity } from "../../src/model/schema.ts";
 import {
   DENSITIES,
   type Diagram,
@@ -198,6 +200,7 @@ export function generate(seed: number, m: Measurer): Generated {
   addContainerEdges(d, r, text);
   addLanes(d, r, text);
   addEdgeLooks(d, r);
+  addNesting(d, r, text);
   addNodeKinds(d, r, m);
 
   return { diagram: d, ops, rejected };
@@ -230,6 +233,55 @@ function addEdgeLooks(d: Diagram, r: () => number): void {
     else if (x < 0.2) e.kind = "optional";
     else if (x < 0.27) e.both = true;
     if (r() < 0.08) e.accent = true;
+  }
+}
+
+/**
+ * Groups inside groups (D34): a group may be wrapped in a new outer group, which may
+ * take a free node beside the group in one of its rows, and that outer group again
+ * in a third. Done last, so that every seed's diagram is the same as before up to
+ * here. A wrap the model refuses is dropped, as an agent would drop it.
+ */
+function addNesting(d: Diagram, r: () => number, text: (lo: number, hi: number) => string): void {
+  for (const g of [...(d.groups ?? [])]) {
+    if (r() >= 0.4) continue;
+    let inner = g.id;
+    for (let level = 2; level <= MAX_GROUP_DEPTH; level++) {
+      if (level > 2 && r() >= 0.5) break;
+      const id = `${inner}o`;
+      // A free node next to the inner group's block, in the first row that has one.
+      let beside: string | undefined;
+      if (r() < 0.5) {
+        for (const l of d.layers) {
+          const at = l.nodes.flatMap((n, k) => (n.group === inner ? [k] : []));
+          if (at.length === 0) continue;
+          const left = l.nodes[(at[0] as number) - 1];
+          const right = l.nodes[(at[at.length - 1] as number) + 1];
+          beside = [left, right].find((n) => n !== undefined && n.group === undefined)?.id;
+          if (beside !== undefined) break;
+        }
+      }
+      const trial: Diagram = {
+        ...d,
+        groups: [
+          ...(d.groups ?? []).map((x) => (x.id === inner ? { ...x, in: id } : x)),
+          { id, label: text(3, 14) },
+        ],
+        layers: d.layers.map((l) => ({
+          ...l,
+          nodes: l.nodes.map((n) => (n.id === beside ? { ...n, group: id } : n)),
+        })),
+      };
+      if (
+        checkIntegrity(trial).length > 0 ||
+        validateGroups(trial).length > 0 ||
+        validateAlignments(trial).length > 0
+      )
+        break;
+      d.groups = trial.groups ?? [];
+      d.layers = trial.layers;
+      inner = id;
+    }
   }
 }
 

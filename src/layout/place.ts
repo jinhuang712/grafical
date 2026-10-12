@@ -542,12 +542,45 @@ function laneSides(
  * the ports it needs; failing that, the one that leaves the most room. Returns,
  * for each group, the room its seat leaves: negative when no seat leaves enough.
  */
+/** The longest stretch of [a, b] that no span covers, or -1 when none is left. */
+function freeRoom(a: number, b: number, spans: [number, number][]): number {
+  let best = -1;
+  let at = a;
+  for (const [lo, hi] of [...spans].sort((x, y) => x[0] - y[0])) {
+    if (hi <= at) continue;
+    if (lo >= b) break;
+    if (lo >= at) best = Math.max(best, lo - at);
+    at = hi;
+  }
+  return at <= b ? Math.max(best, b - at) : best;
+}
+
 function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, number>): number[] {
   const clr = GROUP.labelClear;
-  return groups.map((g) => {
+  const byId = new Map(groups.map((g) => [g.id, g]));
+  const depth = (g: PGroup): number => {
+    const parent = g.parent === undefined ? undefined : byId.get(g.parent);
+    return parent === undefined ? 1 : 1 + depth(parent);
+  };
+  // Outer labels first: a line into a row passes every head stacked above it, so an
+  // inner label's ports must leave room for the outer labels too (D34).
+  const order = groups
+    .map((_, i) => i)
+    .sort((i, j) => depth(groups[i] as PGroup) - depth(groups[j] as PGroup) || i - j);
+  const out: number[] = [];
+  for (const i of order) out[i] = seat(groups[i] as PGroup);
+  return out;
+
+  function seat(g: PGroup): number {
     const row = (layers[g.top]?.nodes ?? []).filter(
       (n) => g.members.includes(n.id) && (topEnds.get(n.id) ?? 0) > 0,
     );
+    const above: [number, number][] = [];
+    for (let p = g.parent; p !== undefined; p = byId.get(p)?.parent) {
+      const o = byId.get(p);
+      if (o !== undefined && o.top === g.top)
+        above.push([o.labelX - clr, o.labelX + o.labelW + clr]);
+    }
     let roomy: number | undefined;
     let best = g.labelX;
     let bestSlack = Number.NEGATIVE_INFINITY;
@@ -572,11 +605,16 @@ function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, num
         // A dot's ports sit at its centre or spread over all of it, so a label over
         // any part of it leaves its lines no room (D34).
         const clear = hi <= a || lo >= b;
-        const room = clear
-          ? b - a
-          : portReach(n.w) === 0
-            ? -1
-            : Math.max(Math.min(b, lo) - a, b - Math.max(a, hi));
+        const room =
+          above.length > 0
+            ? portReach(n.w) === 0 && (!clear || above.some(([x, y]) => y > a && x < b))
+              ? -1
+              : freeRoom(a, b, [[lo, hi], ...above])
+            : clear
+              ? b - a
+              : portReach(n.w) === 0
+                ? -1
+                : Math.max(Math.min(b, lo) - a, b - Math.max(a, hi));
         slack = Math.min(slack, room - ((topEnds.get(n.id) ?? 1) - 1) * ROUTE.portPitch);
         total += room;
       }
@@ -595,5 +633,5 @@ function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, num
     }
     g.labelX = roomy ?? best;
     return roomy !== undefined ? 0 : bestSlack;
-  });
+  }
 }

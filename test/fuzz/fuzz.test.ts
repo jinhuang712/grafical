@@ -11,6 +11,11 @@ import { failures, geometryFailures } from "./fuzz.ts";
 import { generate } from "./gen.ts";
 
 const seeds = Number(process.env.FUZZ_SEEDS ?? 500);
+/**
+ * Seeds past the usual 500 that once failed, kept so that CI runs them: a line
+ * through an outer label stacked above an inner one (D34).
+ */
+const FAILED = [590, 649, 1051, 1606];
 
 describe("fuzz", () => {
   it(
@@ -22,7 +27,11 @@ describe("fuzz", () => {
       let edges = 0;
       let groups = 0;
       let lanes = 0;
-      for (let seed = 1; seed <= seeds; seed++) {
+      const all = [
+        ...Array.from({ length: seeds }, (_, i) => i + 1),
+        ...FAILED.filter((x) => x > seeds),
+      ];
+      for (const seed of all) {
         const { diagram } = generate(seed, m);
         nodes += diagram.layers.reduce((s, l) => s + l.nodes.length, 0);
         edges += diagram.edges.length;
@@ -34,7 +43,7 @@ describe("fuzz", () => {
         }
       }
       console.log(
-        `${seeds} diagrams, ${(nodes / seeds).toFixed(1)} nodes, ${(edges / seeds).toFixed(1)} edges, ${(groups / seeds).toFixed(1)} groups and ${(lanes / seeds).toFixed(1)} lanes on average`,
+        `${all.length} diagrams, ${(nodes / all.length).toFixed(1)} nodes, ${(edges / all.length).toFixed(1)} edges, ${(groups / all.length).toFixed(1)} groups and ${(lanes / all.length).toFixed(1)} lanes on average`,
       );
       expect(found).toEqual([]);
     },
