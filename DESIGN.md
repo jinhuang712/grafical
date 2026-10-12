@@ -417,7 +417,7 @@ A node added without `--size` gets a medium box, or a large one when its text do
 
 `sizing: fixed` in the file turns this off: a node without a size is always medium, as before, and text that does not fit is refused. It is a diagram fact, set by `grafical new --sizing` or `diagram.sizing`, because the file alone decides the picture (D15). Without it, sizing is auto.
 
-This was added on 2026-10-11. In the three phase 1b drafts, text overflow was the most common reason grafical refused Haiku's first batch, which it refused in 66% of draft calls. The fix it suggested was to remove the node and add it again larger.
+This was added on 2026-10-11. In the three phase 1b drafts, text overflow was the most common reason grafical refused Haiku's first batch, which it refused in 46% of draft calls (first reported as 66%, which counted every read of the guide as a refusal). The fix it suggested was to remove the node and add it again larger.
 
 Rejected:
 - Auto size choosing the small box for short text. Boxes of three widths in one row look uneven, and the medium box is the target's grid.

@@ -27,7 +27,7 @@ Across three tries the drafts scored 31–41, 28–45 and 29–38. The engine wo
 
 ## Other findings
 
-- grafical refused 63% of draft calls (33–80%).
+- grafical refused 37% of draft calls (0–60%; first reported as 63%, which counted every read of the guide as a refusal).
 - Three of the nine drafts across the three tries used one id for a layer and a node, such as `callers`, and were refused with `duplicate-id`.
 - The off-tool count of r2 (2) is a false positive. Haiku ran Python to rename ids in its own batch file, and drew nothing outside grafical.
 
