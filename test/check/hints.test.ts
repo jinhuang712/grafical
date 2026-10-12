@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { findHints } from "../../src/check/hints.ts";
 import { check } from "../../src/check/index.ts";
-import { arrangementCost, layout } from "../../src/layout/index.ts";
+import { arrangementCost, layout, lineTrouble } from "../../src/layout/index.ts";
 import { applyOps, type Diagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
@@ -44,12 +44,9 @@ describe("hints (D35)", () => {
     expect(findHints(edgeLooks, m, 3, true).every((h) => h.safe)).toBe(true);
   });
 
-  it("removes the state machine's crossing", () => {
-    const [h] = findHints(stateMachine, m);
-    expect(h?.gain).toContain("crossings 1 -> 0");
-    if (h === undefined) return;
-    const { before, after } = applied(stateMachine, h.ops);
-    expect(lower(after, before)).toBe(true);
+  it("finds no crossing in the state machine: its router avoids the one a hint once removed", () => {
+    expect(lineTrouble(stateMachine, m).crossings).toEqual([]);
+    expect(findHints(stateMachine, m).some((h) => h.gain.includes("crossings"))).toBe(false);
   });
 
   it("has nothing to say about the target look", () => {

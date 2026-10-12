@@ -210,6 +210,8 @@ const TRACK_MIN = 8;
 const CLEAR = 8;
 /** What a jog costs a corridor, in px of travel. */
 const JOG = 96;
+/** What a crossing costs a corridor, in px of travel. */
+const CROSS = 2 * JOG;
 /** The weight of a port or gap track that keeps its line straight. */
 const STRAIGHT = 16;
 
@@ -496,6 +498,51 @@ function assignBuses(plans: Plan[], alone: Set<string>): void {
   }
 }
 
+/**
+ * How many lines pl would cross if it passed its rows at x, counting only the
+ * crossings that placement already makes certain (D24): a line straight through
+ * pl's first or last gutter where pl runs along it, a line along a gutter that pl
+ * passes straight through, and a sideways line across a row that pl passes.
+ */
+function certainCrossings(plans: Plan[], pl: Plan, x: number): number {
+  const first = pl.gutters[0];
+  const last = pl.gutters[pl.gutters.length - 1];
+  const xs = centreX(pl.u);
+  const xt = centreX(pl.v);
+  const inside = (t: number, a: number, b: number) =>
+    t > Math.min(a, b) + EPS && t < Math.max(a, b) - EPS;
+  let n = 0;
+  for (const o of plans) {
+    if (o === pl) continue;
+    if (o.kind === "neighbour") {
+      const [l, r] = o.u.x < o.v.x ? [o.u, o.v] : [o.v, o.u];
+      if (pl.between.includes(o.u.layer) && inside(x, l.x + l.w, r.x)) n++;
+      continue;
+    }
+    // Only lines whose way through every gutter is known: placement's, or chosen.
+    if (o.ideal.length !== o.gutters.length + 1) continue;
+    const lo = Math.max(o.u.x, o.v.x);
+    const hi = Math.min(o.u.x + o.u.w, o.v.x + o.v.w);
+    o.gutters.forEach((g, j) => {
+      const a = o.ideal[j] ?? 0;
+      const b = o.ideal[j + 1] ?? 0;
+      // A line between neighbouring rows that overlap runs straight.
+      const up =
+        o.between.length === 0 && o.u !== o.v && hi > lo
+          ? clamp((a + b) / 2, lo, hi)
+          : Math.abs(a - b) < EPS
+            ? a
+            : undefined;
+      if (g === first && up !== undefined && inside(up, xs, x)) n++;
+      else if (g === last && up !== undefined && inside(up, x, xt)) n++;
+      else if (g !== first && g !== last && pl.gutters.includes(g) && up === undefined) {
+        if (inside(x, a, b)) n++;
+      }
+    });
+  }
+  return n;
+}
+
 /** The x spans free in every one of these layers, given each layer's gaps. */
 function corridors(between: number[], gapsByLayer: Gap[][]): [number, number][] {
   let spans: [number, number][] = [[Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY]];
@@ -578,7 +625,14 @@ function chooseGaps(
         travel:
           dist(xs, lo, hi) +
           (reach(pl.u, lo, hi) ? 0 : JOG) +
-          team.reduce((s, m) => s + dist(centreX(m.v), lo, hi) + (reach(m.v, lo, hi) ? 0 : JOG), 0),
+          team.reduce(
+            (s, m) =>
+              s +
+              dist(centreX(m.v), lo, hi) +
+              (reach(m.v, lo, hi) ? 0 : JOG) +
+              CROSS * certainCrossings(plans, m, clamp(xs, lo, hi)),
+            0,
+          ),
         move: dist(xs, lo, hi),
       }))
       .sort(
