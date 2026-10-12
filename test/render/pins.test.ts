@@ -12,7 +12,10 @@ import { renderPng, renderSvg } from "../../src/render/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
+import { flowchart } from "../fixtures/flowchart.ts";
 import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
+import { nested } from "../fixtures/nested.ts";
+import { stateMachine } from "../fixtures/state-machine.ts";
 
 const sha = (d: string | Uint8Array): string => createHash("sha256").update(d).digest("hex");
 const pixels = (png: Uint8Array): string => sha(PNG.sync.read(Buffer.from(png)).data);
@@ -27,6 +30,21 @@ const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
     diagram: lanesRows,
     svg: "ef6c36d775422f2e6772016f8db1728275e59ef6866bdab1825e81fc50cd70a3",
     png: "cd19a9fc203cc2d67080dda319e83a41124efdebac53cbc02daaf4838b83f666",
+  },
+  flowchart: {
+    diagram: flowchart,
+    svg: "18f089de243e5ca2ed071c9902bc91614de7efea14569f82fab51974f0410b44",
+    png: "3bd0ee5b043f90bdcd73dd6c28c9d53cbf0f1aaab8f1bfd368566a74edcde620",
+  },
+  stateMachine: {
+    diagram: stateMachine,
+    svg: "987a1153a41fd8a2bfc91e4fc4d5bb989aacb18eb1377f4cf1f5e63611bd1a67",
+    png: "1cbdb4115f29e5eeef8d88bf43a145856fd1f409f54cf22b99ebed55d77d440a",
+  },
+  nested: {
+    diagram: nested,
+    svg: "683dba59d3ee96eb19ca6d79cd0eb28b8ab1d87ac7c9b6676f5963ea2fbed458",
+    png: "315781b68cd795f8499830baa25ed66e235bf748ecd665754eb1770f10e04608",
   },
   lanesColumns: {
     diagram: lanesColumns,
