@@ -57,7 +57,7 @@ Third try, 2026-10-11, with the shared store placed between the systems: not met
 - **Swimlanes:** lanes that run as rows or as columns, one way per diagram, with nodes allowed outside every lane. Done (D32).
 - **Styling:** built-in themes and a shared stylesheet file that a diagram names, set by an operation, so that an agent can apply the theme a person asks for in plain words. Changing the stylesheet changes every diagram that uses it. Done (D30).
 - **A live viewer:** `grafical view <file>` opens a window that shows the diagram as it is now, and redraws it within a moment of every change an agent makes. It shows; it does not edit (editing is stage 2). Done (D31).
-- **Warnings the agent sees but that never block:** a picture wider than the page, a crowded row, a group of one node, and an edge that crosses a row of unrelated nodes. Done (D29).
+- **Warnings the agent sees but that never block:** a picture wider than the page, a crowded row, a group of one node, and an edge that crosses a row of unrelated nodes. Done (D29). Replaced on 2026-10-13 by counts (D37).
 
 ### Phase 1d: clearer lines and more diagram types
 
@@ -66,6 +66,16 @@ Added by the owner on 2026-10-12, after the stage 1 round, where every comment o
 - **Diagram types** (D34): the node kinds `state`, `decision`, `terminal`, `initial` and `final`, groups nested up to three levels, and teaching for each type, first as `grafical guide <type>` and then in the help (D36), for C4, cloud, event flow, flowcharts, state machines, swimlane processes, dependency graphs, data flow and deployment.
 
 Exit check: each new type has a fixture the owner has looked at, and the stage 1 benchmarks run again, with the MVP bar.
+
+### Phase 1e: discrete output and freer placement
+
+Added by the owner on 2026-10-13, after the help rounds showed that tidy lines (no crossings) can still make a picture hard to follow, and that the layered grid, where a row is the only placement fact, had stopped improving it: the MVP score went from 38.3 to 38.0 across a phase of line work. Built in this order:
+- **Discrete output** (D37): `grafical show --drawn` prints how a diagram is drawn as facts and counts, `grafical try` prints a batch's counts before and after it, the counts replace warnings and hints, and refusals give mappings, not sentences. Done.
+- **Guides, not a grid:** columns, a second placement fact beside rows. A box may follow a row, a column, both or neither; one with neither sits near what it connects to. A design decision first, and a prototype on three hard pictures (the private reference brief, the public brief and photo sharing), because placement must stay stable (D10) and deterministic (D15).
+- **Bundled fan-outs:** lines from one box to several others leave as one line and split near their targets, with a dot at the split.
+- **Then, as facts the agent states:** the flow's direction (down or right), dividers and walls between parts of a picture (a wall lets lines cross only through a named gate), and notes attached to a box, line or group.
+
+Exit check: the MVP bar in both its parts (GOALS.md, goal 1) measured again.
 
 ### Phase 2: the vocabulary and stability
 
