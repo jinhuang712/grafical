@@ -2,7 +2,9 @@
 
 import type { z } from "zod";
 import type { OpError } from "../errors.ts";
+import { lineStyle } from "../theme/paint.ts";
 import { allowed, closest } from "./suggest.ts";
+import { EDGE_KINDS, type EdgeKind } from "./types.ts";
 
 export const ID_NODE = "ID_NODE";
 export const ID_EDGE = "ID_EDGE";
@@ -67,13 +69,21 @@ export function issuesToErrors(
       for (const key of keys) {
         const f = leaf ? key : fieldName([...path, key]);
         const near = closest(key, known, 2);
+        // YAML ends unquoted text at a comma or a colon, and the rest becomes a key.
+        const cut = getPath(raw, [...path, key]) === null || /\s/.test(key);
         out.push({
           code: "unknown-field",
           index,
           field: f,
           found: key,
           expected: known.length ? `one of: ${known.join(", ")}` : "no extra fields",
-          ...(near.length ? { suggestion: `did you mean: ${near.join(", ")}` } : {}),
+          ...(cut
+            ? {
+                suggestion: `${key} looks like the rest of a text cut at a comma or a colon; quote the whole text, such as sublabel: "validate, dedupe"`,
+              }
+            : near.length
+              ? { suggestion: `did you mean: ${near.join(", ")}` }
+              : {}),
         });
       }
     } else if (issue.code === "invalid_value") {
@@ -84,7 +94,7 @@ export function issuesToErrors(
         ...base,
         found: show(found),
         expected: "a known value",
-        suggestion: allowed(values),
+        suggestion: field === "line" ? legendLine(found, values) : allowed(values),
       });
     } else if (issue.message === ID_NODE || issue.message === ID_EDGE) {
       const text = issue.message === ID_NODE ? ID_PATTERN_TEXT : EDGE_ID_PATTERN_TEXT;
@@ -125,10 +135,24 @@ export function issuesToErrors(
   return out;
 }
 
+/**
+ * A legend's line given as an edge kind, or with its wording: the legend names how lines
+ * look, so say which look the kind is drawn in, or where the wording goes.
+ */
+function legendLine(found: unknown, values: string[]): string {
+  if (typeof found === "string" && (EDGE_KINDS as readonly string[]).includes(found)) {
+    const style = lineStyle(found as EdgeKind);
+    return `${found} is an edge kind; the legend names how lines look, and ${found} lines are ${style}: line: ${style}`;
+  }
+  return `${allowed(values)}; the wording goes in text, such as {op: diagram.legend, line: dashed, text: event}`;
+}
+
 // The set of known keys of the object at `path`, found by its shape.
 function knownKeys(raw: unknown, path: readonly PropertyKey[]): string[] {
   const last = path[path.length - 1];
   const parent = path[path.length - 2];
+  const op = (raw as { op?: unknown } | null)?.op;
+  if (path.length === 0 && typeof op === "string") return OP_KEYS[op] ?? [];
   if (path.length === 0)
     return ["grafical", "title", "subtitle", "note", "density", "layers", "groups", "edges"];
   if (parent === "nodes")
@@ -138,7 +162,6 @@ function knownKeys(raw: unknown, path: readonly PropertyKey[]): string[] {
     if (parent === "layers") return ["id", "label", "nodes"];
     if (parent === "edges") return ["id", "from", "to", "kind", "label"];
   }
-  const op = (raw as { op?: unknown } | null)?.op;
   return typeof op === "string" ? (OP_KEYS[op] ?? []) : [];
 }
 

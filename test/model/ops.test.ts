@@ -26,6 +26,36 @@ function fail(d: Diagram | null, ops: Op[]): OpError[] {
   return r.errors;
 }
 
+describe("refusals that say how to fix them", () => {
+  it("an edge kind given as a legend's line names the look it is drawn in", () => {
+    const e = parseOp({ op: "diagram.legend", line: "async", text: "event" }, 0) as OpError[];
+    expect(e[0]).toMatchObject({ code: "bad-value", field: "line" });
+    expect(e[0]?.suggestion).toContain("async lines are dashed: line: dashed");
+    const worded = parseOp({ op: "diagram.legend", line: "solid: request" }, 0) as OpError[];
+    expect(worded[0]?.suggestion).toContain("the wording goes in text");
+  });
+
+  it("text cut at a comma is named as such, and other fields come from the operation", () => {
+    const cut = parseOps([
+      { op: "node.add", id: "a", layer: "top", label: "A", sublabel: "x", dedupe: null },
+    ]) as OpError[];
+    expect(cut[0]).toMatchObject({ code: "unknown-field", found: "dedupe" });
+    expect(cut[0]?.suggestion).toContain("quote the whole text");
+    expect(cut[0]?.expected).toContain("sublabel");
+    const typo = parseOps([
+      { op: "node.add", id: "a", layer: "top", label: "A", sublable: "x" },
+    ]) as OpError[];
+    expect(typo[0]?.suggestion).toContain("did you mean: sublabel");
+  });
+
+  it("a node given its row's id is offered a free id", () => {
+    const d = ok(empty, [{ op: "layer.add", id: "placed", label: "Placed" }]);
+    const e = fail(d.diagram, [{ op: "node.add", id: "placed", layer: "placed", label: "Placed" }]);
+    expect(e[0]?.code).toBe("duplicate-id");
+    expect(e[0]?.suggestion).toContain("such as placed-2, or name the row for what it holds");
+  });
+});
+
 const base: Diagram = ok(empty, [
   { op: "layer.add", id: "top", label: "Top" },
   { op: "layer.add", id: "bottom", label: "Bottom" },
