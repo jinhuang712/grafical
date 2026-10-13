@@ -183,11 +183,11 @@ describe("write commands", () => {
     expect(r.code).toBe(1);
     expect(r.out).toContain("failed changed=-");
     expect(r.out).toContain("code=unknown-layer field=layer");
-    expect(r.out).toContain("closest layers: services");
+    expect(r.out).toContain("near=services,storage,clients");
     expect(read("single.grafical.yaml")).toBe(before);
   });
 
-  it("gives the error as JSON with the operation index", () => {
+  it("gives the error as JSON with the operation number", () => {
     writeFileSync(
       join(dir, "bad.yaml"),
       "- op: node.add\n  id: ok1\n  layer: storage\n  label: Ok\n- op: edge.add\n  from: api\n  to: nope\n",
@@ -200,7 +200,7 @@ describe("write commands", () => {
     expect(j.changed).toEqual([]);
     expect(j.errors[0]).toMatchObject({
       code: "unknown-node",
-      index: 1,
+      op: 1,
       field: "to",
       found: "nope",
     });
@@ -215,7 +215,7 @@ describe("write commands", () => {
     const r = run("apply", "single.grafical.yaml", "bad2.yaml");
     expect(r.code).toBe(1);
     expect(r.out).toContain("code=bad-value field=kind");
-    expect(r.out).toContain("allowed: service, store, queue, external, actor");
+    expect(r.out).toContain("likely=store allowed=service,store,queue,external,actor");
   });
 
   it("refuses to overwrite with new, and a missing file is an error", () => {

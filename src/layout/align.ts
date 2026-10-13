@@ -4,6 +4,8 @@
 // of a layer, another alignment or a group puts the target's column on the other
 // side of the node's neighbours, and the operation that caused it fails.
 
+import type { Facts } from "../errors.ts";
+
 export type AlignmentCode =
   | "unknown-node"
   | "same-layer"
@@ -18,6 +20,5 @@ export interface AlignmentProblem {
   /** Its alignment target. */
   target: string;
   found: string;
-  expected: string;
-  suggestion: string;
+  facts: Facts;
 }

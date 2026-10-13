@@ -7,7 +7,7 @@
 
 import type { OpError } from "../errors.ts";
 import { inGroup } from "./groups.ts";
-import { suggestIds } from "./suggest.ts";
+import { closest } from "./suggest.ts";
 import type { Diagram, Layer } from "./types.ts";
 
 export type LaneRun = "rows" | "columns";
@@ -77,8 +77,7 @@ export function checkLanes(d: Diagram, index: number): OpError[] {
       index,
       field,
       found: lane,
-      expected: "the id of an existing lane",
-      suggestion: suggestIds(lane, ids, "lane"),
+      facts: { near: closest(lane, ids) },
     });
   d.layers.forEach((l, li) => {
     if (l.lane !== undefined && !ids.includes(l.lane)) unknown(l.lane, `layers[${li}].lane`);
@@ -94,10 +93,12 @@ export function checkLanes(d: Diagram, index: number): OpError[] {
       code: "lane-mixed",
       index,
       field: "lanes",
-      found: `layer ${layer.id} and node ${node.id} both lie in lanes`,
-      expected:
-        "lanes that hold layers (they run as rows) or nodes (they run as columns), one way per diagram",
-      suggestion: `lane leave <file> ${node.id}, or lane leave <file> ${layer.id}`,
+      found: node.id,
+      facts: {
+        is: "node",
+        row: layer.id,
+        fix: [`lane leave <file> ${node.id}`, `lane leave <file> ${layer.id}`],
+      },
     });
     return errors;
   }
@@ -120,9 +121,8 @@ function rowGaps(d: Diagram, index: number): OpError[] {
       code: "lane-gap",
       index,
       field: `lanes[${i}]`,
-      found: `${lane.id} holds layers ${rows.map((r) => d.layers[r]?.id).join(", ")} but not ${gaps.map((l) => l.id).join(", ")}`,
-      expected: "a lane that holds neighbouring layers",
-      suggestion: `lane join <file> ${lane.id} ${gap.id}, or layer move the layers of ${lane.id} together`,
+      found: lane.id,
+      facts: { row: gap.id, fix: [`lane join <file> ${lane.id} ${gap.id}`] },
     });
   });
   return errors;
@@ -140,15 +140,16 @@ function groupsAcross(d: Diagram, index: number): OpError[] {
       }
     }
     if (lanes.size < 2) return;
-    const named = [...lanes].map((x) => (x === "" ? "outside every lane" : `lane ${x}`));
     const target = [...lanes].find((x) => x !== "") as string;
     errors.push({
       code: "group-across-lanes",
       index,
       field: `groups[${i}]`,
-      found: `${g.id} has members ${named.join(" and ")}`,
-      expected: "a group inside one lane, or outside every lane",
-      suggestion: `lane join <file> ${target} ${g.id}, or lane leave <file> ${g.id}`,
+      found: g.id,
+      facts: {
+        lanes: [...lanes].map((x) => (x === "" ? "none" : x)),
+        fix: [`lane join <file> ${target} ${g.id}`, `lane leave <file> ${g.id}`],
+      },
     });
   });
   return errors;

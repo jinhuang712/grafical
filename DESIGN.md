@@ -90,7 +90,7 @@ Rejected: generated IDs, because the agent would have to look them up before eve
 
 ### D5 Every operation is validated, and its errors say how to fix it
 
-An operation error has a code, the index of the operation, the field, what was found, what was expected, and a suggestion. An unknown ID suggests the closest existing IDs. A bad value lists the allowed values.
+An operation error has a code, the index of the operation, the field, what was found, and facts (D37, 2026-10-13): the closest existing IDs for an unknown ID, the allowed values for a bad value, the value it most likely means, a limit and how many there are, the row or group it concerns, and the operations that would fix it. Until 2026-10-13 it gave "what was expected" and a suggestion as sentences.
 
 Rejected: prose error messages, because an agent has to interpret them, and that costs a round. Accepting a doubtful operation with a warning, because the warning is easy to ignore and the error then surfaces later.
 
@@ -264,7 +264,7 @@ After each operation or batch, grafical lays out the diagram and checks it. Each
 | A line that crosses text: a node, edge or group label | Engine |
 | A non-member inside a group's box | Engine |
 
-A write that leaves an agent-owned defect fails and changes nothing. The defect names its elements, what was found, what was expected, and an operation that would fix it.
+A write that leaves an agent-owned defect fails and changes nothing. The defect names its elements, the field and the text at fault, and facts: the lines the text takes and the most it may, the characters no font can draw, and the operations that would fix it (D37).
 
 Engine-owned defects are about where lines and boxes go, which no operation controls (D2). The engine must avoid them itself, with the room D10 allows: the next gutter step, more track or port separation, another label slot. If it still leaves one, that is an engine bug. The write goes ahead, the agent is never told, and `grafical check --all` reports it so that benchmarks and tests count it. The checker does not count the shared trunk of a bus as an overlap. A bus is a fan-out of unlabelled edges in one line style from one node (D11).
 
@@ -585,7 +585,7 @@ Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "The command line states fact
 - **How it is drawn:** a discrete report of the drawing: for each box its row, its place in the row, its size and its lines on each side; for each line the sides it leaves and enters, its bends, its length, the lines it crosses and the rows it passes without connecting; and totals. The agent judges the drawing from it without opening the picture.
 - **What a change would do:** `grafical try <file> <batch>` applies a batch without writing it and reports the same counts before and after, and a `delta` record of the change in each. The agent decides what to try; grafical measures. It replaces hints (D35), which chose the moves themselves.
 - **Warnings become counts:** the number of nodes, the picture's width, the nodes in a row, the lines passing a row, with no threshold and no advice.
-- **Refusals stay terse:** the field, what was found, the allowed values, the closest ids, and a mapping where one exists (`async -> dashed`), with no sentences.
+- **Refusals stay terse:** the field, what was found, the allowed values, the closest ids, and a mapping where one exists (`async -> dashed`), with no sentences. Since 2026-10-13 they are records too: `error op=0 code=bad-value field=kind found=database likely=store allowed=service,store,...`. The code says what is wrong, and a fixed set of facts says what is there: `near`, `likely`, `allowed`, `free`, `count`, `lines`, `min`, `max`, the `row`, `group` or `node` it concerns, `line` and `column` in the YAML, and `fix`, operations that would fix it. A YAML syntax error gives the text of its line in place of the parser's message.
 - **The help is documentation, not output about a diagram:** its principles and examples stay.
 - **The form is records**, added on 2026-10-13 after the owner turned down phrases such as "most lines at a box 10 (sync)": one record per line, a word that names it (`ok`, `failed`, `error`, `defect`, `counts`, `box`, `group`, `line`, `wrote`), then `key=value` fields in the logfmt style, such as `line id=a->b from=a to=b leaves=bottom enters=top bends=2 length=372 crosses=- passes=-`. A list is comma separated, a thing and its number is `api:3`, and none is `-`. A value with a space is quoted. The fields are the JSON's, under the same names.
 - **How long the lines are**, added the same day, when the owner found a box with one line put in the top row while its partner sat four rows down: the line ran 964 px round the right edge, and nothing in the output said so. Each line now gives `direct`, the shortest a line between its two ends could be (the gap between them across plus the gap down), `detour`, its length over `direct`, and `skip`, the rows between its ends' rows. Each box gives `lines` and `reach`, the length of its lines together, and the counts give every line's `length` together and the `longest` line. On that draft: `length=964 direct=480 detour=2.01 skip=3`, and `grafical try` with the box moved down to its partner's row prints `delta ... bends=-4 length=-1380`.

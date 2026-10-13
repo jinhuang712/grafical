@@ -21,33 +21,34 @@ describe("file validation", () => {
       field: "layers[0].nodes[0].kind",
       found: "database",
     });
-    expect(e?.suggestion).toContain("database -> store");
-    expect(e?.suggestion).toContain(`allowed: ${NODE_KINDS.join(", ")}`);
+    expect(e?.facts?.likely).toEqual(["store"]);
+    expect(e?.facts?.allowed).toEqual(NODE_KINDS);
   });
 
   it("rejects an unknown size", () => {
     const [e] = errorsOf(layers("      - id: n\n        label: N\n        size: xl\n"));
     expect(e).toMatchObject({ code: "bad-value", field: "layers[0].nodes[0].size" });
-    expect(e?.suggestion).toBe("allowed: s, m, l");
+    expect(e?.facts?.allowed).toEqual(["s", "m", "l"]);
   });
 
   it("rejects an unknown density", () => {
     const [e] = errorsOf(`${head}density: tight\n`);
     expect(e).toMatchObject({ code: "bad-value", field: "density", found: "tight" });
-    expect(e?.suggestion).toBe("allowed: compact, normal, airy");
+    expect(e?.facts?.allowed).toEqual(["compact", "normal", "airy"]);
   });
 
   it("rejects a bad id", () => {
     const [e] = errorsOf(layers("      - id: Bad_Id\n        label: N\n"));
     expect(e).toMatchObject({ code: "bad-id", found: "Bad_Id" });
-    expect(e?.expected).toContain("lowercase");
+    expect(e?.facts?.likely).toEqual(["bad_id"]);
+    expect(e?.facts?.allowed).toEqual(["a-z", "0-9", ".", "_", "-"]);
   });
 
   it("rejects a duplicate id across layers, nodes and edges", () => {
     const text = `${layers("      - id: n\n        label: N\n      - id: a\n        label: Same as layer\n")}`;
     const [e] = errorsOf(text);
     expect(e).toMatchObject({ code: "duplicate-id", found: "a", field: "layers[0].nodes[1].id" });
-    expect(e?.suggestion).toContain("layers[0].id");
+    expect(e?.facts).toEqual({ is: "layer" });
   });
 
   it("rejects an edge that points at a missing node and suggests the closest", () => {
@@ -57,7 +58,7 @@ describe("file validation", () => {
     );
     const [e] = errorsOf(text);
     expect(e).toMatchObject({ code: "unknown-node", field: "edges[0].to", found: "kafak" });
-    expect(e?.suggestion).toBe("closest ids: kafka, relay, a");
+    expect(e?.facts?.near).toEqual(["kafka", "relay", "a"]);
   });
 
   it("rejects an align to a node in the same layer", () => {
@@ -83,7 +84,7 @@ describe("file validation", () => {
   it("rejects unknown fields and suggests the nearest", () => {
     const [e] = errorsOf(layers("      - id: n\n        label: N\n        sublable: x\n"));
     expect(e).toMatchObject({ code: "unknown-field", found: "sublable" });
-    expect(e?.suggestion).toBe("did you mean: sublabel, label");
+    expect(e?.facts?.likely).toEqual(["sublabel", "label"]);
   });
 
   it("rejects a missing title and a wrong type", () => {

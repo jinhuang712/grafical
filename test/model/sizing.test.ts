@@ -81,7 +81,9 @@ describe("sizing fixed (D27)", () => {
     const d = ok(one(LONG), [{ op: "diagram.sizing", mode: "fixed" }]);
     expect(width(d)).toBe(BOX.m.w);
     const found = check(d, layout(d, m), m).filter((x) => x.code === "overflow");
-    expect(found.some((x) => x.fix.includes("node resize <file> a --size l"))).toBe(true);
+    expect(found.some((x) => x.facts.fix?.includes("grafical node resize <file> a --size l"))).toBe(
+      true,
+    );
   });
 
   it("is written after density, and auto clears it", () => {

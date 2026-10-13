@@ -196,7 +196,7 @@ describe("group operations", () => {
     ]).diagram;
     const e = fail(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "z"] }]);
     expect(e[0]).toMatchObject({ code: "group-split", field: "group" });
-    expect(e[0]?.suggestion).toContain("y");
+    expect(e[0]).toMatchObject({ found: "y", facts: { group: "g", row: "r" } });
     // Joining the node in between, or grouping neighbours, is fine.
     ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y", "z"] }]);
     ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y"] }]);

@@ -1,4 +1,4 @@
-// Helpers that turn a wrong value into a suggestion (DESIGN.md D5).
+// The ids nearest to a wrong one, for an error's facts (DESIGN.md D5, D37).
 
 /** Levenshtein distance. */
 export function editDistance(a: string, b: string): number {
@@ -24,14 +24,4 @@ export function closest(target: string, candidates: readonly string[], limit = 3
     .sort((x, y) => x.d - y.d || x.i - y.i)
     .slice(0, limit)
     .map((x) => x.c);
-}
-
-/** A suggestion for an id that does not exist. */
-export function suggestIds(target: string, candidates: readonly string[], noun: string): string {
-  if (candidates.length === 0) return `no ${noun} exists yet`;
-  return `closest ${noun}s: ${closest(target, candidates).join(", ")}`;
-}
-
-export function allowed(values: readonly string[]): string {
-  return `allowed: ${values.join(", ")}`;
 }

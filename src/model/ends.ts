@@ -12,7 +12,7 @@
 import type { OpError } from "../errors.ts";
 import { groupNodes } from "./groups.ts";
 import { laneNodes, laneRun } from "./lanes.ts";
-import { suggestIds } from "./suggest.ts";
+import { closest } from "./suggest.ts";
 import type { Diagram } from "./types.ts";
 
 export type EndKind = "node" | "group" | "layer" | "lane";
@@ -109,8 +109,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
           index,
           field: `edges[${ei}].${end}`,
           found: id,
-          expected: "the id of an existing node, group, layer or lane",
-          suggestion: suggestIds(id, ids, "id"),
+          facts: { near: closest(id, ids) },
         });
       } else if (kind !== "node" && endRows(d, id) === undefined) {
         known = false;
@@ -118,9 +117,8 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
           code: "empty-container",
           index,
           field: `edges[${ei}].${end}`,
-          found: `${kind} ${id} holds no node`,
-          expected: "a group, layer or lane with at least one node",
-          suggestion: `add a node to ${id} first, or edge remove <file> ${e.id}`,
+          found: id,
+          facts: { is: kind, count: 0, min: 1, edge: e.id },
         });
       }
     }
@@ -133,9 +131,8 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         code: "lane-to-lane",
         index,
         field: `edges[${ei}]`,
-        found: `${e.id} joins two lanes, ${e.from} and ${e.to}`,
-        expected: "an edge between a lane and a node, group or layer",
-        suggestion: `edge retarget <file> ${e.id} so that one end is a node of its lane`,
+        found: e.id,
+        facts: { lanes: [e.from, e.to] },
       });
       return;
     }
@@ -162,9 +159,8 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         code: "edge-inside",
         index,
         field: `edges[${ei}]`,
-        found: `${e.id} joins ${e.from} and ${e.to}, and one lies inside or across the other`,
-        expected: "an edge between ends that neither contain nor overlap each other",
-        suggestion: `edge remove <file> ${e.id}, and connect a member to something outside its container instead`,
+        found: e.id,
+        facts: { fix: [`edge remove <file> ${e.id}`] },
       });
       return;
     }
@@ -173,10 +169,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         code: "edge-blocked",
         index,
         field: `edges[${ei}]`,
-        found: `${e.from} and ${e.to} share a row, with other nodes between them in every row they share`,
-        expected:
-          "a node or group that sits right beside the group it connects to, in a row they share",
-        suggestion: `node move <file> <node> so the two sit side by side, or connect ${e.from} to a member of ${e.to}`,
+        found: e.id,
       });
     }
   });

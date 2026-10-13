@@ -9,6 +9,7 @@ import { parse } from "yaml";
 import { countsText, delta, deltaText, drawing, drawingText } from "../check/drawing.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
+import { yamlError } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
 import { EDGE_KINDS, NODE_KINDS } from "../model/types.ts";
@@ -756,7 +757,13 @@ function build(): Command {
       throw new CommanderError(
         2,
         "grafical.badScale",
-        `--scale must be from 1 to 4, got ${String(opts.scale)}`,
+        record("error", {
+          code: "bad-scale",
+          field: "--scale",
+          found: String(opts.scale),
+          min: 1,
+          max: 4,
+        }),
       );
     }
     const d = loadDiagram(file);
@@ -804,12 +811,22 @@ function build(): Command {
         throw new CommanderError(
           2,
           "grafical.badPort",
-          `--port must be a whole number from 0 to 65535, got ${String(opts.port)}`,
+          record("error", {
+            code: "bad-port",
+            field: "--port",
+            found: String(opts.port),
+            min: 0,
+            max: 65535,
+          }),
         );
       }
       // The file need not exist yet: the window can open before the agent starts drawing.
       if (!existsSync(dirname(file))) {
-        throw new CommanderError(2, "grafical.noFolder", `no folder ${dirname(file)} to watch`);
+        throw new CommanderError(
+          2,
+          "grafical.noFolder",
+          record("error", { code: "no-folder", field: "file", found: dirname(file) }),
+        );
       }
       const viewer = await startViewer(file, port);
       process.stdout.write(`${record("viewing", { file, url: viewer.url, stop: "ctrl-c" })}\n`);
@@ -827,15 +844,18 @@ function build(): Command {
 
 /** A batch file's operations, or nothing when it is refused, with the refusal printed. */
 function readBatch(batch: string, opts: Opts): Op[] | undefined {
+  let text: string;
   let raw: unknown;
   try {
-    raw = parse(readFileSync(batch, "utf8"));
+    text = readFileSync(batch, "utf8");
+  } catch {
+    process.exitCode = emit(fileError("batch-unreadable", batch), opts.json === true);
+    return undefined;
+  }
+  try {
+    raw = parse(text);
   } catch (err) {
-    const why = err instanceof Error ? (err.message.split("\n")[0] ?? "") : String(err);
-    process.exitCode = emit(
-      fileError("batch-unreadable", batch, "a readable YAML list of operations", why),
-      opts.json === true,
-    );
+    process.exitCode = emit(failure([yamlError(text, err)]), opts.json === true);
     return undefined;
   }
   const ops = parseOps(raw);
@@ -859,7 +879,8 @@ async function main(argv: string[]) {
         process.exitCode = 0;
         return;
       }
-      if (err.code.startsWith("grafical.")) process.stderr.write(`error: ${err.message}\n`);
+      // grafical's own usage errors are records (D37); commander prints its own.
+      if (err.code.startsWith("grafical.")) process.stderr.write(`${err.message}\n`);
       process.exitCode = 2;
       return;
     }

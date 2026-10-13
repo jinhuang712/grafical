@@ -7,16 +7,20 @@ import { type Diagram, type DiagramNode, type Edge, type Layer, LINE_STYLES } fr
 
 export function readDiagram(text: string): Diagram | OpError[] {
   const doc = parseDocument(text, { uniqueKeys: true });
-  if (doc.errors.length > 0) {
-    return doc.errors.map((e) => ({
-      code: "bad-yaml",
-      index: 0,
-      found: e.message.split("\n")[0] ?? "invalid YAML",
-      expected: "a valid YAML diagram file",
-      suggestion: `line ${e.linePos?.[0]?.line ?? 1}; fix the syntax or recreate with grafical new`,
-    }));
-  }
+  if (doc.errors.length > 0) return doc.errors.map((e) => yamlError(text, e));
   return validateDiagram(doc.toJS());
+}
+
+/** A YAML syntax error: the line and column it is at, from 1, and the text of that line. */
+export function yamlError(text: string, err: unknown): OpError {
+  const at = (err as { linePos?: { line: number; col: number }[] } | null)?.linePos?.[0];
+  const line = at?.line ?? 1;
+  return {
+    code: "bad-yaml",
+    index: 0,
+    found: (text.split("\n")[line - 1] ?? "").trim(),
+    facts: { line, ...(at !== undefined ? { column: at.col } : {}) },
+  };
 }
 
 // Key order is fixed here. A field that holds its default is left out.

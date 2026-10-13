@@ -100,8 +100,9 @@ describe("overflow", () => {
     const d = run(scene([node("a", 40, 40, "a very long label indeed")]));
     expect(codes(d)).toEqual(["overflow"]);
     expect(d[0]?.elements).toEqual(["a"]);
-    expect(d[0]?.fix).toContain("grafical node rename <file> a --label");
-    expect(d[0]?.fix).toContain("--size l");
+    expect(d[0]).toMatchObject({ field: "label" });
+    expect(d[0]?.facts.fix).toContain("grafical node rename <file> a --label <shorter text>");
+    expect(d[0]?.facts.fix).toContain("grafical node resize <file> a --size l");
   });
 
   it("fails a label with 3 lines, and a sublabel with 2", () => {
@@ -120,7 +121,7 @@ describe("overflow", () => {
         })),
       },
     ];
-    expect(run(s)[0]?.found).toContain("3 lines");
+    expect(run(s)[0]?.facts).toMatchObject({ lines: 3, max: 2 });
     n.texts = [
       node("a", 40, 40).texts[0] as PlacedText,
       {
@@ -137,7 +138,8 @@ describe("overflow", () => {
     ];
     const d = run(s);
     expect(codes(d)).toEqual(["overflow"]);
-    expect(d[0]?.found).toContain("sublabel");
+    expect(d[0]?.field).toBe("sublabel");
+    expect(d[0]?.facts.lines).toBe(2);
   });
 });
 
@@ -267,7 +269,7 @@ describe("edge-overlap", () => {
     ]);
     const d = run(scene(nodes, [x, y]));
     expect(codes(d)).toEqual(["edge-overlap"]);
-    expect(d[0]?.found).toContain("50px");
+    expect(d[0]?.facts.shared).toBe(50);
   });
   it("passes a bus: unlabelled edges of one kind from one node, sharing a trunk", () => {
     const withE = [...nodes, node("e", 172, 240)];
@@ -337,7 +339,9 @@ describe("missing-glyph", () => {
     const found = check(d, s, withGlyphs);
     expect(found.map((f) => f.code)).toEqual(Array(5).fill("missing-glyph"));
     expect(found.map((f) => f.elements[0])).toEqual(["a", "a", "a->b", "l", "title"]);
-    expect(found.some((f) => f.fix.startsWith("grafical node rename <file> a"))).toBe(true);
+    expect(found.some((f) => f.facts.fix?.[0]?.startsWith("grafical node rename <file> a"))).toBe(
+      true,
+    );
   });
   it("fails a subtitle, note and group label with a missing glyph", () => {
     const s = scene([node("a", 40, 40)]);
@@ -347,7 +351,7 @@ describe("missing-glyph", () => {
     d.groups = [{ id: "g", label: "☃ system" }];
     const found = check(d, s, withGlyphs);
     expect(found.map((f) => f.elements[0])).toEqual(["g", "note", "subtitle"]);
-    expect(found.find((f) => f.elements[0] === "g")?.fix).toContain(
+    expect(found.find((f) => f.elements[0] === "g")?.facts.fix?.[0]).toContain(
       "grafical group rename <file> g",
     );
   });

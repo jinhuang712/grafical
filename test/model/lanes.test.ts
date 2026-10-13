@@ -86,7 +86,7 @@ describe("lanes in the model (D32)", () => {
     ]);
     const e1 = fail(rows, [{ op: "lane.join", lane: "platform", members: ["orders"] }]);
     expect(e1[0]).toMatchObject({ code: "lane-mixed" });
-    expect(e1[0]?.suggestion).toBe("lane join <file> platform services");
+    expect(e1[0]?.facts?.fix).toEqual(["lane join <file> platform services"]);
     const { diagram: cols } = ok(shop, [
       { op: "lane.add", id: "ord", label: "Orders", members: ["orders"] },
     ]);
@@ -99,7 +99,7 @@ describe("lanes in the model (D32)", () => {
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge", "data"] },
     ]);
     expect(gap[0]).toMatchObject({ code: "lane-gap" });
-    expect(gap[0]?.suggestion).toContain("lane join <file> platform services");
+    expect(gap[0]?.facts?.fix).toEqual(["lane join <file> platform services"]);
     const { diagram: d } = ok(shop, [
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge", "services"] },
       { op: "layer.add", id: "mesh", label: "Mesh", after: "edge" },
@@ -129,7 +129,7 @@ describe("lanes in the model (D32)", () => {
     expect(e1[0]).toMatchObject({ code: "unknown-lane", field: "lane" });
     const e2 = fail(shop, [{ op: "lane.add", id: "x", label: "X", members: ["gatway"] }]);
     expect(e2[0]).toMatchObject({ code: "unknown-node", field: "members" });
-    expect(e2[0]?.suggestion).toContain("gateway");
+    expect(e2[0]?.facts?.near).toContain("gateway");
     const e3 = fail(shop, [{ op: "lane.add", id: "orders", label: "X" }]);
     expect(e3[0]).toMatchObject({ code: "duplicate-id" });
   });

@@ -5,13 +5,13 @@ import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { type Counts, countsText, drawing } from "../check/drawing.ts";
 import { check } from "../check/index.ts";
-import type { Defect, OpError } from "../errors.ts";
+import { type Defect, FACT_ORDER, type Facts, type OpError } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
 import { readDiagram, writeDiagram } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import type { Diagram } from "../model/types.ts";
-import { record } from "../records.ts";
+import { record, type Value } from "../records.ts";
 import type { Scene } from "../scene.ts";
 import { createMeasurer } from "../text/index.ts";
 import type { Measurer } from "../text/types.ts";
@@ -35,6 +35,35 @@ export function oneLine(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
+/** The facts of an error or a defect, in their fixed order. */
+function factFields(f: Facts | undefined): Record<string, Value> {
+  const out: Record<string, Value> = {};
+  for (const k of FACT_ORDER) if (f?.[k] !== undefined) out[k] = f[k];
+  return out;
+}
+
+/** An error as the report gives it: its operation's index as op, then its facts. */
+function errorFields(e: OpError): Record<string, Value> {
+  return {
+    op: e.index,
+    code: e.code,
+    field: e.field,
+    found: oneLine(e.found),
+    ...factFields(e.facts),
+  };
+}
+
+function defectFields(d: Defect): Record<string, Value> {
+  return {
+    code: d.code,
+    owner: d.owner,
+    elements: d.elements,
+    ...(d.field !== undefined ? { field: d.field } : {}),
+    ...(d.found !== undefined ? { found: oneLine(d.found) } : {}),
+    ...factFields(d.facts),
+  };
+}
+
 /**
  * The report as records (D37): ok with the ids it changed, or failed, then a record
  * for each error and defect, then the counts. A refused change writes nothing.
@@ -43,30 +72,8 @@ export function formatReport(r: Report): string {
   const out: string[] = [];
   if (r.ok) out.push(r.changed.length > 0 ? record("ok", { changed: r.changed }) : "ok");
   else out.push(record("failed", { changed: [] }));
-  for (const e of r.errors) {
-    out.push(
-      record("error", {
-        op: e.index,
-        code: e.code,
-        field: e.field,
-        found: oneLine(e.found),
-        expected: oneLine(e.expected),
-        ...(e.suggestion ? { suggestion: oneLine(e.suggestion) } : {}),
-      }),
-    );
-  }
-  for (const d of r.defects) {
-    out.push(
-      record("defect", {
-        code: d.code,
-        owner: d.owner,
-        elements: d.elements,
-        found: oneLine(d.found),
-        expected: oneLine(d.expected),
-        fix: oneLine(d.fix),
-      }),
-    );
-  }
+  for (const e of r.errors) out.push(record("error", errorFields(e)));
+  for (const d of r.defects) out.push(record("defect", defectFields(d)));
   if (r.counts !== undefined) out.push(countsText(r.counts));
   return `${out.join("\n")}\n`;
 }
@@ -76,7 +83,13 @@ export function emit(report: Report, json: boolean, extra: Record<string, unknow
     const body = {
       ok: report.ok,
       changed: report.changed,
-      errors: report.errors,
+      errors: report.errors.map((e) => ({
+        op: e.index,
+        code: e.code,
+        ...(e.field !== undefined ? { field: e.field } : {}),
+        found: e.found,
+        ...(e.facts !== undefined ? { facts: e.facts } : {}),
+      })),
       defects: report.defects,
       ...(report.counts !== undefined ? { counts: report.counts } : {}),
       ...extra,
@@ -92,39 +105,20 @@ export function failure(errors: OpError[]): Report {
   return { ok: false, changed: [], errors, defects: [] };
 }
 
-export function fileError(
-  code: string,
-  file: string,
-  expected: string,
-  suggestion?: string,
-): Report {
-  return failure([
-    {
-      code,
-      index: 0,
-      field: "file",
-      found: file,
-      expected,
-      ...(suggestion ? { suggestion } : {}),
-    },
-  ]);
+export function fileError(code: string, file: string, facts?: Facts): Report {
+  return failure([{ code, index: 0, field: "file", found: file, ...(facts ? { facts } : {}) }]);
 }
 
 /** Reads and validates a diagram file. */
 export function loadDiagram(file: string): Diagram | Report {
   if (!existsSync(file)) {
-    return fileError(
-      "file-not-found",
-      file,
-      "an existing diagram file",
-      "create it first: grafical new <file> --title <text>",
-    );
+    return fileError("file-not-found", file, { fix: ["grafical new <file> --title <text>"] });
   }
   let text: string;
   try {
     text = readFileSync(file, "utf8");
-  } catch (err) {
-    return fileError("file-unreadable", file, "a readable file", String(err));
+  } catch {
+    return fileError("file-unreadable", file);
   }
   const d = readDiagram(text);
   if (Array.isArray(d)) return failure(d);
@@ -141,17 +135,10 @@ export function loadStyles(file: string, refs: string[]): Report | undefined {
     if (styleProblem(ref) !== undefined) continue;
     const path = join(dirname(file), ref);
     if (!existsSync(path)) {
-      return fileError(
-        "style-not-found",
-        path,
-        "the stylesheet the diagram names",
-        `create ${ref} beside the diagram, or grafical diagram style <file> default`,
-      );
+      return fileError("style-not-found", path, { fix: ["grafical diagram style <file> default"] });
     }
     const theme = parseStylesheet(readFileSync(path, "utf8"), ref);
-    if (Array.isArray(theme)) {
-      return fileError("bad-stylesheet", path, "a valid stylesheet", theme.join("; "));
-    }
+    if (Array.isArray(theme)) return failure(theme);
     provideStylesheet(ref, theme);
   }
   return undefined;
@@ -195,12 +182,7 @@ async function plan(file: string, ops: Op[], create: boolean): Promise<Planned |
   let base: Diagram | null = null;
   if (create) {
     if (existsSync(file)) {
-      return fileError(
-        "file-exists",
-        file,
-        "a path that does not exist yet",
-        "choose another file name; grafical new never overwrites",
-      );
+      return fileError("file-exists", file);
     }
   } else {
     const loaded = loadDiagram(file);

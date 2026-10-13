@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import type { OpError } from "../../src/errors.ts";
 import { layout } from "../../src/layout/index.ts";
 import { applyOps, type Diagram, readDiagram, writeDiagram } from "../../src/model/index.ts";
 import { renderSvg } from "../../src/render/index.ts";
@@ -52,13 +53,14 @@ type:
   title: { weight: 700 }
 `,
       "x.grafical-style.yaml",
-    ) as string[];
+    ) as OpError[];
     expect(Array.isArray(errors)).toBe(true);
-    const text = errors.join("\n");
-    expect(text).toContain("paint.group.fill: a colour like #1a2b3c");
-    expect(text).toContain("shade");
-    expect(text).toContain("paint.edge.kinds.call");
-    expect(text).toContain("type.title.weight");
+    expect(errors.every((e) => e.code === "bad-stylesheet")).toBe(true);
+    const at = (field: string) => errors.find((e) => e.field === field);
+    expect(at("paint.group.fill")?.found).toBe("red");
+    expect(at("paint.group")?.found).toContain("shade");
+    expect(at("paint.edge.kinds.call")).toBeDefined();
+    expect(at("type.title.weight")?.found).toBe("700");
   });
 
   it("take curved or orthogonal lines, and nothing else (D33)", () => {
@@ -69,7 +71,11 @@ type:
       );
     expect((sheet("curved") as Theme).paint.edge.shape).toBe("curved");
     expect((sheet("orthogonal") as Theme).paint.edge.shape).toBe("orthogonal");
-    expect((sheet("wavy") as string[]).join("\n")).toContain("paint.edge.shape");
+    expect((sheet("wavy") as OpError[])[0]).toMatchObject({
+      code: "bad-stylesheet",
+      field: "paint.edge.shape",
+      found: "wavy",
+    });
     expect(THEMES.default?.paint.edge.shape).toBe("orthogonal");
   });
 
@@ -80,7 +86,11 @@ type:
         "x.grafical-style.yaml",
       );
     expect((sheet("shade") as Theme).paint.nesting).toBe("shade");
-    expect((sheet("stripes") as string[]).join("\n")).toContain("paint.nesting");
+    expect((sheet("stripes") as OpError[])[0]).toMatchObject({
+      code: "bad-stylesheet",
+      field: "paint.nesting",
+      found: "stripes",
+    });
     expect(THEMES.default?.paint.nesting).toBe("alternate");
   });
 
@@ -88,8 +98,8 @@ type:
     expect(styleProblem("dark")).toBeUndefined();
     expect(styleProblem("brand.grafical-style.yaml")).toBeUndefined();
     expect(styleProblem("styles/brand.grafical-style.yaml")).toBeUndefined();
-    expect(styleProblem("neon")).toContain("built-in theme");
-    expect(styleProblem("../brand.grafical-style.yaml")).toContain("inside");
+    expect(styleProblem("neon")).toBe("bad-value");
+    expect(styleProblem("../brand.grafical-style.yaml")).toBe("outside-folder");
   });
 });
 

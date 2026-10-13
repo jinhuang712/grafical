@@ -36,8 +36,6 @@ export const MAX_LABEL_LINES = 2;
 export const MAX_SUBLABEL_LINES = 1;
 
 const r2 = (v: number): string => String(Math.round(v * 100) / 100);
-const rectText = (r: Rect): string =>
-  `x ${r2(r.x)}..${r2(r.x + r.w)}, y ${r2(r.y)}..${r2(r.y + r.h)}`;
 
 function lineCount(t: PlacedText): number {
   return new Set(t.runs.map((r) => r2(r.y))).size;
@@ -53,33 +51,25 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
       if (explicit || (n.size === undefined && diagram.sizing === "fixed")) canGrow.add(n.id);
     }
   }
+  const texts = new Map<string, { label: string; sublabel?: string }>();
+  for (const layer of diagram.layers) for (const n of layer.nodes) texts.set(n.id, n);
   for (const n of scene.nodes) {
-    const box = inset(n.rect, NODE_PADDING, NODE_PADDING_Y);
     for (const t of n.texts) {
       const isSub = t.role === "node-sublabel";
       const max = isSub ? MAX_SUBLABEL_LINES : MAX_LABEL_LINES;
       const lines = lineCount(t);
-      const what = isSub ? "sublabel" : "label";
-      const shorten = isSub
-        ? `grafical node describe <file> ${n.id} --text <shorter text>`
-        : `grafical node rename <file> ${n.id} --label <shorter text>`;
-      const bigger = canGrow.has(n.id) ? `, or grafical node resize <file> ${n.id} --size l` : "";
+      const field = isSub ? "sublabel" : "label";
+      const fix = [
+        isSub
+          ? `grafical node describe <file> ${n.id} --text <shorter text>`
+          : `grafical node rename <file> ${n.id} --label <shorter text>`,
+        ...(canGrow.has(n.id) ? [`grafical node resize <file> ${n.id} --size l`] : []),
+      ];
+      const found = (isSub ? texts.get(n.id)?.sublabel : texts.get(n.id)?.label) ?? "";
       if (lines > max) {
-        out.push({
-          code: "overflow",
-          elements: [n.id],
-          found: `the ${what} of ${n.id} has ${lines} lines`,
-          expected: `at most ${max} ${max === 1 ? "line" : "lines"}`,
-          fix: `${shorten}${bigger}`,
-        });
+        out.push({ code: "overflow", elements: [n.id], field, found, facts: { lines, max, fix } });
       } else if (!textInside(n.kind, n.rect, t.bbox)) {
-        out.push({
-          code: "overflow",
-          elements: [n.id],
-          found: `the ${what} of ${n.id} spans ${rectText(t.bbox)}, outside ${rectText(box)}`,
-          expected: `text inside the box, ${NODE_PADDING}px from its sides and ${NODE_PADDING_Y}px from its top and bottom`,
-          fix: `${shorten}${bigger}`,
-        });
+        out.push({ code: "overflow", elements: [n.id], field, found, facts: { lines, fix } });
       }
     }
   }
@@ -92,9 +82,9 @@ function checkLaneLabels(scene: Scene, out: Found[]): void {
     out.push({
       code: "overflow",
       elements: [x.id],
-      found: `the label of lane ${x.id} spans ${rectText(x.label.bbox)}, outside its header ${rectText(x.head)}`,
-      expected: "a lane label inside the lane's header",
-      fix: `grafical lane rename <file> ${x.id} --label <shorter text>`,
+      field: "label",
+      found: x.label.runs.map((r) => r.text).join(" "),
+      facts: { fix: [`grafical lane rename <file> ${x.id} --label <shorter text>`] },
     });
   }
 }
@@ -109,9 +99,7 @@ function checkNodeOverlap(scene: Scene, out: Found[]): void {
         out.push({
           code: "node-overlap",
           elements: [a.id, b.id].sort(),
-          found: `${a.id} (${rectText(a.rect)}) overlaps ${b.id} (${rectText(b.rect)})`,
-          expected: "node boxes that do not intersect",
-          fix: `grafical node move <file> ${b.id} --layer <layer> --after ${a.id}`,
+          facts: {},
         });
       }
     }
@@ -128,9 +116,7 @@ function checkEdgeThroughNode(scene: Scene, out: Found[]): void {
         out.push({
           code: "edge-through-node",
           elements: [e.id, n.id],
-          found: `edge ${e.id} passes through node ${n.id}`,
-          expected: "a route that goes around nodes other than its two ends",
-          fix: `grafical node move <file> ${n.id} --layer <layer> --first (or --last), so the route can pass beside it`,
+          facts: {},
         });
       }
     }
@@ -146,9 +132,7 @@ function checkLabelCollision(scene: Scene, out: Found[]): void {
         out.push({
           code: "label-collision",
           elements: [e.id, n.id],
-          found: `the label of edge ${e.id} overlaps node ${n.id}`,
-          expected: "an edge label clear of nodes",
-          fix: `grafical edge remove <file> ${e.id}, then add it again with a shorter --label`,
+          facts: { is: "node" },
         });
       }
     }
@@ -158,9 +142,7 @@ function checkLabelCollision(scene: Scene, out: Found[]): void {
         out.push({
           code: "label-collision",
           elements: [e.id, o.id],
-          found: `the label of edge ${e.id} sits on edge ${o.id}`,
-          expected: "an edge label clear of other edges",
-          fix: `grafical edge remove <file> ${e.id}, then add it again with a shorter --label`,
+          facts: { is: "edge" },
         });
       }
     }
@@ -173,9 +155,7 @@ function checkLabelCollision(scene: Scene, out: Found[]): void {
         out.push({
           code: "label-collision",
           elements: [a.id, b.id].sort(),
-          found: `the labels of edges ${a.id} and ${b.id} overlap`,
-          expected: "edge labels that do not overlap",
-          fix: `grafical edge remove <file> ${b.id}, then add it again with a shorter --label`,
+          facts: { is: "label" },
         });
       }
     }
@@ -191,34 +171,28 @@ export const TEXT_TOLERANCE = 2;
  * because its segments run next to it by design.
  */
 function checkTextCrossing(scene: Scene, out: Found[]): void {
-  const targets: { id: string; what: string; text: PlacedText; owner?: string }[] = [];
+  // Each text, with the element it belongs to and what that element is.
+  const targets: { id: string; is: string; text: PlacedText; owner?: string }[] = [];
   for (const n of scene.nodes) {
-    for (const t of n.texts) targets.push({ id: n.id, what: `the text of node ${n.id}`, text: t });
+    for (const t of n.texts) targets.push({ id: n.id, is: "node", text: t });
   }
   for (const e of scene.edges) {
-    if (e.label) {
-      targets.push({ id: e.id, what: `the label of edge ${e.id}`, text: e.label, owner: e.id });
-    }
+    if (e.label) targets.push({ id: e.id, is: "edge", text: e.label, owner: e.id });
   }
   for (const g of scene.groups ?? []) {
-    targets.push({ id: g.id, what: `the label of group ${g.id}`, text: g.label });
-    if (g.sublabel)
-      targets.push({ id: g.id, what: `the label of group ${g.id}`, text: g.sublabel });
+    targets.push({ id: g.id, is: "group", text: g.label });
+    if (g.sublabel) targets.push({ id: g.id, is: "group", text: g.sublabel });
   }
-  for (const b of scene.bands ?? []) {
-    targets.push({ id: b.id, what: `the label of layer ${b.id}`, text: b.label });
-  }
-  for (const x of scene.lanes ?? []) {
-    targets.push({ id: x.id, what: `the label of lane ${x.id}`, text: x.label });
-  }
+  for (const b of scene.bands ?? []) targets.push({ id: b.id, is: "layer", text: b.label });
+  for (const x of scene.lanes ?? []) targets.push({ id: x.id, is: "lane", text: x.label });
   const named: [string, PlacedText | undefined][] = [
     ["subtitle", scene.subtitle],
     ["note", scene.note],
     ["title", scene.title],
   ];
-  for (const [id, t] of named) if (t) targets.push({ id, what: `the ${id}`, text: t });
+  for (const [id, t] of named) if (t) targets.push({ id, is: id, text: t });
   for (const [i, item] of (scene.legend ?? []).entries()) {
-    targets.push({ id: `legend-${i}`, what: `legend item ${i + 1}`, text: item.label });
+    targets.push({ id: `legend-${i}`, is: "legend", text: item.label });
   }
   for (const e of scene.edges) {
     const segs = segmentsOf(e.points);
@@ -229,9 +203,7 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
         out.push({
           code: "text-crossing",
           elements: [e.id, t.id],
-          found: `edge ${e.id} crosses ${t.what}`,
-          expected: "lines that never run through text",
-          fix: `none for the agent: the engine must route ${e.id} around the text`,
+          facts: { is: t.is },
         });
       }
     }
@@ -247,9 +219,7 @@ function checkGroupIntruder(scene: Scene, out: Found[]): void {
       out.push({
         code: "group-intruder",
         elements: [g.id, n.id],
-        found: `node ${n.id} (${rectText(n.rect)}) lies inside group ${g.id} (${rectText(g.rect)}) but is not a member`,
-        expected: "only members inside a group box",
-        fix: `grafical node move <file> ${n.id} --layer <layer> --first (or --last), so the group box can close around its members`,
+        facts: {},
       });
     }
   }
@@ -265,11 +235,7 @@ function checkLaneStray(diagram: Diagram, scene: Scene, out: Found[]): void {
       out.push({
         code: "lane-stray",
         elements: [x.id, n.id],
-        found: member
-          ? `node ${n.id} (${rectText(n.rect)}) is in lane ${x.id} (${rectText(x.rect)}) but lies outside it`
-          : `node ${n.id} (${rectText(n.rect)}) lies inside lane ${x.id} (${rectText(x.rect)}) but is not in it`,
-        expected: "every node of a lane inside it, and no other node",
-        fix: `none for the agent: the engine must place ${n.id} on the right side of the lane's border`,
+        facts: { lane: member ? x.id : "none" },
       });
     }
   }
@@ -315,9 +281,7 @@ function checkEdgeOverlap(scene: Scene, out: Found[]): void {
         out.push({
           code: "edge-overlap",
           elements: [a.id, b.id].sort(),
-          found: `edges ${a.id} and ${b.id} share ${r2(length(worst))}px of one line, from (${r2(worst.a.x)}, ${r2(worst.a.y)}) to (${r2(worst.b.x)}, ${r2(worst.b.y)})`,
-          expected: "edges that can be told apart",
-          fix: `grafical node move <file> <node of ${b.id}> --after <neighbour>, to change how the edges are routed`,
+          facts: { shared: Math.round(length(worst)) },
         });
       }
     }
@@ -325,95 +289,45 @@ function checkEdgeOverlap(scene: Scene, out: Found[]): void {
 }
 
 function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
-  const add = (id: string, what: string, text: string | undefined, fix: string): void => {
+  const add = (id: string, field: string, text: string | undefined, fix: string): void => {
     if (!text) return;
     const missing = m.missingGlyphs(text);
     if (missing.length === 0) return;
     out.push({
       code: "missing-glyph",
       elements: [id],
-      found: `the ${what} "${text}" has characters no bundled font can draw: ${missing.join(" ")}`,
-      expected: "characters that Inter or Noto Sans SC can draw",
-      fix,
+      field,
+      found: text,
+      facts: { chars: missing, fix: [fix] },
     });
   };
-  add(
-    "title",
-    "title",
-    diagram.title,
-    "grafical diagram title <file> --text <text without these characters>",
-  );
-  add(
-    "subtitle",
-    "subtitle",
-    diagram.subtitle,
-    "grafical diagram subtitle <file> --text <text without these characters>",
-  );
-  add(
-    "note",
-    "note",
-    diagram.note,
-    "grafical diagram note <file> --text <text without these characters>",
-  );
+  add("title", "title", diagram.title, "grafical diagram title <file> --text <text>");
+  add("subtitle", "subtitle", diagram.subtitle, "grafical diagram subtitle <file> --text <text>");
+  add("note", "note", diagram.note, "grafical diagram note <file> --text <text>");
   for (const g of diagram.groups ?? []) {
-    add(
-      g.id,
-      "group label",
-      g.label,
-      `grafical group rename <file> ${g.id} --label <text without these characters>`,
-    );
-    add(
-      g.id,
-      "group sublabel",
-      g.sublabel,
-      `grafical group describe <file> ${g.id} --text <text without these characters>`,
-    );
+    add(g.id, "label", g.label, `grafical group rename <file> ${g.id} --label <text>`);
+    add(g.id, "sublabel", g.sublabel, `grafical group describe <file> ${g.id} --text <text>`);
   }
   for (const x of diagram.lanes ?? []) {
-    add(
-      x.id,
-      "lane label",
-      x.label,
-      `grafical lane rename <file> ${x.id} --label <text without these characters>`,
-    );
+    add(x.id, "label", x.label, `grafical lane rename <file> ${x.id} --label <text>`);
   }
   for (const line of LINE_STYLES) {
     add(
       `legend-${line}`,
-      "legend text",
+      "text",
       diagram.legend?.[line],
-      `grafical diagram legend <file> ${line} --text <text without these characters>`,
+      `grafical diagram legend <file> ${line} --text <text>`,
     );
   }
   for (const layer of diagram.layers) {
-    add(
-      layer.id,
-      "layer label",
-      layer.label,
-      `grafical layer rename <file> ${layer.id} --label <text without these characters>`,
-    );
+    add(layer.id, "label", layer.label, `grafical layer rename <file> ${layer.id} --label <text>`);
     for (const n of layer.nodes) {
-      add(
-        n.id,
-        "label",
-        n.label,
-        `grafical node rename <file> ${n.id} --label <text without these characters>`,
-      );
-      add(
-        n.id,
-        "sublabel",
-        n.sublabel,
-        `grafical node describe <file> ${n.id} --text <text without these characters>`,
-      );
+      add(n.id, "label", n.label, `grafical node rename <file> ${n.id} --label <text>`);
+      add(n.id, "sublabel", n.sublabel, `grafical node describe <file> ${n.id} --text <text>`);
     }
   }
   for (const e of diagram.edges) {
-    add(
-      e.id,
-      "edge label",
-      e.label,
-      `grafical edge relabel <file> ${e.id} --label <text without these characters>`,
-    );
+    add(e.id, "label", e.label, `grafical edge relabel <file> ${e.id} --label <text>`);
   }
 }
 
@@ -445,14 +359,18 @@ export function check(diagram: Diagram, scene: Scene, measurer: Measurer): Defec
       (a, b) =>
         order(a) - order(b) ||
         compare(a.elements.join("\u0000"), b.elements.join("\u0000")) ||
-        compare(a.found, b.found),
+        compare(
+          `${a.field ?? ""}\u0000${a.found ?? ""}`,
+          `${b.field ?? ""}\u0000${b.found ?? ""}`,
+        ) ||
+        compare(JSON.stringify(a.facts), JSON.stringify(b.facts)),
     )
     .map((d) => ({
       code: d.code,
       owner: DEFECT_OWNER[d.code],
       elements: d.elements,
-      found: d.found,
-      expected: d.expected,
-      fix: d.fix,
+      ...(d.field !== undefined ? { field: d.field } : {}),
+      ...(d.found !== undefined ? { found: d.found } : {}),
+      facts: d.facts,
     }));
 }

@@ -29,8 +29,7 @@ export function geometryFailures(s: Scene): Defect[] {
     owner: "engine",
     elements: [],
     found,
-    expected: "",
-    fix: "",
+    facts: {},
   });
   return [
     ...textCrossings(s).map((x) => as("text-crossing", x)),

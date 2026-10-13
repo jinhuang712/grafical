@@ -16,8 +16,10 @@
 //    nodes it connects to.
 // Pure: no measurement and no pixels. place.ts turns columns into x.
 
+import type { Facts } from "../errors.ts";
 import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
+import { closest } from "../model/suggest.ts";
 import type { Diagram } from "../model/types.ts";
 import type { AlignmentProblem } from "./align.ts";
 
@@ -30,8 +32,7 @@ export interface GroupProblem {
   /** The node that stands in the way, if one does. */
   node?: string;
   found: string;
-  expected: string;
-  suggestion: string;
+  facts: Facts;
 }
 
 export interface Grid {
@@ -197,27 +198,28 @@ export function buildGrid(d: Diagram): Grid {
         code: "self-alignment",
         node: id,
         target: t,
-        found: `${id} aligned with itself`,
-        expected: "a node in another layer",
-        suggestion: `remove the alignment of ${id}`,
+        found: t,
+        facts: { node: id, fix: [`node align <file> ${id}`] },
       });
     } else if (j === undefined) {
       alignProblems.push({
         code: "unknown-node",
         node: id,
         target: t,
-        found: `no node ${t}`,
-        expected: "the id of a node in another layer",
-        suggestion: `align ${id} with an existing node, or remove the alignment`,
+        found: t,
+        facts: { node: id, near: closest(t, ids), fix: [`node align <file> ${id}`] },
       });
     } else if (row[j] === row[i]) {
       alignProblems.push({
         code: "same-layer",
         node: id,
         target: t,
-        found: `${t} is in the same layer as ${id}`,
-        expected: "a node in another layer",
-        suggestion: `align ${id} with a node above or below it, or remove the alignment`,
+        found: t,
+        facts: {
+          node: id,
+          row: d.layers[row[i] as number]?.id ?? "",
+          fix: [`node align <file> ${id}`],
+        },
       });
     } else if (tryJoin(i, j) === "clash") {
       const layer = d.layers[row[i] as number]?.id ?? "";
@@ -225,10 +227,8 @@ export function buildGrid(d: Diagram): Grid {
         code: "alignment-conflict",
         node: id,
         target: t,
-        found: `${id} cannot sit in the column of ${t}: the order of layer ${layer}, another alignment or a group puts that column elsewhere`,
-        expected:
-          "an alignment that fits the order of both layers, the other alignments and the groups",
-        suggestion: `remove the alignment of ${id}, or move ${id} in layer ${layer} so that it lies on the same side of its neighbours as ${t}`,
+        found: t,
+        facts: { node: id, row: layer, fix: [`node align <file> ${id}`] },
       });
     }
   }
@@ -527,13 +527,13 @@ function groupConstraints(
         // of its nodes sits wholly left or right of the box, the row keeping its order.
         const split = gapSplit(list, ms, g, rows, chainOf, links, reaches, cls);
         if (split === undefined) {
-          failed = conflict(d, g, ids[list[0] as number] as string);
+          failed = conflict(g, ids[list[0] as number] as string);
           break;
         }
         for (const [k, i] of list.entries()) {
           for (const m of ms) {
             if (k < split ? addEdge(i, m, mine) : addEdge(m, i, mine)) continue;
-            failed = conflict(d, g, ids[i] as string);
+            failed = conflict(g, ids[i] as string);
             break;
           }
           if (failed !== undefined) break;
@@ -550,9 +550,8 @@ function groupConstraints(
           code: "group-split",
           group: g,
           node: s,
-          found: `${s} sits between members of ${g} in layer ${layer}`,
-          expected: `the members of ${g} next to each other in every layer`,
-          suggestion: `move ${s} before or after the members of ${g} in layer ${layer}, or join it to ${g}`,
+          found: s,
+          facts: { group: g, row: layer, fix: [`group join <file> ${g} ${s}`] },
         };
         break;
       }
@@ -560,11 +559,11 @@ function groupConstraints(
       const right = list[last + 1];
       for (const m of ms) {
         if (left !== undefined && !addEdge(left, m, mine)) {
-          failed = conflict(d, g, ids[left] as string);
+          failed = conflict(g, ids[left] as string);
           break;
         }
         if (right !== undefined && !addEdge(m, right, mine)) {
-          failed = conflict(d, g, ids[right] as string);
+          failed = conflict(g, ids[right] as string);
           break;
         }
       }
@@ -587,7 +586,7 @@ function groupConstraints(
       for (const m of ms) {
         for (const o of os) {
           const ok = side < 0 ? addEdge(m, o, mine) : addEdge(o, m, mine);
-          if (!ok && failed === undefined) failed = conflict(d, g, undefined, other.group);
+          if (!ok && failed === undefined) failed = conflict(g, undefined, other.group);
         }
       }
     }
@@ -649,18 +648,19 @@ function gapSplit(
   return best;
 }
 
-function conflict(d: Diagram, g: string, node?: string, other?: string): GroupProblem {
-  const label = d.groups?.find((x) => x.id === g)?.label ?? g;
-  const what = other !== undefined ? `group ${other}` : `node ${node}`;
+/** A node or another group that lies left of group g in one row and right of it in another. */
+function conflict(g: string, node?: string, other?: string): GroupProblem {
   const p: GroupProblem = {
     code: "group-conflict",
     group: g,
-    found: `${g} (${label}) cannot be one box: ${what} lies on its left in one layer and on its right in another`,
-    expected: `a side of ${g} that ${what} keeps in every layer`,
-    suggestion:
-      other !== undefined
-        ? `move the members of ${g} or of ${other} so that one group is left of the other in every layer`
-        : `move ${node} to the same side of the members of ${g} in every layer, or join it to ${g}`,
+    found: other ?? node ?? "",
+    facts: {
+      is: other !== undefined ? "group" : "node",
+      group: g,
+      ...(other === undefined && node !== undefined
+        ? { fix: [`group join <file> ${g} ${node}`] }
+        : {}),
+    },
   };
   if (node !== undefined) p.node = node;
   return p;

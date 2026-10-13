@@ -8,6 +8,9 @@
 
 import { parse } from "yaml";
 import { z } from "zod";
+import type { OpError } from "../errors.ts";
+import { yamlError } from "../model/io.ts";
+import { getPath, show } from "../model/issues.ts";
 import type { Diagram } from "../model/types.ts";
 import type { TextRole } from "../scene.ts";
 import type { TextStyle } from "../text/types.ts";
@@ -141,15 +144,11 @@ export const THEMES: Record<string, Theme> = {
 
 export const DEFAULT_THEME = THEMES.default as Theme;
 
-/** Is this a style a diagram may name: a built-in theme, or a stylesheet's relative path? */
-export function styleProblem(style: string): string | undefined {
+/** Why a diagram may not name this style, as an error code: undefined for a built-in theme or a stylesheet inside its folder. */
+export function styleProblem(style: string): "bad-value" | "outside-folder" | undefined {
   if (style in THEMES) return undefined;
-  if (!style.endsWith(STYLESHEET_SUFFIX)) {
-    return `a built-in theme (${Object.keys(THEMES).join(", ")}) or a file named <name>${STYLESHEET_SUFFIX}`;
-  }
-  if (style.startsWith("/") || style.split("/").includes("..")) {
-    return `a path relative to the diagram's folder, inside it`;
-  }
+  if (!style.endsWith(STYLESHEET_SUFFIX)) return "bad-value";
+  if (style.startsWith("/") || style.split("/").includes("..")) return "outside-folder";
   return undefined;
 }
 
@@ -227,19 +226,22 @@ function merge<T>(base: T, over: unknown): T {
   return out as T;
 }
 
-/** A stylesheet's text as a theme named `ref`, or the problems, one per line. */
-export function parseStylesheet(text: string, ref: string): Theme | string[] {
+/** A stylesheet's text as a theme named `ref`, or an error for each field at fault. */
+export function parseStylesheet(text: string, ref: string): Theme | OpError[] {
   let raw: unknown;
   try {
     raw = parse(text);
   } catch (err) {
-    return [
-      `not valid YAML: ${err instanceof Error ? (err.message.split("\n")[0] ?? "") : String(err)}`,
-    ];
+    return [yamlError(text, err)];
   }
   const r = SHEET_SCHEMA.safeParse(raw);
   if (!r.success) {
-    return r.error.issues.map((i) => `${i.path.join(".") || "(top)"}: ${i.message}`);
+    return r.error.issues.map((i) => ({
+      code: "bad-stylesheet",
+      index: 0,
+      field: i.path.join("."),
+      found: show(getPath(raw, i.path)),
+    }));
   }
   const base = THEMES[r.data.base ?? "default"] as Theme;
   return {

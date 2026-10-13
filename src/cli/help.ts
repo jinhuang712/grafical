@@ -72,9 +72,9 @@ Diagram types:
 
 When refused:
   The command prints "failed changed=-" and a record per problem: "error"
-  (a fact is wrong) or "defect" (the picture would be wrong), each with
-  what to fix. The file is untouched. Exit codes: 0 done, 1 refused, 2 a
-  usage error. grafical apply --help lists the codes.
+  (a fact is wrong) or "defect" (the picture would be wrong), with a code
+  and facts. The file is untouched. Exit codes: 0 done, 1 refused, 2 a
+  usage error. grafical apply --help lists the facts.
 
 Run grafical <command> --help for its options and what to know about it.
 `;
@@ -174,17 +174,22 @@ Output:
 
 When refused:
   failed changed=-, the file untouched, then a record per problem:
-  error op=<index> code=<code> field=<field> found=<value> expected=<what>
-        suggestion=<how>
-    unknown-node, -layer, -group, -lane, -edge: the suggestion names the
-    closest ids. duplicate-id, bad-id, bad-type, bad-value, missing-field,
-    unknown-field, unknown-op: the item is malformed. Others: follow the
-    suggestion.
-  defect code=<code> owner=agent elements=<ids> found=<what> expected=<what>
-         fix=<operation>
-    overflow: a label is too long for its box; shorten it, or move detail
-    to the sublabel. missing-glyph: a character cannot be drawn; replace it.
-    Where lines and boxes go is grafical's job, never yours.
+  error op=<index> code=<code> field=<field> found=<value> <facts>
+  defect code=<code> owner=agent elements=<ids> field=<field> found=<text>
+         <facts>
+  The code says what is wrong, and the facts what is there:
+    near       the closest existing ids
+    likely     what the value most likely means: use it
+    allowed    the values or fields allowed
+    free       an unused id like the one given
+    count, lines, min, max   counts and limits
+    row, group, node, nodes  the row or group it concerns, and its nodes
+    line, column             where in the YAML
+    fix        operations that would fix it
+  unquoted-text: YAML cut unquoted text at a comma or a colon; quote it.
+  overflow: the text takes more lines than its box holds; shorten it, or
+  move detail to the sublabel. missing-glyph: chars cannot be drawn.
+  Where lines and boxes go is grafical's job, never yours.
   Exit codes: 0 done, 1 refused, 2 a usage error.
 
 See also: show, render, diff

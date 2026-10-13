@@ -698,8 +698,7 @@ export function parseOp(raw: unknown, index: number): Op | OpError[] {
         index,
         field: "op",
         found: show(raw),
-        expected: "a mapping with op: <noun>.<verb> and the operation's fields",
-        suggestion: `ops: ${OP_NAMES.join(", ")}`,
+        facts: { allowed: OP_NAMES },
       },
     ];
   }
@@ -710,8 +709,7 @@ export function parseOp(raw: unknown, index: number): Op | OpError[] {
         index,
         field: "op",
         found: name,
-        expected: `one of: ${OP_NAMES.join(", ")}`,
-        suggestion: `closest ops: ${closest(name, OP_NAMES, 2).join(", ")}`,
+        facts: { likely: closest(name, OP_NAMES, 2) },
       },
     ];
   }
@@ -728,7 +726,7 @@ export function parseOps(raw: unknown): Op[] | OpError[] {
         code: "bad-batch",
         index: 0,
         found: show(raw),
-        expected: "a YAML list of operations, each starting with op: <noun>.<verb>",
+        facts: { type: "array" },
       },
     ];
   }

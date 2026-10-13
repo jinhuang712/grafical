@@ -5,13 +5,13 @@
 import type { OpError } from "../errors.ts";
 import * as layoutModule from "../layout/index.ts";
 import type { Measurer } from "../text/types.ts";
-import { styleProblem, THEMES } from "../theme/themes.ts";
+import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
 import { endIds, endKind } from "./ends.ts";
 import { groupChain, groupHeight, inGroup, innerGroups, MAX_GROUP_DEPTH } from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
 import type { EdgeAddOp, LayerAddOp, NodeAddOp, NodeMoveOp, Op, Position } from "./ops.ts";
 import { checkIntegrity, MAX_ACCENTS } from "./schema.ts";
-import { suggestIds } from "./suggest.ts";
+import { closest } from "./suggest.ts";
 import {
   DEFAULT_DENSITY,
   DEFAULT_EDGE_KIND,
@@ -62,8 +62,7 @@ function dupError(d: Diagram, id: string, i: number): OpError | undefined {
     index: i,
     field: "id",
     found: id,
-    expected: "an id not used by any layer, group, lane, node or edge",
-    suggestion: `${id} is a ${kind}; free: ${id}-${n}`,
+    facts: { is: kind, free: `${id}-${n}` },
   };
 }
 
@@ -89,8 +88,7 @@ function unknownNode(d: Diagram, id: string, i: number, field: string): OpError 
     index: i,
     field,
     found: id,
-    expected: "the id of an existing node",
-    suggestion: suggestIds(id, nodeIds(d), "node"),
+    facts: { near: closest(id, nodeIds(d)) },
   };
 }
 
@@ -100,12 +98,12 @@ function unknownLayer(d: Diagram, id: string, i: number, field: string): OpError
     index: i,
     field,
     found: id,
-    expected: "the id of an existing layer",
-    suggestion: suggestIds(
-      id,
-      d.layers.map((l) => l.id),
-      "layer",
-    ),
+    facts: {
+      near: closest(
+        id,
+        d.layers.map((l) => l.id),
+      ),
+    },
   };
 }
 
@@ -115,12 +113,12 @@ function unknownGroup(d: Diagram, id: string, i: number, field: string): OpError
     index: i,
     field,
     found: id,
-    expected: "the id of an existing group",
-    suggestion: suggestIds(
-      id,
-      (d.groups ?? []).map((g) => g.id),
-      "group",
-    ),
+    facts: {
+      near: closest(
+        id,
+        (d.groups ?? []).map((g) => g.id),
+      ),
+    },
   };
 }
 
@@ -157,14 +155,15 @@ function nestError(
   field: string,
 ): OpError | undefined {
   const around = groupChain(d, parent);
+  // The value at fault: the group it would sit in, or the group joining another.
+  const found = field === "in" ? parent : id;
   if (around.includes(id)) {
     return {
       code: "group-cycle",
       index: i,
       field,
-      found: `${parent} sits inside ${id}`,
-      expected: "a group inside a group that is not inside it",
-      suggestion: `put ${id} in a group outside it, or take ${parent} out of ${id} first`,
+      found,
+      facts: { chain: [id, ...around.slice(0, around.indexOf(id) + 1)] },
     };
   }
   const levels = around.length + groupHeight(d, id);
@@ -173,9 +172,8 @@ function nestError(
     code: "group-too-deep",
     index: i,
     field,
-    found: `${id} in ${around.join(" in ")} makes ${levels} levels`,
-    expected: `groups at most ${MAX_GROUP_DEPTH} levels deep`,
-    suggestion: `put ${id} in a group further out, or none`,
+    found,
+    facts: { count: levels, max: MAX_GROUP_DEPTH, chain: [id, ...around] },
   };
 }
 
@@ -263,12 +261,12 @@ function unknownLane(d: Diagram, id: string, i: number, field: string): OpError 
     index: i,
     field,
     found: id,
-    expected: "the id of an existing lane",
-    suggestion: suggestIds(
-      id,
-      (d.lanes ?? []).map((x) => x.id),
-      "lane",
-    ),
+    facts: {
+      near: closest(
+        id,
+        (d.lanes ?? []).map((x) => x.id),
+      ),
+    },
   };
 }
 
@@ -312,9 +310,12 @@ function laneTargets(
           code: "lane-mixed",
           index: i,
           field: "members",
-          found: `${id} is a layer, and the lanes here run as columns`,
-          expected: "nodes or groups: lanes that run as columns hold nodes",
-          suggestion: `lane join <file> ${lane} ${layer.nodes.map((n) => n.id).join(" ") || "<node>"}`,
+          found: id,
+          facts: {
+            is: "layer",
+            run: "columns",
+            fix: [`lane join <file> ${lane} ${layer.nodes.map((n) => n.id).join(" ") || "<node>"}`],
+          },
         });
     } else if (node !== undefined) {
       if (settled === "columns") nodes.push(node.node);
@@ -323,9 +324,8 @@ function laneTargets(
           code: "lane-mixed",
           index: i,
           field: "members",
-          found: `${id} is a node, and the lanes here run as rows`,
-          expected: "layers or groups: lanes that run as rows hold layers",
-          suggestion: `lane join <file> ${lane} ${node.layer.id}`,
+          found: id,
+          facts: { is: "node", run: "rows", fix: [`lane join <file> ${lane} ${node.layer.id}`] },
         });
     } else {
       errors.push({
@@ -333,8 +333,7 @@ function laneTargets(
         index: i,
         field: "members",
         found: id,
-        expected: "the id of a layer, node or group",
-        suggestion: suggestIds(id, [...layerIds, ...nodeIds(d), ...groupIds], "id"),
+        facts: { near: closest(id, [...layerIds, ...nodeIds(d), ...groupIds]) },
       });
     }
   }
@@ -404,9 +403,8 @@ function checkAlign(d: Diagram, nodeLayer: string, target: string, i: number): O
       code: "align-same-layer",
       index: i,
       field: "align",
-      found: `${target} (layer ${nodeLayer})`,
-      expected: "a node in another layer",
-      suggestion: `${target} is in the same layer; align to a node in a different layer`,
+      found: target,
+      facts: { row: nodeLayer },
     };
   }
   return undefined;
@@ -434,9 +432,8 @@ function resolveSlot(
         code: "conflicting-position",
         index: i,
         field: set.join(","),
-        found: set.join(", "),
-        expected: "at most one of first, last, before, after",
-        suggestion: "keep one",
+        found: set.join(","),
+        facts: { max: 1 },
       },
     };
   }
@@ -452,8 +449,7 @@ function resolveSlot(
         index: i,
         field,
         found: ref,
-        expected: "another node",
-        suggestion: "a node cannot be placed relative to itself",
+        facts: { node: self },
       },
     };
   }
@@ -466,9 +462,8 @@ function resolveSlot(
           code: "not-in-layer",
           index: i,
           field,
-          found: `${ref} (layer ${elsewhere.layer.id})`,
-          expected: `a node in layer ${layerId}`,
-          suggestion: `nodes in ${layerId}: ${list.map((n) => n.id).join(", ") || "(none)"}`,
+          found: ref,
+          facts: { row: layerId, nodes: list.map((n) => n.id) },
         },
       };
     }
@@ -487,9 +482,8 @@ function addLayer(s: State, op: LayerAddOp, i: number): OpError[] {
       code: "conflicting-position",
       index: i,
       field: "before,after",
-      found: "before, after",
-      expected: "at most one of before, after",
-      suggestion: "keep one",
+      found: "before,after",
+      facts: { max: 1 },
     });
   }
   let at = d.layers.length;
@@ -522,16 +516,7 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
   }
   if (op.accent === true) {
     const count = d.layers.reduce((n, l) => n + l.nodes.filter((x) => x.accent).length, 0);
-    if (count >= MAX_ACCENTS) {
-      errors.push({
-        code: "too-many-accents",
-        index: i,
-        field: "accent",
-        found: `${count + 1} accented nodes`,
-        expected: `at most ${MAX_ACCENTS}`,
-        suggestion: "node emphasize <id> --off on another node first",
-      });
-    }
+    if (count >= MAX_ACCENTS) errors.push(tooManyAccents(d, i, "accent", "true", count + 1));
   }
   let slot: Slot = { auto: true };
   if (layer) {
@@ -564,9 +549,8 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
       {
         code: "missing-field",
         index: i,
-        field: "layer",
-        found: "(missing)",
-        expected: "layer, or one of first, last, before, after",
+        field: "layer,first,last,before,after",
+        found: "",
       },
     ];
   }
@@ -581,9 +565,8 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
         code: "align-same-layer",
         index: i,
         field: "layer",
-        found: `${op.id} would share layer ${target.id} with ${own}`,
-        expected: "a node whose align target is in another layer",
-        suggestion: `${op.id} is aligned to ${own}; choose a different layer`,
+        found: target.id,
+        facts: { node: own as string },
       });
     }
     const clash = target.nodes.find((n) => n.align === op.id);
@@ -592,9 +575,8 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
         code: "align-same-layer",
         index: i,
         field: "layer",
-        found: `${clash.id} in layer ${target.id} is aligned to ${op.id}`,
-        expected: "no node in the target layer aligned to this node",
-        suggestion: `choose a layer other than ${target.id}`,
+        found: target.id,
+        facts: { node: clash.id },
       });
     }
   }
@@ -624,8 +606,7 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
       index: i,
       field,
       found: end,
-      expected: "the id of an existing node, group, layer or lane",
-      suggestion: suggestIds(end, endIds(d), "id"),
+      facts: { near: closest(end, endIds(d)) },
     });
   }
   let id = op.id;
@@ -637,7 +618,7 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
     for (let n = 2; unusedKind(d, id) !== undefined; n++) id = `${op.from}->${op.to}#${n}`;
   }
   const kind = op.kind ?? DEFAULT_EDGE_KIND;
-  if (op.both === true && kind === "link") errors.push(bothOnLink(id, i, "both"));
+  if (op.both === true && kind === "link") errors.push(bothOnLink(id, i, "both", "true"));
   if (errors.length > 0) return errors;
   const edge: Edge = { id, from: op.from, to: op.to, kind };
   if (op.label !== undefined) edge.label = op.label;
@@ -647,26 +628,42 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
   return [];
 }
 
-function badStyle(style: string, problem: string, i: number): OpError {
+/** A style that names no theme, or a stylesheet outside the diagram's folder (D30). */
+export function badStyle(style: string, problem: string, i: number, field = "style"): OpError {
   return {
-    code: "bad-value",
+    code: problem,
     index: i,
-    field: "style",
+    field,
     found: style,
-    expected: problem,
-    suggestion: `one of ${Object.keys(THEMES).join(", ")}, or a stylesheet such as brand.grafical-style.yaml beside the diagram`,
+    facts: { allowed: [...Object.keys(THEMES), `<name>${STYLESHEET_SUFFIX}`] },
   };
 }
 
 /** A link has no direction, so it takes no arrowheads at all (D33). */
-function bothOnLink(id: string, i: number, field: string): OpError {
+function bothOnLink(id: string, i: number, field: string, found: string): OpError {
+  return { code: "both-on-link", index: i, field, found, facts: { edge: id, kind: "link" } };
+}
+
+/** One accent more than grafical allows: the accented nodes, and the limit. */
+function tooManyAccents(
+  d: Diagram,
+  i: number,
+  field: string,
+  found: string,
+  count: number,
+): OpError {
+  const accented = d.layers.flatMap((l) => l.nodes.filter((x) => x.accent).map((x) => x.id));
   return {
-    code: "both-on-link",
+    code: "too-many-accents",
     index: i,
     field,
-    found: `edge ${id} is a link`,
-    expected: "arrowheads only on a call, async, data or optional edge",
-    suggestion: `leave out both, or give ${id} another kind first`,
+    found,
+    facts: {
+      count,
+      max: MAX_ACCENTS,
+      nodes: accented,
+      fix: [`node emphasize <file> ${accented[0] ?? "<id>"} --off`],
+    },
   };
 }
 
@@ -676,12 +673,12 @@ function unknownEdge(d: Diagram, id: string, i: number, field: string): OpError 
     index: i,
     field,
     found: id,
-    expected: "the id of an existing edge",
-    suggestion: suggestIds(
-      id,
-      d.edges.map((e) => e.id),
-      "edge",
-    ),
+    facts: {
+      near: closest(
+        id,
+        d.edges.map((e) => e.id),
+      ),
+    },
   };
 }
 
@@ -690,9 +687,8 @@ function conflicting(i: number, set: string[]): OpError {
     code: "conflicting-position",
     index: i,
     field: set.join(","),
-    found: set.join(", "),
-    expected: "at most one of first, last, before, after",
-    suggestion: "keep one",
+    found: set.join(","),
+    facts: { max: 1 },
   };
 }
 
@@ -712,8 +708,7 @@ function moveLayer(s: State, op: Extract<Op, { op: "layer.move" }>, i: number): 
         code: "missing-field",
         index: i,
         field: "first,last,before,after",
-        found: "(none)",
-        expected: "one of first, last, before, after",
+        found: "",
       },
     ];
   }
@@ -729,8 +724,7 @@ function moveLayer(s: State, op: Extract<Op, { op: "layer.move" }>, i: number): 
           index: i,
           field: op.before !== undefined ? "before" : "after",
           found: ref,
-          expected: "another layer",
-          suggestion: "a layer cannot be placed relative to itself",
+          facts: { row: op.id },
         },
       ];
     }
@@ -757,9 +751,8 @@ function removeLayer(s: State, op: Extract<Op, { op: "layer.remove" }>, i: numbe
         code: "layer-not-empty",
         index: i,
         field: "id",
-        found: `layer ${op.id} holds ${layer.nodes.map((n) => n.id).join(", ")}`,
-        expected: "an empty layer",
-        suggestion: `node move or node remove its nodes first, or layer.split to reshape it`,
+        found: op.id,
+        facts: { count: layer.nodes.length, max: 0, nodes: layer.nodes.map((n) => n.id) },
       },
     ];
   }
@@ -784,9 +777,8 @@ function splitLayer(s: State, op: Extract<Op, { op: "layer.split" }>, i: number)
         code: "layer-too-small",
         index: i,
         field: "id",
-        found: `layer ${op.id} holds ${layer.nodes.length} node${layer.nodes.length === 1 ? "" : "s"}`,
-        expected: "a layer of two or more nodes",
-        suggestion: "add nodes first, or layer.add a new layer and node move into it",
+        found: op.id,
+        facts: { count: layer.nodes.length, min: 2, nodes: layer.nodes.map((n) => n.id) },
       },
     ];
   }
@@ -801,9 +793,8 @@ function splitLayer(s: State, op: Extract<Op, { op: "layer.split" }>, i: number)
           code: "not-in-layer",
           index: i,
           field: "from",
-          found: `${op.from} (layer ${elsewhere.layer.id})`,
-          expected: `a node in layer ${op.id}`,
-          suggestion: `nodes in ${op.id}: ${layer.nodes.map((n) => n.id).join(", ")}`,
+          found: op.from,
+          facts: { row: op.id, nodes: layer.nodes.map((n) => n.id) },
         },
       ];
     }
@@ -814,8 +805,7 @@ function splitLayer(s: State, op: Extract<Op, { op: "layer.split" }>, i: number)
           index: i,
           field: "from",
           found: op.from,
-          expected: `a node of ${op.id} other than its first, so that both layers keep a node`,
-          suggestion: `from: ${layer.nodes[1]?.id}`,
+          facts: { row: op.id, allowed: layer.nodes.slice(1).map((n) => n.id) },
         },
       ];
     }
@@ -843,8 +833,7 @@ function swapNodes(s: State, op: Extract<Op, { op: "node.swap" }>, i: number): O
         index: i,
         field: "b",
         found: op.b,
-        expected: "another node",
-        suggestion: "a node cannot swap with itself",
+        facts: { node: op.a },
       },
     ];
   }
@@ -858,14 +847,14 @@ function swapNodes(s: State, op: Extract<Op, { op: "node.swap" }>, i: number): O
 function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number): OpError[] {
   const d = s.d;
   const errors = missingNodes(d, op.nodes, i);
-  if (new Set(op.nodes).size !== op.nodes.length) {
+  const twice = op.nodes.filter((id, k) => op.nodes.indexOf(id) !== k);
+  if (twice.length > 0) {
     errors.push({
       code: "duplicate-id",
       index: i,
       field: "nodes",
-      found: op.nodes.join(", "),
-      expected: "each node once",
-      suggestion: "list each node to merge once",
+      found: [...new Set(twice)].join(","),
+      facts: { max: 1 },
     });
   }
   if (!op.nodes.includes(op.id)) {
@@ -932,16 +921,8 @@ function orderGroup(s: State, op: Extract<Op, { op: "group.order" }>, i: number)
   if (op.before !== undefined) set.push("before");
   if (op.after !== undefined) set.push("after");
   if (set.length !== 1) {
-    if (set.length > 1) return [{ ...conflicting(i, set), expected: "one of before, after" }];
-    return [
-      {
-        code: "missing-field",
-        index: i,
-        field: "before,after",
-        found: "(none)",
-        expected: "one of before, after",
-      },
-    ];
+    if (set.length > 1) return [conflicting(i, set)];
+    return [{ code: "missing-field", index: i, field: "before,after", found: "" }];
   }
   const other = (op.before ?? op.after) as string;
   const field = op.before !== undefined ? "before" : "after";
@@ -965,9 +946,8 @@ function orderGroup(s: State, op: Extract<Op, { op: "group.order" }>, i: number)
         code: "no-shared-layer",
         index: i,
         field,
-        found: `${op.id} and ${other} have no layer in common`,
-        expected: "two groups with members in at least one same layer",
-        suggestion: `node move the members of ${op.id} instead`,
+        found: other,
+        facts: { group: op.id },
       },
     ];
   }
@@ -1040,18 +1020,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
         if (op.off === true) delete n.accent;
         else if (n.accent !== true) {
           const count = d.layers.reduce((c, l) => c + l.nodes.filter((x) => x.accent).length, 0);
-          if (count >= MAX_ACCENTS) {
-            return [
-              {
-                code: "too-many-accents",
-                index: i,
-                field: "id",
-                found: `${count + 1} accented nodes`,
-                expected: `at most ${MAX_ACCENTS}`,
-                suggestion: "node emphasize <id> --off on another node first",
-              },
-            ];
-          }
+          if (count >= MAX_ACCENTS) return [tooManyAccents(d, i, "id", op.id, count + 1)];
           n.accent = true;
         }
       } else if (op.to === undefined) delete n.align;
@@ -1089,12 +1058,12 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
         if (op.label === undefined) delete e.label;
         else e.label = op.label;
       } else if (op.op === "edge.kind") {
-        if (op.kind === "link" && e.both === true) return [bothOnLink(e.id, i, "kind")];
+        if (op.kind === "link" && e.both === true) return [bothOnLink(e.id, i, "kind", op.kind)];
         e.kind = op.kind;
       } else if (op.op === "edge.reverse") [e.from, e.to] = [e.to, e.from];
       else if (op.op === "edge.both") {
         if (op.off === true) delete e.both;
-        else if (e.kind === "link") return [bothOnLink(e.id, i, "id")];
+        else if (e.kind === "link") return [bothOnLink(e.id, i, "id", e.id)];
         else e.both = true;
       } else {
         if (op.from === undefined && op.to === undefined) {
@@ -1103,8 +1072,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
               code: "missing-field",
               index: i,
               field: "from,to",
-              found: "(none)",
-              expected: "from, to or both",
+              found: "",
             },
           ];
         }
@@ -1117,8 +1085,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
             index: i,
             field,
             found: end,
-            expected: "the id of an existing node, group, layer or lane",
-            suggestion: suggestIds(end, endIds(d), "id"),
+            facts: { near: closest(end, endIds(d)) },
           });
         }
         if (errors.length > 0) return errors;
@@ -1155,8 +1122,7 @@ function step(s: State, op: Op, i: number): OpError[] {
           index: i,
           field: "op",
           found: op.op,
-          expected: "an existing diagram to change",
-          suggestion: "diagram.new only creates a file: use grafical new",
+          facts: { fix: ["grafical new <file> --title <text>"] },
         },
       ];
     case "diagram.subtitle":
@@ -1229,22 +1195,7 @@ function step(s: State, op: Op, i: number): OpError[] {
     }
     case "edge.remove": {
       const idx = d.edges.findIndex((e) => e.id === op.id);
-      if (idx < 0) {
-        return [
-          {
-            code: "unknown-edge",
-            index: i,
-            field: "id",
-            found: op.id,
-            expected: "the id of an existing edge",
-            suggestion: suggestIds(
-              op.id,
-              d.edges.map((e) => e.id),
-              "edge",
-            ),
-          },
-        ];
-      }
+      if (idx < 0) return [unknownEdge(d, op.id, i, "id")];
       d.edges.splice(idx, 1);
       touch(s, op.id);
       return [];
@@ -1320,9 +1271,8 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
           {
             code: "no-diagram",
             index: 0,
-            found: first === undefined ? "(no operations)" : first.op,
-            expected: "diagram.new as the first operation when there is no diagram",
-            suggestion: "create the file first: grafical new <file> --title <text>",
+            found: first === undefined ? "" : first.op,
+            facts: { fix: ["grafical new <file> --title <text>"] },
           },
         ],
       };
@@ -1352,8 +1302,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
         index: last,
         field: "align",
         found: p.found,
-        expected: p.expected,
-        suggestion: p.suggestion,
+        facts: p.facts,
       })),
     };
   }
@@ -1367,8 +1316,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
         index: last,
         field: "group",
         found: p.found,
-        expected: p.expected,
-        suggestion: p.suggestion,
+        facts: p.facts,
       })),
     };
   }

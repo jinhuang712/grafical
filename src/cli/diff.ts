@@ -8,7 +8,7 @@ import { Document, type YAMLMap, type YAMLSeq } from "yaml";
 import { readDiagram } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import type { Diagram } from "../model/types.ts";
-import { failure, fileError, oneLine, type Report } from "./pipeline.ts";
+import { failure, fileError, type Report } from "./pipeline.ts";
 
 /** The diagram as the revision holds it, or null when the revision has no such file. */
 export function atRevision(file: string, rev: string): Diagram | null | Report {
@@ -17,17 +17,12 @@ export function atRevision(file: string, rev: string): Diagram | null | Report {
     env: { ...process.env, LC_ALL: "C" },
   });
   if (r.error !== undefined) {
-    return fileError("not-in-git", file, "git on the PATH", oneLine(String(r.error)));
+    return fileError("not-in-git", file);
   }
   if (r.status !== 0) {
     const why = r.stderr ?? "";
     if (/not a git repository/i.test(why)) {
-      return fileError(
-        "not-in-git",
-        file,
-        "a file inside a git repository",
-        "git init, then commit",
-      );
+      return fileError("not-in-git", file);
     }
     if (/does not exist in|exists on disk, but not in/.test(why)) return null;
     return failure([
@@ -36,14 +31,14 @@ export function atRevision(file: string, rev: string): Diagram | null | Report {
         index: 0,
         field: "rev",
         found: rev,
-        expected: "a git revision that exists, such as HEAD, HEAD~1 or a commit id",
-        suggestion: oneLine(why.replace(/^fatal: /, "")),
       },
     ]);
   }
   const d = readDiagram(r.stdout);
   if (Array.isArray(d)) {
-    return failure(d.map((e) => ({ ...e, found: `${e.found} (in ${rev})` })));
+    return failure(
+      d.map((e) => ({ ...e, field: e.field === undefined ? "rev" : `${rev}:${e.field}` })),
+    );
   }
   return d;
 }

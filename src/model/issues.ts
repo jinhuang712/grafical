@@ -1,20 +1,35 @@
 // Turns zod issues into OpErrors (DESIGN.md D5).
 
 import type { z } from "zod";
-import type { OpError } from "../errors.ts";
+import type { Facts, OpError } from "../errors.ts";
 import { lineStyle } from "../theme/paint.ts";
-import { allowed, closest } from "./suggest.ts";
+import { closest } from "./suggest.ts";
 import { EDGE_KINDS, type EdgeKind } from "./types.ts";
 
 export const ID_NODE = "ID_NODE";
 export const ID_EDGE = "ID_EDGE";
 
-export const ID_PATTERN_TEXT =
-  "lowercase letters, digits, '.', '_' or '-', starting with a letter or digit";
-export const EDGE_ID_PATTERN_TEXT = `${ID_PATTERN_TEXT}; may contain '->' and '#<n>'`;
+/** The characters an id may hold; an edge's id may also hold -> and #<n>. */
+const ID_CHARS = ["a-z", "0-9", ".", "_", "-"];
+const EDGE_ID_CHARS = [...ID_CHARS, "->", "#<n>"];
+
+/** The id an agent most likely meant: lowercase, with other characters as hyphens. */
+function likelyId(v: unknown, edge: boolean): string[] {
+  if (typeof v !== "string") return [];
+  const parts = edge ? v.split("->") : [v];
+  const id = parts
+    .map((p) =>
+      p
+        .toLowerCase()
+        .replace(/[^a-z0-9._#-]+/g, "-")
+        .replace(/^-+|-+$/g, ""),
+    )
+    .join("->");
+  return id === "" || id === v ? [] : [id];
+}
 
 export function show(v: unknown): string {
-  if (v === undefined) return "(missing)";
+  if (v === undefined) return "";
   const s = typeof v === "string" ? v : (JSON.stringify(v) ?? String(v));
   return s.length > 60 ? `${s.slice(0, 57)}...` : s;
 }
@@ -38,9 +53,9 @@ export function fieldName(path: readonly PropertyKey[]): string {
   return out;
 }
 
-function expectedType(issue: z.core.$ZodIssue): string {
+function expectedType(issue: z.core.$ZodIssue): string | undefined {
   const e = (issue as { expected?: unknown }).expected;
-  return typeof e === "string" ? `a ${e}` : "a valid value";
+  return typeof e === "string" ? e : undefined;
 }
 
 /**
@@ -74,20 +89,14 @@ export function issuesToErrors(
         // YAML ends unquoted text at a comma or a colon, and the rest becomes a key.
         const cut = value === null || /\s/.test(key);
         out.push({
-          code: "unknown-field",
+          code: cut && renamed === undefined ? "unquoted-text" : "unknown-field",
           index,
           field: f,
           found: key,
-          expected: known.length ? `one of: ${known.join(", ")}` : "no extra fields",
-          ...(renamed !== undefined
-            ? { suggestion: `${key} -> ${renamed}` }
-            : cut
-              ? {
-                  suggestion: `text cut at "," or ":" before ${key}: quote it`,
-                }
-              : near.length
-                ? { suggestion: `did you mean: ${near.join(", ")}` }
-                : {}),
+          facts: {
+            allowed: known,
+            ...(renamed !== undefined ? { likely: [renamed] } : cut ? {} : { likely: near }),
+          },
         });
       }
     } else if (issue.code === "invalid_value") {
@@ -97,70 +106,58 @@ export function issuesToErrors(
         index,
         ...base,
         found: show(found),
-        expected: "a known value",
-        suggestion:
+        facts:
           field === "style" && leaf
             ? legendStyle(found, values)
             : field === "kind" || field?.endsWith(".kind")
               ? guessedKind(raw, path, found, values)
-              : allowed(values),
+              : { allowed: values },
       });
     } else if (issue.message === ID_NODE || issue.message === ID_EDGE) {
-      const text = issue.message === ID_NODE ? ID_PATTERN_TEXT : EDGE_ID_PATTERN_TEXT;
+      const edge = issue.message === ID_EDGE;
       out.push({
         code: "bad-id",
         index,
         ...base,
         found: show(found),
-        expected: text,
-        suggestion: "use lowercase, such as relay or order-db",
+        facts: { allowed: edge ? EDGE_ID_CHARS : ID_CHARS, likely: likelyId(found, edge) },
       });
     } else if (issue.code === "invalid_type") {
+      const type = expectedType(issue);
       out.push({
         code: found === undefined ? "missing-field" : "bad-type",
         index,
         ...base,
         found: show(found),
-        expected: expectedType(issue),
+        ...(type !== undefined ? { facts: { type } } : {}),
       });
     } else if (issue.code === "too_small") {
-      out.push({
-        code: "empty-value",
-        index,
-        ...base,
-        found: show(found),
-        expected: "a non-empty text",
-      });
+      out.push({ code: "empty-value", index, ...base, found: show(found), facts: { min: 1 } });
     } else {
-      out.push({
-        code: "invalid",
-        index,
-        ...base,
-        found: show(found),
-        expected: issue.message,
-      });
+      out.push({ code: "invalid", index, ...base, found: show(found) });
     }
   }
   return out;
 }
 
 /** Kinds agents guess, and the kind each most likely means, for boxes and for lines. */
-const NODE_GUESS: Record<string, string> = {
-  start: "initial (state machine), terminal (flowchart)",
-  end: "final (state machine), terminal (flowchart)",
-  process: "service",
-  step: "service",
-  task: "service",
-  app: "service",
-  database: "store",
-  db: "store",
-  cache: "store",
-  topic: "queue",
-  stream: "queue",
-  user: "actor",
-  person: "actor",
-  question: "decision",
-  condition: "decision",
+const NODE_GUESS: Record<string, string[]> = {
+  // A flowchart's Start and End are terminals; a state machine's are initial and final.
+  start: ["terminal", "initial"],
+  end: ["terminal", "final"],
+  process: ["service"],
+  step: ["service"],
+  task: ["service"],
+  app: ["service"],
+  database: ["store"],
+  db: ["store"],
+  cache: ["store"],
+  topic: ["queue"],
+  stream: ["queue"],
+  user: ["actor"],
+  person: ["actor"],
+  question: ["decision"],
+  condition: ["decision"],
 };
 const EDGE_GUESS: Record<string, string> = {
   request: "call",
@@ -182,12 +179,13 @@ function guessedKind(
   path: readonly PropertyKey[],
   found: unknown,
   values: string[],
-): string {
+): Facts {
   const op = getPath(raw, ["op"]);
   const lines = (typeof op === "string" && op.startsWith("edge.")) || path.includes("edges");
-  const guess =
-    typeof found === "string" ? (lines ? EDGE_GUESS : NODE_GUESS)[found.toLowerCase()] : undefined;
-  return guess === undefined ? allowed(values) : `${found} -> ${guess}; ${allowed(values)}`;
+  const key = typeof found === "string" ? found.toLowerCase() : undefined;
+  const guess = key === undefined ? undefined : lines ? EDGE_GUESS[key] : NODE_GUESS[key];
+  if (guess === undefined) return { allowed: values };
+  return { allowed: values, likely: typeof guess === "string" ? [guess] : guess };
 }
 
 /** Operation fields renamed for clarity, by `<op>.<old field>`, with their new name. */
@@ -197,13 +195,15 @@ const RENAMED: Record<string, string> = { "diagram.legend.line": "style" };
  * A legend's style given as an edge kind, or with its wording: the legend names how lines
  * look, so say which look the kind is drawn in, or where the wording goes.
  */
-function legendStyle(found: unknown, values: string[]): string {
-  if (found === undefined) return allowed(values);
+function legendStyle(found: unknown, values: string[]): Facts {
   if (typeof found === "string" && (EDGE_KINDS as readonly string[]).includes(found)) {
-    const style = lineStyle(found as EdgeKind);
-    return `${found} -> ${style}`;
+    return { allowed: values, likely: [lineStyle(found as EdgeKind)] };
   }
-  return `${allowed(values)}; the wording goes in text`;
+  if (typeof found !== "string") return { allowed: values };
+  return {
+    allowed: values,
+    fix: [`diagram legend <file> <style> --text ${JSON.stringify(found)}`],
+  };
 }
 
 // The set of known keys of the object at `path`, found by its shape.

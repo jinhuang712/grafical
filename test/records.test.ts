@@ -20,9 +20,9 @@ describe("records (D37)", () => {
     expect(record("box", { sides: { top: 1, bottom: 2 } })).toBe("box sides=top:1,bottom:2");
   });
 
-  it("quotes a value with a space, a quote, an equals sign or a comma", () => {
-    expect(record("r", { a: "two words", b: 'say "hi"', c: "k=v", d: ["x,y", "z"] })).toBe(
-      'r a="two words" b="say \\"hi\\"" c="k=v" d="x,y",z',
-    );
+  it("quotes a value with a space, a quote or an equals sign, and a list item with a comma", () => {
+    expect(
+      record("r", { a: "two words", b: 'say "hi"', c: "k=v", d: ["x,y", "z"], e: "x,y" }),
+    ).toBe('r a="two words" b="say \\"hi\\"" c="k=v" d="x,y",z e=x,y');
   });
 });

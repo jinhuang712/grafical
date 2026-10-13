@@ -52,7 +52,7 @@ describe("edge ends at a container (D28)", () => {
       { op: "edge.add", from: "callers", to: "catalog-apx" },
     ]);
     expect(unknown[0]).toMatchObject({ code: "unknown-node", field: "to" });
-    expect(unknown[0]?.suggestion).toContain("catalog-api");
+    expect(unknown[0]?.facts?.near).toContain("catalog-api");
   });
 
   it("refuses a side meeting with a node between", () => {

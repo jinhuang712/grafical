@@ -2,12 +2,12 @@
 
 import { z } from "zod";
 import type { OpError } from "../errors.ts";
-import { styleProblem, THEMES } from "../theme/themes.ts";
+import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
 import { checkEnds } from "./ends.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
 import { ID_EDGE, ID_NODE, issuesToErrors } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
-import { suggestIds } from "./suggest.ts";
+import { closest } from "./suggest.ts";
 import {
   DEFAULT_DENSITY,
   DEFAULT_EDGE_KIND,
@@ -152,8 +152,9 @@ function build(p: Parsed): Diagram {
  */
 export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   const errors: OpError[] = [];
+  // What each id first names: a layer, node, group, lane or edge.
   const seen = new Map<string, string>();
-  const claim = (id: string, where: string) => {
+  const claim = (id: string, where: string, is: string) => {
     const first = seen.get(id);
     if (first !== undefined) {
       errors.push({
@@ -161,29 +162,28 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
         index,
         field: where,
         found: id,
-        expected: "an id that is unique across layers, nodes and edges",
-        suggestion: `${id} is already used at ${first}; choose another id`,
+        facts: { is: first },
       });
-    } else seen.set(id, where);
+    } else seen.set(id, is);
   };
   const layerOf = new Map<string, string>();
   const nodeIds: string[] = [];
   d.layers.forEach((l, li) => {
-    claim(l.id, `layers[${li}].id`);
+    claim(l.id, `layers[${li}].id`, "layer");
     l.nodes.forEach((n, ni) => {
-      claim(n.id, `layers[${li}].nodes[${ni}].id`);
+      claim(n.id, `layers[${li}].nodes[${ni}].id`, "node");
       layerOf.set(n.id, l.id);
       nodeIds.push(n.id);
     });
   });
   (d.groups ?? []).forEach((g, gi) => {
-    claim(g.id, `groups[${gi}].id`);
+    claim(g.id, `groups[${gi}].id`, "group");
   });
   (d.lanes ?? []).forEach((x, i) => {
-    claim(x.id, `lanes[${i}].id`);
+    claim(x.id, `lanes[${i}].id`, "lane");
   });
   d.edges.forEach((e, ei) => {
-    claim(e.id, `edges[${ei}].id`);
+    claim(e.id, `edges[${ei}].id`, "edge");
   });
   errors.push(...checkGroups(d, index));
   errors.push(...checkLanes(d, index));
@@ -192,12 +192,11 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
     const problem = styleProblem(d.style);
     if (problem !== undefined) {
       errors.push({
-        code: "bad-value",
+        code: problem,
         index,
         field: "style",
         found: d.style,
-        expected: problem,
-        suggestion: `one of ${Object.keys(THEMES).join(", ")}, or a stylesheet such as brand.grafical-style.yaml beside the diagram`,
+        facts: { allowed: [...Object.keys(THEMES), `<name>${STYLESHEET_SUFFIX}`] },
       });
     }
   }
@@ -214,17 +213,15 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
           index,
           field,
           found: n.align,
-          expected: "the id of an existing node",
-          suggestion: suggestIds(n.align, nodeIds, "node"),
+          facts: { near: closest(n.align, nodeIds) },
         });
       } else if (other === l.id) {
         errors.push({
           code: "align-same-layer",
           index,
           field,
-          found: `${n.align} (layer ${other})`,
-          expected: "a node in another layer",
-          suggestion: `${n.id} is in layer ${l.id} too; align to a node in a different layer`,
+          found: n.align,
+          facts: { row: l.id },
         });
       }
     });
@@ -234,9 +231,12 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       code: "too-many-accents",
       index,
       field: "accent",
-      found: `${accents} accented nodes`,
-      expected: `at most ${MAX_ACCENTS}`,
-      suggestion: "take the accent off all but 2 nodes",
+      found: "true",
+      facts: {
+        count: accents,
+        max: MAX_ACCENTS,
+        nodes: d.layers.flatMap((l) => l.nodes.filter((n) => n.accent).map((n) => n.id)),
+      },
     });
   }
   return errors;
@@ -258,8 +258,7 @@ function checkGroups(d: Diagram, index: number): OpError[] {
         index,
         field: `layers[${li}].nodes[${ni}].group`,
         found: n.group,
-        expected: "the id of an existing group",
-        suggestion: suggestIds(n.group, ids, "group"),
+        facts: { near: closest(n.group, ids) },
       });
     });
   });
@@ -271,8 +270,7 @@ function checkGroups(d: Diagram, index: number): OpError[] {
         index,
         field: `groups[${gi}].in`,
         found: g.in,
-        expected: "the id of an existing group",
-        suggestion: suggestIds(g.in, ids, "group"),
+        facts: { near: closest(g.in, ids) },
       });
       return;
     }
@@ -283,18 +281,16 @@ function checkGroups(d: Diagram, index: number): OpError[] {
         code: "group-cycle",
         index,
         field: `groups[${gi}].in`,
-        found: `${g.id} sits inside itself: ${[...chain, parent].join(" in ")}`,
-        expected: "each group inside a group that is not inside it",
-        suggestion: `take ${g.id} out of ${g.in}`,
+        found: g.in,
+        facts: { chain: [...chain, parent] },
       });
     } else if (chain.length > MAX_GROUP_DEPTH) {
       errors.push({
         code: "group-too-deep",
         index,
         field: `groups[${gi}].in`,
-        found: `${chain.join(" in ")}: ${chain.length} levels`,
-        expected: `groups at most ${MAX_GROUP_DEPTH} levels deep`,
-        suggestion: `put ${g.id} in a group further out, or none`,
+        found: g.in,
+        facts: { count: chain.length, max: MAX_GROUP_DEPTH, chain },
       });
     }
   });
@@ -309,7 +305,7 @@ export function validateDiagram(raw: unknown): Diagram | OpError[] {
         code: "bad-file",
         index: 0,
         found: show(raw),
-        expected: "a mapping with grafical, title, density, layers and edges",
+        facts: { allowed: ["grafical", "title", "density", "layers", "edges"] },
       },
     ];
   }
@@ -321,8 +317,7 @@ export function validateDiagram(raw: unknown): Diagram | OpError[] {
         index: 0,
         field: "grafical",
         found: String(version),
-        expected: `format ${FORMAT_VERSION} or older`,
-        suggestion: "upgrade grafical; a newer file is refused, never guessed at",
+        facts: { max: FORMAT_VERSION },
       },
     ];
   }
