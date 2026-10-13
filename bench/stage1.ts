@@ -15,6 +15,8 @@
 //           the agent learning grafical from its help alone (D36), Haiku, 3 runs
 //   brief   the public brief again, 6 runs, after the refusals learned to say how to fix
 //   help2   the help round again, after the refusals and the help said how to fix
+//   help3   again, after the kinds were named, rows took ids like row-users, and hints
+//           tried rows and hubs, safe ones first, each naming the lines it untangles
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (EXPERIMENTS.md, "Harness").
@@ -49,6 +51,7 @@ export const PARTS = [
   "help",
   "brief",
   "help2",
+  "help3",
 ] as const;
 export type Part = (typeof PARTS)[number];
 
@@ -167,6 +170,9 @@ export function planPart(part: Part): PartPlan {
     case "help2":
       add(["grafical"], "haiku", runs3, helpTasks(), []);
       return { part, round: "p1d-help2", runs: RUNS, chains };
+    case "help3":
+      add(["grafical"], "haiku", runs3, helpTasks(), []);
+      return { part, round: "p1d-help3", runs: RUNS, chains };
   }
 }
 
