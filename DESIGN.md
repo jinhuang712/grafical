@@ -62,6 +62,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D37 | Output is discrete: facts and counts, and the agent judges | The command line states facts; the agent understands |
 | D38 | A fan-out of three or more unlabelled lines leaves as one bundle | The tool carries the taste |
 | D39 | The file fixes the picture; the same facts give mostly the same picture | The same file is the same picture |
+| D40 | A node carries marks in five slots, and a mark is an emoji, text or a file | The engine owns every pixel |
 
 ## Writing a diagram
 
@@ -336,6 +337,7 @@ grafical is MIT-licensed. Every dependency must allow use in an MIT project. Lic
 | `harfbuzzjs` | MIT |
 | `subset-font`, used only to build the font subsets | BSD-3-Clause |
 | Inter, Noto Sans SC | SIL Open Font License |
+| `@twemoji/svg` | MIT for the package, CC-BY 4.0 for the graphics (D40), from its npm page |
 | `elkjs` | EPL-2.0 OR GPL-3.0-or-later. Not used, see D11 |
 
 ### D22 The file records its format version, and the format only grows
@@ -621,6 +623,36 @@ Rejected:
 - Canonical placement, the same facts always giving the same picture. Every edit could then move boxes the agent did not touch, against the stability D10 promises.
 - Canonical placement within one batch, with later edits kept stable. It was the recommendation, but "mostly" asks for no new rule, and a batch already places its boxes together, knowing all of their lines (D24).
 
+### D40 A node carries marks in five slots, and a mark is an emoji, text or a file
+
+Decided on 2026-10-13 by the owner, who wanted a very important node flagged with `⚠️` at its top-left, and asked that a mark not be limited to a fixed list: "anything. dont constrain it. at the end its a svg/png/textBox or smth".
+
+A node has five slots: `top-left`, `top-right`, `bottom-left`, `bottom-right` and `left`. Each holds at most one mark. `node icon <file> <id> --slot <slot> --icon <mark>` sets it, and without `--icon` it clears it. A mark is one of:
+- an emoji, drawn from the bundled Twemoji images, so it does not depend on the machine's fonts (D12, D15);
+- a text of up to 3 characters, such as `P0`, drawn in the bundled fonts;
+- an SVG or PNG file, named relative to the diagram file and inside its folder.
+
+The caller never gives a size or a position (D2). A mark is a 20 px square, and the slot fixes where it goes:
+- a corner mark sticks out of its corner by 6 px. It takes no room, so it moves no other box, text or line (D10);
+- the `left` mark takes a 28 px column inside the box. The box keeps its size, the text gives up that width, and the text centres in the rest. A node whose size grafical chooses (D27) takes the large box when its text no longer fits the medium one. A diamond and a dot have corner slots only.
+
+The same file gives the same picture (D15):
+- the SVG embeds each picture as a data URI, so it never links to a file;
+- the diagram stores a file's SHA-256 beside its name. A changed or missing file fails the load with `mark-file-changed` or `mark-file-not-found`. Setting that slot again accepts the file as it is;
+- an SVG that holds a script, a `foreignObject`, an event handler or a reference to anything outside itself is refused (`mark-file-unsafe`), and so is a path outside the diagram's folder.
+
+`show` lists each mark as `icon.<slot>`. The checker adds `mark-covers`, for a mark that covers text or another node, and reports a text mark the fonts cannot draw as `missing-glyph` (D14). `diff` reports marks as `node.icon` operations (D18).
+
+The emoji images come from `@twemoji/svg` (MIT for the package, CC-BY 4.0 for the graphics, which asks for attribution). Which emoji it lacks is the limit: an emoji with no image is refused as `mark-not-drawn`.
+
+Rejected:
+- A fixed list of icon names. It gives the safest output, but the owner wants any picture, and a list can never hold what people flag nodes with.
+- Drawing an emoji with a color emoji font. It would depend on the font on each machine, against D15.
+- A mark with a size or an offset. It breaks D2, and each mark would sit differently.
+- Several marks in one slot. The slot would have to grow or its marks shrink, and a corner would then cover more of the box.
+
 ## Not yet decided
+
+- **Marks and lines:** a corner mark is not yet checked against the lines that leave the box near its corner. A line that meets a mark is not reported.
 
 - **Stage 2:** how the board reaches the file (a local server while the board is open is proposed), and how snap guides turn a drag into one operation.

@@ -90,6 +90,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `node.resize` | Set the size step, which fixes the box's width and height. Without a step, grafical sizes the box to its text again (D27) | done |
 | `node.align` | Place the node directly above or below a node in another layer. Fails if the alignment cannot hold with the order of either layer | done |
 | `node.emphasize` | Turn the accent on or off | done |
+| `node.icon` | Put a mark in a slot, or clear the slot without a mark. A mark is an emoji, a text of up to 3 characters, or an SVG or PNG file next to the diagram (D40) | done |
 | `node.remove` | Remove the node and its edges | done |
 | `node.swap` | Two nodes trade places: layer and slot | done |
 | `node.merge` | Replace nodes with one new node that keeps all their edges, each once. Edges between them go | done |
@@ -129,6 +130,7 @@ grafical node remove <file> <id>
 grafical node describe <file> <id> [--text <text>]
 grafical node kind <file> <id> <kind>
 grafical node emphasize <file> <id> [--off]
+grafical node icon <file> <id> --slot <slot> [--icon <emoji | text | file.svg | file.png>]
 grafical node align <file> <id> [--to <node>]
 grafical node swap <file> <a> <b>
 grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--kind <kind>]
@@ -270,6 +272,7 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | Size steps | `s`, `m`, `l` |
 | Density | `compact`, `normal`, `airy` |
 | Emphasis | `accent`: at most 2 nodes per diagram, and edges on the main path, drawn thick (D33) |
+| Mark slots | `top-left`, `top-right`, `bottom-left`, `bottom-right`, `left`: one mark each. A diamond and a dot have no `left` (D40) |
 | Line shape | `orthogonal` (default) or `curved`, set in a stylesheet as `paint.edge.shape` (D33) |
 | Nested box fill | `alternate` (default): group fill and background in turn; `shade`: each level a shade nearer the border colour. Set in a stylesheet as `paint.nesting` (D34) |
 
