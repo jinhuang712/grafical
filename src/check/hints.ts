@@ -15,10 +15,12 @@ export interface Hint {
   command: string;
   /** What gets better, measured. */
   gain: string;
+  /** The troubled lines it untangles: crossing or bending more than twice now, not after. */
+  fixes: string[];
   /**
-   * Keeps every node among its own kind: a swap within a row, a group moved past
-   * another, or a move into a row of the same family. A hint that is not safe is
-   * marked, for the agent to weigh against what its rows mean.
+   * Keeps every node among its own kind and every row in its place: a swap or a slide
+   * within a row, a group moved past another, or a move into a row of the same family.
+   * A hint that is not safe is marked, for the agent to weigh against what its rows mean.
    */
   safe: boolean;
 }
@@ -52,6 +54,9 @@ function triesFor(nodes: number): number {
 /** A diagram of at most this many nodes tries every node, not only those at troubled lines. */
 const SMALL = 16;
 
+/** A node with at least this many lines is a hub, and is tried at every place in its row. */
+const HUB = 3;
+
 /** A cost is [crossings + lines over two bends, crossings, bends, length]. */
 function better(c: number[], base: number[]): boolean {
   const [p, x, b] = c as [number, number, number];
@@ -84,8 +89,18 @@ const quote = (s: string) => (/^[\w.-]+$/.test(s) ? s : `"${s}"`);
 
 function commandOf(op: Op): string {
   if (op.op === "node.swap") return `grafical node swap <file> ${op.a} ${op.b}`;
-  if (op.op === "node.move")
-    return `grafical node move <file> ${op.id} --layer ${quote(op.layer ?? "")}`;
+  if (op.op === "node.move") {
+    if (op.layer !== undefined)
+      return `grafical node move <file> ${op.id} --layer ${quote(op.layer)}`;
+    return op.before !== undefined
+      ? `grafical node move <file> ${op.id} --before ${op.before}`
+      : `grafical node move <file> ${op.id} --after ${op.after ?? ""}`;
+  }
+  if (op.op === "layer.move") {
+    return op.before !== undefined
+      ? `grafical layer move <file> ${op.id} --before ${op.before}`
+      : `grafical layer move <file> ${op.id} --after ${op.after ?? ""}`;
+  }
   if (op.op === "layer.remove") return `grafical layer remove <file> ${op.id}`;
   if (op.op === "group.order") {
     return op.before !== undefined
@@ -138,6 +153,18 @@ export function findHints(d: Diagram, m: Measurer, limit = 3, onlySafe = false):
     const cost = arrangementCost(r.diagram, m);
     if (better(cost, base)) tried.push({ ops, cost, safe });
   };
+  // A row moved up or down keeps every node in its row and among its kind, and fixes lines
+  // that pass a row they do not connect, as agents found by hand; but the order of the rows
+  // is the story's (a request runs top to bottom), so it is marked for the agent to weigh.
+  for (let i = 0; i < d.layers.length; i++) {
+    const id = d.layers[i]?.id as string;
+    for (const step of [1, 2]) {
+      const below = d.layers[i + step];
+      if (below !== undefined) attempt([{ op: "layer.move", id, after: below.id }], false);
+    }
+    const above = d.layers[i - 2];
+    if (above !== undefined) attempt([{ op: "layer.move", id, before: above.id }], false);
+  }
   // A whole system moved past another keeps every node in its row and among its kind,
   // and is often the only fix for a hub that a single node cannot leave its group to reach.
   const groups = (d.groups ?? []).map((g) => g.id).sort();
@@ -159,6 +186,15 @@ export function findHints(d: Diagram, m: Measurer, limit = 3, onlySafe = false):
       if (other.id === id || (focus.has(other.id) && other.id < id)) continue;
       attempt([{ op: "node.swap", a: id, b: other.id }], true);
     }
+    // A hub slid to each place in its row, so that it can sit over the nodes it reaches.
+    const lines = d.edges.filter((e) => e.from === id || e.to === id).length;
+    if (lines >= HUB) {
+      for (const other of layer.nodes) {
+        if (other.id === id) continue;
+        attempt([{ op: "node.move", id, before: other.id }], true);
+        attempt([{ op: "node.move", id, after: other.id }], true);
+      }
+    }
     const node = layer.nodes.find((n) => n.id === id);
     if (node === undefined || FAMILY[node.kind] === "edge") continue;
     for (const to of [row - 1, row + 1]) {
@@ -172,8 +208,25 @@ export function findHints(d: Diagram, m: Measurer, limit = 3, onlySafe = false):
       );
     }
   }
-  // The best first; one hint per pair of nodes or node, so they do not repeat.
-  tried.sort((a, b) => (lower(a.cost, b.cost) ? -1 : lower(b.cost, a.cost) ? 1 : 0));
+  // Those that keep every node among its kind and every row in place first, since agents
+  // decline the others more often than not; then the best first. The best of the others
+  // keeps the last place when it leaves fewer troubled lines than any safe one, so that
+  // small safe gains do not hide a large fix. One hint per change, so they do not repeat.
+  tried.sort(
+    (a, b) =>
+      Number(b.safe) - Number(a.safe) ||
+      (lower(a.cost, b.cost) ? -1 : lower(b.cost, a.cost) ? 1 : 0),
+  );
+  const firstUnsafe = tried.findIndex((t) => !t.safe);
+  const bold = tried[firstUnsafe];
+  if (
+    bold !== undefined &&
+    firstUnsafe > limit - 1 &&
+    (bold.cost[0] ?? 0) < (tried[0]?.cost[0] ?? 0)
+  ) {
+    tried.splice(firstUnsafe, 1);
+    tried.splice(limit - 1, 0, bold);
+  }
   const out: Hint[] = [];
   const seen = new Set<string>();
   for (const t of tried) {
@@ -184,10 +237,12 @@ export function findHints(d: Diagram, m: Measurer, limit = 3, onlySafe = false):
     seen.add(key);
     const r = applyOps(d, t.ops, m);
     if ("errors" in r || check(r.diagram, layout(r.diagram, m), m).length > 0) continue;
+    const after = troubledEdges(r.diagram, m);
     out.push({
       ops: t.ops,
       command: t.ops.map(commandOf).join("; "),
       gain: gainText(t.cost, base),
+      fixes: [...troubled].filter((id) => !after.has(id)).sort(),
       safe: t.safe,
     });
   }

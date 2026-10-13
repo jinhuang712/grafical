@@ -51,18 +51,49 @@ const lower = (a: number[], b: number[]) => {
 };
 
 describe("hints (D35)", () => {
-  it("names the rearrangement that straightens the photo-sharing lines", () => {
-    const [h] = findHints(edgeLooks, m);
+  it("names the rearrangement that straightens the photo-sharing lines, and the line it untangles", () => {
+    const h = findHints(edgeLooks, m).find((x) => x.command.includes("uploads --layer entry"));
     expect(h?.command).toBe("grafical node move <file> uploads --layer entry");
     expect(h?.gain).toBe("lines with more than two bends 1 -> 0, bends 6 -> 2");
+    expect(h?.fixes).toEqual(["api->photos"]);
   });
 
-  it("marks a hint that moves a node among other kinds", () => {
-    const [top] = findHints(edgeLooks, m);
-    // The queue would join the API's row: shown, and marked for the agent to weigh.
-    expect(top?.safe).toBe(false);
+  it("puts safe hints first, and keeps a place for a larger fix that is not", () => {
+    const hints = findHints(edgeLooks, m);
+    // The queue would join the API's row: shown last, and marked for the agent to weigh.
+    expect(hints.map((h) => h.safe)).toEqual([true, true, false]);
+    expect(hints[2]?.command).toBe("grafical node move <file> uploads --layer entry");
     expect(findHints(crossed, m)[0]?.safe).toBe(true);
     expect(findHints(edgeLooks, m, 3, true).every((h) => h.safe)).toBe(true);
+  });
+
+  it("tries rows moved up or down, and marks them as reordering rows", () => {
+    // A message row between the services and the store they share: moving it fixes lines.
+    const between: Diagram = {
+      grafical: 1,
+      title: "Between",
+      density: "normal",
+      layers: [
+        {
+          id: "row-svc",
+          label: "Services",
+          nodes: [n("a", "A", "service", "m"), n("b", "B", "service", "m")],
+        },
+        { id: "row-msg", label: "Messages", nodes: [n("q", "Q", "queue", "m")] },
+        { id: "row-db", label: "Stores", nodes: [n("db", "DB", "store", "m")] },
+      ],
+      edges: [
+        e("a", "db", "call"),
+        e("b", "db", "call"),
+        e("a", "q", "async"),
+        e("q", "b", "async"),
+      ],
+    };
+    const rows = findHints(between, m, 10).filter((h) =>
+      h.ops.some((op) => op.op === "layer.move"),
+    );
+    for (const h of rows) expect(h.safe).toBe(false);
+    expect(rows.length).toBeGreaterThan(0);
   });
 
   it("finds no crossing in the state machine: its router avoids the one a hint once removed", () => {

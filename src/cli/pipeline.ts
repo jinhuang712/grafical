@@ -93,8 +93,15 @@ export function formatReport(r: Report): string {
   const lines = r.lines === undefined ? undefined : linesText(r.lines);
   if (lines !== undefined) out.push(lines);
   // A hint that puts a node among other kinds says so, for the agent to weigh.
-  for (const h of r.hints ?? [])
-    out.push(`hint: ${h.gain}: ${h.command}${h.safe ? "" : "   (moves a node among other kinds)"}`);
+  // A hint that changes what the rows say says how, for the agent to weigh.
+  const unsafeNote = (h: Hint) =>
+    h.ops.some((op) => op.op === "layer.move") ? "reorders rows" : "moves a node among other kinds";
+  for (const h of r.hints ?? []) {
+    const shown = h.fixes.slice(0, 3).join(", ");
+    const more = h.fixes.length > 3 ? ` and ${h.fixes.length - 3} more` : "";
+    const fixes = h.fixes.length > 0 ? ` (untangles ${shown}${more})` : "";
+    out.push(`hint: ${h.gain}${fixes}: ${h.command}${h.safe ? "" : `   (${unsafeNote(h)})`}`);
+  }
   return `${out.join("\n")}\n`;
 }
 

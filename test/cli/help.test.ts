@@ -66,6 +66,7 @@ describe("what to improve (D35)", () => {
     const c = run("check", file);
     expect(c.out).toMatch(/^hint: .*crossings|^hint: .*bends/m);
     expect(c.out).toContain(`grafical node move ${file} `);
+    expect(c.out).toContain("(untangles api->photos): grafical node move");
     const json = JSON.parse(run("check", file, "--json").out);
     expect(json.hints.length).toBeGreaterThan(0);
     expect(json.hints[0].ops.length).toBeGreaterThan(0);
