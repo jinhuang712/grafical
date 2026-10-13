@@ -236,7 +236,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       field: "accent",
       found: `${accents} accented nodes`,
       expected: `at most ${MAX_ACCENTS}`,
-      suggestion: "keep accent on the one or two nodes a reader should see first",
+      suggestion: "take the accent off all but 2 nodes",
     });
   }
   return errors;

@@ -21,7 +21,7 @@ describe("file validation", () => {
       field: "layers[0].nodes[0].kind",
       found: "database",
     });
-    expect(e?.suggestion).toContain("database is not a kind; use store");
+    expect(e?.suggestion).toContain("database -> store");
     expect(e?.suggestion).toContain(`allowed: ${NODE_KINDS.join(", ")}`);
   });
 

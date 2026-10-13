@@ -57,15 +57,13 @@ function dupError(d: Diagram, id: string, i: number): OpError | undefined {
   if (kind === undefined) return undefined;
   let n = 2;
   while (unusedKind(d, `${id}-${n}`) !== undefined) n++;
-  // Rows named after their only box are the usual clash: a state machine, a cloud's users.
-  const rows = kind === "layer" ? ", or name the row for what it holds" : "";
   return {
     code: "duplicate-id",
     index: i,
     field: "id",
     found: id,
     expected: "an id not used by any layer, group, lane, node or edge",
-    suggestion: `${id} is already a ${kind}, and rows, nodes, groups, lanes and edges share one set of ids; choose another, such as ${id}-${n}${rows}`,
+    suggestion: `${id} is a ${kind}; free: ${id}-${n}`,
   };
 }
 
@@ -531,7 +529,7 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
         field: "accent",
         found: `${count + 1} accented nodes`,
         expected: `at most ${MAX_ACCENTS}`,
-        suggestion: "keep accent on the one or two nodes a reader should see first",
+        suggestion: "node emphasize <id> --off on another node first",
       });
     }
   }

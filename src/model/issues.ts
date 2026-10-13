@@ -80,10 +80,10 @@ export function issuesToErrors(
           found: key,
           expected: known.length ? `one of: ${known.join(", ")}` : "no extra fields",
           ...(renamed !== undefined
-            ? { suggestion: `${key} is now called ${renamed}: ${renamed}: ${show(value)}` }
+            ? { suggestion: `${key} -> ${renamed}` }
             : cut
               ? {
-                  suggestion: `${key} looks like the rest of a text cut at a comma or a colon; quote the whole text, such as sublabel: "validate, dedupe"`,
+                  suggestion: `text cut at "," or ":" before ${key}: quote it`,
                 }
               : near.length
                 ? { suggestion: `did you mean: ${near.join(", ")}` }
@@ -146,8 +146,8 @@ export function issuesToErrors(
 
 /** Kinds agents guess, and the kind each most likely means, for boxes and for lines. */
 const NODE_GUESS: Record<string, string> = {
-  start: "initial for a state machine's start dot, or terminal for a flowchart's Start",
-  end: "final for a state machine's end ring, or terminal for a flowchart's End",
+  start: "initial (state machine), terminal (flowchart)",
+  end: "final (state machine), terminal (flowchart)",
   process: "service",
   step: "service",
   task: "service",
@@ -187,9 +187,7 @@ function guessedKind(
   const lines = (typeof op === "string" && op.startsWith("edge.")) || path.includes("edges");
   const guess =
     typeof found === "string" ? (lines ? EDGE_GUESS : NODE_GUESS)[found.toLowerCase()] : undefined;
-  return guess === undefined
-    ? allowed(values)
-    : `${found} is not a kind; use ${guess}; ${allowed(values)}`;
+  return guess === undefined ? allowed(values) : `${found} -> ${guess}; ${allowed(values)}`;
 }
 
 /** Operation fields renamed for clarity, by `<op>.<old field>`, with their new name. */
@@ -203,9 +201,9 @@ function legendStyle(found: unknown, values: string[]): string {
   if (found === undefined) return allowed(values);
   if (typeof found === "string" && (EDGE_KINDS as readonly string[]).includes(found)) {
     const style = lineStyle(found as EdgeKind);
-    return `${found} is an edge kind; the legend names how lines look, and ${found} lines are ${style}: style: ${style}`;
+    return `${found} -> ${style}`;
   }
-  return `${allowed(values)}; the wording goes in text, such as {op: diagram.legend, style: dashed, text: event}`;
+  return `${allowed(values)}; the wording goes in text`;
 }
 
 // The set of known keys of the object at `path`, found by its shape.

@@ -30,7 +30,7 @@ describe("refusals that say how to fix them", () => {
   it("an edge kind given as a legend's line names the look it is drawn in", () => {
     const e = parseOp({ op: "diagram.legend", style: "async", text: "event" }, 0) as OpError[];
     expect(e[0]).toMatchObject({ code: "bad-value", field: "style" });
-    expect(e[0]?.suggestion).toContain("async lines are dashed: style: dashed");
+    expect(e[0]?.suggestion).toBe("async -> dashed");
     const worded = parseOp({ op: "diagram.legend", style: "solid: request" }, 0) as OpError[];
     expect(worded[0]?.suggestion).toContain("the wording goes in text");
   });
@@ -41,12 +41,12 @@ describe("refusals that say how to fix them", () => {
       0,
     ) as OpError[];
     expect(start[0]?.suggestion).toContain(
-      "start is not a kind; use initial for a state machine's start dot, or terminal for a flowchart's Start; allowed: ",
+      "start -> initial (state machine), terminal (flowchart); allowed: ",
     );
     const event = parseOp({ op: "edge.add", from: "a", to: "b", kind: "event" }, 0) as OpError[];
-    expect(event[0]?.suggestion).toContain("event is not a kind; use async; allowed: call");
+    expect(event[0]?.suggestion).toContain("event -> async; allowed: call");
     const style = parseOp({ op: "edge.add", from: "a", to: "b", kind: "dashed" }, 0) as OpError[];
-    expect(style[0]?.suggestion).toContain("dashed is not a kind; use async");
+    expect(style[0]?.suggestion).toContain("dashed -> async");
     const odd = parseOp(
       { op: "node.add", id: "s", layer: "l", label: "S", kind: "blob" },
       0,
@@ -57,7 +57,7 @@ describe("refusals that say how to fix them", () => {
   it("the legend's old field name line is refused with its new name", () => {
     const e = parseOp({ op: "diagram.legend", line: "dashed", text: "event" }, 0) as OpError[];
     const old = e.find((x) => x.code === "unknown-field");
-    expect(old?.suggestion).toBe("line is now called style: style: dashed");
+    expect(old?.suggestion).toBe("line -> style");
   });
 
   it("text cut at a comma is named as such, and other fields come from the operation", () => {
@@ -65,7 +65,7 @@ describe("refusals that say how to fix them", () => {
       { op: "node.add", id: "a", layer: "top", label: "A", sublabel: "x", dedupe: null },
     ]) as OpError[];
     expect(cut[0]).toMatchObject({ code: "unknown-field", found: "dedupe" });
-    expect(cut[0]?.suggestion).toContain("quote the whole text");
+    expect(cut[0]?.suggestion).toBe('text cut at "," or ":" before dedupe: quote it');
     expect(cut[0]?.expected).toContain("sublabel");
     const typo = parseOps([
       { op: "node.add", id: "a", layer: "top", label: "A", sublable: "x" },
@@ -77,7 +77,7 @@ describe("refusals that say how to fix them", () => {
     const d = ok(empty, [{ op: "layer.add", id: "placed", label: "Placed" }]);
     const e = fail(d.diagram, [{ op: "node.add", id: "placed", layer: "placed", label: "Placed" }]);
     expect(e[0]?.code).toBe("duplicate-id");
-    expect(e[0]?.suggestion).toContain("such as placed-2, or name the row for what it holds");
+    expect(e[0]?.suggestion).toBe("placed is a layer; free: placed-2");
   });
 });
 
@@ -362,7 +362,7 @@ describe("parsing operations", () => {
       [1, "missing-field", "layer"],
       [2, "unknown-field", "extra"],
     ]);
-    expect(r[0]?.suggestion).toBe(`db is not a kind; use store; allowed: ${NODE_KINDS.join(", ")}`);
+    expect(r[0]?.suggestion).toBe(`db -> store; allowed: ${NODE_KINDS.join(", ")}`);
   });
   it("rejects a batch that is not a list, and coordinates", () => {
     expect((parseOps({ op: "x" }) as OpError[])[0]?.code).toBe("bad-batch");
