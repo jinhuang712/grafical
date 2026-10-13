@@ -587,8 +587,11 @@ Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "The command line states fact
 - **Warnings become counts:** the number of nodes, the picture's width, the nodes in a row, the lines passing a row, with no threshold and no advice.
 - **Refusals stay terse:** the field, what was found, the allowed values, the closest ids, and a mapping where one exists (`async -> dashed`), with no sentences.
 - **The help is documentation, not output about a diagram:** its principles and examples stay.
+- **The form is records**, added on 2026-10-13 after the owner turned down phrases such as "most lines at a box 10 (sync)": one record per line, a word that names it (`counts`, `box`, `group`, `line`), then `key=value` fields in the logfmt style, such as `line id=a->b from=a to=b leaves=bottom enters=top bends=2 length=372 crosses=- passes=-`. A list is comma separated, a thing and its number is `api:3`, and none is `-`. A value with a space is quoted. The fields are the JSON's, under the same names.
 
 Rejected:
+- Phrases with the numbers in them ("most nodes in a row 4 (outside)"). They read well to a person, but the agent has to parse English to get the number, and each phrase is worded its own way.
+- A table with a header row. A column is read by its position, so an agent that reads one row alone cannot tell which number is which.
 - Advice in the output, however helpful. It decides for the agent, and one reader's advice is not another's (PHILOSOPHY.md, "Easy and consistent, not right for every reader").
 - Hints as discrete commands with numbers. The numbers are facts, but which moves to try is a judgement, and it is the agent's.
 

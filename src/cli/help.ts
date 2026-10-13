@@ -162,11 +162,13 @@ Good to know:
 
 Output:
   ok changed: <ids>          the change is written
-  counts: nodes, lines, crossings, bends, width, height, the row with most
-          nodes, the box with most lines, and the lines that pass a row
-          they do not connect. Facts only: what they mean is yours to
-          judge. grafical show <file> --drawn names each box and line.
-  --json prints the same as one JSON object.
+  counts nodes= lines= crossings= bends= width= height= fullest= busiest=
+         passing=
+    fullest is the row with most nodes, as <row>:<nodes>; busiest the box
+    with most lines, as <box>:<lines>; passing the lines that pass a row
+    they do not connect. Facts only: what they mean is yours to judge.
+    grafical show <file> --drawn prints a record for each box and line.
+  --json prints the same as one JSON object, under the same names.
 
 When refused:
   failed, file unchanged, then one line per problem:
@@ -206,11 +208,16 @@ Good to know:
 edges, in the words of the operations. Read it instead of the file.`,
     after: `
 Good to know:
-  - --drawn prints how it is drawn, one fact per line: for each box its row,
-    its place in the row, its size and its lines by side; for each line the
-    sides it leaves and enters, its bends, its length, the lines it crosses
-    and the rows it passes; and the totals. Judge the drawing from it, and
-    change what you decide to change.
+  - --drawn prints how it is drawn, one record per line, as key=value:
+      counts ...                    as apply prints them
+      box id= row= place= of= width= height= sides=
+      group id= members= width= height=
+      line id= from= to= leaves= enters= bends= length= crosses= passes=
+    place counts from 1 at the row's left, and of is how many boxes the
+    row holds. sides counts a box's lines by side, as top:1,bottom:2.
+    passes names the rows a line runs through without meeting a box of.
+    Sizes and lengths are in pixels; - means none. Judge the drawing from
+    them, and change what you decide to change.
 `,
   },
 
@@ -231,8 +238,7 @@ of every change, with the changed parts marked. Ctrl-C stops it.`,
 
   try: {
     about: `Apply a batch without writing it, and print the drawing's counts before and
-after it: nodes, lines, crossings, bends, size, the fullest row, the box with
-most lines and the lines passing a row. Nothing is written.`,
+after it, as apply prints them. Nothing is written.`,
     after: `
 Good to know:
   - Use it to compare arrangements you are weighing: a row moved, two nodes
@@ -242,8 +248,8 @@ Good to know:
 Example:
   grafical try shop.grafical.yaml move.yaml
   ok would change: row-stores
-  before: nodes 9, lines 10, crossings 3, bends 12, ...
-  after: nodes 9, lines 10, crossings 0, bends 8, ...
+  before nodes=9 lines=10 crossings=3 bends=12 ...
+  after nodes=9 lines=10 crossings=0 bends=8 ...
 `,
   },
 
@@ -263,8 +269,8 @@ See also: layer move, layer split, node add
     about: "Move the second half of a row, or the nodes from --from on, into a new row below.",
     after: `
 When to use:
-  - A row holds more boxes than read well side by side; the counts name
-    the row with most nodes, and the picture's width.
+  - A row holds more boxes than read well side by side; the counts give
+    the row with most nodes (fullest) and the picture's width.
   - Or merge boxes a reader need not tell apart (node merge).
 `,
   },

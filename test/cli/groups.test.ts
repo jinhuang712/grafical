@@ -115,9 +115,7 @@ describe("grouped diagrams", () => {
     writeFileSync(join(dir, "big.yaml"), items.join(""));
     const w = run("apply", f, "big.yaml");
     expect(w.code).toBe(0);
-    expect(w.out).toMatch(
-      /^counts: nodes 17, lines 0, crossings 0, bends 0, .*most nodes in a row 17 \(row\)/m,
-    );
+    expect(w.out).toMatch(/^counts nodes=17 lines=0 crossings=0 bends=0 .*fullest=row:17 /m);
     expect(w.out).not.toMatch(/warning|hint|too many/);
     const c = run("check", f, "--json");
     expect(c.code).toBe(0);

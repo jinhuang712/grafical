@@ -6,6 +6,7 @@
 import { bendsOf, crossingsOf } from "../layout/index.ts";
 import { endRows } from "../model/ends.ts";
 import type { Diagram } from "../model/index.ts";
+import { record } from "../records.ts";
 import type { Point, Rect, Scene } from "../scene.ts";
 
 export type Side = "top" | "bottom" | "left" | "right";
@@ -20,7 +21,7 @@ export interface DrawnBox {
   width: number;
   height: number;
   /** Lines that meet the box, by side; a side no line meets is left out. */
-  lines: Partial<Record<Side, number>>;
+  sides: Partial<Record<Side, number>>;
 }
 
 export interface DrawnLine {
@@ -53,8 +54,8 @@ export interface Counts {
   width: number;
   height: number;
   /** The row with the most boxes, and the box with the most lines; ties go to the first. */
-  fullestRow?: { id: string; nodes: number };
-  busiestBox?: { id: string; lines: number };
+  fullest: { id: string; nodes: number } | null;
+  busiest: { id: string; lines: number } | null;
   /** Lines that pass at least one row. */
   passing: number;
 }
@@ -162,6 +163,9 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
   for (const layer of d.layers) {
     const row = scene.nodes.filter((n) => n.layer === layer.id).sort((p, q) => p.rect.x - q.rect.x);
     row.forEach((n, i) => {
+      const at = atBox.get(n.id) ?? {};
+      const sides: Partial<Record<Side, number>> = {};
+      for (const s of SIDES) if (at[s] !== undefined) sides[s] = at[s];
       boxes.push({
         id: n.id,
         row: layer.id,
@@ -169,7 +173,7 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
         of: row.length,
         width: Math.round(n.rect.w),
         height: Math.round(n.rect.h),
-        lines: atBox.get(n.id) ?? {},
+        sides,
       });
     });
   }
@@ -181,16 +185,15 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
     height: Math.round(g.rect.h),
   }));
 
-  let fullestRow: Counts["fullestRow"];
+  let fullest: Counts["fullest"] = null;
   for (const layer of d.layers) {
-    if (fullestRow === undefined || layer.nodes.length > fullestRow.nodes)
-      fullestRow = { id: layer.id, nodes: layer.nodes.length };
+    if (fullest === null || layer.nodes.length > fullest.nodes)
+      fullest = { id: layer.id, nodes: layer.nodes.length };
   }
-  let busiestBox: Counts["busiestBox"];
+  let busiest: Counts["busiest"] = null;
   for (const box of boxes) {
-    const n = Object.values(box.lines).reduce((s, x) => s + (x ?? 0), 0);
-    if (n > 0 && (busiestBox === undefined || n > busiestBox.lines))
-      busiestBox = { id: box.id, lines: n };
+    const n = Object.values(box.sides).reduce((s, x) => s + (x ?? 0), 0);
+    if (n > 0 && (busiest === null || n > busiest.lines)) busiest = { id: box.id, lines: n };
   }
   return {
     counts: {
@@ -200,8 +203,8 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
       bends: lines.reduce((s, l) => s + l.bends, 0),
       width: Math.round(scene.width),
       height: Math.round(scene.height),
-      ...(fullestRow !== undefined ? { fullestRow } : {}),
-      ...(busiestBox !== undefined ? { busiestBox } : {}),
+      fullest,
+      busiest,
       passing: lines.filter((l) => l.passes.length > 0).length,
     },
     boxes,
@@ -210,45 +213,16 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
   };
 }
 
-/** The counts as one line of text, after a word that says what they count. */
-export function countsText(c: Counts, label = "counts"): string {
-  const parts = [
-    `nodes ${c.nodes}`,
-    `lines ${c.lines}`,
-    `crossings ${c.crossings}`,
-    `bends ${c.bends}`,
-    `width ${c.width} px`,
-    `height ${c.height} px`,
-    ...(c.fullestRow !== undefined
-      ? [`most nodes in a row ${c.fullestRow.nodes} (${c.fullestRow.id})`]
-      : []),
-    ...(c.busiestBox !== undefined
-      ? [`most lines at a box ${c.busiestBox.lines} (${c.busiestBox.id})`]
-      : []),
-    `lines passing a row ${c.passing}`,
-  ];
-  return `${label}: ${parts.join(", ")}`;
+/** The counts as one record, named by what they count: counts, before or after. */
+export function countsText(c: Counts, name = "counts"): string {
+  return record(name, { ...c });
 }
 
-/** The whole drawing as text, one fact per line. */
+/** The whole drawing as records: the counts, then each box, group and line. */
 export function drawingText(dr: Drawing): string {
   const out = [countsText(dr.counts)];
-  for (const b of dr.boxes) {
-    const sides = SIDES.filter((s) => b.lines[s] !== undefined).map((s) => `${s} ${b.lines[s]}`);
-    out.push(
-      `box ${b.id}: row ${b.row}, place ${b.place} of ${b.of}, ${b.width}x${b.height} px${sides.length > 0 ? `, lines ${sides.join(" ")}` : ""}`,
-    );
-  }
-  for (const g of dr.groups)
-    out.push(`group ${g.id}: members ${g.members}, ${g.width}x${g.height} px`);
-  for (const l of dr.lines) {
-    const extra = [
-      ...(l.crosses.length > 0 ? [`crosses ${l.crosses.join(" ")}`] : []),
-      ...(l.passes.length > 0 ? [`passes ${l.passes.join(" ")}`] : []),
-    ];
-    out.push(
-      `line ${l.id}: leaves ${l.leaves}, enters ${l.enters}, bends ${l.bends}, length ${l.length} px${extra.length > 0 ? `, ${extra.join(", ")}` : ""}`,
-    );
-  }
+  for (const b of dr.boxes) out.push(record("box", { ...b }));
+  for (const g of dr.groups) out.push(record("group", { ...g }));
+  for (const l of dr.lines) out.push(record("line", { ...l }));
   return `${out.join("\n")}\n`;
 }

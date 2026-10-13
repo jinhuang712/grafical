@@ -63,7 +63,7 @@ describe("the counts in place of hints (D37)", () => {
 
   it("check prints the counts, and no hint, warning or advice", () => {
     const out = run("check", photos()).out;
-    expect(out).toMatch(/^ok\ncounts: nodes \d+, lines \d+, crossings \d+, bends \d+/);
+    expect(out).toMatch(/^ok\ncounts nodes=\d+ lines=\d+ crossings=\d+ bends=\d+/);
     expect(out).not.toMatch(/^(hint|warning|lines):/m);
     expect(run("diagram", "improve", photos()).code).toBe(2);
     const json = JSON.parse(run("check", photos(), "--json").out);

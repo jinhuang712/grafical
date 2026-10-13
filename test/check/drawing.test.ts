@@ -51,14 +51,14 @@ const skipping: Diagram = {
 describe("the drawing as facts (D37)", () => {
   it("names each box's row, place and lines by side, and each line's sides and crossings", () => {
     const dr = drawing(crossed, layout(crossed, m));
-    expect(dr.counts).toMatchObject({ nodes: 4, lines: 2, crossings: 1, busiestBox: { lines: 1 } });
+    expect(dr.counts).toMatchObject({ nodes: 4, lines: 2, crossings: 1, busiest: { lines: 1 } });
     expect(dr.boxes.map((b) => `${b.id} ${b.row} ${b.place}/${b.of}`)).toEqual([
       "a1 top 1/2",
       "a2 top 2/2",
       "b1 bottom 1/2",
       "b2 bottom 2/2",
     ]);
-    expect(dr.boxes.find((b) => b.id === "a1")?.lines).toEqual({ bottom: 1 });
+    expect(dr.boxes.find((b) => b.id === "a1")?.sides).toEqual({ bottom: 1 });
     const line = dr.lines.find((l) => l.id === "a1->b2");
     expect(line).toMatchObject({
       leaves: "bottom",
@@ -70,7 +70,7 @@ describe("the drawing as facts (D37)", () => {
 
   it("counts the lines at a box, and names a row a line passes without meeting it", () => {
     const dr = drawing(skipping, layout(skipping, m));
-    expect(dr.counts.busiestBox).toEqual({ id: "a", lines: 3 });
+    expect(dr.counts.busiest).toEqual({ id: "a", lines: 3 });
     // A drawn picture where a->z runs down through the middle row, between m1 and m2.
     const box = (id: string, layer: string, x: number, y: number) => ({
       id,
@@ -112,12 +112,17 @@ describe("the drawing as facts (D37)", () => {
     expect(drawing(skipping, scene).counts.passing).toBe(1);
   });
 
-  it("is the same text every time, with no judgement in it", () => {
+  it("is the same records every time, key=value only, with no judgement in it", () => {
     const a = drawingText(drawing(crossed, layout(crossed, m)));
     expect(drawingText(drawing(crossed, layout(crossed, m)))).toBe(a);
-    expect(a.split("\n")[0]).toMatch(
-      /^counts: nodes 4, lines 2, crossings 1, bends \d+, width \d+ px/,
+    const lines = a.trimEnd().split("\n");
+    expect(lines[0]).toMatch(/^counts nodes=4 lines=2 crossings=1 bends=\d+ width=\d+ height=\d+ /);
+    expect(lines).toContain(
+      "box id=a1 row=top place=1 of=2 width=" +
+        `${drawing(crossed, layout(crossed, m)).boxes[0]?.width} height=56 sides=bottom:1`,
     );
+    // Every field is key=value: a record is its name, then fields with no spaces in them.
+    for (const l of lines) expect(l).toMatch(/^[a-z]+( [a-z]+=[^ =]+)+$/);
     expect(a).not.toMatch(/too|should|better|warning|hint/i);
   });
 });

@@ -147,7 +147,7 @@ describe("write commands", () => {
     expect(r.code, r.out + r.err).toBe(0);
     expect(r.out).toBe(
       "ok changed: clients, services, storage, web, api, worker, db, mq, web->api, api->db, api->mq, mq->worker\n" +
-        "counts: nodes 5, lines 4, crossings 0, bends 2, width 368 px, height 376 px, most nodes in a row 2 (services), most lines at a box 3 (api), lines passing a row 0\n",
+        "counts nodes=5 lines=4 crossings=0 bends=2 width=368 height=376 fullest=services:2 busiest=api:3 passing=0\n",
     );
     const single = read("single.grafical.yaml");
     expect(read("batch.grafical.yaml")).toBe(single);
@@ -286,9 +286,11 @@ describe("read commands", () => {
   it("show --drawn prints the drawing as facts and counts (D37)", () => {
     const r = run("show", "single.grafical.yaml", "--drawn");
     expect(r.code).toBe(0);
-    expect(r.out).toMatch(/^counts: nodes \d+, lines \d+, crossings \d+/);
-    expect(r.out).toMatch(/^box api: row \S+, place \d+ of \d+/m);
-    expect(r.out).toMatch(/^line api->db: leaves \w+, enters \w+, bends \d+, length \d+ px/m);
+    expect(r.out).toMatch(/^counts nodes=\d+ lines=\d+ crossings=\d+/);
+    expect(r.out).toMatch(/^box id=api row=\S+ place=\d+ of=\d+/m);
+    expect(r.out).toMatch(
+      /^line id=api->db from=api to=db leaves=\w+ enters=\w+ bends=\d+ length=\d+/m,
+    );
     const json = JSON.parse(run("show", "single.grafical.yaml", "--drawn", "--json").out);
     expect(json.drawing.counts.nodes).toBeGreaterThan(0);
   });
@@ -299,7 +301,7 @@ describe("read commands", () => {
     const r = run("try", "single.grafical.yaml", "try.yaml");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(
-      /^ok would change: api\nbefore: nodes \d+, lines \d+, crossings \d+.*\nafter: nodes \d+/,
+      /^ok would change: api\nbefore nodes=\d+ lines=\d+ crossings=\d+.*\nafter nodes=\d+/,
     );
     expect(readFileSync(join(dir, "single.grafical.yaml"), "utf8")).toBe(before);
     const json = JSON.parse(run("try", "single.grafical.yaml", "try.yaml", "--json").out);
@@ -314,11 +316,11 @@ describe("read commands", () => {
     const r = run("render", "single.grafical.yaml", "--png", "only.png", "--scale", "1");
     expect(r.code).toBe(0);
     expect(existsSync(join(dir, "only.png"))).toBe(true);
-    expect(r.out).toMatch(/^wrote only.png\nok\ncounts: nodes /);
+    expect(r.out).toMatch(/^wrote only.png\nok\ncounts nodes=/);
     // A flag with no path writes only that file, beside the diagram.
     const beside = run("render", "single.grafical.yaml", "--png", "--scale", "1");
     expect(beside.code).toBe(0);
-    expect(beside.out).toMatch(/^wrote single.png\nok\ncounts: nodes /);
+    expect(beside.out).toMatch(/^wrote single.png\nok\ncounts nodes=/);
   });
 
   it("the help read before a draft is byte-stable and within the old guide's budget", () => {
