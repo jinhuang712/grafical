@@ -169,8 +169,10 @@ export const ROUTE = {
   labelClear: 4,
   /** Least space between two labels side by side, so that they do not read as one. */
   labelSpace: 24,
-  /** This many unlabelled edges of one kind on one node side share a trunk (D25 rule 4). */
+  /** This many unlabelled edges of one kind on a crowded node side share a trunk (D25 rule 4). */
   busMin: 2,
+  /** This many unlabelled edges of one kind leaving one node side leave as one bundle, crowded or not (D38). */
+  fanOut: 3,
   /** Space on each side of the label of an edge that runs sideways between neighbours. */
   sideLabelPad: 12,
   /** A sideways edge with a wider label goes round through the gutter instead. */

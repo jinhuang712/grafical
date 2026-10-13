@@ -464,10 +464,12 @@ function portsOn(n: PNode): number {
 }
 
 /**
- * Every line meets its node side at a port of its own (D33), unless the side has
- * more lines than slots. From such a side, a fan-out of unlabelled edges in one
- * line style leaves as a bus: one port and one trunk. Of the rest, a fan-in of
- * unlabelled edges in one style into such a side arrives through one port.
+ * Every line meets its node side at a port of its own (D33), with two exceptions.
+ * Unlabelled edges in one line style that leave one side leave as a bus, one port
+ * and one trunk that splits near their targets: three or more of them from any
+ * side (D38), two or more from a side with more lines than slots. Of the rest, a
+ * fan-in of unlabelled edges in one style into such a crowded side arrives through
+ * one port.
  */
 function assignBuses(plans: Plan[], alone: Set<string>): void {
   const load = new Map<string, number>();
@@ -498,8 +500,10 @@ function assignBuses(plans: Plan[], alone: Set<string>): void {
   const look = (pl: Plan) => `${lineStyle(pl.edge.kind)}${pl.edge.accent === true ? ":main" : ""}`;
   for (const bus of collect(
     (pl) => `${pl.u.id}:${pl.srcSide}:${look(pl)}`,
-    (pl) => pl.edge.both === true || roomy(pl.u, pl.srcSide),
+    (pl) => pl.edge.both === true,
   )) {
+    const first = bus.members[0] as Plan;
+    if (bus.members.length < ROUTE.fanOut && roomy(first.u, first.srcSide)) continue;
     for (const pl of bus.members) pl.bus = bus;
   }
   for (const fan of collect(

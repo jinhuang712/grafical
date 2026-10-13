@@ -280,16 +280,32 @@ describe("the target look (D25)", () => {
     ).toBe("persist");
   });
 
-  it("gives each line of a fan-out a port of its own where the side has room (D33)", () => {
+  it("bundles a fan-out of three or more unlabelled lines into one port and trunk (D38)", () => {
     const crossings = lineTrouble(catalogSyncGrouped, m).crossings;
     for (const from of ["pipelines", "service"]) {
-      const out = scene.edges.filter((x) => x.from === from);
-      const ports = new Set(out.map((x) => `${x.points[0]?.x},${x.points[0]?.y}`));
-      expect(out.length).toBeGreaterThan(2);
-      expect(ports.size).toBe(out.length);
+      const out = scene.edges.filter(
+        (x) => x.from === from && x.label === undefined && x.kind === "call",
+      );
+      expect(out.length).toBeGreaterThanOrEqual(3);
+      expect(new Set(out.map((x) => `${x.points[0]?.x},${x.points[0]?.y}`)).size).toBe(1);
       const ids = new Set(out.map((x) => x.id));
       expect(crossings.filter(([a, b]) => ids.has(a) && ids.has(b))).toEqual([]);
     }
+  });
+
+  it("gives each line a port of its own when two leave a side with room (D33)", () => {
+    const two: Diagram = {
+      grafical: 1,
+      title: "Two",
+      density: "normal",
+      layers: [
+        { id: "top", label: "Top", nodes: [n("a", "A service", "service", "m")] },
+        { id: "low", label: "Low", nodes: [n("b", "B", "store", "m"), n("c", "C", "store", "m")] },
+      ],
+      edges: [e("a", "b", "call"), e("a", "c", "call")],
+    };
+    const out = layout(two, m).edges;
+    expect(new Set(out.map((x) => `${x.points[0]?.x},${x.points[0]?.y}`)).size).toBe(2);
   });
 
   it("merges a crowded side's fan-out into one trunk, with no junction that reads as a crossing", () => {

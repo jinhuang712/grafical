@@ -290,7 +290,7 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 
 | Feature | Does | Status |
 |---|---|---|
-| Bundled fan-outs | Lines from one box to several others leave as one line and split near their targets, with a dot at the split. The engine's behavior: nothing for the agent to state | stage 1 |
+| Bundled fan-outs | Three or more unlabelled lines of one style from one side of a box leave as one line and split near their targets, with a dot at each split. The engine's behavior: nothing for the agent to state (D38) | done |
 | Equal heights in a row | Every box in a row takes the height of the row's tallest, so their tops line up | stage 1 |
 | Room around stores | Lines keep a clearance from a store's cylinder, as from a box | stage 1 |
 | Flow direction | `down` (as now) or `right`: rows become columns of the flow, left to right. One diagram fact | stage 1 |
