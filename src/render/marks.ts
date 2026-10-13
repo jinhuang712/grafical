@@ -3,10 +3,11 @@
 // a file (D15). The command line reads the files and gives their bytes in here
 // before it renders, the way it gives in stylesheets (D30).
 
-import { graphemes, isEmoji } from "../model/schema.ts";
+import { isEmoji } from "../model/schema.ts";
 import type { Mark } from "../model/types.ts";
 import type { Rect, SceneMark } from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
+import { markTextSize } from "../theme/geometry.ts";
 import { escapeXml, num } from "./svg.ts";
 
 export { isEmoji };
@@ -32,9 +33,6 @@ export function markImage(m: Mark): MarkImage | undefined {
   return images.get(markKey(m));
 }
 
-/** The font size of a text mark: the more characters, the smaller. */
-const TEXT_SIZE = [14, 14, 11, 9];
-
 /** The badge of a text mark when it names no color. */
 const DEFAULT_BADGE = "#1f2328";
 
@@ -53,8 +51,8 @@ function readableOn(bg: string): string {
  * box outline running through it.
  */
 function textMark(text: string, r: Rect, bg: string): string {
-  const n = graphemes(text).length;
-  const size = TEXT_SIZE[Math.min(n, TEXT_SIZE.length - 1)] as number;
+  // The layout sized the badge for this text size (markWidth), so the two must agree.
+  const size = markTextSize(text);
   const f = FONT_FAMILY[/[　-鿿＀-￯]/.test(text) ? "noto-600" : "inter-600"];
   return (
     `<rect x="${num(r.x)}" y="${num(r.y)}" width="${num(r.w)}" height="${num(r.h)}" rx="4" fill="${bg}"/>\n` +

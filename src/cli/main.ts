@@ -513,7 +513,7 @@ function build(): Command {
       .requiredOption("--slot <slot>", MARK_SLOTS.join(", "))
       .option(
         "--icon <mark>",
-        "an emoji, up to 3 characters, or a file next to the diagram; leave it out to clear",
+        "an emoji, up to 6 characters, or a file next to the diagram; leave it out to clear",
       )
       .option(
         "--bg <color>",

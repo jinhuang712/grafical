@@ -4,26 +4,40 @@
 // overflow rule (D14), so a node the engine sizes overflows only when its text
 // does not fit the large box either.
 
+import { isEmoji } from "../model/schema.ts";
 import {
   type Diagram,
   type DiagramNode,
   MARK_SLOTS,
+  type Mark,
+  markText,
   type NodeKind,
   type SizeStep,
 } from "../model/types.ts";
 import type { Rect, SceneMark } from "../scene.ts";
 import type { Line, Measurer } from "../text/types.ts";
-import { FRAME, MARK } from "../theme/geometry.ts";
+import { FRAME, MARK, markTextSize } from "../theme/geometry.ts";
 import { isDot, lineRoom, nodeBox } from "../theme/shapes.ts";
 import { type TypeRamp, themeOf } from "../theme/themes.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 import { lineHeight } from "./text.ts";
 
+/**
+ * How wide a mark is (D40). A picture is a square. A text sits on a badge that is as
+ * wide as the text and its padding, and at least a square, so that `NEW` fits.
+ */
+export function markWidth(mark: Mark, m: Measurer): number {
+  const text = markText(mark);
+  if (text === undefined || isEmoji(text)) return MARK.size;
+  const w = m.measure(text, { size: markTextSize(text), weight: 600 }).width;
+  return Math.max(MARK.size, Math.ceil(w + 2 * MARK.padX));
+}
+
 /** The width a node's text gives up for its left mark (D40). A diamond and a dot have no left slot. */
-export function leftInset(node: DiagramNode): number {
-  return node.icons?.left !== undefined && node.kind !== "decision" && !isDot(node.kind)
-    ? MARK.leftColumn
-    : 0;
+export function leftInset(node: DiagramNode, m: Measurer): number {
+  const mark = node.icons?.left;
+  if (mark === undefined || node.kind === "decision" || isDot(node.kind)) return 0;
+  return markWidth(mark, m) + MARK.leftGap;
 }
 
 /**
@@ -31,20 +45,22 @@ export function leftInset(node: DiagramNode): number {
  * corner by MARK.overhang. The left mark is inside the box, centred in its column.
  * A diamond and a dot have corner marks only.
  */
-export function markRects(node: DiagramNode, r: Rect): SceneMark[] {
+export function markRects(node: DiagramNode, r: Rect, m: Measurer): SceneMark[] {
   const out: SceneMark[] = [];
   const { size, overhang } = MARK;
   for (const slot of MARK_SLOTS) {
     const mark = node.icons?.[slot];
     if (mark === undefined) continue;
+    const w = markWidth(mark, m);
     let rect: Rect;
     if (slot === "left") {
-      if (leftInset(node) === 0) continue;
-      rect = { x: r.x + FRAME.textPad, y: r.y + (r.h - size) / 2, w: size, h: size };
+      if (leftInset(node, m) === 0) continue;
+      rect = { x: r.x + FRAME.textPad, y: r.y + (r.h - size) / 2, w, h: size };
     } else {
-      const x = slot.endsWith("left") ? r.x - overhang : r.x + r.w - size + overhang;
+      // A corner mark grows away from its corner, so it stays over the same corner.
+      const x = slot.endsWith("left") ? r.x - overhang : r.x + r.w - w + overhang;
       const y = slot.startsWith("top") ? r.y - overhang : r.y + r.h - size + overhang;
-      rect = { x, y, w: size, h: size };
+      rect = { x, y, w, h: size };
     }
     out.push({ slot, rect, mark });
   }
@@ -103,7 +119,7 @@ export function fits(
     node.sublabel,
     m,
     T,
-    leftInset(node),
+    leftInset(node, m),
   );
   if (label.length > FRAME.labelLines || sub.length > FRAME.sublabelLines) return false;
   if ([...label, ...sub].some((l) => l.width > room + 1e-6)) return false;
@@ -135,7 +151,7 @@ function autoSize(node: DiagramNode, m: Measurer, T: TypeRamp): SizeStep {
     hit.ramp === T &&
     hit.label === node.label &&
     hit.sublabel === node.sublabel &&
-    hit.inset === leftInset(node)
+    hit.inset === leftInset(node, m)
   ) {
     return hit.step;
   }
@@ -143,7 +159,7 @@ function autoSize(node: DiagramNode, m: Measurer, T: TypeRamp): SizeStep {
   byNode.set(node, {
     label: node.label,
     sublabel: node.sublabel,
-    inset: leftInset(node),
+    inset: leftInset(node, m),
     step,
     ramp: T,
   });

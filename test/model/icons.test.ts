@@ -60,9 +60,9 @@ describe("node.icon (D40)", () => {
     expect(d.layers[0]?.nodes[0]?.icons).toBeUndefined();
   });
 
-  it("refuses a text over 3 characters, and says the limit", () => {
+  it("refuses a text over 6 characters, and says the limit", () => {
     const e = run([{ op: "node.icon", id: "x", slot: "top-left", icon: "TOOLONG" }]);
-    expect(e).toMatchObject([{ code: "mark-too-long", field: "icon", facts: { max: 3 } }]);
+    expect(e).toMatchObject([{ code: "mark-too-long", field: "icon", facts: { max: 6 } }]);
   });
 
   it("counts an emoji as one character", () => {
@@ -146,7 +146,7 @@ describe("marks in the file", () => {
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
   });
 
-  it("refuses a text over 3 characters in the file", () => {
+  it("refuses a text over 6 characters in the file", () => {
     const text = writeDiagram(marked).replace("⚠️", "TOOLONG");
     const r = readDiagram(text);
     expect(Array.isArray(r) && r[0]?.code).toBe("mark-too-long");

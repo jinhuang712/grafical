@@ -360,7 +360,7 @@ Limits:
   },
   "node icon": {
     about: `Put a mark on a node, such as a warning at its top-left. The mark is an
-emoji, up to 3 characters of text, or an SVG or PNG file next to the diagram.
+emoji, up to 6 characters of text, or an SVG or PNG file next to the diagram.
 Without --icon, the slot is cleared.`,
     after: `
 Slots (one mark each):

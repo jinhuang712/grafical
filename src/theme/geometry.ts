@@ -27,9 +27,16 @@ export const MARK = {
   overhang: 6,
   /** Space between the left mark and the text. */
   leftGap: 8,
-  /** The width the text gives up for a left mark: the mark, its gap, and the box padding on its left. */
-  leftColumn: 28,
+  /** Space between a text mark's text and the edge of its badge, left and right. */
+  padX: 5,
 };
+
+/** The font size of a text mark: one character is larger than a few. */
+export function markTextSize(text: string): number {
+  return [...new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text)].length <= 1
+    ? 14
+    : 11;
+}
 
 /** The one size of a state machine's start and end dots (D34). */
 export const DOT = 24;

@@ -943,9 +943,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   for (const l of layers) {
     for (const n of l.nodes) {
       const rect: Rect = { x: centre + n.x, y: nodeTop(l.index, n.h), w: n.w, h: n.h };
-      const marks = markRects(n.node, rect);
+      const marks = markRects(n.node, rect, m);
       const texts: PlacedText[] = [];
-      const inset = leftInset(n.node);
+      const inset = leftInset(n.node, m);
       // A dot's label stays in the file and in show, but is not drawn (D34).
       if (withText && !isDot(n.node.kind)) {
         const { label: lines, sub } = nodeLines(

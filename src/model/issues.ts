@@ -126,7 +126,7 @@ export function issuesToErrors(
       // A mark is a text or a file: a string that is refused is too long (D40).
       out.push(
         typeof found === "string"
-          ? { code: "mark-too-long", index, ...base, found: show(found), facts: { max: 3 } }
+          ? { code: "mark-too-long", index, ...base, found: show(found), facts: { max: 6 } }
           : {
               code: "bad-mark",
               index,

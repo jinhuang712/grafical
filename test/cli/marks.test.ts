@@ -122,7 +122,7 @@ describe("grafical node icon", () => {
     expect(read(fresh)).not.toContain("icons");
   });
 
-  it("refuses a text over 3 characters, and the left slot on a diamond", () => {
+  it("refuses a text over 6 characters, and the left slot on a diamond", () => {
     const fresh = "f.grafical.yaml";
     for (const args of [
       ["new", fresh, "--title", "F"],

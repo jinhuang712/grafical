@@ -45,6 +45,34 @@ describe("marks in the layout", () => {
     );
   });
 
+  it("makes a text badge as wide as its text, growing away from its corner", () => {
+    // Found on a real picture: NEW overflowed a 20 px square.
+    const s = layout(
+      marked("api", {
+        "top-left": "P0",
+        "top-right": { text: "NEW", bg: "#f5c542" },
+        left: { text: "v2.1", bg: "#0969da" },
+      }),
+      m,
+    );
+    const api = s.nodes.find((n) => n.id === "api");
+    const at = (slot: string) => api?.marks?.find((x) => x.slot === slot)?.rect;
+    const text = (t: string) => m.measure(t, { size: 11, weight: 600 }).width;
+    expect(at("top-right")?.w).toBeGreaterThanOrEqual(text("NEW") + 2 * MARK.padX);
+    expect(at("top-right")?.w).toBeGreaterThan(MARK.size);
+    // The right edge stays where a square would put it; the left corner's left edge too.
+    const r = api?.rect;
+    expect((at("top-right")?.x ?? 0) + (at("top-right")?.w ?? 0)).toBe(
+      (r?.x ?? 0) + (r?.w ?? 0) + MARK.overhang,
+    );
+    expect(at("top-left")?.x).toBe((r?.x ?? 0) - MARK.overhang);
+    // One short text still gets a square; a wider left badge pushes the label further right.
+    expect(at("top-left")?.w).toBeGreaterThanOrEqual(text("P0") + 2 * MARK.padX);
+    expect(at("left")?.w).toBeGreaterThan(MARK.size);
+    const left = at("left");
+    expect((left?.x ?? 0) + (left?.w ?? 0)).toBeLessThanOrEqual(api?.texts[0]?.bbox.x ?? 0);
+  });
+
   it("puts a corner mark over its corner, sticking out by the overhang", () => {
     const s = layout(marked("api", { "top-left": "⚠️", "bottom-right": "!" }), m);
     const api = s.nodes.find((n) => n.id === "api");
@@ -71,7 +99,7 @@ describe("marks in the layout", () => {
     const now = after.nodes.find((n) => n.id === "api");
     expect(now?.rect).toEqual(was?.rect);
     const x = (s: typeof was) => s?.texts[0]?.runs[0]?.x ?? 0;
-    expect(x(now) - x(was)).toBeCloseTo(MARK.leftColumn / 2, 5);
+    expect(x(now) - x(was)).toBeCloseTo((MARK.size + MARK.leftGap) / 2, 5);
     const left = now?.marks?.[0];
     expect(left?.slot).toBe("left");
     expect(left?.rect.x).toBeGreaterThanOrEqual((now?.rect.x ?? 0) + 8);

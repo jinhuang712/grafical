@@ -90,7 +90,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `node.resize` | Set the size step, which fixes the box's width and height. Without a step, grafical sizes the box to its text again (D27) | done |
 | `node.align` | Place the node directly above or below a node in another layer. Fails if the alignment cannot hold with the order of either layer | done |
 | `node.emphasize` | Turn the accent on or off | done |
-| `node.icon` | Put a mark in a slot, or clear the slot without a mark. A mark is an emoji, a text of up to 3 characters, or an SVG or PNG file next to the diagram. A text mark may take a background color (D40) | done |
+| `node.icon` | Put a mark in a slot, or clear the slot without a mark. A mark is an emoji, a text of up to 6 characters, or an SVG or PNG file next to the diagram. A text mark may take a background color (D40) | done |
 | `node.remove` | Remove the node and its edges | done |
 | `node.swap` | Two nodes trade places: layer and slot | done |
 | `node.merge` | Replace nodes with one new node that keeps all their edges, each once. Edges between them go | done |

@@ -39,7 +39,7 @@ export const edgeId = z.string().regex(EDGE_ID_RE, { message: ID_EDGE });
 export const text = z.string().min(1);
 
 /** The most characters a text mark may hold; a longer text belongs in the label (D40). */
-export const MARK_TEXT_MAX = 3;
+export const MARK_TEXT_MAX = 6;
 
 /** The characters a person sees, so that one emoji counts as one. */
 export function graphemes(s: string): string[] {
