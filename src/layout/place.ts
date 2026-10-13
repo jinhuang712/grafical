@@ -15,6 +15,7 @@ import { nodeBox, portReach } from "../theme/shapes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import type { SideSlot } from "./side.ts";
+import { rowHeights } from "./size.ts";
 
 export interface PNode {
   id: string;
@@ -104,6 +105,7 @@ const ceil4 = (x: number) => Math.ceil(x / 4 - 1e-9) * 4;
 export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   const sp = SPACING[d.density];
   const grid = buildGrid(d);
+  const heights = rowHeights(d);
   const nodes = new Map<string, PNode>();
   const layers: PLayer[] = d.layers.map((layer, index) => {
     const placed: PNode[] = [];
@@ -119,7 +121,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         col: grid.col.get(node.id) ?? 0,
         x: 0,
         w: box.w,
-        h: box.h,
+        h: heights.get(node.id) ?? box.h,
       };
       nodes.set(node.id, pn);
       placed.push(pn);

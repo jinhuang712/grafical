@@ -99,6 +99,24 @@ export function sizeOf(node: DiagramNode, d: Diagram, m: Measurer): SizeStep {
   return autoSize(node, m, themeOf(d).type);
 }
 
+/**
+ * Each node's box height in its row: every box of a row takes the height of the row's
+ * tallest box, so that their tops line up. Dots and diamonds keep their own shapes.
+ * The nodes must be sized (withSizes).
+ */
+export function rowHeights(d: Diagram): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const l of d.layers) {
+    const boxes = l.nodes.filter((n) => !isDot(n.kind) && n.kind !== "decision");
+    const tallest = Math.max(0, ...boxes.map((n) => nodeBox(n.kind, n.size ?? "m").h));
+    for (const n of l.nodes) {
+      if (out.has(n.id)) continue;
+      out.set(n.id, boxes.includes(n) ? tallest : nodeBox(n.kind, n.size ?? "m").h);
+    }
+  }
+  return out;
+}
+
 /** The diagram with every node's step filled in, for layout. The input is not changed. */
 export function withSizes(d: Diagram, m: Measurer): Diagram {
   return {
