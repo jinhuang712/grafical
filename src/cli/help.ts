@@ -19,6 +19,7 @@ How to work:
   1. grafical new <file> --title <text> --subtitle <text> --note <text>
   2. Write all rows, nodes, groups and edges in one batch file, then
      grafical apply <file> batch.yaml            (grafical apply --help)
+     Name rows for what they hold, so that no row shares a box's id.
   3. grafical render <file>, and look at the PNG.
   4. Fix with single commands. When the output shows lines: and hint:,
      weigh each hint and run the ones that keep your rows' meaning.
@@ -40,7 +41,8 @@ A good diagram:
   - Keep labels short; detail (port, technology, count) goes in the
     sublabel, not in extra boxes.
   - Accent what the story is about. Name what each line style means in the
-    legend. Say what you left out in a note that starts "Not shown:".
+    legend: diagram legend <file> dashed --text event. Say what you left out
+    in a note that starts "Not shown:".
 
 Diagram types:
   architecture   services, stores and queues; a group per system; label
@@ -143,7 +145,7 @@ Batch file:
     group.leave       nodes up
     lane.add          id label members                 (a list)
     edge.emphasize    edges off                        (a list)
-    diagram.legend    line text
+    diagram.legend    line text       (line: solid, dashed, dotted or plain)
     diagram.subtitle  text; diagram.note text           (no text clears it)
   Every other command works too, its arguments named as in its help:
   node.swap a b, node.merge id nodes label, layer.split id into label from.
