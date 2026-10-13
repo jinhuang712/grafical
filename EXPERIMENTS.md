@@ -43,6 +43,8 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 | Faithfulness | Invented components, and important items missing from the brief | Judges' checklist against the brief |
 | Mechanical defects | Overflow, overlap, edges through nodes, label collisions, edges sharing a segment | A geometry check on the rendered SVG that is separate from grafical's checker: `pnpm bench geometry` (bench/geometry.ts). It reads shapes only, and treats lines of one style that leave or reach one point as a bus or a fan-in |
 
+**Not measured: how readable a picture is.** A score of what a reader struggles with (lines to trace, line length, the largest fan-out) was proposed on 2026-10-13 and rejected by the owner: readers and agents prefer different things, and grafical's job is an easy tool and a consistent result, not a picture right for every reader (PHILOSOPHY.md). Crossings and bends stay measured, because they are mechanical and the engine owns them.
+
 **Fixed overhead.** Every headless run carries Claude Code's own system prompt. Each round therefore starts with one empty run per model, and results are reported both as measured and minus that baseline.
 
 | Empty run on Haiku, "reply OK" | Cache writes | Cache reads | Cost | Wall time |

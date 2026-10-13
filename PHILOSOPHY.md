@@ -24,6 +24,12 @@ Like a typesetter, the engine lays out the whole picture again from the facts af
 
 A good-looking diagram must not depend on a strong model. The tool decides everything about the look that a model is likely to get wrong: spacing, alignment, type sizes, routing, colors. A model only chooses from short lists. The smaller the gap between a weak and a strong model in how the picture looks, the better the tool is working.
 
+## Easy and consistent, not right for every reader
+
+grafical exists because agents need a tool that is easy to use and draws consistent diagrams. It does not try to make every diagram look good to every reader. Readers prefer different things, and so do the agents that draw. grafical is measured by how easily an agent gets to a finished picture, and by how alike the pictures are: the same facts give the same picture, a change moves only what it names, and a weak model's picture looks like a strong one's.
+
+Added by the owner on 2026-10-13, when a proposed score of how hard a picture is to read was rejected: readers differ, and no score settles that for everyone.
+
 ## The engine arranges; the agent decides what the diagram says
 
 The engine is responsible for the picture: where boxes and lines go, how they are spaced and routed, and how they are drawn and styled. The agent is responsible for the content: what to include and how much, what to merge, what each box and line is called, whether the facts are correct, and whether the story reads well. The engine may tell the agent a fact that helps, such as "this row is wider than the page", but it never decides content for the agent.

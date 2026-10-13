@@ -8,7 +8,7 @@ An agent builds a diagram one operation at a time: add a layer, add a node, conn
 
 ## Why
 
-Agents describe systems well, but they draw them badly. Today an agent writes a whole diagram in one shot. Every fix regenerates the whole picture, unrelated parts move, and weaker models produce something different each time. [PROPOSAL.md](PROPOSAL.md) covers the problem and what we measured.
+Agents describe systems well, but they draw them badly. Today an agent writes a whole diagram in one shot. Every fix regenerates the whole picture, unrelated parts move, and weaker models produce something different each time. grafical gives agents a tool that is easy to use and draws consistent diagrams. It does not try to make every diagram look good to every reader. [PROPOSAL.md](PROPOSAL.md) covers the problem and what we measured.
 
 ## How it works
 

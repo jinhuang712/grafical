@@ -12,6 +12,7 @@
 
 ## Non-goals for stage 1
 
+- Making every diagram look good to every reader. Readers and agents prefer different things. Stage 1 gives agents an easy tool and a consistent result (PHILOSOPHY.md, "Easy and consistent, not right for every reader"), and adds no score of how readable a picture is (owner, 2026-10-13).
 - People editing on a board. That is stage 2.
 - Placing anything by coordinates, for anyone.
 - Diagram types that need a layout other than layered rows: sequence, entity-relationship and class diagrams, mind maps, timelines and charts. The types the layered engine can draw are in stage 1, added by the owner on 2026-10-12 (DESIGN.md D34).

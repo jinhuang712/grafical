@@ -56,6 +56,13 @@ On 2026-10-10 we ran a blind test. Four agents drew the same two services from t
 - Keep the diagram in git and review changes to it like code.
 - Later, let people and agents work on the same diagram, each picking up where the other stopped.
 
+## What we do not try to do
+
+grafical does not try to make every diagram look good to every reader. Readers prefer different things, and so do the agents that draw: one draws every dependency as its own line, another one line to a group of them. No score settles that for everyone. The problem grafical solves is narrower: agents need a tool that is easy to use and draws consistent diagrams (owner, 2026-10-13).
+
+- **Easy:** an agent learns the tool from `grafical --help` and from the replies to its own commands, and reaches a finished picture in a few steps.
+- **Consistent:** the same facts give the same picture, a change moves only what it names, and different models given the same facts get pictures that look alike.
+
 ## What we need
 
 | Need | Meaning |
