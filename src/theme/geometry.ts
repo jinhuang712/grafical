@@ -105,6 +105,8 @@ export const FRAME = {
   legendLabelGap: 8,
   /** Space between two legend items. */
   legendItemGap: 24,
+  /** Space between two lines of a legend that wraps (D42). */
+  legendLineGap: 6,
   /** The subtitle and the footnote wrap at the content's width, but never narrower than this. */
   minTextWidth: 480,
   /**

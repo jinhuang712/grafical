@@ -378,6 +378,23 @@ function legendItems(d: Diagram, P: Paint): { style: LineStyleName; text: string
   return out;
 }
 
+/** Items, by width, in lines no wider than `room`. A line holds at least one item (D42). */
+function wrapItems(
+  widths: number[],
+  room: number,
+  gap: number,
+): { items: number[]; width: number }[] {
+  const rows: { items: number[]; width: number }[] = [];
+  widths.forEach((w, i) => {
+    const last = rows[rows.length - 1];
+    if (last !== undefined && last.width + gap + w <= room) {
+      last.items.push(i);
+      last.width += gap + w;
+    } else rows.push({ items: [i], width: w });
+  });
+  return rows;
+}
+
 const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
@@ -706,9 +723,14 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const itemW = items.map(
     (it) => FRAME.legendSample + FRAME.legendLabelGap + m.measure(it.text, legendStyle).width,
   );
-  const legendW =
-    itemW.reduce((s, w) => s + w, 0) + Math.max(0, items.length - 1) * FRAME.legendItemGap;
   const textW = Math.max(2 * half, FRAME.minTextWidth);
+  // A legend wider than the room right of the title wraps into more lines (D42).
+  const legendRows = wrapItems(
+    itemW,
+    Math.max(0, ...itemW, textW - title.bbox.w - FRAME.legendGap),
+    FRAME.legendItemGap,
+  );
+  const legendW = Math.max(0, ...legendRows.map((r) => r.width));
   const subLines =
     withText && d.subtitle !== undefined && d.subtitle !== ""
       ? m.wrap(d.subtitle, T.subtitle, textW)
@@ -726,18 +748,18 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   );
   const centre = width / 2 - shift;
 
-  const titleBottom = title.bbox.y + ceil4(title.bbox.h);
-  const subtitle =
-    subLines.length > 0
-      ? placeLines("subtitle", subLines, sp.margin, titleBottom + FRAME.subtitleGap, "start", m, T)
-      : undefined;
-  const headBottom = subtitle !== undefined ? subtitle.bbox.y + subtitle.bbox.h : titleBottom;
+  // The legend's first line is level with the title, and each further line starts
+  // at the same left edge below it (D42).
   const legend: SceneLegendItem[] = [];
-  {
-    const mid = title.bbox.y + title.bbox.h / 2;
-    const lh = lineBox("legend", m, T);
+  const lh = lineBox("legend", m, T);
+  const firstMid = title.bbox.y + title.bbox.h / 2;
+  const legendPitch = lh + FRAME.legendLineGap;
+  legendRows.forEach((row, r) => {
+    const mid = firstMid + r * legendPitch;
     let x = width - sp.margin - legendW;
-    items.forEach((it, i) => {
+    for (const i of row.items) {
+      const it = items[i];
+      if (it === undefined) continue;
       legend.push({
         style: it.style,
         ...(it.main === true ? { main: true } : {}),
@@ -751,8 +773,16 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         ),
       });
       x += (itemW[i] ?? 0) + FRAME.legendItemGap;
-    });
-  }
+    }
+  });
+  const legendBottom = firstMid + (legendRows.length - 1) * legendPitch + lh / 2;
+  // A subtitle starts below the title, and below the legend when it wraps.
+  const titleBottom = Math.max(title.bbox.y + ceil4(title.bbox.h), ceil4(legendBottom));
+  const subtitle =
+    subLines.length > 0
+      ? placeLines("subtitle", subLines, sp.margin, titleBottom + FRAME.subtitleGap, "start", m, T)
+      : undefined;
+  const headBottom = subtitle !== undefined ? subtitle.bbox.y + subtitle.bbox.h : titleBottom;
 
   // Down: rows and gutters. A gutter holds, top to bottom, the padding of the
   // groups whose last row is above it, its tracks, and the head of the groups
