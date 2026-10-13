@@ -14,6 +14,7 @@
 //   help    a prompt for each diagram type, the public brief and the 25-component brief,
 //           the agent learning grafical from its help alone (D36), Haiku, 3 runs
 //   brief   the public brief again, 6 runs, after the refusals learned to say how to fix
+//   help2   the help round again, after the refusals and the help said how to fix
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (EXPERIMENTS.md, "Harness").
@@ -47,6 +48,7 @@ export const PARTS = [
   "hints4",
   "help",
   "brief",
+  "help2",
 ] as const;
 export type Part = (typeof PARTS)[number];
 
@@ -162,6 +164,9 @@ export function planPart(part: Part): PartPlan {
         [],
       );
       return { part, round: "p1d-brief", runs: RUNS, chains };
+    case "help2":
+      add(["grafical"], "haiku", runs3, helpTasks(), []);
+      return { part, round: "p1d-help2", runs: RUNS, chains };
   }
 }
 
