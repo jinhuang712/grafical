@@ -22,8 +22,8 @@ How to work:
      Rows and boxes share one set of ids, so give rows ids like row-users.
   3. grafical render <file> and look at the PNG, or read
      grafical show <file> --drawn.
-  4. Fix with single commands. When the output shows lines: and hint:,
-     weigh each hint and run the ones that keep your rows' meaning.
+  4. Fix with single commands. To weigh a change first, grafical try <file>
+     <batch> prints the counts before and after it.
   Never edit the file by hand. A refused change leaves the file untouched:
   fix what the error names and run it again.
 
@@ -162,18 +162,10 @@ Good to know:
 
 Output:
   ok changed: <ids>          the change is written
-  lines: ...                 lines that cross, and lines that bend more
-                             than twice
-  hint: <gain>: <commands>   a move grafical measured to fix them. You
-                             decide; one marked as moving a node among
-                             other kinds rarely belongs.
-  warning <code> ...         never blocks; weigh it:
-                             too-many-nodes: merge (node merge)
-                             too-wide, crowded-layer: split a row
-                             (layer split)
-                             lonely-group: remove the group or add a node
-                             edge-crosses-layer: move a row (layer move)
-                             too-many-main-edges: emphasize fewer edges
+  counts: nodes, lines, crossings, bends, width, height, the row with most
+          nodes, the box with most lines, and the lines that pass a row
+          they do not connect. Facts only: what they mean is yours to
+          judge. grafical show <file> --drawn names each box and line.
   --json prints the same as one JSON object.
 
 When refused:
@@ -205,7 +197,7 @@ ${indent(EXAMPLE_BATCH)}  grafical apply orders.grafical.yaml batch.yaml
     after: `
 Good to know:
   - Look at the PNG after a draft, and after any change you are unsure of.
-  - Like apply, it names what to improve (lines:, hint:) and warns.
+  - Like apply and check, it prints the counts.
 `,
   },
 
@@ -233,8 +225,8 @@ of every change, with the changed parts marked. Ctrl-C stops it.`,
   },
 
   check: {
-    about: `Report the defects you can fix, the warnings and what to improve, without
-changing anything. --all adds the engine's own defects, which are its bugs.`,
+    about: `Report the defects you can fix and the counts, without changing anything.
+--all adds the engine's own defects, which are its bugs.`,
   },
 
   try: {
@@ -271,13 +263,13 @@ See also: layer move, layer split, node add
     about: "Move the second half of a row, or the nodes from --from on, into a new row below.",
     after: `
 When to use:
-  - A row holds more boxes than read well side by side: the warnings
-    too-wide and crowded-layer say so.
+  - A row holds more boxes than read well side by side; the counts name
+    the row with most nodes, and the picture's width.
   - Or merge boxes a reader need not tell apart (node merge).
 `,
   },
   "layer tidy": {
-    about: "Reorder a row's nodes once, to untangle lines. Prefer the hints apply prints.",
+    about: "Reorder a row's nodes once, to untangle lines.",
   },
 
   "node add": {
@@ -390,8 +382,7 @@ By diagram type:
   event flow     the path of the event the diagram is about
 
 Good to know:
-  - Keep the main path a small part of the lines, or nothing stands out
-    (warning too-many-main-edges).
+  - Keep the main path a small part of the lines, or nothing stands out.
 `,
   },
 
@@ -478,6 +469,6 @@ By diagram type:
       "Take the look from a theme or a stylesheet; without one, the default theme. Change it only when the user asks.",
   },
   "diagram tidy": {
-    about: "Reorder every row once, to untangle lines. Prefer the hints apply prints.",
+    about: "Reorder every row once, to untangle lines.",
   },
 };

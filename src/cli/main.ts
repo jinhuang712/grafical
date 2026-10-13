@@ -6,7 +6,6 @@ import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
-import { advise } from "../check/advice.ts";
 import { countsText, drawing, drawingText } from "../check/drawing.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
@@ -23,7 +22,6 @@ import {
   fileError,
   inspect,
   isReport,
-  linesFeedback,
   loadDiagram,
   runWrite,
   tryWrite,
@@ -60,8 +58,8 @@ async function write(file: string, raw: Record<string, unknown>, opts: Opts, cre
   await finish(file, [op], opts, create);
 }
 
-async function finish(file: string, ops: Op[], opts: Opts, create = false, hints = false) {
-  const report = await runWrite(file, ops, create, hints);
+async function finish(file: string, ops: Op[], opts: Opts, create = false, counts = false) {
+  const report = await runWrite(file, ops, create, counts);
   process.exitCode = emit(report, opts.json === true);
 }
 
@@ -644,7 +642,7 @@ function build(): Command {
       .argument("<batch.yaml>"),
   ).action(async (file: string, batch: string, opts: Opts) => {
     const ops = readBatch(batch, opts);
-    // A batch is usually a draft or a large change: its report says what to improve (D35).
+    // A batch is usually a draft or a large change: its report carries the counts (D37).
     if (ops !== undefined) await finish(file, ops, opts, false, true);
   });
 
@@ -721,7 +719,7 @@ function build(): Command {
   json(
     program
       .command("check")
-      .description("report the defects you can fix; --all adds the engine's own")
+      .description("report the defects you can fix, and the counts")
       .argument("<file>")
       .option("--all", "also report engine-owned defects, which are engine bugs"),
   ).action(async (file: string, opts: Opts) => {
@@ -738,8 +736,7 @@ function build(): Command {
         changed: [],
         errors: [],
         defects,
-        warnings: advise(d, layout(d, m)),
-        ...linesFeedback(d, file, m),
+        counts: drawing(d, layout(d, m)).counts,
       },
       opts.json === true,
     );
@@ -788,8 +785,7 @@ function build(): Command {
       changed: [],
       errors: [],
       defects,
-      warnings: advise(d, scene),
-      ...linesFeedback(d, file, m),
+      counts: drawing(d, scene).counts,
     };
     if (opts.json !== true) for (const f of files) process.stdout.write(`wrote ${f}\n`);
     process.exitCode = emit(report, opts.json === true, { files });

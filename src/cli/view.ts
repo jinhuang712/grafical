@@ -9,7 +9,7 @@ import { spawn } from "node:child_process";
 import { existsSync, readFileSync, watch } from "node:fs";
 import { createServer, type Server, type ServerResponse } from "node:http";
 import { basename, dirname } from "node:path";
-import { advise } from "../check/advice.ts";
+import { drawing } from "../check/drawing.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import type { Op } from "../model/ops.ts";
@@ -28,7 +28,7 @@ export interface Frame {
   height: number;
   /** Boxes around the parts that changed since the last frame. */
   changed: Rect[];
-  /** Errors, defects and warnings, one per line. */
+  /** Errors, defects and the counts, one per line. */
   problems: string[];
   /** The picture is the last good one: the file cannot be drawn right now. */
   stale: boolean;
@@ -181,7 +181,7 @@ export async function startViewer(file: string, port = 0): Promise<Viewer> {
         changed: [],
         errors: [],
         defects: inspect(d, m),
-        warnings: advise(d, next),
+        counts: drawing(d, next).counts,
       };
     } catch (err) {
       // An engine bug must not stop the window: it keeps the last good picture.

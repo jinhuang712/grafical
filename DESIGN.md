@@ -405,7 +405,7 @@ Rejected:
 ### D26 Curation is coached, budgeted and shown
 
 A good diagram leaves things out, and only the agent can decide what. grafical helps in three ways:
-- **Budget.** `grafical check` warns when a diagram has more than 16 nodes, and suggests merging nodes that share a group and all their edges. The warning does not block.
+- **Budget.** `grafical check` warns when a diagram has more than 16 nodes, and suggests merging nodes that share a group and all their edges. The warning does not block. Reversed on 2026-10-13 by D37: grafical prints counts, not warnings. The number of nodes is one of them.
 - **Coaching.** The help (`grafical --help`, D36; at first `grafical guide`) tells agents to merge what a reader does not need apart, such as several topics into one node, and to keep a diagram to one story. It also says to merge only nodes with the same edges, because a merged box claims every edge of every member, and never to wrap one node in a group of its own name. Both were added on 2026-10-11, after the phase 1b judges found merged boxes that drew calls the brief does not have.
 - **Honesty.** A diagram may carry a subtitle, one sentence under the title, and a footnote naming what it leaves out ("Not shown: …"). Both are facts in the file, set by operations.
 
@@ -448,8 +448,8 @@ Rejected:
 ### D29 Open questions settled by the owner
 
 On 2026-10-11 the owner settled the questions that had stayed open since phase 0:
-- **Wide layers:** a layer wider than the page is a warning, not a defect, and `layer.split` moves the second half of a layer into a new layer below it. Rejected: a defect that blocks the write until the agent splits, because how to split is a content choice; wrapping the layer, because it moves nodes no operation named.
-- **The layer order an agent picks** stays the agent's choice. The engine warns when an edge crosses a layer whose nodes it does not connect. Rejected: the engine reordering layers, because which layer comes first is part of the story the agent tells.
+- **Wide layers** (the warning reversed on 2026-10-13 by D37, which prints the width and the nodes in each row as counts): a layer wider than the page is a warning, not a defect, and `layer.split` moves the second half of a layer into a new layer below it. Rejected: a defect that blocks the write until the agent splits, because how to split is a content choice; wrapping the layer, because it moves nodes no operation named.
+- **The layer order an agent picks** stays the agent's choice. The engine warns when an edge crosses a layer whose nodes it does not connect. (Since D37, 2026-10-13, it reports the line and the row it passes, as a fact.) Rejected: the engine reordering layers, because which layer comes first is part of the story the agent tells.
 - **Alignment on the column grid:** `node.align` stays as it is. It joins two nodes in one column of the grid (D10).
 - **Exact lists:** the five node kinds, three edge kinds, three size steps and three densities stay as they are. Rejected: more node kinds, such as gateway or cache, because each new choice is one more a weak model can get wrong.
 - **File naming:** `<name>.grafical.yaml`.
@@ -535,6 +535,8 @@ Rejected, for stage 1:
 - A setting for the diagram's type. The kinds already say what is drawn.
 
 ### D35 The engine names rearrangements that make the lines better, as commands
+
+Reversed on 2026-10-13 by D37: grafical no longer searches for moves or prints hints. The agent decides what to try, and `grafical try` measures it.
 
 Decided on 2026-10-12. The owner rejected all three phase 1d milestone pictures for their lines ("rearranging would solve this problem") and asked that the drawing model, not a person, find the better drawing: "either theres a mechanism to allow the model to realize theres a better way of drawing this or we add more operations or make the operations more obvious to use". In stage 1, grafical's 25 drafts looked at their own picture 26 times and ran no command after any look, and 49 steps never called `diagram tidy`, `node swap` or `node align`.
 

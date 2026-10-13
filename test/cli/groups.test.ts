@@ -105,7 +105,7 @@ describe("grouped diagrams", () => {
     expect(read(f)).not.toContain("lane");
   });
 
-  it("warns above 16 nodes, in text and JSON, and exits 0", () => {
+  it("apply and check report the counts, in text and JSON, with no threshold (D37)", () => {
     const f = "big.grafical.yaml";
     run("new", f, "--title", "Big");
     const items = ["- op: layer.add\n  id: row\n  label: Row\n"];
@@ -115,15 +115,15 @@ describe("grouped diagrams", () => {
     writeFileSync(join(dir, "big.yaml"), items.join(""));
     const w = run("apply", f, "big.yaml");
     expect(w.code).toBe(0);
-    expect(w.out).toContain("warning too-many-nodes: found 17 nodes");
-    expect(w.out).toContain("queues in layer row");
+    expect(w.out).toMatch(
+      /^counts: nodes 17, lines 0, crossings 0, bends 0, .*most nodes in a row 17 \(row\)/m,
+    );
+    expect(w.out).not.toMatch(/warning|hint|too many/);
     const c = run("check", f, "--json");
     expect(c.code).toBe(0);
     const body = JSON.parse(c.out);
     expect(body.ok).toBe(true);
-    expect(body.warnings[0].code).toBe("too-many-nodes");
-    const small = run("check", "g.grafical.yaml", "--json");
-    expect(JSON.parse(small.out).warnings).toEqual([]);
+    expect(body.counts.nodes).toBe(17);
   });
 
   it("the help teaches the grouped style", () => {

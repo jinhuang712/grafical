@@ -3,17 +3,15 @@
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { advise } from "../check/advice.ts";
-import { type Counts, drawing } from "../check/drawing.ts";
-import { findHints, type Hint } from "../check/hints.ts";
+import { type Counts, countsText, drawing } from "../check/drawing.ts";
 import { check } from "../check/index.ts";
 import type { Defect, OpError } from "../errors.ts";
-import { type LineTrouble, layout, lineTrouble } from "../layout/index.ts";
+import { layout } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
-import type { Warning } from "../model/budget.ts";
 import { readDiagram, writeDiagram } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import type { Diagram } from "../model/types.ts";
+import type { Scene } from "../scene.ts";
 import { createMeasurer } from "../text/index.ts";
 import type { Measurer } from "../text/types.ts";
 import {
@@ -28,41 +26,8 @@ export interface Report {
   changed: string[];
   errors: OpError[];
   defects: Defect[];
-  /** Non-blocking notes (D26). They never change the exit code. */
-  warnings?: Warning[];
-  /** What to improve: the lines that cross, and those that bend more than twice (D35). */
-  lines?: LineTrouble;
-  /** Moves measured to make the lines better, as commands (D35). The agent decides; grafical never applies them. */
-  hints?: Hint[];
-}
-
-/**
- * What the engine tells the agent about its lines (D35): what to improve, and the
- * moves it measured, with the diagram's path in place of <file>, so each command
- * runs as printed.
- */
-export function linesFeedback(
-  d: Diagram,
-  file: string,
-  m: Measurer,
-): { lines: LineTrouble; hints: Hint[] } {
-  const path = /^[\w./-]+$/.test(file) ? file : `"${file}"`;
-  return {
-    lines: lineTrouble(d, m),
-    hints: findHints(d, m).map((h) => ({ ...h, command: h.command.replaceAll("<file>", path) })),
-  };
-}
-
-/** The `lines:` line: what crosses and what bends too much, the first few named. */
-function linesText(t: LineTrouble): string | undefined {
-  if (t.crossings.length === 0 && t.bent.length === 0) return undefined;
-  const parts = [
-    ...t.crossings.map(([a, b]) => `${a} crosses ${b}`),
-    ...t.bent.map((x) => `${x.edge} bends ${x.bends} times`),
-  ];
-  const shown = parts.slice(0, 6).join("; ");
-  const more = parts.length > 6 ? `; and ${parts.length - 6} more` : "";
-  return `lines: ${t.points} crossing${t.points === 1 ? "" : "s"}, ${t.bent.length} line${t.bent.length === 1 ? "" : "s"} bending more than twice: ${shown}${more}`;
+  /** The drawing's counts (D37): on apply, check and render, when nothing was refused. */
+  counts?: Counts;
 }
 
 export function oneLine(s: string): string {
@@ -81,28 +46,12 @@ export function formatReport(r: Report): string {
     if (e.suggestion) s += `; ${oneLine(e.suggestion)}`;
     out.push(s);
   }
-  for (const w of r.warnings ?? []) {
-    out.push(
-      `warning ${w.code}: found ${oneLine(w.found)}; expected ${oneLine(w.expected)}; ${oneLine(w.suggestion)}`,
-    );
-  }
   for (const d of r.defects) {
     out.push(
       `defect ${d.code} [${d.elements.join(", ")}]: found ${oneLine(d.found)}; expected ${oneLine(d.expected)}; fix: ${oneLine(d.fix)}`,
     );
   }
-  const lines = r.lines === undefined ? undefined : linesText(r.lines);
-  if (lines !== undefined) out.push(lines);
-  // A hint that puts a node among other kinds says so, for the agent to weigh.
-  // A hint that changes what the rows say says how, for the agent to weigh.
-  const unsafeNote = (h: Hint) =>
-    h.ops.some((op) => op.op === "layer.move") ? "reorders rows" : "moves a node among other kinds";
-  for (const h of r.hints ?? []) {
-    const shown = h.fixes.slice(0, 3).join(", ");
-    const more = h.fixes.length > 3 ? ` and ${h.fixes.length - 3} more` : "";
-    const fixes = h.fixes.length > 0 ? ` (untangles ${shown}${more})` : "";
-    out.push(`hint: ${h.gain}${fixes}: ${h.command}${h.safe ? "" : `   (${unsafeNote(h)})`}`);
-  }
+  if (r.counts !== undefined) out.push(countsText(r.counts));
   return `${out.join("\n")}\n`;
 }
 
@@ -113,9 +62,7 @@ export function emit(report: Report, json: boolean, extra: Record<string, unknow
       changed: report.changed,
       errors: report.errors,
       defects: report.defects,
-      warnings: report.warnings ?? [],
-      lines: report.lines ?? { points: 0, crossings: [], bent: [] },
-      hints: report.hints ?? [],
+      ...(report.counts !== undefined ? { counts: report.counts } : {}),
       ...extra,
     };
     process.stdout.write(`${JSON.stringify(body)}\n`);
@@ -220,6 +167,7 @@ interface Planned {
   next: Diagram;
   changed: string[];
   m: Measurer;
+  scene: Scene;
 }
 
 /**
@@ -251,30 +199,32 @@ async function plan(file: string, ops: Op[], create: boolean): Promise<Planned |
   const m = await createMeasurer();
   const result = applyOps(base, ops, m);
   if ("errors" in result) return failure(result.errors);
-  const defects = inspect(result.diagram, m);
+  const scene = layout(result.diagram, m);
+  const defects = check(result.diagram, scene, m).filter((x) => x.owner === "agent");
   if (defects.length > 0) return { ok: false, changed: [], errors: [], defects };
-  return { base, next: result.diagram, changed: result.changed, m };
+  return { base, next: result.diagram, changed: result.changed, m, scene };
 }
 
-/** Applies operations to the file's diagram and writes it, or refuses and writes nothing. */
+/**
+ * Applies operations to the file's diagram and writes it, or refuses and writes nothing.
+ * With `counts`, the report carries the drawing's counts (D37), as apply's does.
+ */
 export async function runWrite(
   file: string,
   ops: Op[],
   create = false,
-  hints = false,
+  counts = false,
 ): Promise<Report> {
   const p = await plan(file, ops, create);
   if (isReport(p)) return p;
   writeAtomic(file, writeDiagram(p.next));
-  const report: Report = {
+  return {
     ok: true,
     changed: p.changed,
     errors: [],
     defects: [],
-    warnings: advise(p.next, layout(p.next, p.m)),
+    ...(counts ? { counts: drawing(p.next, p.scene).counts } : {}),
   };
-  if (hints) Object.assign(report, linesFeedback(p.next, file, p.m));
-  return report;
 }
 
 /**
@@ -287,10 +237,10 @@ export async function tryWrite(
 ): Promise<Report | { report: Report; before: Counts; after: Counts }> {
   const p = await plan(file, ops, false);
   if (isReport(p)) return p;
-  const counts = (d: Diagram) => drawing(d, layout(d, p.m)).counts;
+  const base = p.base as Diagram;
   return {
     report: { ok: true, changed: p.changed, errors: [], defects: [] },
-    before: counts(p.base as Diagram),
-    after: counts(p.next),
+    before: drawing(base, layout(base, p.m)).counts,
+    after: drawing(p.next, p.scene).counts,
   };
 }

@@ -4,7 +4,6 @@ import type { OpError } from "../../src/errors.ts";
 import { layout } from "../../src/layout/index.ts";
 import {
   applyOps,
-  budgetWarnings,
   type Diagram,
   type Op,
   parseOp,
@@ -299,41 +298,5 @@ describe("diagram.subtitle and diagram.note", () => {
   it("diagram.new takes them", () => {
     const d = ok(null, [{ op: "diagram.new", title: "T", subtitle: "S", note: "N" }]).diagram;
     expect(d).toMatchObject({ subtitle: "S", note: "N" });
-  });
-});
-
-describe("budget warnings (D26)", () => {
-  function wide(n: number, extra: Op[] = []): Diagram {
-    const ops: Op[] = [{ op: "layer.add", id: "row", label: "Row" }];
-    for (let i = 0; i < n; i++)
-      ops.push({ op: "node.add", id: `n${i}`, layer: "row", label: `N${i}` });
-    return ok(empty, [...ops, ...extra]).diagram;
-  }
-
-  it("is silent up to 16 nodes and warns above", () => {
-    expect(budgetWarnings(wide(16))).toEqual([]);
-    const w = budgetWarnings(wide(17));
-    expect(w).toHaveLength(1);
-    expect(w[0]).toMatchObject({ code: "too-many-nodes", found: "17 nodes" });
-  });
-
-  it("names nodes in one group with identical edges", () => {
-    const d = wide(17, [
-      { op: "node.add", id: "src", layer: "row", label: "Src" },
-      { op: "group.add", id: "g", label: "G", nodes: ["n1", "n2", "n3"] },
-      { op: "edge.add", from: "src", to: "n1" },
-      { op: "edge.add", from: "src", to: "n2" },
-      { op: "edge.add", from: "src", to: "n3" },
-    ]);
-    const w = budgetWarnings(d);
-    expect(w[0]?.suggestion).toContain("n1, n2, n3 (same group, same edges)");
-  });
-
-  it("names several queues in one row", () => {
-    const d = wide(17, [
-      { op: "node.add", id: "q1", layer: "row", label: "Q1", kind: "queue" },
-      { op: "node.add", id: "q2", layer: "row", label: "Q2", kind: "queue" },
-    ]);
-    expect(budgetWarnings(d)[0]?.suggestion).toContain("q1, q2 (queues in layer row)");
   });
 });

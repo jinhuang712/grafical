@@ -146,7 +146,8 @@ describe("write commands", () => {
     const r = run("apply", "batch.grafical.yaml", "batch.yaml");
     expect(r.code, r.out + r.err).toBe(0);
     expect(r.out).toBe(
-      "ok changed: clients, services, storage, web, api, worker, db, mq, web->api, api->db, api->mq, mq->worker\n",
+      "ok changed: clients, services, storage, web, api, worker, db, mq, web->api, api->db, api->mq, mq->worker\n" +
+        "counts: nodes 5, lines 4, crossings 0, bends 2, width 368 px, height 368 px, most nodes in a row 2 (services), most lines at a box 3 (api), lines passing a row 0\n",
     );
     const single = read("single.grafical.yaml");
     expect(read("batch.grafical.yaml")).toBe(single);
@@ -166,18 +167,13 @@ describe("write commands", () => {
       "--json",
     );
     expect(r.code).toBe(0);
-    expect(r.out).toBe(
-      '{"ok":true,"changed":["cache"],"errors":[],"defects":[],"warnings":[],"lines":{"points":0,"crossings":[],"bent":[]},"hints":[]}\n',
-    );
+    expect(r.out).toBe('{"ok":true,"changed":["cache"],"errors":[],"defects":[]}\n');
     const rm = run("node", "remove", "single.grafical.yaml", "cache", "--json");
     expect(JSON.parse(rm.out)).toEqual({
       ok: true,
       changed: ["cache"],
       errors: [],
       defects: [],
-      warnings: [],
-      lines: { points: 0, crossings: [], bent: [] },
-      hints: [],
     });
   });
 
@@ -273,9 +269,9 @@ describe("read commands", () => {
   it("check reports no defects on a good file", () => {
     const r = run("check", "single.grafical.yaml", "--json");
     expect(r.code).toBe(0);
-    expect(r.out).toBe(
-      '{"ok":true,"changed":[],"errors":[],"defects":[],"warnings":[],"lines":{"points":0,"crossings":[],"bent":[]},"hints":[]}\n',
-    );
+    const body = JSON.parse(r.out);
+    expect(body).toMatchObject({ ok: true, changed: [], errors: [], defects: [] });
+    expect(body.counts.crossings).toBe(0);
   });
 
   it("render writes the svg and the png beside the file", () => {
@@ -318,11 +314,11 @@ describe("read commands", () => {
     const r = run("render", "single.grafical.yaml", "--png", "only.png", "--scale", "1");
     expect(r.code).toBe(0);
     expect(existsSync(join(dir, "only.png"))).toBe(true);
-    expect(r.out).toBe("wrote only.png\nok\n");
+    expect(r.out).toMatch(/^wrote only.png\nok\ncounts: nodes /);
     // A flag with no path writes only that file, beside the diagram.
     const beside = run("render", "single.grafical.yaml", "--png", "--scale", "1");
     expect(beside.code).toBe(0);
-    expect(beside.out).toBe("wrote single.png\nok\n");
+    expect(beside.out).toMatch(/^wrote single.png\nok\ncounts: nodes /);
   });
 
   it("the help read before a draft is byte-stable and within the old guide's budget", () => {

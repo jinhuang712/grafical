@@ -54,30 +54,21 @@ describe("help pages (D36)", () => {
   });
 });
 
-describe("what to improve (D35)", () => {
+describe("the counts in place of hints (D37)", () => {
   /** The photo-sharing diagram, where a line bends more than twice round the upload queue. */
   function photos(): string {
     writeFileSync(join(dir, "photos.grafical.yaml"), writeDiagram(edgeLooks));
     return "photos.grafical.yaml";
   }
 
-  it("a hint names the file, ready to run", () => {
-    const file = photos();
-    const c = run("check", file);
-    expect(c.out).toMatch(/^hint: .*crossings|^hint: .*bends/m);
-    expect(c.out).toContain(`grafical node move ${file} `);
-    expect(c.out).toContain("(untangles api->photos): grafical node move");
-    const json = JSON.parse(run("check", file, "--json").out);
-    expect(json.hints.length).toBeGreaterThan(0);
-    expect(json.hints[0].ops.length).toBeGreaterThan(0);
-  });
-
-  it("tells the agent what to improve, and leaves the moves to it", () => {
-    const file = photos();
-    const out = run("check", file).out;
-    expect(out).toMatch(/^lines: \d+ crossings?, \d+ lines? bending more than twice: /m);
-    expect(run("diagram", "improve", file).code).toBe(2);
-    const json = JSON.parse(run("check", file, "--json").out);
-    expect(json.lines.bent.length + json.lines.crossings.length).toBeGreaterThan(0);
+  it("check prints the counts, and no hint, warning or advice", () => {
+    const out = run("check", photos()).out;
+    expect(out).toMatch(/^ok\ncounts: nodes \d+, lines \d+, crossings \d+, bends \d+/);
+    expect(out).not.toMatch(/^(hint|warning|lines):/m);
+    expect(run("diagram", "improve", photos()).code).toBe(2);
+    const json = JSON.parse(run("check", photos(), "--json").out);
+    expect(json.counts.lines).toBe(edgeLooks.edges.length);
+    expect(json.hints).toBeUndefined();
+    expect(json.warnings).toBeUndefined();
   });
 });

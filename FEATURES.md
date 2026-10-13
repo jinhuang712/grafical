@@ -27,7 +27,7 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical review <file>` | Open the board on the diagram | stage 2 |
 | `grafical mcp` | Serve the same operations over MCP | later |
 
-Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also say what to improve, `lines:` (the lines that cross, and those that bend more than twice), and print up to three hints: moves the engine measured to fix them, as commands ready to run (D35). The agent decides; grafical never applies them.
+Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also print the drawing's counts: nodes, lines, crossings, bends, width, height, the row with most nodes, the box with most lines, and the lines that pass a row they do not connect (D37). They are facts; what they mean is the agent's to judge.
 
 ## Operations
 
@@ -178,13 +178,7 @@ grafical diff <file> [<git-rev>]
 - An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group, a layer or a lane. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
 - A lane's members are layers or nodes, one way per diagram (`lane-mixed`). A row lane's layers must be neighbours (`lane-gap`), and a layer added between two layers of a lane joins it. Column lanes go left to right in creation order, and grafical keeps each row in that order: a node outside every lane sits right of the lanes, or left of them when it comes first in its row. A group lies in one lane (`group-across-lanes`) and joins with all its members. Two lanes are never the ends of one edge (`lane-to-lane`), and neither are a layer and a column lane (`edge-inside`). `lane remove` keeps the members and removes the edges that end at the lane.
 - A group's box spans every row from its top member to its bottom one, rows without a member included; the other nodes of those rows sit beside the box (D7). `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
-- Warnings never block and never change the exit code. A write, `check` and `render` report them:
-  - `too-many-nodes`: more than 16 nodes, with merge candidates (D26);
-  - `too-wide`: the picture is wider than 1024 px, naming the widest layer to split (D29);
-  - `crowded-layer`: a layer holds more than 5 nodes (D29);
-  - `lonely-group`: a group holds one node;
-  - `edge-crosses-layer`: an edge's line threads between the nodes of a layer it does not connect (D29);
-  - `too-many-main-edges`: more than three edges, and more than a third of them, are on the main path (D33).
+- grafical prints no warnings and no hints (D37). What they reported is in the counts and in `grafical show --drawn`: the number of nodes, the picture's width, the nodes in each row, the members of each group, and the rows a line passes.
 - Every command accepts `--json`. Exit codes: 0 for success, 1 for an operation error or a defect, 2 for a usage error.
 - `grafical --help` and each command's `--help` carry this reference, written for agents (D36).
 
