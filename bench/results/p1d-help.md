@@ -81,3 +81,15 @@ After `grafical --help` named the kinds ("kind initial for the start dot"), rows
 - **What is still refused:** a line style given as an edge's kind (`kind: dashed`, three times), the mirror of the old legend mistake; a sublabel too long for one line (three, all on the public brief), though the help says it holds one line, without saying how long that is; text cut at a comma (four); `--png` with no path (three, as in every round); and seven failures of the agents' own `sed` scripts on their batch files.
 - **Reading costs more.** Agents read three more pages a draft. The command list on the first page names each group (`node`: "boxes") without its commands, so an agent opens `grafical node --help` to find `node add`.
 
+## Records (`stage1 --part records`, round `p1e-records`)
+
+The same 33 tasks after grafical's output became `key=value` records (DESIGN.md D37): the counts with every line's length and the longest line, `show --drawn` with each line's shortest possible length, detour and rows skipped, `try` with a delta, and errors and defects as a code and facts (`near`, `likely`, `allowed`, `fix`) with no sentences. Hints are gone. The engine also changed: fan-outs leave as one bundle (D38), a row's boxes share one height, and stores keep more room. The last round cost $0.43 (`p1d-help3`); this one is expected to cost the same.
+
+**Expected, written before the round ran:**
+- Writes refused: no clear difference from 18%. The facts are the ones the sentences carried; a refusal is answered as before, from `likely`, `near` or `fix`.
+- Recovery: an agent fixes a refused write on its next call about as often as before. If it does not, a fact the sentence gave is missing.
+- `grafical try`: run by few drafts, as hints were (4 of 8 shown one), since nothing in the output now points at it.
+- Problem lines (crossings and lines with more than two bends, measured with this engine on both rounds): no clear difference from `p1d-help3`.
+- Type conventions met: no clear difference from 63 of 63.
+
+**The decision it drives:** if writes refused rise above 25% or recovery falls, find the fact that was lost and add it before anything else. Otherwise the records stay, and phase 1e moves on to flow direction.
