@@ -120,7 +120,7 @@ function build(): Command {
 
   const diagram = program
     .command("diagram")
-    .description("the title, subtitle, note, legend, look and spacing");
+    .description("the whole diagram: title, subtitle, note, legend, style, density, sizing, tidy");
   json(
     diagram
       .command("style")
@@ -153,7 +153,9 @@ function build(): Command {
     });
   }
 
-  const group = program.command("group").description("boxes around the parts of one system");
+  const group = program
+    .command("group")
+    .description("boxes around one system: add, join, leave, rename, describe, order, remove");
   json(
     group
       .command("add")
@@ -222,7 +224,9 @@ function build(): Command {
     );
   });
 
-  const lane = program.command("lane").description("swimlanes: bands that say who owns what");
+  const lane = program
+    .command("lane")
+    .description("swimlanes, who owns what: add, join, leave, rename, remove");
   json(
     lane
       .command("add")
@@ -275,7 +279,9 @@ function build(): Command {
     await write(file, { op: "lane.remove", id }, opts);
   });
 
-  const layer = program.command("layer").description("rows");
+  const layer = program
+    .command("layer")
+    .description("rows: add, move, split, rename, tidy, remove");
   json(
     layer
       .command("add")
@@ -289,7 +295,11 @@ function build(): Command {
     await write(file, { op: "layer.add", id, ...pick(opts, ["label", "before", "after"]) }, opts);
   });
 
-  const node = program.command("node").description("boxes");
+  const node = program
+    .command("node")
+    .description(
+      "boxes: add, move, swap, align, merge, kind, describe, rename, resize, emphasize, remove",
+    );
   json(
     node
       .command("add")
@@ -355,7 +365,9 @@ function build(): Command {
     await write(file, { op: "node.remove", id }, opts);
   });
 
-  const edge = program.command("edge").description("lines");
+  const edge = program
+    .command("edge")
+    .description("lines: add, kind, relabel, emphasize, reverse, both, retarget, remove");
   json(
     edge
       .command("add")
