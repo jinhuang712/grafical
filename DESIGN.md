@@ -643,7 +643,7 @@ A text mark's badge is dark by default, and the owner decided on 2026-10-14, aft
 Setting a slot again replaces its mark with the styles the new command names. A style that holds its default is left out of the file. A picture (an emoji or a file) takes `--size` and no other style, because it has its own colors and outline, and the refusal names the field.
 
 The caller never gives a size in pixels or a position (D2). A picture is a square. A text mark is as wide as its text plus the padding of its size on each side, and at least a square, so `NEW` fits its badge. The slot fixes where it goes:
-- a corner mark sticks out of its corner by 6 px. It takes no room, so it moves no other box, text or line (D10);
+- a corner mark is centred on its corner: half its height lies outside the box on each axis, at every size, so the corner stays covered and a large mark does not sit on the label. It takes no room, so it moves no other box, text or line (D10);
 - a corner mark grows away from its corner, so it stays over the same corner;
 - the `left` mark takes a column inside the box, as wide as the mark plus 8 px. The box keeps its size, the text gives up that width, and the text centres in the rest. A node whose size grafical chooses (D27) takes the large box when its text no longer fits the medium one. A diamond and a dot have corner slots only.
 

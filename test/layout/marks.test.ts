@@ -63,9 +63,9 @@ describe("marks in the layout", () => {
     // The right edge stays where a square would put it; the left corner's left edge too.
     const r = api?.rect;
     expect((at("top-right")?.x ?? 0) + (at("top-right")?.w ?? 0)).toBe(
-      (r?.x ?? 0) + (r?.w ?? 0) + MARK.overhang,
+      (r?.x ?? 0) + (r?.w ?? 0) + MARK_STEP.m.h / 2,
     );
-    expect(at("top-left")?.x).toBe((r?.x ?? 0) - MARK.overhang);
+    expect(at("top-left")?.x).toBe((r?.x ?? 0) - MARK_STEP.m.h / 2);
     // One short text still gets a square; a wider left badge pushes the label further right.
     expect(at("top-left")?.w).toBeGreaterThanOrEqual(text("P0") + 2 * MARK_STEP.m.padX);
     expect(at("left")?.w).toBeGreaterThan(MARK_STEP.m.h);
@@ -91,29 +91,54 @@ describe("marks in the layout", () => {
     expect(rect("bottom-left")).toMatchObject({ w: MARK_STEP.l.h, h: MARK_STEP.l.h });
     // A larger step makes the badge wider too, for the same text.
     expect(rect("top-right")?.w).toBeGreaterThan(rect("top-left")?.w ?? 0);
-    // A bottom corner mark still sticks out of the bottom edge by the overhang.
+    // A bottom corner mark still sticks out of the bottom edge by half its height.
     const api = s.nodes.find((n) => n.id === "api")?.rect;
     expect((rect("bottom-left")?.y ?? 0) + MARK_STEP.l.h).toBe(
-      (api?.y ?? 0) + (api?.h ?? 0) + MARK.overhang,
+      (api?.y ?? 0) + (api?.h ?? 0) + MARK_STEP.l.h / 2,
     );
   });
 
-  it("puts a corner mark over its corner, sticking out by the overhang", () => {
+  it("centres a picture on its corner at every size, so the corner stays covered", () => {
+    // Found on a real picture: a large warning sat mostly inside the box, over the label.
+    for (const size of ["s", "m", "l"] as const) {
+      const s = layout(
+        marked("api", {
+          "top-left": { text: "⚠️", size },
+          "bottom-right": { text: "🔥", size },
+        }),
+        m,
+      );
+      const api = s.nodes.find((n) => n.id === "api");
+      const [tl, br] = api?.marks ?? [];
+      const r = api?.rect;
+      const centre = (x?: { x: number; y: number; w: number; h: number }) => ({
+        x: (x?.x ?? 0) + (x?.w ?? 0) / 2,
+        y: (x?.y ?? 0) + (x?.h ?? 0) / 2,
+      });
+      expect(centre(tl?.rect)).toEqual({ x: r?.x, y: r?.y });
+      expect(centre(br?.rect)).toEqual({
+        x: (r?.x ?? 0) + (r?.w ?? 0),
+        y: (r?.y ?? 0) + (r?.h ?? 0),
+      });
+    }
+  });
+
+  it("puts a corner mark over its corner, centred on it", () => {
     const s = layout(marked("api", { "top-left": "⚠️", "bottom-right": "!" }), m);
     const api = s.nodes.find((n) => n.id === "api");
     const [tl, br] = api?.marks ?? [];
     expect(api?.marks?.map((x) => x.slot)).toEqual(["top-left", "bottom-right"]);
     expect(tl?.rect).toEqual({
-      x: (api?.rect.x ?? 0) - MARK.overhang,
-      y: (api?.rect.y ?? 0) - MARK.overhang,
+      x: (api?.rect.x ?? 0) - MARK_STEP.m.h / 2,
+      y: (api?.rect.y ?? 0) - MARK_STEP.m.h / 2,
       w: MARK_STEP.m.h,
       h: MARK_STEP.m.h,
     });
     expect((br?.rect.x ?? 0) + MARK_STEP.m.h).toBe(
-      (api?.rect.x ?? 0) + (api?.rect.w ?? 0) + MARK.overhang,
+      (api?.rect.x ?? 0) + (api?.rect.w ?? 0) + MARK_STEP.m.h / 2,
     );
     expect((br?.rect.y ?? 0) + MARK_STEP.m.h).toBe(
-      (api?.rect.y ?? 0) + (api?.rect.h ?? 0) + MARK.overhang,
+      (api?.rect.y ?? 0) + (api?.rect.h ?? 0) + MARK_STEP.m.h / 2,
     );
   });
 

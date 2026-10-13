@@ -18,12 +18,11 @@ export const BOX: Record<SizeStep, { w: number; h: number }> = {
  * days?" on one line, large two short lines of about 115 px.
  */
 /**
- * Marks on a node (D40). A mark is a square. A corner mark sticks out of its corner by
- * `overhang` on both axes. The left mark takes a column inside the box, which the
- * text gives up.
+ * Marks on a node (D40). A corner mark is centred on its corner: half its height lies
+ * outside the box on each axis, whatever its size. The left mark takes a column inside
+ * the box, which the text gives up.
  */
 export const MARK = {
-  overhang: 6,
   /** Space between the left mark and the text. */
   leftGap: 8,
 };

@@ -49,18 +49,19 @@ export function leftInset(node: DiagramNode, m: Measurer): number {
 }
 
 /**
- * Where a node's marks go (D40). A corner mark is a square that sticks out of its
- * corner by MARK.overhang. The left mark is inside the box, centred in its column.
- * A diamond and a dot have corner marks only.
+ * Where a node's marks go (D40). A corner mark is centred on its corner, on the height
+ * of the mark: half of it lies outside the box on each axis, so a large mark covers the
+ * corner as a small one does. A wide badge grows inward along the edge. The left mark is
+ * inside the box, centred in its column. A diamond and a dot have corner marks only.
  */
 export function markRects(node: DiagramNode, r: Rect, m: Measurer): SceneMark[] {
   const out: SceneMark[] = [];
-  const { overhang } = MARK;
   for (const slot of MARK_SLOTS) {
     const mark = node.icons?.[slot];
     if (mark === undefined) continue;
     const w = markWidth(mark, m);
     const h = markHeight(mark);
+    const overhang = h / 2;
     let rect: Rect;
     if (slot === "left") {
       if (leftInset(node, m) === 0) continue;
