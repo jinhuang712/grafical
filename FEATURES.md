@@ -296,7 +296,7 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Flow direction | `down` (as now) or `right`: rows become columns of the flow, left to right. One diagram fact | stage 1 |
 | Dividers and walls | A labelled line between parts of a picture ("trust boundary"); a wall also lets lines cross only through a named gate node | stage 1 |
 | Notes | A short text attached to a box, a line or a group, placed by the engine | stage 1 |
-| Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in, so two agents that state the same facts get the same picture. Needs a decision first, since it touches stability (D10) and slot choice (D24) | stage 1 |
+| Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in. Not built: the owner decided that the file fixes the picture and the same facts give mostly the same picture (D39) | dropped |
 | Columns | An optional second placement fact beside rows: every box of a column sits left of every box of the next; a box in no column settles near what it connects to. Prototyped 2026-10-13 | stage 1 |
 
 ## Stage 2: the board

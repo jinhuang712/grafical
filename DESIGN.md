@@ -61,6 +61,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D36 | The help is the reference; there is no separate guide | The tool carries the taste |
 | D37 | Output is discrete: facts and counts, and the agent judges | The command line states facts; the agent understands |
 | D38 | A fan-out of three or more unlabelled lines leaves as one bundle | The tool carries the taste |
+| D39 | The file fixes the picture; the same facts give mostly the same picture | The same file is the same picture |
 
 ## Writing a diagram
 
@@ -608,6 +609,17 @@ Decided on 2026-10-13, as the first feature of phase 1e (FEATURES.md). The owner
 Rejected:
 - Bundling labelled lines without a place for their labels: it loses the labels.
 - Bundling from two lines: two separate lines are as easy to follow as a trunk that splits.
+
+### D39 The file fixes the picture; the same facts give mostly the same picture
+
+Decided on 2026-10-13 by the owner, asked whether two agents that state the same facts must get the same picture: "mostly. but the intermediate grafical.yaml always outputs the exact same diagram."
+
+- **The same file, the exact same picture.** This is D15 as it stands: the same diagram file and stylesheet give the same SVG bytes and PNG pixels, on any machine.
+- **The same facts, mostly the same picture.** The file keeps the order of each row's boxes, and a box placed without a stated position takes the slot that suits the lines it has when it arrives (D24). Two agents that state the same facts in another order can get a different order in a row. grafical does not reorder a diagram to one canonical form.
+
+Rejected:
+- Canonical placement, the same facts always giving the same picture. Every edit could then move boxes the agent did not touch, against the stability D10 promises.
+- Canonical placement within one batch, with later edits kept stable. It was the recommendation, but "mostly" asks for no new rule, and a batch already places its boxes together, knowing all of their lines (D24).
 
 ## Not yet decided
 
