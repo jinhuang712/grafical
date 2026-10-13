@@ -107,6 +107,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `edge.retarget` | Move one or both ends of an edge. Its ID, kind and label stay | done |
 | `edge.both` | Draw arrowheads at both ends, or one end again. A link takes none (`both-on-link`) (D33) | done |
 | `edge.emphasize` | Draw edges thick, as the main path, or thin again. The legend names it "main path" (D33) | done |
+| `edge.weight` | Give edges a weight: a level (`thin`, `thick`, `heavy`, or one the stylesheet adds) or a width in pixels from 0.5 to 8. Without a weight, thin again (D41) | done |
 
 ## Command-line syntax
 
@@ -141,6 +142,7 @@ grafical edge kind <file> <id> <kind>
 grafical edge reverse <file> <id>
 grafical edge both <file> <id> [--off]
 grafical edge emphasize <file> <id...> [--off]
+grafical edge weight <file> <id...> [--weight <level|pixels>]
 grafical edge retarget <file> <id> [--from <end>] [--to <end>]
 grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c] [--in <group>]
 grafical group join <file> <group> <node or group...>
@@ -176,7 +178,7 @@ grafical diff <file> [<git-rev>]
 - `node remove` also removes the node's edges, and reports their ids.
 - `node merge` puts the new node where the first listed node was, keeps every edge of the merged nodes once, and drops the edges between them. It may reuse a merged node's id. Nodes aligned to a merged node lose the alignment.
 - `layer tidy` and `diagram tidy` reorder once, when asked (D24). They report every node that moved.
-- Clearing: `node describe`, `node align`, `edge relabel`, `group describe` and `diagram legend` without their value clear it.
+- Clearing: `node describe`, `node align`, `edge relabel`, `edge weight`, `group describe` and `diagram legend` without their value clear it.
 - An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group, a layer or a lane. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
 - A lane's members are layers or nodes, one way per diagram (`lane-mixed`). A row lane's layers must be neighbours (`lane-gap`), and a layer added between two layers of a lane joins it. Column lanes go left to right in creation order, and grafical keeps each row in that order: a node outside every lane sits right of the lanes, or left of them when it comes first in its row. A group lies in one lane (`group-across-lanes`) and joins with all its members. Two lanes are never the ends of one edge (`lane-to-lane`), and neither are a layer and a column lane (`edge-inside`). `lane remove` keeps the members and removes the edges that end at the lane.
 - A group's box spans every row from its top member to its bottom one, rows without a member included; the other nodes of those rows sit beside the box (D7). `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
@@ -230,7 +232,7 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A group's keys are `id`, `label`, `sublabel` and `in`, the group it sits inside (D34). A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, and `both` and `accent` appear only when true. A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
+- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A group's keys are `id`, `label`, `sublabel` and `in`, the group it sits inside (D34). A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, `weight`. `both` and `accent` appear only when true, and `weight` only when it is not thin (D41). A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ### The stylesheet file
@@ -251,6 +253,7 @@ paint:
     kinds:
       call: { stroke: "#2f6f4f" }
       async: { stroke: "#2f6f4f", dash: "4 3" }
+    weights: { heavy: 5, critical: 6.5 }   # more edge weights (D41)
 type:
   title: { size: 22 }
   node-label: { size: 14, weight: 600 }
@@ -273,6 +276,7 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | Density | `compact`, `normal`, `airy` |
 | Emphasis | `accent`: at most 2 nodes per diagram, and edges on the main path, drawn thick (D33) |
 | Mark slots | `top-left`, `top-right`, `bottom-left`, `bottom-right`, `left`: one mark each. A diamond and a dot have no `left` (D40) |
+| Edge weight | `thin`, `thick`, `heavy`, and any level a stylesheet adds in `paint.edge.weights`; or a width of 0.5 to 8 pixels. The built-in themes draw them 1.25, 2.5 and 4 wide (D41) |
 | Line shape | `orthogonal` (default) or `curved`, set in a stylesheet as `paint.edge.shape` (D33) |
 | Nested box fill | `alternate` (default): group fill and background in turn; `shade`: each level a shade nearer the border colour. Set in a stylesheet as `paint.nesting` (D34) |
 

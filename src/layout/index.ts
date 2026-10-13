@@ -37,7 +37,7 @@ import type {
 } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { BAND, FRAME, GROUP, LANE, ROUTE, SPACING, type Spacing } from "../theme/geometry.ts";
-import { lineStyle } from "../theme/paint.ts";
+import { edgeWidth, lineStyle, type Paint } from "../theme/paint.ts";
 import { isDot, textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
@@ -361,7 +361,7 @@ const LEGEND_WORDS: Record<EdgeKind, string> = {
 };
 
 /** The legend's text for each line style the diagram uses (D8), in the diagram's wording if it sets one. */
-function legendItems(d: Diagram): { style: LineStyleName; text: string; main?: true }[] {
+function legendItems(d: Diagram, P: Paint): { style: LineStyleName; text: string; main?: true }[] {
   const kinds = new Set(d.edges.map((e) => e.kind));
   const out: { style: LineStyleName; text: string; main?: true }[] = [];
   for (const style of LINE_STYLES) {
@@ -372,7 +372,8 @@ function legendItems(d: Diagram): { style: LineStyleName; text: string; main?: t
     const plain = used.length > 1 ? "call or read" : LEGEND_WORDS[first];
     out.push({ style, text: d.legend?.[style] ?? plain });
   }
-  if (d.edges.some((e) => e.accent === true))
+  // Any edge heavier than thin is on the main path (D41).
+  if (d.edges.some((e) => (edgeWidth(e, P) ?? P.edge.strokeWidth) > P.edge.strokeWidth))
     out.push({ style: "solid", text: "main path", main: true });
   return out;
 }
@@ -701,7 +702,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     ? placeLine("title", d.title, sp.margin, sp.margin, m, T)
     : empty("title", sp.margin, sp.margin);
   const legendStyle = T.legend;
-  const items = withText ? legendItems(d) : [];
+  const items = withText ? legendItems(d, theme.paint) : [];
   const itemW = items.map(
     (it) => FRAME.legendSample + FRAME.legendLabelGap + m.measure(it.text, legendStyle).width,
   );
@@ -1017,7 +1018,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (fromBox !== undefined) points = cutRoute(points, fromBox, "start");
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
     if (e.both === true) edge.both = true;
-    if (e.accent === true) edge.main = true;
+    const width = edgeWidth(e, theme.paint);
+    if (width !== undefined && width !== theme.paint.edge.strokeWidth) edge.width = width;
     if (a.label !== undefined && e.label !== undefined && withText) {
       const cutAt = [toBox, fromBox].filter((b): b is Rect => b !== undefined);
       const at = points === a.points ? a.label : besideRoute(points, a.label, cutAt, clearOf(e.id));
@@ -1082,7 +1084,7 @@ function roundScene(s: Scene): Scene {
       };
       if (e.label !== undefined) out.label = roundText(e.label);
       if (e.both === true) out.both = true;
-      if (e.main === true) out.main = true;
+      if (e.width !== undefined) out.width = e.width;
       return out;
     }),
   };

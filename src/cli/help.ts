@@ -427,6 +427,21 @@ Good to know:
 `,
   },
 
+  "edge weight": {
+    about: "Set how thick edges are, by level or in pixels; without --weight, thin again.",
+    after: `
+Levels:
+  thin is the default, thick is what edge emphasize gives, heavy is thicker.
+  A stylesheet may retune them and add levels; an unknown level is refused
+  and the error lists the allowed ones. A number of pixels runs from 0.5 to 8.
+
+Good to know:
+  - Prefer a level to a number: levels read the same across a diagram.
+  - Weight, like emphasize, replaces the other: the last one set is the look.
+  - Thick and heavy lines stand out only against thin ones; few of them.
+`,
+  },
+
   "group add": {
     about: `Draw one box around the parts of one system, service or team. Its members may
 sit in several rows; the box spans them all.`,

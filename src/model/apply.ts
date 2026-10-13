@@ -5,7 +5,8 @@
 import type { OpError } from "../errors.ts";
 import * as layoutModule from "../layout/index.ts";
 import type { Measurer } from "../text/types.ts";
-import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
+import { edgeWidth } from "../theme/paint.ts";
+import { STYLESHEET_SUFFIX, styleProblem, THEMES, themeOf } from "../theme/themes.ts";
 import { endIds, endKind } from "./ends.ts";
 import { groupChain, groupHeight, inGroup, innerGroups, MAX_GROUP_DEPTH } from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
@@ -1087,8 +1088,37 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       if (missing.length > 0) return missing.map((id) => unknownEdge(d, id, i, "edges"));
       for (const e of d.edges) {
         if (!op.edges.includes(e.id)) continue;
+        // The old accent and a weight never both stay: the last one set is the edge's look (D41).
+        delete e.weight;
         if (op.off === true) delete e.accent;
         else e.accent = true;
+        touch(s, e.id);
+      }
+      return [];
+    }
+    case "edge.weight": {
+      if (typeof op.weight === "string") {
+        const P = themeOf(d).paint;
+        if (edgeWidth({ weight: op.weight }, P) === undefined) {
+          const allowed = ["thin", "thick", ...Object.keys(P.edge.weights)];
+          return [
+            {
+              code: "unknown-weight",
+              index: i,
+              field: "weight",
+              found: op.weight,
+              facts: { near: closest(op.weight, allowed), allowed },
+            },
+          ];
+        }
+      }
+      const missing = op.edges.filter((id) => !d.edges.some((e) => e.id === id));
+      if (missing.length > 0) return missing.map((id) => unknownEdge(d, id, i, "edges"));
+      for (const e of d.edges) {
+        if (!op.edges.includes(e.id)) continue;
+        delete e.accent;
+        if (op.weight === undefined || op.weight === "thin") delete e.weight;
+        else e.weight = op.weight;
         touch(s, e.id);
       }
       return [];

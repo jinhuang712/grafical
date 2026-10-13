@@ -369,7 +369,7 @@ function build(): Command {
 
   const edge = program
     .command("edge")
-    .description("lines: add, kind, relabel, emphasize, reverse, both, retarget, remove");
+    .description("lines: add, kind, relabel, emphasize, weight, reverse, both, retarget, remove");
   json(
     edge
       .command("add")
@@ -422,6 +422,26 @@ function build(): Command {
       .option("--off", "undo it"),
   ).action(async (file: string, edges: string[], opts: Opts) => {
     await write(file, { op: "edge.emphasize", edges, ...pick(opts, ["off"]) }, opts);
+  });
+  json(
+    edge
+      .command("weight")
+      .description("set how thick edges are: a level or a width in pixels; without --weight, thin")
+      .argument("<file>")
+      .argument("<id...>")
+      .option(
+        "--weight <weight>",
+        "thin, thick, heavy or a stylesheet's level, or pixels, 0.5 to 8",
+      ),
+  ).action(async (file: string, edges: string[], opts: Opts) => {
+    const w = opts.weight;
+    // A number of pixels is a number in the file; anything else is a level name.
+    const weight = typeof w === "string" && /^[0-9.]+$/.test(w) ? Number(w) : w;
+    await write(
+      file,
+      { op: "edge.weight", edges, ...(weight === undefined ? {} : { weight }) },
+      opts,
+    );
   });
   json(
     edge

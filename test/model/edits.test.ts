@@ -213,7 +213,7 @@ describe("edges", () => {
     expect(edge(d, "pipelines->mongo")?.accent).toBe(true);
     expect(writeDiagram(d)).toContain("accent: true");
     const scene = layout(d, m);
-    expect(scene.edges.filter((e) => e.main === true).map((e) => e.id)).toEqual([
+    expect(scene.edges.filter((e) => e.width === 2.5).map((e) => e.id)).toEqual([
       "pipelines->mongo",
       "service->mongo",
     ]);

@@ -261,7 +261,7 @@ describe("the target look", () => {
     expect(heads(as("link"))).toBe(heads(as("data")) - 1);
     const both = renderSvg({ ...s, edges: [{ ...data, both: true }], legend: [] });
     expect(heads(both)).toBe(heads(as("data")) + 1);
-    const main = renderSvg({ ...s, edges: [{ ...data, main: true }], legend: [] });
+    const main = renderSvg({ ...s, edges: [{ ...data, width: 2.5 }], legend: [] });
     expect(main).toContain('stroke-width="2.5"');
     expect(as("data")).not.toContain('stroke-width="2.5"');
   });

@@ -20,6 +20,7 @@ import {
   provideStylesheet,
   styleProblem,
   stylesheetRefs,
+  unknownWeights,
 } from "../theme/themes.ts";
 import { bindMarkOps, loadMarks, settingSlots } from "./marks.ts";
 
@@ -125,7 +126,11 @@ export function loadDiagram(file: string, setting: Set<string> = new Set()): Dia
   if (Array.isArray(d)) return failure(d);
   const marks = loadMarks(file, d, setting);
   if (marks.length > 0) return failure(marks);
-  return loadStyles(file, stylesheetRefs(d, [])) ?? d;
+  const styles = loadStyles(file, stylesheetRefs(d, []));
+  if (styles !== undefined) return styles;
+  // The file is read before its stylesheet, so a weight level is checked here (D41).
+  const weights = unknownWeights(d);
+  return weights.length > 0 ? failure(weights) : d;
 }
 
 /**
@@ -202,6 +207,8 @@ async function plan(file: string, ops: Op[], create: boolean): Promise<Planned |
   if (bound.errors.length > 0) return failure(bound.errors);
   const result = applyOps(base, bound.ops, m);
   if ("errors" in result) return failure(result.errors);
+  const weights = unknownWeights(result.diagram);
+  if (weights.length > 0) return failure(weights);
   const scene = layout(result.diagram, m);
   const defects = check(result.diagram, scene, m).filter((x) => x.owner === "agent");
   if (defects.length > 0) return { ok: false, changed: [], errors: [], defects };

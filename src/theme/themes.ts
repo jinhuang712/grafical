@@ -11,10 +11,11 @@ import { z } from "zod";
 import type { OpError } from "../errors.ts";
 import { yamlError } from "../model/io.ts";
 import { getPath, show } from "../model/issues.ts";
+import { closest } from "../model/suggest.ts";
 import type { Diagram } from "../model/types.ts";
 import type { TextRole } from "../scene.ts";
 import type { TextStyle } from "../text/types.ts";
-import { PAINT, type Paint } from "./paint.ts";
+import { edgeWidth, PAINT, type Paint, WEIGHT_LEVEL, WEIGHT_MAX, WEIGHT_MIN } from "./paint.ts";
 import { TYPE_RAMP } from "./type.ts";
 
 export type TypeRamp = Record<TextRole, TextStyle>;
@@ -76,6 +77,7 @@ const DARK: Paint = {
     },
     arrow: { length: 7, halfWidth: 3 },
     main: { strokeWidth: 2.5, arrow: { length: 9, halfWidth: 4 } },
+    weights: { heavy: 4 },
     cornerRadius: 6,
     shape: "orthogonal",
     labelBackground: { fill: "#0f1419", padX: 3, padY: 1, radius: 2 },
@@ -130,6 +132,7 @@ const PRINT: Paint = {
     },
     arrow: { length: 7, halfWidth: 3 },
     main: { strokeWidth: 2.5, arrow: { length: 9, halfWidth: 4 } },
+    weights: { heavy: 4 },
     cornerRadius: 4,
     shape: "orthogonal",
     labelBackground: { fill: "#ffffff", padX: 3, padY: 1, radius: 2 },
@@ -181,7 +184,20 @@ const SIZE = z.number().min(0).max(64);
 const SHAPE = z.enum(["orthogonal", "curved"]);
 const NESTING = z.enum(["alternate", "shade"]);
 
+// More weight levels: a name and a width. thin and thick are set by edge.strokeWidth and
+// edge.main.strokeWidth, so they are not names here (D41).
+const WEIGHTS = z.record(
+  z
+    .string()
+    .regex(WEIGHT_LEVEL, { message: "a level name like heavy" })
+    .refine((k) => k !== "thin" && k !== "thick", {
+      message: "a level other than thin and thick: set those in edge.strokeWidth and edge.main",
+    }),
+  z.number().min(WEIGHT_MIN).max(WEIGHT_MAX),
+);
+
 function partial(example: unknown, path: string[]): z.ZodType {
+  if (path.join(".") === "edge.weights") return WEIGHTS;
   if (path.join(".") === "edge.shape") return SHAPE;
   if (path.join(".") === "nesting") return NESTING;
   if (typeof example === "number") return SIZE;
@@ -249,4 +265,25 @@ export function parseStylesheet(text: string, ref: string): Theme | OpError[] {
     paint: merge(base.paint, r.data.paint),
     type: merge(base.type, r.data.type),
   };
+}
+
+/**
+ * An error for each edge whose weight names a level the diagram's stylesheet lacks (D41).
+ * Run after the stylesheet is provided, because the file is read before its stylesheet.
+ */
+export function unknownWeights(d: Diagram, index = 0): OpError[] {
+  const P = themeOf(d).paint;
+  const allowed = ["thin", "thick", ...Object.keys(P.edge.weights)];
+  const errors: OpError[] = [];
+  d.edges.forEach((e, i) => {
+    if (typeof e.weight !== "string" || edgeWidth(e, P) !== undefined) return;
+    errors.push({
+      code: "unknown-weight",
+      index,
+      field: `edges[${i}].weight`,
+      found: e.weight,
+      facts: { edge: e.id, near: closest(e.weight, allowed), allowed },
+    });
+  });
+  return errors;
 }

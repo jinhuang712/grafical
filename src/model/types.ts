@@ -107,8 +107,10 @@ export interface Edge {
   label?: string;
   /** true: an arrowhead at both ends. A link has none (D33). */
   both?: boolean;
-  /** true: drawn thick, as part of the main path (D33). */
+  /** true: drawn thick, as part of the main path (D33). Means `weight: thick`; `weight` wins. */
   accent?: boolean;
+  /** A weight level the stylesheet names, or a width in pixels (D41). Absent: thin. */
+  weight?: string | number;
 }
 
 export interface Diagram {

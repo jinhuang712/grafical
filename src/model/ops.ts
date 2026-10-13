@@ -4,7 +4,7 @@
 import { z } from "zod";
 import type { OpError } from "../errors.ts";
 import { issuesToErrors, OP_KEYS, show } from "./issues.ts";
-import { edgeId, nodeId, text } from "./schema.ts";
+import { edgeId, nodeId, text, weightValue } from "./schema.ts";
 import { closest } from "./suggest.ts";
 import {
   DENSITIES,
@@ -264,6 +264,13 @@ export interface EdgeEmphasizeOp {
   /** true: thin again. */
   off?: boolean;
 }
+/** Gives edges a weight, a level or a width in pixels (D41). */
+export interface EdgeWeightOp {
+  op: "edge.weight";
+  edges: string[];
+  /** Absent: thin again. */
+  weight?: string | number;
+}
 /** Draws an arrowhead at both ends of an edge, or at one end again (D33). */
 export interface EdgeBothOp {
   op: "edge.both";
@@ -364,6 +371,7 @@ export type Op =
   | EdgeReverseOp
   | EdgeBothOp
   | EdgeEmphasizeOp
+  | EdgeWeightOp
   | EdgeRetargetOp;
 
 export type OpName = Op["op"];
@@ -560,6 +568,11 @@ export const edgeEmphasizeSchema = z.strictObject({
   edges: z.array(edgeId).min(1),
   off: z.boolean().optional(),
 });
+export const edgeWeightSchema = z.strictObject({
+  op: z.literal("edge.weight"),
+  edges: z.array(edgeId).min(1),
+  weight: weightValue.optional(),
+});
 export const edgeBothSchema = z.strictObject({
   op: z.literal("edge.both"),
   id: edgeId,
@@ -649,6 +662,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeReverseSchema,
   edgeBothSchema,
   edgeEmphasizeSchema,
+  edgeWeightSchema,
   edgeRetargetSchema,
 ]);
 
@@ -699,6 +713,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.reverse": edgeReverseSchema,
   "edge.both": edgeBothSchema,
   "edge.emphasize": edgeEmphasizeSchema,
+  "edge.weight": edgeWeightSchema,
   "edge.retarget": edgeRetargetSchema,
 };
 

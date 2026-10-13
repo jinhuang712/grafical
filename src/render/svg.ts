@@ -9,7 +9,7 @@
 import type { PlacedText, Point, Rect, Scene, SceneEdge, SceneGroup, SceneNode } from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
 import { FRAME } from "../theme/geometry.ts";
-import { hasHead, PAINT, type Paint, STYLE_KIND } from "../theme/paint.ts";
+import { hasHead, lineLook, PAINT, type Paint, STYLE_KIND } from "../theme/paint.ts";
 import { meetOutline } from "../theme/shapes.ts";
 import { markShape } from "./marks.ts";
 
@@ -397,7 +397,7 @@ function edgeShapes(
 ): string[] {
   const paint = P.edge;
   const kind: { stroke: string; dash?: string } = paint.kinds[e.kind];
-  const look = lineLook(e.main === true, P);
+  const look = lineLook(e.width, P);
   const pts = simplify(e.points);
   if (pts.length < 2) return [];
   pts[0] = ontoOutline(pts[0] as Point, pts[1] as Point, nodes.get(e.from));
@@ -422,21 +422,13 @@ function edgeShapes(
   return out;
 }
 
-/** The width and arrowhead of a line: thicker on the main path (D33). */
-function lineLook(
-  main: boolean,
-  P: Paint,
-): { strokeWidth: number; arrow: { length: number; halfWidth: number } } {
-  return main ? P.edge.main : { strokeWidth: P.edge.strokeWidth, arrow: P.edge.arrow };
-}
-
 function legendShapes(scene: Scene, P: Paint): string[] {
   const out: string[] = [];
   const paint = P.edge;
   const stroke = paint.kinds.call.stroke;
   for (const item of scene.legend ?? []) {
     const { x1, x2, y } = item.sample;
-    const look = lineLook(item.main === true, P);
+    const look = lineLook(item.main === true ? P.edge.main.strokeWidth : undefined, P);
     const head = hasHead(STYLE_KIND[item.style])
       ? arrowHead({ x: x2, y }, { x: x1, y }, stroke, look.arrow)
       : undefined;
@@ -596,7 +588,7 @@ export function renderSvg(scene: Scene): string {
   }
 
   for (const j of joinsOf(scene.edges)) {
-    const r = lineLook(j.edge.main === true, P).strokeWidth + 1.5;
+    const r = lineLook(j.edge.width, P).strokeWidth + 1.5;
     out.push(
       `<circle cx="${num(j.at.x)}" cy="${num(j.at.y)}" r="${num(r)}" fill="${P.edge.kinds[j.edge.kind].stroke}"/>`,
     );

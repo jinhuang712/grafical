@@ -63,6 +63,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D38 | A fan-out of three or more unlabelled lines leaves as one bundle | The tool carries the taste |
 | D39 | The file fixes the picture; the same facts give mostly the same picture | The same file is the same picture |
 | D40 | A node carries marks in five slots, and a mark is an emoji, text or a file | The engine owns every pixel |
+| D41 | An edge has a weight: a named level or a width, tuned by the stylesheet | The tool carries the taste |
 
 ## Writing a diagram
 
@@ -527,7 +528,7 @@ Decided by the owner on 2026-10-12, not yet built. In the stage 1 round every co
 
 Rejected:
 - The agent choosing the side a line leaves by. Spreading lines tidily is the kind of choice a weak model gets wrong.
-- Free styles per edge, such as a colour or a dash pattern. The reader would have to decode each one.
+- Free styles per edge, such as a colour or a dash pattern. The reader would have to decode each one. Since 2026-10-13 an edge's width is the exception (D41).
 - Curves drawn freely, outside the routed channels. They could cross boxes and text, and the router could no longer keep lines apart.
 
 ### D34 Stage 1 draws every diagram type the layered engine can draw
@@ -651,8 +652,26 @@ Rejected:
 - A mark with a size or an offset. It breaks D2, and each mark would sit differently.
 - Several marks in one slot. The slot would have to grow or its marks shrink, and a corner would then cover more of the box.
 
+### D41 An edge has a weight: a named level or a width, tuned by the stylesheet
+
+Decided by the owner on 2026-10-13, built the same day. D33 gave an edge one emphasis, the thick main path. The owner wants some edges thicker than others, in more than one step.
+
+- **Levels.** The built-in themes ship three: `thin` (1.25, the width of every edge today), `thick` (2.5, today's emphasis) and `heavy` (4). An edge with no weight is `thin`.
+- **Stylesheet.** A stylesheet (D30) may retune and add levels. `thin` is `paint.edge.strokeWidth` and `thick` is `paint.edge.main.strokeWidth`, the keys that already set them. Every other level is in `paint.edge.weights`, a map from a level name to a width, which holds `heavy` and may add more, such as `critical`. A level name is lowercase letters, digits and hyphens, and `thin` and `thick` are not names there. `thin`, `thick` and `heavy` always exist. A command or a file that names a level the stylesheet lacks is refused with `unknown-weight`, which lists the allowed names. The file is read before its stylesheet, so the pipeline checks the levels once the stylesheet is loaded.
+- **A width.** `edge weight` also takes a number of pixels, from 0.5 to 8. This reverses part of D33, which rejected free styles per edge. It reverses the width only. Colour and dash pattern stay with the kind (D8).
+- **The file.** An edge holds `weight: <level or number>`. A level is written as its name, a width as a number. `accent: true` on an edge stays valid and means `weight: thick` (D22: the format only grows). `edge emphasize` sets `accent` and clears `weight`. `edge weight` sets `weight` and clears `accent`, and without a weight, or at `thin`, it clears both. So grafical never writes both. When a hand-written file has both, `weight` wins.
+- **Arrowhead.** It grows with the width. At the `thin` width it is the thin arrowhead, at the `thick` width it is the main-path arrowhead, and past that it grows by the same step per pixel, up to a length of 12 px. A narrower edge than `thin` keeps the thin arrowhead.
+- **Legend.** The legend names "main path" when a diagram has an edge heavier than `thin`. The sample line is drawn at the `thick` width. D33's warning about too many main-path edges is not built, and D41 does not add it. More levels need it more, so it stays in the not-yet list below.
+- **Equal widths.** Two edges with the same width look the same, whatever their level names. The legend does not name levels.
+
+Rejected:
+- Three fixed levels with fixed widths. The owner wants to retune them.
+- A numeric width only, with no names. The agent would pick a different number for every edge, and the reader would have to decode each one. The levels give the agent the choice D33 wanted. The number is there for the person who needs an exact width.
+- Raising the weight limit with the number of levels. Emphasis works because few edges have it.
+
 ## Not yet decided
 
 - **Marks and lines:** a corner mark is not yet checked against the lines that leave the box near its corner. A line that meets a mark is not reported.
 
+- **Too many heavy edges:** D33 says more than three main-path edges, and more than a third of all edges, draw a warning, because a main path stands out only against thin lines. No code does this yet. With D41 the count would be every edge heavier than `thin`.
 - **Stage 2:** how the board reaches the file (a local server while the board is open is proposed), and how snap guides turn a drag into one operation.

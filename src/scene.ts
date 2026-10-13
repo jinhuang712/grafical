@@ -130,8 +130,8 @@ export interface SceneEdge {
   label?: PlacedText;
   /** true: a second arrowhead at the first point (D33). */
   both?: boolean;
-  /** true: drawn thick, as part of the main path (D33). */
-  main?: boolean;
+  /** The line width in pixels when it is not the thin one: a heavier edge (D33, D41). */
+  width?: number;
 }
 
 export interface Scene {

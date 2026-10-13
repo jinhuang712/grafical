@@ -25,7 +25,7 @@
 import type { Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
 import { GROUP, ROUTE } from "../theme/geometry.ts";
-import { lineStyle } from "../theme/paint.ts";
+import { lineStyle, weightOf } from "../theme/paint.ts";
 import { portInset } from "../theme/shapes.ts";
 import { routeGutter } from "./gutter.ts";
 import { centreX, type PLayer, type PNode } from "./place.ts";
@@ -497,7 +497,8 @@ function assignBuses(plans: Plan[], alone: Set<string>): void {
   };
   // A two-way edge has an arrowhead at its start, so it never shares a trunk from there, and
   // a main-path edge shares one only with main-path edges, which are as thick (D33).
-  const look = (pl: Plan) => `${lineStyle(pl.edge.kind)}${pl.edge.accent === true ? ":main" : ""}`;
+  // Edges of one weight share a trunk (D41).
+  const look = (pl: Plan) => `${lineStyle(pl.edge.kind)}:${weightOf(pl.edge) ?? ""}`;
   for (const bus of collect(
     (pl) => `${pl.u.id}:${pl.srcSide}:${look(pl)}`,
     (pl) => pl.edge.both === true,

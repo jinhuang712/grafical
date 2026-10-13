@@ -403,13 +403,20 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (members !== undefined) ops.push({ op: "lane.join", lane: x.id, members });
   }
 
-  // 9. Edges that come, and the facts of the edges that stay. The main path comes last.
+  // 9. Edges that come, and the facts of the edges that stay. The weights come last.
   const mainOn: string[] = [];
   const mainOff: string[] = [];
+  const weightOff: string[] = [];
+  const weighted = new Map<string | number, string[]>();
   for (const e of a.edges) {
     const was = keptEdges.has(e.id) ? bEdges.get(e.id) : undefined;
-    if (e.accent === true && was?.accent !== true) mainOn.push(e.id);
-    if (e.accent !== true && was?.accent === true) mainOff.push(e.id);
+    if (weightLook(e) !== weightLook(was)) {
+      if (e.weight !== undefined && e.weight !== "thin") {
+        weighted.set(e.weight, [...(weighted.get(e.weight) ?? []), e.id]);
+      } else if (e.accent === true && e.weight === undefined) mainOn.push(e.id);
+      else if (was?.weight === undefined) mainOff.push(e.id);
+      else weightOff.push(e.id);
+    }
     if (was === undefined) {
       ops.push(edgeAdd(e));
       continue;
@@ -432,6 +439,15 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (e.both === true && was.both !== true) ops.push({ op: "edge.both", id: e.id });
   }
   if (mainOff.length > 0) ops.push({ op: "edge.emphasize", edges: mainOff, off: true });
+  if (weightOff.length > 0) ops.push({ op: "edge.weight", edges: weightOff });
+  for (const [weight, edges] of weighted) ops.push({ op: "edge.weight", edges, weight });
   if (mainOn.length > 0) ops.push({ op: "edge.emphasize", edges: mainOn });
   return ops;
+}
+
+/** How an edge is weighted: a weight wins over the old accent, and thin is no weight (D41). */
+function weightLook(e: Edge | undefined): string {
+  if (e === undefined) return "thin";
+  if (e.weight !== undefined) return e.weight === "thin" ? "thin" : `w:${e.weight}`;
+  return e.accent === true ? "accent" : "thin";
 }

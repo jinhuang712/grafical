@@ -71,6 +71,11 @@ export interface Paint {
     arrow: { length: number; halfWidth: number };
     /** An edge on the main path: a thicker line and a larger arrowhead (D33). */
     main: { strokeWidth: number; arrow: { length: number; halfWidth: number } };
+    /**
+     * More weight levels (D41): a name and a width. `thin` is `strokeWidth` and `thick` is
+     * `main.strokeWidth`; every other level lives here.
+     */
+    weights: Record<string, number>;
     /** Radius of a rounded corner in a route. */
     cornerRadius: number;
     /**
@@ -94,6 +99,58 @@ const STYLES: Record<EdgeKind, LineStyleName> = {
 /** The line style an edge kind is drawn in. The kind decides it (D8, D33). */
 export function lineStyle(kind: EdgeKind): LineStyleName {
   return STYLES[kind];
+}
+
+/** The narrowest and widest width of one edge, in pixels (D41). */
+export const WEIGHT_MIN = 0.5;
+export const WEIGHT_MAX = 8;
+/** A weight level's name (D41). */
+export const WEIGHT_LEVEL = /^[a-z][a-z0-9-]*$/;
+/** The longest arrowhead a heavy line grows to, unless the thick one is longer (D41). */
+const ARROW_MAX = 12;
+
+/** The weight an edge is drawn at: its `weight`, else `thick` for the old `accent`, else none (D41). */
+export function weightOf(e: {
+  accent?: boolean;
+  weight?: string | number;
+}): string | number | undefined {
+  return e.weight ?? (e.accent === true ? "thick" : undefined);
+}
+
+/** The width of an edge in pixels, or undefined for a level the paint lacks (D41). */
+export function edgeWidth(
+  e: { accent?: boolean; weight?: string | number },
+  P: Paint,
+): number | undefined {
+  const w = weightOf(e) ?? "thin";
+  if (typeof w === "number") return w;
+  if (w === "thin") return P.edge.strokeWidth;
+  if (w === "thick") return P.edge.main.strokeWidth;
+  return P.edge.weights[w];
+}
+
+/**
+ * The width and arrowhead of a line (D41). At the thin width the arrowhead is the thin
+ * one and at the thick width it is the main-path one. Between and past them it grows by
+ * the same step per pixel, up to a length of ARROW_MAX. A narrower line keeps the thin one.
+ */
+export function lineLook(
+  width: number | undefined,
+  P: Paint,
+): { strokeWidth: number; arrow: { length: number; halfWidth: number } } {
+  const { arrow, main } = P.edge;
+  const w = width ?? P.edge.strokeWidth;
+  const span = main.strokeWidth - P.edge.strokeWidth;
+  if (w <= P.edge.strokeWidth || span <= 0) return { strokeWidth: w, arrow };
+  let t = (w - P.edge.strokeWidth) / span;
+  const dLen = main.arrow.length - arrow.length;
+  const dHalf = main.arrow.halfWidth - arrow.halfWidth;
+  const cap = Math.max(ARROW_MAX, main.arrow.length);
+  if (dLen > 0 && arrow.length + dLen * t > cap) t = (cap - arrow.length) / dLen;
+  return {
+    strokeWidth: w,
+    arrow: { length: arrow.length + dLen * t, halfWidth: arrow.halfWidth + dHalf * t },
+  };
 }
 
 /** The kind whose paint draws a line style's sample in the legend. */
@@ -156,6 +213,7 @@ export const PAINT: Paint = {
     },
     arrow: { length: 7, halfWidth: 3 },
     main: { strokeWidth: 2.5, arrow: { length: 9, halfWidth: 4 } },
+    weights: { heavy: 4 },
     cornerRadius: 6,
     shape: "orthogonal",
     labelBackground: { fill: "#ffffff", padX: 3, padY: 1, radius: 2 },

@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import type { OpError } from "../errors.ts";
+import { WEIGHT_LEVEL, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
 import { checkEnds } from "./ends.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
@@ -96,6 +97,12 @@ const layerSchema = z.strictObject({
   nodes: z.array(nodeSchema).default([]),
 });
 
+/** An edge weight: a level name, or a width in pixels (D41). Whether the level exists is checked once the stylesheet is read. */
+export const weightValue = z.union([
+  z.string().regex(WEIGHT_LEVEL, { message: "a level name like heavy" }),
+  z.number().min(WEIGHT_MIN).max(WEIGHT_MAX),
+]);
+
 const edgeSchema = z.strictObject({
   id: edgeId,
   from: nodeId,
@@ -104,6 +111,7 @@ const edgeSchema = z.strictObject({
   label: text.optional(),
   both: z.boolean().optional(),
   accent: z.boolean().optional(),
+  weight: weightValue.optional(),
 });
 
 export const diagramSchema = z.strictObject({
@@ -159,6 +167,7 @@ function build(p: Parsed): Diagram {
     if (e.label !== undefined) edge.label = e.label;
     if (e.both === true) edge.both = true;
     if (e.accent === true) edge.accent = true;
+    if (e.weight !== undefined) edge.weight = e.weight;
     return edge;
   });
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
