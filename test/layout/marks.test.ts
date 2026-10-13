@@ -111,6 +111,47 @@ describe("marks in the checker", () => {
     expect(defects).toMatchObject([{ elements: ["api", "worker"], facts: { is: "node" } }]);
   });
 
+  it("lets a corner mark meet a text's line box without touching its ink (a store with two lines)", () => {
+    // Found by an agent on a real diagram: the label's box ended 0.4 px under the mark.
+    const d: Diagram = {
+      grafical: 1,
+      title: "R",
+      density: "normal",
+      layers: [
+        {
+          id: "row",
+          label: "Store",
+          nodes: [
+            {
+              id: "mongo",
+              label: "MongoDB catalog",
+              kind: "store",
+              sublabel: "goods_*, DLQ, retry",
+              icons: { "top-left": "⚠️", "top-right": "P0" },
+            },
+          ],
+        },
+      ],
+      edges: [],
+    };
+    expect(check(d, layout(d, m), m).filter((x) => x.code === "mark-covers")).toEqual([]);
+  });
+
+  it("names two ways out of a covered label: a larger box, or the other side", () => {
+    const d = marked("api", { "top-left": "⚠️" });
+    const scene = layout(d, m);
+    const api = scene.nodes.find((n) => n.id === "api");
+    const label = api?.texts[0]?.bbox;
+    if (api?.marks?.[0] === undefined || label === undefined) throw new Error("no mark");
+    api.marks[0].rect = { ...label, w: MARK.size, h: MARK.size };
+    const [defect] = check(d, scene, m).filter((x) => x.code === "mark-covers");
+    expect(defect?.facts?.fix).toEqual([
+      "grafical node resize <file> api --size l",
+      "grafical node icon <file> api --slot top-left",
+      "grafical node icon <file> api --slot bottom-left --icon <mark>",
+    ]);
+  });
+
   it("reports a plain-text mark the bundled fonts cannot draw", () => {
     const d = marked("api", { "top-left": "ก" });
     const defects = check(d, layout(d, m), m);

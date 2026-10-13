@@ -46,9 +46,12 @@ function textMark(text: string, r: Rect, fill: string): string {
   const n = [...segments(text)].length;
   const size = TEXT_SIZE[Math.min(n, TEXT_SIZE.length - 1)] as number;
   const f = FONT_FAMILY[/[　-鿿＀-￯]/.test(text) ? "noto-600" : "inter-600"];
+  // White text on a dark badge: a text mark over a corner would otherwise float, with
+  // the box outline running through it.
   return (
+    `<rect x="${num(r.x)}" y="${num(r.y)}" width="${num(r.w)}" height="${num(r.h)}" rx="4" fill="${fill}"/>\n` +
     `<text x="${num(r.x + r.w / 2)}" y="${num(r.y + r.h / 2 + size * 0.36)}" text-anchor="middle" ` +
-    `font-family="${f.family}" font-size="${num(size)}" font-weight="${f.weight}" fill="${fill}" ` +
+    `font-family="${f.family}" font-size="${num(size)}" font-weight="${f.weight}" fill="#ffffff" ` +
     `xml:space="preserve">${escapeXml(text)}</text>`
   );
 }

@@ -358,9 +358,9 @@ Limits:
 `,
   },
   "node icon": {
-    about: `Put a mark on a node, such as a warning at its top-left. The mark is an emoji,
-up to 3 characters of text, or an SVG or PNG file next to the diagram. Without --icon,
-the slot is cleared.`,
+    about: `Put a mark on a node, such as a warning at its top-left. The mark is an
+emoji, up to 3 characters of text, or an SVG or PNG file next to the diagram.
+Without --icon, the slot is cleared.`,
     after: `
 Slots (one mark each):
   top-left, top-right, bottom-left, bottom-right   over a corner of the box
@@ -371,6 +371,8 @@ Notes:
   - A file is kept with its hash. If the file changes, run this again for
     the slot to accept it.
   - The left slot narrows the text. A diamond and a dot have corner slots only.
+  - A corner mark that covers the label is refused (mark-covers). Give the node
+    a larger size, or put the mark in the slot on the other side.
 
 Example:
   grafical node icon d.grafical.yaml billing --slot top-left --icon "⚠️"

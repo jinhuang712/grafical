@@ -31,6 +31,8 @@ export const NODE_PADDING = 8;
 export const NODE_PADDING_Y = 4;
 /** An edge may graze a node's rect by this much, at its ports. */
 export const PORT_TOLERANCE = 4;
+/** How far a text's box may reach under a corner mark before the mark covers it (D40). */
+export const MARK_TEXT_SLACK = 3;
 /** Two edges must share at least this much length to count as overlapping. */
 export const MIN_SHARED_LENGTH = 8;
 export const MAX_LABEL_LINES = 2;
@@ -114,8 +116,16 @@ function checkNodeOverlap(scene: Scene, out: Found[]): void {
 function checkMarkCovers(scene: Scene, out: Found[]): void {
   for (const n of scene.nodes) {
     for (const mark of n.marks ?? []) {
-      const fix = [`grafical node icon <file> ${n.id} --slot ${mark.slot}`];
-      if (n.texts.some((t) => rectsOverlap(t.bbox, mark.rect))) {
+      // Two ways out: a larger box, or the same mark on the other side of the box, which
+      // takes the old slot's mark away first.
+      const other = mark.slot.replace(/^top|^bottom/, (v) => (v === "top" ? "bottom" : "top"));
+      const fix = [
+        `grafical node resize <file> ${n.id} --size l`,
+        `grafical node icon <file> ${n.id} --slot ${mark.slot}`,
+        `grafical node icon <file> ${n.id} --slot ${other} --icon <mark>`,
+      ];
+      // A text's box is taller and wider than its ink, so a few pixels of it may meet a mark.
+      if (n.texts.some((t) => rectsOverlap(inset(t.bbox, MARK_TEXT_SLACK), mark.rect))) {
         out.push({
           code: "mark-covers",
           elements: [n.id],
