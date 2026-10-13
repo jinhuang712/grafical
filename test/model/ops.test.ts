@@ -45,6 +45,8 @@ describe("refusals that say how to fix them", () => {
     );
     const event = parseOp({ op: "edge.add", from: "a", to: "b", kind: "event" }, 0) as OpError[];
     expect(event[0]?.suggestion).toContain("event is not a kind; use async; allowed: call");
+    const style = parseOp({ op: "edge.add", from: "a", to: "b", kind: "dashed" }, 0) as OpError[];
+    expect(style[0]?.suggestion).toContain("dashed is not a kind; use async");
     const odd = parseOp(
       { op: "node.add", id: "s", layer: "l", label: "S", kind: "blob" },
       0,

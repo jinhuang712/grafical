@@ -170,6 +170,11 @@ const EDGE_GUESS: Record<string, string> = {
   flow: "data",
   sometimes: "optional",
   relation: "link",
+  // How the lines of a kind look, given as the kind.
+  solid: "call",
+  dashed: "async",
+  dotted: "optional",
+  plain: "link",
 };
 
 function guessedKind(
