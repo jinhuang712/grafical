@@ -1,7 +1,8 @@
 // The drawing as discrete facts (DESIGN.md D37): for each box its row, its place in the
-// row, its size and its lines on each side; for each line the sides it leaves and enters,
-// its bends, its length, the lines it crosses and the rows it passes without connecting;
-// and totals. The coding agent judges the drawing from them; grafical judges nothing.
+// row, its size, its lines on each side and their length; for each line the sides it
+// leaves and enters, its bends, its length against the shortest it could be, the rows
+// between its ends, the lines it crosses and the rows it passes without connecting; and
+// totals. The coding agent judges the drawing from them; grafical judges nothing.
 
 import { bendsOf, crossingsOf } from "../layout/index.ts";
 import { endRows } from "../model/ends.ts";
@@ -20,8 +21,12 @@ export interface DrawnBox {
   of: number;
   width: number;
   height: number;
+  /** Line ends at the box: a line from the box to itself counts twice. */
+  lines: number;
   /** Lines that meet the box, by side; a side no line meets is left out. */
   sides: Partial<Record<Side, number>>;
+  /** The length of its lines together, each counted once. */
+  reach: number;
 }
 
 export interface DrawnLine {
@@ -32,6 +37,12 @@ export interface DrawnLine {
   enters: Side;
   bends: number;
   length: number;
+  /** The shortest any line between its two ends could be: the gap between them across and down. */
+  direct: number;
+  /** Its length over direct, to two decimals; null when the ends touch. */
+  detour: number | null;
+  /** Rows between the rows of its ends: 0 for one row or two neighbouring rows. */
+  skip: number;
   /** The lines it crosses, in id order. */
   crosses: string[];
   /** Rows between its ends that it runs through, among their boxes, without meeting a box of. */
@@ -51,11 +62,14 @@ export interface Counts {
   /** Every point where two lines cross. */
   crossings: number;
   bends: number;
+  /** The length of every line together. */
+  length: number;
   width: number;
   height: number;
-  /** The row with the most boxes, and the box with the most lines; ties go to the first. */
+  /** The row with the most boxes, the box with the most lines and the longest line; ties go to the first. */
   fullest: { id: string; nodes: number } | null;
   busiest: { id: string; lines: number } | null;
+  longest: { id: string; length: number } | null;
   /** Lines that pass at least one row. */
   passing: number;
 }
@@ -76,6 +90,13 @@ function sideOf(p: Point, r: Rect): Side {
     right: Math.abs(p.x - (r.x + r.w)),
   };
   return SIDES.reduce((best, s) => (gaps[s] < gaps[best] ? s : best), "top" as Side);
+}
+
+/** The gap between two boxes across, plus the gap down: the shortest a line between them can be. */
+function gapOf(a: Rect, b: Rect): number {
+  const dx = Math.max(0, Math.max(a.x, b.x) - Math.min(a.x + a.w, b.x + b.w));
+  const dy = Math.max(0, Math.max(a.y, b.y) - Math.min(a.y + a.h, b.y + b.h));
+  return dx + dy;
 }
 
 export function drawing(d: Diagram, scene: Scene): Drawing {
@@ -132,7 +153,9 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
     const passes: string[] = [];
     const a = endRows(d, e.from);
     const b = endRows(d, e.to);
+    let skip = 0;
     if (a !== undefined && b !== undefined) {
+      skip = Math.max(0, Math.max(a[0], b[0]) - Math.min(a[1], b[1]) - 1);
       const lo = Math.min(a[1], b[1]);
       const hi = Math.max(a[0], b[0]);
       for (const layer of d.layers.slice(lo + 1, Math.max(lo + 1, hi))) {
@@ -146,6 +169,8 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
         if (through) passes.push(layer.id);
       }
     }
+    const direct =
+      fromRect === undefined || toRect === undefined ? 0 : Math.round(gapOf(fromRect, toRect));
     lines.push({
       id: e.id,
       from: e.from,
@@ -154,11 +179,18 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
       enters,
       bends: bendsOf(e.points),
       length: Math.round(length),
+      direct,
+      detour: direct > 0 ? Math.round((length / direct) * 100) / 100 : null,
+      skip,
       crosses: (crosses.get(e.id) ?? []).sort(),
       passes,
     });
   }
 
+  const reach = new Map<string, number>();
+  for (const l of lines) {
+    for (const id of new Set([l.from, l.to])) reach.set(id, (reach.get(id) ?? 0) + l.length);
+  }
   const boxes: DrawnBox[] = [];
   for (const layer of d.layers) {
     const row = scene.nodes.filter((n) => n.layer === layer.id).sort((p, q) => p.rect.x - q.rect.x);
@@ -173,7 +205,9 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
         of: row.length,
         width: Math.round(n.rect.w),
         height: Math.round(n.rect.h),
+        lines: Object.values(sides).reduce((s, x) => s + (x ?? 0), 0),
         sides,
+        reach: reach.get(n.id) ?? 0,
       });
     });
   }
@@ -192,8 +226,12 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
   }
   let busiest: Counts["busiest"] = null;
   for (const box of boxes) {
-    const n = Object.values(box.sides).reduce((s, x) => s + (x ?? 0), 0);
-    if (n > 0 && (busiest === null || n > busiest.lines)) busiest = { id: box.id, lines: n };
+    if (box.lines > 0 && (busiest === null || box.lines > busiest.lines))
+      busiest = { id: box.id, lines: box.lines };
+  }
+  let longest: Counts["longest"] = null;
+  for (const l of lines) {
+    if (longest === null || l.length > longest.length) longest = { id: l.id, length: l.length };
   }
   return {
     counts: {
@@ -201,10 +239,12 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
       lines: scene.edges.length,
       crossings: points,
       bends: lines.reduce((s, l) => s + l.bends, 0),
+      length: lines.reduce((s, l) => s + l.length, 0),
       width: Math.round(scene.width),
       height: Math.round(scene.height),
       fullest,
       busiest,
+      longest,
       passing: lines.filter((l) => l.passes.length > 0).length,
     },
     boxes,
@@ -216,6 +256,24 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
 /** The counts as one record, named by what they count: counts, before or after. */
 export function countsText(c: Counts, name = "counts"): string {
   return record(name, { ...c });
+}
+
+/** What a change does to the counts: after less before, for each number among them. */
+export function delta(before: Counts, after: Counts): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(after)) {
+    const was = before[k as keyof Counts];
+    if (typeof v === "number" && typeof was === "number") out[k] = v - was;
+  }
+  return out;
+}
+
+/** The delta as one record, a rise signed with +. */
+export function deltaText(d: Record<string, number>): string {
+  return record(
+    "delta",
+    Object.fromEntries(Object.entries(d).map(([k, n]) => [k, n > 0 ? `+${n}` : String(n)])),
+  );
 }
 
 /** The whole drawing as records: the counts, then each box, group and line. */

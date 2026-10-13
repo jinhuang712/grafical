@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
-import { countsText, drawing, drawingText } from "../check/drawing.ts";
+import { countsText, delta, deltaText, drawing, drawingText } from "../check/drawing.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import type { Op } from "../model/ops.ts";
@@ -659,12 +659,11 @@ function build(): Command {
     if (isReport(r)) {
       process.exitCode = emit(r, opts.json === true);
     } else if (opts.json === true) {
-      process.stdout.write(
-        `${JSON.stringify({ ok: true, changed: r.report.changed, before: r.before, after: r.after })}\n`,
-      );
+      const body = { ok: true, changed: r.report.changed, before: r.before, after: r.after };
+      process.stdout.write(`${JSON.stringify({ ...body, delta: delta(r.before, r.after) })}\n`);
     } else {
       process.stdout.write(
-        `ok would change: ${r.report.changed.join(", ")}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n`,
+        `ok would change: ${r.report.changed.join(", ")}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n${deltaText(delta(r.before, r.after))}\n`,
       );
     }
   });

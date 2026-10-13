@@ -162,12 +162,14 @@ Good to know:
 
 Output:
   ok changed: <ids>          the change is written
-  counts nodes= lines= crossings= bends= width= height= fullest= busiest=
-         passing=
-    fullest is the row with most nodes, as <row>:<nodes>; busiest the box
-    with most lines, as <box>:<lines>; passing the lines that pass a row
-    they do not connect. Facts only: what they mean is yours to judge.
-    grafical show <file> --drawn prints a record for each box and line.
+  counts nodes= lines= crossings= bends= length= width= height= fullest=
+         busiest= longest= passing=
+    length is every line's length together, in pixels. fullest is the row
+    with most nodes, as <row>:<nodes>; busiest the box with most lines, as
+    <box>:<lines>; longest the longest line, as <line>:<length>; passing
+    the lines that pass a row they do not connect. Facts only: what they
+    mean is yours to judge. grafical show <file> --drawn prints a record
+    for each box and line.
   --json prints the same as one JSON object, under the same names.
 
 When refused:
@@ -210,14 +212,18 @@ edges, in the words of the operations. Read it instead of the file.`,
 Good to know:
   - --drawn prints how it is drawn, one record per line, as key=value:
       counts ...                    as apply prints them
-      box id= row= place= of= width= height= sides=
+      box id= row= place= of= width= height= lines= sides= reach=
       group id= members= width= height=
-      line id= from= to= leaves= enters= bends= length= crosses= passes=
+      line id= from= to= leaves= enters= bends= length= direct= detour=
+           skip= crosses= passes=
     place counts from 1 at the row's left, and of is how many boxes the
-    row holds. sides counts a box's lines by side, as top:1,bottom:2.
-    passes names the rows a line runs through without meeting a box of.
-    Sizes and lengths are in pixels; - means none. Judge the drawing from
-    them, and change what you decide to change.
+    row holds. sides counts a box's lines by side, as top:1,bottom:2, and
+    reach is their length together. direct is the shortest a line between
+    its two ends could be, and detour its length over direct. skip counts
+    the rows between its ends' rows. passes names the rows it runs
+    through without meeting a box of. Sizes and lengths are in pixels;
+    - means none. Judge the drawing from them, and change what you decide
+    to change.
 `,
   },
 
@@ -238,7 +244,7 @@ of every change, with the changed parts marked. Ctrl-C stops it.`,
 
   try: {
     about: `Apply a batch without writing it, and print the drawing's counts before and
-after it, as apply prints them. Nothing is written.`,
+after it, as apply prints them, and the change in each. Nothing is written.`,
     after: `
 Good to know:
   - Use it to compare arrangements you are weighing: a row moved, two nodes
@@ -247,9 +253,10 @@ Good to know:
 
 Example:
   grafical try shop.grafical.yaml move.yaml
-  ok would change: row-stores
-  before nodes=9 lines=10 crossings=3 bends=12 ...
-  after nodes=9 lines=10 crossings=0 bends=8 ...
+  ok would change: storefront
+  before nodes=9 lines=10 crossings=1 bends=12 length=3140 ...
+  after nodes=9 lines=10 crossings=1 bends=8 length=2380 ...
+  delta nodes=0 lines=0 crossings=0 bends=-4 length=-760 ...
 `,
   },
 

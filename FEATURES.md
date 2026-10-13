@@ -16,8 +16,8 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical new <file> --title <text>` | Create an empty diagram | done |
 | `grafical <noun> <verb> <file> …` | Apply one operation, such as `grafical node add` | done |
 | `grafical apply <file> <batch.yaml>` | Apply a list of operations, all or nothing | done |
-| `grafical try <file> <batch.yaml>` | Apply a batch without writing it, and print the drawing's counts before and after it. The agent decides what to try; grafical measures (D37) | done |
-| `grafical show <file> [--drawn]` | Print a compact view of the diagram for agents. `--drawn`: how it is drawn, as `key=value` records: each box's row, place, size and lines by side; each line's sides, bends, length, crossings and the rows it passes; and totals (D37) | done |
+| `grafical try <file> <batch.yaml>` | Apply a batch without writing it, and print the drawing's counts before and after it, and the change in each. The agent decides what to try; grafical measures (D37) | done |
+| `grafical show <file> [--drawn]` | Print a compact view of the diagram for agents. `--drawn`: how it is drawn, as `key=value` records: each box's row, place, size, lines by side and their length together; each line's sides, bends, length, the shortest it could be, the rows it skips, crossings and the rows it passes; and totals (D37) | done |
 | `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (D14) | done |
 | `grafical render <file> [--svg [<out>]] [--png [<out>]]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file; `--svg` or `--png` alone writes only that one, to `<out>` or beside the file. `--scale` sets the PNG scale, from 1 to 4 | done |
 | `grafical view <file> [--port <n>] [--no-open]` | Open a window, sized to the diagram, that shows it as it is now, redrawn within a moment of every change, with the changed parts marked, a list of each change as operations, and the problems. Ctrl-C stops it (D31) | done |
@@ -27,7 +27,7 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical review <file>` | Open the board on the diagram | stage 2 |
 | `grafical mcp` | Serve the same operations over MCP | later |
 
-Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also print the drawing's counts as one `key=value` record: nodes, lines, crossings, bends, width, height, the row with most nodes, the box with most lines, and the lines that pass a row they do not connect (D37). They are facts; what they mean is the agent's to judge.
+Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also print the drawing's counts as one `key=value` record: nodes, lines, crossings, bends, the lines' length together, width, height, the row with most nodes, the box with most lines, the longest line, and the lines that pass a row they do not connect (D37). They are facts; what they mean is the agent's to judge.
 
 ## Operations
 
