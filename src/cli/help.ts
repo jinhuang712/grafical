@@ -6,6 +6,7 @@
 
 import { MAX_GROUP_DEPTH } from "../model/groups.ts";
 import { MAX_ACCENTS } from "../model/schema.ts";
+import { MARK_COLORS } from "../model/types.ts";
 
 /** What grafical is: the top of `grafical --help`. */
 export const PROGRAM_ABOUT = `grafical draws architecture and process diagrams from facts. You say which
@@ -370,12 +371,17 @@ Notes:
   - grafical sizes and places the mark; it takes no size or position.
   - A file is kept with its hash. If the file changes, run this again for
     the slot to accept it.
+  - A text mark sits on a dark badge. --bg sets its color: a name from
+    ${Object.keys(MARK_COLORS).join(", ")}, or #rrggbb.
+    grafical picks light or dark text to read on it. An emoji or a file
+    takes no --bg.
   - The left slot narrows the text. A diamond and a dot have corner slots only.
   - A corner mark that covers the label is refused (mark-covers). Give the node
     a larger size, or put the mark in the slot on the other side.
 
 Example:
   grafical node icon d.grafical.yaml billing --slot top-left --icon "⚠️"
+  grafical node icon d.grafical.yaml billing --slot top-right --icon P0 --bg red
 `,
   },
   "node align": {

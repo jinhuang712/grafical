@@ -3,10 +3,13 @@
 // a file (D15). The command line reads the files and gives their bytes in here
 // before it renders, the way it gives in stylesheets (D30).
 
+import { graphemes, isEmoji } from "../model/schema.ts";
 import type { Mark } from "../model/types.ts";
 import type { Rect, SceneMark } from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
 import { escapeXml, num } from "./svg.ts";
+
+export { isEmoji };
 
 export interface MarkImage {
   mime: "image/svg+xml" | "image/png";
@@ -15,20 +18,10 @@ export interface MarkImage {
 
 const images = new Map<string, MarkImage>();
 
-/** Does this text hold one emoji? Anything else short is drawn as text. */
-export function isEmoji(text: string): boolean {
-  return /^\p{Extended_Pictographic}/u.test(text) && [...segments(text)].length === 1;
-}
-
-function* segments(text: string): Generator<string> {
-  for (const s of new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text)) {
-    yield s.segment;
-  }
-}
-
-/** What identifies the picture a mark draws: the text, or the file's hash. */
+/** What identifies the picture a mark draws: the emoji, or the file's hash. A text has none. */
 export function markKey(m: Mark): string {
-  return typeof m === "string" ? (isEmoji(m) ? `e:${m}` : `t:${m}`) : `f:${m.sha256}`;
+  if (typeof m === "string") return isEmoji(m) ? `e:${m}` : `t:${m}`;
+  return "file" in m ? `f:${m.sha256}` : `t:${m.text}`;
 }
 
 export function provideMarkImage(key: string, image: MarkImage): void {
@@ -42,24 +35,43 @@ export function markImage(m: Mark): MarkImage | undefined {
 /** The font size of a text mark: the more characters, the smaller. */
 const TEXT_SIZE = [14, 14, 11, 9];
 
-function textMark(text: string, r: Rect, fill: string): string {
-  const n = [...segments(text)].length;
+/** The badge of a text mark when it names no color. */
+const DEFAULT_BADGE = "#1f2328";
+
+/** White text on a dark badge, and dark text on a light one. */
+function readableOn(bg: string): string {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = Number.parseInt(bg.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.4 ? "#1f2328" : "#ffffff";
+}
+
+/**
+ * A text mark sits on a badge. Over a corner it would otherwise float, with the
+ * box outline running through it.
+ */
+function textMark(text: string, r: Rect, bg: string): string {
+  const n = graphemes(text).length;
   const size = TEXT_SIZE[Math.min(n, TEXT_SIZE.length - 1)] as number;
   const f = FONT_FAMILY[/[　-鿿＀-￯]/.test(text) ? "noto-600" : "inter-600"];
-  // White text on a dark badge: a text mark over a corner would otherwise float, with
-  // the box outline running through it.
   return (
-    `<rect x="${num(r.x)}" y="${num(r.y)}" width="${num(r.w)}" height="${num(r.h)}" rx="4" fill="${fill}"/>\n` +
+    `<rect x="${num(r.x)}" y="${num(r.y)}" width="${num(r.w)}" height="${num(r.h)}" rx="4" fill="${bg}"/>\n` +
     `<text x="${num(r.x + r.w / 2)}" y="${num(r.y + r.h / 2 + size * 0.36)}" text-anchor="middle" ` +
-    `font-family="${f.family}" font-size="${num(size)}" font-weight="${f.weight}" fill="#ffffff" ` +
+    `font-family="${f.family}" font-size="${num(size)}" font-weight="${f.weight}" fill="${readableOn(bg)}" ` +
     `xml:space="preserve">${escapeXml(text)}</text>`
   );
 }
 
 /** One mark as SVG. A mark whose picture was not given in draws nothing. */
-export function markShape(m: SceneMark, textFill: string): string[] {
-  if (typeof m.mark === "string" && !isEmoji(m.mark)) return [textMark(m.mark, m.rect, textFill)];
-  const img = markImage(m.mark);
+export function markShape(m: SceneMark): string[] {
+  const mark = m.mark;
+  if (typeof mark === "object" && "text" in mark) return [textMark(mark.text, m.rect, mark.bg)];
+  if (typeof mark === "string" && !isEmoji(mark)) {
+    return [textMark(mark, m.rect, DEFAULT_BADGE)];
+  }
+  const img = markImage(mark);
   if (img === undefined) return [];
   return [
     `<image x="${num(m.rect.x)}" y="${num(m.rect.y)}" width="${num(m.rect.w)}" height="${num(m.rect.h)}" ` +

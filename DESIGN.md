@@ -630,7 +630,7 @@ Decided on 2026-10-13 by the owner, who wanted a very important node flagged wit
 
 A node has five slots: `top-left`, `top-right`, `bottom-left`, `bottom-right` and `left`. Each holds at most one mark. `node icon <file> <id> --slot <slot> --icon <mark>` sets it, and without `--icon` it clears it. A mark is one of:
 - an emoji, drawn from the bundled Twemoji images, so it does not depend on the machine's fonts (D12, D15);
-- a text of up to 3 characters, such as `P0`, drawn in the bundled fonts;
+- a text of up to 3 characters, such as `P0`, drawn in the bundled fonts on a badge. The badge is dark unless `--bg` gives a color, by a name (`red`, `amber`, `green`, `blue`, `purple`, `gray`, `dark`) or as `#rrggbb`. grafical picks light or dark text, whichever reads better on it. The file keeps the hex, so a change to the names never changes an existing file. This is the owner's decision of 2026-10-14, after a plain text over a corner looked ugly. It is the one place a caller sets a color, an exception to D8, and a picture (an emoji or a file) takes none;
 - an SVG or PNG file, named relative to the diagram file and inside its folder.
 
 The caller never gives a size or a position (D2). A mark is a 20 px square, and the slot fixes where it goes:

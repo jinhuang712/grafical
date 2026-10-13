@@ -64,6 +64,8 @@ function prepare(
   mark: string | Mark,
   index: number,
 ): { sha256?: string; error?: OpError } {
+  // A text with a background is drawn by the SVG writer, with no picture to read.
+  if (typeof mark === "object" && "text" in mark) return {};
   if (typeof mark === "string" && !isMarkFile(mark)) {
     if (!isEmoji(mark)) return {};
     const path = emojiPath(mark);
@@ -86,7 +88,7 @@ function prepare(
   if (!existsSync(path)) return { error: problem("mark-file-not-found", index, path) };
   const bytes = readFileSync(path);
   const sha256 = fileHash(bytes);
-  if (typeof mark !== "string" && mark.sha256 !== sha256) {
+  if (typeof mark !== "string" && "sha256" in mark && mark.sha256 !== sha256) {
     return {
       error: {
         ...problem("mark-file-changed", index, file),

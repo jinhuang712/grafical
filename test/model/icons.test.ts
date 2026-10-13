@@ -75,6 +75,45 @@ describe("node.icon (D40)", () => {
     expect(e).toMatchObject([{ code: "mark-file-unread" }]);
   });
 
+  it("gives a text mark a background by name or by hex, and keeps the hex", () => {
+    const d = run([
+      { op: "node.icon", id: "x", slot: "top-left", icon: "P0", bg: "red" },
+      { op: "node.icon", id: "x", slot: "top-right", icon: "NEW", bg: "#F5C542" },
+    ]) as Diagram;
+    expect(d.layers[0]?.nodes[0]?.icons).toEqual({
+      "top-left": { text: "P0", bg: "#d1242f" },
+      "top-right": { text: "NEW", bg: "#f5c542" },
+    });
+  });
+
+  it("refuses a background that is no color, and lists the names", () => {
+    const e = run([{ op: "node.icon", id: "x", slot: "top-left", icon: "P0", bg: "pink" }]);
+    expect(e).toMatchObject([
+      {
+        code: "bad-value",
+        field: "bg",
+        facts: { allowed: ["red", "amber", "green", "blue", "purple", "gray", "dark", "#rrggbb"] },
+      },
+    ]);
+  });
+
+  it("refuses a background on an emoji or on a file", () => {
+    expect(
+      run([{ op: "node.icon", id: "x", slot: "top-left", icon: "⚠️", bg: "red" }]),
+    ).toMatchObject([{ code: "mark-bg-on-picture", field: "bg" }]);
+    expect(
+      run([{ op: "node.icon", id: "x", slot: "top-left", icon: "a.svg", sha256: HASH, bg: "red" }]),
+    ).toMatchObject([{ code: "mark-bg-on-picture", field: "bg" }]);
+  });
+
+  it("setting the slot again without a background drops it", () => {
+    const d = run([
+      { op: "node.icon", id: "x", slot: "top-left", icon: "P0", bg: "red" },
+      { op: "node.icon", id: "x", slot: "top-left", icon: "P0" },
+    ]) as Diagram;
+    expect(d.layers[0]?.nodes[0]?.icons).toEqual({ "top-left": "P0" });
+  });
+
   it("refuses the left slot on a diamond, and names the slots that remain", () => {
     const e = run([{ op: "node.icon", id: "q", slot: "left", icon: "!" }]);
     expect(e).toMatchObject([
@@ -126,5 +165,23 @@ describe("marks in the file", () => {
       { op: "node.icon", id: "x", slot: "bottom-right", icon: "a.png", sha256: HASH },
     ]);
     expect(run(ops)).toEqual(marked);
+  });
+
+  it("round-trips a text mark with a background, and diff rebuilds it", () => {
+    const d = run([
+      { op: "node.icon", id: "x", slot: "top-right", icon: "P0", bg: "red" },
+    ]) as Diagram;
+    const text = writeDiagram(d);
+    expect(text).toMatch(/top-right:\n\s+bg: "?#d1242f"?\n\s+text: P0/);
+    expect(readDiagram(text)).toEqual(d);
+    expect(run(diffDiagrams(base, d))).toEqual(d);
+  });
+
+  it("refuses a background that is not #rrggbb in the file", () => {
+    const d = run([
+      { op: "node.icon", id: "x", slot: "top-right", icon: "P0", bg: "red" },
+    ]) as Diagram;
+    const r = readDiagram(writeDiagram(d).replace("#d1242f", "red"));
+    expect(Array.isArray(r) && r[0]?.code).toBeDefined();
   });
 });

@@ -139,6 +139,37 @@ describe("grafical node icon", () => {
     );
   });
 
+  it("draws a text mark on the background it is given, with text that reads on it", () => {
+    const f = "g.grafical.yaml";
+    for (const args of [
+      ["new", f, "--title", "G"],
+      ["layer", "add", f, "top", "--label", "L"],
+      ["node", "add", f, "n", "--layer", "top", "--label", "N"],
+    ]) {
+      run(...args);
+    }
+    expect(
+      run("node", "icon", f, "n", "--slot", "top-left", "--icon", "P0", "--bg", "red").code,
+    ).toBe(0);
+    expect(
+      run("node", "icon", f, "n", "--slot", "top-right", "--icon", "NEW", "--bg", "#f5c542").code,
+    ).toBe(0);
+    expect(run("show", f).out).toContain("icon.top-left.bg=#d1242f");
+    run("render", f, "--svg", "g.svg");
+    const svg = read("g.svg");
+    expect(svg).toMatch(/rx="4" fill="#d1242f"/);
+    expect(svg).toMatch(/rx="4" fill="#f5c542"/);
+    // Light text on the red badge, dark text on the yellow one.
+    expect(svg).toMatch(/fill="#ffffff"[^>]*>P0</);
+    expect(svg).toMatch(/fill="#1f2328"[^>]*>NEW</);
+    expect(
+      run("node", "icon", f, "n", "--slot", "left", "--icon", "⚠️", "--bg", "red").out,
+    ).toContain("code=mark-bg-on-picture");
+    expect(
+      run("node", "icon", f, "n", "--slot", "left", "--icon", "P1", "--bg", "pink").out,
+    ).toContain("allowed=red,amber,green,blue,purple,gray,dark,#rrggbb");
+  });
+
   it("clears a slot without --icon", () => {
     expect(icon("top-left").code).toBe(0);
     expect(read("d.grafical.yaml")).not.toContain("top-left");

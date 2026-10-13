@@ -220,6 +220,8 @@ export interface NodeIconOp {
   icon?: string;
   /** The file's SHA-256, filled in by the command line when icon is a file (D40). */
   sha256?: string;
+  /** The background of a text mark: a name in MARK_COLORS, or `#rrggbb`. */
+  bg?: string;
 }
 export interface NodeAlignOp {
   op: "node.align";
@@ -537,6 +539,7 @@ export const nodeIconSchema = z.strictObject({
     .string()
     .regex(/^[0-9a-f]{64}$/)
     .optional(),
+  bg: text.optional(),
 });
 export const nodeAlignSchema = z.strictObject({
   op: z.literal("node.align"),

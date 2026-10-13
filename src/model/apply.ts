@@ -11,7 +11,15 @@ import { endIds, endKind } from "./ends.ts";
 import { groupChain, groupHeight, inGroup, innerGroups, MAX_GROUP_DEPTH } from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
 import type { EdgeAddOp, LayerAddOp, NodeAddOp, NodeMoveOp, Op, Position } from "./ops.ts";
-import { checkIntegrity, graphemes, isMarkFile, MARK_TEXT_MAX, MAX_ACCENTS } from "./schema.ts";
+import {
+  checkIntegrity,
+  graphemes,
+  isEmoji,
+  isMarkFile,
+  MARK_TEXT_MAX,
+  MAX_ACCENTS,
+  markColor,
+} from "./schema.ts";
 import { closest } from "./suggest.ts";
 import {
   DEFAULT_DENSITY,
@@ -23,6 +31,7 @@ import {
   FORMAT_VERSION,
   type Group,
   type Layer,
+  MARK_COLORS,
   MARK_SLOTS,
 } from "./types.ts";
 
@@ -1056,6 +1065,17 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       if (op.icon === undefined) {
         if (n.icons !== undefined) delete n.icons[op.slot];
       } else if (op.sha256 !== undefined) {
+        if (op.bg !== undefined) {
+          return [
+            {
+              code: "mark-bg-on-picture",
+              index: i,
+              field: "bg",
+              found: op.bg,
+              facts: { fix: [`node icon <file> ${op.id} --slot ${op.slot} --icon ${op.icon}`] },
+            },
+          ];
+        }
         n.icons = { ...n.icons, [op.slot]: { file: op.icon, sha256: op.sha256 } };
       } else if (isMarkFile(op.icon)) {
         // The command line reads the file and fills in its hash before the operation gets here.
@@ -1078,6 +1098,28 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
             facts: { max: MARK_TEXT_MAX },
           },
         ];
+      } else if (op.bg !== undefined) {
+        const bg = markColor(op.bg);
+        // A picture has its own colors, so a background belongs to a text mark only.
+        if (bg === undefined || isEmoji(op.icon)) {
+          return [
+            {
+              code: bg === undefined ? "bad-value" : "mark-bg-on-picture",
+              index: i,
+              field: "bg",
+              found: op.bg,
+              facts:
+                bg === undefined
+                  ? { allowed: [...Object.keys(MARK_COLORS), "#rrggbb"] }
+                  : {
+                      fix: [
+                        `node icon <file> ${op.id} --slot ${op.slot} --icon <text> --bg ${op.bg}`,
+                      ],
+                    },
+            },
+          ];
+        }
+        n.icons = { ...n.icons, [op.slot]: { text: op.icon, bg } };
       } else n.icons = { ...n.icons, [op.slot]: op.icon };
       if (n.icons !== undefined && Object.keys(n.icons).length === 0) delete n.icons;
       touch(s, op.id);

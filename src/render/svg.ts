@@ -599,7 +599,7 @@ export function renderSvg(scene: Scene): string {
     for (const t of n.texts) {
       out.push(...texts(t, t.role === "node-sublabel" ? P.text.nodeSublabel : P.text.nodeLabel));
     }
-    for (const m of n.marks ?? []) out.push(...markShape(m, P.text.nodeLabel));
+    for (const m of n.marks ?? []) out.push(...markShape(m));
   }
 
   out.push(...texts(scene.title, P.text.title));

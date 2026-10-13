@@ -3,7 +3,7 @@
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import { laneNodes } from "../model/lanes.ts";
-import { type Diagram, LINE_STYLES, MARK_SLOTS } from "../model/types.ts";
+import { type Diagram, LINE_STYLES, MARK_SLOTS, markText } from "../model/types.ts";
 import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
@@ -369,8 +369,9 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
       for (const slot of MARK_SLOTS) {
         const mark = n.icons?.[slot];
         // An emoji is drawn as a picture, so only plain text needs the fonts.
-        if (typeof mark === "string" && !isEmoji(mark)) {
-          add(n.id, "icon", mark, `grafical node icon <file> ${n.id} --slot ${slot} --icon <text>`);
+        const text = mark === undefined ? undefined : markText(mark);
+        if (text !== undefined && !isEmoji(text)) {
+          add(n.id, "icon", text, `grafical node icon <file> ${n.id} --slot ${slot} --icon <text>`);
         }
       }
     }

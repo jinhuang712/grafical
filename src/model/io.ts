@@ -43,8 +43,10 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
     const icons: Record<string, unknown> = {};
     for (const slot of MARK_SLOTS) {
       const m = n.icons[slot];
-      if (m !== undefined)
-        icons[slot] = typeof m === "string" ? m : { file: m.file, sha256: m.sha256 };
+      if (m === undefined) continue;
+      if (typeof m === "string") icons[slot] = m;
+      else if ("file" in m) icons[slot] = { file: m.file, sha256: m.sha256 };
+      else icons[slot] = { bg: m.bg, text: m.text };
     }
     o.icons = icons;
   }

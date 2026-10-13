@@ -8,6 +8,7 @@ import {
   type Edge,
   LINE_STYLES,
   MARK_SLOTS,
+  markText,
 } from "../model/types.ts";
 
 function nodeText(n: DiagramNode): string {
@@ -20,7 +21,9 @@ function nodeText(n: DiagramNode): string {
   if (n.sublabel !== undefined) s += ` sub=${JSON.stringify(n.sublabel)}`;
   for (const slot of MARK_SLOTS) {
     const m = n.icons?.[slot];
-    if (m !== undefined) s += ` icon.${slot}=${JSON.stringify(typeof m === "string" ? m : m.file)}`;
+    if (m === undefined) continue;
+    s += ` icon.${slot}=${JSON.stringify(markText(m) ?? (m as { file: string }).file)}`;
+    if (typeof m === "object" && "bg" in m) s += ` icon.${slot}.bg=${m.bg}`;
   }
   return s;
 }

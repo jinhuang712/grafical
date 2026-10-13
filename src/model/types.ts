@@ -48,7 +48,28 @@ export type MarkSlot = (typeof MARK_SLOTS)[number];
  * A mark: an emoji or a short text, or an SVG or PNG file next to the diagram file.
  * A file is kept with its SHA-256, so a changed file is caught (D40, D15).
  */
-export type Mark = string | { file: string; sha256: string };
+export type Mark = string | { file: string; sha256: string } | { text: string; bg: string };
+
+/**
+ * The colors a text mark's background may be named by. Any `#rrggbb` is allowed too.
+ * A name is turned into its hex when the mark is set, so a change here never
+ * changes a file that already exists (D15).
+ */
+export const MARK_COLORS = {
+  red: "#d1242f",
+  amber: "#bf8700",
+  green: "#1a7f37",
+  blue: "#0969da",
+  purple: "#8250df",
+  gray: "#57606a",
+  dark: "#1f2328",
+} as const;
+
+/** The text of a text or emoji mark, with or without a background. A file has none. */
+export function markText(m: Mark): string | undefined {
+  if (typeof m === "string") return m;
+  return "text" in m ? m.text : undefined;
+}
 
 export interface DiagramNode {
   id: string;

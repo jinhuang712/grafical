@@ -22,6 +22,7 @@ import {
   type Group,
   type Layer,
   LINE_STYLES,
+  MARK_COLORS,
   MARK_SLOTS,
   NODE_KINDS,
   SIZE_STEPS,
@@ -47,17 +48,32 @@ export function graphemes(s: string): string[] {
   );
 }
 
+/** Does this text hold one emoji? Anything else short is drawn as text (D40). */
+export function isEmoji(text: string): boolean {
+  return /^\p{Extended_Pictographic}/u.test(text) && graphemes(text).length === 1;
+}
+
+/** The `#rrggbb` a color name or a hex value means, or undefined when it means none. */
+export function markColor(v: string): string | undefined {
+  const named = (MARK_COLORS as Record<string, string>)[v.toLowerCase()];
+  if (named !== undefined) return named;
+  return /^#[0-9a-fA-F]{6}$/.test(v) ? v.toLowerCase() : undefined;
+}
+
 /** Does a mark value name an image file rather than hold a text? */
 export function isMarkFile(v: string): boolean {
   return /\.(svg|png)$/i.test(v);
 }
 
+const markText1 = z
+  .string()
+  .min(1)
+  .refine((v) => graphemes(v).length <= MARK_TEXT_MAX, { message: "mark-too-long" });
+
 const markSchema = z.union([
-  z
-    .string()
-    .min(1)
-    .refine((v) => graphemes(v).length <= MARK_TEXT_MAX, { message: "mark-too-long" }),
+  markText1,
   z.strictObject({ file: text, sha256: z.string().regex(/^[0-9a-f]{64}$/) }),
+  z.strictObject({ text: markText1, bg: z.string().regex(/^#[0-9a-f]{6}$/) }),
 ]);
 
 const iconsSchema = z.strictObject({

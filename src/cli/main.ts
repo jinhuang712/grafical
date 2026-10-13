@@ -12,7 +12,7 @@ import { diffDiagrams } from "../model/diff.ts";
 import { yamlError } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
-import { EDGE_KINDS, MARK_SLOTS, NODE_KINDS } from "../model/types.ts";
+import { EDGE_KINDS, MARK_COLORS, MARK_SLOTS, NODE_KINDS } from "../model/types.ts";
 import { record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
@@ -514,9 +514,13 @@ function build(): Command {
       .option(
         "--icon <mark>",
         "an emoji, up to 3 characters, or a file next to the diagram; leave it out to clear",
+      )
+      .option(
+        "--bg <color>",
+        `a text mark's background: ${Object.keys(MARK_COLORS).join(", ")} or #rrggbb`,
       ),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "node.icon", id, ...pick(opts, ["slot", "icon"]) }, opts);
+    await write(file, { op: "node.icon", id, ...pick(opts, ["slot", "icon", "bg"]) }, opts);
   });
   json(
     node
