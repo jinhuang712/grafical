@@ -169,6 +169,8 @@ export const ROUTE = {
   labelClear: 4,
   /** Least space between two labels side by side, so that they do not read as one. */
   labelSpace: 24,
+  /** Room a gutter adds on its side next to a row that holds a store, past a cylinder's lid and base. */
+  storeRoom: 8,
   /** This many unlabelled edges of one kind on a crowded node side share a trunk (D25 rule 4). */
   busMin: 2,
   /** This many unlabelled edges of one kind leaving one node side leave as one bundle, crowded or not (D38). */

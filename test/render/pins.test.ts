@@ -23,13 +23,13 @@ const pixels = (png: Uint8Array): string => sha(PNG.sync.read(Buffer.from(png)).
 const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
   grouped: {
     diagram: catalogSyncGrouped,
-    svg: "94a6ca4099bfb3089afd6c6d6f0da9ede88d564a8ade61feebb191fa2f31fbcd",
-    png: "04c5132e495f50f21c51f6f9a61218ae41798f5239c93ca72b21985be0d7a2cf",
+    svg: "eada6126b5e59d641f9bc7c5806667f9b05bf179cf85f316669e53c6ebe7ccd2",
+    png: "504816c29cf5b24a5b51f91ada21160ac7c8db93b88676df58101e19d43c6c43",
   },
   lanesRows: {
     diagram: lanesRows,
-    svg: "ab21efa1434a41df200fe54fae7e6d92edf0f0752ac20c5c1d8fa9e8b6c3c929",
-    png: "e02c9fd43e8a194ef50abdd6db3b791cf862af6af136f2ecdb5edd3cb6997575",
+    svg: "4c4e707b165b582bca314d47358ee3be6bf8446a7635abb80f032dcb7cc9e8ae",
+    png: "f9c5772217fcb470238fc808ca21372624852292d7b0ab02a3921a160c7724d2",
   },
   flowchart: {
     diagram: flowchart,
@@ -43,8 +43,8 @@ const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
   },
   nested: {
     diagram: nested,
-    svg: "7762c626ebfa11cefd9f389bf3e7e49cc70627d7b611856fc3cbc4561619d8d7",
-    png: "dbcf208605d0bad13c80ced273c7e53d3d6070f99d2049802270510b5247f7fa",
+    svg: "3239741da54334ec5ce5cebed32c784d39787503b905b43a95e39eaf6d07ff75",
+    png: "1c089ea9fd744ffc59bc1fcaf8ed685095f16cd77aff27342d56d279465c2a55",
   },
   lanesColumns: {
     diagram: lanesColumns,

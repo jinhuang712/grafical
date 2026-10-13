@@ -801,13 +801,23 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (bandRows.has(0)) y += BAND.head;
   /** Where a row lane's border crosses gutter i, between two rows in different lanes. */
   const borders = new Map<number, number>();
+  /** A row that holds a store: the gutters beside it keep more room from its cylinders. */
+  const storeRow = (i: number) => (layers[i]?.nodes ?? []).some((n) => n.node.kind === "store");
   layers.forEach((l, i) => {
     rowTops.push(y);
     y += l.rowH;
     const rows = routing.rows[i] ?? 0;
     const last = i === layers.length - 1;
-    const pad = GROUP.pad * padsAt(i) + (bandRows.has(i) ? BAND.pad : 0);
-    const tracks = rows === 0 ? (last ? 0 : (sp.gutterSteps[0] ?? 48)) : gutterHeight(rows, sp);
+    const pad =
+      GROUP.pad * padsAt(i) +
+      (bandRows.has(i) ? BAND.pad : 0) +
+      (rows > 0 && storeRow(i) ? ROUTE.storeRoom : 0);
+    const tracks =
+      rows === 0
+        ? last
+          ? 0
+          : (sp.gutterSteps[0] ?? 48)
+        : gutterHeight(rows, sp) + (storeRow(i + 1) ? ROUTE.storeRoom : 0);
     gutterTops.push(y);
     endPads.push(pad);
     if (!last && laneAt(i) !== laneAt(i + 1)) {
