@@ -428,7 +428,7 @@ function legendShapes(scene: Scene, P: Paint): string[] {
   const stroke = paint.kinds.call.stroke;
   for (const item of scene.legend ?? []) {
     const { x1, x2, y } = item.sample;
-    const look = lineLook(item.main === true ? P.edge.main.strokeWidth : undefined, P);
+    const look = lineLook(item.width, P);
     const head = hasHead(STYLE_KIND[item.style])
       ? arrowHead({ x: x2, y }, { x: x1, y }, stroke, look.arrow)
       : undefined;

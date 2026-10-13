@@ -130,6 +130,19 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
         : { op: "diagram.legend", style: line, text },
     );
   }
+  const aw = a.legend?.weights ?? {};
+  const bw = b.legend?.weights ?? {};
+  for (const key of [...new Set([...Object.keys(bw), ...Object.keys(aw)])].sort()) {
+    const text = aw[key];
+    if (text === bw[key]) continue;
+    // A width in pixels is a number in the operation, as in edge.weight (D41).
+    const weight = /^[0-9]/.test(key) ? Number(key) : key;
+    ops.push(
+      text === undefined
+        ? { op: "diagram.legend", weight }
+        : { op: "diagram.legend", weight, text },
+    );
+  }
 
   const bN = nodesOf(b);
   const aN = nodesOf(a);

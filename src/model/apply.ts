@@ -11,6 +11,7 @@ import { endIds, endKind } from "./ends.ts";
 import { groupChain, groupHeight, inGroup, innerGroups, MAX_GROUP_DEPTH } from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
 import type {
+  DiagramLegendOp,
   EdgeAddOp,
   LayerAddOp,
   NodeAddOp,
@@ -24,6 +25,7 @@ import {
   graphemes,
   isEmoji,
   isMarkFile,
+  legendWeightProblem,
   MARK_TEXT_MAX,
   MAX_ACCENTS,
   markColor,
@@ -41,10 +43,12 @@ import {
   FORMAT_VERSION,
   type Group,
   type Layer,
+  type Legend,
   MARK_COLORS,
   MARK_SLOTS,
   type Mark,
   type MarkStyle,
+  weightKey,
 } from "./types.ts";
 
 export type ApplyResult = { diagram: Diagram; changed: string[] } | { errors: OpError[] };
@@ -140,6 +144,60 @@ function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
   if (op.shape !== undefined && op.shape !== DEFAULT_MARK_SHAPE) style.shape = op.shape;
   if (size !== undefined) style.size = size;
   return Object.keys(style).length === 0 ? icon : { text: icon, ...style };
+}
+
+/** The fields of a legend operation that name its entry; it names exactly one (D42). */
+const LEGEND_TARGETS = ["style", "weight"] as const;
+
+/** Sets one legend entry's words, or with no text gives it back its default (D42). */
+function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
+  const named = LEGEND_TARGETS.filter((k) => op[k] !== undefined);
+  if (named.length !== 1) {
+    const fields = named.join(",");
+    return [
+      named.length === 0
+        ? {
+            code: "missing-field",
+            index: i,
+            field: "style",
+            found: "",
+            facts: { allowed: [...LEGEND_TARGETS] },
+          }
+        : { code: "conflicting-fields", index: i, field: fields, found: fields, facts: { max: 1 } },
+    ];
+  }
+  const legend: Legend = { ...(s.d.legend ?? {}) };
+  if (op.style !== undefined) {
+    if (op.text === undefined) delete legend[op.style];
+    else legend[op.style] = op.text;
+  } else if (op.weight !== undefined) {
+    const key = weightKey(op.weight);
+    const P = themeOf(s.d).paint;
+    const levels = ["thick", ...Object.keys(P.edge.weights)];
+    const facts = legendWeightProblem(key, levels);
+    if (facts !== undefined)
+      return [{ code: "bad-value", index: i, field: "weight", found: key, facts }];
+    if (typeof op.weight === "string" && edgeWidth({ weight: op.weight }, P) === undefined) {
+      return [
+        {
+          code: "unknown-weight",
+          index: i,
+          field: "weight",
+          found: key,
+          facts: { near: closest(key, levels), allowed: levels },
+        },
+      ];
+    }
+    const words = { ...(legend.weights ?? {}) };
+    if (op.text === undefined) delete words[key];
+    else words[key] = op.text;
+    if (Object.keys(words).length > 0) legend.weights = words;
+    else delete legend.weights;
+  }
+  if (Object.keys(legend).length > 0) s.d.legend = legend;
+  else delete s.d.legend;
+  touch(s, "legend");
+  return [];
 }
 
 function nodeIds(d: Diagram): string[] {
@@ -1042,15 +1100,8 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       d.density = op.density;
       touch(s, "density");
       return [];
-    case "diagram.legend": {
-      const legend = { ...(d.legend ?? {}) };
-      if (op.text === undefined) delete legend[op.style];
-      else legend[op.style] = op.text;
-      if (Object.keys(legend).length > 0) d.legend = legend;
-      else delete d.legend;
-      touch(s, "legend");
-      return [];
-    }
+    case "diagram.legend":
+      return setLegend(s, op, i);
     case "diagram.style": {
       if (op.style === undefined) delete d.style;
       else {

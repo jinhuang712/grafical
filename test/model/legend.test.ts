@@ -1,0 +1,136 @@
+// The legend's words (DESIGN.md D42): naming line widths, through the operation and the file.
+
+import { describe, expect, it } from "vitest";
+import type { OpError } from "../../src/errors.ts";
+import { layout } from "../../src/layout/index.ts";
+import { diffDiagrams } from "../../src/model/diff.ts";
+import {
+  applyOps,
+  type Diagram,
+  type Op,
+  readDiagram,
+  writeDiagram,
+} from "../../src/model/index.ts";
+import { createStubMeasurer } from "../../src/text/stub.ts";
+import { catalogSyncGrouped as fx } from "../fixtures/catalog-sync-grouped.ts";
+
+const m = createStubMeasurer();
+
+function ok(d: Diagram, ops: Op[]): Diagram {
+  const r = applyOps(d, ops, m);
+  if ("errors" in r) throw new Error(JSON.stringify(r.errors));
+  return r.diagram;
+}
+function fail(d: Diagram, ops: Op[]): OpError[] {
+  const r = applyOps(d, ops, m);
+  if (!("errors" in r)) throw new Error("expected errors");
+  return r.errors;
+}
+/** The legend's entries as their words and sample widths. */
+function entries(d: Diagram) {
+  return (layout(d, m).legend ?? []).map((x) => ({
+    text: x.label.runs.map((r) => r.text).join(""),
+    width: x.width,
+  }));
+}
+
+/** Two thick edges, one heavy and one 3 pixels wide. */
+const weighted = ok(fx, [
+  { op: "edge.weight", edges: ["pipelines->mongo"], weight: "thick" },
+  { op: "edge.weight", edges: ["service->mongo"], weight: "heavy" },
+  { op: "edge.weight", edges: ["pipelines->postgres"], weight: 3 },
+]);
+
+describe("the legend names line widths (D42)", () => {
+  it("widths it does not name share one main path entry, drawn at the thinnest", () => {
+    expect(entries(weighted).filter((x) => x.width !== undefined)).toEqual([
+      { text: "main path", width: 2.5 },
+    ]);
+  });
+
+  it("a named width has its own entry, and the entries go from the thinnest", () => {
+    const d = ok(weighted, [
+      { op: "diagram.legend", weight: "heavy", text: "critical" },
+      { op: "diagram.legend", weight: 3, text: "writes" },
+    ]);
+    expect(entries(d).filter((x) => x.width !== undefined)).toEqual([
+      { text: "main path", width: 2.5 },
+      { text: "writes", width: 3 },
+      { text: "critical", width: 4 },
+    ]);
+    expect(d.legend?.weights).toEqual({ heavy: "critical", "3": "writes" });
+  });
+
+  it("a width named but not drawn has no entry until an edge has it", () => {
+    const d = ok(fx, [{ op: "diagram.legend", weight: "heavy", text: "critical" }]);
+    expect(entries(d).some((x) => x.width !== undefined)).toBe(false);
+    const drawn = ok(d, [{ op: "edge.weight", edges: ["service->mongo"], weight: "heavy" }]);
+    expect(entries(drawn).at(-1)).toEqual({ text: "critical", width: 4 });
+  });
+
+  it("without text, a width goes back to the default words", () => {
+    const named = ok(weighted, [{ op: "diagram.legend", weight: "thick", text: "writes" }]);
+    const back = ok(named, [{ op: "diagram.legend", weight: "thick" }]);
+    expect(back.legend).toBeUndefined();
+    expect(writeDiagram(back)).toBe(writeDiagram(weighted));
+  });
+
+  it("the file keeps the names sorted, and reads them back", () => {
+    const a = ok(weighted, [
+      { op: "diagram.legend", weight: "thick", text: "writes" },
+      { op: "diagram.legend", weight: 3, text: "copies" },
+    ]);
+    const b = ok(weighted, [
+      { op: "diagram.legend", weight: 3, text: "copies" },
+      { op: "diagram.legend", weight: "thick", text: "writes" },
+    ]);
+    const text = writeDiagram(a);
+    expect(writeDiagram(b)).toBe(text);
+    expect(text).toContain("weights:");
+    expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
+  });
+
+  it("a width written 2.50 in a file is the edge's 2.5", () => {
+    for (const key of ["2.50", '"2.50"']) {
+      const text = writeDiagram(weighted).replace(
+        /\nlayers:/,
+        `\nlegend:\n  weights:\n    ${key}: copies\nlayers:`,
+      );
+      expect((readDiagram(text) as Diagram).legend?.weights).toEqual({ "2.5": "copies" });
+    }
+  });
+
+  it("diff gives back the operations that name a width", () => {
+    const after = ok(weighted, [{ op: "diagram.legend", weight: 3, text: "copies" }]);
+    const ops = diffDiagrams(weighted, after);
+    expect(ops).toEqual([{ op: "diagram.legend", weight: 3, text: "copies" }]);
+    expect(writeDiagram(ok(weighted, ops))).toBe(writeDiagram(after));
+  });
+
+  it("thin, a level the stylesheet lacks, and a width out of range are refused", () => {
+    expect(fail(fx, [{ op: "diagram.legend", weight: "thin", text: "x" }])[0]).toMatchObject({
+      code: "bad-value",
+      field: "weight",
+      facts: { allowed: ["thick", "heavy"], min: 0.5, max: 8 },
+    });
+    expect(fail(fx, [{ op: "diagram.legend", weight: "huge", text: "x" }])[0]).toMatchObject({
+      code: "unknown-weight",
+      found: "huge",
+    });
+    const file = writeDiagram(fx).replace(
+      /\nlayers:/,
+      "\nlegend:\n  weights:\n    thin: x\nlayers:",
+    );
+    expect(readDiagram(file)).toMatchObject([{ code: "bad-value", field: "legend.weights" }]);
+  });
+
+  it("an entry is named by exactly one of style and weight", () => {
+    expect(fail(fx, [{ op: "diagram.legend", text: "x" }])[0]).toMatchObject({
+      code: "missing-field",
+      facts: { allowed: ["style", "weight"] },
+    });
+    expect(
+      fail(fx, [{ op: "diagram.legend", style: "solid", weight: "thick", text: "x" }])[0],
+    ).toMatchObject({ code: "conflicting-fields", field: "style,weight" });
+  });
+});

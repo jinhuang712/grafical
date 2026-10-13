@@ -109,8 +109,9 @@ describe("edge weights (D41)", () => {
 
   it("the legend names the main path when an edge is heavier than thin", () => {
     const d = ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: "heavy" }]);
-    expect(layout(d, m).legend?.at(-1)).toMatchObject({ main: true });
-    expect(layout(fx, m).legend?.some((l) => l.main === true)).toBe(false);
+    // Drawn at the width it stands for (D42).
+    expect(layout(d, m).legend?.at(-1)).toMatchObject({ width: 4 });
+    expect(layout(fx, m).legend?.some((l) => l.width !== undefined)).toBe(false);
   });
 
   it("a heavier line grows its arrowhead by the same step, up to a limit", () => {

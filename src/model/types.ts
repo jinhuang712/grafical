@@ -168,6 +168,19 @@ export interface Edge {
   weight?: string | number;
 }
 
+/**
+ * The legend's words (D42): per line style, and per line width, named by its level or,
+ * for a width in pixels, by its number written as a string.
+ */
+export type Legend = Partial<Record<LineStyleName, string>> & {
+  weights?: Record<string, string>;
+};
+
+/** How the legend names an edge's weight: its level, or its width in pixels as text (D42). */
+export function weightKey(w: string | number): string {
+  return typeof w === "number" ? String(w) : w;
+}
+
 export interface Diagram {
   /** The format version (D22). */
   grafical: number;
@@ -181,8 +194,8 @@ export interface Diagram {
   sizing?: "fixed";
   /** A built-in theme's name, or a stylesheet's path relative to the file (D30). Absent: the default theme. */
   style?: string;
-  /** The legend's wording per line style, where it differs from the default. */
-  legend?: Partial<Record<LineStyleName, string>>;
+  /** The legend's words, where they differ from the default (D42). */
+  legend?: Legend;
   /** Ordered top to bottom. */
   layers: Layer[];
   /** The systems, in creation order. Absent or empty: no groups. Members name their group (D7). */

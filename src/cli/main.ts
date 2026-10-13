@@ -671,12 +671,30 @@ function build(): Command {
   json(
     diagram
       .command("legend")
-      .description("name a line style in the legend; without --text, the default wording")
+      .description(
+        "name a line style or a line width in the legend; without --text, the default wording",
+      )
       .argument("<file>")
-      .argument("<style>", "how the lines look: solid, dashed, dotted or plain")
+      .argument("[style]", "how the lines look: solid, dashed, dotted or plain")
+      .option(
+        "--weight <weight>",
+        "a line width instead: thick, heavy, a stylesheet's level, or pixels",
+      )
       .option("--text <text>"),
-  ).action(async (file: string, style: string, opts: Opts) => {
-    await write(file, { op: "diagram.legend", style, ...pick(opts, ["text"]) }, opts);
+  ).action(async (file: string, style: string | undefined, opts: Opts) => {
+    const w = opts.weight;
+    // A number of pixels is a number, as in edge weight (D41).
+    const weight = typeof w === "string" && /^[0-9.]+$/.test(w) ? Number(w) : w;
+    await write(
+      file,
+      {
+        op: "diagram.legend",
+        ...(style === undefined ? {} : { style }),
+        ...(weight === undefined ? {} : { weight }),
+        ...pick(opts, ["text"]),
+      },
+      opts,
+    );
   });
   json(
     diagram

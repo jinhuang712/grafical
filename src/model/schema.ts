@@ -1,7 +1,7 @@
 // Validation of a diagram file (DESIGN.md D1, D5, D22).
 
 import { z } from "zod";
-import type { OpError } from "../errors.ts";
+import type { Facts, OpError } from "../errors.ts";
 import { WEIGHT_LEVEL, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
 import { checkEnds } from "./ends.ts";
@@ -135,6 +135,30 @@ const layerSchema = z.strictObject({
   nodes: z.array(nodeSchema).default([]),
 });
 
+/** A width in pixels, written as a legend's key (D42). */
+const WIDTH_KEY = /^[0-9]+(\.[0-9]+)?$/;
+
+/**
+ * What a legend may name as a weight (D42): a level other than thin, or a width in
+ * pixels within the limits. Returns the facts of a refusal, or undefined. `levels` are
+ * the levels the stylesheet has; whether a level exists is checked once it is read.
+ */
+export function legendWeightProblem(
+  key: string,
+  levels: readonly string[] = ["thick", "heavy"],
+): Facts | undefined {
+  const facts: Facts = {
+    allowed: levels.filter((l) => l !== "thin"),
+    min: WEIGHT_MIN,
+    max: WEIGHT_MAX,
+  };
+  if (WIDTH_KEY.test(key)) {
+    const w = Number(key);
+    return w >= WEIGHT_MIN && w <= WEIGHT_MAX ? undefined : facts;
+  }
+  return key !== "thin" && WEIGHT_LEVEL.test(key) ? undefined : facts;
+}
+
 /** An edge weight: a level name, or a width in pixels (D41). Whether the level exists is checked once the stylesheet is read. */
 export const weightValue = z.union([
   z.string().regex(WEIGHT_LEVEL, { message: "a level name like heavy" }),
@@ -166,6 +190,7 @@ export const diagramSchema = z.strictObject({
       dashed: text.optional(),
       dotted: text.optional(),
       plain: text.optional(),
+      weights: z.record(z.string(), text).optional(),
     })
     .optional(),
   layers: z.array(layerSchema).default([]),
@@ -217,6 +242,11 @@ function build(p: Parsed): Diagram {
       const text = p.legend[line];
       if (text !== undefined) legend[line] = text;
     }
+    // YAML may write a width as 2.50 or "2.50"; the legend names it as the edge's number does.
+    const weights = Object.entries(p.legend.weights ?? {}).map(
+      ([k, v]) => [WIDTH_KEY.test(k) ? String(Number(k)) : k, v] as const,
+    );
+    if (weights.length > 0) legend.weights = Object.fromEntries(weights);
     if (Object.keys(legend).length > 0) d.legend = legend;
   }
   if (p.subtitle !== undefined) d.subtitle = p.subtitle;
@@ -286,6 +316,12 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
         found: d.style,
         facts: { allowed: [...Object.keys(THEMES), `<name>${STYLESHEET_SUFFIX}`] },
       });
+    }
+  }
+  for (const key of Object.keys(d.legend?.weights ?? {})) {
+    const facts = legendWeightProblem(key);
+    if (facts !== undefined) {
+      errors.push({ code: "bad-value", index, field: "legend.weights", found: key, facts });
     }
   }
   let accents = 0;

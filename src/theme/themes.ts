@@ -268,7 +268,8 @@ export function parseStylesheet(text: string, ref: string): Theme | OpError[] {
 }
 
 /**
- * An error for each edge whose weight names a level the diagram's stylesheet lacks (D41).
+ * An error for each edge weight, and each width the legend names, that is a level the
+ * diagram's stylesheet lacks (D41, D42).
  * Run after the stylesheet is provided, because the file is read before its stylesheet.
  */
 export function unknownWeights(d: Diagram, index = 0): OpError[] {
@@ -285,5 +286,18 @@ export function unknownWeights(d: Diagram, index = 0): OpError[] {
       facts: { edge: e.id, near: closest(e.weight, allowed), allowed },
     });
   });
+  // The legend may name a level only the stylesheet has (D42).
+  for (const key of Object.keys(d.legend?.weights ?? {})) {
+    if (!WEIGHT_LEVEL.test(key) || key === "thin" || edgeWidth({ weight: key }, P) !== undefined) {
+      continue;
+    }
+    errors.push({
+      code: "unknown-weight",
+      index,
+      field: "legend.weights",
+      found: key,
+      facts: { near: closest(key, allowed), allowed },
+    });
+  }
   return errors;
 }

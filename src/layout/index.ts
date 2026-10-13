@@ -21,6 +21,7 @@ import {
   type EdgeKind,
   LINE_STYLES,
   type LineStyleName,
+  weightKey,
 } from "../model/types.ts";
 import type {
   PlacedText,
@@ -37,7 +38,7 @@ import type {
 } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { BAND, FRAME, GROUP, LANE, ROUTE, SPACING, type Spacing } from "../theme/geometry.ts";
-import { edgeWidth, lineStyle, type Paint } from "../theme/paint.ts";
+import { edgeWidth, lineStyle, type Paint, weightOf } from "../theme/paint.ts";
 import { isDot, textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
@@ -360,10 +361,21 @@ const LEGEND_WORDS: Record<EdgeKind, string> = {
   optional: "optional",
 };
 
-/** The legend's text for each line style the diagram uses (D8), in the diagram's wording if it sets one. */
-function legendItems(d: Diagram, P: Paint): { style: LineStyleName; text: string; main?: true }[] {
+interface LegendItem {
+  style: LineStyleName;
+  text: string;
+  /** A line width's entry: its sample's width (D42). */
+  width?: number;
+}
+
+/**
+ * The legend's entries (D8, D42): each line style the diagram uses, then each line
+ * width, from the thinnest. A width the diagram names has its own entry. The heavier
+ * ones it does not name share "main path", drawn at the thinnest of them (D41).
+ */
+function legendItems(d: Diagram, P: Paint): LegendItem[] {
   const kinds = new Set(d.edges.map((e) => e.kind));
-  const out: { style: LineStyleName; text: string; main?: true }[] = [];
+  const out: LegendItem[] = [];
   for (const style of LINE_STYLES) {
     const used = EDGE_KINDS.filter((k) => kinds.has(k) && lineStyle(k) === style);
     const first = used[0];
@@ -372,10 +384,23 @@ function legendItems(d: Diagram, P: Paint): { style: LineStyleName; text: string
     const plain = used.length > 1 ? "call or read" : LEGEND_WORDS[first];
     out.push({ style, text: d.legend?.[style] ?? plain });
   }
-  // Any edge heavier than thin is on the main path (D41).
-  if (d.edges.some((e) => (edgeWidth(e, P) ?? P.edge.strokeWidth) > P.edge.strokeWidth))
-    out.push({ style: "solid", text: "main path", main: true });
-  return out;
+  const widths = new Map<string, number>();
+  for (const e of d.edges) {
+    const w = weightOf(e);
+    const px = edgeWidth(e, P);
+    if (w !== undefined && w !== "thin" && px !== undefined) widths.set(weightKey(w), px);
+  }
+  const named: LegendItem[] = [];
+  let main: number | undefined;
+  for (const [key, px] of widths) {
+    const text = d.legend?.weights?.[key];
+    if (text !== undefined) named.push({ style: "solid", text, width: px });
+    else if (px > P.edge.strokeWidth) main = Math.min(main ?? px, px);
+  }
+  if (main !== undefined) named.push({ style: "solid", text: "main path", width: main });
+  // Sorting is stable: equal widths keep the order of the edges, and "main path" comes last.
+  named.sort((a, b) => (a.width ?? 0) - (b.width ?? 0));
+  return [...out, ...named];
 }
 
 /** Items, by width, in lines no wider than `room`. A line holds at least one item (D42). */
@@ -762,7 +787,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       if (it === undefined) continue;
       legend.push({
         style: it.style,
-        ...(it.main === true ? { main: true } : {}),
+        ...(it.width !== undefined ? { width: it.width } : {}),
         sample: { x1: x, x2: x + FRAME.legendSample, y: mid },
         label: placeLine(
           "legend",
@@ -1124,7 +1149,7 @@ function roundScene(s: Scene): Scene {
   if (s.legend !== undefined) {
     out.legend = s.legend.map((it) => ({
       style: it.style,
-      ...(it.main === true ? { main: true } : {}),
+      ...(it.width !== undefined ? { width: it.width } : {}),
       sample: { x1: round2(it.sample.x1), x2: round2(it.sample.x2), y: round2(it.sample.y) },
       label: roundText(it.label),
     }));

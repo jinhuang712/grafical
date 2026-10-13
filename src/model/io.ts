@@ -85,11 +85,14 @@ export function writeDiagram(d: Diagram): string {
   if (d.sizing === "fixed") out.sizing = "fixed";
   if (d.style !== undefined) out.style = d.style;
   if (d.legend !== undefined && Object.keys(d.legend).length > 0) {
-    const legend: Record<string, string> = {};
+    const legend: Record<string, unknown> = {};
     for (const line of LINE_STYLES) {
       const text = d.legend[line];
       if (text !== undefined) legend[line] = text;
     }
+    // Sorted, so the same words give the same file whatever order they were set in.
+    const weights = Object.entries(d.legend.weights ?? {}).sort(([a], [b]) => (a < b ? -1 : 1));
+    if (weights.length > 0) legend.weights = Object.fromEntries(weights);
     out.legend = legend;
   }
   out.layers = d.layers.map(layerOut);

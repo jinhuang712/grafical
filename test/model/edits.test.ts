@@ -217,7 +217,10 @@ describe("edges", () => {
       "pipelines->mongo",
       "service->mongo",
     ]);
-    expect(scene.legend?.at(-1)).toMatchObject({ main: true });
+    expect(scene.legend?.at(-1)).toMatchObject({
+      width: 2.5,
+      label: { runs: [{ text: "main path" }] },
+    });
     const off = ok(d, [{ op: "edge.emphasize", edges: ["service->mongo"], off: true }]);
     expect(edge(off, "service->mongo")?.accent).toBeUndefined();
     expect(fail(fx, [{ op: "edge.emphasize", edges: ["nope"] }])[0]).toMatchObject({
