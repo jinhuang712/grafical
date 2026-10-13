@@ -1,6 +1,7 @@
 // The legend's words (DESIGN.md D42): naming line widths, through the operation and the file.
 
 import { describe, expect, it } from "vitest";
+import { drawing, drawingText } from "../../src/check/drawing.ts";
 import type { OpError } from "../../src/errors.ts";
 import { layout } from "../../src/layout/index.ts";
 import { diffDiagrams } from "../../src/model/diff.ts";
@@ -218,6 +219,22 @@ describe("the legend leaves entries out (D42)", () => {
       code: "conflicting-fields",
       field: "mark,hide",
     });
+  });
+
+  it("show --drawn lists each entry the legend draws, in its order", () => {
+    const d = ok(marked, [
+      { op: "edge.weight", edges: ["pipelines->mongo"], weight: "thick" },
+      { op: "diagram.legend", weight: "thick", text: "writes" },
+      { op: "diagram.legend", mark: "P0", text: "paged at night" },
+      { op: "diagram.legend", style: "dashed", hide: true },
+    ]);
+    const dr = drawing(d, layout(d, m));
+    expect(dr.legend.slice(1)).toEqual([
+      { style: "solid", width: 2.5, mark: null, text: "writes" },
+      { style: null, width: null, mark: "P0", text: "paged at night" },
+    ]);
+    expect(dr.legend[0]).toMatchObject({ style: "solid", width: null, mark: null });
+    expect(drawingText(dr)).toContain('legend style=- width=- mark=P0 text="paged at night"');
   });
 
   it("a file's entry holds words or false", () => {

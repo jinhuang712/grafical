@@ -224,6 +224,7 @@ Good to know:
       group id= members= width= height=
       line id= from= to= leaves= enters= bends= length= direct= detour=
            skip= crosses= passes=
+      legend style= width= mark= text=   each entry the legend draws
     place counts from 1 at the row's left, and of is how many boxes the
     row holds. sides counts a box's lines by side, as top:1,bottom:2, and
     reach is their length together. direct is the shortest a line between

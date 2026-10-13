@@ -1,12 +1,14 @@
 // The drawing as discrete facts (DESIGN.md D37): for each box its row, its place in the
 // row, its size, its lines on each side and their length; for each line the sides it
 // leaves and enters, its bends, its length against the shortest it could be, the rows
-// between its ends, the lines it crosses and the rows it passes without connecting; and
-// totals. The coding agent judges the drawing from them; grafical judges nothing.
+// between its ends, the lines it crosses and the rows it passes without connecting; the
+// legend's entries; and totals. The coding agent judges the drawing from them; grafical
+// judges nothing.
 
 import { bendsOf, crossingsOf } from "../layout/index.ts";
 import { endRows } from "../model/ends.ts";
 import type { Diagram } from "../model/index.ts";
+import { markName } from "../model/types.ts";
 import { record } from "../records.ts";
 import type { Point, Rect, Scene } from "../scene.ts";
 
@@ -56,6 +58,17 @@ export interface DrawnGroup {
   height: number;
 }
 
+/** One entry the legend draws, in its order (D42): a line style, a line width or a mark. */
+export interface DrawnLegend {
+  /** The line style of a line's sample; null for a mark. */
+  style: string | null;
+  /** A line width's sample width in pixels; null for a thin line or a mark. */
+  width: number | null;
+  /** A mark's name: its emoji, text or file; null for a line. */
+  mark: string | null;
+  text: string;
+}
+
 export interface Counts {
   nodes: number;
   lines: number;
@@ -79,6 +92,7 @@ export interface Drawing {
   boxes: DrawnBox[];
   lines: DrawnLine[];
   groups: DrawnGroup[];
+  legend: DrawnLegend[];
 }
 
 /** The side of a box a line's end point lies on: the nearest one. */
@@ -250,6 +264,12 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
     boxes,
     lines,
     groups,
+    legend: (scene.legend ?? []).map((it) => ({
+      style: it.mark === undefined ? (it.style ?? null) : null,
+      width: it.width ?? null,
+      mark: it.mark === undefined ? null : markName(it.mark.mark),
+      text: it.label.runs.map((r) => r.text).join(""),
+    })),
   };
 }
 
@@ -276,11 +296,12 @@ export function deltaText(d: Record<string, number>): string {
   );
 }
 
-/** The whole drawing as records: the counts, then each box, group and line. */
+/** The whole drawing as records: the counts, then each box, group and line, then the legend. */
 export function drawingText(dr: Drawing): string {
   const out = [countsText(dr.counts)];
   for (const b of dr.boxes) out.push(record("box", { ...b }));
   for (const g of dr.groups) out.push(record("group", { ...g }));
   for (const l of dr.lines) out.push(record("line", { ...l }));
+  for (const x of dr.legend) out.push(record("legend", { ...x }));
   return `${out.join("\n")}\n`;
 }
