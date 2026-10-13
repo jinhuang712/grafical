@@ -681,7 +681,7 @@ Rejected:
 
 ### D42 The legend names line widths and marks, and may leave an entry out
 
-Decided by the owner on 2026-10-14. When the reference picture was redrawn with grafical alone, thick lines were used to mean "writes to a store". The legend could only call them "main path", so the emphasis was dropped. Asked whether an agent should name it, the owner answered "yes, the legend needs more flexibility", and chose, of three options, a legend that names everything in the picture that carries meaning.
+Decided by the owner on 2026-10-14. When the reference picture was redrawn with grafical alone, thick lines were used to mean "writes to a store". The legend could only call them "main path", so the emphasis was dropped. Asked whether an agent should name it, the owner answered "yes, the legend needs more flexibility", and chose, of three options, a legend that names everything in the picture that carries meaning. Built the same day.
 
 - **What it lists.** In order: each line style the diagram uses (D8, D33), each line width heavier than `thin`, and each mark the diagram names that a node carries (D40). The caller gives words only. Where the legend goes and how it wraps are the engine's (D2).
 - **Widths.** A width the diagram names gets its own entry, its sample drawn at that width. The widths it does not name share one entry, "main path", as in D41, drawn at the thinnest of them. A width is named by its level (`thick`, `heavy`, or a level the stylesheet adds), or by its number for an edge whose weight is a number of pixels. `thin` takes no name: the line styles' entries say what thin lines are. A width lighter than `thin` has an entry only when it is named. The entries go from the thinnest to the widest.
