@@ -38,8 +38,8 @@ A good diagram:
   - Merge only what has the same connections: a merged box claims every
     line of every part.
   - Draw each flow to its end, or leave it out.
-  - Keep labels short; detail (port, technology, count) goes in the
-    sublabel, not in extra boxes.
+  - Keep labels short. Detail (port, technology, count) goes in the
+    sublabel, not in extra boxes, and a sublabel holds one line.
   - Accent what the story is about. Name what each line style means in the
     legend: diagram legend <file> dashed --text event. Say what you left out
     in a note that starts "Not shown:".
@@ -271,8 +271,8 @@ Common mistakes:
 
 Limits:
   - At most ${MAX_ACCENTS} nodes carry --accent.
-  - A label or sublabel that does not fit the large box is refused
-    (overflow).
+  - A sublabel holds one line, and a label must fit the large box; longer
+    text is refused (overflow).
 
 See also: node merge, node kind, node describe, edge add
 
