@@ -41,3 +41,24 @@ Six more drafts of the public brief, after the refusals learned to say how to fi
 - **The lines were bad luck in three drafts.** The six new drafts average 2.8 problem lines, as the guide round's three did (3.0).
 - **The drafts are a little larger**, and none of the nine help drafts ran a hint.
 - **Writes are still refused often**, 11 of 25. Five of them were a sublabel that wrapped to a second line: the help said detail goes in the sublabel, but not that a sublabel holds one line, which the guide had said ("sublabels short"). Three were a node given its row's id, which the refusal now answers with a free id.
+
+## The help round again (`stage1 --part help2`, round `p1d-help2`)
+
+The same 33 tasks after the refusals learned to say how to fix the usual mistakes, the legend's field became `style`, and the help showed the legend call, how to name rows and that a sublabel holds one line. $0.29.
+
+| | `p1d-help` | `p1d-help2` |
+|---|---|---|
+| Writes refused | 45 of 157 (29%) | 24 of 117 (21%) |
+| Legend given an edge kind | 15 | 0 |
+| Sublabel on two lines | 4 | 1 |
+| Node given its row's id | 11 | 7 |
+| A kind guessed (start, process) | 0 | 3 |
+| Type conventions met | 63 of 63 | 57 of 63 |
+| Cost per type draft | $0.009 | $0.007 |
+| Problem lines, public brief | 17, 14, 6 | 4, 2, 5 |
+| Hints run | 0 | 2 of 22 shown |
+
+- **The fixes worked where they were read.** The legend mistake went, and the overflow nearly did.
+- **A node given its row's id fell, but stays.** All seven drafts had read the top page, which now says to name rows for what they hold; none repeated it after the refusal.
+- **The state machines lost their kinds.** The three order drafts read only the command groups' pages, not `node add --help`, where the kinds are listed; the top page said "an initial dot ... a final ring" without saying those are the kinds' names. They guessed `kind: start` first, were refused with the list of kinds, and settled on `terminal`, `state` and `service`. In the first help round all three had read `node add --help`, and all used `initial` and `final`.
+
