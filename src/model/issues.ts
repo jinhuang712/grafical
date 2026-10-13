@@ -98,7 +98,12 @@ export function issuesToErrors(
         ...base,
         found: show(found),
         expected: "a known value",
-        suggestion: field === "style" && leaf ? legendStyle(found, values) : allowed(values),
+        suggestion:
+          field === "style" && leaf
+            ? legendStyle(found, values)
+            : field === "kind" || field?.endsWith(".kind")
+              ? guessedKind(raw, path, found, values)
+              : allowed(values),
       });
     } else if (issue.message === ID_NODE || issue.message === ID_EDGE) {
       const text = issue.message === ID_NODE ? ID_PATTERN_TEXT : EDGE_ID_PATTERN_TEXT;
@@ -137,6 +142,49 @@ export function issuesToErrors(
     }
   }
   return out;
+}
+
+/** Kinds agents guess, and the kind each most likely means, for boxes and for lines. */
+const NODE_GUESS: Record<string, string> = {
+  start: "initial for a state machine's start dot, or terminal for a flowchart's Start",
+  end: "final for a state machine's end ring, or terminal for a flowchart's End",
+  process: "service",
+  step: "service",
+  task: "service",
+  app: "service",
+  database: "store",
+  db: "store",
+  cache: "store",
+  topic: "queue",
+  stream: "queue",
+  user: "actor",
+  person: "actor",
+  question: "decision",
+  condition: "decision",
+};
+const EDGE_GUESS: Record<string, string> = {
+  request: "call",
+  sync: "call",
+  message: "async",
+  event: "async",
+  flow: "data",
+  sometimes: "optional",
+  relation: "link",
+};
+
+function guessedKind(
+  raw: unknown,
+  path: readonly PropertyKey[],
+  found: unknown,
+  values: string[],
+): string {
+  const op = getPath(raw, ["op"]);
+  const lines = (typeof op === "string" && op.startsWith("edge.")) || path.includes("edges");
+  const guess =
+    typeof found === "string" ? (lines ? EDGE_GUESS : NODE_GUESS)[found.toLowerCase()] : undefined;
+  return guess === undefined
+    ? allowed(values)
+    : `${found} is not a kind; use ${guess}; ${allowed(values)}`;
 }
 
 /** Operation fields renamed for clarity, by `<op>.<old field>`, with their new name. */

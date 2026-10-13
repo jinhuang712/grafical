@@ -35,6 +35,23 @@ describe("refusals that say how to fix them", () => {
     expect(worded[0]?.suggestion).toContain("the wording goes in text");
   });
 
+  it("a guessed kind is answered with the kind it most likely means", () => {
+    const start = parseOp(
+      { op: "node.add", id: "s", layer: "l", label: "S", kind: "start" },
+      0,
+    ) as OpError[];
+    expect(start[0]?.suggestion).toContain(
+      "start is not a kind; use initial for a state machine's start dot, or terminal for a flowchart's Start; allowed: ",
+    );
+    const event = parseOp({ op: "edge.add", from: "a", to: "b", kind: "event" }, 0) as OpError[];
+    expect(event[0]?.suggestion).toContain("event is not a kind; use async; allowed: call");
+    const odd = parseOp(
+      { op: "node.add", id: "s", layer: "l", label: "S", kind: "blob" },
+      0,
+    ) as OpError[];
+    expect(odd[0]?.suggestion).toContain("allowed:");
+  });
+
   it("the legend's old field name line is refused with its new name", () => {
     const e = parseOp({ op: "diagram.legend", line: "dashed", text: "event" }, 0) as OpError[];
     const old = e.find((x) => x.code === "unknown-field");
@@ -343,7 +360,7 @@ describe("parsing operations", () => {
       [1, "missing-field", "layer"],
       [2, "unknown-field", "extra"],
     ]);
-    expect(r[0]?.suggestion).toBe(`allowed: ${NODE_KINDS.join(", ")}`);
+    expect(r[0]?.suggestion).toBe(`db is not a kind; use store; allowed: ${NODE_KINDS.join(", ")}`);
   });
   it("rejects a batch that is not a list, and coordinates", () => {
     expect((parseOps({ op: "x" }) as OpError[])[0]?.code).toBe("bad-batch");
