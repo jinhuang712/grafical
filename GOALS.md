@@ -4,7 +4,9 @@
 
 ## Goals for stage 1
 
-1. **The MVP bar.** Haiku, using only the command line, draws the private reference brief well enough to score at least 42 of 50 in blind judging, with zero mechanical defects. 42 is what the `diagram-design` skill scored with Opus and Sonnet on that brief on 2026-10-10.
+1. **The MVP bar.** Two parts, set by the owner on 2026-10-13 (PHILOSOPHY.md, "Easy and consistent, not right for every reader"):
+   - **The main bar: easy and consistent.** Haiku, using only the command line and its help, meets the targets of benchmarks 2 (iteration), 4 (stability), 5 (model gap), 6 (operation errors) and 11 (determinism and speed), with zero mechanical defects.
+   - **Beside it: the judged score.** Haiku draws the private reference brief well enough to score at least 42 of 50 in blind judging. 42 is what the `diagram-design` skill scored with Opus and Sonnet on that brief on 2026-10-10.
 2. A change costs one batch: it takes seconds, uses few tokens, and moves nothing beyond what DESIGN.md D10 allows.
 3. No output ever contains a mechanical defect.
 4. The diagram file is the whole truth: the same file gives the same picture, and changes can be reviewed in git.
