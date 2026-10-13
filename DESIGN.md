@@ -671,13 +671,32 @@ Decided by the owner on 2026-10-13, built the same day. D33 gave an edge one emp
 - **A width.** `edge weight` also takes a number of pixels, from 0.5 to 8. This reverses part of D33, which rejected free styles per edge. It reverses the width only. Colour and dash pattern stay with the kind (D8).
 - **The file.** An edge holds `weight: <level or number>`. A level is written as its name, a width as a number. `accent: true` on an edge stays valid and means `weight: thick` (D22: the format only grows). `edge emphasize` sets `accent` and clears `weight`. `edge weight` sets `weight` and clears `accent`, and without a weight, or at `thin`, it clears both. So grafical never writes both. When a hand-written file has both, `weight` wins.
 - **Arrowhead.** It grows with the width. At the `thin` width it is the thin arrowhead, at the `thick` width it is the main-path arrowhead, and past that it grows by the same step per pixel, up to a length of 12 px. A narrower edge than `thin` keeps the thin arrowhead.
-- **Legend.** The legend names "main path" when a diagram has an edge heavier than `thin`. The sample line is drawn at the `thick` width. D33's warning about too many main-path edges is not built, and D41 does not add it. More levels need it more, so it stays in the not-yet list below.
-- **Equal widths.** Two edges with the same width look the same, whatever their level names. The legend does not name levels.
+- **Legend.** The legend names "main path" when a diagram has an edge heavier than `thin`. The sample line is drawn at the `thick` width; since D42, at the thinnest width the entry stands for. D33's warning about too many main-path edges is not built, and D41 does not add it. More levels need it more, so it stays in the not-yet list below.
+- **Equal widths.** Two edges with the same width look the same, whatever their level names. The legend does not name levels. Changed by D42 on 2026-10-14: a diagram may name each width in the legend.
 
 Rejected:
 - Three fixed levels with fixed widths. The owner wants to retune them.
 - A numeric width only, with no names. The agent would pick a different number for every edge, and the reader would have to decode each one. The levels give the agent the choice D33 wanted. The number is there for the person who needs an exact width.
 - Raising the weight limit with the number of levels. Emphasis works because few edges have it.
+
+### D42 The legend names line widths and marks, and may leave an entry out
+
+Decided by the owner on 2026-10-14. When the reference picture was redrawn with grafical alone, thick lines were used to mean "writes to a store". The legend could only call them "main path", so the emphasis was dropped. Asked whether an agent should name it, the owner answered "yes, the legend needs more flexibility", and chose, of three options, a legend that names everything in the picture that carries meaning.
+
+- **What it lists.** In order: each line style the diagram uses (D8, D33), each line width heavier than `thin`, and each mark the diagram names that a node carries (D40). The caller gives words only. Where the legend goes and how it wraps are the engine's (D2).
+- **Widths.** A width the diagram names gets its own entry, its sample drawn at that width. The widths it does not name share one entry, "main path", as in D41, drawn at the thinnest of them. A width is named by its level (`thick`, `heavy`, or a level the stylesheet adds), or by its number for an edge whose weight is a number of pixels. `thin` takes no name: the line styles' entries say what thin lines are. A width lighter than `thin` has an entry only when it is named. The entries go from the thinnest to the widest.
+- **Marks.** A mark has an entry only when the diagram names it, because a mark with no words tells the reader nothing. It is named by what it shows: its emoji, its text or its file name. Marks with the same name share one entry, drawn like the first one found (rows top to bottom, nodes in order, slots in order). The sample is drawn at the small size, so every line of the legend has one height.
+- **Left out.** A line style or a width may be left out, for a meaning that needs no key. A mark is left out by not naming it.
+- **Names for what is not drawn.** A name for something the diagram does not draw is kept, and its entry shows once it is drawn, as a line style's wording always did. `show --drawn` lists the entries that are drawn.
+- **Wrapping.** The legend sits right of the title. When it is wider than the room there, it wraps into more lines below the first, each line starting at the same left edge. The room is the content's width, never less than the footnote's least width (D26), less the title and the gap beside it. A legend that fits stays on one line, as before. A subtitle starts below the legend's last line.
+- **The file.** `legend` keeps its four line-style keys, and each now holds words or `false` for left out. It gains `weights`, a map from a level or a width to words or `false`, and `marks`, a map from a mark to words. The format only grows (D22).
+- **The operation.** `diagram.legend` names one of `style`, `weight` or `mark`, with `text` for its words, `hide: true` to leave it out, or neither for the default. The command keeps `diagram legend <file> <style>`, and takes `--weight <w>` or `--mark <m>` in place of the style, with `--text` or `--hide`.
+
+Rejected:
+- Free entries, which the agent writes in its own order. It is the most flexible, but the legend could then list what is not drawn and leave out what is.
+- Lines and widths only. Marks would stay unexplained, and a mark's meaning is what a reader cannot guess.
+- A legend the caller places, at the bottom or the left. Placement is the engine's (D2).
+- Default words for each level, such as "heavy". A level's name is the stylesheet's word, not the reader's, so widths with no name keep D41's one "main path".
 
 ## Not yet decided
 
