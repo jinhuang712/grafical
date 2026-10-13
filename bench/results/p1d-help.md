@@ -93,3 +93,5 @@ The same 33 tasks after grafical's output became `key=value` records (DESIGN.md 
 - Type conventions met: no clear difference from 63 of 63.
 
 **The decision it drives:** if writes refused rise above 25% or recovery falls, find the fact that was lost and add it before anything else. Otherwise the records stay, and phase 1e moves on to flow direction.
+
+**Stopped, not analysed.** The owner stopped the round after 7 of the 33 drafts ($0.11): a change to the output's form is not big enough for a paid round. Rounds wait for a big update, such as a new feature, and the owner agrees to each one first. The seven drafts are kept in the run's folder, outside git.
