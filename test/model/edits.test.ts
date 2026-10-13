@@ -44,7 +44,7 @@ describe("diagram settings", () => {
     const d = ok(fx, [
       { op: "diagram.title", text: "New title" },
       { op: "diagram.density", density: "compact" },
-      { op: "diagram.legend", line: "dashed", text: "Kafka message" },
+      { op: "diagram.legend", style: "dashed", text: "Kafka message" },
     ]);
     expect(d).toMatchObject({ title: "New title", density: "compact" });
     expect(d.legend).toEqual({ dashed: "Kafka message" });
@@ -54,7 +54,7 @@ describe("diagram settings", () => {
     roundTrips(d);
     const legend = layout(d, m).legend?.map((it) => it.label.runs.map((r) => r.text).join(""));
     expect(legend).toContain("Kafka message");
-    const cleared = ok(d, [{ op: "diagram.legend", line: "dashed" }]);
+    const cleared = ok(d, [{ op: "diagram.legend", style: "dashed" }]);
     expect(cleared.legend).toBeUndefined();
   });
 
@@ -286,7 +286,7 @@ describe("parsing", () => {
     const items = [
       { op: "diagram.title", text: "T" },
       { op: "diagram.density", density: "airy" },
-      { op: "diagram.legend", line: "solid", text: "HTTP" },
+      { op: "diagram.legend", style: "solid", text: "HTTP" },
       { op: "diagram.tidy" },
       { op: "layer.rename", id: "a", label: "A" },
       { op: "layer.move", id: "a", last: true },
@@ -312,7 +312,7 @@ describe("parsing", () => {
       const parsed = parseOp(item, k);
       expect(Array.isArray(parsed), JSON.stringify(item)).toBe(false);
     }
-    expect((parseOp({ op: "diagram.legend", line: "wavy" }, 0) as OpError[])[0]?.code).toBe(
+    expect((parseOp({ op: "diagram.legend", style: "wavy" }, 0) as OpError[])[0]?.code).toBe(
       "bad-value",
     );
   });

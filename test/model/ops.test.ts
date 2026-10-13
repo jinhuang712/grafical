@@ -28,11 +28,17 @@ function fail(d: Diagram | null, ops: Op[]): OpError[] {
 
 describe("refusals that say how to fix them", () => {
   it("an edge kind given as a legend's line names the look it is drawn in", () => {
-    const e = parseOp({ op: "diagram.legend", line: "async", text: "event" }, 0) as OpError[];
-    expect(e[0]).toMatchObject({ code: "bad-value", field: "line" });
-    expect(e[0]?.suggestion).toContain("async lines are dashed: line: dashed");
-    const worded = parseOp({ op: "diagram.legend", line: "solid: request" }, 0) as OpError[];
+    const e = parseOp({ op: "diagram.legend", style: "async", text: "event" }, 0) as OpError[];
+    expect(e[0]).toMatchObject({ code: "bad-value", field: "style" });
+    expect(e[0]?.suggestion).toContain("async lines are dashed: style: dashed");
+    const worded = parseOp({ op: "diagram.legend", style: "solid: request" }, 0) as OpError[];
     expect(worded[0]?.suggestion).toContain("the wording goes in text");
+  });
+
+  it("the legend's old field name line is refused with its new name", () => {
+    const e = parseOp({ op: "diagram.legend", line: "dashed", text: "event" }, 0) as OpError[];
+    const old = e.find((x) => x.code === "unknown-field");
+    expect(old?.suggestion).toBe("line is now called style: style: dashed");
   });
 
   it("text cut at a comma is named as such, and other fields come from the operation", () => {

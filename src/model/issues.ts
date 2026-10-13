@@ -69,21 +69,25 @@ export function issuesToErrors(
       for (const key of keys) {
         const f = leaf ? key : fieldName([...path, key]);
         const near = closest(key, known, 2);
+        const value = getPath(raw, [...path, key]);
+        const renamed = leaf ? RENAMED[`${String(getPath(raw, ["op"]))}.${key}`] : undefined;
         // YAML ends unquoted text at a comma or a colon, and the rest becomes a key.
-        const cut = getPath(raw, [...path, key]) === null || /\s/.test(key);
+        const cut = value === null || /\s/.test(key);
         out.push({
           code: "unknown-field",
           index,
           field: f,
           found: key,
           expected: known.length ? `one of: ${known.join(", ")}` : "no extra fields",
-          ...(cut
-            ? {
-                suggestion: `${key} looks like the rest of a text cut at a comma or a colon; quote the whole text, such as sublabel: "validate, dedupe"`,
-              }
-            : near.length
-              ? { suggestion: `did you mean: ${near.join(", ")}` }
-              : {}),
+          ...(renamed !== undefined
+            ? { suggestion: `${key} is now called ${renamed}: ${renamed}: ${show(value)}` }
+            : cut
+              ? {
+                  suggestion: `${key} looks like the rest of a text cut at a comma or a colon; quote the whole text, such as sublabel: "validate, dedupe"`,
+                }
+              : near.length
+                ? { suggestion: `did you mean: ${near.join(", ")}` }
+                : {}),
         });
       }
     } else if (issue.code === "invalid_value") {
@@ -94,7 +98,7 @@ export function issuesToErrors(
         ...base,
         found: show(found),
         expected: "a known value",
-        suggestion: field === "line" ? legendLine(found, values) : allowed(values),
+        suggestion: field === "style" && leaf ? legendStyle(found, values) : allowed(values),
       });
     } else if (issue.message === ID_NODE || issue.message === ID_EDGE) {
       const text = issue.message === ID_NODE ? ID_PATTERN_TEXT : EDGE_ID_PATTERN_TEXT;
@@ -135,16 +139,20 @@ export function issuesToErrors(
   return out;
 }
 
+/** Operation fields renamed for clarity, by `<op>.<old field>`, with their new name. */
+const RENAMED: Record<string, string> = { "diagram.legend.line": "style" };
+
 /**
- * A legend's line given as an edge kind, or with its wording: the legend names how lines
+ * A legend's style given as an edge kind, or with its wording: the legend names how lines
  * look, so say which look the kind is drawn in, or where the wording goes.
  */
-function legendLine(found: unknown, values: string[]): string {
+function legendStyle(found: unknown, values: string[]): string {
+  if (found === undefined) return allowed(values);
   if (typeof found === "string" && (EDGE_KINDS as readonly string[]).includes(found)) {
     const style = lineStyle(found as EdgeKind);
-    return `${found} is an edge kind; the legend names how lines look, and ${found} lines are ${style}: line: ${style}`;
+    return `${found} is an edge kind; the legend names how lines look, and ${found} lines are ${style}: style: ${style}`;
   }
-  return `${allowed(values)}; the wording goes in text, such as {op: diagram.legend, line: dashed, text: event}`;
+  return `${allowed(values)}; the wording goes in text, such as {op: diagram.legend, style: dashed, text: event}`;
 }
 
 // The set of known keys of the object at `path`, found by its shape.

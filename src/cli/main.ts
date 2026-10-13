@@ -609,10 +609,10 @@ function build(): Command {
       .command("legend")
       .description("name a line style in the legend; without --text, the default wording")
       .argument("<file>")
-      .argument("<line>", "solid, dashed, dotted or plain")
+      .argument("<style>", "how the lines look: solid, dashed, dotted or plain")
       .option("--text <text>"),
-  ).action(async (file: string, line: string, opts: Opts) => {
-    await write(file, { op: "diagram.legend", line, ...pick(opts, ["text"]) }, opts);
+  ).action(async (file: string, style: string, opts: Opts) => {
+    await write(file, { op: "diagram.legend", style, ...pick(opts, ["text"]) }, opts);
   });
   json(
     diagram

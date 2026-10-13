@@ -155,7 +155,8 @@ export interface DiagramDensityOp {
 /** The legend's text for one line style. Absent text: the default wording. */
 export interface DiagramLegendOp {
   op: "diagram.legend";
-  line: LineStyleName;
+  /** How the lines look. Named line until 2026-10-13 (D36). */
+  style: LineStyleName;
   text?: string;
 }
 /** Reorders every layer once, to untangle lines (D24). */
@@ -469,7 +470,7 @@ export const diagramDensitySchema = z.strictObject({
 });
 export const diagramLegendSchema = z.strictObject({
   op: z.literal("diagram.legend"),
-  line: z.enum(LINE_STYLES),
+  style: z.enum(LINE_STYLES),
   text: text.optional(),
 });
 export const diagramTidySchema = z.strictObject({ op: z.literal("diagram.tidy") });

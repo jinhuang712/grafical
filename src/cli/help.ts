@@ -145,7 +145,7 @@ Batch file:
     group.leave       nodes up
     lane.add          id label members                 (a list)
     edge.emphasize    edges off                        (a list)
-    diagram.legend    line text       (line: solid, dashed, dotted or plain)
+    diagram.legend    style text      (style: solid, dashed, dotted or plain)
     diagram.subtitle  text; diagram.note text           (no text clears it)
   Every other command works too, its arguments named as in its help:
   node.swap a b, node.merge id nodes label, layer.split id into label from.

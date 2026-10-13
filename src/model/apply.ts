@@ -990,8 +990,8 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       return [];
     case "diagram.legend": {
       const legend = { ...(d.legend ?? {}) };
-      if (op.text === undefined) delete legend[op.line];
-      else legend[op.line] = op.text;
+      if (op.text === undefined) delete legend[op.style];
+      else legend[op.style] = op.text;
       if (Object.keys(legend).length > 0) d.legend = legend;
       else delete d.legend;
       touch(s, "legend");

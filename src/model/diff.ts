@@ -124,7 +124,9 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     const text = a.legend?.[line];
     if (text === b.legend?.[line]) continue;
     ops.push(
-      text === undefined ? { op: "diagram.legend", line } : { op: "diagram.legend", line, text },
+      text === undefined
+        ? { op: "diagram.legend", style: line }
+        : { op: "diagram.legend", style: line, text },
     );
   }
 
