@@ -287,6 +287,16 @@ describe("read commands", () => {
     expect(readFileSync(join(dir, "single.svg"), "utf8").startsWith("<svg")).toBe(true);
   });
 
+  it("show --drawn prints the drawing as facts and counts (D37)", () => {
+    const r = run("show", "single.grafical.yaml", "--drawn");
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/^counts: nodes \d+, lines \d+, crossings \d+/);
+    expect(r.out).toMatch(/^box api: row \S+, place \d+ of \d+/m);
+    expect(r.out).toMatch(/^line api->db: leaves \w+, enters \w+, bends \d+, length \d+ px/m);
+    const json = JSON.parse(run("show", "single.grafical.yaml", "--drawn", "--json").out);
+    expect(json.drawing.counts.nodes).toBeGreaterThan(0);
+  });
+
   it("render with one flag writes only that file", () => {
     const r = run("render", "single.grafical.yaml", "--png", "only.png", "--scale", "1");
     expect(r.code).toBe(0);

@@ -182,28 +182,21 @@ export interface LineTrouble {
   bent: { edge: string; bends: number }[];
 }
 
-/** The pairs of lines that cross, and the lines that bend more than twice (D35). */
-export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
-  const { scene } = compute(diagram, m, false);
-  const bent: { edge: string; bends: number }[] = [];
-  const pairs = new Set<string>();
-  let points = 0;
+/** Every point where two routes cross, and the pairs of lines, each pair once, in id order. */
+export function crossingsOf(edges: SceneEdge[]): { points: number; pairs: [string, string][] } {
   const segs: { id: string; v: boolean; at: number; lo: number; hi: number }[] = [];
-  for (const e of scene.edges) {
-    let bends = 0;
+  for (const e of edges) {
     for (let i = 1; i < e.points.length; i++) {
       const a = e.points[i - 1] as Point;
       const b = e.points[i] as Point;
-      const c = e.points[i + 1];
-      if (c !== undefined && !((a.x === b.x && b.x === c.x) || (a.y === b.y && b.y === c.y)))
-        bends++;
       if (a.x === b.x)
         segs.push({ id: e.id, v: true, at: a.x, lo: Math.min(a.y, b.y), hi: Math.max(a.y, b.y) });
       else if (a.y === b.y)
         segs.push({ id: e.id, v: false, at: a.y, lo: Math.min(a.x, b.x), hi: Math.max(a.x, b.x) });
     }
-    if (bends > 2) bent.push({ edge: e.id, bends });
   }
+  let points = 0;
+  const pairs = new Set<string>();
   for (const h of segs) {
     if (h.v) continue;
     for (const v of segs) {
@@ -217,11 +210,33 @@ export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
   const byId = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
   return {
     points,
-    crossings: [...pairs]
+    pairs: [...pairs]
       .map((p) => JSON.parse(p) as [string, string])
       .sort((a, b) => byId(a[0], b[0]) || byId(a[1], b[1])),
-    bent: bent.sort((a, b) => byId(a.edge, b.edge)),
   };
+}
+
+/** The turns of an orthogonal route. */
+export function bendsOf(points: Point[]): number {
+  let bends = 0;
+  for (let i = 1; i + 1 < points.length; i++) {
+    const a = points[i - 1] as Point;
+    const b = points[i] as Point;
+    const c = points[i + 1] as Point;
+    if (!((a.x === b.x && b.x === c.x) || (a.y === b.y && b.y === c.y))) bends++;
+  }
+  return bends;
+}
+
+/** The pairs of lines that cross, and the lines that bend more than twice (D35). */
+export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
+  const { scene } = compute(diagram, m, false);
+  const { points, pairs } = crossingsOf(scene.edges);
+  const bent = scene.edges
+    .map((e) => ({ edge: e.id, bends: bendsOf(e.points) }))
+    .filter((b) => b.bends > 2)
+    .sort((a, b) => (a.edge < b.edge ? -1 : a.edge > b.edge ? 1 : 0));
+  return { points, crossings: pairs, bent };
 }
 
 /** The edges whose routes cross another route, or bend more than twice (D25 rules 2 and 3). */

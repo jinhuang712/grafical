@@ -20,7 +20,8 @@ How to work:
   2. Write all rows, nodes, groups and edges in one batch file, then
      grafical apply <file> batch.yaml            (grafical apply --help)
      Rows and boxes share one set of ids, so give rows ids like row-users.
-  3. grafical render <file>, and look at the PNG.
+  3. grafical render <file> and look at the PNG, or read
+     grafical show <file> --drawn.
   4. Fix with single commands. When the output shows lines: and hint:,
      weigh each hint and run the ones that keep your rows' meaning.
   Never edit the file by hand. A refused change leaves the file untouched:
@@ -211,6 +212,14 @@ Good to know:
   show: {
     about: `Print a compact view of the diagram: rows, nodes in order, groups, lanes and
 edges, in the words of the operations. Read it instead of the file.`,
+    after: `
+Good to know:
+  - --drawn prints how it is drawn, one fact per line: for each box its row,
+    its place in the row, its size and its lines by side; for each line the
+    sides it leaves and enters, its bends, its length, the lines it crosses
+    and the rows it passes; and the totals. Judge the drawing from it, and
+    change what you decide to change.
+`,
   },
 
   check: {

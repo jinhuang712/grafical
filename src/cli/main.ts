@@ -7,6 +7,7 @@ import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
 import { advise } from "../check/advice.ts";
+import { drawing, drawingText } from "../check/drawing.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import type { Op } from "../model/ops.ts";
@@ -662,11 +663,20 @@ function build(): Command {
   });
 
   json(
-    program.command("show").description("print a compact view of a diagram").argument("<file>"),
-  ).action((file: string, opts: Opts) => {
+    program
+      .command("show")
+      .description("print a compact view of a diagram")
+      .argument("<file>")
+      .option("--drawn", "how it is drawn: each box, line and group, as facts and counts"),
+  ).action(async (file: string, opts: Opts) => {
     const d = loadDiagram(file);
     if (isReport(d)) {
       process.exitCode = emit(d, opts.json === true);
+    } else if (opts.drawn === true) {
+      const dr = drawing(d, layout(d, await createMeasurer()));
+      process.stdout.write(
+        opts.json === true ? `${JSON.stringify({ ok: true, drawing: dr })}\n` : drawingText(dr),
+      );
     } else if (opts.json === true) {
       process.stdout.write(`${JSON.stringify({ ok: true, diagram: d })}\n`);
     } else {
