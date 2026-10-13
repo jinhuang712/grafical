@@ -27,3 +27,17 @@ After `grafical guide` was removed (DESIGN.md D36), this round asks whether an a
 - **The legend and the main path were set less often** (27 of 42 against 38): their per-type wording lives on `diagram legend --help` and `edge emphasize --help`, which few drafts opened.
 - **Reading costs.** About ten pages before the first write make a type draft half as dear again.
 - **The public brief drew worse**, in three drafts, so not settled. In the worst, a message row sits between the services and the store they share, and the outside services sit below the store, so lines cross rows they do not connect (13 crossings). grafical offered a move that takes the crossings from 13 to 3; no draft in this round ran a hint. The 25-component drafts drew as before.
+
+## The public brief again, six drafts (`stage1 --part brief`, round `p1d-brief`)
+
+Six more drafts of the public brief, after the refusals learned to say how to fix the usual mistakes (and before the legend's field became `style`), $0.10:
+
+| | Guides (3) | Help, first three | Help, six more |
+|---|---|---|---|
+| Problem lines | 8, 1, 0 | 17, 14, 6 | 2, 0, 4, 4, 4, 3 |
+| Nodes | 13 to 15 | 15 to 19 | 15 to 20 |
+| Hints run | 1 of 14 shown | 0 of 12 | 0 of 17 |
+
+- **The lines were bad luck in three drafts.** The six new drafts average 2.8 problem lines, as the guide round's three did (3.0).
+- **The drafts are a little larger**, and none of the nine help drafts ran a hint.
+- **Writes are still refused often**, 11 of 25. Five of them were a sublabel that wrapped to a second line: the help said detail goes in the sublabel, but not that a sublabel holds one line, which the guide had said ("sublabels short"). Three were a node given its row's id, which the refusal now answers with a free id.
