@@ -62,3 +62,22 @@ The same 33 tasks after the refusals learned to say how to fix the usual mistake
 - **A node given its row's id fell, but stays.** All seven drafts had read the top page, which now says to name rows for what they hold; none repeated it after the refusal.
 - **The state machines lost their kinds.** The three order drafts read only the command groups' pages, not `node add --help`, where the kinds are listed; the top page said "an initial dot ... a final ring" without saying those are the kinds' names. They guessed `kind: start` first, were refused with the list of kinds, and settled on `terminal`, `state` and `service`. In the first help round all three had read `node add --help`, and all used `initial` and `final`.
 
+## A third time (`stage1 --part help3`, round `p1d-help3`)
+
+After `grafical --help` named the kinds ("kind initial for the start dot"), rows took ids like `row-users` in the example and the rules, a guessed kind was answered with the likely one, and hints tried rows and hubs, safe ones first, each naming the lines it untangles (DESIGN.md D35). $0.35.
+
+| | `p1d-help2` | `p1d-help3` |
+|---|---|---|
+| Type conventions met | 57 of 63 | 63 of 63 |
+| Node given its row's id | 7 | 0 |
+| Writes refused | 24 of 117 (21%) | 26 of 141 (18%) |
+| Drafts that ran a hint | 1 of 6 shown one | 4 of 8 |
+| Problem lines, mean of all drafts | 1.64 | 1.48 |
+| Help pages read, per type draft | 8.7 | 11.7 |
+| Cost per type draft | $0.007 | $0.009 |
+
+- **Naming the kinds on the first page brought them back**, and an id pattern to copy ended the row-id clash: two rules agents had read and broken, fixed by saying them where and how agents copy.
+- **More agents ran hints**, though most hints shown still went unrun. Replayed offline, an agent that takes every safe hint gains little on these drafts (1.64 to 1.48 problem lines with no try limit): what is left needs a row reordered or a box moved among other kinds, which the agent must judge.
+- **What is still refused:** a line style given as an edge's kind (`kind: dashed`, three times), the mirror of the old legend mistake; a sublabel too long for one line (three, all on the public brief), though the help says it holds one line, without saying how long that is; text cut at a comma (four); `--png` with no path (three, as in every round); and seven failures of the agents' own `sed` scripts on their batch files.
+- **Reading costs more.** Agents read three more pages a draft. The command list on the first page names each group (`node`: "boxes") without its commands, so an agent opens `grafical node --help` to find `node add`.
+
