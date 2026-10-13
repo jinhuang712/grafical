@@ -74,6 +74,7 @@ Added by the owner on 2026-10-13, after the help rounds showed that tidy lines (
 - **Guides, not a grid:** columns, a second placement fact beside rows. A box may follow a row, a column, both or neither; one with neither sits near what it connects to. A design decision first, and a prototype on three hard pictures (the private reference brief, the public brief and photo sharing), because placement must stay stable (D10) and deterministic (D15).
 - **Bundled fan-outs:** lines from one box to several others leave as one line and split near their targets, with a dot at the split.
 - **Then, as facts the agent states:** the flow's direction (down or right), dividers and walls between parts of a picture (a wall lets lines cross only through a named gate), and notes attached to a box, line or group.
+- **The full list, with the order the owner agreed** (FEATURES.md, "Phase 1e"): bundled fan-outs with equal heights in a row and room around stores first, then the rest. Each stays only if it measurably helps.
 
 Exit check: the MVP bar in both its parts (GOALS.md, goal 1) measured again.
 

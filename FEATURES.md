@@ -284,6 +284,21 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | Built-in themes `default`, `dark` and `print`, and stylesheet files (D30) | done |
 | Brand fonts | later |
 
+## Phase 1e: chosen by the owner on 2026-10-13
+
+Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed when it is built. The test each passed: a fact the agent states or the engine's own behavior, never a coordinate; easier or more consistent; no choice the agent does not need (PHILOSOPHY.md).
+
+| Feature | Does | Status |
+|---|---|---|
+| Bundled fan-outs | Lines from one box to several others leave as one line and split near their targets, with a dot at the split. The engine's behavior: nothing for the agent to state | stage 1 |
+| Equal heights in a row | Every box in a row takes the height of the row's tallest, so their tops line up | stage 1 |
+| Room around stores | Lines keep a clearance from a store's cylinder, as from a box | stage 1 |
+| Flow direction | `down` (as now) or `right`: rows become columns of the flow, left to right. One diagram fact | stage 1 |
+| Dividers and walls | A labelled line between parts of a picture ("trust boundary"); a wall also lets lines cross only through a named gate node | stage 1 |
+| Notes | A short text attached to a box, a line or a group, placed by the engine | stage 1 |
+| Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in, so two agents that state the same facts get the same picture. Needs a decision first, since it touches stability (D10) and slot choice (D24) | stage 1 |
+| Columns | An optional second placement fact beside rows: every box of a column sits left of every box of the next; a box in no column settles near what it connects to. Prototyped 2026-10-13 | stage 1 |
+
 ## Stage 2: the board
 
 | Feature | Status |
@@ -301,3 +316,19 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | Diagram types that need a layout of their own: sequence, entity-relationship and class, mind map, timeline (D34) | later |
 | Import from Mermaid, draw.io and Excalidraw | later |
 | An MCP server | later |
+| Numbered steps along the main flow | later |
+| Views: one file, several pictures of parts of it, a group drawn folded into one box | later |
+| One catalog of systems shared by many diagrams | later |
+
+## Considered and dropped, 2026-10-13
+
+| Feature | Why |
+|---|---|
+| Docking to an edge, relative placement ("beside", "between") | Columns and drift cover them; a second way to say one thing is one more choice |
+| Gaps between sections | Spacing is the engine's |
+| Zones, section titles | Dividers and groups cover them |
+| Ports, end labels, tags | Choices with little gain for architecture diagrams; a sublabel holds a port |
+| Icons | More kinds a weak model can get wrong (D29) |
+| Patterns, one operation for a common structure | Shorthand for content; the help's examples teach the structures |
+| A declared diagram type that checks its conventions | grafical would judge content (D37) |
+| A score of how readable a picture is | Readers differ (PHILOSOPHY.md) |
