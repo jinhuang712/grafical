@@ -97,7 +97,7 @@ describe("grouped diagrams", () => {
     expect(run("show", f).out).toContain(
       'lane desk "Order desk team" (columns): gateway, checkout',
     );
-    const mixed = run("lane", "join", f, "desk", "store");
+    const mixed = run("lane", "join", f, "desk", "row-store");
     expect(mixed.code).toBe(1);
     expect(mixed.out).toContain("lane-mixed");
     expect(run("lane", "leave", f, "order-desk").code).toBe(0);

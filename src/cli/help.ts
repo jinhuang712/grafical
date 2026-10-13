@@ -19,7 +19,7 @@ How to work:
   1. grafical new <file> --title <text> --subtitle <text> --note <text>
   2. Write all rows, nodes, groups and edges in one batch file, then
      grafical apply <file> batch.yaml            (grafical apply --help)
-     Name rows for what they hold, so that no row shares a box's id.
+     Rows and boxes share one set of ids, so give rows ids like row-users.
   3. grafical render <file>, and look at the PNG.
   4. Fix with single commands. When the output shows lines: and hint:,
      weigh each hint and run the ones that keep your rows' meaning.
@@ -50,10 +50,11 @@ Diagram types:
   c4             people are actor, other systems external, technology in
                  the sublabel; one group around the system's containers;
                  label every line with what its source does
-  flowchart      a row per step; terminal for Start and End, decision for
-                 a question; label each answer and nothing else
-  state machine  an initial dot, state boxes, a final ring; label every
-                 transition with its event
+  flowchart      a row per step; kind terminal for Start and End, kind
+                 decision for a question; label each answer, nothing else
+  state machine  kind initial for the start dot and kind final for the end
+                 ring (neither draws its label), kind state for the rest;
+                 label every transition with its event
   swimlane       lanes, only when who does what is the story
   cloud          region, network and subnet as groups inside groups; users
                  and the way in on top, data at the bottom
@@ -78,16 +79,16 @@ Run grafical <command> --help for its options and what to know about it.
 
 /** The example of `grafical apply --help`, which the tests build and check. */
 export const EXAMPLE_NEW = `grafical new orders.grafical.yaml --title "Order desk and shipping" --subtitle "Two services coupled only by the shared orders database." --note "Not shown: payment retries, admin tools."`;
-export const EXAMPLE_BATCH = `- {op: layer.add, id: callers, label: Callers}
-- {op: layer.add, id: entry, label: Entry}
-- {op: layer.add, id: core, label: Core}
-- {op: layer.add, id: store, label: Store}
-- {op: node.add, id: shoppers, layer: callers, label: Shoppers, sublabel: "web, mobile", kind: actor}
-- {op: node.add, id: gateway, layer: entry, label: API gateway, sublabel: "REST, :8080"}
-- {op: node.add, id: checkout, layer: core, label: checkout, sublabel: "validate, price"}
-- {op: node.add, id: events, layer: core, label: order topics, sublabel: 3 broker topics, kind: queue}
-- {op: node.add, id: dispatcher, layer: core, label: dispatcher, sublabel: one per carrier}
-- {op: node.add, id: orders-db, layer: store, label: Orders DB, sublabel: "orders, parcels", kind: store, accent: true}
+export const EXAMPLE_BATCH = `- {op: layer.add, id: row-callers, label: Callers}
+- {op: layer.add, id: row-entry, label: Entry}
+- {op: layer.add, id: row-core, label: Core}
+- {op: layer.add, id: row-store, label: Store}
+- {op: node.add, id: shoppers, layer: row-callers, label: Shoppers, sublabel: "web, mobile", kind: actor}
+- {op: node.add, id: gateway, layer: row-entry, label: API gateway, sublabel: "REST, :8080"}
+- {op: node.add, id: checkout, layer: row-core, label: checkout, sublabel: "validate, price"}
+- {op: node.add, id: events, layer: row-core, label: order topics, sublabel: 3 broker topics, kind: queue}
+- {op: node.add, id: dispatcher, layer: row-core, label: dispatcher, sublabel: one per carrier}
+- {op: node.add, id: orders-db, layer: row-store, label: Orders DB, sublabel: "orders, parcels", kind: store, accent: true}
 - {op: group.add, id: order-desk, label: order-desk, nodes: [gateway, checkout]}
 - {op: group.add, id: shipping, label: shipping, nodes: [events, dispatcher]}
 - {op: edge.add, from: shoppers, to: gateway}
@@ -222,7 +223,7 @@ Good to know:
   - Rows run top to bottom the way a request or a process moves.
   - Name a row by what it holds ("Entry", "Stores").
   - A row is drawn as a labelled band only when an edge ends at it.
-  - Its id cannot be a node's id too: row users, node web-users.
+  - Rows and boxes share one set of ids: give rows ids like row-users.
 
 See also: layer move, layer split, node add
 `,
@@ -264,7 +265,8 @@ Good to know:
   - Give a position only when order matters.
 
 Common mistakes:
-  - Giving a node its row's id: ids are unique across everything.
+  - Giving a node its row's id: rows and boxes share one set of ids, so
+    rows take ids like row-users.
   - Start and End of a flowchart as initial and final: their labels vanish.
     Use terminal.
   - In a batch file, a sublabel with a comma unquoted.
@@ -277,7 +279,7 @@ Limits:
 See also: node merge, node kind, node describe, edge add
 
 Example:
-  grafical node add shop.grafical.yaml orders-db --layer store \\
+  grafical node add shop.grafical.yaml orders-db --layer row-store \\
     --label "Orders DB" --kind store --sublabel Postgres --accent
 `,
   },
