@@ -71,9 +71,9 @@ Diagram types:
   The help of node add, edge add, group add and lane add says more.
 
 When refused:
-  The command prints "failed, file unchanged" and one line per problem,
-  starting "error op" (a fact is wrong) or "defect" (the picture would be
-  wrong). Each line says how to fix it. Exit codes: 0 done, 1 refused, 2 a
+  The command prints "failed changed=-" and a record per problem: "error"
+  (a fact is wrong) or "defect" (the picture would be wrong), each with
+  what to fix. The file is untouched. Exit codes: 0 done, 1 refused, 2 a
   usage error. grafical apply --help lists the codes.
 
 Run grafical <command> --help for its options and what to know about it.
@@ -161,7 +161,7 @@ Good to know:
     rows, nodes, groups, lanes and edges: a node cannot share its row's id.
 
 Output:
-  ok changed: <ids>          the change is written
+  ok changed=<ids>           the change is written
   counts nodes= lines= crossings= bends= length= width= height= fullest=
          busiest= longest= passing=
     length is every line's length together, in pixels. fullest is the row
@@ -173,13 +173,15 @@ Output:
   --json prints the same as one JSON object, under the same names.
 
 When refused:
-  failed, file unchanged, then one line per problem:
-  error op <index> <code> <field>: found <value>; expected <what>; <suggestion>
+  failed changed=-, the file untouched, then a record per problem:
+  error op=<index> code=<code> field=<field> found=<value> expected=<what>
+        suggestion=<how>
     unknown-node, -layer, -group, -lane, -edge: the suggestion names the
     closest ids. duplicate-id, bad-id, bad-type, bad-value, missing-field,
     unknown-field, unknown-op: the item is malformed. Others: follow the
     suggestion.
-  defect <code> [<elements>]: found <what>; expected <what>; fix: <operation>
+  defect code=<code> owner=agent elements=<ids> found=<what> expected=<what>
+         fix=<operation>
     overflow: a label is too long for its box; shorten it, or move detail
     to the sublabel. missing-glyph: a character cannot be drawn; replace it.
     Where lines and boxes go is grafical's job, never yours.
@@ -253,7 +255,7 @@ Good to know:
 
 Example:
   grafical try shop.grafical.yaml move.yaml
-  ok would change: storefront
+  ok changed=storefront written=no
   before nodes=9 lines=10 crossings=1 bends=12 length=3140 ...
   after nodes=9 lines=10 crossings=1 bends=8 length=2380 ...
   delta nodes=0 lines=0 crossings=0 bends=-4 length=-760 ...

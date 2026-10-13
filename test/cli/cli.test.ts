@@ -146,7 +146,7 @@ describe("write commands", () => {
     const r = run("apply", "batch.grafical.yaml", "batch.yaml");
     expect(r.code, r.out + r.err).toBe(0);
     expect(r.out).toBe(
-      "ok changed: clients, services, storage, web, api, worker, db, mq, web->api, api->db, api->mq, mq->worker\n" +
+      "ok changed=clients,services,storage,web,api,worker,db,mq,web->api,api->db,api->mq,mq->worker\n" +
         "counts nodes=5 lines=4 crossings=0 bends=2 length=256 width=368 height=376 fullest=services:2 busiest=api:3 longest=api->mq:120 passing=0\n",
     );
     const single = read("single.grafical.yaml");
@@ -181,8 +181,8 @@ describe("write commands", () => {
     const before = read("single.grafical.yaml");
     const r = run("node", "add", "single.grafical.yaml", "x", "--layer", "servces", "--label", "X");
     expect(r.code).toBe(1);
-    expect(r.out).toContain("failed, file unchanged");
-    expect(r.out).toContain("unknown-layer layer");
+    expect(r.out).toContain("failed changed=-");
+    expect(r.out).toContain("code=unknown-layer field=layer");
     expect(r.out).toContain("closest layers: services");
     expect(read("single.grafical.yaml")).toBe(before);
   });
@@ -214,7 +214,7 @@ describe("write commands", () => {
     );
     const r = run("apply", "single.grafical.yaml", "bad2.yaml");
     expect(r.code).toBe(1);
-    expect(r.out).toContain("bad-value kind");
+    expect(r.out).toContain("code=bad-value field=kind");
     expect(r.out).toContain("allowed: service, store, queue, external, actor");
   });
 
@@ -239,9 +239,9 @@ describe("write commands", () => {
     run("node", "add", "e.grafical.yaml", "q", "--layer", "l", "--label", "Q");
     run("edge", "add", "e.grafical.yaml", "p", "q");
     const second = run("edge", "add", "e.grafical.yaml", "p", "q", "--label", "again");
-    expect(second.out).toBe("ok changed: p->q#2\n");
+    expect(second.out).toBe("ok changed=p->q#2\n");
     const rm = run("node", "remove", "e.grafical.yaml", "q");
-    expect(rm.out).toBe("ok changed: q, p->q, p->q#2\n");
+    expect(rm.out).toBe("ok changed=q,p->q,p->q#2\n");
   });
 });
 
@@ -301,7 +301,7 @@ describe("read commands", () => {
     const r = run("try", "single.grafical.yaml", "try.yaml");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(
-      /^ok would change: api\nbefore nodes=\d+ lines=\d+ crossings=\d+.*\nafter nodes=\d+.*\ndelta nodes=0 lines=0 crossings=[-+]?\d+ /,
+      /^ok changed=api written=no\nbefore nodes=\d+ lines=\d+ crossings=\d+.*\nafter nodes=\d+.*\ndelta nodes=0 lines=0 crossings=[-+]?\d+ /,
     );
     expect(readFileSync(join(dir, "single.grafical.yaml"), "utf8")).toBe(before);
     const json = JSON.parse(run("try", "single.grafical.yaml", "try.yaml", "--json").out);
@@ -317,11 +317,11 @@ describe("read commands", () => {
     const r = run("render", "single.grafical.yaml", "--png", "only.png", "--scale", "1");
     expect(r.code).toBe(0);
     expect(existsSync(join(dir, "only.png"))).toBe(true);
-    expect(r.out).toMatch(/^wrote only.png\nok\ncounts nodes=/);
+    expect(r.out).toMatch(/^wrote file=only.png\nok\ncounts nodes=/);
     // A flag with no path writes only that file, beside the diagram.
     const beside = run("render", "single.grafical.yaml", "--png", "--scale", "1");
     expect(beside.code).toBe(0);
-    expect(beside.out).toMatch(/^wrote single.png\nok\ncounts nodes=/);
+    expect(beside.out).toMatch(/^wrote file=single.png\nok\ncounts nodes=/);
   });
 
   it("the help read before a draft is byte-stable and within the old guide's budget", () => {

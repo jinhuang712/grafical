@@ -12,6 +12,7 @@ import { diffDiagrams } from "../model/diff.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
 import { EDGE_KINDS, NODE_KINDS } from "../model/types.ts";
+import { record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
 import { atRevision, formatOps } from "./diff.ts";
@@ -663,7 +664,7 @@ function build(): Command {
       process.stdout.write(`${JSON.stringify({ ...body, delta: delta(r.before, r.after) })}\n`);
     } else {
       process.stdout.write(
-        `ok would change: ${r.report.changed.join(", ")}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n${deltaText(delta(r.before, r.after))}\n`,
+        `${record("ok", { changed: r.report.changed, written: "no" })}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n${deltaText(delta(r.before, r.after))}\n`,
       );
     }
   });
@@ -786,7 +787,8 @@ function build(): Command {
       defects,
       counts: drawing(d, scene).counts,
     };
-    if (opts.json !== true) for (const f of files) process.stdout.write(`wrote ${f}\n`);
+    if (opts.json !== true)
+      for (const f of files) process.stdout.write(`${record("wrote", { file: f })}\n`);
     process.exitCode = emit(report, opts.json === true, { files });
   });
 
@@ -810,7 +812,7 @@ function build(): Command {
         throw new CommanderError(2, "grafical.noFolder", `no folder ${dirname(file)} to watch`);
       }
       const viewer = await startViewer(file, port);
-      process.stdout.write(`viewing ${file} at ${viewer.url} (Ctrl-C stops it)\n`);
+      process.stdout.write(`${record("viewing", { file, url: viewer.url, stop: "ctrl-c" })}\n`);
       if (opts.open !== false) openWindow(viewer.url, windowSize(viewer.size()));
       await new Promise<void>((resolve) => {
         process.once("SIGINT", resolve);

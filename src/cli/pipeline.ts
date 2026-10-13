@@ -11,6 +11,7 @@ import { applyOps } from "../model/apply.ts";
 import { readDiagram, writeDiagram } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import type { Diagram } from "../model/types.ts";
+import { record } from "../records.ts";
 import type { Scene } from "../scene.ts";
 import { createMeasurer } from "../text/index.ts";
 import type { Measurer } from "../text/types.ts";
@@ -34,21 +35,36 @@ export function oneLine(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * The report as records (D37): ok with the ids it changed, or failed, then a record
+ * for each error and defect, then the counts. A refused change writes nothing.
+ */
 export function formatReport(r: Report): string {
   const out: string[] = [];
-  if (r.ok) {
-    out.push(r.changed.length > 0 ? `ok changed: ${r.changed.join(", ")}` : "ok");
-  } else {
-    out.push("failed, file unchanged");
-  }
+  if (r.ok) out.push(r.changed.length > 0 ? record("ok", { changed: r.changed }) : "ok");
+  else out.push(record("failed", { changed: [] }));
   for (const e of r.errors) {
-    let s = `error op ${e.index} ${e.code}${e.field ? ` ${e.field}` : ""}: found ${oneLine(e.found)}; expected ${oneLine(e.expected)}`;
-    if (e.suggestion) s += `; ${oneLine(e.suggestion)}`;
-    out.push(s);
+    out.push(
+      record("error", {
+        op: e.index,
+        code: e.code,
+        field: e.field,
+        found: oneLine(e.found),
+        expected: oneLine(e.expected),
+        ...(e.suggestion ? { suggestion: oneLine(e.suggestion) } : {}),
+      }),
+    );
   }
   for (const d of r.defects) {
     out.push(
-      `defect ${d.code} [${d.elements.join(", ")}]: found ${oneLine(d.found)}; expected ${oneLine(d.expected)}; fix: ${oneLine(d.fix)}`,
+      record("defect", {
+        code: d.code,
+        owner: d.owner,
+        elements: d.elements,
+        found: oneLine(d.found),
+        expected: oneLine(d.expected),
+        fix: oneLine(d.fix),
+      }),
     );
   }
   if (r.counts !== undefined) out.push(countsText(r.counts));

@@ -43,7 +43,7 @@ describe("grouped diagrams", () => {
     expect(n.code).toBe(0);
     writeFileSync(join(dir, "batch.yaml"), batch);
     const r = run("apply", "orders.grafical.yaml", "batch.yaml");
-    expect(r.out).toMatch(/^ok changed: /);
+    expect(r.out).toMatch(/^ok changed=/);
     expect(r.code).toBe(0);
     const text = read("orders.grafical.yaml");
     expect(text).toContain("subtitle: Two services coupled");
@@ -68,7 +68,7 @@ describe("grouped diagrams", () => {
     run("node", "add", f, "b", "--layer", "r2", "--label", "B");
     run("node", "add", f, "c", "--layer", "r3", "--label", "C");
     expect(run("group", "add", f, "g", "--label", "G", "--nodes", "a,b").out).toBe(
-      "ok changed: g, a, b\n",
+      "ok changed=g,a,b\n",
     );
     expect(run("group", "join", f, "g", "c").code).toBe(0);
     // Leaving the middle row: the box still spans it (D7).
@@ -76,7 +76,7 @@ describe("grouped diagrams", () => {
     expect(run("group", "join", f, "g", "b").code).toBe(0);
     expect(run("group", "join", f, "zz", "a").out).toContain("unknown-group");
     expect(run("group", "rename", f, "g", "--label", "Renamed").code).toBe(0);
-    expect(run("group", "remove", f, "g").out).toBe("ok changed: g, a, b, c\n");
+    expect(run("group", "remove", f, "g").out).toBe("ok changed=g,a,b,c\n");
     expect(read(f)).not.toContain("group");
     expect(run("diagram", "subtitle", f).code).toBe(0);
     expect(run("diagram", "note", f, "--text", "Not shown: y.").code).toBe(0);
@@ -101,7 +101,7 @@ describe("grouped diagrams", () => {
     expect(mixed.code).toBe(1);
     expect(mixed.out).toContain("lane-mixed");
     expect(run("lane", "leave", f, "order-desk").code).toBe(0);
-    expect(run("lane", "remove", f, "desk").out).toBe("ok changed: desk\n");
+    expect(run("lane", "remove", f, "desk").out).toBe("ok changed=desk\n");
     expect(read(f)).not.toContain("lane");
   });
 

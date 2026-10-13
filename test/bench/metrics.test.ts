@@ -213,6 +213,15 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     expect(classify(denied, true)).toBe("denied");
     expect(classify('{"ok":true}', false)).toBe("success");
     expect(classify("ok changed: a", false)).toBe("success");
+    expect(classify("ok changed=a", false)).toBe("success");
+    expect(classify("Exit code 1\nfailed changed=-\nerror op=0 code=unknown-node", true)).toBe(
+      "opError",
+    );
+    expect(classify("Exit code 1\nfailed changed=-\ndefect code=overflow owner=agent", true)).toBe(
+      "defect",
+    );
+    // The help quotes the records with placeholders: they are not refusals.
+    expect(classify("error op=<index> code=<code>\ndefect code=<code>", false)).toBe("success");
     expect(classify("boom", true)).toBe("opError");
   });
 
