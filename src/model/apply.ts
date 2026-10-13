@@ -150,39 +150,52 @@ function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
 /** The fields of a legend operation that name its entry; it names exactly one (D42). */
 const LEGEND_TARGETS = ["style", "weight", "mark"] as const;
 
-/** A map of words with one key set, or removed when there are no words; undefined when empty. */
-function setWords(
-  words: Record<string, string> | undefined,
+/** A map with one key set, or removed when the value is undefined; undefined when empty. */
+function setWords<V>(
+  words: Record<string, V> | undefined,
   key: string,
-  text: string | undefined,
-): Record<string, string> | undefined {
+  value: V | undefined,
+): Record<string, V> | undefined {
   const out = { ...(words ?? {}) };
-  if (text === undefined) delete out[key];
-  else out[key] = text;
+  if (value === undefined) delete out[key];
+  else out[key] = value;
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
-/** Sets one legend entry's words, or with no text gives it back its default (D42). */
+/**
+ * Sets one legend entry's words, leaves it out with hide, or with neither gives it back
+ * its default (D42). A mark has no entry by default, so it cannot be left out.
+ */
 function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
   const named = LEGEND_TARGETS.filter((k) => op[k] !== undefined);
-  if (named.length !== 1) {
-    const fields = named.join(",");
+  const hide = op.hide === true;
+  const clash = (a: string, b: string): OpError => ({
+    code: "conflicting-fields",
+    index: i,
+    field: `${a},${b}`,
+    found: `${a},${b}`,
+    facts: { max: 1 },
+  });
+  if (named.length === 0) {
     return [
-      named.length === 0
-        ? {
-            code: "missing-field",
-            index: i,
-            field: "style",
-            found: "",
-            facts: { allowed: [...LEGEND_TARGETS] },
-          }
-        : { code: "conflicting-fields", index: i, field: fields, found: fields, facts: { max: 1 } },
+      {
+        code: "missing-field",
+        index: i,
+        field: "style",
+        found: "",
+        facts: { allowed: [...LEGEND_TARGETS] },
+      },
     ];
   }
+  if (named.length > 1) return [clash(named[0] ?? "", named[1] ?? "")];
+  if (hide && op.text !== undefined) return [clash("text", "hide")];
+  if (hide && op.mark !== undefined) return [clash("mark", "hide")];
+  // false leaves the entry out (D42).
+  const value = hide ? false : op.text;
   const legend: Legend = { ...(s.d.legend ?? {}) };
   if (op.style !== undefined) {
-    if (op.text === undefined) delete legend[op.style];
-    else legend[op.style] = op.text;
+    if (value === undefined) delete legend[op.style];
+    else legend[op.style] = value;
   } else if (op.weight !== undefined) {
     const key = weightKey(op.weight);
     const P = themeOf(s.d).paint;
@@ -201,7 +214,7 @@ function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
         },
       ];
     }
-    const weights = setWords(legend.weights, key, op.text);
+    const weights = setWords(legend.weights, key, value);
     if (weights === undefined) delete legend.weights;
     else legend.weights = weights;
   } else if (op.mark !== undefined) {

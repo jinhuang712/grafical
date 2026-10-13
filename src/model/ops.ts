@@ -171,6 +171,8 @@ export interface DiagramLegendOp {
   /** A mark's emoji, text or file name (D40). */
   mark?: string;
   text?: string;
+  /** true: leave a line style's or a line width's entry out. */
+  hide?: boolean;
 }
 /** Reorders every layer once, to untangle lines (D24). */
 export interface DiagramTidyOp {
@@ -515,6 +517,7 @@ export const diagramLegendSchema = z.strictObject({
   weight: weightValue.optional(),
   mark: text.optional(),
   text: text.optional(),
+  hide: z.boolean().optional(),
 });
 export const diagramTidySchema = z.strictObject({ op: z.literal("diagram.tidy") });
 export const layerRenameSchema = z.strictObject({

@@ -43,7 +43,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `diagram.subtitle` | Set or clear one sentence under the title (D26) | done |
 | `diagram.note` | Set or clear the footnote, such as "Not shown: …" (D26) | done |
 | `diagram.style` | Take the look from a built-in theme (`default`, `dark`, `print`) or a stylesheet file beside the diagram; without one, the default theme (D30) | done |
-| `diagram.legend` | Name a line style in the legend, such as "Kafka message" for dashed lines, a line width, such as "writes" for thick lines, or a mark, such as "paged at night" for a `P0` badge, or go back to the default wording (D42) | done |
+| `diagram.legend` | Name a line style in the legend, such as "Kafka message" for dashed lines, a line width, such as "writes" for thick lines, or a mark, such as "paged at night" for a `P0` badge; leave a line style or width out; or go back to the default wording (D42) | done |
 | `diagram.tidy` | Reorder every layer's nodes once, together, to reduce crossings (D24) | done |
 
 ### Layers
@@ -161,7 +161,7 @@ grafical diagram note <file> [--text <text>]
 grafical diagram sizing <file> auto|fixed
 grafical diagram title <file> --text <text>
 grafical diagram density <file> compact|normal|airy
-grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mark <mark> [--text <text>]
+grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mark <mark> [--text <text>|--hide]
 grafical diagram tidy <file>
 grafical diagram style <file> [<style>]
 grafical apply <file> <batch.yaml>

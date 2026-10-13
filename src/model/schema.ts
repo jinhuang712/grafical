@@ -40,6 +40,8 @@ const EDGE_ID_RE = /^[a-z0-9][a-z0-9._-]*(->[a-z0-9][a-z0-9._-]*)?(#[0-9]+)?$/;
 export const nodeId = z.string().regex(ID_RE, { message: ID_NODE });
 export const edgeId = z.string().regex(EDGE_ID_RE, { message: ID_EDGE });
 export const text = z.string().min(1);
+/** A legend entry's words, or false to leave the entry out (D42). */
+const words = z.union([text, z.literal(false)]);
 
 /** The most characters a text mark may hold; a longer text belongs in the label (D40). */
 export const MARK_TEXT_MAX = 6;
@@ -191,11 +193,11 @@ export const diagramSchema = z.strictObject({
   style: text.optional(),
   legend: z
     .strictObject({
-      solid: text.optional(),
-      dashed: text.optional(),
-      dotted: text.optional(),
-      plain: text.optional(),
-      weights: z.record(z.string(), text).optional(),
+      solid: words.optional(),
+      dashed: words.optional(),
+      dotted: words.optional(),
+      plain: words.optional(),
+      weights: z.record(z.string(), words).optional(),
       marks: z.record(z.string(), text).optional(),
     })
     .optional(),

@@ -681,7 +681,8 @@ function build(): Command {
         "a line width instead: thick, heavy, a stylesheet's level, or pixels",
       )
       .option("--mark <mark>", "a mark instead: its emoji, text or file, as node icon set it")
-      .option("--text <text>"),
+      .option("--text <text>")
+      .option("--hide", "leave a line style's or a line width's entry out"),
   ).action(async (file: string, style: string | undefined, opts: Opts) => {
     const w = opts.weight;
     // A number of pixels is a number, as in edge weight (D41).
@@ -692,7 +693,7 @@ function build(): Command {
         op: "diagram.legend",
         ...(style === undefined ? {} : { style }),
         ...(weight === undefined ? {} : { weight }),
-        ...pick(opts, ["mark", "text"]),
+        ...pick(opts, ["mark", "text", "hide"]),
       },
       opts,
     );

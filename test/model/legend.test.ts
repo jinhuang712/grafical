@@ -186,3 +186,44 @@ describe("the legend names marks (D42)", () => {
     });
   });
 });
+
+describe("the legend leaves entries out (D42)", () => {
+  const styles = (d: Diagram) => (layout(d, m).legend ?? []).map((x) => x.style);
+
+  it("hide leaves a line style out, and without it the entry comes back", () => {
+    expect(styles(fx)).toContain("dashed");
+    const d = ok(fx, [{ op: "diagram.legend", style: "dashed", hide: true }]);
+    expect(styles(d)).not.toContain("dashed");
+    const text = writeDiagram(d);
+    expect(text).toContain("dashed: false");
+    expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
+    expect(diffDiagrams(fx, d)).toEqual([{ op: "diagram.legend", style: "dashed", hide: true }]);
+    const back = ok(d, [{ op: "diagram.legend", style: "dashed" }]);
+    expect(writeDiagram(back)).toBe(writeDiagram(fx));
+  });
+
+  it("a width left out has no entry, and is not in the shared main path", () => {
+    const d = ok(weighted, [{ op: "diagram.legend", weight: "thick", hide: true }]);
+    // The heavy and the 3 pixel lines still share main path, now drawn at 3.
+    expect(entries(d).filter((x) => x.width !== undefined)).toEqual([
+      { text: "main path", width: 3 },
+    ]);
+  });
+
+  it("hide takes no text, and a mark is left out by not naming it", () => {
+    expect(
+      fail(fx, [{ op: "diagram.legend", style: "solid", text: "x", hide: true }])[0],
+    ).toMatchObject({ code: "conflicting-fields", field: "text,hide" });
+    expect(fail(fx, [{ op: "diagram.legend", mark: "P0", hide: true }])[0]).toMatchObject({
+      code: "conflicting-fields",
+      field: "mark,hide",
+    });
+  });
+
+  it("a file's entry holds words or false", () => {
+    const file = writeDiagram(fx).replace(/\nlayers:/, "\nlegend:\n  plain: 5\nlayers:");
+    expect(readDiagram(file)).toMatchObject([
+      { code: "bad-type", field: "legend.plain", facts: { type: "string", allowed: ["false"] } },
+    ]);
+  });
+});

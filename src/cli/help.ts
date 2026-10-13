@@ -535,6 +535,10 @@ Marks:
   file, as node icon set it. A mark is in the legend only once you name it.
   Marks with the same name share one entry.
 
+Leaving out:
+  --hide leaves a line style's or a width's entry out, for a meaning the
+  reader needs no key for. Run it again without --hide to bring it back.
+
 By diagram type:
   c4             solid "uses"
   flowchart      solid "next step"

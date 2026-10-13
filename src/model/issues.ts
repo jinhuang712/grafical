@@ -122,6 +122,15 @@ export function issuesToErrors(
         found: show(found),
         facts: { allowed: edge ? EDGE_ID_CHARS : ID_CHARS, likely: likelyId(found, edge) },
       });
+    } else if (issue.code === "invalid_union" && path[0] === "legend") {
+      // A legend entry holds words, or false to leave it out (D42).
+      out.push({
+        code: "bad-type",
+        index,
+        ...base,
+        found: show(found),
+        facts: { type: "string", allowed: ["false"] },
+      });
     } else if (issue.code === "invalid_union" || issue.message === "mark-too-long") {
       // A mark is a text or a file: a string that is refused is too long (D40).
       out.push(

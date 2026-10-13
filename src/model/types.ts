@@ -176,9 +176,10 @@ export interface Edge {
 /**
  * The legend's words (D42): per line style; per line width, named by its level or, for
  * a width in pixels, by its number written as a string; and per mark, by its name.
+ * `false` leaves a line style's or a width's entry out. A mark is left out by not naming it.
  */
-export type Legend = Partial<Record<LineStyleName, string>> & {
-  weights?: Record<string, string>;
+export type Legend = Partial<Record<LineStyleName, string | false>> & {
+  weights?: Record<string, string | false>;
   marks?: Record<string, string>;
 };
 

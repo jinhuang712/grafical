@@ -122,26 +122,16 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     );
   }
   for (const line of LINE_STYLES) {
-    const text = a.legend?.[line];
-    if (text === b.legend?.[line]) continue;
-    ops.push(
-      text === undefined
-        ? { op: "diagram.legend", style: line }
-        : { op: "diagram.legend", style: line, text },
-    );
+    const words = a.legend?.[line];
+    if (words !== b.legend?.[line]) ops.push({ op: "diagram.legend", style: line, ...said(words) });
   }
   const aw = a.legend?.weights ?? {};
   const bw = b.legend?.weights ?? {};
   for (const key of [...new Set([...Object.keys(bw), ...Object.keys(aw)])].sort()) {
-    const text = aw[key];
-    if (text === bw[key]) continue;
+    if (aw[key] === bw[key]) continue;
     // A width in pixels is a number in the operation, as in edge.weight (D41).
     const weight = /^[0-9]/.test(key) ? Number(key) : key;
-    ops.push(
-      text === undefined
-        ? { op: "diagram.legend", weight }
-        : { op: "diagram.legend", weight, text },
-    );
+    ops.push({ op: "diagram.legend", weight, ...said(aw[key]) });
   }
   const am = a.legend?.marks ?? {};
   const bm = b.legend?.marks ?? {};
@@ -477,6 +467,12 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   for (const [weight, edges] of weighted) ops.push({ op: "edge.weight", edges, weight });
   if (mainOn.length > 0) ops.push({ op: "edge.emphasize", edges: mainOn });
   return ops;
+}
+
+/** A legend entry's words as operation fields: text, hide for false, none for the default (D42). */
+function said(words: string | false | undefined): { text: string } | { hide: true } | object {
+  if (words === false) return { hide: true };
+  return words === undefined ? {} : { text: words };
 }
 
 /** How an edge is weighted: a weight wins over the old accent, and thin is no weight (D41). */

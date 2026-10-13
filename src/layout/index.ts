@@ -404,7 +404,8 @@ function legendItems(d: Diagram, P: Paint): LegendItem[] {
     if (first === undefined) continue;
     // Calls and data reads share the solid line.
     const plain = used.length > 1 ? "call or read" : LEGEND_WORDS[first];
-    out.push({ style, text: d.legend?.[style] ?? plain });
+    const words = d.legend?.[style];
+    if (words !== false) out.push({ style, text: words ?? plain });
   }
   const widths = new Map<string, number>();
   for (const e of d.edges) {
@@ -416,6 +417,8 @@ function legendItems(d: Diagram, P: Paint): LegendItem[] {
   let main: number | undefined;
   for (const [key, px] of widths) {
     const text = d.legend?.weights?.[key];
+    // A width left out has no entry, and is not in the shared one either.
+    if (text === false) continue;
     if (text !== undefined) named.push({ style: "solid", text, width: px });
     else if (px > P.edge.strokeWidth) main = Math.min(main ?? px, px);
   }
