@@ -17,6 +17,8 @@
 //   help2   the help round again, after the refusals and the help said how to fix
 //   help3   again, after the kinds were named, rows took ids like row-users, and hints
 //           tried rows and hubs, safe ones first, each naming the lines it untangles
+//   records again, after the output became key=value records with no hints (D37), and
+//           fan-outs bundled (D38), rows took one height and stores more room
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (EXPERIMENTS.md, "Harness").
@@ -52,6 +54,7 @@ export const PARTS = [
   "brief",
   "help2",
   "help3",
+  "records",
 ] as const;
 export type Part = (typeof PARTS)[number];
 
@@ -173,6 +176,9 @@ export function planPart(part: Part): PartPlan {
     case "help3":
       add(["grafical"], "haiku", runs3, helpTasks(), []);
       return { part, round: "p1d-help3", runs: RUNS, chains };
+    case "records":
+      add(["grafical"], "haiku", runs3, helpTasks(), []);
+      return { part, round: "p1e-records", runs: RUNS, chains };
   }
 }
 
