@@ -32,9 +32,15 @@ Added by the owner on 2026-10-13, when a proposed score of how hard a picture is
 
 ## The engine arranges; the agent decides what the diagram says
 
-The engine is responsible for the picture: where boxes and lines go, how they are spaced and routed, and how they are drawn and styled. The agent is responsible for the content: what to include and how much, what to merge, what each box and line is called, whether the facts are correct, and whether the story reads well. The engine may tell the agent a fact that helps, such as "this row is wider than the page", but it never decides content for the agent.
+The engine is responsible for the picture: where boxes and lines go, how they are spaced and routed, and how they are drawn and styled. The agent is responsible for the content: what to include and how much, what to merge, what each box and line is called, whether the facts are correct, and whether the story reads well. The engine may tell the agent a fact that helps, such as "this row is 2424 px wide", but it never decides content for the agent.
 
 Added by the owner on 2026-10-11, after three judged rounds showed that the engine's work had reached the picture's layout while the remaining points were lost on what the agent chose to draw.
+
+## The command line states facts; the agent understands
+
+Everything grafical prints is discrete: what exists, how it is drawn, and counts. grafical never judges a diagram or advises in prose. Whether a diagram says the right thing and reads well is for the coding agent to decide from those facts, and to iterate on. A refusal states which input is wrong and what is allowed.
+
+Added by the owner on 2026-10-13: "CLI is all discrete, and understanding the diagram should be for the coding agent to do."
 
 ## Mistakes are caught at the step that made them
 

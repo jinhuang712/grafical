@@ -59,6 +59,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D34 | Stage 1 draws every diagram type the layered engine can draw | The engine arranges; the agent decides what the diagram says |
 | D35 | The engine names rearrangements that make the lines better, as commands | The engine arranges; the agent decides what the diagram says |
 | D36 | The help is the reference; there is no separate guide | The tool carries the taste |
+| D37 | Output is discrete: facts and counts, and the agent judges | The command line states facts; the agent understands |
 
 ## Writing a diagram
 
@@ -568,6 +569,21 @@ Rejected:
 - Keeping `grafical guide` beside the help. Two references drift apart, and an agent that is never told about the guide never reads it.
 - Pointing `--help` at the guide. Each hop is a place where an agent stops following.
 - A snippet for users to paste into their agent's instructions. It works only where a user adds it.
+
+### D37 Output is discrete: facts and counts, and the agent judges
+
+Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "The command line states facts; the agent understands"). grafical had begun to judge and advise in prose: warnings that a diagram has too many nodes "for one story", hints that pick moves by grafical's own idea of better, refusals that explain in sentences. Understanding a diagram is the coding agent's job; grafical gives it the facts to do it.
+
+- **What the diagram is:** `show`, as now: rows, nodes in order, groups, lanes and edges.
+- **How it is drawn:** a discrete report of the drawing: for each box its row, its place in the row, its size and its lines on each side; for each line the sides it leaves and enters, its bends, its length, the lines it crosses and the rows it passes without connecting; and totals. The agent judges the drawing from it without opening the picture.
+- **What a change would do:** `grafical try <file> <batch>` applies a batch without writing it and reports the same counts before and after. The agent decides what to try; grafical measures. It replaces hints (D35), which chose the moves themselves.
+- **Warnings become counts:** the number of nodes, the picture's width, the nodes in a row, the lines passing a row, with no threshold and no advice.
+- **Refusals stay terse:** the field, what was found, the allowed values, the closest ids, and a mapping where one exists (`async -> dashed`), with no sentences.
+- **The help is documentation, not output about a diagram:** its principles and examples stay.
+
+Rejected:
+- Advice in the output, however helpful. It decides for the agent, and one reader's advice is not another's (PHILOSOPHY.md, "Easy and consistent, not right for every reader").
+- Hints as discrete commands with numbers. The numbers are facts, but which moves to try is a judgement, and it is the agent's.
 
 ## Not yet decided
 
