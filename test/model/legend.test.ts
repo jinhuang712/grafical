@@ -124,13 +124,65 @@ describe("the legend names line widths (D42)", () => {
     expect(readDiagram(file)).toMatchObject([{ code: "bad-value", field: "legend.weights" }]);
   });
 
-  it("an entry is named by exactly one of style and weight", () => {
+  it("an entry is named by exactly one of style, weight and mark", () => {
     expect(fail(fx, [{ op: "diagram.legend", text: "x" }])[0]).toMatchObject({
       code: "missing-field",
-      facts: { allowed: ["style", "weight"] },
+      facts: { allowed: ["style", "weight", "mark"] },
     });
     expect(
       fail(fx, [{ op: "diagram.legend", style: "solid", weight: "thick", text: "x" }])[0],
     ).toMatchObject({ code: "conflicting-fields", field: "style,weight" });
+  });
+});
+
+/** A warning on two nodes of the work row, and a red P0 badge on the relay above them. */
+const marked = ok(fx, [
+  { op: "node.icon", id: "pipelines", slot: "top-left", icon: "⚠️" },
+  { op: "node.icon", id: "service", slot: "top-left", icon: "⚠️" },
+  { op: "node.icon", id: "relay", slot: "top-right", icon: "P0", bg: "red" },
+]);
+const markEntries = (d: Diagram) => (layout(d, m).legend ?? []).filter((x) => x.mark !== undefined);
+
+describe("the legend names marks (D42)", () => {
+  it("a mark is in the legend only once it is named, and once for each name", () => {
+    expect(markEntries(marked)).toEqual([]);
+    const d = ok(marked, [
+      { op: "diagram.legend", mark: "⚠️", text: "needs an owner" },
+      { op: "diagram.legend", mark: "P0", text: "paged 24/7" },
+    ]);
+    const marks = markEntries(d);
+    // Rows top to bottom: the relay's badge comes first.
+    expect(marks.map((x) => x.label.runs.map((r) => r.text).join(""))).toEqual([
+      "paged 24/7",
+      "needs an owner",
+    ]);
+    // Drawn at the small size, styled as on the node.
+    expect(marks.map((x) => x.mark?.mark)).toEqual([
+      { text: "P0", bg: "#d1242f", size: "s" },
+      { text: "⚠️", size: "s" },
+    ]);
+    expect(marks.every((x) => x.mark?.rect.h === 16 && x.style === undefined)).toBe(true);
+  });
+
+  it("the words stay in the file, and without text the mark leaves the legend", () => {
+    const d = ok(marked, [{ op: "diagram.legend", mark: "⚠️", text: "needs an owner" }]);
+    const text = writeDiagram(d);
+    expect(text).toContain("marks:");
+    expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
+    const ops = diffDiagrams(marked, d);
+    expect(ops).toEqual([{ op: "diagram.legend", mark: "⚠️", text: "needs an owner" }]);
+    const back = ok(d, [{ op: "diagram.legend", mark: "⚠️" }]);
+    expect(writeDiagram(back)).toBe(writeDiagram(marked));
+  });
+
+  it("a name longer than any mark is refused", () => {
+    expect(fail(fx, [{ op: "diagram.legend", mark: "warning", text: "x" }])[0]).toMatchObject({
+      code: "mark-too-long",
+      field: "mark",
+      facts: { max: 6 },
+    });
+    expect(ok(fx, [{ op: "diagram.legend", mark: "icons/lock.svg", text: "x" }]).legend).toEqual({
+      marks: { "icons/lock.svg": "x" },
+    });
   });
 });

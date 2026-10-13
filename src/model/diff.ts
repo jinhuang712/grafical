@@ -143,6 +143,15 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
         : { op: "diagram.legend", weight, text },
     );
   }
+  const am = a.legend?.marks ?? {};
+  const bm = b.legend?.marks ?? {};
+  for (const mark of [...new Set([...Object.keys(bm), ...Object.keys(am)])].sort()) {
+    const text = am[mark];
+    if (text === bm[mark]) continue;
+    ops.push(
+      text === undefined ? { op: "diagram.legend", mark } : { op: "diagram.legend", mark, text },
+    );
+  }
 
   const bN = nodesOf(b);
   const aN = nodesOf(a);

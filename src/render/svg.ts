@@ -427,13 +427,18 @@ function legendShapes(scene: Scene, P: Paint): string[] {
   const paint = P.edge;
   const stroke = paint.kinds.call.stroke;
   for (const item of scene.legend ?? []) {
+    if (item.mark !== undefined) {
+      out.push(...markShape(item.mark), ...texts(item.label, P.text.legend));
+      continue;
+    }
+    const style = item.style ?? "solid";
     const { x1, x2, y } = item.sample;
     const look = lineLook(item.width, P);
-    const head = hasHead(STYLE_KIND[item.style])
+    const head = hasHead(STYLE_KIND[style])
       ? arrowHead({ x: x2, y }, { x: x1, y }, stroke, look.arrow)
       : undefined;
     const end = head ? head.base.x : x2;
-    const dash = paint.kinds[STYLE_KIND[item.style]].dash;
+    const dash = paint.kinds[STYLE_KIND[style]].dash;
     out.push(
       `<path d="M${num(x1)} ${num(y)}L${num(end)} ${num(y)}" fill="none" stroke="${stroke}" stroke-width="${num(look.strokeWidth)}"${dashAttr(dash)}/>`,
     );

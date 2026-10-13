@@ -16,6 +16,9 @@ import { FONT_FAMILY } from "../text/faces.ts";
 import { markRadius, markTextSize } from "../theme/geometry.ts";
 import { escapeXml, num } from "./svg.ts";
 
+/** A mark and the rect it is drawn in: on a node, or in the legend (D40, D42). */
+type DrawnMark = Pick<SceneMark, "mark" | "rect">;
+
 export { isEmoji };
 
 export interface MarkImage {
@@ -67,7 +70,7 @@ function readableOn(bg: string): string {
  * box outline running through it. The layout sized the badge for this text size
  * (markWidth), so the two must agree.
  */
-function textMark(m: SceneMark, text: string): string {
+function textMark(m: DrawnMark, text: string): string {
   const style = markStyle(m.mark);
   const r: Rect = m.rect;
   const bg = style.bg ?? DEFAULT_BADGE;
@@ -87,8 +90,8 @@ function textMark(m: SceneMark, text: string): string {
   );
 }
 
-/** One mark as SVG. A mark whose picture was not given in draws nothing. */
-export function markShape(m: SceneMark): string[] {
+/** One mark as SVG, on a node or in the legend. A mark whose picture was not given in draws nothing. */
+export function markShape(m: DrawnMark): string[] {
   const text = markText(m.mark);
   if (text !== undefined && !isEmoji(text)) return [textMark(m, text)];
   const img = markImage(m.mark);

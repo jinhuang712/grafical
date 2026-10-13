@@ -74,6 +74,11 @@ export function isMarkFile(v: string): boolean {
   return /\.(svg|png)$/i.test(v);
 }
 
+/** Is this longer than any mark can be, so that no mark is named by it (D42)? */
+export function markNameTooLong(name: string): boolean {
+  return !isMarkFile(name) && graphemes(name).length > MARK_TEXT_MAX;
+}
+
 const markText1 = z
   .string()
   .min(1)
@@ -191,6 +196,7 @@ export const diagramSchema = z.strictObject({
       dotted: text.optional(),
       plain: text.optional(),
       weights: z.record(z.string(), text).optional(),
+      marks: z.record(z.string(), text).optional(),
     })
     .optional(),
   layers: z.array(layerSchema).default([]),
@@ -247,6 +253,9 @@ function build(p: Parsed): Diagram {
       ([k, v]) => [WIDTH_KEY.test(k) ? String(Number(k)) : k, v] as const,
     );
     if (weights.length > 0) legend.weights = Object.fromEntries(weights);
+    if (p.legend.marks !== undefined && Object.keys(p.legend.marks).length > 0) {
+      legend.marks = { ...p.legend.marks };
+    }
     if (Object.keys(legend).length > 0) d.legend = legend;
   }
   if (p.subtitle !== undefined) d.subtitle = p.subtitle;
@@ -323,6 +332,16 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
     if (facts !== undefined) {
       errors.push({ code: "bad-value", index, field: "legend.weights", found: key, facts });
     }
+  }
+  for (const name of Object.keys(d.legend?.marks ?? {})) {
+    if (!markNameTooLong(name)) continue;
+    errors.push({
+      code: "mark-too-long",
+      index,
+      field: "legend.marks",
+      found: name,
+      facts: { max: MARK_TEXT_MAX },
+    });
   }
   let accents = 0;
   d.layers.forEach((l, li) => {

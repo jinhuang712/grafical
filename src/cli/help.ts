@@ -43,9 +43,9 @@ A good diagram:
   - Keep labels short. Detail (port, technology, count) goes in the
     sublabel, not in extra boxes; a sublabel holds one line, about 30
     characters.
-  - Accent what the story is about. Name what each line style means in the
-    legend: diagram legend <file> dashed --text event. Say what you left out
-    in a note that starts "Not shown:".
+  - Accent what the story is about. Name in the legend what each line style,
+    width and mark means: diagram legend <file> dashed --text event. Say
+    what you left out in a note that starts "Not shown:".
 
 Diagram types:
   architecture   services, stores and queues; a group per system; label
@@ -77,7 +77,7 @@ When refused:
   and facts. The file is untouched. Exit codes: 0 done, 1 refused, 2 a
   usage error. grafical apply --help lists the facts.
 
-Run grafical <command> --help for its options and what to know about it.
+Run grafical <command> --help for its options and more.
 `;
 
 /** The example of `grafical apply --help`, which the tests build and check. */
@@ -149,7 +149,7 @@ Batch file:
     group.leave       nodes up
     lane.add          id label members                 (a list)
     edge.emphasize    edges off                        (a list)
-    diagram.legend    style weight text (style: solid, dashed, dotted or plain)
+    diagram.legend    style weight mark text (style: solid dashed dotted plain)
     diagram.subtitle  text; diagram.note text           (no text clears it)
   Every other command works too, its arguments named as in its help:
   node.swap a b, node.merge id nodes label, layer.split id into label from.
@@ -522,13 +522,18 @@ Example:
 
   "diagram legend": {
     about:
-      "Name what a line style or a line width means in the legend; without --text, the default wording.",
+      "Name what a line style, a line width or a mark means in the legend; without --text, the default wording.",
     after: `
 Line widths:
   Name a width with --weight in place of the style: thick, heavy, a
   stylesheet's level, or the pixels an edge weight gives. Each named width
   has its own entry. Widths heavier than thin that you do not name share one
   entry, "main path". Thin lines are what the line styles' entries say.
+
+Marks:
+  Name a mark with --mark in place of the style: its emoji, its text or its
+  file, as node icon set it. A mark is in the legend only once you name it.
+  Marks with the same name share one entry.
 
 By diagram type:
   c4             solid "uses"

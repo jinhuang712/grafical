@@ -105,6 +105,11 @@ export function markText(m: Mark): string | undefined {
   return "text" in m ? m.text : undefined;
 }
 
+/** What the legend names a mark by: its emoji or text, or its file's name (D42). */
+export function markName(m: Mark): string {
+  return markText(m) ?? (m as { file: string }).file;
+}
+
 export interface DiagramNode {
   id: string;
   label: string;
@@ -169,11 +174,12 @@ export interface Edge {
 }
 
 /**
- * The legend's words (D42): per line style, and per line width, named by its level or,
- * for a width in pixels, by its number written as a string.
+ * The legend's words (D42): per line style; per line width, named by its level or, for
+ * a width in pixels, by its number written as a string; and per mark, by its name.
  */
 export type Legend = Partial<Record<LineStyleName, string>> & {
   weights?: Record<string, string>;
+  marks?: Record<string, string>;
 };
 
 /** How the legend names an edge's weight: its level, or its width in pixels as text (D42). */

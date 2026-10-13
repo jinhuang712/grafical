@@ -672,7 +672,7 @@ function build(): Command {
     diagram
       .command("legend")
       .description(
-        "name a line style or a line width in the legend; without --text, the default wording",
+        "name a line style, line width or mark in the legend; without --text, the default wording",
       )
       .argument("<file>")
       .argument("[style]", "how the lines look: solid, dashed, dotted or plain")
@@ -680,6 +680,7 @@ function build(): Command {
         "--weight <weight>",
         "a line width instead: thick, heavy, a stylesheet's level, or pixels",
       )
+      .option("--mark <mark>", "a mark instead: its emoji, text or file, as node icon set it")
       .option("--text <text>"),
   ).action(async (file: string, style: string | undefined, opts: Opts) => {
     const w = opts.weight;
@@ -691,7 +692,7 @@ function build(): Command {
         op: "diagram.legend",
         ...(style === undefined ? {} : { style }),
         ...(weight === undefined ? {} : { weight }),
-        ...pick(opts, ["text"]),
+        ...pick(opts, ["mark", "text"]),
       },
       opts,
     );

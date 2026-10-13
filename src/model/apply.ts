@@ -29,6 +29,7 @@ import {
   MARK_TEXT_MAX,
   MAX_ACCENTS,
   markColor,
+  markNameTooLong,
 } from "./schema.ts";
 import { closest } from "./suggest.ts";
 import {
@@ -147,7 +148,19 @@ function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
 }
 
 /** The fields of a legend operation that name its entry; it names exactly one (D42). */
-const LEGEND_TARGETS = ["style", "weight"] as const;
+const LEGEND_TARGETS = ["style", "weight", "mark"] as const;
+
+/** A map of words with one key set, or removed when there are no words; undefined when empty. */
+function setWords(
+  words: Record<string, string> | undefined,
+  key: string,
+  text: string | undefined,
+): Record<string, string> | undefined {
+  const out = { ...(words ?? {}) };
+  if (text === undefined) delete out[key];
+  else out[key] = text;
+  return Object.keys(out).length > 0 ? out : undefined;
+}
 
 /** Sets one legend entry's words, or with no text gives it back its default (D42). */
 function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
@@ -188,11 +201,24 @@ function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
         },
       ];
     }
-    const words = { ...(legend.weights ?? {}) };
-    if (op.text === undefined) delete words[key];
-    else words[key] = op.text;
-    if (Object.keys(words).length > 0) legend.weights = words;
-    else delete legend.weights;
+    const weights = setWords(legend.weights, key, op.text);
+    if (weights === undefined) delete legend.weights;
+    else legend.weights = weights;
+  } else if (op.mark !== undefined) {
+    if (markNameTooLong(op.mark)) {
+      return [
+        {
+          code: "mark-too-long",
+          index: i,
+          field: "mark",
+          found: op.mark,
+          facts: { max: MARK_TEXT_MAX },
+        },
+      ];
+    }
+    const marks = setWords(legend.marks, op.mark, op.text);
+    if (marks === undefined) delete legend.marks;
+    else legend.marks = marks;
   }
   if (Object.keys(legend).length > 0) s.d.legend = legend;
   else delete s.d.legend;

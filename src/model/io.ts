@@ -91,8 +91,10 @@ export function writeDiagram(d: Diagram): string {
       if (text !== undefined) legend[line] = text;
     }
     // Sorted, so the same words give the same file whatever order they were set in.
-    const weights = Object.entries(d.legend.weights ?? {}).sort(([a], [b]) => (a < b ? -1 : 1));
-    if (weights.length > 0) legend.weights = Object.fromEntries(weights);
+    for (const key of ["weights", "marks"] as const) {
+      const words = Object.entries(d.legend[key] ?? {}).sort(([a], [b]) => (a < b ? -1 : 1));
+      if (words.length > 0) legend[key] = Object.fromEntries(words);
+    }
     out.legend = legend;
   }
   out.layers = d.layers.map(layerOut);

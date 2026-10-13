@@ -52,6 +52,9 @@ export function showDiagram(d: Diagram): string {
   for (const [w, text] of Object.entries(d.legend?.weights ?? {})) {
     lines.push(`legend weight ${w} ${JSON.stringify(text)}`);
   }
+  for (const [mark, text] of Object.entries(d.legend?.marks ?? {})) {
+    lines.push(`legend mark ${JSON.stringify(mark)} ${JSON.stringify(text)}`);
+  }
   for (const l of d.layers) {
     const nodes = l.nodes.length > 0 ? l.nodes.map(nodeText).join(" | ") : "(empty)";
     const lane = l.lane === undefined ? "" : ` lane=${l.lane}`;

@@ -158,13 +158,18 @@ export interface DiagramDensityOp {
   op: "diagram.density";
   density: Density;
 }
-/** The legend's words for one line style or one line width. Absent text: the default (D42). */
+/**
+ * The legend's words for one line style, line width or mark. Absent text: the default,
+ * which for a mark is no entry (D42).
+ */
 export interface DiagramLegendOp {
   op: "diagram.legend";
   /** How the lines look. Named line until 2026-10-13 (D36). */
   style?: LineStyleName;
   /** A weight level other than thin, or a width in pixels (D41). */
   weight?: string | number;
+  /** A mark's emoji, text or file name (D40). */
+  mark?: string;
   text?: string;
 }
 /** Reorders every layer once, to untangle lines (D24). */
@@ -508,6 +513,7 @@ export const diagramLegendSchema = z.strictObject({
   op: z.literal("diagram.legend"),
   style: z.enum(LINE_STYLES).optional(),
   weight: weightValue.optional(),
+  mark: text.optional(),
   text: text.optional(),
 });
 export const diagramTidySchema = z.strictObject({ op: z.literal("diagram.tidy") });

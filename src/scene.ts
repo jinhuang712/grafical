@@ -89,14 +89,16 @@ export interface SceneLane {
   label: PlacedText;
 }
 
-/** One line style or line width in the legend, with a short sample line (D8, D42). */
+/** One line style, line width or mark in the legend, with its sample (D8, D42). */
 export interface SceneLegendItem {
-  /** The line style the sample is drawn in (D8). */
-  style: LineStyleName;
+  /** The line style the sample is drawn in (D8). A mark's entry has none. */
+  style?: LineStyleName;
   /** The sample's width in pixels when it is not the thin one: a line width's entry (D41, D42). */
   width?: number;
-  /** The sample line, left to right, at the label's middle height. */
+  /** Where the sample sits, left to right, at the label's middle height. A line is drawn along it. */
   sample: { x1: number; x2: number; y: number };
+  /** A mark's entry: the mark, at the small size, in this rect (D42). */
+  mark?: { mark: Mark; rect: Rect };
   label: PlacedText;
 }
 

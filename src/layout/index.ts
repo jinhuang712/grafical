@@ -21,6 +21,9 @@ import {
   type EdgeKind,
   LINE_STYLES,
   type LineStyleName,
+  MARK_SLOTS,
+  type Mark,
+  markName,
   weightKey,
 } from "../model/types.ts";
 import type {
@@ -37,7 +40,16 @@ import type {
   SceneNode,
 } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
-import { BAND, FRAME, GROUP, LANE, ROUTE, SPACING, type Spacing } from "../theme/geometry.ts";
+import {
+  BAND,
+  FRAME,
+  GROUP,
+  LANE,
+  MARK_STEP,
+  ROUTE,
+  SPACING,
+  type Spacing,
+} from "../theme/geometry.ts";
 import { edgeWidth, lineStyle, type Paint, weightOf } from "../theme/paint.ts";
 import { isDot, textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
@@ -54,7 +66,7 @@ import {
   routeAcross,
 } from "./route.ts";
 import { planSideways } from "./side.ts";
-import { leftInset, markRects, nodeLines, withSizes } from "./size.ts";
+import { leftInset, markRects, markWidth, nodeLines, withSizes } from "./size.ts";
 import { routeStats } from "./stats.ts";
 import { lineBox, lineHeight, placeLine, placeLines } from "./text.ts";
 
@@ -362,16 +374,26 @@ const LEGEND_WORDS: Record<EdgeKind, string> = {
 };
 
 interface LegendItem {
-  style: LineStyleName;
+  /** A line's entry: the style of its sample. */
+  style?: LineStyleName;
   text: string;
   /** A line width's entry: its sample's width (D42). */
   width?: number;
+  /** A mark's entry: the mark, at the small size (D42). */
+  mark?: Mark;
+}
+
+/** A mark at the small size, as the legend draws it (D42). */
+function smallMark(mk: Mark): Mark {
+  return typeof mk === "string" ? { text: mk, size: "s" } : { ...mk, size: "s" };
 }
 
 /**
  * The legend's entries (D8, D42): each line style the diagram uses, then each line
- * width, from the thinnest. A width the diagram names has its own entry. The heavier
- * ones it does not name share "main path", drawn at the thinnest of them (D41).
+ * width, from the thinnest, then each mark the diagram names. A width the diagram names
+ * has its own entry. The heavier ones it does not name share "main path", drawn at the
+ * thinnest of them (D41). A mark has an entry only when it is named, drawn like the first
+ * one found: rows top to bottom, nodes in order, slots in order.
  */
 function legendItems(d: Diagram, P: Paint): LegendItem[] {
   const kinds = new Set(d.edges.map((e) => e.kind));
@@ -400,7 +422,20 @@ function legendItems(d: Diagram, P: Paint): LegendItem[] {
   if (main !== undefined) named.push({ style: "solid", text: "main path", width: main });
   // Sorting is stable: equal widths keep the order of the edges, and "main path" comes last.
   named.sort((a, b) => (a.width ?? 0) - (b.width ?? 0));
-  return [...out, ...named];
+  const marks: LegendItem[] = [];
+  const seen = new Set<string>();
+  for (const n of d.layers.flatMap((l) => l.nodes)) {
+    for (const slot of MARK_SLOTS) {
+      const mk = n.icons?.[slot];
+      if (mk === undefined) continue;
+      const name = markName(mk);
+      const text = d.legend?.marks?.[name];
+      if (text === undefined || seen.has(name)) continue;
+      seen.add(name);
+      marks.push({ text, mark: smallMark(mk) });
+    }
+  }
+  return [...out, ...named, ...marks];
 }
 
 /** Items, by width, in lines no wider than `room`. A line holds at least one item (D42). */
@@ -745,8 +780,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     : empty("title", sp.margin, sp.margin);
   const legendStyle = T.legend;
   const items = withText ? legendItems(d, theme.paint) : [];
+  // A line's sample is a short line; a mark's is the mark (D42).
+  const sampleW = items.map((it) =>
+    it.mark === undefined ? FRAME.legendSample : markWidth(it.mark, m),
+  );
   const itemW = items.map(
-    (it) => FRAME.legendSample + FRAME.legendLabelGap + m.measure(it.text, legendStyle).width,
+    (it, i) => (sampleW[i] ?? 0) + FRAME.legendLabelGap + m.measure(it.text, legendStyle).width,
   );
   const textW = Math.max(2 * half, FRAME.minTextWidth);
   // A legend wider than the room right of the title wraps into more lines (D42).
@@ -777,30 +816,31 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // at the same left edge below it (D42).
   const legend: SceneLegendItem[] = [];
   const lh = lineBox("legend", m, T);
+  // A line of the legend is as high as its text, or as a mark when it lists one.
+  const lineH = items.some((it) => it.mark !== undefined) ? Math.max(lh, MARK_STEP.s.h) : lh;
   const firstMid = title.bbox.y + title.bbox.h / 2;
-  const legendPitch = lh + FRAME.legendLineGap;
+  const legendPitch = lineH + FRAME.legendLineGap;
   legendRows.forEach((row, r) => {
     const mid = firstMid + r * legendPitch;
     let x = width - sp.margin - legendW;
     for (const i of row.items) {
       const it = items[i];
       if (it === undefined) continue;
+      const w = sampleW[i] ?? 0;
+      const h = MARK_STEP.s.h;
       legend.push({
-        style: it.style,
+        ...(it.style !== undefined ? { style: it.style } : {}),
         ...(it.width !== undefined ? { width: it.width } : {}),
-        sample: { x1: x, x2: x + FRAME.legendSample, y: mid },
-        label: placeLine(
-          "legend",
-          it.text,
-          x + FRAME.legendSample + FRAME.legendLabelGap,
-          mid - lh / 2,
-          m,
-        ),
+        sample: { x1: x, x2: x + w, y: mid },
+        ...(it.mark !== undefined
+          ? { mark: { mark: it.mark, rect: { x, y: mid - h / 2, w, h } } }
+          : {}),
+        label: placeLine("legend", it.text, x + w + FRAME.legendLabelGap, mid - lh / 2, m),
       });
       x += (itemW[i] ?? 0) + FRAME.legendItemGap;
     }
   });
-  const legendBottom = firstMid + (legendRows.length - 1) * legendPitch + lh / 2;
+  const legendBottom = firstMid + (legendRows.length - 1) * legendPitch + lineH / 2;
   // A subtitle starts below the title, and below the legend when it wraps.
   const titleBottom = Math.max(title.bbox.y + ceil4(title.bbox.h), ceil4(legendBottom));
   const subtitle =
@@ -1148,9 +1188,12 @@ function roundScene(s: Scene): Scene {
   if (s.note !== undefined) out.note = roundText(s.note);
   if (s.legend !== undefined) {
     out.legend = s.legend.map((it) => ({
-      style: it.style,
+      ...(it.style !== undefined ? { style: it.style } : {}),
       ...(it.width !== undefined ? { width: it.width } : {}),
       sample: { x1: round2(it.sample.x1), x2: round2(it.sample.x2), y: round2(it.sample.y) },
+      ...(it.mark !== undefined
+        ? { mark: { mark: it.mark.mark, rect: roundRect(it.mark.rect) } }
+        : {}),
       label: roundText(it.label),
     }));
   }
