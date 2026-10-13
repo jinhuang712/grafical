@@ -90,7 +90,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `node.resize` | Set the size step, which fixes the box's width and height. Without a step, grafical sizes the box to its text again (D27) | done |
 | `node.align` | Place the node directly above or below a node in another layer. Fails if the alignment cannot hold with the order of either layer | done |
 | `node.emphasize` | Turn the accent on or off | done |
-| `node.icon` | Put a mark in a slot, or clear the slot without a mark. A mark is an emoji, a text of up to 6 characters, or an SVG or PNG file next to the diagram. A text mark may take a background color (D40) | done |
+| `node.icon` | Put a mark in a slot, or clear the slot without a mark. A mark is an emoji, a text of up to 6 characters, or an SVG or PNG file next to the diagram. A text mark may take a background, text and border color, and a shape. Any mark may take a size (D40) | done |
 | `node.remove` | Remove the node and its edges | done |
 | `node.swap` | Two nodes trade places: layer and slot | done |
 | `node.merge` | Replace nodes with one new node that keeps all their edges, each once. Edges between them go | done |
@@ -131,7 +131,7 @@ grafical node remove <file> <id>
 grafical node describe <file> <id> [--text <text>]
 grafical node kind <file> <id> <kind>
 grafical node emphasize <file> <id> [--off]
-grafical node icon <file> <id> --slot <slot> [--icon <emoji | text | file.svg | file.png>] [--bg <color | #rrggbb>]
+grafical node icon <file> <id> --slot <slot> [--icon <emoji | text | file.svg | file.png>] [--bg <color>] [--fg <color>] [--border <color>] [--shape <shape>] [--size s|m|l]
 grafical node align <file> <id> [--to <node>]
 grafical node swap <file> <a> <b>
 grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--kind <kind>]
@@ -275,7 +275,9 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | Size steps | `s`, `m`, `l` |
 | Density | `compact`, `normal`, `airy` |
 | Emphasis | `accent`: at most 2 nodes per diagram, and edges on the main path, drawn thick (D33) |
-| Mark colors | `red`, `amber`, `green`, `blue`, `purple`, `gray`, `dark`, or `#rrggbb`, for the background of a text mark (D40) |
+| Mark colors | `red`, `amber`, `green`, `blue`, `purple`, `gray`, `dark`, or `#rrggbb`, for the background, text and border of a text mark (D40) |
+| Mark shapes | `square`, `rounded` (default), `pill`: the badge of a text mark (D40) |
+| Mark sizes | `s`, `m` (default), `l`: 16, 20 and 28 px high (D40) |
 | Mark slots | `top-left`, `top-right`, `bottom-left`, `bottom-right`, `left`: one mark each. A diamond and a dot have no `left` (D40) |
 | Edge weight | `thin`, `thick`, `heavy`, and any level a stylesheet adds in `paint.edge.weights`; or a width of 0.5 to 8 pixels. The built-in themes draw them 1.25, 2.5 and 4 wide (D41) |
 | Line shape | `orthogonal` (default) or `curved`, set in a stylesheet as `paint.edge.shape` (D33) |

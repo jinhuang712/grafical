@@ -7,7 +7,7 @@ import { layout } from "../../src/layout/index.ts";
 import type { Diagram, DiagramNode } from "../../src/model/types.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
-import { MARK } from "../../src/theme/geometry.ts";
+import { MARK, MARK_STEP } from "../../src/theme/geometry.ts";
 import { tiny } from "../fixtures/tiny.ts";
 
 let m: Measurer;
@@ -58,8 +58,8 @@ describe("marks in the layout", () => {
     const api = s.nodes.find((n) => n.id === "api");
     const at = (slot: string) => api?.marks?.find((x) => x.slot === slot)?.rect;
     const text = (t: string) => m.measure(t, { size: 11, weight: 600 }).width;
-    expect(at("top-right")?.w).toBeGreaterThanOrEqual(text("NEW") + 2 * MARK.padX);
-    expect(at("top-right")?.w).toBeGreaterThan(MARK.size);
+    expect(at("top-right")?.w).toBeGreaterThanOrEqual(text("NEW") + 2 * MARK_STEP.m.padX);
+    expect(at("top-right")?.w).toBeGreaterThan(MARK_STEP.m.h);
     // The right edge stays where a square would put it; the left corner's left edge too.
     const r = api?.rect;
     expect((at("top-right")?.x ?? 0) + (at("top-right")?.w ?? 0)).toBe(
@@ -67,10 +67,35 @@ describe("marks in the layout", () => {
     );
     expect(at("top-left")?.x).toBe((r?.x ?? 0) - MARK.overhang);
     // One short text still gets a square; a wider left badge pushes the label further right.
-    expect(at("top-left")?.w).toBeGreaterThanOrEqual(text("P0") + 2 * MARK.padX);
-    expect(at("left")?.w).toBeGreaterThan(MARK.size);
+    expect(at("top-left")?.w).toBeGreaterThanOrEqual(text("P0") + 2 * MARK_STEP.m.padX);
+    expect(at("left")?.w).toBeGreaterThan(MARK_STEP.m.h);
     const left = at("left");
     expect((left?.x ?? 0) + (left?.w ?? 0)).toBeLessThanOrEqual(api?.texts[0]?.bbox.x ?? 0);
+  });
+
+  it("sizes a mark by its step: small is shorter, large is taller, and a picture stays square", () => {
+    const s = layout(
+      marked("api", {
+        "top-left": { text: "P0", size: "s" },
+        "top-right": { text: "P0", size: "l" },
+        "bottom-left": { text: "⚠️", size: "l" },
+        "bottom-right": "P0",
+      }),
+      m,
+    );
+    const marks = s.nodes.find((n) => n.id === "api")?.marks ?? [];
+    const rect = (slot: string) => marks.find((x) => x.slot === slot)?.rect;
+    expect(rect("top-left")?.h).toBe(MARK_STEP.s.h);
+    expect(rect("top-right")?.h).toBe(MARK_STEP.l.h);
+    expect(rect("bottom-right")?.h).toBe(MARK_STEP.m.h);
+    expect(rect("bottom-left")).toMatchObject({ w: MARK_STEP.l.h, h: MARK_STEP.l.h });
+    // A larger step makes the badge wider too, for the same text.
+    expect(rect("top-right")?.w).toBeGreaterThan(rect("top-left")?.w ?? 0);
+    // A bottom corner mark still sticks out of the bottom edge by the overhang.
+    const api = s.nodes.find((n) => n.id === "api")?.rect;
+    expect((rect("bottom-left")?.y ?? 0) + MARK_STEP.l.h).toBe(
+      (api?.y ?? 0) + (api?.h ?? 0) + MARK.overhang,
+    );
   });
 
   it("puts a corner mark over its corner, sticking out by the overhang", () => {
@@ -81,13 +106,13 @@ describe("marks in the layout", () => {
     expect(tl?.rect).toEqual({
       x: (api?.rect.x ?? 0) - MARK.overhang,
       y: (api?.rect.y ?? 0) - MARK.overhang,
-      w: MARK.size,
-      h: MARK.size,
+      w: MARK_STEP.m.h,
+      h: MARK_STEP.m.h,
     });
-    expect((br?.rect.x ?? 0) + MARK.size).toBe(
+    expect((br?.rect.x ?? 0) + MARK_STEP.m.h).toBe(
       (api?.rect.x ?? 0) + (api?.rect.w ?? 0) + MARK.overhang,
     );
-    expect((br?.rect.y ?? 0) + MARK.size).toBe(
+    expect((br?.rect.y ?? 0) + MARK_STEP.m.h).toBe(
       (api?.rect.y ?? 0) + (api?.rect.h ?? 0) + MARK.overhang,
     );
   });
@@ -99,11 +124,11 @@ describe("marks in the layout", () => {
     const now = after.nodes.find((n) => n.id === "api");
     expect(now?.rect).toEqual(was?.rect);
     const x = (s: typeof was) => s?.texts[0]?.runs[0]?.x ?? 0;
-    expect(x(now) - x(was)).toBeCloseTo((MARK.size + MARK.leftGap) / 2, 5);
+    expect(x(now) - x(was)).toBeCloseTo((MARK_STEP.m.h + MARK.leftGap) / 2, 5);
     const left = now?.marks?.[0];
     expect(left?.slot).toBe("left");
     expect(left?.rect.x).toBeGreaterThanOrEqual((now?.rect.x ?? 0) + 8);
-    expect((left?.rect.x ?? 0) + MARK.size).toBeLessThanOrEqual(now?.texts[0]?.bbox.x ?? 0);
+    expect((left?.rect.x ?? 0) + MARK_STEP.m.h).toBeLessThanOrEqual(now?.texts[0]?.bbox.x ?? 0);
   });
 });
 
@@ -121,7 +146,7 @@ describe("marks in the checker", () => {
     const api = scene.nodes.find((n) => n.id === "api");
     const label = api?.texts[0]?.bbox;
     if (api?.marks?.[0] === undefined || label === undefined) throw new Error("no mark");
-    api.marks[0].rect = { ...label, w: MARK.size, h: MARK.size };
+    api.marks[0].rect = { ...label, w: MARK_STEP.m.h, h: MARK_STEP.m.h };
     const defects = check(d, scene, m).filter((x) => x.code === "mark-covers");
     expect(defects).toMatchObject([
       { owner: "agent", elements: ["api"], found: "top-left", facts: { is: "label" } },
@@ -134,7 +159,7 @@ describe("marks in the checker", () => {
     const api = scene.nodes.find((n) => n.id === "api");
     const worker = scene.nodes.find((n) => n.id === "worker");
     if (api?.marks?.[0] === undefined || worker === undefined) throw new Error("no mark");
-    api.marks[0].rect = { ...worker.rect, w: MARK.size, h: MARK.size };
+    api.marks[0].rect = { ...worker.rect, w: MARK_STEP.m.h, h: MARK_STEP.m.h };
     const defects = check(d, scene, m).filter((x) => x.code === "mark-covers");
     expect(defects).toMatchObject([{ elements: ["api", "worker"], facts: { is: "node" } }]);
   });
@@ -171,7 +196,7 @@ describe("marks in the checker", () => {
     const api = scene.nodes.find((n) => n.id === "api");
     const label = api?.texts[0]?.bbox;
     if (api?.marks?.[0] === undefined || label === undefined) throw new Error("no mark");
-    api.marks[0].rect = { ...label, w: MARK.size, h: MARK.size };
+    api.marks[0].rect = { ...label, w: MARK_STEP.m.h, h: MARK_STEP.m.h };
     const [defect] = check(d, scene, m).filter((x) => x.code === "mark-covers");
     expect(defect?.facts?.fix).toEqual([
       "grafical node resize <file> api --size l",

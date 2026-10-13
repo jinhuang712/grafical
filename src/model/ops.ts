@@ -13,7 +13,11 @@ import {
   type EdgeKind,
   LINE_STYLES,
   type LineStyleName,
+  MARK_SHAPES,
+  MARK_SIZES,
   MARK_SLOTS,
+  type MarkShape,
+  type MarkSize,
   type MarkSlot,
   NODE_KINDS,
   type NodeKind,
@@ -222,6 +226,14 @@ export interface NodeIconOp {
   sha256?: string;
   /** The background of a text mark: a name in MARK_COLORS, or `#rrggbb`. */
   bg?: string;
+  /** The color of a text mark's text. Absent: light or dark, whichever reads on the background. */
+  fg?: string;
+  /** The color of a text mark's border. Absent: none. */
+  border?: string;
+  /** The shape of a text mark's badge. Absent: rounded. */
+  shape?: MarkShape;
+  /** The size of the mark, a text's or a picture's. Absent: m. */
+  size?: MarkSize;
 }
 export interface NodeAlignOp {
   op: "node.align";
@@ -540,6 +552,10 @@ export const nodeIconSchema = z.strictObject({
     .regex(/^[0-9a-f]{64}$/)
     .optional(),
   bg: text.optional(),
+  fg: text.optional(),
+  border: text.optional(),
+  shape: z.enum(MARK_SHAPES).optional(),
+  size: z.enum(MARK_SIZES).optional(),
 });
 export const nodeAlignSchema = z.strictObject({
   op: z.literal("node.align"),

@@ -48,7 +48,41 @@ export type MarkSlot = (typeof MARK_SLOTS)[number];
  * A mark: an emoji or a short text, or an SVG or PNG file next to the diagram file.
  * A file is kept with its SHA-256, so a changed file is caught (D40, D15).
  */
-export type Mark = string | { file: string; sha256: string } | { text: string; bg: string };
+export type Mark =
+  | string
+  | { file: string; sha256: string; size?: MarkSize }
+  | ({ text: string } & MarkStyle);
+
+export const MARK_SIZES = ["s", "m", "l"] as const;
+export type MarkSize = (typeof MARK_SIZES)[number];
+
+/** The outline of a text mark's badge: square corners, slightly rounded ones, or a pill. */
+export const MARK_SHAPES = ["square", "rounded", "pill"] as const;
+export type MarkShape = (typeof MARK_SHAPES)[number];
+
+/**
+ * What a text mark may set beyond its text (D40). Colors are `#rrggbb`, kept as hex.
+ * Every field is absent when it holds its default: a dark badge, light or dark text
+ * that reads on it, no border, a rounded shape, the medium size.
+ */
+export interface MarkStyle {
+  bg?: string;
+  border?: string;
+  fg?: string;
+  shape?: MarkShape;
+  size?: MarkSize;
+}
+
+export const DEFAULT_MARK_SIZE: MarkSize = "m";
+export const DEFAULT_MARK_SHAPE: MarkShape = "rounded";
+
+/** A mark's style: the size of a file, and everything a text mark sets. */
+export function markStyle(m: Mark): MarkStyle {
+  if (typeof m === "string") return {};
+  if ("file" in m) return m.size === undefined ? {} : { size: m.size };
+  const { text: _text, ...style } = m;
+  return style;
+}
 
 /**
  * The colors a text mark's background may be named by. Any `#rrggbb` is allowed too.

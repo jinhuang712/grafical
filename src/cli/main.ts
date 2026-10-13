@@ -12,7 +12,14 @@ import { diffDiagrams } from "../model/diff.ts";
 import { yamlError } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
-import { EDGE_KINDS, MARK_COLORS, MARK_SLOTS, NODE_KINDS } from "../model/types.ts";
+import {
+  EDGE_KINDS,
+  MARK_COLORS,
+  MARK_SHAPES,
+  MARK_SIZES,
+  MARK_SLOTS,
+  NODE_KINDS,
+} from "../model/types.ts";
 import { record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
@@ -518,9 +525,14 @@ function build(): Command {
       .option(
         "--bg <color>",
         `a text mark's background: ${Object.keys(MARK_COLORS).join(", ")} or #rrggbb`,
-      ),
+      )
+      .option("--fg <color>", "a text mark's text color; the default reads on the background")
+      .option("--border <color>", "a text mark's border color; the default has none")
+      .option("--shape <shape>", `a text mark's badge: ${MARK_SHAPES.join(", ")}`)
+      .option("--size <size>", `any mark's size: ${MARK_SIZES.join(", ")}`),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "node.icon", id, ...pick(opts, ["slot", "icon", "bg"]) }, opts);
+    const names = ["slot", "icon", "bg", "fg", "border", "shape", "size"];
+    await write(file, { op: "node.icon", id, ...pick(opts, names) }, opts);
   });
   json(
     node

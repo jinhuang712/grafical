@@ -23,7 +23,10 @@ import {
   type Layer,
   LINE_STYLES,
   MARK_COLORS,
+  MARK_SHAPES,
+  MARK_SIZES,
   MARK_SLOTS,
+  type Mark,
   NODE_KINDS,
   SIZE_STEPS,
   SIZINGS,
@@ -48,6 +51,12 @@ export function graphemes(s: string): string[] {
   );
 }
 
+/** A parsed mark without its absent fields, which the types do not allow to be undefined. */
+function compactMark(m: z.output<typeof markSchema>): Mark {
+  if (typeof m === "string") return m;
+  return Object.fromEntries(Object.entries(m).filter(([, v]) => v !== undefined)) as Mark;
+}
+
 /** Does this text hold one emoji? Anything else short is drawn as text (D40). */
 export function isEmoji(text: string): boolean {
   return /^\p{Extended_Pictographic}/u.test(text) && graphemes(text).length === 1;
@@ -70,10 +79,23 @@ const markText1 = z
   .min(1)
   .refine((v) => graphemes(v).length <= MARK_TEXT_MAX, { message: "mark-too-long" });
 
+const hexColor = z.string().regex(/^#[0-9a-f]{6}$/);
+
 const markSchema = z.union([
   markText1,
-  z.strictObject({ file: text, sha256: z.string().regex(/^[0-9a-f]{64}$/) }),
-  z.strictObject({ text: markText1, bg: z.string().regex(/^#[0-9a-f]{6}$/) }),
+  z.strictObject({
+    file: text,
+    sha256: z.string().regex(/^[0-9a-f]{64}$/),
+    size: z.enum(MARK_SIZES).optional(),
+  }),
+  z.strictObject({
+    text: markText1,
+    bg: hexColor.optional(),
+    border: hexColor.optional(),
+    fg: hexColor.optional(),
+    shape: z.enum(MARK_SHAPES).optional(),
+    size: z.enum(MARK_SIZES).optional(),
+  }),
 ]);
 
 const iconsSchema = z.strictObject({
@@ -171,7 +193,7 @@ function build(p: Parsed): Diagram {
         const icons: NonNullable<DiagramNode["icons"]> = {};
         for (const slot of MARK_SLOTS) {
           const m = n.icons[slot];
-          if (m !== undefined) icons[slot] = m;
+          if (m !== undefined) icons[slot] = compactMark(m);
         }
         if (Object.keys(icons).length > 0) node.icons = icons;
       }

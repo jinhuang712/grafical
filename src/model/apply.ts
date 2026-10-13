@@ -10,7 +10,15 @@ import { STYLESHEET_SUFFIX, styleProblem, THEMES, themeOf } from "../theme/theme
 import { endIds, endKind } from "./ends.ts";
 import { groupChain, groupHeight, inGroup, innerGroups, MAX_GROUP_DEPTH } from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
-import type { EdgeAddOp, LayerAddOp, NodeAddOp, NodeMoveOp, Op, Position } from "./ops.ts";
+import type {
+  EdgeAddOp,
+  LayerAddOp,
+  NodeAddOp,
+  NodeIconOp,
+  NodeMoveOp,
+  Op,
+  Position,
+} from "./ops.ts";
 import {
   checkIntegrity,
   graphemes,
@@ -24,6 +32,8 @@ import { closest } from "./suggest.ts";
 import {
   DEFAULT_DENSITY,
   DEFAULT_EDGE_KIND,
+  DEFAULT_MARK_SHAPE,
+  DEFAULT_MARK_SIZE,
   DEFAULT_NODE_KIND,
   type Diagram,
   type DiagramNode,
@@ -33,6 +43,8 @@ import {
   type Layer,
   MARK_COLORS,
   MARK_SLOTS,
+  type Mark,
+  type MarkStyle,
 } from "./types.ts";
 
 export type ApplyResult = { diagram: Diagram; changed: string[] } | { errors: OpError[] };
@@ -75,6 +87,59 @@ function dupError(d: Diagram, id: string, i: number): OpError | undefined {
     found: id,
     facts: { is: kind, free: `${id}-${n}` },
   };
+}
+
+/** The style fields of a node.icon operation, in the order errors name them. */
+const MARK_STYLE_FIELDS = ["bg", "fg", "border", "shape"] as const;
+
+/**
+ * The mark a node.icon operation sets, or its errors (D40). A style that holds its default
+ * is left out, so the file shows only what was chosen. A picture, that is an emoji or a
+ * file, takes a size and nothing else: it has its own colors and outline.
+ */
+function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
+  const bad = (code: string, field: string, found: string, facts?: OpError["facts"]): OpError[] => [
+    { code, index: i, field, found, ...(facts === undefined ? {} : { facts }) },
+  ];
+  const size = op.size === undefined || op.size === DEFAULT_MARK_SIZE ? undefined : op.size;
+  const picture = op.sha256 !== undefined || isEmoji(icon);
+  if (op.sha256 === undefined && isMarkFile(icon)) {
+    // The command line reads the file and fills in its hash before the operation gets here.
+    return bad("mark-file-unread", "icon", icon, {
+      fix: [`node icon <file> ${op.id} --slot ${op.slot} --icon ${icon}`],
+    });
+  }
+  if (op.sha256 === undefined && graphemes(icon).length > MARK_TEXT_MAX) {
+    return bad("mark-too-long", "icon", icon, { max: MARK_TEXT_MAX });
+  }
+  if (picture) {
+    for (const f of MARK_STYLE_FIELDS) {
+      const v = op[f];
+      if (v !== undefined) {
+        return bad("mark-style-on-picture", f, v, {
+          allowed: ["size"],
+          fix: [`node icon <file> ${op.id} --slot ${op.slot} --icon ${icon}`],
+        });
+      }
+    }
+    if (op.sha256 !== undefined) {
+      return { file: icon, sha256: op.sha256, ...(size === undefined ? {} : { size }) };
+    }
+    return size === undefined ? icon : { text: icon, size };
+  }
+  const style: MarkStyle = {};
+  for (const f of ["bg", "fg", "border"] as const) {
+    const v = op[f];
+    if (v === undefined) continue;
+    const hex = markColor(v);
+    if (hex === undefined) {
+      return bad("bad-value", f, v, { allowed: [...Object.keys(MARK_COLORS), "#rrggbb"] });
+    }
+    style[f] = hex;
+  }
+  if (op.shape !== undefined && op.shape !== DEFAULT_MARK_SHAPE) style.shape = op.shape;
+  if (size !== undefined) style.size = size;
+  return Object.keys(style).length === 0 ? icon : { text: icon, ...style };
 }
 
 function nodeIds(d: Diagram): string[] {
@@ -1064,63 +1129,11 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       }
       if (op.icon === undefined) {
         if (n.icons !== undefined) delete n.icons[op.slot];
-      } else if (op.sha256 !== undefined) {
-        if (op.bg !== undefined) {
-          return [
-            {
-              code: "mark-bg-on-picture",
-              index: i,
-              field: "bg",
-              found: op.bg,
-              facts: { fix: [`node icon <file> ${op.id} --slot ${op.slot} --icon ${op.icon}`] },
-            },
-          ];
-        }
-        n.icons = { ...n.icons, [op.slot]: { file: op.icon, sha256: op.sha256 } };
-      } else if (isMarkFile(op.icon)) {
-        // The command line reads the file and fills in its hash before the operation gets here.
-        return [
-          {
-            code: "mark-file-unread",
-            index: i,
-            field: "icon",
-            found: op.icon,
-            facts: { fix: [`node icon <file> ${op.id} --slot ${op.slot} --icon ${op.icon}`] },
-          },
-        ];
-      } else if (graphemes(op.icon).length > MARK_TEXT_MAX) {
-        return [
-          {
-            code: "mark-too-long",
-            index: i,
-            field: "icon",
-            found: op.icon,
-            facts: { max: MARK_TEXT_MAX },
-          },
-        ];
-      } else if (op.bg !== undefined) {
-        const bg = markColor(op.bg);
-        // A picture has its own colors, so a background belongs to a text mark only.
-        if (bg === undefined || isEmoji(op.icon)) {
-          return [
-            {
-              code: bg === undefined ? "bad-value" : "mark-bg-on-picture",
-              index: i,
-              field: "bg",
-              found: op.bg,
-              facts:
-                bg === undefined
-                  ? { allowed: [...Object.keys(MARK_COLORS), "#rrggbb"] }
-                  : {
-                      fix: [
-                        `node icon <file> ${op.id} --slot ${op.slot} --icon <text> --bg ${op.bg}`,
-                      ],
-                    },
-            },
-          ];
-        }
-        n.icons = { ...n.icons, [op.slot]: { text: op.icon, bg } };
-      } else n.icons = { ...n.icons, [op.slot]: op.icon };
+      } else {
+        const mark = buildMark(op, op.icon, i);
+        if (Array.isArray(mark)) return mark;
+        n.icons = { ...n.icons, [op.slot]: mark };
+      }
       if (n.icons !== undefined && Object.keys(n.icons).length === 0) delete n.icons;
       touch(s, op.id);
       return [];

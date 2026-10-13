@@ -4,7 +4,7 @@
 // The sizes follow the target picture (D25): 136 x 56 boxes, 32 px between
 // neighbours, 24 px of group padding.
 
-import type { Density, SizeStep } from "../model/types.ts";
+import type { Density, MarkShape, MarkSize, SizeStep } from "../model/types.ts";
 
 export const BOX: Record<SizeStep, { w: number; h: number }> = {
   s: { w: 112, h: 48 },
@@ -23,19 +23,30 @@ export const BOX: Record<SizeStep, { w: number; h: number }> = {
  * text gives up.
  */
 export const MARK = {
-  size: 20,
   overhang: 6,
   /** Space between the left mark and the text. */
   leftGap: 8,
-  /** Space between a text mark's text and the edge of its badge, left and right. */
-  padX: 5,
 };
 
-/** The font size of a text mark: one character is larger than a few. */
-export function markTextSize(text: string): number {
-  return [...new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text)].length <= 1
-    ? 14
-    : 11;
+/**
+ * A mark's size steps (D40): its height, which is also a picture's width, the font size of a
+ * text of one character and of several, and the space between a text and its badge's edge.
+ */
+export const MARK_STEP: Record<MarkSize, { h: number; one: number; many: number; padX: number }> = {
+  s: { h: 16, one: 11, many: 9, padX: 4 },
+  m: { h: 20, one: 14, many: 11, padX: 5 },
+  l: { h: 28, one: 18, many: 14, padX: 7 },
+};
+
+/** The font size of a text mark: one character is larger than several. */
+export function markTextSize(text: string, size: MarkSize = "m"): number {
+  const n = [...new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text)].length;
+  return n <= 1 ? MARK_STEP[size].one : MARK_STEP[size].many;
+}
+
+/** The corner radius of a badge of this shape and height. */
+export function markRadius(shape: MarkShape, h: number): number {
+  return shape === "square" ? 0 : shape === "pill" ? h / 2 : 4;
 }
 
 /** The one size of a state machine's start and end dots (D34). */

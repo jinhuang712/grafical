@@ -6,17 +6,19 @@
 
 import { isEmoji } from "../model/schema.ts";
 import {
+  DEFAULT_MARK_SIZE,
   type Diagram,
   type DiagramNode,
   MARK_SLOTS,
   type Mark,
+  markStyle,
   markText,
   type NodeKind,
   type SizeStep,
 } from "../model/types.ts";
 import type { Rect, SceneMark } from "../scene.ts";
 import type { Line, Measurer } from "../text/types.ts";
-import { FRAME, MARK, markTextSize } from "../theme/geometry.ts";
+import { FRAME, MARK, MARK_STEP, markTextSize } from "../theme/geometry.ts";
 import { isDot, lineRoom, nodeBox } from "../theme/shapes.ts";
 import { type TypeRamp, themeOf } from "../theme/themes.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
@@ -27,10 +29,16 @@ import { lineHeight } from "./text.ts";
  * wide as the text and its padding, and at least a square, so that `NEW` fits.
  */
 export function markWidth(mark: Mark, m: Measurer): number {
+  const step = MARK_STEP[markStyle(mark).size ?? DEFAULT_MARK_SIZE];
   const text = markText(mark);
-  if (text === undefined || isEmoji(text)) return MARK.size;
-  const w = m.measure(text, { size: markTextSize(text), weight: 600 }).width;
-  return Math.max(MARK.size, Math.ceil(w + 2 * MARK.padX));
+  if (text === undefined || isEmoji(text)) return step.h;
+  const size = markTextSize(text, markStyle(mark).size);
+  return Math.max(step.h, Math.ceil(m.measure(text, { size, weight: 600 }).width + 2 * step.padX));
+}
+
+/** How high a mark is (D40). */
+export function markHeight(mark: Mark): number {
+  return MARK_STEP[markStyle(mark).size ?? DEFAULT_MARK_SIZE].h;
 }
 
 /** The width a node's text gives up for its left mark (D40). A diamond and a dot have no left slot. */
@@ -47,20 +55,21 @@ export function leftInset(node: DiagramNode, m: Measurer): number {
  */
 export function markRects(node: DiagramNode, r: Rect, m: Measurer): SceneMark[] {
   const out: SceneMark[] = [];
-  const { size, overhang } = MARK;
+  const { overhang } = MARK;
   for (const slot of MARK_SLOTS) {
     const mark = node.icons?.[slot];
     if (mark === undefined) continue;
     const w = markWidth(mark, m);
+    const h = markHeight(mark);
     let rect: Rect;
     if (slot === "left") {
       if (leftInset(node, m) === 0) continue;
-      rect = { x: r.x + FRAME.textPad, y: r.y + (r.h - size) / 2, w, h: size };
+      rect = { x: r.x + FRAME.textPad, y: r.y + (r.h - h) / 2, w, h };
     } else {
       // A corner mark grows away from its corner, so it stays over the same corner.
       const x = slot.endsWith("left") ? r.x - overhang : r.x + r.w - w + overhang;
-      const y = slot.startsWith("top") ? r.y - overhang : r.y + r.h - size + overhang;
-      rect = { x, y, w, h: size };
+      const y = slot.startsWith("top") ? r.y - overhang : r.y + r.h - h + overhang;
+      rect = { x, y, w, h };
     }
     out.push({ slot, rect, mark });
   }

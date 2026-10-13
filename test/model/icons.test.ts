@@ -100,10 +100,10 @@ describe("node.icon (D40)", () => {
   it("refuses a background on an emoji or on a file", () => {
     expect(
       run([{ op: "node.icon", id: "x", slot: "top-left", icon: "⚠️", bg: "red" }]),
-    ).toMatchObject([{ code: "mark-bg-on-picture", field: "bg" }]);
+    ).toMatchObject([{ code: "mark-style-on-picture", field: "bg" }]);
     expect(
       run([{ op: "node.icon", id: "x", slot: "top-left", icon: "a.svg", sha256: HASH, bg: "red" }]),
-    ).toMatchObject([{ code: "mark-bg-on-picture", field: "bg" }]);
+    ).toMatchObject([{ code: "mark-style-on-picture", field: "bg" }]);
   });
 
   it("setting the slot again without a background drops it", () => {
@@ -112,6 +112,80 @@ describe("node.icon (D40)", () => {
       { op: "node.icon", id: "x", slot: "top-left", icon: "P0" },
     ]) as Diagram;
     expect(d.layers[0]?.nodes[0]?.icons).toEqual({ "top-left": "P0" });
+  });
+
+  it("sets the text color, border, shape and size of a text mark, keeping only what is not default", () => {
+    const d = run([
+      {
+        op: "node.icon",
+        id: "x",
+        slot: "top-left",
+        icon: "P0",
+        bg: "red",
+        fg: "#FFFFFF",
+        border: "dark",
+        shape: "pill",
+        size: "l",
+      },
+      // The defaults are left out of the file.
+      { op: "node.icon", id: "x", slot: "top-right", icon: "v2", shape: "rounded", size: "m" },
+    ]) as Diagram;
+    expect(d.layers[0]?.nodes[0]?.icons).toEqual({
+      "top-left": {
+        text: "P0",
+        bg: "#d1242f",
+        fg: "#ffffff",
+        border: "#1f2328",
+        shape: "pill",
+        size: "l",
+      },
+      "top-right": "v2",
+    });
+  });
+
+  it("gives a picture a size, and refuses every other style on it, naming the field", () => {
+    const d = run([
+      { op: "node.icon", id: "x", slot: "top-left", icon: "⚠️", size: "l" },
+      { op: "node.icon", id: "x", slot: "top-right", icon: "a.svg", sha256: HASH, size: "s" },
+    ]) as Diagram;
+    expect(d.layers[0]?.nodes[0]?.icons).toEqual({
+      "top-left": { text: "⚠️", size: "l" },
+      "top-right": { file: "a.svg", sha256: HASH, size: "s" },
+    });
+    for (const f of ["bg", "fg", "border", "shape"] as const) {
+      const v = f === "shape" ? "pill" : "red";
+      expect(run([{ op: "node.icon", id: "x", slot: "left", icon: "⚠️", [f]: v }])).toMatchObject([
+        { code: "mark-style-on-picture", field: f, facts: { allowed: ["size"] } },
+      ]);
+    }
+  });
+
+  it("refuses a text or border color that is no color, naming the field", () => {
+    for (const f of ["fg", "border"] as const) {
+      expect(
+        run([{ op: "node.icon", id: "x", slot: "top-left", icon: "P0", [f]: "pink" }]),
+      ).toMatchObject([{ code: "bad-value", field: f }]);
+    }
+  });
+
+  it("round-trips a styled mark and a sized picture, with keys sorted, and diff rebuilds them", () => {
+    const d = run([
+      {
+        op: "node.icon",
+        id: "x",
+        slot: "top-left",
+        icon: "P0",
+        bg: "red",
+        border: "dark",
+        size: "s",
+      },
+      { op: "node.icon", id: "x", slot: "top-right", icon: "🔥", size: "l" },
+    ]) as Diagram;
+    const text = writeDiagram(d);
+    expect(text).toMatch(/bg: "?#d1242f"?\n\s+border: "?#1f2328"?\n\s+size: s\n\s+text: P0/);
+    expect(readDiagram(text)).toEqual(d);
+    expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
+    expect(run(diffDiagrams(base, d))).toEqual(d);
   });
 
   it("refuses the left slot on a diamond, and names the slots that remain", () => {

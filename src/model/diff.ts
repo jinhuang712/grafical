@@ -315,8 +315,19 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       if (JSON.stringify(now) === JSON.stringify(before)) continue;
       if (now === undefined) ops.push({ op: "node.icon", id, slot });
       else if (typeof now === "string") ops.push({ op: "node.icon", id, slot, icon: now });
-      else if ("text" in now) ops.push({ op: "node.icon", id, slot, icon: now.text, bg: now.bg });
-      else ops.push({ op: "node.icon", id, slot, icon: now.file, sha256: now.sha256 });
+      else if ("file" in now) {
+        ops.push({
+          op: "node.icon",
+          id,
+          slot,
+          icon: now.file,
+          sha256: now.sha256,
+          ...(now.size === undefined ? {} : { size: now.size }),
+        });
+      } else {
+        const { text, ...style } = now;
+        ops.push({ op: "node.icon", id, slot, icon: text, ...style });
+      }
     }
     if (n.accent === true && was?.accent !== true) ons.push({ op: "node.emphasize", id });
     const now =

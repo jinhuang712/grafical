@@ -164,10 +164,53 @@ describe("grafical node icon", () => {
     expect(svg).toMatch(/fill="#1f2328"[^>]*>NEW</);
     expect(
       run("node", "icon", f, "n", "--slot", "left", "--icon", "⚠️", "--bg", "red").out,
-    ).toContain("code=mark-bg-on-picture");
+    ).toContain("code=mark-style-on-picture");
     expect(
       run("node", "icon", f, "n", "--slot", "left", "--icon", "P1", "--bg", "pink").out,
     ).toContain("allowed=red,amber,green,blue,purple,gray,dark,#rrggbb");
+  });
+
+  it("draws the border, shape, text color and size a text mark is given", () => {
+    const f = "h.grafical.yaml";
+    for (const args of [
+      ["new", f, "--title", "H"],
+      ["layer", "add", f, "top", "--label", "L"],
+      ["node", "add", f, "n", "--layer", "top", "--label", "N", "--size", "l"],
+    ]) {
+      run(...args);
+    }
+    const put = (slot: string, ...rest: string[]) =>
+      run("node", "icon", f, "n", "--slot", slot, "--icon", ...rest);
+    expect(
+      put("top-left", "P0", "--bg", "#fff3bf", "--border", "#bf8700", "--shape", "pill").code,
+    ).toBe(0);
+    expect(
+      put("top-right", "NEW", "--bg", "blue", "--fg", "#ffd43b", "--size", "l", "--shape", "square")
+        .code,
+    ).toBe(0);
+    run("render", f, "--svg", "h.svg");
+    const svg = read("h.svg");
+    // Pill: the radius is half the height (20 px), less the border's inset. Square: no radius.
+    expect(svg).toMatch(/rx="9\.25" fill="#fff3bf" stroke="#bf8700" stroke-width="1\.5"/);
+    expect(svg).toMatch(/height="28" rx="0" fill="#0969da"/);
+    expect(svg).toMatch(/fill="#ffd43b"[^>]*>NEW</);
+    // No --fg: dark text on the pale badge.
+    expect(svg).toMatch(/fill="#1f2328"[^>]*>P0</);
+    expect(run("show", f).out).toContain("icon.top-left.border=#bf8700");
+    expect(run("show", f).out).toContain("icon.top-right.size=l");
+  });
+
+  it("refuses a style on an emoji, and a shape that does not exist", () => {
+    const f = "h.grafical.yaml";
+    expect(
+      run("node", "icon", f, "n", "--slot", "left", "--icon", "⚠️", "--fg", "red").out,
+    ).toContain("code=mark-style-on-picture field=fg");
+    expect(
+      run("node", "icon", f, "n", "--slot", "left", "--icon", "P0", "--shape", "star").out,
+    ).toContain("allowed=square,rounded,pill");
+    expect(
+      run("node", "icon", f, "n", "--slot", "left", "--icon", "P0", "--size", "xl").out,
+    ).toContain("allowed=s,m,l");
   });
 
   it("clears a slot without --icon", () => {

@@ -45,8 +45,16 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
       const m = n.icons[slot];
       if (m === undefined) continue;
       if (typeof m === "string") icons[slot] = m;
-      else if ("file" in m) icons[slot] = { file: m.file, sha256: m.sha256 };
-      else icons[slot] = { bg: m.bg, text: m.text };
+      else if ("file" in m) {
+        icons[slot] = { file: m.file, sha256: m.sha256, ...(m.size ? { size: m.size } : {}) };
+      } else {
+        // Keys sorted, so the same facts give the same bytes (D15).
+        const o: Record<string, string> = {};
+        for (const k of ["bg", "border", "fg", "shape", "size", "text"] as const) {
+          if (m[k] !== undefined) o[k] = m[k];
+        }
+        icons[slot] = o;
+      }
     }
     o.icons = icons;
   }

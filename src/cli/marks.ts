@@ -9,7 +9,7 @@ import { dirname, isAbsolute, join, normalize } from "node:path";
 import type { OpError } from "../errors.ts";
 import type { Op } from "../model/ops.ts";
 import { isMarkFile } from "../model/schema.ts";
-import { type Diagram, MARK_SLOTS, type Mark, type MarkSlot } from "../model/types.ts";
+import { type Diagram, MARK_SLOTS, type Mark, type MarkSlot, markText } from "../model/types.ts";
 import { isEmoji, markKey, provideMarkImage } from "../render/marks.ts";
 
 const require = createRequire(import.meta.url);
@@ -64,13 +64,13 @@ function prepare(
   mark: string | Mark,
   index: number,
 ): { sha256?: string; error?: OpError } {
-  // A text with a background is drawn by the SVG writer, with no picture to read.
-  if (typeof mark === "object" && "text" in mark) return {};
-  if (typeof mark === "string" && !isMarkFile(mark)) {
-    if (!isEmoji(mark)) return {};
-    const path = emojiPath(mark);
+  const text = typeof mark === "string" ? (isMarkFile(mark) ? undefined : mark) : markText(mark);
+  if (text !== undefined) {
+    // A plain text is drawn by the SVG writer, with no picture to read. An emoji is a picture.
+    if (!isEmoji(text)) return {};
+    const path = emojiPath(text);
     if (!existsSync(path)) {
-      return { error: problem("mark-not-drawn", index, mark, ["use an emoji from Unicode 15"]) };
+      return { error: problem("mark-not-drawn", index, text, ["use an emoji from Unicode 15"]) };
     }
     provideMarkImage(markKey(mark), {
       mime: "image/svg+xml",
@@ -78,7 +78,7 @@ function prepare(
     });
     return {};
   }
-  const file = typeof mark === "string" ? mark : mark.file;
+  const file = typeof mark === "string" ? mark : (mark as { file: string }).file;
   if (isAbsolute(file) || normalize(file).startsWith("..")) {
     return {
       error: problem("mark-file-outside", index, file, ["put the file next to the diagram"]),
