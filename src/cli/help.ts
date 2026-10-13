@@ -199,7 +199,8 @@ ${indent(EXAMPLE_BATCH)}  grafical apply orders.grafical.yaml batch.yaml
   },
 
   render: {
-    about: "Write the picture as SVG and PNG, beside the file unless --svg or --png say where.",
+    about:
+      "Write the picture as SVG and PNG beside the file; --svg or --png alone writes only that one.",
     after: `
 Good to know:
   - Look at the PNG after a draft, and after any change you are unsure of.

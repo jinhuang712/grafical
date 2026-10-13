@@ -731,8 +731,8 @@ function build(): Command {
       .command("render")
       .description("write SVG and PNG; with neither --svg nor --png, both beside the file")
       .argument("<file>")
-      .option("--svg <out>")
-      .option("--png <out>")
+      .option("--svg [out]", "write only the SVG: to <out>, or beside the file")
+      .option("--png [out]", "write only the PNG: to <out>, or beside the file")
       .option("--scale <n>", "PNG scale, 1 to 4", "2"),
   ).action(async (file: string, opts: Opts) => {
     const scale = Number(opts.scale);

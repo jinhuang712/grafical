@@ -18,7 +18,7 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical apply <file> <batch.yaml>` | Apply a list of operations, all or nothing | done |
 | `grafical show <file>` | Print a compact view of the diagram for agents | done |
 | `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (D14) | done |
-| `grafical render <file> [--svg <out>] [--png <out>]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file. `--scale` sets the PNG scale, from 1 to 4 | done |
+| `grafical render <file> [--svg [<out>]] [--png [<out>]]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file; `--svg` or `--png` alone writes only that one, to `<out>` or beside the file. `--scale` sets the PNG scale, from 1 to 4 | done |
 | `grafical view <file> [--port <n>] [--no-open]` | Open a window, sized to the diagram, that shows it as it is now, redrawn within a moment of every change, with the changed parts marked, a list of each change as operations, and the problems. Ctrl-C stops it (D31) | done |
 | `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file (D18) | done |
 | `grafical --help`, `grafical <command> --help` | The reference for agents: how to work, what makes a diagram good, the diagram types, and for each command its options, guidelines, common mistakes, limits and an example (D36) | done |
@@ -162,7 +162,7 @@ grafical diagram style <file> [<style>]
 grafical apply <file> <batch.yaml>
 grafical show <file>
 grafical check <file> [--all]
-grafical render <file> [--svg <out>] [--png <out>] [--scale 1-4]
+grafical render <file> [--svg [<out>]] [--png [<out>]] [--scale 1-4]
 grafical view <file> [--port <n>] [--no-open]
 grafical diff <file> [<git-rev>]
 ```

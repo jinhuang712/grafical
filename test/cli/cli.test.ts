@@ -292,6 +292,10 @@ describe("read commands", () => {
     expect(r.code).toBe(0);
     expect(existsSync(join(dir, "only.png"))).toBe(true);
     expect(r.out).toBe("wrote only.png\nok\n");
+    // A flag with no path writes only that file, beside the diagram.
+    const beside = run("render", "single.grafical.yaml", "--png", "--scale", "1");
+    expect(beside.code).toBe(0);
+    expect(beside.out).toBe("wrote single.png\nok\n");
   });
 
   it("the help read before a draft is byte-stable and within the old guide's budget", () => {
