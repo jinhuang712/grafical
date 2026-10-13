@@ -37,6 +37,19 @@ export type LineStyleName = (typeof LINE_STYLES)[number];
 export const SIZINGS = ["auto", "fixed"] as const;
 export type Sizing = (typeof SIZINGS)[number];
 
+/**
+ * Where a mark sits on a node (D40): over one of its four corners, or in a column
+ * inside the box, left of the text.
+ */
+export const MARK_SLOTS = ["top-left", "top-right", "bottom-left", "bottom-right", "left"] as const;
+export type MarkSlot = (typeof MARK_SLOTS)[number];
+
+/**
+ * A mark: an emoji or a short text, or an SVG or PNG file next to the diagram file.
+ * A file is kept with its SHA-256, so a changed file is caught (D40, D15).
+ */
+export type Mark = string | { file: string; sha256: string };
+
 export interface DiagramNode {
   id: string;
   label: string;
@@ -53,6 +66,8 @@ export interface DiagramNode {
   group?: string;
   /** The lane this node lies in, when lanes run as columns (D32). */
   lane?: string;
+  /** Marks in fixed slots, such as a warning at the top-left (D40). */
+  icons?: Partial<Record<MarkSlot, Mark>>;
 }
 
 /** A system drawn as one box around its member nodes, which may sit in several rows (D7). */

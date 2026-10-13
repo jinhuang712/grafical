@@ -12,7 +12,7 @@ import { diffDiagrams } from "../model/diff.ts";
 import { yamlError } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
-import { EDGE_KINDS, NODE_KINDS } from "../model/types.ts";
+import { EDGE_KINDS, MARK_SLOTS, NODE_KINDS } from "../model/types.ts";
 import { record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
@@ -300,7 +300,7 @@ function build(): Command {
   const node = program
     .command("node")
     .description(
-      "boxes: add, move, swap, align, merge, kind, describe, rename, resize, emphasize, remove",
+      "boxes: add, move, swap, align, merge, kind, describe, icon, rename, resize, emphasize, remove",
     );
   json(
     node
@@ -483,6 +483,20 @@ function build(): Command {
       .option("--off", "undo it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "node.emphasize", id, ...pick(opts, ["off"]) }, opts);
+  });
+  json(
+    node
+      .command("icon")
+      .description("put a mark on a node: an emoji, a short text, or an SVG or PNG file")
+      .argument("<file>")
+      .argument("<id>")
+      .requiredOption("--slot <slot>", MARK_SLOTS.join(", "))
+      .option(
+        "--icon <mark>",
+        "an emoji, up to 3 characters, or a file next to the diagram; leave it out to clear",
+      ),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "node.icon", id, ...pick(opts, ["slot", "icon"]) }, opts);
   });
   json(
     node

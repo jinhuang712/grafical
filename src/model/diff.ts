@@ -17,6 +17,7 @@ import {
   type Group,
   type Lane,
   LINE_STYLES,
+  MARK_SLOTS,
 } from "./types.ts";
 
 /** The longest common subsequence of two lists of ids, as a set. */
@@ -307,6 +308,14 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
         );
       if (was.accent === true && n.accent !== true)
         ops.push({ op: "node.emphasize", id, off: true });
+    }
+    for (const slot of MARK_SLOTS) {
+      const now = n.icons?.[slot];
+      const before = was?.icons?.[slot];
+      if (JSON.stringify(now) === JSON.stringify(before)) continue;
+      if (now === undefined) ops.push({ op: "node.icon", id, slot });
+      else if (typeof now === "string") ops.push({ op: "node.icon", id, slot, icon: now });
+      else ops.push({ op: "node.icon", id, slot, icon: now.file, sha256: now.sha256 });
     }
     if (n.accent === true && was?.accent !== true) ons.push({ op: "node.emphasize", id });
     const now =

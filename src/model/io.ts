@@ -3,7 +3,14 @@
 import { parseDocument, stringify } from "yaml";
 import type { OpError } from "../errors.ts";
 import { validateDiagram } from "./schema.ts";
-import { type Diagram, type DiagramNode, type Edge, type Layer, LINE_STYLES } from "./types.ts";
+import {
+  type Diagram,
+  type DiagramNode,
+  type Edge,
+  type Layer,
+  LINE_STYLES,
+  MARK_SLOTS,
+} from "./types.ts";
 
 export function readDiagram(text: string): Diagram | OpError[] {
   const doc = parseDocument(text, { uniqueKeys: true });
@@ -32,6 +39,15 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
   if (n.align !== undefined) o.align = n.align;
   if (n.group !== undefined) o.group = n.group;
   if (n.lane !== undefined) o.lane = n.lane;
+  if (n.icons !== undefined && Object.keys(n.icons).length > 0) {
+    const icons: Record<string, unknown> = {};
+    for (const slot of MARK_SLOTS) {
+      const m = n.icons[slot];
+      if (m !== undefined)
+        icons[slot] = typeof m === "string" ? m : { file: m.file, sha256: m.sha256 };
+    }
+    o.icons = icons;
+  }
   return o;
 }
 

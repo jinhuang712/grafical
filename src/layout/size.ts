@@ -4,13 +4,52 @@
 // overflow rule (D14), so a node the engine sizes overflows only when its text
 // does not fit the large box either.
 
-import type { Diagram, DiagramNode, NodeKind, SizeStep } from "../model/types.ts";
+import {
+  type Diagram,
+  type DiagramNode,
+  MARK_SLOTS,
+  type NodeKind,
+  type SizeStep,
+} from "../model/types.ts";
+import type { Rect, SceneMark } from "../scene.ts";
 import type { Line, Measurer } from "../text/types.ts";
-import { FRAME } from "../theme/geometry.ts";
+import { FRAME, MARK } from "../theme/geometry.ts";
 import { isDot, lineRoom, nodeBox } from "../theme/shapes.ts";
 import { type TypeRamp, themeOf } from "../theme/themes.ts";
 import { TYPE_RAMP } from "../theme/type.ts";
 import { lineHeight } from "./text.ts";
+
+/** The width a node's text gives up for its left mark (D40). A diamond and a dot have no left slot. */
+export function leftInset(node: DiagramNode): number {
+  return node.icons?.left !== undefined && node.kind !== "decision" && !isDot(node.kind)
+    ? MARK.leftColumn
+    : 0;
+}
+
+/**
+ * Where a node's marks go (D40). A corner mark is a square that sticks out of its
+ * corner by MARK.overhang. The left mark is inside the box, centred in its column.
+ * A diamond and a dot have corner marks only.
+ */
+export function markRects(node: DiagramNode, r: Rect): SceneMark[] {
+  const out: SceneMark[] = [];
+  const { size, overhang } = MARK;
+  for (const slot of MARK_SLOTS) {
+    const mark = node.icons?.[slot];
+    if (mark === undefined) continue;
+    let rect: Rect;
+    if (slot === "left") {
+      if (leftInset(node) === 0) continue;
+      rect = { x: r.x + FRAME.textPad, y: r.y + (r.h - size) / 2, w: size, h: size };
+    } else {
+      const x = slot.endsWith("left") ? r.x - overhang : r.x + r.w - size + overhang;
+      const y = slot.startsWith("top") ? r.y - overhang : r.y + r.h - size + overhang;
+      rect = { x, y, w: size, h: size };
+    }
+    out.push({ slot, rect, mark });
+  }
+  return out;
+}
 
 /** A node's label and sublabel, wrapped to the room its shape gives its text (D34). */
 export function nodeLines(
@@ -21,6 +60,8 @@ export function nodeLines(
   sublabel: string | undefined,
   m: Measurer,
   T: TypeRamp,
+  /** Width the text gives up on the left, for a left mark (D40). */
+  inset = 0,
 ): { label: Line[]; sub: Line[]; room: number } {
   const wrap = (room: number) => ({
     label: m.wrap(label, T["node-label"], room),
@@ -28,7 +69,7 @@ export function nodeLines(
       sublabel === undefined || sublabel === "" ? [] : m.wrap(sublabel, T["node-sublabel"], room),
     room,
   });
-  if (kind !== "decision") return wrap(lineRoom(kind, w, h, 0));
+  if (kind !== "decision") return wrap(lineRoom(kind, w, h, 0) - inset);
   // A diamond's lines narrow as its text block grows, so wrap again until the block
   // the lines were wrapped for holds them.
   const lh = lineHeight("node-label", m, T);
@@ -54,7 +95,16 @@ export function fits(
   // A dot draws no text, so any label fits it.
   if (isDot(node.kind)) return true;
   const box = nodeBox(node.kind, step);
-  const { label, sub, room } = nodeLines(node.kind, box.w, box.h, node.label, node.sublabel, m, T);
+  const { label, sub, room } = nodeLines(
+    node.kind,
+    box.w,
+    box.h,
+    node.label,
+    node.sublabel,
+    m,
+    T,
+    leftInset(node),
+  );
   if (label.length > FRAME.labelLines || sub.length > FRAME.sublabelLines) return false;
   if ([...label, ...sub].some((l) => l.width > room + 1e-6)) return false;
   const block =
@@ -65,6 +115,7 @@ export function fits(
 interface Sized {
   label: string;
   sublabel: string | undefined;
+  inset: number;
   step: SizeStep;
 }
 
@@ -83,12 +134,19 @@ function autoSize(node: DiagramNode, m: Measurer, T: TypeRamp): SizeStep {
     hit !== undefined &&
     hit.ramp === T &&
     hit.label === node.label &&
-    hit.sublabel === node.sublabel
+    hit.sublabel === node.sublabel &&
+    hit.inset === leftInset(node)
   ) {
     return hit.step;
   }
   const step: SizeStep = fits(node, "m", m, T) ? "m" : "l";
-  byNode.set(node, { label: node.label, sublabel: node.sublabel, step, ramp: T });
+  byNode.set(node, {
+    label: node.label,
+    sublabel: node.sublabel,
+    inset: leftInset(node),
+    step,
+    ramp: T,
+  });
   return step;
 }
 

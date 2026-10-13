@@ -10,7 +10,7 @@ import { endIds, endKind } from "./ends.ts";
 import { groupChain, groupHeight, inGroup, innerGroups, MAX_GROUP_DEPTH } from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
 import type { EdgeAddOp, LayerAddOp, NodeAddOp, NodeMoveOp, Op, Position } from "./ops.ts";
-import { checkIntegrity, MAX_ACCENTS } from "./schema.ts";
+import { checkIntegrity, graphemes, isMarkFile, MARK_TEXT_MAX, MAX_ACCENTS } from "./schema.ts";
 import { closest } from "./suggest.ts";
 import {
   DEFAULT_DENSITY,
@@ -22,6 +22,7 @@ import {
   FORMAT_VERSION,
   type Group,
   type Layer,
+  MARK_SLOTS,
 } from "./types.ts";
 
 export type ApplyResult = { diagram: Diagram; changed: string[] } | { errors: OpError[] };
@@ -1029,6 +1030,55 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
         if (e) return [{ ...e, field: "to" }];
         n.align = op.to;
       }
+      touch(s, op.id);
+      return [];
+    }
+    case "node.icon": {
+      const at = findNode(d, op.id);
+      if (!at) return [unknownNode(d, op.id, i, "id")];
+      const n = at.node;
+      if (
+        op.icon !== undefined &&
+        op.slot === "left" &&
+        (n.kind === "decision" || n.kind === "initial" || n.kind === "final")
+      ) {
+        return [
+          {
+            code: "bad-value",
+            index: i,
+            field: "slot",
+            found: op.slot,
+            facts: { kind: n.kind, allowed: MARK_SLOTS.filter((x) => x !== "left") },
+          },
+        ];
+      }
+      if (op.icon === undefined) {
+        if (n.icons !== undefined) delete n.icons[op.slot];
+      } else if (op.sha256 !== undefined) {
+        n.icons = { ...n.icons, [op.slot]: { file: op.icon, sha256: op.sha256 } };
+      } else if (isMarkFile(op.icon)) {
+        // The command line reads the file and fills in its hash before the operation gets here.
+        return [
+          {
+            code: "mark-file-unread",
+            index: i,
+            field: "icon",
+            found: op.icon,
+            facts: { fix: [`node icon <file> ${op.id} --slot ${op.slot} --icon ${op.icon}`] },
+          },
+        ];
+      } else if (graphemes(op.icon).length > MARK_TEXT_MAX) {
+        return [
+          {
+            code: "mark-too-long",
+            index: i,
+            field: "icon",
+            found: op.icon,
+            facts: { max: MARK_TEXT_MAX },
+          },
+        ];
+      } else n.icons = { ...n.icons, [op.slot]: op.icon };
+      if (n.icons !== undefined && Object.keys(n.icons).length === 0) delete n.icons;
       touch(s, op.id);
       return [];
     }

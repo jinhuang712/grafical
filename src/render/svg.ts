@@ -11,6 +11,7 @@ import { FONT_FAMILY } from "../text/faces.ts";
 import { FRAME } from "../theme/geometry.ts";
 import { hasHead, PAINT, type Paint, STYLE_KIND } from "../theme/paint.ts";
 import { meetOutline } from "../theme/shapes.ts";
+import { markShape } from "./marks.ts";
 
 /** At most 2 decimals, no trailing zeros, never "-0". */
 export function num(v: number): string {
@@ -606,6 +607,7 @@ export function renderSvg(scene: Scene): string {
     for (const t of n.texts) {
       out.push(...texts(t, t.role === "node-sublabel" ? P.text.nodeSublabel : P.text.nodeLabel));
     }
+    for (const m of n.marks ?? []) out.push(...markShape(m, P.text.nodeLabel));
   }
 
   out.push(...texts(scene.title, P.text.title));

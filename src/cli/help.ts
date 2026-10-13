@@ -357,6 +357,25 @@ Limits:
   - At most ${MAX_ACCENTS} nodes carry an accent.
 `,
   },
+  "node icon": {
+    about: `Put a mark on a node, such as a warning at its top-left. The mark is an emoji,
+up to 3 characters of text, or an SVG or PNG file next to the diagram. Without --icon,
+the slot is cleared.`,
+    after: `
+Slots (one mark each):
+  top-left, top-right, bottom-left, bottom-right   over a corner of the box
+  left                                             inside the box, before text
+
+Notes:
+  - grafical sizes and places the mark; it takes no size or position.
+  - A file is kept with its hash. If the file changes, run this again for
+    the slot to accept it.
+  - The left slot narrows the text. A diamond and a dot have corner slots only.
+
+Example:
+  grafical node icon d.grafical.yaml billing --slot top-left --icon "⚠️"
+`,
+  },
   "node align": {
     about: "Sit directly above or below a node in another row; without --to, stop.",
   },

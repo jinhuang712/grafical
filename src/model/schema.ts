@@ -21,6 +21,7 @@ import {
   type Group,
   type Layer,
   LINE_STYLES,
+  MARK_SLOTS,
   NODE_KINDS,
   SIZE_STEPS,
   SIZINGS,
@@ -35,6 +36,37 @@ export const nodeId = z.string().regex(ID_RE, { message: ID_NODE });
 export const edgeId = z.string().regex(EDGE_ID_RE, { message: ID_EDGE });
 export const text = z.string().min(1);
 
+/** The most characters a text mark may hold; a longer text belongs in the label (D40). */
+export const MARK_TEXT_MAX = 3;
+
+/** The characters a person sees, so that one emoji counts as one. */
+export function graphemes(s: string): string[] {
+  return [...new Intl.Segmenter("en", { granularity: "grapheme" }).segment(s)].map(
+    (x) => x.segment,
+  );
+}
+
+/** Does a mark value name an image file rather than hold a text? */
+export function isMarkFile(v: string): boolean {
+  return /\.(svg|png)$/i.test(v);
+}
+
+const markSchema = z.union([
+  z
+    .string()
+    .min(1)
+    .refine((v) => graphemes(v).length <= MARK_TEXT_MAX, { message: "mark-too-long" }),
+  z.strictObject({ file: text, sha256: z.string().regex(/^[0-9a-f]{64}$/) }),
+]);
+
+const iconsSchema = z.strictObject({
+  "top-left": markSchema.optional(),
+  "top-right": markSchema.optional(),
+  "bottom-left": markSchema.optional(),
+  "bottom-right": markSchema.optional(),
+  left: markSchema.optional(),
+});
+
 const nodeSchema = z.strictObject({
   id: nodeId,
   label: text,
@@ -45,6 +77,7 @@ const nodeSchema = z.strictObject({
   align: nodeId.optional(),
   group: nodeId.optional(),
   lane: nodeId.optional(),
+  icons: iconsSchema.optional(),
 });
 
 const groupSchema = z.strictObject({
@@ -110,6 +143,14 @@ function build(p: Parsed): Diagram {
       if (n.align !== undefined) node.align = n.align;
       if (n.group !== undefined) node.group = n.group;
       if (n.lane !== undefined) node.lane = n.lane;
+      if (n.icons !== undefined) {
+        const icons: NonNullable<DiagramNode["icons"]> = {};
+        for (const slot of MARK_SLOTS) {
+          const m = n.icons[slot];
+          if (m !== undefined) icons[slot] = m;
+        }
+        if (Object.keys(icons).length > 0) node.icons = icons;
+      }
       return node;
     }),
   }));

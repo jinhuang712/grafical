@@ -103,6 +103,7 @@ export const DEFECT_CODES = [
   "group-intruder",
   "lane-stray",
   "missing-glyph",
+  "mark-covers",
 ] as const;
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
@@ -116,6 +117,7 @@ export type DefectOwner = "agent" | "engine";
 export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   overflow: "agent",
   "missing-glyph": "agent",
+  "mark-covers": "agent",
   "node-overlap": "engine",
   "edge-through-node": "engine",
   "label-collision": "engine",

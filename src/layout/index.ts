@@ -53,7 +53,7 @@ import {
   routeAcross,
 } from "./route.ts";
 import { planSideways } from "./side.ts";
-import { nodeLines, withSizes } from "./size.ts";
+import { leftInset, markRects, nodeLines, withSizes } from "./size.ts";
 import { routeStats } from "./stats.ts";
 import { lineBox, lineHeight, placeLine, placeLines } from "./text.ts";
 
@@ -942,7 +942,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   for (const l of layers) {
     for (const n of l.nodes) {
       const rect: Rect = { x: centre + n.x, y: nodeTop(l.index, n.h), w: n.w, h: n.h };
+      const marks = markRects(n.node, rect);
       const texts: PlacedText[] = [];
+      const inset = leftInset(n.node);
       // A dot's label stays in the file and in show, but is not drawn (D34).
       if (withText && !isDot(n.node.kind)) {
         const { label: lines, sub } = nodeLines(
@@ -953,10 +955,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
           n.node.sublabel,
           m,
           T,
+          inset,
         );
         const block = lines.length * nodeLh + sub.length * subLh;
         const top = textTop(n.node.kind, rect, block);
-        const cx = rect.x + rect.w / 2;
+        // A left mark takes a column, so the text centres in what is left.
+        const cx = rect.x + rect.w / 2 + inset / 2;
         texts.push(placeLines("node-label", lines, cx, top, "middle", m, T));
         if (sub.length > 0) {
           texts.push(
@@ -970,6 +974,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         kind: n.node.kind,
         accent: n.node.accent ?? false,
         rect,
+        ...(marks.length > 0 ? { marks } : {}),
         texts,
       });
     }

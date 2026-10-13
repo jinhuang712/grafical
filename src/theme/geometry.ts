@@ -17,6 +17,20 @@ export const BOX: Record<SizeStep, { w: number; h: number }> = {
  * its box is larger than a plain box of the same step: medium fits "Within 30
  * days?" on one line, large two short lines of about 115 px.
  */
+/**
+ * Marks on a node (D40). A mark is a square. A corner mark sticks out of its corner by
+ * `overhang` on both axes. The left mark takes a column inside the box, which the
+ * text gives up.
+ */
+export const MARK = {
+  size: 20,
+  overhang: 6,
+  /** Space between the left mark and the text. */
+  leftGap: 8,
+  /** The width the text gives up for a left mark: the mark, its gap, and the box padding on its left. */
+  leftColumn: 28,
+};
+
 /** The one size of a state machine's start and end dots (D34). */
 export const DOT = 24;
 

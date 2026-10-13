@@ -122,6 +122,19 @@ export function issuesToErrors(
         found: show(found),
         facts: { allowed: edge ? EDGE_ID_CHARS : ID_CHARS, likely: likelyId(found, edge) },
       });
+    } else if (issue.code === "invalid_union" || issue.message === "mark-too-long") {
+      // A mark is a text or a file: a string that is refused is too long (D40).
+      out.push(
+        typeof found === "string"
+          ? { code: "mark-too-long", index, ...base, found: show(found), facts: { max: 3 } }
+          : {
+              code: "bad-mark",
+              index,
+              ...base,
+              found: show(found),
+              facts: { allowed: ["text", "file"], type: "string" },
+            },
+      );
     } else if (issue.code === "invalid_type") {
       const type = expectedType(issue);
       out.push({
@@ -215,7 +228,7 @@ function knownKeys(raw: unknown, path: readonly PropertyKey[]): string[] {
   if (path.length === 0)
     return ["grafical", "title", "subtitle", "note", "density", "layers", "groups", "edges"];
   if (parent === "nodes")
-    return ["id", "label", "kind", "sublabel", "size", "accent", "align", "group"];
+    return ["id", "label", "kind", "sublabel", "size", "accent", "align", "group", "icons"];
   if (last === undefined || typeof last === "number") {
     if (parent === "groups") return ["id", "label", "sublabel", "in"];
     if (parent === "layers") return ["id", "label", "nodes"];

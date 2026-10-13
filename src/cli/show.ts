@@ -2,7 +2,13 @@
 // vocabulary (DESIGN.md D17). One line per layer, then one line per edge.
 
 import { laneNodes, laneRun } from "../model/lanes.ts";
-import { type Diagram, type DiagramNode, type Edge, LINE_STYLES } from "../model/types.ts";
+import {
+  type Diagram,
+  type DiagramNode,
+  type Edge,
+  LINE_STYLES,
+  MARK_SLOTS,
+} from "../model/types.ts";
 
 function nodeText(n: DiagramNode): string {
   let s = `${n.id} ${JSON.stringify(n.label)} ${n.kind}`;
@@ -12,6 +18,10 @@ function nodeText(n: DiagramNode): string {
   if (n.group !== undefined) s += ` group=${n.group}`;
   if (n.lane !== undefined) s += ` lane=${n.lane}`;
   if (n.sublabel !== undefined) s += ` sub=${JSON.stringify(n.sublabel)}`;
+  for (const slot of MARK_SLOTS) {
+    const m = n.icons?.[slot];
+    if (m !== undefined) s += ` icon.${slot}=${JSON.stringify(typeof m === "string" ? m : m.file)}`;
+  }
   return s;
 }
 

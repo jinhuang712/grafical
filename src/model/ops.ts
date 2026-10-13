@@ -13,6 +13,8 @@ import {
   type EdgeKind,
   LINE_STYLES,
   type LineStyleName,
+  MARK_SLOTS,
+  type MarkSlot,
   NODE_KINDS,
   type NodeKind,
   SIZE_STEPS,
@@ -210,6 +212,15 @@ export interface NodeEmphasizeOp {
   /** true: turn the accent off. */
   off?: boolean;
 }
+export interface NodeIconOp {
+  op: "node.icon";
+  id: string;
+  slot: MarkSlot;
+  /** An emoji or a short text, or the path of an SVG or PNG file. Absent: clear the slot. */
+  icon?: string;
+  /** The file's SHA-256, filled in by the command line when icon is a file (D40). */
+  sha256?: string;
+}
 export interface NodeAlignOp {
   op: "node.align";
   id: string;
@@ -342,6 +353,7 @@ export type Op =
   | NodeDescribeOp
   | NodeKindOp
   | NodeEmphasizeOp
+  | NodeIconOp
   | NodeAlignOp
   | NodeSwapOp
   | NodeMergeOp
@@ -508,6 +520,16 @@ export const nodeEmphasizeSchema = z.strictObject({
   id: nodeId,
   off: z.boolean().optional(),
 });
+export const nodeIconSchema = z.strictObject({
+  op: z.literal("node.icon"),
+  id: nodeId,
+  slot: z.enum(MARK_SLOTS),
+  icon: text.optional(),
+  sha256: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/)
+    .optional(),
+});
 export const nodeAlignSchema = z.strictObject({
   op: z.literal("node.align"),
   id: nodeId,
@@ -618,6 +640,7 @@ export const opSchema = z.discriminatedUnion("op", [
   nodeDescribeSchema,
   nodeKindSchema,
   nodeEmphasizeSchema,
+  nodeIconSchema,
   nodeAlignSchema,
   nodeSwapSchema,
   nodeMergeSchema,
@@ -667,6 +690,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "node.describe": nodeDescribeSchema,
   "node.kind": nodeKindSchema,
   "node.emphasize": nodeEmphasizeSchema,
+  "node.icon": nodeIconSchema,
   "node.align": nodeAlignSchema,
   "node.swap": nodeSwapSchema,
   "node.merge": nodeMergeSchema,

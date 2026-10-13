@@ -21,6 +21,7 @@ import {
   styleProblem,
   stylesheetRefs,
 } from "../theme/themes.ts";
+import { bindMarkOps, loadMarks, settingSlots } from "./marks.ts";
 
 export interface Report {
   ok: boolean;
@@ -110,7 +111,7 @@ export function fileError(code: string, file: string, facts?: Facts): Report {
 }
 
 /** Reads and validates a diagram file. */
-export function loadDiagram(file: string): Diagram | Report {
+export function loadDiagram(file: string, setting: Set<string> = new Set()): Diagram | Report {
   if (!existsSync(file)) {
     return fileError("file-not-found", file, { fix: ["grafical new <file> --title <text>"] });
   }
@@ -122,6 +123,8 @@ export function loadDiagram(file: string): Diagram | Report {
   }
   const d = readDiagram(text);
   if (Array.isArray(d)) return failure(d);
+  const marks = loadMarks(file, d, setting);
+  if (marks.length > 0) return failure(marks);
   return loadStyles(file, stylesheetRefs(d, [])) ?? d;
 }
 
@@ -185,7 +188,7 @@ async function plan(file: string, ops: Op[], create: boolean): Promise<Planned |
       return fileError("file-exists", file);
     }
   } else {
-    const loaded = loadDiagram(file);
+    const loaded = loadDiagram(file, settingSlots(ops));
     if (isReport(loaded)) return loaded;
     base = loaded;
   }
@@ -195,7 +198,9 @@ async function plan(file: string, ops: Op[], create: boolean): Promise<Planned |
   const styles = loadStyles(file, stylesheetRefs(base, named));
   if (styles !== undefined) return styles;
   const m = await createMeasurer();
-  const result = applyOps(base, ops, m);
+  const bound = bindMarkOps(file, ops);
+  if (bound.errors.length > 0) return failure(bound.errors);
+  const result = applyOps(base, bound.ops, m);
   if ("errors" in result) return failure(result.errors);
   const scene = layout(result.diagram, m);
   const defects = check(result.diagram, scene, m).filter((x) => x.owner === "agent");

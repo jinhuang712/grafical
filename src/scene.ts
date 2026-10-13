@@ -2,7 +2,7 @@
 // The layout produces it, the checker inspects it, the renderer draws it.
 // Coordinates are px, origin top left, y down.
 
-import type { EdgeKind, LineStyleName, NodeKind } from "./model/types.ts";
+import type { EdgeKind, LineStyleName, Mark, MarkSlot, NodeKind } from "./model/types.ts";
 import type { FontFace } from "./text/types.ts";
 import type { Paint } from "./theme/paint.ts";
 
@@ -100,12 +100,22 @@ export interface SceneLegendItem {
   label: PlacedText;
 }
 
+/** A mark on a node, in a square the layout fixed (D40). */
+export interface SceneMark {
+  slot: MarkSlot;
+  rect: Rect;
+  /** The mark as the diagram holds it. The SVG writer draws it with what the provider has for it. */
+  mark: Mark;
+}
+
 export interface SceneNode {
   id: string;
   layer: string;
   kind: NodeKind;
   accent: boolean;
   rect: Rect;
+  /** Marks, in slot order. Absent: none. */
+  marks?: SceneMark[];
   /** The label, then the sublabel if any. */
   texts: PlacedText[];
 }

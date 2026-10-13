@@ -3,7 +3,8 @@
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import { laneNodes } from "../model/lanes.ts";
-import { type Diagram, LINE_STYLES } from "../model/types.ts";
+import { type Diagram, LINE_STYLES, MARK_SLOTS } from "../model/types.ts";
+import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { lineStyle } from "../theme/paint.ts";
@@ -100,6 +101,37 @@ function checkNodeOverlap(scene: Scene, out: Found[]): void {
           code: "node-overlap",
           elements: [a.id, b.id].sort(),
           facts: {},
+        });
+      }
+    }
+  }
+}
+
+/**
+ * A mark must not cover text or another node (D40). A corner mark sticks out of its
+ * box, so a long label or a close neighbour can meet it.
+ */
+function checkMarkCovers(scene: Scene, out: Found[]): void {
+  for (const n of scene.nodes) {
+    for (const mark of n.marks ?? []) {
+      const fix = [`grafical node icon <file> ${n.id} --slot ${mark.slot}`];
+      if (n.texts.some((t) => rectsOverlap(t.bbox, mark.rect))) {
+        out.push({
+          code: "mark-covers",
+          elements: [n.id],
+          field: "icon",
+          found: mark.slot,
+          facts: { is: "label", fix },
+        });
+      }
+      for (const other of scene.nodes) {
+        if (other.id === n.id || !rectsOverlap(other.rect, mark.rect)) continue;
+        out.push({
+          code: "mark-covers",
+          elements: [n.id, other.id].sort(),
+          field: "icon",
+          found: mark.slot,
+          facts: { is: "node", fix },
         });
       }
     }
@@ -324,6 +356,13 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
     for (const n of layer.nodes) {
       add(n.id, "label", n.label, `grafical node rename <file> ${n.id} --label <text>`);
       add(n.id, "sublabel", n.sublabel, `grafical node describe <file> ${n.id} --text <text>`);
+      for (const slot of MARK_SLOTS) {
+        const mark = n.icons?.[slot];
+        // An emoji is drawn as a picture, so only plain text needs the fonts.
+        if (typeof mark === "string" && !isEmoji(mark)) {
+          add(n.id, "icon", mark, `grafical node icon <file> ${n.id} --slot ${slot} --icon <text>`);
+        }
+      }
     }
   }
   for (const e of diagram.edges) {
@@ -346,6 +385,7 @@ export function check(diagram: Diagram, scene: Scene, measurer: Measurer): Defec
   checkOverflow(diagram, scene, out);
   checkLaneLabels(scene, out);
   checkNodeOverlap(scene, out);
+  checkMarkCovers(scene, out);
   checkEdgeThroughNode(scene, out);
   checkLabelCollision(scene, out);
   checkEdgeOverlap(scene, out);
