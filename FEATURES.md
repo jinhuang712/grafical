@@ -16,6 +16,7 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical new <file> --title <text>` | Create an empty diagram | done |
 | `grafical <noun> <verb> <file> …` | Apply one operation, such as `grafical node add` | done |
 | `grafical apply <file> <batch.yaml>` | Apply a list of operations, all or nothing | done |
+| `grafical try <file> <batch.yaml>` | Apply a batch without writing it, and print the drawing's counts before and after it. The agent decides what to try; grafical measures (D37) | done |
 | `grafical show <file> [--drawn]` | Print a compact view of the diagram for agents. `--drawn`: how it is drawn, as facts and counts: each box's row, place, size and lines by side; each line's sides, bends, length, crossings and the rows it passes; and totals (D37) | done |
 | `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (D14) | done |
 | `grafical render <file> [--svg [<out>]] [--png [<out>]]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file; `--svg` or `--png` alone writes only that one, to `<out>` or beside the file. `--scale` sets the PNG scale, from 1 to 4 | done |

@@ -297,6 +297,23 @@ describe("read commands", () => {
     expect(json.drawing.counts.nodes).toBeGreaterThan(0);
   });
 
+  it("try reports the counts before and after a batch, and writes nothing (D37)", () => {
+    const before = readFileSync(join(dir, "single.grafical.yaml"), "utf8");
+    writeFileSync(join(dir, "try.yaml"), "- {op: node.rename, id: api, label: API service}\n");
+    const r = run("try", "single.grafical.yaml", "try.yaml");
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(
+      /^ok would change: api\nbefore: nodes \d+, lines \d+, crossings \d+.*\nafter: nodes \d+/,
+    );
+    expect(readFileSync(join(dir, "single.grafical.yaml"), "utf8")).toBe(before);
+    const json = JSON.parse(run("try", "single.grafical.yaml", "try.yaml", "--json").out);
+    expect(json.after.nodes).toBe(json.before.nodes);
+    writeFileSync(join(dir, "try-bad.yaml"), "- {op: node.rename, id: nope, label: X}\n");
+    const bad = run("try", "single.grafical.yaml", "try-bad.yaml");
+    expect(bad.code).toBe(1);
+    expect(bad.out).toContain("unknown-node");
+  });
+
   it("render with one flag writes only that file", () => {
     const r = run("render", "single.grafical.yaml", "--png", "only.png", "--scale", "1");
     expect(r.code).toBe(0);

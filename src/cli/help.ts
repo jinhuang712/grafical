@@ -222,9 +222,37 @@ Good to know:
 `,
   },
 
+  diff: {
+    about: `Print how the file differs from a git revision, HEAD by default, as a batch of
+operations that apply replays on the revision's file.`,
+  },
+
+  view: {
+    about: `Open a live window that shows the diagram as it is now, redrawn within a moment
+of every change, with the changed parts marked. Ctrl-C stops it.`,
+  },
+
   check: {
     about: `Report the defects you can fix, the warnings and what to improve, without
 changing anything. --all adds the engine's own defects, which are its bugs.`,
+  },
+
+  try: {
+    about: `Apply a batch without writing it, and print the drawing's counts before and
+after it: nodes, lines, crossings, bends, size, the fullest row, the box with
+most lines and the lines passing a row. Nothing is written.`,
+    after: `
+Good to know:
+  - Use it to compare arrangements you are weighing: a row moved, two nodes
+    swapped, a node slid along its row. You decide which to keep, then apply it.
+  - A batch it would refuse is refused as apply would refuse it.
+
+Example:
+  grafical try shop.grafical.yaml move.yaml
+  ok would change: row-stores
+  before: nodes 9, lines 10, crossings 3, bends 12, ...
+  after: nodes 9, lines 10, crossings 0, bends 8, ...
+`,
   },
 
   "layer add": {

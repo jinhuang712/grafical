@@ -7,7 +7,7 @@ import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
 import { advise } from "../check/advice.ts";
-import { drawing, drawingText } from "../check/drawing.ts";
+import { countsText, drawing, drawingText } from "../check/drawing.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import type { Op } from "../model/ops.ts";
@@ -26,6 +26,7 @@ import {
   linesFeedback,
   loadDiagram,
   runWrite,
+  tryWrite,
   writeAtomic,
 } from "./pipeline.ts";
 import { showDiagram } from "./show.ts";
@@ -642,24 +643,32 @@ function build(): Command {
       .argument("<file>")
       .argument("<batch.yaml>"),
   ).action(async (file: string, batch: string, opts: Opts) => {
-    let raw: unknown;
-    try {
-      raw = parse(readFileSync(batch, "utf8"));
-    } catch (err) {
-      const why = err instanceof Error ? (err.message.split("\n")[0] ?? "") : String(err);
-      process.exitCode = emit(
-        fileError("batch-unreadable", batch, "a readable YAML list of operations", why),
-        opts.json === true,
-      );
-      return;
-    }
-    const ops = parseOps(raw);
-    if (!isOps(ops)) {
-      process.exitCode = emit(failure(ops), opts.json === true);
-      return;
-    }
+    const ops = readBatch(batch, opts);
     // A batch is usually a draft or a large change: its report says what to improve (D35).
-    await finish(file, ops, opts, false, true);
+    if (ops !== undefined) await finish(file, ops, opts, false, true);
+  });
+
+  json(
+    program
+      .command("try")
+      .description("a batch's counts before and after, writing nothing")
+      .argument("<file>")
+      .argument("<batch.yaml>"),
+  ).action(async (file: string, batch: string, opts: Opts) => {
+    const ops = readBatch(batch, opts);
+    if (ops === undefined) return;
+    const r = await tryWrite(file, ops);
+    if (isReport(r)) {
+      process.exitCode = emit(r, opts.json === true);
+    } else if (opts.json === true) {
+      process.stdout.write(
+        `${JSON.stringify({ ok: true, changed: r.report.changed, before: r.before, after: r.after })}\n`,
+      );
+    } else {
+      process.stdout.write(
+        `ok would change: ${r.report.changed.join(", ")}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n`,
+      );
+    }
   });
 
   json(
@@ -687,7 +696,7 @@ function build(): Command {
   json(
     program
       .command("diff")
-      .description("print how the file differs from a git revision, as a batch of operations")
+      .description("the changes since a revision, as operations")
       .argument("<file>")
       .argument("[rev]", "a git revision", "HEAD"),
   ).action((file: string, rev: string, opts: Opts) => {
@@ -739,7 +748,7 @@ function build(): Command {
   json(
     program
       .command("render")
-      .description("write SVG and PNG; with neither --svg nor --png, both beside the file")
+      .description("write SVG and PNG")
       .argument("<file>")
       .option("--svg [out]", "write only the SVG: to <out>, or beside the file")
       .option("--png [out]", "write only the PNG: to <out>, or beside the file")
@@ -788,7 +797,7 @@ function build(): Command {
 
   program
     .command("view")
-    .description("open a live view of the diagram, redrawn as it changes; Ctrl-C stops it")
+    .description("a live window, redrawn on every change")
     .argument("<file>")
     .option("--port <n>", "the local port to serve on; default: a free one")
     .option("--no-open", "print the address instead of opening a window")
@@ -817,6 +826,27 @@ function build(): Command {
 
   attachHelp(program);
   return program;
+}
+
+/** A batch file's operations, or nothing when it is refused, with the refusal printed. */
+function readBatch(batch: string, opts: Opts): Op[] | undefined {
+  let raw: unknown;
+  try {
+    raw = parse(readFileSync(batch, "utf8"));
+  } catch (err) {
+    const why = err instanceof Error ? (err.message.split("\n")[0] ?? "") : String(err);
+    process.exitCode = emit(
+      fileError("batch-unreadable", batch, "a readable YAML list of operations", why),
+      opts.json === true,
+    );
+    return undefined;
+  }
+  const ops = parseOps(raw);
+  if (!isOps(ops)) {
+    process.exitCode = emit(failure(ops), opts.json === true);
+    return undefined;
+  }
+  return ops;
 }
 
 function isOps(x: Op[] | unknown[]): x is Op[] {

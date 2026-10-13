@@ -4,6 +4,7 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { advise } from "../check/advice.ts";
+import { type Counts, drawing } from "../check/drawing.ts";
 import { findHints, type Hint } from "../check/hints.ts";
 import { check } from "../check/index.ts";
 import type { Defect, OpError } from "../errors.ts";
@@ -193,7 +194,7 @@ export function loadStyles(file: string, refs: string[]): Report | undefined {
   return undefined;
 }
 
-export function isReport(x: Diagram | Report): x is Report {
+export function isReport<T extends object>(x: T | Report): x is Report {
   return "ok" in x;
 }
 
@@ -213,16 +214,20 @@ export function inspect(d: Diagram, m: Measurer, all = false): Defect[] {
   return all ? defects : defects.filter((x) => x.owner === "agent");
 }
 
+/** A change grafical would accept: the diagram before and after it, and what it changed. */
+interface Planned {
+  base: Diagram | null;
+  next: Diagram;
+  changed: string[];
+  m: Measurer;
+}
+
 /**
- * Applies operations to the file's diagram. With `create`, there is no file
- * yet: the first operation is diagram.new, and an existing file is refused.
+ * Applies operations to the file's diagram in memory and checks the result, writing
+ * nothing. With `create`, there is no file yet: the first operation is diagram.new,
+ * and an existing file is refused.
  */
-export async function runWrite(
-  file: string,
-  ops: Op[],
-  create = false,
-  hints = false,
-): Promise<Report> {
+async function plan(file: string, ops: Op[], create: boolean): Promise<Planned | Report> {
   let base: Diagram | null = null;
   if (create) {
     if (existsSync(file)) {
@@ -248,14 +253,44 @@ export async function runWrite(
   if ("errors" in result) return failure(result.errors);
   const defects = inspect(result.diagram, m);
   if (defects.length > 0) return { ok: false, changed: [], errors: [], defects };
-  writeAtomic(file, writeDiagram(result.diagram));
+  return { base, next: result.diagram, changed: result.changed, m };
+}
+
+/** Applies operations to the file's diagram and writes it, or refuses and writes nothing. */
+export async function runWrite(
+  file: string,
+  ops: Op[],
+  create = false,
+  hints = false,
+): Promise<Report> {
+  const p = await plan(file, ops, create);
+  if (isReport(p)) return p;
+  writeAtomic(file, writeDiagram(p.next));
   const report: Report = {
     ok: true,
-    changed: result.changed,
+    changed: p.changed,
     errors: [],
     defects: [],
-    warnings: advise(result.diagram, layout(result.diagram, m)),
+    warnings: advise(p.next, layout(p.next, p.m)),
   };
-  if (hints) Object.assign(report, linesFeedback(result.diagram, file, m));
+  if (hints) Object.assign(report, linesFeedback(p.next, file, p.m));
   return report;
+}
+
+/**
+ * What a batch would do (D37): the counts of the drawing before and after it, with
+ * nothing written. The agent decides what to try; grafical measures.
+ */
+export async function tryWrite(
+  file: string,
+  ops: Op[],
+): Promise<Report | { report: Report; before: Counts; after: Counts }> {
+  const p = await plan(file, ops, false);
+  if (isReport(p)) return p;
+  const counts = (d: Diagram) => drawing(d, layout(d, p.m)).counts;
+  return {
+    report: { ok: true, changed: p.changed, errors: [], defects: [] },
+    before: counts(p.base as Diagram),
+    after: counts(p.next),
+  };
 }

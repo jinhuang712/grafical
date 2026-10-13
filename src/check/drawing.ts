@@ -210,8 +210,8 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
   };
 }
 
-/** The counts as one line of text. */
-export function countsText(c: Counts): string {
+/** The counts as one line of text, after a word that says what they count. */
+export function countsText(c: Counts, label = "counts"): string {
   const parts = [
     `nodes ${c.nodes}`,
     `lines ${c.lines}`,
@@ -227,7 +227,7 @@ export function countsText(c: Counts): string {
       : []),
     `lines passing a row ${c.passing}`,
   ];
-  return `counts: ${parts.join(", ")}`;
+  return `${label}: ${parts.join(", ")}`;
 }
 
 /** The whole drawing as text, one fact per line. */
