@@ -144,6 +144,17 @@ grafical node icon <file> <id> --slot <slot> [--icon <mark>] [--bg <color>] [--f
 
 Gap: a corner mark is not checked against the lines that leave the box near its corner.
 
+### Marks by name ⬜
+
+A mark taken by name from one icon set that grafical bundles, so that an agent need not find a file for every box.
+
+```sh
+grafical node icon <file> <id> --slot <slot> --icon <set>:<name>
+```
+
+- The set is a permissively licensed one, such as Lucide (ISC) or Tabler (MIT). A cloud vendor's own icons stay files the agent brings.
+- An unknown name is refused, with `near` and `likely`.
+
 ### Emphasis ✅
 
 At most two boxes stand out, as what a reader should see first.
@@ -211,6 +222,17 @@ grafical edge emphasize <file> <id...> [--off]
 - `emphasize` makes a line `thick`, the main path.
 - A stylesheet may retune the levels and add more, such as `critical`. A level the stylesheet lacks is refused as `unknown-weight`, with the allowed names.
 - The arrowhead grows with the width.
+
+### Numbered steps ⬜
+
+A number on a line, so that a reader can follow a request or a process in order.
+
+```sh
+grafical edge step <file> <id> [--n <number>]
+```
+
+- The agent states each number, and grafical draws it as a small badge on the line. `show --drawn` adds `step=<n>` to the line's record.
+- Without `--n`, the step is cleared.
 
 ### Ends at a group, a row or a lane ✅
 
@@ -318,6 +340,22 @@ grafical group remove <file> <id> [--out]
 - `group order` puts a group's members before or after another group's, in every row the two share.
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group. Lines that end at the group go with it.
 - A box inside a box takes the canvas's fill, so the fills alternate by depth. A stylesheet may set `paint.nesting: shade` instead.
+
+### Copying a group ⬜
+
+A second zone, region or shard in one operation.
+
+```sh
+grafical group copy <file> <group> <new-id> --suffix <suffix> --before <group> | --after <group>
+```
+
+- The copy holds the group's boxes, its inner groups and the lines between them. Every copied ID ends in the suffix.
+- Each copied box sits in its original's row. The agent states where the copy goes, before or after a group in every row the two share, as `group order` does (DESIGN.md, "The agent states every order").
+- Not decided: whether lines to boxes outside the group are copied too.
+
+### Deeper nesting ⬜
+
+Groups nest up to five levels instead of three, as a cloud's account, region, network, zone and subnet do. The fuzz test must hold at five levels first.
 
 ### Swimlanes ✅
 
@@ -568,7 +606,6 @@ These are wanted, but not scheduled. Each becomes a planned feature once ROADMAP
 - **Diagram types with a layout of their own:** sequence, entity-relationship and class diagrams, mind maps and timelines.
 - **Importing** Mermaid, draw.io and Excalidraw files.
 - **An MCP server** over the same operations.
-- **Numbered steps** along the main flow.
 - **Views:** one file, several pictures of parts of it, and a group drawn folded into one box.
 - **One catalog of systems** shared by many diagrams.
 - **Brand fonts.**

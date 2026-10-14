@@ -31,6 +31,7 @@ What each milestone delivers is in [FEATURES.md](FEATURES.md), and every exit na
 ## More combinations of operations ⬜
 
 - ⬜ **Decide the form with the owner,** such as one operation for a common edit or for a common shape (FEATURES.md, "Later").
+- ⬜ **Build the first candidates,** chosen by the owner on 2026-10-15 after a field study of other diagram tools (FEATURES.md, "Numbered steps", "Copying a group", "Deeper nesting", "Marks by name").
 - ⬜ **Prototype it** on the briefs where the agents worked hardest.
 - ⬜ **Keep it only if a round shows it helps.**
 
