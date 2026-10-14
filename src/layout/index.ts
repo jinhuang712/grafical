@@ -12,6 +12,7 @@
 // Rows are not drawn (D7): their bands and labels stay in the scene for the
 // checker and for debugging.
 
+import { checkEnds } from "../model/ends.ts";
 import { groupChain } from "../model/groups.ts";
 import { laneRun, orderByLanes } from "../model/lanes.ts";
 import {
@@ -119,10 +120,24 @@ function splitsGroup(d: Diagram, nodes: DiagramNode[]): boolean {
 }
 
 /**
+ * Whether row li in this order can be drawn (D7, D10, D28): no group is split or
+ * left without one box, every alignment holds, and an edge to a container meets
+ * it right beside its end where they share a row.
+ */
+function drawable(d: Diagram, li: number, nodes: DiagramNode[]): boolean {
+  if (splitsGroup(d, nodes)) return false;
+  const trial: Diagram = { ...d, layers: d.layers.map((l, i) => (i === li ? { ...l, nodes } : l)) };
+  const grid = buildGrid(trial);
+  if (grid.groupProblems.length > 0 || grid.alignProblems.length > 0) return false;
+  return !checkEnds(trial, 0).some((e) => e.code === "edge-blocked");
+}
+
+/**
  * D24: the index in its layer, counting the node's current position as removed,
  * that gives the fewest edge crossings. A tie goes to the last slot. Each slot is
- * tried with the real router. A slot that would split a group is not taken while
- * another slot keeps the groups whole.
+ * tried with the real router. Only slots that can be drawn are tried; when there
+ * is none, the slots that keep the groups whole, and then every slot, so that the
+ * write is refused for what the agent can change.
  */
 export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m: Measurer): number {
   const li = diagram.layers.findIndex((l) => l.id === layerId);
@@ -131,12 +146,11 @@ export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m:
   const node = layer.nodes.find((n) => n.id === nodeId);
   const rest = layer.nodes.filter((n) => n.id !== nodeId);
   if (node === undefined) return rest.length;
-  const whole: number[] = [];
-  for (let slot = 0; slot <= rest.length; slot++) {
-    if (!splitsGroup(diagram, [...rest.slice(0, slot), node, ...rest.slice(slot)]))
-      whole.push(slot);
-  }
-  const slots = whole.length > 0 ? whole : Array.from({ length: rest.length + 1 }, (_, i) => i);
+  const order = (slot: number) => [...rest.slice(0, slot), node, ...rest.slice(slot)];
+  const all = Array.from({ length: rest.length + 1 }, (_, i) => i);
+  const drawn = all.filter((slot) => drawable(diagram, li, order(slot)));
+  const whole = all.filter((slot) => !splitsGroup(diagram, order(slot)));
+  const slots = drawn.length > 0 ? drawn : whole.length > 0 ? whole : all;
   let best = slots[slots.length - 1] ?? rest.length;
   let fewest = Number.POSITIVE_INFINITY;
   for (const slot of slots) {
@@ -270,14 +284,13 @@ function lower(a: number[], b: number[]): boolean {
 /**
  * D24: the nodes one batch added without a position, ordered together. Each in
  * turn tries every slot of its row and takes the one with the lowest route cost,
- * while the cost drops. The other nodes keep their order, and no slot that splits
- * a group or breaks an alignment is taken. Nodes are tried in the order given,
- * slots from the first, so the result is the same on every machine.
+ * while the cost drops. The other nodes keep their order, and only slots that can
+ * be drawn are taken. Nodes are tried in the order given, slots from the first, so
+ * the result is the same on every machine.
  */
 export function orderTogether(diagram: Diagram, ids: readonly string[], m: Measurer): Diagram {
   let d = diagram;
   const cost = (x: Diagram) => routeCost(compute(x, m, false).scene);
-  const checkAlign = d.layers.some((l) => l.nodes.some((n) => n.align !== undefined));
   let best = cost(d);
   let tries = 0;
   for (let pass = 0; pass < 4 && tries < ORDER_TRIES; pass++) {
@@ -293,13 +306,11 @@ export function orderTogether(diagram: Diagram, ids: readonly string[], m: Measu
       for (let slot = 0; slot <= rest.length && tries < ORDER_TRIES; slot++) {
         if (slot === at) continue;
         const nodes = [...rest.slice(0, slot), node, ...rest.slice(slot)];
-        if (splitsGroup(d, nodes)) continue;
+        if (!drawable(d, li, nodes)) continue;
         const trial: Diagram = {
           ...d,
           layers: d.layers.map((l, i) => (i === li ? { ...l, nodes } : l)),
         };
-        if (checkAlign && buildGrid(trial).alignProblems.length > 0) continue;
-        if (buildGrid(trial).groupProblems.length > 0) continue;
         tries++;
         const c = cost(trial);
         if (lower(c, best)) {

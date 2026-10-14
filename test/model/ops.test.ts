@@ -166,6 +166,25 @@ describe("node.add", () => {
     ]);
     expect(ids(r.diagram, "top")).toEqual(["a", "b", "n"]);
   });
+  it("slots a lone node where its line crosses least, not last (D24)", () => {
+    const d = ok(null, [
+      { op: "diagram.new", title: "T" },
+      { op: "layer.add", id: "top", label: "Top" },
+      { op: "layer.add", id: "low", label: "Low" },
+      ...["a", "b", "c"].map(
+        (id): Op => ({ op: "node.add", id, layer: "top", label: id, last: true }),
+      ),
+      ...["p", "q"].map((id): Op => ({ op: "node.add", id, layer: "low", label: id, last: true })),
+      { op: "edge.add", from: "a", to: "p" },
+      { op: "edge.add", from: "c", to: "q" },
+    ]).diagram;
+    // Last, a->n would cross c->q.
+    const r = ok(d, [
+      { op: "node.add", id: "n", layer: "low", label: "N" },
+      { op: "edge.add", from: "a", to: "n" },
+    ]);
+    expect(ids(r.diagram, "low")).toEqual(["p", "n", "q"]);
+  });
   it("rejects an unknown layer, with the closest ids", () => {
     const [e] = fail(base, [{ op: "node.add", id: "n", layer: "tpo", label: "N" }]);
     expect(e).toMatchObject({ code: "unknown-layer", field: "layer", found: "tpo" });

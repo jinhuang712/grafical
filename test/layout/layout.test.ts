@@ -624,6 +624,33 @@ describe("slot choice (D24)", () => {
     expect(chooseSlot(d, "loose", "y", m)).toBe(2);
   });
 
+  it("takes no slot that leaves a line to a group without a box beside it (D28)", () => {
+    // x joins outer; after g2 it would stand between inner and c, whose line runs beside.
+    const d: Diagram = {
+      grafical: 1,
+      title: "T",
+      density: "normal",
+      layers: [
+        {
+          id: "r",
+          label: "R",
+          nodes: [
+            n("g1", "G1", "service", "m", { group: "outer" }),
+            n("g2", "G2", "service", "m", { group: "inner" }),
+            n("x", "X", "service", "m", { group: "outer" }),
+            n("c", "C", "service", "m"),
+          ],
+        },
+      ],
+      groups: [
+        { id: "outer", label: "Outer" },
+        { id: "inner", label: "Inner", in: "outer" },
+      ],
+      edges: [e("inner", "c", "call")],
+    };
+    expect(chooseSlot(d, "r", "x", m)).toBe(1);
+  });
+
   it("never splits a group while a slot keeps it whole", () => {
     for (const l of catalogSyncGrouped.layers) {
       const d = addNode(catalogSyncGrouped, l.id, n("x", "x", "service", "m"), m).diagram;

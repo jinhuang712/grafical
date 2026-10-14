@@ -40,8 +40,9 @@ describe("slot choice (D24)", () => {
       createStubMeasurer(),
     );
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
-    // Only y waits for a slot: z was removed. The node is absent from its layer when asked.
-    expect(calls).toEqual([{ edges: ["x->y"], layer: "l", node: "y", layerNodes: ["x"] }]);
+    // Only y waits for a slot: z was removed. The node is still in its layer when asked,
+    // since chooseSlot counts its place there as removed.
+    expect(calls).toEqual([{ edges: ["x->y"], layer: "l", node: "y", layerNodes: ["x", "y"] }]);
     expect(r.diagram.layers[0]?.nodes.map((n) => n.id)).toEqual(["y", "x"]);
   });
 

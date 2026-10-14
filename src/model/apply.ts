@@ -1457,8 +1457,9 @@ function placePending(s: State, m: Measurer) {
     const at = findNode(s.d, p.node);
     if (!at) continue;
     ids.push(p.node);
-    at.layer.nodes.splice(at.index, 1);
+    // The node stays in its row while its slot is chosen: chooseSlot counts it as removed.
     const raw = layoutModule.chooseSlot(s.d, at.layer.id, p.node, m);
+    at.layer.nodes.splice(at.index, 1);
     const slot = Math.max(0, Math.min(at.layer.nodes.length, Math.trunc(raw)));
     at.layer.nodes.splice(slot, 0, at.node);
   }
