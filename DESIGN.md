@@ -64,6 +64,8 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D39 | The file fixes the picture; the same facts give mostly the same picture | The same file is the same picture |
 | D40 | A node carries marks in five slots, and a mark is an emoji, text or a file | The engine owns every pixel |
 | D41 | An edge has a weight: a named level or a width, tuned by the stylesheet | The tool carries the taste |
+| D42 | The legend names line widths and marks, and may leave an entry out | The tool carries the taste |
+| D43 | A wall is empty space between two named sides, crossed only where it allows | The engine places; the agent states relations |
 
 ## Writing a diagram
 
@@ -700,6 +702,30 @@ Rejected:
 - Lines and widths only. Marks would stay unexplained, and a mark's meaning is what a reader cannot guess.
 - A legend the caller places, at the bottom or the left. Placement is the engine's (D2).
 - Default words for each level, such as "heavy". A level's name is the stylesheet's word, not the reader's, so widths with no name keep D41's one "main path".
+
+### D43 A wall is empty space between two named sides, crossed only where it allows
+
+Decided by the owner on 2026-10-14. On 2026-10-13 the owner asked for "breaks" and "invisible walls that anything cannot be put into", and chose "dividers and walls" for phase 1e. Shown a wall drawn as a line with gates, the owner answered "walls can have thickness", then "a space! not a layer, not a line, not a thick line", that it "doesn't have to be entirely across the whole image, could be partial", and that lines cross it "only when the wall allows". The model below was then approved as shown.
+
+- **What it is.** A wall separates two sides, each a list of nodes and groups. It is empty space between them: nothing is placed in it.
+- **Its direction is the engine's.** When every row of one side lies above every row of the other, the wall runs across, between them. When the two sides share rows, and in each shared row one side's nodes all sit left of the other's, it runs up and down between them. Otherwise it is refused (`wall-sides`), and so is a node on both sides.
+- **Partial.** A wall is as long as the two sides need: across, from the left edge of the leftmost box of either side to the right edge of the rightmost; up and down, from the top of the highest to the bottom of the lowest.
+- **Thickness.** A wall adds a fixed space where it runs: across, to the gutter just below the upper side's lowest row, after the gutter's tracks; up and down, between the grid columns of the two sides. Rows and columns are shared by the whole picture, so the gap is as long as the picture, but the wall, its rule and its drawing are only as long as the sides.
+- **Crossing.** A line from one side to the other is refused (`wall-crossed`) unless the wall allows it: the wall's `allow` names the line, or a node or group at one of its ends, such as a gateway. A line that ends at neither side but whose route passes through the wall's space is an agent-owned defect (D14) with the same code and the same fixes, since the boxes the agent placed lead it there.
+- **Drawn or not.** A wall without a label is invisible: only its space shows. With a label it draws a dashed line through its middle, with the label at its start: across, at its left end, above the line; up and down, at its top. That is the divider the phase planned, so dividers are walls with labels, not a second fact.
+- **Changes.** A node or group that goes leaves the walls' sides and allow lists. A wall left with an empty side goes too, and is listed among the changes.
+- **The file.** `walls`, a list of `{id, between, and, allow, label}`, where `between`, `and` and `allow` are lists of ids. The format only grows (D22).
+- **The operations.** `wall.add` with `between`, `and`, and optionally `allow` and `label`; `wall.allow` adds ids to what a wall lets through, or takes them away with `off`; `wall.remove`. The commands are `wall add <file> <id> --between <ids> --and <ids> [--allow <ids>] [--label <text>]`, `wall allow <file> <id> <ids...> [--off]` and `wall remove <file> <id>`.
+- **Built in steps.** Walls that run across first, then walls that run up and down. Until the second step, sides that share rows are refused as `wall-sides`.
+
+Rejected:
+- A line between two rows, with gates. The owner: a wall is "a space", "not a line".
+- A row drawn as a band, whose nodes are the gates. The owner: "not a layer".
+- A thick line. The owner: "not a thick line".
+- A wall across the whole picture only. The owner: "could be partial".
+- Lines that cross freely, and a sealed wall. The owner: lines cross "only when the wall allows".
+- A wall placed by coordinates or by size. Where it goes and how thick it is are the engine's (D2); the agent names what it separates.
+- Rerouting a line round a wall. A line between the sides is refused before layout, and any other line through a wall's space is reported with fixes. Routing round a partial obstacle is left for later.
 
 ## Not yet decided
 

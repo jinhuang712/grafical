@@ -304,7 +304,7 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Equal heights in a row | Every box in a row takes the height of the row's tallest, so their tops line up (D27) | done |
 | Room around stores | A gutter keeps more room on its side next to a row that holds a store, so lines run clear of the cylinders (D33) | done |
 | Flow direction | `down` (as now) or `right`: rows become columns of the flow, left to right. One diagram fact. Held by the owner on 2026-10-14: the costliest of the three, since most of the layout assumes rows run across, with no evidence yet that it helps; walls and notes come first | later |
-| Dividers and walls | A labelled line between parts of a picture ("trust boundary"); a wall also lets lines cross only through a named gate node | stage 1 |
+| Walls | Empty space between two named sides, partial, that lines cross only where the wall allows; with a label it draws a dashed divider through its middle (D43). Across first, then up and down | stage 1 |
 | Notes | A short text attached to a box, a line or a group, placed by the engine | stage 1 |
 | Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in. Not built: the owner decided that the file fixes the picture and the same facts give mostly the same picture (D39) | dropped |
 | Columns | An optional second placement fact beside rows: every box of a column sits left of every box of the next; a box in no column settles near what it connects to. Prototyped 2026-10-13 | stage 1 |
