@@ -12,6 +12,7 @@
 // Rows are not drawn (D7): their bands and labels stay in the scene for the
 // checker and for debugging.
 
+import { columnOrdered, columnRanks, orderByColumns } from "../model/columns.ts";
 import { checkEnds } from "../model/ends.ts";
 import { groupChain } from "../model/groups.ts";
 import { laneRun, orderByLanes } from "../model/lanes.ts";
@@ -142,12 +143,13 @@ function splitsGroup(d: Diagram, nodes: DiagramNode[]): boolean {
 }
 
 /**
- * Whether row li in this order can be drawn (D7, D10, D28): no group is split or
- * left without one box, every alignment holds, and an edge to a container meets
- * it right beside its end where they share a row.
+ * Whether row li in this order can be drawn (D7, D10, D28, D45): no group is split or
+ * left without one box, the row keeps its columns' order, every alignment holds, and
+ * an edge to a container meets it right beside its end where they share a row.
  */
 function drawable(d: Diagram, li: number, nodes: DiagramNode[]): boolean {
   if (splitsGroup(d, nodes)) return false;
+  if (!columnOrdered(nodes, columnRanks(d))) return false;
   const trial: Diagram = { ...d, layers: d.layers.map((l, i) => (i === li ? { ...l, nodes } : l)) };
   const grid = buildGrid(trial);
   if (grid.groupProblems.length > 0 || grid.alignProblems.length > 0) return false;
@@ -592,6 +594,7 @@ function compute(
   const sized = withSizes(facts, m);
   // Column lanes keep each row in lane order (D32); a file edited by hand may not.
   orderByLanes(sized);
+  orderByColumns(sized);
   // Container ends route to a stand-in node and are cut at the container (D28).
   const ends = planEnds(sized);
   const d: Diagram = { ...sized, edges: ends.edges };

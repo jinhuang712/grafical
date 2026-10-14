@@ -95,6 +95,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     delete empty.groups;
     delete empty.lanes;
     delete empty.walls;
+    delete empty.columns;
     delete empty.notes;
     delete empty.legend;
     return [created, ...diffDiagrams(empty, after)];
@@ -163,6 +164,13 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   );
   const goneGroups = [...bGroups.keys()].filter((g) => !keptGroups.has(g));
   const goneLanes = [...bLanes.keys()].filter((x) => !keptLanes.has(x));
+  // Columns (D45) keep their order the same way: those out of step go and come back.
+  const aColumns = (a.columns ?? []).map((c) => c.id);
+  const keptColumns = keptStart(
+    (b.columns ?? []).map((c) => c.id),
+    aColumns,
+  );
+  const goneColumns = (b.columns ?? []).map((c) => c.id).filter((c) => !keptColumns.has(c));
   const reborn = new Set([...goneGroups, ...goneLanes]);
 
   // Edges keep their entry when it is in step and their ends before the change
@@ -235,6 +243,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
         : { op: "group.remove", id: g, out: true },
     );
   for (const x of goneLanes) ops.push({ op: "lane.remove", id: x });
+  for (const c of goneColumns) ops.push({ op: "column.remove", id: c });
 
   // Alignments a move would break are cleared now and set again in step 7.
   const movesLayer = (id: string) => {
@@ -415,6 +424,13 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     const x = bN.get(id)?.node.lane;
     return x !== undefined && keptLanes.has(x) ? x : undefined;
   };
+  for (const c of aColumns) if (!keptColumns.has(c)) ops.push({ op: "column.add", id: c });
+  const columnNow = (id: string) => {
+    const c = bN.get(id)?.node.column;
+    return c !== undefined && keptColumns.has(c) ? c : undefined;
+  };
+  const columnLeave: string[] = [];
+  const columnJoin = new Map<string, string[]>();
   const groupLeave: string[] = [];
   const groupJoin = new Map<string, string[]>();
   const laneLeave: string[] = [];
@@ -426,6 +442,11 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (n.group !== g) {
       if (n.group === undefined) groupLeave.push(id);
       else want(groupJoin, n.group, id);
+    }
+    const c = columnNow(id);
+    if (n.column !== c) {
+      if (c !== undefined) columnLeave.push(id);
+      if (n.column !== undefined) want(columnJoin, n.column, id);
     }
     const x = laneNow(id);
     if (n.lane !== x) {
@@ -450,6 +471,11 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   }
   if (groupLeave.length > 0) ops.push({ op: "group.leave", nodes: groupLeave });
   if (laneLeave.length > 0) ops.push({ op: "lane.leave", members: laneLeave });
+  if (columnLeave.length > 0) ops.push({ op: "column.leave", members: columnLeave });
+  for (const c of aColumns) {
+    const members = columnJoin.get(c);
+    if (members !== undefined) ops.push({ op: "column.join", column: c, members });
+  }
   for (const g of aGroups) {
     const nodes = groupJoin.get(g.id);
     if (nodes !== undefined) ops.push({ op: "group.join", group: g.id, nodes });

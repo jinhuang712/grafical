@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
 import { WEIGHT_LEVEL, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
+import { checkColumns } from "./columns.ts";
 import { checkEnds } from "./ends.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
 import { ID_EDGE, ID_NODE, issuesToErrors, WEIGHT } from "./issues.ts";
@@ -126,6 +127,7 @@ const nodeSchema = z.strictObject({
   align: nodeId.optional(),
   group: nodeId.optional(),
   lane: nodeId.optional(),
+  column: nodeId.optional(),
   icons: iconsSchema.optional(),
 });
 
@@ -216,6 +218,7 @@ export const diagramSchema = z.strictObject({
   layers: z.array(layerSchema).default([]),
   groups: z.array(groupSchema).default([]),
   lanes: z.array(laneSchema).default([]),
+  columns: z.array(z.strictObject({ id: nodeId })).default([]),
   walls: z.array(wallSchema).default([]),
   notes: z.array(z.strictObject({ on: z.string().min(1), text })).default([]),
   edges: z.array(edgeSchema).default([]),
@@ -236,6 +239,7 @@ function build(p: Parsed): Diagram {
       if (n.align !== undefined) node.align = n.align;
       if (n.group !== undefined) node.group = n.group;
       if (n.lane !== undefined) node.lane = n.lane;
+      if (n.column !== undefined) node.column = n.column;
       if (n.icons !== undefined) {
         const icons: NonNullable<DiagramNode["icons"]> = {};
         for (const slot of MARK_SLOTS) {
@@ -285,6 +289,7 @@ function build(p: Parsed): Diagram {
     });
   }
   if (p.lanes.length > 0) d.lanes = p.lanes.map((x) => ({ id: x.id, label: x.label }));
+  if (p.columns.length > 0) d.columns = p.columns.map((x) => ({ id: x.id }));
   if (p.walls.length > 0) {
     d.walls = p.walls.map((x) => {
       const wall: Wall = { id: x.id, between: [...x.between], and: [...x.and] };
@@ -334,6 +339,9 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   (d.lanes ?? []).forEach((x, i) => {
     claim(x.id, `lanes[${i}].id`, "lane");
   });
+  (d.columns ?? []).forEach((x, i) => {
+    claim(x.id, `columns[${i}].id`, "column");
+  });
   (d.walls ?? []).forEach((x, i) => {
     claim(x.id, `walls[${i}].id`, "wall");
   });
@@ -343,6 +351,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   errors.push(...checkGroups(d, index));
   errors.push(...checkLanes(d, index));
   errors.push(...checkEnds(d, index));
+  errors.push(...checkColumns(d, index));
   errors.push(...checkWalls(d, index));
   errors.push(...checkNotes(d, index));
   if (d.style !== undefined) {

@@ -346,6 +346,27 @@ export interface LaneRemoveOp {
   op: "lane.remove";
   id: string;
 }
+/** Members are nodes, or groups that bring their nodes (D45). */
+export interface ColumnAddOp {
+  op: "column.add";
+  id: string;
+  nodes?: string[];
+  before?: string;
+  after?: string;
+}
+export interface ColumnJoinOp {
+  op: "column.join";
+  column: string;
+  members: string[];
+}
+export interface ColumnLeaveOp {
+  op: "column.leave";
+  members: string[];
+}
+export interface ColumnRemoveOp {
+  op: "column.remove";
+  id: string;
+}
 /** Sides are nodes and groups; allow names lines, nodes and groups (D43). */
 export interface WallAddOp {
   op: "wall.add";
@@ -398,6 +419,10 @@ export type Op =
   | LaneLeaveOp
   | LaneRenameOp
   | LaneRemoveOp
+  | ColumnAddOp
+  | ColumnJoinOp
+  | ColumnLeaveOp
+  | ColumnRemoveOp
   | WallAddOp
   | WallAllowOp
   | WallRemoveOp
@@ -678,6 +703,23 @@ export const laneRenameSchema = z.strictObject({
   label: text,
 });
 export const laneRemoveSchema = z.strictObject({ op: z.literal("lane.remove"), id: nodeId });
+export const columnAddSchema = z.strictObject({
+  op: z.literal("column.add"),
+  id: nodeId,
+  nodes: nodeList.optional(),
+  before: nodeId.optional(),
+  after: nodeId.optional(),
+});
+export const columnJoinSchema = z.strictObject({
+  op: z.literal("column.join"),
+  column: nodeId,
+  members: nodeList,
+});
+export const columnLeaveSchema = z.strictObject({
+  op: z.literal("column.leave"),
+  members: nodeList,
+});
+export const columnRemoveSchema = z.strictObject({ op: z.literal("column.remove"), id: nodeId });
 /** What a wall lets through: a line's id, or a node's or a group's. */
 const passList = z.array(z.string().min(1)).min(1);
 export const wallAddSchema = z.strictObject({
@@ -729,6 +771,10 @@ export const opSchema = z.discriminatedUnion("op", [
   laneLeaveSchema,
   laneRenameSchema,
   laneRemoveSchema,
+  columnAddSchema,
+  columnJoinSchema,
+  columnLeaveSchema,
+  columnRemoveSchema,
   wallAddSchema,
   wallAllowSchema,
   wallRemoveSchema,
@@ -785,6 +831,10 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "lane.leave": laneLeaveSchema,
   "lane.rename": laneRenameSchema,
   "lane.remove": laneRemoveSchema,
+  "column.add": columnAddSchema,
+  "column.join": columnJoinSchema,
+  "column.leave": columnLeaveSchema,
+  "column.remove": columnRemoveSchema,
   "wall.add": wallAddSchema,
   "wall.allow": wallAllowSchema,
   "wall.remove": wallRemoveSchema,

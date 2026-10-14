@@ -20,6 +20,7 @@ function nodeText(n: DiagramNode): string {
   if (n.align !== undefined) s += ` align=${n.align}`;
   if (n.group !== undefined) s += ` group=${n.group}`;
   if (n.lane !== undefined) s += ` lane=${n.lane}`;
+  if (n.column !== undefined) s += ` column=${n.column}`;
   if (n.sublabel !== undefined) s += ` sub=${JSON.stringify(n.sublabel)}`;
   for (const slot of MARK_SLOTS) {
     const m = n.icons?.[slot];
@@ -86,6 +87,12 @@ export function showDiagram(d: Diagram): string {
         : laneNodes(d, x.id);
     const way = run === undefined ? "" : ` (${run})`;
     lines.push(`lane ${x.id} ${JSON.stringify(x.label)}${way}: ${members.join(", ") || "(empty)"}`);
+  }
+  for (const c of d.columns ?? []) {
+    const members = d.layers.flatMap((l) =>
+      l.nodes.filter((n) => n.column === c.id).map((n) => n.id),
+    );
+    lines.push(`column ${c.id}: ${members.join(", ") || "(empty)"}`);
   }
   for (const w of d.walls ?? []) {
     const label = w.label === undefined ? "" : ` ${JSON.stringify(w.label)}`;

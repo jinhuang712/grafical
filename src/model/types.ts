@@ -126,6 +126,8 @@ export interface DiagramNode {
   group?: string;
   /** The lane this node lies in, when lanes run as columns (D32). */
   lane?: string;
+  /** The column this node follows (D45). */
+  column?: string;
   /** Marks in fixed slots, such as a warning at the top-left (D40). */
   icons?: Partial<Record<MarkSlot, Mark>>;
 }
@@ -154,6 +156,11 @@ export interface Layer {
  * it: layers, when lanes run as rows, or nodes, when lanes run as columns. All
  * lanes of a diagram run one way.
  */
+/** A column (D45): a guide that its nodes follow, left of the next column's in every row. */
+export interface Column {
+  id: string;
+}
+
 export interface Lane {
   id: string;
   label: string;
@@ -231,6 +238,8 @@ export interface Diagram {
   groups?: Group[];
   /** The swimlanes. Lanes that run as columns go left to right in this order (D32). */
   lanes?: Lane[];
+  /** Columns, left to right (D45). */
+  columns?: Column[];
   /** Empty space between two sides, in creation order (D43). */
   walls?: Wall[];
   /** One note at most per node, group or line, in creation order (D44). */

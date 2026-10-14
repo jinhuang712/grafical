@@ -39,6 +39,7 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
   if (n.align !== undefined) o.align = n.align;
   if (n.group !== undefined) o.group = n.group;
   if (n.lane !== undefined) o.lane = n.lane;
+  if (n.column !== undefined) o.column = n.column;
   if (n.icons !== undefined && Object.keys(n.icons).length > 0) {
     const icons: Record<string, unknown> = {};
     for (const slot of MARK_SLOTS) {
@@ -108,6 +109,9 @@ export function writeDiagram(d: Diagram): string {
   }
   if (d.lanes !== undefined && d.lanes.length > 0) {
     out.lanes = d.lanes.map((x) => ({ id: x.id, label: x.label }));
+  }
+  if (d.columns !== undefined && d.columns.length > 0) {
+    out.columns = d.columns.map((x) => ({ id: x.id }));
   }
   if (d.walls !== undefined && d.walls.length > 0) {
     out.walls = d.walls.map((x) => {

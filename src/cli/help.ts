@@ -146,13 +146,13 @@ Batch file:
     group.join        group nodes                      (a list)
     group.leave       nodes up
     lane.add          id label members                 (a list)
+    column.add        id nodes before after            (nodes is a list)
     wall.add          id between and allow label       (lists but id, label)
     note.add          on text                          (replaces its note)
     edge.emphasize    edges off                        (a list)
     diagram.legend    style weight mark text (style: solid dashed dotted plain)
     diagram.subtitle  text; diagram.note text           (no text clears it)
-  Every other command works too, its arguments named as in its help:
-  node.swap a b, node.merge id nodes label, layer.split id into label from.
+  Every other command works too, its arguments named as in its help.
 
 Good to know:
   - Add rows first, then nodes, then groups and lanes, then edges.
@@ -168,9 +168,8 @@ Output:
     length is every line's length together, in pixels. fullest is the row
     with most nodes, as <row>:<nodes>; busiest the box with most lines, as
     <box>:<lines>; longest the longest line, as <line>:<length>; passing
-    the lines that pass a row they do not connect. Facts only: what they
-    mean is yours to judge. grafical show <file> --drawn prints a record
-    for each box and line.
+    the lines that pass a row they do not connect. grafical show <file>
+    --drawn prints a record for each box and line.
 
 When refused:
   failed changed=-, the file untouched, then a record per problem:
@@ -523,6 +522,29 @@ Limits:
 
 Example:
   grafical lane add laptop.grafical.yaml it --label IT --members order,setup
+`,
+  },
+
+  "column add": {
+    about: `Add a column: a guide that boxes follow beside their rows. Every box of a column
+sits left of every box of the next column, in every row. Nothing is drawn.`,
+    after: `
+When to use:
+  - When a diagram has sides: requests on the left and processing on the
+    right, one team's services and another's, reads and writes.
+  - Leave a box shared by two sides, such as their database, out of every
+    column: it keeps its place, and a new one lands near what it connects to.
+
+Good to know:
+  - Columns go left to right in the order they are added, or --before and
+    --after another column.
+  - grafical keeps every row in column order; a box in no column stays
+    beside the box left of it.
+  - A group as a member brings its nodes.
+  - A diagram has columns or lanes that run as columns, not both.
+
+Example:
+  grafical column add shop.grafical.yaml requests --nodes web,api,cache
 `,
   },
 

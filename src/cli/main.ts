@@ -288,6 +288,54 @@ function build(): Command {
     await write(file, { op: "lane.remove", id }, opts);
   });
 
+  const column = program.command("column").description("column guides: add, join, leave, remove");
+  json(
+    column
+      .command("add")
+      .description("add a column, last unless placed, optionally with members")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--nodes <ids>", "the members, comma-separated: nodes, or groups with their nodes")
+      .option("--before <column>", "just left of this column")
+      .option("--after <column>", "just right of this column"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const raw: Record<string, unknown> = {
+      op: "column.add",
+      id,
+      ...pick(opts, ["before", "after"]),
+    };
+    if (typeof opts.nodes === "string") raw.nodes = splitIds(opts.nodes);
+    await write(file, raw, opts);
+  });
+  json(
+    column
+      .command("join")
+      .description("put nodes, or groups with their nodes, into a column")
+      .argument("<file>")
+      .argument("<column>")
+      .argument("<member...>"),
+  ).action(async (file: string, c: string, members: string[], opts: Opts) => {
+    await write(file, { op: "column.join", column: c, members }, opts);
+  });
+  json(
+    column
+      .command("leave")
+      .description("take nodes, or groups' nodes, out of their column")
+      .argument("<file>")
+      .argument("<member...>"),
+  ).action(async (file: string, members: string[], opts: Opts) => {
+    await write(file, { op: "column.leave", members }, opts);
+  });
+  json(
+    column
+      .command("remove")
+      .description("remove a column; its nodes stay where they are")
+      .argument("<file>")
+      .argument("<id>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "column.remove", id }, opts);
+  });
+
   const wall = program.command("wall").description("walls between parts: add, allow, remove");
   json(
     wall

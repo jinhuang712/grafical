@@ -17,6 +17,7 @@
 // Pure: no measurement and no pixels. place.ts turns columns into x.
 
 import type { Facts } from "../errors.ts";
+import { columnRanks } from "../model/columns.ts";
 import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
 import { closest } from "../model/suggest.ts";
@@ -24,7 +25,7 @@ import type { Diagram } from "../model/types.ts";
 import { wallRun, wallSplit } from "../model/walls.ts";
 import type { AlignmentProblem } from "./align.ts";
 
-export type GroupCode = "group-split" | "group-conflict" | "wall-sides";
+export type GroupCode = "group-split" | "group-conflict" | "wall-sides" | "column-order";
 
 /** A group whose members cannot be boxed together (D7). */
 export interface GroupProblem {
@@ -162,6 +163,42 @@ export function buildGrid(d: Diagram): Grid {
   };
 
   const groupProblems = groupConstraints(d, rows, ids, row, chainOf, succ, reaches, cls, links);
+  // Columns (D45): every node of a column lies left of every node of a later column, in
+  // every row. Rows are already in column order, so only another fact can contradict it:
+  // the first pair that cannot hold is refused.
+  const ranks = columnRanks(d);
+  if (ranks.size > 0) {
+    const rankOf = new Map(
+      d.layers.flatMap((l) =>
+        l.nodes.flatMap((n) => {
+          const r = n.column === undefined ? undefined : ranks.get(n.column);
+          return r === undefined ? [] : [[n.id, r] as const];
+        }),
+      ),
+    );
+    let clash: [string, string] | undefined;
+    for (const [a, ra] of rankOf) {
+      for (const [b, rb] of rankOf) {
+        const i = index.get(a);
+        const j = index.get(b);
+        if (rb <= ra || i === undefined || j === undefined || (succ[i] ?? []).includes(j)) continue;
+        if (reaches(cls[j] as number, cls[i] as number)) {
+          clash ??= [a, b];
+          continue;
+        }
+        succ[i]?.push(j);
+      }
+    }
+    if (clash !== undefined) {
+      const column = d.layers.flatMap((l) => l.nodes).find((n) => n.id === clash[0])?.column ?? "";
+      groupProblems.push({
+        code: "column-order",
+        group: column,
+        found: clash[0],
+        facts: { nodes: clash },
+      });
+    }
+  }
   // Walls up and down (D43): every node left of a wall, in the rows it spans, lies left
   // of every node right of it, so that the wall's space can run between their columns.
   for (const w of d.walls ?? []) {

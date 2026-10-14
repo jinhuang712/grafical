@@ -7,8 +7,16 @@ import * as layoutModule from "../layout/index.ts";
 import type { Measurer } from "../text/types.ts";
 import { edgeWidth } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES, themeOf } from "../theme/themes.ts";
+import { orderByColumns } from "./columns.ts";
 import { endIds, endKind } from "./ends.ts";
-import { groupChain, groupHeight, inGroup, innerGroups, MAX_GROUP_DEPTH } from "./groups.ts";
+import {
+  groupChain,
+  groupHeight,
+  groupNodes,
+  inGroup,
+  innerGroups,
+  MAX_GROUP_DEPTH,
+} from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
 import { noteTargets, pruneNotes } from "./notes.ts";
 import type {
@@ -79,6 +87,7 @@ function unusedKind(d: Diagram, id: string): string | undefined {
   if ((d.groups ?? []).some((g) => g.id === id)) return "group";
   if ((d.lanes ?? []).some((x) => x.id === id)) return "lane";
   if ((d.walls ?? []).some((x) => x.id === id)) return "wall";
+  if ((d.columns ?? []).some((x) => x.id === id)) return "column";
   if (d.layers.some((l) => l.nodes.some((n) => n.id === id))) return "node";
   if (d.edges.some((e) => e.id === id)) return "edge";
   return undefined;
@@ -637,6 +646,91 @@ function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number
   } else if (walls.length > 1) d.walls = walls.filter((x) => x.id !== wall.id);
   else delete d.walls;
   touch(s, wall.id);
+  return [];
+}
+
+/**
+ * column.add, column.join, column.leave and column.remove (D45). Members are nodes, or
+ * groups that bring their nodes. Rows are put in column order once the batch is applied.
+ */
+function columnStep(s: State, op: Extract<Op, { op: `column.${string}` }>, i: number): OpError[] {
+  const d = s.d;
+  const columns = d.columns ?? [];
+  const ids = columns.map((c) => c.id);
+  const unknownColumn = (id: string, field: string): OpError => ({
+    code: "unknown-column",
+    index: i,
+    field,
+    found: id,
+    facts: { near: closest(id, ids) },
+  });
+  const members = (list: readonly string[], field: string): DiagramNode[] | OpError[] => {
+    const nodes: DiagramNode[] = [];
+    const errors: OpError[] = [];
+    const groups = (d.groups ?? []).map((g) => g.id);
+    for (const id of list) {
+      const at = findNode(d, id);
+      if (at) nodes.push(at.node);
+      else if (groups.includes(id)) nodes.push(...groupNodes(d, id));
+      else {
+        errors.push({
+          code: "unknown-node",
+          index: i,
+          field,
+          found: id,
+          facts: { near: closest(id, [...nodeIds(d), ...groups]) },
+        });
+      }
+    }
+    return errors.length > 0 ? errors : nodes;
+  };
+  const follow = (nodes: DiagramNode[], column: string | undefined) => {
+    for (const n of nodes) {
+      if (column === undefined) delete n.column;
+      else n.column = column;
+      touch(s, n.id);
+    }
+  };
+  const isErrors = (x: DiagramNode[] | OpError[]): x is OpError[] =>
+    x.length > 0 && "code" in (x[0] as object);
+  if (op.op === "column.add") {
+    const dup = dupError(d, op.id, i);
+    if (dup) return [dup];
+    if (op.before !== undefined && op.after !== undefined) {
+      return [{ code: "conflicting-position", index: i, field: "before,after", found: op.before }];
+    }
+    const ref = op.before ?? op.after;
+    const at = ref === undefined ? columns.length : ids.indexOf(ref);
+    if (ref !== undefined && at < 0) return [unknownColumn(ref, op.before ? "before" : "after")];
+    const nodes = op.nodes === undefined ? [] : members(op.nodes, "nodes");
+    if (isErrors(nodes)) return nodes;
+    columns.splice(op.after !== undefined ? at + 1 : at, 0, { id: op.id });
+    d.columns = columns;
+    touch(s, op.id);
+    follow(nodes, op.id);
+    return [];
+  }
+  if (op.op === "column.leave") {
+    const nodes = members(op.members, "members");
+    if (isErrors(nodes)) return nodes;
+    follow(nodes, undefined);
+    return [];
+  }
+  const key = op.op === "column.join" ? op.column : op.id;
+  if (!ids.includes(key)) return [unknownColumn(key, op.op === "column.join" ? "column" : "id")];
+  if (op.op === "column.join") {
+    const nodes = members(op.members, "members");
+    if (isErrors(nodes)) return nodes;
+    follow(nodes, key);
+    return [];
+  }
+  follow(
+    d.layers.flatMap((l) => l.nodes.filter((n) => n.column === key)),
+    undefined,
+  );
+  if (columns.length > 1) d.columns = columns.filter((c) => c.id !== key);
+  else delete d.columns;
+  touch(s, key);
   return [];
 }
 
@@ -1496,6 +1590,11 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "note.add":
     case "note.remove":
       return noteStep(s, op, i);
+    case "column.add":
+    case "column.join":
+    case "column.leave":
+    case "column.remove":
+      return columnStep(s, op, i);
     case "layer.add":
       return addLayer(s, op, i);
     case "node.add":
@@ -1647,6 +1746,8 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
   tidyLayers(s, m);
   // Column lanes keep each row in lane order (D32).
   touch(s, ...orderByLanes(s.d));
+  // Columns keep each row in column order (D45).
+  touch(s, ...orderByColumns(s.d));
   const last = Math.max(0, ops.length - 1);
   const broken = checkIntegrity(s.d, last);
   if (broken.length > 0) return { errors: broken };
