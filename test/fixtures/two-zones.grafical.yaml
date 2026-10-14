@@ -1,0 +1,142 @@
+grafical: 1
+title: Highly available web app
+subtitle: Two availability zones; the database fails over to the standby.
+density: normal
+layers:
+  - id: row-users
+    label: Users
+    nodes:
+      - id: users
+        label: Users
+        kind: actor
+  - id: row-edge
+    label: Edge
+    nodes:
+      - id: dns
+        label: Route 53
+        kind: service
+        sublabel: DNS
+      - id: cdn
+        label: CloudFront
+        kind: service
+        sublabel: CDN
+      - id: s3
+        label: S3
+        kind: store
+        sublabel: static assets
+  - id: row-public
+    label: Public subnets
+    nodes:
+      - id: nat-a
+        label: NAT gateway
+        kind: service
+        group: pub-a
+      - id: alb
+        label: Load balancer
+        kind: service
+        sublabel: ALB
+        group: vpc
+      - id: nat-b
+        label: NAT gateway
+        kind: service
+        group: pub-b
+  - id: row-app
+    label: App subnets
+    nodes:
+      - id: web-a
+        label: Web server
+        kind: service
+        sublabel: EC2
+        group: app-a
+      - id: web-b
+        label: Web server
+        kind: service
+        sublabel: EC2
+        group: app-b
+  - id: row-data
+    label: Data subnets
+    nodes:
+      - id: rds-a
+        label: RDS primary
+        kind: store
+        group: data-a
+      - id: rds-b
+        label: RDS standby
+        kind: store
+        group: data-b
+groups:
+  - id: vpc
+    label: VPC
+    sublabel: 10.0.0.0/16
+  - id: az-a
+    label: Availability Zone A
+    in: vpc
+  - id: az-b
+    label: Availability Zone B
+    in: vpc
+  - id: pub-a
+    label: Public subnet
+    in: az-a
+  - id: app-a
+    label: Private subnet
+    in: az-a
+  - id: data-a
+    label: Private subnet
+    in: az-a
+  - id: pub-b
+    label: Public subnet
+    in: az-b
+  - id: app-b
+    label: Private subnet
+    in: az-b
+  - id: data-b
+    label: Private subnet
+    in: az-b
+edges:
+  - id: users->dns
+    from: users
+    to: dns
+    kind: call
+  - id: users->cdn
+    from: users
+    to: cdn
+    kind: call
+  - id: cdn->s3
+    from: cdn
+    to: s3
+    kind: call
+  - id: cdn->alb
+    from: cdn
+    to: alb
+    kind: call
+  - id: alb->web-a
+    from: alb
+    to: web-a
+    kind: call
+  - id: alb->web-b
+    from: alb
+    to: web-b
+    kind: call
+  - id: web-a->rds-a
+    from: web-a
+    to: rds-a
+    kind: call
+  - id: web-b->rds-a
+    from: web-b
+    to: rds-a
+    kind: call
+  - id: rds-a->rds-b
+    from: rds-a
+    to: rds-b
+    kind: call
+    label: sync replication
+  - id: web-a->nat-a
+    from: web-a
+    to: nat-a
+    kind: optional
+    label: outbound
+  - id: web-b->nat-b
+    from: web-b
+    to: nat-b
+    kind: optional
+    label: outbound

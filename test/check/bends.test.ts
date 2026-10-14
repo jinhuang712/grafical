@@ -96,4 +96,13 @@ describe('lines bent for no reason (DESIGN.md, "Who chose is punished")', () => 
     }
     expect(check(d, s, m)).toEqual([]);
   });
+
+  // Found on 2026-10-15 in a two-zone cloud diagram: web-b's top side also takes the line from the load
+  // balancer, and its line up to the NAT gateway above bends twice. A known engine defect: drop `.fails`
+  // once the line runs straight.
+  it.fails("run straight from a box whose side another line shares", () => {
+    const file = join(import.meta.dirname, "../fixtures/two-zones.grafical.yaml");
+    const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
+    expect(check(d, layout(d, m), m)).toEqual([]);
+  });
 });
