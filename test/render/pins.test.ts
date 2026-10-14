@@ -1,4 +1,4 @@
-// The determinism gate of benchmark 11 (DESIGN.md, "Output and determinism"), end to end: fixtures laid
+// The determinism gate (GOALS.md, "Determinism"; DESIGN.md, "Output and determinism"), end to end: fixtures laid
 // out with the real measurer give these SVG bytes and PNG pixels on every
 // machine CI runs on, macOS and Linux. If the layout or the paint changes on
 // purpose, look at the pictures (node test/debug/check-fixtures.ts), then update.

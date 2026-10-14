@@ -43,7 +43,7 @@ This repository is public. Names, hosts, topics, databases and architecture of r
 | `pnpm typecheck` | Type-check with `tsc --noEmit` | available |
 | `pnpm lint` | Lint and format check with Biome | available |
 | `pnpm test` | Run vitest. Passes while no tests exist | available |
-| `pnpm bench <baseline\|chain\|smoke\|stage1\|judge\|gallery\|geometry\|lines\|speed\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` and `stage1` need `--approved`. `geometry` checks every picture of a round for mechanical defects (benchmark 7), `speed` times one operation and one command (benchmark 11), and `lines` measures a round's lines and how often the agent ran `grafical try` (DESIGN.md, "Records over prose"); all three cost nothing | available |
+| `pnpm bench <baseline\|chain\|smoke\|stage1\|judge\|gallery\|geometry\|lines\|speed\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` and `stage1` need `--approved`. `geometry` checks every picture of a round for mechanical defects (GOALS.md, "Mechanical defects"), `speed` times one operation and one command (GOALS.md, "Speed"), and `lines` measures a round's lines and how often the agent ran `grafical try` (DESIGN.md, "Records over prose"); all three cost nothing | available |
 
 A command added to `package.json` gets a row here in the same change.
 

@@ -1,4 +1,4 @@
-// Benchmark 4 as a test helper, restated for the column grid (DESIGN.md, "Layout computed again on every change"): an
+// GOALS.md, "Stability" as a test helper, restated for the column grid (DESIGN.md, "Layout computed again on every change"): an
 // operation changes only the facts it names. The engine chooses columns, so
 // positions may shift to keep the picture tidy; the structure may not. After one
 // operation, for every node the operation does not name:

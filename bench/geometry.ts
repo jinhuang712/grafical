@@ -1,4 +1,4 @@
-// Benchmark 7's separate geometry check (GOALS.md, EXPERIMENTS.md): mechanical
+// The separate geometry check (GOALS.md, "Mechanical defects"; EXPERIMENTS.md): mechanical
 // defects found in a rendered SVG, from its shapes alone. It shares no code with
 // grafical's checker and does not know what the shapes stand for, so it also
 // catches what the renderer gets wrong. It reads flat SVG: rect, ellipse,
@@ -462,7 +462,7 @@ export interface StepGeometry {
 }
 
 /**
- * Benchmark 7 for a round: checks every step's picture and writes geometry.json
+ * GOALS.md, "Mechanical defects" for a round: checks every step's picture and writes geometry.json
  * beside it. A grafical step's diagram file is rendered again; another arm's
  * step is checked only if the agent made an SVG.
  */

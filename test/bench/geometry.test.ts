@@ -33,7 +33,7 @@ const line = (d: string, dash = "") =>
   `<path d="${d}" fill="none" stroke="#666666" stroke-width="1.25"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`;
 const codes = (s: string) => checkSvg(s, m).map((d) => d.code);
 
-describe("the separate geometry check (benchmark 7)", () => {
+describe('the separate geometry check (GOALS.md, "Mechanical defects")', () => {
   it("finds each kind of mechanical defect in a hand-made SVG", () => {
     expect(codes(svg(`${box(10, 10)}\n${box(80, 30)}`))).toEqual(["overlap"]);
     expect(codes(svg(`${box(100, 100)}\n${line("M150 20L150 250")}`))).toEqual([

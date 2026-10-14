@@ -1,4 +1,4 @@
-<!-- what-we-build: approved 2026-10-14 -->
+<!-- what-we-build: approved 2026-10-15 -->
 # grafical — Proposal
 
 > Architecture diagrams that coding agents build in small, checked steps.
@@ -121,7 +121,7 @@ Three bets, each of which can be tested.
 |---|---|
 | Real diagrams need placements that rows and order cannot say, and the vocabulary grows until it is as hard as coordinates. This has started: walls, notes, columns and steps came in phase 1e | Each new fact stays only if it measurably helps, and every placement stays a fact, never a position |
 | Routing through the gaps is not enough for dense diagrams. The lines were the main complaint in the stage 1 round | Line work comes first in phases 1d and 1e, and the geometry check counts every defect |
-| Many small operations cost more round trips than one rewrite | A batch applies many operations in one call, and benchmark 1 measures tool calls |
+| Many small operations cost more round trips than one rewrite | A batch applies many operations in one call, and GOALS.md, "Time" and "Cost" measure what the round trips cost |
 | A small model still draws what the diagram says badly, even when the picture is tidy | The help teaches choosing what to draw, and the judged score keeps measuring it |
 
 ## Prior art

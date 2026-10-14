@@ -21,7 +21,7 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 | H9 | A loose prompt is enough for Haiku to draw what the owner meant | "Easy and consistent" | Owner's acceptance | E3 |
 | H10 | Each design decision helps more than its alternative | DESIGN.md | The metric each ablation names | E5 |
 
-"The same file is the same picture" is tested mechanically in CI, not by an experiment (benchmark 11).
+"The same file is the same picture" is tested mechanically in CI, not by an experiment (GOALS.md, "Determinism").
 
 ## Metrics
 
@@ -30,7 +30,7 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 | Cost | Dollars per run, per first draft and per change request | `total_cost_usd` in the headless run's result |
 | Wall time | Seconds from prompt to final answer, and the API's share of it | `duration_ms`, `duration_api_ms` |
 | Turns, tool calls | Model turns, and tool calls by tool | `num_turns`, the transcript |
-| Tokens | Fresh tokens: uncached input plus cache writes plus output. Benchmarks 2 and 3 count these | `input_tokens`, `cache_creation_input_tokens`, `output_tokens` |
+| Tokens | Fresh tokens: uncached input plus cache writes plus output. GOALS.md, "Iteration" and "Token use" count these | `input_tokens`, `cache_creation_input_tokens`, `output_tokens` |
 | Cache reads | Input tokens served from the prompt cache | `cache_read_input_tokens` |
 | Cache hit rate | Cache reads ÷ (uncached input + cache writes + cache reads), per run and per turn | The fields above, per turn from `stream-json` |
 | Image reads | Times the agent opens a rendered picture to judge it | The transcript |
@@ -152,4 +152,4 @@ An ablation runs when its decision is built or questioned, not all at once.
 | End of phase 1 | Smoke test: E1 and E2 on the public brief, grafical against a raw model, Haiku only, 3 runs each. It tests the core bet before phase 2 is built. E2 uses the four change types phase 1 supports: add a node between two others, move a node to another layer, rename a node, remove a node |
 | Phase 2 | E5 ablations, as their decisions are built |
 | Phase 3 | E1 to E4 with all arms and models, at least 3 runs each, and the MVP bar on the private reference brief |
-| End of stage 1 | Since 2026-10-11, the smoke test, E1 to E5 and the MVP bar run together once all of stage 1 is built (ROADMAP.md, "How stage 1 ends"). The owner set a $20 budget, mostly Haiku: Opus runs only for benchmark 5, the gap between Opus and Haiku. The owner rates E3 in person |
+| End of stage 1 | Since 2026-10-11, the smoke test, E1 to E5 and the MVP bar run together once all of stage 1 is built (ROADMAP.md, "How stage 1 ends"). The owner set a $20 budget, mostly Haiku: Opus runs only for GOALS.md, "Model gap", the gap between Opus and Haiku. The owner rates E3 in person |

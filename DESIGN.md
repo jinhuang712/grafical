@@ -67,7 +67,7 @@ Code and the other documents cite a section of this file by its heading, such as
 
 ### Performance
 
-- **A write lays out, routes and checks fast enough to run every time.** The targets are in [GOALS.md](GOALS.md), benchmark 11. Cost: every search the engine runs, such as choosing a slot, needs a cap, so that a large diagram stays fast. Holds as: `pnpm bench speed` times one operation and one command.
+- **A write lays out, routes and checks fast enough to run every time.** The targets are in GOALS.md, "Speed". Cost: every search the engine runs, such as choosing a slot, needs a cap, so that a large diagram stays fast. Holds as: `pnpm bench speed` times one operation and one command.
 
 ### Security
 
@@ -121,7 +121,7 @@ Reversed in part on 2026-10-12: groups nest, up to three levels, for deployment 
 
 ## Decision: Layout computed again on every change — 2026-10-11
 
-After every operation, grafical lays out the whole diagram again from the facts, the way LaTeX typesets a document again after every edit. Positions are never stored. Layout must be fast enough to feel instant: benchmark 11 in [GOALS.md](GOALS.md) allows 50 ms per operation in process.
+After every operation, grafical lays out the whole diagram again from the facts, the way LaTeX typesets a document again after every edit. Positions are never stored. Layout must be fast enough to feel instant: GOALS.md, "Speed" allows 50 ms per operation in process.
 
 Placement follows the facts in a fixed order: layers from top to bottom, nodes in each layer by their order, box sizes from their steps, gaps from the density.
 
@@ -140,7 +140,7 @@ Placement follows the facts in a fixed order: layers from top to bottom, nodes i
 
 "Changed" does not cascade: an edge that moved only because it shares a gap does not make its own neighbours movable. Otherwise a layer never moves sideways.
 
-The column grid does not keep this list. It is solved again from the facts after every change, so one operation can move nodes sideways in rows it did not touch: after about half of all single operations on the catalog-sync fixtures (bench/results/phase2.md). Remembering the last layout would break "Output and determinism". On 2026-10-12 the owner restated benchmark 4: an operation changes no fact it does not name (layer, order, group, lane, alignment), which the tests and `grafical diff` check, and sideways movement is measured, not gated. The stage 1 judges decide whether the movement hurts a reader; a column solver whose choices stay local to the change is the fix if it does.
+The column grid does not keep this list. It is solved again from the facts after every change, so one operation can move nodes sideways in rows it did not touch: after about half of all single operations on the catalog-sync fixtures (bench/results/phase2.md). Remembering the last layout would break "Output and determinism". On 2026-10-12 the owner restated GOALS.md, "Stability": an operation changes no fact it does not name (layer, order, group, lane, alignment), which the tests and `grafical diff` check, and sideways movement is measured, not gated. The stage 1 judges decide whether the movement hurts a reader; a column solver whose choices stay local to the change is the fix if it does.
 
 One exception: when a gap between two nodes is full, the next edge in id order takes its next-best gap, and that can move a route outside the channels it shares with the changed edge.
 
@@ -453,7 +453,7 @@ Decided on 2026-10-12 by the owner. In a real setup an agent knows only that a `
 - **Direction, not numbers.** Advice gives a direction and leaves the call to the model ("one story per diagram"), not a count ("12 to 16 boxes"). Numbers appear only for limits grafical enforces, such as two accents and three levels of groups, taken from the engine's own constants. Thresholds live in warnings, which react to the diagram at hand ("Curation stays with the agent").
 - **What the type guides taught moved into it.** Measured the same day (`bench/results/p1d-guides.md`): without the type guides Haiku still knew its diagram types, but not grafical's spelling of them. It drew a flowchart's Start and End as state-machine dots, whose labels are not drawn, left C4 and data-flow lines unlabelled, and was refused 16% of its calls against 3%. So the help says which kind each type uses (`node add`), when each type labels a line (`edge add`), how groups nest and how lists are written (`group add`, `lane add`, `apply`). The worked example per type went; `apply --help` keeps one full example, which the tests build from the help as printed.
 - **Clear names.** A name an agent misreads is fixed at the name. Fifteen drafts of the help round gave the legend an edge kind, `line: async`, reading `line` as the line of async edges; the field names how lines look, so the owner renamed it `style` on 2026-10-13. A batch that still says `line` is refused with the new name. A refusal also says how to fix the usual mistakes: which look an edge kind is drawn in, how to quote text that YAML cut at a comma, a free id for one already taken.
-- **Budget.** The help read before a first draft, `--help`, `new --help` and `apply --help`, stays under the old guide's 12,000 characters, about 2,800 tokens (benchmark 3). The help is printed at 80 columns on every terminal, so it is the same text for every agent.
+- **Budget.** The help read before a first draft, `--help`, `new --help` and `apply --help`, stays under the old guide's 12,000 characters, about 2,800 tokens (GOALS.md, "Token use"). The help is printed at 80 columns on every terminal, so it is the same text for every agent.
 
 Rejected:
 - Keeping `grafical guide` beside the help. Two references drift apart, and an agent that is never told about the guide never reads it.

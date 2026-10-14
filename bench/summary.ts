@@ -99,7 +99,7 @@ export function scoresByItem(round: string): Map<string, number> {
   return out;
 }
 
-/** Geometry defects in each picture, by `<chain>/<step>`, from `pnpm bench geometry` (benchmark 7). */
+/** Geometry defects in each picture, by `<chain>/<step>`, from `pnpm bench geometry` (GOALS.md, "Mechanical defects"). */
 export function geometryByItem(round: string): Map<string, number> {
   const out = new Map<string, number>();
   const top = join(RUNS, round);

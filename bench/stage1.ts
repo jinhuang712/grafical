@@ -2,7 +2,7 @@
 // every experiment that runs, as parts the owner can run one at a time.
 //
 //   e1e2    E1 draft and the 8 E2 change requests: grafical, raw and Mermaid, Haiku, 3 runs
-//   opus    E1 drafts on Opus, grafical and raw, 3 runs: the model gap (benchmark 5)
+//   opus    E1 drafts on Opus, grafical and raw, 3 runs: the model gap (GOALS.md, "Model gap")
 //   scale   E4 drafts on the 10-, 25- and 50-component briefs: all three arms, Haiku, 3 runs
 //   intent  E3: the 10 loose prompts, grafical, Haiku, one run each; the owner accepts or rejects
 //   mvp     the MVP bar: the private reference brief, grafical, Haiku, 3 runs, kept outside the repo

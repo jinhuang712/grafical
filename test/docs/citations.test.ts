@@ -63,14 +63,17 @@ describe("citations of document headings", () => {
     expect(missing).toEqual([]);
   });
 
-  it("use no decision number left from before 2026-10-15", () => {
+  it("use no decision or benchmark number left from before 2026-10-15", () => {
     const left: string[] = [];
     for (const file of files) {
       let text = readFileSync(join(ROOT, file), "utf8");
-      // DESIGN.md keeps the old numbers in its intro and in "Former IDs".
+      // DESIGN.md and GOALS.md keep the old numbers in "Former IDs" and "Former numbers".
       if (file === "DESIGN.md")
         text = text.slice(text.indexOf("## Principles"), text.indexOf("## Former IDs"));
-      for (const m of text.matchAll(/\bD\d{1,2}\b(?!")/g)) left.push(`${file}: ${m[0]}`);
+      if (file === "GOALS.md") text = text.slice(0, text.indexOf("## Former numbers"));
+      for (const m of text.matchAll(/\bD\d{1,2}\b(?!")|\b[Bb]enchmarks? \d|\b[Gg]oal \d\b/g)) {
+        left.push(`${file}: ${m[0]}`);
+      }
     }
     expect(left).toEqual([]);
   });

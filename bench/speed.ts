@@ -1,4 +1,4 @@
-// Benchmark 11's speed (GOALS.md): the time in process to apply, lay out and check
+// GOALS.md, "Speed": the time in process to apply, lay out and check
 // one operation on diagrams of about 50 nodes, and the wall time of one command.
 // Diagrams come from the fuzz generator's fixed seeds, so every run measures the
 // same ones. Costs nothing: no agent runs.

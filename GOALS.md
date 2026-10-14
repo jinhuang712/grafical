@@ -1,57 +1,183 @@
+<!-- what-we-build: approved 2026-10-15 -->
 # Goals
 
-> Written 2026-10-11. The targets are first estimates, except the MVP bar in goal 1. Recalibrate the others after the phase 1 smoke test and the full run in phase 3, and record each change here with its reason. Only the owner changes the MVP bar. How the benchmarks are run and judged is in [EXPERIMENTS.md](EXPERIMENTS.md).
+Each goal is a check with a number, grouped under the want in [PROPOSAL.md](PROPOSAL.md) that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [EXPERIMENTS.md](EXPERIMENTS.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
 
-## Goals for stage 1
+A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of the measurement. Code and documents cite a check by its heading, such as `GOALS.md, "Speed"`.
 
-1. **The MVP bar.** Two parts, set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"):
-   - **The main bar: easy and consistent.** Haiku, using only the command line and its help, meets the targets of benchmarks 2 (iteration), 4 (stability), 5 (model gap), 6 (operation errors) and 11 (determinism and speed), with zero mechanical defects.
-   - **Beside it: the judged score.** Haiku draws the private reference brief well enough to score at least 42 of 50 in blind judging. 42 is what the `diagram-design` skill scored with Opus and Sonnet on that brief on 2026-10-10.
-2. A change costs one batch: it takes seconds, uses few tokens, and moves nothing beyond what DESIGN.md, "Layout computed again on every change" allows.
-3. No output ever contains a mechanical defect.
-4. The diagram file is the whole truth: the same file gives the same picture, and changes can be reviewed in git.
-5. Large diagrams work: 50 nodes render without defects and without hiding information.
+## The MVP bar
 
-## Non-goals for stage 1
+Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It has two parts.
 
-- Making every diagram look good to every reader. Readers and agents prefer different things. Stage 1 gives agents an easy tool and a consistent result (PHILOSOPHY.md, "What makes grafical good?"), and adds no score of how readable a picture is (owner, 2026-10-13).
-- People editing on a board. Dropped on 2026-10-14 (PHILOSOPHY.md, "Who draws?").
-- Placing anything by coordinates, for anyone.
-- Diagram types that need a layout other than layered rows: sequence, entity-relationship and class diagrams, mind maps, timelines and charts. The types the layered engine can draw are in stage 1, added by the owner on 2026-10-12 (DESIGN.md, "Every layered diagram type").
-- Real-time collaboration, accounts or a hosted service.
-- Importing Mermaid, draw.io or Excalidraw files.
-- Free colors or styles per element. A whole diagram takes its look from a theme or a shared stylesheet (added by the owner on 2026-10-11), but no operation colors one node or edge.
-- An MCP server. It comes later, as a thin wrapper over the same operations.
+- **The main bar: easy and consistent.** Haiku, using only the command line and its help, meets the targets of "Iteration", "Stability", "Model gap", "Operation errors", "Determinism" and "Speed", with zero mechanical defects.
+- **Beside it: the judged score.** Haiku draws the private reference brief well enough that two blind Opus judges score it at least 42 of 50. 42 is what the `diagram-design` skill scored with Opus and Sonnet on that brief on 2026-10-10.
+- **Status:** ❌ not met. On 2026-10-12 the judges scored Haiku's three drafts 40, 34 and 40 (mean 38.0). In the main bar, "Iteration", "Operation errors" and "Speed" are not met.
 
-## Benchmarks
+## A change is one small step
 
-| # | Benchmark | Measures | Target | Kill threshold |
-|---|---|---|---|---|
-| 1 | First draft | Blind score (of 50), wall time, tool calls | Haiku ≥ 42, ≤ 2 min, ≤ 10 tool calls | Haiku below 34, the no-tool score in the 2026-10-10 test |
-| 2 | Iteration | Seconds and tokens per change request, and the share done right the first time | ≤ 30 s and ≤ 15k tokens per change, ≥ 90% right | Slower or costlier than regenerating with no tool |
-| 3 | Token use | Fresh tokens Haiku uses per first draft through the command line, and the fixed overhead: reference text read before the first operation | ≤ 50k per draft, overhead ≤ 3k | Above the no-tool arm. The 2026-10-10 figure of about 80k was counted differently, so the phase 1 smoke test measures the no-tool arm again |
-| 4 | Stability | Facts that changed although no operation named them (layer, order, group, lane, alignment), per change. Measured without a target: nodes that move sideways in rows whose contents did not change | 0 unnamed fact changes | Any |
-| 5 | Model gap | Opus score minus Haiku score on the same task | ≤ 4 | As large as the gap with no tool |
-| 6 | Operation errors | Share of operations rejected, and retries needed to recover | ≤ 5%, recovered within 1 retry | Above 20% |
-| 7 | Mechanical defects | Overflow, overlap, edges through nodes and label collisions, found by a separate geometry check on the rendered SVG, plus the judges' defect score | 0 found, judges' defect score ≥ 4 of 5 | Any defect in an output is a bug |
-| 8 | Scale | Defects and judged clarity at 10, 25 and 50 nodes | 0 defects, clarity ≥ 3 of 5 at 50 nodes | Defects at 25 nodes |
-| 9 | Faithfulness | Invented components, and important items missing from the brief | 0 invented, ≤ 1 missing | Any invented component |
-| 10 | Intent | Loose prompts of about three sentences given to Haiku, accepted by the owner without changes | ≥ 7 of 10 | Below 5 of 10 |
-| 11 | Determinism and speed | SVG bytes and PNG pixels across macOS and Linux. Time in process to apply, lay out and check one operation at 50 nodes. Wall time of one command | Identical (a gate), ≤ 50 ms in process, ≤ 400 ms per command | Any difference, or a render above 2 s |
-| 12 | Cost | Dollars per first draft and per change request, on Haiku | Set from the phase 1 smoke test. Per change: below regenerating with no tool | Costlier than the no-tool arm |
-| 13 | Cache hit rate | Cache reads ÷ all input tokens, per run | ≥ 85% | Below the no-tool arm |
-| 14 | Verifiability | Image reads the agent needs to know it is done. Checks that need a judge or a person | ≤ 1 image read per first draft, 0 per change. For grafical, only taste and faithfulness need a judge. Every other check is mechanical | The agent must look at the picture after each step |
+### Iteration
 
-Benchmark 7 does not use grafical's own checker. That checker refuses every write it flags (DESIGN.md, "Defects owned by who can fix them"), so it would always report zero.
+- **Target:** at most 30 s and 15k fresh tokens per change request, and at least 90% of requests done right the first time.
+- **Method:** the benchmark harness runs a draft and 8 change requests on the public brief, 3 runs per arm (EXPERIMENTS.md, "E2 Iteration").
+- **Kill threshold:** slower or costlier per change than redrawing with no tool.
+- **Status:** ❌ not met on 2026-10-12. 17 of 24 change steps made the change (71%). Six of the seven misses asked about something the draft had merged away, instead of inventing it. Per step, time averaged 4 to 32 s, over the target only for adding a node, and fresh tokens averaged 0.9k to 14.6k.
 
-"Fresh tokens" in benchmarks 2 and 3 exclude cache reads, which benchmark 13 counts. EXPERIMENTS.md defines every metric.
+### Stability
 
-## Which experiment measures what
+- **Target:** no fact changes that no operation named: a row, an order, a group, a lane or an alignment. Boxes that move sideways in rows the change did not touch are measured, without a target.
+- **Method:** the stability tests apply single operations, and `grafical diff` compares each change step with the one before. Restated by the owner on 2026-10-12.
+- **Kill threshold:** any unnamed fact change.
+- **Status:** ✅ met on 2026-10-12. 0 unnamed changes in all 169 single operations of the tests and in every change step of the stage 1 round.
 
-| Experiment in EXPERIMENTS.md | Benchmarks |
-|---|---|
-| E1 First draft | 1, 3, 5, 6, 7, 9, 12, 13, 14 |
-| E2 Iteration | 2, 4, 6, 12, 13, 14 |
-| E3 Intent | 10 |
-| E4 Scale | 8 |
-| CI tests | 4, 7, 11 |
+## The agent never places anything
+
+### No placement by the agent
+
+- **Target:** no transcript in which the agent works out a position or writes a script to lay out the picture.
+- **Method:** the benchmark harness scans every grafical transcript of a round.
+- **Kill threshold:** none set.
+- **Status:** ⬜ not measured.
+
+## Enough to say what is needed
+
+### Enough to say
+
+- **Target:** number not set. It counts the times an agent wanted to state something that no operation could express, and drew something else or gave up.
+- **Method:** read from the refusals and the agents' own notes in a benchmark round. The first measured round sets the target.
+- **Kill threshold:** none set.
+- **Status:** ⬜ not measured.
+
+## Complete and clear at once
+
+### Mechanical defects
+
+- **Target:** no overflow, overlap, line through a box or label collision, and a defect score from the judges of at least 4 of 5.
+- **Method:** `pnpm bench geometry` checks every rendered SVG of a round with a geometry check of its own. It does not use grafical's checker, which refuses every write it flags and so would always report zero (DESIGN.md, "Defects owned by who can fix them").
+- **Kill threshold:** any defect in an output is a bug.
+- **Status:** ❌ not met on 2026-10-12. The geometry check found no defect in all 49 grafical pictures of the stage 1 round, nor in the 46 of its rerun, but the judges gave the drafts of the reference brief a defect score of 3 or 4.
+
+### Scale
+
+- **Target:** no defect, and a clarity of at least 3 of 5 at 50 boxes.
+- **Method:** Haiku drafts briefs of 10, 25 and 50 components, 3 runs each, rated blind by the owner (EXPERIMENTS.md, "E4 Scale").
+- **Kill threshold:** a defect at 25 boxes.
+- **Status:** ⬜ not shown at 50 boxes. On 2026-10-12 all 9 drafts had no defect, and the 50-component drafts scored a clarity of 5, 5 and 4. But Haiku merged that brief into 15 to 19 boxes, so no picture of 50 boxes was judged.
+
+### Faithfulness
+
+- **Target:** no invented component, and at most 1 important item of the brief missing.
+- **Method:** the judges' checklist in each first-draft round (EXPERIMENTS.md, "E1 First draft").
+- **Kill threshold:** any invented component.
+- **Status:** ⬜ not measured as a count.
+
+## Fewer turns, less time, fewer tokens
+
+The checks in this section are comparative. A number such as 35.6k tokens means nothing alone, so grafical is held against three baselines that draw the same brief:
+
+- **A stronger model with a higher thinking budget, without grafical,** such as Opus with extended thinking.
+- **The same model without grafical:** Haiku drawing on its own.
+- **Other tools,** such as Mermaid and the `diagram-design` skill.
+
+The rule, set by the owner on 2026-10-15: grafical gets a picture the owner accepts for less than each baseline pays for a picture the owner accepts. A baseline that draws no accepted picture loses the comparison, whatever it spends. The first drafts of the stage 1 round on the public brief, 2026-10-12, 3 runs each, mean per draft:
+
+| Arm | Owner's rating (of 25) | Cost | Time | Fresh tokens | From the cache |
+|---|---|---|---|---|---|
+| Haiku with grafical | 24 | $0.011 | 48 s | 35.6k | 83.2% |
+| Opus with grafical | 24 | $0.259 | 39 s | 23.7k | 84.6% |
+| Opus without grafical | 5 | $0.312 | 54 s | 26.5k | 87.1% |
+| Haiku without grafical | 5 | $0.007 | 47 s | 20.5k | 88.7% |
+| Haiku with Mermaid | 5 | $0.004 | 16 s | 13.3k | 83.1% |
+
+The owner marked every draft without grafical, and every Mermaid draft, too bad to rate, so none was accepted. Opus ran at its default thinking budget, so the higher-thinking baseline has not run yet, and neither has the `diagram-design` skill.
+
+### The picture turned in
+
+- **Target:** a judged score of at least 42 of 50 for the picture the agent turns in at the end. How many drafts or calls it took to get there is not counted: "Time", "Token use" and "Cost" measure what they cost.
+- **Method:** Haiku draws the brief from the command line and its help, 3 runs, and the final picture of each is judged blind (EXPERIMENTS.md, "E1 First draft").
+- **Kill threshold:** a score below 34, the no-tool score of the 2026-10-10 test.
+- **Status:** ❌ not met on 2026-10-12: 38.0 on the private reference brief.
+
+### Time
+
+- **Target:** an accepted diagram in less wall time than each baseline takes for an accepted one.
+- **Method:** the benchmark harness, from each run's wall time, first drafts and change requests.
+- **Kill threshold:** a baseline that gets accepted diagrams in less time.
+- **Status:** ✅ met on 2026-10-12 against the baselines that ran, none of which drew an accepted picture. ⬜ The higher-thinking baseline and the `diagram-design` skill have not run.
+
+### Token use
+
+- **Target:** an accepted diagram for fewer fresh tokens than each baseline uses for an accepted one. Also, the help an agent reads before its first operation stays under 3k tokens.
+- **Method:** the benchmark harness, from each run's token counts. Fresh tokens leave out cache reads.
+- **Kill threshold:** a baseline that gets accepted diagrams for fewer tokens.
+- **Status:** ✅ met on 2026-10-12 against the baselines that ran. ⬜ The higher-thinking baseline and the `diagram-design` skill have not run, and the help read before the first operation was not measured, because the round recorded no empty baseline.
+
+### Context added
+
+- **Target:** an accepted diagram adds fewer tokens to the agent's conversation than each baseline adds for an accepted one. What stays in the conversation is what the agent carries into all its later work.
+- **Method:** the benchmark harness, from each transcript: the size of the conversation when the task ends, less its size when the task starts.
+- **Kill threshold:** a baseline that adds less to the conversation for accepted diagrams.
+- **Status:** ⬜ not measured.
+
+### Cost
+
+- **Target:** an accepted diagram for less money than each baseline pays for an accepted one, for first drafts and for change requests.
+- **Method:** the benchmark harness, from each run's cost.
+- **Kill threshold:** a baseline that gets accepted diagrams for less.
+- **Status:** ✅ met on 2026-10-12 against the baselines that ran. ⬜ The higher-thinking baseline and the `diagram-design` skill have not run.
+
+### Cache hit rate
+
+- **Target:** a higher share of input read from the cache than each baseline that draws accepted diagrams.
+- **Method:** the benchmark harness: cache reads divided by all input tokens, per run.
+- **Kill threshold:** a baseline that draws accepted diagrams with a higher share.
+- **Status:** ✅ met on 2026-10-12 against the baselines that ran. ⬜ The higher-thinking baseline and the `diagram-design` skill have not run.
+
+### Verifiability
+
+- **Target:** at most 1 look at the picture per first draft, and none per change. Only taste and faithfulness need a judge, and every other check is mechanical.
+- **Method:** the benchmark harness counts the images each agent opens.
+- **Kill threshold:** the agent must look at the picture after each step.
+- **Status:** ❌ not met on 2026-10-12. Drafts looked once. Changes looked up to once per step: 1.0 when adding a node, 0.3 when adding a line.
+
+### Operation errors
+
+- **Target:** at most 5% of operations refused, each recovered within 1 retry.
+- **Method:** the benchmark harness counts refused calls in each round.
+- **Kill threshold:** above 20%.
+- **Status:** ❌ not met on 2026-10-12. First drafts were refused 0% of their calls, but the scale drafts 20% and the loose prompts 13%.
+
+### Speed
+
+- **Target:** at most 50 ms in process to apply, lay out and check one operation at 50 boxes, and at most 400 ms for one command.
+- **Method:** `pnpm bench speed`, on random diagrams of about 50 boxes.
+- **Kill threshold:** a render above 2 s.
+- **Status:** ❌ not met on 2026-10-15. One operation took a median of 8.6 ms, but adding a box without a position took up to 189.7 ms. On 2026-10-12 the worst case was 16.6 ms. Commands took 181 to 193 ms, and a render 366 ms.
+
+## A small model draws like a large one
+
+### Model gap
+
+- **Target:** Opus's score minus Haiku's at most 4, on the same task.
+- **Method:** Opus and Haiku draw the same brief, 3 runs each, rated blind by the owner.
+- **Kill threshold:** as large as the gap with no tool.
+- **Status:** ✅ met on 2026-10-12: a gap of 0, both 24 of 25.
+
+### Intent
+
+- **Target:** at least 7 of 10 loose prompts of about three sentences, drawn by Haiku, accepted by the owner without changes.
+- **Method:** the owner rates each drawing in person (EXPERIMENTS.md, "E3 Intent").
+- **Kill threshold:** fewer than 5 of 10.
+- **Status:** ✅ met on 2026-10-12: 9 of 10 accepted.
+
+## The diagram is a file
+
+### Determinism
+
+- **Target:** the same SVG bytes and PNG pixels on macOS and Linux.
+- **Method:** CI renders the pinned fixtures on both systems and compares them on every push.
+- **Kill threshold:** any difference.
+- **Status:** ✅ met on 2026-10-14, in CI run 38584033554.
+
+## Former numbers
+
+Until 2026-10-15 the checks had numbers, and the dated results in `bench/results/` still use them. Benchmark 1 is "The picture turned in" and "Time", 2 "Iteration", 3 "Token use", 4 "Stability", 5 "Model gap", 6 "Operation errors", 7 "Mechanical defects", 8 "Scale", 9 "Faithfulness", 10 "Intent", 11 "Determinism" and "Speed", 12 "Cost", 13 "Cache hit rate" and 14 "Verifiability". Goal 1 is "The MVP bar".

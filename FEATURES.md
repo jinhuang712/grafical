@@ -356,4 +356,6 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Patterns, one operation for a common structure | Shorthand for content; the help's examples teach the structures |
 | A declared diagram type that checks its conventions | grafical would judge content (DESIGN.md, "Records over prose") |
 | A score of how readable a picture is | Readers differ (PHILOSOPHY.md) |
+| Placement by coordinates, for anyone | Coordinates are the dirty work models fail at, and a free position would break the promise that a change moves only what it names (PHILOSOPHY.md, "What may the agent set?") |
+| Real-time collaboration, accounts or a hosted service | The diagram is a file in git, and git already shares it and keeps its history (DESIGN.md, "Git as the history") |
 | A board where people edit the diagram (`grafical review`), with drags that become operations | Agents draw good enough diagrams with grafical, and a person asks for a change in words (PHILOSOPHY.md, "Who draws?"). Dropped by the owner on 2026-10-14 |

@@ -76,21 +76,21 @@ Added by the owner on 2026-10-13, after the help rounds showed that tidy lines (
 - **Then, as facts the agent states:** the flow's direction (down or right), dividers and walls between parts of a picture (a wall lets lines cross only through a named gate), and notes attached to a box, line or group. On 2026-10-14 the owner held the flow's direction for later, and walls were built the same day: empty space between two named sides, which a label turns into a divider (DESIGN.md, "Walls as space"); and notes, as a callout or a footnote (DESIGN.md, "Notes as callouts or footnotes").
 - **The full list, with the order the owner agreed** (FEATURES.md, "Phase 1e: chosen by the owner on 2026-10-13"): bundled fan-outs with equal heights in a row and room around stores first, then the rest. Each stays only if it measurably helps.
 
-Exit check: the MVP bar in both its parts (GOALS.md, goal 1) measured again.
+Exit check: the MVP bar in both its parts (GOALS.md, "The MVP bar") measured again.
 
 ### Phase 2: the vocabulary and stability
 
-Everything else that FEATURES.md marks `stage 1`: the full operation set, `apply`, `show`, `diff` and the reference for agents (`guide`, now the help, DESIGN.md, "The help as the reference"). The stability rule (DESIGN.md, "Layout computed again on every change") is enforced by tests. The separate geometry check for benchmark 7 is built.
+Everything else that FEATURES.md marks `stage 1`: the full operation set, `apply`, `show`, `diff` and the reference for agents (`guide`, now the help, DESIGN.md, "The help as the reference"). The stability rule (DESIGN.md, "Layout computed again on every change") is enforced by tests. The separate geometry check for GOALS.md, "Mechanical defects" is built.
 
-Exit check: benchmarks 4, 7 and 11 meet their targets. These three need no agent runs.
+Exit check: GOALS.md, "Stability", "Mechanical defects", "Determinism" and "Speed" meet their targets. These three need no agent runs.
 
-First measurement, 2026-10-12: 7 and 11 met, and 4 not met. Unnamed nodes in unchanged rows move sideways after half of all single operations. The owner restated benchmark 4 the same day: no unnamed fact changes, which holds, with sideways movement measured but not gated ([bench/results/phase2.md](bench/results/phase2.md)). The cross-platform gate of benchmark 11 waits for CI.
+First measurement, 2026-10-12: 7 and 11 met, and 4 not met. Unnamed nodes in unchanged rows move sideways after half of all single operations. The owner restated GOALS.md, "Stability" the same day: no unnamed fact changes, which holds, with sideways movement measured but not gated ([bench/results/phase2.md](bench/results/phase2.md)). The cross-platform gate, GOALS.md, "Determinism", waits for CI.
 
 ### Phase 3: benchmark and release
 
 Extend the benchmark harness to every arm and experiment, then run E1 to E4 from EXPERIMENTS.md, with at least three runs per cell.
 
-Exit check: benchmarks 1, 2, 3, 5, 6, 8, 9, 10, 12, 13 and 14 meet their targets. A recorded decision may recalibrate any target except the MVP bar in goal 1. Then release 0.1.0 on npm.
+Exit check: every other check in GOALS.md meets its target. A recorded decision may recalibrate any target except GOALS.md, "The MVP bar". Then release 0.1.0 on npm.
 
 ## Later
 
