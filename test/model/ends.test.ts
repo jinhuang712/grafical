@@ -62,7 +62,10 @@ describe("edge ends at a container (D28)", () => {
       { op: "node.add", id: "probe", layer: "topics", label: "probe", first: true },
     ]);
     const e = fail(d, [{ op: "edge.add", from: "probe", to: "catalog-api" }]);
-    expect(e[0]?.code).toBe("edge-blocked");
+    expect(e[0]).toMatchObject({
+      code: "edge-blocked",
+      facts: { row: "topics", nodes: ["retry", "line_topics"] },
+    });
   });
 
   it("removing a group removes the edges that end at it", () => {

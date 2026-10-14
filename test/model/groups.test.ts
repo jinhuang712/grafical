@@ -197,6 +197,12 @@ describe("group operations", () => {
     const e = fail(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "z"] }]);
     expect(e[0]).toMatchObject({ code: "group-split", field: "group" });
     expect(e[0]).toMatchObject({ found: "y", facts: { group: "g", row: "r" } });
+    // The node in between either joins, or goes out to one side of the members.
+    expect(e[0]?.facts?.fix).toEqual([
+      "group join <file> g y",
+      "node move <file> y --before x",
+      "node move <file> y --after z",
+    ]);
     // Joining the node in between, or grouping neighbours, is fine.
     ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y", "z"] }]);
     ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y"] }]);

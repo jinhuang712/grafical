@@ -546,12 +546,18 @@ function groupConstraints(
       if (stranger !== undefined) {
         const layer = d.layers[r]?.id ?? "";
         const s = ids[stranger] as string;
+        // The node either belongs in the group, or goes out to one side of its members.
+        const fix = [
+          `group join <file> ${g} ${s}`,
+          `node move <file> ${s} --before ${ids[list[first] as number]}`,
+          `node move <file> ${s} --after ${ids[list[last] as number]}`,
+        ];
         failed = {
           code: "group-split",
           group: g,
           node: s,
           found: s,
-          facts: { group: g, row: layer, fix: [`group join <file> ${g} ${s}`] },
+          facts: { group: g, row: layer, fix },
         };
         break;
       }

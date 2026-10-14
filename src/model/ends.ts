@@ -9,7 +9,7 @@
 // - an end that shares a row with a group meets the group's side, so nothing may
 //   stand between them in that row.
 
-import type { OpError } from "../errors.ts";
+import type { Facts, OpError } from "../errors.ts";
 import { groupNodes } from "./groups.ts";
 import { laneNodes, laneRun } from "./lanes.ts";
 import { closest } from "./suggest.ts";
@@ -93,6 +93,27 @@ export function meeting(d: Diagram, a: string, b: string): Meeting | undefined {
   return undefined;
 }
 
+/** The first row two ends share, and the nodes that stand between them there. */
+function between(d: Diagram, a: string, b: string): Facts {
+  const inA = new Set(endNodes(d, a));
+  const inB = new Set(endNodes(d, b));
+  for (const layer of d.layers) {
+    const ia = layer.nodes.flatMap((n, k) => (inA.has(n.id) ? [k] : []));
+    const ib = layer.nodes.flatMap((n, k) => (inB.has(n.id) ? [k] : []));
+    if (ia.length === 0 || ib.length === 0) continue;
+    const [l, r] =
+      Math.max(...ia) < Math.min(...ib)
+        ? [Math.max(...ia), Math.min(...ib)]
+        : [Math.max(...ib), Math.min(...ia)];
+    const nodes = layer.nodes
+      .slice(l + 1, Math.max(l + 1, r))
+      .filter((n) => !inA.has(n.id) && !inB.has(n.id))
+      .map((n) => n.id);
+    return { row: layer.id, nodes };
+  }
+  return {};
+}
+
 /** The rules for each edge's two ends. `index` goes on every error. */
 export function checkEnds(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
@@ -170,6 +191,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
+        facts: between(d, e.from, e.to),
       });
     }
   });
