@@ -217,6 +217,15 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         add(a.col, b.col, a.w / 2 + sp.nodeGap + b.w / 2);
       }
     }
+    // A box placed by steps (D46): each step across keeps a medium box and a gap, so
+    // that two steps never look like one.
+    for (const n of nodes.values()) {
+      const from = n.node.from === undefined ? undefined : nodes.get(n.node.from);
+      if (from === undefined) continue;
+      for (let c = Math.min(from.col, n.col); c < Math.max(from.col, n.col); c++) {
+        add(c, c + 1, BOX.m.w + sp.nodeGap);
+      }
+    }
     const labelSpan = (g: string) => text.groupLabelW(g) + 2 * GROUP.labelInset;
     /** Terms for where a wide group's label ends: past the ports of its first row. */
     const pastPorts = (g: string) => {

@@ -3,6 +3,7 @@
 import { parseDocument, stringify } from "yaml";
 import type { OpError } from "../errors.ts";
 import { validateDiagram } from "./schema.ts";
+import { STEP_KEYS } from "./steps.ts";
 import {
   type Diagram,
   type DiagramNode,
@@ -59,6 +60,8 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
     }
     o.icons = icons;
   }
+  if (n.from !== undefined) o.from = n.from;
+  for (const k of STEP_KEYS) if (n[k] !== undefined) o[k] = n[k];
   return o;
 }
 
@@ -99,6 +102,7 @@ export function writeDiagram(d: Diagram): string {
     out.legend = legend;
   }
   out.layers = d.layers.map(layerOut);
+  if (d.nodes !== undefined && d.nodes.length > 0) out.nodes = d.nodes.map(nodeOut);
   if (d.groups !== undefined && d.groups.length > 0) {
     out.groups = d.groups.map((g) => {
       const o: Record<string, unknown> = { id: g.id, label: g.label };

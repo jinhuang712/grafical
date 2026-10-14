@@ -1,6 +1,7 @@
 // Taste measurements (DESIGN.md D25, D26). These are not defects: a broken
 // rule is reported by `grafical check --all` and never blocks a write. Pure.
 
+import { everyNode } from "../model/steps.ts";
 import type { Diagram } from "../model/types.ts";
 import type { Rect, Scene, SceneEdge } from "../scene.ts";
 import { lineStyle } from "../theme/paint.ts";
@@ -148,7 +149,7 @@ export function measureTaste(diagram: Diagram, scene: Scene): TasteReport {
   const straight = merged.filter((s) => s.length === 1).length;
   const labelled = edges.filter((e) => e.label).length;
   const styles = new Set(edges.map((e) => lineStyle(e.kind)));
-  const nodeCount = diagram.layers.reduce((n, l) => n + l.nodes.length, 0);
+  const nodeCount = everyNode(diagram).length;
   const crossings = countCrossings(edges);
   const crossLimit = Math.floor(total / 10 + 1e-9);
   const maxBends = bends.reduce((m, b) => Math.max(m, b), 0);

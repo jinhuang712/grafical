@@ -13,6 +13,7 @@ import { drawing } from "../check/drawing.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import type { Op } from "../model/ops.ts";
+import { everyNode } from "../model/steps.ts";
 import type { Diagram } from "../model/types.ts";
 import { renderSvg } from "../render/index.ts";
 import type { Rect, Scene } from "../scene.ts";
@@ -76,7 +77,7 @@ export function describeOp(op: Op): string {
   return words.join(" ");
 }
 
-const nodeCount = (d: Diagram) => d.layers.reduce((t, l) => t + l.nodes.length, 0);
+const nodeCount = (d: Diagram) => everyNode(d).length;
 
 function bounds(points: { x: number; y: number }[], pad: number): Rect {
   const xs = points.map((p) => p.x);

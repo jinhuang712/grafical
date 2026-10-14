@@ -2,6 +2,7 @@
 // vocabulary (DESIGN.md D17). One line per layer, then one line per edge.
 
 import { laneNodes, laneRun } from "../model/lanes.ts";
+import { everyNode, STEP_KEYS } from "../model/steps.ts";
 import {
   type Diagram,
   type DiagramNode,
@@ -22,6 +23,8 @@ function nodeText(n: DiagramNode): string {
   if (n.lane !== undefined) s += ` lane=${n.lane}`;
   if (n.column !== undefined) s += ` column=${n.column}`;
   if (n.sublabel !== undefined) s += ` sub=${JSON.stringify(n.sublabel)}`;
+  if (n.from !== undefined) s += ` from=${n.from}`;
+  for (const k of STEP_KEYS) if (n[k] !== undefined) s += ` ${k}=${n[k]}`;
   for (const slot of MARK_SLOTS) {
     const m = n.icons?.[slot];
     if (m === undefined) continue;
@@ -68,10 +71,12 @@ export function showDiagram(d: Diagram): string {
     lines.push(`layer ${l.id} ${JSON.stringify(l.label)}${lane}: ${nodes}`);
   }
   if (d.layers.length === 0) lines.push("(no layers)");
+  // Boxes in no row, placed by steps from another box (D46).
+  for (const n of d.nodes ?? []) lines.push(`node ${nodeText(n)}`);
   for (const g of d.groups ?? []) {
-    const members = d.layers.flatMap((l) =>
-      l.nodes.filter((n) => n.group === g.id).map((n) => n.id),
-    );
+    const members = everyNode(d)
+      .filter((n) => n.group === g.id)
+      .map((n) => n.id);
     const sub = g.sublabel === undefined ? "" : ` sub=${JSON.stringify(g.sublabel)}`;
     const inner = (d.groups ?? []).filter((x) => x.in === g.id).map((x) => `group ${x.id}`);
     const where = g.in === undefined ? "" : ` in=${g.in}`;

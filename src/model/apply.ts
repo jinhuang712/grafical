@@ -28,6 +28,7 @@ import type {
   NodeMoveOp,
   Op,
   Position,
+  Steps,
 } from "./ops.ts";
 import {
   checkIntegrity,
@@ -40,6 +41,7 @@ import {
   markColor,
   markNameTooLong,
 } from "./schema.ts";
+import { everyNode, STEP_KEYS, stepChain, steppedFrom } from "./steps.ts";
 import { closest } from "./suggest.ts";
 import {
   DEFAULT_DENSITY,
@@ -88,7 +90,7 @@ function unusedKind(d: Diagram, id: string): string | undefined {
   if ((d.lanes ?? []).some((x) => x.id === id)) return "lane";
   if ((d.walls ?? []).some((x) => x.id === id)) return "wall";
   if ((d.columns ?? []).some((x) => x.id === id)) return "column";
-  if (d.layers.some((l) => l.nodes.some((n) => n.id === id))) return "node";
+  if (everyNode(d).some((n) => n.id === id)) return "node";
   if (d.edges.some((e) => e.id === id)) return "edge";
   return undefined;
 }
@@ -253,19 +255,44 @@ function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
 }
 
 function nodeIds(d: Diagram): string[] {
-  return d.layers.flatMap((l) => l.nodes.map((n) => n.id));
+  return everyNode(d).map((n) => n.id);
 }
 
-function findNode(
-  d: Diagram,
-  id: string,
-): { layer: Layer; index: number; node: DiagramNode } | undefined {
+/** Where a node is: its row, or none for a box placed by steps (D46), and the list that holds it. */
+interface Found {
+  layer?: Layer;
+  list: DiagramNode[];
+  index: number;
+  node: DiagramNode;
+}
+
+function findNode(d: Diagram, id: string): Found | undefined {
   for (const layer of d.layers) {
     const index = layer.nodes.findIndex((n) => n.id === id);
     const node = layer.nodes[index];
-    if (node) return { layer, index, node };
+    if (node) return { layer, list: layer.nodes, index, node };
   }
-  return undefined;
+  const list = d.nodes ?? [];
+  const index = list.findIndex((n) => n.id === id);
+  const node = list[index];
+  return node ? { list, index, node } : undefined;
+}
+
+/** Takes a node out of the list that holds it; the steps list goes when it empties. */
+function unlist(d: Diagram, at: Found) {
+  at.list.splice(at.index, 1);
+  if (d.nodes !== undefined && d.nodes.length === 0) delete d.nodes;
+}
+
+/** A fact about where a box is, on a box placed by steps (D46): it goes back to a row first. */
+function stepped(id: string, i: number, field: string, found: string): OpError {
+  return {
+    code: "conflicting-position",
+    index: i,
+    field,
+    found,
+    facts: { node: id, fix: [`node move <file> ${id} --layer <row>`] },
+  };
 }
 
 function unknownNode(d: Diagram, id: string, i: number, field: string): OpError {
@@ -426,9 +453,9 @@ function groupStep(s: State, op: Extract<Op, { op: `group.${string}` }>, i: numb
   } else {
     // Its nodes and inner groups move into the group around it, or out of every group.
     const into = op.op === "group.remove" && op.out === true ? undefined : g.in;
-    const members = d.layers.flatMap((l) =>
-      l.nodes.filter((n) => n.group === g.id).map((n) => n.id),
-    );
+    const members = everyNode(d)
+      .filter((n) => n.group === g.id)
+      .map((n) => n.id);
     for (const c of innerGroups(d, g.id)) setParent(s, c, into);
     d.groups = groups.filter((x) => x.id !== g.id);
     touch(s, g.id);
@@ -504,7 +531,8 @@ function laneTargets(
           },
         });
     } else if (node !== undefined) {
-      if (settled === "columns") nodes.push(node.node);
+      if (node.layer === undefined) errors.push(stepped(id, i, "members", id));
+      else if (settled === "columns") nodes.push(node.node);
       else
         errors.push({
           code: "lane-mixed",
@@ -670,8 +698,10 @@ function columnStep(s: State, op: Extract<Op, { op: `column.${string}` }>, i: nu
     const groups = (d.groups ?? []).map((g) => g.id);
     for (const id of list) {
       const at = findNode(d, id);
-      if (at) nodes.push(at.node);
-      else if (groups.includes(id)) nodes.push(...groupNodes(d, id));
+      if (at?.layer === undefined && at !== undefined) errors.push(stepped(id, i, field, id));
+      else if (at) nodes.push(at.node);
+      // A group brings the nodes of its rows; a box placed by steps follows no column.
+      else if (groups.includes(id)) nodes.push(...groupNodes(d, id).filter((n) => !n.from));
       else {
         errors.push({
           code: "unknown-node",
@@ -779,7 +809,8 @@ function noteStep(s: State, op: Extract<Op, { op: `note.${string}` }>, i: number
 function checkAlign(d: Diagram, nodeLayer: string, target: string, i: number): OpError | undefined {
   const at = findNode(d, target);
   if (!at) return unknownNode(d, target, i, "align");
-  if (at.layer.id === nodeLayer) {
+  // Whether a box placed by steps lands in the same row is known once it is placed.
+  if (at.layer?.id === nodeLayer) {
     return {
       code: "align-same-layer",
       index: i,
@@ -884,11 +915,161 @@ function addLayer(s: State, op: LayerAddOp, i: number): OpError[] {
   return [];
 }
 
-function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
+type StepSet = Partial<Record<(typeof STEP_KEYS)[number], number>>;
+
+/** Whether an operation gives steps from another box (D46). */
+function givesSteps(op: Steps): boolean {
+  return op.from !== undefined || STEP_KEYS.some((k) => op[k] !== undefined);
+}
+
+/**
+ * The errors of placing box `id` by steps from `from` (D46): that box exists and does not
+ * step from `id`, through others or not; at least one step, and one way across and one
+ * way down; and none of `others`, the options that would say where the box is too.
+ */
+function stepErrors(
+  d: Diagram,
+  id: string,
+  from: string | undefined,
+  steps: StepSet,
+  others: string[],
+  i: number,
+): OpError[] {
+  const errors: OpError[] = others.map((f) => ({
+    code: "conflicting-position",
+    index: i,
+    field: `from,${f}`,
+    found: `from,${f}`,
+    facts: { max: 1 },
+  }));
+  if (from === undefined)
+    errors.push({ code: "missing-field", index: i, field: "from", found: "" });
+  else if (!findNode(d, from)) errors.push(unknownNode(d, from, i, "from"));
+  else {
+    const chain = [from, ...stepChain(d, from)];
+    const k = chain.indexOf(id);
+    if (k >= 0) {
+      errors.push({
+        code: "step-cycle",
+        index: i,
+        field: "from",
+        found: from,
+        facts: { chain: [id, ...chain.slice(0, k + 1)] },
+      });
+    }
+  }
+  if (!STEP_KEYS.some((k) => steps[k] !== undefined)) {
+    errors.push({ code: "missing-field", index: i, field: STEP_KEYS.join(","), found: "" });
+  }
+  for (const pair of [["down", "up"] as const, ["left", "right"] as const]) {
+    if (steps[pair[0]] === undefined || steps[pair[1]] === undefined) continue;
+    errors.push({
+      code: "conflicting-position",
+      index: i,
+      field: pair.join(","),
+      found: pair.join(","),
+      facts: { max: 1 },
+    });
+  }
+  return errors;
+}
+
+/** The options of an operation besides steps that say where a box is. */
+function placeOptions(op: NodeAddOp | NodeMoveOp): string[] {
+  const set: string[] = [];
+  if (op.layer !== undefined) set.push("layer");
+  if (op.first === true) set.push("first");
+  if (op.last === true) set.push("last");
+  if (op.before !== undefined) set.push("before");
+  if (op.after !== undefined) set.push("after");
+  if ("align" in op && op.align !== undefined) set.push("align");
+  return set;
+}
+
+/** Sets a box's steps, replacing the ones it had; without `from`, takes them off. */
+function setSteps(node: DiagramNode, from: string | undefined, steps: StepSet) {
+  if (from === undefined) delete node.from;
+  else node.from = from;
+  for (const k of STEP_KEYS) {
+    const v = steps[k];
+    if (v === undefined) delete node[k];
+    else node[k] = v;
+  }
+}
+
+/** The steps an operation gives, or a box's own when it gives none. */
+function stepsOf(op: StepSet, own: StepSet): StepSet {
+  const given = STEP_KEYS.some((k) => op[k] !== undefined) ? op : own;
+  const out: StepSet = {};
+  for (const k of STEP_KEYS) if (given[k] !== undefined) out[k] = given[k];
+  return out;
+}
+
+function addStepped(s: State, op: NodeAddOp, i: number): OpError[] {
   const d = s.d;
   const errors: OpError[] = [];
   const dup = dupError(d, op.id, i);
   if (dup) errors.push(dup);
+  const steps = stepsOf(op, {});
+  errors.push(...stepErrors(d, op.id, op.from, steps, placeOptions(op), i));
+  if (op.accent === true) {
+    const count = everyNode(d).filter((x) => x.accent).length;
+    if (count >= MAX_ACCENTS) errors.push(tooManyAccents(d, i, "accent", "true", count + 1));
+  }
+  if (errors.length > 0) return errors;
+  const node: DiagramNode = { id: op.id, label: op.label, kind: op.kind ?? DEFAULT_NODE_KIND };
+  if (op.size !== undefined) node.size = op.size;
+  if (op.sublabel !== undefined) node.sublabel = op.sublabel;
+  if (op.accent === true) node.accent = true;
+  setSteps(node, op.from, steps);
+  d.nodes = [...(d.nodes ?? []), node];
+  touch(s, op.id);
+  return [];
+}
+
+/** node.move with steps: the box leaves its row, or keeps its place in the list of such boxes (D46). */
+function moveStepped(s: State, op: NodeMoveOp, at: Found, i: number): OpError[] {
+  const d = s.d;
+  const from = op.from ?? at.node.from;
+  const steps = stepsOf(op, at.node);
+  const errors = stepErrors(d, op.id, from, steps, placeOptions(op), i);
+  // A fact that ties a box to a box in another row or to a column goes first.
+  const ties = [
+    ["align", `node align <file> ${op.id}`],
+    ["column", `column leave <file> ${op.id}`],
+    ["lane", `lane leave <file> ${op.id}`],
+  ] as const;
+  for (const [k, fix] of ties) {
+    const v = at.node[k];
+    if (v === undefined) continue;
+    errors.push({
+      code: "conflicting-position",
+      index: i,
+      field: `from,${k}`,
+      found: v,
+      facts: { node: op.id, fix: [fix] },
+    });
+  }
+  if (errors.length > 0) return errors;
+  if (at.layer !== undefined) {
+    unlist(d, at);
+    d.nodes = [...(d.nodes ?? []), at.node];
+    s.pending = s.pending.filter((p) => p.node !== op.id);
+  }
+  setSteps(at.node, from, steps);
+  touch(s, op.id);
+  return [];
+}
+
+function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
+  if (givesSteps(op)) return addStepped(s, op, i);
+  const d = s.d;
+  const errors: OpError[] = [];
+  const dup = dupError(d, op.id, i);
+  if (dup) errors.push(dup);
+  if (op.layer === undefined) {
+    return [...errors, { code: "missing-field", index: i, field: "layer,from", found: "" }];
+  }
   const layer = d.layers.find((l) => l.id === op.layer);
   if (!layer) errors.push(unknownLayer(d, op.layer, i, "layer"));
   if (layer && op.align !== undefined) {
@@ -896,7 +1077,7 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
     if (e) errors.push(e);
   }
   if (op.accent === true) {
-    const count = d.layers.reduce((n, l) => n + l.nodes.filter((x) => x.accent).length, 0);
+    const count = everyNode(d).filter((x) => x.accent).length;
     if (count >= MAX_ACCENTS) errors.push(tooManyAccents(d, i, "accent", "true", count + 1));
   }
   let slot: Slot = { auto: true };
@@ -923,14 +1104,16 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
   const d = s.d;
   const at = findNode(d, op.id);
   if (!at) return [unknownNode(d, op.id, i, "id")];
+  if (givesSteps(op)) return moveStepped(s, op, at, i);
   const hasPos =
     op.first === true || op.last === true || op.before !== undefined || op.after !== undefined;
-  if (op.layer === undefined && !hasPos) {
+  // A box placed by steps has no row to take a position in: --layer puts it back in one.
+  if (op.layer === undefined && (!hasPos || at.layer === undefined)) {
     return [
       {
         code: "missing-field",
         index: i,
-        field: "layer,first,last,before,after",
+        field: at.layer === undefined ? "layer,from" : "layer,first,last,before,after",
         found: "",
       },
     ];
@@ -938,9 +1121,9 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
   const target = op.layer === undefined ? at.layer : d.layers.find((l) => l.id === op.layer);
   if (!target) return [unknownLayer(d, op.layer as string, i, "layer")];
   const errors: OpError[] = [];
-  if (target.id !== at.layer.id) {
+  if (target.id !== at.layer?.id) {
     const own = at.node.align;
-    const ownLayer = own === undefined ? undefined : findNode(d, own)?.layer.id;
+    const ownLayer = own === undefined ? undefined : findNode(d, own)?.layer?.id;
     if (ownLayer === target.id) {
       errors.push({
         code: "align-same-layer",
@@ -965,7 +1148,8 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
   const slot = resolveSlot(d, rest, op, op.id, i, target.id);
   if ("error" in slot) errors.push(slot.error);
   if (errors.length > 0) return errors;
-  at.layer.nodes.splice(at.index, 1);
+  unlist(d, at);
+  setSteps(at.node, undefined, {});
   s.pending = s.pending.filter((p) => p.node !== op.id);
   if ("at" in slot) target.nodes.splice(slot.at, 0, at.node);
   else {
@@ -1033,7 +1217,9 @@ function tooManyAccents(
   found: string,
   count: number,
 ): OpError {
-  const accented = d.layers.flatMap((l) => l.nodes.filter((x) => x.accent).map((x) => x.id));
+  const accented = everyNode(d)
+    .filter((x) => x.accent)
+    .map((x) => x.id);
   return {
     code: "too-many-accents",
     index: i,
@@ -1218,8 +1404,15 @@ function swapNodes(s: State, op: Extract<Op, { op: "node.swap" }>, i: number): O
       },
     ];
   }
-  a.layer.nodes[a.index] = b.node;
-  b.layer.nodes[b.index] = a.node;
+  // A box placed by steps has no place in a row to swap (D46).
+  for (const [x, field] of [
+    [a, "a"],
+    [b, "b"],
+  ] as const) {
+    if (x.layer === undefined) return [stepped(x.node.id, i, field, x.node.id)];
+  }
+  a.list[a.index] = b.node;
+  b.list[b.index] = a.node;
   s.pending = s.pending.filter((p) => p.node !== op.a && p.node !== op.b);
   touch(s, op.a, op.b);
   return [];
@@ -1243,6 +1436,10 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
     if (dup) errors.push(dup);
   }
   if (errors.length > 0) return errors;
+  // The merged node takes the first part's place in its row, so every part is in a row (D46).
+  for (const id of op.nodes) {
+    if (findNode(d, id)?.layer === undefined) return [stepped(id, i, "nodes", id)];
+  }
   const parts = op.nodes.map((id) => findNode(d, id)?.node as DiagramNode);
   const first = findNode(d, op.nodes[0] as string);
   if (!first) return [];
@@ -1251,14 +1448,20 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
   if (parts.some((p) => p.accent === true)) node.accent = true;
   if (first.node.group !== undefined) node.group = first.node.group;
   if (first.node.lane !== undefined) node.lane = first.node.lane;
-  first.layer.nodes[first.index] = node;
+  first.list[first.index] = node;
   const merged = new Set(op.nodes);
   for (const id of op.nodes.slice(1)) {
     const at = findNode(d, id);
-    if (at) at.layer.nodes.splice(at.index, 1);
+    if (at) at.list.splice(at.index, 1);
   }
   s.pending = s.pending.filter((p) => !merged.has(p.node));
   touch(s, op.id, ...op.nodes);
+  // A box placed by steps from a merged node steps from the new one.
+  for (const n of d.nodes ?? []) {
+    if (n.from === undefined || !merged.has(n.from)) continue;
+    n.from = op.id;
+    touch(s, n.id);
+  }
   // Alignments to a merged node are dropped, and the nodes reported.
   for (const l of d.layers) {
     for (const n of l.nodes) {
@@ -1393,11 +1596,12 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       else if (op.op === "node.emphasize") {
         if (op.off === true) delete n.accent;
         else if (n.accent !== true) {
-          const count = d.layers.reduce((c, l) => c + l.nodes.filter((x) => x.accent).length, 0);
+          const count = everyNode(d).filter((x) => x.accent).length;
           if (count >= MAX_ACCENTS) return [tooManyAccents(d, i, "id", op.id, count + 1)];
           n.accent = true;
         }
       } else if (op.to === undefined) delete n.align;
+      else if (at.layer === undefined) return [stepped(op.id, i, "to", op.to)];
       else {
         const e = checkAlign(d, at.layer.id, op.to, i);
         if (e) return [{ ...e, field: "to" }];
@@ -1621,7 +1825,23 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "node.remove": {
       const at = findNode(d, op.id);
       if (!at) return [unknownNode(d, op.id, i, "id")];
-      at.layer.nodes.splice(at.index, 1);
+      // A box others are placed from by steps stays while they are (D46).
+      const users = steppedFrom(d, op.id);
+      if (users.length > 0) {
+        return [
+          {
+            code: "step-anchor",
+            index: i,
+            field: "id",
+            found: op.id,
+            facts: {
+              nodes: users,
+              fix: users.map((u) => `node move <file> ${u} --layer <row>`),
+            },
+          },
+        ];
+      }
+      unlist(d, at);
       s.pending = s.pending.filter((p) => p.node !== op.id);
       touch(s, op.id);
       const gone = d.edges.filter((e) => e.from === op.id || e.to === op.id);
@@ -1675,7 +1895,7 @@ function placePending(s: State, m: Measurer) {
   const ids: string[] = [];
   for (const p of s.pending) {
     const at = findNode(s.d, p.node);
-    if (!at) continue;
+    if (at?.layer === undefined) continue;
     ids.push(p.node);
     // The node stays in its row while its slot is chosen: chooseSlot counts it as removed.
     const raw = layoutModule.chooseSlot(s.d, at.layer.id, p.node, m);
@@ -1776,6 +1996,24 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
         found: p.found,
         facts: p.facts,
       })),
+    };
+  }
+  // A box placed by steps whose cell another fact keeps is an operation error (D46).
+  const stepProblems = layoutModule.validateSteps(s.d);
+  if (stepProblems.length > 0) {
+    return {
+      errors: stepProblems.map((p) => {
+        // Two boxes in each other's way: the error names the one this batch moved.
+        const other = typeof p.facts.node === "string" ? p.facts.node : undefined;
+        const swap =
+          p.code === "step-blocked" &&
+          other !== undefined &&
+          !s.changed.includes(p.found) &&
+          s.changed.includes(other);
+        const found = swap ? (other as string) : p.found;
+        const facts = swap ? { ...p.facts, node: p.found } : p.facts;
+        return { code: p.code, index: last, field: "from", found, facts };
+      }),
     };
   }
   if (s.d.groups !== undefined && s.d.groups.length === 0) delete s.d.groups;

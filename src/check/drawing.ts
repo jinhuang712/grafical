@@ -6,6 +6,7 @@
 // judges nothing.
 
 import { bendsOf, crossingsOf } from "../layout/index.ts";
+import { addedRow, placeSteps } from "../layout/steps.ts";
 import { endRows } from "../model/ends.ts";
 import type { Diagram } from "../model/index.ts";
 import { markName } from "../model/types.ts";
@@ -136,7 +137,11 @@ function gapOf(a: Rect, b: Rect): number {
   return dx + dy;
 }
 
-export function drawing(d: Diagram, scene: Scene): Drawing {
+export function drawing(facts: Diagram, scene: Scene): Drawing {
+  // Boxes placed by steps count in the rows they are drawn in (D46).
+  const d = placeSteps(facts).d;
+  /** A row's name in the output: a row the engine added is "-". */
+  const rowName = (id: string) => (addedRow(id) ? "-" : id);
   // Every element a line can end at, with the box it is drawn in.
   const rects = new Map<string, Rect>();
   for (const n of scene.nodes) rects.set(n.id, n.rect);
@@ -221,7 +226,7 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
           if (q === undefined || p.x !== q.x) return false;
           return Math.min(p.y, q.y) < s.y1 && Math.max(p.y, q.y) > s.y0 && p.x > s.x0 && p.x < s.x1;
         });
-        if (through) passes.push(layer.id);
+        if (through) passes.push(rowName(layer.id));
       }
     }
     const direct =
@@ -256,7 +261,7 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
       for (const s of SIDES) if (at[s] !== undefined) sides[s] = at[s];
       boxes.push({
         id: n.id,
-        row: layer.id,
+        row: rowName(layer.id),
         place: i + 1,
         of: row.length,
         width: Math.round(n.rect.w),
@@ -278,7 +283,7 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
   let fullest: Counts["fullest"] = null;
   for (const layer of d.layers) {
     if (fullest === null || layer.nodes.length > fullest.nodes)
-      fullest = { id: layer.id, nodes: layer.nodes.length };
+      fullest = { id: rowName(layer.id), nodes: layer.nodes.length };
   }
   let busiest: Counts["busiest"] = null;
   for (const box of boxes) {

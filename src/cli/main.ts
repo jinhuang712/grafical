@@ -12,6 +12,7 @@ import { diffDiagrams } from "../model/diff.ts";
 import { yamlError } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
+import { STEP_KEYS } from "../model/steps.ts";
 import {
   EDGE_KINDS,
   MARK_COLORS,
@@ -56,6 +57,26 @@ function splitIds(s: string): string[] {
 }
 
 const POSITION = ["first", "last", "before", "after"];
+
+/** The box steps start from, and the steps, as numbers where they read as one (D46). */
+function stepFlags(opts: Opts): Record<string, unknown> {
+  const out = pick(opts, ["from"]);
+  for (const k of STEP_KEYS) {
+    const v = opts[k];
+    if (v !== undefined) out[k] = typeof v === "string" && /^[0-9.]+$/.test(v) ? Number(v) : v;
+  }
+  return out;
+}
+
+/** The step options of node add and node move (D46). */
+function withSteps(c: Command): Command {
+  return c
+    .option("--from <node>", "in no row: placed by steps from this box, and moves with it")
+    .option("--down <n>", "steps down from --from, 1 to 10")
+    .option("--up <n>", "steps up")
+    .option("--left <n>", "steps left")
+    .option("--right <n>", "steps right");
+}
 
 /** Runs an operation built from flags through the shared write path. */
 async function write(file: string, raw: Record<string, unknown>, opts: Opts, create = false) {
@@ -376,7 +397,7 @@ function build(): Command {
     await write(file, { op: "wall.remove", id }, opts);
   });
 
-  const note = program.command("note").description("notes on a box, line or group: add, remove");
+  const note = program.command("note").description("notes on a box, line, group: add, remove");
   json(
     note
       .command("add")
@@ -419,25 +440,27 @@ function build(): Command {
       "boxes: add, move, swap, align, merge, kind, describe, icon, rename, resize, emphasize, remove",
     );
   json(
-    node
-      .command("add")
-      .description("add a node to a layer")
-      .argument("<file>")
-      .argument("<id>")
-      .requiredOption("--layer <layer>", "the row")
-      .requiredOption("--label <text>", "the name, short, as a reader would say it")
-      .option("--kind <kind>", "what the box is: see Kinds below")
-      .option("--sublabel <text>", "a quieter second line: technology, port, count")
-      .option("--size <size>", "s, m or l; leave it out")
-      .option("--first", "the first place")
-      .option("--last", "the last place")
-      .option("--before <node>", "just before this node in the row")
-      .option("--after <node>", "just after this node in the row")
-      .option("--align <node>", "sit directly above or below a node in another layer")
-      .option("--accent", "mark as one of the nodes to see first"),
+    withSteps(
+      node
+        .command("add")
+        .description("add a node to a layer, or by steps from another box")
+        .argument("<file>")
+        .argument("<id>")
+        .option("--layer <layer>", "the row")
+        .requiredOption("--label <text>", "the name, short, as a reader would say it")
+        .option("--kind <kind>", "what the box is: see Kinds below")
+        .option("--sublabel <text>", "a quieter second line: technology, port, count")
+        .option("--size <size>", "s, m or l; leave it out")
+        .option("--first", "the first place")
+        .option("--last", "the last place")
+        .option("--before <node>", "just before this node in the row")
+        .option("--after <node>", "just after this node in the row")
+        .option("--align <node>", "sit directly above or below a node in another layer")
+        .option("--accent", "mark as one of the nodes to see first"),
+    ),
   ).action(async (file: string, id: string, opts: Opts) => {
     const names = ["layer", "label", "kind", "sublabel", "size", "align", "accent", ...POSITION];
-    await write(file, { op: "node.add", id, ...pick(opts, names) }, opts);
+    await write(file, { op: "node.add", id, ...pick(opts, names), ...stepFlags(opts) }, opts);
   });
   json(
     node
@@ -460,18 +483,21 @@ function build(): Command {
     await write(file, { op: "node.resize", id, ...pick(opts, ["size"]) }, opts);
   });
   json(
-    node
-      .command("move")
-      .description("move a node to another layer or position")
-      .argument("<file>")
-      .argument("<id>")
-      .option("--layer <layer>", "the row to move it to")
-      .option("--first", "the first place")
-      .option("--last", "the last place")
-      .option("--before <node>", "just before this node in the row")
-      .option("--after <node>", "just after this node in the row"),
+    withSteps(
+      node
+        .command("move")
+        .description("move a node to another layer or position, or by steps from another box")
+        .argument("<file>")
+        .argument("<id>")
+        .option("--layer <layer>", "the row to move it to")
+        .option("--first", "the first place")
+        .option("--last", "the last place")
+        .option("--before <node>", "just before this node in the row")
+        .option("--after <node>", "just after this node in the row"),
+    ),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "node.move", id, ...pick(opts, ["layer", ...POSITION]) }, opts);
+    const op = { op: "node.move", id, ...pick(opts, ["layer", ...POSITION]), ...stepFlags(opts) };
+    await write(file, op, opts);
   });
   json(
     node

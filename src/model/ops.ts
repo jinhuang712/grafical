@@ -4,7 +4,7 @@
 import { z } from "zod";
 import type { OpError } from "../errors.ts";
 import { issuesToErrors, OP_KEYS, show } from "./issues.ts";
-import { edgeId, nodeId, text, weightValue } from "./schema.ts";
+import { edgeId, nodeId, steps, text, weightValue } from "./schema.ts";
 import { closest } from "./suggest.ts";
 import {
   DENSITIES,
@@ -104,10 +104,19 @@ export interface LayerAddOp {
   before?: string;
   after?: string;
 }
-export interface NodeAddOp extends Position {
+/** Steps from another box, for a box in no row (D46). */
+export interface Steps {
+  from?: string;
+  down?: number;
+  up?: number;
+  left?: number;
+  right?: number;
+}
+/** A node goes in a row (`layer`), or in no row, by steps from another box (`from`). */
+export interface NodeAddOp extends Position, Steps {
   op: "node.add";
   id: string;
-  layer: string;
+  layer?: string;
   label: string;
   kind?: NodeKind;
   sublabel?: string;
@@ -126,7 +135,7 @@ export interface NodeResizeOp {
   /** Absent: the engine sizes the node again (D27). */
   size?: SizeStep;
 }
-export interface NodeMoveOp extends Position {
+export interface NodeMoveOp extends Position, Steps {
   op: "node.move";
   id: string;
   layer?: string;
@@ -526,10 +535,17 @@ export const layerAddSchema = z.strictObject({
   before: nodeId.optional(),
   after: nodeId.optional(),
 });
+const stepFields = {
+  from: nodeId.optional(),
+  down: steps.optional(),
+  up: steps.optional(),
+  left: steps.optional(),
+  right: steps.optional(),
+};
 export const nodeAddSchema = z.strictObject({
   op: z.literal("node.add"),
   id: nodeId,
-  layer: nodeId,
+  layer: nodeId.optional(),
   label: text,
   kind: z.enum(NODE_KINDS).optional(),
   sublabel: text.optional(),
@@ -537,6 +553,7 @@ export const nodeAddSchema = z.strictObject({
   align: nodeId.optional(),
   accent: z.boolean().optional(),
   ...position,
+  ...stepFields,
 });
 export const nodeRenameSchema = z.strictObject({
   op: z.literal("node.rename"),
@@ -553,6 +570,7 @@ export const nodeMoveSchema = z.strictObject({
   id: nodeId,
   layer: nodeId.optional(),
   ...position,
+  ...stepFields,
 });
 export const nodeRemoveSchema = z.strictObject({ op: z.literal("node.remove"), id: nodeId });
 export const edgeAddSchema = z.strictObject({

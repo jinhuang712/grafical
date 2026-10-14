@@ -139,8 +139,8 @@ Batch file:
   one fails, none apply, and the error gives its index, counting from 0.
     layer.add         id label before after
     node.add          id layer label kind sublabel size first last before
-                      after align accent
-    node.move         id layer first last before after
+                      after align accent from down up left right
+    node.move         id layer first last before after from down up left right
     edge.add          from to id label kind both
     group.add         id label sublabel nodes in       (nodes is a list)
     group.join        group nodes                      (a list)
@@ -158,6 +158,7 @@ Good to know:
   - Add rows first, then nodes, then groups and lanes, then edges.
   - Quote text that holds a comma, a colon or a #: sublabel: "iOS, Android".
   - Write lists as [a, b].
+  - from with down, up, left or right: a box in no row, cells from a box.
   - An id is lowercase letters, digits, ".", "_" or "-", and unique across
     rows, nodes, groups, lanes and edges: a node cannot share its row's id.
 
@@ -185,10 +186,9 @@ When refused:
     row, group, node, nodes  the row or group it concerns, and its nodes
     line, column             where in the YAML
     fix        operations that would fix it
-  unquoted-text: YAML cut unquoted text at a comma or a colon; quote it.
   overflow: the text takes more lines than its box holds; shorten it, or
   move detail to the sublabel. missing-glyph: chars cannot be drawn.
-  Where lines and boxes go is grafical's job, never yours.
+  Where lines go is grafical's job, never yours.
   Exit codes: 0 done, 1 refused, 2 a usage error.
 
 See also: show, render, diff
@@ -300,7 +300,8 @@ When to use:
 
   "node add": {
     about: `Add a box to a row. grafical picks the slot with the fewest crossings, so add
-the node's edges in the same batch for them to count.`,
+the node's edges in the same batch for them to count. Or add it in no row, some
+steps from another box: --from with --down, --up, --left or --right.`,
     after: `
 Kinds:
   service    something that runs: an app, an API, a job, a step (default)
@@ -320,6 +321,10 @@ Good to know:
   - Leave --size out: grafical sizes the box to its text. Shorten a long
     label rather than reaching for a large box.
   - Give a position only when order matters.
+  - A step is one cell of grafical's grid: a row down or up, a column left
+    or right. A box placed by steps moves with the box it steps from, and
+    the boxes of the row it lands in stand aside. Past the first or last
+    row, grafical adds a row. You choose the steps; grafical keeps them.
 
 Common mistakes:
   - Giving a node its row's id: rows and boxes share one set of ids, so
@@ -332,6 +337,14 @@ Limits:
   - At most ${MAX_ACCENTS} nodes carry --accent.
   - A sublabel holds one line, about 30 characters, and a label must fit
     the large box; longer text is refused (overflow).
+  - Each step option takes 1 to 10. A box placed by steps takes no row,
+    position, --align, column or lane.
+
+When refused:
+  step-blocked  another box keeps the cell, or must stand where it lands;
+                node names it
+  step-cycle    the box would step from itself, through other boxes
+  step-anchor   node remove: other boxes step from it; nodes names them
 
 See also: node merge, node kind, node describe, edge add
 
@@ -351,7 +364,9 @@ When to use:
 `,
   },
   "node move": {
-    about: "Move a node to another row or position. Without a position, grafical picks the slot.",
+    about: `Move a node to another row or position. Without a position, grafical picks the
+slot. --from with steps takes it out of its row, as node add does; --layer puts
+it back in one.`,
   },
   "node kind": {
     about: "Change a node's kind (grafical node add --help lists them).",

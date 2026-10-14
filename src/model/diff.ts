@@ -10,6 +10,7 @@
 // new order puts out of step are removed and added again.
 
 import type { Op } from "./ops.ts";
+import { STEP_KEYS } from "./steps.ts";
 import {
   type Diagram,
   type DiagramNode,
@@ -66,12 +67,26 @@ function keptStart(before: readonly string[], after: readonly string[]): Set<str
 
 interface Placed {
   node: DiagramNode;
+  /** The node's row; "" for a box placed by steps (D46). */
   layer: string;
 }
 
 function nodesOf(d: Diagram): Map<string, Placed> {
-  return new Map(d.layers.flatMap((l) => l.nodes.map((node) => [node.id, { node, layer: l.id }])));
+  return new Map([
+    ...d.layers.flatMap((l) => l.nodes.map((node) => [node.id, { node, layer: l.id }] as const)),
+    ...(d.nodes ?? []).map((node) => [node.id, { node, layer: "" }] as const),
+  ]);
 }
+
+/** A box's steps as operation fields (D46). */
+function stepFields(n: DiagramNode): Partial<Record<(typeof STEP_KEYS)[number], number>> {
+  const out: Partial<Record<(typeof STEP_KEYS)[number], number>> = {};
+  for (const k of STEP_KEYS) if (n[k] !== undefined) out[k] = n[k];
+  return out;
+}
+
+const sameSteps = (x: DiagramNode, y: DiagramNode) =>
+  x.from === y.from && STEP_KEYS.every((k) => x[k] === y[k]);
 
 const defaultEdgeId = (e: Edge) => `${e.from}->${e.to}`;
 
@@ -92,6 +107,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (after.subtitle !== undefined) created.subtitle = after.subtitle;
     if (after.note !== undefined) created.note = after.note;
     const empty: Diagram = { ...after, layers: [], edges: [] };
+    delete empty.nodes;
     delete empty.groups;
     delete empty.lanes;
     delete empty.walls;
@@ -234,6 +250,26 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   // 2. Edges that go.
   for (const e of b.edges) if (!keptEdges.has(e.id)) ops.push({ op: "edge.remove", id: e.id });
 
+  // Boxes placed by steps (D46) keep creation order, and only the end of the list takes
+  // a box. One placed by steps before and after, from a box that stays, keeps its entry
+  // while in step; every other one waits in a row, so that no box is removed while
+  // another steps from it, and goes to the end of the list once the rows are in place.
+  const bSteps = (b.nodes ?? []).map((n) => n.id);
+  const aSteps = a.nodes ?? [];
+  const keptSteps = keptStart(
+    bSteps.filter((id) => {
+      const was = bN.get(id)?.node;
+      return was?.from !== undefined && aN.has(was.from) && aN.get(id)?.layer === "";
+    }),
+    aSteps.map((n) => n.id),
+  );
+  for (const id of bSteps) {
+    if (keptSteps.has(id)) continue;
+    // A row no node of which sits above or below the box.
+    const row = b.layers.find((l) => !l.nodes.some((n) => n.align === id)) ?? b.layers[0];
+    if (row !== undefined) ops.push({ op: "node.move", id, layer: row.id, last: true });
+  }
+
   // 3. Nodes, groups and lanes that go. Their edges went above.
   for (const id of bN.keys()) if (!aN.has(id)) ops.push({ op: "node.remove", id });
   for (const g of goneGroups)
@@ -334,6 +370,51 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
         ops.push(op);
       }
     });
+  }
+
+  // Boxes placed by steps, past the ones that kept their entry, in the list's order. A
+  // box steps from its own box once that box's chain of steps is final, and from the first
+  // row's first node until then; every box then takes its own, the box it steps from
+  // first, so that no box ever steps from itself.
+  const firstNode = a.layers.flatMap((l) => l.nodes)[0]?.id;
+  const final = new Set(a.layers.flatMap((l) => l.nodes.map((n) => n.id)));
+  const fixed = (n: DiagramNode) => {
+    const was = bN.get(n.id)?.node;
+    return keptSteps.has(n.id) && was !== undefined && sameSteps(n, was);
+  };
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const n of aSteps) {
+      if (final.has(n.id) || !fixed(n) || !final.has(n.from ?? "")) continue;
+      final.add(n.id);
+      grew = true;
+    }
+  }
+  const later = new Set<string>();
+  for (const n of aSteps) {
+    if (keptSteps.has(n.id) || n.from === undefined || firstNode === undefined) continue;
+    const from = final.has(n.from) ? n.from : firstNode;
+    if (from === n.from) final.add(n.id);
+    else later.add(n.id);
+    if (!bN.has(n.id)) {
+      const op: Op = { op: "node.add", id: n.id, label: n.label, kind: n.kind, from };
+      if (n.sublabel !== undefined) op.sublabel = n.sublabel;
+      if (n.size !== undefined) op.size = n.size;
+      ops.push({ ...op, ...stepFields(n) });
+    } else ops.push({ op: "node.move", id: n.id, from, ...stepFields(n) });
+  }
+  for (const n of aSteps) if (keptSteps.has(n.id) && !fixed(n)) later.add(n.id);
+  const done = new Set(final);
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const n of aSteps) {
+      if (done.has(n.id) || !done.has(n.from ?? "")) continue;
+      done.add(n.id);
+      grew = true;
+      if (later.has(n.id)) {
+        ops.push({ op: "node.move", id: n.id, from: n.from as string, ...stepFields(n) });
+      }
+    }
   }
 
   // 6. Layers that go, now empty.

@@ -2,12 +2,13 @@
 // states only what it is about and its words; the layout draws it as a callout
 // beside its target, or as a numbered footnote.
 
+import { everyNode } from "./steps.ts";
 import type { Diagram } from "./types.ts";
 
 /** Every id a note may be about: nodes, groups and lines. */
 export function noteTargets(d: Diagram): string[] {
   return [
-    ...d.layers.flatMap((l) => l.nodes.map((n) => n.id)),
+    ...everyNode(d).map((n) => n.id),
     ...(d.groups ?? []).map((g) => g.id),
     ...d.edges.map((e) => e.id),
   ];

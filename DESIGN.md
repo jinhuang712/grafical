@@ -159,6 +159,7 @@ Placement follows the facts in a fixed order: layers from top to bottom, nodes i
 - the elements it names;
 - the other nodes in each layer whose contents changed, which re-spread sideways and keep their order. A layer's contents include its nodes' alignment facts;
 - a layer that has a node aligned to a node that moved, which slides sideways as one block;
+- a box placed by steps from a node that moved, which keeps its steps (D46);
 - the layers below a layer or gutter that changed height, which shift down as one block;
 - edges that share a gap with a changed edge, but only inside the gaps they share;
 - ports on a node side that a changed edge uses;

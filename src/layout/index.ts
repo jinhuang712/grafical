@@ -75,11 +75,13 @@ import {
 import { planSideways } from "./side.ts";
 import { leftInset, markRects, markWidth, nodeLines, withSizes } from "./size.ts";
 import { routeStats } from "./stats.ts";
+import { placeSteps } from "./steps.ts";
 import { lineBox, lineHeight, placeLine, placeLines } from "./text.ts";
 
 export type { AlignmentCode, AlignmentProblem } from "./align.ts";
-export type { GroupCode, GroupProblem } from "./grid.ts";
+export type { GroupCode, GroupProblem, StepProblem } from "./grid.ts";
 export { type RouteStats, routeStats } from "./stats.ts";
+export { addedRow, placeSteps, validateSteps } from "./steps.ts";
 
 export function layout(diagram: Diagram, m: Measurer): Scene {
   return framed(diagram, m).scene;
@@ -119,7 +121,7 @@ export function layoutFramed(diagram: Diagram, m: Measurer): { scene: Scene; cen
  * an operation error.
  */
 export function validateAlignments(diagram: Diagram): AlignmentProblem[] {
-  return buildGrid(diagram).alignProblems;
+  return buildGrid(placeSteps(diagram).d).alignProblems;
 }
 
 /**
@@ -129,7 +131,7 @@ export function validateAlignments(diagram: Diagram): AlignmentProblem[] {
  * error.
  */
 export function validateGroups(diagram: Diagram): GroupProblem[] {
-  return buildGrid(diagram).groupProblems;
+  return buildGrid(placeSteps(diagram).d).groupProblems;
 }
 
 /** Does any group, its inner groups' nodes counted, have a non-member between two of its members in this row? */
@@ -151,9 +153,10 @@ function drawable(d: Diagram, li: number, nodes: DiagramNode[]): boolean {
   if (splitsGroup(d, nodes)) return false;
   if (!columnOrdered(nodes, columnRanks(d))) return false;
   const trial: Diagram = { ...d, layers: d.layers.map((l, i) => (i === li ? { ...l, nodes } : l)) };
-  const grid = buildGrid(trial);
-  if (grid.groupProblems.length > 0 || grid.alignProblems.length > 0) return false;
-  return !checkEnds(trial, 0).some((e) => e.code === "edge-blocked");
+  const grid = buildGrid(placeSteps(trial).d);
+  const problems = [...grid.groupProblems, ...grid.alignProblems, ...grid.stepProblems];
+  if (problems.length > 0) return false;
+  return !checkEnds(placeSteps(trial).d, 0).some((e) => e.code === "edge-blocked");
 }
 
 /**
@@ -591,7 +594,8 @@ function compute(
   // The diagram's theme decides the type sizes here and the paint in the scene (D30).
   const theme = themeOf(facts);
   const T = theme.type;
-  const sized = withSizes(facts, m);
+  // Boxes placed by steps sit in rows from here on (D46).
+  const sized = withSizes(placeSteps(facts).d, m);
   // Column lanes keep each row in lane order (D32); a file edited by hand may not.
   orderByLanes(sized);
   orderByColumns(sized);

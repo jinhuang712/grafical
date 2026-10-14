@@ -7,6 +7,7 @@
 import type { OpError } from "../errors.ts";
 import { endNodes } from "./ends.ts";
 import { groupChain } from "./groups.ts";
+import { everyNode } from "./steps.ts";
 import { closest } from "./suggest.ts";
 import type { Diagram, Edge, Wall } from "./types.ts";
 
@@ -67,7 +68,7 @@ export function joinsSides(
 export function wallAllows(d: Diagram, w: Wall, e: Edge): boolean {
   const allow = w.allow ?? [];
   if (allow.includes(e.id)) return true;
-  const group = new Map(d.layers.flatMap((l) => l.nodes.map((n) => [n.id, n.group] as const)));
+  const group = new Map(everyNode(d).map((n) => [n.id, n.group] as const));
   for (const end of [e.from, e.to]) {
     const chain = group.has(end) ? [end, ...groupChain(d, group.get(end))] : groupChain(d, end);
     if (chain.some((id) => allow.includes(id))) return true;
@@ -89,7 +90,7 @@ export function checkWalls(d: Diagram, index: number): OpError[] {
   const walls = d.walls ?? [];
   if (walls.length === 0) return [];
   const errors: OpError[] = [];
-  const nodes = d.layers.flatMap((l) => l.nodes.map((n) => n.id));
+  const nodes = everyNode(d).map((n) => n.id);
   const sideIds = [...nodes, ...(d.groups ?? []).map((g) => g.id)];
   const passIds = [...sideIds, ...d.edges.map((e) => e.id)];
   walls.forEach((w, wi) => {
@@ -215,7 +216,7 @@ function sharedRow(d: Diagram, a: string[], b: string[]): { row?: string; nodes:
 /** Every id a wall may name: nodes, groups and lines. */
 export function wallNames(d: Diagram): Set<string> {
   return new Set([
-    ...d.layers.flatMap((l) => l.nodes.map((n) => n.id)),
+    ...everyNode(d).map((n) => n.id),
     ...(d.groups ?? []).map((g) => g.id),
     ...d.edges.map((e) => e.id),
   ]);

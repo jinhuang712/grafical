@@ -6,7 +6,9 @@
 //    block of columns that no other node of the group's rows enters. These are
 //    "left of" constraints between nodes.
 // 2. Columns: nodes that share a column form a class. Alignment facts join
-//    classes first. Then edges between rows join their two ends, best edge first,
+//    classes first, then boxes placed by steps (D46): such a box joins the class of
+//    the box it steps from at an offset, its steps across, so that a class may span
+//    columns. Then edges between rows join their two ends, best edge first,
 //    so that the edge becomes one straight vertical line. An edge that skips rows
 //    also reserves its column in the rows it passes, so that it runs through empty
 //    space (D25 rule 5). A join must keep every constraint satisfiable, must not
@@ -20,6 +22,7 @@ import type { Facts } from "../errors.ts";
 import { columnRanks } from "../model/columns.ts";
 import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
+import { stepOf } from "../model/steps.ts";
 import { closest } from "../model/suggest.ts";
 import type { Diagram } from "../model/types.ts";
 import { wallRun, wallSplit } from "../model/walls.ts";
@@ -37,6 +40,14 @@ export interface GroupProblem {
   facts: Facts;
 }
 
+/** A box placed by steps whose cell another fact keeps (D46). */
+export interface StepProblem {
+  code: "step-blocked";
+  node: string;
+  found: string;
+  facts: Facts;
+}
+
 export interface Grid {
   /** Column index of every node, from 0. */
   col: Map<string, number>;
@@ -45,9 +56,18 @@ export interface Grid {
   reserved: Map<number, Set<number>>;
   alignProblems: AlignmentProblem[];
   groupProblems: GroupProblem[];
+  stepProblems: StepProblem[];
   /** Nodes outside every group that two or more groups use: they sit between those groups. */
   shared: Set<string>;
 }
+
+/**
+ * A cell of a class: a row, and an offset from the class's column. Offsets stay well
+ * inside ±4096, so the key of a cell one column right is the key plus one.
+ */
+const cellKey = (r: number, o: number): number => r * 8192 + o + 4096;
+const cellRow = (key: number): number => Math.floor(key / 8192);
+const cellOff = (key: number): number => (key % 8192) - 4096;
 
 interface Cand {
   u: number;
@@ -84,15 +104,23 @@ export function buildGrid(d: Diagram): Grid {
     rows.push(list);
   });
   const N = ids.length;
+  // Each node's offset from its class's column: 0 but for boxes placed by steps (D46).
+  const off: number[] = new Array<number>(N).fill(0);
   // The groups around each node, innermost first (D34).
   const chainOf: string[][] = Array.from({ length: N }, () => []);
   const alignOf: (string | undefined)[] = [];
+  // Boxes placed by steps, in row order: the box, the box it steps from, its steps across.
+  const steps: { s: number; a: number; dx: number }[] = [];
   for (const l of d.layers) {
     for (const n of l.nodes) {
       const i = index.get(n.id);
       if (i === undefined || (chainOf[i] ?? []).length > 0 || alignOf[i] !== undefined) continue;
       chainOf[i] = groupChain(d, n.group);
       alignOf[i] = n.align;
+      const a = n.from === undefined ? undefined : index.get(n.from);
+      if (a !== undefined && a !== i && !steps.some((x) => x.s === i)) {
+        steps.push({ s: i, a, dx: stepOf(n).dx });
+      }
     }
   }
   /** The outermost group around a node. */
@@ -223,25 +251,36 @@ export function buildGrid(d: Diagram): Grid {
     }
   }
 
-  // Classes: members, real rows and reserved rows.
-  const rowsOf = (c: number): Set<number> => {
+  // Classes: members' cells, and reserved cells (cellKey).
+  const cellsOf = (c: number, shift = 0): Set<number> => {
     const s = new Set<number>();
-    for (let i = 0; i < N; i++) if (cls[i] === c) s.add(row[i] as number);
+    for (let i = 0; i < N; i++) {
+      if (cls[i] === c) s.add(cellKey(row[i] as number, (off[i] as number) + shift));
+    }
     return s;
   };
   const reservedOf = new Map<number, Set<number>>();
 
+  /** Joins b's class to a's, b in a's column. Within a class that spans columns, b's offset follows a's. */
   const tryJoin = (a: number, b: number): "joined" | "same" | "clash" => {
     const ca = cls[a] as number;
     const cb = cls[b] as number;
-    if (ca === cb) return "same";
-    const ra = rowsOf(ca);
-    const rb = rowsOf(cb);
+    if (ca === cb) return off[a] === off[b] ? "same" : "clash";
+    const shift = (off[a] as number) - (off[b] as number);
+    const ra = cellsOf(ca);
+    const rb = cellsOf(cb, shift);
     for (const r of ra) if (rb.has(r)) return "clash";
-    const res = new Set([...(reservedOf.get(ca) ?? []), ...(reservedOf.get(cb) ?? [])]);
+    const res = new Set([
+      ...(reservedOf.get(ca) ?? []),
+      ...[...(reservedOf.get(cb) ?? [])].map((x) => x + shift),
+    ]);
     for (const r of res) if (ra.has(r) || rb.has(r)) return "clash";
     if (reaches(ca, cb) || reaches(cb, ca)) return "clash";
-    for (let i = 0; i < N; i++) if (cls[i] === cb) cls[i] = ca;
+    for (let i = 0; i < N; i++) {
+      if (cls[i] !== cb) continue;
+      cls[i] = ca;
+      off[i] = (off[i] as number) + shift;
+    }
     reservedOf.delete(cb);
     if (res.size > 0) reservedOf.set(ca, res);
     return "joined";
@@ -294,6 +333,140 @@ export function buildGrid(d: Diagram): Grid {
     }
   }
 
+  // Step 2a, boxes placed by steps (D46): each joins the class of the box it steps from,
+  // its steps across right of it, the box stepped from first. The join must hold.
+  const stepProblems: StepProblem[] = [];
+  {
+    const left = new Set(steps.map((x) => x.s));
+    const order: typeof steps = [];
+    for (let grew = true; grew; ) {
+      grew = false;
+      for (const x of steps) {
+        if (!left.has(x.s) || left.has(x.a)) continue;
+        order.push(x);
+        left.delete(x.s);
+        grew = true;
+      }
+    }
+    for (const { s, a, dx } of order) {
+      const block = stepJoin(a, s, dx);
+      if (block === undefined) continue;
+      stepProblems.push({
+        code: "step-blocked",
+        node: ids[s] as string,
+        found: ids[s] as string,
+        facts: { node: ids[block] as string, row: d.layers[row[s] as number]?.id ?? "" },
+      });
+    }
+  }
+
+  /**
+   * Joins box s to the class of box a, k columns right of it, or names the box in the way:
+   * one of a's class in the cell, or a neighbour of s in its row when the constraints
+   * cannot hold. Classes that the join puts both left and right of a's class have their
+   * place fixed by it: they join it, each where the constraints put it first.
+   */
+  function stepJoin(a: number, s: number, k: number): number | undefined {
+    const ca = cls[a] as number;
+    const cs = cls[s] as number;
+    const list = rows[row[s] as number] ?? [];
+    const at = list.indexOf(s);
+    const near = k >= 0 ? [list[at - 1], list[at + 1]] : [list[at + 1], list[at - 1]];
+    const neighbour = near.find((x) => x !== undefined) ?? a;
+    if (ca === cs) return (off[s] as number) - (off[a] as number) === k ? undefined : neighbour;
+    const shift = (off[a] as number) + k - (off[s] as number);
+    const own = new Map<number, number>();
+    for (let i = 0; i < N; i++) {
+      if (cls[i] === ca) own.set(cellKey(row[i] as number, off[i] as number), i);
+    }
+    for (let i = 0; i < N; i++) {
+      if (cls[i] !== cs) continue;
+      const hit = own.get(cellKey(row[i] as number, (off[i] as number) + shift));
+      if (hit !== undefined) return hit;
+    }
+    const savedCls = [...cls];
+    const savedOff = [...off];
+    const restore = () => {
+      cls.splice(0, N, ...savedCls);
+      off.splice(0, N, ...savedOff);
+    };
+    for (let i = 0; i < N; i++) {
+      if (cls[i] !== cs) continue;
+      cls[i] = ca;
+      off[i] = (off[i] as number) + shift;
+    }
+    // The classes on a cycle through a's class: reached from it, and reaching it.
+    const outs = new Map<number, Set<number>>();
+    const ins = new Map<number, Set<number>>();
+    for (let i = 0; i < N; i++) {
+      for (const j of succ[i] ?? []) {
+        const p = cls[i] as number;
+        const q = cls[j] as number;
+        if (p === q) continue;
+        outs.set(p, (outs.get(p) ?? new Set()).add(q));
+        ins.set(q, (ins.get(q) ?? new Set()).add(p));
+      }
+    }
+    const reach = (next: Map<number, Set<number>>): Set<number> => {
+      const seen = new Set([ca]);
+      const stack = [ca];
+      while (stack.length > 0) {
+        for (const q of next.get(stack.pop() as number) ?? []) {
+          if (seen.has(q)) continue;
+          seen.add(q);
+          stack.push(q);
+        }
+      }
+      return seen;
+    };
+    const back = reach(ins);
+    const ring = [...reach(outs)].filter((c) => back.has(c));
+    // The least columns that keep every constraint among them, from 0.
+    const p = new Map(ring.map((c) => [c, 0]));
+    let settled = false;
+    for (let round = 0; round <= ring.length && !settled; round++) {
+      settled = true;
+      for (let i = 0; i < N; i++) {
+        const pi = p.get(cls[i] as number);
+        if (pi === undefined) continue;
+        for (const j of succ[i] ?? []) {
+          const cj = cls[j] as number;
+          const pj = p.get(cj);
+          if (pj === undefined) continue;
+          const want = pi + (off[i] as number) - (off[j] as number) + 1;
+          if (want <= pj) continue;
+          p.set(cj, want);
+          settled = false;
+        }
+      }
+    }
+    if (!settled) {
+      restore();
+      return neighbour;
+    }
+    const base = p.get(ca) as number;
+    const taken = new Map<number, number>();
+    for (let i = 0; i < N; i++) {
+      const pi = p.get(cls[i] as number);
+      if (pi === undefined) continue;
+      const o = (off[i] as number) + pi - base;
+      const key = cellKey(row[i] as number, o);
+      const other = taken.get(key);
+      if (other !== undefined) {
+        restore();
+        return other === s ? i : other;
+      }
+      taken.set(key, i);
+    }
+    for (let i = 0; i < N; i++) {
+      const pi = p.get(cls[i] as number);
+      if (pi === undefined) continue;
+      off[i] = (off[i] as number) + pi - base;
+      cls[i] = ca;
+    }
+    return undefined;
+  }
+
   /**
    * Keeps the column of node a's class empty in these rows, for a straight line
    * through them. Each node of those rows takes the side its edges pull it to:
@@ -303,11 +476,12 @@ export function buildGrid(d: Diagram): Grid {
    */
   const reserveRows = (a: number, rs: number[], added: [number, number][]): boolean => {
     const c = cls[a] as number;
-    const own = rowsOf(c);
-    if (rs.some((r) => own.has(r))) return false;
-    const packed = pack(N, cls, row, succ, reservedOf).col;
-    const colOf = (x: number) => packed.get(cls[x] as number) ?? 0;
-    const at = packed.get(c) ?? 0;
+    const own = cellsOf(c);
+    const cells = rs.map((r) => cellKey(r, off[a] as number));
+    if (cells.some((x) => own.has(x))) return false;
+    const packed = pack(N, cls, row, off, succ, reservedOf).col;
+    const colOf = (x: number) => (packed.get(cls[x] as number) ?? 0) + (off[x] as number);
+    const at = colOf(a);
     const pull = (x: number) => {
       const cs = (links[x] ?? []).map(colOf).sort((p, q) => p - q);
       if (cs.length === 0) return colOf(x);
@@ -352,7 +526,7 @@ export function buildGrid(d: Diagram): Grid {
       }
       if (!held) return false;
     }
-    reservedOf.set(c, new Set([...(reservedOf.get(c) ?? []), ...rs]));
+    reservedOf.set(c, new Set([...(reservedOf.get(c) ?? []), ...cells]));
     return true;
   };
 
@@ -373,8 +547,8 @@ export function buildGrid(d: Diagram): Grid {
   // joins: right of every member of the one, left of every member of the other.
   // Sides come from the order so far; constraints that would make a cycle are dropped.
   {
-    const packed0 = pack(N, cls, row, succ, reservedOf).col;
-    const colOf = (i: number) => packed0.get(cls[i] as number) ?? 0;
+    const packed0 = pack(N, cls, row, off, succ, reservedOf).col;
+    const colOf = (i: number) => (packed0.get(cls[i] as number) ?? 0) + (off[i] as number);
     const membersOf = new Map<string, number[]>();
     for (let i = 0; i < N; i++) {
       const g = outerOf(i);
@@ -413,7 +587,7 @@ export function buildGrid(d: Diagram): Grid {
 
   // Step 2b: edges, best first.
   const maxRow = Math.max(0, ...rows.map((l) => l.length));
-  const limit = Math.max(maxRow, pack(N, cls, row, succ, reservedOf).columns) + SLACK;
+  const limit = Math.max(maxRow, pack(N, cls, row, off, succ, reservedOf).columns) + SLACK;
   const partners = new Map<string, number[]>();
   const edgeKey = (a: number, r: number) => `${a}:${r}`;
   const pairs: { u: number; v: number; key: string }[] = [];
@@ -469,10 +643,12 @@ export function buildGrid(d: Diagram): Grid {
     const reserve: number[] = [];
     for (let r = (row[hi] as number) + 1; r < (row[lo] as number); r++) reserve.push(r);
     const saved = [...cls];
+    const savedOff = [...off];
     const savedRes = new Map([...reservedOf].map(([k, v]) => [k, new Set(v)]));
     const added: [number, number][] = [];
     const restore = () => {
       cls.splice(0, N, ...saved);
+      off.splice(0, N, ...savedOff);
       reservedOf.clear();
       for (const [k, v] of savedRes) reservedOf.set(k, v);
       for (const [a, b] of added) {
@@ -486,7 +662,7 @@ export function buildGrid(d: Diagram): Grid {
       restore();
       continue;
     }
-    if (pack(N, cls, row, succ, reservedOf).columns > limit) {
+    if (pack(N, cls, row, off, succ, reservedOf).columns > limit) {
       restore();
       continue;
     }
@@ -495,28 +671,45 @@ export function buildGrid(d: Diagram): Grid {
   }
 
   // Steps 3 and 4.
-  const packed = pack(N, cls, row, succ, reservedOf);
+  const packed = pack(N, cls, row, off, succ, reservedOf);
   const colOfClass = packed.col;
-  balance(N, cls, row, succ, reservedOf, colOfClass, pairs, packed.columns, shared);
+  balance(N, cls, row, off, succ, reservedOf, colOfClass, pairs, packed.columns, shared);
 
-  // Columns in use, renumbered from 0.
-  const used = [...new Set([...colOfClass.values()])].sort((a, b) => a - b);
+  // Columns in use, renumbered from 0. A class that spans columns, for steps, keeps the
+  // columns between its boxes, so that a step stays one column.
+  const nodeCol = (i: number) => (colOfClass.get(cls[i] as number) ?? 0) + (off[i] as number);
+  const inUse = new Set<number>();
+  for (let i = 0; i < N; i++) inUse.add(nodeCol(i));
+  for (const c of new Set(cls)) {
+    const os = cls.flatMap((x, i) => (x === c ? [off[i] as number] : []));
+    const at = colOfClass.get(c) ?? 0;
+    for (let o = Math.min(...os) + 1; o < Math.max(...os); o++) inUse.add(at + o);
+  }
+  const used = [...inUse].sort((a, b) => a - b);
   const renum = new Map(used.map((c, i) => [c, i]));
   const col = new Map<string, number>();
-  for (let i = 0; i < N; i++) {
-    col.set(ids[i] as string, renum.get(colOfClass.get(cls[i] as number) ?? 0) ?? 0);
-  }
+  for (let i = 0; i < N; i++) col.set(ids[i] as string, renum.get(nodeCol(i)) ?? 0);
   const reserved = new Map<number, Set<number>>();
   for (const [c, res] of reservedOf) {
-    const k = renum.get(colOfClass.get(c) ?? 0);
-    if (k === undefined) continue;
-    const set = reserved.get(k) ?? new Set<number>();
-    for (const r of res) set.add(r);
-    reserved.set(k, set);
+    for (const key of res) {
+      const k = renum.get((colOfClass.get(c) ?? 0) + cellOff(key));
+      if (k === undefined) continue;
+      const set = reserved.get(k) ?? new Set<number>();
+      set.add(cellRow(key));
+      reserved.set(k, set);
+    }
   }
   const sharedIds = new Set<string>();
   for (let i = 0; i < N; i++) if (shared[i] === 1) sharedIds.add(ids[i] as string);
-  return { col, columns: used.length, reserved, alignProblems, groupProblems, shared: sharedIds };
+  return {
+    col,
+    columns: used.length,
+    reserved,
+    alignProblems,
+    groupProblems,
+    stepProblems,
+    shared: sharedIds,
+  };
 }
 
 /**
@@ -739,31 +932,66 @@ interface Packed {
   columns: number;
 }
 
-/** Each class takes the leftmost column its constraints and its rows allow. */
-function pack(
+/**
+ * The "left of" constraints between classes, each with the least columns between the
+ * two classes' columns: 1, but for a box at an offset in its class (D46).
+ */
+function classEdges(
   N: number,
   cls: number[],
-  row: number[],
+  off: number[],
   succ: number[][],
-  reservedOf: Map<number, Set<number>>,
-): Packed {
-  const classes = [...new Set(cls)].sort((a, b) => a - b);
-  const indeg = new Map<number, number>(classes.map((c) => [c, 0]));
-  const out = new Map<number, Set<number>>(classes.map((c) => [c, new Set<number>()]));
+): Map<number, Map<number, number>> {
+  const out = new Map<number, Map<number, number>>();
   for (let i = 0; i < N; i++) {
     for (const j of succ[i] ?? []) {
       const a = cls[i] as number;
       const b = cls[j] as number;
       if (a === b) continue;
-      const set = out.get(a) as Set<number>;
-      if (set.has(b)) continue;
-      set.add(b);
-      indeg.set(b, (indeg.get(b) ?? 0) + 1);
+      const w = (off[i] as number) - (off[j] as number) + 1;
+      const m = out.get(a) ?? new Map<number, number>();
+      m.set(b, Math.max(m.get(b) ?? w, w));
+      out.set(a, m);
     }
   }
-  const rowsOf = new Map<number, number[]>(classes.map((c) => [c, []]));
-  for (let i = 0; i < N; i++) rowsOf.get(cls[i] as number)?.push(row[i] as number);
-  for (const [c, res] of reservedOf) rowsOf.get(c)?.push(...res);
+  return out;
+}
+
+/** Each class's cells, as [row, offset]: its nodes' and its reserved ones. */
+function classCells(
+  N: number,
+  cls: number[],
+  row: number[],
+  off: number[],
+  reservedOf: Map<number, Set<number>>,
+): Map<number, [number, number][]> {
+  const cells = new Map<number, [number, number][]>();
+  for (let i = 0; i < N; i++) {
+    const c = cls[i] as number;
+    const list = cells.get(c) ?? [];
+    list.push([row[i] as number, off[i] as number]);
+    cells.set(c, list);
+  }
+  for (const [c, res] of reservedOf) {
+    for (const key of res) cells.get(c)?.push([cellRow(key), cellOff(key)]);
+  }
+  return cells;
+}
+
+/** Each class takes the leftmost column its constraints and its cells allow. */
+function pack(
+  N: number,
+  cls: number[],
+  row: number[],
+  off: number[],
+  succ: number[][],
+  reservedOf: Map<number, Set<number>>,
+): Packed {
+  const classes = [...new Set(cls)].sort((a, b) => a - b);
+  const indeg = new Map<number, number>(classes.map((c) => [c, 0]));
+  const out = classEdges(N, cls, off, succ);
+  for (const m of out.values()) for (const b of m.keys()) indeg.set(b, (indeg.get(b) ?? 0) + 1);
+  const cellsOf = classCells(N, cls, row, off, reservedOf);
   const occupied: Set<number>[] = [];
   const lower = new Map<number, number>();
   const col = new Map<number, number>();
@@ -772,16 +1000,19 @@ function pack(
   while (ready.length > 0) {
     ready.sort((a, b) => a - b);
     const c = ready.shift() as number;
-    const rs = rowsOf.get(c) ?? [];
-    let k = lower.get(c) ?? 0;
-    while (rs.some((r) => occupied[k]?.has(r))) k++;
+    const cells = cellsOf.get(c) ?? [];
+    const offs = cells.map(([, o]) => o);
+    let k = Math.max(lower.get(c) ?? 0, -Math.min(0, ...offs));
+    while (cells.some(([r, o]) => occupied[k + o]?.has(r))) k++;
     col.set(c, k);
-    const occ = occupied[k] ?? new Set<number>();
-    for (const r of rs) occ.add(r);
-    occupied[k] = occ;
-    columns = Math.max(columns, k + 1);
-    for (const b of out.get(c) ?? []) {
-      lower.set(b, Math.max(lower.get(b) ?? 0, k + 1));
+    for (const [r, o] of cells) {
+      const occ = occupied[k + o] ?? new Set<number>();
+      occ.add(r);
+      occupied[k + o] = occ;
+    }
+    columns = Math.max(columns, k + Math.max(0, ...offs) + 1);
+    for (const [b, w] of out.get(c) ?? []) {
+      lower.set(b, Math.max(lower.get(b) ?? 0, k + w));
       const left = (indeg.get(b) ?? 0) - 1;
       indeg.set(b, left);
       if (left === 0) ready.push(b);
@@ -807,6 +1038,7 @@ function balance(
   N: number,
   cls: number[],
   row: number[],
+  off: number[],
   succ: number[][],
   reservedOf: Map<number, Set<number>>,
   col: Map<number, number>,
@@ -817,33 +1049,40 @@ function balance(
   const sharedClass = new Set<number>();
   for (let i = 0; i < N; i++) if (shared[i] === 1) sharedClass.add(cls[i] as number);
   const classes = [...new Set(cls)].sort((a, b) => a - b);
-  const preds = new Map<number, Set<number>>(classes.map((c) => [c, new Set<number>()]));
-  const succs = new Map<number, Set<number>>(classes.map((c) => [c, new Set<number>()]));
-  for (let i = 0; i < N; i++) {
-    for (const j of succ[i] ?? []) {
-      const a = cls[i] as number;
-      const b = cls[j] as number;
-      if (a === b) continue;
-      succs.get(a)?.add(b);
-      preds.get(b)?.add(a);
-    }
+  const succs = classEdges(N, cls, off, succ);
+  const preds = new Map<number, Map<number, number>>();
+  for (const [a, m] of succs) {
+    for (const [b, w] of m) preds.set(b, (preds.get(b) ?? new Map<number, number>()).set(a, w));
   }
-  const rowsOf = new Map<number, Set<number>>(classes.map((c) => [c, new Set<number>()]));
-  for (let i = 0; i < N; i++) rowsOf.get(cls[i] as number)?.add(row[i] as number);
-  for (const [c, res] of reservedOf) for (const r of res) rowsOf.get(c)?.add(r);
-  const links = new Map<number, number[]>(classes.map((c) => [c, []]));
+  const cellsOf = classCells(N, cls, row, off, reservedOf);
+  // Each class's offsets, least and most, and its cells as keys.
+  const span = new Map<number, [number, number]>();
+  const keys = new Map<number, Set<number>>();
+  for (const c of classes) {
+    const cells = cellsOf.get(c) ?? [];
+    const offs = cells.map(([, o]) => o);
+    span.set(c, [Math.min(...offs), Math.max(...offs)]);
+    keys.set(c, new Set(cells.map(([r, o]) => cellKey(r, o))));
+  }
+  // An edge between two classes, with the columns from one class's column to the other end.
+  const links = new Map<number, { o: number; d: number }[]>(classes.map((c) => [c, []]));
   for (const { u, v } of pairs) {
     const a = cls[u] as number;
     const b = cls[v] as number;
     if (a === b) continue;
-    links.get(a)?.push(b);
-    links.get(b)?.push(a);
+    const d = (off[v] as number) - (off[u] as number);
+    links.get(a)?.push({ o: b, d });
+    links.get(b)?.push({ o: a, d: -d });
   }
   const clash = (c: number, k: number): boolean => {
-    const rs = rowsOf.get(c) as Set<number>;
+    const [lo, hi] = span.get(c) as [number, number];
+    const mine = keys.get(c) as Set<number>;
     for (const o of classes) {
-      if (o === c || col.get(o) !== k) continue;
-      for (const r of rowsOf.get(o) ?? []) if (rs.has(r)) return true;
+      if (o === c) continue;
+      const at = col.get(o) ?? 0;
+      const [olo, ohi] = span.get(o) as [number, number];
+      if (at + ohi < k + lo || at + olo > k + hi) continue;
+      for (const [r, x] of cellsOf.get(o) ?? []) if (mine.has(cellKey(r, x + at - k))) return true;
     }
     return false;
   };
@@ -852,15 +1091,15 @@ function balance(
     for (const c of classes) {
       const ls = links.get(c) ?? [];
       if (ls.length === 0) continue;
-      let lo = 0;
-      for (const p of preds.get(c) ?? []) lo = Math.max(lo, (col.get(p) ?? 0) + 1);
-      let hi = columns - 1;
-      for (const s of succs.get(c) ?? []) hi = Math.min(hi, (col.get(s) ?? 0) - 1);
-      const cost = (k: number) => ls.reduce((t, o) => t + Math.abs(k - (col.get(o) ?? 0)), 0);
+      const [first, last] = span.get(c) as [number, number];
+      let lo = Math.max(0, -first);
+      for (const [p, w] of preds.get(c) ?? []) lo = Math.max(lo, (col.get(p) ?? 0) + w);
+      let hi = columns - 1 - last;
+      for (const [s, w] of succs.get(c) ?? []) hi = Math.min(hi, (col.get(s) ?? 0) - w);
+      const at = (l: { o: number; d: number }) => (col.get(l.o) ?? 0) + l.d;
+      const cost = (k: number) => ls.reduce((t, l) => t + Math.abs(k - at(l)), 0);
       const here = col.get(c) ?? 0;
-      const aim = sharedClass.has(c)
-        ? ls.reduce((t, o) => t + (col.get(o) ?? 0), 0) / ls.length
-        : here;
+      const aim = sharedClass.has(c) ? ls.reduce((t, l) => t + at(l), 0) / ls.length : here;
       let best = here;
       let bestCost = cost(here);
       for (let k = lo; k <= hi; k++) {

@@ -2,6 +2,7 @@
 // measurer, and returns every mechanical flaw, in a deterministic order.
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
+import { addedRow, placeSteps } from "../layout/steps.ts";
 import { laneNodes } from "../model/lanes.ts";
 import { type Diagram, LINE_STYLES, MARK_SLOTS, markText } from "../model/types.ts";
 import { crossingFix, wallAllows } from "../model/walls.ts";
@@ -432,7 +433,14 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
     );
   }
   for (const layer of diagram.layers) {
-    add(layer.id, "label", layer.label, `grafical layer rename <file> ${layer.id} --label <text>`);
+    if (!addedRow(layer.id)) {
+      add(
+        layer.id,
+        "label",
+        layer.label,
+        `grafical layer rename <file> ${layer.id} --label <text>`,
+      );
+    }
     for (const n of layer.nodes) {
       add(n.id, "label", n.label, `grafical node rename <file> ${n.id} --label <text>`);
       add(n.id, "sublabel", n.sublabel, `grafical node describe <file> ${n.id} --text <text>`);
@@ -469,7 +477,9 @@ function compare(a: string, b: string): number {
 type Found = Omit<Defect, "owner">;
 
 /** Every defect, agent-owned and engine-owned, in a deterministic order (D14). */
-export function check(diagram: Diagram, scene: Scene, measurer: Measurer): Defect[] {
+export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[] {
+  // Boxes placed by steps are checked in the rows they are drawn in (D46).
+  const diagram = placeSteps(facts).d;
   const out: Found[] = [];
   checkOverflow(diagram, scene, out);
   checkLaneLabels(scene, out);

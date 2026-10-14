@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
+import { placeSteps } from "../layout/steps.ts";
 import { WEIGHT_LEVEL, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
 import { checkColumns } from "./columns.ts";
@@ -10,6 +11,7 @@ import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
 import { ID_EDGE, ID_NODE, issuesToErrors, WEIGHT } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
 import { noteTargets } from "./notes.ts";
+import { checkSteps, everyNode, MAX_STEPS, STEP_KEYS } from "./steps.ts";
 import { closest } from "./suggest.ts";
 import {
   DEFAULT_DENSITY,
@@ -131,6 +133,18 @@ const nodeSchema = z.strictObject({
   icons: iconsSchema.optional(),
 });
 
+/** A whole number of steps (D46). */
+export const steps = z.number().int().min(1).max(MAX_STEPS);
+
+/** A box in no row, placed by steps from another box (D46). It has no row, alignment, column or lane. */
+const stepNodeSchema = nodeSchema.omit({ align: true, lane: true, column: true }).extend({
+  from: nodeId,
+  down: steps.optional(),
+  up: steps.optional(),
+  left: steps.optional(),
+  right: steps.optional(),
+});
+
 const groupSchema = z.strictObject({
   id: nodeId,
   label: text,
@@ -216,6 +230,7 @@ export const diagramSchema = z.strictObject({
     })
     .optional(),
   layers: z.array(layerSchema).default([]),
+  nodes: z.array(stepNodeSchema).default([]),
   groups: z.array(groupSchema).default([]),
   lanes: z.array(laneSchema).default([]),
   columns: z.array(z.strictObject({ id: nodeId })).default([]),
@@ -226,30 +241,36 @@ export const diagramSchema = z.strictObject({
 
 type Parsed = z.output<typeof diagramSchema>;
 
+function buildNode(n: Parsed["layers"][number]["nodes"][number] | Parsed["nodes"][number]) {
+  const node: DiagramNode = { id: n.id, label: n.label, kind: n.kind };
+  if (n.sublabel !== undefined) node.sublabel = n.sublabel;
+  if (n.size !== undefined) node.size = n.size;
+  if (n.accent === true) node.accent = true;
+  if ("align" in n && n.align !== undefined) node.align = n.align;
+  if (n.group !== undefined) node.group = n.group;
+  if ("lane" in n && n.lane !== undefined) node.lane = n.lane;
+  if ("column" in n && n.column !== undefined) node.column = n.column;
+  if (n.icons !== undefined) {
+    const icons: NonNullable<DiagramNode["icons"]> = {};
+    for (const slot of MARK_SLOTS) {
+      const m = n.icons[slot];
+      if (m !== undefined) icons[slot] = compactMark(m);
+    }
+    if (Object.keys(icons).length > 0) node.icons = icons;
+  }
+  if ("from" in n) {
+    node.from = n.from;
+    for (const k of STEP_KEYS) if (n[k] !== undefined) node[k] = n[k];
+  }
+  return node;
+}
+
 function build(p: Parsed): Diagram {
   const layers: Layer[] = p.layers.map((l) => ({
     id: l.id,
     label: l.label,
     ...(l.lane === undefined ? {} : { lane: l.lane }),
-    nodes: l.nodes.map((n) => {
-      const node: DiagramNode = { id: n.id, label: n.label, kind: n.kind };
-      if (n.sublabel !== undefined) node.sublabel = n.sublabel;
-      if (n.size !== undefined) node.size = n.size;
-      if (n.accent === true) node.accent = true;
-      if (n.align !== undefined) node.align = n.align;
-      if (n.group !== undefined) node.group = n.group;
-      if (n.lane !== undefined) node.lane = n.lane;
-      if (n.column !== undefined) node.column = n.column;
-      if (n.icons !== undefined) {
-        const icons: NonNullable<DiagramNode["icons"]> = {};
-        for (const slot of MARK_SLOTS) {
-          const m = n.icons[slot];
-          if (m !== undefined) icons[slot] = compactMark(m);
-        }
-        if (Object.keys(icons).length > 0) node.icons = icons;
-      }
-      return node;
-    }),
+    nodes: l.nodes.map(buildNode),
   }));
   const edges: Edge[] = p.edges.map((e) => {
     const edge: Edge = { id: e.id, from: e.from, to: e.to, kind: e.kind };
@@ -288,6 +309,7 @@ function build(p: Parsed): Diagram {
       return group;
     });
   }
+  if (p.nodes.length > 0) d.nodes = p.nodes.map(buildNode);
   if (p.lanes.length > 0) d.lanes = p.lanes.map((x) => ({ id: x.id, label: x.label }));
   if (p.columns.length > 0) d.columns = p.columns.map((x) => ({ id: x.id }));
   if (p.walls.length > 0) {
@@ -323,16 +345,21 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       });
     } else seen.set(id, is);
   };
-  const layerOf = new Map<string, string>();
   const nodeIds: string[] = [];
   d.layers.forEach((l, li) => {
     claim(l.id, `layers[${li}].id`, "layer");
     l.nodes.forEach((n, ni) => {
       claim(n.id, `layers[${li}].nodes[${ni}].id`, "node");
-      layerOf.set(n.id, l.id);
       nodeIds.push(n.id);
     });
   });
+  (d.nodes ?? []).forEach((n, ni) => {
+    claim(n.id, `nodes[${ni}].id`, "node");
+    nodeIds.push(n.id);
+  });
+  // Rules that depend on rows see each box placed by steps in its row (D46).
+  const placed = placeSteps(d).d;
+  const layerOf = new Map(placed.layers.flatMap((l) => l.nodes.map((n) => [n.id, l.id] as const)));
   (d.groups ?? []).forEach((g, gi) => {
     claim(g.id, `groups[${gi}].id`, "group");
   });
@@ -349,10 +376,11 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
     claim(e.id, `edges[${ei}].id`, "edge");
   });
   errors.push(...checkGroups(d, index));
-  errors.push(...checkLanes(d, index));
-  errors.push(...checkEnds(d, index));
+  errors.push(...checkSteps(d, index));
+  errors.push(...checkLanes(placed, index));
+  errors.push(...checkEnds(placed, index));
   errors.push(...checkColumns(d, index));
-  errors.push(...checkWalls(d, index));
+  errors.push(...checkWalls(placed, index));
   errors.push(...checkNotes(d, index));
   if (d.style !== undefined) {
     const problem = styleProblem(d.style);
@@ -382,7 +410,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       facts: { max: MARK_TEXT_MAX },
     });
   }
-  let accents = 0;
+  let accents = (d.nodes ?? []).filter((n) => n.accent).length;
   d.layers.forEach((l, li) => {
     l.nodes.forEach((n, ni) => {
       if (n.accent) accents++;
@@ -417,7 +445,9 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       facts: {
         count: accents,
         max: MAX_ACCENTS,
-        nodes: d.layers.flatMap((l) => l.nodes.filter((n) => n.accent).map((n) => n.id)),
+        nodes: everyNode(d)
+          .filter((n) => n.accent)
+          .map((n) => n.id),
       },
     });
   }
@@ -460,18 +490,22 @@ function checkGroups(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
   const groups = d.groups ?? [];
   const ids = groups.map((g) => g.id);
-  d.layers.forEach((l, li) => {
-    l.nodes.forEach((n, ni) => {
-      if (n.group === undefined || ids.includes(n.group)) return;
-      errors.push({
-        code: "unknown-group",
-        index,
-        field: `layers[${li}].nodes[${ni}].group`,
-        found: n.group,
-        facts: { near: closest(n.group, ids) },
-      });
+  const listed = [
+    ...d.layers.flatMap((l, li) =>
+      l.nodes.map((n, ni) => ({ n, at: `layers[${li}].nodes[${ni}]` })),
+    ),
+    ...(d.nodes ?? []).map((n, ni) => ({ n, at: `nodes[${ni}]` })),
+  ];
+  for (const { n, at } of listed) {
+    if (n.group === undefined || ids.includes(n.group)) continue;
+    errors.push({
+      code: "unknown-group",
+      index,
+      field: `${at}.group`,
+      found: n.group,
+      facts: { near: closest(n.group, ids) },
     });
-  });
+  }
   groups.forEach((g, gi) => {
     if (g.in === undefined) return;
     if (!ids.includes(g.in)) {

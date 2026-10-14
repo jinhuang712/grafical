@@ -9,6 +9,7 @@ import { dirname, isAbsolute, join, normalize } from "node:path";
 import type { OpError } from "../errors.ts";
 import type { Op } from "../model/ops.ts";
 import { isMarkFile } from "../model/schema.ts";
+import { everyNode } from "../model/steps.ts";
 import { type Diagram, MARK_SLOTS, type Mark, type MarkSlot, markText } from "../model/types.ts";
 import { isEmoji, markKey, provideMarkImage } from "../render/marks.ts";
 
@@ -118,17 +119,15 @@ function prepare(
 export function loadMarks(file: string, d: Diagram, setting: Set<string> = new Set()): OpError[] {
   const folder = dirname(file);
   const errors: OpError[] = [];
-  for (const layer of d.layers) {
-    for (const node of layer.nodes) {
-      for (const slot of MARK_SLOTS) {
-        const mark = node.icons?.[slot];
-        if (mark === undefined) continue;
-        // A mark that an operation sets or clears is read again by that operation, so it
-        // may be the one that fixes a changed or missing file.
-        if (setting.has(markSlotKey(node.id, slot))) continue;
-        const { error } = prepare(folder, mark, 0);
-        if (error !== undefined) errors.push({ ...error, field: `${node.id}.icons.${slot}` });
-      }
+  for (const node of everyNode(d)) {
+    for (const slot of MARK_SLOTS) {
+      const mark = node.icons?.[slot];
+      if (mark === undefined) continue;
+      // A mark that an operation sets or clears is read again by that operation, so it
+      // may be the one that fixes a changed or missing file.
+      if (setting.has(markSlotKey(node.id, slot))) continue;
+      const { error } = prepare(folder, mark, 0);
+      if (error !== undefined) errors.push({ ...error, field: `${node.id}.icons.${slot}` });
     }
   }
   return errors;

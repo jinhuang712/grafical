@@ -130,6 +130,13 @@ export interface DiagramNode {
   column?: string;
   /** Marks in fixed slots, such as a warning at the top-left (D40). */
   icons?: Partial<Record<MarkSlot, Mark>>;
+  /** The box a box in no row is placed from, by the steps below (D46). */
+  from?: string;
+  /** Steps down, up, left or right from `from`, each a cell of the column grid (D46). */
+  down?: number;
+  up?: number;
+  left?: number;
+  right?: number;
 }
 
 /** A system drawn as one box around its member nodes, which may sit in several rows (D7). */
@@ -234,6 +241,8 @@ export interface Diagram {
   legend?: Legend;
   /** Ordered top to bottom. */
   layers: Layer[];
+  /** Boxes in no row, each placed by steps from another box, in creation order (D46). */
+  nodes?: DiagramNode[];
   /** The systems, in creation order. Absent or empty: no groups. Members name their group (D7). */
   groups?: Group[];
   /** The swimlanes. Lanes that run as columns go left to right in this order (D32). */

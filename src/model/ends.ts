@@ -12,13 +12,14 @@
 import type { Facts, OpError } from "../errors.ts";
 import { groupNodes } from "./groups.ts";
 import { laneNodes, laneRun } from "./lanes.ts";
+import { everyNode } from "./steps.ts";
 import { closest } from "./suggest.ts";
 import type { Diagram } from "./types.ts";
 
 export type EndKind = "node" | "group" | "layer" | "lane";
 
 export function endKind(d: Diagram, id: string): EndKind | undefined {
-  if (d.layers.some((l) => l.nodes.some((n) => n.id === id))) return "node";
+  if (everyNode(d).some((n) => n.id === id)) return "node";
   if ((d.groups ?? []).some((g) => g.id === id)) return "group";
   if (d.layers.some((l) => l.id === id)) return "layer";
   if ((d.lanes ?? []).some((x) => x.id === id)) return "lane";
@@ -28,7 +29,7 @@ export function endKind(d: Diagram, id: string): EndKind | undefined {
 /** Every id an edge may end at, for suggestions. */
 export function endIds(d: Diagram): string[] {
   return [
-    ...d.layers.flatMap((l) => l.nodes.map((n) => n.id)),
+    ...everyNode(d).map((n) => n.id),
     ...(d.groups ?? []).map((g) => g.id),
     ...d.layers.map((l) => l.id),
     ...(d.lanes ?? []).map((x) => x.id),

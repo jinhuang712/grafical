@@ -22,9 +22,9 @@ export function inGroup(d: Diagram, n: DiagramNode, id: string): boolean {
   return groupChain(d, n.group).includes(id);
 }
 
-/** The nodes of a group, its own and its inner groups', in layer order. */
+/** The nodes of a group, its own and its inner groups', in layer order, then those placed by steps. */
 export function groupNodes(d: Diagram, id: string): DiagramNode[] {
-  return d.layers.flatMap((l) => l.nodes.filter((n) => inGroup(d, n, id)));
+  return [...d.layers.flatMap((l) => l.nodes), ...(d.nodes ?? [])].filter((n) => inGroup(d, n, id));
 }
 
 /** How many levels a group and the groups inside it take: 1 with none inside it. */

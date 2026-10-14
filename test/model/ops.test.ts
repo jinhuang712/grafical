@@ -375,12 +375,12 @@ describe("parsing operations", () => {
   it("reports bad values, missing and unknown fields with the item's index", () => {
     const r = parseOps([
       { op: "node.add", id: "n", layer: "l", label: "N", kind: "db" },
-      { op: "node.add", id: "n2", label: "N" },
+      { op: "node.add", id: "n2", layer: "l" },
       { op: "node.remove", id: "n", extra: 1 },
     ]) as OpError[];
     expect(r.map((e) => [e.index, e.code, e.field])).toEqual([
       [0, "bad-value", "kind"],
-      [1, "missing-field", "layer"],
+      [1, "missing-field", "label"],
       [2, "unknown-field", "extra"],
     ]);
     expect(r[0]?.facts).toMatchObject({ likely: ["store"], allowed: NODE_KINDS });

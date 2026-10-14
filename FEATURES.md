@@ -90,16 +90,16 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the fewest crossings (D24) | done |
+| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the fewest crossings (D24). Or, in no row, `from` another box with steps `down` or `up` and `left` or `right`, each a cell of the column grid (D46) | done |
 | `node.rename` | Change the label. The ID stays. A node grafical sizes grows or shrinks with its label (D27). A label that still does not fit fails with a suggested fix | done |
 | `node.describe` | Set or clear the sublabel, such as a port or a topic name | done |
 | `node.kind` | Change the kind | done |
-| `node.move` | Move to another layer, group or position | done |
+| `node.move` | Move to another layer, group or position, or by steps from another box; `layer` puts a box placed by steps back in a row (D46) | done |
 | `node.resize` | Set the size step, which fixes the box's width and height. Without a step, grafical sizes the box to its text again (D27) | done |
 | `node.align` | Place the node directly above or below a node in another layer. Fails if the alignment cannot hold with the order of either layer | done |
 | `node.emphasize` | Turn the accent on or off | done |
 | `node.icon` | Put a mark in a slot, or clear the slot without a mark. A mark is an emoji, a text of up to 6 characters, or an SVG or PNG file next to the diagram. A text mark may take a background, text and border color, and a shape. Any mark may take a size (D40) | done |
-| `node.remove` | Remove the node and its edges | done |
+| `node.remove` | Remove the node and its edges. A box that others step from stays while they do (`step-anchor`) | done |
 | `node.swap` | Two nodes trade places: layer and slot | done |
 | `node.merge` | Replace nodes with one new node that keeps all their edges, each once. Edges between them go | done |
 
@@ -132,9 +132,12 @@ grafical layer tidy <file> <id>
 grafical layer split <file> <id> <new-id> --label <text> [--from <node>]
 grafical node add <file> <id> --layer <layer> --label <text> [--kind <kind>] [--sublabel <text>]
     [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]
+grafical node add <file> <id> --from <node> [--down <n> | --up <n>] [--left <n> | --right <n>]
+    --label <text> [--kind <kind>] [--sublabel <text>] [--size s|m|l] [--accent]
 grafical node rename <file> <id> --label <text>
 grafical node resize <file> <id> [--size s|m|l]
 grafical node move <file> <id> [--layer <layer>] [--first | --last | --before <node> | --after <node>]
+grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <n> | --right <n>]
 grafical node remove <file> <id>
 grafical node describe <file> <id> [--text <text>]
 grafical node kind <file> <id> <kind>
@@ -193,6 +196,7 @@ grafical diff <file> [<git-rev>]
 - `node add` without a position lets grafical pick the slot (D24). `node move --layer` without a position does the same.
 - `node add` without `--size` gets a medium box, or a large one when its text does not fit the medium box (D27). `node resize` without `--size` returns a node to that. With `diagram sizing fixed`, a node without a size is always medium.
 - `node remove` also removes the node's edges, and reports their ids.
+- A box placed by steps sits that many cells of the column grid from the box it steps from, which may itself be placed by steps, and moves with it; each step is 1 to 10, and at least one is given. Past the first or last row it lands in a row grafical adds, which `show --drawn` names `-`. The boxes of the row it lands in stand aside. A cell another fact keeps is refused (`step-blocked`), so is a box that steps from itself (`step-cycle`), and steps are not combined with a row, a position, an alignment, a column or a lane (`conflicting-position`). `node move` with steps and no `--from` keeps the box it steps from, and with `--from` alone keeps the steps (D46).
 - `node merge` puts the new node where the first listed node was, keeps every edge of the merged nodes once, and drops the edges between them. It may reuse a merged node's id. Nodes aligned to a merged node lose the alignment.
 - `layer tidy` and `diagram tidy` reorder once, when asked (D24). They report every node that moved.
 - Clearing: `node describe`, `node align`, `edge relabel`, `edge weight`, `group describe` and `diagram legend` without their value clear it.
@@ -252,7 +256,7 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A group's keys are `id`, `label`, `sublabel` and `in`, the group it sits inside (D34). A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`, `column`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32), a `columns` list of `id`, left to right, after it (D45), a `walls` list of `id`, `between`, `and`, `allow` and `label` after it (D43), and a `notes` list of `on` and `text` after that (D44). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, `weight`. `both` and `accent` appear only when true, and `weight` only when it is not thin (D41). A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
+- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A group's keys are `id`, `label`, `sublabel` and `in`, the group it sits inside (D34). A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`, `column`. A `nodes` list after `layers` holds the boxes in no row, in creation order, each with `from` and its steps, `down`, `up`, `left`, `right`, last, and no `align`, `lane` or `column` (D46). A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32), a `columns` list of `id`, left to right, after it (D45), a `walls` list of `id`, `between`, `and`, `allow` and `label` after it (D43), and a `notes` list of `on` and `text` after that (D44). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, `weight`. `both` and `accent` appear only when true, and `weight` only when it is not thin (D41). A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ### The stylesheet file
@@ -328,6 +332,7 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Notes | A short text attached to a box, a line or a group: a callout card beside it where there is room, a numbered footnote where there is not; grafical picks (D44) | done |
 | Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in. Not built: the owner decided that the file fixes the picture and the same facts give mostly the same picture (D39) | dropped |
 | Columns | An optional second placement fact beside rows: every box of a column sits left of every box of the next; a box in no column keeps its place beside its neighbour, and a new one lands near what it connects to (D45) | done |
+| Steps | A box in no row, placed some cells of the grid from another box, which it moves with; the agent states the steps (D46) | done |
 
 ## Stage 2: the board
 
