@@ -56,7 +56,7 @@ grafical view arch.grafical.yaml
 | File | Holds |
 |---|---|
 | [PROPOSAL.md](PROPOSAL.md) | The problem, what we want, the idea and its bets |
-| [PHILOSOPHY.md](PHILOSOPHY.md) | The beliefs that do not change |
+| [PHILOSOPHY.md](PHILOSOPHY.md) | The questions grafical takes a stance on, and its answers |
 | [GOALS.md](GOALS.md) | Goals, non-goals, benchmarks and their targets |
 | [DESIGN.md](DESIGN.md) | Numbered design decisions and what was rejected |
 | [FEATURES.md](FEATURES.md) | Commands and operations, with status |

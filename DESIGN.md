@@ -17,57 +17,55 @@ agent ──operations──> grafical
                         └── render ────> SVG ──resvg──> PNG
 ```
 
-In stage 2 the board becomes a second client of the same operations. Nothing else in this picture changes.
-
 ## Index
 
 | ID | Decision | Traces to |
 |---|---|---|
-| D1 | Operations are the only way to change a diagram | Built in steps |
-| D2 | Operations state facts, never coordinates | The engine owns every pixel |
-| D3 | A batch applies many operations at once, all or nothing | Built in steps |
+| D1 | Operations are the only way to change a diagram | Make the next improvement cheap |
+| D2 | Operations state facts, never coordinates | Looks are free; places are facts |
+| D3 | A batch applies many operations at once, all or nothing | Make the next improvement cheap |
 | D4 | Every element has a stable ID that the caller chooses | Only the facts you name change |
-| D5 | Every operation is validated, and its errors say how to fix it | Mistakes are caught at the step |
-| D6 | Layout is described by discrete facts | The engine owns every pixel |
-| D7 | Layers are rows, and groups are the systems drawn around them | The tool carries the taste |
-| D8 | Kinds and styles are short, fixed lists | The tool carries the taste |
-| D9 | A person's adjustment will be an ordinary operation | People and agents take the same steps |
+| D5 | Every operation is validated, and its errors say how to fix it | Make the next improvement cheap |
+| D6 | Layout is described by discrete facts | Looks are free; places are facts |
+| D7 | Layers are rows, and groups are the systems drawn around them | The engine does the dirty work |
+| D8 | Kinds and styles are short, fixed lists | Drawing has always been arranging elements |
+| D9 | A person's adjustment will be an ordinary operation. Reversed | — |
 | D10 | Layout is recomputed from the facts on every change, like a typesetter | Only the facts you name change |
-| D11 | Edges route orthogonally through the gaps, with our own router | The engine owns every pixel |
+| D11 | Edges route orthogonally through the gaps, with our own router | The engine does the dirty work |
 | D12 | Text is measured from bundled fonts | The same file is the same picture |
 | D13 | grafical writes the SVG, and resvg rasterizes it | The same file is the same picture |
-| D14 | The checker runs on every write. A defect the agent can fix fails the command, and the engine avoids the rest | Mistakes are caught at the step |
+| D14 | The checker runs on every write. A defect the agent can fix fails the command, and the engine avoids the rest | Make the next improvement cheap |
 | D15 | Same file, same SVG bytes and PNG pixels | The same file is the same picture |
-| D16 | The command line comes first, with JSON output | Built in steps |
-| D17 | `show` gives agents a compact view of a diagram | The tool carries the taste |
+| D16 | The command line comes first, with JSON output | The engine translates sentences into places |
+| D17 | `show` gives agents a compact view of a diagram | The engine translates sentences into places |
 | D18 | Git is the history, and `diff` reports changes as operations | The same file is the same picture |
-| D19 | TypeScript on Node, with an engine that also runs in a browser | People and agents take the same steps |
-| D20 | X6 draws the board in stage 2, not the stage 1 output | The same file is the same picture |
+| D19 | TypeScript on Node, with an engine that also runs in a browser | — |
+| D20 | X6 draws the board in stage 2, not the stage 1 output. Reversed | — |
 | D21 | MIT license, and dependencies must allow it | — |
 | D22 | The file records its format version, and the format only grows | The same file is the same picture |
 | D23 | The toolchain | — |
-| D24 | The engine picks a new node's slot, and `layer.tidy` reorders on request | The tool carries the taste |
-| D25 | The target look is a picture, and its rules are measured | The tool carries the taste |
-| D26 | Curation is coached, budgeted and shown | The tool carries the taste |
-| D27 | A node with no size is sized to its text | The tool carries the taste |
-| D28 | An edge may end at a group or a layer | The tool carries the taste |
-| D29 | Open questions settled by the owner | The engine arranges; the agent decides what the diagram says |
-| D30 | A diagram takes its look from a theme or a shared stylesheet | The tool carries the taste |
-| D31 | A live viewer shows the diagram as it is now | A diagram is built in steps |
-| D32 | Swimlanes run as rows or as columns | The engine arranges; the agent decides what the diagram says |
-| D33 | Lines have a short list of looks, and meet a box on any side | The tool carries the taste |
-| D34 | Stage 1 draws every diagram type the layered engine can draw | The engine arranges; the agent decides what the diagram says |
-| D35 | The engine names rearrangements that make the lines better, as commands | The engine arranges; the agent decides what the diagram says |
-| D36 | The help is the reference; there is no separate guide | The tool carries the taste |
-| D37 | Output is discrete: facts and counts, and the agent judges | The command line states facts; the agent understands |
-| D38 | A fan-out of three or more unlabelled lines leaves as one bundle | The tool carries the taste |
+| D24 | The engine picks a new node's slot, and `layer.tidy` reorders on request | The engine does the dirty work |
+| D25 | The target look is a picture, and its rules are measured | The engine does the dirty work |
+| D26 | Curation is coached, budgeted and shown | A diagram works by what it leaves out |
+| D27 | A node with no size is sized to its text | The engine does the dirty work |
+| D28 | An edge may end at a group or a layer | Drawing has always been arranging elements |
+| D29 | Open questions settled by the owner | The agent owns the taste and the truth |
+| D30 | A diagram takes its look from a theme or a shared stylesheet | Looks are free; places are facts |
+| D31 | A live viewer shows the diagram as it is now | Make the next improvement cheap |
+| D32 | Swimlanes run as rows or as columns | The agent owns the taste and the truth |
+| D33 | Lines have a short list of looks, and meet a box on any side | Looks are free; places are facts |
+| D34 | Stage 1 draws every diagram type the layered engine can draw | The agent owns the taste and the truth |
+| D35 | The engine names rearrangements that make the lines better, as commands | The agent owns the taste and the truth |
+| D36 | The help is the reference; there is no separate guide | Easy and consistent |
+| D37 | Output is discrete: facts and counts, and the agent judges | The agent owns the taste and the truth |
+| D38 | A fan-out of three or more unlabelled lines leaves as one bundle | The engine does the dirty work |
 | D39 | The file fixes the picture; the same facts give mostly the same picture | The same file is the same picture |
-| D40 | A node carries marks in five slots, and a mark is an emoji, text or a file | The engine owns every pixel |
-| D41 | An edge has a weight: a named level or a width, tuned by the stylesheet | The tool carries the taste |
-| D42 | The legend names line widths and marks, and may leave an entry out | The tool carries the taste |
-| D43 | A wall is empty space between two named sides, crossed only where it allows | The engine places; the agent states relations |
-| D44 | A note is attached to a box, line or group; grafical draws it as a callout or a footnote | The engine places; the agent states relations |
-| D45 | Columns: an optional second placement fact beside rows | The engine places; the agent states relations |
+| D40 | A node carries marks in five slots, and a mark is an emoji, text or a file | Looks are free; places are facts |
+| D41 | An edge has a weight: a named level or a width, tuned by the stylesheet | Looks are free; places are facts |
+| D42 | The legend names line widths and marks, and may leave an entry out | Looks are free; places are facts |
+| D43 | A wall is empty space between two named sides, crossed only where it allows | Looks are free; places are facts |
+| D44 | A note is attached to a box, line or group; grafical draws it as a callout or a footnote | The agent owns the taste and the truth |
+| D45 | Columns: an optional second placement fact beside rows | Looks are free; places are facts |
 
 ## Writing a diagram
 
@@ -140,6 +138,8 @@ Rejected: per-node colors and free style attributes. Every invented style is som
 Changed on 2026-10-12: edges have more looks than two, still from short lists (D33).
 
 ### D9 A person's adjustment will be an ordinary operation
+
+Reversed: the owner dropped stage 2, the board where people edit, on 2026-10-14 (PHILOSOPHY.md, "Who draws?"). No person edits the diagram, so nothing replaces this decision.
 
 In stage 2, a drag on the board becomes the same operation an agent would send, such as `node.move` or `node.align`. It changes the same facts, so the file has one kind of state, whoever made the change. If stage 2 needs a fact that stage 1 lacks, it is added under D22.
 
@@ -323,9 +323,13 @@ Rejected: an operation log inside the file, which could replay any past version.
 
 grafical is written in TypeScript and runs on Node 24 or later. The engine (model, layout, routing, measurement and SVG writing) uses no Node-only APIs. The stage 2 board can then run the same engine in the browser while a person drags.
 
+Since the owner dropped stage 2, the board where people edit, on 2026-10-14 (PHILOSOPHY.md, "Who draws?"), the board no longer needs the browser build. The choice of TypeScript on Node stands.
+
 Rejected: Go, which builds a single binary, because the board would need a second engine or a large WASM build. Rust, because development is slower, and the stage 2 board still needs a browser build.
 
 ### D20 X6 draws the board in stage 2, not the stage 1 output
+
+Reversed: the owner dropped stage 2, the board where people edit, on 2026-10-14 (PHILOSOPHY.md, "Who draws?"). No board is drawn, so nothing replaces this decision.
 
 In stage 2, AntV X6 draws the board from the geometry the engine computes, and handles selection, dragging and snapping. Before stage 2 starts, X6 is compared again with React Flow. On 2026-10-10 the latest X6 release on npm was 3.1.8, under MIT, and its maintainers had made no public statement about its future.
 
@@ -490,7 +494,7 @@ Rejected:
 
 ### D31 A live viewer shows the diagram as it is now
 
-`grafical view <file>` serves the picture on a local port and opens it in a window, without browser tabs when Chrome is installed. The page redraws within a moment of every change to the file, from any process: the window shows what an agent is drawing while it draws. Elements that changed are marked briefly. The viewer only shows; editing on a board is stage 2. It keeps no log: the file and git hold the history.
+`grafical view <file>` serves the picture on a local port and opens it in a window, without browser tabs when Chrome is installed. The page redraws within a moment of every change to the file, from any process: the window shows what an agent is drawing while it draws. Elements that changed are marked briefly. The viewer only shows; nobody edits on it. It keeps no log: the file and git hold the history.
 
 As built: the page is served on 127.0.0.1 only, on a free port unless `--port` names one, and receives each new picture over server-sent events. The viewer watches the diagram's folder, because a write replaces the file by renaming over it, and redraws when the file or a stylesheet changes. The picture is the same SVG that `render` writes, scaled to fit the window. Marks are boxes laid over it that fade in under two seconds: a new node or edge, changed text, a node that changed size, kind or accent, and an edge with new ends, kind or label. A node that only moved because the layout re-flowed is not marked. While the file cannot be read, the page keeps the last good picture and shows the errors. The viewer may start before the file exists, so a person can open the window and then ask an agent to draw. Defects and warnings are listed under the picture.
 
@@ -566,7 +570,7 @@ Decided on 2026-10-12. The owner rejected all three phase 1d milestone pictures 
 - **Taking them is the agent's.** The workflow in `grafical --help` (at first, the guide's) says: if the output shows `lines:` and `hint:` lines, improve them yourself; run a hint's commands if the moved node still belongs in its new row, then render again and repeat. The engine diagnoses and measures; the model decides and makes each move with its own command.
 - **First measurement, 2026-10-12** (`bench/results/p1d-hints.md`): with hints printed but no command to take them, Haiku ran none in the 9 of 15 drafts that showed one, though the first hint, applied blindly, clearly improved the drafts looked at (password reset: crossings 1 -> 0, lines over two bends 2 -> 0, bends 12 -> 7). Hence a command to take them, `diagram improve`, and a workflow step to run it.
 - **Safe hints.** In the second round agents ran `diagram improve` in 9 of 11 drafts, and each run lowered the problems, but improve had moved nodes among other kinds and the agents moved them back by hand, which left one draft with 29 problems. A hint is safe when it keeps every node among its own kind: a swap within a row, or a move into a row of the same family (steps and states, stores, queues); callers and outside systems never move. `diagram improve` took only safe hints. The others are still shown, marked as moving a node among other kinds, for the agent to judge: the photo-sharing diagram's best hint, its upload queue beside the API, is one. In the third round agents ran it in 7 of 10 drafts and undid nothing.
-- **`diagram improve` removed, the same day.** The owner judged that it made the engine decide: "break improve apart. its proven to be useful. so what about telling the models what to improve and allow models to do it themselves?" It chose the moves and made them; PHILOSOPHY.md puts what the diagram says, rows included, with the agent, and "Only the facts you name change". Its parts stay where they belong: the engine names what to improve (`lines:`) and measures moves (`hint:`), and the agent judges each move and runs it. Offline, `pnpm bench lines --improve` replays an agent that follows the safe hints one by one; on the fifteen drafts made without hints that takes problems from 5.53 to 3.93 per draft.
+- **`diagram improve` removed, the same day.** The owner judged that it made the engine decide: "break improve apart. its proven to be useful. so what about telling the models what to improve and allow models to do it themselves?" It chose the moves and made them; PHILOSOPHY.md puts what the diagram says, rows included, with the agent ("Who owns what?"), and only the facts you name change ("What does a change do?"). Its parts stay where they belong: the engine names what to improve (`lines:`) and measures moves (`hint:`), and the agent judges each move and runs it. Offline, `pnpm bench lines --improve` replays an agent that follows the safe hints one by one; on the fifteen drafts made without hints that takes problems from 5.53 to 3.93 per draft.
 - **Rows, hubs and order, 2026-10-13.** In the help rounds no agent ran a hint on the public brief: every hint there moved a store or a service among other kinds, and the agents declined them, rightly; one agent instead moved a row by hand, a fix the search never tried. The search now also tries each row moved one or two places up or down, and a node with three or more lines slid to every place in its row, so that it can sit over the nodes it reaches. A row move keeps every node among its kind, but the order of the rows is the story's, so it is marked "reorders rows". Hints that keep both kinds and rows come first; the best of the others keeps the last place when it leaves fewer troubled lines than any safe one, so that small safe gains do not hide a large fix. Each hint names the troubled lines it untangles ("untangles api->photos"), so that the agent can match it to what it sees. `check` at 50 nodes takes 381 ms, within benchmark 11's 400.
 - **Cost.** A diagram of up to 16 nodes tries up to 200 rearrangements, in about 25 ms; a larger one fewer, about 1200 divided by its node count, nodes at the most troubled lines first, so that `check` stays within benchmark 11 at 50 nodes (343 ms).
 
@@ -594,7 +598,7 @@ Rejected:
 
 ### D37 Output is discrete: facts and counts, and the agent judges
 
-Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "The command line states facts; the agent understands"). grafical had begun to judge and advise in prose: warnings that a diagram has too many nodes "for one story", hints that pick moves by grafical's own idea of better, refusals that explain in sentences. Understanding a diagram is the coding agent's job; grafical gives it the facts to do it.
+Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "Who owns what?"). grafical had begun to judge and advise in prose: warnings that a diagram has too many nodes "for one story", hints that pick moves by grafical's own idea of better, refusals that explain in sentences. Understanding a diagram is the coding agent's job; grafical gives it the facts to do it.
 
 - **What the diagram is:** `show`, as now: rows, nodes in order, groups, lanes and edges.
 - **How it is drawn:** a discrete report of the drawing: for each box its row, its place in the row, its size and its lines on each side; for each line the sides it leaves and enters, its bends, its length, the lines it crosses and the rows it passes without connecting; and totals. The agent judges the drawing from it without opening the picture.
@@ -609,7 +613,7 @@ Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "The command line states fact
 Rejected:
 - Phrases with the numbers in them ("most nodes in a row 4 (outside)"). They read well to a person, but the agent has to parse English to get the number, and each phrase is worded its own way.
 - A table with a header row. A column is read by its position, so an agent that reads one row alone cannot tell which number is which.
-- Advice in the output, however helpful. It decides for the agent, and one reader's advice is not another's (PHILOSOPHY.md, "Easy and consistent, not right for every reader").
+- Advice in the output, however helpful. It decides for the agent, and one reader's advice is not another's (PHILOSOPHY.md, "What makes grafical good?").
 - Hints as discrete commands with numbers. The numbers are facts, but which moves to try is a judgement, and it is the agent's.
 
 ### D38 A fan-out of three or more unlabelled lines leaves as one bundle
@@ -808,4 +812,3 @@ Rejected:
 - **Marks and lines:** a corner mark is not yet checked against the lines that leave the box near its corner. A line that meets a mark is not reported.
 
 - **Too many heavy edges:** D33 says more than three main-path edges, and more than a third of all edges, draw a warning, because a main path stands out only against thin lines. No code does this yet. With D41 the count would be every edge heavier than `thin`.
-- **Stage 2:** how the board reaches the file (a local server while the board is open is proposed), and how snap guides turn a drag into one operation.

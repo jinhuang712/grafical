@@ -54,7 +54,6 @@ On 2026-10-10 we ran a blind test. Four agents drew the same two services from t
 - Draw big diagrams without the tool hiding information.
 - Make it cheap enough that a small model like Haiku can do it well.
 - Keep the diagram in git and review changes to it like code.
-- Later, let people and agents work on the same diagram, each picking up where the other stopped.
 
 ## What we do not try to do
 
@@ -88,8 +87,6 @@ Diagrams from large engineering teams look consistent because they use few value
 
 grafical gives agents a command-line tool whose operations state those facts. The engine owns everything else: measuring text, placing nodes, routing edges, and re-spacing the picture after every change so it stays tidy. After each step, it validates the change and checks the picture for defects, and reports any problem to the agent at once. [DESIGN.md](DESIGN.md) shows the full shape.
 
-In stage 2 a board joins as a second client of the same operations. A person's drag becomes an operation too, so people and agents take turns on one file.
-
 ## Why it should work
 
 Three bets, each of which can be tested.
@@ -120,4 +117,4 @@ Sources: the projects' READMEs and documentation, including [LikeC4's documentat
 
 ## Scope
 
-Stage 1 is the MVP, for agents. Stage 2 adds the board, for people. [ROADMAP.md](ROADMAP.md) has the phases, and [FEATURES.md](FEATURES.md) has what each stage contains.
+Stage 1 is the MVP, for agents. [ROADMAP.md](ROADMAP.md) has the phases, and [FEATURES.md](FEATURES.md) has what they contain. A board where people edit the diagram was planned as stage 2 and dropped on 2026-10-14 (FEATURES.md, "Considered and dropped").

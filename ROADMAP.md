@@ -2,7 +2,7 @@
 
 > Written 2026-10-11. Phase 0 was done on 2026-10-11. Stage 1's benchmarks ran on 2026-10-12 ([results](bench/results/stage1.md)). The MVP bar was not met, so stage 1 has not ended (see "How stage 1 ends"), and phase 1d comes next.
 
-grafical ships in two stages. In stage 1, the MVP, agents draw through the command line. In stage 2, people and agents edit the same diagram on a board. Each phase has an exit check. On 2026-10-11 the owner decided to build all of stage 1 first and to run the checks together at the end, instead of gating each phase on the one before. Benchmarks and targets are defined in [GOALS.md](GOALS.md). What each stage contains is listed in [FEATURES.md](FEATURES.md).
+In stage 1, the MVP, agents draw through the command line. A stage 2, where people would edit the same diagram on a board, was dropped by the owner on 2026-10-14 (PHILOSOPHY.md, "Who draws?"). Each phase has an exit check. On 2026-10-11 the owner decided to build all of stage 1 first and to run the checks together at the end, instead of gating each phase on the one before. Benchmarks and targets are defined in [GOALS.md](GOALS.md). What each stage contains is listed in [FEATURES.md](FEATURES.md).
 
 ## Stage 1: the MVP
 
@@ -56,7 +56,7 @@ Third try, 2026-10-11, with the shared store placed between the systems: not met
 - **Edge ends at containers** (D28): an arrow may end at a group or a layer. Done.
 - **Swimlanes:** lanes that run as rows or as columns, one way per diagram, with nodes allowed outside every lane. Done (D32).
 - **Styling:** built-in themes and a shared stylesheet file that a diagram names, set by an operation, so that an agent can apply the theme a person asks for in plain words. Changing the stylesheet changes every diagram that uses it. Done (D30).
-- **A live viewer:** `grafical view <file>` opens a window that shows the diagram as it is now, and redraws it within a moment of every change an agent makes. It shows; it does not edit (editing is stage 2). Done (D31).
+- **A live viewer:** `grafical view <file>` opens a window that shows the diagram as it is now, and redraws it within a moment of every change an agent makes. It shows; it does not edit. Done (D31).
 - **Warnings the agent sees but that never block:** a picture wider than the page, a crowded row, a group of one node, and an edge that crosses a row of unrelated nodes. Done (D29). Replaced on 2026-10-13 by counts (D37).
 
 ### Phase 1d: clearer lines and more diagram types
@@ -92,18 +92,9 @@ Extend the benchmark harness to every arm and experiment, then run E1 to E4 from
 
 Exit check: benchmarks 1, 2, 3, 5, 6, 8, 9, 10, 12, 13 and 14 meet their targets. A recorded decision may recalibrate any target except the MVP bar in goal 1. Then release 0.1.0 on npm.
 
-## Stage 2: the board
-
-Stage 2 builds the board features in FEATURES.md. Before it starts:
-
-1. Compare X6 with React Flow again (D20).
-2. Decide how the board reaches the file (DESIGN.md, "Not yet decided").
-3. Set the target for the new benchmark: how long a person needs for an adjustment.
-4. Set the stage 2 exit check.
-
 ## Later
 
-Items marked `later` in FEATURES.md are not scheduled. They are planned after stage 2, or earlier if benchmark results show one is needed.
+Items marked `later` in FEATURES.md are not scheduled. They are planned after stage 1, or earlier if benchmark results show one is needed.
 
 ## How stage 1 ends
 

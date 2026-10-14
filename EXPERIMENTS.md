@@ -10,15 +10,15 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 
 | # | Hypothesis | Traces to | Measured by | Experiment |
 |---|---|---|---|---|
-| H1 | Haiku with grafical draws a first draft as good as strong models with a skill | Bet 2, "The tool carries the taste" | Blind score, model gap | E1 |
-| H2 | A change costs one small batch, not a regeneration, and is cheaper and faster than regenerating | "A diagram is built in steps" | Dollars, wall time and tokens per change, regenerations | E2 |
+| H1 | Haiku with grafical draws a first draft as good as strong models with a skill | Bet 2, "Easy and consistent" | Blind score, model gap | E1 |
+| H2 | A change costs one small batch, not a regeneration, and is cheaper and faster than regenerating | "Make the next improvement cheap" | Dollars, wall time and tokens per change, regenerations | E2 |
 | H3 | A change never alters a fact it did not name | "Only the facts you name change" | Unnamed fact changes, movement outside DESIGN.md D10's list | E2 |
-| H4 | No caller ever computes a coordinate | "The engine owns every pixel" | Coordinates or layout scripts in the agent's transcript | E1, E2 |
-| H5 | Mistakes are fixed at the step that made them | "Mistakes are caught at the step that made them" | Operation errors, retries to recover | E1, E2 |
+| H4 | No caller ever computes a coordinate | "Looks are free; places are facts" | Coordinates or layout scripts in the agent's transcript | E1, E2 |
+| H5 | Mistakes are fixed at the step that made them | "Make the next improvement cheap" | Operation errors, retries to recover | E1, E2 |
 | H6 | The agent knows it is done from grafical's text output, without looking at the picture | Verifiability | Image reads per run | E1, E2 |
 | H7 | Many short, stable command outputs keep the prompt cache warm | Cost | Cache hit rate | E1, E2 |
 | H8 | Layered facts are enough for real diagrams at 50 nodes | Bet 1 | Defects and clarity by size | E4 |
-| H9 | A loose prompt is enough for Haiku to draw what the owner meant | "The tool carries the taste" | Owner's acceptance | E3 |
+| H9 | A loose prompt is enough for Haiku to draw what the owner meant | "Easy and consistent" | Owner's acceptance | E3 |
 | H10 | Each design decision helps more than its alternative | DESIGN.md | The metric each ablation names | E5 |
 
 "The same file is the same picture" is tested mechanically in CI, not by an experiment (benchmark 11).

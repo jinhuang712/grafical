@@ -5,7 +5,6 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | Status | Meaning |
 |---|---|
 | `stage 1` | Planned for the MVP |
-| `stage 2` | Planned for the board |
 | `later` | Wanted, not scheduled |
 | `done` | Implemented and tested |
 
@@ -24,7 +23,6 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file (D18) | done |
 | `grafical --help`, `grafical <command> --help` | The reference for agents: how to work, what makes a diagram good, the diagram types, and for each command its options, guidelines, common mistakes, limits and an example (D36) | done |
 | `grafical guide [<type>]` | Print the reference, or how to draw one diagram type (D34) | dropped: the help replaced it (D36) |
-| `grafical review <file>` | Open the board on the diagram | stage 2 |
 | `grafical mcp` | Serve the same operations over MCP | later |
 
 Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also print the drawing's counts as one `key=value` record: nodes, lines, crossings, bends, the lines' length together, width, height, the row with most nodes, the box with most lines, the longest line, and the lines that pass a row they do not connect (D37). They are facts; what they mean is the agent's to judge.
@@ -334,15 +332,6 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Columns | An optional second placement fact beside rows: every box of a column sits left of every box of the next; a box in no column keeps its place beside its neighbour, and a new one lands near what it connects to (D45) | done |
 | Steps | A box in no row, placed some cells of the grid from another box, which it moves with; the agent states the steps (D46) | done |
 
-## Stage 2: the board
-
-| Feature | Status |
-|---|---|
-| An X6 board opened by `grafical review` | stage 2 |
-| A drag becomes an ordinary operation, with snap guides that show which one before the drop | stage 2 |
-| A person's adjustments land in the diagram file like an agent's | stage 2 |
-| An agent continues from a person's changes, and the reverse | stage 2 |
-
 ## Later
 
 | Feature | Status |
@@ -367,3 +356,4 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Patterns, one operation for a common structure | Shorthand for content; the help's examples teach the structures |
 | A declared diagram type that checks its conventions | grafical would judge content (D37) |
 | A score of how readable a picture is | Readers differ (PHILOSOPHY.md) |
+| A board where people edit the diagram (`grafical review`), with drags that become operations | Agents draw good enough diagrams with grafical, and a person asks for a change in words (PHILOSOPHY.md, "Who draws?"). Dropped by the owner on 2026-10-14 |
