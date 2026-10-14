@@ -152,4 +152,4 @@ An ablation runs when its decision is built or questioned, not all at once.
 | End of phase 1 | Smoke test: E1 and E2 on the public brief, grafical against a raw model, Haiku only, 3 runs each. It tests the core bet before phase 2 is built. E2 uses the four change types phase 1 supports: add a node between two others, move a node to another layer, rename a node, remove a node |
 | Phase 2 | E5 ablations, as their decisions are built |
 | Phase 3 | E1 to E4 with all arms and models, at least 3 runs each, and the MVP bar on the private reference brief |
-| End of stage 1 | Since 2026-10-11, the smoke test, E1 to E5 and the MVP bar run together once all of stage 1 is built (ROADMAP.md, "How stage 1 ends"). The owner set a $20 budget, mostly Haiku: Opus runs only for GOALS.md, "Model gap", the gap between Opus and Haiku. The owner rates E3 in person |
+| End of stage 1 | Since 2026-10-11, the smoke test, E1 to E5 and the MVP bar run together once all of stage 1 is built (ROADMAP.md, "The MVP bar, measured again"). The owner set a $20 budget, mostly Haiku: Opus runs only for GOALS.md, "Model gap", the gap between Opus and Haiku. The owner rates E3 in person |

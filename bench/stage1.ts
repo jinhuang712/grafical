@@ -1,4 +1,4 @@
-// The end of stage 1 (ROADMAP.md, "How stage 1 ends"; EXPERIMENTS.md, "Schedule"):
+// The end of stage 1 (ROADMAP.md, "The MVP bar, measured again"; EXPERIMENTS.md, "Schedule"):
 // every experiment that runs, as parts the owner can run one at a time.
 //
 //   e1e2    E1 draft and the 8 E2 change requests: grafical, raw and Mermaid, Haiku, 3 runs
