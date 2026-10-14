@@ -67,6 +67,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D42 | The legend names line widths and marks, and may leave an entry out | The tool carries the taste |
 | D43 | A wall is empty space between two named sides, crossed only where it allows | The engine places; the agent states relations |
 | D44 | A note is attached to a box, line or group; grafical draws it as a callout or a footnote | The engine places; the agent states relations |
+| D45 | Columns: an optional second placement fact beside rows | The engine places; the agent states relations |
 
 ## Writing a diagram
 
@@ -745,6 +746,19 @@ Rejected:
 - Footnotes only. A reader looks away from what the note is about, even when there is room beside it.
 - A note that the agent places. Where it goes is the engine's (D2).
 - Several notes on one target. One note holds a sentence or two; more is a box or a second diagram.
+
+### D45 Columns: an optional second placement fact beside rows
+
+Asked for by the owner on 2026-10-13 ("not just layers, we shall involve another thing called columns") and approved the same day in the phase 1e list: "Columns, optional … build it after bundled fan-outs", "as long as they help and have gains". A prototype that day, in a scratch copy of the engine, gave photo sharing 5 bends instead of 6 and a picture 744 px wide instead of 840, and the private reference draft 0 crossings instead of 1 and 23 bends instead of 27; the public brief, already in column order, did not change. The step was then left out of a question about what to build next, by mistake, and the owner asked for it again on 2026-10-14.
+
+- **What the agent states.** A column is named, and boxes join it: `column add <file> <id> [--nodes a,b]`, `column join <file> <column> <member...>`, `column leave <file> <member...>`, `column remove <file> <id>`. A group as a member brings its nodes. Columns go left to right in the order they were added, or `--before`/`--after` another. A column has no label: it is a guide, and nothing is drawn.
+- **What the engine does.** Every box of a column lies left of every box of the next, in every row: each row is kept in column order on every write, as rows are for column lanes (D32), and the column grid takes the same order. A box in no column keeps its place beside the box left of it; a new one takes the slot with the fewest crossings among the slots that keep the order (D24), which puts it near what it connects to.
+- **Refusals.** A fact that contradicts the order, an alignment, a group, a wall or another column's order, is refused as `column-order`, naming two boxes whose order cannot hold. Columns and lanes that run as columns are two ways to say one thing, so a diagram has one or the other (`column-lanes`).
+- **The file.** `columns`, a list of `{id}` from left to right, and `column` on a node. The format only grows (D22).
+
+Rejected:
+- Drawing columns as bands. Lanes that run as columns are already that; a column is a guide.
+- A box in no column that drifts to the mean column of what it connects to on every write, as the prototype did. A line added elsewhere would move it, against D10. A box that belongs to no row and no column is a separate step (D46).
 
 ## Not yet decided
 
