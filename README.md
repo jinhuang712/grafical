@@ -76,6 +76,8 @@ From a clone, write `node src/cli/main.ts` in place of `grafical`.
 - [EXPERIMENTS.md](EXPERIMENTS.md): how the benchmarks run, and the rules for a result.
 - [AGENTS.md](AGENTS.md): how agents develop in this repository.
 - [GITFLOW.md](GITFLOW.md): the git conventions.
+- [TODO.md](TODO.md): small fixes and follow-ups with no milestone yet.
+- [CHANGELOG.md](CHANGELOG.md): what changed in each release.
 
 ## License
 
