@@ -2,12 +2,14 @@
 
 import type { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
-import { lineStyle } from "../theme/paint.ts";
+import { lineStyle, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { closest } from "./suggest.ts";
 import { EDGE_KINDS, type EdgeKind } from "./types.ts";
 
 export const ID_NODE = "ID_NODE";
 export const ID_EDGE = "ID_EDGE";
+/** An edge weight that is neither a level name nor a width within the limits (D41). */
+export const WEIGHT = "WEIGHT";
 
 /** The characters an id may hold; an edge's id may also hold -> and #<n>. */
 const ID_CHARS = ["a-z", "0-9", ".", "_", "-"];
@@ -121,6 +123,20 @@ export function issuesToErrors(
         ...base,
         found: show(found),
         facts: { allowed: edge ? EDGE_ID_CHARS : ID_CHARS, likely: likelyId(found, edge) },
+      });
+    } else if (issue.message === WEIGHT) {
+      // The stylesheet's own levels are checked once it is read; these are the built-in ones.
+      const legend = leaf && getPath(raw, ["op"]) === "diagram.legend";
+      out.push({
+        code: "bad-value",
+        index,
+        ...base,
+        found: show(found),
+        facts: {
+          allowed: legend ? ["thick", "heavy"] : ["thin", "thick", "heavy"],
+          min: WEIGHT_MIN,
+          max: WEIGHT_MAX,
+        },
       });
     } else if (issue.code === "invalid_union" && path[0] === "legend") {
       // A legend entry holds words, or false to leave it out (D42).

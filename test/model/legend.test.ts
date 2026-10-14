@@ -9,6 +9,7 @@ import {
   applyOps,
   type Diagram,
   type Op,
+  parseOp,
   readDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
@@ -118,6 +119,11 @@ describe("the legend names line widths (D42)", () => {
       code: "unknown-weight",
       found: "huge",
     });
+    for (const weight of [12, "Heavy"]) {
+      expect(parseOp({ op: "diagram.legend", weight, text: "x" }, 0)).toMatchObject([
+        { code: "bad-value", field: "weight", facts: { allowed: ["thick", "heavy"], max: 8 } },
+      ]);
+    }
     const file = writeDiagram(fx).replace(
       /\nlayers:/,
       "\nlegend:\n  weights:\n    thin: x\nlayers:",

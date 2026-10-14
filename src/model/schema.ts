@@ -6,7 +6,7 @@ import { WEIGHT_LEVEL, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
 import { checkEnds } from "./ends.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
-import { ID_EDGE, ID_NODE, issuesToErrors } from "./issues.ts";
+import { ID_EDGE, ID_NODE, issuesToErrors, WEIGHT } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
 import { closest } from "./suggest.ts";
 import {
@@ -168,8 +168,8 @@ export function legendWeightProblem(
 
 /** An edge weight: a level name, or a width in pixels (D41). Whether the level exists is checked once the stylesheet is read. */
 export const weightValue = z.union([
-  z.string().regex(WEIGHT_LEVEL, { message: "a level name like heavy" }),
-  z.number().min(WEIGHT_MIN).max(WEIGHT_MAX),
+  z.string().regex(WEIGHT_LEVEL, { message: WEIGHT }),
+  z.number().min(WEIGHT_MIN, { message: WEIGHT }).max(WEIGHT_MAX, { message: WEIGHT }),
 ]);
 
 const edgeSchema = z.strictObject({

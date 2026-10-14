@@ -89,12 +89,25 @@ describe("edge weights (D41)", () => {
       found: "huge",
       facts: { allowed: ["thin", "thick", "heavy"] },
     });
-    // The range is checked when an operation is parsed, as for every operation.
+    // The range is checked when an operation is parsed, as for every operation, and the
+    // refusal names the levels and the limits.
     for (const weight of [20, 0.1, "Big"]) {
       const parsed = parseOp({ op: "edge.weight", edges: [EDGE], weight }, 0);
-      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed).toEqual([
+        {
+          code: "bad-value",
+          index: 0,
+          field: "weight",
+          found: String(weight),
+          facts: { allowed: ["thin", "thick", "heavy"], min: 0.5, max: 8 },
+        },
+      ]);
     }
     expect(Array.isArray(parseOp({ op: "edge.weight", edges: [EDGE], weight: 8 }, 0))).toBe(false);
+    const file = writeDiagram(ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: 3 }]));
+    expect(readDiagram(file.replace("weight: 3", "weight: 12"))).toMatchObject([
+      { code: "bad-value", found: "12", facts: { min: 0.5, max: 8 } },
+    ]);
     expect(fail(fx, [{ op: "edge.weight", edges: ["nope"] }])[0]).toMatchObject({
       code: "unknown-edge",
       field: "edges",
