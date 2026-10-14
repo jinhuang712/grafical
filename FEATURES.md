@@ -17,7 +17,7 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical <noun> <verb> <file> …` | Apply one operation, such as `grafical node add` | done |
 | `grafical apply <file> <batch.yaml>` | Apply a list of operations, all or nothing | done |
 | `grafical try <file> <batch.yaml>` | Apply a batch without writing it, and print the drawing's counts before and after it, and the change in each. The agent decides what to try; grafical measures (D37) | done |
-| `grafical show <file> [--drawn]` | Print a compact view of the diagram for agents. `--drawn`: how it is drawn, as `key=value` records: each box's row, place, size, lines by side and their length together; each line's sides, bends, length, the shortest it could be, the rows it skips, crossings, the rows it passes and the lines it is bundled with; and totals (D37) | done |
+| `grafical show <file> [--drawn]` | Print a compact view of the diagram for agents. `--drawn`: how it is drawn, as `key=value` records: each box's row, place, size, lines by side and their length together; each line's sides, bends, length, the shortest it could be, the rows it skips, crossings, the rows it passes and the lines it is bundled with; each wall's length, space and the lines through it (D43); and totals (D37) | done |
 | `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (D14) | done |
 | `grafical render <file> [--svg [<out>]] [--png [<out>]]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file; `--svg` or `--png` alone writes only that one, to `<out>` or beside the file. `--scale` sets the PNG scale, from 1 to 4 | done |
 | `grafical view <file> [--port <n>] [--no-open]` | Open a window, sized to the diagram, that shows it as it is now, redrawn within a moment of every change, with the changed parts marked, a list of each change as operations, and the problems. Ctrl-C stops it (D31) | done |
@@ -77,6 +77,9 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `lane.join`, `lane.leave` | Put layers, nodes or groups into a lane, or take them out | done |
 | `lane.rename` | Change a lane's label | done |
 | `lane.remove` | Remove the lane and keep its members. Edges that end at the lane go with it | done |
+| `wall.add` | Add a wall: empty space between two sides, each a list of nodes and groups, that a line from one side to the other crosses only where `allow` names it or one of its ends; a label draws a dashed divider through it (D43). Across only, so far | done |
+| `wall.allow` | Let lines through a wall, by id or by a node or group at an end; `off` takes them back | done |
+| `wall.remove` | Remove a wall | done |
 
 ### Nodes
 
@@ -156,6 +159,9 @@ grafical lane join <file> <lane> <member...>
 grafical lane leave <file> <member...>
 grafical lane rename <file> <id> --label <text>
 grafical lane remove <file> <id>
+grafical wall add <file> <id> --between a,b --and c,d [--allow e,f] [--label <text>]
+grafical wall allow <file> <id> <pass...> [--off]
+grafical wall remove <file> <id>
 grafical diagram subtitle <file> [--text <text>]
 grafical diagram note <file> [--text <text>]
 grafical diagram sizing <file> auto|fixed
@@ -182,6 +188,7 @@ grafical diff <file> [<git-rev>]
 - An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group, a layer or a lane. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
 - A lane's members are layers or nodes, one way per diagram (`lane-mixed`). A row lane's layers must be neighbours (`lane-gap`), and a layer added between two layers of a lane joins it. Column lanes go left to right in creation order, and grafical keeps each row in that order: a node outside every lane sits right of the lanes, or left of them when it comes first in its row. A group lies in one lane (`group-across-lanes`) and joins with all its members. Two lanes are never the ends of one edge (`lane-to-lane`), and neither are a layer and a column lane (`edge-inside`). `lane remove` keeps the members and removes the edges that end at the lane.
 - A group's box spans every row from its top member to its bottom one, rows without a member included; the other nodes of those rows sit beside the box (D7). `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
+- A wall's sides may not share a node, and one must lie wholly above the other (`wall-sides`); walls up and down come next. A line from one side to the other is refused unless the wall allows it, and any other line drawn through the wall is a defect, both `wall-crossed`. A node, group or line that is removed leaves the walls, and a wall left with an empty side goes (D43).
 - grafical prints no warnings and no hints (D37). What they reported is in the counts and in `grafical show --drawn`: the number of nodes, the picture's width, the nodes in each row, the members of each group, and the rows a line passes.
 - Every command accepts `--json`. Exit codes: 0 for success, 1 for an operation error or a defect, 2 for a usage error.
 - `grafical --help` and each command's `--help` carry this reference, written for agents (D36).
@@ -232,7 +239,7 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A group's keys are `id`, `label`, `sublabel` and `in`, the group it sits inside (D34). A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, `weight`. `both` and `accent` appear only when true, and `weight` only when it is not thin (D41). A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
+- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A group's keys are `id`, `label`, `sublabel` and `in`, the group it sits inside (D34). A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`. A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32), and a `walls` list of `id`, `between`, `and`, `allow` and `label` after it (D43). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, `weight`. `both` and `accent` appear only when true, and `weight` only when it is not thin (D41). A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ### The stylesheet file
@@ -304,7 +311,7 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Equal heights in a row | Every box in a row takes the height of the row's tallest, so their tops line up (D27) | done |
 | Room around stores | A gutter keeps more room on its side next to a row that holds a store, so lines run clear of the cylinders (D33) | done |
 | Flow direction | `down` (as now) or `right`: rows become columns of the flow, left to right. One diagram fact. Held by the owner on 2026-10-14: the costliest of the three, since most of the layout assumes rows run across, with no evidence yet that it helps; walls and notes come first | later |
-| Walls | Empty space between two named sides, partial, that lines cross only where the wall allows; with a label it draws a dashed divider through its middle (D43). Across first, then up and down | stage 1 |
+| Walls | Empty space between two named sides, partial, that lines cross only where the wall allows; with a label it draws a dashed divider through its middle (D43). Walls across built 2026-10-14; up and down next | stage 1 |
 | Notes | A short text attached to a box, a line or a group, placed by the engine | stage 1 |
 | Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in. Not built: the owner decided that the file fixes the picture and the same facts give mostly the same picture (D39) | dropped |
 | Columns | An optional second placement fact beside rows: every box of a column sits left of every box of the next; a box in no column settles near what it connects to. Prototyped 2026-10-13 | stage 1 |

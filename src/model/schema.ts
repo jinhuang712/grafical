@@ -30,7 +30,9 @@ import {
   NODE_KINDS,
   SIZE_STEPS,
   SIZINGS,
+  type Wall,
 } from "./types.ts";
+import { checkWalls } from "./walls.ts";
 
 export const MAX_ACCENTS = 2;
 
@@ -135,6 +137,15 @@ const groupSchema = z.strictObject({
 
 const laneSchema = z.strictObject({ id: nodeId, label: text });
 
+/** Empty space between two sides (D43): nodes and groups; it lets through lines, nodes and groups. */
+const wallSchema = z.strictObject({
+  id: nodeId,
+  between: z.array(nodeId).min(1),
+  and: z.array(nodeId).min(1),
+  allow: z.array(z.string().min(1)).optional(),
+  label: text.optional(),
+});
+
 const layerSchema = z.strictObject({
   id: nodeId,
   label: text,
@@ -204,6 +215,7 @@ export const diagramSchema = z.strictObject({
   layers: z.array(layerSchema).default([]),
   groups: z.array(groupSchema).default([]),
   lanes: z.array(laneSchema).default([]),
+  walls: z.array(wallSchema).default([]),
   edges: z.array(edgeSchema).default([]),
 });
 
@@ -271,6 +283,14 @@ function build(p: Parsed): Diagram {
     });
   }
   if (p.lanes.length > 0) d.lanes = p.lanes.map((x) => ({ id: x.id, label: x.label }));
+  if (p.walls.length > 0) {
+    d.walls = p.walls.map((x) => {
+      const wall: Wall = { id: x.id, between: [...x.between], and: [...x.and] };
+      if (x.allow !== undefined && x.allow.length > 0) wall.allow = [...x.allow];
+      if (x.label !== undefined) wall.label = x.label;
+      return wall;
+    });
+  }
   return d;
 }
 
@@ -311,12 +331,16 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   (d.lanes ?? []).forEach((x, i) => {
     claim(x.id, `lanes[${i}].id`, "lane");
   });
+  (d.walls ?? []).forEach((x, i) => {
+    claim(x.id, `walls[${i}].id`, "wall");
+  });
   d.edges.forEach((e, ei) => {
     claim(e.id, `edges[${ei}].id`, "edge");
   });
   errors.push(...checkGroups(d, index));
   errors.push(...checkLanes(d, index));
   errors.push(...checkEnds(d, index));
+  errors.push(...checkWalls(d, index));
   if (d.style !== undefined) {
     const problem = styleProblem(d.style);
     if (problem !== undefined) {

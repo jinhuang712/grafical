@@ -89,6 +89,18 @@ export interface SceneLane {
   label: PlacedText;
 }
 
+/**
+ * A wall (D43): the empty space it keeps between its sides, as long as the sides
+ * need. A labelled wall draws a dashed line through the middle, the label above it.
+ */
+export interface SceneWall {
+  id: string;
+  run: "across" | "beside";
+  rect: Rect;
+  line?: { a: Point; b: Point };
+  label?: PlacedText;
+}
+
 /** One line style, line width or mark in the legend, with its sample (D8, D42). */
 export interface SceneLegendItem {
   /** The line style the sample is drawn in (D8). A mark's entry has none. */
@@ -154,6 +166,8 @@ export interface Scene {
   /** Layers an edge ends at, drawn behind the groups. Absent when there are none. */
   bands?: SceneBand[];
   lanes?: SceneLane[];
+  /** Walls (D43), drawn over the groups and under the lines. Absent when there are none. */
+  walls?: SceneWall[];
   nodes: SceneNode[];
   edges: SceneEdge[];
 }

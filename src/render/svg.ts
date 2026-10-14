@@ -527,6 +527,16 @@ export function renderSvg(scene: Scene): string {
     );
   }
   for (const g of groups) out.push(...groupShapes(g, P));
+  // A wall is space (D43); a labelled one draws a dashed line over the groups, under the lines.
+  for (const wl of scene.walls ?? []) {
+    if (wl.line !== undefined) {
+      const { a, b } = wl.line;
+      out.push(
+        `<line x1="${num(a.x)}" y1="${num(a.y)}" x2="${num(b.x)}" y2="${num(b.y)}" stroke="${P.text.groupLabelMuted}" stroke-width="1" stroke-dasharray="6 4"/>`,
+      );
+    }
+    if (wl.label !== undefined) out.push(...texts(wl.label, P.text.groupLabelMuted));
+  }
 
   const lb = P.edge.labelBackground;
   const byId = new Map(scene.nodes.map((n) => [n.id, n]));

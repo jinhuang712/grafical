@@ -142,6 +142,18 @@ export const BAND = {
   labelInset: 16,
 };
 
+/** Walls: empty space between two sides (DESIGN.md D43). */
+export const WALL = {
+  /** The space a wall adds where it runs, for each wall there. */
+  space: 48,
+  /** How far a wall reaches past the outermost boxes of its sides. */
+  reach: 16,
+  /** Space between a labelled wall's dashed line and the bottom of its label. */
+  labelGap: 4,
+  /** Least space between a wall's label and a line that crosses the wall. */
+  labelClear: 8,
+};
+
 /** Swimlanes (DESIGN.md D32). */
 export const LANE = {
   /** Space between a lane's side and the content in it, across. */

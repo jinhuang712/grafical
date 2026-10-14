@@ -27,6 +27,7 @@ import {
   markName,
   weightKey,
 } from "../model/types.ts";
+import { wallRun } from "../model/walls.ts";
 import type {
   PlacedText,
   Point,
@@ -39,6 +40,7 @@ import type {
   SceneLayer,
   SceneLegendItem,
   SceneNode,
+  SceneWall,
 } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import {
@@ -50,6 +52,7 @@ import {
   ROUTE,
   SPACING,
   type Spacing,
+  WALL,
 } from "../theme/geometry.ts";
 import { edgeWidth, lineStyle, type Paint, weightOf } from "../theme/paint.ts";
 import { isDot, textTop } from "../theme/shapes.ts";
@@ -900,6 +903,17 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     );
     return Math.max(0, full + (crowded ? GROUP.clear : 0) - tracks);
   };
+  // Walls that run across (D43): each takes its own space in the gutter just below the
+  // lowest row of its upper side, after the gutter's tracks.
+  const acrossWalls = (d.walls ?? []).flatMap((w) => {
+    const way = wallRun(d, w);
+    if (way?.run !== "across") return [];
+    const gutter = Math.max(...way.first.map((id) => nodes.get(id)?.layer ?? 0));
+    return [{ wall: w, gutter }];
+  });
+  const wallsAt = (i: number) => acrossWalls.filter((x) => x.gutter === i).length;
+  /** Where the walls of gutter i start, top to bottom. */
+  const wallTops = new Map<number, number>();
   const rowTops: number[] = [];
   const gutterTops: number[] = [];
   const endPads: number[] = [];
@@ -922,19 +936,30 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       GROUP.pad * padsAt(i) +
       (bandRows.has(i) ? BAND.pad : 0) +
       (rows > 0 && storeRow(i) ? ROUTE.storeRoom : 0);
+    const walls = wallsAt(i);
+    // A gutter with no runs keeps its least height only when no wall gives it room.
     const tracks =
       rows === 0
-        ? last
+        ? last || walls > 0
           ? 0
           : (sp.gutterSteps[0] ?? 48)
         : gutterHeight(rows, sp) + (storeRow(i + 1) ? ROUTE.storeRoom : 0);
     gutterTops.push(y);
     endPads.push(pad);
     if (!last && laneAt(i) !== laneAt(i + 1)) {
-      // The border runs below the gutter's tracks; heads below it take their full room.
-      y += pad + (rows === 0 ? LANE.pad : tracks);
+      // The border runs below the gutter's tracks and walls; heads below it take their full room.
+      y += pad + (rows === 0 && walls === 0 ? LANE.pad : tracks);
+      wallTops.set(i, y);
+      y += walls * WALL.space;
       borders.set(i, y);
       y += LANE.pad + GROUP.head * headsAt(i + 1) + (bandRows.has(i + 1) ? BAND.head : 0);
+      return;
+    }
+    if (walls > 0) {
+      // Nothing is placed in a wall: the heads below it take their full room (D43).
+      y += pad + tracks;
+      wallTops.set(i, y);
+      y += walls * WALL.space + headRoom(i, 0);
       return;
     }
     const head = last ? 0 : headRoom(i, tracks);
@@ -1145,6 +1170,60 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     sceneEdges.push(edge);
   }
 
+  // Walls (D43): each as long as the boxes of its sides. A labelled one draws a dashed
+  // line through its middle, and its label above the line at the first place along
+  // it that no crossing line comes near.
+  const sceneWalls: SceneWall[] = [];
+  const boxRects = new Map<string, Rect>([
+    ...sceneNodes.map((n) => [n.id, n.rect] as const),
+    ...sceneGroups.map((g) => [g.id, g.rect] as const),
+  ]);
+  const stacked = new Map<number, number>();
+  for (const { wall, gutter } of acrossWalls) {
+    const k = stacked.get(gutter) ?? 0;
+    stacked.set(gutter, k + 1);
+    const rects = [...wall.between, ...wall.and].flatMap((id) => boxRects.get(id) ?? []);
+    if (rects.length === 0) continue;
+    const x0 = Math.min(...rects.map((r) => r.x)) - WALL.reach;
+    const x1 = Math.max(...rects.map((r) => r.x + r.w)) + WALL.reach;
+    const y0 = (wallTops.get(gutter) ?? 0) + k * WALL.space;
+    const out: SceneWall = {
+      id: wall.id,
+      run: "across",
+      rect: { x: x0, y: y0, w: x1 - x0, h: WALL.space },
+    };
+    if (wall.label !== undefined) {
+      const mid = y0 + WALL.space / 2;
+      out.line = { a: { x: x0, y: mid }, b: { x: x1, y: mid } };
+      if (withText) {
+        const lh = lineBox("layer-label", m, T);
+        const w = m.measure(wall.label, T["layer-label"]).width;
+        const top = mid - WALL.labelGap - lh;
+        // The x of every line that runs down or up through the label's height.
+        const crossing = sceneEdges
+          .flatMap((e) =>
+            e.points.slice(1).flatMap((b, j) => {
+              const a = e.points[j] as Point;
+              const lo = Math.min(a.y, b.y);
+              const hi = Math.max(a.y, b.y);
+              return a.x === b.x && lo < mid && hi > top ? [a.x] : [];
+            }),
+          )
+          .sort((p, q) => p - q);
+        let x = x0 + WALL.reach;
+        for (const c of crossing) {
+          if (c < x - WALL.labelClear) continue;
+          if (c > x + w + WALL.labelClear) break;
+          x = c + WALL.labelClear;
+        }
+        if (x + w > x1 - WALL.reach) x = x0 + WALL.reach;
+        x = Math.max(sp.margin, Math.min(x, width - sp.margin - w));
+        out.label = placeLine("layer-label", wall.label, x, top, m, T);
+      }
+    }
+    sceneWalls.push(out);
+  }
+
   const scene: Scene = {
     width,
     height,
@@ -1160,6 +1239,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (theme !== DEFAULT_THEME) scene.paint = theme.paint;
   if (sceneBands.length > 0) scene.bands = sceneBands;
   if (sceneLanes.length > 0) scene.lanes = sceneLanes;
+  if (sceneWalls.length > 0) scene.walls = sceneWalls;
   return { scene: roundScene(scene), centre };
 }
 
@@ -1235,6 +1315,16 @@ function roundScene(s: Scene): Scene {
       rect: roundRect(x.rect),
       head: roundRect(x.head),
       label: roundText(x.label),
+    }));
+  }
+  if (s.walls !== undefined) {
+    const pt = (p: Point) => ({ x: round2(p.x), y: round2(p.y) });
+    out.walls = s.walls.map((w) => ({
+      id: w.id,
+      run: w.run,
+      rect: roundRect(w.rect),
+      ...(w.line === undefined ? {} : { line: { a: pt(w.line.a), b: pt(w.line.b) } }),
+      ...(w.label === undefined ? {} : { label: roundText(w.label) }),
     }));
   }
   return out;

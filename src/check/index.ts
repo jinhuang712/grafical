@@ -4,6 +4,7 @@
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import { laneNodes } from "../model/lanes.ts";
 import { type Diagram, LINE_STYLES, MARK_SLOTS, markText } from "../model/types.ts";
+import { crossingFix, wallAllows } from "../model/walls.ts";
 import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
@@ -227,6 +228,9 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
   }
   for (const b of scene.bands ?? []) targets.push({ id: b.id, is: "layer", text: b.label });
   for (const x of scene.lanes ?? []) targets.push({ id: x.id, is: "lane", text: x.label });
+  for (const w of scene.walls ?? []) {
+    if (w.label) targets.push({ id: w.id, is: "wall", text: w.label });
+  }
   const named: [string, PlacedText | undefined][] = [
     ["subtitle", scene.subtitle],
     ["note", scene.note],
@@ -278,6 +282,28 @@ function checkLaneStray(diagram: Diagram, scene: Scene, out: Found[]): void {
         code: "lane-stray",
         elements: [x.id, n.id],
         facts: { lane: member ? x.id : "none" },
+      });
+    }
+  }
+}
+
+/**
+ * No line passes through a wall's space unless the wall allows it (D43). A line
+ * between the two sides is refused before layout; this finds the others.
+ */
+function checkWalls(diagram: Diagram, scene: Scene, out: Found[]): void {
+  const edges = new Map(diagram.edges.map((e) => [e.id, e]));
+  for (const sw of scene.walls ?? []) {
+    const wall = diagram.walls?.find((w) => w.id === sw.id);
+    if (wall === undefined) continue;
+    for (const e of scene.edges) {
+      const fact = edges.get(e.id);
+      if (fact === undefined || wallAllows(diagram, wall, fact)) continue;
+      if (!segmentsOf(e.points).some((s) => segmentCrossesRect(s, sw.rect))) continue;
+      out.push({
+        code: "wall-crossed",
+        elements: [e.id, sw.id],
+        facts: { fix: crossingFix(wall, fact) },
       });
     }
   }
@@ -421,6 +447,7 @@ export function check(diagram: Diagram, scene: Scene, measurer: Measurer): Defec
   checkTextCrossing(scene, out);
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);
+  checkWalls(diagram, scene, out);
   checkMissingGlyphs(diagram, measurer, out);
   const order = (d: Found): number => DEFECT_CODES.indexOf(d.code);
   return out

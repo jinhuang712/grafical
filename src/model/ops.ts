@@ -346,6 +346,25 @@ export interface LaneRemoveOp {
   op: "lane.remove";
   id: string;
 }
+/** Sides are nodes and groups; allow names lines, nodes and groups (D43). */
+export interface WallAddOp {
+  op: "wall.add";
+  id: string;
+  between: string[];
+  and: string[];
+  allow?: string[];
+  label?: string;
+}
+export interface WallAllowOp {
+  op: "wall.allow";
+  id: string;
+  allow: string[];
+  off?: boolean;
+}
+export interface WallRemoveOp {
+  op: "wall.remove";
+  id: string;
+}
 
 export type Op =
   | DiagramNewOp
@@ -369,6 +388,9 @@ export type Op =
   | LaneLeaveOp
   | LaneRenameOp
   | LaneRemoveOp
+  | WallAddOp
+  | WallAllowOp
+  | WallRemoveOp
   | LayerAddOp
   | LayerRenameOp
   | LayerMoveOp
@@ -644,6 +666,23 @@ export const laneRenameSchema = z.strictObject({
   label: text,
 });
 export const laneRemoveSchema = z.strictObject({ op: z.literal("lane.remove"), id: nodeId });
+/** What a wall lets through: a line's id, or a node's or a group's. */
+const passList = z.array(z.string().min(1)).min(1);
+export const wallAddSchema = z.strictObject({
+  op: z.literal("wall.add"),
+  id: nodeId,
+  between: nodeList,
+  and: nodeList,
+  allow: passList.optional(),
+  label: text.optional(),
+});
+export const wallAllowSchema = z.strictObject({
+  op: z.literal("wall.allow"),
+  id: nodeId,
+  allow: passList,
+  off: z.boolean().optional(),
+});
+export const wallRemoveSchema = z.strictObject({ op: z.literal("wall.remove"), id: nodeId });
 
 /** Parses one operation. A batch item is exactly this. */
 export const opSchema = z.discriminatedUnion("op", [
@@ -676,6 +715,9 @@ export const opSchema = z.discriminatedUnion("op", [
   laneLeaveSchema,
   laneRenameSchema,
   laneRemoveSchema,
+  wallAddSchema,
+  wallAllowSchema,
+  wallRemoveSchema,
   layerRenameSchema,
   layerMoveSchema,
   layerRemoveSchema,
@@ -727,6 +769,9 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "lane.leave": laneLeaveSchema,
   "lane.rename": laneRenameSchema,
   "lane.remove": laneRemoveSchema,
+  "wall.add": wallAddSchema,
+  "wall.allow": wallAllowSchema,
+  "wall.remove": wallRemoveSchema,
   "layer.rename": layerRenameSchema,
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,

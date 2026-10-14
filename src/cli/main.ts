@@ -288,6 +288,46 @@ function build(): Command {
     await write(file, { op: "lane.remove", id }, opts);
   });
 
+  const wall = program.command("wall").description("walls between parts: add, allow, remove");
+  json(
+    wall
+      .command("add")
+      .description("add a wall between two sides; grafical decides where it runs")
+      .argument("<file>")
+      .argument("<id>")
+      .requiredOption("--between <ids>", "one side: nodes and groups, comma-separated")
+      .requiredOption("--and <ids>", "the other side")
+      .option("--allow <ids>", "lines, or nodes and groups whose lines, may cross")
+      .option("--label <text>", "draw a dashed divider through it with these words"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const raw: Record<string, unknown> = { op: "wall.add", id, ...pick(opts, ["label"]) };
+    for (const key of ["between", "and", "allow"] as const) {
+      const v = opts[key];
+      if (typeof v === "string") raw[key] = splitIds(v);
+    }
+    await write(file, raw, opts);
+  });
+  json(
+    wall
+      .command("allow")
+      .description("let lines through a wall: by id, or every line of a node or group")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("<pass...>")
+      .option("--off", "stop letting them through"),
+  ).action(async (file: string, id: string, pass: string[], opts: Opts) => {
+    await write(
+      file,
+      { op: "wall.allow", id, allow: pass, ...(opts.off === true ? { off: true } : {}) },
+      opts,
+    );
+  });
+  json(
+    wall.command("remove").description("remove a wall").argument("<file>").argument("<id>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "wall.remove", id }, opts);
+  });
+
   const layer = program
     .command("layer")
     .description("rows: add, move, split, rename, tidy, remove");
@@ -709,7 +749,7 @@ function build(): Command {
   json(
     program
       .command("apply")
-      .description("apply a YAML list of operations, all or nothing")
+      .description("apply a batch of operations, all or none")
       .argument("<file>")
       .argument("<batch.yaml>"),
   ).action(async (file: string, batch: string, opts: Opts) => {
@@ -721,7 +761,7 @@ function build(): Command {
   json(
     program
       .command("try")
-      .description("a batch's counts before and after, writing nothing")
+      .description("counts before and after a batch, no write")
       .argument("<file>")
       .argument("<batch.yaml>"),
   ).action(async (file: string, batch: string, opts: Opts) => {
@@ -765,7 +805,7 @@ function build(): Command {
   json(
     program
       .command("diff")
-      .description("the changes since a revision, as operations")
+      .description("changes since a revision, as operations")
       .argument("<file>")
       .argument("[rev]", "a git revision", "HEAD"),
   ).action((file: string, rev: string, opts: Opts) => {
@@ -790,7 +830,7 @@ function build(): Command {
   json(
     program
       .command("check")
-      .description("report the defects you can fix, and the counts")
+      .description("the defects you can fix, and the counts")
       .argument("<file>")
       .option("--all", "also report engine-owned defects, which are engine bugs"),
   ).action(async (file: string, opts: Opts) => {

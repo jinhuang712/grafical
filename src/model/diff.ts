@@ -18,6 +18,7 @@ import {
   type Lane,
   LINE_STYLES,
   MARK_SLOTS,
+  type Wall,
 } from "./types.ts";
 
 /** The longest common subsequence of two lists of ids, as a set. */
@@ -93,6 +94,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     const empty: Diagram = { ...after, layers: [], edges: [] };
     delete empty.groups;
     delete empty.lanes;
+    delete empty.walls;
     delete empty.legend;
     return [created, ...diffDiagrams(empty, after)];
   }
@@ -190,6 +192,24 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       else if (fresh) keptEdges.delete(e.id);
     }
   }
+
+  // Walls (D43) that change go first and come back last, once all they name exists. So
+  // does a wall that names something removed and added again, which would forget it.
+  const removed = new Set([
+    ...b.edges.filter((e) => !keptEdges.has(e.id)).map((e) => e.id),
+    ...[...bN.keys()].filter((id) => !aN.has(id)),
+    ...goneGroups,
+  ]);
+  const aWalls = new Map((a.walls ?? []).map((w) => [w.id, w]));
+  const steady = (w: Wall) =>
+    sameWall(w, aWalls.get(w.id)) &&
+    ![...w.between, ...w.and, ...(w.allow ?? [])].some((id) => removed.has(id));
+  const keptWalls = keptStart(
+    (b.walls ?? []).filter(steady).map((w) => w.id),
+    (a.walls ?? []).map((w) => w.id),
+  );
+  for (const w of b.walls ?? [])
+    if (!keptWalls.has(w.id)) ops.push({ op: "wall.remove", id: w.id });
 
   // 2. Edges that go.
   for (const e of b.edges) if (!keptEdges.has(e.id)) ops.push({ op: "edge.remove", id: e.id });
@@ -466,7 +486,25 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   if (weightOff.length > 0) ops.push({ op: "edge.weight", edges: weightOff });
   for (const [weight, edges] of weighted) ops.push({ op: "edge.weight", edges, weight });
   if (mainOn.length > 0) ops.push({ op: "edge.emphasize", edges: mainOn });
+  for (const w of a.walls ?? []) {
+    if (keptWalls.has(w.id)) continue;
+    const op: Op = { op: "wall.add", id: w.id, between: w.between, and: w.and };
+    if (w.allow !== undefined) op.allow = w.allow;
+    if (w.label !== undefined) op.label = w.label;
+    ops.push(op);
+  }
   return ops;
+}
+
+function sameWall(x: Wall, y: Wall | undefined): boolean {
+  const list = (ids: readonly string[] | undefined) => (ids ?? []).join(",");
+  return (
+    y !== undefined &&
+    list(x.between) === list(y.between) &&
+    list(x.and) === list(y.and) &&
+    list(x.allow) === list(y.allow) &&
+    x.label === y.label
+  );
 }
 
 /** A legend entry's words as operation fields: text, hide for false, none for the default (D42). */

@@ -159,6 +159,21 @@ export interface Lane {
   label: string;
 }
 
+/**
+ * A wall (D43): empty space between two sides, each a list of nodes and groups. A line
+ * from one side to the other crosses it only where `allow` names the line, or a node or
+ * group at one of its ends.
+ */
+export interface Wall {
+  id: string;
+  between: string[];
+  and: string[];
+  /** Lines, nodes and groups the wall lets through. */
+  allow?: string[];
+  /** Drawn as a dashed line through the wall's middle, with these words at its start. Absent: invisible. */
+  label?: string;
+}
+
 export interface Edge {
   id: string;
   from: string;
@@ -209,6 +224,8 @@ export interface Diagram {
   groups?: Group[];
   /** The swimlanes. Lanes that run as columns go left to right in this order (D32). */
   lanes?: Lane[];
+  /** Empty space between two sides, in creation order (D43). */
+  walls?: Wall[];
   /** Ordered: list order is creation order, and decides nothing visual. */
   edges: Edge[];
 }

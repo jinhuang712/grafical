@@ -109,6 +109,14 @@ export function writeDiagram(d: Diagram): string {
   if (d.lanes !== undefined && d.lanes.length > 0) {
     out.lanes = d.lanes.map((x) => ({ id: x.id, label: x.label }));
   }
+  if (d.walls !== undefined && d.walls.length > 0) {
+    out.walls = d.walls.map((x) => {
+      const o: Record<string, unknown> = { id: x.id, between: x.between, and: x.and };
+      if (x.allow !== undefined && x.allow.length > 0) o.allow = x.allow;
+      if (x.label !== undefined) o.label = x.label;
+      return o;
+    });
+  }
   out.edges = d.edges.map(edgeOut);
   return stringify(out, { lineWidth: 0, indent: 2, indentSeq: true, minContentWidth: 0 });
 }

@@ -49,8 +49,10 @@ import {
   MARK_SLOTS,
   type Mark,
   type MarkStyle,
+  type Wall,
   weightKey,
 } from "./types.ts";
+import { pruneWalls, wallNames } from "./walls.ts";
 
 export type ApplyResult = { diagram: Diagram; changed: string[] } | { errors: OpError[] };
 
@@ -75,6 +77,7 @@ function unusedKind(d: Diagram, id: string): string | undefined {
   if (d.layers.some((l) => l.id === id)) return "layer";
   if ((d.groups ?? []).some((g) => g.id === id)) return "group";
   if ((d.lanes ?? []).some((x) => x.id === id)) return "lane";
+  if ((d.walls ?? []).some((x) => x.id === id)) return "wall";
   if (d.layers.some((l) => l.nodes.some((n) => n.id === id))) return "node";
   if (d.edges.some((e) => e.id === id)) return "edge";
   return undefined;
@@ -565,6 +568,74 @@ function laneStep(s: State, op: Extract<Op, { op: `lane.${string}` }>, i: number
     d.edges = d.edges.filter((e) => e.from !== lane.id && e.to !== lane.id);
     touch(s, ...gone.map((e) => e.id));
   }
+  return [];
+}
+
+/**
+ * wall.add, wall.allow and wall.remove (D43). Ids that do not exist are refused here;
+ * whether the sides lie above or beside each other, and which lines cross, is checked
+ * once the whole batch is applied.
+ */
+function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number): OpError[] {
+  const d = s.d;
+  const walls = d.walls ?? [];
+  const sides = new Set([...nodeIds(d), ...(d.groups ?? []).map((g) => g.id)]);
+  const names = wallNames(d);
+  const unknown = (ids: readonly string[], field: string, among: Set<string>): OpError[] =>
+    ids
+      .filter((id) => !among.has(id))
+      .map((id) => ({
+        code: "unknown-node",
+        index: i,
+        field,
+        found: id,
+        facts: { near: closest(id, [...among]) },
+      }));
+  const unique = (ids: readonly string[]) => [...new Set(ids)];
+  if (op.op === "wall.add") {
+    const dup = dupError(d, op.id, i);
+    if (dup) return [dup];
+    const errors = [
+      ...unknown(op.between, "between", sides),
+      ...unknown(op.and, "and", sides),
+      ...unknown(op.allow ?? [], "allow", names),
+    ];
+    if (errors.length > 0) return errors;
+    const wall: Wall = { id: op.id, between: unique(op.between), and: unique(op.and) };
+    if (op.allow !== undefined) wall.allow = unique(op.allow);
+    if (op.label !== undefined) wall.label = op.label;
+    d.walls = [...walls, wall];
+    touch(s, op.id);
+    return [];
+  }
+  const wall = walls.find((x) => x.id === op.id);
+  if (!wall) {
+    return [
+      {
+        code: "unknown-wall",
+        index: i,
+        field: "id",
+        found: op.id,
+        facts: {
+          near: closest(
+            op.id,
+            walls.map((x) => x.id),
+          ),
+        },
+      },
+    ];
+  }
+  if (op.op === "wall.allow" && op.off === true) {
+    const allow = (wall.allow ?? []).filter((id) => !op.allow.includes(id));
+    if (allow.length > 0) wall.allow = allow;
+    else delete wall.allow;
+  } else if (op.op === "wall.allow") {
+    const errors = unknown(op.allow, "allow", names);
+    if (errors.length > 0) return errors;
+    wall.allow = unique([...(wall.allow ?? []), ...op.allow]);
+  } else if (walls.length > 1) d.walls = walls.filter((x) => x.id !== wall.id);
+  else delete d.walls;
+  touch(s, wall.id);
   return [];
 }
 
@@ -1375,6 +1446,10 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "lane.rename":
     case "lane.remove":
       return laneStep(s, op, i);
+    case "wall.add":
+    case "wall.allow":
+    case "wall.remove":
+      return wallStep(s, op, i);
     case "layer.add":
       return addLayer(s, op, i);
     case "node.add":
@@ -1509,8 +1584,14 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
   const s: State = { d: start, changed: [], pending: [], tidy: new Set() };
   for (let i = from; i < ops.length; i++) {
     const op = ops[i] as Op;
+    const before = s.d.walls === undefined ? undefined : wallNames(s.d);
     const errors = step(s, op, i);
     if (errors.length > 0) return { errors };
+    // The walls forget what the operation removed (D43).
+    if (before !== undefined) {
+      const now = wallNames(s.d);
+      touch(s, ...pruneWalls(s.d, new Set([...before].filter((id) => !now.has(id)))));
+    }
   }
   placePending(s, m);
   tidyLayers(s, m);

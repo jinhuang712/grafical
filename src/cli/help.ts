@@ -148,6 +148,7 @@ Batch file:
     group.join        group nodes                      (a list)
     group.leave       nodes up
     lane.add          id label members                 (a list)
+    wall.add          id between and allow label       (lists but id, label)
     edge.emphasize    edges off                        (a list)
     diagram.legend    style weight mark text (style: solid dashed dotted plain)
     diagram.subtitle  text; diagram.note text           (no text clears it)
@@ -224,6 +225,7 @@ Good to know:
       group id= members= width= height=
       line id= from= to= leaves= enters= bends= length= direct= detour=
            skip= crosses= passes= bundle=
+      wall id= run= length= space= lines=   lines: the lines through it
       legend style= width= mark= text=   each entry the legend draws
     place counts from 1 at the row's left, and of is how many boxes the
     row holds. sides counts a box's lines by side, as top:1,bottom:2, and
@@ -523,6 +525,39 @@ Limits:
 Example:
   grafical lane add laptop.grafical.yaml it --label IT --members order,setup
 `,
+  },
+
+  "wall add": {
+    about: `Add a wall: empty space between two sides, each a list of nodes and groups.
+grafical decides where it runs, and nothing is placed in it.`,
+    after: `
+When to use:
+  - To keep two parts of a picture apart: the internet and a private
+    network, two tenants, what a team owns and what it calls.
+  - With --label it draws a dashed divider through the space, the label at
+    its start. Without one it is only space.
+
+Crossing:
+  - A line from one side to the other is refused (wall-crossed) unless the
+    wall allows it: --allow names the line, or a node or group at one of
+    its ends, such as a gateway. grafical wall allow lets more through.
+  - Any other line whose route passes through the wall is a defect with the
+    same code: allow it, or move a box so that its line goes round.
+
+Good to know:
+  - It runs across when one side lies wholly above the other, as long as
+    the two sides need, not across the whole picture. Sides that share rows
+    are refused for now (wall-sides).
+  - A node, group or line that is removed leaves the wall; a wall left with
+    an empty side goes too.
+
+Example:
+  grafical wall add shop.grafical.yaml net --between web,mobile --and orders,users --allow gateway --label "private network"
+`,
+  },
+  "wall allow": {
+    about:
+      "Let lines through a wall: name a line, or a node or group to let every line that ends at it through; --off takes them back.",
   },
 
   "diagram legend": {

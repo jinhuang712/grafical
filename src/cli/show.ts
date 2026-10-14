@@ -11,6 +11,7 @@ import {
   markStyle,
   markText,
 } from "../model/types.ts";
+import { wallRun } from "../model/walls.ts";
 
 function nodeText(n: DiagramNode): string {
   let s = `${n.id} ${JSON.stringify(n.label)} ${n.kind}`;
@@ -85,6 +86,14 @@ export function showDiagram(d: Diagram): string {
         : laneNodes(d, x.id);
     const way = run === undefined ? "" : ` (${run})`;
     lines.push(`lane ${x.id} ${JSON.stringify(x.label)}${way}: ${members.join(", ") || "(empty)"}`);
+  }
+  for (const w of d.walls ?? []) {
+    const label = w.label === undefined ? "" : ` ${JSON.stringify(w.label)}`;
+    const way = wallRun(d, w)?.run;
+    const allow = w.allow === undefined ? "" : ` allow=${w.allow.join(",")}`;
+    lines.push(
+      `wall ${w.id}${label}${way === undefined ? "" : ` (${way})`}: between=${w.between.join(",")} and=${w.and.join(",")}${allow}`,
+    );
   }
   lines.push(d.edges.length > 0 ? "edges:" : "edges: (none)");
   for (const e of d.edges) lines.push(edgeText(e));

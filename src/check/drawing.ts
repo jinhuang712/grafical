@@ -11,6 +11,7 @@ import type { Diagram } from "../model/index.ts";
 import { markName } from "../model/types.ts";
 import { record } from "../records.ts";
 import type { Point, Rect, Scene } from "../scene.ts";
+import { segmentCrossesRect, segmentsOf } from "./geometry.ts";
 
 export type Side = "top" | "bottom" | "left" | "right";
 const SIDES: Side[] = ["top", "bottom", "left", "right"];
@@ -71,6 +72,16 @@ export interface DrawnLegend {
   text: string;
 }
 
+/** A wall (D43): which way it runs, how long and how thick it is, and the lines through it. */
+export interface DrawnWall {
+  id: string;
+  run: string;
+  length: number;
+  space: number;
+  /** The lines that cross it, in id order. */
+  lines: string[];
+}
+
 export interface Counts {
   nodes: number;
   lines: number;
@@ -94,6 +105,7 @@ export interface Drawing {
   boxes: DrawnBox[];
   lines: DrawnLine[];
   groups: DrawnGroup[];
+  walls: DrawnWall[];
   legend: DrawnLegend[];
 }
 
@@ -285,6 +297,19 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
     boxes,
     lines,
     groups,
+    walls: (scene.walls ?? []).map((w) => {
+      const across = w.run === "across";
+      return {
+        id: w.id,
+        run: w.run,
+        length: Math.round(across ? w.rect.w : w.rect.h),
+        space: Math.round(across ? w.rect.h : w.rect.w),
+        lines: scene.edges
+          .filter((e) => segmentsOf(e.points).some((s) => segmentCrossesRect(s, w.rect)))
+          .map((e) => e.id)
+          .sort(),
+      };
+    }),
     legend: (scene.legend ?? []).map((it) => ({
       style: it.mark === undefined ? (it.style ?? null) : null,
       width: it.width ?? null,
@@ -322,6 +347,7 @@ export function drawingText(dr: Drawing): string {
   const out = [countsText(dr.counts)];
   for (const b of dr.boxes) out.push(record("box", { ...b }));
   for (const g of dr.groups) out.push(record("group", { ...g }));
+  for (const w of dr.walls) out.push(record("wall", { ...w }));
   for (const l of dr.lines) out.push(record("line", { ...l }));
   for (const x of dr.legend) out.push(record("legend", { ...x }));
   return `${out.join("\n")}\n`;

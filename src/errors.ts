@@ -104,6 +104,7 @@ export const DEFECT_CODES = [
   "lane-stray",
   "missing-glyph",
   "mark-covers",
+  "wall-crossed",
 ] as const;
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
@@ -118,6 +119,8 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   overflow: "agent",
   "missing-glyph": "agent",
   "mark-covers": "agent",
+  // The agent's boxes lead the line through the wall; it allows the line or moves one (D43).
+  "wall-crossed": "agent",
   "node-overlap": "engine",
   "edge-through-node": "engine",
   "label-collision": "engine",
