@@ -90,7 +90,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the fewest crossings (D24). Or, in no row, `from` another box with steps `down` or `up` and `left` or `right`, each a cell of the column grid (D46) | done |
+| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the lowest route cost: crossings, lines over two bends and boxes beside all they connect to, then bends and length (D24, D47). Or, in no row, `from` another box with steps `down` or `up` and `left` or `right`, each a cell of the column grid (D46) | done |
 | `node.rename` | Change the label. The ID stays. A node grafical sizes grows or shrinks with its label (D27). A label that still does not fit fails with a suggested fix | done |
 | `node.describe` | Set or clear the sublabel, such as a port or a topic name | done |
 | `node.kind` | Change the kind | done |

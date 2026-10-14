@@ -106,6 +106,7 @@ export const DEFECT_CODES = [
   "mark-covers",
   "wall-crossed",
   "needless-bend",
+  "box-aside",
 ] as const;
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
@@ -131,6 +132,8 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "lane-stray": "engine",
   // One x would have served both ends of the line (D47).
   "needless-bend": "engine",
+  // The agent placed the box by steps beside everything it connects to (D47).
+  "box-aside": "agent",
 };
 
 /**

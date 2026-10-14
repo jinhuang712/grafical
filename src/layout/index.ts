@@ -179,17 +179,16 @@ export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m:
   const whole = all.filter((slot) => !splitsGroup(diagram, order(slot)));
   const slots = drawn.length > 0 ? drawn : whole.length > 0 ? whole : all;
   let best = slots[slots.length - 1] ?? rest.length;
-  let fewest = Number.POSITIVE_INFINITY;
+  let lowest: number[] | undefined;
   for (const slot of slots) {
     const nodes = [...rest.slice(0, slot), node, ...rest.slice(slot)];
     const trial: Diagram = {
       ...diagram,
       layers: diagram.layers.map((l, i) => (i === li ? { ...l, nodes } : l)),
     };
-    const { scene } = compute(trial, m, false);
-    const c = routeStats(scene.edges.map((e) => e.points)).crossings;
-    if (c <= fewest) {
-      fewest = c;
+    const c = routeCost(compute(trial, m, false).scene);
+    if (lowest === undefined || !lower(lowest, c)) {
+      lowest = c;
       best = slot;
     }
   }
@@ -200,8 +199,43 @@ export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m:
 const ORDER_TRIES = 1500;
 
 /**
+ * Boxes that lie wholly beside the boxes they connect to, which their lines must then
+ * reach across (D47): a box with lines to two or more boxes whose centres lie at least
+ * its own width apart, left of the leftmost centre or right of the rightmost.
+ */
+export function asideBoxes(scene: Scene): { box: string; users: string[] }[] {
+  const nodes = new Map(scene.nodes.map((n) => [n.id, n]));
+  const users = new Map<string, Set<string>>();
+  const link = (a: string, b: string) => {
+    if (a === b || !nodes.has(a) || !nodes.has(b)) return;
+    users.set(a, (users.get(a) ?? new Set()).add(b));
+  };
+  for (const e of scene.edges) {
+    link(e.from, e.to);
+    link(e.to, e.from);
+  }
+  const out: { box: string; users: string[] }[] = [];
+  for (const n of scene.nodes) {
+    const us = [...(users.get(n.id) ?? [])].sort(cmpIds);
+    if (us.length < 2) continue;
+    const cs = us.map((u) => {
+      const r = (nodes.get(u) as SceneNode).rect;
+      return r.x + r.w / 2;
+    });
+    const lo = Math.min(...cs);
+    const hi = Math.max(...cs);
+    if (hi - lo < n.rect.w) continue;
+    if (n.rect.x > hi || n.rect.x + n.rect.w < lo) out.push({ box: n.id, users: us });
+  }
+  return out;
+}
+
+const cmpIds = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
+/**
  * How bad the routes of a scene are, compared in order: crossings plus edges with
- * more than two bends (D25 rule 2), then crossings, then bends, then length.
+ * more than two bends (D25 rule 2) plus boxes aside of what they connect to (D47), then
+ * crossings, then bends, then length.
  */
 function routeCost(scene: Scene): number[] {
   let over = 0;
@@ -218,7 +252,7 @@ function routeCost(scene: Scene): number[] {
     if (bends > 2) over++;
   }
   const s = routeStats(scene.edges.map((e) => e.points));
-  return [s.crossings + over, s.crossings, s.bends, s.length];
+  return [s.crossings + over + asideBoxes(scene).length, s.crossings, s.bends, s.length];
 }
 
 /** A diagram's route cost (see routeCost), laid out without text: for comparing arrangements (D24, D35). */

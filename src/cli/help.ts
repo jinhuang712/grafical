@@ -299,9 +299,10 @@ When to use:
   },
 
   "node add": {
-    about: `Add a box to a row. grafical picks the slot with the fewest crossings, so add
-the node's edges in the same batch for them to count. Or add it in no row, some
-steps from another box: --from with --down, --up, --left or --right.`,
+    about: `Add a box to a row. grafical picks the slot where its lines cross and bend least
+and stay short, so add the node's edges in the same batch for them to count. Or
+add it in no row, some steps from another box: --from with --down, --up, --left
+or --right.`,
     after: `
 Kinds:
   service    something that runs: an app, an API, a job, a step (default)
@@ -345,6 +346,8 @@ When refused:
                 node names it
   step-cycle    the box would step from itself, through other boxes
   step-anchor   node remove: other boxes step from it; nodes names them
+  box-aside     the box sits beside every box it connects to, so its lines
+                reach across; nodes names them: step it to between them
 
 See also: node merge, node kind, node describe, edge add
 

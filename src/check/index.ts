@@ -2,7 +2,7 @@
 // measurer, and returns every mechanical flaw, in a deterministic order.
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
-import { bendsOf } from "../layout/index.ts";
+import { asideBoxes, bendsOf } from "../layout/index.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { laneNodes } from "../model/lanes.ts";
 import { type Diagram, LINE_STYLES, MARK_SLOTS, markText } from "../model/types.ts";
@@ -426,6 +426,21 @@ function checkNeedlessBend(scene: Scene, out: Found[]): void {
   }
 }
 
+/**
+ * A box placed by steps that lies wholly beside every box it connects to (D47): the agent
+ * chose its cell, so the agent moves it, between them. A box in a row that lies aside is
+ * the engine's to avoid, by its slot choice.
+ */
+function checkStepAside(diagram: Diagram, scene: Scene, out: Found[]): void {
+  const stepped = new Set(
+    diagram.layers.flatMap((l) => l.nodes.filter((n) => n.from !== undefined).map((n) => n.id)),
+  );
+  for (const { box, users } of asideBoxes(scene)) {
+    if (!stepped.has(box)) continue;
+    out.push({ code: "box-aside", elements: [box], facts: { node: box, nodes: users } });
+  }
+}
+
 function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   const add = (id: string, field: string, text: string | undefined, fix: string | string[]) => {
     if (!text) return;
@@ -532,6 +547,7 @@ export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[
   checkLabelCollision(scene, out);
   checkEdgeOverlap(scene, out);
   checkNeedlessBend(scene, out);
+  checkStepAside(diagram, scene, out);
   checkTextCrossing(scene, out);
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);
