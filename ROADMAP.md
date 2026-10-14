@@ -1,7 +1,7 @@
 <!-- what-we-build: approved 2026-10-15 -->
 # Roadmap
 
-**Current milestone:** the MVP bar, measured again. Most of what it needs is built; the speed slip, the new checks and the missing baselines come before the next paid round.
+**Current milestone:** the MVP bar, measured again. Most of what it needs is built; the new checks and the missing baselines come before the next paid round.
 
 ✅ done · 🟨 in progress · ⬜ planned
 
@@ -20,7 +20,7 @@ What each milestone delivers is in [FEATURES.md](FEATURES.md), and every exit na
 
 ## The MVP bar, measured again 🟨
 
-- ⬜ **Fix the speed slip.** Adding a box without a position takes up to 189.7 ms at 50 boxes, against 50 ms (GOALS.md, "Speed").
+- ✅ **Fix the speed slip.** Adding a box without a position took up to 189.7 ms at 50 boxes, against 50 ms. The agent now states every order, so no slot search runs, and the worst operation takes 18.6 ms (GOALS.md, "Speed").
 - ⬜ **Measure the new checks:** a scan of the transcripts for placement by the agent, the requests no operation could express, and the context each diagram adds (GOALS.md, "No placement by the agent", "Enough to say", "Context added").
 - ⬜ **Add the missing baselines:** Opus with a higher thinking budget, and the `diagram-design` skill (GOALS.md, "Fewer turns, less time, fewer tokens").
 - ⬜ **Run one paid round,** with the owner's approval of its cost first. The owner's budget for stage 1 is $20, mostly on Haiku. Opus runs only for the baselines and the gap between models, and both get the same prompt, word for word. The private reference brief's runs stay on the owner's machine, and only numbers are committed.

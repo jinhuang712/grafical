@@ -11,7 +11,7 @@ Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It 
 
 - **The main bar: easy and consistent.** Haiku, using only the command line and its help, meets the targets of "Iteration", "Stability", "Model gap", "Operation errors", "Determinism" and "Speed", with zero mechanical defects.
 - **Beside it: the judged score.** Haiku draws the private reference brief well enough that two blind Opus judges score it at least 42 of 50. 42 is what the `diagram-design` skill scored with Opus and Sonnet on that brief on 2026-10-10.
-- **Status:** ❌ not met. On 2026-10-12 the judges scored Haiku's three drafts 40, 34 and 40 (mean 38.0). In the main bar, "Iteration", "Operation errors" and "Speed" are not met.
+- **Status:** ❌ not met. On 2026-10-12 the judges scored Haiku's three drafts 40, 34 and 40 (mean 38.0). In the main bar, "Iteration" and "Operation errors" are not met.
 
 ## A change is one small step
 
@@ -151,7 +151,7 @@ The owner marked every draft without grafical, and every Mermaid draft, too bad 
 - **Target:** at most 50 ms in process to apply, lay out and check one operation at 50 boxes, and at most 400 ms for one command.
 - **Method:** `pnpm bench speed`, on random diagrams of about 50 boxes.
 - **Kill threshold:** a render above 2 s.
-- **Status:** ❌ not met on 2026-10-15. One operation took a median of 8.6 ms, but adding a box without a position took up to 189.7 ms. On 2026-10-12 the worst case was 16.6 ms. Commands took 181 to 193 ms, and a render 366 ms.
+- **Status:** ✅ met on 2026-10-15, after DESIGN.md, "The agent states every order" removed the slot search. One operation took a median of 8.1 ms and at most 18.6 ms. Commands took 185 to 198 ms, and a render 368 ms. Earlier the same day, adding a box without a position took up to 189.7 ms, because the slot search laid the diagram out once for every slot.
 
 ## A small model draws like a large one
 
