@@ -97,7 +97,8 @@ export interface SceneWall {
   id: string;
   run: "across" | "beside";
   rect: Rect;
-  line?: { a: Point; b: Point };
+  /** From a to b; `gaps` are spans along it, in x across or y up and down, where it breaks around text. */
+  line?: { a: Point; b: Point; gaps?: [number, number][] };
   label?: PlacedText;
 }
 

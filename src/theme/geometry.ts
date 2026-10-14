@@ -152,6 +152,8 @@ export const WALL = {
   labelGap: 4,
   /** Least space between a wall's label and a line that crosses the wall. */
   labelClear: 8,
+  /** Widest the label of a wall up and down runs before it wraps: the wall grows to hold it. */
+  labelWrap: 96,
 };
 
 /** Swimlanes (DESIGN.md D32). */

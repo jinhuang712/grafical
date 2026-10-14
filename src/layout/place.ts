@@ -10,7 +10,8 @@
 import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
 import { DEFAULT_SIZE, type Diagram, type DiagramNode } from "../model/types.ts";
-import { BOX, GROUP, LANE, ROUTE, SPACING } from "../theme/geometry.ts";
+import { wallRun, wallSplit } from "../model/walls.ts";
+import { BOX, GROUP, LANE, ROUTE, SPACING, WALL } from "../theme/geometry.ts";
 import { nodeBox, portReach } from "../theme/shapes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
@@ -92,6 +93,8 @@ export interface PlaceText {
    * that stands for the other end. The label sits between that node and the lane.
    */
   laneEnds?: Map<string, { lane: string; node: string }>;
+  /** The space a wall that runs up and down keeps between its sides (D43). */
+  wallSpace?: (id: string) => number;
 }
 
 const NO_TEXT: PlaceText = {
@@ -302,6 +305,21 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         for (const b of laneOrder[k] as PNode[]) {
           for (const r of rightTerms(a, b))
             for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + 2 * LANE.padX + s.d);
+        }
+      }
+    }
+    // Walls up and down (D43): what lies left of a wall in its rows, boxes included,
+    // keeps the wall's space from what lies right of it.
+    for (const w of d.walls ?? []) {
+      const way = wallRun(d, w);
+      const split = way?.run === "beside" ? wallSplit(d, way) : undefined;
+      if (split === undefined || "row" in split) continue;
+      const space = text.wallSpace?.(w.id) ?? WALL.space;
+      const side = (ids: string[]) => ids.flatMap((id) => nodes.get(id) ?? []);
+      for (const a of side(split.left)) {
+        for (const b of side(split.right)) {
+          for (const r of rightTerms(a, b))
+            for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + space + s.d);
         }
       }
     }

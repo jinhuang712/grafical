@@ -104,13 +104,23 @@ describe("walls (D43)", () => {
       code: "wall-sides",
       facts: { nodes: ["relay"] },
     });
-    // Up and down walls are not laid out yet.
-    expect(
-      fail(fx, [{ op: "wall.add", id: "w", between: ["upstream"], and: ["callers"] }])[0],
-    ).toMatchObject({
-      code: "wall-sides",
-      facts: { row: "sources", nodes: ["upstream", "callers"] },
+    // Up and down: a node between the sides would stand in the wall, and a row the wall
+    // spans with no node of either side has no place for it.
+    const beside = (between: string[], and: string[]): Op => ({
+      op: "wall.add",
+      id: "w",
+      between,
+      and,
     });
+    expect(fail(fx, [beside(["catalog-sync"], ["catalog-api"])])[0]).toMatchObject({
+      code: "wall-sides",
+      facts: { row: "work", nodes: ["mongo"] },
+    });
+    expect(fail(fx, [beside(["relay", "pipelines"], ["service"])])[0]).toMatchObject({
+      code: "wall-sides",
+      facts: { row: "topics", nodes: [] },
+    });
+    expect(ok(fx, [beside(["upstream"], ["callers"])]).diagram.walls).toHaveLength(1);
     expect(fail(fx, [{ ...net, id: "relay" } as Op])[0]).toMatchObject({ code: "duplicate-id" });
   });
 

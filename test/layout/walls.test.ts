@@ -101,6 +101,35 @@ describe("a wall across (D43)", () => {
     expect(check(allowed, layout(allowed, m), m)).toEqual([]);
   });
 
+  it("up and down, is space between the columns of its sides, in the rows they span", () => {
+    const d = ok(fx, [
+      {
+        op: "wall.add",
+        id: "split",
+        between: ["catalog-sync"],
+        and: ["catalog-api", "mongo"],
+        allow: ["mongo"],
+        label: "team boundary",
+      },
+    ]);
+    const scene = layout(d, m);
+    const wall = scene.walls?.[0];
+    if (wall?.line === undefined || wall.label === undefined) throw new Error("no wall");
+    expect(wall.run).toBe("beside");
+    expect(wall.rect.w).toBeGreaterThanOrEqual(WALL.space);
+    const sync = scene.groups?.find((g) => g.id === "catalog-sync")?.rect as Rect;
+    const mongo = scene.nodes.find((n) => n.id === "mongo")?.rect as Rect;
+    expect(wall.rect.x).toBeGreaterThanOrEqual(sync.x + sync.w);
+    expect(wall.rect.x + wall.rect.w).toBeLessThanOrEqual(mongo.x);
+    for (const n of scene.nodes) expect(overlaps(n.rect, wall.rect)).toBe(false);
+    // The label at the top, the dashed line on below it through the middle.
+    const mid = wall.rect.x + wall.rect.w / 2;
+    expect(wall.line.a.x).toBe(mid);
+    expect(wall.line.b).toEqual({ x: mid, y: wall.rect.y + wall.rect.h });
+    expect(wall.label.bbox.y + wall.label.bbox.h).toBeLessThanOrEqual(wall.line.a.y);
+    expect(check(d, scene, m)).toEqual([]);
+  });
+
   it("show --drawn names how long and thick it is, and the lines through it", () => {
     const d = ok(fx, [net()]);
     const dr = drawing(d, layout(d, m));

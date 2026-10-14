@@ -545,9 +545,11 @@ Crossing:
     same code: allow it, or move a box so that its line goes round.
 
 Good to know:
-  - It runs across when one side lies wholly above the other, as long as
-    the two sides need, not across the whole picture. Sides that share rows
-    are refused for now (wall-sides).
+  - It runs across when one side lies wholly above the other, and up and
+    down when the sides share rows, one side left of the other in each. It
+    is as long as the two sides need, not the whole picture.
+  - Up and down, each row it spans needs a node of a side, and no other
+    node between the sides: that node would stand in the wall (wall-sides).
   - A node, group or line that is removed leaves the wall; a wall left with
     an empty side goes too.
 

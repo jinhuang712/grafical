@@ -77,7 +77,7 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `lane.join`, `lane.leave` | Put layers, nodes or groups into a lane, or take them out | done |
 | `lane.rename` | Change a lane's label | done |
 | `lane.remove` | Remove the lane and keep its members. Edges that end at the lane go with it | done |
-| `wall.add` | Add a wall: empty space between two sides, each a list of nodes and groups, that a line from one side to the other crosses only where `allow` names it or one of its ends; a label draws a dashed divider through it (D43). Across only, so far | done |
+| `wall.add` | Add a wall: empty space between two sides, each a list of nodes and groups, that a line from one side to the other crosses only where `allow` names it or one of its ends; a label draws a dashed divider through it (D43) | done |
 | `wall.allow` | Let lines through a wall, by id or by a node or group at an end; `off` takes them back | done |
 | `wall.remove` | Remove a wall | done |
 
@@ -188,7 +188,7 @@ grafical diff <file> [<git-rev>]
 - An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group, a layer or a lane. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
 - A lane's members are layers or nodes, one way per diagram (`lane-mixed`). A row lane's layers must be neighbours (`lane-gap`), and a layer added between two layers of a lane joins it. Column lanes go left to right in creation order, and grafical keeps each row in that order: a node outside every lane sits right of the lanes, or left of them when it comes first in its row. A group lies in one lane (`group-across-lanes`) and joins with all its members. Two lanes are never the ends of one edge (`lane-to-lane`), and neither are a layer and a column lane (`edge-inside`). `lane remove` keeps the members and removes the edges that end at the lane.
 - A group's box spans every row from its top member to its bottom one, rows without a member included; the other nodes of those rows sit beside the box (D7). `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
-- A wall's sides may not share a node, and one must lie wholly above the other (`wall-sides`); walls up and down come next. A line from one side to the other is refused unless the wall allows it, and any other line drawn through the wall is a defect, both `wall-crossed`. A node, group or line that is removed leaves the walls, and a wall left with an empty side goes (D43).
+- A wall's sides may not share a node, and must lie one above the other, or side by side in the rows they share with no other node between them and a node of a side in every row the wall spans (`wall-sides`). A line from one side to the other is refused unless the wall allows it, and any other line drawn through the wall is a defect, both `wall-crossed`. A node, group or line that is removed leaves the walls, and a wall left with an empty side goes (D43).
 - grafical prints no warnings and no hints (D37). What they reported is in the counts and in `grafical show --drawn`: the number of nodes, the picture's width, the nodes in each row, the members of each group, and the rows a line passes.
 - Every command accepts `--json`. Exit codes: 0 for success, 1 for an operation error or a defect, 2 for a usage error.
 - `grafical --help` and each command's `--help` carry this reference, written for agents (D36).
@@ -311,7 +311,7 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Equal heights in a row | Every box in a row takes the height of the row's tallest, so their tops line up (D27) | done |
 | Room around stores | A gutter keeps more room on its side next to a row that holds a store, so lines run clear of the cylinders (D33) | done |
 | Flow direction | `down` (as now) or `right`: rows become columns of the flow, left to right. One diagram fact. Held by the owner on 2026-10-14: the costliest of the three, since most of the layout assumes rows run across, with no evidence yet that it helps; walls and notes come first | later |
-| Walls | Empty space between two named sides, partial, that lines cross only where the wall allows; with a label it draws a dashed divider through its middle (D43). Walls across built 2026-10-14; up and down next | stage 1 |
+| Walls | Empty space between two named sides, partial, that lines cross only where the wall allows; with a label it draws a dashed divider through its middle (D43) | done |
 | Notes | A short text attached to a box, a line or a group, placed by the engine | stage 1 |
 | Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in. Not built: the owner decided that the file fixes the picture and the same facts give mostly the same picture (D39) | dropped |
 | Columns | An optional second placement fact beside rows: every box of a column sits left of every box of the next; a box in no column settles near what it connects to. Prototyped 2026-10-13 | stage 1 |

@@ -27,7 +27,7 @@ import {
   markName,
   weightKey,
 } from "../model/types.ts";
-import { wallRun } from "../model/walls.ts";
+import { wallRun, wallSplit } from "../model/walls.ts";
 import type {
   PlacedText,
   Point,
@@ -631,13 +631,49 @@ function compute(
       }
     }
   }
+  // Walls up and down (D43): each label wraps to a few words, and the wall is as wide as
+  // its widest line, or its least space.
+  const wallStyle = T["layer-label"];
+  const wallLines = new Map(
+    (d.walls ?? []).map((w) => [
+      w.id,
+      w.label === undefined ? [] : m.wrap(w.label, wallStyle, WALL.labelWrap),
+    ]),
+  );
+  const wallSpace = (id: string) =>
+    Math.max(
+      WALL.space,
+      ceil4(Math.max(0, ...(wallLines.get(id) ?? []).map((l) => l.width)) + 2 * WALL.labelClear),
+    );
   const placement = placeAcross(d, {
     sideways,
     edgeLabelW: (id) => labelSizes.get(id)?.w,
     groupLabelW: (id) => groupW.get(id) ?? 0,
     laneEnds,
+    wallSpace,
   });
   const { layers, nodes, groups } = placement;
+  // Where each wall up and down runs across: from the right of what lies left of it to
+  // the left of what lies right, boxes included; and the rows it spans.
+  const besideWalls = (d.walls ?? []).flatMap((w) => {
+    const way = wallRun(d, w);
+    const split = way?.run === "beside" ? wallSplit(d, way) : undefined;
+    if (split === undefined || "row" in split) return [];
+    const left = new Set(split.left);
+    const right = new Set(split.right);
+    const edges = (ids: Set<string>, side: "right" | "left") => [
+      ...[...ids].flatMap((id) => {
+        const n = nodes.get(id);
+        return n === undefined ? [] : [side === "right" ? n.x + n.w : n.x];
+      }),
+      ...groups
+        .filter((g) => g.members.length > 0 && g.members.every((id) => ids.has(id)))
+        .map((g) => (side === "right" ? g.x1 : g.x0)),
+    ];
+    const x0 = Math.max(...edges(left, "right"));
+    const x1 = Math.min(...edges(right, "left"));
+    return [{ wall: w, x0, x1, top: split.top, bottom: split.bottom }];
+  });
   const routeEdges = refineEnds(sized, ends, nodes);
 
   // Bands (D28): the layers an edge ends at, drawn across the content. Each band's
@@ -682,6 +718,12 @@ function compute(
   // Where no vertical line may pass: a group's or band's label, above its first
   // row, and the label of an edge that runs sideways, in the gap it crosses.
   const forbidTop = new Map<number, [number, number][]>();
+  // No line runs down through a wall up and down, in the rows it spans (D43).
+  for (const b of besideWalls) {
+    for (let r = b.top; r <= b.bottom; r++) {
+      forbidTop.set(r, [...(forbidTop.get(r) ?? []), [b.x0, b.x1]]);
+    }
+  }
   for (const g of groups) {
     const list = forbidTop.get(g.top) ?? [];
     list.push([g.labelX - GROUP.labelClear, g.labelX + g.labelW + GROUP.labelClear]);
@@ -1277,6 +1319,75 @@ function compute(
     }
     sceneWalls.push(out);
   }
+  // The text a wall's label and line keep clear of: edge, group, band and lane labels.
+  const texts: Rect[] = [
+    ...sceneEdges.flatMap((e) => (e.label === undefined ? [] : [e.label.bbox])),
+    ...sceneGroups.flatMap((g) => [g.label.bbox, ...(g.sublabel ? [g.sublabel.bbox] : [])]),
+    ...sceneBands.map((x) => x.label.bbox),
+    ...sceneLanes.map((x) => x.label.bbox),
+  ];
+  // Walls up and down: from the top of the highest box of either side to the bottom of
+  // the lowest. A label sits at the top, centred, at the first height no crossing line
+  // comes near, and the dashed line runs on below it.
+  for (const b of besideWalls) {
+    const rects = [...b.wall.between, ...b.wall.and].flatMap((id) => boxRects.get(id) ?? []);
+    if (rects.length === 0) continue;
+    const y0 = Math.min(...rects.map((r) => r.y)) - WALL.reach;
+    const y1 = Math.max(...rects.map((r) => r.y + r.h)) + WALL.reach;
+    const rect = { x: centre + b.x0, y: y0, w: b.x1 - b.x0, h: y1 - y0 };
+    const out: SceneWall = { id: b.wall.id, run: "beside", rect };
+    const mid = rect.x + rect.w / 2;
+    if (b.wall.label !== undefined) {
+      const lines = wallLines.get(b.wall.id) ?? [];
+      const lh = lineHeight("layer-label", m, T);
+      const h = lines.length * lh;
+      const w = Math.max(0, ...lines.map((l) => l.width));
+      // A place is clear when no line, box or text comes within the label's clearance.
+      const clear = (top: number) => {
+        const c = WALL.labelClear;
+        const r = { x: mid - w / 2 - c, y: top - c, w: w + 2 * c, h: h + 2 * c };
+        if (sceneNodes.some((n) => overlaps(n.rect, r))) return false;
+        if (texts.some((t) => overlaps(t, r))) return false;
+        return sceneEdges.every((e) =>
+          e.points.slice(1).every((p, j) => !segmentHits(e.points[j] as Point, p, r)),
+        );
+      };
+      // Down the wall from its top; then above it, then below it, stepping away.
+      const tops: number[] = [];
+      for (let t = y0; t + h <= y1; t += 4) tops.push(t);
+      for (let k = 1; k <= 24; k++) tops.push(y0 - WALL.labelGap - h - 4 * (k - 1), y1 + 4 * k);
+      const y = tops.find(clear) ?? y0;
+      if (withText) out.label = placeLines("layer-label", lines, mid, y, "middle", m, T);
+      // A label below the wall ends the line; one at or above its top starts it.
+      out.line =
+        y >= y1
+          ? { a: { x: mid, y: y0 }, b: { x: mid, y: y - WALL.labelGap } }
+          : { a: { x: mid, y: y + h + WALL.labelGap }, b: { x: mid, y: y1 } };
+    }
+    sceneWalls.push(out);
+  }
+  // A dashed line breaks where it would cross text: a label of a line the wall allows.
+  for (const wl of sceneWalls) {
+    if (wl.line === undefined) continue;
+    const { a, b } = wl.line;
+    const across = a.y === b.y;
+    const others = sceneWalls.flatMap((x) =>
+      x === wl || x.label === undefined ? [] : [x.label.bbox],
+    );
+    const gaps = [...texts, ...others]
+      .filter((t) =>
+        across
+          ? t.y < a.y && t.y + t.h > a.y && t.x < b.x && t.x + t.w > a.x
+          : t.x < a.x && t.x + t.w > a.x && t.y < b.y && t.y + t.h > a.y,
+      )
+      .map((t): [number, number] =>
+        across
+          ? [t.x - WALL.labelGap, t.x + t.w + WALL.labelGap]
+          : [t.y - WALL.labelGap, t.y + t.h + WALL.labelGap],
+      )
+      .sort((p, q) => p[0] - q[0]);
+    if (gaps.length > 0) wl.line.gaps = gaps;
+  }
 
   const scene: Scene = {
     width,
@@ -1377,7 +1488,19 @@ function roundScene(s: Scene): Scene {
       id: w.id,
       run: w.run,
       rect: roundRect(w.rect),
-      ...(w.line === undefined ? {} : { line: { a: pt(w.line.a), b: pt(w.line.b) } }),
+      ...(w.line === undefined
+        ? {}
+        : {
+            line: {
+              a: pt(w.line.a),
+              b: pt(w.line.b),
+              ...(w.line.gaps === undefined
+                ? {}
+                : {
+                    gaps: w.line.gaps.map(([p, q]): [number, number] => [round2(p), round2(q)]),
+                  }),
+            },
+          }),
       ...(w.label === undefined ? {} : { label: roundText(w.label) }),
     }));
   }

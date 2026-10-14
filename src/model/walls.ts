@@ -124,14 +124,22 @@ export function checkWalls(d: Diagram, index: number): OpError[] {
     const b = sideNodes(d, w.and);
     const both = a.filter((n) => b.includes(n));
     const run = both.length > 0 ? undefined : wallRun(d, w);
-    // Walls that run up and down are refused until they are laid out (D43).
-    if (run === undefined || run.run === "beside") {
+    const split = run?.run === "beside" ? wallSplit(d, run) : undefined;
+    const problem =
+      both.length > 0
+        ? { nodes: both }
+        : run === undefined
+          ? sharedRow(d, a, b)
+          : split !== undefined && "row" in split
+            ? split
+            : undefined;
+    if (problem !== undefined) {
       errors.push({
         code: "wall-sides",
         index,
         field: `walls[${wi}]`,
         found: w.id,
-        facts: both.length > 0 ? { nodes: both } : sharedRow(d, a, b),
+        facts: problem,
       });
       return;
     }
@@ -147,6 +155,48 @@ export function checkWalls(d: Diagram, index: number): OpError[] {
     });
   });
   return errors;
+}
+
+/** The nodes left and right of a wall that runs up and down, in the rows it spans, top and bottom. */
+export interface WallSplit {
+  left: string[];
+  right: string[];
+  top: number;
+  bottom: number;
+}
+
+/**
+ * How a wall up and down splits each row it spans (D43): in a row with nodes of the
+ * left side, the nodes up to its last one lie left; in a row with only nodes of the
+ * right side, the nodes before its first one. A node between the two sides would
+ * stand in the wall, and a row with neither side has no place for it: both are
+ * refused, as the row and the nodes in the way.
+ */
+export function wallSplit(
+  d: Diagram,
+  run: Extract<WallRun, { run: "beside" }>,
+): WallSplit | { row: string; nodes: string[] } {
+  const row = rowOf(d);
+  const rows = [...run.first, ...run.second].map((n) => row.get(n) ?? 0);
+  const top = Math.min(...rows);
+  const bottom = Math.max(...rows);
+  const left: string[] = [];
+  const right: string[] = [];
+  for (let r = top; r <= bottom; r++) {
+    const l = d.layers[r];
+    if (l === undefined) continue;
+    const ids = l.nodes.map((n) => n.id);
+    const lastA = ids.findLastIndex((id) => run.first.includes(id));
+    const firstB = ids.findIndex((id) => run.second.includes(id));
+    if (lastA < 0 && firstB < 0) return { row: l.id, nodes: [] };
+    const cut = lastA >= 0 ? lastA + 1 : firstB;
+    if (lastA >= 0 && firstB >= 0 && firstB > cut) {
+      return { row: l.id, nodes: ids.slice(cut, firstB) };
+    }
+    left.push(...ids.slice(0, cut));
+    right.push(...ids.slice(cut));
+  }
+  return { left, right, top, bottom };
 }
 
 /** The first row both sides hold nodes in, with those nodes; or the nodes of a side that is empty. */

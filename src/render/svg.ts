@@ -531,9 +531,22 @@ export function renderSvg(scene: Scene): string {
   for (const wl of scene.walls ?? []) {
     if (wl.line !== undefined) {
       const { a, b } = wl.line;
-      out.push(
-        `<line x1="${num(a.x)}" y1="${num(a.y)}" x2="${num(b.x)}" y2="${num(b.y)}" stroke="${P.text.groupLabelMuted}" stroke-width="1" stroke-dasharray="6 4"/>`,
-      );
+      const across = a.y === b.y;
+      // The pieces between the gaps it leaves around text.
+      const pieces: [number, number][] = [];
+      let from = across ? a.x : a.y;
+      for (const [p, q] of wl.line.gaps ?? []) {
+        if (p > from) pieces.push([from, p]);
+        from = Math.max(from, q);
+      }
+      const to = across ? b.x : b.y;
+      if (to > from) pieces.push([from, to]);
+      for (const [p, q] of pieces) {
+        const [x1, y1, x2, y2] = across ? [p, a.y, q, a.y] : [a.x, p, a.x, q];
+        out.push(
+          `<line x1="${num(x1)}" y1="${num(y1)}" x2="${num(x2)}" y2="${num(y2)}" stroke="${P.text.groupLabelMuted}" stroke-width="1" stroke-dasharray="6 4"/>`,
+        );
+      }
     }
     if (wl.label !== undefined) out.push(...texts(wl.label, P.text.groupLabelMuted));
   }
