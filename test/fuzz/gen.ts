@@ -6,11 +6,12 @@
 import { check } from "../../src/check/index.ts";
 import { layout, validateAlignments, validateGroups } from "../../src/layout/index.ts";
 import { fits } from "../../src/layout/size.ts";
+import { orderByColumns } from "../../src/model/columns.ts";
 import { checkEnds } from "../../src/model/ends.ts";
 import { MAX_GROUP_DEPTH } from "../../src/model/groups.ts";
 import type { Op } from "../../src/model/index.ts";
 import { applyOps } from "../../src/model/index.ts";
-import { checkLanes, orderByLanes } from "../../src/model/lanes.ts";
+import { checkLanes, laneRun, orderByLanes } from "../../src/model/lanes.ts";
 import { checkIntegrity } from "../../src/model/schema.ts";
 import {
   DENSITIES,
@@ -208,8 +209,35 @@ export function generate(seed: number, m: Measurer): Generated {
   addWalls(d, r, text, m);
   addSideWalls(d, r, text, m);
   addNotes(d, r, text);
+  addColumns(d, r);
 
   return { diagram: d, ops, rejected };
+}
+
+/**
+ * Two or three columns (D45), drawn last, in three seeds of ten: each node follows one
+ * at random, or none, and every row is put in column order. Columns that a check
+ * refuses are dropped, as an agent would drop the operation.
+ */
+function addColumns(d: Diagram, r: () => number): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  if (r() < 0.7 || laneRun(d) === "columns") return;
+  const columns = Array.from({ length: int(2, 3) }, (_, i) => ({ id: `col${i}` }));
+  const trial: Diagram = structuredClone(d);
+  trial.columns = columns;
+  for (const l of trial.layers) {
+    for (const nd of l.nodes) {
+      if (r() < 0.6) nd.column = columns[int(0, columns.length - 1)]?.id as string;
+    }
+  }
+  orderByColumns(trial);
+  const refused =
+    checkIntegrity(trial).length > 0 ||
+    validateGroups(trial).length > 0 ||
+    validateAlignments(trial).length > 0;
+  if (refused) return;
+  d.layers = trial.layers;
+  d.columns = columns;
 }
 
 /**
