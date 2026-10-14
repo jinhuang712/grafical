@@ -303,7 +303,7 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Bundled fan-outs | Three or more unlabelled lines of one style from one side of a box leave as one line and split near their targets, with a dot at each split. The engine's behavior: nothing for the agent to state (D38) | done |
 | Equal heights in a row | Every box in a row takes the height of the row's tallest, so their tops line up (D27) | done |
 | Room around stores | A gutter keeps more room on its side next to a row that holds a store, so lines run clear of the cylinders (D33) | done |
-| Flow direction | `down` (as now) or `right`: rows become columns of the flow, left to right. One diagram fact | stage 1 |
+| Flow direction | `down` (as now) or `right`: rows become columns of the flow, left to right. One diagram fact. Held by the owner on 2026-10-14: the costliest of the three, since most of the layout assumes rows run across, with no evidence yet that it helps; walls and notes come first | later |
 | Dividers and walls | A labelled line between parts of a picture ("trust boundary"); a wall also lets lines cross only through a named gate node | stage 1 |
 | Notes | A short text attached to a box, a line or a group, placed by the engine | stage 1 |
 | Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in. Not built: the owner decided that the file fixes the picture and the same facts give mostly the same picture (D39) | dropped |
