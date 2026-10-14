@@ -37,7 +37,12 @@ function headings(doc: string): Set<string> {
   for (const line of readFileSync(join(ROOT, doc), "utf8").split("\n")) {
     const m = /^#{1,6} (.+)$/.exec(line);
     if (!m?.[1]) continue;
-    out.add(m[1].replace(/^Decision: /, "").replace(/ — \d{4}-\d{2}-\d{2}$/, ""));
+    out.add(
+      m[1]
+        .replace(/^Decision: /, "")
+        .replace(/ — \d{4}-\d{2}-\d{2}$/, "")
+        .replace(/ (✅|🚧|⬜)$/u, ""),
+    );
   }
   return out;
 }

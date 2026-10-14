@@ -22,7 +22,7 @@ Phase 0 also sets up the package: TypeScript, Biome, vitest, and CI on macOS and
 
 ### Phase 1: the loop
 
-The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, `edge.add`, `check` and `render`. For the smoke test it also adds `node.rename`, `node.move`, `node.remove` and `edge.remove`, so that changes can be made, and `apply`, `show` and `guide`, so that an agent's cost is measured on the real design. FEATURES.md, "Command-line syntax", gives their syntax. Underneath them:
+The smallest path from operations to a picture: `new`, `layer.add`, `node.add`, `edge.add`, `check` and `render`. For the smoke test it also adds `node.rename`, `node.move`, `node.remove` and `edge.remove`, so that changes can be made, and `apply`, `show` and `guide`, so that an agent's cost is measured on the real design. `grafical --help` gives their syntax. Underneath them:
 - layout recomputed on every change, with even spreading and gutters that grow in steps (DESIGN.md, "Layout computed again on every change");
 - the slot choice for new nodes (DESIGN.md, "The engine picks a new box's slot");
 - the router work listed in DESIGN.md, "Our own gap router";
@@ -74,7 +74,7 @@ Added by the owner on 2026-10-13, after the help rounds showed that tidy lines (
 - **Guides, not a grid:** columns, a second placement fact beside rows. A box may follow a row, a column, both or neither; one with neither sits near what it connects to. A design decision first, and a prototype on three hard pictures (the private reference brief, the public brief and photo sharing), because placement must stay stable (DESIGN.md, "Layout computed again on every change") and deterministic (DESIGN.md, "Output and determinism"). Columns were built on 2026-10-14 (DESIGN.md, "Columns beside rows"), and so were boxes in no row, placed by steps from another box (DESIGN.md, "Steps from another box").
 - **Bundled fan-outs:** lines from one box to several others leave as one line and split near their targets, with a dot at the split.
 - **Then, as facts the agent states:** the flow's direction (down or right), dividers and walls between parts of a picture (a wall lets lines cross only through a named gate), and notes attached to a box, line or group. On 2026-10-14 the owner held the flow's direction for later, and walls were built the same day: empty space between two named sides, which a label turns into a divider (DESIGN.md, "Walls as space"); and notes, as a callout or a footnote (DESIGN.md, "Notes as callouts or footnotes").
-- **The full list, with the order the owner agreed** (FEATURES.md, "Phase 1e: chosen by the owner on 2026-10-13"): bundled fan-outs with equal heights in a row and room around stores first, then the rest. Each stays only if it measurably helps.
+- **The full list, with the order the owner agreed** (FEATURES.md, "Placing", "Grouping"): bundled fan-outs with equal heights in a row and room around stores first, then the rest. Each stays only if it measurably helps.
 
 Exit check: the MVP bar in both its parts (GOALS.md, "The MVP bar") measured again.
 
