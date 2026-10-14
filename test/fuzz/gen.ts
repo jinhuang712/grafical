@@ -206,6 +206,7 @@ export function generate(seed: number, m: Measurer): Generated {
   addNesting(d, r, text);
   addNodeKinds(d, r, m);
   addWalls(d, r, text, m);
+  addSideWalls(d, r, text, m);
 
   return { diagram: d, ops, rejected };
 }
@@ -246,6 +247,45 @@ function addWalls(
     }
     d.walls = [...(d.walls ?? []), wall];
   }
+}
+
+/**
+ * Up to one wall up and down (D43), drawn after the walls across: in one or two
+ * neighbouring rows of two nodes or more, the node left of a cut against the one
+ * right of it, letting through every line of either side. A wall the model or the
+ * grid refuses is dropped, and a line the drawing finds through it is let through.
+ */
+function addSideWalls(
+  d: Diagram,
+  r: () => number,
+  text: (lo: number, hi: number) => string,
+  m: Measurer,
+): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  if (r() < 0.7 || d.layers.length === 0) return;
+  const top = int(0, d.layers.length - 1);
+  const rows = d.layers.slice(top, top + int(1, 2));
+  if (rows.some((l) => l.nodes.length < 2)) return;
+  const between: string[] = [];
+  const and: string[] = [];
+  for (const l of rows) {
+    const cut = int(1, l.nodes.length - 1);
+    between.push(l.nodes[cut - 1]?.id ?? "");
+    and.push(l.nodes[cut]?.id ?? "");
+  }
+  const wall: Wall = { id: "side-wall", between, and, allow: [...between, ...and] };
+  if (r() < 0.6) wall.label = text(3, 18);
+  const trial: Diagram = { ...d, walls: [...(d.walls ?? []), wall] };
+  const refused =
+    checkWalls(trial, 0).length > 0 ||
+    validateGroups(trial).length > 0 ||
+    validateAlignments(trial).length > 0;
+  if (refused) return;
+  for (const x of check(trial, layout(trial, m), m)) {
+    if (x.code === "wall-crossed" && x.elements[1] === wall.id)
+      wall.allow?.push(x.elements[0] ?? "");
+  }
+  d.walls = [...(d.walls ?? []), wall];
 }
 
 /** The kinds the generator picked before phase 1d, so that each seed's diagram stays the same. */
