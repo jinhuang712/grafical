@@ -35,7 +35,7 @@ This repository is public. Names, hosts, topics, databases and architecture of r
 
 - Node 24 or later, pnpm. The toolchain is in `package.json`.
 - macOS is the main development machine. CI runs on macOS and Linux, because output must match on both (DESIGN.md, "Output and determinism").
-- The package is set up. No product code exists yet.
+- The engine is in `src/`, with the `grafical` command at `src/cli/main.ts`. The benchmark harness is in `bench/`.
 
 ## Commands
 
