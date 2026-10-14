@@ -87,8 +87,8 @@ export const EXAMPLE_BATCH = `- {op: layer.add, id: row-callers, label: Callers}
 - {op: node.add, id: shoppers, layer: row-callers, label: Shoppers, sublabel: "web, mobile", kind: actor}
 - {op: node.add, id: gateway, layer: row-entry, label: API gateway, sublabel: "REST, :8080"}
 - {op: node.add, id: checkout, layer: row-core, label: checkout, sublabel: "validate, price"}
-- {op: node.add, id: events, layer: row-core, label: order topics, sublabel: 3 broker topics, kind: queue}
-- {op: node.add, id: dispatcher, layer: row-core, label: dispatcher, sublabel: one per carrier}
+- {op: node.add, id: events, layer: row-core, label: order topics, sublabel: 3 broker topics, kind: queue, last: true}
+- {op: node.add, id: dispatcher, layer: row-core, label: dispatcher, sublabel: one per carrier, last: true}
 - {op: node.add, id: orders-db, layer: row-store, label: Orders DB, sublabel: "orders, parcels", kind: store, accent: true}
 - {op: group.add, id: order-desk, label: order-desk, nodes: [gateway, checkout]}
 - {op: group.add, id: shipping, label: shipping, nodes: [events, dispatcher]}
@@ -294,15 +294,10 @@ When to use:
   - Or merge boxes a reader need not tell apart (node merge).
 `,
   },
-  "layer tidy": {
-    about: "Reorder a row's nodes once, to untangle lines.",
-  },
-
   "node add": {
-    about: `Add a box to a row. grafical picks the slot where its lines cross and bend least
-and stay short, so add the node's edges in the same batch for them to count. Or
-add it in no row, some steps from another box: --from with --down, --up, --left
-or --right.`,
+    about: `Add a box to a row, at the place you give: --first, --last, --before or --after.
+Only the first box of an empty row needs none. Or add it in no row, some steps
+from another box: --from with --down, --up, --left or --right.`,
     after: `
 Kinds:
   service    something that runs: an app, an API, a job, a step (default)
@@ -321,7 +316,8 @@ Good to know:
     sublabel ("Postgres").
   - Leave --size out: grafical sizes the box to its text. Shorten a long
     label rather than reaching for a large box.
-  - Give a position only when order matters.
+  - The order of a row decides most crossings. Compare two orders with
+    grafical try and keep the one with fewer.
   - A step is one cell of grafical's grid: a row down or up, a column left
     or right. A box placed by steps moves with the box it steps from, and
     the boxes of the row it lands in stand aside. Past the first or last
@@ -342,6 +338,7 @@ Limits:
     position, --align, column or lane.
 
 When refused:
+  missing-field no place in a non-empty row; row and nodes say what is there
   step-blocked  another box keeps the cell, or must stand where it lands;
                 node names it
   step-cycle    the box would step from itself, through other boxes
@@ -352,7 +349,7 @@ When refused:
 See also: node merge, node kind, node describe, edge add
 
 Example:
-  grafical node add shop.grafical.yaml orders-db --layer row-store \\
+  grafical node add shop.grafical.yaml orders-db --layer row-store --last \\
     --label "Orders DB" --kind store --sublabel Postgres --accent
 `,
   },
@@ -367,9 +364,9 @@ When to use:
 `,
   },
   "node move": {
-    about: `Move a node to another row or position. Without a position, grafical picks the
-slot. --from with steps takes it out of its row, as node add does; --layer puts
-it back in one.`,
+    about: `Move a node to another row or position. Into another row, give the place too,
+as node add does. --from with steps takes it out of its row; --layer puts it
+back in one.`,
   },
   "node kind": {
     about: "Change a node's kind (grafical node add --help lists them).",
@@ -652,8 +649,5 @@ By diagram type:
   "diagram style": {
     about:
       "Take the look from a theme or a stylesheet; without one, the default theme. Change it only when the user asks.",
-  },
-  "diagram tidy": {
-    about: "Reorder every row once, to untangle lines.",
   },
 };

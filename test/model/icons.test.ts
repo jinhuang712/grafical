@@ -7,9 +7,7 @@ import {
   readDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
-import { createStubMeasurer } from "../../src/text/index.ts";
 
-const m = createStubMeasurer();
 const HASH = "a".repeat(64);
 
 const base: Diagram = {
@@ -30,7 +28,7 @@ const base: Diagram = {
 };
 
 function run(ops: Op[], from: Diagram = base) {
-  const r = applyOps(from, ops, m);
+  const r = applyOps(from, ops);
   if ("errors" in r) return r.errors;
   return r.diagram;
 }

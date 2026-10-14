@@ -17,14 +17,14 @@ beforeAll(async () => {
 });
 
 function edited(d: Diagram, ops: Op[]): Diagram {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r.diagram;
 }
 
 /** Applies the diff of a and b to a, and checks that it gives b, file for file. */
 function replays(a: Diagram | null, b: Diagram): void {
-  const r = applyOps(a, diffDiagrams(a, b), m);
+  const r = applyOps(a, diffDiagrams(a, b));
   if ("errors" in r) throw new Error(JSON.stringify(r.errors.slice(0, 3)));
   expect(writeDiagram(r.diagram)).toBe(writeDiagram(b));
 }

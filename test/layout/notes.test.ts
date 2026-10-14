@@ -18,7 +18,7 @@ beforeAll(async () => {
 });
 
 function ok(d: Diagram, ops: Op[]): Diagram {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r.diagram;
 }

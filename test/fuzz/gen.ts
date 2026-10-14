@@ -92,7 +92,7 @@ export function generate(seed: number, m: Measurer): Generated {
     edges: [],
   };
   const apply = (op: Op): boolean => {
-    const res = applyOps(d, [op], m);
+    const res = applyOps(d, [op]);
     if ("errors" in res) {
       rejected++;
       return false;

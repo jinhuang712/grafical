@@ -1,5 +1,5 @@
-// Route measures: crossings, bends and length. The slot choice (DESIGN.md, "The engine picks a new box's slot") minimises
-// crossings with them, and tests report them.
+// Route measures: crossings, bends and length. The counts report them to the agent
+// (DESIGN.md, "Records over prose"), and tests report them.
 
 import type { Point } from "../scene.ts";
 

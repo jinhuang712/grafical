@@ -105,7 +105,7 @@ type:
 
 describe("a themed diagram", () => {
   const styled = (style: string): Diagram => {
-    const r = applyOps(catalogSyncGrouped, [{ op: "diagram.style", style }], m);
+    const r = applyOps(catalogSyncGrouped, [{ op: "diagram.style", style }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     return r.diagram;
   };
@@ -138,7 +138,7 @@ describe("a themed diagram", () => {
   });
 
   it("refuses a style that is neither a theme nor a stylesheet file", () => {
-    const r = applyOps(catalogSyncGrouped, [{ op: "diagram.style", style: "neon" }], m);
+    const r = applyOps(catalogSyncGrouped, [{ op: "diagram.style", style: "neon" }]);
     expect("errors" in r && r.errors[0]?.code).toBe("bad-value");
   });
 });

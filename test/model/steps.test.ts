@@ -20,12 +20,12 @@ import { e, n } from "../fixtures/build.ts";
 const m = createStubMeasurer();
 
 function ok(d: Diagram, ops: Op[]): Diagram {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r.diagram;
 }
 function fail(d: Diagram, ops: Op[]): OpError[] {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if (!("errors" in r)) throw new Error("expected errors");
   return r.errors;
 }
@@ -201,12 +201,12 @@ describe('boxes placed by steps (DESIGN.md, "Steps from another box")', () => {
         [a, b],
         [b, a],
       ] as const) {
-        const r = applyOps(x, diffDiagrams(x, y), m);
+        const r = applyOps(x, diffDiagrams(x, y));
         if ("errors" in r) throw new Error(JSON.stringify(r.errors.slice(0, 3)));
         expect(writeDiagram(r.diagram)).toBe(writeDiagram(y));
       }
     }
-    const fresh = applyOps(null, diffDiagrams(null, a), m);
+    const fresh = applyOps(null, diffDiagrams(null, a));
     if ("errors" in fresh) throw new Error(JSON.stringify(fresh.errors));
     expect(writeDiagram(fresh.diagram)).toBe(writeDiagram(a));
   });

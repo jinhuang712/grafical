@@ -22,7 +22,7 @@ const LONG = "upstream catalog projection worker pool";
 const empty: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
 
 function ok(d: Diagram, ops: Op[]): Diagram {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r.diagram;
 }
@@ -96,7 +96,7 @@ describe('sizing fixed (DESIGN.md, "Boxes sized to their text")', () => {
   });
 
   it("diagram.new takes it", () => {
-    const r = applyOps(null, [{ op: "diagram.new", title: "T", sizing: "fixed" }], m);
+    const r = applyOps(null, [{ op: "diagram.new", title: "T", sizing: "fixed" }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     expect(r.diagram.sizing).toBe("fixed");
   });

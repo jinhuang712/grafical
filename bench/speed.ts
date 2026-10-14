@@ -29,8 +29,8 @@ function operations(d: Diagram): Record<string, Op[]> {
   return {
     rename: [{ op: "node.rename", id: nodes[3] ?? "", label: "renamed node" }],
     "add, placed": [{ op: "node.add", id: "zz", layer, label: "new node", last: true }],
-    "add, slotted": [
-      { op: "node.add", id: "zz", layer, label: "new node" },
+    "add, with a line": [
+      { op: "node.add", id: "zz", layer, label: "new node", last: true },
       { op: "edge.add", from: "zz", to: nodes[0] ?? "" },
     ],
     "edge add": [{ op: "edge.add", from: nodes[1] ?? "", to: nodes[nodes.length - 2] ?? "" }],
@@ -53,7 +53,7 @@ export async function measureSpeed(): Promise<string[]> {
       const ms: number[] = [];
       for (let k = 0; k < 7; k++) {
         const t0 = performance.now();
-        const r = applyOps(d, ops, m);
+        const r = applyOps(d, ops);
         if ("errors" in r) break;
         const s = layout(r.diagram, m);
         check(r.diagram, s, m);

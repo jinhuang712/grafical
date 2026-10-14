@@ -31,12 +31,12 @@ const EDGE = "pipelines->mongo";
 const OTHER = "service->mongo";
 
 function ok(d: Diagram, ops: Op[]): Diagram {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r.diagram;
 }
 function fail(d: Diagram, ops: Op[]): OpError[] {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if (!("errors" in r)) throw new Error("expected errors");
   return r.errors;
 }
@@ -156,7 +156,7 @@ describe('edge weights (DESIGN.md, "Edge weights")', () => {
       [fx, heavy],
       [heavy, fx],
     ] as const) {
-      const r = applyOps(a, diffDiagrams(a, b), m);
+      const r = applyOps(a, diffDiagrams(a, b));
       if ("errors" in r) throw new Error(JSON.stringify(r.errors));
       expect(writeDiagram(r.diagram)).toBe(writeDiagram(b));
     }

@@ -1,10 +1,8 @@
 // The phase 1 operations, applied to a Diagram the way the command line will apply
-// them, for the stability tests. A node added or moved without a position takes the
-// slot chooseSlot picks (DESIGN.md, "The engine picks a new box's slot").
+// them, for the stability tests. A node added or moved goes last in its row, a place
+// the agent states (DESIGN.md, "The agent states every order").
 
-import { chooseSlot } from "../../src/layout/index.ts";
 import type { Diagram, DiagramNode, Edge } from "../../src/model/types.ts";
-import type { Measurer } from "../../src/text/types.ts";
 import type { Named } from "./stability.ts";
 
 export interface Applied {
@@ -19,16 +17,12 @@ function withLayers(
   return { ...d, layers: d.layers.map((l) => ({ ...l, nodes: f(l.nodes, l.id) })) };
 }
 
-function placeBySlot(d: Diagram, layerId: string, node: DiagramNode, m: Measurer): Diagram {
-  const appended = withLayers(d, (nodes, id) => (id === layerId ? [...nodes, node] : nodes));
-  const slot = chooseSlot(appended, layerId, node.id, m);
-  return withLayers(d, (nodes, id) =>
-    id === layerId ? [...nodes.slice(0, slot), node, ...nodes.slice(slot)] : nodes,
-  );
+function placeLast(d: Diagram, layerId: string, node: DiagramNode): Diagram {
+  return withLayers(d, (nodes, id) => (id === layerId ? [...nodes, node] : nodes));
 }
 
-export function addNode(d: Diagram, layerId: string, node: DiagramNode, m: Measurer): Applied {
-  return { diagram: placeBySlot(d, layerId, node, m), named: { nodes: [node.id], edges: [] } };
+export function addNode(d: Diagram, layerId: string, node: DiagramNode): Applied {
+  return { diagram: placeLast(d, layerId, node), named: { nodes: [node.id], edges: [] } };
 }
 
 /** Removes the node and its edges, and drops alignments to it, as the model does. */
@@ -59,11 +53,11 @@ export function renameNode(d: Diagram, id: string, label: string): Applied {
   };
 }
 
-export function moveNode(d: Diagram, id: string, layerId: string, m: Measurer): Applied {
+export function moveNode(d: Diagram, id: string, layerId: string): Applied {
   const node = d.layers.flatMap((l) => l.nodes).find((n) => n.id === id);
   if (node === undefined) throw new Error(`no node ${id}`);
   const without = withLayers(d, (nodes) => nodes.filter((n) => n.id !== id));
-  return { diagram: placeBySlot(without, layerId, node, m), named: { nodes: [id], edges: [] } };
+  return { diagram: placeLast(without, layerId, node), named: { nodes: [id], edges: [] } };
 }
 
 export function addEdge(d: Diagram, edge: Edge): Applied {

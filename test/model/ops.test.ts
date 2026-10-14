@@ -9,19 +9,16 @@ import {
   writeDiagram,
 } from "../../src/model/index.ts";
 import { NODE_KINDS } from "../../src/model/types.ts";
-import { createStubMeasurer } from "../../src/text/index.ts";
-
-const m = createStubMeasurer();
 
 const empty: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
 
 function ok(d: Diagram | null, ops: Op[]) {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r;
 }
 function fail(d: Diagram | null, ops: Op[]): OpError[] {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if (!("errors" in r)) throw new Error("expected errors");
   return r.errors;
 }
@@ -159,32 +156,6 @@ describe("node.add", () => {
       align: "a",
     });
   });
-  it("slots a node without a position last (stub), after all operations", () => {
-    const r = ok(base, [
-      { op: "node.add", id: "n", layer: "top", label: "N" },
-      { op: "edge.add", from: "n", to: "c" },
-    ]);
-    expect(ids(r.diagram, "top")).toEqual(["a", "b", "n"]);
-  });
-  it('slots a lone node where its line crosses least, not last (DESIGN.md, "The engine picks a new box\'s slot")', () => {
-    const d = ok(null, [
-      { op: "diagram.new", title: "T" },
-      { op: "layer.add", id: "top", label: "Top" },
-      { op: "layer.add", id: "low", label: "Low" },
-      ...["a", "b", "c"].map(
-        (id): Op => ({ op: "node.add", id, layer: "top", label: id, last: true }),
-      ),
-      ...["p", "q"].map((id): Op => ({ op: "node.add", id, layer: "low", label: id, last: true })),
-      { op: "edge.add", from: "a", to: "p" },
-      { op: "edge.add", from: "c", to: "q" },
-    ]).diagram;
-    // Last, a->n would cross c->q.
-    const r = ok(d, [
-      { op: "node.add", id: "n", layer: "low", label: "N" },
-      { op: "edge.add", from: "a", to: "n" },
-    ]);
-    expect(ids(r.diagram, "low")).toEqual(["p", "n", "q"]);
-  });
   it("rejects an unknown layer, with the closest ids", () => {
     const [e] = fail(base, [{ op: "node.add", id: "n", layer: "tpo", label: "N" }]);
     expect(e).toMatchObject({ code: "unknown-layer", field: "layer", found: "tpo" });
@@ -215,7 +186,14 @@ describe("node.add", () => {
     ).toBe("unknown-node");
   });
   it("allows at most two accents", () => {
-    const acc = (id: string): Op => ({ op: "node.add", id, layer: "top", label: id, accent: true });
+    const acc = (id: string): Op => ({
+      op: "node.add",
+      id,
+      layer: "top",
+      label: id,
+      accent: true,
+      last: true,
+    });
     const e = fail(base, [acc("x1"), acc("x2"), acc("x3")]);
     expect(e[0]).toMatchObject({ code: "too-many-accents", index: 2 });
   });
@@ -236,9 +214,12 @@ describe("node.rename, node.move, node.remove", () => {
     expect(ids(r.diagram, "top")).toEqual(["b"]);
     expect(ids(r.diagram, "bottom")).toEqual(["a", "c"]);
   });
-  it("moves across layers without a position, and the engine slots it", () => {
-    const r = ok(base, [{ op: "node.move", id: "a", layer: "bottom" }]);
-    expect(ids(r.diagram, "bottom")).toEqual(["c", "a"]);
+  it('refuses a move into a row with boxes and no place (DESIGN.md, "The agent states every order")', () => {
+    expect(fail(base, [{ op: "node.move", id: "a", layer: "bottom" }])[0]).toMatchObject({
+      code: "missing-field",
+      field: "first,last,before,after",
+      facts: { row: "bottom", nodes: ["c"] },
+    });
   });
   it("needs a layer or a position", () => {
     expect(fail(base, [{ op: "node.move", id: "a" }])[0]?.code).toBe("missing-field");
@@ -316,16 +297,12 @@ describe("edge.add and edge.remove", () => {
 describe("batches", () => {
   it("is atomic: an error leaves the input untouched and names the operation index", () => {
     const before = writeDiagram(base);
-    const r = applyOps(
-      base,
-      [
-        { op: "node.add", id: "n", layer: "top", label: "N" },
-        { op: "edge.add", from: "n", to: "c" },
-        { op: "node.rename", id: "ghost", label: "G" },
-        { op: "node.add", id: "z", layer: "top", label: "Z" },
-      ],
-      m,
-    );
+    const r = applyOps(base, [
+      { op: "node.add", id: "n", layer: "top", label: "N", last: true },
+      { op: "edge.add", from: "n", to: "c" },
+      { op: "node.rename", id: "ghost", label: "G" },
+      { op: "node.add", id: "z", layer: "top", label: "Z", last: true },
+    ]);
     expect(r).toHaveProperty("errors");
     expect((r as { errors: OpError[] }).errors[0]).toMatchObject({
       index: 2,

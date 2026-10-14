@@ -31,7 +31,7 @@ afterAll(() => {
 });
 
 function edited(d: Diagram, ...ops: Parameters<typeof applyOps>[1]): Diagram {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r.diagram;
 }
@@ -52,7 +52,7 @@ describe("changedParts", () => {
   it("marks a new node but not the nodes it pushed aside", () => {
     const before = layout(tiny, m);
     const after = layout(
-      edited(tiny, { op: "node.add", id: "cache", layer: "services", label: "cache" }),
+      edited(tiny, { op: "node.add", id: "cache", layer: "services", label: "cache", last: true }),
       m,
     );
     const moved = after.nodes.filter((n) => {

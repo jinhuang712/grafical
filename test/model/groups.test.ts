@@ -10,19 +10,18 @@ import {
   readDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
-import { createMeasurer, createStubMeasurer } from "../../src/text/index.ts";
+import { createMeasurer } from "../../src/text/index.ts";
 import { nested } from "../fixtures/nested.ts";
 
-const m = createStubMeasurer();
 const empty: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
 
 function ok(d: Diagram | null, ops: Op[]) {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r;
 }
 function fail(d: Diagram | null, ops: Op[]): OpError[] {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if (!("errors" in r)) throw new Error("expected errors");
   return r.errors;
 }

@@ -15,12 +15,12 @@ beforeAll(async () => {
 });
 
 function ok(d: Diagram | null, ops: Op[]): { diagram: Diagram; changed: string[] } {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r;
 }
 function fail(d: Diagram, ops: Op[]): OpError[] {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if (!("errors" in r)) throw new Error("expected errors");
   return r.errors;
 }

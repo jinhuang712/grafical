@@ -205,7 +205,7 @@ async function plan(file: string, ops: Op[], create: boolean): Promise<Planned |
   const m = await createMeasurer();
   const bound = bindMarkOps(file, ops);
   if (bound.errors.length > 0) return failure(bound.errors);
-  const result = applyOps(base, bound.ops, m);
+  const result = applyOps(base, bound.ops);
   if ("errors" in result) return failure(result.errors);
   const weights = unknownWeights(result.diagram);
   if (weights.length > 0) return failure(weights);

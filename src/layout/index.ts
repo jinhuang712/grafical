@@ -1,4 +1,4 @@
-// Layout entry point (DESIGN.md, "Rows unseen, groups as systems", "Layout computed again on every change", "Our own gap router", "The engine picks a new box's slot", "A target picture with measured rules"). The whole diagram is laid
+// Layout entry point (DESIGN.md, "Rows unseen, groups as systems", "Layout computed again on every change", "Our own gap router", "A target picture with measured rules"). The whole diagram is laid
 // out again from its facts on every call, in a fixed order:
 // 1. across: every node on a column of one grid shared by all rows, columns chosen
 //    so that edges run straight, then spaced for boxes, groups and labels
@@ -12,13 +12,10 @@
 // Rows are not drawn (DESIGN.md, "Rows unseen, groups as systems"): their bands and labels stay in the scene for the
 // checker and for debugging.
 
-import { columnOrdered, columnRanks, orderByColumns } from "../model/columns.ts";
-import { checkEnds } from "../model/ends.ts";
-import { groupChain } from "../model/groups.ts";
+import { orderByColumns } from "../model/columns.ts";
 import { laneRun, orderByLanes } from "../model/lanes.ts";
 import {
   type Diagram,
-  type DiagramNode,
   EDGE_KINDS,
   type EdgeKind,
   LINE_STYLES,
@@ -133,70 +130,6 @@ export function validateAlignments(diagram: Diagram): AlignmentProblem[] {
 export function validateGroups(diagram: Diagram): GroupProblem[] {
   return buildGrid(placeSteps(diagram).d).groupProblems;
 }
-
-/** Does any group, its inner groups' nodes counted, have a non-member between two of its members in this row? */
-function splitsGroup(d: Diagram, nodes: DiagramNode[]): boolean {
-  const chains = nodes.map((n) => groupChain(d, n.group));
-  for (const g of new Set(chains.flat())) {
-    const at = chains.flatMap((c, k) => (c.includes(g) ? [k] : []));
-    if ((at[at.length - 1] ?? 0) - (at[0] ?? 0) + 1 !== at.length) return true;
-  }
-  return false;
-}
-
-/**
- * Whether row li in this order can be drawn (DESIGN.md, "Rows unseen, groups as systems", "Layout computed again on every change", "Lines that end at containers", "Columns beside rows"): no group is split or
- * left without one box, the row keeps its columns' order, every alignment holds, and
- * an edge to a container meets it right beside its end where they share a row.
- */
-function drawable(d: Diagram, li: number, nodes: DiagramNode[]): boolean {
-  if (splitsGroup(d, nodes)) return false;
-  if (!columnOrdered(nodes, columnRanks(d))) return false;
-  const trial: Diagram = { ...d, layers: d.layers.map((l, i) => (i === li ? { ...l, nodes } : l)) };
-  const grid = buildGrid(placeSteps(trial).d);
-  const problems = [...grid.groupProblems, ...grid.alignProblems, ...grid.stepProblems];
-  if (problems.length > 0) return false;
-  return !checkEnds(placeSteps(trial).d, 0).some((e) => e.code === "edge-blocked");
-}
-
-/**
- * DESIGN.md, "The engine picks a new box's slot": the index in its layer, counting the node's current position as removed,
- * that gives the fewest edge crossings. A tie goes to the last slot. Each slot is
- * tried with the real router. Only slots that can be drawn are tried; when there
- * is none, the slots that keep the groups whole, and then every slot, so that the
- * write is refused for what the agent can change.
- */
-export function chooseSlot(diagram: Diagram, layerId: string, nodeId: string, m: Measurer): number {
-  const li = diagram.layers.findIndex((l) => l.id === layerId);
-  const layer = diagram.layers[li];
-  if (layer === undefined) return 0;
-  const node = layer.nodes.find((n) => n.id === nodeId);
-  const rest = layer.nodes.filter((n) => n.id !== nodeId);
-  if (node === undefined) return rest.length;
-  const order = (slot: number) => [...rest.slice(0, slot), node, ...rest.slice(slot)];
-  const all = Array.from({ length: rest.length + 1 }, (_, i) => i);
-  const drawn = all.filter((slot) => drawable(diagram, li, order(slot)));
-  const whole = all.filter((slot) => !splitsGroup(diagram, order(slot)));
-  const slots = drawn.length > 0 ? drawn : whole.length > 0 ? whole : all;
-  let best = slots[slots.length - 1] ?? rest.length;
-  let lowest: number[] | undefined;
-  for (const slot of slots) {
-    const nodes = [...rest.slice(0, slot), node, ...rest.slice(slot)];
-    const trial: Diagram = {
-      ...diagram,
-      layers: diagram.layers.map((l, i) => (i === li ? { ...l, nodes } : l)),
-    };
-    const c = routeCost(compute(trial, m, false).scene);
-    if (lowest === undefined || !lower(lowest, c)) {
-      lowest = c;
-      best = slot;
-    }
-  }
-  return best;
-}
-
-/** Most layouts `orderTogether` tries, so that a large batch stays fast. */
-const ORDER_TRIES = 1500;
 
 /**
  * Boxes that lie wholly beside the boxes they connect to, which their lines must then
@@ -331,62 +264,6 @@ export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
 export function troubledEdges(diagram: Diagram, m: Measurer): Set<string> {
   const t = lineTrouble(diagram, m);
   return new Set([...t.crossings.flat(), ...t.bent.map((b) => b.edge)]);
-}
-
-function lower(a: number[], b: number[]): boolean {
-  for (let i = 0; i < a.length; i++) {
-    const x = a[i] ?? 0;
-    const y = b[i] ?? 0;
-    if (Math.abs(x - y) > 1e-6) return x < y;
-  }
-  return false;
-}
-
-/**
- * DESIGN.md, "The engine picks a new box's slot": the nodes one batch added without a position, ordered together. Each in
- * turn tries every slot of its row and takes the one with the lowest route cost,
- * while the cost drops. The other nodes keep their order, and only slots that can
- * be drawn are taken. Nodes are tried in the order given, slots from the first, so
- * the result is the same on every machine.
- */
-export function orderTogether(diagram: Diagram, ids: readonly string[], m: Measurer): Diagram {
-  let d = diagram;
-  const cost = (x: Diagram) => routeCost(compute(x, m, false).scene);
-  let best = cost(d);
-  let tries = 0;
-  for (let pass = 0; pass < 4 && tries < ORDER_TRIES; pass++) {
-    let moved = false;
-    for (const id of ids) {
-      const li = d.layers.findIndex((l) => l.nodes.some((n) => n.id === id));
-      const layer = d.layers[li];
-      const node = layer?.nodes.find((n) => n.id === id);
-      if (layer === undefined || node === undefined) continue;
-      const rest = layer.nodes.filter((n) => n.id !== id);
-      const at = layer.nodes.indexOf(node);
-      let pick: Diagram | undefined;
-      for (let slot = 0; slot <= rest.length && tries < ORDER_TRIES; slot++) {
-        if (slot === at) continue;
-        const nodes = [...rest.slice(0, slot), node, ...rest.slice(slot)];
-        if (!drawable(d, li, nodes)) continue;
-        const trial: Diagram = {
-          ...d,
-          layers: d.layers.map((l, i) => (i === li ? { ...l, nodes } : l)),
-        };
-        tries++;
-        const c = cost(trial);
-        if (lower(c, best)) {
-          best = c;
-          pick = trial;
-        }
-      }
-      if (pick !== undefined) {
-        d = pick;
-        moved = true;
-      }
-    }
-    if (!moved) break;
-  }
-  return d;
 }
 
 const ceil4 = (x: number) => Math.ceil(x / 4 - 1e-9) * 4;

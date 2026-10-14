@@ -13,12 +13,12 @@ beforeAll(async () => {
 });
 
 function ok(d: Diagram, ops: Op[]): Diagram {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r.diagram;
 }
 function fail(d: Diagram, ops: Op[]): OpError[] {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if (!("errors" in r)) throw new Error("expected errors");
   return r.errors;
 }
@@ -70,7 +70,7 @@ describe('edge ends at a container (DESIGN.md, "Lines that end at containers")',
 
   it("removing a group removes the edges that end at it", () => {
     const d = ok(catalogSyncGrouped, toGroup);
-    const r = applyOps(d, [{ op: "group.remove", id: "catalog-api" }], m);
+    const r = applyOps(d, [{ op: "group.remove", id: "catalog-api" }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     expect(r.diagram.edges.some((e) => e.to === "catalog-api")).toBe(false);
     expect(r.changed).toContain("callers->catalog-api");

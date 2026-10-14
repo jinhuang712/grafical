@@ -1,10 +1,9 @@
-// Applying operations (DESIGN.md, "Operations over whole-file rewrites", "Operations", "Checking and failure", "The engine picks a new box's slot"). Pure and atomic: any
+// Applying operations (DESIGN.md, "Operations over whole-file rewrites", "Operations", "Checking and failure", "The agent states every order"). Pure and atomic: any
 // error means the input diagram is untouched, and the first failing operation's
 // errors are returned with its index.
 
 import type { OpError } from "../errors.ts";
 import * as layoutModule from "../layout/index.ts";
-import type { Measurer } from "../text/types.ts";
 import { edgeWidth } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES, themeOf } from "../theme/themes.ts";
 import { orderByColumns } from "./columns.ts";
@@ -67,17 +66,9 @@ import { pruneWalls, wallNames } from "./walls.ts";
 
 export type ApplyResult = { diagram: Diagram; changed: string[] } | { errors: OpError[] };
 
-interface Pending {
-  node: string;
-}
-
 interface State {
   d: Diagram;
   changed: string[];
-  /** Nodes that wait for an engine-chosen slot (DESIGN.md, "The engine picks a new box's slot"), in operation order. */
-  pending: Pending[];
-  /** Layers to reorder once the batch is applied (layer.tidy, diagram.tidy). */
-  tidy: Set<string>;
 }
 
 function touch(s: State, ...ids: string[]) {
@@ -822,9 +813,13 @@ function checkAlign(d: Diagram, nodeLayer: string, target: string, i: number): O
   return undefined;
 }
 
-type Slot = { at: number } | { auto: true } | { error: OpError };
+type Slot = { at: number } | { error: OpError };
 
-/** Where in `list` the position puts a node. `self` is not in `list`. */
+/**
+ * Where in `list` the position puts a node. `self` is not in `list`. A position is
+ * required unless the row is empty: the agent states the order, and the engine never
+ * picks it (DESIGN.md, "The agent states every order").
+ */
 function resolveSlot(
   d: Diagram,
   list: DiagramNode[],
@@ -849,7 +844,18 @@ function resolveSlot(
       },
     };
   }
-  if (set.length === 0) return { auto: true };
+  if (set.length === 0) {
+    if (list.length === 0) return { at: 0 };
+    return {
+      error: {
+        code: "missing-field",
+        index: i,
+        field: "first,last,before,after",
+        found: "",
+        facts: { row: layerId, nodes: list.map((n) => n.id) },
+      },
+    };
+  }
   if (pos.first === true) return { at: 0 };
   if (pos.last === true) return { at: list.length };
   const field = pos.before !== undefined ? "before" : "after";
@@ -1054,7 +1060,6 @@ function moveStepped(s: State, op: NodeMoveOp, at: Found, i: number): OpError[] 
   if (at.layer !== undefined) {
     unlist(d, at);
     d.nodes = [...(d.nodes ?? []), at.node];
-    s.pending = s.pending.filter((p) => p.node !== op.id);
   }
   setSteps(at.node, from, steps);
   touch(s, op.id);
@@ -1080,7 +1085,7 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
     const count = everyNode(d).filter((x) => x.accent).length;
     if (count >= MAX_ACCENTS) errors.push(tooManyAccents(d, i, "accent", "true", count + 1));
   }
-  let slot: Slot = { auto: true };
+  let slot: Slot = { at: 0 };
   if (layer) {
     slot = resolveSlot(d, layer.nodes, op, op.id, i, layer.id);
     if ("error" in slot) errors.push(slot.error);
@@ -1092,10 +1097,6 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
   if (op.accent === true) node.accent = true;
   if (op.align !== undefined) node.align = op.align;
   if ("at" in slot) layer.nodes.splice(slot.at, 0, node);
-  else {
-    layer.nodes.push(node);
-    s.pending.push({ node: op.id });
-  }
   touch(s, op.id);
   return [];
 }
@@ -1150,12 +1151,7 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
   if (errors.length > 0) return errors;
   unlist(d, at);
   setSteps(at.node, undefined, {});
-  s.pending = s.pending.filter((p) => p.node !== op.id);
   if ("at" in slot) target.nodes.splice(slot.at, 0, at.node);
-  else {
-    target.nodes.push(at.node);
-    s.pending.push({ node: op.id });
-  }
   touch(s, op.id);
   return [];
 }
@@ -1413,7 +1409,6 @@ function swapNodes(s: State, op: Extract<Op, { op: "node.swap" }>, i: number): O
   }
   a.list[a.index] = b.node;
   b.list[b.index] = a.node;
-  s.pending = s.pending.filter((p) => p.node !== op.a && p.node !== op.b);
   touch(s, op.a, op.b);
   return [];
 }
@@ -1454,7 +1449,6 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
     const at = findNode(d, id);
     if (at) at.list.splice(at.index, 1);
   }
-  s.pending = s.pending.filter((p) => !merged.has(p.node));
   touch(s, op.id, ...op.nodes);
   // A box placed by steps from a merged node steps from the new one.
   for (const n of d.nodes ?? []) {
@@ -1562,9 +1556,6 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, "style");
       return [];
     }
-    case "diagram.tidy":
-      for (const l of d.layers) s.tidy.add(l.id);
-      return [];
     case "layer.rename": {
       const layer = d.layers.find((l) => l.id === op.id);
       if (!layer) return [unknownLayer(d, op.id, i, "id")];
@@ -1576,10 +1567,6 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       return moveLayer(s, op, i);
     case "layer.remove":
       return removeLayer(s, op, i);
-    case "layer.tidy":
-      if (!d.layers.some((l) => l.id === op.id)) return [unknownLayer(d, op.id, i, "id")];
-      s.tidy.add(op.id);
-      return [];
     case "layer.split":
       return splitLayer(s, op, i);
     case "node.describe":
@@ -1842,7 +1829,6 @@ function step(s: State, op: Op, i: number): OpError[] {
         ];
       }
       unlist(d, at);
-      s.pending = s.pending.filter((p) => p.node !== op.id);
       touch(s, op.id);
       const gone = d.edges.filter((e) => e.from === op.id || e.to === op.id);
       d.edges = d.edges.filter((e) => e.from !== op.id && e.to !== op.id);
@@ -1887,46 +1873,10 @@ function newDiagram(op: Extract<Op, { op: "diagram.new" }>): Diagram {
 }
 
 /**
- * Once all operations are applied, nodes without a position take the engine's
- * slot (DESIGN.md, "The engine picks a new box's slot"): each in turn, then all of them together, so that a node added early
- * in a batch can still move for the edges added after it.
- */
-function placePending(s: State, m: Measurer) {
-  const ids: string[] = [];
-  for (const p of s.pending) {
-    const at = findNode(s.d, p.node);
-    if (at?.layer === undefined) continue;
-    ids.push(p.node);
-    // The node stays in its row while its slot is chosen: chooseSlot counts it as removed.
-    const raw = layoutModule.chooseSlot(s.d, at.layer.id, p.node, m);
-    at.layer.nodes.splice(at.index, 1);
-    const slot = Math.max(0, Math.min(at.layer.nodes.length, Math.trunc(raw)));
-    at.layer.nodes.splice(slot, 0, at.node);
-  }
-  s.pending = [];
-  if (ids.length >= 2) s.d = layoutModule.orderTogether(s.d, ids, m);
-}
-
-/** layer.tidy and diagram.tidy: the named layers reordered once, together (DESIGN.md, "The engine picks a new box's slot"). */
-function tidyLayers(s: State, m: Measurer) {
-  if (s.tidy.size === 0) return;
-  const ids = s.d.layers.filter((l) => s.tidy.has(l.id)).flatMap((l) => l.nodes.map((n) => n.id));
-  const before = new Map(s.d.layers.flatMap((l) => l.nodes.map((n, k) => [n.id, k] as const)));
-  s.d = layoutModule.orderTogether(s.d, ids, m);
-  for (const l of s.d.layers) {
-    l.nodes.forEach((n, k) => {
-      if (before.get(n.id) !== k) touch(s, n.id);
-    });
-  }
-  s.tidy.clear();
-}
-
-/**
  * `diagram` is null only for `diagram.new`, which must be the single first
- * operation. Nothing is changed in the input. DESIGN.md, "The engine picks a new box's slot": nodes added or moved
- * without a position are slotted after every operation has been applied.
+ * operation. Nothing is changed in the input.
  */
-export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measurer): ApplyResult {
+export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResult {
   const first = ops[0];
   let start: Diagram;
   let from = 0;
@@ -1946,7 +1896,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
     start = newDiagram(first);
     from = 1;
   } else start = structuredClone(diagram);
-  const s: State = { d: start, changed: [], pending: [], tidy: new Set() };
+  const s: State = { d: start, changed: [] };
   for (let i = from; i < ops.length; i++) {
     const op = ops[i] as Op;
     const named = s.d.walls !== undefined || s.d.notes !== undefined;
@@ -1962,8 +1912,6 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
       pruneNotes(s.d, gone);
     }
   }
-  placePending(s, m);
-  tidyLayers(s, m);
   // Column lanes keep each row in lane order (DESIGN.md, "Swimlanes run one way").
   touch(s, ...orderByLanes(s.d));
   // Columns keep each row in column order (DESIGN.md, "Columns beside rows").

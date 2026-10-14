@@ -249,7 +249,7 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 ```
 
 - A new row goes to the bottom unless `--before` or `--after` places it.
-- A box added or moved into a row without a position takes the slot where its lines cross and bend least, and that slot is then saved as its order.
+- A box added to a row, or moved into another row, says where it goes: `--first`, `--last`, `--before` or `--after`. Without one it is refused as `missing-field`, with the row and the boxes in it. Only the first box of an empty row needs none (DESIGN.md, "The agent states every order").
 - `layer split` moves the second half of a row, or its boxes from one box on, into a new row below it.
 - A row can be removed only when it is empty, and the lines that end at it go with it.
 
@@ -293,17 +293,6 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
 - A cell another fact keeps is refused as `step-blocked`, a box that steps from itself as `step-cycle`. Steps are not combined with a row, a position, an alignment, a column or a lane (`conflicting-position`).
 - `node move --layer` puts the box back in a row. `node move` with steps and no `--from` keeps the box it steps from, and with `--from` alone keeps the steps.
 - A box placed by steps beside every box it connects to, wholly left or right of them, is refused as `box-aside`, naming those boxes.
-
-### Tidying ✅
-
-Reorder boxes once, when asked, to cut crossings.
-
-```sh
-grafical layer tidy <file> <id>
-grafical diagram tidy <file>
-```
-
-`layer tidy` reorders one row, and `diagram tidy` every row together. Each reports every box that moved. Nothing else ever reorders a row.
 
 ## Grouping
 
@@ -588,6 +577,7 @@ These are wanted, but not scheduled. Each becomes a planned feature once ROADMAP
 - **A declared diagram type that checks its conventions.** grafical would be judging content (DESIGN.md, "Records over prose").
 - **Real-time collaboration, accounts or a hosted service.** The diagram is a file in git, and git already shares it and keeps its history (DESIGN.md, "Git as the history").
 - **The same facts always giving the same picture,** whatever order they arrived in. The file fixes the picture, and the same facts give mostly the same picture (DESIGN.md, "Same file exact, same facts mostly").
+- **Tidying, a row reordered by the engine.** The engine does not choose an order for the agent. The agent compares orders with `grafical try` (DESIGN.md, "The agent states every order"). Dropped by the owner on 2026-10-15.
 - **`grafical guide`.** The help replaced it (DESIGN.md, "The help as the reference").
 - **Docking to an edge, and placement such as "beside" or "between".** Columns and steps cover them, and a second way to say one thing is one more choice.
 - **Gaps between sections.** Spacing is the engine's.

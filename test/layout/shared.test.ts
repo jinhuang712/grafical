@@ -28,7 +28,7 @@ const ops: Op[] = [
 
 describe('a node that two groups use (DESIGN.md, "Layout computed again on every change")', () => {
   it("sits in a column between the two groups, not under either", () => {
-    const r = applyOps(null, ops, m);
+    const r = applyOps(null, ops);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     const d: Diagram = r.diagram;
     const scene = layout(d, m);

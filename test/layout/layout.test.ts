@@ -2,7 +2,6 @@ import { createHash } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { check as checker } from "../../src/check/index.ts";
 import {
-  chooseSlot,
   layout,
   layoutFramed,
   lineTrouble,
@@ -467,7 +466,7 @@ describe('stability (DESIGN.md, "Layout computed again on every change")', () =>
 
     it(`${name}: add a node to each layer`, () => {
       const out = d.layers.flatMap((l) =>
-        check(d, addNode(d, l.id, n(`new_${l.id}`, "new node", "service", "m"), m)).map(
+        check(d, addNode(d, l.id, n(`new_${l.id}`, "new node", "service", "m"))).map(
           (v) => `${l.id}: ${v}`,
         ),
       );
@@ -511,7 +510,7 @@ describe('stability (DESIGN.md, "Layout computed again on every change")', () =>
       ["i18n", "processing"],
     ];
     const out = moves.flatMap(([id, layer]) =>
-      check(catalogSync, moveNode(catalogSync, id, layer, m)).map((v) => `${id} to ${layer}: ${v}`),
+      check(catalogSync, moveNode(catalogSync, id, layer)).map((v) => `${id} to ${layer}: ${v}`),
     );
     expect(out).toEqual([]);
   });
@@ -567,107 +566,6 @@ describe('determinism (DESIGN.md, "Output and determinism")', () => {
           .sort((a, b) => (a[0] < b[0] ? -1 : 1));
       expect(hash(byId(reversed))).toEqual(hash(byId(d)));
     }
-  });
-});
-
-describe('slot choice (DESIGN.md, "The engine picks a new box\'s slot")', () => {
-  const cases: [string, string][] = [
-    ["stores", "postgres"],
-    ["stores", "mongo_catalog"],
-    ["processing", "goods_pipe"],
-    ["kafka", "retry_v1"],
-    ["entry", "relay"],
-    ["upstream", "storefront"],
-    ["topics", "ticket_topics"],
-  ];
-  for (const [layer, id] of cases) {
-    it(`${id} gets no more crossings than if appended last`, () => {
-      const last = {
-        ...catalogSync,
-        layers: catalogSync.layers.map((l) => {
-          if (l.id !== layer) return l;
-          const node = l.nodes.find((x) => x.id === id) as DiagramNode;
-          return { ...l, nodes: [...l.nodes.filter((x) => x.id !== id), node] };
-        }),
-      };
-      const slot = chooseSlot(last, layer, id, m);
-      const lyr = last.layers.find((l) => l.id === layer);
-      if (lyr === undefined) throw new Error(layer);
-      const rest = lyr.nodes.filter((x) => x.id !== id);
-      const node = lyr.nodes.find((x) => x.id === id) as DiagramNode;
-      const chosen = {
-        ...last,
-        layers: last.layers.map((l) =>
-          l.id === layer ? { ...l, nodes: [...rest.slice(0, slot), node, ...rest.slice(slot)] } : l,
-        ),
-      };
-      expect(crossings(chosen)).toBeLessThanOrEqual(crossings(last));
-    });
-  }
-
-  it("a tie goes to the last slot", () => {
-    const d: Diagram = {
-      ...tiny,
-      layers: [
-        ...tiny.layers,
-        {
-          id: "loose",
-          label: "Loose",
-          nodes: [
-            n("x", "x", "service", "s"),
-            n("y", "y", "service", "s"),
-            n("z", "z", "service", "s"),
-          ],
-        },
-      ],
-    };
-    expect(chooseSlot(d, "loose", "y", m)).toBe(2);
-  });
-
-  it('takes no slot that leaves a line to a group without a box beside it (DESIGN.md, "Lines that end at containers")', () => {
-    // x joins outer; after g2 it would stand between inner and c, whose line runs beside.
-    const d: Diagram = {
-      grafical: 1,
-      title: "T",
-      density: "normal",
-      layers: [
-        {
-          id: "r",
-          label: "R",
-          nodes: [
-            n("g1", "G1", "service", "m", { group: "outer" }),
-            n("g2", "G2", "service", "m", { group: "inner" }),
-            n("x", "X", "service", "m", { group: "outer" }),
-            n("c", "C", "service", "m"),
-          ],
-        },
-      ],
-      groups: [
-        { id: "outer", label: "Outer" },
-        { id: "inner", label: "Inner", in: "outer" },
-      ],
-      edges: [e("inner", "c", "call")],
-    };
-    expect(chooseSlot(d, "r", "x", m)).toBe(1);
-  });
-
-  it("never splits a group while a slot keeps it whole", () => {
-    for (const l of catalogSyncGrouped.layers) {
-      const d = addNode(catalogSyncGrouped, l.id, n("x", "x", "service", "m"), m).diagram;
-      expect(validateGroups(d)).toEqual([]);
-    }
-  });
-
-  it("is fast enough to run on every node.add", () => {
-    const layer = dense.layers.find((l) => l.id === "collections");
-    if (layer === undefined) throw new Error("no collections layer");
-    const t0 = performance.now();
-    chooseSlot(dense, "collections", "col_goods_tag", m);
-    const ms = performance.now() - t0;
-    console.log(
-      `chooseSlot on dense, ${layer.nodes.length} slots with the real router: ${ms.toFixed(1)} ms`,
-    );
-    expect(ms).toBeLessThan(1000);
   });
 });
 

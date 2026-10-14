@@ -7,12 +7,16 @@
 // Since phase 1b boxes are 136 px wide (DESIGN.md, "A target picture with measured rules"), so one of Haiku's sublabels no
 // longer fits on one line: that is an overflow, a defect the agent owns and would
 // fix with a shorter sublabel. Those are counted, not failed.
+//
+// The run was recorded while grafical still picked the slot of a box added without
+// a place. Since the agent states every order (DESIGN.md, "The agent states every
+// order"), such a box is replayed with --last, the order Haiku wrote them in.
 
 import { describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
 import { DEFECT_OWNER } from "../../src/errors.ts";
 import { layout } from "../../src/layout/index.ts";
-import { applyOps, type Diagram } from "../../src/model/index.ts";
+import { applyOps, type Diagram, type Op } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import { haikuCatalogSync } from "../fixtures/haiku-catalog-sync.ts";
 import { groupIntruders, textCrossings } from "./checks.ts";
@@ -23,8 +27,17 @@ describe("Haiku's catalog-sync build", () => {
     let d: Diagram | null = null;
     const problems: string[] = [];
     const agent = new Set<string>();
+    const placed = (op: Op): Op =>
+      op.op === "node.add" &&
+      op.from === undefined &&
+      op.first === undefined &&
+      op.last === undefined &&
+      op.before === undefined &&
+      op.after === undefined
+        ? { ...op, last: true }
+        : op;
     haikuCatalogSync.forEach((op, i) => {
-      const res = applyOps(d, [op], m);
+      const res = applyOps(d, [placed(op)]);
       if ("errors" in res) {
         problems.push(`#${i} ${op.op}: ${res.errors.map((e) => e.code).join(", ")}`);
         return;

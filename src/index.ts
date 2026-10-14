@@ -2,7 +2,7 @@
 
 export { check, measureTaste, type TasteReport, type TasteRule } from "./check/index.ts";
 export type { Defect, DefectCode, OpError } from "./errors.ts";
-export { chooseSlot, layout } from "./layout/index.ts";
+export { layout } from "./layout/index.ts";
 export * from "./model/types.ts";
 export { renderPng, renderSvg } from "./render/index.ts";
 export type * from "./scene.ts";

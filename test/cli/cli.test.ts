@@ -53,7 +53,17 @@ const SINGLE: string[][] = [
     "API",
     "--accent",
   ],
-  ["node", "add", "single.grafical.yaml", "worker", "--layer", "services", "--label", "Worker"],
+  [
+    "node",
+    "add",
+    "single.grafical.yaml",
+    "worker",
+    "--layer",
+    "services",
+    "--label",
+    "Worker",
+    "--last",
+  ],
   [
     "node",
     "add",
@@ -77,6 +87,7 @@ const SINGLE: string[][] = [
     "MQ",
     "--kind",
     "queue",
+    "--last",
   ],
   ["edge", "add", "single.grafical.yaml", "web", "api", "--label", "call"],
   ["edge", "add", "single.grafical.yaml", "api", "db", "--kind", "data"],
@@ -107,6 +118,7 @@ const BATCH = `- op: layer.add
   id: worker
   layer: services
   label: Worker
+  last: true
 - op: node.add
   id: db
   layer: storage
@@ -117,6 +129,7 @@ const BATCH = `- op: layer.add
   layer: storage
   label: MQ
   kind: queue
+  last: true
 - op: edge.add
   from: web
   to: api
@@ -164,6 +177,7 @@ describe("write commands", () => {
       "storage",
       "--label",
       "Cache",
+      "--last",
       "--json",
     );
     expect(r.code).toBe(0);
@@ -190,7 +204,7 @@ describe("write commands", () => {
   it("gives the error as JSON with the operation number", () => {
     writeFileSync(
       join(dir, "bad.yaml"),
-      "- op: node.add\n  id: ok1\n  layer: storage\n  label: Ok\n- op: edge.add\n  from: api\n  to: nope\n",
+      "- op: node.add\n  id: ok1\n  layer: storage\n  label: Ok\n  last: true\n- op: edge.add\n  from: api\n  to: nope\n",
     );
     const before = read("single.grafical.yaml");
     const r = run("apply", "single.grafical.yaml", "bad.yaml", "--json");
@@ -236,7 +250,7 @@ describe("write commands", () => {
     run("new", "e.grafical.yaml", "--title", "E");
     run("layer", "add", "e.grafical.yaml", "l", "--label", "L");
     run("node", "add", "e.grafical.yaml", "p", "--layer", "l", "--label", "P");
-    run("node", "add", "e.grafical.yaml", "q", "--layer", "l", "--label", "Q");
+    run("node", "add", "e.grafical.yaml", "q", "--layer", "l", "--label", "Q", "--last");
     run("edge", "add", "e.grafical.yaml", "p", "q");
     const second = run("edge", "add", "e.grafical.yaml", "p", "q", "--label", "again");
     expect(second.out).toBe("ok changed=p->q#2\n");

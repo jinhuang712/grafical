@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
 import type { OpError } from "../../src/errors.ts";
-import { layout, routeStats } from "../../src/layout/index.ts";
+import { layout } from "../../src/layout/index.ts";
 import {
   applyOps,
   type Diagram,
@@ -20,13 +20,13 @@ beforeAll(async () => {
 });
 
 function run(d: Diagram, ops: Op[]) {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r;
 }
 const ok = (d: Diagram, ops: Op[]) => run(d, ops).diagram;
 function fail(d: Diagram, ops: Op[]): OpError[] {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if (!("errors" in r)) throw new Error("expected errors");
   return r.errors;
 }
@@ -57,34 +57,13 @@ describe("diagram settings", () => {
     const cleared = ok(d, [{ op: "diagram.legend", style: "dashed" }]);
     expect(cleared.legend).toBeUndefined();
   });
-
-  it("tidy reorders layers once to untangle lines, and reports what moved", () => {
-    // Two pairs wired across each other: a1 -> b2, a2 -> b1.
-    const base: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
-    const d = ok(base, [
-      { op: "layer.add", id: "top", label: "Top" },
-      { op: "layer.add", id: "bot", label: "Bot" },
-      { op: "node.add", id: "a1", layer: "top", label: "a1", last: true },
-      { op: "node.add", id: "a2", layer: "top", label: "a2", last: true },
-      { op: "node.add", id: "b1", layer: "bot", label: "b1", last: true },
-      { op: "node.add", id: "b2", layer: "bot", label: "b2", last: true },
-      { op: "edge.add", from: "a1", to: "b2" },
-      { op: "edge.add", from: "a2", to: "b1" },
-    ]);
-    const crossings = (x: Diagram) => routeStats(layout(x, m).edges.map((e) => e.points)).crossings;
-    expect(crossings(d)).toBeGreaterThan(0);
-    const r = run(d, [{ op: "diagram.tidy" }]);
-    expect(crossings(r.diagram)).toBe(0);
-    expect(r.changed.length).toBeGreaterThan(0);
-  });
 });
 
 describe("layers", () => {
-  it("rename, move, tidy", () => {
+  it("rename, move", () => {
     const d = ok(fx, [
       { op: "layer.rename", id: "deps", label: "Outside" },
       { op: "layer.move", id: "sources", after: "deps" },
-      { op: "layer.tidy", id: "deps" },
     ]);
     expect(d.layers.map((l) => l.id)).toEqual(["entry", "topics", "work", "deps", "sources"]);
     expect(d.layers[3]?.label).toBe("Outside");
@@ -257,7 +236,15 @@ describe("edges", () => {
 describe("dots", () => {
   it('a start and an end keep their label in the file, and draw none (DESIGN.md, "Every layered diagram type")', () => {
     const d = ok(fx, [
-      { op: "node.add", id: "begin", layer: "topics", label: "begin", kind: "initial", size: "l" },
+      {
+        op: "node.add",
+        id: "begin",
+        layer: "topics",
+        label: "begin",
+        kind: "initial",
+        size: "l",
+        first: true,
+      },
     ]);
     roundTrips(d);
     expect(node(d, "begin")).toMatchObject({ label: "begin", kind: "initial" });
@@ -290,11 +277,9 @@ describe("parsing", () => {
       { op: "diagram.title", text: "T" },
       { op: "diagram.density", density: "airy" },
       { op: "diagram.legend", style: "solid", text: "HTTP" },
-      { op: "diagram.tidy" },
       { op: "layer.rename", id: "a", label: "A" },
       { op: "layer.move", id: "a", last: true },
       { op: "layer.remove", id: "a" },
-      { op: "layer.tidy", id: "a" },
       { op: "layer.split", id: "a", into: "b", label: "B" },
       { op: "node.describe", id: "a", text: "t" },
       { op: "node.kind", id: "a", kind: "store" },

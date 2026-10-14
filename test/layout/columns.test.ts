@@ -17,14 +17,10 @@ beforeAll(async () => {
 
 describe('columns in the picture (DESIGN.md, "Columns beside rows")', () => {
   it("photo sharing: requests left, processing right, narrower and with a bend less", () => {
-    const r = applyOps(
-      edgeLooks,
-      [
-        { op: "column.add", id: "requests", nodes: ["web", "api", "cache"] },
-        { op: "column.add", id: "processing", nodes: ["uploads", "thumbs"] },
-      ],
-      m,
-    );
+    const r = applyOps(edgeLooks, [
+      { op: "column.add", id: "requests", nodes: ["web", "api", "cache"] },
+      { op: "column.add", id: "processing", nodes: ["uploads", "thumbs"] },
+    ]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     const d: Diagram = r.diagram;
     const before = drawing(edgeLooks, layout(edgeLooks, m)).counts;

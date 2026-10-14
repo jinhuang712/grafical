@@ -150,7 +150,7 @@ function build(): Command {
 
   const diagram = program
     .command("diagram")
-    .description("the whole diagram: title, subtitle, note, legend, style, density, sizing, tidy");
+    .description("the whole diagram: title, subtitle, note, legend, style, density, sizing");
   json(
     diagram
       .command("style")
@@ -418,9 +418,7 @@ function build(): Command {
     await write(file, { op: "note.remove", ...pick(opts, ["on"]) }, opts);
   });
 
-  const layer = program
-    .command("layer")
-    .description("rows: add, move, split, rename, tidy, remove");
+  const layer = program.command("layer").description("rows: add, move, split, rename, remove");
   json(
     layer
       .command("add")
@@ -743,15 +741,6 @@ function build(): Command {
   });
   json(
     layer
-      .command("tidy")
-      .description("reorder a layer's nodes once, to untangle lines")
-      .argument("<file>")
-      .argument("<id>"),
-  ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "layer.tidy", id }, opts);
-  });
-  json(
-    layer
       .command("split")
       .description("move the second half of a layer, or from --from on, into a new layer below")
       .argument("<file>")
@@ -832,14 +821,6 @@ function build(): Command {
       },
       opts,
     );
-  });
-  json(
-    diagram
-      .command("tidy")
-      .description("reorder every layer once, to untangle lines")
-      .argument("<file>"),
-  ).action(async (file: string, opts: Opts) => {
-    await write(file, { op: "diagram.tidy" }, opts);
   });
   json(
     program

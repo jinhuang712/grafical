@@ -183,10 +183,6 @@ export interface DiagramLegendOp {
   /** true: leave a line style's or a line width's entry out. */
   hide?: boolean;
 }
-/** Reorders every layer once, to untangle lines (DESIGN.md, "The engine picks a new box's slot"). */
-export interface DiagramTidyOp {
-  op: "diagram.tidy";
-}
 export interface LayerRenameOp {
   op: "layer.rename";
   id: string;
@@ -202,11 +198,6 @@ export interface LayerMoveOp {
 }
 export interface LayerRemoveOp {
   op: "layer.remove";
-  id: string;
-}
-/** Reorders one layer's nodes once, to untangle lines (DESIGN.md, "The engine picks a new box's slot"). */
-export interface LayerTidyOp {
-  op: "layer.tidy";
   id: string;
 }
 /** Moves a layer's nodes from `from` on (or its second half) into a new layer below it (DESIGN.md, "Curation stays with the agent"). */
@@ -415,7 +406,6 @@ export type Op =
   | DiagramTitleOp
   | DiagramDensityOp
   | DiagramLegendOp
-  | DiagramTidyOp
   | GroupAddOp
   | GroupJoinOp
   | GroupLeaveOp
@@ -441,7 +431,6 @@ export type Op =
   | LayerRenameOp
   | LayerMoveOp
   | LayerRemoveOp
-  | LayerTidyOp
   | LayerSplitOp
   | NodeAddOp
   | NodeRenameOp
@@ -596,7 +585,6 @@ export const diagramLegendSchema = z.strictObject({
   text: text.optional(),
   hide: z.boolean().optional(),
 });
-export const diagramTidySchema = z.strictObject({ op: z.literal("diagram.tidy") });
 export const layerRenameSchema = z.strictObject({
   op: z.literal("layer.rename"),
   id: nodeId,
@@ -608,7 +596,6 @@ export const layerMoveSchema = z.strictObject({
   ...position,
 });
 export const layerRemoveSchema = z.strictObject({ op: z.literal("layer.remove"), id: nodeId });
-export const layerTidySchema = z.strictObject({ op: z.literal("layer.tidy"), id: nodeId });
 export const layerSplitSchema = z.strictObject({
   op: z.literal("layer.split"),
   id: nodeId,
@@ -781,7 +768,6 @@ export const opSchema = z.discriminatedUnion("op", [
   diagramTitleSchema,
   diagramDensitySchema,
   diagramLegendSchema,
-  diagramTidySchema,
   groupDescribeSchema,
   groupOrderSchema,
   laneAddSchema,
@@ -801,7 +787,6 @@ export const opSchema = z.discriminatedUnion("op", [
   layerRenameSchema,
   layerMoveSchema,
   layerRemoveSchema,
-  layerTidySchema,
   layerSplitSchema,
   nodeDescribeSchema,
   nodeKindSchema,
@@ -841,7 +826,6 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.title": diagramTitleSchema,
   "diagram.density": diagramDensitySchema,
   "diagram.legend": diagramLegendSchema,
-  "diagram.tidy": diagramTidySchema,
   "group.describe": groupDescribeSchema,
   "group.order": groupOrderSchema,
   "lane.add": laneAddSchema,
@@ -861,7 +845,6 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "layer.rename": layerRenameSchema,
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,
-  "layer.tidy": layerTidySchema,
   "layer.split": layerSplitSchema,
   "node.describe": nodeDescribeSchema,
   "node.kind": nodeKindSchema,

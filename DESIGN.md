@@ -27,7 +27,7 @@ Code and the other documents cite a section of this file by its heading, such as
 ### The model
 
 - **Places are facts, never coordinates.** A box's place is its row, its order in the row, its group, its column, an alignment, or a number of steps from another box. How far apart things sit is the engine's. Cost: an agent cannot nudge one box, and every new need for placement becomes a new fact. Holds as: no field in `src/model/schema.ts` and no operation holds a position, a box size in pixels or a bend point.
-- **The agent's facts stay as stated.** The engine never adds, drops, merges or reorders what the agent stated, rows included. The one choice it makes is the slot of a box added without a position, which it then saves as an ordinary fact. Cost: a diagram stays as cluttered as the agent made it, and grafical only reports counts. Holds as: the stability tests and `grafical diff` between two steps show no fact changed that no operation named.
+- **The agent's facts stay as stated.** The engine never adds, drops, merges or reorders what the agent stated, rows included, and never chooses a fact for the agent: every row, order, group and place is stated ("The agent states every order"). Cost: a diagram stays as cluttered as the agent made it, and grafical only reports counts. Holds as: the stability tests and `grafical diff` between two steps show no fact changed that no operation named.
 
 ### Layout and routing
 
@@ -127,7 +127,7 @@ Placement follows the facts in a fixed order: layers from top to bottom, nodes i
 
 **One column grid for the whole diagram.** Every node sits in a column of one grid shared by all rows, and the grid is centred. Within a row, columns follow node order. The engine chooses each node's column so that as many edges as possible run as one straight vertical segment, and so that every group's members fill a block of neighbouring columns with no outsider inside it. A node outside every group that two or more groups use, such as the store a write side and a read side share, is not lined up under either: it takes a column of its own between them, centred on the gap between their boxes. Both judges of the second phase 1b round ranked the target first for exactly that placement (2026-10-11). This replaces the first version's rows, each centred and spread on its own: those made almost every edge between rows jog sideways, which the judges read as staircases. The choice of columns is deterministic, so the same facts always give the same picture.
 
-**Stability means the structure stays, not the pixels.** An operation never changes a fact it does not name. The one exception is the slot of a node added without a position, which "The engine picks a new box's slot" chooses. Positions are compared relative to the shared centre line: when the canvas widens, everything shifts by the same amount, and that is not movement. After an operation, only these may move:
+**Stability means the structure stays, not the pixels.** An operation never changes a fact it does not name. Positions are compared relative to the shared centre line: when the canvas widens, everything shifts by the same amount, and that is not movement. After an operation, only these may move:
 - the elements it names;
 - the other nodes in each layer whose contents changed, which re-spread sideways and keep their order. A layer's contents include its nodes' alignment facts;
 - a layer that has a node aligned to a node that moved, which slides sideways as one block;
@@ -150,7 +150,7 @@ One exception: when a gap between two nodes is full, the next edge in id order t
 
 Rejected:
 - Left-aligned layers that never re-spread. They keep more pixels still, but rows end up ragged, and the picture stops looking finished. The phase 0 router spike showed this.
-- Reordering nodes on every change to reduce crossings. It gives a better picture once, but any change can reshuffle the structure. Order is chosen once, when a node is added, or when an operation asks for it ("The engine picks a new box's slot").
+- Reordering nodes on every change to reduce crossings. It gives a better picture once, but any change can reshuffle the structure. Order is stated by the agent, when a node is added or moved ("The agent states every order").
 - Gutters that grow by any amount, because nearly every edge addition would then move the layers below.
 - A "gutter full" defect. Its fix (a larger density, fewer edges, a split layer) costs the agent a round, and moves more than growing would.
 - An aligned node that slides alone within its row's spacing, as phase 1 first built it. None of the three alignments in the public brief could hold that way.
@@ -286,6 +286,9 @@ Changed on 2026-10-14 by "Who chose is punished": a new node's slot is the one w
 `layer.tidy <layer>` reorders the nodes of one layer to reduce crossings. It runs once, as a named operation, so its changes are expected. Nothing reorders a layer otherwise ("Layout computed again on every change").
 
 The engine tries every slot with the real router. One layout of a 15-node diagram takes about 0.6 ms, and a 15-node draft batch about 50 ms in all. Ordering together stops after 1,500 layouts, so a large batch stays fast.
+
+
+Reversed on 2026-10-15 by "The agent states every order": the engine no longer picks a slot, and `layer.tidy` and `diagram.tidy` are removed.
 
 Rejected:
 - Appending a node last when no position is given. The agent's order would then decide the crossings, and that order is the main reason a diagram looks messy.
@@ -477,7 +480,7 @@ Rejected:
 Decided on 2026-10-13 by the owner, asked whether two agents that state the same facts must get the same picture: "mostly. but the intermediate grafical.yaml always outputs the exact same diagram."
 
 - **The same file, the exact same picture.** This is "Output and determinism" as it stands: the same diagram file and stylesheet give the same SVG bytes and PNG pixels, on any machine.
-- **The same facts, mostly the same picture.** The file keeps the order of each row's boxes, and a box placed without a stated position takes the slot that suits the lines it has when it arrives ("The engine picks a new box's slot"). Two agents that state the same facts in another order can get a different order in a row. grafical does not reorder a diagram to one canonical form.
+- **The same facts, mostly the same picture.** The file keeps the order of each row's boxes, as the agent stated it ("The agent states every order"). Two agents that add the same boxes at other places get another order in a row. grafical does not reorder a diagram to one canonical form.
 
 Rejected:
 - Canonical placement, the same facts always giving the same picture. Every edit could then move boxes the agent did not touch, against the stability "Layout computed again on every change" promises.
@@ -517,7 +520,7 @@ Rejected:
 
 Asked for by the owner on 2026-10-13 ("not just layers, we shall involve another thing called columns") and approved the same day in the phase 1e list: "Columns, optional … build it after bundled fan-outs", "as long as they help and have gains". A prototype that day, in a scratch copy of the engine, gave photo sharing 5 bends instead of 6 and a picture 744 px wide instead of 840, and the private reference draft 0 crossings instead of 1 and 23 bends instead of 27. The public brief, already in column order, did not change. The step was then left out of a question about what to build next, by mistake, and the owner asked for it again on 2026-10-14 (behavior: FEATURES.md, "Columns").
 
-A column is a guide, and nothing is drawn. Every box of a column lies left of every box of the next, in every row: each row is kept in column order on every write, as rows are for column lanes ("Swimlanes run one way"), and the column grid takes the same order. A box in no column keeps its place beside the box left of it, and a new one takes the best slot among those that keep the order ("The engine picks a new box's slot"). Columns and lanes that run as columns are two ways to say one thing, so a diagram has one or the other.
+A column is a guide, and nothing is drawn. Every box of a column lies left of every box of the next, in every row: each row is kept in column order on every write, as rows are for column lanes ("Swimlanes run one way"), and the column grid takes the same order. A box in no column keeps its place beside the box left of it, and so does a new one, at the place the agent stated ("The agent states every order"). Columns and lanes that run as columns are two ways to say one thing, so a diagram has one or the other.
 
 Rejected:
 - Drawing columns as bands. Lanes that run as columns are already that, and a column is a guide.
@@ -602,8 +605,26 @@ Rejected:
 - Refusing a box beside its users in a row. The file does not tell a slot the agent stated from one the engine chose, so the agent would be refused for the engine's choice.
 - Drawing with no grafical at all. Opus 5.5, given the same brief and prompt with any tool, drew it with Graphviz in 65 seconds for $0.39: every kind in a band of its own, but curved lines that cross many times, small text and details the brief did not ask for. The owner: "wayyyyyyyy worse".
 
+## Decision: The agent states every order — 2026-10-15
+
+Decided by the owner on 2026-10-15: the engine does not choose for the agent. Until then the engine made one choice of structure: the order of a row, for a box added or moved into it without a position ("The engine picks a new box's slot"), and for the rows `layer tidy` and `diagram tidy` reordered. Both are gone.
+
+- **A place is required.** A box added to a row, or moved into another row, says where it goes: first, last, or before or after a box (FEATURES.md, "Rows and order"). Without one it is refused as `missing-field`, with the row and the boxes already in it. The first box of an empty row needs none, because it has only one place.
+- **No tidying.** `layer tidy` and `diagram tidy` are removed. An agent that wants fewer crossings compares orders with `grafical try` and its counts ("Records over prose"), and keeps the one it prefers.
+- **No exception left.** Every order in the file is one the agent stated, so "The agent's facts stay as stated" holds without an exception.
+
+The slot search was also the cause of the speed slip measured on 2026-10-15 (GOALS.md, "Speed"): it laid the whole diagram out once for every slot of the row, and adding a box without a position took up to 189.7 ms at 50 boxes.
+
+Cost: Haiku's drafts may cross more. Ordering the boxes of a batch together had cut the crossings of its three phase 1b drafts from 8, 7 and 6 to 0, 2 and 1. Not yet measured with the agent stating every order.
+
+Rejected:
+- Keeping the engine's slot as the default when no place is given. That is the engine choosing structure for the agent.
+- Putting a box with no place last. A fixed rule would still choose the order, and the agent might never notice that it chose none.
+- Keeping `layer tidy` and `diagram tidy` because the agent asks for them. The agent would choose to reorder, but the engine would still choose the order.
+
 ## Open questions
 
+- **A box beside every box it connects to, in a row:** "Who chose is punished" did not refuse it, because the file could not tell a slot the agent stated from one the engine chose. Since "The agent states every order" the agent states every slot, so it could become an agent defect, as it is for a box placed by steps. Not decided.
 - **Marks and lines:** a corner mark is not yet checked against the lines that leave the box near its corner. A line that meets a mark is not reported.
 
 - **Too many heavy edges:** "Lines meet any side" says more than three main-path edges, and more than a third of all edges, draw a warning, because a main path stands out only against thin lines. No code does this yet. With "Edge weights" the count would be every edge heavier than `thin`.

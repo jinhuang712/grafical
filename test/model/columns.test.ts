@@ -11,18 +11,15 @@ import {
   readDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
-import { createStubMeasurer } from "../../src/text/stub.ts";
 import { e, n } from "../fixtures/build.ts";
 
-const m = createStubMeasurer();
-
 function ok(d: Diagram, ops: Op[]) {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r;
 }
 function fail(d: Diagram, ops: Op[]): OpError[] {
-  const r = applyOps(d, ops, m);
+  const r = applyOps(d, ops);
   if (!("errors" in r)) throw new Error("expected errors");
   return r.errors;
 }

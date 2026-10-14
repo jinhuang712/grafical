@@ -244,7 +244,7 @@ When a step resumes a session, `total_cost_usd` and `duration_api_ms` are runnin
 | DESIGN.md, "Operations" batches | Batches allowed | One operation per call | Cost and wall time per draft |
 | DESIGN.md, "Interfaces" `guide` | A 1k-token guide | A 3k-token guide | Score and operation errors |
 | DESIGN.md, "Interfaces" `show` | `show` | Reading the YAML file | Tokens and operation errors |
-| DESIGN.md, "The engine picks a new box's slot" slot choice | The engine picks the slot | New nodes go last | Score and crossings |
+| DESIGN.md, "The engine picks a new box's slot" slot choice | The engine picks the slot | New nodes go last | Score and crossings. Never ran: since DESIGN.md, "The agent states every order", the agent states every slot |
 | DESIGN.md, "Defects owned by who can fix them" checking | A check after every write | One check at the end | Operation errors and retries |
 | DESIGN.md, "Interfaces" output | Compact JSON reports | Full reports | Tokens and cache hit rate |
 | DESIGN.md, "Every layered diagram type" type guides | The type guides | No type guides: the main guide alone | Problem lines, refused writes, and whether a draft uses its type's kinds and parts. Ran 2026-10-12 (`bench/results/p1d-guides.md`); the guides then moved into the help (DESIGN.md, "The help as the reference") |
