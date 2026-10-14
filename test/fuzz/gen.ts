@@ -207,8 +207,29 @@ export function generate(seed: number, m: Measurer): Generated {
   addNodeKinds(d, r, m);
   addWalls(d, r, text, m);
   addSideWalls(d, r, text, m);
+  addNotes(d, r, text);
 
   return { diagram: d, ops, rejected };
+}
+
+/**
+ * Up to four notes (D44), drawn last: on nodes, groups and lines at random, each a
+ * few words to a sentence, so that some find room for a card and some are footnotes.
+ */
+function addNotes(d: Diagram, r: () => number, text: (lo: number, hi: number) => string): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  if (r() < 0.6) return;
+  const targets = [
+    ...d.layers.flatMap((l) => l.nodes.map((n) => n.id)),
+    ...(d.groups ?? []).map((g) => g.id),
+    ...d.edges.map((e) => e.id),
+  ];
+  const notes = new Map<string, string>();
+  const count = int(1, 4);
+  for (let k = 0; k < count && targets.length > 0; k++) {
+    notes.set(targets[int(0, targets.length - 1)] as string, text(5, 60));
+  }
+  if (notes.size > 0) d.notes = [...notes].map(([on, words]) => ({ on, text: words }));
 }
 
 /**
