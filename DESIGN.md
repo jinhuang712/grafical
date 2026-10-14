@@ -108,7 +108,7 @@ Rejected: prose error messages, because an agent has to interpret them, and that
 A node's place is its layer, its order within the layer, its group, and an optional alignment with a node in another layer. Its size is a size step, and the box has that step's fixed width and height. The diagram's spacing is a density. The allowed values are listed in [FEATURES.md](FEATURES.md). The theme maps each value to pixels.
 
 Rejected:
-- Free positions. They make every diagram look different and give a weak model too many ways to be wrong.
+- Free positions. They make every diagram look different and give a weak model too many ways to be wrong. Changed in part on 2026-10-14 by the owner's decision: a box may be placed by whole steps on the grid from another box (D46).
 - A general graph layout over a plain node and edge list, such as ELK layered or dagre. Those compute positions globally, so adding one node can reorder others.
 - Boxes that grow with their text. A longer label would push every layer below it down.
 
@@ -759,6 +759,31 @@ Asked for by the owner on 2026-10-13 ("not just layers, we shall involve another
 Rejected:
 - Drawing columns as bands. Lanes that run as columns are already that; a column is a guide.
 - A box in no column that drifts to the mean column of what it connects to on every write, as the prototype did. A line added elsewhere would move it, against D10. A box that belongs to no row and no column is a separate step (D46).
+
+### D46 A box placed by steps from another box, in no row
+
+Asked for by the owner on 2026-10-14: "a box that can belong to no row / column meaning no grid is allowed", then "we still want a free-er feature", and "why i bring in the free placement or relative placement is to avoid the row/column contraint!". Of the ways shown that day, the owner chose steps from another box: "this moves it away from the grid but keeps it kinda predictable". The owner also settled who chooses how far: the agent, because "grafical is not responsible for taste, graph correctness and clearness. grafical is a engine only to do the dirty work."
+
+- **What the agent states.** `node add <file> <id> --from <box> --down <n> --right <n>` places a box some steps from another box, instead of in a row; `--up` and `--left` step the other way. At least one step is given, each a whole number from 1 to 10. `node move` takes the same options, and `node move --layer` puts the box back in a row. The box it steps from may itself be placed by steps.
+- **What a step is.** One cell of the column grid (D10): a row down or up, a column left or right. Rows count as they are in the file. A step past the first or last row lands in a row the engine adds there; a row passed on the way stays empty, a medium box high. Each step across keeps at least a medium box and a gap between the two columns, so that two steps never look like one.
+- **What the engine does.** The box sits in its cell and moves with the box it steps from. The boxes of a row it lands in keep their order and stand aside, some left of it and some right, as the column grid puts them before the box arrives. Lines route as they do between any boxes. Nothing else is chosen for the agent: a step that puts the box where it reads badly is the agent's to change.
+- **Refusals.** A cell that another box must keep, because it was placed by steps there too, or because a row's order, a group or an alignment holds it, is refused as `step-blocked`, naming the box in the way. A box that steps from itself, through others or not, is refused as `step-cycle`. A box that others step from is not removed while they do (`step-anchor`). Steps say where a box is, so they are not combined with `--layer`, a position in a row, `--align`, a column (D45) or lanes that run as columns.
+- **What `show` prints.** Such a box gets a line of its own with `from=` and its steps. `show --drawn` gives the row it landed in, `row=-` for a row the engine added.
+- **The file.** `nodes`, a list of the boxes in no row, each with `from` and its steps: `down` or `up`, `left` or `right`. The format only grows (D22).
+
+This changes D6 in part, which rejected free positions: a step is a small whole number on the grid, a fact like a row, not a coordinate.
+
+A prototype on the public brief's draft (`bench/runs/p1d-help3`) freed its seven dependency boxes, from 27 bends, 824 px wide and 1008 px high:
+- placed by the engine just below the box that uses each: 29 bends, 1336 px wide;
+- placed by the engine below everything that box connects to: 17 bends, 1136 px wide, 912 px high;
+- placed one step down from the box that uses each: 20 bends, 1640 px wide, 752 px high, the seven sharing the topics' row. Two steps would have given the second picture: the right step depends on the rest of the diagram, and it is the agent's to choose.
+
+Rejected:
+- A free box that the engine places, below what it connects to. It drew best in the prototype, but the engine would choose the row.
+- A side without a distance ("below catalog-sync"), the engine choosing how far. The same reason.
+- Rows counted from another box ("2 rows below catalog-sync"), joining that row's list. It keeps the row the owner wants a box free of.
+- A cell on one grid for the whole picture (`--at 4,2`). Nothing ties the box to the box it belongs with, so it does not move with it.
+- Steps in pixels. The gap router (D11) runs lines through the gaps between rows and between boxes, so every box sits in a cell of the grid.
 
 ## Not yet decided
 
