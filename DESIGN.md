@@ -66,6 +66,7 @@ In stage 2 the board becomes a second client of the same operations. Nothing els
 | D41 | An edge has a weight: a named level or a width, tuned by the stylesheet | The tool carries the taste |
 | D42 | The legend names line widths and marks, and may leave an entry out | The tool carries the taste |
 | D43 | A wall is empty space between two named sides, crossed only where it allows | The engine places; the agent states relations |
+| D44 | A note is attached to a box, line or group; grafical draws it as a callout or a footnote | The engine places; the agent states relations |
 
 ## Writing a diagram
 
@@ -728,6 +729,22 @@ Rejected:
 - Lines that cross freely, and a sealed wall. The owner: lines cross "only when the wall allows".
 - A wall placed by coordinates or by size. Where it goes and how thick it is are the engine's (D2); the agent names what it separates.
 - Rerouting a line round a wall. A line between the sides is refused before layout, and any other line through a wall's space is reported with fixes. Routing round a partial obstacle is left for later.
+
+### D44 A note is attached to a box, line or group; grafical draws it as a callout or a footnote
+
+Decided by the owner on 2026-10-14. The phase planned notes: a short text that keeps detail out of extra boxes, attached to what it is about and placed by the engine. Asked whether a note should be a card beside its target or a numbered footnote, the owner chose "both, grafical picks".
+
+- **What the agent states.** `note add <file> --on <id> --text <text>`: the note of a node, a group or a line. A target has one note; adding another replaces it. `note remove <file> --on <id>`. The file holds `notes`, a list of `{on, text}` in creation order. The format only grows (D22).
+- **A callout when there is room.** A card with the note's text, wrapped at 160 px, beside its target and joined to it by a short dotted line: right of a box or group first, then left, below and above; beside the middle of a line's longest part. The card keeps clear of every box, line, text and other card, and stays inside the picture. Nothing is moved to make room.
+- **A footnote when there is not.** A small number on the target, at a free corner of a box, after a group's label, or beside a line, and the note's text in a numbered list at the bottom of the picture, above the footnote of D26. Footnotes are numbered in reading order of their targets, top to bottom, then left to right.
+- **Length.** A note that takes more than four lines at 160 px is an agent-owned `overflow`, as a label is (D14).
+- **Changes.** A note goes with its target, and is listed among the changes. Show prints each note; `show --drawn` says how each is drawn.
+
+Rejected:
+- Callouts only. A dense picture has no room, and moving boxes to make room would break stability (D10).
+- Footnotes only. A reader looks away from what the note is about, even when there is room beside it.
+- A note that the agent places. Where it goes is the engine's (D2).
+- Several notes on one target. One note holds a sentence or two; more is a box or a second diagram.
 
 ## Not yet decided
 
