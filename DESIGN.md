@@ -526,6 +526,8 @@ Rejected:
 - Drawing columns as bands. Lanes that run as columns are already that, and a column is a guide.
 - A box in no column that drifts to the mean column of what it connects to on every write, as the prototype did. A line added elsewhere would move it, against "Layout computed again on every change". A box that belongs to no row and no column is a separate step ("Steps from another box").
 
+Made exact on 2026-10-15 by the owner: the order holds across all rows, not only within each one ("Columns hold across rows").
+
 ## Decision: A legend for widths and marks — 2026-10-14
 
 Decided by the owner on 2026-10-14. When the reference picture was redrawn with grafical alone, thick lines were used to mean "writes to a store". The legend could only call them "main path", so the emphasis was dropped. Asked whether an agent should name it, the owner answered "yes, the legend needs more flexibility", and chose, of three options, a legend that names everything in the picture that carries meaning. Built the same day (behavior: FEATURES.md, "Legend").
@@ -635,6 +637,17 @@ Decided by the owner on 2026-10-15, after a field study that redrew ten publishe
 Rejected:
 - Keeping the default words, "call or read", "message", "optional", "related" and "main path". They suit an architecture diagram, are wrong on a flowchart, and are the engine stating a meaning.
 - Default words per diagram type. grafical has no setting for the diagram's type ("Every layered diagram type").
+
+## Decision: Columns hold across rows — 2026-10-15
+
+Decided by the owner on 2026-10-15, after the same field study. A swimlane with lanes across and a column for each phase drew "Receive goods", in the fifth column, right above "Ship", in the fourth. Each row kept its boxes in column order, but boxes of different rows in neighbouring columns could share a place in the grid. The smallest case: two rows, `a` in the first column and `b` in the second, both drawn at the same x.
+
+- **The rule.** Every box of a column lies left of every box of the next column, across all rows, so that the phases of a process line up across lanes. "Columns beside rows" said this in words that allowed both readings.
+- **Cost.** A picture that uses columns only to order its rows may grow wider.
+- Not built yet (TODO.md, "Columns hold across rows").
+
+Rejected:
+- Columns that order boxes only within a row, with FEATURES.md reworded. Lanes across with phases could not be drawn, and lanes that run down would stay the only swimlane.
 
 ## Open questions
 

@@ -261,7 +261,7 @@ grafical node align <file> <id> [--to <node>]
 
 A box sits directly above or below a box in another row, and its row slides sideways as one block to put it there. An alignment that cannot hold with the order of either row is refused, as `alignment-conflict` or `alignment-cycle`. Without `--to`, the alignment is cleared.
 
-### Columns ✅
+### Columns 🚧
 
 A second placement fact beside rows. Nothing is drawn: a column is a guide.
 
@@ -277,6 +277,8 @@ grafical column remove <file> <id>
 - An order that another fact contradicts is refused as `column-order`, naming two boxes whose order cannot hold.
 - A diagram has columns or lanes that run as columns, not both (`column-lanes`).
 - Removing a column leaves its boxes where they are.
+
+Gap: the order holds only within each row, so a box of one column can sit right under a box of the column before it. DESIGN.md, "Columns hold across rows" makes it hold across all rows.
 
 ### Steps from another box ✅
 
