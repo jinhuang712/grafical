@@ -4,7 +4,12 @@
 // would drop it, so every diagram that comes out is valid.
 
 import { check } from "../../src/check/index.ts";
-import { layout, validateAlignments, validateGroups } from "../../src/layout/index.ts";
+import {
+  layout,
+  validateAlignments,
+  validateGroups,
+  validateSteps,
+} from "../../src/layout/index.ts";
 import { fits } from "../../src/layout/size.ts";
 import { orderByColumns } from "../../src/model/columns.ts";
 import { checkEnds } from "../../src/model/ends.ts";
@@ -16,6 +21,7 @@ import { checkIntegrity } from "../../src/model/schema.ts";
 import {
   DENSITIES,
   type Diagram,
+  type DiagramNode,
   EDGE_KINDS,
   type Edge,
   SIZE_STEPS,
@@ -210,8 +216,50 @@ export function generate(seed: number, m: Measurer): Generated {
   addSideWalls(d, r, text, m);
   addNotes(d, r, text);
   addColumns(d, r);
+  addSteps(d, r);
 
   return { diagram: d, ops, rejected };
+}
+
+/**
+ * One to three boxes placed by steps (D46), drawn last, in three seeds of ten: each a
+ * node taken out of its row, stepping up to two cells across and down from another
+ * node, now and then one placed by steps itself. A box that a check refuses goes back
+ * to its row, as an agent would drop the operation.
+ */
+function addSteps(d: Diagram, r: () => number): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  if (r() < 0.7) return;
+  const tries = int(1, 3);
+  for (let t = 0; t < tries; t++) {
+    const rowNodes = d.layers.flatMap((l) => l.nodes);
+    const free = rowNodes.filter(
+      (x) => x.align === undefined && x.column === undefined && x.lane === undefined,
+    );
+    if (free.length < 2) return;
+    const box = free[int(0, free.length - 1)] as DiagramNode;
+    const anchors = [...rowNodes, ...(d.nodes ?? [])].filter((x) => x.id !== box.id);
+    const from = anchors[int(0, anchors.length - 1)] as DiagramNode;
+    let dx = int(-2, 2);
+    const dy = int(-2, 2);
+    if (dx === 0 && dy === 0) dx = 1;
+    const trial: Diagram = structuredClone(d);
+    for (const l of trial.layers) l.nodes = l.nodes.filter((x) => x.id !== box.id);
+    const moved: DiagramNode = { ...structuredClone(box), from: from.id };
+    if (dx > 0) moved.right = dx;
+    if (dx < 0) moved.left = -dx;
+    if (dy > 0) moved.down = dy;
+    if (dy < 0) moved.up = -dy;
+    trial.nodes = [...(trial.nodes ?? []), moved];
+    const refused =
+      checkIntegrity(trial).length > 0 ||
+      validateGroups(trial).length > 0 ||
+      validateAlignments(trial).length > 0 ||
+      validateSteps(trial).length > 0;
+    if (refused) continue;
+    d.layers = trial.layers;
+    d.nodes = trial.nodes;
+  }
 }
 
 /**
