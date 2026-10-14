@@ -538,6 +538,8 @@ Rejected:
 - A legend the caller places, at the bottom or the left. Placement is the engine's.
 - Default words for each level, such as "heavy". A level's name is the stylesheet's word, not the reader's, so widths with no name share one "main path" entry.
 
+Changed on 2026-10-15 by the owner: line styles and widths lose their default words too, and "main path" goes with them ("The legend says only what the agent named").
+
 ## Decision: Walls as space — 2026-10-14
 
 Decided by the owner on 2026-10-14. On 2026-10-13 the owner asked for "breaks" and "invisible walls that anything cannot be put into", and chose "dividers and walls" for phase 1e. Shown a wall drawn as a line with gates, the owner answered "walls can have thickness", then "a space! not a layer, not a line, not a thick line", that it "doesn't have to be entirely across the whole image, could be partial", and that lines cross it "only when the wall allows". The model below was then approved as shown (behavior: FEATURES.md, "Walls").
@@ -621,6 +623,18 @@ Rejected:
 - Keeping the engine's slot as the default when no place is given. That is the engine choosing structure for the agent.
 - Putting a box with no place last. A fixed rule would still choose the order, and the agent might never notice that it chose none.
 - Keeping `layer tidy` and `diagram tidy` because the agent asks for them. The agent would choose to reorder, but the engine would still choose the order.
+
+## Decision: The legend says only what the agent named — 2026-10-15
+
+Decided by the owner on 2026-10-15, after a field study that redrew ten published and classic diagrams with grafical. The legend printed "call" on a flowchart, a state machine and two swimlanes, and "related" on an org chart. Those are meanings the agent never stated, and they were wrong in all of those pictures. PHILOSOPHY.md, "What is a diagram?": grafical never adds a fact the agent did not state.
+
+- **An entry needs the agent's words.** A line style or a width gets an entry only when `diagram legend` names it, as a mark already does ("A legend for widths and marks"). A diagram that names nothing draws no legend.
+- **The agent sees what it left unnamed.** `show --drawn` prints a `legend` record for each style and width the picture draws, with `text=-` where the agent gave no words.
+- Not built yet (TODO.md, "The legend says only what the agent named").
+
+Rejected:
+- Keeping the default words, "call or read", "message", "optional", "related" and "main path". They suit an architecture diagram, are wrong on a flowchart, and are the engine stating a meaning.
+- Default words per diagram type. grafical has no setting for the diagram's type ("Every layered diagram type").
 
 ## Open questions
 
