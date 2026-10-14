@@ -1214,6 +1214,8 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
   /** A port that leans toward x, at most a quarter of the box from its centre. */
   const toward = (n: PNode, x: number) =>
     snap(centreX(n) + clamp(x - centreX(n), -n.w / 4, n.w / 4));
+  /** Lines between boxes whose facing sides overlap, which can run straight down. */
+  const straight = new Set<Plan>();
   for (const pl of plans) {
     const { u, v } = pl;
     if (pl.kind === "neighbour") {
@@ -1287,6 +1289,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
         const spans = forbidTop.get(lower.layer) ?? [];
         ds = nearestFree((centreX(u) + centreX(v)) / 2, lo, hi, spans);
         dt = ds;
+        straight.add(pl);
         ws = STRAIGHT;
         wt = STRAIGHT;
       } else {
@@ -1364,10 +1367,18 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     ...keys.filter((k) => sides.get(k)?.[0]?.side === "top"),
   ];
   for (const k of order) {
-    const ends = sides.get(k) ?? [];
-    const first = ends[0];
+    const first = sides.get(k)?.[0];
     if (first === undefined) continue;
     const n = first.node;
+    // A line that can run straight down meets the port its upper box took: bottom sides
+    // are placed first, and theirs can be pushed off the middle by their neighbours.
+    const lo = n.x + ROUTE.portMin / 2 + 2;
+    const hi = n.x + n.w - ROUTE.portMin / 2 - 2;
+    const ends = (sides.get(k) ?? []).map((e) => {
+      if (e.side !== "top" || !straight.has(e.plan)) return e;
+      const x = e.src ? e.plan.dstPort : e.plan.srcPort;
+      return x >= lo && x <= hi ? { ...e, desired: x, far: x } : e;
+    });
     // A fan-out leaves through one port and a fan-in arrives through one, each
     // placed like a single end.
     const slots: End[] = [];

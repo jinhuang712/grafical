@@ -2,6 +2,7 @@
 // measurer, and returns every mechanical flaw, in a deterministic order.
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
+import { bendsOf } from "../layout/index.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { laneNodes } from "../model/lanes.ts";
 import { type Diagram, LINE_STYLES, MARK_SLOTS, markText } from "../model/types.ts";
@@ -9,7 +10,7 @@ import { crossingFix, wallAllows } from "../model/walls.ts";
 import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
-import { NOTE } from "../theme/geometry.ts";
+import { NOTE, ROUTE } from "../theme/geometry.ts";
 import { lineStyle } from "../theme/paint.ts";
 import { textInside } from "../theme/shapes.ts";
 import { themeOf } from "../theme/themes.ts";
@@ -383,6 +384,48 @@ function checkEdgeOverlap(scene: Scene, out: Found[]): void {
   }
 }
 
+/**
+ * A line between boxes in neighbouring rows, from the upper one's bottom into the lower
+ * one's top, that bends although each of its ports lies within the other box's side:
+ * one x would have served both ends (D47). The lines of a bundle share a port and bend
+ * where they part, by design.
+ */
+function checkNeedlessBend(scene: Scene, out: Found[]): void {
+  const row = new Map(scene.layers.map((l, i) => [l.id, i]));
+  const nodes = new Map(scene.nodes.map((n) => [n.id, n]));
+  const key = (id: string, p: { x: number; y: number }) => `${id}@${p.x},${p.y}`;
+  const shared = new Map<string, number>();
+  for (const e of scene.edges) {
+    for (const [id, p] of [
+      [e.from, e.points[0]],
+      [e.to, e.points.at(-1)],
+    ] as const) {
+      if (p !== undefined) shared.set(key(id, p), (shared.get(key(id, p)) ?? 0) + 1);
+    }
+  }
+  const inset = ROUTE.portMin / 2 + 2;
+  const within = (x: number, r: Rect) => x >= r.x + inset - 1 && x <= r.x + r.w - inset + 1;
+  for (const e of scene.edges) {
+    const a = nodes.get(e.from);
+    const b = nodes.get(e.to);
+    const p = e.points[0];
+    const q = e.points.at(-1);
+    if (a === undefined || b === undefined || p === undefined || q === undefined) continue;
+    const ra = row.get(a.layer);
+    const rb = row.get(b.layer);
+    if (ra === undefined || rb === undefined || Math.abs(ra - rb) !== 1) continue;
+    if ((shared.get(key(e.from, p)) ?? 0) > 1 || (shared.get(key(e.to, q)) ?? 0) > 1) continue;
+    const [up, upPort, low, lowPort] = ra < rb ? [a, p, b, q] : [b, q, a, p];
+    if (Math.abs(upPort.y - (up.rect.y + up.rect.h)) > 2 || Math.abs(lowPort.y - low.rect.y) > 2) {
+      continue;
+    }
+    if (!within(upPort.x, low.rect) || !within(lowPort.x, up.rect)) continue;
+    const bends = bendsOf(e.points);
+    if (bends === 0) continue;
+    out.push({ code: "needless-bend", elements: [e.id], facts: { count: bends } });
+  }
+}
+
 function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   const add = (id: string, field: string, text: string | undefined, fix: string | string[]) => {
     if (!text) return;
@@ -488,6 +531,7 @@ export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[
   checkEdgeThroughNode(scene, out);
   checkLabelCollision(scene, out);
   checkEdgeOverlap(scene, out);
+  checkNeedlessBend(scene, out);
   checkTextCrossing(scene, out);
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);

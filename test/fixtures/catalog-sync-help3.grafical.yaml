@@ -1,0 +1,186 @@
+# Haiku's draft of the public brief bench/briefs/catalog-sync.md, from the p1d-help3
+# round (run 2): catalog-sync has eight lines on its bottom side, two of them to and
+# from its retry topic right under it (DESIGN.md D47).
+grafical: 1
+title: catalog-sync and catalog-api
+subtitle: Two Go services, coupled only by the shared MongoDB.
+note: "Not shown: the full-load trigger (unknown), production database names, whether production runs a separate relay pod (unknown), and the full list of catalog-api callers."
+density: normal
+legend:
+  dashed: async, via a topic
+layers:
+  - id: row-callers
+    label: Callers
+    nodes:
+      - id: pub
+        label: Publishers
+        kind: service
+        sublabel: inventory, pricing, merchant
+      - id: ops
+        label: Operators
+        kind: actor
+        sublabel: admin routes, other services
+      - id: readers
+        label: Storefront
+        kind: actor
+        sublabel: promotions and others
+  - id: row-broker
+    label: Broker
+    nodes:
+      - id: upstream
+        label: Upstream topics
+        kind: queue
+        sublabel: item, variant, offer, search
+  - id: row-services
+    label: Services
+    nodes:
+      - id: relay
+        label: catalog-relay
+        kind: service
+        sublabel: tier 1, :7101
+        group: grp-sync
+      - id: sync
+        label: catalog-sync
+        kind: service
+        sublabel: tier 2, :7102, embedded relay
+        group: grp-sync
+      - id: api
+        label: catalog-api
+        kind: service
+        sublabel: gRPC :7190, HTTP :8080
+  - id: row-kafka
+    label: Kafka
+    nodes:
+      - id: goods-topics
+        label: Line topics
+        kind: queue
+        sublabel: goods_v1, tickets_v1
+      - id: retry-topic
+        label: Retry topic
+        kind: queue
+        sublabel: catalog_retry_v1
+  - id: row-outside
+    label: Outside services
+    nodes:
+      - id: geo
+        label: geo-svc
+        kind: service
+        sublabel: region tree
+      - id: auth
+        label: auth-svc
+        kind: service
+        sublabel: service auth check
+      - id: i18n
+        label: i18n-svc
+        kind: service
+        sublabel: translated text
+      - id: campaign
+        label: campaign-svc
+        kind: service
+        sublabel: campaign tags
+  - id: row-stores
+    label: Stores
+    nodes:
+      - id: pg
+        label: Postgres replicas
+        kind: store
+        sublabel: goods, tickets
+      - id: redis
+        label: Redis
+        kind: store
+        sublabel: name cache, 10 min
+      - id: mongo
+        label: MongoDB
+        kind: store
+        sublabel: catalog, inventory, DLQ
+        accent: true
+groups:
+  - id: grp-sync
+    label: catalog-sync
+    sublabel: Catalog team, Go
+edges:
+  - id: pub->upstream
+    from: pub
+    to: upstream
+    kind: async
+    label: publish
+  - id: upstream->relay
+    from: upstream
+    to: relay
+    kind: async
+    label: consume
+  - id: relay->goods-topics
+    from: relay
+    to: goods-topics
+    kind: async
+    label: produce
+  - id: goods-topics->sync
+    from: goods-topics
+    to: sync
+    kind: async
+    label: consume
+  - id: sync->retry-topic
+    from: sync
+    to: retry-topic
+    kind: async
+    label: failed
+  - id: retry-topic->sync
+    from: retry-topic
+    to: sync
+    kind: async
+    label: retry
+  - id: sync->mongo
+    from: sync
+    to: mongo
+    kind: call
+    label: persist
+  - id: sync->pg
+    from: sync
+    to: pg
+    kind: call
+    label: read
+  - id: sync->redis
+    from: sync
+    to: redis
+    kind: call
+    label: cache
+  - id: sync->geo
+    from: sync
+    to: geo
+    kind: call
+    label: HTTP GET
+  - id: sync->i18n
+    from: sync
+    to: i18n
+    kind: call
+    label: HTTP GET
+  - id: sync->auth
+    from: sync
+    to: auth
+    kind: call
+    label: auth check
+  - id: ops->sync
+    from: ops
+    to: sync
+    kind: call
+    label: admin HTTP
+  - id: readers->api
+    from: readers
+    to: api
+    kind: call
+    label: read
+  - id: api->mongo
+    from: api
+    to: mongo
+    kind: call
+    label: read
+  - id: api->campaign
+    from: api
+    to: campaign
+    kind: call
+    label: tags
+  - id: api->i18n
+    from: api
+    to: i18n
+    kind: call
+    label: campaign text

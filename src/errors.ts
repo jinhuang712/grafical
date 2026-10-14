@@ -105,6 +105,7 @@ export const DEFECT_CODES = [
   "missing-glyph",
   "mark-covers",
   "wall-crossed",
+  "needless-bend",
 ] as const;
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
@@ -128,6 +129,8 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "text-crossing": "engine",
   "group-intruder": "engine",
   "lane-stray": "engine",
+  // One x would have served both ends of the line (D47).
+  "needless-bend": "engine",
 };
 
 /**
