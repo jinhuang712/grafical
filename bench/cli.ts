@@ -12,7 +12,7 @@
 //   summary --round <name>                    write bench/results/<round>.md
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   benchmark 7: check every step's picture's geometry
-//   lines --round <name>                      measure each final diagram's lines, and the agent's tries (D37)
+//   lines --round <name>                      measure each final diagram's lines, and the agent's tries (DESIGN.md, "Records over prose")
 //   speed                                     benchmark 11: time one operation and one command
 //   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints|hints2|hints3|hints4|help|brief|help2|help3|records> --dry-run | --approved [--only <chain>]
 //                                             the end of stage 1, one part at a time

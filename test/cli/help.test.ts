@@ -23,7 +23,7 @@ function run(...args: string[]) {
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 
-describe("help pages (D36)", () => {
+describe('help pages (DESIGN.md, "The help as the reference")', () => {
   it("each page belongs to a command, shows its paragraph and sections, and fits a terminal", () => {
     for (const path of ["", ...Object.keys(PAGES)]) {
       const r = run(...(path === "" ? [] : path.split(" ")), "--help");
@@ -54,7 +54,7 @@ describe("help pages (D36)", () => {
   });
 });
 
-describe("the counts in place of hints (D37)", () => {
+describe('the counts in place of hints (DESIGN.md, "Records over prose")', () => {
   /** The photo-sharing diagram, where a line bends more than twice round the upload queue. */
   function photos(): string {
     writeFileSync(join(dir, "photos.grafical.yaml"), writeDiagram(edgeLooks));

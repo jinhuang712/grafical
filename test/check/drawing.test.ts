@@ -48,7 +48,7 @@ const skipping: Diagram = {
   edges: [e("a", "m1", "call"), e("a", "m2", "call"), e("m1", "z", "call"), e("a", "z", "call")],
 };
 
-describe("the drawing as facts (D37)", () => {
+describe('the drawing as facts (DESIGN.md, "Records over prose")', () => {
   it("names each box's row, place and lines by side, and each line's sides and crossings", () => {
     const dr = drawing(crossed, layout(crossed, m));
     expect(dr.counts).toMatchObject({ nodes: 4, lines: 2, crossings: 1, busiest: { lines: 1 } });
@@ -153,7 +153,7 @@ describe("the drawing as facts (D37)", () => {
     expect(dr.counts).toMatchObject({ length: 390, longest: { id: "a->z", length: 390 } });
   });
 
-  it("names the lines each line leaves or arrives with as one bundle (D38)", () => {
+  it('names the lines each line leaves or arrives with as one bundle (DESIGN.md, "Fan-outs of three bundle")', () => {
     const fan = (label?: string): Diagram => ({
       grafical: 1,
       title: "Fan",

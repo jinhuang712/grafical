@@ -1,4 +1,4 @@
-// A state machine (D34): an order's life, from the start dot to the end ring,
+// A state machine (DESIGN.md, "Every layered diagram type"): an order's life, from the start dot to the end ring,
 // with a loop back and a two-way pause.
 
 import type { Diagram } from "../../src/model/types.ts";

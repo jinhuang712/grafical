@@ -34,7 +34,7 @@ const toLayer: Op[] = [
   { op: "edge.add", from: "pipelines", to: "deps", label: "calls" },
 ];
 
-describe("edge ends at a container (D28)", () => {
+describe('edge ends at a container (DESIGN.md, "Lines that end at containers")', () => {
   it("accepts a group or a layer as an end", () => {
     const d = ok(catalogSyncGrouped, [...toGroup, ...toLayer]);
     expect(d.edges.map((e) => e.id)).toContain("callers->catalog-api");

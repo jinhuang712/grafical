@@ -1,4 +1,4 @@
-// Marks on nodes (DESIGN.md D40): corner marks take no room, the left mark takes a
+// Marks on nodes (DESIGN.md, "Marks of any kind"): corner marks take no room, the left mark takes a
 // column of its box, and a mark that meets text is a defect.
 
 import { beforeAll, describe, expect, it } from "vitest";

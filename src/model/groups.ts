@@ -1,4 +1,4 @@
-// Groups inside groups (D7, D34): which groups hold a node or a group, through
+// Groups inside groups (DESIGN.md, "Rows unseen, groups as systems", "Every layered diagram type"): which groups hold a node or a group, through
 // every level. A group names the group it sits in; a node names its innermost one.
 
 import type { Diagram, DiagramNode } from "./types.ts";

@@ -24,7 +24,7 @@ vi.mock("../../src/layout/index.ts", () => ({
 const { applyOps } = await import("../../src/model/index.ts");
 const { createStubMeasurer } = await import("../../src/text/index.ts");
 
-describe("slot choice (D24)", () => {
+describe('slot choice (DESIGN.md, "The engine picks a new box\'s slot")', () => {
   it("runs after every operation, so later edges count, and applies the slot it returns", () => {
     calls.length = 0;
     const d: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };

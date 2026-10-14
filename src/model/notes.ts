@@ -1,4 +1,4 @@
-// Notes (DESIGN.md D44): a short text about a node, a group or a line. The agent
+// Notes (DESIGN.md, "Notes as callouts or footnotes"): a short text about a node, a group or a line. The agent
 // states only what it is about and its words; the layout draws it as a callout
 // beside its target, or as a numbered footnote.
 

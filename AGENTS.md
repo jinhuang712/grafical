@@ -27,12 +27,12 @@ The published history was rewritten on 2026-09-26 to remove a company name, and 
 
 ## Nothing internal enters this repository
 
-This repository is public. Names, hosts, topics, databases and architecture of real company systems never go into a file or a commit message. Benchmarks on real systems use private briefs kept outside the repository (GOALS.md, "How the benchmarks run"). Fixtures and examples use fictional systems.
+This repository is public. Names, hosts, topics, databases and architecture of real company systems never go into a file or a commit message. Benchmarks on real systems use private briefs kept outside the repository (EXPERIMENTS.md, "Harness"). Fixtures and examples use fictional systems.
 
 ## Environment
 
-- Node 24 or later, pnpm. The full toolchain is DESIGN.md D23.
-- macOS is the main development machine. CI runs on macOS and Linux, because output must match on both (D15).
+- Node 24 or later, pnpm. The toolchain is in `package.json`.
+- macOS is the main development machine. CI runs on macOS and Linux, because output must match on both (DESIGN.md, "Output and determinism").
 - The package is set up. No product code exists yet.
 
 ## Commands
@@ -43,7 +43,7 @@ This repository is public. Names, hosts, topics, databases and architecture of r
 | `pnpm typecheck` | Type-check with `tsc --noEmit` | available |
 | `pnpm lint` | Lint and format check with Biome | available |
 | `pnpm test` | Run vitest. Passes while no tests exist | available |
-| `pnpm bench <baseline\|chain\|smoke\|stage1\|judge\|gallery\|geometry\|lines\|speed\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` and `stage1` need `--approved`. `geometry` checks every picture of a round for mechanical defects (benchmark 7), `speed` times one operation and one command (benchmark 11), and `lines` measures a round's lines and how often the agent ran `grafical try` (D37); all three cost nothing | available |
+| `pnpm bench <baseline\|chain\|smoke\|stage1\|judge\|gallery\|geometry\|lines\|speed\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` and `stage1` need `--approved`. `geometry` checks every picture of a round for mechanical defects (benchmark 7), `speed` times one operation and one command (benchmark 11), and `lines` measures a round's lines and how often the agent ran `grafical try` (DESIGN.md, "Records over prose"); all three cost nothing | available |
 
 A command added to `package.json` gets a row here in the same change.
 
@@ -66,10 +66,10 @@ A command added to `package.json` gets a row here in the same change.
 
 - The diagram file is compared byte for byte: the same operations give the same file.
 - SVG output is compared byte for byte, as text snapshots.
-- PNG output is compared as decoded pixels, not as compressed bytes. D15 promises the same pixels, not the same PNG bytes.
-- Stability tests apply one operation and assert that nothing outside DESIGN.md D10's list changed position, size or route.
+- PNG output is compared as decoded pixels, not as compressed bytes. DESIGN.md, "Output and determinism" promises the same pixels, not the same PNG bytes.
+- Stability tests apply one operation and assert that nothing outside the list in DESIGN.md, "Layout computed again on every change" changed position, size or route.
 - Fixtures live in `test/fixtures/`. Public benchmark briefs live in `bench/briefs/`.
-- The fuzz test (`test/fuzz/`) lays out random diagrams from fixed seeds and asserts that none has an engine-owned defect (DESIGN.md D14). CI runs 500 seeds. Run more with `FUZZ_SEEDS=5000 pnpm test test/fuzz`. A failing seed becomes a fixture before it is fixed.
+- The fuzz test (`test/fuzz/`) lays out random diagrams from fixed seeds and asserts that none has an engine-owned defect (DESIGN.md, "Defects owned by who can fix them"). CI runs 500 seeds. Run more with `FUZZ_SEEDS=5000 pnpm test test/fuzz`. A failing seed becomes a fixture before it is fixed.
 - A change to layout or routing must keep the fuzz test, the stability tests and the replay of a real agent run (`test/layout/haiku.test.ts`) passing.
 - `node test/debug/check-fixtures.ts <dir>` lays out, checks and renders every fixture with the real engine, for looking at the pictures.
 

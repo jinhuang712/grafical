@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { record } from "../src/records.ts";
 
-describe("records (D37)", () => {
+describe('records (DESIGN.md, "Records over prose")', () => {
   it("prints a name, then each field as key=value in the order given", () => {
     expect(record("line", { id: "a->b", bends: 2, crosses: ["x", "y"] })).toBe(
       "line id=a->b bends=2 crosses=x,y",

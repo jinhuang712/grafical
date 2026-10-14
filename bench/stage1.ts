@@ -6,19 +6,19 @@
 //   scale   E4 drafts on the 10-, 25- and 50-component briefs: all three arms, Haiku, 3 runs
 //   intent  E3: the 10 loose prompts, grafical, Haiku, one run each; the owner accepts or rejects
 //   mvp     the MVP bar: the private reference brief, grafical, Haiku, 3 runs, kept outside the repo
-//   hints, nohints  phase 1d: five tasks with and without the engine's hints (D35),
+//   hints, nohints  phase 1d: five tasks with and without the engine's hints (DESIGN.md, "Records over prose"),
 //           grafical, Haiku, 3 runs, measured by their lines, not by a person
 //   hints2  the same with `diagram improve` and the guide's step to run it
 //   hints3  the same with improve taking only safe hints
 //   hints4  the same with improve removed: the agent runs each hint itself
 //   help    a prompt for each diagram type, the public brief and the 25-component brief,
-//           the agent learning grafical from its help alone (D36), Haiku, 3 runs
+//           the agent learning grafical from its help alone (DESIGN.md, "The help as the reference"), Haiku, 3 runs
 //   brief   the public brief again, 6 runs, after the refusals learned to say how to fix
 //   help2   the help round again, after the refusals and the help said how to fix
 //   help3   again, after the kinds were named, rows took ids like row-users, and hints
 //           tried rows and hubs, safe ones first, each naming the lines it untangles
-//   records again, after the output became key=value records with no hints (D37), and
-//           fan-outs bundled (D38), rows took one height and stores more room
+//   records again, after the output became key=value records with no hints (DESIGN.md, "Records over prose"), and
+//           fan-outs bundled (DESIGN.md, "Fan-outs of three bundle"), rows took one height and stores more room
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (EXPERIMENTS.md, "Harness").
@@ -75,7 +75,7 @@ export interface PartPlan {
   /** The parent of the round's directory. */
   runs: string;
   chains: Chain[];
-  /** false: the grafical tool prints no hints (D35). */
+  /** false: the grafical tool prints no hints (DESIGN.md, "Records over prose"). */
   hints?: boolean;
 }
 

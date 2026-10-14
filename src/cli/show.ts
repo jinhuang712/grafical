@@ -1,5 +1,5 @@
 // `grafical show`: a compact view of a diagram in the operations' own
-// vocabulary (DESIGN.md D17). One line per layer, then one line per edge.
+// vocabulary (DESIGN.md, "Interfaces"). One line per layer, then one line per edge.
 
 import { laneNodes, laneRun } from "../model/lanes.ts";
 import { everyNode, STEP_KEYS } from "../model/steps.ts";
@@ -45,7 +45,7 @@ function edgeText(e: Edge): string {
   return s;
 }
 
-/** A legend entry's words, quoted, or hidden for one left out (D42). */
+/** A legend entry's words, quoted, or hidden for one left out (DESIGN.md, "A legend for widths and marks"). */
 function legendWords(words: string | false): string {
   return words === false ? "hidden" : JSON.stringify(words);
 }
@@ -71,7 +71,7 @@ export function showDiagram(d: Diagram): string {
     lines.push(`layer ${l.id} ${JSON.stringify(l.label)}${lane}: ${nodes}`);
   }
   if (d.layers.length === 0) lines.push("(no layers)");
-  // Boxes in no row, placed by steps from another box (D46).
+  // Boxes in no row, placed by steps from another box (DESIGN.md, "Steps from another box").
   for (const n of d.nodes ?? []) lines.push(`node ${nodeText(n)}`);
   for (const g of d.groups ?? []) {
     const members = everyNode(d)

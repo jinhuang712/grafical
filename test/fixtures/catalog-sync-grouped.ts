@@ -1,6 +1,6 @@
 // The target picture bench/targets/catalog-sync-grouped.png as facts: 15 nodes, 16
 // edges, two groups that span rows, a subtitle and a footnote. The engine must
-// draw it as uncluttered as the hand-drawn target (DESIGN.md D25).
+// draw it as uncluttered as the hand-drawn target (DESIGN.md, "A target picture with measured rules").
 
 import type { Diagram } from "../../src/model/types.ts";
 import { e, n } from "./build.ts";

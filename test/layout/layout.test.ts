@@ -125,7 +125,7 @@ function crossLikeJunctions(edges: SceneEdge[]): string[] {
   return out;
 }
 
-describe("groups inside groups (D34)", () => {
+describe('groups inside groups (DESIGN.md, "Every layered diagram type")', () => {
   let scene: Scene;
   beforeAll(async () => {
     scene = layout(nested, await createMeasurer());
@@ -220,7 +220,7 @@ describe("lines past a group they do not belong to", () => {
   });
 });
 
-describe("the target look (D25)", () => {
+describe('the target look (DESIGN.md, "A target picture with measured rules")', () => {
   let scene: Scene;
   let m: Measurer;
   beforeAll(async () => {
@@ -280,7 +280,7 @@ describe("the target look (D25)", () => {
     ).toBe("persist");
   });
 
-  it("bundles a fan-out of three or more unlabelled lines into one port and trunk (D38)", () => {
+  it('bundles a fan-out of three or more unlabelled lines into one port and trunk (DESIGN.md, "Fan-outs of three bundle")', () => {
     const crossings = lineTrouble(catalogSyncGrouped, m).crossings;
     for (const from of ["pipelines", "service"]) {
       const out = scene.edges.filter(
@@ -293,7 +293,7 @@ describe("the target look (D25)", () => {
     }
   });
 
-  it("gives each line a port of its own when two leave a side with room (D33)", () => {
+  it('gives each line a port of its own when two leave a side with room (DESIGN.md, "Lines meet any side")', () => {
     const two: Diagram = {
       grafical: 1,
       title: "Two",
@@ -403,7 +403,7 @@ describe("edge cases", () => {
     });
   }
 
-  it("draws a self-loop wide and deep enough to read as a loop (D33)", () => {
+  it('draws a self-loop wide and deep enough to read as a loop (DESIGN.md, "Lines meet any side")', () => {
     const loop = layout(edgeCases, m).edges.find((x) => x.from === x.to);
     const [a, b, c, d] = loop?.points ?? [];
     expect(loop?.points).toHaveLength(4);
@@ -435,7 +435,7 @@ describe("edge cases", () => {
   });
 });
 
-describe("stability (D10)", () => {
+describe('stability (DESIGN.md, "Layout computed again on every change")', () => {
   let ops = 0;
   let moved = 0;
   let routes = 0;
@@ -551,7 +551,7 @@ describe("stability (D10)", () => {
   });
 });
 
-describe("determinism (D15)", () => {
+describe('determinism (DESIGN.md, "Output and determinism")', () => {
   for (const [name, d] of fixtures) {
     it(`${name} gives an identical scene`, () => {
       expect(hash(layout(d, m))).toEqual(hash(layout(structuredClone(d), m)));
@@ -570,7 +570,7 @@ describe("determinism (D15)", () => {
   });
 });
 
-describe("slot choice (D24)", () => {
+describe('slot choice (DESIGN.md, "The engine picks a new box\'s slot")', () => {
   const cases: [string, string][] = [
     ["stores", "postgres"],
     ["stores", "mongo_catalog"],
@@ -624,7 +624,7 @@ describe("slot choice (D24)", () => {
     expect(chooseSlot(d, "loose", "y", m)).toBe(2);
   });
 
-  it("takes no slot that leaves a line to a group without a box beside it (D28)", () => {
+  it('takes no slot that leaves a line to a group without a box beside it (DESIGN.md, "Lines that end at containers")', () => {
     // x joins outer; after g2 it would stand between inner and c, whose line runs beside.
     const d: Diagram = {
       grafical: 1,

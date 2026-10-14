@@ -1,6 +1,6 @@
 # Haiku's draft of the public brief bench/briefs/catalog-sync.md, from the p1d-help3
 # round (run 2): catalog-sync has eight lines on its bottom side, two of them to and
-# from its retry topic right under it (DESIGN.md D47).
+# from its retry topic right under it (DESIGN.md, "Who chose is punished").
 grafical: 1
 title: catalog-sync and catalog-api
 subtitle: Two Go services, coupled only by the shared MongoDB.

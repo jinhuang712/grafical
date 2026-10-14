@@ -71,7 +71,7 @@ describe("grouped diagrams", () => {
       "ok changed=g,a,b\n",
     );
     expect(run("group", "join", f, "g", "c").code).toBe(0);
-    // Leaving the middle row: the box still spans it (D7).
+    // Leaving the middle row: the box still spans it (DESIGN.md, "Rows unseen, groups as systems").
     expect(run("group", "leave", f, "b").code).toBe(0);
     expect(run("group", "join", f, "g", "b").code).toBe(0);
     expect(run("group", "join", f, "zz", "a").out).toContain("unknown-group");
@@ -105,7 +105,7 @@ describe("grouped diagrams", () => {
     expect(read(f)).not.toContain("lane");
   });
 
-  it("apply and check report the counts, in text and JSON, with no threshold (D37)", () => {
+  it('apply and check report the counts, in text and JSON, with no threshold (DESIGN.md, "Records over prose")', () => {
     const f = "big.grafical.yaml";
     run("new", f, "--title", "Big");
     const items = ["- op: layer.add\n  id: row\n  label: Row\n"];
@@ -132,7 +132,7 @@ describe("grouped diagrams", () => {
   });
 });
 
-describe("groups inside groups on the command line (D34)", () => {
+describe('groups inside groups on the command line (DESIGN.md, "Every layered diagram type")', () => {
   it("adds, moves and removes a group inside another, and show names where each sits", () => {
     writeFileSync(join(dir, "shop.grafical.yaml"), writeDiagram(nested));
     const f = "shop.grafical.yaml";

@@ -1,4 +1,4 @@
-// Groups inside groups (D34): a fictional shop deployed in one cloud region, whose
+// Groups inside groups (DESIGN.md, "Every layered diagram type"): a fictional shop deployed in one cloud region, whose
 // network holds a public and a private subnet. Three levels, the most allowed, with
 // nodes outside every group above and beside them.
 

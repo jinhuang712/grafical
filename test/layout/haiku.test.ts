@@ -1,10 +1,10 @@
 // Regression: Haiku's own build of the public brief, replayed operation by
 // operation the way the command line applies it, with the real measurer. In the
 // phase 1 smoke test five of these writes failed on defects the engine owns. Now
-// no write may leave a defect the engine owns (D14), nor a line through text or a
+// no write may leave a defect the engine owns (DESIGN.md, "Defects owned by who can fix them"), nor a line through text or a
 // node inside a group it does not belong to.
 //
-// Since phase 1b boxes are 136 px wide (D25), so one of Haiku's sublabels no
+// Since phase 1b boxes are 136 px wide (DESIGN.md, "A target picture with measured rules"), so one of Haiku's sublabels no
 // longer fits on one line: that is an overflow, a defect the agent owns and would
 // fix with a shorter sublabel. Those are counted, not failed.
 

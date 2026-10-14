@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The grafical command line (DESIGN.md D16). Exit codes: 0 success, 1 an
+// The grafical command line (DESIGN.md, "Interfaces"). Exit codes: 0 success, 1 an
 // operation error or a defect, 2 a usage error.
 
 import { existsSync, readFileSync } from "node:fs";
@@ -58,7 +58,7 @@ function splitIds(s: string): string[] {
 
 const POSITION = ["first", "last", "before", "after"];
 
-/** The box steps start from, and the steps, as numbers where they read as one (D46). */
+/** The box steps start from, and the steps, as numbers where they read as one (DESIGN.md, "Steps from another box"). */
 function stepFlags(opts: Opts): Record<string, unknown> {
   const out = pick(opts, ["from"]);
   for (const k of STEP_KEYS) {
@@ -68,7 +68,7 @@ function stepFlags(opts: Opts): Record<string, unknown> {
   return out;
 }
 
-/** The step options of node add and node move (D46). */
+/** The step options of node add and node move (DESIGN.md, "Steps from another box"). */
 function withSteps(c: Command): Command {
   return c
     .option("--from <node>", "in no row: placed by steps from this box, and moves with it")
@@ -99,7 +99,7 @@ function renderName(file: string): string {
 }
 
 /**
- * Gives each command its help page (D36): the one-line description stays the summary in
+ * Gives each command its help page (DESIGN.md, "The help as the reference"): the one-line description stays the summary in
  * its parent's list, and the page's paragraph and sections show on its own help.
  */
 function attachHelp(parent: Command, path: string[] = []): void {
@@ -820,7 +820,7 @@ function build(): Command {
       .option("--hide", "leave a line style's or a line width's entry out"),
   ).action(async (file: string, style: string | undefined, opts: Opts) => {
     const w = opts.weight;
-    // A number of pixels is a number, as in edge weight (D41).
+    // A number of pixels is a number, as in edge weight (DESIGN.md, "Edge weights").
     const weight = typeof w === "string" && /^[0-9.]+$/.test(w) ? Number(w) : w;
     await write(
       file,
@@ -849,7 +849,7 @@ function build(): Command {
       .argument("<batch.yaml>"),
   ).action(async (file: string, batch: string, opts: Opts) => {
     const ops = readBatch(batch, opts);
-    // A batch is usually a draft or a large change: its report carries the counts (D37).
+    // A batch is usually a draft or a large change: its report carries the counts (DESIGN.md, "Records over prose").
     if (ops !== undefined) await finish(file, ops, opts, false, true);
   });
 
@@ -1084,7 +1084,7 @@ async function main(argv: string[]) {
         process.exitCode = 0;
         return;
       }
-      // grafical's own usage errors are records (D37); commander prints its own.
+      // grafical's own usage errors are records (DESIGN.md, "Records over prose"); commander prints its own.
       if (err.code.startsWith("grafical.")) process.stderr.write(`${err.message}\n`);
       process.exitCode = 2;
       return;

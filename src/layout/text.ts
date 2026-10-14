@@ -1,4 +1,4 @@
-// Placing measured text into the scene. Text never decides a box size (D6): it is
+// Placing measured text into the scene. Text never decides a box size (DESIGN.md, "Facts over coordinates"): it is
 // wrapped to the room it is given, and whatever does not fit is left for the
 // checker to report as overflow.
 

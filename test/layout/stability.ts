@@ -1,4 +1,4 @@
-// Benchmark 4 as a test helper, restated for the column grid (DESIGN.md D10): an
+// Benchmark 4 as a test helper, restated for the column grid (DESIGN.md, "Layout computed again on every change"): an
 // operation changes only the facts it names. The engine chooses columns, so
 // positions may shift to keep the picture tidy; the structure may not. After one
 // operation, for every node the operation does not name:
@@ -6,8 +6,8 @@
 // - it keeps its place in its layer's order, and the picture draws the row's
 //   nodes left to right in that order;
 // - it keeps its group, and the picture draws it inside that group's box and the
-//   boxes around it (D34), and in no other;
-// - it keeps its lane and its alignment (D32, D10).
+//   boxes around it (DESIGN.md, "Every layered diagram type"), and in no other;
+// - it keeps its lane and its alignment (DESIGN.md, "Swimlanes run one way", "Layout computed again on every change").
 // Movement is measured, not limited: how many nodes and routes moved, relative to
 // the centre line.
 

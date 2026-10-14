@@ -1,4 +1,4 @@
-// Paint: every colour and stroke value of a theme, by role (DESIGN.md D8, D30).
+// Paint: every colour and stroke value of a theme, by role (DESIGN.md, "Looks", "Themes and stylesheets").
 // The SVG writer reads roles from a scene's paint and never holds a hex code itself.
 // PAINT is the default theme's paint; themes.ts holds the others.
 
@@ -13,7 +13,7 @@ export interface NodePaint {
 
 export interface EdgePaint {
   stroke: string;
-  /** Dash pattern of a dashed or dotted line: async and optional edges (D8, D33). */
+  /** Dash pattern of a dashed or dotted line: async and optional edges (DESIGN.md, "Looks", "Lines meet any side"). */
   dash?: string;
 }
 
@@ -44,21 +44,21 @@ export interface Paint {
     nodeSublabel: string;
     edgeLabel: string;
   };
-  /** A system box behind its nodes (D7). Rows are not drawn. */
+  /** A system box behind its nodes (DESIGN.md, "Rows unseen, groups as systems"). Rows are not drawn. */
   group: BoxPaint;
   /**
-   * How a box inside a box is told apart (D34). alternate: the fill and the
+   * How a box inside a box is told apart (DESIGN.md, "Every layered diagram type"). alternate: the fill and the
    * background take turns by depth. shade: each level a shade nearer the border
    * colour, which is darker on a light theme.
    */
   nesting: "alternate" | "shade";
-  /** A layer an edge ends at, drawn behind its groups: lighter than a group (D28). */
+  /** A layer an edge ends at, drawn behind its groups: lighter than a group (DESIGN.md, "Lines that end at containers"). */
   band: BoxPaint;
-  /** A swimlane, drawn behind everything else (D32). Lanes side by side share a border. */
+  /** A swimlane, drawn behind everything else (DESIGN.md, "Swimlanes run one way"). Lanes side by side share a border. */
   lane: LanePaint;
   node: {
     radius: number;
-    /** The corner radius of a state, rounder than a box (D34). */
+    /** The corner radius of a state, rounder than a box (DESIGN.md, "Every layered diagram type"). */
     stateRadius: number;
     strokeWidth: number;
     kinds: Record<NodeKind, NodePaint>;
@@ -69,10 +69,10 @@ export interface Paint {
     strokeWidth: number;
     kinds: Record<EdgeKind, EdgePaint>;
     arrow: { length: number; halfWidth: number };
-    /** An edge on the main path: a thicker line and a larger arrowhead (D33). */
+    /** An edge on the main path: a thicker line and a larger arrowhead (DESIGN.md, "Lines meet any side"). */
     main: { strokeWidth: number; arrow: { length: number; halfWidth: number } };
     /**
-     * More weight levels (D41): a name and a width. `thin` is `strokeWidth` and `thick` is
+     * More weight levels (DESIGN.md, "Edge weights"): a name and a width. `thin` is `strokeWidth` and `thick` is
      * `main.strokeWidth`; every other level lives here.
      */
     weights: Record<string, number>;
@@ -80,7 +80,7 @@ export interface Paint {
     cornerRadius: number;
     /**
      * orthogonal: corners rounded by cornerRadius. curved: each corner as round as
-     * its two stretches and the room around it allow; the route stays the same (D33).
+     * its two stretches and the room around it allow; the route stays the same (DESIGN.md, "Lines meet any side").
      */
     shape: "orthogonal" | "curved";
     /** The patch behind an edge label, so the label stays readable over lines. */
@@ -96,20 +96,20 @@ const STYLES: Record<EdgeKind, LineStyleName> = {
   optional: "dotted",
 };
 
-/** The line style an edge kind is drawn in. The kind decides it (D8, D33). */
+/** The line style an edge kind is drawn in. The kind decides it (DESIGN.md, "Looks", "Lines meet any side"). */
 export function lineStyle(kind: EdgeKind): LineStyleName {
   return STYLES[kind];
 }
 
-/** The narrowest and widest width of one edge, in pixels (D41). */
+/** The narrowest and widest width of one edge, in pixels (DESIGN.md, "Edge weights"). */
 export const WEIGHT_MIN = 0.5;
 export const WEIGHT_MAX = 8;
-/** A weight level's name (D41). */
+/** A weight level's name (DESIGN.md, "Edge weights"). */
 export const WEIGHT_LEVEL = /^[a-z][a-z0-9-]*$/;
-/** The longest arrowhead a heavy line grows to, unless the thick one is longer (D41). */
+/** The longest arrowhead a heavy line grows to, unless the thick one is longer (DESIGN.md, "Edge weights"). */
 const ARROW_MAX = 12;
 
-/** The weight an edge is drawn at: its `weight`, else `thick` for the old `accent`, else none (D41). */
+/** The weight an edge is drawn at: its `weight`, else `thick` for the old `accent`, else none (DESIGN.md, "Edge weights"). */
 export function weightOf(e: {
   accent?: boolean;
   weight?: string | number;
@@ -117,7 +117,7 @@ export function weightOf(e: {
   return e.weight ?? (e.accent === true ? "thick" : undefined);
 }
 
-/** The width of an edge in pixels, or undefined for a level the paint lacks (D41). */
+/** The width of an edge in pixels, or undefined for a level the paint lacks (DESIGN.md, "Edge weights"). */
 export function edgeWidth(
   e: { accent?: boolean; weight?: string | number },
   P: Paint,
@@ -130,7 +130,7 @@ export function edgeWidth(
 }
 
 /**
- * The width and arrowhead of a line (D41). At the thin width the arrowhead is the thin
+ * The width and arrowhead of a line (DESIGN.md, "Edge weights"). At the thin width the arrowhead is the thin
  * one and at the thick width it is the main-path one. Between and past them it grows by
  * the same step per pixel, up to a length of ARROW_MAX. A narrower line keeps the thin one.
  */
@@ -161,7 +161,7 @@ export const STYLE_KIND: Record<LineStyleName, EdgeKind> = {
   plain: "link",
 };
 
-/** A link says two things are related, with no direction, so it has no arrowhead (D33). */
+/** A link says two things are related, with no direction, so it has no arrowhead (DESIGN.md, "Lines meet any side"). */
 export function hasHead(kind: EdgeKind): boolean {
   return kind !== "link";
 }

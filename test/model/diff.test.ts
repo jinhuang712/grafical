@@ -29,7 +29,7 @@ function replays(a: Diagram | null, b: Diagram): void {
   expect(writeDiagram(r.diagram)).toBe(writeDiagram(b));
 }
 
-describe("diff as operations (D18)", () => {
+describe('diff as operations (DESIGN.md, "Git as the history")', () => {
   it("reports nothing for the same diagram", () => {
     expect(diffDiagrams(catalogSyncGrouped, structuredClone(catalogSyncGrouped))).toEqual([]);
   });
@@ -60,7 +60,7 @@ describe("diff as operations (D18)", () => {
     ]);
   });
 
-  it("replays groups that move between groups, and removed groups that held others (D34)", () => {
+  it('replays groups that move between groups, and removed groups that held others (DESIGN.md, "Every layered diagram type")', () => {
     const moved = edited(nested, [
       { op: "group.join", group: "region", nodes: ["public"] },
       { op: "group.leave", nodes: ["api"], up: true },

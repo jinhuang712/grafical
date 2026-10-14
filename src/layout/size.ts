@@ -1,7 +1,7 @@
-// Box sizes (DESIGN.md D27). A node with no size takes a medium box, or a large
+// Box sizes (DESIGN.md, "Boxes sized to their text"). A node with no size takes a medium box, or a large
 // one when its text does not fit the medium box. A diagram whose sizing is fixed
-// gives every such node a medium box, as before D27. The fit test is the checker's
-// overflow rule (D14), so a node the engine sizes overflows only when its text
+// gives every such node a medium box, as before DESIGN.md, "Boxes sized to their text". The fit test is the checker's
+// overflow rule (DESIGN.md, "Defects owned by who can fix them"), so a node the engine sizes overflows only when its text
 // does not fit the large box either.
 
 import { isEmoji } from "../model/schema.ts";
@@ -25,7 +25,7 @@ import { TYPE_RAMP } from "../theme/type.ts";
 import { lineHeight } from "./text.ts";
 
 /**
- * How wide a mark is (D40). A picture is a square. A text sits on a badge that is as
+ * How wide a mark is (DESIGN.md, "Marks of any kind"). A picture is a square. A text sits on a badge that is as
  * wide as the text and its padding, and at least a square, so that `NEW` fits.
  */
 export function markWidth(mark: Mark, m: Measurer): number {
@@ -36,12 +36,12 @@ export function markWidth(mark: Mark, m: Measurer): number {
   return Math.max(step.h, Math.ceil(m.measure(text, { size, weight: 600 }).width + 2 * step.padX));
 }
 
-/** How high a mark is (D40). */
+/** How high a mark is (DESIGN.md, "Marks of any kind"). */
 export function markHeight(mark: Mark): number {
   return MARK_STEP[markStyle(mark).size ?? DEFAULT_MARK_SIZE].h;
 }
 
-/** The width a node's text gives up for its left mark (D40). A diamond and a dot have no left slot. */
+/** The width a node's text gives up for its left mark (DESIGN.md, "Marks of any kind"). A diamond and a dot have no left slot. */
 export function leftInset(node: DiagramNode, m: Measurer): number {
   const mark = node.icons?.left;
   if (mark === undefined || node.kind === "decision" || isDot(node.kind)) return 0;
@@ -49,7 +49,7 @@ export function leftInset(node: DiagramNode, m: Measurer): number {
 }
 
 /**
- * Where a node's marks go (D40). A corner mark is centred on its corner, on the height
+ * Where a node's marks go (DESIGN.md, "Marks of any kind"). A corner mark is centred on its corner, on the height
  * of the mark: half of it lies outside the box on each axis, so a large mark covers the
  * corner as a small one does. A wide badge grows inward along the edge. The left mark is
  * inside the box, centred in its column. A diamond and a dot have corner marks only.
@@ -77,7 +77,7 @@ export function markRects(node: DiagramNode, r: Rect, m: Measurer): SceneMark[] 
   return out;
 }
 
-/** A node's label and sublabel, wrapped to the room its shape gives its text (D34). */
+/** A node's label and sublabel, wrapped to the room its shape gives its text (DESIGN.md, "Every layered diagram type"). */
 export function nodeLines(
   kind: NodeKind,
   w: number,
@@ -86,7 +86,7 @@ export function nodeLines(
   sublabel: string | undefined,
   m: Measurer,
   T: TypeRamp,
-  /** Width the text gives up on the left, for a left mark (D40). */
+  /** Width the text gives up on the left, for a left mark (DESIGN.md, "Marks of any kind"). */
   inset = 0,
 ): { label: Line[]; sub: Line[]; room: number } {
   const wrap = (room: number) => ({

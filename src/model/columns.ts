@@ -1,4 +1,4 @@
-// Columns (DESIGN.md D45): a guide that boxes follow beside their rows. Every box of
+// Columns (DESIGN.md, "Columns beside rows"): a guide that boxes follow beside their rows. Every box of
 // a column lies left of every box of the next, in every row; a box in no column keeps
 // its place beside the box left of it. Nothing is drawn.
 

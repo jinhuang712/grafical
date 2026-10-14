@@ -1,4 +1,4 @@
-// Taste measurements (DESIGN.md D25, D26). These are not defects: a broken
+// Taste measurements (DESIGN.md, "A target picture with measured rules", "Curation stays with the agent"). These are not defects: a broken
 // rule is reported by `grafical check --all` and never blocks a write. Pure.
 
 import { everyNode } from "../model/steps.ts";
@@ -27,9 +27,9 @@ export interface TasteReport {
   edgesOverBendLimit: TasteRule;
   /** Rule 7: the share of edges that carry a label. */
   labelledShare: TasteRule;
-  /** Rule 6: how many line styles the edges use: solid, dashed, dotted or plain (D8, D33). */
+  /** Rule 6: how many line styles the edges use: solid, dashed, dotted or plain (DESIGN.md, "Looks", "Lines meet any side"). */
   lineStyles: TasteRule;
-  /** D26: the node count, against the budget. */
+  /** DESIGN.md, "Curation stays with the agent": the node count, against the budget. */
   nodeCount: TasteRule;
   /** Rule 5: see `countCorridorViolations`. */
   corridorViolations: TasteRule;
@@ -140,7 +140,7 @@ function rule(value: number, limit: number, ok: boolean): TasteRule {
   return { value: round(value), limit, ok };
 }
 
-/** Measures the eight rules of D25 and the node budget of D26. */
+/** Measures the eight rules of DESIGN.md, "A target picture with measured rules" and the node budget of DESIGN.md, "Curation stays with the agent". */
 export function measureTaste(diagram: Diagram, scene: Scene): TasteReport {
   const edges = scene.edges;
   const total = edges.length;

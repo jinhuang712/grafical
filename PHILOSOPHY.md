@@ -1,4 +1,4 @@
-<!-- what-we-build: approved 2026-10-14 -->
+<!-- what-we-build: approved 2026-10-15 -->
 # Philosophy
 
 > Written 2026-10-11. Rewritten by the owner on 2026-10-14, as questions with answers.
@@ -131,9 +131,9 @@ When two answers collide, the facts the agent named win. grafical never changes 
 
 **The sentential author.** Larkin and Simon's advantage of diagrams belongs to the reader, whose eye searches by location. The agent that draws is a sentential creature making a diagrammatic thing, and this is the deepest reason coordinates are the wrong interface for it. Their warning matters as much as their praise: "To be useful a diagram must be constructed to take advantage of these features." A diagram is not good because it is a diagram. Tversky adds that a diagram is thought put outside the head, which is why the thinking has to stay with whoever draws.
 
-**Flexibility against ease.** Moody's principles pull against each other: more symbols say more, and are harder to tell apart. Bertin found that a picture has only a handful of visual variables, such as position, size, shape, value, hue, orientation and texture, and that their combinations carry everything. The owner's answer follows both: the conflict is real, and it is solved by abundant, discrete operations. The line between free and discrete fell where the owner drew it on 2026-10-14: colors and line widths are looks and may take any value (DESIGN.md D40, D41), and placement stays a fact.
+**Flexibility against ease.** Moody's principles pull against each other: more symbols say more, and are harder to tell apart. Bertin found that a picture has only a handful of visual variables, such as position, size, shape, value, hue, orientation and texture, and that their combinations carry everything. The owner's answer follows both: the conflict is real, and it is solved by abundant, discrete operations. The line between free and discrete fell where the owner drew it on 2026-10-14: colors and line widths are looks and may take any value (DESIGN.md, "Marks of any kind", "Edge weights"), and placement stays a fact.
 
-**A doubt still open.** Steps from another box (DESIGN.md D46) are small whole numbers on the grid, a fact like a row. They are also the nearest grafical has come to a position. If steps grow larger, finer or more common, "places are facts" needs another look.
+**A doubt still open.** Steps from another box (DESIGN.md, "Steps from another box") are small whole numbers on the grid, a fact like a row. They are also the nearest grafical has come to a position. If steps grow larger, finer or more common, "places are facts" needs another look.
 
 **How the earlier stances got here.** On 2026-10-11, after three judged rounds lost their remaining points on what the agent chose to draw, the engine was given the picture and the agent the content. On 2026-10-13, a proposed score of how hard a picture is to read was rejected, because readers differ, and "easy and consistent" became the aim. The same day, the command line became discrete: "CLI is all discrete, and understanding the diagram should be for the coding agent to do." On 2026-10-14, while choosing how a box leaves the grid, the owner said grafical only does the dirty work. The same day, the owner dropped the stance that "people and agents take the same steps", which had kept the door open for people to edit on a board: agents draw good enough diagrams with grafical, and what is missing is more combinations of operations.
 

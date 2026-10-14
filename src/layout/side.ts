@@ -1,4 +1,4 @@
-// Edges between neighbours in one row run straight sideways (D11, D25): from one
+// Edges between neighbours in one row run straight sideways (DESIGN.md, "Our own gap router", "A target picture with measured rules"): from one
 // node's side to the other's, at the row's middle. Which edges do, and where on the
 // side, depends only on the facts and the measured labels, so that placement can
 // leave room for the labels before anything is routed.

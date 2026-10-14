@@ -1,4 +1,4 @@
-// The help pages: all an agent reads to learn grafical (DESIGN.md D36). A page is
+// The help pages: all an agent reads to learn grafical (DESIGN.md, "The help as the reference"). A page is
 // commander's usage, options and commands, then this file's sections, always in this
 // order: When to use, By diagram type, Kinds, Good to know, Common mistakes, Limits,
 // Batch file, Output, When refused, See also, Example. A page shows the ones it has.

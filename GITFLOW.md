@@ -66,7 +66,7 @@ The scope is optional. Add `!` after the type or scope for a breaking change, an
 - The scope is the module or directory touched, in lowercase, such as `layout`, `router` or `cli`.
 - The subject is lowercase except for names and identifiers, has no trailing period, and is at most 72 characters.
 - The subject describes the effect, not the process: `keep layer order on node.remove`, not `fixed some layout stuff`.
-- When the change implements a design decision, end the subject with its ID, such as `(D10)`.
+- When the change carries out a design decision, name it in the body by its heading in DESIGN.md, such as `DESIGN.md, "Our own gap router"`.
 - The body explains why. The diff already shows what.
 
 ## Attribution

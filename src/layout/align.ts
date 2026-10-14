@@ -1,4 +1,4 @@
-// Alignment (DESIGN.md D6, D10): an aligned node sits in the same column of the
+// Alignment (DESIGN.md, "Facts over coordinates", "Layout computed again on every change"): an aligned node sits in the same column of the
 // grid as its target, so directly above or below it. The grid (grid.ts) treats an
 // alignment as a join of two columns that must hold. It cannot hold when the order
 // of a layer, another alignment or a group puts the target's column on the other

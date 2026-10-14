@@ -1,4 +1,4 @@
-// Boxes beside every box they connect to (DESIGN.md D47): the engine counts one it placed
+// Boxes beside every box they connect to (DESIGN.md, "Who chose is punished"): the engine counts one it placed
 // as it counts a crossing, and one the agent placed by steps fails the write.
 
 import { beforeAll, describe, expect, it } from "vitest";
@@ -41,7 +41,7 @@ function diagram(store: DiagramNode, low: DiagramNode[] = []): Diagram {
   return d;
 }
 
-describe("a box beside every box it connects to (D47)", () => {
+describe('a box beside every box it connects to (DESIGN.md, "Who chose is punished")', () => {
   it("fails the write when the agent placed it there by steps", () => {
     const aside = diagram(box("db", { kind: "store", from: "b", down: 1, right: 1 }));
     expect(asideBoxes(layout(aside, m))).toEqual([{ box: "db", users: ["a", "b"] }]);

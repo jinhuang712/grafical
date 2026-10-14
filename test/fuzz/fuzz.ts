@@ -1,7 +1,7 @@
-// What the fuzz asserts: the defects the engine owns (DESIGN.md D14). Overflow
+// What the fuzz asserts: the defects the engine owns (DESIGN.md, "Defects owned by who can fix them"). Overflow
 // and a missing glyph are the agent's to fix, with a shorter label or other text.
 // A line through text and a node inside a group it does not belong to are the
-// engine's too (D25 rule 8, D7); until the checker on this branch finds them,
+// engine's too (DESIGN.md, "A target picture with measured rules" rule 8, DESIGN.md, "Rows unseen, groups as systems"); until the checker on this branch finds them,
 // the layout's own geometry checks count them.
 
 import type { Defect, DefectCode } from "../../src/errors.ts";

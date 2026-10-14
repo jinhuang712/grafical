@@ -1,4 +1,4 @@
-// Text measurement entry point (DESIGN.md D12). The real measurer shapes the
+// Text measurement entry point (DESIGN.md, "Bundled fonts"). The real measurer shapes the
 // bundled fonts with harfbuzzjs. The stub stays for tests that need no fonts.
 
 import { loadFontBytes } from "./fonts.ts";

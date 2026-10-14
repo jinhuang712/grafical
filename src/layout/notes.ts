@@ -1,4 +1,4 @@
-// Notes (DESIGN.md D44): each note is drawn as a callout card beside what it is
+// Notes (DESIGN.md, "Notes as callouts or footnotes"): each note is drawn as a callout card beside what it is
 // about, where there is room, or as a numbered footnote: a number on its target and
 // its text in a list at the bottom. A card keeps clear of every box, line, text and
 // other card, and lies wholly inside or outside each group, lane and band. Nothing

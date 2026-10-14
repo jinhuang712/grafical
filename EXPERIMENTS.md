@@ -12,7 +12,7 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 |---|---|---|---|---|
 | H1 | Haiku with grafical draws a first draft as good as strong models with a skill | Bet 2, "Easy and consistent" | Blind score, model gap | E1 |
 | H2 | A change costs one small batch, not a regeneration, and is cheaper and faster than regenerating | "Make the next improvement cheap" | Dollars, wall time and tokens per change, regenerations | E2 |
-| H3 | A change never alters a fact it did not name | "Only the facts you name change" | Unnamed fact changes, movement outside DESIGN.md D10's list | E2 |
+| H3 | A change never alters a fact it did not name | "Only the facts you name change" | Unnamed fact changes, movement outside the list in DESIGN.md, "Layout computed again on every change" | E2 |
 | H4 | No caller ever computes a coordinate | "Looks are free; places are facts" | Coordinates or layout scripts in the agent's transcript | E1, E2 |
 | H5 | Mistakes are fixed at the step that made them | "Make the next improvement cheap" | Operation errors, retries to recover | E1, E2 |
 | H6 | The agent knows it is done from grafical's text output, without looking at the picture | Verifiability | Image reads per run | E1, E2 |
@@ -36,7 +36,7 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 | Image reads | Times the agent opens a rendered picture to judge it | The transcript |
 | Regenerations | Change requests answered by redrawing the whole diagram | The transcript, and for grafical the operation log |
 | Unnamed fact changes | Facts (layer, order, group, alignment) that changed although no operation named them | grafical's `diff` between before and after |
-| Out-of-list movement | Elements that moved although DESIGN.md D10 does not allow it | The engine's layout, before and after |
+| Out-of-list movement | Elements that moved although DESIGN.md, "Layout computed again on every change" does not allow it | The engine's layout, before and after |
 | Other changes, no-tool arms | What changed besides the request, counted by the judges | Judges' answer to "what else changed?" |
 | Operation errors | Rejected operations ÷ all operations, and the retries until success | grafical's JSON output |
 | Score | Two blind Opus judges, five criteria from 1 to 5 each, 50 points in total | Judging, below |
@@ -96,14 +96,14 @@ Each belief in [PHILOSOPHY.md](PHILOSOPHY.md) and each bet in [PROPOSAL.md](PROP
 
 | Decision | A | B | Deciding metric |
 |---|---|---|---|
-| D3 batches | Batches allowed | One operation per call | Cost and wall time per draft |
-| D17 `guide` | A 1k-token guide | A 3k-token guide | Score and operation errors |
-| D17 `show` | `show` | Reading the YAML file | Tokens and operation errors |
-| D24 slot choice | The engine picks the slot | New nodes go last | Score and crossings |
-| D14 checking | A check after every write | One check at the end | Operation errors and retries |
-| D16 output | Compact JSON reports | Full reports | Tokens and cache hit rate |
-| D34 type guides | The type guides | No type guides: the main guide alone | Problem lines, refused writes, and whether a draft uses its type's kinds and parts. Ran 2026-10-12 (`bench/results/p1d-guides.md`); the guides then moved into the help (D36) |
-| D36 help | The guide, as round `p1d-guides` ran it | The help alone, the prompt naming only the `grafical` command (`stage1 --part help`) | The same, and whether agents open `--help` before their first write |
+| DESIGN.md, "Operations" batches | Batches allowed | One operation per call | Cost and wall time per draft |
+| DESIGN.md, "Interfaces" `guide` | A 1k-token guide | A 3k-token guide | Score and operation errors |
+| DESIGN.md, "Interfaces" `show` | `show` | Reading the YAML file | Tokens and operation errors |
+| DESIGN.md, "The engine picks a new box's slot" slot choice | The engine picks the slot | New nodes go last | Score and crossings |
+| DESIGN.md, "Defects owned by who can fix them" checking | A check after every write | One check at the end | Operation errors and retries |
+| DESIGN.md, "Interfaces" output | Compact JSON reports | Full reports | Tokens and cache hit rate |
+| DESIGN.md, "Every layered diagram type" type guides | The type guides | No type guides: the main guide alone | Problem lines, refused writes, and whether a draft uses its type's kinds and parts. Ran 2026-10-12 (`bench/results/p1d-guides.md`); the guides then moved into the help (DESIGN.md, "The help as the reference") |
+| DESIGN.md, "The help as the reference" help | The guide, as round `p1d-guides` ran it | The help alone, the prompt naming only the `grafical` command (`stage1 --part help`) | The same, and whether agents open `--help` before their first write |
 
 An ablation runs when its decision is built or questioned, not all at once.
 
@@ -126,9 +126,9 @@ An ablation runs when its decision is built or questioned, not all at once.
 - **Records:** for each run, a summary of every metric above, the transcript, the final diagram file and picture, and their hashes. Raw runs go to `bench/runs/`, which is not tracked. Summary tables are committed under `bench/results/`.
 - **Versions:** each result records the Claude Code version, the model IDs and grafical's commit.
 - **Judging:** two Opus judges score each picture blind, each with its own random labels. They score accuracy, clarity, visual quality, defects, and fit in a doc at 1000 px wide, each from 1 to 5. That gives 25 points per judge and 50 in total. For E2 they also list what changed besides each request. They see only the brief, the request and the pictures.
-  - **Order**, a sixth criterion, scores clutter: few, straight, easy lines, no tangles or staircases, no line across text. With it a judge gives 30 points and a pair 60. It was added on 2026-10-11, after the owner called the phase 1 pictures "cluttered, messy, lines are all over the place" (DESIGN.md D25).
+  - **Order**, a sixth criterion, scores clutter: few, straight, easy lines, no tangles or staircases, no line across text. With it a judge gives 30 points and a pair 60. It was added on 2026-10-11, after the owner called the phase 1 pictures "cluttered, messy, lines are all over the place" (DESIGN.md, "A target picture with measured rules").
   - The MVP bar in GOALS.md stays on the first five criteria, out of 50, so that it compares with its 2026-10-10 baseline.
-  - The D25 target picture is judged in every round as an anchor.
+  - The DESIGN.md, "A target picture with measured rules" target picture is judged in every round as an anchor.
   - **Two scores per picture** (from 2026-10-11, after the owner's principle that the engine arranges and the agent decides what the diagram says): an engine score, from order, visual quality, defects and fit (20 per judge), and an agent score, from accuracy and clarity (10 per judge). Results report both next to the total, so that a round shows which side lost its points.
 - **The owner's ratings:** every round's pictures also go to the owner's rating page, made by `pnpm bench gallery`, under blind letters. The owner's ratings are read back and reported next to the judges' scores.
   - From the end of stage 1 (owner, 2026-10-12): the owner's blind ratings are the final judge, and judging must stay cheap. Opus judges score only the MVP bar, whose 42 of 50 baseline came from Opus judges. Every other round is scored by the owner alone.

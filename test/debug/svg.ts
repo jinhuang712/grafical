@@ -35,7 +35,7 @@ export function debugSvg(s: Scene, opts: DebugOptions = {}): string {
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(s.width)}" height="${r2(s.height)}" viewBox="0 0 ${r2(s.width)} ${r2(s.height)}" font-family="Inter, Helvetica Neue, Helvetica, Arial, sans-serif">`,
   );
   out.push(`<rect width="${r2(s.width)}" height="${r2(s.height)}" fill="#ffffff"/>`);
-  // Rows are not drawn (D7); groups are, behind everything else.
+  // Rows are not drawn (DESIGN.md, "Rows unseen, groups as systems"); groups are, behind everything else.
   const frame = frameParts(s);
   out.push(...frame.behind);
   const texts = [s.title];

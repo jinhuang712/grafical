@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="648" viewBox="0 0 1024 648" role="img" aria-labelledby="target-title">
-<title id="target-title">catalog-sync and catalog-api: the target look (DESIGN.md D25)</title>
+<title id="target-title">catalog-sync and catalog-api: the target look (DESIGN.md, "A target picture with measured rules")</title>
 <rect width="1024" height="648" fill="#ffffff"/>
 <rect x="32" y="184" width="352" height="312" rx="8" fill="#f5f6f8" stroke="#d5d9df" stroke-width="1"/>
 <text x="48" y="208" font-family="Inter" font-size="12" font-weight="600" fill="#4b525c" xml:space="preserve">catalog-sync</text>

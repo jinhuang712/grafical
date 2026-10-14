@@ -1,4 +1,4 @@
-// Blind judging (EXPERIMENTS.md, "Judging"). Two Opus judges score each
+// Blind judging (EXPERIMENTS.md, "Harness"). Two Opus judges score each
 // picture. Each judge gets its own random labels, drawn with a crypto RNG, and
 // sees one picture per call in a directory that holds nothing else. The key
 // that maps labels back to pictures is stored apart from what the judges see.

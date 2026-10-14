@@ -1,5 +1,5 @@
 // Lays out each fixture with the real measurer, runs the real checker and the
-// layout's own geometry checks, prints the measured rules of DESIGN.md D25, and
+// layout's own geometry checks, prints the measured rules of DESIGN.md, "A target picture with measured rules", and
 // renders a PNG through the real renderer. Run with:
 //   node test/debug/check-fixtures.ts <out-dir> [fixture]
 

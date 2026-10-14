@@ -1,4 +1,4 @@
-// The determinism gate of benchmark 11 (DESIGN.md D15), end to end: fixtures laid
+// The determinism gate of benchmark 11 (DESIGN.md, "Output and determinism"), end to end: fixtures laid
 // out with the real measurer give these SVG bytes and PNG pixels on every
 // machine CI runs on, macOS and Linux. If the layout or the paint changes on
 // purpose, look at the pictures (node test/debug/check-fixtures.ts), then update.
@@ -58,7 +58,7 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-describe("the same file gives the same picture everywhere (D15)", () => {
+describe('the same file gives the same picture everywhere (DESIGN.md, "Output and determinism")', () => {
   for (const [name, pin] of Object.entries(PINS)) {
     it(`${name}: SVG bytes and PNG pixels`, () => {
       const svg = renderSvg(layout(pin.diagram, m));

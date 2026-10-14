@@ -73,13 +73,13 @@ describe("file format", () => {
     expect(r[0]?.code).toBe("unknown-group");
   });
 
-  it("round-trips a group inside a group, with in after the label (D34)", () => {
+  it('round-trips a group inside a group, with in after the label (DESIGN.md, "Every layered diagram type")', () => {
     const text = writeDiagram(nested);
     expect(text).toContain("  - id: vpc\n    label: shop network\n    in: region\n");
     expect(readDiagram(text)).toEqual(nested);
   });
 
-  it("rejects a group in a missing group, in itself, or four deep (D34)", () => {
+  it('rejects a group in a missing group, in itself, or four deep (DESIGN.md, "Every layered diagram type")', () => {
     const withGroups = (groups: NonNullable<Diagram["groups"]>) =>
       readDiagram(writeDiagram({ ...nested, groups })) as OpError[];
     const parents = (nested.groups ?? []).filter((g) => g.id !== "public" && g.id !== "private");
@@ -170,7 +170,7 @@ describe("group operations", () => {
     expect(fail(d1, [{ op: "group.rename", id: "zz", label: "x" }])[0]?.code).toBe("unknown-group");
   });
 
-  it("a group's box spans a row it has no member in, and that row's nodes sit beside it (D7)", async () => {
+  it("a group's box spans a row it has no member in, and that row's nodes sit beside it (DESIGN.md, \"Rows unseen, groups as systems\")", async () => {
     const d = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a", "c"] }]).diagram;
     const real = await createMeasurer();
     const s = layout(d, real);
@@ -187,7 +187,7 @@ describe("group operations", () => {
     expect(groupOf(ok(d2, [{ op: "group.leave", nodes: ["b"] }]).diagram, "b")).toBeUndefined();
   });
 
-  it("group-split: a non-member between members in one row is refused by the layout (D7)", () => {
+  it('group-split: a non-member between members in one row is refused by the layout (DESIGN.md, "Rows unseen, groups as systems")', () => {
     const row = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
       { op: "node.add", id: "x", layer: "r", label: "X", last: true },
@@ -229,7 +229,7 @@ describe("group operations", () => {
   });
 });
 
-describe("groups inside groups (D34)", () => {
+describe('groups inside groups (DESIGN.md, "Every layered diagram type")', () => {
   const parentOf = (d: Diagram, id: string) => d.groups?.find((g) => g.id === id)?.in;
   const groupOfNode = (d: Diagram, id: string) =>
     d.layers.flatMap((l) => l.nodes).find((n) => n.id === id)?.group;

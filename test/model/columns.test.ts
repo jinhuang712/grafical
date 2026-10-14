@@ -1,4 +1,4 @@
-// Columns (DESIGN.md D45): a guide that boxes follow beside their rows.
+// Columns (DESIGN.md, "Columns beside rows"): a guide that boxes follow beside their rows.
 
 import { describe, expect, it } from "vitest";
 import { showDiagram } from "../../src/cli/show.ts";
@@ -61,7 +61,7 @@ const base: Diagram = {
   ],
 };
 
-describe("columns (D45)", () => {
+describe('columns (DESIGN.md, "Columns beside rows")', () => {
   it("are kept in the file, read back, and shown", () => {
     const r = ok(base, [
       { op: "column.add", id: "requests", nodes: ["web", "api", "cache"] },

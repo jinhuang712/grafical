@@ -1,5 +1,5 @@
 // The type ramp: one style per text role. Shared by the layout and the renderer.
-// The sizes match the target picture (DESIGN.md D25).
+// The sizes match the target picture (DESIGN.md, "A target picture with measured rules").
 
 import type { TextRole } from "../scene.ts";
 import type { TextStyle } from "../text/types.ts";

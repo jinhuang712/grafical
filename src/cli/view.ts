@@ -1,9 +1,9 @@
 // `grafical view <file>`: the diagram as it is now, in a window, redrawn within a
 // moment of every change to the file or its stylesheet, from any process
-// (DESIGN.md D31). It shows; it never edits. The parts that changed are marked
+// (DESIGN.md, "A viewer that only shows"). It shows; it never edits. The parts that changed are marked
 // for a moment by boxes laid over the picture, so the SVG stays the same bytes
 // that `render` writes. A side panel lists each change as operations, taken from
-// `grafical diff` between the last good file and the new one (D18).
+// `grafical diff` between the last good file and the new one (DESIGN.md, "Git as the history").
 
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, watch } from "node:fs";

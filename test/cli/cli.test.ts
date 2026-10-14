@@ -283,7 +283,7 @@ describe("read commands", () => {
     expect(readFileSync(join(dir, "single.svg"), "utf8").startsWith("<svg")).toBe(true);
   });
 
-  it("show --drawn prints the drawing as facts and counts (D37)", () => {
+  it('show --drawn prints the drawing as facts and counts (DESIGN.md, "Records over prose")', () => {
     const r = run("show", "single.grafical.yaml", "--drawn");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(/^counts nodes=\d+ lines=\d+ crossings=\d+/);
@@ -295,7 +295,7 @@ describe("read commands", () => {
     expect(json.drawing.counts.nodes).toBeGreaterThan(0);
   });
 
-  it("try reports the counts before and after a batch, and writes nothing (D37)", () => {
+  it('try reports the counts before and after a batch, and writes nothing (DESIGN.md, "Records over prose")', () => {
     const before = readFileSync(join(dir, "single.grafical.yaml"), "utf8");
     writeFileSync(join(dir, "try.yaml"), "- {op: node.rename, id: api, label: API service}\n");
     const r = run("try", "single.grafical.yaml", "try.yaml");

@@ -1,4 +1,4 @@
-// Applying operations (DESIGN.md D1, D3, D4, D5, D24). Pure and atomic: any
+// Applying operations (DESIGN.md, "Operations over whole-file rewrites", "Operations", "Checking and failure", "The engine picks a new box's slot"). Pure and atomic: any
 // error means the input diagram is untouched, and the first failing operation's
 // errors are returned with its index.
 
@@ -74,7 +74,7 @@ interface Pending {
 interface State {
   d: Diagram;
   changed: string[];
-  /** Nodes that wait for an engine-chosen slot (D24), in operation order. */
+  /** Nodes that wait for an engine-chosen slot (DESIGN.md, "The engine picks a new box's slot"), in operation order. */
   pending: Pending[];
   /** Layers to reorder once the batch is applied (layer.tidy, diagram.tidy). */
   tidy: Set<string>;
@@ -113,7 +113,7 @@ function dupError(d: Diagram, id: string, i: number): OpError | undefined {
 const MARK_STYLE_FIELDS = ["bg", "fg", "border", "shape"] as const;
 
 /**
- * The mark a node.icon operation sets, or its errors (D40). A style that holds its default
+ * The mark a node.icon operation sets, or its errors (DESIGN.md, "Marks of any kind"). A style that holds its default
  * is left out, so the file shows only what was chosen. A picture, that is an emoji or a
  * file, takes a size and nothing else: it has its own colors and outline.
  */
@@ -162,7 +162,7 @@ function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
   return Object.keys(style).length === 0 ? icon : { text: icon, ...style };
 }
 
-/** The fields of a legend operation that name its entry; it names exactly one (D42). */
+/** The fields of a legend operation that name its entry; it names exactly one (DESIGN.md, "A legend for widths and marks"). */
 const LEGEND_TARGETS = ["style", "weight", "mark"] as const;
 
 /** A map with one key set, or removed when the value is undefined; undefined when empty. */
@@ -179,7 +179,7 @@ function setWords<V>(
 
 /**
  * Sets one legend entry's words, leaves it out with hide, or with neither gives it back
- * its default (D42). A mark has no entry by default, so it cannot be left out.
+ * its default (DESIGN.md, "A legend for widths and marks"). A mark has no entry by default, so it cannot be left out.
  */
 function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
   const named = LEGEND_TARGETS.filter((k) => op[k] !== undefined);
@@ -205,7 +205,7 @@ function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
   if (named.length > 1) return [clash(named[0] ?? "", named[1] ?? "")];
   if (hide && op.text !== undefined) return [clash("text", "hide")];
   if (hide && op.mark !== undefined) return [clash("mark", "hide")];
-  // false leaves the entry out (D42).
+  // false leaves the entry out (DESIGN.md, "A legend for widths and marks").
   const value = hide ? false : op.text;
   const legend: Legend = { ...(s.d.legend ?? {}) };
   if (op.style !== undefined) {
@@ -258,7 +258,7 @@ function nodeIds(d: Diagram): string[] {
   return everyNode(d).map((n) => n.id);
 }
 
-/** Where a node is: its row, or none for a box placed by steps (D46), and the list that holds it. */
+/** Where a node is: its row, or none for a box placed by steps (DESIGN.md, "Steps from another box"), and the list that holds it. */
 interface Found {
   layer?: Layer;
   list: DiagramNode[];
@@ -284,7 +284,7 @@ function unlist(d: Diagram, at: Found) {
   if (d.nodes !== undefined && d.nodes.length === 0) delete d.nodes;
 }
 
-/** A fact about where a box is, on a box placed by steps (D46): it goes back to a row first. */
+/** A fact about where a box is, on a box placed by steps (DESIGN.md, "Steps from another box"): it goes back to a row first. */
 function stepped(id: string, i: number, field: string, found: string): OpError {
   return {
     code: "conflicting-position",
@@ -350,7 +350,7 @@ function setGroup(s: State, ids: readonly string[], group: string | undefined) {
   }
 }
 
-/** Sets the group a group sits in, or takes it out of every group (D34). */
+/** Sets the group a group sits in, or takes it out of every group (DESIGN.md, "Every layered diagram type"). */
 function setParent(s: State, id: string, parent: string | undefined) {
   const g = s.d.groups?.find((x) => x.id === id);
   if (g === undefined || g.in === parent) return;
@@ -359,7 +359,7 @@ function setParent(s: State, id: string, parent: string | undefined) {
   touch(s, id);
 }
 
-/** A group that would sit more than three deep, with what is inside it, or inside itself (D34). */
+/** A group that would sit more than three deep, with what is inside it, or inside itself (DESIGN.md, "Every layered diagram type"). */
 function nestError(
   d: Diagram,
   id: string,
@@ -460,7 +460,7 @@ function groupStep(s: State, op: Extract<Op, { op: `group.${string}` }>, i: numb
     d.groups = groups.filter((x) => x.id !== g.id);
     touch(s, g.id);
     setGroup(s, members, into);
-    // The edges that end at the group go with it, as a node's do (D28).
+    // The edges that end at the group go with it, as a node's do (DESIGN.md, "Lines that end at containers").
     const gone = d.edges.filter((e) => e.from === g.id || e.to === g.id);
     d.edges = d.edges.filter((e) => e.from !== g.id && e.to !== g.id);
     touch(s, ...gone.map((e) => e.id));
@@ -486,7 +486,7 @@ function unknownLane(d: Diagram, id: string, i: number, field: string): OpError 
 /**
  * What lane members stand for: layers when lanes run as rows, nodes when they run
  * as columns. A group stands for its layers or its nodes. While no lane has a
- * member, the first layer or node decides; groups alone mean columns (D32).
+ * member, the first layer or node decides; groups alone mean columns (DESIGN.md, "Swimlanes run one way").
  */
 function laneTargets(
   d: Diagram,
@@ -601,7 +601,7 @@ function laneStep(s: State, op: Extract<Op, { op: `lane.${string}` }>, i: number
       if (l.lane === lane.id) setLane(s, { layers: [l], nodes: [] }, undefined);
       setLane(s, { layers: [], nodes: l.nodes.filter((n) => n.lane === lane.id) }, undefined);
     }
-    // The edges that end at the lane go with it, as a group's do (D28).
+    // The edges that end at the lane go with it, as a group's do (DESIGN.md, "Lines that end at containers").
     const gone = d.edges.filter((e) => e.from === lane.id || e.to === lane.id);
     d.edges = d.edges.filter((e) => e.from !== lane.id && e.to !== lane.id);
     touch(s, ...gone.map((e) => e.id));
@@ -610,7 +610,7 @@ function laneStep(s: State, op: Extract<Op, { op: `lane.${string}` }>, i: number
 }
 
 /**
- * wall.add, wall.allow and wall.remove (D43). Ids that do not exist are refused here;
+ * wall.add, wall.allow and wall.remove (DESIGN.md, "Walls as space"). Ids that do not exist are refused here;
  * whether the sides lie above or beside each other, and which lines cross, is checked
  * once the whole batch is applied.
  */
@@ -678,7 +678,7 @@ function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number
 }
 
 /**
- * column.add, column.join, column.leave and column.remove (D45). Members are nodes, or
+ * column.add, column.join, column.leave and column.remove (DESIGN.md, "Columns beside rows"). Members are nodes, or
  * groups that bring their nodes. Rows are put in column order once the batch is applied.
  */
 function columnStep(s: State, op: Extract<Op, { op: `column.${string}` }>, i: number): OpError[] {
@@ -764,7 +764,7 @@ function columnStep(s: State, op: Extract<Op, { op: `column.${string}` }>, i: nu
   return [];
 }
 
-/** note.add and note.remove (D44). A note is named by its target, which has one at most. */
+/** note.add and note.remove (DESIGN.md, "Notes as callouts or footnotes"). A note is named by its target, which has one at most. */
 function noteStep(s: State, op: Extract<Op, { op: `note.${string}` }>, i: number): OpError[] {
   const d = s.d;
   const targets = noteTargets(d);
@@ -917,13 +917,13 @@ function addLayer(s: State, op: LayerAddOp, i: number): OpError[] {
 
 type StepSet = Partial<Record<(typeof STEP_KEYS)[number], number>>;
 
-/** Whether an operation gives steps from another box (D46). */
+/** Whether an operation gives steps from another box (DESIGN.md, "Steps from another box"). */
 function givesSteps(op: Steps): boolean {
   return op.from !== undefined || STEP_KEYS.some((k) => op[k] !== undefined);
 }
 
 /**
- * The errors of placing box `id` by steps from `from` (D46): that box exists and does not
+ * The errors of placing box `id` by steps from `from` (DESIGN.md, "Steps from another box"): that box exists and does not
  * step from `id`, through others or not; at least one step, and one way across and one
  * way down; and none of `others`, the options that would say where the box is too.
  */
@@ -1027,7 +1027,7 @@ function addStepped(s: State, op: NodeAddOp, i: number): OpError[] {
   return [];
 }
 
-/** node.move with steps: the box leaves its row, or keeps its place in the list of such boxes (D46). */
+/** node.move with steps: the box leaves its row, or keeps its place in the list of such boxes (DESIGN.md, "Steps from another box"). */
 function moveStepped(s: State, op: NodeMoveOp, at: Found, i: number): OpError[] {
   const d = s.d;
   const from = op.from ?? at.node.from;
@@ -1193,7 +1193,7 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
   return [];
 }
 
-/** A style that names no theme, or a stylesheet outside the diagram's folder (D30). */
+/** A style that names no theme, or a stylesheet outside the diagram's folder (DESIGN.md, "Themes and stylesheets"). */
 export function badStyle(style: string, problem: string, i: number, field = "style"): OpError {
   return {
     code: problem,
@@ -1204,7 +1204,7 @@ export function badStyle(style: string, problem: string, i: number, field = "sty
   };
 }
 
-/** A link has no direction, so it takes no arrowheads at all (D33). */
+/** A link has no direction, so it takes no arrowheads at all (DESIGN.md, "Lines meet any side"). */
 function bothOnLink(id: string, i: number, field: string, found: string): OpError {
   return { code: "both-on-link", index: i, field, found, facts: { edge: id, kind: "link" } };
 }
@@ -1404,7 +1404,7 @@ function swapNodes(s: State, op: Extract<Op, { op: "node.swap" }>, i: number): O
       },
     ];
   }
-  // A box placed by steps has no place in a row to swap (D46).
+  // A box placed by steps has no place in a row to swap (DESIGN.md, "Steps from another box").
   for (const [x, field] of [
     [a, "a"],
     [b, "b"],
@@ -1436,7 +1436,7 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
     if (dup) errors.push(dup);
   }
   if (errors.length > 0) return errors;
-  // The merged node takes the first part's place in its row, so every part is in a row (D46).
+  // The merged node takes the first part's place in its row, so every part is in a row (DESIGN.md, "Steps from another box").
   for (const id of op.nodes) {
     if (findNode(d, id)?.layer === undefined) return [stepped(id, i, "nodes", id)];
   }
@@ -1645,7 +1645,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       if (missing.length > 0) return missing.map((id) => unknownEdge(d, id, i, "edges"));
       for (const e of d.edges) {
         if (!op.edges.includes(e.id)) continue;
-        // The old accent and a weight never both stay: the last one set is the edge's look (D41).
+        // The old accent and a weight never both stay: the last one set is the edge's look (DESIGN.md, "Edge weights").
         delete e.weight;
         if (op.off === true) delete e.accent;
         else e.accent = true;
@@ -1825,7 +1825,7 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "node.remove": {
       const at = findNode(d, op.id);
       if (!at) return [unknownNode(d, op.id, i, "id")];
-      // A box others are placed from by steps stays while they are (D46).
+      // A box others are placed from by steps stays while they are (DESIGN.md, "Steps from another box").
       const users = steppedFrom(d, op.id);
       if (users.length > 0) {
         return [
@@ -1888,7 +1888,7 @@ function newDiagram(op: Extract<Op, { op: "diagram.new" }>): Diagram {
 
 /**
  * Once all operations are applied, nodes without a position take the engine's
- * slot (D24): each in turn, then all of them together, so that a node added early
+ * slot (DESIGN.md, "The engine picks a new box's slot"): each in turn, then all of them together, so that a node added early
  * in a batch can still move for the edges added after it.
  */
 function placePending(s: State, m: Measurer) {
@@ -1907,7 +1907,7 @@ function placePending(s: State, m: Measurer) {
   if (ids.length >= 2) s.d = layoutModule.orderTogether(s.d, ids, m);
 }
 
-/** layer.tidy and diagram.tidy: the named layers reordered once, together (D24). */
+/** layer.tidy and diagram.tidy: the named layers reordered once, together (DESIGN.md, "The engine picks a new box's slot"). */
 function tidyLayers(s: State, m: Measurer) {
   if (s.tidy.size === 0) return;
   const ids = s.d.layers.filter((l) => s.tidy.has(l.id)).flatMap((l) => l.nodes.map((n) => n.id));
@@ -1923,7 +1923,7 @@ function tidyLayers(s: State, m: Measurer) {
 
 /**
  * `diagram` is null only for `diagram.new`, which must be the single first
- * operation. Nothing is changed in the input. D24: nodes added or moved
+ * operation. Nothing is changed in the input. DESIGN.md, "The engine picks a new box's slot": nodes added or moved
  * without a position are slotted after every operation has been applied.
  */
 export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measurer): ApplyResult {
@@ -1953,7 +1953,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
     const before = named ? wallNames(s.d) : undefined;
     const errors = step(s, op, i);
     if (errors.length > 0) return { errors };
-    // The walls forget what the operation removed (D43), and notes go with their targets (D44).
+    // The walls forget what the operation removed (DESIGN.md, "Walls as space"), and notes go with their targets (DESIGN.md, "Notes as callouts or footnotes").
     if (before !== undefined) {
       const now = wallNames(s.d);
       const gone = new Set([...before].filter((id) => !now.has(id)));
@@ -1964,14 +1964,14 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
   }
   placePending(s, m);
   tidyLayers(s, m);
-  // Column lanes keep each row in lane order (D32).
+  // Column lanes keep each row in lane order (DESIGN.md, "Swimlanes run one way").
   touch(s, ...orderByLanes(s.d));
-  // Columns keep each row in column order (D45).
+  // Columns keep each row in column order (DESIGN.md, "Columns beside rows").
   touch(s, ...orderByColumns(s.d));
   const last = Math.max(0, ops.length - 1);
   const broken = checkIntegrity(s.d, last);
   if (broken.length > 0) return { errors: broken };
-  // An alignment that cannot hold with the order of its layers is an operation error (D10).
+  // An alignment that cannot hold with the order of its layers is an operation error (DESIGN.md, "Layout computed again on every change").
   const problems = layoutModule.validateAlignments(s.d);
   if (problems.length > 0) {
     return {
@@ -1984,7 +1984,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
       })),
     };
   }
-  // A group the engine cannot box without a non-member inside is an operation error (D7).
+  // A group the engine cannot box without a non-member inside is an operation error (DESIGN.md, "Rows unseen, groups as systems").
   // A row between members that holds none is boxed over, its nodes beside the box.
   const groupProblems = layoutModule.validateGroups(s.d);
   if (groupProblems.length > 0) {
@@ -1998,7 +1998,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
       })),
     };
   }
-  // A box placed by steps whose cell another fact keeps is an operation error (D46).
+  // A box placed by steps whose cell another fact keeps is an operation error (DESIGN.md, "Steps from another box").
   const stepProblems = layoutModule.validateSteps(s.d);
   if (stepProblems.length > 0) {
     return {

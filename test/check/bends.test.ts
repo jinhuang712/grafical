@@ -1,4 +1,4 @@
-// Lines bent for no reason (DESIGN.md D47): between boxes in neighbouring rows, when one
+// Lines bent for no reason (DESIGN.md, "Who chose is punished"): between boxes in neighbouring rows, when one
 // x would have served both ends, the line runs straight, and a bend is an engine defect.
 
 import { readFileSync } from "node:fs";
@@ -58,7 +58,7 @@ const diagram: Diagram = {
   edges: [{ id: "a->b", from: "a", to: "b", kind: "call" }],
 };
 
-describe("lines bent for no reason (D47)", () => {
+describe('lines bent for no reason (DESIGN.md, "Who chose is punished")', () => {
   it("are an engine defect when one x would have served both ends", () => {
     const bent = line("a->b", "a", "b", [
       [150, 88],

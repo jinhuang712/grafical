@@ -9,7 +9,7 @@ import {
   textInside,
 } from "../../src/theme/shapes.ts";
 
-describe("node shapes (D34)", () => {
+describe('node shapes (DESIGN.md, "Every layered diagram type")', () => {
   const r = { x: 0, y: 0, w: 184, h: 80 };
 
   it("lays a decision out in a larger box than a plain node", () => {

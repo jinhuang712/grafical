@@ -1,4 +1,4 @@
-// The scene: everything the engine computes from a diagram (DESIGN.md D10, D11).
+// The scene: everything the engine computes from a diagram (DESIGN.md, "Layout computed again on every change", "Our own gap router").
 // The layout produces it, the checker inspects it, the renderer draws it.
 // Coordinates are px, origin top left, y down.
 
@@ -49,7 +49,7 @@ export interface PlacedText {
 }
 
 /**
- * A layer's row. Rows are not drawn (D7): the band and label stay in the scene
+ * A layer's row. Rows are not drawn (DESIGN.md, "Rows unseen, groups as systems"): the band and label stay in the scene
  * for the checker and for debugging, and the renderer skips them.
  */
 export interface SceneLayer {
@@ -58,7 +58,7 @@ export interface SceneLayer {
   label: PlacedText;
 }
 
-/** A system box around its member nodes (D7). */
+/** A system box around its member nodes (DESIGN.md, "Rows unseen, groups as systems"). */
 export interface SceneGroup {
   id: string;
   rect: Rect;
@@ -67,11 +67,11 @@ export interface SceneGroup {
   members: string[];
   /** The label's second, quieter part, such as "write side", after the label. */
   sublabel?: PlacedText;
-  /** How many boxes it sits in, itself counted, when it sits in another (D34). Absent: 1. */
+  /** How many boxes it sits in, itself counted, when it sits in another (DESIGN.md, "Every layered diagram type"). Absent: 1. */
   depth?: number;
 }
 
-/** A layer drawn as a band across the content, because an edge ends at it (D28). */
+/** A layer drawn as a band across the content, because an edge ends at it (DESIGN.md, "Lines that end at containers"). */
 export interface SceneBand {
   /** The layer's id. */
   id: string;
@@ -79,7 +79,7 @@ export interface SceneBand {
   label: PlacedText;
 }
 
-/** A swimlane (D32): its whole area, the header that holds its label, and the label. */
+/** A swimlane (DESIGN.md, "Swimlanes run one way"): its whole area, the header that holds its label, and the label. */
 export interface SceneLane {
   id: string;
   /** Rows: the header is on the left. Columns: on top. */
@@ -90,7 +90,7 @@ export interface SceneLane {
 }
 
 /**
- * A wall (D43): the empty space it keeps between its sides, as long as the sides
+ * A wall (DESIGN.md, "Walls as space"): the empty space it keeps between its sides, as long as the sides
  * need. A labelled wall draws a dashed line through the middle, the label above it.
  */
 export interface SceneWall {
@@ -102,7 +102,7 @@ export interface SceneWall {
   label?: PlacedText;
 }
 
-/** A small numbered circle: a footnote's number on its target, or before its text (D44). */
+/** A small numbered circle: a footnote's number on its target, or before its text (DESIGN.md, "Notes as callouts or footnotes"). */
 export interface SceneBadge {
   x: number;
   y: number;
@@ -111,7 +111,7 @@ export interface SceneBadge {
 }
 
 /**
- * A note (D44), as grafical drew it: a callout card beside its target, joined to it
+ * A note (DESIGN.md, "Notes as callouts or footnotes"), as grafical drew it: a callout card beside its target, joined to it
  * by a dotted line; or a footnote, a number on the target and its text in the list
  * at the bottom.
  */
@@ -128,20 +128,20 @@ export interface SceneNote {
   key?: SceneBadge;
 }
 
-/** One line style, line width or mark in the legend, with its sample (D8, D42). */
+/** One line style, line width or mark in the legend, with its sample (DESIGN.md, "Looks", "A legend for widths and marks"). */
 export interface SceneLegendItem {
-  /** The line style the sample is drawn in (D8). A mark's entry has none. */
+  /** The line style the sample is drawn in (DESIGN.md, "Looks"). A mark's entry has none. */
   style?: LineStyleName;
-  /** The sample's width in pixels when it is not the thin one: a line width's entry (D41, D42). */
+  /** The sample's width in pixels when it is not the thin one: a line width's entry (DESIGN.md, "Edge weights", "A legend for widths and marks"). */
   width?: number;
   /** Where the sample sits, left to right, at the label's middle height. A line is drawn along it. */
   sample: { x1: number; x2: number; y: number };
-  /** A mark's entry: the mark, at the small size, in this rect (D42). */
+  /** A mark's entry: the mark, at the small size, in this rect (DESIGN.md, "A legend for widths and marks"). */
   mark?: { mark: Mark; rect: Rect };
   label: PlacedText;
 }
 
-/** A mark on a node, in a square the layout fixed (D40). */
+/** A mark on a node, in a square the layout fixed (DESIGN.md, "Marks of any kind"). */
 export interface SceneMark {
   slot: MarkSlot;
   rect: Rect;
@@ -169,33 +169,33 @@ export interface SceneEdge {
   /** Orthogonal polyline from the source port to the target port. The arrowhead sits at the last point. */
   points: Point[];
   label?: PlacedText;
-  /** true: a second arrowhead at the first point (D33). */
+  /** true: a second arrowhead at the first point (DESIGN.md, "Lines meet any side"). */
   both?: boolean;
-  /** The line width in pixels when it is not the thin one: a heavier edge (D33, D41). */
+  /** The line width in pixels when it is not the thin one: a heavier edge (DESIGN.md, "Lines meet any side", "Edge weights"). */
   width?: number;
 }
 
 export interface Scene {
-  /** The paint of the diagram's theme (D30). Absent: the default theme. */
+  /** The paint of the diagram's theme (DESIGN.md, "Themes and stylesheets"). Absent: the default theme. */
   paint?: Paint;
   width: number;
   height: number;
   title: PlacedText;
-  /** One sentence under the title (D26). */
+  /** One sentence under the title (DESIGN.md, "Curation stays with the agent"). */
   subtitle?: PlacedText;
-  /** The footnote at the bottom (D26). */
+  /** The footnote at the bottom (DESIGN.md, "Curation stays with the agent"). */
   note?: PlacedText;
-  /** The line styles the diagram uses, top right (D8). Empty when it has no edges. */
+  /** The line styles the diagram uses, top right (DESIGN.md, "Looks"). Empty when it has no edges. */
   legend?: SceneLegendItem[];
   layers: SceneLayer[];
-  /** System boxes, drawn behind nodes and edges (D7). */
+  /** System boxes, drawn behind nodes and edges (DESIGN.md, "Rows unseen, groups as systems"). */
   groups?: SceneGroup[];
   /** Layers an edge ends at, drawn behind the groups. Absent when there are none. */
   bands?: SceneBand[];
   lanes?: SceneLane[];
-  /** Walls (D43), drawn over the groups and under the lines. Absent when there are none. */
+  /** Walls (DESIGN.md, "Walls as space"), drawn over the groups and under the lines. Absent when there are none. */
   walls?: SceneWall[];
-  /** Notes (D44), drawn over everything but the lines' arrowheads. Absent when there are none. */
+  /** Notes (DESIGN.md, "Notes as callouts or footnotes"), drawn over everything but the lines' arrowheads. Absent when there are none. */
   notes?: SceneNote[];
   nodes: SceneNode[];
   edges: SceneEdge[];

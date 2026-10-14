@@ -1,6 +1,6 @@
 // The phase 1 operations, applied to a Diagram the way the command line will apply
 // them, for the stability tests. A node added or moved without a position takes the
-// slot chooseSlot picks (D24).
+// slot chooseSlot picks (DESIGN.md, "The engine picks a new box's slot").
 
 import { chooseSlot } from "../../src/layout/index.ts";
 import type { Diagram, DiagramNode, Edge } from "../../src/model/types.ts";

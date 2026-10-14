@@ -1,4 +1,4 @@
-// Walls in the picture (DESIGN.md D43): space where they run, a dashed divider when
+// Walls in the picture (DESIGN.md, "Walls as space"): space where they run, a dashed divider when
 // labelled, and a line through one that it does not allow.
 
 import { beforeAll, describe, expect, it } from "vitest";
@@ -35,7 +35,7 @@ const net = (label?: string): Op => ({
 const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
-describe("a wall across (D43)", () => {
+describe('a wall across (DESIGN.md, "Walls as space")', () => {
   it("is space below the upper side's lowest row, as long as the sides' boxes", () => {
     const before = layout(fx, m);
     const scene = layout(ok(fx, [net()]), m);

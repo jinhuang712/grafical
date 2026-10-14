@@ -1,10 +1,10 @@
-// Edges that end at a container (DESIGN.md D28). The router knows only nodes, so
+// Edges that end at a container (DESIGN.md, "Lines that end at containers"). The router knows only nodes, so
 // each container end is routed to a node of the container that faces the other
 // end, and the route is then cut where it meets the container's box. A group is
 // met at its top or bottom when the other end lies above or below all its rows,
 // and at its side when the two share a row: then the facing node is the member
 // beside the other end. A layer, drawn as a band, is met at its top or bottom.
-// A lane (D32) is met like a group: at its border across rows, or at its side.
+// A lane (DESIGN.md, "Swimlanes run one way") is met like a group: at its border across rows, or at its side.
 
 import { endKind, endNodes, endRows, meeting } from "../model/ends.ts";
 import type { Diagram, Edge } from "../model/types.ts";
@@ -43,7 +43,7 @@ function facing(d: Diagram, end: ContainerEnd): string[] {
 /**
  * Stand-ins for every container end, before placement: the middle node of the
  * facing row, or for a side meeting the member beside the other end. Edges the
- * model refused never reach the layout, so every end here is valid (D28).
+ * model refused never reach the layout, so every end here is valid (DESIGN.md, "Lines that end at containers").
  */
 export function planEnds(d: Diagram): EndPlan {
   const ends = new Map<string, { from?: ContainerEnd; to?: ContainerEnd }>();

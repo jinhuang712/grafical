@@ -1,17 +1,17 @@
-// The column grid (DESIGN.md D7, D10): every node gets a column of one grid shared
+// The column grid (DESIGN.md, "Rows unseen, groups as systems", "Layout computed again on every change"): every node gets a column of one grid shared
 // by all rows. Within a row, columns follow node order. The facts decide the
 // columns, deterministically, in four steps:
 // 1. Order: each row's nodes come left to right, each lane that runs as a column
-//    takes a block of columns of its own (D32), and each group's members fill a
+//    takes a block of columns of its own (DESIGN.md, "Swimlanes run one way"), and each group's members fill a
 //    block of columns that no other node of the group's rows enters. These are
 //    "left of" constraints between nodes.
 // 2. Columns: nodes that share a column form a class. Alignment facts join
-//    classes first, then boxes placed by steps (D46): such a box joins the class of
+//    classes first, then boxes placed by steps (DESIGN.md, "Steps from another box"): such a box joins the class of
 //    the box it steps from at an offset, its steps across, so that a class may span
 //    columns. Then edges between rows join their two ends, best edge first,
 //    so that the edge becomes one straight vertical line. An edge that skips rows
 //    also reserves its column in the rows it passes, so that it runs through empty
-//    space (D25 rule 5). A join must keep every constraint satisfiable, must not
+//    space (DESIGN.md, "A target picture with measured rules" rule 5). A join must keep every constraint satisfiable, must not
 //    put two nodes of one row in one column, and must not widen the grid.
 // 3. Packing: each class takes the leftmost column its constraints allow.
 // 4. Balance: each class then moves, within its room, toward the columns of the
@@ -30,7 +30,7 @@ import type { AlignmentProblem } from "./align.ts";
 
 export type GroupCode = "group-split" | "group-conflict" | "wall-sides" | "column-order";
 
-/** A group whose members cannot be boxed together (D7). */
+/** A group whose members cannot be boxed together (DESIGN.md, "Rows unseen, groups as systems"). */
 export interface GroupProblem {
   code: GroupCode;
   group: string;
@@ -40,7 +40,7 @@ export interface GroupProblem {
   facts: Facts;
 }
 
-/** A box placed by steps whose cell another fact keeps (D46). */
+/** A box placed by steps whose cell another fact keeps (DESIGN.md, "Steps from another box"). */
 export interface StepProblem {
   code: "step-blocked";
   node: string;
@@ -104,9 +104,9 @@ export function buildGrid(d: Diagram): Grid {
     rows.push(list);
   });
   const N = ids.length;
-  // Each node's offset from its class's column: 0 but for boxes placed by steps (D46).
+  // Each node's offset from its class's column: 0 but for boxes placed by steps (DESIGN.md, "Steps from another box").
   const off: number[] = new Array<number>(N).fill(0);
-  // The groups around each node, innermost first (D34).
+  // The groups around each node, innermost first (DESIGN.md, "Every layered diagram type").
   const chainOf: string[][] = Array.from({ length: N }, () => []);
   const alignOf: (string | undefined)[] = [];
   // Boxes placed by steps, in row order: the box, the box it steps from, its steps across.
@@ -191,7 +191,7 @@ export function buildGrid(d: Diagram): Grid {
   };
 
   const groupProblems = groupConstraints(d, rows, ids, row, chainOf, succ, reaches, cls, links);
-  // Columns (D45): every node of a column lies left of every node of a later column, in
+  // Columns (DESIGN.md, "Columns beside rows"): every node of a column lies left of every node of a later column, in
   // every row. Rows are already in column order, so only another fact can contradict it:
   // the first pair that cannot hold is refused.
   const ranks = columnRanks(d);
@@ -227,7 +227,7 @@ export function buildGrid(d: Diagram): Grid {
       });
     }
   }
-  // Walls up and down (D43): every node left of a wall, in the rows it spans, lies left
+  // Walls up and down (DESIGN.md, "Walls as space"): every node left of a wall, in the rows it spans, lies left
   // of every node right of it, so that the wall's space can run between their columns.
   for (const w of d.walls ?? []) {
     const way = wallRun(d, w);
@@ -333,7 +333,7 @@ export function buildGrid(d: Diagram): Grid {
     }
   }
 
-  // Step 2a, boxes placed by steps (D46): each joins the class of the box it steps from,
+  // Step 2a, boxes placed by steps (DESIGN.md, "Steps from another box"): each joins the class of the box it steps from,
   // its steps across right of it, the box stepped from first. The join must hold.
   const stepProblems: StepProblem[] = [];
   {
@@ -716,7 +716,7 @@ export function buildGrid(d: Diagram): Grid {
  * Group constraints: in each row of a group's rows, its members are one block,
  * the nodes left of the block come before every member, and the nodes right of it
  * after every member. A group's members are its inner groups' nodes too, and the
- * outer groups come first (D34). Groups that share rows, neither inside the other,
+ * outer groups come first (DESIGN.md, "Every layered diagram type"). Groups that share rows, neither inside the other,
  * keep their side of each other. A group whose constraints cannot hold with the
  * ones before it is reported, and its constraints are left out.
  */
@@ -777,7 +777,7 @@ function groupConstraints(
       const list = rows[r] ?? [];
       const at = list.map((i, k) => (isIn(i, g) ? k : -1)).filter((k) => k >= 0);
       if (at.length === 0) {
-        // A row inside the group's span with no member (D7): the box spans it, so each
+        // A row inside the group's span with no member (DESIGN.md, "Rows unseen, groups as systems"): the box spans it, so each
         // of its nodes sits wholly left or right of the box, the row keeping its order.
         const split = gapSplit(list, ms, g, rows, chainOf, links, reaches, cls);
         if (split === undefined) {
@@ -934,7 +934,7 @@ interface Packed {
 
 /**
  * The "left of" constraints between classes, each with the least columns between the
- * two classes' columns: 1, but for a box at an offset in its class (D46).
+ * two classes' columns: 1, but for a box at an offset in its class (DESIGN.md, "Steps from another box").
  */
 function classEdges(
   N: number,

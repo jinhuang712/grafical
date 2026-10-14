@@ -1,4 +1,4 @@
-// Boxes placed by steps from another box, in no row (DESIGN.md D46).
+// Boxes placed by steps from another box, in no row (DESIGN.md, "Steps from another box").
 
 import { describe, expect, it } from "vitest";
 import { drawing } from "../../src/check/drawing.ts";
@@ -53,7 +53,7 @@ const base: Diagram = {
   edges: [e("web", "api", "call"), e("api", "worker", "call"), e("api", "db", "call")],
 };
 
-describe("boxes placed by steps (D46)", () => {
+describe('boxes placed by steps (DESIGN.md, "Steps from another box")', () => {
   it("are kept in the file, read back, and shown", () => {
     const d = ok(base, [
       {

@@ -1,4 +1,4 @@
-// Themes and stylesheets (DESIGN.md D30). A theme is every value of the look:
+// Themes and stylesheets (DESIGN.md, "Themes and stylesheets"). A theme is every value of the look:
 // paint (colours, strokes, radii) and the type ramp. grafical ships a few built-in
 // themes. A stylesheet file starts from one and overrides any of its values. A
 // diagram names its theme or stylesheet; layout and rendering read the result.
@@ -185,7 +185,7 @@ const SHAPE = z.enum(["orthogonal", "curved"]);
 const NESTING = z.enum(["alternate", "shade"]);
 
 // More weight levels: a name and a width. thin and thick are set by edge.strokeWidth and
-// edge.main.strokeWidth, so they are not names here (D41).
+// edge.main.strokeWidth, so they are not names here (DESIGN.md, "Edge weights").
 const WEIGHTS = z.record(
   z
     .string()
@@ -205,7 +205,7 @@ function partial(example: unknown, path: string[]): z.ZodType {
   const entries = Object.entries(example as Record<string, unknown>);
   const shape: Record<string, z.ZodType> = {};
   for (const [k, v] of entries) shape[k] = partial(v, [...path, k]).optional();
-  // Any node kind may take a dashed border; only async and optional edges have a dash pattern (D8, D33).
+  // Any node kind may take a dashed border; only async and optional edges have a dash pattern (DESIGN.md, "Looks", "Lines meet any side").
   if (path.length === 3 && path[0] === "node" && path[1] === "kinds") shape.dash = DASH.optional();
   return z.strictObject(shape);
 }
@@ -269,7 +269,7 @@ export function parseStylesheet(text: string, ref: string): Theme | OpError[] {
 
 /**
  * An error for each edge weight, and each width the legend names, that is a level the
- * diagram's stylesheet lacks (D41, D42).
+ * diagram's stylesheet lacks (DESIGN.md, "Edge weights", "A legend for widths and marks").
  * Run after the stylesheet is provided, because the file is read before its stylesheet.
  */
 export function unknownWeights(d: Diagram, index = 0): OpError[] {
@@ -286,7 +286,7 @@ export function unknownWeights(d: Diagram, index = 0): OpError[] {
       facts: { edge: e.id, near: closest(e.weight, allowed), allowed },
     });
   });
-  // The legend may name a level only the stylesheet has (D42).
+  // The legend may name a level only the stylesheet has (DESIGN.md, "A legend for widths and marks").
   for (const key of Object.keys(d.legend?.weights ?? {})) {
     if (!WEIGHT_LEVEL.test(key) || key === "thin" || edgeWidth({ weight: key }, P) !== undefined) {
       continue;

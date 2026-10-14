@@ -32,7 +32,7 @@ type:
   title: { size: 24 }
 `;
 
-describe("stylesheets (D30)", () => {
+describe('stylesheets (DESIGN.md, "Themes and stylesheets")', () => {
   it("start from a base theme and override any value", () => {
     const t = parseStylesheet(SHEET, "brand.grafical-style.yaml") as Theme;
     expect(Array.isArray(t)).toBe(false);
@@ -63,7 +63,7 @@ type:
     expect(at("type.title.weight")?.found).toBe("700");
   });
 
-  it("take curved or orthogonal lines, and nothing else (D33)", () => {
+  it('take curved or orthogonal lines, and nothing else (DESIGN.md, "Lines meet any side")', () => {
     const sheet = (shape: string) =>
       parseStylesheet(
         `grafical-style: 1\npaint:\n  edge: { shape: ${shape} }\n`,
@@ -79,7 +79,7 @@ type:
     expect(THEMES.default?.paint.edge.shape).toBe("orthogonal");
   });
 
-  it("tell nested boxes apart by alternating fills or by shades, and nothing else (D34)", () => {
+  it('tell nested boxes apart by alternating fills or by shades, and nothing else (DESIGN.md, "Every layered diagram type")', () => {
     const sheet = (nesting: string) =>
       parseStylesheet(
         `grafical-style: 1\npaint:\n  nesting: ${nesting}\n`,

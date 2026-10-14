@@ -1,4 +1,4 @@
-// Boxes placed by steps (DESIGN.md D46), put in rows for layout. A box's row is the row
+// Boxes placed by steps (DESIGN.md, "Steps from another box"), put in rows for layout. A box's row is the row
 // of the box it steps from, its steps down; past the first or last row it lands in a
 // row the engine adds there. In that row it goes where its column falls among the
 // column grid the other boxes take before it arrives: a box in its cell stands aside,
@@ -93,7 +93,7 @@ export function placeSteps(d: Diagram): { d: Diagram; problems: StepPlaceProblem
   return { d: { ...base, layers }, problems };
 }
 
-/** Every box placed by steps that cannot be placed, or whose cell another fact keeps (D46). */
+/** Every box placed by steps that cannot be placed, or whose cell another fact keeps (DESIGN.md, "Steps from another box"). */
 export function validateSteps(d: Diagram): (StepPlaceProblem | StepProblem)[] {
   if ((d.nodes ?? []).length === 0) return [];
   const placed = placeSteps(d);

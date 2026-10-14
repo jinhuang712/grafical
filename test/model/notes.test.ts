@@ -1,4 +1,4 @@
-// Notes (DESIGN.md D44): a short text about a node, a group or a line.
+// Notes (DESIGN.md, "Notes as callouts or footnotes"): a short text about a node, a group or a line.
 
 import { describe, expect, it } from "vitest";
 import { showDiagram } from "../../src/cli/show.ts";
@@ -29,7 +29,7 @@ function fail(d: Diagram, ops: Op[]): OpError[] {
 
 const retry: Op = { op: "note.add", on: "retry", text: "retries 5 times, then the DLQ" };
 
-describe("notes (D44)", () => {
+describe('notes (DESIGN.md, "Notes as callouts or footnotes")', () => {
   it("are kept in the file, read back, and shown", () => {
     const r = ok(fx, [retry, { op: "note.add", on: "service->mongo", text: "Find only" }]);
     expect(r.changed).toEqual(["retry", "service->mongo"]);

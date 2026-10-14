@@ -166,7 +166,7 @@ describe("node.add", () => {
     ]);
     expect(ids(r.diagram, "top")).toEqual(["a", "b", "n"]);
   });
-  it("slots a lone node where its line crosses least, not last (D24)", () => {
+  it('slots a lone node where its line crosses least, not last (DESIGN.md, "The engine picks a new box\'s slot")', () => {
     const d = ok(null, [
       { op: "diagram.new", title: "T" },
       { op: "layer.add", id: "top", label: "Top" },

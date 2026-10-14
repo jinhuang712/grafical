@@ -88,7 +88,7 @@ describe("layers", () => {
     ]);
     expect(d.layers.map((l) => l.id)).toEqual(["entry", "topics", "work", "deps", "sources"]);
     expect(d.layers[3]?.label).toBe("Outside");
-    // A row moved between a group's rows: the box spans it, and its nodes stay beside the box (D7).
+    // A row moved between a group's rows: the box spans it, and its nodes stay beside the box (DESIGN.md, "Rows unseen, groups as systems").
     const moved = ok(fx, [{ op: "layer.move", id: "deps", before: "work" }]);
     expect(check(moved, layout(moved, m), m)).toEqual([]);
     expect(fail(fx, [{ op: "layer.move", id: "deps" }])[0]?.code).toBe("missing-field");
@@ -207,7 +207,7 @@ describe("edges", () => {
     ).toMatchObject({ code: "unknown-node", field: "to" });
   });
 
-  it("emphasize draws edges thick, as the main path, and the legend names it (D33)", () => {
+  it('emphasize draws edges thick, as the main path, and the legend names it (DESIGN.md, "Lines meet any side")', () => {
     const d = ok(fx, [{ op: "edge.emphasize", edges: ["pipelines->mongo", "service->mongo"] }]);
     roundTrips(d);
     expect(edge(d, "pipelines->mongo")?.accent).toBe(true);
@@ -229,7 +229,7 @@ describe("edges", () => {
     });
   });
 
-  it("both draws arrowheads at both ends, and a link takes none (D33)", () => {
+  it('both draws arrowheads at both ends, and a link takes none (DESIGN.md, "Lines meet any side")', () => {
     const d = ok(fx, [
       { op: "edge.both", id: "pipelines->mongo" },
       { op: "edge.add", from: "handlers", to: "geo", both: true },
@@ -255,7 +255,7 @@ describe("edges", () => {
 });
 
 describe("dots", () => {
-  it("a start and an end keep their label in the file, and draw none (D34)", () => {
+  it('a start and an end keep their label in the file, and draw none (DESIGN.md, "Every layered diagram type")', () => {
     const d = ok(fx, [
       { op: "node.add", id: "begin", layer: "topics", label: "begin", kind: "initial", size: "l" },
     ]);

@@ -211,7 +211,7 @@ describe("label-collision", () => {
     const a = e1();
     a.label = label(340, 150);
     const d = run(scene(nodes, [a, e2()]));
-    // The same fault is also a text crossing: the label is text (D25 rule 8).
+    // The same fault is also a text crossing: the label is text (DESIGN.md, "A target picture with measured rules" rule 8).
     expect(codes(d)).toEqual(["label-collision", "text-crossing"]);
     expect(d[0]?.elements).toEqual(["a->b", "c->d"]);
   });
@@ -367,7 +367,7 @@ describe("ordering", () => {
 });
 
 describe("owner", () => {
-  it("gives the agent what it can fix, and the engine the rest (D14)", () => {
+  it('gives the agent what it can fix, and the engine the rest (DESIGN.md, "Defects owned by who can fix them")', () => {
     const s = scene([node("b", 60, 40, "a very long label indeed"), node("a", 40, 40)]);
     expect(run(s).map((d) => [d.code, d.owner])).toEqual([
       ["overflow", "agent"],

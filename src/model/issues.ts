@@ -1,4 +1,4 @@
-// Turns zod issues into OpErrors (DESIGN.md D5).
+// Turns zod issues into OpErrors (DESIGN.md, "Checking and failure").
 
 import type { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
@@ -8,7 +8,7 @@ import { EDGE_KINDS, type EdgeKind } from "./types.ts";
 
 export const ID_NODE = "ID_NODE";
 export const ID_EDGE = "ID_EDGE";
-/** An edge weight that is neither a level name nor a width within the limits (D41). */
+/** An edge weight that is neither a level name nor a width within the limits (DESIGN.md, "Edge weights"). */
 export const WEIGHT = "WEIGHT";
 
 /** The characters an id may hold; an edge's id may also hold -> and #<n>. */
@@ -139,7 +139,7 @@ export function issuesToErrors(
         },
       });
     } else if (issue.code === "invalid_union" && path[0] === "legend") {
-      // A legend entry holds words, or false to leave it out (D42).
+      // A legend entry holds words, or false to leave it out (DESIGN.md, "A legend for widths and marks").
       out.push({
         code: "bad-type",
         index,
@@ -148,7 +148,7 @@ export function issuesToErrors(
         facts: { type: "string", allowed: ["false"] },
       });
     } else if (issue.code === "invalid_union" || issue.message === "mark-too-long") {
-      // A mark is a text or a file: a string that is refused is too long (D40).
+      // A mark is a text or a file: a string that is refused is too long (DESIGN.md, "Marks of any kind").
       out.push(
         typeof found === "string"
           ? { code: "mark-too-long", index, ...base, found: show(found), facts: { max: 6 } }

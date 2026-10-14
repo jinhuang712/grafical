@@ -1,4 +1,4 @@
-// Node shapes (DESIGN.md D8, D34). Every node is laid out as a box, and its kind
+// Node shapes (DESIGN.md, "Looks", "Every layered diagram type"). Every node is laid out as a box, and its kind
 // decides the outline drawn inside that box: how much room its text has, where
 // the text block sits, and where a line that ends at the box's side meets the
 // outline. Layout, the checker and the renderer all ask here, so they agree.
@@ -7,7 +7,7 @@ import type { NodeKind, SizeStep } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
 import { BOX, DIAMOND, DOT, FRAME, ROUTE } from "./geometry.ts";
 
-/** A state machine's start and end are dots: one size, and their label is not drawn (D34). */
+/** A state machine's start and end are dots: one size, and their label is not drawn (DESIGN.md, "Every layered diagram type"). */
 export function isDot(kind: NodeKind): boolean {
   return kind === "initial" || kind === "final";
 }
@@ -44,7 +44,7 @@ export function lineRoom(kind: NodeKind, w: number, h: number, blockH: number): 
   return w - 2 * FRAME.textPad;
 }
 
-/** Does the text box `t` lie inside the room a node of this kind has for text (D14)? */
+/** Does the text box `t` lie inside the room a node of this kind has for text (DESIGN.md, "Defects owned by who can fix them")? */
 export function textInside(kind: NodeKind, r: Rect, t: Rect): boolean {
   const e = 1e-6;
   if (kind === "decision") {

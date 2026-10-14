@@ -1,4 +1,4 @@
-// Operations as data (DESIGN.md D1, D2, D3). Field names are the command-line
+// Operations as data (DESIGN.md, "Operations over whole-file rewrites", "Facts over coordinates", "Operations"). Field names are the command-line
 // flags in camelCase. No operation takes a coordinate.
 
 import { z } from "zod";
@@ -44,12 +44,12 @@ export interface DiagramNewOp {
   subtitle?: string;
   note?: string;
 }
-/** The theme or stylesheet the diagram takes its look from (D30). Absent: the default theme. */
+/** The theme or stylesheet the diagram takes its look from (DESIGN.md, "Themes and stylesheets"). Absent: the default theme. */
 export interface DiagramStyleOp {
   op: "diagram.style";
   style?: string;
 }
-/** How nodes with no size are sized (D27). */
+/** How nodes with no size are sized (DESIGN.md, "Boxes sized to their text"). */
 export interface DiagramSizingOp {
   op: "diagram.sizing";
   mode: Sizing;
@@ -70,13 +70,13 @@ export interface GroupAddOp {
   label: string;
   sublabel?: string;
   nodes?: string[];
-  /** The group the new group sits inside (D34). */
+  /** The group the new group sits inside (DESIGN.md, "Every layered diagram type"). */
   in?: string;
 }
 export interface GroupJoinOp {
   op: "group.join";
   group: string;
-  /** Nodes, and groups that move inside this one with everything in them (D34). */
+  /** Nodes, and groups that move inside this one with everything in them (DESIGN.md, "Every layered diagram type"). */
   nodes: string[];
 }
 export interface GroupLeaveOp {
@@ -104,7 +104,7 @@ export interface LayerAddOp {
   before?: string;
   after?: string;
 }
-/** Steps from another box, for a box in no row (D46). */
+/** Steps from another box, for a box in no row (DESIGN.md, "Steps from another box"). */
 export interface Steps {
   from?: string;
   down?: number;
@@ -132,7 +132,7 @@ export interface NodeRenameOp {
 export interface NodeResizeOp {
   op: "node.resize";
   id: string;
-  /** Absent: the engine sizes the node again (D27). */
+  /** Absent: the engine sizes the node again (DESIGN.md, "Boxes sized to their text"). */
   size?: SizeStep;
 }
 export interface NodeMoveOp extends Position, Steps {
@@ -151,7 +151,7 @@ export interface EdgeAddOp {
   id?: string;
   label?: string;
   kind?: EdgeKind;
-  /** true: an arrowhead at both ends (D33). */
+  /** true: an arrowhead at both ends (DESIGN.md, "Lines meet any side"). */
   both?: boolean;
 }
 export interface EdgeRemoveOp {
@@ -169,21 +169,21 @@ export interface DiagramDensityOp {
 }
 /**
  * The legend's words for one line style, line width or mark. Absent text: the default,
- * which for a mark is no entry (D42).
+ * which for a mark is no entry (DESIGN.md, "A legend for widths and marks").
  */
 export interface DiagramLegendOp {
   op: "diagram.legend";
-  /** How the lines look. Named line until 2026-10-13 (D36). */
+  /** How the lines look. Named line until 2026-10-13 (DESIGN.md, "The help as the reference"). */
   style?: LineStyleName;
-  /** A weight level other than thin, or a width in pixels (D41). */
+  /** A weight level other than thin, or a width in pixels (DESIGN.md, "Edge weights"). */
   weight?: string | number;
-  /** A mark's emoji, text or file name (D40). */
+  /** A mark's emoji, text or file name (DESIGN.md, "Marks of any kind"). */
   mark?: string;
   text?: string;
   /** true: leave a line style's or a line width's entry out. */
   hide?: boolean;
 }
-/** Reorders every layer once, to untangle lines (D24). */
+/** Reorders every layer once, to untangle lines (DESIGN.md, "The engine picks a new box's slot"). */
 export interface DiagramTidyOp {
   op: "diagram.tidy";
 }
@@ -204,12 +204,12 @@ export interface LayerRemoveOp {
   op: "layer.remove";
   id: string;
 }
-/** Reorders one layer's nodes once, to untangle lines (D24). */
+/** Reorders one layer's nodes once, to untangle lines (DESIGN.md, "The engine picks a new box's slot"). */
 export interface LayerTidyOp {
   op: "layer.tidy";
   id: string;
 }
-/** Moves a layer's nodes from `from` on (or its second half) into a new layer below it (D29). */
+/** Moves a layer's nodes from `from` on (or its second half) into a new layer below it (DESIGN.md, "Curation stays with the agent"). */
 export interface LayerSplitOp {
   op: "layer.split";
   id: string;
@@ -240,7 +240,7 @@ export interface NodeIconOp {
   slot: MarkSlot;
   /** An emoji or a short text, or the path of an SVG or PNG file. Absent: clear the slot. */
   icon?: string;
-  /** The file's SHA-256, filled in by the command line when icon is a file (D40). */
+  /** The file's SHA-256, filled in by the command line when icon is a file (DESIGN.md, "Marks of any kind"). */
   sha256?: string;
   /** The background of a text mark: a name in MARK_COLORS, or `#rrggbb`. */
   bg?: string;
@@ -289,21 +289,21 @@ export interface EdgeReverseOp {
   op: "edge.reverse";
   id: string;
 }
-/** Draws edges thick, as the main path, or thin again (D33). */
+/** Draws edges thick, as the main path, or thin again (DESIGN.md, "Lines meet any side"). */
 export interface EdgeEmphasizeOp {
   op: "edge.emphasize";
   edges: string[];
   /** true: thin again. */
   off?: boolean;
 }
-/** Gives edges a weight, a level or a width in pixels (D41). */
+/** Gives edges a weight, a level or a width in pixels (DESIGN.md, "Edge weights"). */
 export interface EdgeWeightOp {
   op: "edge.weight";
   edges: string[];
   /** Absent: thin again. */
   weight?: string | number;
 }
-/** Draws an arrowhead at both ends of an edge, or at one end again (D33). */
+/** Draws an arrowhead at both ends of an edge, or at one end again (DESIGN.md, "Lines meet any side"). */
 export interface EdgeBothOp {
   op: "edge.both";
   id: string;
@@ -330,7 +330,7 @@ export interface GroupOrderOp {
   before?: string;
   after?: string;
 }
-/** Members are layers (lanes then run as rows), nodes (as columns) or groups (D32). */
+/** Members are layers (lanes then run as rows), nodes (as columns) or groups (DESIGN.md, "Swimlanes run one way"). */
 export interface LaneAddOp {
   op: "lane.add";
   id: string;
@@ -355,7 +355,7 @@ export interface LaneRemoveOp {
   op: "lane.remove";
   id: string;
 }
-/** Members are nodes, or groups that bring their nodes (D45). */
+/** Members are nodes, or groups that bring their nodes (DESIGN.md, "Columns beside rows"). */
 export interface ColumnAddOp {
   op: "column.add";
   id: string;
@@ -376,7 +376,7 @@ export interface ColumnRemoveOp {
   op: "column.remove";
   id: string;
 }
-/** Sides are nodes and groups; allow names lines, nodes and groups (D43). */
+/** Sides are nodes and groups; allow names lines, nodes and groups (DESIGN.md, "Walls as space"). */
 export interface WallAddOp {
   op: "wall.add";
   id: string;
@@ -395,7 +395,7 @@ export interface WallRemoveOp {
   op: "wall.remove";
   id: string;
 }
-/** A note on a node, group or line; adding one where there is one replaces it (D44). */
+/** A note on a node, group or line; adding one where there is one replaces it (DESIGN.md, "Notes as callouts or footnotes"). */
 export interface NoteAddOp {
   op: "note.add";
   on: string;

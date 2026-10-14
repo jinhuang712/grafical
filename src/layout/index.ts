@@ -1,4 +1,4 @@
-// Layout entry point (DESIGN.md D7, D10, D11, D24, D25). The whole diagram is laid
+// Layout entry point (DESIGN.md, "Rows unseen, groups as systems", "Layout computed again on every change", "Our own gap router", "The engine picks a new box's slot", "A target picture with measured rules"). The whole diagram is laid
 // out again from its facts on every call, in a fixed order:
 // 1. across: every node on a column of one grid shared by all rows, columns chosen
 //    so that edges run straight, then spaced for boxes, groups and labels
@@ -7,9 +7,9 @@
 // 3. down: the title, subtitle and legend, then rows and gutters top to bottom,
 //    each gutter taking the smallest height step its rows fit in, plus the room
 //    group boxes need below their last row and above their first, and the room
-//    of lane headers and borders (D32);
+//    of lane headers and borders (DESIGN.md, "Swimlanes run one way");
 // 4. assembly of routes, labels, group boxes, text and the footnote.
-// Rows are not drawn (D7): their bands and labels stay in the scene for the
+// Rows are not drawn (DESIGN.md, "Rows unseen, groups as systems"): their bands and labels stay in the scene for the
 // checker and for debugging.
 
 import { columnOrdered, columnRanks, orderByColumns } from "../model/columns.ts";
@@ -89,10 +89,10 @@ export function layout(diagram: Diagram, m: Measurer): Scene {
 
 /**
  * Laid out with text. A wall's label that finds no place along its line clear of the
- * lines that cross it goes left of everything, in a second pass (D43).
+ * lines that cross it goes left of everything, in a second pass (DESIGN.md, "Walls as space").
  */
 function framed(diagram: Diagram, m: Measurer): { scene: Scene; centre: number } {
-  // A note whose card finds no room becomes a footnote, and the list needs room (D44).
+  // A note whose card finds no room becomes a footnote, and the list needs room (DESIGN.md, "Notes as callouts or footnotes").
   let aside = new Set<string>();
   let footnotes = new Set<string>();
   let out = compute(diagram, m, true, aside, footnotes);
@@ -114,7 +114,7 @@ export function layoutFramed(diagram: Diagram, m: Measurer): { scene: Scene; cen
 }
 
 /**
- * Alignments that cannot hold (D10): an aligned node must share its target's
+ * Alignments that cannot hold (DESIGN.md, "Layout computed again on every change"): an aligned node must share its target's
  * column, and the order of a layer, another alignment or a group can put that
  * column on the other side of its neighbours. Also unknown targets, targets in
  * the same layer and a node aligned with itself. The command line turns each into
@@ -125,7 +125,7 @@ export function validateAlignments(diagram: Diagram): AlignmentProblem[] {
 }
 
 /**
- * Groups that cannot be drawn as one box (D7): a group whose members are split
+ * Groups that cannot be drawn as one box (DESIGN.md, "Rows unseen, groups as systems"): a group whose members are split
  * by another node in a layer, and a group that another group or node would have
  * to lie both left and right of. The command line turns each into an operation
  * error.
@@ -145,7 +145,7 @@ function splitsGroup(d: Diagram, nodes: DiagramNode[]): boolean {
 }
 
 /**
- * Whether row li in this order can be drawn (D7, D10, D28, D45): no group is split or
+ * Whether row li in this order can be drawn (DESIGN.md, "Rows unseen, groups as systems", "Layout computed again on every change", "Lines that end at containers", "Columns beside rows"): no group is split or
  * left without one box, the row keeps its columns' order, every alignment holds, and
  * an edge to a container meets it right beside its end where they share a row.
  */
@@ -160,7 +160,7 @@ function drawable(d: Diagram, li: number, nodes: DiagramNode[]): boolean {
 }
 
 /**
- * D24: the index in its layer, counting the node's current position as removed,
+ * DESIGN.md, "The engine picks a new box's slot": the index in its layer, counting the node's current position as removed,
  * that gives the fewest edge crossings. A tie goes to the last slot. Each slot is
  * tried with the real router. Only slots that can be drawn are tried; when there
  * is none, the slots that keep the groups whole, and then every slot, so that the
@@ -200,7 +200,7 @@ const ORDER_TRIES = 1500;
 
 /**
  * Boxes that lie wholly beside the boxes they connect to, which their lines must then
- * reach across (D47): a box with lines to two or more boxes whose centres lie at least
+ * reach across (DESIGN.md, "Who chose is punished"): a box with lines to two or more boxes whose centres lie at least
  * its own width apart, left of the leftmost centre or right of the rightmost.
  */
 export function asideBoxes(scene: Scene): { box: string; users: string[] }[] {
@@ -234,7 +234,7 @@ const cmpIds = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 /**
  * How bad the routes of a scene are, compared in order: crossings plus edges with
- * more than two bends (D25 rule 2) plus boxes aside of what they connect to (D47), then
+ * more than two bends (DESIGN.md, "A target picture with measured rules" rule 2) plus boxes aside of what they connect to (DESIGN.md, "Who chose is punished"), then
  * crossings, then bends, then length.
  */
 function routeCost(scene: Scene): number[] {
@@ -255,14 +255,14 @@ function routeCost(scene: Scene): number[] {
   return [s.crossings + over + asideBoxes(scene).length, s.crossings, s.bends, s.length];
 }
 
-/** A diagram's route cost (see routeCost), laid out without text: for comparing arrangements (D24, D35). */
+/** A diagram's route cost (see routeCost), laid out without text: for comparing arrangements (DESIGN.md, "The engine picks a new box's slot", "Records over prose"). */
 export function arrangementCost(diagram: Diagram, m: Measurer): number[] {
   return routeCost(compute(diagram, m, false).scene);
 }
 
-/** What makes a diagram's lines hard to read (D25 rules 2 and 3): pairs that cross, and lines over two bends. */
+/** What makes a diagram's lines hard to read (DESIGN.md, "A target picture with measured rules" rules 2 and 3): pairs that cross, and lines over two bends. */
 export interface LineTrouble {
-  /** Every point where two routes cross, as the route cost counts them (D24). */
+  /** Every point where two routes cross, as the route cost counts them (DESIGN.md, "The engine picks a new box's slot"). */
   points: number;
   /** Pairs of edge ids whose routes cross, each pair once, in id order. */
   crossings: [string, string][];
@@ -316,7 +316,7 @@ export function bendsOf(points: Point[]): number {
   return bends;
 }
 
-/** The pairs of lines that cross, and the lines that bend more than twice (D35). */
+/** The pairs of lines that cross, and the lines that bend more than twice (DESIGN.md, "Records over prose"). */
 export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
   const { scene } = compute(diagram, m, false);
   const { points, pairs } = crossingsOf(scene.edges);
@@ -327,7 +327,7 @@ export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
   return { points, crossings: pairs, bent };
 }
 
-/** The edges whose routes cross another route, or bend more than twice (D25 rules 2 and 3). */
+/** The edges whose routes cross another route, or bend more than twice (DESIGN.md, "A target picture with measured rules" rules 2 and 3). */
 export function troubledEdges(diagram: Diagram, m: Measurer): Set<string> {
   const t = lineTrouble(diagram, m);
   return new Set([...t.crossings.flat(), ...t.bent.map((b) => b.edge)]);
@@ -343,7 +343,7 @@ function lower(a: number[], b: number[]): boolean {
 }
 
 /**
- * D24: the nodes one batch added without a position, ordered together. Each in
+ * DESIGN.md, "The engine picks a new box's slot": the nodes one batch added without a position, ordered together. Each in
  * turn tries every slot of its row and takes the one with the lowest route cost,
  * while the cost drops. The other nodes keep their order, and only slots that can
  * be drawn are taken. Nodes are tried in the order given, slots from the first, so
@@ -436,7 +436,7 @@ export function gutterHeight(rows: number, sp: Spacing): number {
   return h;
 }
 
-/** A legend entry's default words for an edge kind (D8). */
+/** A legend entry's default words for an edge kind (DESIGN.md, "Looks"). */
 const LEGEND_WORDS: Record<EdgeKind, string> = {
   call: "call",
   async: "message",
@@ -449,22 +449,22 @@ interface LegendItem {
   /** A line's entry: the style of its sample. */
   style?: LineStyleName;
   text: string;
-  /** A line width's entry: its sample's width (D42). */
+  /** A line width's entry: its sample's width (DESIGN.md, "A legend for widths and marks"). */
   width?: number;
-  /** A mark's entry: the mark, at the small size (D42). */
+  /** A mark's entry: the mark, at the small size (DESIGN.md, "A legend for widths and marks"). */
   mark?: Mark;
 }
 
-/** A mark at the small size, as the legend draws it (D42). */
+/** A mark at the small size, as the legend draws it (DESIGN.md, "A legend for widths and marks"). */
 function smallMark(mk: Mark): Mark {
   return typeof mk === "string" ? { text: mk, size: "s" } : { ...mk, size: "s" };
 }
 
 /**
- * The legend's entries (D8, D42): each line style the diagram uses, then each line
+ * The legend's entries (DESIGN.md, "Looks", "A legend for widths and marks"): each line style the diagram uses, then each line
  * width, from the thinnest, then each mark the diagram names. A width the diagram names
  * has its own entry. The heavier ones it does not name share "main path", drawn at the
- * thinnest of them (D41). A mark has an entry only when it is named, drawn like the first
+ * thinnest of them (DESIGN.md, "Edge weights"). A mark has an entry only when it is named, drawn like the first
  * one found: rows top to bottom, nodes in order, slots in order.
  */
 function legendItems(d: Diagram, P: Paint): LegendItem[] {
@@ -513,7 +513,7 @@ function legendItems(d: Diagram, P: Paint): LegendItem[] {
   return [...out, ...named, ...marks];
 }
 
-/** Items, by width, in lines no wider than `room`. A line holds at least one item (D42). */
+/** Items, by width, in lines no wider than `room`. A line holds at least one item (DESIGN.md, "A legend for widths and marks"). */
 function wrapItems(
   widths: number[],
   room: number,
@@ -545,7 +545,7 @@ function segmentHits(a: Point, b: Point, r: Rect): boolean {
 
 /**
  * A label stays where the router put it while it still lies beside its line, clear. A
- * route cut at a container (D28) can lose the part the label sat on, or leave
+ * route cut at a container (DESIGN.md, "Lines that end at containers") can lose the part the label sat on, or leave
  * the label across the container's border: the label then moves beside a part
  * that remains, the longest first, above or below it, or right or left of it,
  * at its middle or one of its ends, stepping away from it while other lines
@@ -625,15 +625,15 @@ function compute(
   aside: ReadonlySet<string> = new Set(),
   footnotes: ReadonlySet<string> = new Set(),
 ): { scene: Scene; centre: number; crowded: string[]; noRoom: string[] } {
-  // The diagram's theme decides the type sizes here and the paint in the scene (D30).
+  // The diagram's theme decides the type sizes here and the paint in the scene (DESIGN.md, "Themes and stylesheets").
   const theme = themeOf(facts);
   const T = theme.type;
-  // Boxes placed by steps sit in rows from here on (D46).
+  // Boxes placed by steps sit in rows from here on (DESIGN.md, "Steps from another box").
   const sized = withSizes(placeSteps(facts).d, m);
-  // Column lanes keep each row in lane order (D32); a file edited by hand may not.
+  // Column lanes keep each row in lane order (DESIGN.md, "Swimlanes run one way"); a file edited by hand may not.
   orderByLanes(sized);
   orderByColumns(sized);
-  // Container ends route to a stand-in node and are cut at the container (D28).
+  // Container ends route to a stand-in node and are cut at the container (DESIGN.md, "Lines that end at containers").
   const ends = planEnds(sized);
   const d: Diagram = { ...sized, edges: ends.edges };
   const sp = SPACING[d.density];
@@ -670,7 +670,7 @@ function compute(
     ]),
   );
   const sideways = planSideways(d, (id) => labelSizes.get(id)?.w, labelH);
-  // Edges that meet a column lane beside it (D32), and the node at their other end.
+  // Edges that meet a column lane beside it (DESIGN.md, "Swimlanes run one way"), and the node at their other end.
   const laneEnds = new Map<string, { lane: string; node: string }>();
   if (laneRun(d) === "columns") {
     for (const e of d.edges) {
@@ -682,7 +682,7 @@ function compute(
       }
     }
   }
-  // Walls up and down (D43): each label wraps to a few words, and the wall is as wide as
+  // Walls up and down (DESIGN.md, "Walls as space"): each label wraps to a few words, and the wall is as wide as
   // its widest line, or its least space.
   const wallStyle = T["layer-label"];
   const wallLines = new Map(
@@ -727,7 +727,7 @@ function compute(
   });
   const routeEdges = refineEnds(sized, ends, nodes);
 
-  // Bands (D28): the layers an edge ends at, drawn across the content. Each band's
+  // Bands (DESIGN.md, "Lines that end at containers"): the layers an edge ends at, drawn across the content. Each band's
   // label sits in its head above the row, at the content's left edge.
   let contentLeft = Number.POSITIVE_INFINITY;
   let contentRight = Number.NEGATIVE_INFINITY;
@@ -769,7 +769,7 @@ function compute(
   // Where no vertical line may pass: a group's or band's label, above its first
   // row, and the label of an edge that runs sideways, in the gap it crosses.
   const forbidTop = new Map<number, [number, number][]>();
-  // No line runs down through a wall up and down, in the rows it spans (D43).
+  // No line runs down through a wall up and down, in the rows it spans (DESIGN.md, "Walls as space").
   for (const b of besideWalls) {
     for (let r = b.top; r <= b.bottom; r++) {
       forbidTop.set(r, [...(forbidTop.get(r) ?? []), [b.x0, b.x1]]);
@@ -852,7 +852,7 @@ function compute(
   }
   if (Number.isFinite(routing.minX)) see(routing.minX - 16);
   if (Number.isFinite(routing.maxX)) see(routing.maxX + 16);
-  // A wall's label set aside ends left of every box and line, as a band's may (D43).
+  // A wall's label set aside ends left of every box and line, as a band's may (DESIGN.md, "Walls as space").
   const asideW = new Map<string, number>();
   for (const w of d.walls ?? []) {
     if (withText && aside.has(w.id) && w.label !== undefined) {
@@ -867,7 +867,7 @@ function compute(
   const asideLeft = asideEnd - Math.max(0, ...asideW.values());
   if (asideW.size > 0) see(asideLeft);
 
-  // Lanes (D32). Row lanes share one header column, left of everything the rows
+  // Lanes (DESIGN.md, "Swimlanes run one way"). Row lanes share one header column, left of everything the rows
   // hold, lines included. Column lanes have a header on top, as wide as the lane.
   const laneStyle = T["lane-label"];
   const laneLh = lineHeight("lane-label", m, T);
@@ -924,7 +924,7 @@ function compute(
     : empty("title", sp.margin, sp.margin);
   const legendStyle = T.legend;
   const items = withText ? legendItems(d, theme.paint) : [];
-  // A line's sample is a short line; a mark's is the mark (D42).
+  // A line's sample is a short line; a mark's is the mark (DESIGN.md, "A legend for widths and marks").
   const sampleW = items.map((it) =>
     it.mark === undefined ? FRAME.legendSample : markWidth(it.mark, m),
   );
@@ -932,7 +932,7 @@ function compute(
     (it, i) => (sampleW[i] ?? 0) + FRAME.legendLabelGap + m.measure(it.text, legendStyle).width,
   );
   const textW = Math.max(2 * half, FRAME.minTextWidth);
-  // A legend wider than the room right of the title wraps into more lines (D42).
+  // A legend wider than the room right of the title wraps into more lines (DESIGN.md, "A legend for widths and marks").
   const legendRows = wrapItems(
     itemW,
     Math.max(0, ...itemW, textW - title.bbox.w - FRAME.legendGap),
@@ -957,7 +957,7 @@ function compute(
   const centre = width / 2 - shift;
 
   // The legend's first line is level with the title, and each further line starts
-  // at the same left edge below it (D42).
+  // at the same left edge below it (DESIGN.md, "A legend for widths and marks").
   const legend: SceneLegendItem[] = [];
   const lh = lineBox("legend", m, T);
   // A line of the legend is as high as its text, or as a mark when it lists one.
@@ -999,7 +999,7 @@ function compute(
   // target, where no run, label or box of the gutter comes near the group; it
   // then adds only what the tracks do not already give it.
   // A box inside a box that starts in the same row has its head below the outer
-  // one's, and one that ends in the same row its padding above it (D34).
+  // one's, and one that ends in the same row its padding above it (DESIGN.md, "Every layered diagram type").
   const heads = (g: (typeof groups)[number]): number =>
     1 + Math.max(0, ...groups.filter((c) => c.parent === g.id && c.top === g.top).map(heads));
   const pads = (g: (typeof groups)[number]): number =>
@@ -1030,7 +1030,7 @@ function compute(
     );
     return Math.max(0, full + (crowded ? GROUP.clear : 0) - tracks);
   };
-  // Walls that run across (D43): each takes its own space in the gutter just below the
+  // Walls that run across (DESIGN.md, "Walls as space"): each takes its own space in the gutter just below the
   // lowest row of its upper side, after the gutter's tracks.
   const acrossWalls = (d.walls ?? []).flatMap((w) => {
     const way = wallRun(d, w);
@@ -1083,7 +1083,7 @@ function compute(
       return;
     }
     if (walls > 0) {
-      // Nothing is placed in a wall: the heads below it take their full room (D43).
+      // Nothing is placed in a wall: the heads below it take their full room (DESIGN.md, "Walls as space").
       y += pad + tracks;
       wallTops.set(i, y);
       y += walls * WALL.space + headRoom(i, 0);
@@ -1095,7 +1095,7 @@ function compute(
   if (colLanes.length > 0 || laneAt(layers.length - 1) !== undefined) y += LANE.pad;
   const lanesBottom = y;
   let bottom = y;
-  // Footnotes (D44) are listed below the content, above the footnote of D26.
+  // Footnotes (DESIGN.md, "Notes as callouts or footnotes") are listed below the content, above the footnote of DESIGN.md, "Curation stays with the agent".
   const listTop = ceil4(y + FRAME.noteGap);
   const listH = withText ? footnotesHeight(d, footnotes, textW, m, T) : 0;
   if (listH > 0) {
@@ -1214,7 +1214,7 @@ function compute(
       const marks = markRects(n.node, rect, m);
       const texts: PlacedText[] = [];
       const inset = leftInset(n.node, m);
-      // A dot's label stays in the file and in show, but is not drawn (D34).
+      // A dot's label stays in the file and in show, but is not drawn (DESIGN.md, "Every layered diagram type").
       if (withText && !isDot(n.node.kind)) {
         const { label: lines, sub } = nodeLines(
           n.node.kind,
@@ -1304,7 +1304,7 @@ function compute(
     sceneEdges.push(edge);
   }
 
-  // Walls (D43): each as long as the boxes of its sides. A labelled one draws a dashed
+  // Walls (DESIGN.md, "Walls as space"): each as long as the boxes of its sides. A labelled one draws a dashed
   // line through its middle, and its label above the line at the first place along
   // it that no crossing line comes near.
   const sceneWalls: SceneWall[] = [];
@@ -1447,7 +1447,7 @@ function compute(
     if (gaps.length > 0) wl.line.gaps = gaps;
   }
 
-  // Notes (D44): a card beside its target where there is room, a footnote where not.
+  // Notes (DESIGN.md, "Notes as callouts or footnotes"): a card beside its target where there is room, a footnote where not.
   const placedNotes = withText
     ? placeNotes(
         d,
@@ -1514,7 +1514,7 @@ function roundText(t: PlacedText): PlacedText {
   };
 }
 
-/** Every coordinate in the scene, rounded to 2 decimals (D15). */
+/** Every coordinate in the scene, rounded to 2 decimals (DESIGN.md, "Output and determinism"). */
 function roundScene(s: Scene): Scene {
   const out: Scene = {
     width: round2(s.width),

@@ -1,4 +1,4 @@
-// The legend (DESIGN.md D8, D33, D42): what it lists and how it wraps.
+// The legend (DESIGN.md, "Looks", "Lines meet any side", "A legend for widths and marks"): what it lists and how it wraps.
 
 import { describe, expect, it } from "vitest";
 import { layout } from "../../src/layout/index.ts";
@@ -23,7 +23,7 @@ function legendLines(s: Scene) {
   return ys.map((y) => items.filter((x) => x.sample.y === y));
 }
 
-describe("the legend (D42)", () => {
+describe('the legend (DESIGN.md, "A legend for widths and marks")', () => {
   it("stays on one line, level with the title, when it fits beside it", () => {
     const s = layout(tinyWith(undefined), m);
     const lines = legendLines(s);

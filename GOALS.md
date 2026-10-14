@@ -7,7 +7,7 @@
 1. **The MVP bar.** Two parts, set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"):
    - **The main bar: easy and consistent.** Haiku, using only the command line and its help, meets the targets of benchmarks 2 (iteration), 4 (stability), 5 (model gap), 6 (operation errors) and 11 (determinism and speed), with zero mechanical defects.
    - **Beside it: the judged score.** Haiku draws the private reference brief well enough to score at least 42 of 50 in blind judging. 42 is what the `diagram-design` skill scored with Opus and Sonnet on that brief on 2026-10-10.
-2. A change costs one batch: it takes seconds, uses few tokens, and moves nothing beyond what DESIGN.md D10 allows.
+2. A change costs one batch: it takes seconds, uses few tokens, and moves nothing beyond what DESIGN.md, "Layout computed again on every change" allows.
 3. No output ever contains a mechanical defect.
 4. The diagram file is the whole truth: the same file gives the same picture, and changes can be reviewed in git.
 5. Large diagrams work: 50 nodes render without defects and without hiding information.
@@ -17,7 +17,7 @@
 - Making every diagram look good to every reader. Readers and agents prefer different things. Stage 1 gives agents an easy tool and a consistent result (PHILOSOPHY.md, "What makes grafical good?"), and adds no score of how readable a picture is (owner, 2026-10-13).
 - People editing on a board. Dropped on 2026-10-14 (PHILOSOPHY.md, "Who draws?").
 - Placing anything by coordinates, for anyone.
-- Diagram types that need a layout other than layered rows: sequence, entity-relationship and class diagrams, mind maps, timelines and charts. The types the layered engine can draw are in stage 1, added by the owner on 2026-10-12 (DESIGN.md D34).
+- Diagram types that need a layout other than layered rows: sequence, entity-relationship and class diagrams, mind maps, timelines and charts. The types the layered engine can draw are in stage 1, added by the owner on 2026-10-12 (DESIGN.md, "Every layered diagram type").
 - Real-time collaboration, accounts or a hosted service.
 - Importing Mermaid, draw.io or Excalidraw files.
 - Free colors or styles per element. A whole diagram takes its look from a theme or a shared stylesheet (added by the owner on 2026-10-11), but no operation colors one node or edge.
@@ -42,7 +42,7 @@
 | 13 | Cache hit rate | Cache reads ÷ all input tokens, per run | ≥ 85% | Below the no-tool arm |
 | 14 | Verifiability | Image reads the agent needs to know it is done. Checks that need a judge or a person | ≤ 1 image read per first draft, 0 per change. For grafical, only taste and faithfulness need a judge. Every other check is mechanical | The agent must look at the picture after each step |
 
-Benchmark 7 does not use grafical's own checker. That checker refuses every write it flags (D14), so it would always report zero.
+Benchmark 7 does not use grafical's own checker. That checker refuses every write it flags (DESIGN.md, "Defects owned by who can fix them"), so it would always report zero.
 
 "Fresh tokens" in benchmarks 2 and 3 exclude cache reads, which benchmark 13 counts. EXPERIMENTS.md defines every metric.
 

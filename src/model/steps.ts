@@ -1,4 +1,4 @@
-// Boxes placed by steps (DESIGN.md D46): a box in no row, placed some cells of the
+// Boxes placed by steps (DESIGN.md, "Steps from another box"): a box in no row, placed some cells of the
 // column grid from another box, which it moves with. The agent states the steps; the
 // engine puts the box in its cell, and the boxes of the row it lands in stand aside.
 

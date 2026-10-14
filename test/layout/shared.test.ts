@@ -26,7 +26,7 @@ const ops: Op[] = [
   { op: "edge.add", from: "b2", to: "db", label: "read" },
 ];
 
-describe("a node that two groups use (D10)", () => {
+describe('a node that two groups use (DESIGN.md, "Layout computed again on every change")', () => {
   it("sits in a column between the two groups, not under either", () => {
     const r = applyOps(null, ops, m);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));

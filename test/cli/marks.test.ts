@@ -1,4 +1,4 @@
-// Marks through the command line (DESIGN.md D40, D15): an emoji, text, an SVG and a
+// Marks through the command line (DESIGN.md, "Marks of any kind", "Output and determinism"): an emoji, text, an SVG and a
 // PNG file; a changed or unsafe file is refused; the same file gives the same SVG.
 
 import { spawnSync } from "node:child_process";
@@ -75,7 +75,7 @@ describe("grafical node icon", () => {
     expect(read("o.svg")).toContain("data:image/png;base64,");
   });
 
-  it("gives the same SVG bytes every time (D15)", () => {
+  it('gives the same SVG bytes every time (DESIGN.md, "Output and determinism")', () => {
     run("render", "d.grafical.yaml", "--svg", "a.svg");
     run("render", "d.grafical.yaml", "--svg", "b.svg");
     expect(read("a.svg")).toBe(read("b.svg"));

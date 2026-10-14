@@ -1,4 +1,4 @@
-// What grafical prints, as records (DESIGN.md D37): one line each, a word that names
+// What grafical prints, as records (DESIGN.md, "Records over prose"): one line each, a word that names
 // the record, then key=value fields, in the logfmt style. The fields are the JSON's,
 // under the same names, so the text and --json say the same thing in the same words.
 

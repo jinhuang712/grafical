@@ -1,4 +1,4 @@
-// Defect checker (DESIGN.md D14). Pure: it reads the diagram, the scene and a
+// Defect checker (DESIGN.md, "Defects owned by who can fix them"). Pure: it reads the diagram, the scene and a
 // measurer, and returns every mechanical flaw, in a deterministic order.
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
@@ -36,7 +36,7 @@ export const NODE_PADDING = 8;
 export const NODE_PADDING_Y = 4;
 /** An edge may graze a node's rect by this much, at its ports. */
 export const PORT_TOLERANCE = 4;
-/** How far a text's box may reach under a corner mark before the mark covers it (D40). */
+/** How far a text's box may reach under a corner mark before the mark covers it (DESIGN.md, "Marks of any kind"). */
 export const MARK_TEXT_SLACK = 3;
 /** Two edges must share at least this much length to count as overlapping. */
 export const MIN_SHARED_LENGTH = 8;
@@ -51,7 +51,7 @@ function lineCount(t: PlacedText): number {
 
 function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
   // A node may grow to l by node resize when it is not l already. One the engine
-  // sizes (D27) is already l when its text needs it, unless sizing is fixed.
+  // sizes (DESIGN.md, "Boxes sized to their text") is already l when its text needs it, unless sizing is fixed.
   const canGrow = new Set<string>();
   for (const layer of diagram.layers) {
     for (const n of layer.nodes) {
@@ -83,7 +83,7 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
   }
 }
 
-/** A lane's label stays inside its header (D32). Row lane headers are narrow, so a long label can run out below. */
+/** A lane's label stays inside its header (DESIGN.md, "Swimlanes run one way"). Row lane headers are narrow, so a long label can run out below. */
 function checkLaneLabels(scene: Scene, out: Found[]): void {
   for (const x of scene.lanes ?? []) {
     if (rectInside(x.label.bbox, x.head)) continue;
@@ -115,7 +115,7 @@ function checkNodeOverlap(scene: Scene, out: Found[]): void {
 }
 
 /**
- * A mark must not cover text or another node (D40). A corner mark sticks out of its
+ * A mark must not cover text or another node (DESIGN.md, "Marks of any kind"). A corner mark sticks out of its
  * box, so a long label or a close neighbour can meet it.
  */
 function checkMarkCovers(scene: Scene, out: Found[]): void {
@@ -209,7 +209,7 @@ function checkLabelCollision(scene: Scene, out: Found[]): void {
   }
 }
 
-/** An edge may graze a text box by this much before it counts as crossing it (D25 rule 8). */
+/** An edge may graze a text box by this much before it counts as crossing it (DESIGN.md, "A target picture with measured rules" rule 8). */
 export const TEXT_TOLERANCE = 2;
 
 /**
@@ -264,7 +264,7 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
   }
 }
 
-/** A node that is not a member lies inside a group's box (D7). */
+/** A node that is not a member lies inside a group's box (DESIGN.md, "Rows unseen, groups as systems"). */
 function checkGroupIntruder(scene: Scene, out: Found[]): void {
   for (const g of scene.groups ?? []) {
     const members = new Set(g.members);
@@ -279,7 +279,7 @@ function checkGroupIntruder(scene: Scene, out: Found[]): void {
   }
 }
 
-/** Every node of a lane lies inside it, and no other node does (D32). */
+/** Every node of a lane lies inside it, and no other node does (DESIGN.md, "Swimlanes run one way"). */
 function checkLaneStray(diagram: Diagram, scene: Scene, out: Found[]): void {
   for (const x of scene.lanes ?? []) {
     const members = new Set(laneNodes(diagram, x.id));
@@ -295,7 +295,7 @@ function checkLaneStray(diagram: Diagram, scene: Scene, out: Found[]): void {
   }
 }
 
-/** A note takes at most four lines at its width (D44); the agent shortens it. */
+/** A note takes at most four lines at its width (DESIGN.md, "Notes as callouts or footnotes"); the agent shortens it. */
 function checkNotes(diagram: Diagram, measurer: Measurer, out: Found[]): void {
   const style = themeOf(diagram).type.note;
   for (const x of diagram.notes ?? []) {
@@ -316,7 +316,7 @@ function checkNotes(diagram: Diagram, measurer: Measurer, out: Found[]): void {
 }
 
 /**
- * No line passes through a wall's space unless the wall allows it (D43). A line
+ * No line passes through a wall's space unless the wall allows it (DESIGN.md, "Walls as space"). A line
  * between the two sides is refused before layout; this finds the others.
  */
 function checkWalls(diagram: Diagram, scene: Scene, out: Found[]): void {
@@ -343,7 +343,7 @@ function sharedEndpoints(a: SceneEdge, b: SceneEdge): string[] {
 
 /**
  * The router draws a fan-out of unlabelled edges in one line style from one node as a
- * bus: one trunk that branches (D11). Its members share segments on purpose, and
+ * bus: one trunk that branches (DESIGN.md, "Our own gap router"). Its members share segments on purpose, and
  * a reader loses nothing, since they carry no label and look the same.
  */
 function isBus(a: SceneEdge, b: SceneEdge): boolean {
@@ -387,7 +387,7 @@ function checkEdgeOverlap(scene: Scene, out: Found[]): void {
 /**
  * A line between boxes in neighbouring rows, from the upper one's bottom into the lower
  * one's top, that bends although each of its ports lies within the other box's side:
- * one x would have served both ends (D47). The lines of a bundle share a port and bend
+ * one x would have served both ends (DESIGN.md, "Who chose is punished"). The lines of a bundle share a port and bend
  * where they part, by design.
  */
 function checkNeedlessBend(scene: Scene, out: Found[]): void {
@@ -427,7 +427,7 @@ function checkNeedlessBend(scene: Scene, out: Found[]): void {
 }
 
 /**
- * A box placed by steps that lies wholly beside every box it connects to (D47): the agent
+ * A box placed by steps that lies wholly beside every box it connects to (DESIGN.md, "Who chose is punished"): the agent
  * chose its cell, so the agent moves it, between them. A box in a row that lies aside is
  * the engine's to avoid, by its slot choice.
  */
@@ -464,7 +464,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   for (const x of diagram.lanes ?? []) {
     add(x.id, "label", x.label, `grafical lane rename <file> ${x.id} --label <text>`);
   }
-  // A legend entry left out holds false, which has no text (D42).
+  // A legend entry left out holds false, which has no text (DESIGN.md, "A legend for widths and marks").
   const words = (w: string | false | undefined) => (w === false ? undefined : w);
   for (const line of LINE_STYLES) {
     add(
@@ -515,7 +515,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   for (const e of diagram.edges) {
     add(e.id, "label", e.label, `grafical edge relabel <file> ${e.id} --label <text>`);
   }
-  // A wall's label (D43) and a note (D44) are drawn too.
+  // A wall's label (DESIGN.md, "Walls as space") and a note (DESIGN.md, "Notes as callouts or footnotes") are drawn too.
   for (const w of diagram.walls ?? []) {
     const again = `grafical wall add <file> ${w.id} --between ${w.between.join(",")} --and ${w.and.join(",")} --label <text>`;
     add(w.id, "label", w.label, [`grafical wall remove <file> ${w.id}`, again]);
@@ -534,9 +534,9 @@ function compare(a: string, b: string): number {
 /** A defect before its owner is filled in from its code. */
 type Found = Omit<Defect, "owner">;
 
-/** Every defect, agent-owned and engine-owned, in a deterministic order (D14). */
+/** Every defect, agent-owned and engine-owned, in a deterministic order (DESIGN.md, "Defects owned by who can fix them"). */
 export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[] {
-  // Boxes placed by steps are checked in the rows they are drawn in (D46).
+  // Boxes placed by steps are checked in the rows they are drawn in (DESIGN.md, "Steps from another box").
   const diagram = placeSteps(facts).d;
   const out: Found[] = [];
   checkOverflow(diagram, scene, out);

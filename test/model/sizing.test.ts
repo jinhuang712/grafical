@@ -38,7 +38,7 @@ const width = (d: Diagram) => layout(d, m).nodes[0]?.rect.w;
 const overflow = (d: Diagram) =>
   check(d, layout(d, m), m).filter((x) => x.code === "overflow").length;
 
-describe("auto size (D27)", () => {
+describe('auto size (DESIGN.md, "Boxes sized to their text")', () => {
   it("gives a node with no size a medium box, or a large one when its text needs it", () => {
     expect(fits({ id: "a", label: LONG, kind: "service" }, "m", m)).toBe(false);
     expect(fits({ id: "a", label: LONG, kind: "service" }, "l", m)).toBe(true);
@@ -76,7 +76,7 @@ describe("auto size (D27)", () => {
   });
 });
 
-describe("sizing fixed (D27)", () => {
+describe('sizing fixed (DESIGN.md, "Boxes sized to their text")', () => {
   it("makes nodes with no size medium, as before, and suggests resize on overflow", () => {
     const d = ok(one(LONG), [{ op: "diagram.sizing", mode: "fixed" }]);
     expect(width(d)).toBe(BOX.m.w);

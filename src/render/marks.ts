@@ -1,7 +1,7 @@
-// Marks in the SVG (DESIGN.md D40). Pure: no Node APIs. An emoji or a file is
+// Marks in the SVG (DESIGN.md, "Marks of any kind"). Pure: no Node APIs. An emoji or a file is
 // drawn as an image that the SVG holds as a data URI, so the output never links to
-// a file (D15). The command line reads the files and gives their bytes in here
-// before it renders, the way it gives in stylesheets (D30).
+// a file (DESIGN.md, "Output and determinism"). The command line reads the files and gives their bytes in here
+// before it renders, the way it gives in stylesheets (DESIGN.md, "Themes and stylesheets").
 
 import { isEmoji } from "../model/schema.ts";
 import {
@@ -16,7 +16,7 @@ import { FONT_FAMILY } from "../text/faces.ts";
 import { markRadius, markTextSize } from "../theme/geometry.ts";
 import { escapeXml, num } from "./svg.ts";
 
-/** A mark and the rect it is drawn in: on a node, or in the legend (D40, D42). */
+/** A mark and the rect it is drawn in: on a node, or in the legend (DESIGN.md, "Marks of any kind", "A legend for widths and marks"). */
 type DrawnMark = Pick<SceneMark, "mark" | "rect">;
 
 export { isEmoji };

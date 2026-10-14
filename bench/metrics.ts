@@ -179,7 +179,7 @@ export type Outcome = "success" | "opError" | "defect" | "denied";
 /**
  * How one grafical call ended. The harness's refusal comes first: its text starts with
  * "Permission to use". Then grafical's own report, as JSON or as the plain records
- * `error op=<index> ...` and `defect code=<code> ...`, or, before D37's records, the lines
+ * `error op=<index> ...` and `defect code=<code> ...`, or, before DESIGN.md, "Records over prose"'s records, the lines
  * `error op <index> ...` and `defect <code> [...`. A failure with neither is an
  * operation error. The help (the guide before it) quotes these lines with placeholders,
  * so a line counts only with a real index or code.

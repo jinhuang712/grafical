@@ -1,4 +1,4 @@
-// The write path shared by every write command (DESIGN.md D14, D16):
+// The write path shared by every write command (DESIGN.md, "Defects owned by who can fix them", "Interfaces"):
 // read, apply, lay out, check, and write only if nothing is wrong.
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
@@ -29,7 +29,7 @@ export interface Report {
   changed: string[];
   errors: OpError[];
   defects: Defect[];
-  /** The drawing's counts (D37): on apply, check and render, when nothing was refused. */
+  /** The drawing's counts (DESIGN.md, "Records over prose"): on apply, check and render, when nothing was refused. */
   counts?: Counts;
 }
 
@@ -67,7 +67,7 @@ function defectFields(d: Defect): Record<string, Value> {
 }
 
 /**
- * The report as records (D37): ok with the ids it changed, or failed, then a record
+ * The report as records (DESIGN.md, "Records over prose"): ok with the ids it changed, or failed, then a record
  * for each error and defect, then the counts. A refused change writes nothing.
  */
 export function formatReport(r: Report): string {
@@ -128,14 +128,14 @@ export function loadDiagram(file: string, setting: Set<string> = new Set()): Dia
   if (marks.length > 0) return failure(marks);
   const styles = loadStyles(file, stylesheetRefs(d, []));
   if (styles !== undefined) return styles;
-  // The file is read before its stylesheet, so a weight level is checked here (D41).
+  // The file is read before its stylesheet, so a weight level is checked here (DESIGN.md, "Edge weights").
   const weights = unknownWeights(d);
   return weights.length > 0 ? failure(weights) : d;
 }
 
 /**
  * Reads the stylesheets a diagram names, relative to its folder, and hands them
- * to layout (D30). Returns a report for the first one that is missing or wrong.
+ * to layout (DESIGN.md, "Themes and stylesheets"). Returns a report for the first one that is missing or wrong.
  * A style that is not a valid name is left for the model to refuse.
  */
 export function loadStyles(file: string, refs: string[]): Report | undefined {
@@ -165,7 +165,7 @@ export function writeAtomic(file: string, content: string | Uint8Array) {
 /**
  * Lays out and checks a diagram. Without `all`, only the defects the agent can
  * fix: engine-owned ones are the engine's to avoid, and only `check --all`
- * reports them (D14).
+ * reports them (DESIGN.md, "Defects owned by who can fix them").
  */
 export function inspect(d: Diagram, m: Measurer, all = false): Defect[] {
   const defects = check(d, layout(d, m), m);
@@ -217,7 +217,7 @@ async function plan(file: string, ops: Op[], create: boolean): Promise<Planned |
 
 /**
  * Applies operations to the file's diagram and writes it, or refuses and writes nothing.
- * With `counts`, the report carries the drawing's counts (D37), as apply's does.
+ * With `counts`, the report carries the drawing's counts (DESIGN.md, "Records over prose"), as apply's does.
  */
 export async function runWrite(
   file: string,
@@ -238,7 +238,7 @@ export async function runWrite(
 }
 
 /**
- * What a batch would do (D37): the counts of the drawing before and after it, with
+ * What a batch would do (DESIGN.md, "Records over prose"): the counts of the drawing before and after it, with
  * nothing written. The agent decides what to try; grafical measures.
  */
 export async function tryWrite(

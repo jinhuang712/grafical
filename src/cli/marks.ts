@@ -1,4 +1,4 @@
-// Reading the pictures behind marks (DESIGN.md D40, D15). Node only: the engine
+// Reading the pictures behind marks (DESIGN.md, "Marks of any kind", "Output and determinism"). Node only: the engine
 // stays pure, so the command line reads each file and each emoji here and hands the
 // bytes to the SVG writer with provideMarkImage(), the way it hands in stylesheets.
 

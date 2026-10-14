@@ -1,4 +1,4 @@
-// Columns in the picture (DESIGN.md D45): every box of a column left of every box of
+// Columns in the picture (DESIGN.md, "Columns beside rows"): every box of a column left of every box of
 // the next, in every row, with nothing drawn.
 
 import { beforeAll, describe, expect, it } from "vitest";
@@ -15,7 +15,7 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-describe("columns in the picture (D45)", () => {
+describe('columns in the picture (DESIGN.md, "Columns beside rows")', () => {
   it("photo sharing: requests left, processing right, narrower and with a bend less", () => {
     const r = applyOps(
       edgeLooks,

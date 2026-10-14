@@ -35,7 +35,7 @@ function run(ops: Op[], from: Diagram = base) {
   return r.diagram;
 }
 
-describe("node.icon (D40)", () => {
+describe('node.icon (DESIGN.md, "Marks of any kind")', () => {
   it("sets a text or emoji mark in a slot, and one slot holds one mark", () => {
     const d = run([
       { op: "node.icon", id: "x", slot: "top-left", icon: "⚠️" },

@@ -1,4 +1,4 @@
-// Text measurement interface (DESIGN.md D12, D13).
+// Text measurement interface (DESIGN.md, "Bundled fonts", "Our own SVG writer").
 // The layout measures and wraps every label through a Measurer, and the
 // renderer writes one <text> element per run.
 
@@ -39,7 +39,7 @@ export interface Measurer {
   /** One line, never wrapped. */
   measure(text: string, style: TextStyle): Line;
   /**
-   * Lines no wider than maxWidth where a break is possible (D12). A piece
+   * Lines no wider than maxWidth where a break is possible (DESIGN.md, "Bundled fonts"). A piece
    * that cannot break is kept whole, so a line may still exceed maxWidth:
    * the checker reports that as overflow.
    */

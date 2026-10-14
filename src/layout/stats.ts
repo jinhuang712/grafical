@@ -1,4 +1,4 @@
-// Route measures: crossings, bends and length. The slot choice (D24) minimises
+// Route measures: crossings, bends and length. The slot choice (DESIGN.md, "The engine picks a new box's slot") minimises
 // crossings with them, and tests report them.
 
 import type { Point } from "../scene.ts";

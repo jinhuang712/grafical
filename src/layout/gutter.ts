@@ -1,8 +1,8 @@
-// One gutter channel (DESIGN.md D11): orders the horizontal runs inside a gutter,
+// One gutter channel (DESIGN.md, "Our own gap router"): orders the horizontal runs inside a gutter,
 // gives each a row, and places the labels the gutter carries. It sees only the
 // visits inside this gutter.
 //
-// The rows are built so that no two lines and no label touch (D14):
+// The rows are built so that no two lines and no label touch (DESIGN.md, "Defects owned by who can fix them"):
 // 1. Two lines that would run on top of each other fix an order: the one that
 //    enters from the top ends above the one that enters from the bottom.
 // 2. Each label takes the best slot along its run that no line crosses from top to
@@ -12,7 +12,7 @@
 // 3. The runs are ordered for few crossings, within the fixed order.
 // 4. Each run, in that order, takes the first row from its earliest one where it
 //    and its label touch nothing placed so far. The gutter grows rather than
-//    squeezes (D10): the fixed order guarantees such a row further down.
+//    squeezes (DESIGN.md, "Layout computed again on every change"): the fixed order guarantees such a row further down.
 // A label with no free slot at all is returned, so that it can move to another
 // gutter of its path. When it has none left, its line takes a detour around the
 // crowd (placeDetours), which is always clear.
@@ -387,7 +387,7 @@ export function routeGutter(
     if (v === undefined) return;
     // A self-loop runs two rows deeper, so that its arrowhead has room to turn back: rows
     // count from the row's bottom, which a box reaches since every box takes its row's
-    // height (D38).
+    // height (DESIGN.md, "Fan-outs of three bundle").
     let t0 = v.members.some((m) => m.plan.u === m.plan.v) ? 2 : 0;
     for (const k of order.slice(0, pos)) {
       const u = ranked[k];

@@ -4,7 +4,7 @@
 // Two of the phase 0 spike's alignments hold: CatalogApiService under promotions,
 // and the goods pipeline under its topic. The spike's third, the catalog-api
 // service under its HTTP entry, needs the Processing row to slide by another
-// amount than the goods pipeline does, so it cannot hold with them (D10).
+// amount than the goods pipeline does, so it cannot hold with them (DESIGN.md, "Layout computed again on every change").
 
 import type { Diagram } from "../../src/model/types.ts";
 import { e, n } from "./build.ts";

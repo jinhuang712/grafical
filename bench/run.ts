@@ -212,7 +212,7 @@ function wrapper(dir: string, name: string, body: string): void {
 
 /**
  * A new, empty directory with the task's brief and the arm's tool, and nothing else.
- * With `hints` false, the grafical arm's tool prints no hint lines (D35), for comparing.
+ * With `hints` false, the grafical arm's tool prints no hint lines (DESIGN.md, "Records over prose"), for comparing.
  */
 export function prepareChainDir(dir: string, arm: Arm, task?: Task, hints = true): void {
   if (existsSync(dir)) throw new Error(`run directory exists, refusing to reuse it: ${dir}`);
@@ -430,7 +430,7 @@ export function runChain(o: {
   task?: Task;
   /** Where the round's directory lives, when not under bench/runs (private briefs). */
   runs?: string;
-  /** false: the grafical tool prints no hints (D35). */
+  /** false: the grafical tool prints no hints (DESIGN.md, "Records over prose"). */
   hints?: boolean;
 }): StepRecord[] {
   const dir = join(o.runs ?? RUNS, o.round, chainName(o.arm, o.model, o.run, o.task));

@@ -43,7 +43,7 @@ function fail(d: Diagram, ops: Op[]): OpError[] {
 const edge = (d: Diagram, id: string) => d.edges.find((e) => e.id === id);
 const widthOf = (d: Diagram, id: string) => layout(d, m).edges.find((e) => e.id === id)?.width;
 
-describe("edge weights (D41)", () => {
+describe('edge weights (DESIGN.md, "Edge weights")', () => {
   it("a level or a width sets how thick an edge is drawn; thin is the default", () => {
     const d = ok(fx, [
       { op: "edge.weight", edges: [EDGE], weight: "heavy" },
@@ -122,7 +122,7 @@ describe("edge weights (D41)", () => {
 
   it("the legend names the main path when an edge is heavier than thin", () => {
     const d = ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: "heavy" }]);
-    // Drawn at the width it stands for (D42).
+    // Drawn at the width it stands for (DESIGN.md, "A legend for widths and marks").
     expect(layout(d, m).legend?.at(-1)).toMatchObject({ width: 4 });
     expect(layout(fx, m).legend?.some((l) => l.width !== undefined)).toBe(false);
   });
@@ -163,7 +163,7 @@ describe("edge weights (D41)", () => {
   });
 });
 
-describe("weights in a stylesheet (D41)", () => {
+describe('weights in a stylesheet (DESIGN.md, "Edge weights")', () => {
   const sheet = (body: string) =>
     parseStylesheet(`grafical-style: 1\npaint:\n  edge:\n${body}`, "w.grafical-style.yaml");
 

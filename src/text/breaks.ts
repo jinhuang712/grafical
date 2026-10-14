@@ -1,4 +1,4 @@
-// Line break opportunities (DESIGN.md D12). Pure functions over characters.
+// Line break opportunities (DESIGN.md, "Bundled fonts"). Pure functions over characters.
 
 const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}　-〿＀-￯]/u;
 const ALNUM = /[\p{L}\p{N}]/u;

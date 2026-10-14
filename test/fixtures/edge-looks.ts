@@ -1,4 +1,4 @@
-// Every line look (D8, D33): calls and data reads solid, messages dashed, an
+// Every line look (DESIGN.md, "Looks", "Lines meet any side"): calls and data reads solid, messages dashed, an
 // optional read dotted, a two-way read and write, and a link with no arrowhead
 // between two related stores. The upload path is the main path.
 

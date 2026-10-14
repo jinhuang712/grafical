@@ -1,4 +1,4 @@
-// Walls (DESIGN.md D43): empty space between two sides, each a list of nodes and
+// Walls (DESIGN.md, "Walls as space"): empty space between two sides, each a list of nodes and
 // groups. Which way a wall runs follows from the rows of its sides: across when one
 // side lies wholly above the other, up and down when they share rows and one side
 // sits left of the other in each. A line from one side to the other crosses only
@@ -167,7 +167,7 @@ export interface WallSplit {
 }
 
 /**
- * How a wall up and down splits each row it spans (D43): in a row with nodes of the
+ * How a wall up and down splits each row it spans (DESIGN.md, "Walls as space"): in a row with nodes of the
  * left side, the nodes up to its last one lie left; in a row with only nodes of the
  * right side, the nodes before its first one. A node between the two sides would
  * stand in the wall, and a row with neither side has no place for it: both are

@@ -15,17 +15,17 @@ What grafical does, as commands and operations, with the status of each. "Comman
 | `grafical new <file> --title <text>` | Create an empty diagram | done |
 | `grafical <noun> <verb> <file> …` | Apply one operation, such as `grafical node add` | done |
 | `grafical apply <file> <batch.yaml>` | Apply a list of operations, all or nothing | done |
-| `grafical try <file> <batch.yaml>` | Apply a batch without writing it, and print the drawing's counts before and after it, and the change in each. The agent decides what to try; grafical measures (D37) | done |
-| `grafical show <file> [--drawn]` | Print a compact view of the diagram for agents. `--drawn`: how it is drawn, as `key=value` records: each box's row, place, size, lines by side and their length together; each line's sides, bends, length, the shortest it could be, the rows it skips, crossings, the rows it passes and the lines it is bundled with; each wall's length, space and the lines through it (D43); how each note is drawn (D44); and totals (D37) | done |
-| `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (D14) | done |
+| `grafical try <file> <batch.yaml>` | Apply a batch without writing it, and print the drawing's counts before and after it, and the change in each. The agent decides what to try; grafical measures (DESIGN.md, "Records over prose") | done |
+| `grafical show <file> [--drawn]` | Print a compact view of the diagram for agents. `--drawn`: how it is drawn, as `key=value` records: each box's row, place, size, lines by side and their length together; each line's sides, bends, length, the shortest it could be, the rows it skips, crossings, the rows it passes and the lines it is bundled with; each wall's length, space and the lines through it (DESIGN.md, "Walls as space"); how each note is drawn (DESIGN.md, "Notes as callouts or footnotes"); and totals (DESIGN.md, "Records over prose") | done |
+| `grafical check <file> [--all]` | Report the defects the agent can fix. `--all` adds the engine-owned ones, which are engine bugs (DESIGN.md, "Defects owned by who can fix them") | done |
 | `grafical render <file> [--svg [<out>]] [--png [<out>]]` | Write SVG and PNG. With neither flag, writes `<name>.svg` and `<name>.png` beside the file; `--svg` or `--png` alone writes only that one, to `<out>` or beside the file. `--scale` sets the PNG scale, from 1 to 4 | done |
-| `grafical view <file> [--port <n>] [--no-open]` | Open a window, sized to the diagram, that shows it as it is now, redrawn within a moment of every change, with the changed parts marked, a list of each change as operations, and the problems. Ctrl-C stops it (D31) | done |
-| `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file (D18) | done |
-| `grafical --help`, `grafical <command> --help` | The reference for agents: how to work, what makes a diagram good, the diagram types, and for each command its options, guidelines, common mistakes, limits and an example (D36) | done |
-| `grafical guide [<type>]` | Print the reference, or how to draw one diagram type (D34) | dropped: the help replaced it (D36) |
+| `grafical view <file> [--port <n>] [--no-open]` | Open a window, sized to the diagram, that shows it as it is now, redrawn within a moment of every change, with the changed parts marked, a list of each change as operations, and the problems. Ctrl-C stops it (DESIGN.md, "A viewer that only shows") | done |
+| `grafical diff <file> [<git-rev>]` | Report how the file on disk differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file (DESIGN.md, "Git as the history") | done |
+| `grafical --help`, `grafical <command> --help` | The reference for agents: how to work, what makes a diagram good, the diagram types, and for each command its options, guidelines, common mistakes, limits and an example (DESIGN.md, "The help as the reference") | done |
+| `grafical guide [<type>]` | Print the reference, or how to draw one diagram type (DESIGN.md, "Every layered diagram type") | dropped: the help replaced it (DESIGN.md, "The help as the reference") |
 | `grafical mcp` | Serve the same operations over MCP | later |
 
-Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also print the drawing's counts as one `key=value` record: nodes, lines, crossings, bends, the lines' length together, width, height, the row with most nodes, the box with most lines, the longest line, and the lines that pass a row they do not connect (D37). They are facts; what they mean is the agent's to judge.
+Every write command reports the IDs it changed, any operation errors and any defects. `--json` prints the same report as JSON. `apply`, `check` and `render` also print the drawing's counts as one `key=value` record: nodes, lines, crossings, bends, the lines' length together, width, height, the row with most nodes, the box with most lines, the longest line, and the lines that pass a row they do not connect (DESIGN.md, "Records over prose"). They are facts; what they mean is the agent's to judge.
 
 ## Operations
 
@@ -37,12 +37,12 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 |---|---|---|
 | `diagram.title` | Set the title | done |
 | `diagram.density` | Set spacing: `compact`, `normal` or `airy` | done |
-| `diagram.sizing` | Set how a node with no size is sized: `auto`, to its text (the default), or `fixed`, always medium (D27) | done |
-| `diagram.subtitle` | Set or clear one sentence under the title (D26) | done |
-| `diagram.note` | Set or clear the footnote, such as "Not shown: …" (D26) | done |
-| `diagram.style` | Take the look from a built-in theme (`default`, `dark`, `print`) or a stylesheet file beside the diagram; without one, the default theme (D30) | done |
-| `diagram.legend` | Name a line style in the legend, such as "Kafka message" for dashed lines, a line width, such as "writes" for thick lines, or a mark, such as "paged at night" for a `P0` badge; leave a line style or width out; or go back to the default wording (D42) | done |
-| `diagram.tidy` | Reorder every layer's nodes once, together, to reduce crossings (D24) | done |
+| `diagram.sizing` | Set how a node with no size is sized: `auto`, to its text (the default), or `fixed`, always medium (DESIGN.md, "Boxes sized to their text") | done |
+| `diagram.subtitle` | Set or clear one sentence under the title (DESIGN.md, "Curation stays with the agent") | done |
+| `diagram.note` | Set or clear the footnote, such as "Not shown: …" (DESIGN.md, "Curation stays with the agent") | done |
+| `diagram.style` | Take the look from a built-in theme (`default`, `dark`, `print`) or a stylesheet file beside the diagram; without one, the default theme (DESIGN.md, "Themes and stylesheets") | done |
+| `diagram.legend` | Name a line style in the legend, such as "Kafka message" for dashed lines, a line width, such as "writes" for thick lines, or a mark, such as "paged at night" for a `P0` badge; leave a line style or width out; or go back to the default wording (DESIGN.md, "A legend for widths and marks") | done |
+| `diagram.tidy` | Reorder every layer's nodes once, together, to reduce crossings (DESIGN.md, "The engine picks a new box's slot") | done |
 
 ### Layers
 
@@ -51,19 +51,19 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 | `layer.add` | Add a layer: at the top, at the bottom, or before or after another layer | done |
 | `layer.rename` | Change a layer's label | done |
 | `layer.move` | Change a layer's position | done |
-| `layer.tidy` | Reorder a layer's nodes to reduce edge crossings, once (D24) | done |
+| `layer.tidy` | Reorder a layer's nodes to reduce edge crossings, once (DESIGN.md, "The engine picks a new box's slot") | done |
 | `layer.remove` | Remove an empty layer, and the edges that end at it | done |
-| `layer.split` | Move the second half of a layer, or its nodes from one node on, into a new layer below it (D29) | done |
+| `layer.split` | Move the second half of a layer, or its nodes from one node on, into a new layer below it (DESIGN.md, "Curation stays with the agent") | done |
 
 ### Groups
 
 | Operation | Does | Status |
 |---|---|---|
-| `group.add` | Draw a system box around nodes, which may sit in several rows (D7) | done |
-| `group.add --in` | Put the new group inside another group, up to three levels (D34) | done |
-| `group.join`, `group.leave` | Add a node to a group, or take it out. Either also moves a whole group into another or out (D34). `leave` takes members out of every group, or with `--up` one level out | done |
+| `group.add` | Draw a system box around nodes, which may sit in several rows (DESIGN.md, "Rows unseen, groups as systems") | done |
+| `group.add --in` | Put the new group inside another group, up to three levels (DESIGN.md, "Every layered diagram type") | done |
+| `group.join`, `group.leave` | Add a node to a group, or take it out. Either also moves a whole group into another or out (DESIGN.md, "Every layered diagram type"). `leave` takes members out of every group, or with `--up` one level out | done |
 | `group.rename` | Change a group's label | done |
-| `group.remove` | Remove the box and keep its nodes. Its nodes and inner groups move into the group around it, or with `--out` out of every group (D34). Edges that end at the group go with it | done |
+| `group.remove` | Remove the box and keep its nodes. Its nodes and inner groups move into the group around it, or with `--out` out of every group (DESIGN.md, "Every layered diagram type"). Edges that end at the group go with it | done |
 | `group.describe` | Set or clear a second, quieter part of the group's label, such as "write side" | done |
 | `group.order` | Put a group's members before or after another group's, in every layer the two share | done |
 
@@ -71,32 +71,32 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `lane.add` | Add a swimlane that names who owns what, optionally with members: layers (the lanes run as rows), nodes (as columns) or groups, which bring their layers or nodes (D32) | done |
+| `lane.add` | Add a swimlane that names who owns what, optionally with members: layers (the lanes run as rows), nodes (as columns) or groups, which bring their layers or nodes (DESIGN.md, "Swimlanes run one way") | done |
 | `lane.join`, `lane.leave` | Put layers, nodes or groups into a lane, or take them out | done |
 | `lane.rename` | Change a lane's label | done |
 | `lane.remove` | Remove the lane and keep its members. Edges that end at the lane go with it | done |
-| `column.add` | Add a column, a guide that boxes follow beside their rows: every box of a column sits left of every box of the next, in every row. Last unless placed `before` or `after` another; optionally with members, nodes or groups that bring their nodes (D45) | done |
+| `column.add` | Add a column, a guide that boxes follow beside their rows: every box of a column sits left of every box of the next, in every row. Last unless placed `before` or `after` another; optionally with members, nodes or groups that bring their nodes (DESIGN.md, "Columns beside rows") | done |
 | `column.join`, `column.leave` | Put nodes, or groups' nodes, into a column, or take them out | done |
 | `column.remove` | Remove a column; its nodes stay where they are | done |
-| `wall.add` | Add a wall: empty space between two sides, each a list of nodes and groups, that a line from one side to the other crosses only where `allow` names it or one of its ends; a label draws a dashed divider through it (D43) | done |
+| `wall.add` | Add a wall: empty space between two sides, each a list of nodes and groups, that a line from one side to the other crosses only where `allow` names it or one of its ends; a label draws a dashed divider through it (DESIGN.md, "Walls as space") | done |
 | `wall.allow` | Let lines through a wall, by id or by a node or group at an end; `off` takes them back | done |
 | `wall.remove` | Remove a wall | done |
-| `note.add` | Add a note to a node, group or line, or replace the one it has: a callout card beside it where there is room, a numbered footnote where there is not (D44) | done |
+| `note.add` | Add a note to a node, group or line, or replace the one it has: a callout card beside it where there is room, a numbered footnote where there is not (DESIGN.md, "Notes as callouts or footnotes") | done |
 | `note.remove` | Remove a note | done |
 
 ### Nodes
 
 | Operation | Does | Status |
 |---|---|---|
-| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the lowest route cost: crossings, lines over two bends and boxes beside all they connect to, then bends and length (D24, D47). Or, in no row, `from` another box with steps `down` or `up` and `left` or `right`, each a cell of the column grid (D46) | done |
-| `node.rename` | Change the label. The ID stays. A node grafical sizes grows or shrinks with its label (D27). A label that still does not fit fails with a suggested fix | done |
+| `node.add` | Add a node with an ID, a label, a kind and a layer, placed first, last, or before or after another node. Without a position, grafical picks the slot with the lowest route cost: crossings, lines over two bends and boxes beside all they connect to, then bends and length (DESIGN.md, "The engine picks a new box's slot", "Who chose is punished"). Or, in no row, `from` another box with steps `down` or `up` and `left` or `right`, each a cell of the column grid (DESIGN.md, "Steps from another box") | done |
+| `node.rename` | Change the label. The ID stays. A node grafical sizes grows or shrinks with its label (DESIGN.md, "Boxes sized to their text"). A label that still does not fit fails with a suggested fix | done |
 | `node.describe` | Set or clear the sublabel, such as a port or a topic name | done |
 | `node.kind` | Change the kind | done |
-| `node.move` | Move to another layer, group or position, or by steps from another box; `layer` puts a box placed by steps back in a row (D46) | done |
-| `node.resize` | Set the size step, which fixes the box's width and height. Without a step, grafical sizes the box to its text again (D27) | done |
+| `node.move` | Move to another layer, group or position, or by steps from another box; `layer` puts a box placed by steps back in a row (DESIGN.md, "Steps from another box") | done |
+| `node.resize` | Set the size step, which fixes the box's width and height. Without a step, grafical sizes the box to its text again (DESIGN.md, "Boxes sized to their text") | done |
 | `node.align` | Place the node directly above or below a node in another layer. Fails if the alignment cannot hold with the order of either layer | done |
 | `node.emphasize` | Turn the accent on or off | done |
-| `node.icon` | Put a mark in a slot, or clear the slot without a mark. A mark is an emoji, a text of up to 6 characters, or an SVG or PNG file next to the diagram. A text mark may take a background, text and border color, and a shape. Any mark may take a size (D40) | done |
+| `node.icon` | Put a mark in a slot, or clear the slot without a mark. A mark is an emoji, a text of up to 6 characters, or an SVG or PNG file next to the diagram. A text mark may take a background, text and border color, and a shape. Any mark may take a size (DESIGN.md, "Marks of any kind") | done |
 | `node.remove` | Remove the node and its edges. A box that others step from stays while they do (`step-anchor`) | done |
 | `node.swap` | Two nodes trade places: layer and slot | done |
 | `node.merge` | Replace nodes with one new node that keeps all their edges, each once. Edges between them go | done |
@@ -105,15 +105,15 @@ On the command line an operation is `<noun> <verb> <file> <id>`, and every other
 
 | Operation | Does | Status |
 |---|---|---|
-| `edge.add` | Connect two ends, with an optional label and kind. An end is a node, a group, a layer or a lane (D28, D32) | done |
+| `edge.add` | Connect two ends, with an optional label and kind. An end is a node, a group, a layer or a lane (DESIGN.md, "Lines that end at containers", "Swimlanes run one way") | done |
 | `edge.relabel` | Change or clear the label | done |
 | `edge.kind` | Change the kind | done |
 | `edge.reverse` | Swap the direction. The ID stays | done |
 | `edge.remove` | Remove the edge | done |
 | `edge.retarget` | Move one or both ends of an edge. Its ID, kind and label stay | done |
-| `edge.both` | Draw arrowheads at both ends, or one end again. A link takes none (`both-on-link`) (D33) | done |
-| `edge.emphasize` | Draw edges thick, as the main path, or thin again. The legend names it "main path" (D33) | done |
-| `edge.weight` | Give edges a weight: a level (`thin`, `thick`, `heavy`, or one the stylesheet adds) or a width in pixels from 0.5 to 8. Without a weight, thin again (D41) | done |
+| `edge.both` | Draw arrowheads at both ends, or one end again. A link takes none (`both-on-link`) (DESIGN.md, "Lines meet any side") | done |
+| `edge.emphasize` | Draw edges thick, as the main path, or thin again. The legend names it "main path" (DESIGN.md, "Lines meet any side") | done |
+| `edge.weight` | Give edges a weight: a level (`thin`, `thick`, `heavy`, or one the stylesheet adds) or a width in pixels from 0.5 to 8. Without a weight, thin again (DESIGN.md, "Edge weights") | done |
 
 ## Command-line syntax
 
@@ -191,22 +191,22 @@ grafical diff <file> [<git-rev>]
 ```
 
 - A new layer goes to the bottom unless `--before` or `--after` places it.
-- `node add` without a position lets grafical pick the slot (D24). `node move --layer` without a position does the same.
-- `node add` without `--size` gets a medium box, or a large one when its text does not fit the medium box (D27). `node resize` without `--size` returns a node to that. With `diagram sizing fixed`, a node without a size is always medium.
+- `node add` without a position lets grafical pick the slot (DESIGN.md, "The engine picks a new box's slot"). `node move --layer` without a position does the same.
+- `node add` without `--size` gets a medium box, or a large one when its text does not fit the medium box (DESIGN.md, "Boxes sized to their text"). `node resize` without `--size` returns a node to that. With `diagram sizing fixed`, a node without a size is always medium.
 - `node remove` also removes the node's edges, and reports their ids.
-- A box placed by steps sits that many cells of the column grid from the box it steps from, which may itself be placed by steps, and moves with it; each step is 1 to 10, and at least one is given. Past the first or last row it lands in a row grafical adds, which `show --drawn` names `-`. The boxes of the row it lands in stand aside. A cell another fact keeps is refused (`step-blocked`), so is a box that steps from itself (`step-cycle`), and steps are not combined with a row, a position, an alignment, a column or a lane (`conflicting-position`). `node move` with steps and no `--from` keeps the box it steps from, and with `--from` alone keeps the steps (D46).
+- A box placed by steps sits that many cells of the column grid from the box it steps from, which may itself be placed by steps, and moves with it; each step is 1 to 10, and at least one is given. Past the first or last row it lands in a row grafical adds, which `show --drawn` names `-`. The boxes of the row it lands in stand aside. A cell another fact keeps is refused (`step-blocked`), so is a box that steps from itself (`step-cycle`), and steps are not combined with a row, a position, an alignment, a column or a lane (`conflicting-position`). `node move` with steps and no `--from` keeps the box it steps from, and with `--from` alone keeps the steps (DESIGN.md, "Steps from another box").
 - `node merge` puts the new node where the first listed node was, keeps every edge of the merged nodes once, and drops the edges between them. It may reuse a merged node's id. Nodes aligned to a merged node lose the alignment.
-- `layer tidy` and `diagram tidy` reorder once, when asked (D24). They report every node that moved.
+- `layer tidy` and `diagram tidy` reorder once, when asked (DESIGN.md, "The engine picks a new box's slot"). They report every node that moved.
 - Clearing: `node describe`, `node align`, `edge relabel`, `edge weight`, `group describe` and `diagram legend` without their value clear it.
-- An edge id defaults to `<from>-><to>` (D4). Either end may be a node, a group, a layer or a lane. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
+- An edge id defaults to `<from>-><to>` (DESIGN.md, "Operations"). Either end may be a node, a group, a layer or a lane. A layer an edge ends at is drawn as a band. An end may not lie inside the other (`edge-inside`), a container end must hold a node (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). `group remove` also removes the edges that end at the group.
 - A lane's members are layers or nodes, one way per diagram (`lane-mixed`). A row lane's layers must be neighbours (`lane-gap`), and a layer added between two layers of a lane joins it. Column lanes go left to right in creation order, and grafical keeps each row in that order: a node outside every lane sits right of the lanes, or left of them when it comes first in its row. A group lies in one lane (`group-across-lanes`) and joins with all its members. Two lanes are never the ends of one edge (`lane-to-lane`), and neither are a layer and a column lane (`edge-inside`). `lane remove` keeps the members and removes the edges that end at the lane.
-- A group's box spans every row from its top member to its bottom one, rows without a member included; the other nodes of those rows sit beside the box (D7). `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
-- grafical keeps every row in column order; a box in no column stays beside the box left of it. An order another fact contradicts is refused (`column-order`), and a diagram has columns or lanes that run as columns, not both (`column-lanes`) (D45).
-- A wall's sides may not share a node, and must lie one above the other, or side by side in the rows they share with no other node between them and a node of a side in every row the wall spans (`wall-sides`). A line from one side to the other is refused unless the wall allows it, and any other line drawn through the wall is a defect, both `wall-crossed`. A node, group or line that is removed leaves the walls, and a wall left with an empty side goes (D43).
-- A node, group or line has one note at most, and its note goes with it. A note that takes more than four lines is an `overflow` (D44).
-- grafical prints no warnings and no hints (D37). What they reported is in the counts and in `grafical show --drawn`: the number of nodes, the picture's width, the nodes in each row, the members of each group, and the rows a line passes.
+- A group's box spans every row from its top member to its bottom one, rows without a member included; the other nodes of those rows sit beside the box (DESIGN.md, "Rows unseen, groups as systems"). `group join` moves a node out of its previous group. `group remove` keeps the members, ungrouped. `diagram subtitle` and `diagram note` without `--text` clear the text.
+- grafical keeps every row in column order; a box in no column stays beside the box left of it. An order another fact contradicts is refused (`column-order`), and a diagram has columns or lanes that run as columns, not both (`column-lanes`) (DESIGN.md, "Columns beside rows").
+- A wall's sides may not share a node, and must lie one above the other, or side by side in the rows they share with no other node between them and a node of a side in every row the wall spans (`wall-sides`). A line from one side to the other is refused unless the wall allows it, and any other line drawn through the wall is a defect, both `wall-crossed`. A node, group or line that is removed leaves the walls, and a wall left with an empty side goes (DESIGN.md, "Walls as space").
+- A node, group or line has one note at most, and its note goes with it. A note that takes more than four lines is an `overflow` (DESIGN.md, "Notes as callouts or footnotes").
+- grafical prints no warnings and no hints (DESIGN.md, "Records over prose"). What they reported is in the counts and in `grafical show --drawn`: the number of nodes, the picture's width, the nodes in each row, the members of each group, and the rows a line passes.
 - Every command accepts `--json`. Exit codes: 0 for success, 1 for an operation error or a defect, 2 for a usage error.
-- `grafical --help` and each command's `--help` carry this reference, written for agents (D36).
+- `grafical --help` and each command's `--help` carry this reference, written for agents (DESIGN.md, "The help as the reference").
 
 A batch file is a YAML list of operations. Each item has `op: <noun>.<verb>` and the same fields as the command's flags, in camelCase:
 
@@ -254,12 +254,12 @@ edges:
     label: produce
 ```
 
-- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A group's keys are `id`, `label`, `sublabel` and `in`, the group it sits inside (D34). A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`, `column`. A `nodes` list after `layers` holds the boxes in no row, in creation order, each with `from` and its steps, `down`, `up`, `left`, `right`, last, and no `align`, `lane` or `column` (D46). A `lanes` list of `id` and `label`, in order across, comes after `groups` (D32), a `columns` list of `id`, left to right, after it (D45), a `walls` list of `id`, `between`, `and`, `allow` and `label` after it (D43), and a `notes` list of `on` and `text` after that (D44). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, `weight`. `both` and `accent` appear only when true, and `weight` only when it is not thin (D41). A node has `size` only when one was given; without it grafical sizes the box (D27). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
+- Keys appear in the order shown. `sizing: fixed`, when set, comes right after `density`. A group's keys are `id`, `label`, `sublabel` and `in`, the group it sits inside (DESIGN.md, "Every layered diagram type"). A layer's keys are `id`, `label`, `lane`, `nodes`. A node's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane`, `column`. A `nodes` list after `layers` holds the boxes in no row, in creation order, each with `from` and its steps, `down`, `up`, `left`, `right`, last, and no `align`, `lane` or `column` (DESIGN.md, "Steps from another box"). A `lanes` list of `id` and `label`, in order across, comes after `groups` (DESIGN.md, "Swimlanes run one way"), a `columns` list of `id`, left to right, after it (DESIGN.md, "Columns beside rows"), a `walls` list of `id`, `between`, `and`, `allow` and `label` after it (DESIGN.md, "Walls as space"), and a `notes` list of `on` and `text` after that (DESIGN.md, "Notes as callouts or footnotes"). An edge's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent`, `weight`. `both` and `accent` appear only when true, and `weight` only when it is not thin (DESIGN.md, "Edge weights"). A node has `size` only when one was given; without it grafical sizes the box (DESIGN.md, "Boxes sized to their text"). A field that holds its default (no accent, no alignment, no group, no lane, auto sizing) is left out, and so are an empty `groups` or `lanes` list, a missing subtitle and a missing note.
 - Layers, the nodes in a layer, and edges are ordered lists. The order of layers and nodes is their place in the picture. The order of edges is creation order and changes nothing visible.
 
 ### The stylesheet file
 
-A diagram names its look with `style:`, right after `density`: a built-in theme, or a stylesheet's path relative to the diagram, ending in `.grafical-style.yaml` (D30).
+A diagram names its look with `style:`, right after `density`: a built-in theme, or a stylesheet's path relative to the diagram, ending in `.grafical-style.yaml` (DESIGN.md, "Themes and stylesheets").
 
 ```yaml
 grafical-style: 1
@@ -275,13 +275,13 @@ paint:
     kinds:
       call: { stroke: "#2f6f4f" }
       async: { stroke: "#2f6f4f", dash: "4 3" }
-    weights: { heavy: 5, critical: 6.5 }   # more edge weights (D41)
+    weights: { heavy: 5, critical: 6.5 }   # more edge weights (DESIGN.md, "Edge weights")
 type:
   title: { size: 22 }
   node-label: { size: 14, weight: 600 }
 ```
 
-- `paint` holds every colour, stroke width and corner radius, by role, under the same keys as the built-in themes. Any node kind may take a dashed border. Only `async` and `optional` edges have a dash pattern, because the kind decides the line style (D8, D33).
+- `paint` holds every colour, stroke width and corner radius, by role, under the same keys as the built-in themes. Any node kind may take a dashed border. Only `async` and `optional` edges have a dash pattern, because the kind decides the line style (DESIGN.md, "Looks", "Lines meet any side").
 - `type` holds a size (6 to 48) and a weight (400 or 600, the bundled fonts' weights) per text role. Larger type changes the layout, and text that no longer fits its box is refused as overflow.
 - An unknown key, a malformed colour or a weight the fonts lack is refused with the path of the value.
 - A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
@@ -292,18 +292,18 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 
 | List | Values |
 |---|---|
-| Node kinds | `service`, `store`, `queue`, `external`, `actor`, `state` (rounded box), `terminal` (pill: a flowchart's start or end), `decision` (diamond), `initial` and `final` (a state machine's start dot and end ring: one size, label not drawn) (D34) |
+| Node kinds | `service`, `store`, `queue`, `external`, `actor`, `state` (rounded box), `terminal` (pill: a flowchart's start or end), `decision` (diamond), `initial` and `final` (a state machine's start dot and end ring: one size, label not drawn) (DESIGN.md, "Every layered diagram type") |
 | Edge kinds | `call`, `async`, `data`, `link` (no arrowhead), `optional` (dotted) |
 | Size steps | `s`, `m`, `l` |
 | Density | `compact`, `normal`, `airy` |
-| Emphasis | `accent`: at most 2 nodes per diagram, and edges on the main path, drawn thick (D33) |
-| Mark colors | `red`, `amber`, `green`, `blue`, `purple`, `gray`, `dark`, or `#rrggbb`, for the background, text and border of a text mark (D40) |
-| Mark shapes | `square`, `rounded` (default), `pill`: the badge of a text mark (D40) |
-| Mark sizes | `s`, `m` (default), `l`: 16, 20 and 28 px high (D40) |
-| Mark slots | `top-left`, `top-right`, `bottom-left`, `bottom-right`, `left`: one mark each. A diamond and a dot have no `left` (D40) |
-| Edge weight | `thin`, `thick`, `heavy`, and any level a stylesheet adds in `paint.edge.weights`; or a width of 0.5 to 8 pixels. The built-in themes draw them 1.25, 2.5 and 4 wide (D41) |
-| Line shape | `orthogonal` (default) or `curved`, set in a stylesheet as `paint.edge.shape` (D33) |
-| Nested box fill | `alternate` (default): group fill and background in turn; `shade`: each level a shade nearer the border colour. Set in a stylesheet as `paint.nesting` (D34) |
+| Emphasis | `accent`: at most 2 nodes per diagram, and edges on the main path, drawn thick (DESIGN.md, "Lines meet any side") |
+| Mark colors | `red`, `amber`, `green`, `blue`, `purple`, `gray`, `dark`, or `#rrggbb`, for the background, text and border of a text mark (DESIGN.md, "Marks of any kind") |
+| Mark shapes | `square`, `rounded` (default), `pill`: the badge of a text mark (DESIGN.md, "Marks of any kind") |
+| Mark sizes | `s`, `m` (default), `l`: 16, 20 and 28 px high (DESIGN.md, "Marks of any kind") |
+| Mark slots | `top-left`, `top-right`, `bottom-left`, `bottom-right`, `left`: one mark each. A diamond and a dot have no `left` (DESIGN.md, "Marks of any kind") |
+| Edge weight | `thin`, `thick`, `heavy`, and any level a stylesheet adds in `paint.edge.weights`; or a width of 0.5 to 8 pixels. The built-in themes draw them 1.25, 2.5 and 4 wide (DESIGN.md, "Edge weights") |
+| Line shape | `orthogonal` (default) or `curved`, set in a stylesheet as `paint.edge.shape` (DESIGN.md, "Lines meet any side") |
+| Nested box fill | `alternate` (default): group fill and background in turn; `shade`: each level a shade nearer the border colour. Set in a stylesheet as `paint.nesting` (DESIGN.md, "Every layered diagram type") |
 
 ## Output
 
@@ -313,7 +313,7 @@ This is the one place these lists are kept. They are first lists, and phase 2 se
 | PNG rendered by resvg, with no browser | stage 1 |
 | Bundled fonts: Inter, and a Simplified Chinese subset of Noto Sans SC | stage 1 |
 | Same SVG bytes and PNG pixels for the same file, on macOS and Linux | stage 1 |
-| Built-in themes `default`, `dark` and `print`, and stylesheet files (D30) | done |
+| Built-in themes `default`, `dark` and `print`, and stylesheet files (DESIGN.md, "Themes and stylesheets") | done |
 | Brand fonts | later |
 
 ## Phase 1e: chosen by the owner on 2026-10-13
@@ -322,22 +322,22 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 
 | Feature | Does | Status |
 |---|---|---|
-| Bundled fan-outs | Three or more unlabelled lines of one style from one side of a box leave as one line and split near their targets, with a dot at each split. The engine's behavior: nothing for the agent to state (D38) | done |
-| Equal heights in a row | Every box in a row takes the height of the row's tallest, so their tops line up (D27) | done |
-| Room around stores | A gutter keeps more room on its side next to a row that holds a store, so lines run clear of the cylinders (D33) | done |
+| Bundled fan-outs | Three or more unlabelled lines of one style from one side of a box leave as one line and split near their targets, with a dot at each split. The engine's behavior: nothing for the agent to state (DESIGN.md, "Fan-outs of three bundle") | done |
+| Equal heights in a row | Every box in a row takes the height of the row's tallest, so their tops line up (DESIGN.md, "Boxes sized to their text") | done |
+| Room around stores | A gutter keeps more room on its side next to a row that holds a store, so lines run clear of the cylinders (DESIGN.md, "Lines meet any side") | done |
 | Flow direction | `down` (as now) or `right`: rows become columns of the flow, left to right. One diagram fact. Held by the owner on 2026-10-14: the costliest of the three, since most of the layout assumes rows run across, with no evidence yet that it helps; walls and notes come first | later |
-| Walls | Empty space between two named sides, partial, that lines cross only where the wall allows; with a label it draws a dashed divider through its middle (D43) | done |
-| Notes | A short text attached to a box, a line or a group: a callout card beside it where there is room, a numbered footnote where there is not; grafical picks (D44) | done |
-| Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in. Not built: the owner decided that the file fixes the picture and the same facts give mostly the same picture (D39) | dropped |
-| Columns | An optional second placement fact beside rows: every box of a column sits left of every box of the next; a box in no column keeps its place beside its neighbour, and a new one lands near what it connects to (D45) | done |
-| Steps | A box in no row, placed some cells of the grid from another box, which it moves with; the agent states the steps (D46) | done |
+| Walls | Empty space between two named sides, partial, that lines cross only where the wall allows; with a label it draws a dashed divider through its middle (DESIGN.md, "Walls as space") | done |
+| Notes | A short text attached to a box, a line or a group: a callout card beside it where there is room, a numbered footnote where there is not; grafical picks (DESIGN.md, "Notes as callouts or footnotes") | done |
+| Same facts, same picture | Boxes placed without a stated position land the same way whatever order the facts arrived in. Not built: the owner decided that the file fixes the picture and the same facts give mostly the same picture (DESIGN.md, "Same file exact, same facts mostly") | dropped |
+| Columns | An optional second placement fact beside rows: every box of a column sits left of every box of the next; a box in no column keeps its place beside its neighbour, and a new one lands near what it connects to (DESIGN.md, "Columns beside rows") | done |
+| Steps | A box in no row, placed some cells of the grid from another box, which it moves with; the agent states the steps (DESIGN.md, "Steps from another box") | done |
 
 ## Later
 
 | Feature | Status |
 |---|---|
-| Lanes that run both ways in one diagram, as a grid of lanes and phases (D32) | later |
-| Diagram types that need a layout of their own: sequence, entity-relationship and class, mind map, timeline (D34) | later |
+| Lanes that run both ways in one diagram, as a grid of lanes and phases (DESIGN.md, "Swimlanes run one way") | later |
+| Diagram types that need a layout of their own: sequence, entity-relationship and class, mind map, timeline (DESIGN.md, "Every layered diagram type") | later |
 | Import from Mermaid, draw.io and Excalidraw | later |
 | An MCP server | later |
 | Numbered steps along the main flow | later |
@@ -352,8 +352,8 @@ Each is kept only if it measurably helps (ROADMAP.md, phase 1e). Syntax is fixed
 | Gaps between sections | Spacing is the engine's |
 | Zones, section titles | Dividers and groups cover them |
 | Ports, end labels, tags | Choices with little gain for architecture diagrams; a sublabel holds a port |
-| Icons | More kinds a weak model can get wrong (D29) |
+| Icons | More kinds a weak model can get wrong (DESIGN.md, "Curation stays with the agent") |
 | Patterns, one operation for a common structure | Shorthand for content; the help's examples teach the structures |
-| A declared diagram type that checks its conventions | grafical would judge content (D37) |
+| A declared diagram type that checks its conventions | grafical would judge content (DESIGN.md, "Records over prose") |
 | A score of how readable a picture is | Readers differ (PHILOSOPHY.md) |
 | A board where people edit the diagram (`grafical review`), with drags that become operations | Agents draw good enough diagrams with grafical, and a person asks for a change in words (PHILOSOPHY.md, "Who draws?"). Dropped by the owner on 2026-10-14 |

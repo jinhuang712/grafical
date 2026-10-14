@@ -46,7 +46,7 @@ describe("determinism", () => {
   }
 });
 
-describe("boxes inside boxes (D34)", () => {
+describe('boxes inside boxes (DESIGN.md, "Every layered diagram type")', () => {
   it("fills them by depth: the group fill and the background in turn, or shades", () => {
     const scene = layout(nested, createStubMeasurer());
     const fills = (svg: string) =>
@@ -63,7 +63,7 @@ describe("boxes inside boxes (D34)", () => {
   });
 });
 
-describe("crossings and joins (D33)", () => {
+describe('crossings and joins (DESIGN.md, "Lines meet any side")', () => {
   /** Plain lines, which carry no arrowhead, alone on the tiny scene's canvas. */
   const lines = (edges: SceneEdge[]): string => renderSvg({ ...tinyScene(), nodes: [], edges });
   const edge = (id: string, points: Point[]): SceneEdge => ({
@@ -108,7 +108,7 @@ describe("crossings and joins (D33)", () => {
     expect(svg).toContain('d="M180 60L108 60A8 4 0 0 0 92 60L20 60"');
   });
 
-  it("rounds a corner as far as its stretches allow in the curved style (D33)", () => {
+  it('rounds a corner as far as its stretches allow in the curved style (DESIGN.md, "Lines meet any side")', () => {
     const curved = { ...PAINT, edge: { ...PAINT.edge, shape: "curved" as const } };
     const zed = edge("z", [
       { x: 20, y: 20 },
@@ -248,7 +248,7 @@ describe("the target look", () => {
     expect(out.match(/<path d="M236 248[^>]*>/)?.[0]).not.toContain("dasharray");
   });
 
-  it("draws an optional edge dotted, and a link with no arrowhead (D33)", () => {
+  it('draws an optional edge dotted, and a link with no arrowhead (DESIGN.md, "Lines meet any side")', () => {
     const s = mixedScene();
     const data = s.edges.find((e) => e.kind === "data");
     expect(data).toBeDefined();

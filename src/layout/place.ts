@@ -1,7 +1,7 @@
-// Placement across (DESIGN.md D7, D10): every node sits on a column of one grid
+// Placement across (DESIGN.md, "Rows unseen, groups as systems", "Layout computed again on every change"): every node sits on a column of one grid
 // shared by all rows (grid.ts). Each column gets an x from the room its nodes need:
 // box widths and the gap between neighbours, group boxes and the space between a
-// box and the nodes outside it, the space between column lanes (D32), labels of
+// box and the nodes outside it, the space between column lanes (DESIGN.md, "Swimlanes run one way"), labels of
 // edges that run sideways between neighbours, and lines that pass a row through
 // an empty column. Columns are
 // packed from the left, as close as that room allows, and the picture is centred
@@ -46,7 +46,7 @@ export interface PLayer {
 export interface PGroup {
   id: string;
   label: string;
-  /** The boxed group this one sits in (D34). */
+  /** The boxed group this one sits in (DESIGN.md, "Every layered diagram type"). */
   parent?: string;
   /** Member ids, its inner groups' included, row by row, in order. */
   members: string[];
@@ -93,7 +93,7 @@ export interface PlaceText {
    * that stands for the other end. The label sits between that node and the lane.
    */
   laneEnds?: Map<string, { lane: string; node: string }>;
-  /** The space a wall that runs up and down keeps between its sides (D43). */
+  /** The space a wall that runs up and down keeps between its sides (DESIGN.md, "Walls as space"). */
   wallSpace?: (id: string) => number;
 }
 
@@ -134,7 +134,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   });
 
   // Groups that can be boxed, with their members, the nodes of their inner groups
-  // included (D34).
+  // included (DESIGN.md, "Every layered diagram type").
   const broken = new Set(grid.groupProblems.map((p) => p.group));
   const groupIds = (d.groups ?? []).map((g) => g.id).filter((g) => !broken.has(g));
   /** The boxed groups around a node, innermost first. */
@@ -178,7 +178,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     const top = u.layer > v.layer ? u : v;
     topEnds.set(top.id, (topEnds.get(top.id) ?? 0) + 1);
   }
-  // Column lanes (D32), and the nodes outside them, as blocks in order across.
+  // Column lanes (DESIGN.md, "Swimlanes run one way"), and the nodes outside them, as blocks in order across.
   const ranks = laneRun(d) === "columns" ? laneRanks(d) : new Map<string, number>();
   const laneIds = (d.lanes ?? []).map((x) => x.id);
   const laneOrder: PNode[][] = [];
@@ -217,7 +217,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         add(a.col, b.col, a.w / 2 + sp.nodeGap + b.w / 2);
       }
     }
-    // A box placed by steps (D46): each step across keeps a medium box and a gap, so
+    // A box placed by steps (DESIGN.md, "Steps from another box"): each step across keeps a medium box and a gap, so
     // that two steps never look like one.
     for (const n of nodes.values()) {
       const from = n.node.from === undefined ? undefined : nodes.get(n.node.from);
@@ -317,7 +317,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         }
       }
     }
-    // Walls up and down (D43): what lies left of a wall in its rows, boxes included,
+    // Walls up and down (DESIGN.md, "Walls as space"): what lies left of a wall in its rows, boxes included,
     // keeps the wall's space from what lies right of it.
     for (const w of d.walls ?? []) {
       const way = wallRun(d, w);
@@ -565,7 +565,7 @@ function laneSides(
 
 /**
  * Seats each group's label in the head of its box, where no line may then pass
- * (D25 rule 8). The leftmost seat wins that keeps clear of the centre of every
+ * (DESIGN.md, "A target picture with measured rules" rule 8). The leftmost seat wins that keeps clear of the centre of every
  * first-row member a line enters or leaves by its top, so that its straight lines
  * stay centred; failing that, the leftmost that leaves each such member room for
  * the ports it needs; failing that, the one that leaves the most room. Returns,
@@ -592,7 +592,7 @@ function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, num
     return parent === undefined ? 1 : 1 + depth(parent);
   };
   // Outer labels first: a line into a row passes every head stacked above it, so an
-  // inner label's ports must leave room for the outer labels too (D34).
+  // inner label's ports must leave room for the outer labels too (DESIGN.md, "Every layered diagram type").
   const order = groups
     .map((_, i) => i)
     .sort((i, j) => depth(groups[i] as PGroup) - depth(groups[j] as PGroup) || i - j);
@@ -632,7 +632,7 @@ function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, num
         const c = centreX(n);
         if (c > lo - 1e-6 && c < hi + 1e-6) centred = false;
         // A dot's ports sit at its centre or spread over all of it, so a label over
-        // any part of it leaves its lines no room (D34).
+        // any part of it leaves its lines no room (DESIGN.md, "Every layered diagram type").
         const clear = hi <= a || lo >= b;
         const room =
           above.length > 0

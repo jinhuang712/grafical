@@ -1,4 +1,4 @@
-// Swimlanes (DESIGN.md D32). A lane's members name it: layers, when lanes run as
+// Swimlanes (DESIGN.md, "Swimlanes run one way"). A lane's members name it: layers, when lanes run as
 // rows, or nodes, when lanes run as columns. The way lanes run follows from which
 // members name them, so a diagram cannot hold both. Row lanes span neighbouring
 // layers. Column lanes go left to right in list order and span the whole height;

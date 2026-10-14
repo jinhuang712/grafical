@@ -1,4 +1,4 @@
-// The drawing as discrete facts (DESIGN.md D37): for each box its row, its place in the
+// The drawing as discrete facts (DESIGN.md, "Records over prose"): for each box its row, its place in the
 // row, its size, its lines on each side and their length; for each line the sides it
 // leaves and enters, its bends, its length against the shortest it could be, the rows
 // between its ends, the lines it crosses and the rows it passes without connecting; the
@@ -51,7 +51,7 @@ export interface DrawnLine {
   crosses: string[];
   /** Rows between its ends that it runs through, among their boxes, without meeting a box of. */
   passes: string[];
-  /** The lines it leaves or arrives with through one port, drawn as one bundle there (D38), in id order. */
+  /** The lines it leaves or arrives with through one port, drawn as one bundle there (DESIGN.md, "Fan-outs of three bundle"), in id order. */
   bundle: string[];
 }
 
@@ -62,7 +62,7 @@ export interface DrawnGroup {
   height: number;
 }
 
-/** One entry the legend draws, in its order (D42): a line style, a line width or a mark. */
+/** One entry the legend draws, in its order (DESIGN.md, "A legend for widths and marks"): a line style, a line width or a mark. */
 export interface DrawnLegend {
   /** The line style of a line's sample; null for a mark. */
   style: string | null;
@@ -73,7 +73,7 @@ export interface DrawnLegend {
   text: string;
 }
 
-/** A wall (D43): which way it runs, how long and how thick it is, and the lines through it. */
+/** A wall (DESIGN.md, "Walls as space"): which way it runs, how long and how thick it is, and the lines through it. */
 export interface DrawnWall {
   id: string;
   run: string;
@@ -83,7 +83,7 @@ export interface DrawnWall {
   lines: string[];
 }
 
-/** A note (D44): what it is about, and how it is drawn: a callout, or a footnote and its number. */
+/** A note (DESIGN.md, "Notes as callouts or footnotes"): what it is about, and how it is drawn: a callout, or a footnote and its number. */
 export interface DrawnNote {
   on: string;
   as: string;
@@ -138,7 +138,7 @@ function gapOf(a: Rect, b: Rect): number {
 }
 
 export function drawing(facts: Diagram, scene: Scene): Drawing {
-  // Boxes placed by steps count in the rows they are drawn in (D46).
+  // Boxes placed by steps count in the rows they are drawn in (DESIGN.md, "Steps from another box").
   const d = placeSteps(facts).d;
   /** A row's name in the output: a row the engine added is "-". */
   const rowName = (id: string) => (addedRow(id) ? "-" : id);
@@ -170,7 +170,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     crosses.set(b, [...(crosses.get(b) ?? []), a]);
   }
 
-  // Every line meets its box at a port of its own, except the lines of a bundle (D33, D38).
+  // Every line meets its box at a port of its own, except the lines of a bundle (DESIGN.md, "Lines meet any side", "Fan-outs of three bundle").
   const bundles = new Map<string, Set<string>>();
   const ends = (e: (typeof scene.edges)[number]) => [
     `${e.from}@${e.points[0]?.x},${e.points[0]?.y}`,

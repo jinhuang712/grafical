@@ -1,7 +1,7 @@
-// Geometry tokens: box sizes per size step, spacing per density (DESIGN.md D6, D10).
+// Geometry tokens: box sizes per size step, spacing per density (DESIGN.md, "Facts over coordinates", "Layout computed again on every change").
 // Owned by the layout. Every value is a multiple of 4, and every box width a
 // multiple of 8, so that box centres and edges stay on the 4 px grid.
-// The sizes follow the target picture (D25): 136 x 56 boxes, 32 px between
+// The sizes follow the target picture (DESIGN.md, "A target picture with measured rules"): 136 x 56 boxes, 32 px between
 // neighbours, 24 px of group padding.
 
 import type { Density, MarkShape, MarkSize, SizeStep } from "../model/types.ts";
@@ -13,12 +13,12 @@ export const BOX: Record<SizeStep, { w: number; h: number }> = {
 };
 
 /**
- * A decision's box per size step (D34). A diamond holds text only in its middle, so
+ * A decision's box per size step (DESIGN.md, "Every layered diagram type"). A diamond holds text only in its middle, so
  * its box is larger than a plain box of the same step: medium fits "Within 30
  * days?" on one line, large two short lines of about 115 px.
  */
 /**
- * Marks on a node (D40). A corner mark is centred on its corner: half its height lies
+ * Marks on a node (DESIGN.md, "Marks of any kind"). A corner mark is centred on its corner: half its height lies
  * outside the box on each axis, whatever its size. The left mark takes a column inside
  * the box, which the text gives up.
  */
@@ -28,7 +28,7 @@ export const MARK = {
 };
 
 /**
- * A mark's size steps (D40): its height, which is also a picture's width, the font size of a
+ * A mark's size steps (DESIGN.md, "Marks of any kind"): its height, which is also a picture's width, the font size of a
  * text of one character and of several, and the space between a text and its badge's edge.
  */
 export const MARK_STEP: Record<MarkSize, { h: number; one: number; many: number; padX: number }> = {
@@ -48,7 +48,7 @@ export function markRadius(shape: MarkShape, h: number): number {
   return shape === "square" ? 0 : shape === "pill" ? h / 2 : 4;
 }
 
-/** The one size of a state machine's start and end dots (D34). */
+/** The one size of a state machine's start and end dots (DESIGN.md, "Every layered diagram type"). */
 export const DOT = 24;
 
 export const DIAMOND: Record<SizeStep, { w: number; h: number }> = {
@@ -105,17 +105,17 @@ export const FRAME = {
   legendLabelGap: 8,
   /** Space between two legend items. */
   legendItemGap: 24,
-  /** Space between two lines of a legend that wraps (D42). */
+  /** Space between two lines of a legend that wraps (DESIGN.md, "A legend for widths and marks"). */
   legendLineGap: 6,
   /** The subtitle and the footnote wrap at the content's width, but never narrower than this. */
   minTextWidth: 480,
   /**
    * Horizontal padding inside a box. Its text wraps to the box width minus twice
-   * this, which is the room the checker allows (D14), so that a line that fits is
+   * this, which is the room the checker allows (DESIGN.md, "Defects owned by who can fix them"), so that a line that fits is
    * never wrapped.
    */
   textPad: 8,
-  /** Vertical padding inside a box, the room the checker allows above and below text (D14). */
+  /** Vertical padding inside a box, the room the checker allows above and below text (DESIGN.md, "Defects owned by who can fix them"). */
   textPadY: 4,
   /** Lines a node label may take before it overflows. */
   labelLines: 2,
@@ -128,7 +128,7 @@ export const FRAME = {
   storeLid: 7,
 };
 
-/** A layer drawn as a band, because an edge ends at it (DESIGN.md D28). */
+/** A layer drawn as a band, because an edge ends at it (DESIGN.md, "Lines that end at containers"). */
 export const BAND = {
   /** Space between the band's sides and the content's left and right edges. */
   padX: 16,
@@ -142,7 +142,7 @@ export const BAND = {
   labelInset: 16,
 };
 
-/** Walls: empty space between two sides (DESIGN.md D43). */
+/** Walls: empty space between two sides (DESIGN.md, "Walls as space"). */
 export const WALL = {
   /** The space a wall adds where it runs, for each wall there. */
   space: 48,
@@ -156,7 +156,7 @@ export const WALL = {
   labelWrap: 96,
 };
 
-/** Notes: callout cards and footnotes (DESIGN.md D44). */
+/** Notes: callout cards and footnotes (DESIGN.md, "Notes as callouts or footnotes"). */
 export const NOTE = {
   /** Widest a note's text runs before it wraps. */
   wrap: 160,
@@ -175,7 +175,7 @@ export const NOTE = {
   keyGap: 6,
 };
 
-/** Swimlanes (DESIGN.md D32). */
+/** Swimlanes (DESIGN.md, "Swimlanes run one way"). */
 export const LANE = {
   /** Space between a lane's side and the content in it, across. */
   padX: 20,
@@ -191,7 +191,7 @@ export const LANE = {
   lineClear: 8,
 };
 
-/** System boxes (DESIGN.md D7). */
+/** System boxes (DESIGN.md, "Rows unseen, groups as systems"). */
 export const GROUP = {
   /** Space between a group's box and its members, left, right and below. */
   pad: 24,
@@ -211,7 +211,7 @@ export const GROUP = {
   labelClear: 6,
 };
 
-/** Routing tokens (DESIGN.md D11). */
+/** Routing tokens (DESIGN.md, "Our own gap router"). */
 export const ROUTE = {
   /** Preferred distance between neighbouring ports on one node side. */
   portPitch: 16,
@@ -237,9 +237,9 @@ export const ROUTE = {
   labelSpace: 24,
   /** Room a gutter adds on its side next to a row that holds a store, past a cylinder's lid and base. */
   storeRoom: 8,
-  /** This many unlabelled edges of one kind on a crowded node side share a trunk (D25 rule 4). */
+  /** This many unlabelled edges of one kind on a crowded node side share a trunk (DESIGN.md, "A target picture with measured rules" rule 4). */
   busMin: 2,
-  /** This many unlabelled edges of one kind leaving one node side leave as one bundle, crowded or not (D38). */
+  /** This many unlabelled edges of one kind leaving one node side leave as one bundle, crowded or not (DESIGN.md, "Fan-outs of three bundle"). */
   fanOut: 3,
   /** Space on each side of the label of an edge that runs sideways between neighbours. */
   sideLabelPad: 12,

@@ -1,5 +1,5 @@
-// The diagram model: the facts a diagram file holds (DESIGN.md D6, D7, D8).
-// Positions are never part of the model. The engine computes them (D10).
+// The diagram model: the facts a diagram file holds (DESIGN.md, "Facts over coordinates", "Rows unseen, groups as systems", "Looks").
+// Positions are never part of the model. The engine computes them (DESIGN.md, "Layout computed again on every change").
 
 export const FORMAT_VERSION = 1;
 
@@ -27,18 +27,18 @@ export const DENSITIES = ["compact", "normal", "airy"] as const;
 export type Density = (typeof DENSITIES)[number];
 
 /**
- * The line styles an edge is drawn in (D8, D33): call and data are solid, async dashed,
+ * The line styles an edge is drawn in (DESIGN.md, "Looks", "Lines meet any side"): call and data are solid, async dashed,
  * optional dotted, and a link is a plain line with no arrowhead. The legend names each.
  */
 export const LINE_STYLES = ["solid", "dashed", "dotted", "plain"] as const;
 export type LineStyleName = (typeof LINE_STYLES)[number];
 
-/** How the engine sizes a node that has no size (D27). */
+/** How the engine sizes a node that has no size (DESIGN.md, "Boxes sized to their text"). */
 export const SIZINGS = ["auto", "fixed"] as const;
 export type Sizing = (typeof SIZINGS)[number];
 
 /**
- * Where a mark sits on a node (D40): over one of its four corners, or in a column
+ * Where a mark sits on a node (DESIGN.md, "Marks of any kind"): over one of its four corners, or in a column
  * inside the box, left of the text.
  */
 export const MARK_SLOTS = ["top-left", "top-right", "bottom-left", "bottom-right", "left"] as const;
@@ -46,7 +46,7 @@ export type MarkSlot = (typeof MARK_SLOTS)[number];
 
 /**
  * A mark: an emoji or a short text, or an SVG or PNG file next to the diagram file.
- * A file is kept with its SHA-256, so a changed file is caught (D40, D15).
+ * A file is kept with its SHA-256, so a changed file is caught (DESIGN.md, "Marks of any kind", "Output and determinism").
  */
 export type Mark =
   | string
@@ -61,7 +61,7 @@ export const MARK_SHAPES = ["square", "rounded", "pill"] as const;
 export type MarkShape = (typeof MARK_SHAPES)[number];
 
 /**
- * What a text mark may set beyond its text (D40). Colors are `#rrggbb`, kept as hex.
+ * What a text mark may set beyond its text (DESIGN.md, "Marks of any kind"). Colors are `#rrggbb`, kept as hex.
  * Every field is absent when it holds its default: a dark badge, light or dark text
  * that reads on it, no border, a rounded shape, the medium size.
  */
@@ -87,7 +87,7 @@ export function markStyle(m: Mark): MarkStyle {
 /**
  * The colors a text mark's background may be named by. Any `#rrggbb` is allowed too.
  * A name is turned into its hex when the mark is set, so a change here never
- * changes a file that already exists (D15).
+ * changes a file that already exists (DESIGN.md, "Output and determinism").
  */
 export const MARK_COLORS = {
   red: "#d1242f",
@@ -105,7 +105,7 @@ export function markText(m: Mark): string | undefined {
   return "text" in m ? m.text : undefined;
 }
 
-/** What the legend names a mark by: its emoji or text, or its file's name (D42). */
+/** What the legend names a mark by: its emoji or text, or its file's name (DESIGN.md, "A legend for widths and marks"). */
 export function markName(m: Mark): string {
   return markText(m) ?? (m as { file: string }).file;
 }
@@ -114,7 +114,7 @@ export interface DiagramNode {
   id: string;
   label: string;
   kind: NodeKind;
-  /** Absent: the engine sizes the box to its text, unless the diagram's sizing is fixed (D27). */
+  /** Absent: the engine sizes the box to its text, unless the diagram's sizing is fixed (DESIGN.md, "Boxes sized to their text"). */
   size?: SizeStep;
   /** A second, smaller line, such as a port or a topic name. */
   sublabel?: string;
@@ -122,48 +122,48 @@ export interface DiagramNode {
   accent?: boolean;
   /** The id of a node in another layer that this node sits directly above or below. */
   align?: string;
-  /** The id of the group (system) this node belongs to (D7). */
+  /** The id of the group (system) this node belongs to (DESIGN.md, "Rows unseen, groups as systems"). */
   group?: string;
-  /** The lane this node lies in, when lanes run as columns (D32). */
+  /** The lane this node lies in, when lanes run as columns (DESIGN.md, "Swimlanes run one way"). */
   lane?: string;
-  /** The column this node follows (D45). */
+  /** The column this node follows (DESIGN.md, "Columns beside rows"). */
   column?: string;
-  /** Marks in fixed slots, such as a warning at the top-left (D40). */
+  /** Marks in fixed slots, such as a warning at the top-left (DESIGN.md, "Marks of any kind"). */
   icons?: Partial<Record<MarkSlot, Mark>>;
-  /** The box a box in no row is placed from, by the steps below (D46). */
+  /** The box a box in no row is placed from, by the steps below (DESIGN.md, "Steps from another box"). */
   from?: string;
-  /** Steps down, up, left or right from `from`, each a cell of the column grid (D46). */
+  /** Steps down, up, left or right from `from`, each a cell of the column grid (DESIGN.md, "Steps from another box"). */
   down?: number;
   up?: number;
   left?: number;
   right?: number;
 }
 
-/** A system drawn as one box around its member nodes, which may sit in several rows (D7). */
+/** A system drawn as one box around its member nodes, which may sit in several rows (DESIGN.md, "Rows unseen, groups as systems"). */
 export interface Group {
   id: string;
   label: string;
   /** A second, quieter part of the label, such as "write side". */
   sublabel?: string;
-  /** The group this one sits inside, drawn as a box within its box (D34). */
+  /** The group this one sits inside, drawn as a box within its box (DESIGN.md, "Every layered diagram type"). */
   in?: string;
 }
 
 export interface Layer {
   id: string;
   label: string;
-  /** The lane this layer lies in, when lanes run as rows (D32). */
+  /** The lane this layer lies in, when lanes run as rows (DESIGN.md, "Swimlanes run one way"). */
   lane?: string;
   /** Ordered: list order is the order within the layer. */
   nodes: DiagramNode[];
 }
 
 /**
- * A swimlane: a labelled band that names who owns what (D32). Its members name
+ * A swimlane: a labelled band that names who owns what (DESIGN.md, "Swimlanes run one way"). Its members name
  * it: layers, when lanes run as rows, or nodes, when lanes run as columns. All
  * lanes of a diagram run one way.
  */
-/** A column (D45): a guide that its nodes follow, left of the next column's in every row. */
+/** A column (DESIGN.md, "Columns beside rows"): a guide that its nodes follow, left of the next column's in every row. */
 export interface Column {
   id: string;
 }
@@ -174,7 +174,7 @@ export interface Lane {
 }
 
 /**
- * A wall (D43): empty space between two sides, each a list of nodes and groups. A line
+ * A wall (DESIGN.md, "Walls as space"): empty space between two sides, each a list of nodes and groups. A line
  * from one side to the other crosses it only where `allow` names the line, or a node or
  * group at one of its ends.
  */
@@ -188,7 +188,7 @@ export interface Wall {
   label?: string;
 }
 
-/** A note (D44): a short text about a node, a group or a line, drawn as a callout or a footnote. */
+/** A note (DESIGN.md, "Notes as callouts or footnotes"): a short text about a node, a group or a line, drawn as a callout or a footnote. */
 export interface Note {
   /** The id of the node, group or line it is about. */
   on: string;
@@ -201,16 +201,16 @@ export interface Edge {
   to: string;
   kind: EdgeKind;
   label?: string;
-  /** true: an arrowhead at both ends. A link has none (D33). */
+  /** true: an arrowhead at both ends. A link has none (DESIGN.md, "Lines meet any side"). */
   both?: boolean;
-  /** true: drawn thick, as part of the main path (D33). Means `weight: thick`; `weight` wins. */
+  /** true: drawn thick, as part of the main path (DESIGN.md, "Lines meet any side"). Means `weight: thick`; `weight` wins. */
   accent?: boolean;
-  /** A weight level the stylesheet names, or a width in pixels (D41). Absent: thin. */
+  /** A weight level the stylesheet names, or a width in pixels (DESIGN.md, "Edge weights"). Absent: thin. */
   weight?: string | number;
 }
 
 /**
- * The legend's words (D42): per line style; per line width, named by its level or, for
+ * The legend's words (DESIGN.md, "A legend for widths and marks"): per line style; per line width, named by its level or, for
  * a width in pixels, by its number written as a string; and per mark, by its name.
  * `false` leaves a line style's or a width's entry out. A mark is left out by not naming it.
  */
@@ -219,39 +219,39 @@ export type Legend = Partial<Record<LineStyleName, string | false>> & {
   marks?: Record<string, string>;
 };
 
-/** How the legend names an edge's weight: its level, or its width in pixels as text (D42). */
+/** How the legend names an edge's weight: its level, or its width in pixels as text (DESIGN.md, "A legend for widths and marks"). */
 export function weightKey(w: string | number): string {
   return typeof w === "number" ? String(w) : w;
 }
 
 export interface Diagram {
-  /** The format version (D22). */
+  /** The format version (DESIGN.md, "File format"). */
   grafical: number;
   title: string;
-  /** One sentence under the title (D26). */
+  /** One sentence under the title (DESIGN.md, "Curation stays with the agent"). */
   subtitle?: string;
-  /** A footnote, such as "Not shown: …" (D26). */
+  /** A footnote, such as "Not shown: …" (DESIGN.md, "Curation stays with the agent"). */
   note?: string;
   density: Density;
-  /** "fixed": a node with no size is a medium box, whatever its text. Absent: auto (D27). */
+  /** "fixed": a node with no size is a medium box, whatever its text. Absent: auto (DESIGN.md, "Boxes sized to their text"). */
   sizing?: "fixed";
-  /** A built-in theme's name, or a stylesheet's path relative to the file (D30). Absent: the default theme. */
+  /** A built-in theme's name, or a stylesheet's path relative to the file (DESIGN.md, "Themes and stylesheets"). Absent: the default theme. */
   style?: string;
-  /** The legend's words, where they differ from the default (D42). */
+  /** The legend's words, where they differ from the default (DESIGN.md, "A legend for widths and marks"). */
   legend?: Legend;
   /** Ordered top to bottom. */
   layers: Layer[];
-  /** Boxes in no row, each placed by steps from another box, in creation order (D46). */
+  /** Boxes in no row, each placed by steps from another box, in creation order (DESIGN.md, "Steps from another box"). */
   nodes?: DiagramNode[];
-  /** The systems, in creation order. Absent or empty: no groups. Members name their group (D7). */
+  /** The systems, in creation order. Absent or empty: no groups. Members name their group (DESIGN.md, "Rows unseen, groups as systems"). */
   groups?: Group[];
-  /** The swimlanes. Lanes that run as columns go left to right in this order (D32). */
+  /** The swimlanes. Lanes that run as columns go left to right in this order (DESIGN.md, "Swimlanes run one way"). */
   lanes?: Lane[];
-  /** Columns, left to right (D45). */
+  /** Columns, left to right (DESIGN.md, "Columns beside rows"). */
   columns?: Column[];
-  /** Empty space between two sides, in creation order (D43). */
+  /** Empty space between two sides, in creation order (DESIGN.md, "Walls as space"). */
   walls?: Wall[];
-  /** One note at most per node, group or line, in creation order (D44). */
+  /** One note at most per node, group or line, in creation order (DESIGN.md, "Notes as callouts or footnotes"). */
   notes?: Note[];
   /** Ordered: list order is creation order, and decides nothing visual. */
   edges: Edge[];

@@ -1,6 +1,6 @@
-// Edge ends (DESIGN.md D28). An edge joins two nodes, or a node and a container,
+// Edge ends (DESIGN.md, "Lines that end at containers"). An edge joins two nodes, or a node and a container,
 // or two containers. A container is a group, drawn as its system box, a layer,
-// drawn as a band across the diagram once an edge ends at it, or a lane (D32).
+// drawn as a band across the diagram once an edge ends at it, or a lane (DESIGN.md, "Swimlanes run one way").
 // The rules here are facts, decided from rows and order alone, so they are
 // operation errors:
 // - an end must exist, and a container end must hold at least one node;

@@ -1,4 +1,4 @@
-// The real measurer (DESIGN.md D12): harfbuzzjs shapes the bundled fonts.
+// The real measurer (DESIGN.md, "Bundled fonts"): harfbuzzjs shapes the bundled fonts.
 // It takes font bytes, so it has no file system dependency. See fonts.ts.
 
 import * as hb from "harfbuzzjs";

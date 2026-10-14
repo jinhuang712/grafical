@@ -1,4 +1,4 @@
-// The legend's words (DESIGN.md D42): naming line widths, through the operation and the file.
+// The legend's words (DESIGN.md, "A legend for widths and marks"): naming line widths, through the operation and the file.
 
 import { describe, expect, it } from "vitest";
 import { drawing, drawingText } from "../../src/check/drawing.ts";
@@ -43,7 +43,7 @@ const weighted = ok(fx, [
   { op: "edge.weight", edges: ["pipelines->postgres"], weight: 3 },
 ]);
 
-describe("the legend names line widths (D42)", () => {
+describe('the legend names line widths (DESIGN.md, "A legend for widths and marks")', () => {
   it("widths it does not name share one main path entry, drawn at the thinnest", () => {
     expect(entries(weighted).filter((x) => x.width !== undefined)).toEqual([
       { text: "main path", width: 2.5 },
@@ -150,7 +150,7 @@ const marked = ok(fx, [
 ]);
 const markEntries = (d: Diagram) => (layout(d, m).legend ?? []).filter((x) => x.mark !== undefined);
 
-describe("the legend names marks (D42)", () => {
+describe('the legend names marks (DESIGN.md, "A legend for widths and marks")', () => {
   it("a mark is in the legend only once it is named, and once for each name", () => {
     expect(markEntries(marked)).toEqual([]);
     const d = ok(marked, [
@@ -194,7 +194,7 @@ describe("the legend names marks (D42)", () => {
   });
 });
 
-describe("the legend leaves entries out (D42)", () => {
+describe('the legend leaves entries out (DESIGN.md, "A legend for widths and marks")', () => {
   const styles = (d: Diagram) => (layout(d, m).legend ?? []).map((x) => x.style);
 
   it("hide leaves a line style out, and without it the entry comes back", () => {

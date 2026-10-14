@@ -1,7 +1,7 @@
-// Swimlanes (DESIGN.md D32): a checkout system drawn by owner as row lanes, every
+// Swimlanes (DESIGN.md, "Swimlanes run one way"): a checkout system drawn by owner as row lanes, every
 // row in a lane (the owner chose a lane of its own for the stores, 2026-10-12),
 // and by team as column lanes, with nodes outside every lane and an edge to a lane.
-// Fictional systems. Boxes are sized by grafical (D27).
+// Fictional systems. Boxes are sized by grafical (DESIGN.md, "Boxes sized to their text").
 
 import type { Diagram, DiagramNode, NodeKind } from "../../src/model/types.ts";
 import { e } from "./build.ts";

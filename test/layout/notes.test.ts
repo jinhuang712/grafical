@@ -1,4 +1,4 @@
-// Notes in the picture (DESIGN.md D44): a callout card where there is room, a numbered
+// Notes in the picture (DESIGN.md, "Notes as callouts or footnotes"): a callout card where there is room, a numbered
 // footnote where there is not.
 
 import { beforeAll, describe, expect, it } from "vitest";
@@ -30,7 +30,7 @@ const note = (on: string, text = "retries 5 times, then the DLQ"): Op => ({
 const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
-describe("notes in the picture (D44)", () => {
+describe('notes in the picture (DESIGN.md, "Notes as callouts or footnotes")', () => {
   it("a note with room beside its target is a card, joined to it by a dotted line", () => {
     const d = ok(fx, [note("catalog-api", "owned by the storefront team")]);
     const scene = layout(d, m);

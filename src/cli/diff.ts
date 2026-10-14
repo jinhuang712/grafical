@@ -1,4 +1,4 @@
-// `grafical diff <file> [<rev>]` (DESIGN.md D18): how the file on disk differs
+// `grafical diff <file> [<rev>]` (DESIGN.md, "Git as the history"): how the file on disk differs
 // from a git revision, as a batch of operations. `grafical apply` replays the
 // batch on the revision's file and gets the file on disk.
 

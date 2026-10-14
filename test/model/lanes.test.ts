@@ -56,7 +56,7 @@ beforeAll(() => {
   shop = ok(null, base).diagram;
 });
 
-describe("lanes in the model (D32)", () => {
+describe('lanes in the model (DESIGN.md, "Swimlanes run one way")', () => {
   it("runs as rows when layers join, and the file keeps it", () => {
     const { diagram: d } = ok(shop, [
       { op: "lane.add", id: "customer", label: "Customer", members: ["clients"] },
@@ -157,7 +157,7 @@ describe("lanes in the model (D32)", () => {
   });
 });
 
-describe("lanes in the picture (D32)", () => {
+describe('lanes in the picture (DESIGN.md, "Swimlanes run one way")', () => {
   it("draws row lanes as bands with a header on the left, around their rows only", () => {
     const { diagram: d } = ok(shop, [
       { op: "lane.add", id: "customer", label: "Customer", members: ["clients"] },

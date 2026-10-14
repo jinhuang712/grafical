@@ -1,7 +1,7 @@
-// What grafical reports back to the caller (DESIGN.md D5, D14, D16).
+// What grafical reports back to the caller (DESIGN.md, "Checking and failure", "Defects owned by who can fix them", "Interfaces").
 
 /**
- * The facts that help fix an error or a defect, as discrete values (D37): never a
+ * The facts that help fix an error or a defect, as discrete values (DESIGN.md, "Records over prose"): never a
  * sentence. The code says what is wrong; these say what is there and what would do.
  * They print in this order.
  */
@@ -111,7 +111,7 @@ export const DEFECT_CODES = [
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
 /**
- * Who can fix a defect (D14). The agent can shorten a label or change a
+ * Who can fix a defect (DESIGN.md, "Defects owned by who can fix them"). The agent can shorten a label or change a
  * character. Only the engine can move a line or a box, so it must avoid the
  * rest itself.
  */
@@ -121,7 +121,7 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   overflow: "agent",
   "missing-glyph": "agent",
   "mark-covers": "agent",
-  // The agent's boxes lead the line through the wall; it allows the line or moves one (D43).
+  // The agent's boxes lead the line through the wall; it allows the line or moves one (DESIGN.md, "Walls as space").
   "wall-crossed": "agent",
   "node-overlap": "engine",
   "edge-through-node": "engine",
@@ -130,16 +130,16 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "text-crossing": "engine",
   "group-intruder": "engine",
   "lane-stray": "engine",
-  // One x would have served both ends of the line (D47).
+  // One x would have served both ends of the line (DESIGN.md, "Who chose is punished").
   "needless-bend": "engine",
-  // The agent placed the box by steps beside everything it connects to (D47).
+  // The agent placed the box by steps beside everything it connects to (DESIGN.md, "Who chose is punished").
   "box-aside": "agent",
 };
 
 /**
  * A mechanical flaw in the laid-out picture. A write that leaves an agent-owned
  * defect fails. An engine-owned one is an engine bug: the write goes ahead, and
- * only `grafical check --all` reports it (D14).
+ * only `grafical check --all` reports it (DESIGN.md, "Defects owned by who can fix them").
  */
 export interface Defect {
   code: DefectCode;

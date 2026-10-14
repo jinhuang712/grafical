@@ -1,4 +1,4 @@
-// The ids nearest to a wrong one, for an error's facts (DESIGN.md D5, D37).
+// The ids nearest to a wrong one, for an error's facts (DESIGN.md, "Checking and failure", "Records over prose").
 
 /** Levenshtein distance. */
 export function editDistance(a: string, b: string): number {

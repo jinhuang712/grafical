@@ -1,4 +1,4 @@
-// The engine owns six defects (DESIGN.md D14): no valid diagram may show one.
+// The engine owns six defects (DESIGN.md, "Defects owned by who can fix them"): no valid diagram may show one.
 // Random diagrams from fixed seeds, laid out with the real measurer and judged by
 // the real checker. FUZZ_SEEDS=5000 pnpm test test/fuzz runs a larger set;
 // node test/fuzz/run.ts and node test/fuzz/show.ts <seed> help find out why.
@@ -13,8 +13,8 @@ import { generate } from "./gen.ts";
 const seeds = Number(process.env.FUZZ_SEEDS ?? 500);
 /**
  * Seeds past the usual 500 that once failed, kept so that CI runs them: a line
- * through an outer label stacked above an inner one (D34); a wall's label with no
- * place along its line clear of the lines that cross it (D43).
+ * through an outer label stacked above an inner one (DESIGN.md, "Every layered diagram type"); a wall's label with no
+ * place along its line clear of the lines that cross it (DESIGN.md, "Walls as space").
  */
 const FAILED = [512, 590, 649, 700, 1051, 1606, 1701];
 

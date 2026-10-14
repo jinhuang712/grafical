@@ -1,4 +1,4 @@
-// Reading and writing the diagram file (FEATURES.md, "The diagram file"; D22).
+// Reading and writing the diagram file (FEATURES.md, "The diagram file"; DESIGN.md, "File format").
 
 import { parseDocument, stringify } from "yaml";
 import type { OpError } from "../errors.ts";
@@ -50,7 +50,7 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
       else if ("file" in m) {
         icons[slot] = { file: m.file, sha256: m.sha256, ...(m.size ? { size: m.size } : {}) };
       } else {
-        // Keys sorted, so the same facts give the same bytes (D15).
+        // Keys sorted, so the same facts give the same bytes (DESIGN.md, "Output and determinism").
         const o: Record<string, string> = {};
         for (const k of ["bg", "border", "fg", "shape", "size", "text"] as const) {
           if (m[k] !== undefined) o[k] = m[k];
