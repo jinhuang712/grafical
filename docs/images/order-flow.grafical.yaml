@@ -1,0 +1,30 @@
+grafical: 1
+title: Order flow
+density: normal
+layers:
+  - id: app
+    label: App
+    nodes:
+      - id: api
+        label: Order API
+        kind: service
+  - id: data
+    label: Data
+    nodes:
+      - id: db
+        label: Postgres
+        kind: store
+      - id: cache
+        label: Redis
+        kind: store
+edges:
+  - id: api->db
+    from: api
+    to: db
+    kind: call
+    label: writes
+  - id: api->cache
+    from: api
+    to: cache
+    kind: call
+    label: reads

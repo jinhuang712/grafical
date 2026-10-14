@@ -1,0 +1,67 @@
+grafical: 1
+title: How grafical works
+density: normal
+layers:
+  - id: callers
+    label: Callers
+    nodes:
+      - id: agent
+        label: Coding agent
+        kind: actor
+  - id: engine
+    label: Engine
+    nodes:
+      - id: apply
+        label: Validate and apply
+        kind: service
+        group: grafical
+      - id: layout
+        label: Lay out and route
+        kind: service
+        group: grafical
+      - id: check
+        label: Check
+        kind: service
+        group: grafical
+  - id: outputs
+    label: Outputs
+    nodes:
+      - id: file
+        label: Diagram file
+        kind: store
+        sublabel: YAML, in git
+      - id: picture
+        label: SVG and PNG
+        kind: store
+groups:
+  - id: grafical
+    label: grafical
+edges:
+  - id: agent->apply
+    from: agent
+    to: apply
+    kind: call
+    label: operations
+  - id: apply->file
+    from: apply
+    to: file
+    kind: call
+    label: writes
+  - id: apply->layout
+    from: apply
+    to: layout
+    kind: call
+  - id: layout->check
+    from: layout
+    to: check
+    kind: call
+  - id: check->agent
+    from: check
+    to: agent
+    kind: async
+    label: facts and counts
+  - id: layout->picture
+    from: layout
+    to: picture
+    kind: call
+    label: renders
