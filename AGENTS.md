@@ -61,7 +61,7 @@ A command added to `package.json` gets a row here in the same change.
 - Type check, lint and tests pass.
 - At least one affected fixture was rendered and looked at.
 - For changes to layout, routing or text measurement: the stability and determinism tests pass, and changed PNG snapshots were reviewed one by one.
-- Documents are updated in the same change when behavior, a decision, a target or a phase changed.
+- Documents are updated in the same change when behavior, a decision, a target or a milestone changed.
 - The report states what changed, with the command output that proves it. "The code looks right" is not proof.
 
 ## Tests
@@ -77,7 +77,7 @@ A command added to `package.json` gets a row here in the same change.
 
 ## Decisions and scope
 
-- A new design decision gets the next free ID in DESIGN.md, with the options it rejected.
+- A new design decision gets its own dated section in DESIGN.md, titled by its choice, with the options it rejected.
 - A change that conflicts with PHILOSOPHY.md stops, and the agent asks the owner.
 - When a choice affects scope, the file format or user-visible behavior, offer the options and ask. Do not guess.
 
