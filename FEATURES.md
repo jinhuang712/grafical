@@ -567,7 +567,7 @@ type:
 
 ## Later
 
-These are wanted, but not scheduled. Each becomes a planned feature once ROADMAP.md gives it a phase.
+These are wanted, but not scheduled. Each becomes a planned feature once ROADMAP.md gives it a milestone.
 
 - **More combinations of operations.** The owner said on 2026-10-14 that what grafical lacks is more ways to combine its operations. What form that takes is not decided, such as one operation for a common edit ("put a cache between the API and the database") or for a common shape.
 - **Flow direction:** rows become columns, so that a diagram reads left to right. Held by the owner on 2026-10-14, because most of the layout assumes rows run across, and nothing yet shows it helps.
