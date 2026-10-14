@@ -117,6 +117,9 @@ export function writeDiagram(d: Diagram): string {
       return o;
     });
   }
+  if (d.notes !== undefined && d.notes.length > 0) {
+    out.notes = d.notes.map((x) => ({ on: x.on, text: x.text }));
+  }
   out.edges = d.edges.map(edgeOut);
   return stringify(out, { lineWidth: 0, indent: 2, indentSeq: true, minContentWidth: 0 });
 }

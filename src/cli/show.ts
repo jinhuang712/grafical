@@ -95,6 +95,7 @@ export function showDiagram(d: Diagram): string {
       `wall ${w.id}${label}${way === undefined ? "" : ` (${way})`}: between=${w.between.join(",")} and=${w.and.join(",")}${allow}`,
     );
   }
+  for (const x of d.notes ?? []) lines.push(`note on=${x.on} ${JSON.stringify(x.text)}`);
   lines.push(d.edges.length > 0 ? "edges:" : "edges: (none)");
   for (const e of d.edges) lines.push(edgeText(e));
   return `${lines.join("\n")}\n`;

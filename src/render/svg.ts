@@ -6,7 +6,16 @@
 // not drawn (D7).
 // Nodes come after edges so that ports look clean.
 
-import type { PlacedText, Point, Rect, Scene, SceneEdge, SceneGroup, SceneNode } from "../scene.ts";
+import type {
+  PlacedText,
+  Point,
+  Rect,
+  Scene,
+  SceneBadge,
+  SceneEdge,
+  SceneGroup,
+  SceneNode,
+} from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
 import { FRAME } from "../theme/geometry.ts";
 import { hasHead, lineLook, PAINT, type Paint, STYLE_KIND } from "../theme/paint.ts";
@@ -628,6 +637,30 @@ export function renderSvg(scene: Scene): string {
       out.push(...texts(t, t.role === "node-sublabel" ? P.text.nodeSublabel : P.text.nodeLabel));
     }
     for (const m of n.marks ?? []) out.push(...markShape(m));
+  }
+
+  // Notes (D44): a card and its dotted line, or a footnote's numbers; over the nodes,
+  // so that a number on a box's corner shows.
+  const muted = P.text.groupLabelMuted;
+  const circle = (b: SceneBadge) => [
+    `<circle cx="${num(b.x)}" cy="${num(b.y)}" r="${num(b.r)}" fill="${muted}"/>`,
+    ...texts(b.label, P.background),
+  ];
+  for (const x of scene.notes ?? []) {
+    if (x.link !== undefined) {
+      const { a, b } = x.link;
+      out.push(
+        `<line x1="${num(a.x)}" y1="${num(a.y)}" x2="${num(b.x)}" y2="${num(b.y)}" stroke="${muted}" stroke-width="1" stroke-dasharray="2 3"/>`,
+      );
+    }
+    if (x.card !== undefined) {
+      out.push(
+        `<rect ${rectAttrs(x.card)} rx="4" fill="${P.background}" stroke="${P.band.stroke}" stroke-width="1"/>`,
+      );
+    }
+    if (x.mark !== undefined) out.push(...circle(x.mark));
+    if (x.key !== undefined) out.push(...circle(x.key));
+    out.push(...texts(x.text, P.text.note));
   }
 
   out.push(...texts(scene.title, P.text.title));

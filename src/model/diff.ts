@@ -95,6 +95,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     delete empty.groups;
     delete empty.lanes;
     delete empty.walls;
+    delete empty.notes;
     delete empty.legend;
     return [created, ...diffDiagrams(empty, after)];
   }
@@ -210,6 +211,17 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   );
   for (const w of b.walls ?? [])
     if (!keptWalls.has(w.id)) ops.push({ op: "wall.remove", id: w.id });
+  // Notes (D44) the same way: one that changes, or whose target is removed and added
+  // again, goes first and comes back last.
+  const aNotes = new Map((a.notes ?? []).map((x) => [x.on, x.text]));
+  const keptNotes = keptStart(
+    (b.notes ?? [])
+      .filter((x) => aNotes.get(x.on) === x.text && !removed.has(x.on))
+      .map((x) => x.on),
+    (a.notes ?? []).map((x) => x.on),
+  );
+  for (const x of b.notes ?? [])
+    if (!keptNotes.has(x.on)) ops.push({ op: "note.remove", on: x.on });
 
   // 2. Edges that go.
   for (const e of b.edges) if (!keptEdges.has(e.id)) ops.push({ op: "edge.remove", id: e.id });
@@ -492,6 +504,9 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (w.allow !== undefined) op.allow = w.allow;
     if (w.label !== undefined) op.label = w.label;
     ops.push(op);
+  }
+  for (const x of a.notes ?? []) {
+    if (!keptNotes.has(x.on)) ops.push({ op: "note.add", on: x.on, text: x.text });
   }
   return ops;
 }

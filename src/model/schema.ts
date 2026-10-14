@@ -8,6 +8,7 @@ import { checkEnds } from "./ends.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
 import { ID_EDGE, ID_NODE, issuesToErrors, WEIGHT } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
+import { noteTargets } from "./notes.ts";
 import { closest } from "./suggest.ts";
 import {
   DEFAULT_DENSITY,
@@ -216,6 +217,7 @@ export const diagramSchema = z.strictObject({
   groups: z.array(groupSchema).default([]),
   lanes: z.array(laneSchema).default([]),
   walls: z.array(wallSchema).default([]),
+  notes: z.array(z.strictObject({ on: z.string().min(1), text })).default([]),
   edges: z.array(edgeSchema).default([]),
 });
 
@@ -291,6 +293,7 @@ function build(p: Parsed): Diagram {
       return wall;
     });
   }
+  if (p.notes.length > 0) d.notes = p.notes.map((x) => ({ on: x.on, text: x.text }));
   return d;
 }
 
@@ -341,6 +344,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   errors.push(...checkLanes(d, index));
   errors.push(...checkEnds(d, index));
   errors.push(...checkWalls(d, index));
+  errors.push(...checkNotes(d, index));
   if (d.style !== undefined) {
     const problem = styleProblem(d.style);
     if (problem !== undefined) {
@@ -408,6 +412,34 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       },
     });
   }
+  return errors;
+}
+
+/** Note rules (D44): a note is about a node, a group or a line that exists, one note each. */
+function checkNotes(d: Diagram, index: number): OpError[] {
+  const errors: OpError[] = [];
+  const targets = noteTargets(d);
+  const seen = new Set<string>();
+  (d.notes ?? []).forEach((x, i) => {
+    if (!targets.includes(x.on)) {
+      errors.push({
+        code: "unknown-node",
+        index,
+        field: `notes[${i}].on`,
+        found: x.on,
+        facts: { near: closest(x.on, targets) },
+      });
+    } else if (seen.has(x.on)) {
+      errors.push({
+        code: "duplicate-id",
+        index,
+        field: `notes[${i}].on`,
+        found: x.on,
+        facts: { is: "note" },
+      });
+    }
+    seen.add(x.on);
+  });
   return errors;
 }
 

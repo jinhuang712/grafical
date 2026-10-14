@@ -8,8 +8,10 @@ import { crossingFix, wallAllows } from "../model/walls.ts";
 import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
+import { NOTE } from "../theme/geometry.ts";
 import { lineStyle } from "../theme/paint.ts";
 import { textInside } from "../theme/shapes.ts";
+import { themeOf } from "../theme/themes.ts";
 import {
   collinearOverlap,
   inset,
@@ -231,6 +233,10 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
   for (const w of scene.walls ?? []) {
     if (w.label) targets.push({ id: w.id, is: "wall", text: w.label });
   }
+  for (const x of scene.notes ?? []) {
+    targets.push({ id: x.on, is: "note", text: x.text });
+    for (const b of [x.mark, x.key]) if (b) targets.push({ id: x.on, is: "note", text: b.label });
+  }
   const named: [string, PlacedText | undefined][] = [
     ["subtitle", scene.subtitle],
     ["note", scene.note],
@@ -284,6 +290,26 @@ function checkLaneStray(diagram: Diagram, scene: Scene, out: Found[]): void {
         facts: { lane: member ? x.id : "none" },
       });
     }
+  }
+}
+
+/** A note takes at most four lines at its width (D44); the agent shortens it. */
+function checkNotes(diagram: Diagram, measurer: Measurer, out: Found[]): void {
+  const style = themeOf(diagram).type.note;
+  for (const x of diagram.notes ?? []) {
+    const lines = measurer.wrap(x.text, style, NOTE.wrap).length;
+    if (lines <= NOTE.maxLines) continue;
+    out.push({
+      code: "overflow",
+      elements: [x.on],
+      field: "note",
+      found: x.text,
+      facts: {
+        lines,
+        max: NOTE.maxLines,
+        fix: [`grafical note add <file> --on ${x.on} --text <shorter text>`],
+      },
+    });
   }
 }
 
@@ -357,7 +383,7 @@ function checkEdgeOverlap(scene: Scene, out: Found[]): void {
 }
 
 function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
-  const add = (id: string, field: string, text: string | undefined, fix: string): void => {
+  const add = (id: string, field: string, text: string | undefined, fix: string | string[]) => {
     if (!text) return;
     const missing = m.missingGlyphs(text);
     if (missing.length === 0) return;
@@ -366,7 +392,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
       elements: [id],
       field,
       found: text,
-      facts: { chars: missing, fix: [fix] },
+      facts: { chars: missing, fix: typeof fix === "string" ? [fix] : fix },
     });
   };
   add("title", "title", diagram.title, "grafical diagram title <file> --text <text>");
@@ -423,6 +449,14 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   for (const e of diagram.edges) {
     add(e.id, "label", e.label, `grafical edge relabel <file> ${e.id} --label <text>`);
   }
+  // A wall's label (D43) and a note (D44) are drawn too.
+  for (const w of diagram.walls ?? []) {
+    const again = `grafical wall add <file> ${w.id} --between ${w.between.join(",")} --and ${w.and.join(",")} --label <text>`;
+    add(w.id, "label", w.label, [`grafical wall remove <file> ${w.id}`, again]);
+  }
+  for (const x of diagram.notes ?? []) {
+    add(x.on, "note", x.text, `grafical note add <file> --on ${x.on} --text <text>`);
+  }
 }
 
 export { measureTaste, type TasteReport, type TasteRule } from "./taste.ts";
@@ -448,6 +482,7 @@ export function check(diagram: Diagram, scene: Scene, measurer: Measurer): Defec
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);
   checkWalls(diagram, scene, out);
+  checkNotes(diagram, measurer, out);
   checkMissingGlyphs(diagram, measurer, out);
   const order = (d: Found): number => DEFECT_CODES.indexOf(d.code);
   return out

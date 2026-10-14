@@ -174,6 +174,13 @@ export interface Wall {
   label?: string;
 }
 
+/** A note (D44): a short text about a node, a group or a line, drawn as a callout or a footnote. */
+export interface Note {
+  /** The id of the node, group or line it is about. */
+  on: string;
+  text: string;
+}
+
 export interface Edge {
   id: string;
   from: string;
@@ -226,6 +233,8 @@ export interface Diagram {
   lanes?: Lane[];
   /** Empty space between two sides, in creation order (D43). */
   walls?: Wall[];
+  /** One note at most per node, group or line, in creation order (D44). */
+  notes?: Note[];
   /** Ordered: list order is creation order, and decides nothing visual. */
   edges: Edge[];
 }

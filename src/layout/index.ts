@@ -33,6 +33,7 @@ import type {
   Point,
   Rect,
   Scene,
+  SceneBadge,
   SceneBand,
   SceneEdge,
   SceneGroup,
@@ -60,6 +61,7 @@ import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { cutRoute, planEnds, refineEnds } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
+import { footnotesHeight, placeNotes } from "./notes.ts";
 import { placeAcross } from "./place.ts";
 import {
   type AssembledLabel,
@@ -87,9 +89,16 @@ export function layout(diagram: Diagram, m: Measurer): Scene {
  * lines that cross it goes left of everything, in a second pass (D43).
  */
 function framed(diagram: Diagram, m: Measurer): { scene: Scene; centre: number } {
-  const first = compute(diagram, m, true);
-  if (first.crowded.length === 0) return first;
-  return compute(diagram, m, true, new Set(first.crowded));
+  // A note whose card finds no room becomes a footnote, and the list needs room (D44).
+  let aside = new Set<string>();
+  let footnotes = new Set<string>();
+  let out = compute(diagram, m, true, aside, footnotes);
+  for (let pass = 0; pass < 2 && out.crowded.length + out.noRoom.length > 0; pass++) {
+    aside = new Set([...aside, ...out.crowded]);
+    footnotes = new Set([...footnotes, ...out.noRoom]);
+    out = compute(diagram, m, true, aside, footnotes);
+  }
+  return out;
 }
 
 /**
@@ -575,7 +584,8 @@ function compute(
   m: Measurer,
   withText: boolean,
   aside: ReadonlySet<string> = new Set(),
-): { scene: Scene; centre: number; crowded: string[] } {
+  footnotes: ReadonlySet<string> = new Set(),
+): { scene: Scene; centre: number; crowded: string[]; noRoom: string[] } {
   // The diagram's theme decides the type sizes here and the paint in the scene (D30).
   const theme = themeOf(facts);
   const T = theme.type;
@@ -1044,6 +1054,13 @@ function compute(
   if (colLanes.length > 0 || laneAt(layers.length - 1) !== undefined) y += LANE.pad;
   const lanesBottom = y;
   let bottom = y;
+  // Footnotes (D44) are listed below the content, above the footnote of D26.
+  const listTop = ceil4(y + FRAME.noteGap);
+  const listH = withText ? footnotesHeight(d, footnotes, textW, m, T) : 0;
+  if (listH > 0) {
+    y = listTop + listH;
+    bottom = y;
+  }
   const note =
     noteLines.length > 0
       ? placeLines("note", noteLines, sp.margin, ceil4(y + FRAME.noteGap), "start", m, T)
@@ -1389,6 +1406,41 @@ function compute(
     if (gaps.length > 0) wl.line.gaps = gaps;
   }
 
+  // Notes (D44): a card beside its target where there is room, a footnote where not.
+  const placedNotes = withText
+    ? placeNotes(
+        d,
+        footnotes,
+        {
+          nodes: sceneNodes,
+          groups: sceneGroups,
+          edges: sceneEdges,
+          solid: [
+            ...texts,
+            ...sceneWalls.flatMap((x) => [x.rect, ...(x.label ? [x.label.bbox] : [])]),
+            ...sceneLanes.map((x) => x.head),
+            ...legend.flatMap((it) => [it.label.bbox, ...(it.mark ? [it.mark.rect] : [])]),
+            title.bbox,
+            ...(subtitle ? [subtitle.bbox] : []),
+          ],
+          areas: [
+            ...sceneGroups.map((g) => g.rect),
+            ...sceneLanes.map((x) => x.rect),
+            ...sceneBands.map((x) => x.rect),
+          ],
+          bounds: {
+            x: sp.margin,
+            y: headBottom + FRAME.titleGap / 2,
+            w: width - 2 * sp.margin,
+            h: lanesBottom - headBottom - FRAME.titleGap / 2,
+          },
+          list: { x: sp.margin, y: listTop, w: textW },
+        },
+        m,
+        T,
+      )
+    : { notes: [], noRoom: [] };
+
   const scene: Scene = {
     width,
     height,
@@ -1405,7 +1457,8 @@ function compute(
   if (sceneBands.length > 0) scene.bands = sceneBands;
   if (sceneLanes.length > 0) scene.lanes = sceneLanes;
   if (sceneWalls.length > 0) scene.walls = sceneWalls;
-  return { scene: roundScene(scene), centre, crowded };
+  if (placedNotes.notes.length > 0) scene.notes = placedNotes.notes;
+  return { scene: roundScene(scene), centre, crowded, noRoom: placedNotes.noRoom };
 }
 
 function roundRect(r: Rect): Rect {
@@ -1480,6 +1533,25 @@ function roundScene(s: Scene): Scene {
       rect: roundRect(x.rect),
       head: roundRect(x.head),
       label: roundText(x.label),
+    }));
+  }
+  if (s.notes !== undefined) {
+    const pt = (p: Point) => ({ x: round2(p.x), y: round2(p.y) });
+    const badge = (b: SceneBadge) => ({
+      x: round2(b.x),
+      y: round2(b.y),
+      r: b.r,
+      label: roundText(b.label),
+    });
+    out.notes = s.notes.map((x) => ({
+      on: x.on,
+      as: x.as,
+      text: roundText(x.text),
+      ...(x.card === undefined ? {} : { card: roundRect(x.card) }),
+      ...(x.link === undefined ? {} : { link: { a: pt(x.link.a), b: pt(x.link.b) } }),
+      ...(x.number === undefined ? {} : { number: x.number }),
+      ...(x.mark === undefined ? {} : { mark: badge(x.mark) }),
+      ...(x.key === undefined ? {} : { key: badge(x.key) }),
     }));
   }
   if (s.walls !== undefined) {

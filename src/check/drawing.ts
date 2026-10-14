@@ -82,6 +82,14 @@ export interface DrawnWall {
   lines: string[];
 }
 
+/** A note (D44): what it is about, and how it is drawn: a callout, or a footnote and its number. */
+export interface DrawnNote {
+  on: string;
+  as: string;
+  number: number | null;
+  lines: number;
+}
+
 export interface Counts {
   nodes: number;
   lines: number;
@@ -106,6 +114,7 @@ export interface Drawing {
   lines: DrawnLine[];
   groups: DrawnGroup[];
   walls: DrawnWall[];
+  notes: DrawnNote[];
   legend: DrawnLegend[];
 }
 
@@ -310,6 +319,12 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
           .sort(),
       };
     }),
+    notes: (scene.notes ?? []).map((x) => ({
+      on: x.on,
+      as: x.as,
+      number: x.number ?? null,
+      lines: new Set(x.text.runs.map((r) => r.y)).size,
+    })),
     legend: (scene.legend ?? []).map((it) => ({
       style: it.mark === undefined ? (it.style ?? null) : null,
       width: it.width ?? null,
@@ -348,6 +363,7 @@ export function drawingText(dr: Drawing): string {
   for (const b of dr.boxes) out.push(record("box", { ...b }));
   for (const g of dr.groups) out.push(record("group", { ...g }));
   for (const w of dr.walls) out.push(record("wall", { ...w }));
+  for (const x of dr.notes) out.push(record("note", { ...x }));
   for (const l of dr.lines) out.push(record("line", { ...l }));
   for (const x of dr.legend) out.push(record("legend", { ...x }));
   return `${out.join("\n")}\n`;

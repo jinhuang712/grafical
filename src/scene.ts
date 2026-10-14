@@ -102,6 +102,32 @@ export interface SceneWall {
   label?: PlacedText;
 }
 
+/** A small numbered circle: a footnote's number on its target, or before its text (D44). */
+export interface SceneBadge {
+  x: number;
+  y: number;
+  r: number;
+  label: PlacedText;
+}
+
+/**
+ * A note (D44), as grafical drew it: a callout card beside its target, joined to it
+ * by a dotted line; or a footnote, a number on the target and its text in the list
+ * at the bottom.
+ */
+export interface SceneNote {
+  on: string;
+  as: "callout" | "footnote";
+  /** The words: in the card, or in the list. */
+  text: PlacedText;
+  card?: Rect;
+  link?: { a: Point; b: Point };
+  number?: number;
+  /** The footnote's number on its target, and again before its text. */
+  mark?: SceneBadge;
+  key?: SceneBadge;
+}
+
 /** One line style, line width or mark in the legend, with its sample (D8, D42). */
 export interface SceneLegendItem {
   /** The line style the sample is drawn in (D8). A mark's entry has none. */
@@ -169,6 +195,8 @@ export interface Scene {
   lanes?: SceneLane[];
   /** Walls (D43), drawn over the groups and under the lines. Absent when there are none. */
   walls?: SceneWall[];
+  /** Notes (D44), drawn over everything but the lines' arrowheads. Absent when there are none. */
+  notes?: SceneNote[];
   nodes: SceneNode[];
   edges: SceneEdge[];
 }

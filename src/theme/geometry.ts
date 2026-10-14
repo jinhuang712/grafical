@@ -156,6 +156,25 @@ export const WALL = {
   labelWrap: 96,
 };
 
+/** Notes: callout cards and footnotes (DESIGN.md D44). */
+export const NOTE = {
+  /** Widest a note's text runs before it wraps. */
+  wrap: 160,
+  /** The most lines a note may take. */
+  maxLines: 4,
+  /** Space between a card's side and its text, across and down. */
+  padX: 8,
+  padY: 6,
+  /** Space between a card and what it is about: the length of the dotted line. */
+  gaps: [16, 32],
+  /** Least space between a card and any other box, line or text. */
+  clear: 8,
+  /** Radius of a footnote's number. */
+  badge: 8,
+  /** Space between a number and the text it keys, and between two footnotes. */
+  keyGap: 6,
+};
+
 /** Swimlanes (DESIGN.md D32). */
 export const LANE = {
   /** Space between a lane's side and the content in it, across. */

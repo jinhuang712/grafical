@@ -365,6 +365,16 @@ export interface WallRemoveOp {
   op: "wall.remove";
   id: string;
 }
+/** A note on a node, group or line; adding one where there is one replaces it (D44). */
+export interface NoteAddOp {
+  op: "note.add";
+  on: string;
+  text: string;
+}
+export interface NoteRemoveOp {
+  op: "note.remove";
+  on: string;
+}
 
 export type Op =
   | DiagramNewOp
@@ -391,6 +401,8 @@ export type Op =
   | WallAddOp
   | WallAllowOp
   | WallRemoveOp
+  | NoteAddOp
+  | NoteRemoveOp
   | LayerAddOp
   | LayerRenameOp
   | LayerMoveOp
@@ -683,6 +695,8 @@ export const wallAllowSchema = z.strictObject({
   off: z.boolean().optional(),
 });
 export const wallRemoveSchema = z.strictObject({ op: z.literal("wall.remove"), id: nodeId });
+export const noteAddSchema = z.strictObject({ op: z.literal("note.add"), on: edgeId, text });
+export const noteRemoveSchema = z.strictObject({ op: z.literal("note.remove"), on: edgeId });
 
 /** Parses one operation. A batch item is exactly this. */
 export const opSchema = z.discriminatedUnion("op", [
@@ -718,6 +732,8 @@ export const opSchema = z.discriminatedUnion("op", [
   wallAddSchema,
   wallAllowSchema,
   wallRemoveSchema,
+  noteAddSchema,
+  noteRemoveSchema,
   layerRenameSchema,
   layerMoveSchema,
   layerRemoveSchema,
@@ -772,6 +788,8 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "wall.add": wallAddSchema,
   "wall.allow": wallAllowSchema,
   "wall.remove": wallRemoveSchema,
+  "note.add": noteAddSchema,
+  "note.remove": noteRemoveSchema,
   "layer.rename": layerRenameSchema,
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,

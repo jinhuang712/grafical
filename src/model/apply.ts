@@ -10,6 +10,7 @@ import { STYLESHEET_SUFFIX, styleProblem, THEMES, themeOf } from "../theme/theme
 import { endIds, endKind } from "./ends.ts";
 import { groupChain, groupHeight, inGroup, innerGroups, MAX_GROUP_DEPTH } from "./groups.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
+import { noteTargets, pruneNotes } from "./notes.ts";
 import type {
   DiagramLegendOp,
   EdgeAddOp,
@@ -636,6 +637,48 @@ function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number
   } else if (walls.length > 1) d.walls = walls.filter((x) => x.id !== wall.id);
   else delete d.walls;
   touch(s, wall.id);
+  return [];
+}
+
+/** note.add and note.remove (D44). A note is named by its target, which has one at most. */
+function noteStep(s: State, op: Extract<Op, { op: `note.${string}` }>, i: number): OpError[] {
+  const d = s.d;
+  const targets = noteTargets(d);
+  const notes = d.notes ?? [];
+  const at = notes.findIndex((x) => x.on === op.on);
+  if (op.op === "note.add") {
+    if (!targets.includes(op.on)) {
+      return [
+        {
+          code: "unknown-node",
+          index: i,
+          field: "on",
+          found: op.on,
+          facts: { near: closest(op.on, targets) },
+        },
+      ];
+    }
+    if (at >= 0) notes[at] = { on: op.on, text: op.text };
+    else notes.push({ on: op.on, text: op.text });
+    d.notes = notes;
+  } else {
+    if (at < 0) {
+      const on = notes.map((x) => x.on);
+      return [
+        {
+          code: "unknown-note",
+          index: i,
+          field: "on",
+          found: op.on,
+          facts: { near: closest(op.on, on) },
+        },
+      ];
+    }
+    notes.splice(at, 1);
+    if (notes.length > 0) d.notes = notes;
+    else delete d.notes;
+  }
+  touch(s, op.on);
   return [];
 }
 
@@ -1450,6 +1493,9 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "wall.allow":
     case "wall.remove":
       return wallStep(s, op, i);
+    case "note.add":
+    case "note.remove":
+      return noteStep(s, op, i);
     case "layer.add":
       return addLayer(s, op, i);
     case "node.add":
@@ -1584,13 +1630,17 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[], m: Measure
   const s: State = { d: start, changed: [], pending: [], tidy: new Set() };
   for (let i = from; i < ops.length; i++) {
     const op = ops[i] as Op;
-    const before = s.d.walls === undefined ? undefined : wallNames(s.d);
+    const named = s.d.walls !== undefined || s.d.notes !== undefined;
+    const before = named ? wallNames(s.d) : undefined;
     const errors = step(s, op, i);
     if (errors.length > 0) return { errors };
-    // The walls forget what the operation removed (D43).
+    // The walls forget what the operation removed (D43), and notes go with their targets (D44).
     if (before !== undefined) {
       const now = wallNames(s.d);
-      touch(s, ...pruneWalls(s.d, new Set([...before].filter((id) => !now.has(id)))));
+      const gone = new Set([...before].filter((id) => !now.has(id)));
+      // A note's change is named by its target, which the operation already named.
+      touch(s, ...pruneWalls(s.d, gone));
+      pruneNotes(s.d, gone);
     }
   }
   placePending(s, m);

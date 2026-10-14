@@ -328,6 +328,27 @@ function build(): Command {
     await write(file, { op: "wall.remove", id }, opts);
   });
 
+  const note = program.command("note").description("notes on a box, line or group: add, remove");
+  json(
+    note
+      .command("add")
+      .description("add a note to a node, group or line, or replace the one it has")
+      .argument("<file>")
+      .requiredOption("--on <id>", "the node, group or line it is about")
+      .requiredOption("--text <text>", "a sentence or two"),
+  ).action(async (file: string, opts: Opts) => {
+    await write(file, { op: "note.add", ...pick(opts, ["on", "text"]) }, opts);
+  });
+  json(
+    note
+      .command("remove")
+      .description("remove a note")
+      .argument("<file>")
+      .requiredOption("--on <id>", "the node, group or line it is about"),
+  ).action(async (file: string, opts: Opts) => {
+    await write(file, { op: "note.remove", ...pick(opts, ["on"]) }, opts);
+  });
+
   const layer = program
     .command("layer")
     .description("rows: add, move, split, rename, tidy, remove");

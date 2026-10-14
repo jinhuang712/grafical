@@ -41,8 +41,8 @@ A good diagram:
     line of every part.
   - Draw each flow to its end, or leave it out.
   - Keep labels short. Detail (port, technology, count) goes in the
-    sublabel, not in extra boxes; a sublabel holds one line, about 30
-    characters.
+    sublabel or a note, not in extra boxes; a sublabel holds one line,
+    about 30 characters.
   - Accent what the story is about. Name in the legend what each line style,
     width and mark means: diagram legend <file> dashed --text event. Say
     what you left out in a note that starts "Not shown:".
@@ -69,13 +69,11 @@ Diagram types:
                  labelled with what moves
   dependency     what depends on top, what it needs below; no labels; kind
                  optional where a dependency degrades gracefully
-  The help of node add, edge add, group add and lane add says more.
 
 When refused:
   The command prints "failed changed=-" and a record per problem: "error"
   (a fact is wrong) or "defect" (the picture would be wrong), with a code
-  and facts. The file is untouched. Exit codes: 0 done, 1 refused, 2 a
-  usage error. grafical apply --help lists the facts.
+  and facts. The file is untouched. grafical apply --help lists the facts.
 
 Run grafical <command> --help for its options and more.
 `;
@@ -149,6 +147,7 @@ Batch file:
     group.leave       nodes up
     lane.add          id label members                 (a list)
     wall.add          id between and allow label       (lists but id, label)
+    note.add          on text                          (replaces its note)
     edge.emphasize    edges off                        (a list)
     diagram.legend    style weight mark text (style: solid dashed dotted plain)
     diagram.subtitle  text; diagram.note text           (no text clears it)
@@ -172,7 +171,6 @@ Output:
     the lines that pass a row they do not connect. Facts only: what they
     mean is yours to judge. grafical show <file> --drawn prints a record
     for each box and line.
-  --json prints the same as one JSON object, under the same names.
 
 When refused:
   failed changed=-, the file untouched, then a record per problem:
@@ -226,6 +224,7 @@ Good to know:
       line id= from= to= leaves= enters= bends= length= direct= detour=
            skip= crosses= passes= bundle=
       wall id= run= length= space= lines=   lines: the lines through it
+      note on= as= number= lines=   as: callout or footnote
       legend style= width= mark= text=   each entry the legend draws
     place counts from 1 at the row's left, and of is how many boxes the
     row holds. sides counts a box's lines by side, as top:1,bottom:2, and
@@ -557,6 +556,26 @@ Example:
   grafical wall add shop.grafical.yaml net --between web,mobile --and orders,users --allow gateway --label "private network"
 `,
   },
+  "note add": {
+    about: `Add a note to a node, a group or a line: a sentence or two a reader needs and
+no box should hold. A node, group or line has one note; adding another replaces it.`,
+    after: `
+How it is drawn:
+  - grafical picks: a card beside what it is about, joined to it by a short
+    dotted line, where there is room; otherwise a small number on it, and
+    the text in a numbered list at the bottom of the picture.
+
+Good to know:
+  - Keep it short: more than four lines at 160 px is an overflow.
+  - A note goes when what it is about is removed.
+  - show --drawn says how each note is drawn.
+
+Example:
+  grafical note add shop.grafical.yaml --on retry --text "retries 5 times, then the DLQ"
+`,
+  },
+  "note remove": { about: "Remove the note of a node, a group or a line." },
+
   "wall allow": {
     about:
       "Let lines through a wall: name a line, or a node or group to let every line that ends at it through; --off takes them back.",
