@@ -3,7 +3,8 @@
 // model rejects (an alignment that cannot hold, say) is dropped, as an agent
 // would drop it, so every diagram that comes out is valid.
 
-import { validateAlignments, validateGroups } from "../../src/layout/index.ts";
+import { check } from "../../src/check/index.ts";
+import { layout, validateAlignments, validateGroups } from "../../src/layout/index.ts";
 import { fits } from "../../src/layout/size.ts";
 import { checkEnds } from "../../src/model/ends.ts";
 import { MAX_GROUP_DEPTH } from "../../src/model/groups.ts";
@@ -17,7 +18,9 @@ import {
   EDGE_KINDS,
   type Edge,
   SIZE_STEPS,
+  type Wall,
 } from "../../src/model/types.ts";
+import { checkWalls } from "../../src/model/walls.ts";
 import type { Measurer } from "../../src/text/types.ts";
 
 /** mulberry32: a small, fast, seeded generator. Never Math.random (D15). */
@@ -202,8 +205,47 @@ export function generate(seed: number, m: Measurer): Generated {
   addEdgeLooks(d, r);
   addNesting(d, r, text);
   addNodeKinds(d, r, m);
+  addWalls(d, r, text, m);
 
   return { diagram: d, ops, rejected };
+}
+
+/**
+ * Up to two walls across (D43), drawn last: one to three nodes of a row against one
+ * to three of the rows below it, letting through every line of either side, some of
+ * them labelled. A wall the model refuses is dropped, as an agent would drop it, and
+ * a line the drawing finds through a wall is let through, as its defect's fix says.
+ */
+function addWalls(
+  d: Diagram,
+  r: () => number,
+  text: (lo: number, hi: number) => string,
+  m: Measurer,
+): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  if (r() < 0.6 || d.layers.length < 2) return;
+  const count = int(1, 2);
+  for (let k = 0; k < count; k++) {
+    const g = int(0, d.layers.length - 2);
+    const above = d.layers[g]?.nodes ?? [];
+    const below = d.layers.slice(g + 1).flatMap((l) => l.nodes);
+    if (above.length === 0 || below.length === 0) continue;
+    const some = (ns: typeof above) => {
+      const start = int(0, ns.length - 1);
+      return ns.slice(start, start + int(1, 3)).map((n) => n.id);
+    };
+    const between = some(above);
+    const and = some(below);
+    const wall: Wall = { id: `wall${k}`, between, and, allow: [...between, ...and] };
+    if (r() < 0.6) wall.label = text(3, 18);
+    const trial: Diagram = { ...d, walls: [...(d.walls ?? []), wall] };
+    if (checkWalls(trial, 0).length > 0) continue;
+    for (const x of check(trial, layout(trial, m), m)) {
+      if (x.code === "wall-crossed" && x.elements[1] === wall.id)
+        wall.allow?.push(x.elements[0] ?? "");
+    }
+    d.walls = [...(d.walls ?? []), wall];
+  }
 }
 
 /** The kinds the generator picked before phase 1d, so that each seed's diagram stays the same. */

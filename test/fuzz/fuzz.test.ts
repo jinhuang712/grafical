@@ -13,9 +13,10 @@ import { generate } from "./gen.ts";
 const seeds = Number(process.env.FUZZ_SEEDS ?? 500);
 /**
  * Seeds past the usual 500 that once failed, kept so that CI runs them: a line
- * through an outer label stacked above an inner one (D34).
+ * through an outer label stacked above an inner one (D34); a wall's label with no
+ * place along its line clear of the lines that cross it (D43).
  */
-const FAILED = [590, 649, 1051, 1606];
+const FAILED = [512, 590, 649, 700, 1051, 1606, 1701];
 
 describe("fuzz", () => {
   it(
@@ -27,6 +28,7 @@ describe("fuzz", () => {
       let edges = 0;
       let groups = 0;
       let lanes = 0;
+      let walls = 0;
       const all = [
         ...Array.from({ length: seeds }, (_, i) => i + 1),
         ...FAILED.filter((x) => x > seeds),
@@ -37,13 +39,14 @@ describe("fuzz", () => {
         edges += diagram.edges.length;
         groups += diagram.groups?.length ?? 0;
         lanes += diagram.lanes?.length ?? 0;
+        walls += diagram.walls?.length ?? 0;
         const scene = layout(diagram, m);
         for (const x of [...failures(check(diagram, scene, m)), ...geometryFailures(scene)]) {
           found.push(`seed ${seed}: ${x.code} [${x.elements.join(", ")}] ${x.found}`);
         }
       }
       console.log(
-        `${all.length} diagrams, ${(nodes / all.length).toFixed(1)} nodes, ${(edges / all.length).toFixed(1)} edges, ${(groups / all.length).toFixed(1)} groups and ${(lanes / all.length).toFixed(1)} lanes on average`,
+        `${all.length} diagrams, ${(nodes / all.length).toFixed(1)} nodes, ${(edges / all.length).toFixed(1)} edges, ${(groups / all.length).toFixed(1)} groups, ${(lanes / all.length).toFixed(1)} lanes and ${(walls / all.length).toFixed(2)} walls on average`,
       );
       expect(found).toEqual([]);
     },
