@@ -153,6 +153,33 @@ describe("the drawing as facts (D37)", () => {
     expect(dr.counts).toMatchObject({ length: 390, longest: { id: "a->z", length: 390 } });
   });
 
+  it("names the lines each line leaves or arrives with as one bundle (D38)", () => {
+    const fan = (label?: string): Diagram => ({
+      grafical: 1,
+      title: "Fan",
+      density: "normal",
+      layers: [
+        { id: "top", label: "Top", nodes: [n("a", "A", "service", "m")] },
+        {
+          id: "low",
+          label: "Low",
+          nodes: ["b1", "b2", "b3"].map((id) => n(id, id.toUpperCase(), "service", "m")),
+        },
+      ],
+      edges: [e("a", "b1", "call"), e("a", "b2", "call"), e("a", "b3", "call", label)],
+    });
+    const lines = (d: Diagram) =>
+      Object.fromEntries(drawing(d, layout(d, m)).lines.map((l) => [l.id, l.bundle]));
+    expect(lines(fan())).toEqual({
+      "a->b1": ["a->b2", "a->b3"],
+      "a->b2": ["a->b1", "a->b3"],
+      "a->b3": ["a->b1", "a->b2"],
+    });
+    // A labelled line leaves on its own, and two lines alone on a roomy side do not bundle.
+    expect(lines(fan("reads"))).toEqual({ "a->b1": [], "a->b2": [], "a->b3": [] });
+    expect(drawingText(drawing(crossed, layout(crossed, m)))).toContain("passes=- bundle=-");
+  });
+
   it("gives a change's delta for each number among the counts, a rise signed with +", () => {
     const before = drawing(crossed, layout(crossed, m)).counts;
     const after = { ...before, crossings: 0, bends: before.bends + 2, length: before.length - 40 };

@@ -49,6 +49,8 @@ export interface DrawnLine {
   crosses: string[];
   /** Rows between its ends that it runs through, among their boxes, without meeting a box of. */
   passes: string[];
+  /** The lines it leaves or arrives with through one port, drawn as one bundle there (D38), in id order. */
+  bundle: string[];
 }
 
 export interface DrawnGroup {
@@ -142,6 +144,24 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
     crosses.set(b, [...(crosses.get(b) ?? []), a]);
   }
 
+  // Every line meets its box at a port of its own, except the lines of a bundle (D33, D38).
+  const bundles = new Map<string, Set<string>>();
+  const ends = (e: (typeof scene.edges)[number]) => [
+    `${e.from}@${e.points[0]?.x},${e.points[0]?.y}`,
+    `${e.to}@${e.points.at(-1)?.x},${e.points.at(-1)?.y}`,
+  ];
+  const atPort = new Map<string, string[]>();
+  for (const e of scene.edges) {
+    for (const k of ends(e)) atPort.set(k, [...(atPort.get(k) ?? []), e.id]);
+  }
+  for (const ids of atPort.values()) {
+    for (const id of ids) {
+      const set = bundles.get(id) ?? new Set();
+      for (const o of ids) if (o !== id) set.add(o);
+      bundles.set(id, set);
+    }
+  }
+
   const atBox = new Map<string, Partial<Record<Side, number>>>();
   const meet = (id: string, side: Side) => {
     const at = atBox.get(id) ?? {};
@@ -198,6 +218,7 @@ export function drawing(d: Diagram, scene: Scene): Drawing {
       skip,
       crosses: (crosses.get(e.id) ?? []).sort(),
       passes,
+      bundle: [...(bundles.get(e.id) ?? [])].sort(),
     });
   }
 

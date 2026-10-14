@@ -223,7 +223,7 @@ Good to know:
       box id= row= place= of= width= height= lines= sides= reach=
       group id= members= width= height=
       line id= from= to= leaves= enters= bends= length= direct= detour=
-           skip= crosses= passes=
+           skip= crosses= passes= bundle=
       legend style= width= mark= text=   each entry the legend draws
     place counts from 1 at the row's left, and of is how many boxes the
     row holds. sides counts a box's lines by side, as top:1,bottom:2, and
@@ -233,6 +233,10 @@ Good to know:
     through without meeting a box of. Sizes and lengths are in pixels;
     - means none. Judge the drawing from them, and change what you decide
     to change.
+  - bundle names the lines a line leaves or arrives with as one: three or
+    more lines of one style and width from one side of a box, or two on a
+    side too crowded for a port each. A labelled line is never bundled, so
+    a label keeps a line on its own.
 `,
   },
 
