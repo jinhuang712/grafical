@@ -271,6 +271,8 @@ After each operation or batch, grafical lays out the diagram and checks it. Each
 | Two edges that share a segment, so a reader cannot tell them apart | Engine |
 | A line that crosses text: a node, edge or group label | Engine |
 | A non-member inside a group's box | Engine |
+| A line that bends between two boxes that one x would have joined straight (D47) | Engine |
+| A box placed by steps beside every box it connects to (D47) | Agent: place it between them |
 
 A write that leaves an agent-owned defect fails and changes nothing. The defect names its elements, the field and the text at fault, and facts: the lines the text takes and the most it may, the characters no font can draw, and the operations that would fix it (D37).
 
@@ -377,6 +379,8 @@ Node order within a layer decides most edge crossings, and it is exactly the kin
 Then the nodes of the batch that had no position are ordered together: each in turn moves to the slot of its layer with the lowest route cost, while the cost drops. The cost counts crossings plus edges with more than two bends, then crossings, bends and length. Nodes placed before the batch, or given a position in it, keep their order, and no move may split a group or break an alignment. This was added on 2026-10-11: one node at a time, a node added early in a draft is placed before the edges that decide its best slot exist. On Haiku's three phase 1b drafts, ordering together cut crossings from 8, 7 and 6 to 0, 2 and 1.
 
 Two fixes on 2026-10-14, found while dogfooding. A batch with only one node without a position put that node last in its row, every time: the node was taken out of its row before its slot was asked for, and the slot search, which counts the node's own place as removed, did not find it. Since the first build, only batches with two or more such nodes had their slots chosen. Second, both searches take only slots that can be drawn: no group split or left without one box, no alignment broken, and no node put between a group and the end of a line that meets the group beside it (D28). Moving a node into a row with no position used to pick a slot that split its group, and the refusal suggested joining the wrong node to the group. When no slot can be drawn, the search falls back to the slots that keep the groups whole, so the refusal names what is in the way: `edge-blocked` now gives the row and the nodes between the line's two ends, and `group-split` gives three fixes, joining the node to the group or moving it out to either side of the members.
+
+Changed on 2026-10-14 by D47: a new node's slot is the one with the lowest route cost, as when ordering together, not the one with the fewest crossings alone, and the route cost counts a box that lies beside every box it connects to as it counts a crossing.
 
 `layer.tidy <layer>` reorders the nodes of one layer to reduce crossings. It runs once, as a named operation, so its changes are expected. Nothing reorders a layer otherwise (D10).
 
@@ -785,6 +789,19 @@ Rejected:
 - Rows counted from another box ("2 rows below catalog-sync"), joining that row's list. It keeps the row the owner wants a box free of.
 - A cell on one grid for the whole picture (`--at 4,2`). Nothing ties the box to the box it belongs with, so it does not move with it.
 - Steps in pixels. The gap router (D11) runs lines through the gaps between rows and between boxes, so every box sits in a cell of the grid.
+
+### D47 Punishing what draws needlessly badly
+
+Asked for by the owner on 2026-10-14, on the public brief's draft with steps: "we should punish things like this". The owner named a box placed far from the two boxes it connects to, "making so unncessarily long edges"; two lines between a box and the box right under it "bent for no reason"; and the staircase of a busy box's lines. A rule against rows that hold stores and services together was rejected: "thats a taste problem". Who punishes follows who chose (D14, D46): what the engine chose, it must avoid; what the agent stated, refuses the write.
+
+- **A line bent for no reason** is an engine defect, `needless-bend`: a line between boxes in neighbouring rows, from the upper one's bottom into the lower one's top, that bends although each of its ports lies within the other box's side. The router places bottom sides before top sides, and a busy box's ports can be pushed off the middle by their neighbours; a line that can run straight down now meets the port its upper box took. On the public brief's draft, catalog-sync's two lines to and from the retry topic right under it ran straight, and the draft lost 4 of its 27 bends. 3,000 fuzz seeds show none.
+- **A box beside every box it connects to**, with lines to two or more boxes whose centres lie at least its own width apart, wholly left or right of them. Where the engine chose the slot, the route cost counts it as a crossing, and the slot search compares the whole route cost (crossings plus lines over two bends plus such boxes, then crossings, bends and length) instead of crossings alone, which changes D24. The 74 drafts of the last three rounds (p1d-help2, p1d-help3, p1e-records), rebuilt as one batch each with both changes, have 656 bends instead of 684, 90 crossings instead of 93, and 8 drafts with such a box instead of 11. In the one of the 8 looked at, moving the box between its two users adds a crossing or two that its rows make certain. Where the agent placed the box by steps (D46), the agent chose its cell, so it is an agent defect, `box-aside`, that fails the write and names the boxes it connects to.
+- **The staircase** of a busy box's lines is not punished yet. On the public brief's draft it comes from the boxes that sit under the busy box's own column in a row its lines must pass, so that its lines step around them; the owner proposed spreading the boxes apart so that the lines have room. Not yet decided.
+
+Rejected:
+- Rows that mix stores with services or outside services. Which boxes share a row is the agent's choice, a matter of taste (D46, the owner on 2026-10-14).
+- Refusing a box beside its users in a row. The file does not tell a slot the agent stated from one the engine chose, so the agent would be refused for the engine's choice.
+- Drawing with no grafical at all. Opus 5.5, given the same brief and prompt with any tool, drew it with Graphviz in 65 seconds for $0.39: every kind in a band of its own, but curved lines that cross many times, small text and details the brief did not ask for. The owner: "wayyyyyyyy worse".
 
 ## Not yet decided
 
