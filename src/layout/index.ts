@@ -79,7 +79,17 @@ export type { GroupCode, GroupProblem } from "./grid.ts";
 export { type RouteStats, routeStats } from "./stats.ts";
 
 export function layout(diagram: Diagram, m: Measurer): Scene {
-  return compute(diagram, m, true).scene;
+  return framed(diagram, m).scene;
+}
+
+/**
+ * Laid out with text. A wall's label that finds no place along its line clear of the
+ * lines that cross it goes left of everything, in a second pass (D43).
+ */
+function framed(diagram: Diagram, m: Measurer): { scene: Scene; centre: number } {
+  const first = compute(diagram, m, true);
+  if (first.crowded.length === 0) return first;
+  return compute(diagram, m, true, new Set(first.crowded));
 }
 
 /**
@@ -88,7 +98,7 @@ export function layout(diagram: Diagram, m: Measurer): Scene {
  * everything by the same amount.
  */
 export function layoutFramed(diagram: Diagram, m: Measurer): { scene: Scene; centre: number } {
-  return compute(diagram, m, true);
+  return framed(diagram, m);
 }
 
 /**
@@ -556,7 +566,16 @@ const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
   bbox: { x, y, w: 0, h: 0 },
 });
 
-function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene; centre: number } {
+/**
+ * `aside` names the walls whose label goes left of everything. `crowded` names the
+ * walls whose label found no free place along its line, for the second pass.
+ */
+function compute(
+  facts: Diagram,
+  m: Measurer,
+  withText: boolean,
+  aside: ReadonlySet<string> = new Set(),
+): { scene: Scene; centre: number; crowded: string[] } {
   // The diagram's theme decides the type sizes here and the paint in the scene (D30).
   const theme = themeOf(facts);
   const T = theme.type;
@@ -740,6 +759,20 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   }
   if (Number.isFinite(routing.minX)) see(routing.minX - 16);
   if (Number.isFinite(routing.maxX)) see(routing.maxX + 16);
+  // A wall's label set aside ends left of every box and line, as a band's may (D43).
+  const asideW = new Map<string, number>();
+  for (const w of d.walls ?? []) {
+    if (withText && aside.has(w.id) && w.label !== undefined) {
+      asideW.set(w.id, m.measure(w.label, T["layer-label"]).width);
+    }
+  }
+  const asideEnd =
+    Math.min(
+      bandRows.size > 0 ? bandLeft : contentLeft,
+      Number.isFinite(routing.minX) ? routing.minX : Number.POSITIVE_INFINITY,
+    ) - WALL.labelClear;
+  const asideLeft = asideEnd - Math.max(0, ...asideW.values());
+  if (asideW.size > 0) see(asideLeft);
 
   // Lanes (D32). Row lanes share one header column, left of everything the rows
   // hold, lines included. Column lanes have a header on top, as wide as the lane.
@@ -767,6 +800,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     let left = bandRows.size > 0 ? bandLeft : contentLeft;
     let right = bandRows.size > 0 ? contentRight + BAND.padX : contentRight;
     if (Number.isFinite(routing.minX)) left = Math.min(left, routing.minX);
+    if (asideW.size > 0) left = Math.min(left, asideLeft);
     if (Number.isFinite(routing.maxX)) right = Math.max(right, routing.maxX);
     laneLeft = left - LANE.padX - headW;
     laneRight = right + LANE.padX;
@@ -1174,6 +1208,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // line through its middle, and its label above the line at the first place along
   // it that no crossing line comes near.
   const sceneWalls: SceneWall[] = [];
+  const crowded: string[] = [];
   const boxRects = new Map<string, Rect>([
     ...sceneNodes.map((n) => [n.id, n.rect] as const),
     ...sceneGroups.map((g) => [g.id, g.rect] as const),
@@ -1210,15 +1245,34 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
             }),
           )
           .sort((p, q) => p - q);
-        let x = x0 + WALL.reach;
-        for (const c of crossing) {
-          if (c < x - WALL.labelClear) continue;
-          if (c > x + w + WALL.labelClear) break;
-          x = c + WALL.labelClear;
-        }
-        if (x + w > x1 - WALL.reach) x = x0 + WALL.reach;
-        x = Math.max(sp.margin, Math.min(x, width - sp.margin - w));
+        // The first place from x on that no crossing line comes near, or undefined past the end.
+        const free = (from: number, end: number): number | undefined => {
+          let x = from;
+          for (const c of crossing) {
+            if (c < x - WALL.labelClear) continue;
+            if (c > x + w + WALL.labelClear) break;
+            x = c + WALL.labelClear;
+          }
+          return x + w <= end ? x : undefined;
+        };
+        // Along the wall first; failing that, anywhere across the picture at that height;
+        // failing that, left of everything, in a second pass.
+        // Across the picture means inside the row lanes, right of their header column.
+        const [fieldLeft, fieldRight] =
+          rowLanes.length > 0
+            ? [centre + laneLeft + headW + WALL.labelClear, centre + laneRight - WALL.labelClear]
+            : [sp.margin, width - sp.margin];
+        const placed = aside.has(wall.id)
+          ? centre + asideEnd - w
+          : (free(x0 + WALL.reach, x1 - WALL.reach) ?? free(fieldLeft, fieldRight));
+        if (placed === undefined) crowded.push(wall.id);
+        const x = placed ?? x0 + WALL.reach;
         out.label = placeLine("layer-label", wall.label, x, top, m, T);
+        // The line reaches a label placed past its end, so that the two read as one.
+        out.line = {
+          a: { x: Math.min(x0, x), y: mid },
+          b: { x: Math.max(x1, x + w), y: mid },
+        };
       }
     }
     sceneWalls.push(out);
@@ -1240,7 +1294,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (sceneBands.length > 0) scene.bands = sceneBands;
   if (sceneLanes.length > 0) scene.lanes = sceneLanes;
   if (sceneWalls.length > 0) scene.walls = sceneWalls;
-  return { scene: roundScene(scene), centre };
+  return { scene: roundScene(scene), centre, crowded };
 }
 
 function roundRect(r: Rect): Rect {
