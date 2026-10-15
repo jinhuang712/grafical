@@ -241,7 +241,7 @@ After each operation or batch, grafical lays out the diagram and checks it. Each
 | An edge that crosses a node | Engine |
 | Two labels that collide | Engine |
 | Two edges that share a segment, so a reader cannot tell them apart | Engine |
-| A line that crosses text: a node, edge or group label | Engine |
+| A line that crosses text: a node, edge or group label. A group's side counts as a line across an edge's label | Engine |
 | A non-member inside a group's box | Engine |
 | A line that bends between two boxes that one x would have joined straight ("Who chose is punished") | Engine |
 | A box placed by steps beside every box it connects to ("Who chose is punished") | Agent: place it between them |

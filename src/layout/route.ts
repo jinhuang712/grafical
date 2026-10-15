@@ -254,6 +254,10 @@ export function routeAcross(
   // next gutter of its path. Once it has tried them all, its line steps out of the
   // crowd in its first gutter, and the label sits beside the step.
   const byId = new Map(plans.map((p) => [p.edge.id, p]));
+  // The sides of each group box that runs through a gutter, from a row above it to one below.
+  const sides = layers.map((_, g) =>
+    extra.boxes.filter((b) => b.top <= g && b.bottom > g).flatMap((b) => [b.x0, b.x1]),
+  );
   const moved = new Map<string, Set<number>>();
   const away = new Set<string>();
   let gutters: Visit[][] = [];
@@ -263,8 +267,8 @@ export function routeAcross(
     buildVisits(plans, gutters, moved);
     rows = [];
     const stranded: string[] = [];
-    for (const vs of gutters) {
-      const r = routeGutter(vs, pitch, away);
+    for (const [g, vs] of gutters.entries()) {
+      const r = routeGutter(vs, pitch, away, sides[g]);
       rows.push(r.rows);
       stranded.push(...r.stranded);
     }

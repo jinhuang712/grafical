@@ -455,6 +455,27 @@ describe("text-crossing", () => {
         .map((d) => d.elements),
     ).toEqual([["c->d", "a->b"]]);
   });
+
+  it("fails a group's side across an edge's label, and passes a label inside the box", () => {
+    const labelled = (x: number): Scene => {
+      const e = down();
+      e.label = box("edge-label", x, 140);
+      return withEdge(e, {
+        groups: [
+          {
+            id: "g",
+            rect: { x: 20, y: 100, w: 300, h: 120 },
+            label: box("group-label", 30, 104),
+            members: [],
+          },
+        ],
+      });
+    };
+    expect(run(labelled(300)).map((d) => [d.code, ...d.elements])).toEqual([
+      ["text-crossing", "g", "a->b"],
+    ]);
+    expect(codes(run(labelled(200)))).toEqual([]);
+  });
 });
 
 describe("group-intruder", () => {

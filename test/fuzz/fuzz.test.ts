@@ -14,9 +14,10 @@ const seeds = Number(process.env.FUZZ_SEEDS ?? 500);
 /**
  * Seeds past the usual 500 that once failed, kept so that CI runs them: a line
  * through an outer label stacked above an inner one (DESIGN.md, "Every layered diagram type"); a wall's label with no
- * place along its line clear of the lines that cross it (DESIGN.md, "Walls as space").
+ * place along its line clear of the lines that cross it (DESIGN.md, "Walls as space"); the label of a line to a lane
+ * across the top of a group's box.
  */
-const FAILED = [512, 590, 649, 700, 1051, 1606, 1701];
+const FAILED = [512, 590, 649, 700, 1051, 1303, 1606, 1701];
 
 describe("fuzz", () => {
   it(

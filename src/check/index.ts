@@ -262,6 +262,24 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
       }
     }
   }
+  // A group's border is a line too: no edge's label lies across it.
+  for (const g of scene.groups ?? []) {
+    const { x, y, w, h } = g.rect;
+    const sides = segmentsOf([
+      { x, y },
+      { x: x + w, y },
+      { x: x + w, y: y + h },
+      { x, y: y + h },
+      { x, y },
+    ]);
+    for (const e of scene.edges) {
+      if (!e.label) continue;
+      const box = inset(e.label.bbox, TEXT_TOLERANCE);
+      if (sides.some((s) => segmentCrossesRect(s, box))) {
+        out.push({ code: "text-crossing", elements: [g.id, e.id], facts: { is: "edge" } });
+      }
+    }
+  }
 }
 
 /** A node that is not a member lies inside a group's box (DESIGN.md, "Rows unseen, groups as systems"). */

@@ -215,12 +215,14 @@ export interface GutterResult {
 
 /**
  * Orders the runs, gives each a row and places every label. The labels of the
- * edges in `away` take a detour instead (placeDetours).
+ * edges in `away` take a detour instead (placeDetours). `sides` holds the x of each
+ * group side that runs through the gutter: like a line, no label lies across one.
  */
 export function routeGutter(
   all: Visit[],
   pitch: number,
   away: ReadonlySet<string> = new Set(),
+  sides: readonly number[] = [],
 ): GutterResult {
   const clr = ROUTE.labelClear;
   for (const v of all) {
@@ -297,7 +299,7 @@ export function routeGutter(
       const x0 = c.x0 - clr;
       const x1 = c.x0 + lab.w + clr;
       const pairs: [number, number][] = [];
-      let crossed = false;
+      let crossed = sides.some((x) => inside(x, x0, x1));
       if (c.mode !== "beside") {
         for (const s of v.stubs) {
           if (s.top === (c.mode === "above") && inside(s.x, x0, x1)) crossed = true;
@@ -428,7 +430,7 @@ export function routeGutter(
     placed.push(v);
   });
 
-  placeDetours(detoured, visits, pitch);
+  placeDetours(detoured, visits, pitch, sides);
 
   let rows = 0;
   for (const v of [...ranked, ...detoured]) {
@@ -457,7 +459,12 @@ function canDetour(v: Visit): boolean {
  * The label sits beside the far end of the lower row, where nothing else is. Each
  * detour lies outside the ones before it, so they nest without touching.
  */
-function placeDetours(detoured: Visit[], visits: Visit[], pitch: number): void {
+function placeDetours(
+  detoured: Visit[],
+  visits: Visit[],
+  pitch: number,
+  sides: readonly number[],
+): void {
   const clr = ROUTE.labelClear;
   const side = ROUTE.labelGap + 2;
   const done: Visit[] = [];
@@ -498,7 +505,15 @@ function placeDetours(detoured: Visit[], visits: Visit[], pitch: number): void {
       maxX = Math.max(...xs);
     }
     const right = maxX - Math.max(...xs) <= Math.min(...xs) - minX;
-    const x = right ? Math.ceil((maxX + 16) / 4) * 4 : Math.floor((minX - 16) / 4) * 4;
+    let x = right ? Math.ceil((maxX + 16) / 4) * 4 : Math.floor((minX - 16) / 4) * 4;
+    // A label that would lie across a group's side moves out past it, line and all.
+    const across = (at: number) => {
+      const x0 = right ? at + side : at - side - lab.w;
+      return sides.find((s) => inside(s, x0 - clr, x0 + lab.w + clr));
+    };
+    for (let s = across(x); s !== undefined; s = across(x)) {
+      x = right ? Math.ceil((s + 16) / 4) * 4 : Math.floor((s - 16) / 4) * 4;
+    }
     const turn = v.stubs.every((s) => s.top);
     // Room at the top for the new rows, clear of every label below them.
     const shift = Math.ceil((tallest + lab.h + 3 * clr + 4) / pitch) + (turn ? 3 : 1);

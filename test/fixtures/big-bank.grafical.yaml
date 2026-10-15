@@ -1,0 +1,109 @@
+grafical: 1
+title: Internet Banking System
+subtitle: Container diagram (C4 level 2), after Simon Brown's Big Bank plc example.
+density: normal
+layers:
+  - id: row-people
+    label: People
+    nodes:
+      - id: customer
+        label: Personal Banking Customer
+        kind: actor
+        sublabel: has personal bank accounts
+  - id: row-front
+    label: Front ends
+    nodes:
+      - id: webapp
+        label: Web Application
+        kind: service
+        sublabel: Java, Spring MVC
+        group: ibs
+      - id: spa
+        label: Single-Page Application
+        kind: service
+        sublabel: JavaScript, Angular
+        group: ibs
+      - id: mobile
+        label: Mobile App
+        kind: service
+        sublabel: Xamarin
+        group: ibs
+  - id: row-api
+    label: API
+    nodes:
+      - id: api
+        label: API Application
+        kind: service
+        sublabel: Java, Spring MVC
+        group: ibs
+      - id: email
+        label: E-mail System
+        kind: external
+        sublabel: Microsoft Exchange
+  - id: row-data
+    label: Data
+    nodes:
+      - id: db
+        label: Database
+        kind: store
+        sublabel: Oracle schema
+        group: ibs
+      - id: mainframe
+        label: Mainframe Banking System
+        kind: external
+        sublabel: core banking data
+groups:
+  - id: ibs
+    label: Internet Banking System
+    sublabel: Software system
+edges:
+  - id: customer->webapp
+    from: customer
+    to: webapp
+    kind: call
+    label: visits bigbank.com/ib
+  - id: customer->spa
+    from: customer
+    to: spa
+    kind: call
+    label: views balances, pays
+  - id: customer->mobile
+    from: customer
+    to: mobile
+    kind: call
+    label: views balances, pays
+  - id: webapp->spa
+    from: webapp
+    to: spa
+    kind: call
+    label: delivers
+  - id: spa->api
+    from: spa
+    to: api
+    kind: call
+    label: API calls, JSON/HTTPS
+  - id: mobile->api
+    from: mobile
+    to: api
+    kind: call
+    label: API calls, JSON/HTTPS
+  - id: api->db
+    from: api
+    to: db
+    kind: call
+    label: reads, writes (JDBC)
+  - id: api->mainframe
+    from: api
+    to: mainframe
+    kind: call
+    label: API calls, XML/HTTPS
+  - id: api->email
+    from: api
+    to: email
+    kind: call
+    label: sends e-mail, SMTP
+  - id: email->customer
+    from: email
+    to: customer
+    kind: call
+    label: sends e-mails

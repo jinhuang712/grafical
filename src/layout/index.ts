@@ -1126,6 +1126,15 @@ function compute(
     const pad = ROUTE.labelClear / 2;
     const wide = { x: r.x - pad, y: r.y - pad, w: r.w + 2 * pad, h: r.h + 2 * pad };
     if (solid.some((s) => overlaps(wide, s))) return false;
+    // The border of a group or a band is a line: the label lies wholly inside the box or
+    // wholly outside it.
+    const within = (b: Rect) =>
+      wide.x >= b.x &&
+      wide.x + wide.w <= b.x + b.w &&
+      wide.y >= b.y &&
+      wide.y + wide.h <= b.y + b.h;
+    const borders = [...sceneGroups, ...sceneBands].map((x) => x.rect);
+    if (borders.some((b) => overlaps(wide, b) && !within(b))) return false;
     for (const [other, l] of labelAt) if (other !== id && overlaps(wide, l)) return false;
     for (const [other, a] of assembled) {
       if (other === id) continue;
