@@ -15,13 +15,18 @@ afterAll(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
+// Run from a git hook or `git rebase --exec`, git's variables would point these commands at the
+// repository under test: drop them so git finds the temporary folder's own repository.
+const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
+
 function run(...args: string[]) {
-  const r = spawnSync("node", [MAIN, ...args], { cwd: dir, encoding: "utf8" });
+  const r = spawnSync("node", [MAIN, ...args], { cwd: dir, env, encoding: "utf8" });
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 function git(...args: string[]) {
   const r = spawnSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...args], {
     cwd: dir,
+    env,
     encoding: "utf8",
   });
   if (r.status !== 0) throw new Error(r.stderr);
@@ -52,7 +57,11 @@ describe('grafical diff (DESIGN.md, "Git as the history")', () => {
 
     // The batch, applied to the revision's file, gives the file on disk.
     writeFileSync(join(dir, "batch.yaml"), d.out);
-    const old = spawnSync("git", ["show", `HEAD:./${f}`], { cwd: dir, encoding: "utf8" }).stdout;
+    const old = spawnSync("git", ["show", `HEAD:./${f}`], {
+      cwd: dir,
+      env,
+      encoding: "utf8",
+    }).stdout;
     writeFileSync(join(dir, "old.grafical.yaml"), old);
     expect(run("apply", "old.grafical.yaml", "batch.yaml").code).toBe(0);
     expect(readFileSync(join(dir, "old.grafical.yaml"), "utf8")).toBe(
