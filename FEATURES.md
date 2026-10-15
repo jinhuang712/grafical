@@ -56,6 +56,8 @@ grafical try arch.grafical.yaml batch.yaml
 
 `try` applies the batch without writing it, and prints the drawing's counts before and after it, and a `delta` record of the change in each. The agent decides what to try, and grafical measures.
 
+`try` takes several batches, to compare arrangements in one call. It prints one `before` record, then for each batch `ok`, `after` and `delta` records that carry `batch=<file>`; a batch that would be refused prints its refusal records ending in the same `batch=<file>`, the others are still tried, and the exit code is 1. With `--json`: `{ok, before, batches: [{batch, ok, changed, after, delta}]}`. A single batch prints as before, without the key.
+
 ### IDs ✅
 
 The caller names every row, group, lane, column, wall, box and line, and a name never changes while the element exists.

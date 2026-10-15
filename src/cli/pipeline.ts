@@ -80,23 +80,26 @@ export function formatReport(r: Report): string {
   return `${out.join("\n")}\n`;
 }
 
+/** The report as the JSON object `--json` prints. */
+export function reportBody(report: Report): Record<string, unknown> {
+  return {
+    ok: report.ok,
+    changed: report.changed,
+    errors: report.errors.map((e) => ({
+      op: e.index,
+      code: e.code,
+      ...(e.field !== undefined ? { field: e.field } : {}),
+      found: e.found,
+      ...(e.facts !== undefined ? { facts: e.facts } : {}),
+    })),
+    defects: report.defects,
+    ...(report.counts !== undefined ? { counts: report.counts } : {}),
+  };
+}
+
 export function emit(report: Report, json: boolean, extra: Record<string, unknown> = {}): number {
   if (json) {
-    const body = {
-      ok: report.ok,
-      changed: report.changed,
-      errors: report.errors.map((e) => ({
-        op: e.index,
-        code: e.code,
-        ...(e.field !== undefined ? { field: e.field } : {}),
-        found: e.found,
-        ...(e.facts !== undefined ? { facts: e.facts } : {}),
-      })),
-      defects: report.defects,
-      ...(report.counts !== undefined ? { counts: report.counts } : {}),
-      ...extra,
-    };
-    process.stdout.write(`${JSON.stringify(body)}\n`);
+    process.stdout.write(`${JSON.stringify({ ...reportBody(report), ...extra })}\n`);
   } else {
     process.stdout.write(formatReport(report));
   }

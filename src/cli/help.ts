@@ -257,12 +257,15 @@ of every change, with the changed parts marked. Ctrl-C stops it.`,
 
   try: {
     about: `Apply a batch without writing it, and print the drawing's counts before and
-after it, as apply prints them, and the change in each. Nothing is written.`,
+after it, as apply prints them, and the change in each. Nothing is written.
+Give several batches to compare them: one before, then each batch's records
+keyed batch=<file>.`,
     after: `
 Good to know:
   - Use it to compare arrangements you are weighing: a row moved, two nodes
     swapped, a node slid along its row. You decide which to keep, then apply it.
-  - A batch it would refuse is refused as apply would refuse it.
+  - A batch it would refuse is refused as apply would refuse it; with several,
+    its records end in batch=<file> and the others are still tried (exit 1).
 
 Example:
   grafical try shop.grafical.yaml move.yaml

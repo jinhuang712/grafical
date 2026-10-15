@@ -6,7 +6,14 @@ import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
-import { countsText, delta, deltaText, drawing, drawingText } from "../check/drawing.ts";
+import {
+  type Counts,
+  countsText,
+  delta,
+  deltaText,
+  drawing,
+  drawingText,
+} from "../check/drawing.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import { yamlError } from "../model/io.ts";
@@ -30,9 +37,12 @@ import {
   emit,
   failure,
   fileError,
+  formatReport,
   inspect,
   isReport,
   loadDiagram,
+  type Report,
+  reportBody,
   runWrite,
   tryWrite,
   writeAtomic,
@@ -838,23 +848,27 @@ function build(): Command {
   json(
     program
       .command("try")
-      .description("counts before and after a batch, no write")
+      .description("counts before and after, no write")
       .argument("<file>")
-      .argument("<batch.yaml>"),
-  ).action(async (file: string, batch: string, opts: Opts) => {
-    const ops = readBatch(batch, opts);
-    if (ops === undefined) return;
-    const r = await tryWrite(file, ops);
-    if (isReport(r)) {
-      process.exitCode = emit(r, opts.json === true);
-    } else if (opts.json === true) {
-      const body = { ok: true, changed: r.report.changed, before: r.before, after: r.after };
-      process.stdout.write(`${JSON.stringify({ ...body, delta: delta(r.before, r.after) })}\n`);
-    } else {
-      process.stdout.write(
-        `${record("ok", { changed: r.report.changed, written: "no" })}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n${deltaText(delta(r.before, r.after))}\n`,
-      );
+      .argument("<batch...>"),
+  ).action(async (file: string, batches: string[], opts: Opts) => {
+    if (batches.length === 1) {
+      const ops = readBatch(batches[0] as string, opts);
+      if (ops === undefined) return;
+      const r = await tryWrite(file, ops);
+      if (isReport(r)) {
+        process.exitCode = emit(r, opts.json === true);
+      } else if (opts.json === true) {
+        const body = { ok: true, changed: r.report.changed, before: r.before, after: r.after };
+        process.stdout.write(`${JSON.stringify({ ...body, delta: delta(r.before, r.after) })}\n`);
+      } else {
+        process.stdout.write(
+          `${record("ok", { changed: r.report.changed, written: "no" })}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n${deltaText(delta(r.before, r.after))}\n`,
+        );
+      }
+      return;
     }
+    process.exitCode = await tryMany(file, batches, opts.json === true);
   });
 
   json(
@@ -1029,28 +1043,71 @@ function build(): Command {
   return program;
 }
 
-/** A batch file's operations, or nothing when it is refused, with the refusal printed. */
-function readBatch(batch: string, opts: Opts): Op[] | undefined {
+/** A batch file's operations, or the refusal to read it. */
+function readBatchOps(batch: string): Op[] | Report {
   let text: string;
   let raw: unknown;
   try {
     text = readFileSync(batch, "utf8");
   } catch {
-    process.exitCode = emit(fileError("batch-unreadable", batch), opts.json === true);
-    return undefined;
+    return fileError("batch-unreadable", batch);
   }
   try {
     raw = parse(text);
   } catch (err) {
-    process.exitCode = emit(failure([yamlError(text, err)]), opts.json === true);
-    return undefined;
+    return failure([yamlError(text, err)]);
   }
   const ops = parseOps(raw);
-  if (!isOps(ops)) {
-    process.exitCode = emit(failure(ops), opts.json === true);
+  return isOps(ops) ? ops : failure(ops);
+}
+
+/** A batch file's operations, or nothing when it is refused, with the refusal printed. */
+function readBatch(batch: string, opts: Opts): Op[] | undefined {
+  const ops = readBatchOps(batch);
+  if (isReport(ops)) {
+    process.exitCode = emit(ops, opts.json === true);
     return undefined;
   }
   return ops;
+}
+
+/**
+ * Several batches tried against one file (FEATURES.md, "Trying a change"): the `before` counts once, then each
+ * batch's `ok`, `after` and `delta` records keyed by `batch=<file>`; a refused batch prints its refusal records
+ * with the same key, and the rest are still tried. Exit 1 when any is refused.
+ */
+async function tryMany(file: string, batches: string[], json: boolean): Promise<number> {
+  const out: string[] = [];
+  const results: Record<string, unknown>[] = [];
+  let before: Counts | undefined;
+  let code = 0;
+  for (const batch of batches) {
+    const ops = readBatchOps(batch);
+    const r = isReport(ops) ? ops : await tryWrite(file, ops);
+    if (isReport(r)) {
+      code = 1;
+      for (const line of formatReport(r).trimEnd().split("\n")) out.push(`${line} batch=${batch}`);
+      results.push({ batch, ...reportBody(r) });
+      continue;
+    }
+    before ??= r.before;
+    const d = delta(r.before, r.after);
+    out.push(
+      record("ok", { batch, changed: r.report.changed, written: "no" }),
+      countsText(r.after, "after").replace("after", `after batch=${batch}`),
+      deltaText(d).replace("delta", `delta batch=${batch}`),
+    );
+    results.push({ batch, ok: true, changed: r.report.changed, after: r.after, delta: d });
+  }
+  if (json) {
+    process.stdout.write(
+      `${JSON.stringify({ ok: code === 0, before: before ?? null, batches: results })}\n`,
+    );
+  } else {
+    if (before !== undefined) out.unshift(countsText(before, "before"));
+    process.stdout.write(`${out.join("\n")}\n`);
+  }
+  return code;
 }
 
 function isOps(x: Op[] | unknown[]): x is Op[] {

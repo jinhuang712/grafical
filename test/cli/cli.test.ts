@@ -338,6 +338,30 @@ describe("read commands", () => {
     expect(bad.out).toContain("unknown-node");
   });
 
+  it("try with several batches prints one before and each batch's records keyed by its file", () => {
+    const before = readFileSync(join(dir, "single.grafical.yaml"), "utf8");
+    writeFileSync(join(dir, "t1.yaml"), "- {op: node.rename, id: api, label: One}\n");
+    writeFileSync(join(dir, "t2.yaml"), "- {op: node.rename, id: api, label: Two}\n");
+    writeFileSync(join(dir, "t3.yaml"), "- {op: node.rename, id: nope, label: X}\n");
+    const r = run("try", "single.grafical.yaml", "t1.yaml", "t3.yaml", "t2.yaml");
+    expect(r.code).toBe(1);
+    const lines = r.out.trimEnd().split("\n");
+    expect(lines.filter((l) => l.startsWith("before "))).toHaveLength(1);
+    expect(lines[0]).toMatch(/^before nodes=/);
+    expect(lines[1]).toBe("ok batch=t1.yaml changed=api written=no");
+    expect(lines[2]).toMatch(/^after batch=t1.yaml nodes=/);
+    expect(lines[3]).toMatch(/^delta batch=t1.yaml nodes=0 /);
+    expect(lines[4]).toMatch(/^failed changed=- batch=t3.yaml$/);
+    expect(lines[5]).toMatch(/^error op=0 code=unknown-node .* batch=t3.yaml$/);
+    expect(lines[6]).toBe("ok batch=t2.yaml changed=api written=no");
+    expect(readFileSync(join(dir, "single.grafical.yaml"), "utf8")).toBe(before);
+    const json = JSON.parse(run("try", "single.grafical.yaml", "t1.yaml", "t3.yaml", "--json").out);
+    expect(json.ok).toBe(false);
+    expect(json.batches.map((b: { batch: string }) => b.batch)).toEqual(["t1.yaml", "t3.yaml"]);
+    expect(json.batches[0].delta.nodes).toBe(0);
+    expect(json.batches[1].ok).toBe(false);
+  });
+
   it("render with one flag writes only that file", () => {
     const r = run("render", "single.grafical.yaml", "--png", "only.png", "--scale", "1");
     expect(r.code).toBe(0);
