@@ -31,4 +31,17 @@ describe("side turns", () => {
     expect(of("invoice->pay")).toMatchObject({ leaves: "right", bends: 1 });
     expect(check(d, s, m)).toEqual([]);
   });
+
+  // Found by the owner on 2026-10-15: the load balancer's line into zone B bent twice, because
+  // its turn would have started where the line into zone A turned, at the middle of its bottom.
+  it("move along the source's side to keep clear of another turn from it", () => {
+    const file = join(import.meta.dirname, "../fixtures/two-zones.grafical.yaml");
+    const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
+    const s = layout(d, m);
+    const lines = drawing(d, s).lines;
+    const of = (id: string) => lines.find((l) => l.id === id);
+    expect(of("alb->web-a")).toMatchObject({ leaves: "bottom", enters: "right", bends: 1 });
+    expect(of("alb->web-b")).toMatchObject({ leaves: "bottom", enters: "left", bends: 1 });
+    expect(check(d, s, m)).toEqual([]);
+  });
 });

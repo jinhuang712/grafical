@@ -1045,8 +1045,10 @@ function chooseSideExits(
  * gutter takes two. The target's side must be free, the vertical part must run in
  * the open beside the target, clear of its neighbour, of every line through that
  * gap and of every other line's run across the gutter, and a line that would have
- * joined a fan-in leaves it. An edge that skips rows enters by a side where its
- * corridor lies in the open beside its target, and turns out of the corridor.
+ * joined a fan-in leaves it. The turn starts below the source's centre, or moves
+ * toward the target until it keeps clear of the other turns. An edge that skips
+ * rows enters by a side where its corridor lies in the open beside its target, and
+ * turns out of the corridor.
  */
 function chooseSideEntries(
   plans: Plan[],
@@ -1076,6 +1078,18 @@ function chooseSideEntries(
       );
     }
   }
+  // Ports that must sit where a turn is, by node side: they keep the side's spread apart.
+  const fixed = new Map<string, number[]>();
+  const fix = (n: PNode, side: Side, x: number) => {
+    const k = `${n.id}:${side}`;
+    fixed.set(k, [...(fixed.get(k) ?? []), x]);
+  };
+  for (const pl of plans) {
+    if (pl.turn !== undefined && pl.between.length === 0) fix(pl.v, pl.dstSide, pl.turn);
+  }
+  const endsOn = (n: PNode, side: Side) =>
+    plans.filter((o) => (o.u === n && o.srcSide === side) || (o.v === n && o.dstSide === side))
+      .length;
   const pad = ROUTE.corridorPad;
   for (const pl of plans) {
     const { u, v } = pl;
@@ -1101,6 +1115,10 @@ function chooseSideEntries(
     const lo =
       side === "right" ? v.x + v.w + pad : next === undefined ? -Infinity : next.x + next.w + pad;
     const hi = side === "right" ? (next === undefined ? Infinity : next.x - pad) : v.x - pad;
+    // No line runs up or down through the target's row between it and the turn.
+    const gk = side === "right" ? k + 1 : k;
+    const edge = side === "right" ? v.x + v.w : v.x;
+    const fits = (x: number) => runFits(gapRuns, gap, Math.min(x, edge), Math.max(x, edge));
     let x: number;
     if (corridor !== undefined) {
       // The corridor's track must lie in the open beside the target, and a line that
@@ -1115,13 +1133,18 @@ function chooseSideEntries(
       // A port on the source's top keeps clear of group labels there, and the line into
       // a lower row passes the group labels above it.
       const spans = forbidTop.get(pl.kind === "up" ? u.layer : v.layer) ?? [];
+      // A turn beside another turn's run in the gap, or by another turn's port on the
+      // source's side, moves toward its target until it keeps clear of both.
+      const ports = fixed.get(`${u.id}:${pl.srcSide}`) ?? [];
+      const pitch = Math.max(ROUTE.portPitch, spreadOf(u, endsOn(u, pl.srcSide)));
+      const clear = (c: number) =>
+        !inSpans(c, spans) && fits(c) && ports.every((p) => Math.abs(p - c) >= pitch - EPS);
       x = nearestFree(centreX(u), plo, phi, spans);
-      if (x < plo - EPS || x > phi + EPS || inSpans(x, spans)) continue;
+      const dir = edge > x ? 4 : -4;
+      while (x >= plo - EPS && x <= phi + EPS && !clear(x)) x += dir;
+      if (x < plo - EPS || x > phi + EPS) continue;
     }
-    // No line runs up or down through the target's row between it and the turn.
-    const gk = side === "right" ? k + 1 : k;
-    const edge = side === "right" ? v.x + v.w : v.x;
-    if (!runFits(gapRuns, gap, Math.min(x, edge), Math.max(x, edge))) continue;
+    if (!fits(x)) continue;
     const a = Math.min(x, edge) - TRACK_MIN;
     const b = Math.max(x, edge) + TRACK_MIN;
     const crossed = plans.some((o) =>
@@ -1142,6 +1165,7 @@ function chooseSideEntries(
     pl.turnIn = x;
     taken.add(`${v.id}:${side}`);
     addRun(gapRuns, gap, x, edge);
+    if (pl.between.length === 0) fix(u, pl.srcSide, x);
   }
 }
 
@@ -1549,6 +1573,11 @@ const PORT_TIERS: { pitch: number; inset: number; clear: number }[] = [
 /** The widest pitch the ports of one side spread to (DESIGN.md, "Lines meet any side"). */
 const SPREAD_MAX = 48;
 
+/** The pitch that `count` ports spread to over a side of n. */
+function spreadOf(n: PNode, count: number): number {
+  return Math.min(SPREAD_MAX, Math.floor((n.w - 2 * ROUTE.portInset) / Math.max(1, count) / 4) * 4);
+}
+
 /**
  * Ports along one side, in order. They spread evenly over the side first, up to
  * SPREAD_MAX apart, so that its lines never read as one bundle (DESIGN.md, "Lines meet any side"); then the
@@ -1563,10 +1592,7 @@ function portPositions(
   n: PNode,
   allowed: (i: number, x: number, radius: number) => boolean,
 ): number[] {
-  const spread = Math.min(
-    SPREAD_MAX,
-    Math.floor((n.w - 2 * ROUTE.portInset) / Math.max(1, desired.length) / 4) * 4,
-  );
+  const spread = spreadOf(n, desired.length);
   const tiers =
     desired.length > 1 && spread > ROUTE.portPitch
       ? [{ pitch: spread, inset: ROUTE.portInset, clear: CLEAR }, ...PORT_TIERS]
