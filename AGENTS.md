@@ -56,11 +56,13 @@ A command added to `package.json` gets a row here in the same change.
 3. Run `pnpm typecheck`, `pnpm lint` and `pnpm test`.
 4. Read your own diff before reporting.
 
+When a picture looks bad, first draw the better picture with grafical's own commands, as an agent would: rows, order, groups, alignment, and what to cut. Only what the commands cannot reach is engine work. On 2026-10-16 the owner's composition took a dispatch draft from 21 crossings to 1, where a day of router fixes had moved the saved drafts by 3.
+
 ## Definition of done
 
 - Type check, lint and tests pass.
 - At least one affected fixture was rendered and looked at.
-- For changes to layout, routing or text measurement: the stability and determinism tests pass, and changed PNG snapshots were reviewed one by one.
+- For changes to layout, routing or text measurement: the stability and determinism tests pass, and changed PNG snapshots were reviewed one by one. The saved agent drafts (`bench/runs`, in the main checkout only) and fuzz seeds are laid out before and after, and the commit states how many changed and the change in bends, crossings and defects by code. Fixtures that stay the same show that nothing broke, not that anything got better.
 - Documents are updated in the same change when behavior, a decision, a target or a milestone changed.
 - The report states what changed, with the command output that proves it. "The code looks right" is not proof.
 
