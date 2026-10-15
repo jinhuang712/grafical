@@ -29,7 +29,7 @@ import { lineStyle, weightOf } from "../theme/paint.ts";
 import { portInset } from "../theme/shapes.ts";
 import { routeGutter } from "./gutter.ts";
 import { centreX, type PLayer, type PNode } from "./place.ts";
-import type { SideSlot } from "./side.ts";
+import { type SideSlot, sidePitch } from "./side.ts";
 
 /** What the router must keep clear of, from placement. */
 export interface RouteExtra {
@@ -1053,10 +1053,11 @@ function chooseSideExits(
  * neighbouring rows whose target lies wholly left or right of its source runs
  * straight out of the source's top or bottom, beside the target, and turns into the
  * target's facing side at the middle of its row: one bend, where a route through the
- * gutter takes two. The target's side must be free, the vertical part must run in
- * the open beside the target, clear of its neighbour, of every line through that
- * gap and of every other line's run across the gutter, and a line that would have
- * joined a fan-in leaves it. The turn starts below the source's centre, or moves
+ * gutter takes two. The target's side must hold no side exit or line to a neighbour;
+ * several entries share it, each at its own height (assemble), as many as fit at the
+ * side's pitch. The vertical part must run in the open beside the target, clear of
+ * its neighbour, of every line through that gap and of every other line's run across
+ * the gutter, and a line that would have joined a fan-in leaves it. The turn starts below the source's centre, or moves
  * toward the target until it keeps clear of the other turns. An edge that skips
  * rows enters by a side where its corridor lies in the open beside its target, and
  * turns out of the corridor.
@@ -1069,6 +1070,10 @@ function chooseSideEntries(
 ): void {
   const taken = new Set<string>();
   const gapRuns: GapRuns = new Map();
+  // Entries by target side, and their runs by gap: entries into one side run at heights
+  // of their own, so only the runs of other sides' turns must keep apart from them.
+  const entering = new Map<string, Plan[]>();
+  const entryRuns = new Map<string, { side: string; lo: number; hi: number }[]>();
   const gapOf = (n: PNode, side: Side) => {
     const row = layers[n.layer]?.nodes ?? [];
     const k = row.indexOf(n);
@@ -1102,81 +1107,104 @@ function chooseSideEntries(
     plans.filter((o) => (o.u === n && o.srcSide === side) || (o.v === n && o.dstSide === side))
       .length;
   const pad = ROUTE.corridorPad;
-  for (const pl of plans) {
-    const { u, v } = pl;
-    if (pl.kind !== "down" && pl.kind !== "up") continue;
-    if (pl.bus !== undefined) continue;
-    // A line between neighbouring rows turns once: by a side exit or a side entry.
-    if (pl.between.length === 0 && pl.turn !== undefined) continue;
-    // Only between two nodes: a container end is cut at the container's box (DESIGN.md, "Lines that end at containers").
-    if (pl.edge.from !== u.id || pl.edge.to !== v.id || noSideExit.has(pl.edge.id)) continue;
-    // A line that skips rows turns out of its corridor at its last gap track.
-    const corridor = pl.between.length > 0 ? pl.gapX[pl.gapX.length - 1] : undefined;
-    if (pl.between.length > 0 && corridor === undefined) continue;
-    const left = corridor !== undefined ? corridor > v.x + v.w : u.x >= v.x + v.w;
-    const right = corridor !== undefined ? corridor < v.x : u.x + u.w <= v.x;
-    if (!left && !right) continue;
-    // The side of the target that faces the source.
-    const side: Side = left ? "right" : "left";
-    if (taken.has(`${v.id}:${side}`)) continue;
-    const gap = gapOf(v, side);
-    const row = layers[v.layer]?.nodes ?? [];
-    const k = row.indexOf(v);
-    const next = row[side === "right" ? k + 1 : k - 1];
-    const lo =
-      side === "right" ? v.x + v.w + pad : next === undefined ? -Infinity : next.x + next.w + pad;
-    const hi = side === "right" ? (next === undefined ? Infinity : next.x - pad) : v.x - pad;
-    // No line runs up or down through the target's row between it and the turn.
-    const gk = side === "right" ? k + 1 : k;
-    const edge = side === "right" ? v.x + v.w : v.x;
-    const fits = (x: number) => runFits(gapRuns, gap, Math.min(x, edge), Math.max(x, edge));
-    let x: number;
-    if (corridor !== undefined) {
-      // The corridor's track must lie in the open beside the target, and a line that
-      // comes down passes the labels at the top of the target's row.
-      if (corridor < lo - EPS || corridor > hi + EPS) continue;
-      if (pl.kind === "down" && inSpans(corridor, forbidTop.get(v.layer) ?? [])) continue;
-      x = corridor;
-    } else {
-      const plo = Math.max(lo, u.x + portInset(u.w));
-      const phi = Math.min(hi, u.x + u.w - portInset(u.w));
-      if (phi < plo) continue;
-      // A port on the source's top keeps clear of group labels there, and the line into
-      // a lower row passes the group labels above it.
-      const spans = forbidTop.get(pl.kind === "up" ? u.layer : v.layer) ?? [];
-      // A turn beside another turn's run in the gap, or by another turn's port on the
-      // source's side, moves toward its target until it keeps clear of both.
-      const ports = fixed.get(`${u.id}:${pl.srcSide}`) ?? [];
-      const pitch = Math.max(ROUTE.portPitch, spreadOf(u, endsOn(u, pl.srcSide)));
-      const clear = (c: number) =>
-        !inSpans(c, spans) && fits(c) && ports.every((p) => Math.abs(p - c) >= pitch - EPS);
-      x = nearestFree(centreX(u), plo, phi, spans);
-      const dir = edge > x ? 4 : -4;
-      while (x >= plo - EPS && x <= phi + EPS && !clear(x)) x += dir;
-      if (x < plo - EPS || x > phi + EPS) continue;
+  // A line's run across the gutter can stop another's turn until that line enters by a
+  // side too, so the pass repeats while it adds an entry.
+  for (let added = true; added; ) {
+    added = false;
+    for (const pl of plans) {
+      const { u, v } = pl;
+      if (pl.turnIn !== undefined) continue;
+      if (pl.kind !== "down" && pl.kind !== "up") continue;
+      if (pl.bus !== undefined) continue;
+      // A line between neighbouring rows turns once: by a side exit or a side entry.
+      if (pl.between.length === 0 && pl.turn !== undefined) continue;
+      // Only between two nodes: a container end is cut at the container's box (DESIGN.md, "Lines that end at containers").
+      if (pl.edge.from !== u.id || pl.edge.to !== v.id || noSideExit.has(pl.edge.id)) continue;
+      // A line that skips rows turns out of its corridor at its last gap track.
+      const corridor = pl.between.length > 0 ? pl.gapX[pl.gapX.length - 1] : undefined;
+      if (pl.between.length > 0 && corridor === undefined) continue;
+      const left = corridor !== undefined ? corridor > v.x + v.w : u.x >= v.x + v.w;
+      const right = corridor !== undefined ? corridor < v.x : u.x + u.w <= v.x;
+      if (!left && !right) continue;
+      // The side of the target that faces the source.
+      const side: Side = left ? "right" : "left";
+      const sideKey = `${v.id}:${side}`;
+      if (taken.has(sideKey)) continue;
+      const already = entering.get(sideKey) ?? [];
+      if (already.length > 0 && sidePitch(already.length + 1, v.h) === undefined) continue;
+      const gap = gapOf(v, side);
+      const row = layers[v.layer]?.nodes ?? [];
+      const k = row.indexOf(v);
+      const next = row[side === "right" ? k + 1 : k - 1];
+      const lo =
+        side === "right" ? v.x + v.w + pad : next === undefined ? -Infinity : next.x + next.w + pad;
+      const hi = side === "right" ? (next === undefined ? Infinity : next.x - pad) : v.x - pad;
+      // No line runs up or down through the target's row between it and the turn.
+      const gk = side === "right" ? k + 1 : k;
+      const edge = side === "right" ? v.x + v.w : v.x;
+      const fits = (x: number) => {
+        const a = Math.min(x, edge);
+        const b = Math.max(x, edge);
+        return (
+          runFits(gapRuns, gap, a, b) &&
+          (entryRuns.get(gap) ?? []).every(
+            (r) => r.side === sideKey || b + TRACK_MIN <= r.lo || a - TRACK_MIN >= r.hi,
+          ) &&
+          already.every((o) => Math.abs((o.turnIn ?? 0) - x) >= TRACK_MIN - EPS)
+        );
+      };
+      let x: number;
+      if (corridor !== undefined) {
+        // The corridor's track must lie in the open beside the target, and a line that
+        // comes down passes the labels at the top of the target's row.
+        if (corridor < lo - EPS || corridor > hi + EPS) continue;
+        if (pl.kind === "down" && inSpans(corridor, forbidTop.get(v.layer) ?? [])) continue;
+        x = corridor;
+      } else {
+        const plo = Math.max(lo, u.x + portInset(u.w));
+        const phi = Math.min(hi, u.x + u.w - portInset(u.w));
+        if (phi < plo) continue;
+        // A port on the source's top keeps clear of group labels there, and the line into
+        // a lower row passes the group labels above it.
+        const spans = forbidTop.get(pl.kind === "up" ? u.layer : v.layer) ?? [];
+        // A turn beside another turn's run in the gap, or by another turn's port on the
+        // source's side, moves toward its target until it keeps clear of both.
+        const ports = fixed.get(`${u.id}:${pl.srcSide}`) ?? [];
+        const pitch = Math.max(ROUTE.portPitch, spreadOf(u, endsOn(u, pl.srcSide)));
+        const clear = (c: number) =>
+          !inSpans(c, spans) && fits(c) && ports.every((p) => Math.abs(p - c) >= pitch - EPS);
+        x = nearestFree(centreX(u), plo, phi, spans);
+        const dir = edge > x ? 4 : -4;
+        while (x >= plo - EPS && x <= phi + EPS && !clear(x)) x += dir;
+        if (x < plo - EPS || x > phi + EPS) continue;
+      }
+      if (!fits(x)) continue;
+      const a = Math.min(x, edge) - TRACK_MIN;
+      const b = Math.max(x, edge) + TRACK_MIN;
+      const crossed = plans.some((o) =>
+        o.gaps.some((g, j) => {
+          const gx = o.gapX[j];
+          return g.layer === v.layer && g.k === gk && gx !== undefined && gx > a && gx < b;
+        }),
+      );
+      if (crossed) continue;
+      if (runsAcross(plans, pl, pl.gutters[pl.gutters.length - 1] ?? v.layer, x)) continue;
+      const fan = pl.fanIn;
+      if (fan !== undefined) {
+        fan.members = fan.members.filter((m) => m !== pl);
+        if (fan.members.length < ROUTE.busMin) for (const m of fan.members) m.fanIn = undefined;
+        pl.fanIn = undefined;
+      }
+      pl.dstSide = side;
+      pl.turnIn = x;
+      entering.set(sideKey, [...already, pl]);
+      entryRuns.set(gap, [
+        ...(entryRuns.get(gap) ?? []),
+        { side: sideKey, lo: Math.min(x, edge), hi: Math.max(x, edge) },
+      ]);
+      if (pl.between.length === 0) fix(u, pl.srcSide, x);
+      added = true;
     }
-    if (!fits(x)) continue;
-    const a = Math.min(x, edge) - TRACK_MIN;
-    const b = Math.max(x, edge) + TRACK_MIN;
-    const crossed = plans.some((o) =>
-      o.gaps.some((g, j) => {
-        const gx = o.gapX[j];
-        return g.layer === v.layer && g.k === gk && gx !== undefined && gx > a && gx < b;
-      }),
-    );
-    if (crossed) continue;
-    if (runsAcross(plans, pl, pl.gutters[pl.gutters.length - 1] ?? v.layer, x)) continue;
-    const fan = pl.fanIn;
-    if (fan !== undefined) {
-      fan.members = fan.members.filter((m) => m !== pl);
-      if (fan.members.length < ROUTE.busMin) for (const m of fan.members) m.fanIn = undefined;
-      pl.fanIn = undefined;
-    }
-    pl.dstSide = side;
-    pl.turnIn = x;
-    taken.add(`${v.id}:${side}`);
-    addRun(gapRuns, gap, x, edge);
-    if (pl.between.length === 0) fix(u, pl.srcSide, x);
   }
 }
 
@@ -1869,6 +1897,30 @@ export interface AssembledEdge {
 export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> {
   const out = new Map<string, AssembledEdge>();
   const X = (x: number) => geo.centre + x;
+  // Side entries into one side (chooseSideEntries): the lines from above enter its upper
+  // part, the nearer the higher, and the lines from below its lower part, the nearer the
+  // lower, so that none crosses another's way in.
+  const entryAt = new Map<Plan, number>();
+  const bySide = new Map<string, Plan[]>();
+  for (const pl of r.plans) {
+    if (pl.turnIn === undefined) continue;
+    const k = `${pl.v.id}:${pl.dstSide}`;
+    bySide.set(k, [...(bySide.get(k) ?? []), pl]);
+  }
+  for (const list of bySide.values()) {
+    const v = (list[0] as Plan).v;
+    if (list.length < 2) continue;
+    const edge = list[0]?.dstSide === "left" ? v.x : v.x + v.w;
+    const dist = (pl: Plan) => Math.abs((pl.turnIn ?? 0) - edge);
+    const order = [
+      ...list.filter((pl) => pl.kind === "down").sort((a, b) => dist(a) - dist(b)),
+      ...list.filter((pl) => pl.kind !== "down").sort((a, b) => dist(b) - dist(a)),
+    ];
+    const pitch = sidePitch(order.length, v.h) ?? ROUTE.portPitch / 2;
+    order.forEach((pl, i) => {
+      entryAt.set(pl, Math.round(((i - (order.length - 1) / 2) * pitch) / 4) * 4);
+    });
+  }
   for (const pl of r.plans) {
     const { u, v } = pl;
     if (pl.kind === "neighbour") {
@@ -1949,7 +2001,7 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
     });
     if (pl.turnIn !== undefined) {
       // A side entry: on beside the target to the row's middle, then into its side.
-      const my = geo.rowMid(v.layer) + pl.dstPort;
+      const my = geo.rowMid(v.layer) + pl.dstPort + (entryAt.get(pl) ?? 0);
       pts.push(
         { x: X(pl.turnIn), y: my },
         { x: X(pl.dstSide === "left" ? v.x : v.x + v.w), y: my },

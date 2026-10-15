@@ -60,4 +60,27 @@ edges:
     const line = drawing(d, s).lines.find((l) => l.id === "api->mail");
     expect(line).toMatchObject({ leaves: "right", enters: "left", bends: 0 });
   });
+  // Found by the owner on 2026-10-16 in a booking C4 diagram: the web app's line turned
+  // into the API's side, and the mobile app's line beside it bent twice into the API's top.
+  it("enter one side together, the nearer above", () => {
+    const d = readDiagram(`grafical: 1
+title: entries
+density: normal
+layers:
+  - {id: apps, label: Apps, nodes: [{id: web, label: Web app}, {id: mobile, label: Mobile app}, {id: portal, label: Partner portal}]}
+  - {id: core, label: Core, nodes: [{id: api, label: Booking API, align: portal}]}
+edges:
+  - {id: web->api, from: web, to: api}
+  - {id: mobile->api, from: mobile, to: api}
+  - {id: portal->api, from: portal, to: api}
+`) as Diagram;
+    const s = layout(d, m);
+    expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
+    const lines = drawing(d, s).lines;
+    const of = (id: string) => lines.find((l) => l.id === id);
+    expect(of("web->api")).toMatchObject({ enters: "left", bends: 1, crosses: [] });
+    expect(of("mobile->api")).toMatchObject({ enters: "left", bends: 1, crosses: [] });
+    const end = (id: string) => s.edges.find((e) => e.id === id)?.points.at(-1)?.y ?? 0;
+    expect(end("mobile->api")).toBeLessThan(end("web->api"));
+  });
 });
