@@ -160,7 +160,7 @@ describe("write commands", () => {
     expect(r.code, r.out + r.err).toBe(0);
     expect(r.out).toBe(
       "ok changed=clients,services,storage,web,api,worker,db,mq,web->api,api->db,api->mq,mq->worker\n" +
-        "counts nodes=5 lines=4 crossings=0 bends=2 length=256 width=368 height=376 fullest=services:2 busiest=api:3 longest=api->mq:120 passing=0\n",
+        "counts nodes=5 lines=4 crossings=0 bends=2 length=256 width=368 height=376 fullest=services:2 busiest=api:3 longest=api->mq:120 passing=0 across=0 tight=0 crowded=0\n",
     );
     const single = read("single.grafical.yaml");
     expect(read("batch.grafical.yaml")).toBe(single);

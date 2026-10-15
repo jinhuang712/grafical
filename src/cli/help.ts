@@ -19,14 +19,12 @@ export const PROGRAM_AFTER = `
 How to work:
   1. grafical new <file> --title <text> --subtitle <text> --note <text>
   2. Write all rows, nodes, groups and edges in one batch file, then
-     grafical apply <file> batch.yaml            (grafical apply --help)
-     Rows and boxes share one set of ids, so give rows ids like row-users.
+     grafical apply <file> batch.yaml
   3. grafical render <file> and look at the PNG, or read
      grafical show <file> --drawn.
   4. Fix with single commands. To weigh a change first, grafical try <file>
      <batch> prints the counts before and after it.
-  Never edit the file by hand. A refused change leaves the file untouched:
-  fix what the error names and run it again.
+  Never edit the file by hand. Fix what a refusal names and run it again.
 
 A good diagram:
   - One story per diagram. When boxes stop serving that story, merge what a
@@ -156,7 +154,6 @@ Batch file:
 Good to know:
   - Add rows first, then nodes, then groups and lanes, then edges.
   - Quote text that holds a comma, a colon or a #: sublabel: "iOS, Android".
-  - Write lists as [a, b].
   - from with down, up, left or right: a box in no row, cells from a box.
   - An id is lowercase letters, digits, ".", "_" or "-", and unique across
     rows, nodes, groups, lanes and edges: a node cannot share its row's id.
@@ -164,12 +161,14 @@ Good to know:
 Output:
   ok changed=<ids>           the change is written
   counts nodes= lines= crossings= bends= length= width= height= fullest=
-         busiest= longest= passing=
-    length is every line's length together, in pixels. fullest is the row
-    with most nodes, as <row>:<nodes>; busiest the box with most lines, as
-    <box>:<lines>; longest the longest line, as <line>:<length>; passing
-    the lines that pass a row they do not connect. grafical show <file>
-    --drawn prints a record for each box and line.
+         busiest= longest= passing= across= tight= crowded=
+    length is every line's length together, in pixels. fullest: the row
+    with most nodes, <row>:<nodes>; busiest: the box with most lines,
+    <box>:<lines>; longest: <line>:<length>; passing: lines that pass a row
+    they do not connect; across: lines through a group holding neither of
+    their ends; tight: pairs of runs of two lines under 12 px apart for over
+    100 px; crowded: labels under 8 px from a line, box, border or label on
+    two sides. grafical show <file> --drawn prints a record per box and line.
 
 When refused:
   failed changed=-, the file untouched, then a record per problem:
@@ -185,12 +184,10 @@ When refused:
     row, group, node, nodes  the row or group it concerns, and its nodes
     line, column             where in the YAML
     fix        operations that would fix it
-  overflow: the text takes more lines than its box holds; shorten it, or
+  overflow: the text takes more lines than its box holds; shorten it or
   move detail to the sublabel. missing-glyph: chars cannot be drawn.
   Where lines go is grafical's job, never yours.
   Exit codes: 0 done, 1 refused, 2 a usage error.
-
-See also: show, render, diff
 
 Example: two systems around a shared store
   ${EXAMPLE_NEW}

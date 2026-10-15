@@ -56,6 +56,8 @@ Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It 
 - **Kill threshold:** any defect in an output is a bug.
 - **Status:** ❌ not met on 2026-10-12. The geometry check found no defect in all 49 grafical pictures of the stage 1 round, nor in the 46 of its rerun, but the judges gave the drafts of the reference brief a defect score of 3 or 4.
 
+- **Composition, measured on 2026-10-16** over the 306 saved agent drafts (`across`, `tight` and `crowded` of DESIGN.md, "Composition counts"): 66 lines run across a group that holds neither end, in 29 drafts; 6 pairs of runs are tight, in 3 drafts; 88 labels are crowded, in 51 drafts. Not targets: facts to compare a change against.
+
 ### Scale
 
 - **Target:** no defect, and a clarity of at least 3 of 5 at 50 boxes.

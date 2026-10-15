@@ -1,7 +1,9 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import { composition } from "../../src/check/composition.ts";
 import { delta, deltaText, drawing, drawingText } from "../../src/check/drawing.ts";
 import { layout } from "../../src/layout/index.ts";
 import type { Diagram } from "../../src/model/index.ts";
+import type { Scene } from "../../src/scene.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 import { e, n } from "../fixtures/build.ts";
@@ -203,5 +205,135 @@ describe('the drawing as facts (DESIGN.md, "Records over prose")', () => {
     // Every field is key=value: a record is its name, then fields with no spaces in them.
     for (const l of lines) expect(l).toMatch(/^[a-z]+( [a-z]+=[^ =]+)+$/);
     expect(a).not.toMatch(/too|should|better|warning|hint/i);
+  });
+});
+
+describe('composition counts (DESIGN.md, "Composition counts")', () => {
+  const rect = (x: number, y: number, w: number, h: number) => ({ x, y, w, h });
+  const edge = (
+    id: string,
+    from: string,
+    to: string,
+    points: [number, number][],
+    label?: ReturnType<typeof rect>,
+  ) => ({
+    id,
+    from,
+    to,
+    kind: "call",
+    points: points.map(([x, y]) => ({ x, y })),
+    ...(label ? { label: { role: "label", runs: [], bbox: label } } : {}),
+  });
+  const scene = (parts: Record<string, unknown>) =>
+    ({ width: 800, height: 800, layers: [], nodes: [], edges: [], ...parts }) as unknown as Scene;
+  const node = (id: string, r: ReturnType<typeof rect>) => ({ id, layer: "r", rect: r });
+  const never = () => false;
+
+  it("counts a line through a group that holds neither end, once", () => {
+    const s = scene({
+      nodes: [
+        node("a", rect(0, 0, 40, 40)),
+        node("b", rect(0, 300, 40, 40)),
+        node("m", rect(200, 150, 40, 40)),
+      ],
+      groups: [{ id: "g", rect: rect(100, 100, 300, 120), members: ["m"] }],
+      edges: [
+        edge("a->b", "a", "b", [
+          [20, 40],
+          [20, 300],
+        ]),
+        edge("through", "a", "b", [
+          [20, 40],
+          [20, 60],
+          [250, 60],
+          [250, 320],
+          [20, 320],
+        ]),
+        edge("into", "a", "m", [
+          [40, 20],
+          [220, 20],
+          [220, 150],
+        ]),
+        edge("m->b", "m", "b", [
+          [220, 190],
+          [220, 320],
+          [20, 320],
+        ]),
+      ],
+    });
+    expect(composition(s, never).across).toEqual(["through"]);
+  });
+
+  it("counts two lines closer than a track for over 100 px, but not one bus or a wide gap", () => {
+    const s = scene({
+      edges: [
+        edge("p", "a", "b", [
+          [0, 50],
+          [300, 50],
+        ]),
+        edge("q", "c", "d", [
+          [50, 58],
+          [250, 58],
+        ]),
+        edge("far", "e", "f", [
+          [0, 80],
+          [300, 80],
+        ]),
+        edge("short", "g", "h", [
+          [0, 52],
+          [60, 52],
+        ]),
+      ],
+    });
+    const t = composition(s, never).tight;
+    expect(t.map((x) => [x.a, x.b])).toEqual([["p", "q"]]);
+    expect(
+      composition(s, (a, b) => (a === "p" && b === "q") || (a === "q" && b === "p")).tight,
+    ).toEqual([]);
+  });
+
+  it("counts a label with under 8 px of room on two sides, not one", () => {
+    const label = rect(100, 100, 40, 16);
+    const around = scene({
+      nodes: [node("n", rect(100, 120, 80, 40))],
+      edges: [
+        edge(
+          "l",
+          "a",
+          "b",
+          [
+            [0, 0],
+            [10, 0],
+          ],
+          label,
+        ),
+        edge("o", "c", "d", [
+          [96, 90],
+          [96, 130],
+        ]),
+      ],
+    });
+    expect(composition(around, never).crowded.map((c) => c.id)).toEqual(["l"]);
+    const one = scene({
+      nodes: [node("n", rect(100, 120, 80, 40))],
+      edges: [
+        edge(
+          "l",
+          "a",
+          "b",
+          [
+            [0, 0],
+            [10, 0],
+          ],
+          label,
+        ),
+      ],
+    });
+    expect(composition(one, never).crowded).toEqual([]);
+  });
+
+  it("prints the counts on the counts record", () => {
+    const text = drawingText(drawing(crossed, layout(crossed, m)));
+    expect(text).toMatch(/^counts .* passing=\d+ across=0 tight=0 crowded=\d+\n/);
   });
 });

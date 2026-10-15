@@ -13,6 +13,7 @@ import { markName } from "../model/types.ts";
 import { record } from "../records.ts";
 import type { Point, Rect, Scene } from "../scene.ts";
 import { themeOf } from "../theme/themes.ts";
+import { type Composition, composition } from "./composition.ts";
 import { segmentCrossesRect, segmentsOf } from "./geometry.ts";
 
 export type Side = "top" | "bottom" | "left" | "right";
@@ -114,10 +115,18 @@ export interface Counts {
   longest: { id: string; length: number } | null;
   /** Lines that pass at least one row. */
   passing: number;
+  /** Lines that cross a group's box holding neither of their ends. */
+  across: number;
+  /** Pairs of runs of two lines, not one bus, closer than 12 px side by side for over 100 px. */
+  tight: number;
+  /** Line labels with under 8 px of room on two or more sides (DESIGN.md, "Composition counts"). */
+  crowded: number;
 }
 
 export interface Drawing {
   counts: Counts;
+  /** The places behind the three composition counts. */
+  composition: Composition;
   boxes: DrawnBox[];
   lines: DrawnLine[];
   groups: DrawnGroup[];
@@ -301,7 +310,9 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   for (const l of lines) {
     if (longest === null || l.length > longest.length) longest = { id: l.id, length: l.length };
   }
+  const comp = composition(scene, (a, b) => bundles.get(a)?.has(b) === true);
   return {
+    composition: comp,
     counts: {
       nodes: scene.nodes.length,
       lines: scene.edges.length,
@@ -314,6 +325,9 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       busiest,
       longest,
       passing: lines.filter((l) => l.passes.length > 0).length,
+      across: comp.across.length,
+      tight: comp.tight.length,
+      crowded: comp.crowded.length,
     },
     boxes,
     lines,
