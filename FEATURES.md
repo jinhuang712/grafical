@@ -459,7 +459,7 @@ grafical show <file> [--drawn]
 ```
 
 - `show` prints the rows, the boxes in order, the groups, the lanes, the lines, the walls, the notes and the marks, in the same words as the operations.
-- `show --drawn` prints how the picture is drawn, as records: each box's row, place, size and lines by side; each line's sides, bends, length, the shortest it could be, the rows it skips, the lines it crosses and the rows it passes; each wall's length and the lines through it; how each note is drawn; the lines bundled together; and the totals.
+- `show --drawn` prints how the picture is drawn, as records: each box's row, place, size and lines by side; each line's sides, bends, length, the shortest it could be, the rows it skips, the lines it crosses and the rows it passes; each wall's length and the lines through it; one `gutter` record for each pair of neighbouring rows, `gutter above=<row> below=<row> lines=<n> crossings=<n> tight=<n> crowded=<n>`: the lines with a run between the two rows, and the crossings, tight pairs and crowded labels there, so that the agent sees which row choice costs ("Composition counts"), with no advice; how each note is drawn; the lines bundled together; and the totals.
 
 ### Counts ✅
 

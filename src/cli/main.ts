@@ -884,7 +884,9 @@ function build(): Command {
     } else if (opts.drawn === true) {
       const dr = drawing(d, layout(d, await createMeasurer()));
       process.stdout.write(
-        opts.json === true ? `${JSON.stringify({ ok: true, drawing: dr })}\n` : drawingText(dr),
+        opts.json === true
+          ? `${JSON.stringify({ ok: true, drawing: dr }, (k, v) => (k === "composition" ? undefined : v))}\n`
+          : drawingText(dr),
       );
     } else if (opts.json === true) {
       process.stdout.write(`${JSON.stringify({ ok: true, diagram: d })}\n`);

@@ -218,6 +218,7 @@ Good to know:
       group id= members= width= height=
       line id= from= to= leaves= enters= bends= length= direct= detour=
            skip= crosses= passes= bundle=
+      gutter above= below= lines= crossings= tight= crowded=
       wall id= run= length= space= lines=   lines: the lines through it
       note on= as= number= lines=   as: callout or footnote
       legend style= weight= width= mark= text=   each style and width the
@@ -227,9 +228,11 @@ Good to know:
     reach is their length together. direct is the shortest a line between
     its two ends could be, and detour its length over direct. skip counts
     the rows between its ends' rows. passes names the rows it runs
-    through without meeting a box of. Sizes and lengths are in pixels;
-    - means none. Judge the drawing from them, and change what you decide
-    to change.
+    through without meeting a box of. gutter is the space between two
+    neighbouring rows that hold boxes: the lines with a run in it, and the
+    crossings, tight pairs and crowded labels in it, counted as apply's
+    counts are. Sizes and lengths are in pixels; - means none. Judge the
+    drawing from them, and change what you decide to change.
   - bundle names the lines a line leaves or arrives with as one: three or
     more lines of one style and width from one side of a box, or two on a
     side too crowded for a port each. A labelled line is never bundled, so

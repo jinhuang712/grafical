@@ -6,6 +6,7 @@ What changed in each release of grafical, from the side of the agent that draws 
 
 grafical has not been released; the first release is 0.1.0 (ROADMAP.md, "Release 0.1.0").
 
+- `show --drawn` prints a `gutter` record for each pair of neighbouring rows, with the lines, crossings, tight pairs and crowded labels between them.
 - The `counts` record gains `across=` (lines through a group holding neither of their ends), `tight=` (pairs of runs of two lines side by side under 12 px apart for over 100 px) and `crowded=` (line labels with under 8 px of room on two or more sides). `apply --help` describes them.
 - `grafical try <file> <batch.yaml>...` takes several batches: one `before` record, then each batch's `ok`, `after` and `delta` records keyed by `batch=<file>`.
 - An unknown option, a missing argument or an unknown command prints `error code=unknown-option found=--bogus` (exit 2) instead of the parser's sentence.

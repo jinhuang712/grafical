@@ -13,7 +13,7 @@ import { markName } from "../model/types.ts";
 import { record } from "../records.ts";
 import type { Point, Rect, Scene } from "../scene.ts";
 import { themeOf } from "../theme/themes.ts";
-import { type Composition, composition } from "./composition.ts";
+import { type Composition, composition, type Gutter, gutterOf } from "./composition.ts";
 import { segmentCrossesRect, segmentsOf } from "./geometry.ts";
 
 export type Side = "top" | "bottom" | "left" | "right";
@@ -128,6 +128,8 @@ export interface Drawing {
   /** The places behind the three composition counts. */
   composition: Composition;
   boxes: DrawnBox[];
+  /** One for each pair of neighbouring rows that hold boxes. */
+  gutters: Gutter[];
   lines: DrawnLine[];
   groups: DrawnGroup[];
   walls: DrawnWall[];
@@ -179,7 +181,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     }
   }
 
-  const { points, pairs } = crossingsOf(scene.edges);
+  const { points, pairs, at } = crossingsOf(scene.edges);
   const crosses = new Map<string, string[]>();
   for (const [a, b] of pairs) {
     crosses.set(a, [...(crosses.get(a) ?? []), b]);
@@ -311,8 +313,22 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     if (longest === null || l.length > longest.length) longest = { id: l.id, length: l.length };
   }
   const comp = composition(scene, (a, b) => bundles.get(a)?.has(b) === true);
+  const gutters: Gutter[] = [];
+  const drawn = d.layers.filter((l) => spans.has(l.id));
+  drawn.forEach((l, i) => {
+    const next = drawn[i + 1];
+    const a = spans.get(l.id);
+    const b = next === undefined ? undefined : spans.get(next.id);
+    if (next === undefined || a === undefined || b === undefined) return;
+    gutters.push({
+      above: rowName(l.id),
+      below: rowName(next.id),
+      ...gutterOf([a.y1, b.y0], scene, comp, at),
+    });
+  });
   return {
     composition: comp,
+    gutters,
     counts: {
       nodes: scene.nodes.length,
       lines: scene.edges.length,
@@ -392,6 +408,7 @@ export function drawingText(dr: Drawing): string {
   for (const w of dr.walls) out.push(record("wall", { ...w }));
   for (const x of dr.notes) out.push(record("note", { ...x }));
   for (const l of dr.lines) out.push(record("line", { ...l }));
+  for (const g of dr.gutters) out.push(record("gutter", { ...g }));
   for (const x of dr.legend) out.push(record("legend", { ...x }));
   return `${out.join("\n")}\n`;
 }

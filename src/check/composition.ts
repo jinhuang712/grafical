@@ -1,7 +1,7 @@
 // How the lines sit against each other and against the boxes, as three separate counts (DESIGN.md, "Composition
 // counts"). Each is a count of places, never a score: grafical adds nothing up and judges nothing.
 
-import type { Rect, Scene, SceneEdge } from "../scene.ts";
+import type { Point, Rect, Scene, SceneEdge } from "../scene.ts";
 import { EPS, type Segment, segmentCrossesRect, segmentsOf } from "./geometry.ts";
 
 /** Two runs of different lines closer than this, for longer than TIGHT_OVER, are tight: a track is 12 px. */
@@ -141,6 +141,41 @@ function roomsOf(label: Rect, own: string, scene: Scene): number[] {
     }
   }
   return [top, bottom, left, right];
+}
+
+export interface Gutter {
+  above: string;
+  below: string;
+  /** Lines that run in the gutter, even only through it. */
+  lines: number;
+  crossings: number;
+  tight: number;
+  crowded: number;
+}
+
+/**
+ * What lies between two neighbouring rows, from the bottom of the boxes above to the top of the boxes below
+ * (DESIGN.md, "Composition counts"): the lines with a run in it, the crossings, the tight pairs and the crowded
+ * labels. A line's run that only passes through counts.
+ */
+export function gutterOf(
+  [y0, y1]: [number, number],
+  scene: Scene,
+  comp: Composition,
+  crossings: Point[],
+): Omit<Gutter, "above" | "below"> {
+  const inside = (lo: number, hi: number) => hi > y0 + EPS && lo < y1 - EPS;
+  const lines = scene.edges.filter((e) =>
+    segmentsOf(e.points).some((s) => inside(Math.min(s.a.y, s.b.y), Math.max(s.a.y, s.b.y))),
+  ).length;
+  return {
+    lines,
+    crossings: crossings.filter((p) => p.y > y0 + EPS && p.y < y1 - EPS).length,
+    tight: comp.tight.filter((t) => (t.vertical ? inside(t.lo, t.hi) : inside(t.at, t.at))).length,
+    crowded: comp.crowded.filter(
+      (c) => c.rect.y + c.rect.h / 2 > y0 && c.rect.y + c.rect.h / 2 < y1,
+    ).length,
+  };
 }
 
 export function composition(scene: Scene, sameBus: (a: string, b: string) => boolean): Composition {

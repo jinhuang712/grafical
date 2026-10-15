@@ -316,8 +316,13 @@ describe("read commands", () => {
     expect(r.out).toMatch(
       /^line id=api->db from=api to=db leaves=\w+ enters=\w+ bends=\d+ length=\d+/m,
     );
+    expect(r.out).toMatch(
+      /^gutter above=clients below=services lines=\d+ crossings=\d+ tight=\d+ crowded=\d+$/m,
+    );
     const json = JSON.parse(run("show", "single.grafical.yaml", "--drawn", "--json").out);
     expect(json.drawing.counts.nodes).toBeGreaterThan(0);
+    expect(json.drawing.gutters).toHaveLength(2);
+    expect(json.drawing.composition).toBeUndefined();
   });
 
   it('try reports the counts before and after a batch, and writes nothing (DESIGN.md, "Records over prose")', () => {

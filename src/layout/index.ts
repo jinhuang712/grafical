@@ -203,7 +203,12 @@ export interface LineTrouble {
 }
 
 /** Every point where two routes cross, and the pairs of lines, each pair once, in id order. */
-export function crossingsOf(edges: SceneEdge[]): { points: number; pairs: [string, string][] } {
+export function crossingsOf(edges: SceneEdge[]): {
+  points: number;
+  pairs: [string, string][];
+  /** Where each crossing lies. */
+  at: Point[];
+} {
   const segs: { id: string; v: boolean; at: number; lo: number; hi: number }[] = [];
   for (const e of edges) {
     for (let i = 1; i < e.points.length; i++) {
@@ -216,6 +221,7 @@ export function crossingsOf(edges: SceneEdge[]): { points: number; pairs: [strin
     }
   }
   let points = 0;
+  const at: Point[] = [];
   const pairs = new Set<string>();
   for (const h of segs) {
     if (h.v) continue;
@@ -223,6 +229,7 @@ export function crossingsOf(edges: SceneEdge[]): { points: number; pairs: [strin
       if (!v.v || v.id === h.id) continue;
       if (v.at > h.lo && v.at < h.hi && h.at > v.lo && h.at < v.hi) {
         points++;
+        at.push({ x: v.at, y: h.at });
         pairs.add(JSON.stringify(h.id < v.id ? [h.id, v.id] : [v.id, h.id]));
       }
     }
@@ -230,6 +237,7 @@ export function crossingsOf(edges: SceneEdge[]): { points: number; pairs: [strin
   const byId = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
   return {
     points,
+    at,
     pairs: [...pairs]
       .map((p) => JSON.parse(p) as [string, string])
       .sort((a, b) => byId(a[0], b[0]) || byId(a[1], b[1])),
