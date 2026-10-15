@@ -205,18 +205,24 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       columnOrder.push(byRank.get(r) as PNode[]);
   }
   const columns = Math.max(1, grid.columns);
-  let solved = solve(new Set());
+  let solved = solve(new Set(), new Set());
   const seats = seatLabels(solved.groups, layers, topEnds);
-  const tight = solved.groups.filter((_, i) => (seats[i] ?? 0) < 0).map((g) => g.id);
-  if (tight.length > 0) {
+  const tight = solved.groups.filter((_, i) => (seats[i]?.slack ?? 0) < 0).map((g) => g.id);
+  // A label whose every seat covers the centre of a first-row member that a line
+  // enters or leaves by its top would push that line off centre: the first two such
+  // members move apart, so that the label sits between their lines.
+  const crowded = solved.groups
+    .filter((_, i) => (seats[i]?.slack ?? 0) >= 0 && seats[i]?.centred === false)
+    .map((g) => g.id);
+  if (tight.length > 0 || crowded.length > 0) {
     // A label with no seat in its box: the box grows to the right, so that the
     // label can sit past the ports of its first row.
-    solved = solve(new Set(tight));
+    solved = solve(new Set(tight), new Set(crowded));
     seatLabels(solved.groups, layers, topEnds);
   }
   const groups = solved.groups;
 
-  function solve(wide: Set<string>): { groups: PGroup[] } {
+  function solve(wide: Set<string>, spread: Set<string>): { groups: PGroup[] } {
     // Room between columns: x[j] >= x[i] + d for i < j.
     const need: { i: number; d: number }[][] = Array.from({ length: columns }, () => []);
     const add = (i: number, j: number, dist: number) => {
@@ -276,6 +282,18 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const g = boxOf(n, other);
       return g === undefined ? [{ col: n.col, d: n.w / 2 }] : leftEdge(g);
     };
+    // Room for a crowded label between the lines of its first two first-row members
+    // that have them: their centres leave the label and its clearance, and a seat step.
+    for (const g of spread) {
+      const ms = membersOf.get(g) ?? [];
+      const top = Math.min(...ms.map((m) => m.layer));
+      const [a, b] = ms
+        .filter((m) => m.layer === top && (topEnds.get(m.id) ?? 0) > 0)
+        .sort((x, y) => x.col - y.col);
+      if (a !== undefined && b !== undefined) {
+        add(a.col, b.col, text.groupLabelW(g) + 2 * GROUP.labelClear + 4);
+      }
+    }
     // Every node beside a group's members in a row keeps clear of its box, and so
     // does every other group's box.
     for (const l of layers) {
@@ -590,7 +608,8 @@ function laneSides(
  * first-row member a line enters or leaves by its top, so that its straight lines
  * stay centred; failing that, the leftmost that leaves each such member room for
  * the ports it needs; failing that, the one that leaves the most room. Returns,
- * for each group, the room its seat leaves: negative when no seat leaves enough.
+ * for each group, the room its seat leaves (negative when no seat leaves enough),
+ * and whether the seat keeps clear of every such centre.
  */
 /** The longest stretch of [a, b] that no span covers, or -1 when none is left. */
 function freeRoom(a: number, b: number, spans: [number, number][]): number {
@@ -605,7 +624,11 @@ function freeRoom(a: number, b: number, spans: [number, number][]): number {
   return at <= b ? Math.max(best, b - at) : best;
 }
 
-function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, number>): number[] {
+function seatLabels(
+  groups: PGroup[],
+  layers: PLayer[],
+  topEnds: Map<string, number>,
+): { slack: number; centred: boolean }[] {
   const clr = GROUP.labelClear;
   const byId = new Map(groups.map((g) => [g.id, g]));
   const depth = (g: PGroup): number => {
@@ -617,11 +640,11 @@ function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, num
   const order = groups
     .map((_, i) => i)
     .sort((i, j) => depth(groups[i] as PGroup) - depth(groups[j] as PGroup) || i - j);
-  const out: number[] = [];
+  const out: { slack: number; centred: boolean }[] = [];
   for (const i of order) out[i] = seat(groups[i] as PGroup);
   return out;
 
-  function seat(g: PGroup): number {
+  function seat(g: PGroup): { slack: number; centred: boolean } {
     const row = (layers[g.top]?.nodes ?? []).filter(
       (n) => g.members.includes(n.id) && (topEnds.get(n.id) ?? 0) > 0,
     );
@@ -670,7 +693,7 @@ function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, num
       }
       if (slack >= 0 && centred) {
         g.labelX = x;
-        return slack;
+        return { slack, centred: true };
       }
       if (slack >= 0) roomy ??= x;
       // When the most crowded member leaves every seat the same room, the seat that
@@ -682,6 +705,6 @@ function seatLabels(groups: PGroup[], layers: PLayer[], topEnds: Map<string, num
       }
     }
     g.labelX = roomy ?? best;
-    return roomy !== undefined ? 0 : bestSlack;
+    return { slack: roomy !== undefined ? 0 : bestSlack, centred: false };
   }
 }
