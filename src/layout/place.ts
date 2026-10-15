@@ -197,6 +197,35 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     for (const r of [...byRank.keys()].sort((a, b) => a - b))
       laneOrder.push(byRank.get(r) as PNode[]);
   }
+  /**
+   * The column lane whose side a labelled sideways line crosses, if one does: like
+   * any line, the side never runs across the label, which sits just past it, on the
+   * side away from the lane. Past lanes between, that is the last side before the node
+   * the line enters, or the first after the node it leaves when that is outside every lane.
+   */
+  const laneOf = (n: PNode): number | undefined => {
+    const r = ranks.get(n.id);
+    return r !== undefined && r >= 0 && r < laneIds.length ? r : undefined;
+  };
+  const crossed = (slot: SideSlot): { lane: number; side: "x0" | "x1" } | undefined => {
+    const a = nodes.get(slot.left);
+    const b = nodes.get(slot.right);
+    if (slot.label === undefined || a === undefined || b === undefined) return undefined;
+    const ra = laneOf(a);
+    const rb = laneOf(b);
+    // Only lanes that hold nodes are drawn, so only theirs are sides.
+    const held = laneOrder.map((ns) => ranks.get((ns[0] as PNode).id) as number);
+    if (ra !== undefined && rb !== ra) {
+      const before = held.filter((r) => r >= ra && r < (rb ?? laneIds.length));
+      return { lane: Math.max(ra, ...before), side: "x1" };
+    }
+    if (ra === undefined && rb !== undefined && (ranks.get(a.id) ?? 0) < 0) {
+      return { lane: Math.min(rb, ...held.filter((r) => r >= 0)), side: "x0" };
+    }
+    return undefined;
+  };
+  const laneBlock = (lane: number): PNode[] =>
+    laneOrder.find((ns) => ranks.get((ns[0] as PNode).id) === lane) ?? [];
   // Columns (DESIGN.md, "Columns hold across rows"): the nodes of each column that holds one, left to right.
   const columnRank = columnRanks(d);
   const columnOrder: PNode[][] = [];
@@ -386,13 +415,24 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const room = Math.max(w + 2 * ROUTE.sideLabelPad, text.sideRoom?.(id) ?? 0);
       for (const r of rightTerms(a, b))
         for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + room + s.d);
+      // Across a lane's side: the label's room lies between the side and the node past it.
+      const cross = crossed(slot);
+      for (const m of cross === undefined ? [] : laneBlock(cross.lane)) {
+        if (cross?.side === "x1") {
+          for (const r of rightTerms(m, b))
+            for (const s of leftTerms(b, m)) add(r.col, s.col, r.d + LANE.padX + room + s.d);
+        } else {
+          for (const r of rightTerms(a, m))
+            for (const s of leftTerms(m, a)) add(r.col, s.col, r.d + room + LANE.padX + s.d);
+        }
+      }
       // An edge that meets a lane beside it is drawn from the lane's side: its
       // label's room lies between the node and every node of the lane.
       const end = text.laneEnds?.get(id);
       const x = end === undefined ? undefined : nodes.get(end.node);
       const lane = end === undefined ? -1 : laneIds.indexOf(end.lane);
       if (x === undefined || lane < 0) continue;
-      for (const m of laneOrder.find((ns) => ranks.get((ns[0] as PNode).id) === lane) ?? []) {
+      for (const m of laneBlock(lane)) {
         if (m.col < x.col) {
           for (const r of rightTerms(m, x))
             for (const s of leftTerms(x, m)) add(r.col, s.col, r.d + LANE.padX + room + s.d);
@@ -500,7 +540,13 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   for (const [id, end] of text.laneEnds ?? []) {
     if (text.sideways.get(id)?.label !== undefined) hug.add(end.lane);
   }
-  const lanes = laneSides(d, laneOrder, ranks, groups, hug);
+  // A lane whose side a labelled line crosses keeps that side close, so that the label lies past it.
+  const close = new Set<string>();
+  for (const slot of text.sideways.values()) {
+    const cross = crossed(slot);
+    if (cross?.side === "x1") close.add(laneIds[cross.lane] as string);
+  }
+  const lanes = laneSides(d, laneOrder, ranks, groups, hug, close);
   for (const l of lanes) {
     lo = Math.min(lo, l.x0);
     hi = Math.max(hi, l.x1);
@@ -533,7 +579,26 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     const lane = lanes.find((l) => l.id === text.laneEnds?.get(id)?.lane);
     if (lane !== undefined && text.laneEnds?.get(id)?.node === slot.right) left = lane.x1;
     if (lane !== undefined && text.laneEnds?.get(id)?.node === slot.left) right = lane.x0;
-    sideLabels.set(id, (left + right) / 2 - w / 2);
+    const cross = crossed(slot);
+    const side = cross === undefined ? undefined : lanes.find((l) => l.id === laneIds[cross.lane]);
+    if (side !== undefined && cross?.side === "x1") left = side.x1;
+    if (side !== undefined && cross?.side === "x0") right = side.x0;
+    // Lanes between, which hold nodes in other rows, have sides across the line too: the
+    // label then sits in the widest stretch between them.
+    const cuts = lanes.flatMap((l) => [l.x0, l.x1]).filter((x) => x > left && x < right);
+    let at = (left + right) / 2;
+    if (cuts.some((x) => Math.abs(x - at) < w / 2 + ROUTE.sideLabelPad)) {
+      const ends = [left, ...cuts.sort((p, q) => p - q), right];
+      let wide = 0;
+      for (let k = 1; k < ends.length; k++) {
+        const span = (ends[k] as number) - (ends[k - 1] as number);
+        if (span > wide) {
+          wide = span;
+          at = ((ends[k] as number) + (ends[k - 1] as number)) / 2;
+        }
+      }
+    }
+    sideLabels.set(id, at - w / 2);
   }
   return {
     layers,
@@ -552,7 +617,8 @@ export const centreX = (n: PNode): number => n.x + n.w / 2;
  * The sides of each column lane that holds a node: its content's extent, boxes
  * included, widened by its padding; between two lanes, the middle of the space
  * between their contents, unless one of them hugs its content, because an edge
- * meets it beside it. Blocks of nodes outside every lane are skipped.
+ * meets it beside it, or a lane in `close` keeps its right side close, because a
+ * labelled line crosses it. Blocks of nodes outside every lane are skipped.
  */
 function laneSides(
   d: Diagram,
@@ -560,6 +626,7 @@ function laneSides(
   ranks: Map<string, number>,
   groups: PGroup[],
   hug: Set<string>,
+  close: Set<string>,
 ): PLane[] {
   const lanes = d.lanes ?? [];
   const boxOf = new Map(
@@ -591,6 +658,7 @@ function laneSides(
     const b = spans[k + 1] as { lo: number };
     const left = hug.has(ids[k] as string);
     const right = hug.has(ids[k + 1] as string);
+    if (close.has(ids[k] as string)) return a.hi + LANE.padX;
     if (left && !right) return a.hi + LANE.padX;
     if (right && !left) return b.lo - LANE.padX;
     return (a.hi + b.lo) / 2;

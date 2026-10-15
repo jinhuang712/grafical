@@ -1,4 +1,4 @@
-// Line labels and group boxes: a group's side is a line too, and no line's label lies across it.
+// Line labels and the boxes around nodes: a group's or a lane's side is a line too, and no line's label lies across it.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -8,6 +8,7 @@ import { layout } from "../../src/layout/index.ts";
 import { type Diagram, readDiagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
+import { lanesColumns } from "../fixtures/lanes.ts";
 
 let m: Measurer;
 beforeAll(async () => {
@@ -28,6 +29,19 @@ describe("line labels and group sides", () => {
       const b = s.edges.find((e) => e.id === id)?.label?.bbox;
       if (b === undefined) throw new Error(id);
       expect(b.x + b.w <= g.x + g.w || b.x >= g.x + g.w, id).toBe(true);
+    }
+  });
+
+  // The label of a line between two column lanes sat on their shared side.
+  it("keep a label off the side of a column lane its line crosses", () => {
+    const s = layout(lanesColumns, m);
+    expect(check(lanesColumns, s, m)).toEqual([]);
+    const b = s.edges.find((e) => e.id === "orders->payments")?.label?.bbox;
+    if (b === undefined) throw new Error("orders->payments");
+    for (const l of s.lanes ?? []) {
+      for (const x of [l.rect.x, l.rect.x + l.rect.w]) {
+        expect(x <= b.x || x >= b.x + b.w, l.id).toBe(true);
+      }
     }
   });
 });

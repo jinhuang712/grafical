@@ -357,8 +357,8 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
       }
     }
   }
-  // A group's border is a line too: no edge's label lies across it.
-  for (const g of scene.groups ?? []) {
+  // The border of a group, a band or a lane is a line too: no edge's label lies across it.
+  for (const g of [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])]) {
     const { x, y, w, h } = g.rect;
     const sides = segmentsOf([
       { x, y },

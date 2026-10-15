@@ -61,6 +61,8 @@ export interface RouteExtra {
    * row, or a wall up and down runs through it or reaches into it.
    */
   closedAbove: Map<number, [number, number][]>;
+  /** The x of each side of a column lane (DESIGN.md, "Swimlanes run one way"): each runs through every gutter. */
+  laneSides: number[];
 }
 
 /** A group's box, as the router keeps lines out of it. */
@@ -82,6 +84,7 @@ const NO_EXTRA: RouteExtra = {
   noSideExit: new Set(),
   boxes: [],
   closedAbove: new Map(),
+  laneSides: [],
 };
 
 export type Side = "top" | "bottom" | "left" | "right";
@@ -260,10 +263,12 @@ export function routeAcross(
 ): Routing {
   const gapsByLayer = layers.map((l) => gapsOf(l, extra));
   const sorted = [...edges].sort((a, b) => cmp(a.id, b.id));
-  // The sides of each group box that runs through a gutter, from a row above it to one below.
-  const sides = layers.map((_, g) =>
-    extra.boxes.filter((b) => b.top <= g && b.bottom > g).flatMap((b) => [b.x0, b.x1]),
-  );
+  // The sides of each group box that runs through a gutter, from a row above it to one below,
+  // and of every column lane.
+  const sides = layers.map((_, g) => [
+    ...extra.boxes.filter((b) => b.top <= g && b.bottom > g).flatMap((b) => [b.x0, b.x1]),
+    ...extra.laneSides,
+  ]);
   const route = (below: ReadonlySet<string>) => {
     const plans: Plan[] = [];
     for (const edge of sorted) {

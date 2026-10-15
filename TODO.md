@@ -20,6 +20,10 @@ Three unlabelled lines from one box to three boxes in the row below split from t
 
 The split is on purpose: rule 4 of DESIGN.md, "A target picture with measured rules" says a trunk that runs straight on with branches on both sides meets them in a junction that reads as a crossing, so each side branches at its own height (`stagger` in `src/layout/route.ts`). One bar needs the owner to change that rule, for example where a junction dot marks the meeting.
 
-## Labels across a band's or a lane's border
+## A step's badge across a lane's side
 
-`check --all` counts a group's border as a line across an edge's label, but not a band's or a lane's. A label moved beside a line cut at a container already keeps off band borders. The checker should count them too, and the gutters keep labels off them. A step's badge follows the label's rule today, so a lane's border may run under it too (DESIGN.md, "Step badges ride the line").
+`check --all` counts a lane's side across a line's label as `text-crossing`, but not across a step's badge, and the badge's place does not keep off it (DESIGN.md, "Step badges ride the line"). The badge should keep off a lane's side as the label does, and `step-collision` should count one it touches.
+
+## A line cut at a row lane's border has no room for its label
+
+A line that ends at a lane running as a row is cut at the lane's border. When the line then runs only 16 px from the border to its box, and other lines crowd every place beside that stub and past its cut end, its label stays across the border. Fuzz seeds 1126, 1719 and 4951 of 5,000 show it. Fixing it needs the gutter to keep a label's height between the border and the box. Seed 3546 shows the same at a column lane's side: a numbered line turns 100 px before the border it ends at, and its label, widened by the step's badge, has no clear place beside it.

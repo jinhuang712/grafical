@@ -476,6 +476,30 @@ describe("text-crossing", () => {
     ]);
     expect(codes(run(labelled(200)))).toEqual([]);
   });
+
+  it("fails a lane's side across an edge's label, and passes a label inside the lane", () => {
+    const labelled = (x: number): Scene => {
+      const e = down();
+      e.label = box("edge-label", x, 140);
+      return withEdge(e, {
+        lanes: [
+          {
+            id: "l",
+            run: "columns",
+            rect: { x: 20, y: 0, w: 300, h: 400 },
+            head: { x: 20, y: 0, w: 300, h: 40 },
+            label: box("lane-label", 30, 10),
+          },
+        ],
+      });
+    };
+    const crossings = (s: Scene) =>
+      run(s)
+        .filter((d) => d.code === "text-crossing")
+        .map((d) => d.elements);
+    expect(crossings(labelled(300))).toEqual([["l", "a->b"]]);
+    expect(crossings(labelled(200))).toEqual([]);
+  });
 });
 
 describe("group-intruder", () => {

@@ -469,6 +469,21 @@ function besideRoute(
   const reach = 2 * Math.max(at.w, at.h);
   const places = [];
   for (let away = 0; away <= reach; away += 4) places.push(...besides(away));
+  // Last, past an end of the route, beside where the line would go on: a part too short for
+  // the label, cut at a border, leaves it room only outside the border.
+  const past = (p: Point, q: Point) => {
+    const gap = ROUTE.labelGap;
+    if (p.x === q.x) {
+      const y = q.y > p.y ? p.y - gap - at.h : p.y + gap;
+      return [p.x + gap, p.x - gap - at.w].map((x) => ({ x, y }));
+    }
+    const x = q.x > p.x ? p.x - gap - at.w : p.x + gap;
+    return [p.y - gap - at.h, p.y + gap].map((y) => ({ x, y }));
+  };
+  const [p0, p1] = [points[0], points[1]];
+  const [pn, pm] = [points[points.length - 1], points[points.length - 2]];
+  if (p0 !== undefined && p1 !== undefined) places.push(...past(p0, p1));
+  if (pn !== undefined && pm !== undefined) places.push(...past(pn, pm));
   // Clear of the container's border if it can be; else across it, which a label's patch covers.
   for (const strict of [true, false]) {
     for (const p of places) {
@@ -839,6 +854,7 @@ function compute(
       bottom: g.bottom,
       members: new Set(g.members),
     })),
+    laneSides,
     // A line meets a bar at its top or bottom, never at a stand-in's side.
     noSideExit: new Set([
       ...(run === "columns"
@@ -1409,7 +1425,10 @@ function compute(
     if (width !== undefined && width !== theme.paint.edge.strokeWidth) edge.width = width;
     const text = e.label === "" ? undefined : e.label;
     if (a.label !== undefined && (text !== undefined || e.step !== undefined) && withText) {
-      const cutAt = [toBox, fromBox].filter((b): b is Rect => b !== undefined);
+      // A lane's border is kept clear of as the container's is: where it can be.
+      const cutAt = [toBox, fromBox, ...sceneLanes.map((x) => x.rect)].filter(
+        (b): b is Rect => b !== undefined,
+      );
       const at = points === a.points ? a.label : besideRoute(points, a.label, cutAt, clearOf(e.id));
       labelAt.set(e.id, at);
       // The text takes the slot, or stands off the step's badge in it (DESIGN.md, "Step badges ride the line").

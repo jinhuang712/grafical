@@ -49,8 +49,8 @@ const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
   },
   lanesColumns: {
     diagram: lanesColumns,
-    svg: "634fe5805ab1a560b8abc211641ed7ce3934c33cf083696cb2784a73af86b427",
-    png: "52f43a5c3d1f55ffbe56920abcca1b2a2b259ad8cbba02bd384139fc68d3277d",
+    svg: "6a1fd1b2ec7aba11f65c59d95aa3a10a49ebeaddfec8ed903601ae1c5fe123de",
+    png: "ed76a7cef0d44a205de29696805d3ad097a5d5011a826fae958b40e95f22685e",
   },
   steps: {
     diagram: steps,
