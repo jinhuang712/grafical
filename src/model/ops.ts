@@ -168,8 +168,8 @@ export interface DiagramDensityOp {
   density: Density;
 }
 /**
- * The legend's words for one line style, line width or mark. Absent text: the default,
- * which for a mark is no entry (DESIGN.md, "A legend for widths and marks").
+ * The legend's words for one line style, line width or mark. Absent text: no entry
+ * (DESIGN.md, "A legend for widths and marks", "The legend says only what the agent named").
  */
 export interface DiagramLegendOp {
   op: "diagram.legend";
@@ -180,8 +180,6 @@ export interface DiagramLegendOp {
   /** A mark's emoji, text or file name (DESIGN.md, "Marks of any kind"). */
   mark?: string;
   text?: string;
-  /** true: leave a line style's or a line width's entry out. */
-  hide?: boolean;
 }
 export interface LayerRenameOp {
   op: "layer.rename";
@@ -583,7 +581,6 @@ export const diagramLegendSchema = z.strictObject({
   weight: weightValue.optional(),
   mark: text.optional(),
   text: text.optional(),
-  hide: z.boolean().optional(),
 });
 export const layerRenameSchema = z.strictObject({
   op: z.literal("layer.rename"),

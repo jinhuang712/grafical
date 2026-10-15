@@ -224,7 +224,8 @@ Good to know:
            skip= crosses= passes= bundle=
       wall id= run= length= space= lines=   lines: the lines through it
       note on= as= number= lines=   as: callout or footnote
-      legend style= width= mark= text=   each entry the legend draws
+      legend style= weight= width= mark= text=   each style and width the
+           picture draws, and each named mark; text=- has no entry
     place counts from 1 at the row's left, and of is how many boxes the
     row holds. sides counts a box's lines by side, as top:1,bottom:2, and
     reach is their length together. direct is the shortest a line between
@@ -620,22 +621,21 @@ Example:
 
   "diagram legend": {
     about:
-      "Name what a line style, a line width or a mark means in the legend; without --text, the default wording.",
+      "Name what a line style, a line width or a mark means in the legend; without --text, take its entry away.",
     after: `
+The legend says only what you name. A diagram that names nothing has no
+legend. show --drawn prints a legend record for each line style and width
+the picture draws, with text=- for those you have not named.
+
 Line widths:
   Name a width with --weight in place of the style: thick, heavy, a
-  stylesheet's level, or the pixels an edge weight gives. Each named width
-  has its own entry. Widths heavier than thin that you do not name share one
-  entry, "main path". Thin lines are what the line styles' entries say.
+  stylesheet's level, or the pixels an edge weight gives, as the legend
+  record's weight says. Each named width has its own entry. Thin lines are
+  what the line styles' entries say.
 
 Marks:
   Name a mark with --mark in place of the style: its emoji, its text or its
-  file, as node icon set it. A mark is in the legend only once you name it.
-  Marks with the same name share one entry.
-
-Leaving out:
-  --hide leaves a line style's or a width's entry out, for a meaning the
-  reader needs no key for. Run it again without --hide to bring it back.
+  file, as node icon set it. Marks with the same name share one entry.
 
 By diagram type:
   c4             solid "uses"

@@ -629,9 +629,8 @@ function sameWall(x: Wall, y: Wall | undefined): boolean {
   );
 }
 
-/** A legend entry's words as operation fields: text, hide for false, none for the default (DESIGN.md, "A legend for widths and marks"). */
-function said(words: string | false | undefined): { text: string } | { hide: true } | object {
-  if (words === false) return { hide: true };
+/** A legend entry's words as operation fields: text, or none for no entry (DESIGN.md, "A legend for widths and marks"). */
+function said(words: string | undefined): { text: string } | object {
   return words === undefined ? {} : { text: words };
 }
 

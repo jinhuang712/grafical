@@ -16,6 +16,9 @@ function tinyWith(legend: Diagram["legend"]): Diagram {
   return d;
 }
 
+/** Short words for both line styles the tiny diagram draws. */
+const short: Diagram["legend"] = { solid: "call", dashed: "event" };
+
 /** The legend's lines, top to bottom, each as the items on it. */
 function legendLines(s: Scene) {
   const items = s.legend ?? [];
@@ -25,21 +28,21 @@ function legendLines(s: Scene) {
 
 describe('the legend (DESIGN.md, "A legend for widths and marks")', () => {
   it("stays on one line, level with the title, when it fits beside it", () => {
-    const s = layout(tinyWith(undefined), m);
+    const s = layout(tinyWith(short), m);
     const lines = legendLines(s);
     expect(lines).toHaveLength(1);
     expect(lines[0]?.[0]?.sample.y).toBe(s.title.bbox.y + s.title.bbox.h / 2);
   });
 
   it("wraps under the title's right side, without widening the picture", () => {
-    const short = layout(tinyWith(undefined), m);
+    const one = layout(tinyWith(short), m);
     const s = layout(
       tinyWith({ solid: "a call over HTTPS, or a read", dashed: "an event on the orders topic" }),
       m,
     );
     const lines = legendLines(s);
     expect(lines).toHaveLength(2);
-    expect(s.width).toBe(short.width);
+    expect(s.width).toBe(one.width);
     // Each line starts at the same left edge, right of the title.
     const starts = lines.map((l) => Math.min(...l.map((x) => x.sample.x1)));
     expect(new Set(starts).size).toBe(1);

@@ -464,23 +464,16 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   for (const x of diagram.lanes ?? []) {
     add(x.id, "label", x.label, `grafical lane rename <file> ${x.id} --label <text>`);
   }
-  // A legend entry left out holds false, which has no text (DESIGN.md, "A legend for widths and marks").
-  const words = (w: string | false | undefined) => (w === false ? undefined : w);
   for (const line of LINE_STYLES) {
     add(
       `legend-${line}`,
       "text",
-      words(diagram.legend?.[line]),
+      diagram.legend?.[line],
       `grafical diagram legend <file> ${line} --text <text>`,
     );
   }
   for (const [w, text] of Object.entries(diagram.legend?.weights ?? {})) {
-    add(
-      `legend-${w}`,
-      "text",
-      words(text),
-      `grafical diagram legend <file> --weight ${w} --text <text>`,
-    );
+    add(`legend-${w}`, "text", text, `grafical diagram legend <file> --weight ${w} --text <text>`);
   }
   for (const [mark, text] of Object.entries(diagram.legend?.marks ?? {})) {
     add(

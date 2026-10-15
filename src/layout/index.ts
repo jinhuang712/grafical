@@ -17,7 +17,6 @@ import { laneRun, orderByLanes } from "../model/lanes.ts";
 import {
   type Diagram,
   EDGE_KINDS,
-  type EdgeKind,
   LINE_STYLES,
   type LineStyleName,
   MARK_SLOTS,
@@ -313,24 +312,19 @@ export function gutterHeight(rows: number, sp: Spacing): number {
   return h;
 }
 
-/** A legend entry's default words for an edge kind (DESIGN.md, "Looks"). */
-const LEGEND_WORDS: Record<EdgeKind, string> = {
-  call: "call",
-  async: "message",
-  data: "data read",
-  link: "related",
-  optional: "optional",
-};
-
-interface LegendItem {
+/** A legend entry, or a style or width the picture draws with no entry (DESIGN.md, "The legend says only what the agent named"). */
+export interface LegendEntry {
   /** A line's entry: the style of its sample. */
   style?: LineStyleName;
-  text: string;
-  /** A line width's entry: its sample's width (DESIGN.md, "A legend for widths and marks"). */
+  /** The agent's words; none for a style or width it has not named, which the legend leaves out. */
+  text?: string;
+  /** A line width's entry: the weight as the legend names it, and its sample's width (DESIGN.md, "A legend for widths and marks"). */
+  weight?: string;
   width?: number;
   /** A mark's entry: the mark, at the small size (DESIGN.md, "A legend for widths and marks"). */
   mark?: Mark;
 }
+type LegendItem = LegendEntry & { text: string };
 
 /** A mark at the small size, as the legend draws it (DESIGN.md, "A legend for widths and marks"). */
 function smallMark(mk: Mark): Mark {
@@ -338,23 +332,18 @@ function smallMark(mk: Mark): Mark {
 }
 
 /**
- * The legend's entries (DESIGN.md, "Looks", "A legend for widths and marks"): each line style the diagram uses, then each line
- * width, from the thinnest, then each mark the diagram names. A width the diagram names
- * has its own entry. The heavier ones it does not name share "main path", drawn at the
- * thinnest of them (DESIGN.md, "Edge weights"). A mark has an entry only when it is named, drawn like the first
- * one found: rows top to bottom, nodes in order, slots in order.
+ * The legend's entries and what it leaves unnamed (DESIGN.md, "A legend for widths and marks", "The legend says only what the
+ * agent named"): each line style the diagram uses, then each line width other than thin, from the thinnest,
+ * each with the agent's words or none; then each mark the diagram names, drawn like the
+ * first one found: rows top to bottom, nodes in order, slots in order.
  */
-function legendItems(d: Diagram, P: Paint): LegendItem[] {
+export function legendEntries(d: Diagram, P: Paint): LegendEntry[] {
   const kinds = new Set(d.edges.map((e) => e.kind));
-  const out: LegendItem[] = [];
+  const out: LegendEntry[] = [];
   for (const style of LINE_STYLES) {
-    const used = EDGE_KINDS.filter((k) => kinds.has(k) && lineStyle(k) === style);
-    const first = used[0];
-    if (first === undefined) continue;
-    // Calls and data reads share the solid line.
-    const plain = used.length > 1 ? "call or read" : LEGEND_WORDS[first];
-    const words = d.legend?.[style];
-    if (words !== false) out.push({ style, text: words ?? plain });
+    if (!EDGE_KINDS.some((k) => kinds.has(k) && lineStyle(k) === style)) continue;
+    const text = d.legend?.[style];
+    out.push(text === undefined ? { style } : { style, text });
   }
   const widths = new Map<string, number>();
   for (const e of d.edges) {
@@ -362,19 +351,14 @@ function legendItems(d: Diagram, P: Paint): LegendItem[] {
     const px = edgeWidth(e, P);
     if (w !== undefined && w !== "thin" && px !== undefined) widths.set(weightKey(w), px);
   }
-  const named: LegendItem[] = [];
-  let main: number | undefined;
-  for (const [key, px] of widths) {
-    const text = d.legend?.weights?.[key];
-    // A width left out has no entry, and is not in the shared one either.
-    if (text === false) continue;
-    if (text !== undefined) named.push({ style: "solid", text, width: px });
-    else if (px > P.edge.strokeWidth) main = Math.min(main ?? px, px);
+  const weighted: LegendEntry[] = [];
+  for (const [weight, width] of widths) {
+    const text = d.legend?.weights?.[weight];
+    weighted.push({ style: "solid", weight, width, ...(text === undefined ? {} : { text }) });
   }
-  if (main !== undefined) named.push({ style: "solid", text: "main path", width: main });
-  // Sorting is stable: equal widths keep the order of the edges, and "main path" comes last.
-  named.sort((a, b) => (a.width ?? 0) - (b.width ?? 0));
-  const marks: LegendItem[] = [];
+  // Sorting is stable: equal widths keep the order of the edges.
+  weighted.sort((a, b) => (a.width ?? 0) - (b.width ?? 0));
+  const marks: LegendEntry[] = [];
   const seen = new Set<string>();
   for (const n of d.layers.flatMap((l) => l.nodes)) {
     for (const slot of MARK_SLOTS) {
@@ -387,7 +371,7 @@ function legendItems(d: Diagram, P: Paint): LegendItem[] {
       marks.push({ text, mark: smallMark(mk) });
     }
   }
-  return [...out, ...named, ...marks];
+  return [...out, ...weighted, ...marks];
 }
 
 /** Items, by width, in lines no wider than `room`. A line holds at least one item (DESIGN.md, "A legend for widths and marks"). */
@@ -800,7 +784,10 @@ function compute(
     ? placeLine("title", d.title, sp.margin, sp.margin, m, T)
     : empty("title", sp.margin, sp.margin);
   const legendStyle = T.legend;
-  const items = withText ? legendItems(d, theme.paint) : [];
+  // The legend draws only what the agent named (DESIGN.md, "The legend says only what the agent named").
+  const items = withText
+    ? legendEntries(d, theme.paint).filter((it): it is LegendItem => it.text !== undefined)
+    : [];
   // A line's sample is a short line; a mark's is the mark (DESIGN.md, "A legend for widths and marks").
   const sampleW = items.map((it) =>
     it.mark === undefined ? FRAME.legendSample : markWidth(it.mark, m),

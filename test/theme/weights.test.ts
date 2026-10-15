@@ -120,11 +120,12 @@ describe('edge weights (DESIGN.md, "Edge weights")', () => {
     expect(unknownWeights(fx)).toEqual([]);
   });
 
-  it("the legend names the main path when an edge is heavier than thin", () => {
+  it("the legend names a width heavier than thin once the agent names it", () => {
     const d = ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: "heavy" }]);
+    expect(layout(d, m).legend?.some((l) => l.width !== undefined)).toBe(false);
+    const named = ok(d, [{ op: "diagram.legend", weight: "heavy", text: "critical" }]);
     // Drawn at the width it stands for (DESIGN.md, "A legend for widths and marks").
-    expect(layout(d, m).legend?.at(-1)).toMatchObject({ width: 4 });
-    expect(layout(fx, m).legend?.some((l) => l.width !== undefined)).toBe(false);
+    expect(layout(named, m).legend?.at(-1)).toMatchObject({ width: 4 });
   });
 
   it("a heavier line grows its arrowhead by the same step, up to a limit", () => {

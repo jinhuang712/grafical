@@ -334,14 +334,20 @@ describe('the target look (DESIGN.md, "A target picture with measured rules")', 
     }
   });
 
-  it("has a subtitle, a footnote and a legend of the two line styles", () => {
+  it("has a subtitle, a footnote and a legend of the two line styles it names", () => {
     expect(scene.subtitle?.runs.length).toBeGreaterThan(0);
     expect(scene.note?.runs.length).toBeGreaterThan(0);
-    expect(scene.legend?.map((x) => x.style)).toEqual(["solid", "dashed"]);
-    const legendRight = Math.max(
-      ...(scene.legend ?? []).map((x) => x.label.bbox.x + x.label.bbox.w),
+    // It names nothing, so it draws no legend (DESIGN.md, "The legend says only what the agent named").
+    expect(scene.legend).toEqual([]);
+    const named = layout(
+      { ...catalogSyncGrouped, legend: { solid: "call or read", dashed: "message" } },
+      m,
     );
-    expect(legendRight).toBeLessThanOrEqual(scene.width - 32);
+    expect(named.legend?.map((x) => x.style)).toEqual(["solid", "dashed"]);
+    const legendRight = Math.max(
+      ...(named.legend ?? []).map((x) => x.label.bbox.x + x.label.bbox.w),
+    );
+    expect(legendRight).toBeLessThanOrEqual(named.width - 32);
   });
 });
 

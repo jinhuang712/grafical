@@ -139,13 +139,14 @@ export function issuesToErrors(
         },
       });
     } else if (issue.code === "invalid_union" && path[0] === "legend") {
-      // A legend entry holds words, or false to leave it out (DESIGN.md, "A legend for widths and marks").
+      // A legend entry holds words. An old file's false is read as none, and not offered
+      // (DESIGN.md, "The legend says only what the agent named").
       out.push({
         code: "bad-type",
         index,
         ...base,
         found: show(found),
-        facts: { type: "string", allowed: ["false"] },
+        facts: { type: "string" },
       });
     } else if (issue.code === "invalid_union" || issue.message === "mark-too-long") {
       // A mark is a text or a file: a string that is refused is too long (DESIGN.md, "Marks of any kind").

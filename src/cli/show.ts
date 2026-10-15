@@ -45,11 +45,6 @@ function edgeText(e: Edge): string {
   return s;
 }
 
-/** A legend entry's words, quoted, or hidden for one left out (DESIGN.md, "A legend for widths and marks"). */
-function legendWords(words: string | false): string {
-  return words === false ? "hidden" : JSON.stringify(words);
-}
-
 export function showDiagram(d: Diagram): string {
   const sizing = d.sizing === "fixed" ? " sizing=fixed" : "";
   const lines = [`diagram ${JSON.stringify(d.title)} density=${d.density}${sizing}`];
@@ -57,10 +52,10 @@ export function showDiagram(d: Diagram): string {
   if (d.note !== undefined) lines.push(`note ${JSON.stringify(d.note)}`);
   for (const line of LINE_STYLES) {
     const text = d.legend?.[line];
-    if (text !== undefined) lines.push(`legend ${line} ${legendWords(text)}`);
+    if (text !== undefined) lines.push(`legend ${line} ${JSON.stringify(text)}`);
   }
   for (const [w, text] of Object.entries(d.legend?.weights ?? {})) {
-    lines.push(`legend weight ${w} ${legendWords(text)}`);
+    lines.push(`legend weight ${w} ${JSON.stringify(text)}`);
   }
   for (const [mark, text] of Object.entries(d.legend?.marks ?? {})) {
     lines.push(`legend mark ${JSON.stringify(mark)} ${JSON.stringify(text)}`);

@@ -5,13 +5,14 @@
 // legend's entries; and totals. The coding agent judges the drawing from them; grafical
 // judges nothing.
 
-import { bendsOf, crossingsOf } from "../layout/index.ts";
+import { bendsOf, crossingsOf, legendEntries } from "../layout/index.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { endRows } from "../model/ends.ts";
 import type { Diagram } from "../model/index.ts";
 import { markName } from "../model/types.ts";
 import { record } from "../records.ts";
 import type { Point, Rect, Scene } from "../scene.ts";
+import { themeOf } from "../theme/themes.ts";
 import { segmentCrossesRect, segmentsOf } from "./geometry.ts";
 
 export type Side = "top" | "bottom" | "left" | "right";
@@ -62,15 +63,21 @@ export interface DrawnGroup {
   height: number;
 }
 
-/** One entry the legend draws, in its order (DESIGN.md, "A legend for widths and marks"): a line style, a line width or a mark. */
+/**
+ * A line style or a line width the picture draws, or a mark the diagram names, in the legend's
+ * order (DESIGN.md, "A legend for widths and marks", "The legend says only what the agent named").
+ */
 export interface DrawnLegend {
   /** The line style of a line's sample; null for a mark. */
   style: string | null;
+  /** A line width's weight, as diagram legend names it; null for a thin line or a mark. */
+  weight: string | null;
   /** A line width's sample width in pixels; null for a thin line or a mark. */
   width: number | null;
   /** A mark's name: its emoji, text or file; null for a line. */
   mark: string | null;
-  text: string;
+  /** The agent's words; null for a style or width it has not named, which the legend leaves out. */
+  text: string | null;
 }
 
 /** A wall (DESIGN.md, "Walls as space"): which way it runs, how long and how thick it is, and the lines through it. */
@@ -330,11 +337,12 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       number: x.number ?? null,
       lines: new Set(x.text.runs.map((r) => r.y)).size,
     })),
-    legend: (scene.legend ?? []).map((it) => ({
+    legend: legendEntries(facts, themeOf(facts).paint).map((it) => ({
       style: it.mark === undefined ? (it.style ?? null) : null,
+      weight: it.weight ?? null,
       width: it.width ?? null,
-      mark: it.mark === undefined ? null : markName(it.mark.mark),
-      text: it.label.runs.map((r) => r.text).join(""),
+      mark: it.mark === undefined ? null : markName(it.mark),
+      text: it.text ?? null,
     })),
   };
 }

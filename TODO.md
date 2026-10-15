@@ -2,10 +2,6 @@
 
 Small fixes and follow-ups with no milestone yet. An item moves to ROADMAP.md once it has one.
 
-## The legend says only what the agent named
-
-Drop the default words for line styles and widths, draw no legend when the agent names nothing, and print a `legend` record with `text=-` in `show --drawn` for each style and width left unnamed (DESIGN.md, "The legend says only what the agent named").
-
 ## A line between neighbouring rows bends for no reason
 
 `test/fixtures/two-zones.grafical.yaml`: `check --all` reports `defect code=needless-bend owner=engine elements=web-b->nat-b count=2`. The top side of `web-b` also takes the line from `alb`. Its test in `test/check/bends.test.ts` is marked to fail until the line runs straight.

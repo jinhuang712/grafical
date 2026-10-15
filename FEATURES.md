@@ -414,21 +414,19 @@ grafical diagram note <file> [--text <text>]
 
 The subtitle is one sentence under the title. The footnote says what the diagram leaves out, such as "Not shown: Redis name cache". Without `--text`, either one is cleared.
 
-### Legend 🚧
+### Legend ✅
 
-A key in the top right that says what the picture's styles, widths and marks mean.
+A key in the top right that says, in the agent's words, what the picture's styles, widths and marks mean.
 
 ```sh
-grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mark <mark> [--text <text>|--hide]
+grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mark <mark> [--text <text>]
 ```
 
-- By default the legend names each line style the diagram uses: "call or read", "message", "optional" and "related".
-- A line width heavier than `thin` gets an entry when the diagram names it, and the unnamed ones share one entry, "main path".
-- A mark gets an entry only when the diagram names it.
-- `--hide` leaves a style or a width out. Without `--text` or `--hide`, an entry goes back to its default wording.
+- A line style, a line width other than `thin`, or a mark has an entry only when the diagram names it. A diagram that names nothing draws no legend.
+- Without `--text`, the words are taken away, and the entry with them.
+- `show --drawn` prints a `legend` record for each line style and width the picture draws, and for each named mark. `weight` is what `--weight` takes, and `text=-` marks a style or width with no entry.
+- Marks with the same name share one entry.
 - When the legend is wider than its room, it wraps onto more lines.
-
-Gap: line styles and widths still get default words the agent never gave. DESIGN.md, "The legend says only what the agent named" removes them.
 
 ### Spacing ✅
 

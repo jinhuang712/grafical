@@ -212,10 +212,10 @@ export interface Edge {
 /**
  * The legend's words (DESIGN.md, "A legend for widths and marks"): per line style; per line width, named by its level or, for
  * a width in pixels, by its number written as a string; and per mark, by its name.
- * `false` leaves a line style's or a width's entry out. A mark is left out by not naming it.
+ * What is not named has no entry (DESIGN.md, "The legend says only what the agent named").
  */
-export type Legend = Partial<Record<LineStyleName, string | false>> & {
-  weights?: Record<string, string | false>;
+export type Legend = Partial<Record<LineStyleName, string>> & {
+  weights?: Record<string, string>;
   marks?: Record<string, string>;
 };
 
@@ -237,7 +237,7 @@ export interface Diagram {
   sizing?: "fixed";
   /** A built-in theme's name, or a stylesheet's path relative to the file (DESIGN.md, "Themes and stylesheets"). Absent: the default theme. */
   style?: string;
-  /** The legend's words, where they differ from the default (DESIGN.md, "A legend for widths and marks"). */
+  /** The legend's words (DESIGN.md, "A legend for widths and marks", "The legend says only what the agent named"). */
   legend?: Legend;
   /** Ordered top to bottom. */
   layers: Layer[];

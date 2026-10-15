@@ -46,7 +46,10 @@ const EDGE_ID_RE = /^[a-z0-9][a-z0-9._-]*(->[a-z0-9][a-z0-9._-]*)?(#[0-9]+)?$/;
 export const nodeId = z.string().regex(ID_RE, { message: ID_NODE });
 export const edgeId = z.string().regex(EDGE_ID_RE, { message: ID_EDGE });
 export const text = z.string().min(1);
-/** A legend entry's words, or false to leave the entry out (DESIGN.md, "A legend for widths and marks"). */
+/**
+ * A legend entry's words. false, which left an entry out while entries had default words, is read
+ * as no words (DESIGN.md, "The legend says only what the agent named").
+ */
 const words = z.union([text, z.literal(false)]);
 
 /** The most characters a text mark may hold; a longer text belongs in the label (DESIGN.md, "Marks of any kind"). */
@@ -287,11 +290,11 @@ function build(p: Parsed): Diagram {
     const legend: NonNullable<Diagram["legend"]> = {};
     for (const line of LINE_STYLES) {
       const text = p.legend[line];
-      if (text !== undefined) legend[line] = text;
+      if (typeof text === "string") legend[line] = text;
     }
     // YAML may write a width as 2.50 or "2.50"; the legend names it as the edge's number does.
-    const weights = Object.entries(p.legend.weights ?? {}).map(
-      ([k, v]) => [WIDTH_KEY.test(k) ? String(Number(k)) : k, v] as const,
+    const weights = Object.entries(p.legend.weights ?? {}).flatMap(([k, v]) =>
+      typeof v === "string" ? [[WIDTH_KEY.test(k) ? String(Number(k)) : k, v] as const] : [],
     );
     if (weights.length > 0) legend.weights = Object.fromEntries(weights);
     if (p.legend.marks !== undefined && Object.keys(p.legend.marks).length > 0) {

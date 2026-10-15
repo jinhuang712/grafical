@@ -1,4 +1,5 @@
-// The legend's words (DESIGN.md, "A legend for widths and marks"): naming line widths, through the operation and the file.
+// The legend's words (DESIGN.md, "A legend for widths and marks", "The legend says only what the agent named"): naming line
+// styles, widths and marks, through the operation and the file.
 
 import { describe, expect, it } from "vitest";
 import { drawing, drawingText } from "../../src/check/drawing.ts";
@@ -44,10 +45,8 @@ const weighted = ok(fx, [
 ]);
 
 describe('the legend names line widths (DESIGN.md, "A legend for widths and marks")', () => {
-  it("widths it does not name share one main path entry, drawn at the thinnest", () => {
-    expect(entries(weighted).filter((x) => x.width !== undefined)).toEqual([
-      { text: "main path", width: 2.5 },
-    ]);
+  it("widths it does not name have no entry", () => {
+    expect(entries(weighted).filter((x) => x.width !== undefined)).toEqual([]);
   });
 
   it("a named width has its own entry, and the entries go from the thinnest", () => {
@@ -56,7 +55,6 @@ describe('the legend names line widths (DESIGN.md, "A legend for widths and mark
       { op: "diagram.legend", weight: 3, text: "writes" },
     ]);
     expect(entries(d).filter((x) => x.width !== undefined)).toEqual([
-      { text: "main path", width: 2.5 },
       { text: "writes", width: 3 },
       { text: "critical", width: 4 },
     ]);
@@ -70,7 +68,7 @@ describe('the legend names line widths (DESIGN.md, "A legend for widths and mark
     expect(entries(drawn).at(-1)).toEqual({ text: "critical", width: 4 });
   });
 
-  it("without text, a width goes back to the default words", () => {
+  it("without text, a width loses its entry", () => {
     const named = ok(weighted, [{ op: "diagram.legend", weight: "thick", text: "writes" }]);
     const back = ok(named, [{ op: "diagram.legend", weight: "thick" }]);
     expect(back.legend).toBeUndefined();
@@ -194,59 +192,66 @@ describe('the legend names marks (DESIGN.md, "A legend for widths and marks")', 
   });
 });
 
-describe('the legend leaves entries out (DESIGN.md, "A legend for widths and marks")', () => {
+describe('the legend says only what the agent named (DESIGN.md, "The legend says only what the agent named")', () => {
   const styles = (d: Diagram) => (layout(d, m).legend ?? []).map((x) => x.style);
 
-  it("hide leaves a line style out, and without it the entry comes back", () => {
-    expect(styles(fx)).toContain("dashed");
-    const d = ok(fx, [{ op: "diagram.legend", style: "dashed", hide: true }]);
-    expect(styles(d)).not.toContain("dashed");
+  it("a diagram that names nothing draws no legend", () => {
+    expect(layout(fx, m).legend).toEqual([]);
+    expect(layout(weighted, m).legend).toEqual([]);
+  });
+
+  it("a named line style has an entry, and without text it goes", () => {
+    const d = ok(fx, [{ op: "diagram.legend", style: "dashed", text: "event" }]);
+    expect(styles(d)).toEqual(["dashed"]);
     const text = writeDiagram(d);
-    expect(text).toContain("dashed: false");
+    expect(text).toContain("dashed: event");
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
-    expect(diffDiagrams(fx, d)).toEqual([{ op: "diagram.legend", style: "dashed", hide: true }]);
+    expect(diffDiagrams(fx, d)).toEqual([{ op: "diagram.legend", style: "dashed", text: "event" }]);
     const back = ok(d, [{ op: "diagram.legend", style: "dashed" }]);
     expect(writeDiagram(back)).toBe(writeDiagram(fx));
   });
 
-  it("a width left out has no entry, and is not in the shared main path", () => {
-    const d = ok(weighted, [{ op: "diagram.legend", weight: "thick", hide: true }]);
-    // The heavy and the 3 pixel lines still share main path, now drawn at 3.
-    expect(entries(d).filter((x) => x.width !== undefined)).toEqual([
-      { text: "main path", width: 3 },
+  it("hide is refused, and a file's false is read as no words", () => {
+    expect(parseOp({ op: "diagram.legend", style: "solid", hide: true }, 0)).toMatchObject([
+      { code: "unknown-field", field: "hide" },
     ]);
+    const file = writeDiagram(fx).replace(
+      /\nlayers:/,
+      "\nlegend:\n  dashed: false\n  weights:\n    thick: false\nlayers:",
+    );
+    const d = readDiagram(file) as Diagram;
+    expect(d.legend).toBeUndefined();
+    expect(writeDiagram(d)).toBe(writeDiagram(fx));
   });
 
-  it("hide takes no text, and a mark is left out by not naming it", () => {
-    expect(
-      fail(fx, [{ op: "diagram.legend", style: "solid", text: "x", hide: true }])[0],
-    ).toMatchObject({ code: "conflicting-fields", field: "text,hide" });
-    expect(fail(fx, [{ op: "diagram.legend", mark: "P0", hide: true }])[0]).toMatchObject({
-      code: "conflicting-fields",
-      field: "mark,hide",
-    });
-  });
-
-  it("show --drawn lists each entry the legend draws, in its order", () => {
+  it("show --drawn lists each style and width the picture draws, and each named mark", () => {
     const d = ok(marked, [
       { op: "edge.weight", edges: ["pipelines->mongo"], weight: "thick" },
       { op: "diagram.legend", weight: "thick", text: "writes" },
       { op: "diagram.legend", mark: "P0", text: "paged at night" },
-      { op: "diagram.legend", style: "dashed", hide: true },
     ]);
     const dr = drawing(d, layout(d, m));
-    expect(dr.legend.slice(1)).toEqual([
-      { style: "solid", width: 2.5, mark: null, text: "writes" },
-      { style: null, width: null, mark: "P0", text: "paged at night" },
+    const none = { weight: null, width: null, mark: null, text: null };
+    expect(dr.legend).toEqual([
+      { ...none, style: "solid" },
+      { ...none, style: "dashed" },
+      { ...none, style: "solid", weight: "thick", width: 2.5, text: "writes" },
+      { ...none, style: null, mark: "P0", text: "paged at night" },
     ]);
-    expect(dr.legend[0]).toMatchObject({ style: "solid", width: null, mark: null });
-    expect(drawingText(dr)).toContain('legend style=- width=- mark=P0 text="paged at night"');
+    // The ⚠️ marks are not named, so they are not listed.
+    const text = drawingText(dr);
+    expect(text).toContain("legend style=dashed weight=- width=- mark=- text=-");
+    expect(text).toContain('legend style=- weight=- width=- mark=P0 text="paged at night"');
   });
 
-  it("a file's entry holds words or false", () => {
+  it("a file's entry holds words", () => {
     const file = writeDiagram(fx).replace(/\nlayers:/, "\nlegend:\n  plain: 5\nlayers:");
-    expect(readDiagram(file)).toMatchObject([
-      { code: "bad-type", field: "legend.plain", facts: { type: "string", allowed: ["false"] } },
+    expect(readDiagram(file)).toEqual([
+      expect.objectContaining({
+        code: "bad-type",
+        field: "legend.plain",
+        facts: { type: "string" },
+      }),
     ]);
   });
 });

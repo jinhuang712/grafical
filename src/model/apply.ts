@@ -169,12 +169,11 @@ function setWords<V>(
 }
 
 /**
- * Sets one legend entry's words, leaves it out with hide, or with neither gives it back
- * its default (DESIGN.md, "A legend for widths and marks"). A mark has no entry by default, so it cannot be left out.
+ * Sets one legend entry's words, or without text takes them away, and with them the entry
+ * (DESIGN.md, "A legend for widths and marks", "The legend says only what the agent named").
  */
 function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
   const named = LEGEND_TARGETS.filter((k) => op[k] !== undefined);
-  const hide = op.hide === true;
   const clash = (a: string, b: string): OpError => ({
     code: "conflicting-fields",
     index: i,
@@ -194,14 +193,10 @@ function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
     ];
   }
   if (named.length > 1) return [clash(named[0] ?? "", named[1] ?? "")];
-  if (hide && op.text !== undefined) return [clash("text", "hide")];
-  if (hide && op.mark !== undefined) return [clash("mark", "hide")];
-  // false leaves the entry out (DESIGN.md, "A legend for widths and marks").
-  const value = hide ? false : op.text;
   const legend: Legend = { ...(s.d.legend ?? {}) };
   if (op.style !== undefined) {
-    if (value === undefined) delete legend[op.style];
-    else legend[op.style] = value;
+    if (op.text === undefined) delete legend[op.style];
+    else legend[op.style] = op.text;
   } else if (op.weight !== undefined) {
     const key = weightKey(op.weight);
     const P = themeOf(s.d).paint;
@@ -220,7 +215,7 @@ function setLegend(s: State, op: DiagramLegendOp, i: number): OpError[] {
         },
       ];
     }
-    const weights = setWords(legend.weights, key, value);
+    const weights = setWords(legend.weights, key, op.text);
     if (weights === undefined) delete legend.weights;
     else legend.weights = weights;
   } else if (op.mark !== undefined) {

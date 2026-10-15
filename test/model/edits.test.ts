@@ -186,7 +186,7 @@ describe("edges", () => {
     ).toMatchObject({ code: "unknown-node", field: "to" });
   });
 
-  it('emphasize draws edges thick, as the main path, and the legend names it (DESIGN.md, "Lines meet any side")', () => {
+  it('emphasize draws edges thick, as the main path, and the legend names it once the agent does (DESIGN.md, "Lines meet any side")', () => {
     const d = ok(fx, [{ op: "edge.emphasize", edges: ["pipelines->mongo", "service->mongo"] }]);
     roundTrips(d);
     expect(edge(d, "pipelines->mongo")?.accent).toBe(true);
@@ -196,7 +196,9 @@ describe("edges", () => {
       "pipelines->mongo",
       "service->mongo",
     ]);
-    expect(scene.legend?.at(-1)).toMatchObject({
+    expect(scene.legend).toEqual([]);
+    const named = ok(d, [{ op: "diagram.legend", weight: "thick", text: "main path" }]);
+    expect(layout(named, m).legend?.at(-1)).toMatchObject({
       width: 2.5,
       label: { runs: [{ text: "main path" }] },
     });

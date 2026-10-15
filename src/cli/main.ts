@@ -796,7 +796,7 @@ function build(): Command {
     diagram
       .command("legend")
       .description(
-        "name a line style, line width or mark in the legend; without --text, the default wording",
+        "name a line style, line width or mark in the legend; without --text, take its entry away",
       )
       .argument("<file>")
       .argument("[style]", "how the lines look: solid, dashed, dotted or plain")
@@ -805,8 +805,7 @@ function build(): Command {
         "a line width instead: thick, heavy, a stylesheet's level, or pixels",
       )
       .option("--mark <mark>", "a mark instead: its emoji, text or file, as node icon set it")
-      .option("--text <text>")
-      .option("--hide", "leave a line style's or a line width's entry out"),
+      .option("--text <text>"),
   ).action(async (file: string, style: string | undefined, opts: Opts) => {
     const w = opts.weight;
     // A number of pixels is a number, as in edge weight (DESIGN.md, "Edge weights").
@@ -817,7 +816,7 @@ function build(): Command {
         op: "diagram.legend",
         ...(style === undefined ? {} : { style }),
         ...(weight === undefined ? {} : { weight }),
-        ...pick(opts, ["mark", "text", "hide"]),
+        ...pick(opts, ["mark", "text"]),
       },
       opts,
     );
