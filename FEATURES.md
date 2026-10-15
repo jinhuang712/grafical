@@ -337,7 +337,7 @@ grafical group remove <file> <id> [--out]
 - A group's box spans every row from its top member to its bottom one. The other boxes of those rows sit beside it, and nothing else lies inside it.
 - Groups nest, up to three levels (`group-too-deep`). A group inside itself is refused as `group-cycle`.
 - `join` moves a box out of its previous group, and also moves a whole group into another. `leave` takes members out of every group, or with `--up` one level out.
-- `group order` puts a group's members before or after another group's, in every row the two share.
+- `group order` puts a group's boxes, its inner groups' too, before or after another group's, as one block in every row the two share. A group beside itself, or beside a group around or inside it, is refused as `bad-reference`.
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group. Lines that end at the group go with it.
 - A box inside a box takes the canvas's fill, so the fills alternate by depth. A stylesheet may set `paint.nesting: shade` instead.
 

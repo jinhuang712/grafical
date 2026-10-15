@@ -777,7 +777,9 @@ function build(): Command {
   json(
     group
       .command("order")
-      .description("put a group's members before or after another group's, in every shared layer")
+      .description(
+        "put a group's boxes, its inner groups' too, before or after another group's, in every shared layer",
+      )
       .argument("<file>")
       .argument("<id>")
       .option("--before <group>", "just before this group")

@@ -23,7 +23,3 @@ The split is on purpose: rule 4 of DESIGN.md, "A target picture with measured ru
 ## Labels across a band's or a lane's border
 
 `check --all` counts a group's border as a line across an edge's label, but not a band's or a lane's. A label moved beside a line cut at a container already keeps off band borders. The checker should count them too, and the gutters keep labels off them.
-
-## Group order leaves out the boxes of inner groups
-
-`group order` moves only a group's own boxes. A group whose boxes all sit in inner groups, such as a zone around its subnets, is refused as `no-shared-layer`: `group order <file> az-b --before az-a` failed on 2026-10-16 for two zones of three subnets each. DESIGN.md, "Every layered diagram type" counts an inner group's boxes as the group's for every rule, and `group copy` already places them so.

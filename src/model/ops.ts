@@ -312,7 +312,7 @@ export interface GroupDescribeOp {
   /** Absent: clear the group's second, quieter label. */
   text?: string;
 }
-/** Puts a group's members before or after another group's, in every layer they share. */
+/** Puts a group's boxes, its inner groups' too, before or after another group's, in every layer they share. */
 export interface GroupOrderOp {
   op: "group.order";
   id: string;

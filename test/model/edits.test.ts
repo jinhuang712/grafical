@@ -19,12 +19,12 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-function run(d: Diagram, ops: Op[]) {
+function run(d: Diagram | null, ops: Op[]) {
   const r = applyOps(d, ops);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r;
 }
-const ok = (d: Diagram, ops: Op[]) => run(d, ops).diagram;
+const ok = (d: Diagram | null, ops: Op[]) => run(d, ops).diagram;
 function fail(d: Diagram, ops: Op[]): OpError[] {
   const r = applyOps(d, ops);
   if (!("errors" in r)) throw new Error("expected errors");
@@ -270,6 +270,63 @@ describe("groups", () => {
     const topics = order(d, "topics") ?? [];
     expect(topics.indexOf("handlers")).toBeLessThan(topics.indexOf("retry"));
     expect(fail(fx, [{ op: "group.order", id: "catalog-api" }])[0]?.code).toBe("missing-field");
+  });
+
+  // A network with two zones, each a subnet per row holding one box: a zone has no box of its own.
+  const rows = ["public", "app", "data"];
+  const zone = (z: string): Op[] => [
+    { op: "group.add", id: `az-${z}`, label: `Zone ${z}`, in: "vpc" },
+    ...rows.flatMap((r): Op[] => [
+      { op: "node.add", id: `${r}-${z}`, layer: r, label: `${r} ${z}`, last: true },
+      {
+        op: "group.add",
+        id: `${r}-net-${z}`,
+        label: "Subnet",
+        in: `az-${z}`,
+        nodes: [`${r}-${z}`],
+      },
+    ]),
+  ];
+  const zones = ok(null, [
+    { op: "diagram.new", title: "Zones" },
+    ...rows.map((r): Op => ({ op: "layer.add", id: r, label: r })),
+    { op: "group.add", id: "vpc", label: "VPC" },
+    ...zone("a"),
+    ...zone("b"),
+  ]);
+
+  it("order moves the boxes of a group's inner groups too", () => {
+    const { diagram: d, changed } = run(zones, [{ op: "group.order", id: "az-b", before: "az-a" }]);
+    expect(rows.map((r) => order(d, r))).toEqual(rows.map((r) => [`${r}-b`, `${r}-a`]));
+    expect(changed).toEqual(["public-b", "app-b", "data-b"]);
+  });
+
+  it("order moves a group's own boxes and its inner groups' as one block", () => {
+    // Zone A holds a bastion of its own beside its public subnet, after the network's own load balancer.
+    const mixed = ok(zones, [
+      { op: "node.add", id: "lb", layer: "public", label: "LB", first: true },
+      { op: "group.join", group: "vpc", nodes: ["lb"] },
+      { op: "node.add", id: "bastion", layer: "public", label: "Bastion", after: "lb" },
+      { op: "group.join", group: "az-a", nodes: ["bastion"] },
+    ]);
+    expect(order(mixed, "public")).toEqual(["lb", "bastion", "public-a", "public-b"]);
+    const moved = ok(mixed, [{ op: "group.order", id: "az-a", after: "az-b" }]);
+    expect(order(moved, "public")).toEqual(["lb", "public-b", "bastion", "public-a"]);
+    expect(order(moved, "app")).toEqual(["app-b", "app-a"]);
+    const before = ok(mixed, [{ op: "group.order", id: "az-b", before: "az-a" }]);
+    expect(order(before, "public")).toEqual(["lb", "public-b", "bastion", "public-a"]);
+  });
+
+  it("order refuses a group beside itself or a group around or inside it", () => {
+    for (const [id, before] of [
+      ["az-a", "az-a"],
+      ["az-a", "app-net-a"],
+      ["app-net-a", "vpc"],
+    ] as const) {
+      expect(fail(zones, [{ op: "group.order", id, before }])).toEqual([
+        { code: "bad-reference", index: 0, field: "before", found: before, facts: { group: id } },
+      ]);
+    }
   });
 });
 

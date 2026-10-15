@@ -1501,15 +1501,20 @@ function orderGroup(s: State, op: Extract<Op, { op: "group.order" }>, i: number)
   const other = (op.before ?? op.after) as string;
   const field = op.before !== undefined ? "before" : "after";
   if (!groups.some((g) => g.id === other)) return [unknownGroup(d, other, i, field)];
+  // A group's boxes are its own and its inner groups' (DESIGN.md, "Every layered diagram type"), so a group cannot
+  // go beside itself or a group around or inside it.
+  if (groupChain(d, op.id).includes(other) || groupChain(d, other).includes(op.id)) {
+    return [{ code: "bad-reference", index: i, field, found: other, facts: { group: op.id } }];
+  }
+  const ours = (n: DiagramNode) => inGroup(d, n, op.id);
+  const theirs = (n: DiagramNode) => inGroup(d, n, other);
   let shared = false;
   for (const l of d.layers) {
-    const mine = l.nodes.filter((n) => n.group === op.id);
-    if (mine.length === 0 || !l.nodes.some((n) => n.group === other)) continue;
+    const mine = l.nodes.filter(ours);
+    if (mine.length === 0 || !l.nodes.some(theirs)) continue;
     shared = true;
-    const rest = l.nodes.filter((n) => n.group !== op.id);
-    const theirs = rest.map((n, k) => (n.group === other ? k : -1)).filter((k) => k >= 0);
-    const at =
-      op.before !== undefined ? (theirs[0] as number) : (theirs[theirs.length - 1] as number) + 1;
+    const rest = l.nodes.filter((n) => !ours(n));
+    const at = op.before !== undefined ? rest.findIndex(theirs) : rest.findLastIndex(theirs) + 1;
     const next = [...rest.slice(0, at), ...mine, ...rest.slice(at)];
     if (next.some((n, k) => n !== l.nodes[k])) touch(s, ...mine.map((n) => n.id));
     l.nodes = next;

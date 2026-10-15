@@ -6,6 +6,7 @@ What changed in each release of grafical, from the side of the agent that draws 
 
 grafical has not been released; the first release is 0.1.0 (ROADMAP.md, "Release 0.1.0").
 
+- `group order` moves the boxes of a group's inner groups with its own, as one block: two zones whose boxes all sit in subnets now swap, where they were refused as `no-shared-layer`. A group ordered beside itself, or beside a group around or inside it, is refused as `bad-reference`.
 - A line between two boxes of one row may run above the row instead of under it, when fewer lines meet the boxes between its ends from above than from below: it then crosses fewer lines. It stays below where its box lies under a group's label, where a wall or a lane's border lies above the row, and where going above would bend another line or push a label out of its place.
 - `group copy` copies a group with its inner groups, its boxes and the lines between them, every id with `--suffix`, before or after a group in each of its rows: a second zone, region or shard in one operation. `--outside` copies its lines to everything else too.
 - `show --drawn` prints a `gutter` record for each pair of neighbouring rows, with the lines, crossings, tight pairs and crowded labels between them.
