@@ -238,7 +238,7 @@ grafical edge step <file> <id> [--n <number>]
 
 One arrow can point at a whole system instead of each of its parts.
 
-- Either end of a line may be a box, a group, a row or a lane. A row a line ends at is drawn as a band, with its label above it.
+- Either end of a line may be a box, a group, a row or a lane. A row a line ends at is drawn as a band, with its label above it, and a line meets the band straight past its other end where nothing is in the way.
 - An end may not lie inside the other (`edge-inside`), a container end must hold a box (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`).
 - Two lanes are never the two ends of one line (`lane-to-lane`).
 - Removing a group or a lane removes the lines that end at it.

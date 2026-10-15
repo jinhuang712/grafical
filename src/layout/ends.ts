@@ -152,3 +152,41 @@ export function cutRoute(points: Point[], box: Rect, at: "start" | "end"): Point
   if (at === "end") return cutAtEntry(points, box);
   return cutAtEntry([...points].reverse(), box).reverse();
 }
+
+/** The route, ending at the band, from its earliest stretch that heads into the band and may run straight on. */
+function straightInto(
+  points: Point[],
+  band: Rect,
+  clear: (a: Point, b: Point) => boolean,
+): Point[] {
+  const n = points.length - 1;
+  const last = points[n] as Point;
+  const before = points[n - 1];
+  if (n < 2 || before === undefined || before.x !== last.x) return points;
+  const dir = Math.sign(last.y - before.y);
+  for (let k = 0; k < n - 1; k++) {
+    const a = points[k] as Point;
+    const b = points[k + 1] as Point;
+    if (a.x !== b.x || Math.sign(b.y - a.y) !== dir) continue;
+    if (a.x <= band.x || a.x >= band.x + band.w) continue;
+    const end = { x: a.x, y: last.y };
+    if (clear(a, end)) return [...points.slice(0, k + 1), end];
+  }
+  return points;
+}
+
+/**
+ * A line that meets a band across rows was routed to the band's box nearest its other
+ * end, so it may turn toward that box before it meets the band. The band spans the
+ * content, so the line runs straight on into it from its earliest stretch that already
+ * heads there, where that stretch is clear of every box, text and other line.
+ */
+export function straightIntoBand(
+  points: Point[],
+  band: Rect,
+  at: "start" | "end",
+  clear: (a: Point, b: Point) => boolean,
+): Point[] {
+  if (at === "end") return straightInto(points, band, clear);
+  return straightInto([...points].reverse(), band, clear).reverse();
+}

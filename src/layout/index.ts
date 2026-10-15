@@ -56,7 +56,7 @@ import { edgeWidth, lineStyle, type Paint, weightOf } from "../theme/paint.ts";
 import { isDot, textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
-import { cutRoute, planEnds, refineEnds } from "./ends.ts";
+import { cutRoute, planEnds, refineEnds, straightIntoBand } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import { footnotesHeight, placeNotes } from "./notes.ts";
 import { placeAcross } from "./place.ts";
@@ -674,6 +674,15 @@ function compute(
     forbidGap,
     sideLabelX: placement.sideLabels,
     alone: new Set(ends.ends.keys()),
+    bandEnds: new Map(
+      [...ends.ends].map(([id, p]) => [
+        id,
+        {
+          from: p.from?.kind === "layer" && p.from.across,
+          to: p.to?.kind === "layer" && p.to.across,
+        },
+      ]),
+    ),
     boxes: placement.groups.map((g) => ({
       x0: g.x0,
       x1: g.x1,
@@ -1116,12 +1125,12 @@ function compute(
   // What a label moved off a cut route must keep clear of: boxes, lines, other labels and text.
   const labelAt = new Map<string, Rect>();
   for (const [id, a] of assembled) if (a.label !== undefined) labelAt.set(id, a.label);
-  const solid: Rect[] = [
-    ...sceneNodes.map((n) => n.rect),
+  const captions: Rect[] = [
     ...sceneGroups.flatMap((g) => [g.label.bbox, ...(g.sublabel ? [g.sublabel.bbox] : [])]),
     ...sceneBands.map((b) => b.label.bbox),
     ...sceneLanes.map((x) => x.head),
   ];
+  const solid: Rect[] = [...sceneNodes.map((n) => n.rect), ...captions];
   const clearOf = (id: string) => (r: Rect) => {
     const pad = ROUTE.labelClear / 2;
     const wide = { x: r.x - pad, y: r.y - pad, w: r.w + 2 * pad, h: r.h + 2 * pad };
@@ -1136,27 +1145,95 @@ function compute(
     const borders = [...sceneGroups, ...sceneBands].map((x) => x.rect);
     if (borders.some((b) => overlaps(wide, b) && !within(b))) return false;
     for (const [other, l] of labelAt) if (other !== id && overlaps(wide, l)) return false;
+    // Clear of every other line as routed, and as drawn: a line that meets a band may
+    // since run straight on into it.
     for (const [other, a] of assembled) {
       if (other === id) continue;
-      for (let i = 1; i < a.points.length; i++) {
-        if (segmentHits(a.points[i - 1] as Point, a.points[i] as Point, wide)) return false;
+      for (const pts of [a.points, routes.get(other) ?? []]) {
+        for (let i = 1; i < pts.length; i++) {
+          if (segmentHits(pts[i - 1] as Point, pts[i] as Point, wide)) return false;
+        }
       }
     }
     return true;
   };
 
-  const sceneEdges: SceneEdge[] = [];
+  // A container end's route stops at its box.
+  const routes = new Map<string, Point[]>();
   for (const e of d.edges) {
     const a = assembled.get(e.id);
     if (a === undefined) continue;
-    // The scene names the edge's real ends; a container end's route stops at its box.
-    const real = factsById.get(e.id) ?? e;
     let points = a.points;
     const plan = ends.ends.get(e.id);
     const toBox = plan?.to === undefined ? undefined : boxOf.get(plan.to.id);
     const fromBox = plan?.from === undefined ? undefined : boxOf.get(plan.from.id);
     if (toBox !== undefined) points = cutRoute(points, toBox, "end");
     if (fromBox !== undefined) points = cutRoute(points, fromBox, "start");
+    routes.set(e.id, points);
+  }
+  // A line that meets a band across rows runs straight into it where it can: clear of
+  // every box and text, of the router's label slots, and of every other line.
+  const lineClear = (id: string) => (a: Point, b: Point) => {
+    const pad = (r: Rect, p: number) => ({
+      x: r.x - p,
+      y: r.y - p,
+      w: r.w + 2 * p,
+      h: r.h + 2 * p,
+    });
+    // The line starts at its own end box; every other box and text is in its way.
+    const real = factsById.get(id);
+    const own = new Set([real?.from, real?.to]);
+    const inWay = [...sceneNodes.filter((n) => !own.has(n.id)).map((n) => n.rect), ...captions];
+    if (inWay.some((r) => segmentHits(a, b, pad(r, ROUTE.labelClear)))) return false;
+    for (const [other, o] of assembled) {
+      if (
+        other !== id &&
+        o.label !== undefined &&
+        segmentHits(a, b, pad(o.label, ROUTE.labelClear))
+      )
+        return false;
+    }
+    const y0 = Math.min(a.y, b.y);
+    const y1 = Math.max(a.y, b.y);
+    for (const [other, pts] of routes) {
+      if (other === id) continue;
+      for (let i = 1; i < pts.length; i++) {
+        const p = pts[i - 1] as Point;
+        const q = pts[i] as Point;
+        if (p.y === q.y) {
+          const across = a.x > Math.min(p.x, q.x) - 1 && a.x < Math.max(p.x, q.x) + 1;
+          if (across && p.y > y0 - 1 && p.y < y1 + 1) return false;
+        } else if (Math.abs(p.x - a.x) < ROUTE.runSeparation) {
+          if (Math.min(Math.max(p.y, q.y), y1) - Math.max(Math.min(p.y, q.y), y0) > 0) return false;
+        }
+      }
+    }
+    return true;
+  };
+  for (const e of d.edges) {
+    const plan = ends.ends.get(e.id);
+    let points = routes.get(e.id);
+    if (plan === undefined || points === undefined) continue;
+    for (const [end, at] of [
+      [plan.to, "end"],
+      [plan.from, "start"],
+    ] as const) {
+      const band = end?.kind === "layer" && end.across ? boxOf.get(end.id) : undefined;
+      if (band !== undefined) points = straightIntoBand(points, band, at, lineClear(e.id));
+    }
+    routes.set(e.id, points);
+  }
+
+  const sceneEdges: SceneEdge[] = [];
+  for (const e of d.edges) {
+    const a = assembled.get(e.id);
+    const points = routes.get(e.id);
+    if (a === undefined || points === undefined) continue;
+    // The scene names the edge's real ends.
+    const real = factsById.get(e.id) ?? e;
+    const plan = ends.ends.get(e.id);
+    const toBox = plan?.to === undefined ? undefined : boxOf.get(plan.to.id);
+    const fromBox = plan?.from === undefined ? undefined : boxOf.get(plan.from.id);
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
     if (e.both === true) edge.both = true;
     const width = edgeWidth(e, theme.paint);

@@ -44,6 +44,11 @@ export interface RouteExtra {
   /** Edges routed to a stand-in for a container (DESIGN.md, "Lines that end at containers"): they never share a port or trunk. */
   alone: Set<string>;
   /**
+   * The ends, by edge id, that meet a band across rows: the band spans the content, so
+   * such an end takes a corridor as if it lay straight past the other end.
+   */
+  bandEnds: Map<string, { from: boolean; to: boolean }>;
+  /**
    * Edges that never leave by a side: those to a column lane (DESIGN.md, "Swimlanes run one way"), whose border
    * runs the whole height and would leave a side exit only a stub.
    */
@@ -67,6 +72,7 @@ const NO_EXTRA: RouteExtra = {
   forbidGap: new Map(),
   sideLabelX: new Map(),
   alone: new Set(),
+  bandEnds: new Map(),
   noSideExit: new Set(),
   boxes: [],
 };
@@ -243,7 +249,7 @@ export function routeAcross(
     if (pl !== undefined) plans.push(pl);
   }
   assignBuses(plans, extra.alone);
-  chooseGaps(plans, gapsByLayer, extra.forbidTop, extra.boxes);
+  chooseGaps(plans, gapsByLayer, extra.forbidTop, extra.boxes, extra.bandEnds);
   assignGapTracks(plans, extra.boxes);
   chooseSideExits(plans, layers, extra.forbidTop, extra.noSideExit);
   chooseSideEntries(plans, layers, extra.forbidTop, extra.noSideExit);
@@ -625,6 +631,7 @@ function chooseGaps(
   gapsByLayer: Gap[][],
   forbidTop: Map<number, [number, number][]>,
   boxes: Box[],
+  bandEnds: Map<string, { from: boolean; to: boolean }>,
 ): void {
   const load = new Map<string, Set<string>>();
   const take = (pl: Plan, gap: Gap) => {
@@ -656,8 +663,12 @@ function chooseGaps(
   const chosen = new Map<string, number>();
   for (const pl of plans) {
     if (pl.between.length === 0) continue;
-    const xs = centreX(pl.u);
-    const xt = centreX(pl.v);
+    // A band spans the content, so an end that meets one lies straight past the other
+    // end, and every corridor reaches it (DESIGN.md, "Lines that end at containers").
+    const band = bandEnds.get(pl.edge.id);
+    const toBand = (m: Plan) => bandEnds.get(m.edge.id)?.to === true;
+    const xs = band?.from === true && band.to !== true ? centreX(pl.v) : centreX(pl.u);
+    const xt = band?.to === true && band.from !== true ? centreX(pl.u) : centreX(pl.v);
     const k = mateKey(pl);
     const team = (k === undefined ? undefined : mates.get(k)) ?? [pl];
     // A corridor that one end's ports can reach straight saves that end a jog:
@@ -674,12 +685,12 @@ function chooseGaps(
         hi,
         travel:
           dist(xs, lo, hi) +
-          (reach(pl.u, lo, hi) ? 0 : JOG) +
+          (band?.from === true || reach(pl.u, lo, hi) ? 0 : JOG) +
           team.reduce(
             (s, m) =>
               s +
-              dist(centreX(m.v), lo, hi) +
-              (reach(m.v, lo, hi) ? 0 : JOG) +
+              dist(toBand(m) ? centreX(m.u) : centreX(m.v), lo, hi) +
+              (toBand(m) || reach(m.v, lo, hi) ? 0 : JOG) +
               CROSS * certainCrossings(plans, m, clamp(xs, lo, hi)) +
               CROSS * foreignBoxes(boxes, m, clamp(xs, lo, hi)),
             0,
