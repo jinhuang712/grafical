@@ -6,6 +6,7 @@ What changed in each release of grafical, from the side of the agent that draws 
 
 grafical has not been released; the first release is 0.1.0 (ROADMAP.md, "Release 0.1.0").
 
+- An unknown option, a missing argument or an unknown command prints `error code=unknown-option found=--bogus` (exit 2) instead of the parser's sentence.
 - `node add` into a row that already has boxes, and `node move --layer`, need a place: `--first`, `--last`, `--before` or `--after`. Without one the write is refused as `missing-field`, with the row and its boxes. grafical no longer picks the slot.
 - `layer tidy` and `diagram tidy` are removed. Compare orders with `grafical try` instead.
 - The legend says only what the agent named: line styles and widths lose their default words ("call or read", "message", "optional", "related", "main path"), and a diagram that names nothing draws no legend. `show --drawn` prints a `legend` record with `text=-` for each style and width left unnamed, with the `weight` to name it by. `diagram legend --hide` is removed; an old file's `false` is read as no words.

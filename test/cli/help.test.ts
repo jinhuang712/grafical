@@ -50,7 +50,7 @@ describe('help pages (DESIGN.md, "The help as the reference")', () => {
   it("has no guide command any more", () => {
     const r = run("guide");
     expect(r.code).toBe(2);
-    expect(r.err).toContain("unknown command");
+    expect(r.err).toContain("code=unknown-command");
   });
 });
 

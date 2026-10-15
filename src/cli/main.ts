@@ -123,6 +123,8 @@ function build(): Command {
       // The same help on every terminal, so that it is the same text for every agent.
       getOutHelpWidth: () => 80,
       getErrHelpWidth: () => 80,
+      // The parser's sentence is replaced by a record in main().
+      outputError: () => {},
     })
     .showHelpAfterError(false)
     .addHelpText("after", PROGRAM_AFTER.trimEnd());
@@ -1055,6 +1057,13 @@ function isOps(x: Op[] | unknown[]): x is Op[] {
   return x.every((i) => typeof i === "object" && i !== null && "op" in i && !("code" in i));
 }
 
+/** The parser's refusal as a record: its code in kebab case, and the first quoted word of its sentence as what it found. */
+function parserError(err: CommanderError): string {
+  const code = err.code.slice("commander.".length).replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+  const found = /'([^']*)'/.exec(err.message)?.[1];
+  return record("error", found === undefined ? { code } : { code, found });
+}
+
 async function main(argv: string[]) {
   try {
     await build().parseAsync(argv);
@@ -1066,6 +1075,9 @@ async function main(argv: string[]) {
       }
       // grafical's own usage errors are records (DESIGN.md, "Records over prose"); commander prints its own.
       if (err.code.startsWith("grafical.")) process.stderr.write(`${err.message}\n`);
+      else if (err.code.startsWith("commander.") && err.code !== "commander.help") {
+        process.stderr.write(`${parserError(err)}\n`);
+      }
       process.exitCode = 2;
       return;
     }

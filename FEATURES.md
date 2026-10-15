@@ -20,7 +20,7 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
 - `grafical new` takes the title, and optionally `--subtitle`, `--note`, `--density`, `--sizing` and `--style`.
 - Every write reports the IDs it changed and any defects. A refused write changes nothing.
 - Every command takes `--json`, which prints the same report as JSON.
-- Exit codes: 0 for success, 1 for a refused operation or a defect, 2 for a usage error.
+- Exit codes: 0 for success, 1 for a refused operation or a defect, 2 for a usage error. The parser's own refusals (an unknown option, a missing argument, an unknown command) print as `error code=<code> found=<word>` on standard error, such as `error code=unknown-option found=--bogus`.
 
 ### Batches ✅
 

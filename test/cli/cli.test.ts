@@ -246,6 +246,17 @@ describe("write commands", () => {
     expect(run().code).toBe(2);
   });
 
+  it("prints the parser's refusals as error records", () => {
+    const opt = run("show", "single.grafical.yaml", "--bogus");
+    expect(opt.code).toBe(2);
+    expect(opt.err).toBe("error code=unknown-option found=--bogus\n");
+    expect(run("bogus").err).toBe("error code=unknown-command found=bogus\n");
+    expect(run("show").err).toBe("error code=missing-argument found=file\n");
+    expect(run("new", "x.grafical.yaml").err).toMatch(
+      /^error code=missing-mandatory-option-value /,
+    );
+  });
+
   it("handles edge id suffixes and node remove cascading", () => {
     run("new", "e.grafical.yaml", "--title", "E");
     run("layer", "add", "e.grafical.yaml", "l", "--label", "L");
