@@ -44,4 +44,20 @@ describe("side turns", () => {
     expect(of("alb->web-b")).toMatchObject({ leaves: "bottom", enters: "left", bends: 1 });
     expect(check(d, s, m)).toEqual([]);
   });
+  // Found on 2026-10-16: "sends confirmations via" is wider than the 120 px a label between
+  // neighbours could take, so the line went round under the row with its label hanging off.
+  it("run straight between neighbours with a label up to thirty characters", () => {
+    const d = readDiagram(`grafical: 1
+title: wide
+density: normal
+layers:
+  - {id: core, label: Core, nodes: [{id: api, label: Booking API}, {id: mail, label: Email service, kind: external}]}
+edges:
+  - {id: api->mail, from: api, to: mail, label: sends confirmations via}
+`) as Diagram;
+    const s = layout(d, m);
+    expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
+    const line = drawing(d, s).lines.find((l) => l.id === "api->mail");
+    expect(line).toMatchObject({ leaves: "right", enters: "left", bends: 0 });
+  });
 });

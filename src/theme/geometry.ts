@@ -244,7 +244,7 @@ export const ROUTE = {
   /** Space on each side of the label of an edge that runs sideways between neighbours. */
   sideLabelPad: 12,
   /** A sideways edge with a wider label goes round through the gutter instead. */
-  sideLabelMax: 120,
+  sideLabelMax: 200,
   /** Room on each side of a line that runs through an otherwise empty column of a row. */
   corridorPad: 16,
 };
