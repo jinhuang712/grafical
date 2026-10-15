@@ -644,7 +644,7 @@ Decided by the owner on 2026-10-15, after the same field study. A swimlane with 
 
 - **The rule.** Every box of a column lies left of every box of the next column, across all rows, so that the phases of a process line up across lanes. "Columns beside rows" said this in words that allowed both readings.
 - **Cost.** A picture that uses columns only to order its rows may grow wider.
-- Not built yet (TODO.md, "Columns hold across rows").
+- **Built on 2026-10-15.** Placement keeps a row's gap between every box of a column and every box of the next, in any row. The grid already kept their order, but two boxes in different rows could share an x. The field study's swimlane grew from 944 px to 1448 px wide and from 4 bends to 8, because lines between boxes in different columns can no longer run straight.
 
 Rejected:
 - Columns that order boxes only within a row, with FEATURES.md reworded. Lanes across with phases could not be drawn, and lanes that run down would stay the only swimlane.

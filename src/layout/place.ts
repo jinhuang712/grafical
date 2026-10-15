@@ -7,6 +7,7 @@
 // packed from the left, as close as that room allows, and the picture is centred
 // on one centre line. Every x here is relative to that line.
 
+import { columnRanks } from "../model/columns.ts";
 import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
 import { DEFAULT_SIZE, type Diagram, type DiagramNode } from "../model/types.ts";
@@ -191,6 +192,18 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     for (const r of [...byRank.keys()].sort((a, b) => a - b))
       laneOrder.push(byRank.get(r) as PNode[]);
   }
+  // Columns (DESIGN.md, "Columns hold across rows"): the nodes of each column that holds one, left to right.
+  const columnRank = columnRanks(d);
+  const columnOrder: PNode[][] = [];
+  {
+    const byRank = new Map<number, PNode[]>();
+    for (const n of nodes.values()) {
+      const r = n.node.column === undefined ? undefined : columnRank.get(n.node.column);
+      if (r !== undefined) byRank.set(r, [...(byRank.get(r) ?? []), n]);
+    }
+    for (const r of [...byRank.keys()].sort((a, b) => a - b))
+      columnOrder.push(byRank.get(r) as PNode[]);
+  }
   const columns = Math.max(1, grid.columns);
   let solved = solve(new Set());
   const seats = seatLabels(solved.groups, layers, topEnds);
@@ -305,6 +318,14 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
             for (const s of leftTerms(right, anyMember)) add(t.col, s.col, t.d + between + s.d);
           }
         }
+      }
+    }
+    // Columns: every box of a column keeps a row's gap from every box of the next, in
+    // any row, so that a column's boxes never stand over the column before.
+    for (let k = 1; k < columnOrder.length; k++) {
+      for (const a of columnOrder[k - 1] as PNode[]) {
+        for (const b of columnOrder[k] as PNode[])
+          add(a.col, b.col, a.w / 2 + sp.nodeGap + b.w / 2);
       }
     }
     // Column lanes: the content of neighbouring lanes, boxes included, keeps twice

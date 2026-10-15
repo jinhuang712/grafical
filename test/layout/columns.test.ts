@@ -8,6 +8,7 @@ import { layout } from "../../src/layout/index.ts";
 import { applyOps, type Diagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
+import { SPACING } from "../../src/theme/geometry.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 
 let m: Measurer;
@@ -37,5 +38,25 @@ describe('columns in the picture (DESIGN.md, "Columns beside rows")', () => {
     }
     expect(check(d, scene, m)).toEqual([]);
     expect(scene.walls).toBeUndefined();
+  });
+
+  it('hold across rows that share no box (DESIGN.md, "Columns hold across rows")', () => {
+    const d: Diagram = {
+      grafical: 1,
+      title: "T",
+      density: "normal",
+      layers: [
+        { id: "r1", label: "R1", nodes: [{ id: "a", label: "A", kind: "service", column: "c1" }] },
+        { id: "r2", label: "R2", nodes: [{ id: "b", label: "B", kind: "service", column: "c2" }] },
+      ],
+      columns: [{ id: "c1" }, { id: "c2" }],
+      edges: [],
+    };
+    const scene = layout(d, m);
+    const x = (id: string) =>
+      scene.nodes.find((nd) => nd.id === id)?.rect as { x: number; w: number };
+    // A row's gap between them, as if they stood side by side in one row.
+    expect(x("b").x - (x("a").x + x("a").w)).toBe(SPACING.normal.nodeGap);
+    expect(check(d, scene, m)).toEqual([]);
   });
 });
