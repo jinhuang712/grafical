@@ -273,6 +273,25 @@ export function routeGutter(
     }
     return true;
   };
+  /** For each run, every run the fixed order puts below it, with `extra` added, directly or through others. */
+  const closure = (extra: readonly [number, number][]): Set<number>[] => {
+    const next = below.map((set) => [...set]);
+    for (const [a, b] of extra) next[a]?.push(b);
+    return next.map((_, from) => {
+      const seen = new Set<number>();
+      const stack = [from];
+      while (stack.length > 0) {
+        const k = stack.pop() as number;
+        for (const j of next[k] ?? []) {
+          if (!seen.has(j)) {
+            seen.add(j);
+            stack.push(j);
+          }
+        }
+      }
+      return seen;
+    });
+  };
 
   // A line entering from the top that meets one entering from the bottom at the
   // same x must end above it. Lines that meet exactly come first, then near ones,
@@ -295,6 +314,28 @@ export function routeGutter(
   // A label with none tries again wrapped onto more lines, which is narrower.
   const slotsOf = (v: Visit, lab: VisitLabel): Slot[] => {
     const i = index.get(v) ?? 0;
+    const now = closure([]);
+    const forcedBy = new Map<string, number>();
+    // An order the slot fixes against the runs' own preference forces crossings:
+    // every pair it adds to the order, directly or through the order fixed so far.
+    // The runs' preference leaves this label out: where it lay before says nothing
+    // about this slot.
+    const forcedOf = (pairs: [number, number][]): number => {
+      const key = JSON.stringify(pairs);
+      const known = forcedBy.get(key);
+      if (known !== undefined) return known;
+      let forced = 0;
+      closure(pairs).forEach((set, a) => {
+        for (const b of set) {
+          const above = ranked[a];
+          const under = ranked[b];
+          if (a === b || now[a]?.has(b) || above === undefined || under === undefined) continue;
+          forced += Math.max(0, pairCost(above, under, lab) - pairCost(under, above, lab));
+        }
+      });
+      forcedBy.set(key, forced);
+      return forced;
+    };
     return candidates(v, lab).map((c) => {
       const x0 = c.x0 - clr;
       const x1 = c.x0 + lab.w + clr;
@@ -314,14 +355,7 @@ export function routeGutter(
         else if (k !== undefined && t) pairs.push([k, i]);
         else if (k !== undefined && b) pairs.push([i, k]);
       }
-      // An order the slot fixes against the runs' own preference forces crossings.
-      let forced = 0;
-      for (const [a, b] of pairs) {
-        const above = ranked[a];
-        const under = ranked[b];
-        if (above === undefined || under === undefined) continue;
-        forced += Math.max(0, pairCost(above, under) - pairCost(under, above));
-      }
+      const forced = crossed || pairs.length === 0 ? 0 : forcedOf(pairs);
       return { c, crossed, pairs, cost: c.score + SLOT_LINE * pairs.length + SLOT_CROSS * forced };
     });
   };
@@ -539,8 +573,8 @@ function placeDetours(
   }
 }
 
-/** Crossings and other harm when run a lies above run b. */
-function pairCost(a: Visit, b: Visit): number {
+/** Crossings and other harm when run a lies above run b, leaving out the label `without`. */
+function pairCost(a: Visit, b: Visit, without?: VisitLabel): number {
   let c = 0;
   for (const s of b.stubs) if (s.top && inside(s.x, a.lo, a.hi)) c += 1;
   for (const s of a.stubs) if (!s.top && inside(s.x, b.lo, b.hi)) c += 1;
@@ -549,12 +583,12 @@ function pairCost(a: Visit, b: Visit): number {
     for (const t of b.stubs) if (t.top && Math.abs(s.x - t.x) < NEAR) c += HARD;
   }
   const clr = ROUTE.labelClear;
-  if (a.label !== undefined) {
+  if (a.label !== undefined && a.label !== without) {
     const x0 = a.label.x0 - clr;
     const x1 = a.label.x0 + a.label.w + clr;
     for (const s of b.stubs) if (s.top && inside(s.x, x0, x1)) c += LABEL_HIT;
   }
-  if (b.label !== undefined) {
+  if (b.label !== undefined && b.label !== without) {
     const x0 = b.label.x0 - clr;
     const x1 = b.label.x0 + b.label.w + clr;
     for (const s of a.stubs) if (!s.top && inside(s.x, x0, x1)) c += LABEL_HIT;

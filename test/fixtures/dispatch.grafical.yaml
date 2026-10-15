@@ -1,0 +1,263 @@
+grafical: 1
+title: dispatch
+subtitle: How a trip request reaches a driver and is paid, across the booking, matching and payments systems.
+note: "Not shown: ops console admin paths, auth token flow details, retries."
+density: normal
+layers:
+  - id: callers
+    label: Callers
+    nodes:
+      - id: rider-app
+        label: rider-app
+        kind: actor
+        sublabel: mobile
+      - id: ops-console
+        label: ops-console
+        kind: actor
+        sublabel: web
+      - id: driver-app
+        label: driver-app
+        kind: actor
+        sublabel: mobile
+  - id: edge
+    label: Edge
+    nodes:
+      - id: edge-gateway
+        label: edge-gateway
+        kind: service
+        sublabel: TLS, rate limits
+      - id: driver-socket
+        label: driver-socket
+        kind: service
+        sublabel: WebSocket
+      - id: auth-svc
+        label: auth-svc
+        kind: service
+        sublabel: tokens
+  - id: services
+    label: Services
+    nodes:
+      - id: notify-svc
+        label: notify-svc
+        kind: service
+        sublabel: push
+      - id: booking-api
+        label: booking-api
+        kind: service
+        sublabel: trips
+        group: booking
+      - id: fare-estimator
+        label: fare-estimator
+        kind: service
+        sublabel: quotes
+        group: booking
+      - id: matcher
+        label: matcher
+        kind: service
+        sublabel: offers trips
+        group: matching
+      - id: location-ingest
+        label: location-ingest
+        kind: service
+        group: matching
+      - id: surge-calculator
+        label: surge-calculator
+        kind: service
+        sublabel: every minute
+        group: matching
+      - id: payments-api
+        label: payments-api
+        kind: service
+        sublabel: holds, captures
+        group: payments
+      - id: payout-batch
+        label: payout-batch
+        kind: service
+        sublabel: nightly
+        group: payments
+  - id: bus
+    label: Events
+    nodes:
+      - id: events
+        label: events
+        kind: queue
+        sublabel: Kafka topics
+  - id: stores
+    label: Stores
+    nodes:
+      - id: trips-db
+        label: trips-db
+        kind: store
+        sublabel: Postgres
+        group: booking
+      - id: zones-db
+        label: zones-db
+        kind: store
+        sublabel: Postgres
+        group: booking
+      - id: geo-index
+        label: geo-index
+        kind: store
+        sublabel: Redis geo
+        group: matching
+      - id: surge-cache
+        label: surge-cache
+        kind: store
+        sublabel: Redis
+        group: matching
+      - id: ledger-db
+        label: ledger-db
+        kind: store
+        sublabel: Postgres
+        group: payments
+      - id: auth-redis
+        label: auth-redis
+        kind: store
+        sublabel: Redis
+  - id: outside
+    label: External
+    nodes:
+      - id: push-provider
+        label: push-provider
+        kind: external
+      - id: card-processor
+        label: card-processor
+        kind: external
+      - id: bank-transfers
+        label: bank-transfers
+        kind: external
+groups:
+  - id: booking
+    label: booking
+  - id: matching
+    label: matching
+  - id: payments
+    label: payments
+edges:
+  - id: rider-app->edge-gateway
+    from: rider-app
+    to: edge-gateway
+    kind: call
+  - id: driver-app->edge-gateway
+    from: driver-app
+    to: edge-gateway
+    kind: call
+  - id: ops-console->edge-gateway
+    from: ops-console
+    to: edge-gateway
+    kind: call
+  - id: driver-app->driver-socket
+    from: driver-app
+    to: driver-socket
+    kind: call
+    label: WebSocket
+  - id: edge-gateway->auth-svc
+    from: edge-gateway
+    to: auth-svc
+    kind: call
+    label: check tokens
+  - id: edge-gateway->booking-api
+    from: edge-gateway
+    to: booking-api
+    kind: call
+  - id: edge-gateway->payments-api
+    from: edge-gateway
+    to: payments-api
+    kind: call
+  - id: auth-svc->auth-redis
+    from: auth-svc
+    to: auth-redis
+    kind: call
+    label: sessions
+  - id: booking-api->trips-db
+    from: booking-api
+    to: trips-db
+    kind: call
+  - id: booking-api->fare-estimator
+    from: booking-api
+    to: fare-estimator
+    kind: call
+  - id: fare-estimator->zones-db
+    from: fare-estimator
+    to: zones-db
+    kind: call
+  - id: fare-estimator->surge-cache
+    from: fare-estimator
+    to: surge-cache
+    kind: call
+  - id: booking-api->events
+    from: booking-api
+    to: events
+    kind: async
+    label: trip-requested, trip-cancelled
+  - id: driver-socket->events
+    from: driver-socket
+    to: events
+    kind: async
+    label: locations
+  - id: events->location-ingest
+    from: events
+    to: location-ingest
+    kind: async
+  - id: location-ingest->geo-index
+    from: location-ingest
+    to: geo-index
+    kind: call
+  - id: events->matcher
+    from: events
+    to: matcher
+    kind: async
+  - id: matcher->geo-index
+    from: matcher
+    to: geo-index
+    kind: call
+  - id: matcher->driver-socket
+    from: matcher
+    to: driver-socket
+    kind: call
+    label: offer trip
+  - id: matcher->events
+    from: matcher
+    to: events
+    kind: async
+    label: trip-matched
+  - id: surge-calculator->surge-cache
+    from: surge-calculator
+    to: surge-cache
+    kind: call
+  - id: events->payments-api
+    from: events
+    to: payments-api
+    kind: async
+  - id: events->notify-svc
+    from: events
+    to: notify-svc
+    kind: async
+  - id: payments-api->ledger-db
+    from: payments-api
+    to: ledger-db
+    kind: call
+  - id: payments-api->card-processor
+    from: payments-api
+    to: card-processor
+    kind: call
+  - id: payout-batch->ledger-db
+    from: payout-batch
+    to: ledger-db
+    kind: call
+  - id: payout-batch->bank-transfers
+    from: payout-batch
+    to: bank-transfers
+    kind: call
+  - id: notify-svc->push-provider
+    from: notify-svc
+    to: push-provider
+    kind: call
+  - id: push-provider->rider-app
+    from: push-provider
+    to: rider-app
+    kind: async
+  - id: push-provider->driver-app
+    from: push-provider
+    to: driver-app
+    kind: async
