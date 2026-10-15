@@ -511,6 +511,38 @@ Example:
   grafical group join cloud.grafical.yaml vpc web api
 `,
   },
+  "group copy": {
+    about: `Copy a group: a second zone, region or shard in one operation. The copy holds
+its inner groups, its boxes and the lines between them, every id with --suffix,
+and sits in the group the original sits in.`,
+    after: `
+Place:
+  Each copied box sits in its original's row, --before or --after a group
+  with a box in every row of the copy, as group order puts it. The group
+  itself always has one: --after <id>.
+
+Good to know:
+  - Copied boxes keep their labels, kinds, sizes, marks, lanes and columns.
+    Rename the ones that differ, such as a standby.
+  - Lines to boxes outside the group are copied only with --outside:
+    lb->web gives lb->web-b.
+  - A line's id <from>-><to> becomes its copy's ends: web-b->db-b.
+  - Notes and walls are not copied.
+
+When refused:
+  copy-conflict    a box's align, from, lane or column cannot hold for its
+                   copy where it was put; node names the box
+  no-shared-layer  the group given has no box in row; allowed lists the
+                   groups that do
+  duplicate-id     an id the copy makes is taken
+
+See also: group order, edge retarget, diff
+
+Example:
+  grafical group copy ha.grafical.yaml zone-a zone-b --label "Zone B" \\
+    --suffix -b --after zone-a --outside
+`,
+  },
   "group remove": {
     about:
       "Remove a group. Its nodes and inner groups move into the group around it, or out of every group with --out.",

@@ -21,6 +21,7 @@ import { noteTargets, pruneNotes } from "./notes.ts";
 import type {
   DiagramLegendOp,
   EdgeAddOp,
+  GroupCopyOp,
   LayerAddOp,
   NodeAddOp,
   NodeIconOp,
@@ -1527,7 +1528,151 @@ function orderGroup(s: State, op: Extract<Op, { op: "group.order" }>, i: number)
   return [];
 }
 
-/** The newer operations: diagram settings, layers, node and edge edits, group order. */
+/** A copied line's id: its copied ends' default id when it had its ends' default, else its own id with the suffix before any `#n`. */
+function copiedEdgeId(e: Edge, from: string, to: string, suffix: string): string {
+  const n = /#[0-9]+$/.exec(e.id)?.[0] ?? "";
+  const base = e.id.slice(0, e.id.length - n.length);
+  return base === `${e.from}->${e.to}` ? `${from}->${to}${n}` : `${base}${suffix}${n}`;
+}
+
+/**
+ * Copies a group, the groups inside it, its boxes and the lines between them, and with `outside` its lines to
+ * everything else (DESIGN.md, "A group copy holds its inside"). Each copied box joins its original's row, before or
+ * after the other group's boxes there, as group.order puts them (DESIGN.md, "The agent states every order").
+ */
+function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
+  const d = s.d;
+  const groups = d.groups ?? [];
+  const g = groups.find((x) => x.id === op.id);
+  if (!g) return [unknownGroup(d, op.id, i, "id")];
+  const inner = groups.filter((x) => x.id !== g.id && groupChain(d, x.id).includes(g.id));
+  const boxes = groupNodes(d, g.id);
+  const copyOf = new Map<string, string>([[g.id, op.into]]);
+  for (const x of [...inner, ...boxes]) copyOf.set(x.id, `${x.id}${op.suffix}`);
+  const mapped = (id: string) => copyOf.get(id) ?? id;
+  const rows = d.layers.filter((l) => l.nodes.some((n) => copyOf.has(n.id)));
+  // The groups with a box in every row of the copy, but those it would split.
+  const sharing = groups
+    .filter((x) => !inner.includes(x))
+    .filter((x) => rows.every((l) => l.nodes.some((n) => inGroup(d, n, x.id))))
+    .map((x) => x.id);
+  const set = (["before", "after"] as const).filter((k) => op[k] !== undefined);
+  if (set.length > 1) return [conflicting(i, set)];
+  const field = set[0];
+  if (field === undefined) {
+    return [
+      {
+        code: "missing-field",
+        index: i,
+        field: "before,after",
+        found: "",
+        facts: { allowed: sharing },
+      },
+    ];
+  }
+  const other = op[field] as string;
+  if (!groups.some((x) => x.id === other)) return [unknownGroup(d, other, i, field)];
+  // An alignment or a step to a box outside the group cannot hold for the box and its copy at once.
+  const errors: OpError[] = [];
+  for (const n of boxes) {
+    for (const key of ["align", "from"] as const) {
+      const to = n[key];
+      if (to === undefined || copyOf.has(to)) continue;
+      const fix =
+        key === "align" ? `node align <file> ${n.id}` : `node move <file> ${n.id} --layer <row>`;
+      errors.push({
+        code: "copy-conflict",
+        index: i,
+        field: key,
+        found: to,
+        facts: { node: n.id, fix: [fix] },
+      });
+    }
+  }
+  if (errors.length > 0) return errors;
+  const inside = (end: string) => copyOf.has(end);
+  const lines = d.edges.filter((e) =>
+    op.outside === true ? inside(e.from) || inside(e.to) : inside(e.from) && inside(e.to),
+  );
+  const copies: Edge[] = lines.map((e) => {
+    const from = mapped(e.from);
+    const to = mapped(e.to);
+    return { ...structuredClone(e), id: copiedEdgeId(e, from, to, op.suffix), from, to };
+  });
+  const made = [op.into, ...inner.map((x) => mapped(x.id)), ...boxes.map((n) => mapped(n.id))];
+  const seen = new Set<string>();
+  for (const [k, id] of [...made, ...copies.map((e) => e.id)].entries()) {
+    const kind = unusedKind(d, id);
+    if (kind === undefined && !seen.has(id)) {
+      seen.add(id);
+      continue;
+    }
+    const is = kind === undefined ? {} : { is: kind };
+    errors.push({
+      code: "duplicate-id",
+      index: i,
+      field: k === 0 ? "into" : "suffix",
+      found: id,
+      facts: is,
+    });
+  }
+  if (errors.length > 0) return errors;
+  const unshared = rows.find((l) => !l.nodes.some((n) => inGroup(d, n, other)));
+  if (unshared !== undefined) {
+    return [
+      {
+        code: "no-shared-layer",
+        index: i,
+        field,
+        found: other,
+        facts: { allowed: sharing, row: unshared.id, group: g.id },
+      },
+    ];
+  }
+  const copyNode = (n: DiagramNode): DiagramNode => {
+    const c = structuredClone(n);
+    c.id = mapped(n.id);
+    if (n.group !== undefined) c.group = mapped(n.group);
+    if (n.align !== undefined) c.align = mapped(n.align);
+    if (n.from !== undefined) c.from = mapped(n.from);
+    return c;
+  };
+  for (const l of rows) {
+    const theirs = (n: DiagramNode) => inGroup(d, n, other);
+    const at = field === "before" ? l.nodes.findIndex(theirs) : l.nodes.findLastIndex(theirs) + 1;
+    l.nodes.splice(at, 0, ...l.nodes.filter((n) => copyOf.has(n.id)).map(copyNode));
+  }
+  const stepped = (d.nodes ?? []).filter((n) => copyOf.has(n.id));
+  if (stepped.length > 0) d.nodes = [...(d.nodes ?? []), ...stepped.map(copyNode)];
+  const top: Group = { id: op.into, label: op.label };
+  if (g.sublabel !== undefined) top.sublabel = g.sublabel;
+  if (g.in !== undefined) top.in = g.in;
+  const nested = inner.map((x) => ({ ...x, id: mapped(x.id), in: mapped(x.in as string) }));
+  d.groups = [...groups, top, ...nested];
+  d.edges.push(...copies);
+  // The copies keep their originals' lanes and columns. A place that their order would move is refused, not moved.
+  const probe = structuredClone(d);
+  const moved = new Set([...orderByLanes(probe), ...orderByColumns(probe)]);
+  const key = laneRun(d) === "columns" ? "lane" : "column";
+  const away = boxes.filter((n) => moved.has(mapped(n.id)));
+  // The box whose own lane or column moves it, or else the first one moved.
+  const original = away.find((n) => n[key] !== undefined) ?? away[0];
+  if (original !== undefined) {
+    return [
+      {
+        code: "copy-conflict",
+        index: i,
+        field: key,
+        found: original[key] ?? "",
+        facts: { node: original.id },
+      },
+    ];
+  }
+  touch(s, ...made, ...copies.map((e) => e.id));
+  return [];
+}
+
+/** The newer operations: diagram settings, layers, node and edge edits, group order and copy. */
 function editStep(s: State, op: Op, i: number): OpError[] | undefined {
   const d = s.d;
   switch (op.op) {
@@ -1724,6 +1869,8 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
     }
     case "group.order":
       return orderGroup(s, op, i);
+    case "group.copy":
+      return copyGroup(s, op, i);
     default:
       return undefined;
   }

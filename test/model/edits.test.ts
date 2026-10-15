@@ -297,6 +297,15 @@ describe("parsing", () => {
       { op: "edge.retarget", id: "a->b", to: "c" },
       { op: "group.describe", id: "g", text: "t" },
       { op: "group.order", id: "g", after: "h" },
+      {
+        op: "group.copy",
+        id: "g",
+        into: "h",
+        label: "H",
+        suffix: "-2",
+        before: "g",
+        outside: true,
+      },
     ];
     for (const [k, item] of items.entries()) {
       const parsed = parseOp(item, k);

@@ -4,7 +4,7 @@
 import { z } from "zod";
 import type { OpError } from "../errors.ts";
 import { issuesToErrors, OP_KEYS, show } from "./issues.ts";
-import { edgeId, nodeId, steps, text, weightValue } from "./schema.ts";
+import { edgeId, idSuffix, nodeId, steps, text, weightValue } from "./schema.ts";
 import { closest } from "./suggest.ts";
 import {
   DENSITIES,
@@ -319,6 +319,22 @@ export interface GroupOrderOp {
   before?: string;
   after?: string;
 }
+/**
+ * A copy of a group, its inner groups, its boxes and the lines between them, each id with the suffix; each
+ * copied box in its original's row, before or after another group (DESIGN.md, "A group copy holds its inside").
+ */
+export interface GroupCopyOp {
+  op: "group.copy";
+  id: string;
+  /** The copy's id. */
+  into: string;
+  label: string;
+  suffix: string;
+  before?: string;
+  after?: string;
+  /** true: lines between the group and what is outside it are copied too. */
+  outside?: boolean;
+}
 /** Members are layers (lanes then run as rows), nodes (as columns) or groups (DESIGN.md, "Swimlanes run one way"). */
 export interface LaneAddOp {
   op: "lane.add";
@@ -411,6 +427,7 @@ export type Op =
   | GroupRemoveOp
   | GroupDescribeOp
   | GroupOrderOp
+  | GroupCopyOp
   | LaneAddOp
   | LaneJoinOp
   | LaneLeaveOp
@@ -687,6 +704,16 @@ export const groupOrderSchema = z.strictObject({
   before: nodeId.optional(),
   after: nodeId.optional(),
 });
+export const groupCopySchema = z.strictObject({
+  op: z.literal("group.copy"),
+  id: nodeId,
+  into: nodeId,
+  label: text,
+  suffix: idSuffix,
+  before: nodeId.optional(),
+  after: nodeId.optional(),
+  outside: z.boolean().optional(),
+});
 export const laneAddSchema = z.strictObject({
   op: z.literal("lane.add"),
   id: nodeId,
@@ -767,6 +794,7 @@ export const opSchema = z.discriminatedUnion("op", [
   diagramLegendSchema,
   groupDescribeSchema,
   groupOrderSchema,
+  groupCopySchema,
   laneAddSchema,
   laneJoinSchema,
   laneLeaveSchema,
@@ -825,6 +853,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.legend": diagramLegendSchema,
   "group.describe": groupDescribeSchema,
   "group.order": groupOrderSchema,
+  "group.copy": groupCopySchema,
   "lane.add": laneAddSchema,
   "lane.join": laneJoinSchema,
   "lane.leave": laneLeaveSchema,

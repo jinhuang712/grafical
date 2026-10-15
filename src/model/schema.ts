@@ -8,7 +8,7 @@ import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
 import { checkColumns } from "./columns.ts";
 import { checkEnds } from "./ends.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
-import { ID_EDGE, ID_NODE, issuesToErrors, WEIGHT } from "./issues.ts";
+import { ID_EDGE, ID_NODE, ID_SUFFIX, issuesToErrors, WEIGHT } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
 import { noteTargets } from "./notes.ts";
 import { checkSteps, everyNode, MAX_STEPS, STEP_KEYS } from "./steps.ts";
@@ -44,6 +44,8 @@ const ID_RE = /^[a-z0-9][a-z0-9._-]*$/;
 const EDGE_ID_RE = /^[a-z0-9][a-z0-9._-]*(->[a-z0-9][a-z0-9._-]*)?(#[0-9]+)?$/;
 
 export const nodeId = z.string().regex(ID_RE, { message: ID_NODE });
+/** What a group copy appends to every id it makes (DESIGN.md, "A group copy holds its inside"). */
+export const idSuffix = z.string().regex(/^[a-z0-9._-]+$/, { message: ID_SUFFIX });
 export const edgeId = z.string().regex(EDGE_ID_RE, { message: ID_EDGE });
 export const text = z.string().min(1);
 /**

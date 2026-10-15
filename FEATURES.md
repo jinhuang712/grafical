@@ -341,17 +341,18 @@ grafical group remove <file> <id> [--out]
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group. Lines that end at the group go with it.
 - A box inside a box takes the canvas's fill, so the fills alternate by depth. A stylesheet may set `paint.nesting: shade` instead.
 
-### Copying a group ⬜
+### Copying a group ✅
 
 A second zone, region or shard in one operation.
 
 ```sh
-grafical group copy <file> <group> <new-id> --suffix <suffix> --before <group> | --after <group>
+grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before <group> | --after <group> [--outside]
 ```
 
-- The copy holds the group's boxes, its inner groups and the lines between them. Every copied ID ends in the suffix.
-- Each copied box sits in its original's row. The agent states where the copy goes, before or after a group in every row the two share, as `group order` does (DESIGN.md, "The agent states every order").
-- Not decided: whether lines to boxes outside the group are copied too.
+- The copy holds the group's inner groups, its boxes and the lines between them, and sits in the group the original sits in. Every id it makes ends in the suffix, except `<into>`, and a line id `<from>-><to>` follows its copied ends.
+- `--outside` also copies the lines between the group and everything outside it, their inside end moved to the copy.
+- Each copied box sits in its original's row, with its label, kind, size, marks, lane and column. `--before` or `--after` puts the copy before or after a group in every row of the copy, as `group order` does (DESIGN.md, "The agent states every order"). A group with no box in one of those rows is refused as `no-shared-layer`.
+- An alignment or steps to a box outside the group, and a lane or a column that would move the copy from its place, are refused as `copy-conflict`, naming the box (DESIGN.md, "A group copy holds its inside"). Notes and walls are not copied.
 
 ### Deeper nesting ⬜
 

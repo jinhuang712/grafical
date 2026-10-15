@@ -197,7 +197,7 @@ function build(): Command {
 
   const group = program
     .command("group")
-    .description("boxes around one system: add, join, leave, rename, describe, order, remove");
+    .description("a box per system: add, copy, join, leave, rename, describe, order, remove");
   json(
     group
       .command("add")
@@ -784,6 +784,28 @@ function build(): Command {
       .option("--after <group>", "just after this group"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "group.order", id, ...pick(opts, ["before", "after"]) }, opts);
+  });
+  json(
+    group
+      .command("copy")
+      .description("copy a group with its inner groups, boxes and the lines between them")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("<into>", "the copy's id")
+      .requiredOption("--label <text>", "the copy's label")
+      .requiredOption("--suffix <suffix>", "added to every other id the copy makes")
+      .option("--before <group>", "just before this group, in every row of the copy")
+      .option("--after <group>", "just after this group, in every row of the copy")
+      .option("--outside", "copy the lines to boxes outside the group too"),
+  ).action(async (file: string, id: string, into: string, opts: Opts) => {
+    const raw: Record<string, unknown> = {
+      op: "group.copy",
+      id,
+      into,
+      ...pick(opts, ["label", "suffix", "before", "after"]),
+    };
+    if (opts.outside === true) raw.outside = true;
+    await write(file, raw, opts);
   });
 
   json(

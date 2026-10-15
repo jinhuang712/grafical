@@ -126,6 +126,37 @@ describe("grouped diagrams", () => {
     expect(body.counts.nodes).toBe(17);
   });
 
+  it('group copy writes the copy, and prints its refusals as records (DESIGN.md, "A group copy holds its inside")', () => {
+    const f = "copy.grafical.yaml";
+    run("new", f, "--title", "Copy");
+    writeFileSync(
+      join(dir, "copy.yaml"),
+      [
+        "- {op: layer.add, id: r1, label: R1}",
+        "- {op: layer.add, id: r2, label: R2}",
+        "- {op: node.add, id: lb, layer: r1, label: LB}",
+        "- {op: node.add, id: web, layer: r2, label: Web}",
+        "- {op: group.add, id: zone, label: Zone A, nodes: [web]}",
+        "- {op: edge.add, from: lb, to: web}",
+        "",
+      ].join("\n"),
+    );
+    expect(run("apply", f, "copy.yaml").code).toBe(0);
+    const args = ["group", "copy", f, "zone", "zone-b", "--label", "Zone B", "--suffix", "-b"];
+    const missing = run(...args);
+    expect(missing.code).toBe(1);
+    expect(missing.out).toBe(
+      "failed changed=-\nerror op=0 code=missing-field field=before,after found=- allowed=zone\n",
+    );
+    expect(run(...args, "--after", "zone", "--outside").out).toBe(
+      "ok changed=zone-b,web-b,lb->web-b\n",
+    );
+    expect(run("show", f).out).toContain('layer r2 "R2": web "Web" service group=zone | web-b');
+    expect(run(...args, "--after", "zone").out).toContain(
+      "error op=0 code=duplicate-id field=into found=zone-b is=group",
+    );
+  });
+
   it("the help teaches the grouped style", () => {
     const help = run("--help").out + run("apply", "--help").out + run("group", "add", "--help").out;
     for (const w of ["group add", "subtitle", "Not shown:", "sublabel"]) {

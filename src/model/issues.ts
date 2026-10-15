@@ -8,6 +8,8 @@ import { EDGE_KINDS, type EdgeKind } from "./types.ts";
 
 export const ID_NODE = "ID_NODE";
 export const ID_EDGE = "ID_EDGE";
+/** A group copy's suffix: the characters of an id, and it may start with any of them. */
+export const ID_SUFFIX = "ID_SUFFIX";
 /** An edge weight that is neither a level name nor a width within the limits (DESIGN.md, "Edge weights"). */
 export const WEIGHT = "WEIGHT";
 
@@ -15,17 +17,15 @@ export const WEIGHT = "WEIGHT";
 const ID_CHARS = ["a-z", "0-9", ".", "_", "-"];
 const EDGE_ID_CHARS = [...ID_CHARS, "->", "#<n>"];
 
-/** The id an agent most likely meant: lowercase, with other characters as hyphens. */
-function likelyId(v: unknown, edge: boolean): string[] {
+/** The id an agent most likely meant: lowercase, with other characters as hyphens. A suffix keeps its hyphens at the ends. */
+function likelyId(v: unknown, edge: boolean, suffix = false): string[] {
   if (typeof v !== "string") return [];
   const parts = edge ? v.split("->") : [v];
   const id = parts
-    .map((p) =>
-      p
-        .toLowerCase()
-        .replace(/[^a-z0-9._#-]+/g, "-")
-        .replace(/^-+|-+$/g, ""),
-    )
+    .map((p) => {
+      const lower = p.toLowerCase().replace(/[^a-z0-9._#-]+/g, "-");
+      return suffix ? lower.replace(/#/g, "-") : lower.replace(/^-+|-+$/g, "");
+    })
     .join("->");
   return id === "" || id === v ? [] : [id];
 }
@@ -115,14 +115,21 @@ export function issuesToErrors(
               ? guessedKind(raw, path, found, values)
               : { allowed: values },
       });
-    } else if (issue.message === ID_NODE || issue.message === ID_EDGE) {
+    } else if (
+      issue.message === ID_NODE ||
+      issue.message === ID_EDGE ||
+      issue.message === ID_SUFFIX
+    ) {
       const edge = issue.message === ID_EDGE;
       out.push({
         code: "bad-id",
         index,
         ...base,
         found: show(found),
-        facts: { allowed: edge ? EDGE_ID_CHARS : ID_CHARS, likely: likelyId(found, edge) },
+        facts: {
+          allowed: edge ? EDGE_ID_CHARS : ID_CHARS,
+          likely: likelyId(found, edge, issue.message === ID_SUFFIX),
+        },
       });
     } else if (issue.message === WEIGHT) {
       // The stylesheet's own levels are checked once it is read; these are the built-in ones.
