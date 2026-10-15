@@ -665,6 +665,37 @@ function compute(
       forbidTop.set(l.index, list);
     }
   }
+  // Walls that run across (DESIGN.md, "Walls as space"): each takes its own space in the gutter just below the
+  // lowest row of its upper side, after the gutter's tracks.
+  const acrossWalls = (d.walls ?? []).flatMap((w) => {
+    const way = wallRun(d, w);
+    if (way?.run !== "across") return [];
+    const gutter = Math.max(...way.first.map((id) => nodes.get(id)?.layer ?? 0));
+    return [{ wall: w, gutter }];
+  });
+  // Where a line between two boxes of a row may not take the gutter above it: a wall
+  // across there lies between the gutter's tracks and the row, a wall up and down runs
+  // through it or reaches into it, and a lane's border runs below its tracks.
+  const closedAbove = new Map<number, [number, number][]>();
+  const close = (row: number, span: [number, number]) =>
+    closedAbove.set(row, [...(closedAbove.get(row) ?? []), span]);
+  for (const { wall, gutter } of acrossWalls) {
+    const xs = [...wall.between, ...wall.and].flatMap((id) => {
+      const n = nodes.get(id);
+      const g = groups.find((x) => x.id === id);
+      return n !== undefined ? [n.x, n.x + n.w] : g !== undefined ? [g.x0, g.x1] : [];
+    });
+    if (xs.length > 0)
+      close(gutter + 1, [Math.min(...xs) - WALL.reach, Math.max(...xs) + WALL.reach]);
+  }
+  // A wall up and down reaches past its boxes, into the gutters above and below its rows.
+  for (const b of besideWalls) for (let r = b.top; r <= b.bottom + 1; r++) close(r, [b.x0, b.x1]);
+  if (run === "rows") {
+    const laneOf = (i: number) => d.layers[layers[i]?.index ?? -1]?.lane;
+    for (let i = 1; i < layers.length; i++) {
+      if (laneOf(i) !== laneOf(i - 1)) close(i, [-Infinity, Infinity]);
+    }
+  }
   const forbidGap = new Map<string, [number, number][]>();
   for (const [id, x0] of placement.sideLabels) {
     const slot = sideways.get(id);
@@ -691,6 +722,7 @@ function compute(
         },
       ]),
     ),
+    closedAbove,
     boxes: placement.groups.map((g) => ({
       x0: g.x0,
       x1: g.x1,
@@ -911,14 +943,6 @@ function compute(
     );
     return Math.max(0, full + (crowded ? GROUP.clear : 0) - tracks);
   };
-  // Walls that run across (DESIGN.md, "Walls as space"): each takes its own space in the gutter just below the
-  // lowest row of its upper side, after the gutter's tracks.
-  const acrossWalls = (d.walls ?? []).flatMap((w) => {
-    const way = wallRun(d, w);
-    if (way?.run !== "across") return [];
-    const gutter = Math.max(...way.first.map((id) => nodes.get(id)?.layer ?? 0));
-    return [{ wall: w, gutter }];
-  });
   const wallsAt = (i: number) => acrossWalls.filter((x) => x.gutter === i).length;
   /** Where the walls of gutter i start, top to bottom. */
   const wallTops = new Map<number, number>();

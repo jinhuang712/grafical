@@ -24,10 +24,6 @@ The split is on purpose: rule 4 of DESIGN.md, "A target picture with measured ru
 
 `check --all` counts a group's border as a line across an edge's label, but not a band's or a lane's. A label moved beside a line cut at a container already keeps off band borders. The checker should count them too, and the gutters keep labels off them.
 
-## A line between two boxes of one row always runs under the row
-
-A line between two boxes of one row that are not neighbours always takes the gutter below the row (`uturn` in `src/layout/route.ts`), even when the gutter above crosses fewer lines. Tried on 2026-10-16: taking the side whose boxes between the two ends meet fewer other lines cut crossings over the 306 saved drafts from 676 to 651 in 9 drafts, and over 2,000 fuzz seeds by 5.7%. It is not built, because the gutter above a row does not know the heads of the groups that start in the row: a line came down through a group's label, and labels landed across a group's border (fuzz seeds 27 and 88). Restricted to unlabelled lines under no group label, it still added 15 `needless-bend` and 10 `wall-crossed` over 2,000 seeds, and the second is the agent's defect: the write would be refused for the engine's choice. Building it needs the gutter above a row to treat the group heads and walls in it as it treats them below.
-
 ## Group order leaves out the boxes of inner groups
 
 `group order` moves only a group's own boxes. A group whose boxes all sit in inner groups, such as a zone around its subnets, is refused as `no-shared-layer`: `group order <file> az-b --before az-a` failed on 2026-10-16 for two zones of three subnets each. DESIGN.md, "Every layered diagram type" counts an inner group's boxes as the group's for every rule, and `group copy` already places them so.

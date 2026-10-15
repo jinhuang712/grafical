@@ -55,6 +55,12 @@ export interface RouteExtra {
   noSideExit: Set<string>;
   /** Group boxes across, with the rows they span and the nodes inside them (DESIGN.md, "Rows unseen, groups as systems", "Every layered diagram type"). */
   boxes: Box[];
+  /**
+   * x spans, by row, where a line between two boxes of the row may not run through the
+   * gutter above it: a wall across or a lane's border lies between its tracks and the
+   * row, or a wall up and down runs through it or reaches into it.
+   */
+  closedAbove: Map<number, [number, number][]>;
 }
 
 /** A group's box, as the router keeps lines out of it. */
@@ -75,14 +81,15 @@ const NO_EXTRA: RouteExtra = {
   bandEnds: new Map(),
   noSideExit: new Set(),
   boxes: [],
+  closedAbove: new Map(),
 };
 
 export type Side = "top" | "bottom" | "left" | "right";
 
 /**
  * down: to a lower layer. up: to a higher layer. uturn: within one layer through the
- * gutter below it, and every self-loop. neighbour: straight across the gap between
- * two neighbours.
+ * gutter below it or above it, and every self-loop. neighbour: straight across the gap
+ * between two neighbours.
  */
 export type PlanKind = "down" | "up" | "uturn" | "neighbour";
 
@@ -243,27 +250,93 @@ export function routeAcross(
 ): Routing {
   const gapsByLayer = layers.map((l) => gapsOf(l, extra));
   const sorted = [...edges].sort((a, b) => cmp(a.id, b.id));
-  const plans: Plan[] = [];
-  for (const edge of sorted) {
-    const pl = makePlan(edge, nodes, labels, extra);
-    if (pl !== undefined) plans.push(pl);
-  }
-  assignBuses(plans, extra.alone);
-  chooseGaps(plans, gapsByLayer, extra.forbidTop, extra.boxes, extra.bandEnds);
-  assignGapTracks(plans, extra.boxes);
-  chooseSideExits(plans, layers, extra.forbidTop, extra.noSideExit);
-  chooseSideEntries(plans, layers, extra.forbidTop, extra.noSideExit);
-  placePorts(plans, extra.forbidTop);
-  straightenPorts(plans);
-
-  // A label that its gutter cannot hold clear of every other line moves to the
-  // next gutter of its path. Once it has tried them all, its line steps out of the
-  // crowd in its first gutter, and the label sits beside the step.
-  const byId = new Map(plans.map((p) => [p.edge.id, p]));
   // The sides of each group box that runs through a gutter, from a row above it to one below.
   const sides = layers.map((_, g) =>
     extra.boxes.filter((b) => b.top <= g && b.bottom > g).flatMap((b) => [b.x0, b.x1]),
   );
+  const route = (below: ReadonlySet<string>) => {
+    const plans: Plan[] = [];
+    for (const edge of sorted) {
+      const pl = makePlan(edge, nodes, labels, extra);
+      if (pl !== undefined) plans.push(pl);
+    }
+    assignBuses(plans, extra.alone);
+    chooseGaps(plans, gapsByLayer, extra.forbidTop, extra.boxes, extra.bandEnds);
+    assignGapTracks(plans, extra.boxes);
+    chooseUturnGutters(plans, layers, extra.forbidTop, extra.closedAbove, below);
+    chooseSideExits(plans, layers, extra.forbidTop, extra.noSideExit);
+    chooseSideEntries(plans, layers, extra.forbidTop, extra.noSideExit);
+    placePorts(plans, extra.forbidTop);
+    straightenPorts(plans);
+    return { plans, ...channels(plans, layers, pitch, sides) };
+  };
+  // A line between two boxes of a row that takes the gutter above moves the ports of its
+  // boxes and adds a run to that gutter. It goes back below, and everything is routed
+  // again, while a line in that gutter or at one of its boxes bends for nothing, or a
+  // label in that gutter steps out of the crowd, that did not while every such line ran
+  // below (DESIGN.md, "Who chose is punished").
+  const below = new Set<string>();
+  let r = route(below);
+  const above = (ps: Plan[]) => ps.filter((pl) => pl.kind === "uturn" && pl.srcSide === "top");
+  if (above(r.plans).length > 0) {
+    const all = new Set(
+      sorted.filter((e) => nodes.get(e.from)?.layer === nodes.get(e.to)?.layer).map((e) => e.id),
+    );
+    const base = route(all);
+    const bentBefore = new Set(base.plans.filter(needless).map((pl) => pl.edge.id));
+    const awayBefore = new Set(base.gutters.flat().flatMap((v) => (v.detour ? [v.id] : [])));
+    for (;;) {
+      const bent = r.plans.filter((pl) => needless(pl) && !bentBefore.has(pl.edge.id));
+      const away = r.gutters.flatMap((vs, g) =>
+        vs.some((v) => v.detour !== undefined && !awayBefore.has(v.id)) ? [g] : [],
+      );
+      const back = above(r.plans).filter((pl) => {
+        const g = pl.gutters[0] ?? -1;
+        return (
+          away.includes(g) ||
+          bent.some((o) => o.gutters[0] === g || [o.u, o.v].some((n) => n === pl.u || n === pl.v))
+        );
+      });
+      if (back.length === 0) break;
+      for (const pl of back) below.add(pl.edge.id);
+      r = route(below);
+    }
+  }
+  const { plans, gutters, rows } = r;
+
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  const see = (x: number) => {
+    if (!Number.isFinite(x)) return;
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+  };
+  for (const vs of gutters) {
+    for (const v of vs) {
+      see(v.lo);
+      see(v.hi);
+      if (v.detour !== undefined) see(v.detour.x);
+      if (v.label !== undefined) {
+        see(v.label.x0);
+        see(v.label.x0 + v.label.w);
+      }
+    }
+  }
+  return { plans, gutters, rows, minX, maxX };
+}
+
+/**
+ * The rows and labels of every gutter. A label that its gutter cannot hold clear of
+ * every other line moves to the next gutter of its path. Once it has tried them all,
+ * its line steps out of the crowd in its first gutter, and the label sits beside the step.
+ */
+function channels(
+  plans: Plan[],
+  layers: PLayer[],
+  pitch: number,
+  sides: number[][],
+): { gutters: Visit[][]; rows: number[] } {
+  const byId = new Map(plans.map((p) => [p.edge.id, p]));
   const moved = new Map<string, Set<number>>();
   const away = new Set<string>();
   let gutters: Visit[][] = [];
@@ -293,26 +366,7 @@ export function routeAcross(
     }
     if (!again) break;
   }
-
-  let minX = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  const see = (x: number) => {
-    if (!Number.isFinite(x)) return;
-    minX = Math.min(minX, x);
-    maxX = Math.max(maxX, x);
-  };
-  for (const vs of gutters) {
-    for (const v of vs) {
-      see(v.lo);
-      see(v.hi);
-      if (v.detour !== undefined) see(v.detour.x);
-      if (v.label !== undefined) {
-        see(v.label.x0);
-        see(v.label.x0 + v.label.w);
-      }
-    }
-  }
-  return { plans, gutters, rows, minX, maxX };
+  return { gutters, rows };
 }
 
 function cmp(a: string, b: string): number {
@@ -467,6 +521,79 @@ function makePlan(
     between,
     ideal: [centreX(u), centreX(v)],
   };
+}
+
+/**
+ * A line between two boxes of one row runs through the gutter below the row, unless
+ * fewer other lines meet the boxes between its ends on their tops than on their
+ * bottoms: each of those lines crosses its run, so it then takes the gutter above. A
+ * tie keeps it below. A line of the row with both ends from one of its ends to the
+ * other is not counted: it runs inside the run, in either gutter. Its ports keep clear
+ * of the group labels at the top of the row, as every top port does, so a line with an
+ * end wholly under one stays below, as does a line whose ends span a wall or a lane's
+ * border in the gutter above, and a line that shares a port with others. It chooses
+ * once the corridors are chosen, which count it below its row, so that where it runs
+ * moves no other line's corridor. Lines choose in id order, each counting the sides the
+ * lines before it chose.
+ */
+function chooseUturnGutters(
+  plans: Plan[],
+  layers: PLayer[],
+  forbidTop: Map<number, [number, number][]>,
+  closedAbove: Map<number, [number, number][]>,
+  below: ReadonlySet<string>,
+): void {
+  for (const pl of plans) {
+    const { u, v } = pl;
+    if (pl.kind !== "uturn" || u === v || u.layer === 0 || below.has(pl.edge.id)) continue;
+    if (pl.bus !== undefined || pl.fanIn !== undefined) continue;
+    // A box whose top lies under a group's label has no port there.
+    const labels = forbidTop.get(u.layer) ?? [];
+    const lo = (n: PNode) => n.x + portInset(n.w);
+    const hi = (n: PNode) => n.x + n.w - portInset(n.w);
+    const open = (n: PNode) => !inSpans(nearestFree(centreX(n), lo(n), hi(n), labels), labels);
+    if (!open(u) || !open(v)) continue;
+    const row = layers[u.layer]?.nodes ?? [];
+    const [a, b] = row.indexOf(u) < row.indexOf(v) ? [u, v] : [v, u];
+    const span = row.slice(row.indexOf(a), row.indexOf(b) + 1);
+    const inner = new Set(span.slice(1, -1));
+    let tops = 0;
+    let bottoms = 0;
+    for (const o of plans) {
+      // A line with both ends from one of its ends to the other runs inside its run.
+      if (o === pl || o.kind === "neighbour" || (span.includes(o.u) && span.includes(o.v)))
+        continue;
+      for (const [n, side] of [
+        [o.u, o.srcSide],
+        [o.v, o.dstSide],
+      ] as const) {
+        if (!inner.has(n)) continue;
+        if (side === "top") tops++;
+        else bottoms++;
+      }
+    }
+    if (tops >= bottoms) continue;
+    const closed = closedAbove.get(u.layer) ?? [];
+    if (closed.some(([lo, hi]) => lo < b.x + b.w && hi > a.x)) continue;
+    pl.srcSide = "top";
+    pl.dstSide = "top";
+    pl.gutters = [u.layer - 1];
+  }
+}
+
+/**
+ * A line between neighbouring rows, from the upper box's bottom into the lower box's
+ * top through ports of its own, that bends although each port lies within the other
+ * box's side: one x would have served both (DESIGN.md, "Who chose is punished").
+ */
+function needless(pl: Plan): boolean {
+  if ((pl.kind !== "down" && pl.kind !== "up") || pl.between.length > 0) return false;
+  if (pl.bus !== undefined || pl.fanIn !== undefined) return false;
+  if (pl.turn !== undefined || pl.turnIn !== undefined) return false;
+  if (Math.abs(pl.srcPort - pl.dstPort) < EPS) return false;
+  const inset = ROUTE.portMin / 2 + 2;
+  const within = (x: number, n: PNode) => x >= n.x + inset - EPS && x <= n.x + n.w - inset + EPS;
+  return within(pl.srcPort, pl.v) && within(pl.dstPort, pl.u);
 }
 
 /** How many ports a node's top or bottom side holds at the port pitch. */

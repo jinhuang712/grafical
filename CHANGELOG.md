@@ -6,6 +6,7 @@ What changed in each release of grafical, from the side of the agent that draws 
 
 grafical has not been released; the first release is 0.1.0 (ROADMAP.md, "Release 0.1.0").
 
+- A line between two boxes of one row may run above the row instead of under it, when fewer lines meet the boxes between its ends from above than from below: it then crosses fewer lines. It stays below where its box lies under a group's label, where a wall or a lane's border lies above the row, and where going above would bend another line or push a label out of its place.
 - `group copy` copies a group with its inner groups, its boxes and the lines between them, every id with `--suffix`, before or after a group in each of its rows: a second zone, region or shard in one operation. `--outside` copies its lines to everything else too.
 - `show --drawn` prints a `gutter` record for each pair of neighbouring rows, with the lines, crossings, tight pairs and crowded labels between them.
 - The `counts` record gains `across=` (lines through a group holding neither of their ends), `tight=` (pairs of runs of two lines side by side under 12 px apart for over 100 px) and `crowded=` (line labels with under 8 px of room on two or more sides). `apply --help` describes them.

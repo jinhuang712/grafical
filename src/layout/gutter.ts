@@ -480,8 +480,7 @@ export function routeGutter(
 
 /** A detour serves a run between the two boundaries, a straight line, or a u-turn. */
 function canDetour(v: Visit): boolean {
-  const tops = v.stubs.filter((s) => s.top).length;
-  return v.stubs.length === 2 && (tops === 1 || tops === 2);
+  return v.stubs.length === 2;
 }
 
 /**
@@ -489,7 +488,8 @@ function canDetour(v: Visit): boolean {
  * open at the top of the gutter, and everything else moves down. A run between
  * the two boundaries takes the top row from its upper stub and a new bottom row to
  * its lower stub, and the two rows meet in a vertical line outside every other
- * line of the gutter, on the nearer side. A u-turn takes two top rows instead.
+ * line of the gutter, on the nearer side. A u-turn takes two top rows instead, and
+ * one from the gutter's bottom boundary two new bottom rows.
  * The label sits beside the far end of the lower row, where nothing else is. Each
  * detour lies outside the ones before it, so they nest without touching.
  */
@@ -547,6 +547,17 @@ function placeDetours(
     };
     for (let s = across(x); s !== undefined; s = across(x)) {
       x = right ? Math.ceil((s + 16) / 4) * 4 : Math.floor((s - 16) / 4) * 4;
+    }
+    if (v.stubs.every((s) => !s.top)) {
+      // Below everything, the stub nearer the turn on the lower row.
+      const low = Math.ceil((maxY + lab.h / 2 + 2 * clr + 4) / pitch) + 1;
+      const near = Math.abs((xs[0] ?? 0) - x) <= Math.abs((xs[1] ?? 0) - x) ? 0 : 1;
+      v.detour = { x, rows: xs.map((_, i) => (i === near ? low + 2 : low)) };
+      v.row = low + 2;
+      lab.mode = "beside";
+      lab.x0 = right ? x + side : x - side - lab.w;
+      done.push(v);
+      continue;
     }
     const turn = v.stubs.every((s) => s.top);
     // Room at the top for the new rows, clear of every label below them.
