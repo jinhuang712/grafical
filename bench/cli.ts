@@ -13,12 +13,15 @@
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   mechanical defects: check every step's picture's geometry
 //   lines --round <name>                      measure each final diagram's lines, and the agent's tries (DESIGN.md, "Records over prose")
+//   diff <ref> [--seeds 2000] [--render <dir>]
+//                                             what the working tree's engine changes against <ref>, over saved drafts, fixtures and fuzz seeds; costs nothing
 //   speed                                     speed: time one operation and one command
 //   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints|hints2|hints3|hints4|help|brief|help2|help3|records> --dry-run | --approved [--only <chain>]
 //                                             the end of stage 1, one part at a time
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { runDiff } from "./diff.ts";
 import { buildGallery, SITE } from "./gallery.ts";
 import { checkRound } from "./geometry.ts";
 import { runJudging } from "./judge.ts";
@@ -181,6 +184,20 @@ function main(argv: string[]): void {
         );
       }
       console.log(`part ${part}: $${spent.toFixed(3)} spent`);
+      return;
+    }
+    case "diff": {
+      const ref = args[0];
+      if (ref === undefined || ref.startsWith("--")) {
+        console.error("usage: pnpm bench diff <ref> [--seeds <n>] [--render <dir>]");
+        process.exit(2);
+      }
+      runDiff({
+        ref,
+        seeds: Number(flag(args, "seeds") ?? 2000),
+        renderDir: flag(args, "render"),
+        cwd: process.cwd(),
+      }).then((lines) => console.log(lines.join("\n")));
       return;
     }
     case "speed": {

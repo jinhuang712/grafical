@@ -261,6 +261,7 @@ An ablation runs when its decision is built or questioned, not all at once.
   - Each chain gets a new, empty working directory holding only the brief and, for the grafical arm, a `grafical` command.
   - Both arms get the same tools: Bash, Read, Write and Edit. The prompt alone tells the grafical arm to draw with grafical, and the `offTool` metric counts any Bash command that draws another way.
   - A first measuring run had allowed the grafical arm only `grafical *` commands. Claude Code then blocked `grafical apply …; echo`, and the agent fell back to one command per call.
+- **What an engine change did:** `pnpm bench diff <ref>` compares the working tree's engine with the one at `<ref>` over the saved drafts, the fixtures and fuzz seeds, at no cost (bench/diff.ts).
 - **Measuring before a round:** `pnpm bench chain --arm <arm>` runs one chain, a first draft and its change requests, and prints each step's cost. Rule 4 below uses it.
 - **The end of stage 1:** `pnpm bench stage1 --part <e1e2|opus|scale|intent|mvp>` runs one part, `--dry-run` lists its chains and calls, and `--only <chain>` runs one chain to measure its cost first. The `mvp` part runs in `grafical-private/runs/`, outside the repository.
 - **The Mermaid arm** draws with `mmdc` (mermaid-cli), installed outside the repository in `~/.cache/grafical-bench/mermaid`, or `GRAFICAL_BENCH_MMDC`, with a puppeteer config that points at the local Chrome. It keeps its diagram in `diagram.mmd`.
