@@ -939,6 +939,19 @@ function runsAcross(plans: Plan[], pl: Plan, g: number, x: number): boolean {
 }
 
 /**
+ * The runs of side turns along the middle of a row, by gap (`${row}:${k}`). A gap may hold
+ * several, so long as their runs keep apart: then no two run along one line, and no
+ * turn's vertical part crosses another's run.
+ */
+type GapRuns = Map<string, [number, number][]>;
+function runFits(runs: GapRuns, gap: string, a: number, b: number): boolean {
+  return (runs.get(gap) ?? []).every(([lo, hi]) => b + TRACK_MIN <= lo || a - TRACK_MIN >= hi);
+}
+function addRun(runs: GapRuns, gap: string, a: number, b: number): void {
+  runs.set(gap, [...(runs.get(gap) ?? []), [Math.min(a, b), Math.max(a, b)]]);
+}
+
+/**
  * An edge into the next row up or down, to a node wholly on one side of its
  * source, leaves from that side of the source and turns once into the target: an
  * L with one bend, where leaving from the bottom takes a Z with two. It needs the
@@ -963,8 +976,7 @@ function chooseSideExits(
     taken.add(`${pl.v.id}:${pl.dstSide}`);
   }
   const pad = ROUTE.corridorPad;
-  // One side exit per gap of a row, so that two never run along one line.
-  const gapsUsed = new Set<string>();
+  const gapRuns: GapRuns = new Map();
   for (const pl of plans) {
     const { u, v } = pl;
     if (pl.kind !== "down" && pl.kind !== "up") continue;
@@ -1006,9 +1018,10 @@ function chooseSideExits(
     }
     // No line runs up or down through the source's row between it and the turn.
     const gk = left ? k : k + 1;
-    if (gapsUsed.has(`${u.layer}:${gk}`)) continue;
-    const a = Math.min(x, left ? u.x : u.x + u.w) - TRACK_MIN;
-    const b = Math.max(x, left ? u.x : u.x + u.w) + TRACK_MIN;
+    const edge = left ? u.x : u.x + u.w;
+    if (!runFits(gapRuns, `${u.layer}:${gk}`, Math.min(x, edge), Math.max(x, edge))) continue;
+    const a = Math.min(x, edge) - TRACK_MIN;
+    const b = Math.max(x, edge) + TRACK_MIN;
     const crossed = plans.some((o) =>
       o.gaps.some((g, j) => {
         const gx = o.gapX[j];
@@ -1020,7 +1033,7 @@ function chooseSideExits(
     pl.srcSide = side;
     pl.turn = x;
     taken.add(`${u.id}:${side}`);
-    gapsUsed.add(`${u.layer}:${gk}`);
+    addRun(gapRuns, `${u.layer}:${gk}`, x, edge);
   }
 }
 
@@ -1042,7 +1055,7 @@ function chooseSideEntries(
   noSideExit: Set<string>,
 ): void {
   const taken = new Set<string>();
-  const gapsUsed = new Set<string>();
+  const gapRuns: GapRuns = new Map();
   const gapOf = (n: PNode, side: Side) => {
     const row = layers[n.layer]?.nodes ?? [];
     const k = row.indexOf(n);
@@ -1055,7 +1068,12 @@ function chooseSideEntries(
     }
     if (pl.turn !== undefined) {
       taken.add(`${pl.u.id}:${pl.srcSide}`);
-      gapsUsed.add(gapOf(pl.u, pl.srcSide));
+      addRun(
+        gapRuns,
+        gapOf(pl.u, pl.srcSide),
+        pl.turn,
+        pl.srcSide === "left" ? pl.u.x : pl.u.x + pl.u.w,
+      );
     }
   }
   const pad = ROUTE.corridorPad;
@@ -1077,7 +1095,6 @@ function chooseSideEntries(
     const side: Side = left ? "right" : "left";
     if (taken.has(`${v.id}:${side}`)) continue;
     const gap = gapOf(v, side);
-    if (gapsUsed.has(gap)) continue;
     const row = layers[v.layer]?.nodes ?? [];
     const k = row.indexOf(v);
     const next = row[side === "right" ? k + 1 : k - 1];
@@ -1103,8 +1120,10 @@ function chooseSideEntries(
     }
     // No line runs up or down through the target's row between it and the turn.
     const gk = side === "right" ? k + 1 : k;
-    const a = Math.min(x, side === "right" ? v.x + v.w : v.x) - TRACK_MIN;
-    const b = Math.max(x, side === "right" ? v.x + v.w : v.x) + TRACK_MIN;
+    const edge = side === "right" ? v.x + v.w : v.x;
+    if (!runFits(gapRuns, gap, Math.min(x, edge), Math.max(x, edge))) continue;
+    const a = Math.min(x, edge) - TRACK_MIN;
+    const b = Math.max(x, edge) + TRACK_MIN;
     const crossed = plans.some((o) =>
       o.gaps.some((g, j) => {
         const gx = o.gapX[j];
@@ -1122,7 +1141,7 @@ function chooseSideEntries(
     pl.dstSide = side;
     pl.turnIn = x;
     taken.add(`${v.id}:${side}`);
-    gapsUsed.add(gap);
+    addRun(gapRuns, gap, x, edge);
   }
 }
 

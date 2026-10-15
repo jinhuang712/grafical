@@ -1,0 +1,114 @@
+grafical: 1
+title: Order fulfilment
+subtitle: Who does what, from order to payment.
+density: normal
+layers:
+  - id: r-cust
+    label: Customer
+    lane: l-cust
+    nodes:
+      - id: order
+        label: Place order
+        kind: terminal
+        column: c1
+      - id: receive
+        label: Receive goods
+        kind: service
+        column: c5
+      - id: pay
+        label: Pay invoice
+        kind: service
+        column: c6
+  - id: r-sales
+    label: Sales
+    lane: l-sales
+    nodes:
+      - id: check
+        label: Check stock
+        kind: decision
+        column: c2
+      - id: backorder
+        label: Notify backorder
+        kind: service
+        column: c3
+  - id: r-wh
+    label: Warehouse
+    lane: l-wh
+    nodes:
+      - id: pick
+        label: Pick and pack
+        kind: service
+        column: c3
+      - id: ship
+        label: Ship
+        kind: service
+        column: c4
+  - id: r-fin
+    label: Finance
+    lane: l-fin
+    nodes:
+      - id: invoice
+        label: Send invoice
+        kind: service
+        column: c4
+      - id: close
+        label: Close order
+        kind: terminal
+        column: c7
+lanes:
+  - id: l-cust
+    label: Customer
+  - id: l-sales
+    label: Sales
+  - id: l-wh
+    label: Warehouse
+  - id: l-fin
+    label: Finance
+columns:
+  - id: c1
+  - id: c2
+  - id: c3
+  - id: c4
+  - id: c5
+  - id: c6
+  - id: c7
+edges:
+  - id: order->check
+    from: order
+    to: check
+    kind: call
+  - id: check->pick
+    from: check
+    to: pick
+    kind: call
+    label: in stock
+  - id: check->backorder
+    from: check
+    to: backorder
+    kind: call
+    label: out of stock
+  - id: backorder->order
+    from: backorder
+    to: order
+    kind: optional
+    label: reorder later
+  - id: pick->ship
+    from: pick
+    to: ship
+    kind: call
+  - id: ship->invoice
+    from: ship
+    to: invoice
+    kind: call
+  - id: ship->receive
+    from: ship
+    to: receive
+    kind: call
+  - id: invoice->pay
+    from: invoice
+    to: pay
+    kind: call
+  - id: pay->close
+    from: pay
+    to: close
+    kind: call
