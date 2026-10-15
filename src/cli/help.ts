@@ -30,19 +30,23 @@ How to work:
 
 A good diagram:
   - One story per diagram. When boxes stop serving that story, merge what a
-    reader need not tell apart, or make it two diagrams.
+    reader need not tell apart, cut side paths (admin, auth), or make it
+    two diagrams.
   - Rows follow the way a request or a process moves, top to bottom: who
     calls, the way in, the inside, shared stores, outside services.
-  - Put a store between or below the parts that share it, so that each
-    reaches it with a short line. Connect neighbouring rows where you can.
-  - Box the parts of one service or team as a group. Callers and outside
-    services stay out of every group.
+  - Box each system as a group, groups side by side, each with its
+    entry above its stores. Callers and outside services stay out of groups.
+  - Put a store below or between the parts that share it, and boxes that
+    talk next to each other. Connect neighbouring rows where you can.
+  - What every request passes, such as a gateway: end lines at its row
+    (edge add <file> <box> <row>), drawn as one band.
+  - Draw a queue as a box only when it is the story; otherwise draw its
+    events as lines between the services.
   - Merge only what has the same connections: a merged box claims every
     line of every part.
   - Draw each flow to its end, or leave it out.
   - Keep labels short. Detail (port, technology, count) goes in the
-    sublabel or a note, not in extra boxes; a sublabel holds one line,
-    about 30 characters.
+    sublabel, one line of about 30 characters, or a note.
   - Accent what the story is about. Name in the legend what each line style,
     width and mark means: diagram legend <file> dashed --text event. Say
     what you left out in a note that starts "Not shown:".
@@ -69,11 +73,6 @@ Diagram types:
                  labelled with what moves
   dependency     what depends on top, what it needs below; no labels; kind
                  optional where a dependency degrades gracefully
-
-When refused:
-  The command prints "failed changed=-" and a record per problem: "error"
-  (a fact is wrong) or "defect" (the picture would be wrong), with a code
-  and facts. The file is untouched. grafical apply --help lists the facts.
 
 Run grafical <command> --help for its options and more.
 `;
