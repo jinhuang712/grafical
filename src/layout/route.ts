@@ -248,6 +248,7 @@ export function routeAcross(
   chooseSideExits(plans, layers, extra.forbidTop, extra.noSideExit);
   chooseSideEntries(plans, layers, extra.forbidTop, extra.noSideExit);
   placePorts(plans, extra.forbidTop);
+  straightenPorts(plans);
 
   // A label that its gutter cannot hold clear of every other line moves to the
   // next gutter of its path. Once it has tried them all, its line steps out of the
@@ -1147,6 +1148,47 @@ function placePorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): 
       pl.turnIn = undefined;
       pl.dstSide = pl.kind === "down" ? "top" : "bottom";
     }
+  }
+}
+
+/**
+ * A line between neighbouring rows whose lower port was pushed off its upper port, by
+ * the ports that must sit before it on the lower box's top side or by a group label
+ * there, takes its upper port along when the upper box's side has room: one x then
+ * serves both ends, and the line runs straight (DESIGN.md, "Who chose is punished"). Only where no other run of the
+ * gutter goes across that x, so that no crossing comes of it.
+ */
+function straightenPorts(plans: Plan[]): void {
+  const runsIn = (pl: Plan, g: number): [number, number][] =>
+    pl.gutters.flatMap((x, j) => {
+      if (x !== g) return [];
+      const [a, b] = stubsOf(pl, j);
+      return [[Math.min(a.x, b.x), Math.max(a.x, b.x)] as [number, number]];
+    });
+  for (const pl of plans) {
+    if (pl.kind !== "down" && pl.kind !== "up") continue;
+    if (pl.between.length > 0 || pl.turn !== undefined || pl.turnIn !== undefined) continue;
+    if (pl.bus !== undefined || pl.fanIn !== undefined) continue;
+    if (Math.abs(pl.srcPort - pl.dstPort) < EPS) continue;
+    const g = pl.gutters[0];
+    if (g === undefined) continue;
+    const upper = pl.kind === "down" ? pl.u : pl.v;
+    const x = pl.kind === "down" ? pl.dstPort : pl.srcPort;
+    const inset = ROUTE.portMin / 2 + 2;
+    if (x < upper.x + inset - EPS || x > upper.x + upper.w - inset + EPS) continue;
+    const blocked = plans.some((other) => {
+      if (other === pl || !other.gutters.includes(g)) return false;
+      if (runsIn(other, g).some(([lo, hi]) => lo < x - EPS && hi > x + EPS)) return true;
+      // The upper box's other bottom ports keep their pitch.
+      const ports = [
+        ...(other.u === upper && other.srcSide === "bottom" ? [other.srcPort] : []),
+        ...(other.v === upper && other.dstSide === "bottom" ? [other.dstPort] : []),
+      ];
+      return ports.some((p) => Math.abs(p - x) < ROUTE.portMin - EPS);
+    });
+    if (blocked) continue;
+    if (pl.kind === "down") pl.srcPort = x;
+    else pl.dstPort = x;
   }
 }
 
