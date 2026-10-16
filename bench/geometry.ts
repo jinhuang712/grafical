@@ -12,7 +12,10 @@
 // - a line is an open path with a stroke, unless it lies inside one box, like the
 //   lid of a store's cylinder;
 // - a box marked class="bar" is one a line may run across, as grafical marks a
-//   bar that a line may pass (DESIGN.md, "A row with no box as one bar"); it is a box for every other test.
+//   bar that a line may pass (DESIGN.md, "A row with no box as one bar"); it is a box for every other test;
+// - a ring, an outlined circle that holds a text, whose centre a line runs through,
+//   or turns at, rides that line, like a step's number: that line neither passes
+//   through it nor crosses its text.
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -347,6 +350,15 @@ export function readSvg(
   return { shapes, lines, texts, size };
 }
 
+/** The distance from p to the segment a-b. */
+function toSegment(p: Pt, a: Pt, b: Pt): number {
+  const len = Math.hypot(b.x - a.x, b.y - a.y);
+  if (len === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / (len * len);
+  const u = Math.min(1, Math.max(0, t));
+  return Math.hypot(a.x + u * (b.x - a.x) - p.x, a.y + u * (b.y - a.y) - p.y);
+}
+
 /** The mechanical defects of a rendered SVG. */
 export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
   const { shapes, lines, texts, size } = readSvg(svg, m);
@@ -363,15 +375,34 @@ export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
     for (let j = i + 1; j < boxes.length; j++) {
       const a = boxes[i] as Shape;
       const b = boxes[j] as Shape;
-      if (overlap(a, b, 1))
+      // Two circles overlap by their own shape, not by their squares.
+      const round = a.tag === "circle" && b.tag === "circle";
+      const apart = Math.hypot(a.x + a.w / 2 - b.x - b.w / 2, a.y + a.h / 2 - b.y - b.h / 2);
+      if (round ? apart < (a.w + b.w) / 2 - 1 : overlap(a, b, 1))
         out.push({ code: "overlap", found: `boxes at ${at(a)} and ${at(b)} overlap` });
     }
   }
+  // The rings that hold a text, and that a line runs through the middle of: within a
+  // quarter of the ring's width of its centre, as a line through it does, or round a
+  // corner there.
+  const holds = (b: Shape) =>
+    texts.some(
+      (t) =>
+        t.anchor.x > b.x && t.anchor.x < b.x + b.w && t.anchor.y > b.y && t.anchor.y < b.y + b.h,
+    );
+  const rides = (l: Line, b: Shape) =>
+    b.tag === "circle" &&
+    holds(b) &&
+    l.points.some((p, k) => {
+      const q = l.points[k + 1];
+      return q !== undefined && toSegment({ x: b.x + b.w / 2, y: b.y + b.h / 2 }, p, q) < b.w / 4;
+    });
   for (const l of drawn) {
     for (let k = 1; k < l.points.length; k++) {
       const p = l.points[k - 1] as Pt;
       const q = l.points[k] as Pt;
       for (const b of boxes) {
+        if (rides(l, b)) continue;
         if (b.bar !== true && throughShape(p, q, b, PORT)) {
           out.push({
             code: "edge-through-node",
@@ -403,6 +434,7 @@ export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
         });
     }
     for (const l of drawn) {
+      if (home !== undefined && rides(l, home)) continue;
       for (let k = 1; k < l.points.length; k++) {
         if (crosses(l.points[k - 1] as Pt, l.points[k] as Pt, shrink(t, 0.5))) {
           out.push({
