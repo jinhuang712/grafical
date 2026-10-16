@@ -46,7 +46,7 @@ Code and the other documents cite a section of this file by its heading, such as
 
 ### Checking and failure
 
-- **Every write is checked, and each defect has an owner.** A defect the agent can fix fails the write and changes nothing. A defect only the engine can avoid is an engine bug: the write goes ahead, and only `grafical check --all` reports it. Cost: an engine bug can reach a picture without the agent knowing. Holds as: the fuzz test lays out random diagrams from fixed seeds and finds no engine-owned defect.
+- **Every write is checked, and each defect has an owner.** A defect the agent can fix fails the write and changes nothing. A defect only the engine can avoid is an engine bug: the write goes ahead, and only `grafical check --all` reports it. The engine draws in plain forms only: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs ("The dirty work has edges"). Cost: an engine bug can reach a picture without the agent knowing. Holds as: the fuzz test lays out random diagrams from fixed seeds and finds no engine-owned defect.
 - **A refusal is a record of facts, never prose.** It names its code, the operation, the field and what was found, then facts: the allowed values, the nearest IDs, a limit, and operations that would fix it. Cost: a person reads records less easily than sentences. Holds as: every refusal prints as one `error` record of `key=value` fields.
 - **What grafical cannot fully read, it refuses.** A file of a newer format, a field the schema does not know, a mark file that changed and a stylesheet that is missing all fail the load. Nothing is half read. Cost: an older grafical cannot open a newer file at all. Holds as: `readDiagram` returns errors, not a diagram, for any file the schema does not fully accept.
 
@@ -761,6 +761,29 @@ Rejected:
 - Moving boxes apart and sides out so that no line runs across a stated label, built first. Every line kept its box's centre, but the box took empty space the agent never asked for.
 - Sliding a stated label along its side to the nearest stretch no line crosses. The label would no longer be where the agent said.
 - Moving the lines off their boxes' centres, or bending them, around a stated label. The label would move the agent's lines; offered on 2026-10-16 and not chosen.
+
+## Decision: The dirty work has edges — 2026-10-16
+
+Decided by the owner on 2026-10-16 (PHILOSOPHY.md, "Who owns what?"). The engine had been widening a group's box so that no line ran under a stated title ("The agent states where a group's label sits"), and the owner found the empty space it left. Looking for the cause, the owner named the rule behind it: the engine must not do needless work beyond its edges just to get a picture drawn. Until then an engine-owned defect was the engine's to avoid whatever the agent stated ("Defects owned by who can fix them"), and that duty had no edge: every hard case grew a fallback that drew a crooked form and told the agent nothing.
+
+- **Plain forms.** The engine draws each thing in a few plain forms: a line straight or with one or two bends, a label on or beside a run of its own line, wrapped onto more lines if it must, a title at its place, a note as the agent said. Measuring text, spacing, aligning to the grid, choosing ports and tracks stay the engine's dirty work.
+- **Unreadable is refused.** Where drawing the facts in a plain form would hide what a reader needs, such as text under a line, the write is refused as an agent-owned defect that names the fact in the way. The cause is a fact the agent stated: a row, an order, a place, a text.
+- **Costly is reported.** Where it only costs, the picture is drawn and every write reports it. The picture stays correct; whether the cost is worth it is the agent's to judge.
+- **Engine-owned defects are what is left:** a plain form was there, and the engine drew it wrong, such as a line through a box. Those stay engine bugs.
+- **Measured before building**, over the 306 saved agent drafts: 81 drafts (26%) have a line with more than two bends, 242 lines in all, 192 of them with four. Every one of the 242 joins two boxes that are not in neighbouring rows.
+
+What it changes, each built in its own step:
+- **Lines with more than two bends** are reported on every write, single commands included: a `bent` record for each, and `bent=` in the counts. Not refused. Rule 2 of "A target picture with measured rules" said it already, but only `check --all` reported it, and the agent never heard.
+- **A crowded default title** no longer widens its box or moves two boxes apart ("Rows unseen, groups as systems"). Where no seat in the head keeps clear of the lines into the first row, the write is refused as `title-blocked`, and the agent states a place.
+- **A line's label with no room** along its path no longer makes its line step out of the crowd ("Our own gap router", detours). The write is refused, naming the line, and the agent shortens the label, drops it, or changes rows.
+- **A wall's label with no room** along its wall no longer moves left of everything in a second layout ("Walls as space"). The write is refused.
+- **A note** is a card or a footnote as the agent states, no longer a card the engine turns into a footnote ("Notes as callouts or footnotes"). A card with no room is refused.
+
+Rejected:
+- Refusing a line with more than two bends unless the agent allows it, as a wall lets a line through. Proposed on 2026-10-16; the owner chose reporting, which never blocks.
+- Refusing every line with more than two bends. Some structures need a line to skip rows, and a dense diagram might not be drawable at all.
+- Reporting everything, even a label with no room drawn over lines. A picture that hides text is not correct, and a report beside it looks like success ("Defects owned by who can fix them").
+- Keeping each fallback and reporting that it ran. The crooked form would still be drawn for the agent, and the empty space or the detour would stay in the picture.
 
 ## Open questions
 

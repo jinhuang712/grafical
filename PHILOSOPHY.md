@@ -67,6 +67,12 @@ The engine measures text, places boxes, spaces them, routes lines and redraws th
 >
 > — the owner, 2026-10-14
 
+The dirty work has edges. The engine draws each thing in a few plain forms: a line straight or with one or two bends, a label on or beside its own run, a title at its place, a note as the agent said. It does not invent a crooked form to make the facts fit. Where drawing the facts would hide what a reader needs, such as text under a line, the write is refused and names the fact in the way. Where it only costs, such as a line with more bends, it is drawn and reported. Either way the agent decides what to change.
+
+> Often the engine should not do a lot of needless work beyond its edges just to find a way to get the picture drawn. When a title collides with a line, the agent has to think about where it goes; when a line cannot bend into place, it cannot just be forced in either.
+>
+> — the owner, 2026-10-16, translated
+
 > All software construction involves essential tasks, the fashioning of the complex conceptual structures that compose the abstract software entity, and accidental tasks, the representation of these abstract entities … Most of the big past gains in software productivity have come from removing artificial barriers that have made the accidental tasks inordinately hard …
 >
 > — Brooks, "No Silver Bullet", 1986
@@ -135,7 +141,7 @@ When two answers collide, the facts the agent named win. grafical never changes 
 
 **A doubt still open.** Steps from another box (DESIGN.md, "Steps from another box") are small whole numbers on the grid, a fact like a row. They are also the nearest grafical has come to a position. If steps grow larger, finer or more common, "places are facts" needs another look.
 
-**How the earlier stances got here.** On 2026-10-11, after three judged rounds lost their remaining points on what the agent chose to draw, the engine was given the picture and the agent the content. On 2026-10-13, a proposed score of how hard a picture is to read was rejected, because readers differ, and "easy and consistent" became the aim. The same day, the command line became discrete: "CLI is all discrete, and understanding the diagram should be for the coding agent to do." On 2026-10-14, while choosing how a box leaves the grid, the owner said grafical only does the dirty work. The same day, the owner dropped the stance that "people and agents take the same steps", which had kept the door open for people to edit on a board: agents draw good enough diagrams with grafical, and what is missing is more combinations of operations.
+**How the earlier stances got here.** On 2026-10-11, after three judged rounds lost their remaining points on what the agent chose to draw, the engine was given the picture and the agent the content. On 2026-10-13, a proposed score of how hard a picture is to read was rejected, because readers differ, and "easy and consistent" became the aim. The same day, the command line became discrete: "CLI is all discrete, and understanding the diagram should be for the coding agent to do." On 2026-10-14, while choosing how a box leaves the grid, the owner said grafical only does the dirty work. The same day, the owner dropped the stance that "people and agents take the same steps", which had kept the door open for people to edit on a board: agents draw good enough diagrams with grafical, and what is missing is more combinations of operations. On 2026-10-16, after the engine widened boxes to fit a group's title and left empty space the owner had not asked for, the owner gave the dirty work its edges: the engine stopped covering for facts that leave no plain form, and tells the agent instead.
 
 ## Sources
 
