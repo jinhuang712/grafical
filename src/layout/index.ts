@@ -872,8 +872,13 @@ function compute(
 
   // Across: the content is symmetric about the centre line.
   let half = 0;
+  let low = 0;
+  let high = 0;
   const see = (x: number) => {
-    if (Number.isFinite(x)) half = Math.max(half, Math.abs(x));
+    if (!Number.isFinite(x)) return;
+    half = Math.max(half, Math.abs(x));
+    low = Math.min(low, x);
+    high = Math.max(high, x);
   };
   for (const n of nodes.values()) {
     see(n.x);
@@ -954,10 +959,15 @@ function compute(
     see(l.x0);
     see(l.x1);
   }
-  // Row lanes hold everything across, header included: the picture centres on them,
-  // not on the centre line, so that the header's width is not mirrored as empty space.
-  const shift = rowLanes.length > 0 ? Math.round((laneLeft + laneRight) / 8) * 4 : 0;
-  if (rowLanes.length > 0) half = Math.max(shift - laneLeft, laneRight - shift);
+  // Row lanes hold everything across, header included, and a group's label outside its
+  // left or right side reaches out on one side only: the picture centres on what it holds,
+  // not on the centre line, so that the header's or label's width is not mirrored as empty space.
+  const [lo, hi] = rowLanes.length > 0 ? [laneLeft, laneRight] : [low, high];
+  const offCentre =
+    rowLanes.length > 0 ||
+    groups.some((g) => g.titleAt === "outside-left" || g.titleAt === "outside-right");
+  const shift = offCentre ? Math.round((lo + hi) / 8) * 4 : 0;
+  if (offCentre) half = Math.max(shift - lo, hi - shift);
   half = ceil4(Math.max(half, 80));
 
   // The frame: title, subtitle and legend at the top, the footnote at the bottom.

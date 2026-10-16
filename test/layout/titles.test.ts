@@ -233,6 +233,20 @@ edges:
     }
   });
 
+  it("outside a side, leaves no empty space past the other side", () => {
+    for (const at of ["outside-left", "outside-right"] as GroupTitle[]) {
+      const s = layout(ok(below, [{ op: "group.title", id: "app", at }]), m);
+      const g = s.groups?.find((x) => x.id === "app");
+      if (g === undefined) throw new Error("no group");
+      const t = g.label.bbox;
+      const end = (g.sublabel?.bbox.x ?? t.x) + (g.sublabel?.bbox.w ?? t.w);
+      const xs = [...s.nodes.map((n) => n.rect), g.rect].flatMap((r) => [r.x, r.x + r.w]);
+      const left = Math.min(t.x, ...xs);
+      const right = Math.max(end, ...xs);
+      expect(Math.abs(left - (s.width - right)), at).toBeLessThanOrEqual(8);
+    }
+  });
+
   it("leaves a picture without one as it was", () => {
     const d = ok(booking, [{ op: "group.title", id: "app", at: "top" }]);
     const back = ok(d, [{ op: "group.title", id: "app" }]);
