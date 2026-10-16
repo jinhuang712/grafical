@@ -190,6 +190,50 @@ edges:
     });
   }
 
+  for (const at of ["left", "right", "outside-left", "outside-right"] as GroupTitle[]) {
+    it(`sits ${at.replace("-", " ")} beside the rows, at the middle height or clear of every line`, () => {
+      const oneRow = readDiagram(`grafical: 1
+title: One row
+density: normal
+layers:
+  - {id: top, label: Top, nodes: [{id: user, label: User, kind: actor}]}
+  - {id: row, label: Row, nodes: [{id: gw, label: Gateway}, {id: api, label: Orders API, group: svc}, {id: db, label: Orders DB, kind: store, group: svc}, {id: pay, label: Payments}]}
+groups:
+  - {id: svc, label: Orders service}
+edges:
+  - {id: user->gw, from: user, to: gw}
+  - {id: gw->api, from: gw, to: api, label: routes}
+  - {id: api->db, from: api, to: db}
+  - {id: db->pay, from: db, to: pay}
+`) as Diagram;
+      for (const [d0, id] of [
+        [below, "app"],
+        [oneRow, "svc"],
+      ] as const) {
+        const d = ok(d0, [{ op: "group.title", id, at }]);
+        const s = layout(d, m);
+        expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
+        const g = s.groups?.find((x) => x.id === id);
+        if (g === undefined) throw new Error("no group");
+        const t = g.label.bbox;
+        const end = (g.sublabel?.bbox.x ?? t.x) + (g.sublabel?.bbox.w ?? t.w);
+        const r = g.rect;
+        if (at === "left") expect(t.x - r.x).toBeCloseTo(16, 0);
+        if (at === "right") expect(r.x + r.w - end).toBeCloseTo(16, 0);
+        if (at === "outside-left") expect(r.x - end).toBeCloseTo(12, 0);
+        if (at === "outside-right") expect(t.x - (r.x + r.w)).toBeCloseTo(12, 0);
+        expect(t.y).toBeGreaterThan(r.y);
+        expect(t.y + t.h).toBeLessThan(r.y + r.h);
+        // No member lies across the label's height beside it, inside or out.
+        for (const n of s.nodes) {
+          const across = n.rect.x < end && n.rect.x + n.rect.w > t.x;
+          const level = n.rect.y < t.y + t.h && n.rect.y + n.rect.h > t.y;
+          expect(across && level, n.id).toBe(false);
+        }
+      }
+    });
+  }
+
   it("leaves a picture without one as it was", () => {
     const d = ok(booking, [{ op: "group.title", id: "app", at: "top" }]);
     const back = ok(d, [{ op: "group.title", id: "app" }]);

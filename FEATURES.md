@@ -335,7 +335,7 @@ grafical group join <file> <group> <node or group...>
 grafical group leave <file> <node or group...> [--up]
 grafical group rename <file> <id> --label <text>
 grafical group describe <file> <id> [--text <text>]
-grafical group title <file> <id> [top-left|top|top-right|bottom-left|bottom|bottom-right|outside-top|outside-bottom]
+grafical group title <file> <id> [top-left|top|top-right|left|right|bottom-left|bottom|bottom-right|outside-top|outside-bottom|outside-left|outside-right]
 grafical group order <file> <id> --before <group> | --after <group>
 grafical group remove <file> <id> [--out]
 ```
@@ -343,7 +343,7 @@ grafical group remove <file> <id> [--out]
 - A group's box spans every row from its top member to its bottom one. The other boxes of those rows sit beside it, and nothing else lies inside it.
 - Groups nest, up to three levels (`group-too-deep`). A group inside itself is refused as `group-cycle`.
 - `join` moves a box out of its previous group, and also moves a whole group into another. `leave` takes members out of every group, or with `--up` one level out.
-- `group title` (or `group label`) says where the group's label sits: at the left, the middle or the right of its head, or of a foot below its last row, where it takes the head's room and the head only a padding's, or centred just outside its top or bottom side. It sits exactly there, and boxes move so that no line runs across it and the lines into the first row, or out of the last, keep their centres. Without a place the engine seats the label in the head where those lines keep their centres (DESIGN.md, "The agent states where a group's label sits"). Places at the sides, inside and outside the box, are decided and not yet built.
+- `group title` (or `group label`) says where the group's label sits: at the left, the middle or the right of its head, or of a foot below its last row, where it takes the head's room and the head only a padding's, centred just outside its top or bottom side, or beside its rows, inside or outside its left or right side, at the middle height or the nearest one no line comes near. It sits exactly there, and boxes move so that no line runs across it and the lines into the first row, or out of the last, keep their centres. Without a place the engine seats the label in the head where those lines keep their centres (DESIGN.md, "The agent states where a group's label sits"). All twelve places the owner chose are built.
 - `group order` puts a group's boxes, its inner groups' too, before or after another group's, as one block in every row the two share. A group beside itself, or beside a group around or inside it, is refused as `bad-reference`.
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group. Lines that end at the group go with it.
 - A box inside a box takes the canvas's fill, so the fills alternate by depth. A stylesheet may set `paint.nesting: shade` instead.

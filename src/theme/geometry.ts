@@ -233,6 +233,8 @@ export const GROUP = {
   gap: 24,
   /** Space kept between a group's label and any line that passes it. */
   labelClear: 6,
+  /** Space between a group's side and its label outside it (DESIGN.md, "The agent states where a group's label sits"). */
+  outsideGap: 12,
 };
 
 /** Routing tokens (DESIGN.md, "Our own gap router"). */

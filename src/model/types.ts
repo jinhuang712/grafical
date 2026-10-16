@@ -43,8 +43,8 @@ export type RowLook = (typeof ROW_LOOKS)[number];
 /**
  * Where a group's label sits, as the agent states it (DESIGN.md, "The agent states where a group's label sits"):
  * in the head or the foot, at the box's left, middle or right, or centred just outside its
- * top or bottom side. Absent: in the head, where the lines into the group's first row keep
- * their centres.
+ * top or bottom side, or beside its rows inside or outside its left or right side. Absent:
+ * in the head, where the lines into the group's first row keep their centres.
  */
 export const GROUP_TITLES = [
   "top-left",
@@ -55,6 +55,10 @@ export const GROUP_TITLES = [
   "bottom-right",
   "outside-top",
   "outside-bottom",
+  "left",
+  "right",
+  "outside-left",
+  "outside-right",
 ] as const;
 export type GroupTitle = (typeof GROUP_TITLES)[number];
 

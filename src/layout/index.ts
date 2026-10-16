@@ -12,6 +12,7 @@
 // Rows are not drawn (DESIGN.md, "Rows unseen, groups as systems"): their bands and labels stay in the scene for the
 // checker and for debugging.
 
+import { rectsOverlap, segmentCrossesRect, segmentsOf } from "../check/geometry.ts";
 import { orderByColumns } from "../model/columns.ts";
 import { laneRun, orderByLanes } from "../model/lanes.ts";
 import {
@@ -62,7 +63,7 @@ import { badgeRect, settleBadges, stepPlace } from "./badges.ts";
 import { cutRoute, planEnds, refineEnds, straightIntoBand } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import { footnotesHeight, numberBadge, placeNotes } from "./notes.ts";
-import { atFoot, centreX, type PNode, placeAcross } from "./place.ts";
+import { atFoot, atSide, centreX, type PNode, placeAcross, reach } from "./place.ts";
 import {
   type AssembledLabel,
   assemble,
@@ -707,8 +708,9 @@ function compute(
     contentRight = Math.max(contentRight, n.x + n.w);
   }
   for (const g of groups) {
-    contentLeft = Math.min(contentLeft, g.x0);
-    contentRight = Math.max(contentRight, g.x1);
+    const [x0, x1] = reach(g);
+    contentLeft = Math.min(contentLeft, x0);
+    contentRight = Math.max(contentRight, x1);
   }
   const bandStyle = T["layer-label"];
   const bandRows = new Map<
@@ -771,6 +773,17 @@ function compute(
   // A group's label in its foot keeps lines off below its last row instead.
   const forbidBottom = new Map<number, [number, number][]>();
   for (const g of groups) {
+    // A label beside the rows: no line runs up or down through it, in any of the group's rows.
+    if (atSide(g)) {
+      for (let r = g.top; r <= g.bottom; r++) {
+        const span: [number, number] = [
+          g.labelX - GROUP.labelClear,
+          g.labelX + g.labelW + GROUP.labelClear,
+        ];
+        forbidTop.set(r, [...(forbidTop.get(r) ?? []), span]);
+      }
+      continue;
+    }
     const [row, at] = atFoot(g) ? [g.bottom, forbidBottom] : [g.top, forbidTop];
     const list = at.get(row) ?? [];
     list.push([g.labelX - GROUP.labelClear, g.labelX + g.labelW + GROUP.labelClear]);
@@ -880,8 +893,9 @@ function compute(
     see(n.x + n.w);
   }
   for (const g of groups) {
-    see(g.x0);
-    see(g.x1);
+    const [x0, x1] = reach(g);
+    see(x0);
+    see(x1);
   }
   if (bandRows.size > 0) {
     see(bandLeft);
@@ -1188,19 +1202,53 @@ function compute(
     .map((g, k) => ({ g, k }))
     .sort((a, b) => depthOf(a.g) - depthOf(b.g) || a.k - b.k)
     .map((x) => x.g);
+  // A label beside a group's rows sits at the middle of its side, or at the nearest height
+  // there that no line and no line's label comes near (DESIGN.md, "The agent states where a group's label sits").
+  const runs = [...assembled.values()].flatMap((a) => segmentsOf(a.points));
+  const slots = [...assembled.values()].flatMap((a) => (a.label === undefined ? [] : [a.label]));
+  const besideY = (x: number, w: number, top: number, bottom: number, text: string): number => {
+    const probe = placeLine("group-label", text, x, 0, m, T).bbox;
+    const clr = GROUP.labelClear;
+    const mid = (top + bottom) / 2 - probe.y - probe.h / 2;
+    const free = (y: number) => {
+      const r = { x: x - clr, y: y + probe.y - clr, w: w + 2 * clr, h: probe.h + 2 * clr };
+      return (
+        runs.every((s) => !segmentCrossesRect(s, r)) && slots.every((s) => !rectsOverlap(s, r))
+      );
+    };
+    for (let k = 0; ; k++) {
+      const ys = (k === 0 ? [mid] : [mid - 4 * k, mid + 4 * k]).filter(
+        (y) => y + probe.y >= top - 1e-6 && y + probe.y + probe.h <= bottom + 1e-6,
+      );
+      if (ys.length === 0) return mid;
+      const y = ys.find(free);
+      if (y !== undefined) return y;
+    }
+  };
   const sceneGroups: SceneGroup[] = outerFirst.map((g) => {
     const y0 = (rowTops[g.top] ?? 0) - heads(g) + outside(g, "top");
     const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + pads(g) - outside(g, "bottom");
     const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
-    // In its head, in its foot, or a head's height outside its top or bottom side.
-    const ly =
-      (g.titleAt === "outside-top"
-        ? y0 - GROUP.head
-        : g.titleAt === "outside-bottom"
-          ? y1
-          : inFoot(g)
-            ? y1 - GROUP.head
-            : y0) + GROUP.labelTop;
+    // In its head, in its foot, a head's height outside its top or bottom side, or beside its rows.
+    const ly = atSide(g)
+      ? withText
+        ? g.titleAt === "left" || g.titleAt === "right"
+          ? besideY(
+              centre + g.labelX,
+              g.labelW,
+              y0 + GROUP.labelClear,
+              y1 - GROUP.labelClear,
+              g.label,
+            )
+          : besideY(centre + g.labelX, g.labelW, y0, y1, g.label)
+        : (y0 + y1) / 2
+      : (g.titleAt === "outside-top"
+          ? y0 - GROUP.head
+          : g.titleAt === "outside-bottom"
+            ? y1
+            : inFoot(g)
+              ? y1 - GROUP.head
+              : y0) + GROUP.labelTop;
     const label = withText
       ? placeLine("group-label", g.label, centre + g.labelX, ly, m, T)
       : empty("group-label", centre + g.labelX, ly);

@@ -544,10 +544,12 @@ Example:
   "group title": {
     about: `Say where a group's label sits: at the left, middle or right of its box's
 top (top-left, top, top-right) or bottom (bottom-left, bottom, bottom-right),
-or centred just outside its top or bottom (outside-top, outside-bottom).
+at the middle of its left or right side (left, right), or centred just
+outside one side (outside-top, outside-bottom, outside-left, outside-right).
 Without a place, the engine seats it at the top, where the lines into the
 group's first row keep their centres. A stated place stays where it is said,
-and the engine moves boxes aside so that no line runs across it.`,
+and the engine moves boxes aside so that no line runs across it; beside the
+rows, the label moves up or down its side only as far as lines make it.`,
     after: `
 Example:
   grafical group title booking.grafical.yaml app bottom-left
