@@ -13,6 +13,7 @@ import {
   readDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
+import { GROUP_TITLES } from "../../src/model/types.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 
@@ -66,9 +67,7 @@ describe("a group's stated label place", () => {
       {
         code: "bad-value",
         found: "middle",
-        facts: {
-          allowed: ["top-left", "top", "top-right", "bottom-left", "bottom", "bottom-right"],
-        },
+        facts: { allowed: [...GROUP_TITLES] },
       },
     ]);
   });
@@ -162,6 +161,31 @@ edges:
         const r = s.nodes.find((n) => n.id === from)?.rect;
         if (e === undefined || r === undefined) throw new Error(id);
         expect(e.points[0]?.x, id).toBe(r.x + r.w / 2);
+      }
+    });
+  }
+
+  for (const [at, d0] of [
+    ["outside-top", booking],
+    ["outside-bottom", below],
+  ] as const) {
+    it(`sits centred just ${at === "outside-top" ? "above" : "below"} the box, clear of every line`, () => {
+      const d = ok(d0, [{ op: "group.title", id: "app", at }]);
+      const s = layout(d, m);
+      expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
+      const g = s.groups?.find((x) => x.id === "app");
+      if (g === undefined) throw new Error("no group");
+      const t = g.label.bbox;
+      const end = (g.sublabel?.bbox.x ?? t.x) + (g.sublabel?.bbox.w ?? t.w);
+      expect((t.x + end) / 2).toBeCloseTo(g.rect.x + g.rect.w / 2, 0);
+      if (at === "outside-top") {
+        expect(t.y + t.h).toBeLessThan(g.rect.y);
+        expect(t.y).toBeGreaterThan(g.rect.y - 40);
+        // Inside, the box's top is a padding away from its first row.
+        expect((s.nodes.find((n) => n.id === "web")?.rect.y ?? 0) - g.rect.y).toBe(24);
+      } else {
+        expect(t.y).toBeGreaterThan(g.rect.y + g.rect.h);
+        expect(t.y + t.h).toBeLessThan(g.rect.y + g.rect.h + 40);
       }
     });
   }

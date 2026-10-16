@@ -820,7 +820,10 @@ function build(): Command {
       )
       .argument("<file>")
       .argument("<id>")
-      .argument("[place]", "top-left, top, top-right, bottom-left, bottom or bottom-right"),
+      .argument(
+        "[place]",
+        "top-left, top, top-right, bottom-left, bottom, bottom-right, outside-top or outside-bottom",
+      ),
   ).action(async (file: string, id: string, at: string | undefined, opts: Opts) => {
     await write(file, { op: "group.title", id, ...(at === undefined ? {} : { at }) }, opts);
   });

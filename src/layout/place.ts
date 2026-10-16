@@ -757,13 +757,18 @@ function freeRoom(a: number, b: number, spans: [number, number][]): number {
   return at <= b ? Math.max(best, b - at) : best;
 }
 
-/** Whether a group's label sits in a foot below its last row rather than in its head. */
+/**
+ * Whether a group's label sits below its last row, in a foot or outside its bottom side,
+ * rather than above its first row.
+ */
 export const atFoot = (g: { titleAt?: GroupTitle }): boolean =>
-  g.titleAt?.startsWith("bottom") === true;
+  g.titleAt?.startsWith("bottom") === true || g.titleAt === "outside-bottom";
 
 /** The left end of a label at its stated place, at the left, middle or right of its box. */
 function titleX(g: PGroup): number {
-  if (g.titleAt === "top" || g.titleAt === "bottom") return (g.x0 + g.x1) / 2 - g.labelW / 2;
+  if (g.titleAt === "top" || g.titleAt === "bottom" || g.titleAt?.startsWith("outside")) {
+    return (g.x0 + g.x1) / 2 - g.labelW / 2;
+  }
   if (g.titleAt === "top-right" || g.titleAt === "bottom-right") {
     return g.x1 - GROUP.labelInset - g.labelW;
   }

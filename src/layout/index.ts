@@ -1044,13 +1044,21 @@ function compute(
   // then adds only what the tracks do not already give it.
   // A box inside a box that starts in the same row has its head below the outer
   // one's, and one that ends in the same row its padding above it (DESIGN.md, "Every layered diagram type").
-  // A label in the foot takes the head's height there, and leaves a padding's at the top
-  // (DESIGN.md, "The agent states where a group's label sits").
+  // A label in the foot takes the head's height there, and leaves a padding's at the top; a
+  // label outside the box takes a head's height outside its side, and leaves a padding's
+  // inside (DESIGN.md, "The agent states where a group's label sits").
+  const outside = (g: (typeof groups)[number], side: "top" | "bottom") =>
+    g.titleAt === `outside-${side}` ? GROUP.head : 0;
+  const inHead = (g: (typeof groups)[number]) =>
+    g.titleAt === undefined || g.titleAt.startsWith("top");
+  const inFoot = (g: (typeof groups)[number]) => g.titleAt?.startsWith("bottom") === true;
   const heads = (g: (typeof groups)[number]): number =>
-    (atFoot(g) ? GROUP.pad : GROUP.head) +
+    outside(g, "top") +
+    (inHead(g) ? GROUP.head : GROUP.pad) +
     Math.max(0, ...groups.filter((c) => c.parent === g.id && c.top === g.top).map(heads));
   const pads = (g: (typeof groups)[number]): number =>
-    (atFoot(g) ? GROUP.head : GROUP.pad) +
+    outside(g, "bottom") +
+    (inFoot(g) ? GROUP.head : GROUP.pad) +
     Math.max(0, ...groups.filter((c) => c.parent === g.id && c.bottom === g.bottom).map(pads));
   /** The height of the heads stacked above row r, and of the paddings and feet below it. */
   const headsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.top === r).map(heads));
@@ -1181,11 +1189,18 @@ function compute(
     .sort((a, b) => depthOf(a.g) - depthOf(b.g) || a.k - b.k)
     .map((x) => x.g);
   const sceneGroups: SceneGroup[] = outerFirst.map((g) => {
-    const y0 = (rowTops[g.top] ?? 0) - heads(g);
-    const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + pads(g);
+    const y0 = (rowTops[g.top] ?? 0) - heads(g) + outside(g, "top");
+    const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + pads(g) - outside(g, "bottom");
     const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
-    // In its head, or in its foot: the box's last head's height above its bottom side.
-    const ly = (atFoot(g) ? y1 - GROUP.head : y0) + GROUP.labelTop;
+    // In its head, in its foot, or a head's height outside its top or bottom side.
+    const ly =
+      (g.titleAt === "outside-top"
+        ? y0 - GROUP.head
+        : g.titleAt === "outside-bottom"
+          ? y1
+          : inFoot(g)
+            ? y1 - GROUP.head
+            : y0) + GROUP.labelTop;
     const label = withText
       ? placeLine("group-label", g.label, centre + g.labelX, ly, m, T)
       : empty("group-label", centre + g.labelX, ly);

@@ -543,7 +543,8 @@ Example:
   },
   "group title": {
     about: `Say where a group's label sits: at the left, middle or right of its box's
-top (top-left, top, top-right) or bottom (bottom-left, bottom, bottom-right).
+top (top-left, top, top-right) or bottom (bottom-left, bottom, bottom-right),
+or centred just outside its top or bottom (outside-top, outside-bottom).
 Without a place, the engine seats it at the top, where the lines into the
 group's first row keep their centres. A stated place stays where it is said,
 and the engine moves boxes aside so that no line runs across it.`,
