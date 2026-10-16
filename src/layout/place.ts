@@ -10,7 +10,7 @@
 import { columnRanks } from "../model/columns.ts";
 import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
-import { DEFAULT_SIZE, type Diagram, type DiagramNode } from "../model/types.ts";
+import { DEFAULT_SIZE, type Diagram, type DiagramNode, type GroupTitle } from "../model/types.ts";
 import { wallRun, wallSplit } from "../model/walls.ts";
 import { BOX, GROUP, LANE, ROUTE, SPACING, WALL } from "../theme/geometry.ts";
 import { nodeBox, portReach } from "../theme/shapes.ts";
@@ -60,6 +60,8 @@ export interface PGroup {
   /** Left end of the label. */
   labelX: number;
   labelW: number;
+  /** Where the agent said the label sits (DESIGN.md, "The agent states where a group's label sits"). */
+  titleAt?: GroupTitle;
 }
 
 /** A lane that runs as a column: its sides across. Lanes side by side share a side. */
@@ -239,14 +241,34 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       columnOrder.push(byRank.get(r) as PNode[]);
   }
   const columns = Math.max(1, grid.columns);
+  // Room each group with a stated label place takes past its members, on the left and on the
+  // right, so that the lines into its first row pass beside the label at their centres.
+  const grow = new Map<string, { left: number; right: number }>();
+  // Pairs of first-row members whose centres keep apart, by group, so that its label fits between their lines.
+  const apart = new Map<string, { a: string; b: string; d: number }>();
   let solved = solve(new Set(), new Set());
-  const seats = seatLabels(solved.groups, layers, topEnds);
-  const tight = solved.groups.filter((_, i) => (seats[i]?.slack ?? 0) < 0).map((g) => g.id);
+  let seats = seatLabels(solved.groups, layers, topEnds);
+  for (let round = 0; round < 6; round++) {
+    const more = titleRoom(solved.groups, layers, topEnds);
+    if (more.size === 0) break;
+    for (const [g, m] of more) {
+      const was = grow.get(g) ?? { left: 0, right: 0 };
+      if (m.left > 0 || m.right > 0)
+        grow.set(g, { left: was.left + m.left, right: was.right + m.right });
+      if (m.apart !== undefined) apart.set(g, m.apart);
+    }
+    solved = solve(new Set(), new Set());
+    seats = seatLabels(solved.groups, layers, topEnds);
+  }
+  const seated = (g: PGroup) => g.titleAt === undefined;
+  const tight = solved.groups
+    .filter((g, i) => seated(g) && (seats[i]?.slack ?? 0) < 0)
+    .map((g) => g.id);
   // A label whose every seat covers the centre of a first-row member that a line
   // enters or leaves by its top would push that line off centre: the first two such
   // members move apart, so that the label sits between their lines.
   const crowded = solved.groups
-    .filter((_, i) => (seats[i]?.slack ?? 0) >= 0 && seats[i]?.centred === false)
+    .filter((g, i) => seated(g) && (seats[i]?.slack ?? 0) >= 0 && seats[i]?.centred === false)
     .map((g) => g.id);
   if (tight.length > 0 || crowded.length > 0) {
     // A label with no seat in its box: the box grows to the right, so that the
@@ -292,16 +314,28 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
           d: m.w / 2 - portReach(m.w) + GROUP.labelClear + text.groupLabelW(g) + GROUP.labelInset,
         }));
     };
-    /** The left side of a group's box, as terms x - d from each member: a box's padding per level. */
-    const leftEdge = (g: string) =>
-      (membersOf.get(g) ?? []).map((m) => ({ col: m.col, d: m.w / 2 + GROUP.pad * levels(m, g) }));
+    /** Whether a group, or one inside it, takes room past its members for its label. */
+    const grows = (g: string): boolean => grow.has(g) || innerOf(g).some(grows);
+    /**
+     * The left side of a group's box, as terms x - d from each member: a box's padding per
+     * level, and the room its label takes, and its inner groups'.
+     */
+    const leftEdge = (g: string): { col: number; d: number }[] => [
+      ...(membersOf.get(g) ?? []).map((m) => ({
+        col: m.col,
+        d: m.w / 2 + GROUP.pad * levels(m, g) + (grow.get(g)?.left ?? 0),
+      })),
+      ...innerOf(g)
+        .filter(grows)
+        .flatMap((c) => leftEdge(c).map((t) => ({ col: t.col, d: t.d + GROUP.pad }))),
+    ];
     /**
      * The right side of a group's box, as terms x + d: past each member by a box's
      * padding per level, and past the label of the group and of each inner group.
      */
     const rightEdge = (g: string): { col: number; d: number }[] => [
       ...(membersOf.get(g) ?? []).flatMap((m) => [
-        { col: m.col, d: m.w / 2 + GROUP.pad * levels(m, g) },
+        { col: m.col, d: m.w / 2 + GROUP.pad * levels(m, g) + (grow.get(g)?.right ?? 0) },
         { col: m.col, d: -m.w / 2 - GROUP.pad * levels(m, g) + labelSpan(g) },
       ]),
       ...pastPorts(g),
@@ -316,6 +350,11 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const g = boxOf(n, other);
       return g === undefined ? [{ col: n.col, d: n.w / 2 }] : leftEdge(g);
     };
+    for (const { a, b, d } of apart.values()) {
+      const p = nodes.get(a);
+      const q = nodes.get(b);
+      if (p !== undefined && q !== undefined) add(p.col, q.col, d);
+    }
     // Room for a crowded label between the lines of its first two first-row members
     // that have them: their centres leave the label and its clearance, and a seat step.
     for (const g of spread) {
@@ -490,9 +529,15 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const known = sides.get(g);
       if (known !== undefined) return known;
       const ms = membersOf.get(g) ?? [];
-      const x0 = Math.min(...ms.map((m) => m.x - GROUP.pad * levels(m, g)));
+      const room = grow.get(g) ?? { left: 0, right: 0 };
+      const x0 = Math.min(
+        ...ms.map((m) => m.x - GROUP.pad * levels(m, g) - room.left),
+        ...innerOf(g)
+          .filter(grows)
+          .map((c) => sideOf(c)[0] - GROUP.pad),
+      );
       const x1 = Math.max(
-        ...ms.map((m) => m.x + m.w + GROUP.pad * levels(m, g)),
+        ...ms.map((m) => m.x + m.w + GROUP.pad * levels(m, g) + room.right),
         x0 + labelSpan(g),
         ...pastPorts(g).map((t) => (xs[t.col] ?? 0) + t.d),
         ...innerOf(g).map((c) => sideOf(c)[1] + GROUP.pad),
@@ -516,6 +561,8 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         labelX: x0 + GROUP.labelInset,
         labelW: text.groupLabelW(g),
       };
+      const at = d.groups?.find((x) => x.id === g)?.titleAt;
+      if (at !== undefined) box.titleAt = at;
       const parent = parentOf(g);
       if (parent !== undefined) box.parent = parent;
       groups.push(box);
@@ -697,6 +744,97 @@ function freeRoom(a: number, b: number, spans: [number, number][]): number {
   return at <= b ? Math.max(best, b - at) : best;
 }
 
+/** The left end of a label at its stated place in the head. */
+function titleX(g: PGroup): number {
+  if (g.titleAt === "top") return (g.x0 + g.x1) / 2 - g.labelW / 2;
+  if (g.titleAt === "top-right") return g.x1 - GROUP.labelInset - g.labelW;
+  return g.x0 + GROUP.labelInset;
+}
+
+/** What a group whose label has a stated place still needs, so that its first row's lines miss the label. */
+interface TitleNeed {
+  /** Room past its members, on the left and on the right. */
+  left: number;
+  right: number;
+  /** Two first-row members whose centres move apart, so that the label fits between their lines. */
+  apart?: { a: string; b: string; d: number };
+}
+
+/**
+ * What each group whose label has a stated place still needs so that every line into its
+ * first row by the top passes beside the label at its box's centre. A label at the left
+ * moves its box's left side out, one at the right its right side. One in the middle takes
+ * the stretch between lines, or past the first or the last, that costs the least width:
+ * two members move apart until the label fits between their lines, then a side moves out
+ * until the middle of the box lies in that stretch.
+ */
+function titleRoom(
+  groups: PGroup[],
+  layers: PLayer[],
+  topEnds: Map<string, number>,
+): Map<string, TitleNeed> {
+  const clr = GROUP.labelClear;
+  const out = new Map<string, TitleNeed>();
+  for (const g of groups) {
+    if (g.titleAt === undefined) continue;
+    const lo = g.labelX - clr;
+    const hi = g.labelX + g.labelW + clr;
+    // The ports each first-row member's lines take at its top, centred, left to right.
+    const ports = (layers[g.top]?.nodes ?? [])
+      .filter((n) => g.members.includes(n.id) && (topEnds.get(n.id) ?? 0) > 0)
+      .map((n) => {
+        const half = (((topEnds.get(n.id) ?? 1) - 1) * ROUTE.portPitch) / 2;
+        return { n, a: centreX(n) - half, b: centreX(n) + half };
+      })
+      .sort((p, q) => p.a - q.a);
+    const hit = ports.filter((p) => p.b > lo + 1e-6 && p.a < hi - 1e-6);
+    if (hit.length === 0) continue;
+    if (g.titleAt === "top-left") {
+      out.set(g.id, { left: ceil4(Math.max(...hit.map((p) => hi - p.a))), right: 0 });
+      continue;
+    }
+    if (g.titleAt === "top-right") {
+      out.set(g.id, { left: 0, right: ceil4(Math.max(...hit.map((p) => p.b - lo))) });
+      continue;
+    }
+    // In the middle: the label's centre goes as near the box's centre as a stretch allows.
+    const w = g.labelW / 2 + clr;
+    const mid = (g.x0 + g.x1) / 2;
+    const first = ports[0] as (typeof ports)[number];
+    const last = ports[ports.length - 1] as (typeof ports)[number];
+    let best = {
+      cost: 2 * (mid - Math.min(mid, first.a - w)),
+      at: Math.min(mid, first.a - w),
+      wide: 0,
+      k: -1,
+    };
+    const right = Math.max(mid, last.b + w);
+    if (2 * (right - mid) < best.cost)
+      best = { cost: 2 * (right - mid), at: right, wide: 0, k: -1 };
+    for (let k = 1; k < ports.length; k++) {
+      const p = ports[k - 1] as (typeof ports)[number];
+      const q = ports[k] as (typeof ports)[number];
+      const wide = Math.max(0, 2 * w - (q.a - p.b));
+      const at = wide > 0 ? (p.b + q.a) / 2 : Math.min(Math.max(mid, p.b + w), q.a - w);
+      const cost = wide + 2 * Math.abs(at - mid);
+      if (cost < best.cost) best = { cost, at, wide, k };
+    }
+    const p = ports[best.k - 1];
+    const q = ports[best.k];
+    if (best.wide > 0 && p !== undefined && q !== undefined) {
+      const d = ceil4(centreX(q.n) - centreX(p.n) + best.wide);
+      out.set(g.id, { left: 0, right: 0, apart: { a: p.n.id, b: q.n.id, d } });
+      continue;
+    }
+    const shift = best.at - mid;
+    out.set(
+      g.id,
+      shift > 0 ? { left: 0, right: ceil4(2 * shift) } : { left: ceil4(-2 * shift), right: 0 },
+    );
+  }
+  return out;
+}
+
 function seatLabels(
   groups: PGroup[],
   layers: PLayer[],
@@ -737,6 +875,8 @@ function seatLabels(
     const xs: number[] = [];
     for (let x = g.x0 + GROUP.labelInset; x <= last + 1e-6; x += 4) xs.push(x);
     if (xs.length > 0 && (xs[xs.length - 1] as number) < last - 1e-6) xs.push(last);
+    // A stated place is the only seat.
+    if (g.titleAt !== undefined) xs.splice(0, xs.length, titleX(g));
     for (const x of xs) {
       const lo = x - clr;
       const hi = x + g.labelW + clr;

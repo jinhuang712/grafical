@@ -23,6 +23,7 @@ import {
   EDGE_KINDS,
   type Edge,
   FORMAT_VERSION,
+  GROUP_TITLES,
   type Group,
   type Layer,
   LINE_STYLES,
@@ -157,6 +158,7 @@ const groupSchema = z.strictObject({
   label: text,
   sublabel: text.optional(),
   in: nodeId.optional(),
+  titleAt: z.enum(GROUP_TITLES).optional(),
 });
 
 const laneSchema = z.strictObject({ id: nodeId, label: text });
@@ -326,6 +328,7 @@ function build(p: Parsed): Diagram {
       const group: Group = { id: g.id, label: g.label };
       if (g.sublabel !== undefined) group.sublabel = g.sublabel;
       if (g.in !== undefined) group.in = g.in;
+      if (g.titleAt !== undefined) group.titleAt = g.titleAt;
       return group;
     });
   }

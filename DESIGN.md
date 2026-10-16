@@ -742,6 +742,19 @@ Rejected:
 - Leaving a badge off where it finds no room, as a footnote's number may be left off. It would drop a fact the agent stated.
 - Numbers past 99, or text such as "2a". Either needs a wider badge for a rare need, and the format can grow when one is needed.
 
+## Decision: The agent states where a group's label sits — 2026-10-16
+
+Decided by the owner on 2026-10-16 (behavior: FEATURES.md, "Groups"). In a booking C4 diagram the label "Booking app software system" sat in the head between the lines into the web app and the mobile app, where placement had made room for it ("Rows unseen, groups as systems"), and the owner found it in a weird spot. Asked where a group's label should go, the owner chose to let the agent say it through the command line: eight places inside the box, its four corners and the middle of each side, and four outside it, above, below, left and right.
+
+- **Unstated, as before.** Without a place the engine seats the label in the head, at the leftmost seat that keeps the lines into the first row at their boxes' centres, and moves two of those boxes apart when no seat does. The owner chose on 2026-10-16 to keep that widening and have the counts report a crowded label, so that the agent can move the label itself ("Composition counts").
+- **Stated, exactly there.** `group title <group> <place>` (alias `group label`) sets the group's `titleAt`, and the label sits at that place whatever lines come near it. The engine then moves boxes so that no line runs across the label, as it does for every text, and keeps the lines at their boxes' centres where moving boxes can: a label at the left moves the box's left side out past its first row's lines, one at the right its right side, and one in the middle takes the stretch between two lines, or past the first or the last, that costs the least width, moving the two boxes apart until it fits and a side out until the box's middle lies in it. The place never moves to make room: it is the agent's.
+- **Built so far.** The three places in the head: `top-left`, `top` and `top-right`. The places at the foot, at the sides and outside the box come next, each with the room it needs; until then the file refuses them as `bad-value`.
+
+Rejected:
+- The engine moving the label to the bottom left when the head is crowded, the C4 habit. The engine would choose a look for the agent (PHILOSOPHY.md, "Who owns what?").
+- Every label at the bottom left. The owner chose a place per group, stated by the agent.
+- Four corners only, or four corners inside and outside. Shown to the owner on 2026-10-16; the owner chose the eight places inside and the four outside.
+
 ## Open questions
 
 - **A box beside every box it connects to, in a row:** "Who chose is punished" did not refuse it, because the file could not tell a slot the agent stated from one the engine chose. Since "The agent states every order" the agent states every slot, so it could become an agent defect, as it is for a box placed by steps. Not decided.

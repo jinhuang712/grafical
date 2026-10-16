@@ -11,6 +11,8 @@ import {
   type Density,
   EDGE_KINDS,
   type EdgeKind,
+  GROUP_TITLES,
+  type GroupTitle,
   LINE_STYLES,
   type LineStyleName,
   MARK_SHAPES,
@@ -337,6 +339,13 @@ export interface GroupDescribeOp {
   /** Absent: clear the group's second, quieter label. */
   text?: string;
 }
+/** Where a group's label sits (DESIGN.md, "The agent states where a group's label sits"). */
+export interface GroupTitleOp {
+  op: "group.title";
+  id: string;
+  /** Absent: the engine seats the label in the head. */
+  at?: GroupTitle;
+}
 /** Puts a group's boxes, its inner groups' too, before or after another group's, in every layer they share. */
 export interface GroupOrderOp {
   op: "group.order";
@@ -451,6 +460,7 @@ export type Op =
   | GroupRenameOp
   | GroupRemoveOp
   | GroupDescribeOp
+  | GroupTitleOp
   | GroupOrderOp
   | GroupCopyOp
   | LaneAddOp
@@ -742,6 +752,11 @@ export const groupDescribeSchema = z.strictObject({
   id: nodeId,
   text: text.optional(),
 });
+export const groupTitleSchema = z.strictObject({
+  op: z.literal("group.title"),
+  id: nodeId,
+  at: z.enum(GROUP_TITLES).optional(),
+});
 export const groupOrderSchema = z.strictObject({
   op: z.literal("group.order"),
   id: nodeId,
@@ -899,6 +914,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.density": diagramDensitySchema,
   "diagram.legend": diagramLegendSchema,
   "group.describe": groupDescribeSchema,
+  "group.title": groupTitleSchema,
   "group.order": groupOrderSchema,
   "group.copy": groupCopySchema,
   "lane.add": laneAddSchema,

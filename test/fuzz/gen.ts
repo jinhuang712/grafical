@@ -25,6 +25,7 @@ import {
   type DiagramNode,
   EDGE_KINDS,
   type Edge,
+  GROUP_TITLES,
   SIZE_STEPS,
   STEP_NUMBER_MAX,
   type Wall,
@@ -222,8 +223,23 @@ export function generate(seed: number, m: Measurer): Generated {
   // A stream of its own, so that a seed with no bar is the same diagram as before bars.
   addBars(d, rng(seed ^ 0x5bd1e995));
   addStepNumbers(d, r);
+  // A stream of its own, so that a seed with no stated label place is the same diagram as before.
+  addTitles(d, rng(seed ^ 0x27d4eb2f));
 
   return { diagram: d, ops, rejected };
+}
+
+/**
+ * A stated place for each group's label in three seeds of ten (DESIGN.md, "The agent states where a group's label sits"),
+ * a place of its own for each group.
+ */
+function addTitles(d: Diagram, r: () => number): void {
+  if (r() < 0.7) return;
+  for (const g of d.groups ?? []) {
+    g.titleAt = GROUP_TITLES[
+      Math.floor(r() * GROUP_TITLES.length)
+    ] as (typeof GROUP_TITLES)[number];
+  }
 }
 
 /**

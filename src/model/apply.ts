@@ -1653,6 +1653,7 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
   const top: Group = { id: op.into, label: op.label };
   if (g.sublabel !== undefined) top.sublabel = g.sublabel;
   if (g.in !== undefined) top.in = g.in;
+  if (g.titleAt !== undefined) top.titleAt = g.titleAt;
   const nested = inner.map((x) => ({ ...x, id: mapped(x.id), in: mapped(x.in as string) }));
   d.groups = [...groups, top, ...nested];
   d.edges.push(...copies);
@@ -1886,6 +1887,14 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       if (!g) return [unknownGroup(d, op.id, i, "id")];
       if (op.text === undefined) delete g.sublabel;
       else g.sublabel = op.text;
+      touch(s, op.id);
+      return [];
+    }
+    case "group.title": {
+      const g = (d.groups ?? []).find((x) => x.id === op.id);
+      if (!g) return [unknownGroup(d, op.id, i, "id")];
+      if (op.at === undefined) delete g.titleAt;
+      else g.titleAt = op.at;
       touch(s, op.id);
       return [];
     }

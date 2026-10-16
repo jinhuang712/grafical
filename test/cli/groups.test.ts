@@ -166,6 +166,19 @@ describe("grouped diagrams", () => {
 });
 
 describe('groups inside groups on the command line (DESIGN.md, "Every layered diagram type")', () => {
+  it('group title and group label say where a label sits, and show prints it (DESIGN.md, "The agent states where a group\'s label sits")', () => {
+    const f = "titled.grafical.yaml";
+    writeFileSync(join(dir, f), writeDiagram(nested));
+    expect(run("group", "title", f, "vpc", "top-right").code).toBe(0);
+    expect(read(f)).toContain("titleAt: top-right");
+    expect(run("show", f).out).toContain("title=top-right");
+    expect(run("group", "label", f, "vpc").code).toBe(0);
+    expect(read(f)).not.toContain("titleAt");
+    const wrong = run("group", "title", f, "vpc", "middle");
+    expect(wrong.code).not.toBe(0);
+    expect(wrong.err + wrong.out).toContain("bad-value");
+  });
+
   it("adds, moves and removes a group inside another, and show names where each sits", () => {
     writeFileSync(join(dir, "shop.grafical.yaml"), writeDiagram(nested));
     const f = "shop.grafical.yaml";

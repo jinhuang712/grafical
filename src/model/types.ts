@@ -40,6 +40,14 @@ export type LineStyleName = (typeof LINE_STYLES)[number];
 export const ROW_LOOKS = ["box", "band"] as const;
 export type RowLook = (typeof ROW_LOOKS)[number];
 
+/**
+ * Where a group's label sits, as the agent states it (DESIGN.md, "The agent states where a group's label sits"):
+ * in the head at the box's left, middle or right. Absent: in the head, where the lines
+ * into the group's first row keep their centres.
+ */
+export const GROUP_TITLES = ["top-left", "top", "top-right"] as const;
+export type GroupTitle = (typeof GROUP_TITLES)[number];
+
 /** How the engine sizes a node that has no size (DESIGN.md, "Boxes sized to their text"). */
 export const SIZINGS = ["auto", "fixed"] as const;
 export type Sizing = (typeof SIZINGS)[number];
@@ -154,6 +162,8 @@ export interface Group {
   sublabel?: string;
   /** The group this one sits inside, drawn as a box within its box (DESIGN.md, "Every layered diagram type"). */
   in?: string;
+  /** Where its label sits. Absent: the engine seats it in the head. */
+  titleAt?: GroupTitle;
 }
 
 export interface Layer {

@@ -534,11 +534,22 @@ Limits:
   - A box covers every row from its top member to its bottom one; other
     nodes in those rows sit beside it.
 
-See also: group join, group leave, group remove, lane add
+See also: group join, group leave, group remove, group title, lane add
 
 Example:
   grafical group add cloud.grafical.yaml vpc --label "Main network" --in region
   grafical group join cloud.grafical.yaml vpc web api
+`,
+  },
+  "group title": {
+    about: `Say where a group's label sits: top-left, top or top-right of its box.
+Without a place, the engine seats it in the head, where the lines into the
+group's first row keep their centres. A stated place stays where it is said,
+and the engine moves boxes aside so that no line runs across it.`,
+    after: `
+Example:
+  grafical group title booking.grafical.yaml app top-left
+  grafical group title booking.grafical.yaml app
 `,
   },
   "group copy": {

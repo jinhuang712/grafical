@@ -813,6 +813,19 @@ function build(): Command {
   });
   json(
     group
+      .command("title")
+      .alias("label")
+      .description(
+        "say where a group's label sits; without a place, the engine seats it in the head",
+      )
+      .argument("<file>")
+      .argument("<id>")
+      .argument("[place]", "top-left, top or top-right"),
+  ).action(async (file: string, id: string, at: string | undefined, opts: Opts) => {
+    await write(file, { op: "group.title", id, ...(at === undefined ? {} : { at }) }, opts);
+  });
+  json(
+    group
       .command("order")
       .description(
         "put a group's boxes, its inner groups' too, before or after another group's, in every shared layer",
