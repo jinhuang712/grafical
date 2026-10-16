@@ -542,13 +542,14 @@ Example:
 `,
   },
   "group title": {
-    about: `Say where a group's label sits: top-left, top or top-right of its box.
-Without a place, the engine seats it in the head, where the lines into the
+    about: `Say where a group's label sits: at the left, middle or right of its box's
+top (top-left, top, top-right) or bottom (bottom-left, bottom, bottom-right).
+Without a place, the engine seats it at the top, where the lines into the
 group's first row keep their centres. A stated place stays where it is said,
 and the engine moves boxes aside so that no line runs across it.`,
     after: `
 Example:
-  grafical group title booking.grafical.yaml app top-left
+  grafical group title booking.grafical.yaml app bottom-left
   grafical group title booking.grafical.yaml app
 `,
   },

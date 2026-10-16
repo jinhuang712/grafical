@@ -63,7 +63,13 @@ describe("a group's stated label place", () => {
     expect(fail(d, [{ op: "group.title", id: "apq", at: "top" }])[0]?.code).toBe("unknown-group");
     const wrong = readDiagram(writeDiagram(d).replace("titleAt: top-right", "titleAt: middle"));
     expect(wrong).toMatchObject([
-      { code: "bad-value", found: "middle", facts: { allowed: ["top-left", "top", "top-right"] } },
+      {
+        code: "bad-value",
+        found: "middle",
+        facts: {
+          allowed: ["top-left", "top", "top-right", "bottom-left", "bottom", "bottom-right"],
+        },
+      },
     ]);
   });
 
@@ -101,6 +107,61 @@ describe("a group's stated label place", () => {
         const r = s.nodes.find((n) => n.id === to)?.rect;
         if (e === undefined || r === undefined) throw new Error(id);
         expect(e.points.at(-1)?.x, id).toBe(r.x + r.w / 2);
+      }
+    });
+  }
+
+  // Lines leave the last row by the bottom, through the foot the label sits in.
+  const below = readDiagram(`grafical: 1
+title: Booking
+density: normal
+layers:
+  - {id: people, label: People, nodes: [{id: traveller, label: Traveller, kind: actor}, {id: hotel, label: Hotel staff, kind: actor}]}
+  - {id: apps, label: Apps, nodes: [{id: web, label: Web app, group: app}, {id: mobile, label: Mobile app, group: app}, {id: portal, label: Partner portal, group: app}]}
+  - {id: core, label: Core, nodes: [{id: api, label: Booking API, group: app}]}
+  - {id: data, label: Data, nodes: [{id: cache, label: Cache, kind: store, group: app}, {id: db, label: Bookings, kind: store, group: app}]}
+  - {id: ext, label: External, nodes: [{id: backup, label: Backup vault, kind: external}, {id: audit, label: Audit log, kind: external}]}
+groups:
+  - {id: app, label: Booking app, sublabel: software system}
+edges:
+  - {id: traveller->web, from: traveller, to: web}
+  - {id: traveller->mobile, from: traveller, to: mobile}
+  - {id: hotel->portal, from: hotel, to: portal}
+  - {id: web->api, from: web, to: api}
+  - {id: mobile->api, from: mobile, to: api}
+  - {id: portal->api, from: portal, to: api}
+  - {id: api->db, from: api, to: db}
+  - {id: api->cache, from: api, to: cache}
+  - {id: cache->backup, from: cache, to: backup}
+  - {id: db->audit, from: db, to: audit}
+`) as Diagram;
+
+  for (const at of ["bottom-left", "bottom", "bottom-right"] as GroupTitle[]) {
+    it(`sits at the ${at} of a foot, and the lines out of the last row keep their centres`, () => {
+      const d = ok(below, [{ op: "group.title", id: "app", at }]);
+      const s = layout(d, m);
+      expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
+      const g = s.groups?.find((x) => x.id === "app");
+      const db = s.nodes.find((n) => n.id === "db")?.rect;
+      if (g === undefined || db === undefined) throw new Error("no group");
+      const t = g.label.bbox;
+      expect(t.y).toBeGreaterThan(db.y + db.h);
+      expect(t.y + t.h).toBeLessThan(g.rect.y + g.rect.h);
+      const end = (g.sublabel?.bbox.x ?? t.x) + (g.sublabel?.bbox.w ?? t.w);
+      if (at === "bottom-left") expect(t.x - g.rect.x).toBeCloseTo(16, 0);
+      if (at === "bottom-right") expect(g.rect.x + g.rect.w - end).toBeCloseTo(16, 0);
+      if (at === "bottom") expect((t.x + end) / 2).toBeCloseTo(g.rect.x + g.rect.w / 2, 0);
+      // No head above the first row: the box's top is a padding away from it.
+      const web = s.nodes.find((n) => n.id === "web")?.rect;
+      expect((web?.y ?? 0) - g.rect.y).toBe(24);
+      for (const [id, from] of [
+        ["cache->backup", "cache"],
+        ["db->audit", "db"],
+      ]) {
+        const e = s.edges.find((y) => y.id === id);
+        const r = s.nodes.find((n) => n.id === from)?.rect;
+        if (e === undefined || r === undefined) throw new Error(id);
+        expect(e.points[0]?.x, id).toBe(r.x + r.w / 2);
       }
     });
   }

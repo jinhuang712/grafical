@@ -42,10 +42,17 @@ export type RowLook = (typeof ROW_LOOKS)[number];
 
 /**
  * Where a group's label sits, as the agent states it (DESIGN.md, "The agent states where a group's label sits"):
- * in the head at the box's left, middle or right. Absent: in the head, where the lines
- * into the group's first row keep their centres.
+ * in the head or the foot, at the box's left, middle or right. Absent: in the head, where
+ * the lines into the group's first row keep their centres.
  */
-export const GROUP_TITLES = ["top-left", "top", "top-right"] as const;
+export const GROUP_TITLES = [
+  "top-left",
+  "top",
+  "top-right",
+  "bottom-left",
+  "bottom",
+  "bottom-right",
+] as const;
 export type GroupTitle = (typeof GROUP_TITLES)[number];
 
 /** How the engine sizes a node that has no size (DESIGN.md, "Boxes sized to their text"). */

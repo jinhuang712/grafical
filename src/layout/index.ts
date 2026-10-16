@@ -62,7 +62,7 @@ import { badgeRect, settleBadges, stepPlace } from "./badges.ts";
 import { cutRoute, planEnds, refineEnds, straightIntoBand } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import { footnotesHeight, numberBadge, placeNotes } from "./notes.ts";
-import { centreX, type PNode, placeAcross } from "./place.ts";
+import { atFoot, centreX, type PNode, placeAcross } from "./place.ts";
 import {
   type AssembledLabel,
   assemble,
@@ -768,10 +768,13 @@ function compute(
       forbidTop.set(r, [...(forbidTop.get(r) ?? []), [b.x0, b.x1]]);
     }
   }
+  // A group's label in its foot keeps lines off below its last row instead.
+  const forbidBottom = new Map<number, [number, number][]>();
   for (const g of groups) {
-    const list = forbidTop.get(g.top) ?? [];
+    const [row, at] = atFoot(g) ? [g.bottom, forbidBottom] : [g.top, forbidTop];
+    const list = at.get(row) ?? [];
     list.push([g.labelX - GROUP.labelClear, g.labelX + g.labelW + GROUP.labelClear]);
-    forbidTop.set(g.top, list);
+    at.set(row, list);
   }
   for (const [row, b] of bandRows) {
     const list = forbidTop.get(row) ?? [];
@@ -834,6 +837,7 @@ function compute(
   const routing = routeAcross(routeLayers, routeNodes, routeEdges, labelSizes, sp.trackPitch, {
     sideways,
     forbidTop,
+    forbidBottom,
     forbidGap,
     sideLabelX: placement.sideLabels,
     alone: new Set(ends.ends.keys()),
@@ -1040,11 +1044,15 @@ function compute(
   // then adds only what the tracks do not already give it.
   // A box inside a box that starts in the same row has its head below the outer
   // one's, and one that ends in the same row its padding above it (DESIGN.md, "Every layered diagram type").
+  // A label in the foot takes the head's height there, and leaves a padding's at the top
+  // (DESIGN.md, "The agent states where a group's label sits").
   const heads = (g: (typeof groups)[number]): number =>
-    1 + Math.max(0, ...groups.filter((c) => c.parent === g.id && c.top === g.top).map(heads));
+    (atFoot(g) ? GROUP.pad : GROUP.head) +
+    Math.max(0, ...groups.filter((c) => c.parent === g.id && c.top === g.top).map(heads));
   const pads = (g: (typeof groups)[number]): number =>
-    1 + Math.max(0, ...groups.filter((c) => c.parent === g.id && c.bottom === g.bottom).map(pads));
-  /** The heads stacked above row r, and the paddings below it. */
+    (atFoot(g) ? GROUP.head : GROUP.pad) +
+    Math.max(0, ...groups.filter((c) => c.parent === g.id && c.bottom === g.bottom).map(pads));
+  /** The height of the heads stacked above row r, and of the paddings and feet below it. */
   const headsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.top === r).map(heads));
   const padsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.bottom === r).map(pads));
   /** A band that holds boxes has a head above its row and a padding below; a bar has neither. */
@@ -1054,10 +1062,10 @@ function compute(
   /** Room the heads of the groups that start below gutter i still need, besides its tracks. */
   const headRoom = (i: number, tracks: number): number => {
     // A band's head sits above its groups' heads, below the tracks, in full.
-    if (bandHead(i + 1)) return GROUP.head * headsAt(i + 1) + BAND.head;
+    if (bandHead(i + 1)) return headsAt(i + 1) + BAND.head;
     const starting = groups.filter((g) => g.top === i + 1);
     if (starting.length === 0) return 0;
-    const full = GROUP.head * headsAt(i + 1);
+    const full = headsAt(i + 1);
     for (const g of starting) {
       for (const v of routing.gutters[i] ?? []) {
         if (v.row < 0) continue;
@@ -1084,7 +1092,7 @@ function compute(
   const lanesTop = y;
   if (colLanes.length > 0) y += headH + LANE.pad;
   if (laneAt(0) !== undefined) y += LANE.pad;
-  y += GROUP.head * headsAt(0);
+  y += headsAt(0);
   if (bandHead(0)) y += BAND.head;
   /** Where a row lane's border crosses gutter i, between two rows in different lanes. */
   const borders = new Map<number, number>();
@@ -1096,9 +1104,7 @@ function compute(
     const rows = routing.rows[i] ?? 0;
     const last = i === layers.length - 1;
     const pad =
-      GROUP.pad * padsAt(i) +
-      (bandHead(i) ? BAND.pad : 0) +
-      (rows > 0 && storeRow(i) ? ROUTE.storeRoom : 0);
+      padsAt(i) + (bandHead(i) ? BAND.pad : 0) + (rows > 0 && storeRow(i) ? ROUTE.storeRoom : 0);
     const walls = wallsAt(i);
     // A gutter with no runs keeps its least height only when no wall gives it room.
     const tracks =
@@ -1115,7 +1121,7 @@ function compute(
       wallTops.set(i, y);
       y += walls * WALL.space;
       borders.set(i, y);
-      y += LANE.pad + GROUP.head * headsAt(i + 1) + (bandHead(i + 1) ? BAND.head : 0);
+      y += LANE.pad + headsAt(i + 1) + (bandHead(i + 1) ? BAND.head : 0);
       return;
     }
     if (walls > 0) {
@@ -1175,18 +1181,20 @@ function compute(
     .sort((a, b) => depthOf(a.g) - depthOf(b.g) || a.k - b.k)
     .map((x) => x.g);
   const sceneGroups: SceneGroup[] = outerFirst.map((g) => {
-    const y0 = (rowTops[g.top] ?? 0) - GROUP.head * heads(g);
-    const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + GROUP.pad * pads(g);
+    const y0 = (rowTops[g.top] ?? 0) - heads(g);
+    const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + pads(g);
     const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
+    // In its head, or in its foot: the box's last head's height above its bottom side.
+    const ly = (atFoot(g) ? y1 - GROUP.head : y0) + GROUP.labelTop;
     const label = withText
-      ? placeLine("group-label", g.label, centre + g.labelX, y0 + GROUP.labelTop, m, T)
-      : empty("group-label", centre + g.labelX, y0 + GROUP.labelTop);
+      ? placeLine("group-label", g.label, centre + g.labelX, ly, m, T)
+      : empty("group-label", centre + g.labelX, ly);
     const out: SceneGroup = { id: g.id, rect, label, members: g.members };
     if (depthOf(g) > 1) out.depth = depthOf(g);
     const sub = d.groups?.find((x) => x.id === g.id)?.sublabel;
     if (sub !== undefined && withText) {
       const x = centre + g.labelX + labelW(g) + GROUP.sublabelGap;
-      out.sublabel = placeLine("group-sublabel", sub, x, y0 + GROUP.labelTop, m, T);
+      out.sublabel = placeLine("group-sublabel", sub, x, ly, m, T);
     }
     return out;
   });
@@ -1209,8 +1217,8 @@ function compute(
         : empty("layer-label", centre + b.labelX, top);
       return { id: b.id, rect, label, bar: true, ...box };
     }
-    const y0 = (rowTops[i] ?? 0) - GROUP.head * headsAt(i) - BAND.head;
-    const y1 = (rowTops[i] ?? 0) + rowH(i) + GROUP.pad * padsAt(i) + BAND.pad;
+    const y0 = (rowTops[i] ?? 0) - headsAt(i) - BAND.head;
+    const y1 = (rowTops[i] ?? 0) + rowH(i) + padsAt(i) + BAND.pad;
     const x0 = centre + bandLeft;
     const rect: Rect = { x: x0, y: y0, w: contentRight + BAND.padX - bandLeft, h: y1 - y0 };
     const label = withText
