@@ -26,6 +26,7 @@ import {
   EDGE_KINDS,
   type Edge,
   GROUP_TITLES,
+  type GroupTitle,
   SIZE_STEPS,
   STEP_NUMBER_MAX,
   type Wall,
@@ -224,21 +225,31 @@ export function generate(seed: number, m: Measurer): Generated {
   addBars(d, rng(seed ^ 0x5bd1e995));
   addStepNumbers(d, r);
   // A stream of its own, so that a seed with no stated label place is the same diagram as before.
-  addTitles(d, rng(seed ^ 0x27d4eb2f));
+  addTitles(d, rng(seed ^ 0x27d4eb2f), m);
 
   return { diagram: d, ops, rejected };
 }
 
 /**
  * A stated place for each group's label in three seeds of ten (DESIGN.md, "The agent states where a group's label sits"),
- * a place of its own for each group.
+ * a place of its own for each group. A place a line crosses moves to one its title-blocked
+ * refusal names clear, as an agent does, and after three tries, or where none is clear, the
+ * group goes back to the default.
  */
-function addTitles(d: Diagram, r: () => number): void {
+function addTitles(d: Diagram, r: () => number, m: Measurer): void {
   if (r() < 0.7) return;
-  for (const g of d.groups ?? []) {
-    g.titleAt = GROUP_TITLES[
-      Math.floor(r() * GROUP_TITLES.length)
-    ] as (typeof GROUP_TITLES)[number];
+  const pick = (xs: readonly GroupTitle[]) => xs[Math.floor(r() * xs.length)] as GroupTitle;
+  for (const g of d.groups ?? []) g.titleAt = pick(GROUP_TITLES);
+  for (let pass = 0; ; pass++) {
+    const blocked = check(d, layout(d, m), m).filter((x) => x.code === "title-blocked");
+    if (blocked.length === 0) return;
+    for (const x of blocked) {
+      const g = d.groups?.find((y) => y.id === x.elements[0]);
+      if (g === undefined) continue;
+      const clear = (x.facts.clear ?? []) as GroupTitle[];
+      if (pass < 3 && clear.length > 0) g.titleAt = pick(clear);
+      else delete g.titleAt;
+    }
   }
 }
 

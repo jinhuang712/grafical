@@ -3,15 +3,22 @@
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import { arrowheads } from "../layout/badges.ts";
-import { asideBoxes, bendsOf } from "../layout/index.ts";
+import { asideBoxes, bendsOf, layout } from "../layout/index.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { laneNodes } from "../model/lanes.ts";
-import { type Diagram, LINE_STYLES, MARK_SLOTS, markText } from "../model/types.ts";
+import {
+  type Diagram,
+  GROUP_TITLES,
+  type GroupTitle,
+  LINE_STYLES,
+  MARK_SLOTS,
+  markText,
+} from "../model/types.ts";
 import { crossingFix, wallAllows } from "../model/walls.ts";
 import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneBadge, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
-import { NOTE, ROUTE } from "../theme/geometry.ts";
+import { GROUP, NOTE, ROUTE } from "../theme/geometry.ts";
 import { hasHead, lineLook, lineStyle, PAINT } from "../theme/paint.ts";
 import { textInside } from "../theme/shapes.ts";
 import { themeOf } from "../theme/themes.ts";
@@ -312,7 +319,9 @@ export const TEXT_TOLERANCE = 2;
  * labels, subtitle, note, title or legend. An edge's own label is exempt,
  * because its segments run next to it by design.
  */
-function checkTextCrossing(scene: Scene, out: Found[]): void {
+function checkTextCrossing(diagram: Diagram, scene: Scene, out: Found[]): void {
+  // A label at a place the agent stated is the agent's: a line across it is title-blocked.
+  const stated = new Set((diagram.groups ?? []).filter((g) => g.titleAt).map((g) => g.id));
   // Each text, with the element it belongs to and what that element is.
   const targets: { id: string; is: string; text: PlacedText; owner?: string }[] = [];
   for (const n of scene.nodes) {
@@ -322,6 +331,7 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
     if (e.label) targets.push({ id: e.id, is: "edge", text: e.label, owner: e.id });
   }
   for (const g of scene.groups ?? []) {
+    if (stated.has(g.id)) continue;
     targets.push({ id: g.id, is: "group", text: g.label });
     if (g.sublabel) targets.push({ id: g.id, is: "group", text: g.sublabel });
   }
@@ -633,6 +643,40 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
 
 export { measureTaste, type TasteReport, type TasteRule } from "./taste.ts";
 
+/** The lines that pass a group's label or its sublabel nearer than the engine keeps its own lines, by id. */
+function acrossTitle(scene: Scene, id: string): string[] {
+  const g = scene.groups?.find((x) => x.id === id);
+  if (g === undefined) return [];
+  const boxes = [g.label, ...(g.sublabel ? [g.sublabel] : [])].map((t) =>
+    inset(t.bbox, -GROUP.labelClear),
+  );
+  return scene.edges
+    .filter((e) => segmentsOf(e.points).some((s) => boxes.some((b) => segmentCrossesRect(s, b))))
+    .map((e) => e.id);
+}
+
+/**
+ * A label at a place the agent stated moves no line and no box, so a line across it is the
+ * agent's to fix: another place, or none (DESIGN.md, "The agent states where a group's label sits").
+ * The facts name the places where no line would come near it.
+ */
+function checkTitles(facts: Diagram, scene: Scene, measurer: Measurer, out: Found[]): void {
+  for (const group of facts.groups ?? []) {
+    const place = group.titleAt;
+    if (place === undefined) continue;
+    const lines = acrossTitle(scene, group.id);
+    if (lines.length === 0) continue;
+    const at = (p: GroupTitle): Diagram => ({
+      ...facts,
+      groups: (facts.groups ?? []).map((g) => (g.id === group.id ? { ...g, titleAt: p } : g)),
+    });
+    const clear = GROUP_TITLES.filter(
+      (p) => p !== place && acrossTitle(layout(at(p), measurer), group.id).length === 0,
+    );
+    out.push({ code: "title-blocked", elements: [group.id, ...lines], facts: { place, clear } });
+  }
+}
+
 function compare(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
@@ -655,10 +699,11 @@ export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[
   checkEdgeOverlap(scene, out);
   checkNeedlessBend(scene, out);
   checkStepAside(diagram, scene, out);
-  checkTextCrossing(scene, out);
+  checkTextCrossing(diagram, scene, out);
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);
   checkWalls(diagram, scene, out);
+  checkTitles(facts, scene, measurer, out);
   checkNotes(diagram, measurer, out);
   checkMissingGlyphs(diagram, measurer, out);
   const order = (d: Found): number => DEFECT_CODES.indexOf(d.code);

@@ -37,11 +37,6 @@ export interface RouteExtra {
   sideways: Map<string, SideSlot>;
   /** x spans no vertical line may take where it enters a layer from above: group labels. */
   forbidTop: Map<number, [number, number][]>;
-  /**
-   * x spans no vertical line may take where it leaves a layer below: the labels of groups
-   * whose label sits in a foot (DESIGN.md, "The agent states where a group's label sits").
-   */
-  forbidBottom: Map<number, [number, number][]>;
   /** x spans no track may take in a gap, by `${layer}:${k}`: labels of sideways edges. */
   forbidGap: Map<string, [number, number][]>;
   /** Left end of the label of each sideways edge that has one. */
@@ -82,7 +77,6 @@ export interface Box {
 const NO_EXTRA: RouteExtra = {
   sideways: new Map(),
   forbidTop: new Map(),
-  forbidBottom: new Map(),
   forbidGap: new Map(),
   sideLabelX: new Map(),
   alone: new Set(),
@@ -282,21 +276,14 @@ export function routeAcross(
       if (pl !== undefined) plans.push(pl);
     }
     assignBuses(plans, extra.alone);
-    chooseGaps(
-      plans,
-      gapsByLayer,
-      extra.forbidTop,
-      extra.forbidBottom,
-      extra.boxes,
-      extra.bandEnds,
-    );
+    chooseGaps(plans, gapsByLayer, extra.forbidTop, extra.boxes, extra.bandEnds);
     assignGapTracks(plans, extra.boxes);
     chooseUturnGutters(plans, layers, extra.forbidTop, extra.closedAbove, below);
-    chooseSideExits(plans, layers, extra.forbidTop, extra.forbidBottom, extra.noSideExit);
-    chooseSideEntries(plans, layers, extra.forbidTop, extra.forbidBottom, extra.noSideExit);
-    placePorts(plans, extra.forbidTop, extra.forbidBottom);
-    straightenPorts(plans, extra.forbidBottom);
-    centreLines(plans, extra.forbidTop, extra.forbidBottom, extra.boxes);
+    chooseSideExits(plans, layers, extra.forbidTop, extra.noSideExit);
+    chooseSideEntries(plans, layers, extra.forbidTop, extra.noSideExit);
+    placePorts(plans, extra.forbidTop);
+    straightenPorts(plans);
+    centreLines(plans, extra.forbidTop, extra.boxes);
     return { plans, ...channels(plans, layers, pitch, sides) };
   };
   // A line between two boxes of a row that takes the gutter above moves the ports of its
@@ -420,8 +407,7 @@ function step(x: number, lo: number, hi: number): number {
 function gapsOf(l: PLayer, extra: RouteExtra): Gap[] {
   const pad = ROUTE.gapPad;
   const gaps: Gap[] = [];
-  // A line through a gap passes the heads above the row and the feet below it.
-  const top = [...(extra.forbidTop.get(l.index) ?? []), ...(extra.forbidBottom.get(l.index) ?? [])];
+  const top = extra.forbidTop.get(l.index) ?? [];
   const forbid = (k: number) => [...top, ...(extra.forbidGap.get(`${l.index}:${k}`) ?? [])];
   let lo = Number.NEGATIVE_INFINITY;
   l.nodes.forEach((n, k) => {
@@ -787,7 +773,6 @@ function chooseGaps(
   plans: Plan[],
   gapsByLayer: Gap[][],
   forbidTop: Map<number, [number, number][]>,
-  forbidBottom: Map<number, [number, number][]>,
   boxes: Box[],
   bandEnds: Map<string, { from: boolean; to: boolean }>,
 ): void {
@@ -833,12 +818,8 @@ function chooseGaps(
     // two bends at most instead of four (DESIGN.md, "A target picture with measured rules" rule 2).
     const reach = (n: PNode, lo: number, hi: number) =>
       hi >= n.x + portInset(n.w) && lo <= n.x + n.w - portInset(n.w);
-    // The line goes on into the lower end's top side, past any group label there, and
-    // leaves the upper end's bottom side past any label in a foot there.
-    const lower = [
-      ...(forbidTop.get(Math.max(pl.u.layer, pl.v.layer)) ?? []),
-      ...(forbidBottom.get(Math.min(pl.u.layer, pl.v.layer)) ?? []),
-    ];
+    // The line goes on into the lower end's top side, past any group label there.
+    const lower = forbidTop.get(Math.max(pl.u.layer, pl.v.layer)) ?? [];
     const taken = k === undefined ? undefined : chosen.get(k);
     const spans = corridors(pl.between, gapsByLayer)
       .flatMap(([lo, hi]) => freeParts(lo, hi, lower))
@@ -1140,7 +1121,6 @@ function chooseSideExits(
   plans: Plan[],
   layers: PLayer[],
   forbidTop: Map<number, [number, number][]>,
-  forbidBottom: Map<number, [number, number][]>,
   noSideExit: Set<string>,
 ): void {
   const taken = new Set<string>();
@@ -1180,18 +1160,13 @@ function chooseSideExits(
       // goes up passes the labels at the top of the source's row.
       if (corridor < lo - EPS || corridor > hi + EPS) continue;
       if (pl.kind === "up" && inSpans(corridor, forbidTop.get(u.layer) ?? [])) continue;
-      if (pl.kind === "down" && inSpans(corridor, forbidBottom.get(u.layer) ?? [])) continue;
       x = corridor;
     } else {
       const plo = Math.max(lo, v.x + portInset(v.w));
       const phi = Math.min(hi, v.x + v.w - portInset(v.w));
       if (phi < plo) continue;
-      // The vertical part passes the group labels above the lower of the two rows, and
-      // those in a foot below the upper.
-      const spans = [
-        ...(forbidTop.get(Math.max(u.layer, v.layer)) ?? []),
-        ...(forbidBottom.get(Math.min(u.layer, v.layer)) ?? []),
-      ];
+      // The vertical part passes the group labels above the lower of the two rows.
+      const spans = forbidTop.get(Math.max(u.layer, v.layer)) ?? [];
       x = nearestFree(centreX(v), plo, phi, spans);
       if (x < plo - EPS || x > phi + EPS || inSpans(x, spans)) continue;
     }
@@ -1234,7 +1209,6 @@ function chooseSideEntries(
   plans: Plan[],
   layers: PLayer[],
   forbidTop: Map<number, [number, number][]>,
-  forbidBottom: Map<number, [number, number][]>,
   noSideExit: Set<string>,
 ): void {
   const taken = new Set<string>();
@@ -1328,7 +1302,6 @@ function chooseSideEntries(
         // comes down passes the labels at the top of the target's row.
         if (corridor < lo - EPS || corridor > hi + EPS) continue;
         if (pl.kind === "down" && inSpans(corridor, forbidTop.get(v.layer) ?? [])) continue;
-        if (pl.kind === "up" && inSpans(corridor, forbidBottom.get(v.layer) ?? [])) continue;
         x = corridor;
       } else {
         const plo = Math.max(lo, u.x + portInset(u.w));
@@ -1336,10 +1309,7 @@ function chooseSideEntries(
         if (phi < plo) continue;
         // A port on the source's top keeps clear of group labels there, and the line into
         // a lower row passes the group labels above it.
-        const spans = [
-          ...(forbidTop.get(pl.kind === "up" ? u.layer : v.layer) ?? []),
-          ...(forbidBottom.get(pl.kind === "up" ? v.layer : u.layer) ?? []),
-        ];
+        const spans = forbidTop.get(pl.kind === "up" ? u.layer : v.layer) ?? [];
         // A turn beside another turn's run in the gap, or by another turn's port on the
         // source's side, moves toward its target until it keeps clear of both.
         const ports = fixed.get(`${u.id}:${pl.srcSide}`) ?? [];
@@ -1386,13 +1356,9 @@ function chooseSideEntries(
  * leaves from its bottom or top again, and the ports are placed anew, until every
  * side exit meets its port straight.
  */
-function placePorts(
-  plans: Plan[],
-  forbidTop: Map<number, [number, number][]>,
-  forbidBottom: Map<number, [number, number][]>,
-): void {
+function placePorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): void {
   for (;;) {
-    assignPorts(plans, forbidTop, forbidBottom);
+    assignPorts(plans, forbidTop);
     // Between neighbouring rows, the far end's port must sit at the turn; a line that
     // skips rows turns at its corridor, which no port moves.
     const direct = (pl: Plan) => pl.between.length === 0;
@@ -1419,10 +1385,9 @@ function placePorts(
  * the ports that must sit before it on the lower box's top side or by a group label
  * there, takes its upper port along when the upper box's side has room: one x then
  * serves both ends, and the line runs straight (DESIGN.md, "Who chose is punished"). Only where no other run of the
- * gutter goes across that x, so that no crossing comes of it, and no group label in a foot
- * below the upper box lies there.
+ * gutter goes across that x, so that no crossing comes of it.
  */
-function straightenPorts(plans: Plan[], forbidBottom: Map<number, [number, number][]>): void {
+function straightenPorts(plans: Plan[]): void {
   for (const pl of plans) {
     if (pl.kind !== "down" && pl.kind !== "up") continue;
     if (pl.between.length > 0 || pl.turn !== undefined || pl.turnIn !== undefined) continue;
@@ -1434,7 +1399,6 @@ function straightenPorts(plans: Plan[], forbidBottom: Map<number, [number, numbe
     const x = pl.kind === "down" ? pl.dstPort : pl.srcPort;
     const inset = ROUTE.portMin / 2 + 2;
     if (x < upper.x + inset - EPS || x > upper.x + upper.w - inset + EPS) continue;
-    if (inSpans(x, forbidBottom.get(upper.layer) ?? [])) continue;
     const blocked = plans.some((other) => {
       if (other === pl || !other.gutters.includes(g)) return false;
       if (runsIn(other, g).some(([lo, hi]) => lo < x - EPS && hi > x + EPS)) return true;
@@ -1476,7 +1440,6 @@ function runsIn(pl: Plan, g: number): [number, number][] {
 function centreLines(
   plans: Plan[],
   forbidTop: Map<number, [number, number][]>,
-  forbidBottom: Map<number, [number, number][]>,
   boxes: Box[],
 ): void {
   /** Straight from its source through every gap: the x it runs at, or undefined. */
@@ -1526,7 +1489,6 @@ function centreLines(
       for (const [n, side] of ends) {
         if (to < n.x + inset - EPS || to > n.x + n.w - inset + EPS) return false;
         if (side === "top" && inSpans(to, forbidTop.get(n.layer) ?? [])) return false;
-        if (side === "bottom" && inSpans(to, forbidBottom.get(n.layer) ?? [])) return false;
       }
       for (const [j, gap] of m.gaps.entries()) {
         const from = m.gapX[j] ?? m.srcPort;
@@ -1632,11 +1594,7 @@ function nearestFree(x: number, lo: number, hi: number, spans: [number, number][
   return start;
 }
 
-function assignPorts(
-  plans: Plan[],
-  forbidTop: Map<number, [number, number][]>,
-  forbidBottom: Map<number, [number, number][]>,
-): void {
+function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): void {
   const sides = new Map<string, End[]>();
   const push = (end: End) => {
     const k = `${end.node.id}\u0000${end.side}`;
@@ -1719,13 +1677,9 @@ function assignPorts(
       const lo = Math.max(u.x + portInset(u.w), v.x + portInset(v.w));
       const hi = Math.min(u.x + u.w - portInset(u.w), v.x + v.w - portInset(v.w));
       if (hi >= lo) {
-        // Straight, and clear of a group label on the lower node's top side, and of one
-        // in a foot below the upper node.
-        const [upper, lower] = pl.kind === "down" ? [u, v] : [v, u];
-        const spans = [
-          ...(forbidTop.get(lower.layer) ?? []),
-          ...(forbidBottom.get(upper.layer) ?? []),
-        ];
+        // Straight, and clear of a group label on the lower node's top side.
+        const lower = pl.kind === "down" ? v : u;
+        const spans = forbidTop.get(lower.layer) ?? [];
         ds = nearestFree((centreX(u) + centreX(v)) / 2, lo, hi, spans);
         dt = ds;
         straight.add(pl);
@@ -1860,12 +1814,7 @@ function assignPorts(
 
     const g = first.side === "bottom" ? n.layer : n.layer - 1;
     const facing = (first.side === "bottom" ? below.get(g) : above.get(g)) ?? [];
-    const spans =
-      first.side === "top"
-        ? (forbidTop.get(n.layer) ?? [])
-        : first.side === "bottom"
-          ? (forbidBottom.get(n.layer) ?? [])
-          : [];
+    const spans = first.side === "top" ? (forbidTop.get(n.layer) ?? []) : [];
     const sameBus = (a: Plan, b: Plan) =>
       (a.bus !== undefined && b.bus?.id === a.bus.id) ||
       (a.fanIn !== undefined && b.fanIn?.id === a.fanIn.id);

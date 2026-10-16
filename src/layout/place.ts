@@ -177,27 +177,14 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   // first-row member must leave them room. A bar is met in its row (DESIGN.md, "A row with no box as one bar").
   const barRow = (id: string) => layers.find((l) => l.id === id && l.nodes.length === 0)?.index;
   const topEnds = new Map<string, number>();
-  // And by their bottom side, for a label in a foot (DESIGN.md, "The agent states where a group's label sits").
-  const bottomEnds = new Map<string, number>();
   for (const e of d.edges) {
     const u = nodes.get(e.from);
     const v = nodes.get(e.to);
     const lu = u?.layer ?? barRow(e.from);
     const lv = v?.layer ?? barRow(e.to);
-    if (lu === undefined || lv === undefined) continue;
-    if (lu === lv) {
-      // A line between two boxes of a row that are not neighbours turns under the row unless
-      // it is routed above, and a self-loop always does, its ends spread wide.
-      if (u === undefined || v === undefined || text.sideways.has(e.id)) continue;
-      for (const n of u === v ? [u] : [u, v]) {
-        bottomEnds.set(n.id, (bottomEnds.get(n.id) ?? 0) + (u === v ? 4 : 1));
-      }
-      continue;
-    }
+    if (lu === undefined || lv === undefined || lu === lv) continue;
     const top = lu > lv ? u : v;
     if (top !== undefined) topEnds.set(top.id, (topEnds.get(top.id) ?? 0) + 1);
-    const bottom = lu > lv ? v : u;
-    if (bottom !== undefined) bottomEnds.set(bottom.id, (bottomEnds.get(bottom.id) ?? 0) + 1);
   }
   // Column lanes (DESIGN.md, "Swimlanes run one way"), and the nodes outside them, as blocks in order across.
   const ranks = laneRun(d) === "columns" ? laneRanks(d) : new Map<string, number>();
@@ -254,34 +241,28 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       columnOrder.push(byRank.get(r) as PNode[]);
   }
   const columns = Math.max(1, grid.columns);
-  // Room each group with a stated label place takes past its members, on the left and on the
-  // right, so that the lines into its first row pass beside the label at their centres.
-  const grow = new Map<string, { left: number; right: number }>();
+  // A stated label place takes only its own room (DESIGN.md, "The agent states where a group's label sits"): a
+  // strip inside the box beside its rows, or room past its left or right side. Where a line
+  // runs under it, the write is refused as title-blocked; no box moves for it.
+  const titleOf = (g: string) => d.groups?.find((x) => x.id === g)?.titleAt;
+  /** The strip a label beside a group's rows takes inside its box, clear of every member. */
+  const strip = (g: string): { left: number; right: number } => {
+    const at = titleOf(g);
+    if (at !== "left" && at !== "right") return { left: 0, right: 0 };
+    const w = ceil4(text.groupLabelW(g) + 2 * GROUP.labelClear + GROUP.labelInset - GROUP.pad);
+    return at === "left" ? { left: w, right: 0 } : { left: 0, right: w };
+  };
   /** The room a label outside a group's left or right side takes past its box. */
   const outRoom = (g: string): { left: number; right: number } => {
-    const at = d.groups?.find((x) => x.id === g)?.titleAt;
+    const at = titleOf(g);
     if (at !== "outside-left" && at !== "outside-right") return { left: 0, right: 0 };
     const w = ceil4(GROUP.outsideGap + text.groupLabelW(g));
     return at === "outside-left" ? { left: w, right: 0 } : { left: 0, right: w };
   };
   /** Whether a group's label sits beside its rows rather than above or below them. */
-  const besideRows = (g: string) => atSide(d.groups?.find((x) => x.id === g) ?? {});
-  // Pairs of first-row members whose centres keep apart, by group, so that its label fits between their lines.
-  const apart = new Map<string, { a: string; b: string; d: number }>();
+  const besideRows = (g: string) => atSide({ titleAt: titleOf(g) });
   let solved = solve(new Set(), new Set());
-  let seats = seatLabels(solved.groups, layers, topEnds);
-  for (let round = 0; round < 6; round++) {
-    const more = titleRoom(solved.groups, layers, topEnds, bottomEnds);
-    if (more.size === 0) break;
-    for (const [g, m] of more) {
-      const was = grow.get(g) ?? { left: 0, right: 0 };
-      if (m.left > 0 || m.right > 0)
-        grow.set(g, { left: was.left + m.left, right: was.right + m.right });
-      if (m.apart !== undefined) apart.set(g, m.apart);
-    }
-    solved = solve(new Set(), new Set());
-    seats = seatLabels(solved.groups, layers, topEnds);
-  }
+  const seats = seatLabels(solved.groups, layers, topEnds);
   const seated = (g: PGroup) => g.titleAt === undefined;
   const tight = solved.groups
     .filter((g, i) => seated(g) && (seats[i]?.slack ?? 0) < 0)
@@ -340,14 +321,15 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     };
     /** Whether a group, or one inside it, takes room past its members for its label. */
     const grows = (g: string): boolean =>
-      grow.has(g) || outRoom(g).left + outRoom(g).right > 0 || innerOf(g).some(grows);
+      strip(g).left + strip(g).right + outRoom(g).left + outRoom(g).right > 0 ||
+      innerOf(g).some(grows);
     /**
      * The left side of a group's box, as terms x - d from each member: a box's padding per
      * level, and the room its label takes, and its inner groups'.
      */
     const leftEdge = (g: string): { col: number; d: number }[] => {
       // The room its label takes, past its members and past its inner boxes alike.
-      const room = (grow.get(g)?.left ?? 0) + outRoom(g).left;
+      const room = strip(g).left + outRoom(g).left;
       return [
         ...(membersOf.get(g) ?? []).map((m) => ({
           col: m.col,
@@ -363,7 +345,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
      * padding per level, and past the label of the group and of each inner group.
      */
     const rightEdge = (g: string): { col: number; d: number }[] => {
-      const room = (grow.get(g)?.right ?? 0) + outRoom(g).right;
+      const room = strip(g).right + outRoom(g).right;
       return [
         ...(membersOf.get(g) ?? []).flatMap((m) => [
           { col: m.col, d: m.w / 2 + GROUP.pad * levels(m, g) + room },
@@ -384,11 +366,6 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const g = boxOf(n, other);
       return g === undefined ? [{ col: n.col, d: n.w / 2 }] : leftEdge(g);
     };
-    for (const { a, b, d } of apart.values()) {
-      const p = nodes.get(a);
-      const q = nodes.get(b);
-      if (p !== undefined && q !== undefined) add(p.col, q.col, d);
-    }
     // Room for a crowded label between the lines of its first two first-row members
     // that have them: their centres leave the label and its clearance, and a seat step.
     for (const g of spread) {
@@ -563,7 +540,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const known = sides.get(g);
       if (known !== undefined) return known;
       const ms = membersOf.get(g) ?? [];
-      const room = grow.get(g) ?? { left: 0, right: 0 };
+      const room = strip(g);
       const x0 = Math.min(
         ...ms.map((m) => m.x - GROUP.pad * levels(m, g) - room.left),
         ...innerOf(g)
@@ -779,15 +756,8 @@ function freeRoom(a: number, b: number, spans: [number, number][]): number {
   return at <= b ? Math.max(best, b - at) : best;
 }
 
-/**
- * Whether a group's label sits below its last row, in a foot or outside its bottom side,
- * rather than above its first row.
- */
-export const atFoot = (g: { titleAt?: GroupTitle }): boolean =>
-  g.titleAt?.startsWith("bottom") === true || g.titleAt === "outside-bottom";
-
 /** Whether a group's label sits beside its rows, inside or outside its left or right side. */
-export const atSide = (g: { titleAt?: GroupTitle }): boolean =>
+export const atSide = (g: { titleAt?: GroupTitle | undefined }): boolean =>
   g.titleAt === "left" ||
   g.titleAt === "right" ||
   g.titleAt === "outside-left" ||
@@ -814,123 +784,6 @@ function titleX(g: PGroup): number {
     return g.x1 - GROUP.labelInset - g.labelW;
   }
   return g.x0 + GROUP.labelInset;
-}
-
-/** What a group whose label has a stated place still needs, so that its first row's lines miss the label. */
-interface TitleNeed {
-  /** Room past its members, on the left and on the right. */
-  left: number;
-  right: number;
-  /** Two first-row members whose centres move apart, so that the label fits between their lines. */
-  apart?: { a: string; b: string; d: number };
-}
-
-/**
- * What each group whose label has a stated place still needs so that every line into its
- * first row by the top passes beside the label at its box's centre. A label at the left
- * moves its box's left side out, one at the right its right side. One in the middle takes
- * the stretch between lines, or past the first or the last, that costs the least width:
- * two members move apart until the label fits between their lines, then a side moves out
- * until the middle of the box lies in that stretch.
- */
-function titleRoom(
-  groups: PGroup[],
-  layers: PLayer[],
-  topEnds: Map<string, number>,
-  bottomEnds: Map<string, number>,
-): Map<string, TitleNeed> {
-  const clr = GROUP.labelClear;
-  const out = new Map<string, TitleNeed>();
-  const byId = new Map(groups.map((g) => [g.id, g]));
-  const within = (c: PGroup, g: PGroup): boolean =>
-    c.parent !== undefined && (c.parent === g.id || within(byId.get(c.parent) as PGroup, g));
-  const nodes = new Map(layers.flatMap((l) => l.nodes.map((n) => [n.id, n] as const)));
-  for (const g of groups) {
-    // A label outside a side takes its room as the box's reach (outRoom); none moves a line.
-    if (g.titleAt === undefined || g.titleAt === "outside-left" || g.titleAt === "outside-right") {
-      continue;
-    }
-    if (g.titleAt === "left" || g.titleAt === "right") {
-      // Beside the rows, inside: every member and inner box keeps clear of the label, at any height.
-      const spans = [
-        ...g.members.flatMap((id) => {
-          const n = nodes.get(id);
-          return n === undefined ? [] : [[n.x, n.x + n.w] as const];
-        }),
-        ...groups.filter((c) => within(c, g)).map((c) => reach(c)),
-      ];
-      const lo = Math.min(...spans.map((x) => x[0]));
-      const hi = Math.max(...spans.map((x) => x[1]));
-      const short =
-        g.titleAt === "left" ? g.labelX + g.labelW + 2 * clr - lo : hi - (g.labelX - 2 * clr);
-      if (short > 1e-6) {
-        out.set(
-          g.id,
-          g.titleAt === "left"
-            ? { left: ceil4(short), right: 0 }
-            : { left: 0, right: ceil4(short) },
-        );
-      }
-      continue;
-    }
-    const lo = g.labelX - clr;
-    const hi = g.labelX + g.labelW + clr;
-    // The ports each first-row member's lines take at its top, or each last-row member's at
-    // its bottom for a label in the foot, centred, left to right.
-    const [row, ends] = atFoot(g) ? [g.bottom, bottomEnds] : [g.top, topEnds];
-    const ports = (layers[row]?.nodes ?? [])
-      .filter((n) => g.members.includes(n.id) && (ends.get(n.id) ?? 0) > 0)
-      .map((n) => {
-        const half = (((ends.get(n.id) ?? 1) - 1) * ROUTE.portPitch) / 2;
-        return { n, a: centreX(n) - half, b: centreX(n) + half };
-      })
-      .sort((p, q) => p.a - q.a);
-    const hit = ports.filter((p) => p.b > lo + 1e-6 && p.a < hi - 1e-6);
-    if (hit.length === 0) continue;
-    if (g.titleAt === "top-left" || g.titleAt === "bottom-left") {
-      out.set(g.id, { left: ceil4(Math.max(...hit.map((p) => hi - p.a))), right: 0 });
-      continue;
-    }
-    if (g.titleAt === "top-right" || g.titleAt === "bottom-right") {
-      out.set(g.id, { left: 0, right: ceil4(Math.max(...hit.map((p) => p.b - lo))) });
-      continue;
-    }
-    // In the middle: the label's centre goes as near the box's centre as a stretch allows.
-    const w = g.labelW / 2 + clr;
-    const mid = (g.x0 + g.x1) / 2;
-    const first = ports[0] as (typeof ports)[number];
-    const last = ports[ports.length - 1] as (typeof ports)[number];
-    let best = {
-      cost: 2 * (mid - Math.min(mid, first.a - w)),
-      at: Math.min(mid, first.a - w),
-      wide: 0,
-      k: -1,
-    };
-    const right = Math.max(mid, last.b + w);
-    if (2 * (right - mid) < best.cost)
-      best = { cost: 2 * (right - mid), at: right, wide: 0, k: -1 };
-    for (let k = 1; k < ports.length; k++) {
-      const p = ports[k - 1] as (typeof ports)[number];
-      const q = ports[k] as (typeof ports)[number];
-      const wide = Math.max(0, 2 * w - (q.a - p.b));
-      const at = wide > 0 ? (p.b + q.a) / 2 : Math.min(Math.max(mid, p.b + w), q.a - w);
-      const cost = wide + 2 * Math.abs(at - mid);
-      if (cost < best.cost) best = { cost, at, wide, k };
-    }
-    const p = ports[best.k - 1];
-    const q = ports[best.k];
-    if (best.wide > 0 && p !== undefined && q !== undefined) {
-      const d = ceil4(centreX(q.n) - centreX(p.n) + best.wide);
-      out.set(g.id, { left: 0, right: 0, apart: { a: p.n.id, b: q.n.id, d } });
-      continue;
-    }
-    const shift = best.at - mid;
-    out.set(
-      g.id,
-      shift > 0 ? { left: 0, right: ceil4(2 * shift) } : { left: ceil4(-2 * shift), right: 0 },
-    );
-  }
-  return out;
 }
 
 function seatLabels(
@@ -960,7 +813,7 @@ function seatLabels(
     const above: [number, number][] = [];
     for (let p = g.parent; p !== undefined; p = byId.get(p)?.parent) {
       const o = byId.get(p);
-      if (o !== undefined && o.top === g.top && !atFoot(o) && !atSide(o))
+      if (o !== undefined && o.top === g.top && o.titleAt === undefined)
         above.push([o.labelX - clr, o.labelX + o.labelW + clr]);
     }
     let roomy: number | undefined;

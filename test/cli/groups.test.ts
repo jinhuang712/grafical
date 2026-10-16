@@ -177,6 +177,14 @@ describe('groups inside groups on the command line (DESIGN.md, "Every layered di
     const wrong = run("group", "title", f, "vpc", "middle");
     expect(wrong.code).not.toBe(0);
     expect(wrong.err + wrong.out).toContain("bad-value");
+    // A line runs out of the vpc's last row where its label would sit in the foot.
+    const before = read(f);
+    const blocked = run("group", "title", f, "vpc", "bottom");
+    expect(blocked.code).not.toBe(0);
+    expect(blocked.out).toContain(
+      "defect code=title-blocked owner=agent elements=vpc,db->backup place=bottom clear=top-left,",
+    );
+    expect(read(f)).toBe(before);
   });
 
   it("adds, moves and removes a group inside another, and show names where each sits", () => {

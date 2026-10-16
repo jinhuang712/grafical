@@ -85,31 +85,6 @@ describe("a group's stated label place", () => {
     expect(diffDiagrams(booking, a)).toEqual([{ op: "group.title", id: "app", at: "top" }]);
   });
 
-  for (const at of ["top-left", "top", "top-right"] as GroupTitle[]) {
-    it(`sits at the ${at} of the head, and the lines into the first row keep their centres`, () => {
-      const d = ok(booking, [{ op: "group.title", id: "app", at }]);
-      const s = layout(d, m);
-      expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-      const g = s.groups?.find((x) => x.id === "app");
-      if (g === undefined) throw new Error("no group");
-      const x = g.label.bbox.x;
-      const end = (g.sublabel?.bbox.x ?? x) + (g.sublabel?.bbox.w ?? g.label.bbox.w);
-      if (at === "top-left") expect(x - g.rect.x).toBeCloseTo(16, 0);
-      if (at === "top-right") expect(g.rect.x + g.rect.w - end).toBeCloseTo(16, 0);
-      if (at === "top") expect((x + end) / 2).toBeCloseTo(g.rect.x + g.rect.w / 2, 0);
-      for (const [id, to] of [
-        ["traveller->web", "web"],
-        ["traveller->mobile", "mobile"],
-        ["hotel->portal", "portal"],
-      ]) {
-        const e = s.edges.find((y) => y.id === id);
-        const r = s.nodes.find((n) => n.id === to)?.rect;
-        if (e === undefined || r === undefined) throw new Error(id);
-        expect(e.points.at(-1)?.x, id).toBe(r.x + r.w / 2);
-      }
-    });
-  }
-
   // Lines leave the last row by the bottom, through the foot the label sits in.
   const below = readDiagram(`grafical: 1
 title: Booking
@@ -135,64 +110,8 @@ edges:
   - {id: db->audit, from: db, to: audit}
 `) as Diagram;
 
-  for (const at of ["bottom-left", "bottom", "bottom-right"] as GroupTitle[]) {
-    it(`sits at the ${at} of a foot, and the lines out of the last row keep their centres`, () => {
-      const d = ok(below, [{ op: "group.title", id: "app", at }]);
-      const s = layout(d, m);
-      expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-      const g = s.groups?.find((x) => x.id === "app");
-      const db = s.nodes.find((n) => n.id === "db")?.rect;
-      if (g === undefined || db === undefined) throw new Error("no group");
-      const t = g.label.bbox;
-      expect(t.y).toBeGreaterThan(db.y + db.h);
-      expect(t.y + t.h).toBeLessThan(g.rect.y + g.rect.h);
-      const end = (g.sublabel?.bbox.x ?? t.x) + (g.sublabel?.bbox.w ?? t.w);
-      if (at === "bottom-left") expect(t.x - g.rect.x).toBeCloseTo(16, 0);
-      if (at === "bottom-right") expect(g.rect.x + g.rect.w - end).toBeCloseTo(16, 0);
-      if (at === "bottom") expect((t.x + end) / 2).toBeCloseTo(g.rect.x + g.rect.w / 2, 0);
-      // No head above the first row: the box's top is a padding away from it.
-      const web = s.nodes.find((n) => n.id === "web")?.rect;
-      expect((web?.y ?? 0) - g.rect.y).toBe(24);
-      for (const [id, from] of [
-        ["cache->backup", "cache"],
-        ["db->audit", "db"],
-      ]) {
-        const e = s.edges.find((y) => y.id === id);
-        const r = s.nodes.find((n) => n.id === from)?.rect;
-        if (e === undefined || r === undefined) throw new Error(id);
-        expect(e.points[0]?.x, id).toBe(r.x + r.w / 2);
-      }
-    });
-  }
-
-  for (const [at, d0] of [
-    ["outside-top", booking],
-    ["outside-bottom", below],
-  ] as const) {
-    it(`sits centred just ${at === "outside-top" ? "above" : "below"} the box, clear of every line`, () => {
-      const d = ok(d0, [{ op: "group.title", id: "app", at }]);
-      const s = layout(d, m);
-      expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-      const g = s.groups?.find((x) => x.id === "app");
-      if (g === undefined) throw new Error("no group");
-      const t = g.label.bbox;
-      const end = (g.sublabel?.bbox.x ?? t.x) + (g.sublabel?.bbox.w ?? t.w);
-      expect((t.x + end) / 2).toBeCloseTo(g.rect.x + g.rect.w / 2, 0);
-      if (at === "outside-top") {
-        expect(t.y + t.h).toBeLessThan(g.rect.y);
-        expect(t.y).toBeGreaterThan(g.rect.y - 40);
-        // Inside, the box's top is a padding away from its first row.
-        expect((s.nodes.find((n) => n.id === "web")?.rect.y ?? 0) - g.rect.y).toBe(24);
-      } else {
-        expect(t.y).toBeGreaterThan(g.rect.y + g.rect.h);
-        expect(t.y + t.h).toBeLessThan(g.rect.y + g.rect.h + 40);
-      }
-    });
-  }
-
-  for (const at of ["left", "right", "outside-left", "outside-right"] as GroupTitle[]) {
-    it(`sits ${at.replace("-", " ")} beside the rows, at the middle height or clear of every line`, () => {
-      const oneRow = readDiagram(`grafical: 1
+  // Lines run into the group's one row from both sides.
+  const oneRow = readDiagram(`grafical: 1
 title: One row
 density: normal
 layers:
@@ -206,33 +125,113 @@ edges:
   - {id: api->db, from: api, to: db}
   - {id: db->pay, from: db, to: pay}
 `) as Diagram;
-      for (const [d0, id] of [
-        [below, "app"],
-        [oneRow, "svc"],
-      ] as const) {
-        const d = ok(d0, [{ op: "group.title", id, at }]);
-        const s = layout(d, m);
-        expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-        const g = s.groups?.find((x) => x.id === id);
-        if (g === undefined) throw new Error("no group");
-        const t = g.label.bbox;
-        const end = (g.sublabel?.bbox.x ?? t.x) + (g.sublabel?.bbox.w ?? t.w);
-        const r = g.rect;
-        if (at === "left") expect(t.x - r.x).toBeCloseTo(16, 0);
-        if (at === "right") expect(r.x + r.w - end).toBeCloseTo(16, 0);
-        if (at === "outside-left") expect(r.x - end).toBeCloseTo(12, 0);
-        if (at === "outside-right") expect(t.x - (r.x + r.w)).toBeCloseTo(12, 0);
-        expect(t.y).toBeGreaterThan(r.y);
-        expect(t.y + t.h).toBeLessThan(r.y + r.h);
-        // No member lies across the label's height beside it, inside or out.
-        for (const n of s.nodes) {
-          const across = n.rect.x < end && n.rect.x + n.rect.w > t.x;
-          const level = n.rect.y < t.y + t.h && n.rect.y + n.rect.h > t.y;
-          expect(across && level, n.id).toBe(false);
-        }
+
+  for (const at of GROUP_TITLES) {
+    it(`sits exactly at ${at}`, () => {
+      const d = ok(below, [{ op: "group.title", id: "app", at }]);
+      const s = layout(d, m);
+      const g = s.groups?.find((x) => x.id === "app");
+      const web = s.nodes.find((n) => n.id === "web")?.rect;
+      const db = s.nodes.find((n) => n.id === "db")?.rect;
+      if (g === undefined || web === undefined || db === undefined) throw new Error("no group");
+      const t = g.label.bbox;
+      const end = (g.sublabel?.bbox.x ?? t.x) + (g.sublabel?.bbox.w ?? t.w);
+      const r = g.rect;
+      // Across: an inset from a side, the middle, or a gap outside a side.
+      if (["top-left", "bottom-left", "left"].includes(at)) expect(t.x - r.x).toBeCloseTo(16, 0);
+      if (["top-right", "bottom-right", "right"].includes(at)) {
+        expect(r.x + r.w - end).toBeCloseTo(16, 0);
       }
+      if (["top", "bottom", "outside-top", "outside-bottom"].includes(at)) {
+        expect((t.x + end) / 2).toBeCloseTo(r.x + r.w / 2, 0);
+      }
+      if (at === "outside-left") expect(r.x - end).toBeCloseTo(12, 0);
+      if (at === "outside-right") expect(t.x - (r.x + r.w)).toBeCloseTo(12, 0);
+      // Down: in the head, in a foot, just outside the top or bottom, or at the middle height.
+      if (at.startsWith("top")) {
+        expect(t.y).toBeGreaterThan(r.y);
+        expect(t.y + t.h).toBeLessThan(web.y);
+      } else if (at.startsWith("bottom")) {
+        expect(t.y).toBeGreaterThan(db.y + db.h);
+        expect(t.y + t.h).toBeLessThan(r.y + r.h);
+      } else if (at === "outside-top") {
+        expect(t.y + t.h).toBeLessThan(r.y);
+        expect(t.y).toBeGreaterThan(r.y - 40);
+      } else if (at === "outside-bottom") {
+        expect(t.y).toBeGreaterThan(r.y + r.h);
+        expect(t.y + t.h).toBeLessThan(r.y + r.h + 40);
+      } else {
+        expect(t.y + t.h / 2).toBeCloseTo(r.y + r.h / 2, 0);
+      }
+      // Without a head, the box's top is a padding away from the first row.
+      if (!at.startsWith("top")) expect(web.y - r.y).toBe(24);
     });
   }
+
+  it("moves no line and no box for its place: only its own room is added", () => {
+    for (const [d0, id] of [
+      [booking, "app"],
+      [below, "app"],
+      [oneRow, "svc"],
+    ] as const) {
+      const at = (place: GroupTitle) => layout(ok(d0, [{ op: "group.title", id, at: place }]), m);
+      const across = (place: GroupTitle) => {
+        const s = at(place);
+        return {
+          lines: s.edges.map((e) => e.points.map((p) => p.x)),
+          boxes: s.nodes.map((n) => n.rect.x),
+          group: s.groups?.map((g) => [g.rect.x, g.rect.w]),
+        };
+      };
+      const first = across("top-left");
+      for (const place of GROUP_TITLES.filter((x) => !["left", "right"].includes(x))) {
+        if (place.startsWith("outside-l") || place.startsWith("outside-r")) {
+          const w = (s: ReturnType<typeof at>) => s.groups?.find((g) => g.id === id)?.rect.w;
+          expect(w(at(place)), place).toBe(w(at("top-left")));
+        } else {
+          expect(across(place), place).toEqual(first);
+        }
+      }
+    }
+  });
+
+  it("refuses a place a line crosses, and names the places clear of every line", () => {
+    for (const [d0, id, at, line] of [
+      [booking, "app", "top", "traveller->mobile"],
+      [booking, "app", "top-left", "traveller->web"],
+      [below, "app", "bottom-right", "db->audit"],
+      [oneRow, "svc", "left", "gw->api"],
+      [oneRow, "svc", "outside-right", "db->pay"],
+    ] as const) {
+      const d = ok(d0, [{ op: "group.title", id, at }]);
+      const found = check(d, layout(d, m), m).filter((x) => x.owner === "agent");
+      expect(
+        found.map((x) => [x.code, x.elements, x.facts.place]),
+        at,
+      ).toEqual([["title-blocked", [id, line], at]]);
+      const clear = found[0]?.facts.clear ?? [];
+      expect(clear.length, at).toBeGreaterThan(0);
+      for (const place of GROUP_TITLES) {
+        const e = ok(d0, [{ op: "group.title", id, at: place }]);
+        const blocked = check(e, layout(e, m), m).some((x) => x.code === "title-blocked");
+        expect(blocked, place).toBe(!clear.includes(place));
+      }
+    }
+  });
+
+  it("is clear where no line comes near it, with no engine defect", () => {
+    for (const [d0, id, at] of [
+      [booking, "app", "bottom"],
+      [below, "app", "bottom-left"],
+      [below, "app", "left"],
+      [below, "app", "outside-right"],
+      [oneRow, "svc", "top"],
+      [oneRow, "svc", "outside-bottom"],
+    ] as const) {
+      const d = ok(d0, [{ op: "group.title", id, at }]);
+      expect(check(d, layout(d, m), m), at).toEqual([]);
+    }
+  });
 
   it("leaves a picture without one as it was", () => {
     const d = ok(booking, [{ op: "group.title", id: "app", at: "top" }]);

@@ -38,6 +38,10 @@ export interface Facts {
   nodes?: readonly string[];
   /** How the lanes run: rows or columns. */
   run?: string;
+  /** Where a group's label sits, as the agent stated it. */
+  place?: string;
+  /** The places where no line would come near that label. */
+  clear?: readonly string[];
   /** Groups from the inside out, as they would nest. */
   chain?: readonly string[];
   /** Where in the YAML text, from 1. */
@@ -72,6 +76,8 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
   "lanes",
   "nodes",
   "run",
+  "place",
+  "clear",
   "chain",
   "line",
   "column",
@@ -108,6 +114,7 @@ export const DEFECT_CODES = [
   "wall-crossed",
   "needless-bend",
   "box-aside",
+  "title-blocked",
 ] as const;
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
@@ -137,6 +144,8 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "needless-bend": "engine",
   // The agent placed the box by steps beside everything it connects to (DESIGN.md, "Who chose is punished").
   "box-aside": "agent",
+  // The agent stated where a group's label sits, and a line runs there (DESIGN.md, "The agent states where a group's label sits").
+  "title-blocked": "agent",
 };
 
 /**
