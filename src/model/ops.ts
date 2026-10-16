@@ -21,6 +21,8 @@ import {
   type MarkSlot,
   NODE_KINDS,
   type NodeKind,
+  ROW_LOOKS,
+  type RowLook,
   SIZE_STEPS,
   SIZINGS,
   type SizeStep,
@@ -201,6 +203,13 @@ export interface LayerRemoveOp {
   id: string;
 }
 /** Moves a layer's nodes from `from` on (or its second half) into a new layer below it (DESIGN.md, "Curation stays with the agent"). */
+/** How a row is drawn once a line ends at it (DESIGN.md, "A row with no box as one bar"). */
+export interface LayerLookOp {
+  op: "layer.look";
+  id: string;
+  /** Absent: the look follows the row, a box with no box in it and a band with boxes. */
+  look?: RowLook;
+}
 export interface LayerSplitOp {
   op: "layer.split";
   id: string;
@@ -455,6 +464,7 @@ export type Op =
   | LayerRenameOp
   | LayerMoveOp
   | LayerRemoveOp
+  | LayerLookOp
   | LayerSplitOp
   | NodeAddOp
   | NodeRenameOp
@@ -621,6 +631,11 @@ export const layerMoveSchema = z.strictObject({
   ...position,
 });
 export const layerRemoveSchema = z.strictObject({ op: z.literal("layer.remove"), id: nodeId });
+export const layerLookSchema = z.strictObject({
+  op: z.literal("layer.look"),
+  id: nodeId,
+  look: z.enum(ROW_LOOKS).optional(),
+});
 export const layerSplitSchema = z.strictObject({
   op: z.literal("layer.split"),
   id: nodeId,
@@ -828,6 +843,7 @@ export const opSchema = z.discriminatedUnion("op", [
   layerRenameSchema,
   layerMoveSchema,
   layerRemoveSchema,
+  layerLookSchema,
   layerSplitSchema,
   nodeDescribeSchema,
   nodeKindSchema,
@@ -888,6 +904,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "layer.rename": layerRenameSchema,
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,
+  "layer.look": layerLookSchema,
   "layer.split": layerSplitSchema,
   "node.describe": nodeDescribeSchema,
   "node.kind": nodeKindSchema,

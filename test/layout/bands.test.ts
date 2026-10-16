@@ -58,13 +58,13 @@ edges:
 });
 
 describe('a row with no box as one bar (DESIGN.md, "A row with no box as one bar")', () => {
-  const bar = () =>
+  const bar = (look = "") =>
     readDiagram(`grafical: 1
 title: bar
 density: normal
 layers:
   - {id: apps, label: Apps, nodes: [${node("rider", "actor")}, ${node("driver", "actor")}]}
-  - {id: gateway, label: API gateway, nodes: []}
+  - {id: gateway, label: API gateway${look}, nodes: []}
   - {id: core, label: Core, nodes: [${node("booking")}, ${node("matcher")}, ${node("payments")}]}
 edges:
   - {id: rider->gateway, from: rider, to: gateway}
@@ -87,6 +87,7 @@ edges:
     const t = b.label.bbox;
     expect(t.y).toBeGreaterThan(b.rect.y);
     expect(t.y + t.h).toBeLessThan(b.rect.y + b.rect.h);
+    expect(layout(bar(", look: band"), m).bands?.[0]?.box).toBeUndefined();
   });
 
   it("meets each line straight past its other end, at the bar's top or bottom", () => {

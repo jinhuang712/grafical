@@ -267,6 +267,7 @@ A box sits in a row, in an order. Rows are not drawn: they only place.
 ```sh
 grafical layer add <file> <id> --label <text> [--before <row> | --after <row>]
 grafical layer rename <file> <id> --label <text>
+grafical layer look <file> <id> [box|band]
 grafical layer move <file> <id> --first | --last | --before <row> | --after <row>
 grafical layer remove <file> <id>
 grafical layer split <file> <id> <new-id> --label <text> [--from <node>]
@@ -278,6 +279,7 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 - A box added to a row, or moved into another row, says where it goes: `--first`, `--last`, `--before` or `--after`. Without one it is refused as `missing-field`, with the row and the boxes in it. Only the first box of an empty row needs none (DESIGN.md, "The agent states every order").
 - `layer split` moves the second half of a row, or its boxes from one box on, into a new row below it.
 - A row can be removed only when it is empty, and the lines that end at it go with it.
+- `layer look` says how a row is drawn once a line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row with no box is a box and a row with boxes a band.
 
 ### Alignment ✅
 
@@ -565,7 +567,7 @@ edges:
 ```
 
 - Keys appear in the order shown. `sizing` and `style`, when set, come right after `density`.
-- A row's keys are `id`, `label`, `lane` and `nodes`. A box's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane` and `column`.
+- A row's keys are `id`, `label`, `lane`, `look` and `nodes`. A box's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane` and `column`.
 - After `layers`, a `nodes` list holds the boxes in no row, each with `from` and its steps.
 - After `groups` come `lanes`, `columns`, `walls` and `notes`, in that order. A group's keys are `id`, `label`, `sublabel` and `in`.
 - A line's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `pass`, `accent` and `weight`. `both`, `pass` and `accent` appear only when true, and `weight` only when it is not thin.

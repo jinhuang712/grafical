@@ -1709,6 +1709,14 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, op.id);
       return [];
     }
+    case "layer.look": {
+      const layer = d.layers.find((l) => l.id === op.id);
+      if (!layer) return [unknownLayer(d, op.id, i, "id")];
+      if (op.look === undefined) delete layer.look;
+      else layer.look = op.look;
+      touch(s, op.id);
+      return [];
+    }
     case "layer.move":
       return moveLayer(s, op, i);
     case "layer.remove":

@@ -284,7 +284,7 @@ Good to know:
   - Name a row by what it holds ("Entry", "Stores").
   - A row is drawn only when a line ends at it: around its boxes as a band,
     or, with no boxes, as one bar that lines meet straight past their other
-    ends, such as a gateway or a bus.
+    ends, such as a gateway or a bus. layer look draws it as a box or a band.
   - Rows and boxes share one set of ids: give rows ids like row-users.
 
 See also: layer move, layer split, node add
@@ -653,6 +653,10 @@ Example:
   },
   "note remove": { about: "Remove the note of a node, a group or a line." },
 
+  "layer look": {
+    about: `Draw a row as a box or as a band once a line ends at it. Without a look,
+a row with no boxes is a box and a row with boxes a band.`,
+  },
   "edge pass": {
     about:
       "Let a line pass the bars between its ends, rows with no boxes that lines end at; --off takes it back.",

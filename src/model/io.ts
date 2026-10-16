@@ -68,6 +68,7 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
 function layerOut(l: Layer): Record<string, unknown> {
   const o: Record<string, unknown> = { id: l.id, label: l.label };
   if (l.lane !== undefined) o.lane = l.lane;
+  if (l.look !== undefined) o.look = l.look;
   o.nodes = l.nodes.map(nodeOut);
   return o;
 }

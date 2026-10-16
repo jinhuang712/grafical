@@ -33,6 +33,13 @@ export type Density = (typeof DENSITIES)[number];
 export const LINE_STYLES = ["solid", "dashed", "dotted", "plain"] as const;
 export type LineStyleName = (typeof LINE_STYLES)[number];
 
+/**
+ * How a row is drawn once a line ends at it (DESIGN.md, "A row with no box as one bar"): as a box, with a box's
+ * paint and a dark label, or as a band, with the band's light fill and muted label.
+ */
+export const ROW_LOOKS = ["box", "band"] as const;
+export type RowLook = (typeof ROW_LOOKS)[number];
+
 /** How the engine sizes a node that has no size (DESIGN.md, "Boxes sized to their text"). */
 export const SIZINGS = ["auto", "fixed"] as const;
 export type Sizing = (typeof SIZINGS)[number];
@@ -154,6 +161,8 @@ export interface Layer {
   label: string;
   /** The lane this layer lies in, when lanes run as rows (DESIGN.md, "Swimlanes run one way"). */
   lane?: string;
+  /** How the row is drawn once a line ends at it. Absent: a row with no box is a box, one with boxes a band (DESIGN.md, "A row with no box as one bar"). */
+  look?: RowLook;
   /** Ordered: list order is the order within the layer. */
   nodes: DiagramNode[];
 }

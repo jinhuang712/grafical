@@ -227,8 +227,8 @@ export function generate(seed: number, m: Measurer): Generated {
 /**
  * A bar in three seeds of ten (DESIGN.md, "A row with no box as one bar"): a row with no box put between two rows, or
  * above or below them all, with one to four lines between it and boxes or groups. Every
- * line that then passes it says it may, as an agent does after a bar-crossed refusal.
- * A bar that a check refuses is dropped.
+ * line that then passes it says it may, as an agent does after a bar-crossed refusal,
+ * and one bar in four is drawn as a band. A bar that a check refuses is dropped.
  */
 function addBars(d: Diagram, r: () => number): void {
   const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
@@ -239,7 +239,7 @@ function addBars(d: Diagram, r: () => number): void {
   const trial: Diagram = structuredClone(d);
   const at = int(0, trial.layers.length);
   const above = trial.layers[at - 1]?.lane;
-  const bar = {
+  const bar: Diagram["layers"][number] = {
     id: "bar",
     label: ["gateway", "event bus", "API 网关", "message bus"][int(0, 3)] as string,
     ...(above !== undefined && above === trial.layers[at]?.lane ? { lane: above } : {}),
@@ -268,6 +268,8 @@ function addBars(d: Diagram, r: () => number): void {
     validateAlignments(trial).length > 0 ||
     validateSteps(trial).length > 0;
   if (refused) return;
+  // Drawn last, so that the bar is the same with or without a look.
+  if (r() < 0.25) bar.look = "band";
   d.layers = trial.layers;
   d.edges = trial.edges;
 }

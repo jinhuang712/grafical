@@ -340,6 +340,13 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (was !== undefined && was.label !== l.label) {
       ops.push({ op: "layer.rename", id: l.id, label: l.label });
     }
+    if (l.look !== was?.look) {
+      ops.push(
+        l.look === undefined
+          ? { op: "layer.look", id: l.id }
+          : { op: "layer.look", id: l.id, look: l.look },
+      );
+    }
   }
 
   // 5. Nodes in their new layers and places.

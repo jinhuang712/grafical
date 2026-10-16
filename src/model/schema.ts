@@ -32,6 +32,7 @@ import {
   MARK_SLOTS,
   type Mark,
   NODE_KINDS,
+  ROW_LOOKS,
   SIZE_STEPS,
   SIZINGS,
   type Wall,
@@ -172,6 +173,7 @@ const layerSchema = z.strictObject({
   id: nodeId,
   label: text,
   lane: nodeId.optional(),
+  look: z.enum(ROW_LOOKS).optional(),
   nodes: z.array(nodeSchema).default([]),
 });
 
@@ -276,6 +278,7 @@ function build(p: Parsed): Diagram {
     id: l.id,
     label: l.label,
     ...(l.lane === undefined ? {} : { lane: l.lane }),
+    ...(l.look === undefined ? {} : { look: l.look }),
     nodes: l.nodes.map(buildNode),
   }));
   const edges: Edge[] = p.edges.map((e) => {

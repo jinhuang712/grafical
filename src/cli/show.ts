@@ -64,7 +64,8 @@ export function showDiagram(d: Diagram): string {
   for (const l of d.layers) {
     const nodes = l.nodes.length > 0 ? l.nodes.map(nodeText).join(" | ") : "(empty)";
     const lane = l.lane === undefined ? "" : ` lane=${l.lane}`;
-    lines.push(`layer ${l.id} ${JSON.stringify(l.label)}${lane}: ${nodes}`);
+    const look = l.look === undefined ? "" : ` look=${l.look}`;
+    lines.push(`layer ${l.id} ${JSON.stringify(l.label)}${lane}${look}: ${nodes}`);
   }
   if (d.layers.length === 0) lines.push("(no layers)");
   // Boxes in no row, placed by steps from another box (DESIGN.md, "Steps from another box").

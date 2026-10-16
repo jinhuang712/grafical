@@ -1135,8 +1135,9 @@ function compute(
   });
 
   const sceneBands: SceneBand[] = [...bandRows].map(([i, b]): SceneBand => {
-    // A bar is the gateway or the bus itself: it takes a box's look.
-    const box = b.bar ? { box: true as const } : {};
+    // A row's look is the agent's; without one, a bar is a box and a band a band.
+    const box =
+      (d.layers[i]?.look ?? (b.bar ? "box" : "band")) === "box" ? { box: true as const } : {};
     if (b.bar) {
       const y0 = rowTops[i] ?? 0;
       const rect: Rect = {

@@ -742,6 +742,16 @@ function build(): Command {
   });
   json(
     layer
+      .command("look")
+      .description("draw a row as a box or a band once a line ends at it")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("[look]", "box or band"),
+  ).action(async (file: string, id: string, look: string | undefined, opts: Opts) => {
+    await write(file, { op: "layer.look", id, ...(look === undefined ? {} : { look }) }, opts);
+  });
+  json(
+    layer
       .command("move")
       .description("move a layer up or down")
       .argument("<file>")

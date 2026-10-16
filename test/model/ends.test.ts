@@ -162,22 +162,29 @@ groups:
     expect(ok(later, [...into, { op: "edge.pass", id: "driver->payments" }]).edges).toHaveLength(4);
   });
 
-  it("diffs a line that may pass as the operation that made it", () => {
+  it("sets and clears a row's look, and keeps it in the file", () => {
+    const d = ok(base, [...into, { op: "layer.look", id: "gateway", look: "band" }]);
+    expect(d.layers[1]?.look).toBe("band");
+    expect(writeDiagram(d)).toContain("look: band");
+    expect(readDiagram(writeDiagram(d))).toEqual(d);
+    expect(ok(d, [{ op: "layer.look", id: "gateway" }]).layers[1]?.look).toBeUndefined();
+    expect(fail(d, [{ op: "layer.look", id: "gatewya", look: "box" }])[0]?.code).toBe(
+      "unknown-layer",
+    );
+  });
+
+  it("diffs a look and a line that may pass as the operations that made them", () => {
     const a = ok(base, [...into, { op: "edge.add", from: "driver", to: "payments", pass: true }]);
+    const b = ok(a, [{ op: "layer.look", id: "gateway", look: "band" }]);
     for (const [x, y] of [
       [base, a],
-      [a, base],
+      [a, b],
+      [b, a],
     ] as const) {
       const r = applyOps(x, diffDiagrams(x, y));
       if ("errors" in r) throw new Error(JSON.stringify(r.errors));
       expect(writeDiagram(r.diagram)).toBe(writeDiagram(y));
     }
-    expect(diffDiagrams(base, a)).toContainEqual({
-      op: "edge.add",
-      from: "driver",
-      to: "payments",
-      kind: "call",
-      pass: true,
-    });
+    expect(diffDiagrams(a, b)).toEqual([{ op: "layer.look", id: "gateway", look: "band" }]);
   });
 });
