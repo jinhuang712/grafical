@@ -148,7 +148,7 @@ function build(): Command {
       .argument("<file>")
       .requiredOption("--title <text>", "diagram title")
       .option("--density <density>", "compact, normal or airy")
-      .option("--sizing <sizing>", "auto (default) or fixed: how nodes without --size are sized")
+      .option("--sizing <sizing>", "auto (default) or fixed: sizing of nodes without --size")
       .option(
         "--style <style>",
         "a theme (default, dark, print) or a <name>.grafical-style.yaml beside the file",
