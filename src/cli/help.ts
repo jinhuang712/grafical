@@ -127,8 +127,7 @@ Example:
 
   apply: {
     about: `Apply a YAML list of operations, all or nothing. This is the way to draft:
-one batch with every row, node, group and edge, so that grafical places each
-node knowing all of its lines.`,
+one batch with every row, node, group and edge.`,
     after: `
 Batch file:
   A YAML list. Each item is {op: <noun>.<verb>, ...} with the command's
@@ -160,8 +159,9 @@ Good to know:
 
 Output:
   ok changed=<ids>           the change is written
-  counts nodes= lines= crossings= bends= length= width= height= fullest=
-         busiest= longest= passing= across= tight= crowded=
+  bent line= bends= skip=    a line of over 2 bends; skip: rows it skips
+  counts nodes= lines= crossings= bends= bent= length= width= height=
+         fullest= busiest= longest= passing= across= tight= crowded=
     length is every line's length together, in pixels. fullest: the row
     with most nodes, <row>:<nodes>; busiest: the box with most lines,
     <box>:<lines>; longest: <line>:<length>; passing: lines that pass a row
@@ -186,7 +186,6 @@ When refused:
     fix        operations that would fix it
   overflow: the text takes more lines than its box holds; shorten it or
   move detail to the sublabel. missing-glyph: chars cannot be drawn.
-  Where lines go is grafical's job, never yours.
   Exit codes: 0 done, 1 refused, 2 a usage error.
 
 Example: two systems around a shared store

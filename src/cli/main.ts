@@ -7,6 +7,7 @@ import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import { parse } from "yaml";
 import {
+  bentLines,
   type Counts,
   countsText,
   delta,
@@ -1011,13 +1012,15 @@ function build(): Command {
     }
     const m = await createMeasurer();
     const defects = inspect(d, m, opts.all === true);
+    const dr = drawing(d, layout(d, m));
     process.exitCode = emit(
       {
         ok: defects.length === 0,
         changed: [],
         errors: [],
         defects,
-        counts: drawing(d, layout(d, m)).counts,
+        bent: bentLines(dr.lines),
+        counts: dr.counts,
       },
       opts.json === true,
     );
@@ -1067,12 +1070,14 @@ function build(): Command {
       writeAtomic(out, renderPng(svg, scale));
       files.push(out);
     }
+    const dr = drawing(d, scene);
     const report = {
       ok: defects.length === 0,
       changed: [],
       errors: [],
       defects,
-      counts: drawing(d, scene).counts,
+      bent: bentLines(dr.lines),
+      counts: dr.counts,
     };
     if (opts.json !== true)
       for (const f of files) process.stdout.write(`${record("wrote", { file: f })}\n`);

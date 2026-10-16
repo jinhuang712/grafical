@@ -188,7 +188,9 @@ describe('the drawing as facts (DESIGN.md, "Records over prose")', () => {
     const d = delta(before, after);
     expect(d).toMatchObject({ nodes: 0, crossings: -1, bends: 2, length: -40 });
     expect(Object.keys(d)).not.toContain("busiest");
-    expect(deltaText(d)).toMatch(/^delta nodes=0 lines=0 crossings=-1 bends=\+2 length=-40 /);
+    expect(deltaText(d)).toMatch(
+      /^delta nodes=0 lines=0 crossings=-1 bends=\+2 bent=0 length=-40 /,
+    );
   });
 
   it("is the same records every time, key=value only, with no judgement in it", () => {
@@ -196,7 +198,7 @@ describe('the drawing as facts (DESIGN.md, "Records over prose")', () => {
     expect(drawingText(drawing(crossed, layout(crossed, m)))).toBe(a);
     const lines = a.trimEnd().split("\n");
     expect(lines[0]).toMatch(
-      /^counts nodes=4 lines=2 crossings=1 bends=\d+ length=\d+ width=\d+ height=\d+ /,
+      /^counts nodes=4 lines=2 crossings=1 bends=\d+ bent=\d+ length=\d+ width=\d+ height=\d+ /,
     );
     const a1 = drawing(crossed, layout(crossed, m)).boxes[0];
     expect(lines).toContain(

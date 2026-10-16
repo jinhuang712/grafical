@@ -312,7 +312,7 @@ On 2026-10-11 the owner judged the engine's first real output "cluttered, messy,
 
 Both judges picked the grouped version. The compact one hid the messaging and retry mechanics that engineers want. The target is `bench/targets/catalog-sync-grouped.png`, with its SVG beside it. The engine must produce pictures like it from facts alone.
 
-The rules that make it uncluttered. The checker measures each one. A broken rule is reported by `grafical check --all`, and it does not block a write:
+The rules that make it uncluttered. The checker measures each one. A broken rule is reported by `grafical check --all`, and it does not block a write; since 2026-10-16 every write reports a line that breaks rule 2 ("The dirty work has edges"):
 1. **Size:** the canvas is at most 1024 px wide, so that text shows at full size in a document.
 2. **Grid:** every node centre sits on the column grid ("Layout computed again on every change"). At least half the edges are one straight segment, and no edge has more than 2 bends.
 3. **Crossings:** at most 1 per 10 edges.
@@ -773,7 +773,7 @@ Decided by the owner on 2026-10-16 (PHILOSOPHY.md, "Who owns what?"). The engine
 - **Measured before building**, over the 306 saved agent drafts: 81 drafts (26%) have a line with more than two bends, 242 lines in all, 192 of them with four. Every one of the 242 joins two boxes that are not in neighbouring rows.
 
 What it changes, each built in its own step:
-- **Lines with more than two bends** are reported on every write, single commands included: a `bent` record for each, and `bent=` in the counts. Not refused. Rule 2 of "A target picture with measured rules" said it already, but only `check --all` reported it, and the agent never heard.
+- **Lines with more than two bends** are reported on every write, single commands included, and by `check` and `render`: a `bent line= bends= skip=` record for each, and `bent=` in the counts. Not refused. Rule 2 of "A target picture with measured rules" said it already, but only `check --all` reported it, and the agent never heard. Built on 2026-10-16; to make room in the help read before a draft, `apply --help` lost the line "Where lines go is grafical's job, never yours", which the rows an agent chooses now contradict, and a clause about the engine placing boxes, gone since "The agent states every order".
 - **A crowded default title** no longer widens its box or moves two boxes apart ("Rows unseen, groups as systems"). Where no seat in the head keeps clear of the lines into the first row, the write is refused as `title-blocked`, and the agent states a place.
 - **A line's label with no room** along its path no longer makes its line step out of the crowd ("Our own gap router", detours). The write is refused, naming the line, and the agent shortens the label, drops it, or changes rows.
 - **A wall's label with no room** along its wall no longer moves left of everything in a second layout ("Walls as space"). The write is refused.

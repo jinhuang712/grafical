@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { type Counts, countsText, drawing } from "../check/drawing.ts";
+import { type Bent, bentLines, type Counts, countsText, drawing } from "../check/drawing.ts";
 import { check } from "../check/index.ts";
 import { type Defect, FACT_ORDER, type Facts, type OpError } from "../errors.ts";
 import { layout } from "../layout/index.ts";
@@ -31,6 +31,8 @@ export interface Report {
   defects: Defect[];
   /** The drawing's counts (DESIGN.md, "Records over prose"): on apply, check and render, when nothing was refused. */
   counts?: Counts;
+  /** The lines drawn with more than two bends: on every write, check and render (DESIGN.md, "The dirty work has edges"). */
+  bent?: Bent[];
 }
 
 export function oneLine(s: string): string {
@@ -76,6 +78,7 @@ export function formatReport(r: Report): string {
   else out.push(record("failed", { changed: [] }));
   for (const e of r.errors) out.push(record("error", errorFields(e)));
   for (const d of r.defects) out.push(record("defect", defectFields(d)));
+  for (const b of r.bent ?? []) out.push(record("bent", { ...b }));
   if (r.counts !== undefined) out.push(countsText(r.counts));
   return `${out.join("\n")}\n`;
 }
@@ -93,6 +96,7 @@ export function reportBody(report: Report): Record<string, unknown> {
       ...(e.facts !== undefined ? { facts: e.facts } : {}),
     })),
     defects: report.defects,
+    ...(report.bent !== undefined ? { bent: report.bent } : {}),
     ...(report.counts !== undefined ? { counts: report.counts } : {}),
   };
 }
@@ -231,12 +235,14 @@ export async function runWrite(
   const p = await plan(file, ops, create);
   if (isReport(p)) return p;
   writeAtomic(file, writeDiagram(p.next));
+  const dr = drawing(p.next, p.scene);
   return {
     ok: true,
     changed: p.changed,
     errors: [],
     defects: [],
-    ...(counts ? { counts: drawing(p.next, p.scene).counts } : {}),
+    bent: bentLines(dr.lines),
+    ...(counts ? { counts: dr.counts } : {}),
   };
 }
 

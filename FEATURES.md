@@ -474,10 +474,16 @@ grafical show <file> [--drawn]
 After `apply`, `check` and `render`, grafical prints the drawing's counts as one record:
 
 ```text
-counts nodes=3 lines=2 crossings=0 bends=1 length=224 width=368 height=280 fullest=data:2 busiest=api:2 longest=api->cache:176 passing=0 across=0 tight=0 crowded=0
+counts nodes=3 lines=2 crossings=0 bends=1 bent=0 length=224 width=368 height=280 fullest=data:2 busiest=api:2 longest=api->cache:176 passing=0 across=0 tight=0 crowded=0
 ```
 
 They are facts, with no threshold and no advice: what they mean is the agent's to judge.
+
+`bent` counts the lines drawn with more than two bends. Every write, single commands included, and `check` and `render` print a record for each, before the counts, and never refuse for one (DESIGN.md, "The dirty work has edges"); `skip` is the rows between the rows of its ends:
+
+```text
+bent line=api->photos bends=4 skip=1
+```
 
 Three of them say how the picture is composed, each a separate count and never a score ("Composition counts"): `across`, the lines that cross the box of a group holding neither of their ends; `tight`, the pairs of runs of two different lines (not one bus) that run side by side closer than a track, 12 px, for more than 100 px; and `crowded`, the line labels with less than 8 px of room on two or more of their four sides.
 

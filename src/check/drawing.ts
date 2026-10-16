@@ -15,6 +15,7 @@ import type { Point, Rect, Scene } from "../scene.ts";
 import { themeOf } from "../theme/themes.ts";
 import { type Composition, composition, type Gutter, gutterOf } from "./composition.ts";
 import { segmentCrossesRect, segmentsOf } from "./geometry.ts";
+import { TASTE_LIMITS } from "./taste.ts";
 
 export type Side = "top" | "bottom" | "left" | "right";
 const SIDES: Side[] = ["top", "bottom", "left", "right"];
@@ -107,6 +108,8 @@ export interface Counts {
   /** Every point where two lines cross. */
   crossings: number;
   bends: number;
+  /** Lines with more than two bends (DESIGN.md, "The dirty work has edges"). */
+  bent: number;
   /** The length of every line together. */
   length: number;
   width: number;
@@ -345,6 +348,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       lines: scene.edges.length,
       crossings: points,
       bends: lines.reduce((s, l) => s + l.bends, 0),
+      bent: bentLines(lines).length,
       length: lines.reduce((s, l) => s + l.length, 0),
       width: Math.round(scene.width),
       height: Math.round(scene.height),
@@ -389,6 +393,21 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
 }
 
 /** The counts as one record, named by what they count: counts, before or after. */
+/** A line drawn with more than two bends, reported on every write (DESIGN.md, "The dirty work has edges"). */
+export interface Bent {
+  line: string;
+  bends: number;
+  /** Rows between the rows of its ends. */
+  skip: number;
+}
+
+/** The lines with more than two bends, in drawing order. */
+export function bentLines(lines: DrawnLine[]): Bent[] {
+  return lines
+    .filter((l) => l.bends > TASTE_LIMITS.maxBends)
+    .map((l) => ({ line: l.id, bends: l.bends, skip: l.skip }));
+}
+
 export function countsText(c: Counts, name = "counts"): string {
   return record(name, { ...c });
 }

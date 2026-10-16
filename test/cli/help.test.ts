@@ -63,8 +63,15 @@ describe('the counts in place of hints (DESIGN.md, "Records over prose")', () =>
 
   it("check prints the counts, and no hint, warning or advice", () => {
     const out = run("check", photos()).out;
-    expect(out).toMatch(/^ok\ncounts nodes=\d+ lines=\d+ crossings=\d+ bends=\d+/);
+    // The line round the upload queue is reported as a record, a fact and no warning.
+    expect(out).toMatch(
+      /^ok\nbent line=api->photos bends=4 skip=\d+\ncounts nodes=\d+ lines=\d+ crossings=\d+ bends=\d+ bent=1 /,
+    );
     expect(out).not.toMatch(/^(hint|warning|lines):/m);
+    // Every write reports it too, a single command as a batch (DESIGN.md, "The dirty work has edges").
+    expect(run("diagram", "subtitle", photos(), "--text", "Uploads").out).toBe(
+      "ok changed=subtitle\nbent line=api->photos bends=4 skip=1\n",
+    );
     expect(run("diagram", "improve", photos()).code).toBe(2);
     const json = JSON.parse(run("check", photos(), "--json").out);
     expect(json.counts.lines).toBe(edgeLooks.edges.length);
