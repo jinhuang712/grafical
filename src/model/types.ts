@@ -218,7 +218,12 @@ export interface Edge {
   accent?: boolean;
   /** A weight level the stylesheet names, or a width in pixels (DESIGN.md, "Edge weights"). Absent: thin. */
   weight?: string | number;
+  /** Its number in a process, drawn as a badge on the line (DESIGN.md, "Step badges ride the line"). Absent: none. */
+  step?: number;
 }
+
+/** The highest step number: two digits fit the badge (DESIGN.md, "Step badges ride the line"). */
+export const STEP_NUMBER_MAX = 99;
 
 /**
  * The legend's words (DESIGN.md, "A legend for widths and marks"): per line style; per line width, named by its level or, for

@@ -590,6 +590,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     }
     if (was === undefined) {
       ops.push(edgeAdd(e));
+      if (e.step !== undefined) ops.push({ op: "edge.step", id: e.id, n: e.step });
       continue;
     }
     if (e.from !== was.from || e.to !== was.to) {
@@ -613,6 +614,12 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
         e.pass === true ? { op: "edge.pass", id: e.id } : { op: "edge.pass", id: e.id, off: true },
       );
     }
+    if (e.step !== was.step)
+      ops.push(
+        e.step === undefined
+          ? { op: "edge.step", id: e.id }
+          : { op: "edge.step", id: e.id, n: e.step },
+      );
   }
   if (mainOff.length > 0) ops.push({ op: "edge.emphasize", edges: mainOff, off: true });
   if (weightOff.length > 0) ops.push({ op: "edge.weight", edges: weightOff });

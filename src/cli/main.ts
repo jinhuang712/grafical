@@ -27,6 +27,7 @@ import {
   MARK_SIZES,
   MARK_SLOTS,
   NODE_KINDS,
+  STEP_NUMBER_MAX,
 } from "../model/types.ts";
 import { record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
@@ -521,7 +522,9 @@ function build(): Command {
 
   const edge = program
     .command("edge")
-    .description("lines: add, kind, relabel, emphasize, weight, reverse, both, retarget, remove");
+    .description(
+      "lines: add, emphasize, retarget, reverse, kind, relabel, weight, both, step, remove",
+    );
   json(
     edge
       .command("add")
@@ -615,6 +618,19 @@ function build(): Command {
       .option("--off", "undo it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.pass", id, ...pick(opts, ["off"]) }, opts);
+  });
+  json(
+    edge
+      .command("step")
+      .description("number an edge as a step of a process; without --n, clear it")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--n <number>", `the step's number, 1 to ${STEP_NUMBER_MAX}`),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const n = opts.n;
+    // A number is a number in the file, as in edge weight; anything else is refused.
+    const step = typeof n === "string" && /^[0-9.]+$/.test(n) ? Number(n) : n;
+    await write(file, { op: "edge.step", id, ...(step === undefined ? {} : { n: step }) }, opts);
   });
   json(
     edge

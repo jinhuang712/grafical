@@ -87,6 +87,8 @@ export interface PlaceText {
   sideways: Map<string, SideSlot>;
   /** One-line width of an edge's label, or undefined for none. */
   edgeLabelW: (id: string) => number | undefined;
+  /** The least room between its neighbours a sideways edge needs past its label's, such as for step badges (DESIGN.md, "Step badges ride the line"). */
+  sideRoom?: (id: string) => number;
   /** Width of a group's label. */
   groupLabelW: (id: string) => number;
   /**
@@ -381,7 +383,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const b = nodes.get(slot.right);
       const w = text.edgeLabelW(id);
       if (a === undefined || b === undefined || w === undefined) continue;
-      const room = w + 2 * ROUTE.sideLabelPad;
+      const room = Math.max(w + 2 * ROUTE.sideLabelPad, text.sideRoom?.(id) ?? 0);
       for (const r of rightTerms(a, b))
         for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + room + s.d);
       // An edge that meets a lane beside it is drawn from the lane's side: its

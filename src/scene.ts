@@ -106,7 +106,10 @@ export interface SceneWall {
   label?: PlacedText;
 }
 
-/** A small numbered circle: a footnote's number on its target, or before its text (DESIGN.md, "Notes as callouts or footnotes"). */
+/**
+ * A small numbered circle: a footnote's number on its target, or before its text (DESIGN.md, "Notes as callouts or footnotes"); or a
+ * line's step, on the line (DESIGN.md, "Step badges ride the line").
+ */
 export interface SceneBadge {
   x: number;
   y: number;
@@ -177,6 +180,8 @@ export interface SceneEdge {
   both?: boolean;
   /** The line width in pixels when it is not the thin one: a heavier edge (DESIGN.md, "Lines meet any side", "Edge weights"). */
   width?: number;
+  /** Its step's number in a ring centred on the line (DESIGN.md, "Step badges ride the line"). */
+  step?: SceneBadge;
 }
 
 export interface Scene {

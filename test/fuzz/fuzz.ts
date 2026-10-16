@@ -12,6 +12,7 @@ export const ENGINE_OWNED: readonly DefectCode[] = [
   "node-overlap",
   "edge-through-node",
   "label-collision",
+  "step-collision",
   "edge-overlap",
   "text-crossing",
   "group-intruder",

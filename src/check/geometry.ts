@@ -1,4 +1,4 @@
-// Small geometry helpers for the checker. Pure.
+// Small geometry helpers for the checker, and for the layout where it keeps to the same rule. Pure.
 
 import type { Point, Rect } from "../scene.ts";
 
@@ -92,4 +92,28 @@ export function length(s: Segment): number {
 /** True when the point lies within d of the rect (inside counts). */
 export function pointNearRect(p: Point, r: Rect, d: number): boolean {
   return p.x >= r.x - d && p.x <= r.x + r.w + d && p.y >= r.y - d && p.y <= r.y + r.h + d;
+}
+
+/** The distance from p to the nearest point of r; 0 inside it. */
+export function toRect(p: Point, r: Rect): number {
+  const dx = Math.max(r.x - p.x, 0, p.x - (r.x + r.w));
+  const dy = Math.max(r.y - p.y, 0, p.y - (r.y + r.h));
+  return Math.hypot(dx, dy);
+}
+
+/** The distance from p to the nearest side of r, inside it or out. */
+export function toBorder(p: Point, r: Rect): number {
+  const inside = p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h;
+  if (!inside) return toRect(p, r);
+  return Math.min(p.x - r.x, r.x + r.w - p.x, p.y - r.y, r.y + r.h - p.y);
+}
+
+/** The distance from p to an axis-parallel segment. */
+export function toSegment(p: Point, s: Segment): number {
+  return toRect(p, {
+    x: Math.min(s.a.x, s.b.x),
+    y: Math.min(s.a.y, s.b.y),
+    w: Math.abs(s.a.x - s.b.x),
+    h: Math.abs(s.a.y - s.b.y),
+  });
 }

@@ -268,6 +268,27 @@ describe("write commands", () => {
     const rm = run("node", "remove", "e.grafical.yaml", "q");
     expect(rm.out).toBe("ok changed=q,p->q,p->q#2\n");
   });
+
+  it('edge step numbers a line, show prints it, and no --n clears it (DESIGN.md, "Step badges ride the line")', () => {
+    run("new", "s.grafical.yaml", "--title", "S");
+    run("layer", "add", "s.grafical.yaml", "a", "--label", "A");
+    run("layer", "add", "s.grafical.yaml", "b", "--label", "B");
+    run("node", "add", "s.grafical.yaml", "p", "--layer", "a", "--label", "P");
+    run("node", "add", "s.grafical.yaml", "q", "--layer", "b", "--label", "Q");
+    run("edge", "add", "s.grafical.yaml", "p", "q", "--label", "read");
+    expect(run("edge", "step", "s.grafical.yaml", "p->q", "--n", "3").out).toBe(
+      "ok changed=p->q\n",
+    );
+    expect(read("s.grafical.yaml")).toContain("step: 3");
+    expect(run("show", "s.grafical.yaml").out).toContain("p->q [step 3] read");
+    expect(run("show", "s.grafical.yaml", "--drawn").out).toMatch(/^line id=p->q .* step=3$/m);
+    const bad = run("edge", "step", "s.grafical.yaml", "p->q", "--n", "0");
+    expect(bad.code).toBe(1);
+    expect(bad.out).toContain("error op=0 code=bad-value field=n found=0 min=1 max=99");
+    expect(run("edge", "step", "s.grafical.yaml", "p->q").out).toBe("ok changed=p->q\n");
+    expect(read("s.grafical.yaml")).not.toContain("step:");
+    expect(run("show", "s.grafical.yaml", "--drawn").out).not.toContain("step=");
+  });
 });
 
 describe("read commands", () => {

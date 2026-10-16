@@ -310,7 +310,7 @@ export function placeNotes(
     const rowH = Math.max(lines.length * lh, 2 * r);
     // The number sits level with the first line of its text.
     const first = Math.max(lh, 2 * r);
-    const key = badge(n, room.list.x + r, y + first / 2, m, T);
+    const key = numberBadge(n, room.list.x + r, y + first / 2, r, m, T);
     const top = y + (first - lh) / 2;
     const text = placeLines("note", lines, room.list.x + 2 * r + NOTE.keyGap, top, "start", m, T);
     const mark = markOn(k.on, n);
@@ -375,7 +375,7 @@ export function placeNotes(
     const p = spots.find(free);
     if (p === undefined) return undefined;
     taken.push({ x: p.x - r, y: p.y - r, w: 2 * r, h: 2 * r });
-    return badge(n, p.x, p.y, m, T);
+    return numberBadge(n, p.x, p.y, r, m, T);
   }
 
   return { notes: notes.flatMap((x) => out.get(x.on) ?? []), noRoom };
@@ -385,10 +385,17 @@ function midpoint([a, b]: Seg): Point {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
-/** A numbered circle centred at (x, y). */
-function badge(n: number, x: number, y: number, m: Measurer, T: TypeRamp): SceneBadge {
+/** A numbered circle of radius r centred at (x, y): a footnote's number, or a line's step (DESIGN.md, "Step badges ride the line"). */
+export function numberBadge(
+  n: number,
+  x: number,
+  y: number,
+  r: number,
+  m: Measurer,
+  T: TypeRamp,
+): SceneBadge {
   const lines = m.wrap(String(n), T.note, 100);
   const lh = lineHeight("note", m, T);
   const label: PlacedText = placeLines("note", lines, x, y - lh / 2, "middle", m, T);
-  return { x, y, r: NOTE.badge, label };
+  return { x, y, r, label };
 }

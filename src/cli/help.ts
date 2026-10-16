@@ -6,7 +6,7 @@
 
 import { MAX_GROUP_DEPTH } from "../model/groups.ts";
 import { MAX_ACCENTS } from "../model/schema.ts";
-import { MARK_COLORS, MARK_SHAPES, MARK_SIZES } from "../model/types.ts";
+import { MARK_COLORS, MARK_SHAPES, MARK_SIZES, STEP_NUMBER_MAX } from "../model/types.ts";
 
 /** What grafical is: the top of `grafical --help`. */
 export const PROGRAM_ABOUT = `grafical draws architecture and process diagrams from facts. You say which
@@ -479,6 +479,31 @@ Good to know:
   - Prefer a level to a number: levels read the same across a diagram.
   - Weight, like emphasize, replaces the other: the last one set is the look.
   - Thick and heavy lines stand out only against thin ones; few of them.
+`,
+  },
+
+  "edge step": {
+    about: "Number an edge as a step of a process; without --n, clear its number.",
+    after: `
+When to use:
+  A story of one request or one process that the reader follows in order:
+  number its lines in the order they happen. Lines outside that story stay
+  unnumbered.
+
+Good to know:
+  - grafical draws the number in a small ring on the line, under the start
+    of its label. It never numbers, renumbers or checks the order for you.
+  - Lines may share a number, for steps that happen at the same time.
+  - A numbered line keeps its own way out of a box, as a labelled one does.
+  - edge add takes no number: in a batch, add the edges, then
+    {op: edge.step, id: <edge>, n: <number>} for each.
+
+Limits:
+  --n is a whole number from 1 to ${STEP_NUMBER_MAX}.
+
+Example:
+  grafical edge step shop.grafical.yaml "checkout->events" --n 2
+  grafical edge step shop.grafical.yaml "checkout->events"
 `,
   },
 

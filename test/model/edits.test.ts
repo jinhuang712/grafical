@@ -233,6 +233,51 @@ describe("edges", () => {
       field: "kind",
     });
   });
+
+  it('step numbers a line as the agent states it, and no number clears it (DESIGN.md, "Step badges ride the line")', () => {
+    const d = ok(fx, [
+      { op: "edge.step", id: "callers->handlers", n: 1 },
+      { op: "edge.step", id: "handlers->service", n: 2 },
+      { op: "edge.step", id: "service->mongo", n: 2 },
+    ]);
+    roundTrips(d);
+    expect(edge(d, "callers->handlers")?.step).toBe(1);
+    // Two lines may share a number, and nothing is renumbered.
+    expect(edge(d, "service->mongo")?.step).toBe(2);
+    expect(writeDiagram(d)).toContain("step: 2");
+    // The number stays through the line's other edits.
+    const kept = ok(d, [
+      { op: "edge.relabel", id: "callers->handlers", label: "GET" },
+      { op: "edge.reverse", id: "callers->handlers" },
+      { op: "edge.kind", id: "callers->handlers", kind: "async" },
+    ]);
+    expect(edge(kept, "callers->handlers")?.step).toBe(1);
+    const off = ok(d, [{ op: "edge.step", id: "service->mongo" }]);
+    expect(edge(off, "service->mongo")?.step).toBeUndefined();
+    for (const n of [0, 100, 1.5]) {
+      expect(
+        (parseOp({ op: "edge.step", id: "service->mongo", n }, 0) as OpError[])[0],
+      ).toMatchObject({
+        code: "bad-value",
+        field: "n",
+        facts: { min: 1, max: 99 },
+      });
+    }
+    expect(fail(fx, [{ op: "edge.step", id: "nope", n: 1 }])[0]?.code).toBe("unknown-edge");
+  });
+
+  it("merging keeps two lines that differ only in their number", () => {
+    const d = ok(fx, [
+      { op: "edge.add", from: "geo", to: "mongo", id: "g1" },
+      { op: "edge.add", from: "i18n", to: "mongo", id: "g2" },
+      { op: "edge.step", id: "g1", n: 4 },
+      { op: "edge.step", id: "g2", n: 5 },
+      { op: "node.merge", nodes: ["geo", "i18n"], id: "deps-svc", label: "geo, i18n" },
+    ]);
+    expect(
+      d.edges.filter((e) => e.from === "deps-svc" && e.to === "mongo").map((e) => e.step),
+    ).toEqual([4, 5]);
+  });
 });
 
 describe("dots", () => {

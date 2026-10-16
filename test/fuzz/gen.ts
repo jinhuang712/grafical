@@ -26,6 +26,7 @@ import {
   EDGE_KINDS,
   type Edge,
   SIZE_STEPS,
+  STEP_NUMBER_MAX,
   type Wall,
 } from "../../src/model/types.ts";
 import { checkWalls } from "../../src/model/walls.ts";
@@ -220,6 +221,7 @@ export function generate(seed: number, m: Measurer): Generated {
   addSteps(d, r);
   // A stream of its own, so that a seed with no bar is the same diagram as before bars.
   addBars(d, rng(seed ^ 0x5bd1e995));
+  addStepNumbers(d, r);
 
   return { diagram: d, ops, rejected };
 }
@@ -272,6 +274,22 @@ function addBars(d: Diagram, r: () => number): void {
   if (r() < 0.25) bar.look = "band";
   d.layers = trial.layers;
   d.edges = trial.edges;
+}
+
+/**
+ * Numbered lines (DESIGN.md, "Step badges ride the line"), drawn last, in four seeds of ten: a share of the lines,
+ * from a few to all, numbered in the order they were added, now and then two with one
+ * number, and past 9 where there are enough of them.
+ */
+function addStepNumbers(d: Diagram, r: () => number): void {
+  if (r() < 0.6) return;
+  const share = 0.2 + 0.8 * r();
+  let n = 0;
+  for (const e of d.edges) {
+    if (r() >= share) continue;
+    if (n === 0 || r() >= 0.15) n = Math.min(n + 1, STEP_NUMBER_MAX);
+    e.step = n;
+  }
 }
 
 /**

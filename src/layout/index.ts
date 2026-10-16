@@ -51,15 +51,17 @@ import {
   ROUTE,
   SPACING,
   type Spacing,
+  STEP,
   WALL,
 } from "../theme/geometry.ts";
-import { edgeWidth, lineStyle, type Paint, weightOf } from "../theme/paint.ts";
+import { edgeWidth, hasHead, lineLook, lineStyle, type Paint, weightOf } from "../theme/paint.ts";
 import { isDot, textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
+import { badgeRect, settleBadges, stepPlace } from "./badges.ts";
 import { cutRoute, planEnds, refineEnds, straightIntoBand } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
-import { footnotesHeight, placeNotes } from "./notes.ts";
+import { footnotesHeight, numberBadge, placeNotes } from "./notes.ts";
 import { centreX, type PNode, placeAcross } from "./place.ts";
 import {
   type AssembledLabel,
@@ -512,16 +514,33 @@ function compute(
   const labelMetrics = m.metrics(labelStyle);
   const labelH = labelMetrics.ascent + labelMetrics.descent;
   const labelSizes = new Map<string, LabelBox>();
+  // How far a line's arrowheads reach, at its start and its end.
+  const headsOf = (e: Diagram["edges"][number]) => {
+    const head = lineLook(edgeWidth(e, theme.paint), theme.paint).arrow.length;
+    return { start: e.both === true ? head : 0, end: hasHead(e.kind) ? head : 0 };
+  };
   for (const e of d.edges) {
-    const text = e.label;
-    if (text === undefined || text === "") continue;
-    const w = m.measure(text, labelStyle).width;
+    const text = e.label === "" ? undefined : e.label;
+    if (text === undefined && e.step === undefined) continue;
+    // A step's badge rides the line under one end of its label's text, and the text stands
+    // off it (DESIGN.md, "Step badges ride the line"): the router finds room for both.
+    const step = e.step !== undefined;
+    const size = (w: number, h: number) =>
+      !step
+        ? { w, h }
+        : text === undefined
+          ? { w: 2 * STEP.r, h: STEP.r - ROUTE.labelGap }
+          : { w: w + STEP.r, h: h + STEP.lift };
+    const w = text === undefined ? 0 : m.measure(text, labelStyle).width;
     let forms: LabelForm[] | undefined;
     labelSizes.set(e.id, {
-      w,
-      h: labelH,
+      ...size(w, labelH),
+      ...(step ? { badge: headsOf(e) } : {}),
       narrower: () => {
-        forms ??= narrower(text, w, m, T);
+        forms ??=
+          text === undefined
+            ? []
+            : narrower(text, w, m, T).map((f) => ({ ...f, ...size(f.w, f.h) }));
         return forms;
       },
     });
@@ -539,7 +558,11 @@ function compute(
           : GROUP.sublabelGap + m.measure(g.sublabel, groupSubStyle).width),
     ]),
   );
-  const sideways = planSideways(d, (id) => labelSizes.get(id)?.w, labelH);
+  const sideways = planSideways(
+    d,
+    (id) => labelSizes.get(id)?.w,
+    (id) => labelSizes.get(id)?.h ?? labelH,
+  );
   // Edges that meet a column lane beside it (DESIGN.md, "Swimlanes run one way"), and the node at their other end.
   const laneEnds = new Map<string, { lane: string; node: string }>();
   if (laneRun(d) === "columns") {
@@ -566,9 +589,27 @@ function compute(
       WALL.space,
       ceil4(Math.max(0, ...(wallLines.get(id) ?? []).map((l) => l.width)) + 2 * WALL.labelClear),
     );
+  // Two numbered lines between the same neighbours need room for both badges side by
+  // side, each clear of its line's arrowheads (DESIGN.md, "Step badges ride the line").
+  const numbered = new Map<string, number>();
+  const factOf = new Map(d.edges.map((e) => [e.id, e]));
+  for (const [id, slot] of sideways) {
+    if (factOf.get(id)?.step === undefined) continue;
+    const key = `${slot.left}\u0000${slot.right}`;
+    numbered.set(key, (numbered.get(key) ?? 0) + 1);
+  }
+  const sideRoom = (id: string): number => {
+    const e = factOf.get(id);
+    const slot = sideways.get(id);
+    if (e?.step === undefined || slot === undefined) return 0;
+    if ((numbered.get(`${slot.left}\u0000${slot.right}`) ?? 0) < 2) return 0;
+    const heads = headsOf(e);
+    return 4 * STEP.r + heads.start + heads.end + 2 * STEP.arrowClear + 2 * STEP.r + STEP.clear;
+  };
   const placement = placeAcross(d, {
     sideways,
     edgeLabelW: (id) => labelSizes.get(id)?.w,
+    sideRoom,
     groupLabelW: (id) => groupW.get(id) ?? 0,
     laneEnds,
     wallSpace,
@@ -1347,6 +1388,11 @@ function compute(
     routes.set(e.id, points);
   }
 
+  // Which ends of a line meet a group, a row or a lane it ends at (DESIGN.md, "Step badges ride the line").
+  const insideOf = (id: string) => {
+    const plan = ends.ends.get(id);
+    return { start: plan?.from !== undefined, end: plan?.to !== undefined };
+  };
   const sceneEdges: SceneEdge[] = [];
   for (const e of d.edges) {
     const a = assembled.get(e.id);
@@ -1361,17 +1407,38 @@ function compute(
     if (e.both === true) edge.both = true;
     const width = edgeWidth(e, theme.paint);
     if (width !== undefined && width !== theme.paint.edge.strokeWidth) edge.width = width;
-    if (a.label !== undefined && e.label !== undefined && withText) {
+    const text = e.label === "" ? undefined : e.label;
+    if (a.label !== undefined && (text !== undefined || e.step !== undefined) && withText) {
       const cutAt = [toBox, fromBox].filter((b): b is Rect => b !== undefined);
       const at = points === a.points ? a.label : besideRoute(points, a.label, cutAt, clearOf(e.id));
       labelAt.set(e.id, at);
-      if (at.lines > 1) {
-        // A wrapped label: its lines centred on each other, its ink box at the slot.
-        const lines = m.wrap(e.label, labelStyle, at.maxWidth);
-        const lead = (labelMetrics.lineHeight - labelMetrics.ascent - labelMetrics.descent) / 2;
-        edge.label = placeLines("edge-label", lines, at.x + at.w / 2, at.y - lead, "middle", m, T);
-      } else {
-        edge.label = placeLine("edge-label", e.label, at.x, at.y, m, T);
+      // The text takes the slot, or stands off the step's badge in it (DESIGN.md, "Step badges ride the line").
+      const ink = labelMetrics.ascent + labelMetrics.descent;
+      const lines = text !== undefined && at.lines > 1 ? m.wrap(text, labelStyle, at.maxWidth) : [];
+      const th = lines.length > 1 ? (lines.length - 1) * labelMetrics.lineHeight + ink : ink;
+      const tw = e.step === undefined ? at.w : text === undefined ? 0 : at.w - STEP.r;
+      let top = { x: at.x, y: at.y };
+      if (e.step !== undefined) {
+        const head = lineLook(width, theme.paint).arrow.length;
+        const place = stepPlace(
+          points,
+          at,
+          { w: tw, h: th },
+          {
+            start: e.both === true ? head : 0,
+            end: hasHead(e.kind) ? head : 0,
+          },
+          insideOf(e.id),
+        );
+        edge.step = numberBadge(e.step, place.at.x, place.at.y, STEP.r, m, T);
+        top = place.text;
+      }
+      if (lines.length > 1) {
+        // A wrapped label: its lines centred on each other, its ink box at its place.
+        const lead = (labelMetrics.lineHeight - ink) / 2;
+        edge.label = placeLines("edge-label", lines, top.x + tw / 2, top.y - lead, "middle", m, T);
+      } else if (text !== undefined) {
+        edge.label = placeLine("edge-label", text, top.x, top.y, m, T);
       }
     }
     sceneEdges.push(edge);
@@ -1453,6 +1520,7 @@ function compute(
   // The text a wall's label and line keep clear of: edge, group, band and lane labels.
   const texts: Rect[] = [
     ...sceneEdges.flatMap((e) => (e.label === undefined ? [] : [e.label.bbox])),
+    ...sceneEdges.flatMap((e) => (e.step === undefined ? [] : [badgeRect(e.step)])),
     ...sceneGroups.flatMap((g) => [g.label.bbox, ...(g.sublabel ? [g.sublabel.bbox] : [])]),
     ...sceneBands.map((x) => x.label.bbox),
     ...sceneLanes.map((x) => x.label.bbox),
@@ -1520,6 +1588,27 @@ function compute(
     if (gaps.length > 0) wl.line.gaps = gaps;
   }
 
+  // A badge its label's slot left touching something slides along its line (DESIGN.md, "Step badges ride the line").
+  if (withText) {
+    settleBadges(sceneEdges, {
+      solid: [
+        ...sceneNodes.flatMap((n) => [n.rect, ...(n.marks ?? []).map((x) => x.rect)]),
+        ...captions,
+        ...sceneWalls.flatMap((x) => (x.label ? [x.label.bbox] : [])),
+      ],
+      lines: sceneWalls.flatMap((x) => (x.line ? [{ a: x.line.a, b: x.line.b }] : [])),
+      borders: [
+        ...sceneGroups.map((g) => ({ id: g.id, rect: g.rect })),
+        ...sceneBands.map((b) => ({ id: b.id, rect: b.rect })),
+      ],
+      heads: (e) => {
+        const head = lineLook(e.width, theme.paint).arrow.length;
+        return { start: e.both === true ? head : 0, end: hasHead(e.kind) ? head : 0 };
+      },
+      inside: (e) => insideOf(e.id),
+    });
+  }
+
   // Notes (DESIGN.md, "Notes as callouts or footnotes"): a card beside its target where there is room, a footnote where not.
   const placedNotes = withText
     ? placeNotes(
@@ -1531,6 +1620,10 @@ function compute(
           edges: sceneEdges,
           solid: [
             ...texts,
+            // A note's dotted line meets its line, but keeps off the line's badge.
+            ...sceneEdges.flatMap((e) =>
+              e.step === undefined ? [] : [badgeRect({ ...e.step, r: e.step.r + STEP.clear })],
+            ),
             ...sceneWalls.flatMap((x) => [x.rect, ...(x.label ? [x.label.bbox] : [])]),
             ...sceneLanes.map((x) => x.head),
             ...legend.flatMap((it) => [it.label.bbox, ...(it.mark ? [it.mark.rect] : [])]),
@@ -1587,6 +1680,10 @@ function roundText(t: PlacedText): PlacedText {
   };
 }
 
+function roundBadge(b: SceneBadge): SceneBadge {
+  return { x: round2(b.x), y: round2(b.y), r: b.r, label: roundText(b.label) };
+}
+
 /** Every coordinate in the scene, rounded to 2 decimals (DESIGN.md, "Output and determinism"). */
 function roundScene(s: Scene): Scene {
   const out: Scene = {
@@ -1606,6 +1703,7 @@ function roundScene(s: Scene): Scene {
       if (e.label !== undefined) out.label = roundText(e.label);
       if (e.both === true) out.both = true;
       if (e.width !== undefined) out.width = e.width;
+      if (e.step !== undefined) out.step = roundBadge(e.step);
       return out;
     }),
   };
@@ -1653,12 +1751,6 @@ function roundScene(s: Scene): Scene {
   }
   if (s.notes !== undefined) {
     const pt = (p: Point) => ({ x: round2(p.x), y: round2(p.y) });
-    const badge = (b: SceneBadge) => ({
-      x: round2(b.x),
-      y: round2(b.y),
-      r: b.r,
-      label: roundText(b.label),
-    });
     out.notes = s.notes.map((x) => ({
       on: x.on,
       as: x.as,
@@ -1666,8 +1758,8 @@ function roundScene(s: Scene): Scene {
       ...(x.card === undefined ? {} : { card: roundRect(x.card) }),
       ...(x.link === undefined ? {} : { link: { a: pt(x.link.a), b: pt(x.link.b) } }),
       ...(x.number === undefined ? {} : { number: x.number }),
-      ...(x.mark === undefined ? {} : { mark: badge(x.mark) }),
-      ...(x.key === undefined ? {} : { key: badge(x.key) }),
+      ...(x.mark === undefined ? {} : { mark: roundBadge(x.mark) }),
+      ...(x.key === undefined ? {} : { key: roundBadge(x.key) }),
     }));
   }
   if (s.walls !== undefined) {

@@ -16,6 +16,7 @@ import { flowchart } from "../fixtures/flowchart.ts";
 import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
 import { nested } from "../fixtures/nested.ts";
 import { stateMachine } from "../fixtures/state-machine.ts";
+import { steps } from "../fixtures/steps.ts";
 
 const sha = (d: string | Uint8Array): string => createHash("sha256").update(d).digest("hex");
 const pixels = (png: Uint8Array): string => sha(PNG.sync.read(Buffer.from(png)).data);
@@ -50,6 +51,11 @@ const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
     diagram: lanesColumns,
     svg: "634fe5805ab1a560b8abc211641ed7ce3934c33cf083696cb2784a73af86b427",
     png: "52f43a5c3d1f55ffbe56920abcca1b2a2b259ad8cbba02bd384139fc68d3277d",
+  },
+  steps: {
+    diagram: steps,
+    svg: "04efb0907ee0a766e8b1d82743a2d95a0988529cc99b0953df825968b3207738",
+    png: "803c7e455ab8d7fe1d0e953d1f16c80cbcaf80defee58ac7a4952752e78fd75e",
   },
 };
 

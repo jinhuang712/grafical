@@ -22,4 +22,4 @@ The split is on purpose: rule 4 of DESIGN.md, "A target picture with measured ru
 
 ## Labels across a band's or a lane's border
 
-`check --all` counts a group's border as a line across an edge's label, but not a band's or a lane's. A label moved beside a line cut at a container already keeps off band borders. The checker should count them too, and the gutters keep labels off them.
+`check --all` counts a group's border as a line across an edge's label, but not a band's or a lane's. A label moved beside a line cut at a container already keeps off band borders. The checker should count them too, and the gutters keep labels off them. A step's badge follows the label's rule today, so a lane's border may run under it too (DESIGN.md, "Step badges ride the line").

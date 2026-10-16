@@ -98,6 +98,7 @@ export const DEFECT_CODES = [
   "node-overlap",
   "edge-through-node",
   "label-collision",
+  "step-collision",
   "edge-overlap",
   "text-crossing",
   "group-intruder",
@@ -126,6 +127,8 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "node-overlap": "engine",
   "edge-through-node": "engine",
   "label-collision": "engine",
+  // A step's badge rides its line, which only the engine places (DESIGN.md, "Step badges ride the line").
+  "step-collision": "engine",
   "edge-overlap": "engine",
   "text-crossing": "engine",
   "group-intruder": "engine",

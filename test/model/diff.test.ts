@@ -42,10 +42,29 @@ describe('diff as operations (DESIGN.md, "Git as the history")', () => {
       { op: "group.rename", id: "catalog-api", label: "read side" },
       { op: "layer.rename", id: "deps", label: "Dependencies" },
       { op: "diagram.title", text: "Catalog" },
+      { op: "edge.step", id: "relay->line_topics", n: 2 },
     ];
     for (const op of cases) {
       expect(diffDiagrams(catalogSyncGrouped, edited(catalogSyncGrouped, [op]))).toEqual([op]);
     }
+  });
+
+  it('reports a step cleared, and an added edge with its step (DESIGN.md, "Step badges ride the line")', () => {
+    const numbered = edited(catalogSyncGrouped, [
+      { op: "edge.step", id: "relay->line_topics", n: 2 },
+    ]);
+    expect(diffDiagrams(numbered, catalogSyncGrouped)).toEqual([
+      { op: "edge.step", id: "relay->line_topics" },
+    ]);
+    const added = edited(catalogSyncGrouped, [
+      { op: "edge.add", from: "admin", to: "mongo" },
+      { op: "edge.step", id: "admin->mongo", n: 7 },
+    ]);
+    expect(diffDiagrams(catalogSyncGrouped, added)).toEqual([
+      { op: "edge.add", from: "admin", to: "mongo", kind: "call" },
+      { op: "edge.step", id: "admin->mongo", n: 7 },
+    ]);
+    replays(null, added);
   });
 
   it("reports an added edge and a removed node with its edges", () => {

@@ -225,7 +225,7 @@ grafical edge emphasize <file> <id...> [--off]
 - A stylesheet may retune the levels and add more, such as `critical`. A level the stylesheet lacks is refused as `unknown-weight`, with the allowed names.
 - The arrowhead grows with the width.
 
-### Numbered steps ⬜
+### Numbered steps ✅
 
 A number on a line, so that a reader can follow a request or a process in order.
 
@@ -233,8 +233,9 @@ A number on a line, so that a reader can follow a request or a process in order.
 grafical edge step <file> <id> [--n <number>]
 ```
 
-- The agent states each number, and grafical draws it as a small badge on the line. `show --drawn` adds `step=<n>` to the line's record.
-- Without `--n`, the step is cleared.
+- The agent states each number, a whole number from 1 to 99, and grafical draws it as a small ring on the line, under the start of its label. grafical never numbers or renumbers: lines may share a number, and numbers may skip. `show` adds `[step <n>]` to the line, and `show --drawn` adds `step=<n>` to its record.
+- Without `--n`, the step is cleared. In a batch: `{op: edge.step, id: <line>, n: <number>}`.
+- A numbered line keeps its own port, as a labelled one does, and never joins a bundle.
 
 ### Ends at a group, a row or a lane ✅
 
@@ -570,7 +571,7 @@ edges:
 - A row's keys are `id`, `label`, `lane`, `look` and `nodes`. A box's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane` and `column`.
 - After `layers`, a `nodes` list holds the boxes in no row, each with `from` and its steps.
 - After `groups` come `lanes`, `columns`, `walls` and `notes`, in that order. A group's keys are `id`, `label`, `sublabel` and `in`.
-- A line's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `pass`, `accent` and `weight`. `both`, `pass` and `accent` appear only when true, and `weight` only when it is not thin.
+- A line's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `pass`, `accent`, `weight` and `step`. `both`, `pass` and `accent` appear only when true, `weight` only when it is not thin, and `step` only when the line is numbered.
 - A field that holds its default is left out.
 - Rows, the boxes in a row and lines are ordered lists. The order of rows and boxes is their place in the picture. The order of lines is creation order and changes nothing visible.
 

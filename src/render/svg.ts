@@ -6,6 +6,7 @@
 // not drawn (DESIGN.md, "Rows unseen, groups as systems").
 // Nodes come after edges so that ports look clean.
 
+import { badgeRect } from "../layout/badges.ts";
 import type {
   PlacedText,
   Point,
@@ -571,6 +572,7 @@ export function renderSvg(scene: Scene): string {
           boxes: [
             ...scene.nodes.map((n) => n.rect),
             ...scene.edges.flatMap((e) => (e.label ? [e.label.bbox] : [])),
+            ...scene.edges.flatMap((e) => (e.step ? [badgeRect(e.step)] : [])),
           ],
           lines: scene.edges.flatMap((e) => {
             const pts = simplify(e.points);
@@ -578,6 +580,31 @@ export function renderSvg(scene: Scene): string {
           }),
         }
       : undefined;
+  // What lies behind a point, for a label's patch and a badge's fill: the innermost box it
+  // sits in, as boxes come outer first, or the page.
+  const behindAt = (cx: number, cy: number): string => {
+    const inGroup = groups.findLast(
+      (g) =>
+        cx >= g.rect.x && cx <= g.rect.x + g.rect.w && cy >= g.rect.y && cy <= g.rect.y + g.rect.h,
+    );
+    const inBand = (scene.bands ?? []).find(
+      (b) =>
+        cx >= b.rect.x && cx <= b.rect.x + b.rect.w && cy >= b.rect.y && cy <= b.rect.y + b.rect.h,
+    );
+    const inLane = lanes.some(
+      (x) =>
+        cx >= x.rect.x && cx <= x.rect.x + x.rect.w && cy >= x.rect.y && cy <= x.rect.y + x.rect.h,
+    );
+    return inGroup
+      ? groupFill(inGroup, P)
+      : inBand
+        ? inBand.box === true
+          ? P.node.kinds.service.fill
+          : P.band.fill
+        : inLane
+          ? P.lane.fill
+          : lb.fill;
+  };
   for (const e of scene.edges) {
     out.push(...edgeShapes(e, byId, P, hops.get(e.id), room));
     if (e.label) {
@@ -588,44 +615,23 @@ export function renderSvg(scene: Scene): string {
         w: b.w + 2 * lb.padX,
         h: b.h + 2 * lb.padY,
       };
-      const cx = b.x + b.w / 2;
-      const cy = b.y + b.h / 2;
-      // The innermost box the label sits in: boxes come outer first.
-      const inGroup = groups.findLast(
-        (g) =>
-          cx >= g.rect.x &&
-          cx <= g.rect.x + g.rect.w &&
-          cy >= g.rect.y &&
-          cy <= g.rect.y + g.rect.h,
-      );
-      const inBand = (scene.bands ?? []).find(
-        (b) =>
-          cx >= b.rect.x &&
-          cx <= b.rect.x + b.rect.w &&
-          cy >= b.rect.y &&
-          cy <= b.rect.y + b.rect.h,
-      );
-      const inLane = lanes.some(
-        (x) =>
-          cx >= x.rect.x &&
-          cx <= x.rect.x + x.rect.w &&
-          cy >= x.rect.y &&
-          cy <= x.rect.y + x.rect.h,
-      );
-      const behind = inGroup
-        ? groupFill(inGroup, P)
-        : inBand
-          ? inBand.box === true
-            ? P.node.kinds.service.fill
-            : P.band.fill
-          : inLane
-            ? P.lane.fill
-            : lb.fill;
+      const behind = behindAt(b.x + b.w / 2, b.y + b.h / 2);
       out.push(
         `<rect ${rectAttrs(bg)} rx="${num(lb.radius)}" fill="${behind}"/>`,
         ...texts(e.label, P.text.edgeLabel),
       );
     }
+  }
+
+  // Steps (DESIGN.md, "Step badges ride the line"): a ring in the line's colour, centred on the line, that hides
+  // the line inside it, and the number in the labels' colour.
+  for (const e of scene.edges) {
+    if (e.step === undefined) continue;
+    const b = e.step;
+    out.push(
+      `<circle cx="${num(b.x)}" cy="${num(b.y)}" r="${num(b.r)}" fill="${behindAt(b.x, b.y)}" stroke="${P.edge.kinds[e.kind].stroke}" stroke-width="${num(P.edge.strokeWidth)}"/>`,
+      ...texts(b.label, P.text.edgeLabel),
+    );
   }
 
   for (const j of joinsOf(scene.edges)) {

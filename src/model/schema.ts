@@ -8,7 +8,7 @@ import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
 import { checkColumns } from "./columns.ts";
 import { checkEnds } from "./ends.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
-import { ID_EDGE, ID_NODE, ID_SUFFIX, issuesToErrors, WEIGHT } from "./issues.ts";
+import { ID_EDGE, ID_NODE, ID_SUFFIX, issuesToErrors, STEP_NUMBER, WEIGHT } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
 import { noteTargets } from "./notes.ts";
 import { checkSteps, everyNode, MAX_STEPS, STEP_KEYS } from "./steps.ts";
@@ -35,6 +35,7 @@ import {
   ROW_LOOKS,
   SIZE_STEPS,
   SIZINGS,
+  STEP_NUMBER_MAX,
   type Wall,
 } from "./types.ts";
 import { checkWalls } from "./walls.ts";
@@ -207,6 +208,13 @@ export const weightValue = z.union([
   z.number().min(WEIGHT_MIN, { message: WEIGHT }).max(WEIGHT_MAX, { message: WEIGHT }),
 ]);
 
+/** A line's step number (DESIGN.md, "Step badges ride the line"): a whole number from 1 to STEP_NUMBER_MAX. */
+export const stepNumber = z
+  .number()
+  .int({ message: STEP_NUMBER })
+  .min(1, { message: STEP_NUMBER })
+  .max(STEP_NUMBER_MAX, { message: STEP_NUMBER });
+
 const edgeSchema = z.strictObject({
   id: edgeId,
   from: nodeId,
@@ -217,6 +225,7 @@ const edgeSchema = z.strictObject({
   pass: z.boolean().optional(),
   accent: z.boolean().optional(),
   weight: weightValue.optional(),
+  step: stepNumber.optional(),
 });
 
 export const diagramSchema = z.strictObject({
@@ -288,6 +297,7 @@ function build(p: Parsed): Diagram {
     if (e.pass === true) edge.pass = true;
     if (e.accent === true) edge.accent = true;
     if (e.weight !== undefined) edge.weight = e.weight;
+    if (e.step !== undefined) edge.step = e.step;
     return edge;
   });
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };

@@ -96,6 +96,11 @@ export type PlanKind = "down" | "up" | "uturn" | "neighbour";
 export interface LabelBox {
   w: number;
   h: number;
+  /**
+   * A step's badge rides the line at one end of the box, which must lie over a straight
+   * part (DESIGN.md, "Step badges ride the line"): how far the line's arrowheads reach, at its start and end.
+   */
+  badge?: { start: number; end: number };
   /** The label wrapped onto more lines, narrower: asked for only when it does not fit on one. */
   narrower?: () => LabelForm[];
 }
@@ -215,6 +220,11 @@ export interface VisitLabel {
   lines: number;
   maxWidth: number;
   narrower: (() => LabelForm[]) | undefined;
+  /**
+   * A step's badge rides the line at one end of the label (DESIGN.md, "Step badges ride the line"): how far the line's
+   * arrowheads reach into the gutter from its top and from its bottom, where the line meets a box.
+   */
+  badge?: { top: number; bottom: number };
 }
 
 export interface Routing {
@@ -2001,6 +2011,22 @@ function stubsOf(pl: Plan, j: number): [Stub, Stub] {
   return [entry, exit];
 }
 
+/** The arrowheads a line has in its j-th gutter, at the gutter's top and bottom: where it leaves or meets a box there. */
+function headsAt(
+  pl: Plan,
+  j: number,
+  heads: { start: number; end: number },
+): { top: number; bottom: number } {
+  const [entry, exit] = stubsOf(pl, j);
+  const last = pl.gutters.length - 1;
+  const atEntry = j === 0 && pl.turn === undefined ? heads.start : 0;
+  const atExit = j === last && pl.turnIn === undefined ? heads.end : 0;
+  return {
+    top: (entry.top ? atEntry : 0) + (exit.top ? atExit : 0),
+    bottom: (entry.top ? 0 : atEntry) + (exit.top ? 0 : atExit),
+  };
+}
+
 function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<number>>): void {
   const shared = new Map<string, Visit>();
   for (const pl of plans) {
@@ -2066,6 +2092,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
               lines: 1,
               maxWidth: Number.POSITIVE_INFINITY,
               narrower: pl.label.narrower,
+              ...(pl.label.badge === undefined ? {} : { badge: headsAt(pl, j, pl.label.badge) }),
             }
           : undefined;
       const visit: Visit = {

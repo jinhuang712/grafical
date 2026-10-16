@@ -55,6 +55,8 @@ export interface DrawnLine {
   passes: string[];
   /** The lines it leaves or arrives with through one port, drawn as one bundle there (DESIGN.md, "Fan-outs of three bundle"), in id order. */
   bundle: string[];
+  /** Its step's number, drawn on it (DESIGN.md, "Step badges ride the line"); absent for a line with none. */
+  step?: number;
 }
 
 export interface DrawnGroup {
@@ -218,6 +220,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     at[side] = (at[side] ?? 0) + 1;
     atBox.set(id, at);
   };
+  const steps = new Map(d.edges.flatMap((e) => (e.step === undefined ? [] : [[e.id, e.step]])));
   const lines: DrawnLine[] = [];
   for (const e of scene.edges) {
     const first = e.points[0] as Point;
@@ -255,6 +258,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     }
     const direct =
       fromRect === undefined || toRect === undefined ? 0 : Math.round(gapOf(fromRect, toRect));
+    const step = steps.get(e.id);
     lines.push({
       id: e.id,
       from: e.from,
@@ -269,6 +273,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       crosses: (crosses.get(e.id) ?? []).sort(),
       passes,
       bundle: [...(bundles.get(e.id) ?? [])].sort(),
+      ...(step === undefined ? {} : { step }),
     });
   }
 

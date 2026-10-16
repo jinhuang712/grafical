@@ -29,6 +29,7 @@ import { flowchart } from "../test/fixtures/flowchart.ts";
 import { lanesColumns, lanesRows } from "../test/fixtures/lanes.ts";
 import { nested } from "../test/fixtures/nested.ts";
 import { stateMachine } from "../test/fixtures/state-machine.ts";
+import { steps } from "../test/fixtures/steps.ts";
 import { tiny } from "../test/fixtures/tiny.ts";
 import { generate } from "../test/fuzz/gen.ts";
 
@@ -244,6 +245,7 @@ async function corpusItems(
       ["flowchart", flowchart],
       ["state-machine", stateMachine],
       ["nested", nested],
+      ["steps", steps],
     ];
     return [...files, ...built.map(([id, diagram]) => ({ id, diagram, render: true }))];
   }

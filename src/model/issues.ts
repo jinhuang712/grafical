@@ -4,7 +4,7 @@ import type { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
 import { lineStyle, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { closest } from "./suggest.ts";
-import { EDGE_KINDS, type EdgeKind } from "./types.ts";
+import { EDGE_KINDS, type EdgeKind, STEP_NUMBER_MAX } from "./types.ts";
 
 export const ID_NODE = "ID_NODE";
 export const ID_EDGE = "ID_EDGE";
@@ -12,6 +12,8 @@ export const ID_EDGE = "ID_EDGE";
 export const ID_SUFFIX = "ID_SUFFIX";
 /** An edge weight that is neither a level name nor a width within the limits (DESIGN.md, "Edge weights"). */
 export const WEIGHT = "WEIGHT";
+/** A step number that is not a whole number within the limits (DESIGN.md, "Step badges ride the line"). */
+export const STEP_NUMBER = "STEP_NUMBER";
 
 /** The characters an id may hold; an edge's id may also hold -> and #<n>. */
 const ID_CHARS = ["a-z", "0-9", ".", "_", "-"];
@@ -144,6 +146,14 @@ export function issuesToErrors(
           min: WEIGHT_MIN,
           max: WEIGHT_MAX,
         },
+      });
+    } else if (issue.message === STEP_NUMBER) {
+      out.push({
+        code: "bad-value",
+        index,
+        ...base,
+        found: show(found),
+        facts: { min: 1, max: STEP_NUMBER_MAX },
       });
     } else if (issue.code === "invalid_union" && path[0] === "legend") {
       // A legend entry holds words. An old file's false is read as none, and not offered

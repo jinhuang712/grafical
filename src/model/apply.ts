@@ -1463,7 +1463,7 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
     }
   }
   // The new node keeps every edge of the merged ones. Edges between them go, and
-  // edges that become the same (ends, kind and label) are kept once.
+  // edges that become the same (ends, kind, label and step) are kept once.
   const seen = new Set<string>();
   const kept: Edge[] = [];
   for (const e of d.edges) {
@@ -1473,7 +1473,7 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
       touch(s, e.id);
       continue;
     }
-    const key = `${from}\u0000${to}\u0000${e.kind}\u0000${e.label ?? ""}`;
+    const key = `${from}\u0000${to}\u0000${e.kind}\u0000${e.label ?? ""}\u0000${e.step ?? ""}`;
     if (seen.has(key)) {
       touch(s, e.id);
       continue;
@@ -1830,6 +1830,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
     case "edge.reverse":
     case "edge.both":
     case "edge.pass":
+    case "edge.step":
     case "edge.retarget": {
       const e = d.edges.find((x) => x.id === op.id);
       if (!e) return [unknownEdge(d, op.id, i, "id")];
@@ -1847,6 +1848,9 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       } else if (op.op === "edge.pass") {
         if (op.off === true) delete e.pass;
         else e.pass = true;
+      } else if (op.op === "edge.step") {
+        if (op.n === undefined) delete e.step;
+        else e.step = op.n;
       } else {
         if (op.from === undefined && op.to === undefined) {
           return [

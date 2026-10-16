@@ -2,16 +2,17 @@
 // measurer, and returns every mechanical flaw, in a deterministic order.
 
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
+import { arrowheads } from "../layout/badges.ts";
 import { asideBoxes, bendsOf } from "../layout/index.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { laneNodes } from "../model/lanes.ts";
 import { type Diagram, LINE_STYLES, MARK_SLOTS, markText } from "../model/types.ts";
 import { crossingFix, wallAllows } from "../model/walls.ts";
 import { isEmoji } from "../render/marks.ts";
-import type { PlacedText, Rect, Scene, SceneEdge, SceneNode } from "../scene.ts";
+import type { PlacedText, Rect, Scene, SceneBadge, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { NOTE, ROUTE } from "../theme/geometry.ts";
-import { lineStyle } from "../theme/paint.ts";
+import { hasHead, lineLook, lineStyle, PAINT } from "../theme/paint.ts";
 import { textInside } from "../theme/shapes.ts";
 import { themeOf } from "../theme/themes.ts";
 import {
@@ -24,6 +25,9 @@ import {
   type Segment,
   segmentCrossesRect,
   segmentsOf,
+  toBorder,
+  toRect,
+  toSegment,
 } from "./geometry.ts";
 
 /** Text must stay this far inside its node's rect, left and right. */
@@ -205,6 +209,97 @@ function checkLabelCollision(scene: Scene, out: Found[]): void {
           facts: { is: "label" },
         });
       }
+    }
+  }
+}
+
+/** How near a step's badge may come to anything else before it touches it (DESIGN.md, "Step badges ride the line"). */
+export const STEP_CLEAR = 1;
+
+/**
+ * A step's badge sits on its own line, clear of every box, every other line and its
+ * hops, every text, every other badge, and the borders of groups and bands, as a label
+ * keeps clear of them (DESIGN.md, "Step badges ride the line"). It never covers an arrowhead of its own line. A lane's
+ * divider may run under it, as under a label.
+ */
+function checkSteps(scene: Scene, out: Found[]): void {
+  const P = scene.paint ?? PAINT;
+  const badges = scene.edges.filter((e): e is SceneEdge & { step: SceneBadge } => !!e.step);
+  if (badges.length === 0) return;
+  // Each text, with the element it belongs to and what that element is.
+  const texts: { id: string; is: string; rect: Rect }[] = [];
+  for (const n of scene.nodes) {
+    for (const t of n.texts) texts.push({ id: n.id, is: "node", rect: t.bbox });
+    for (const mk of n.marks ?? []) texts.push({ id: n.id, is: "mark", rect: mk.rect });
+  }
+  for (const e of scene.edges)
+    if (e.label) texts.push({ id: e.id, is: "label", rect: e.label.bbox });
+  for (const g of scene.groups ?? []) {
+    texts.push({ id: g.id, is: "group", rect: g.label.bbox });
+    if (g.sublabel) texts.push({ id: g.id, is: "group", rect: g.sublabel.bbox });
+  }
+  for (const b of scene.bands ?? []) texts.push({ id: b.id, is: "layer", rect: b.label.bbox });
+  for (const x of scene.lanes ?? []) texts.push({ id: x.id, is: "lane", rect: x.head });
+  for (const w of scene.walls ?? [])
+    if (w.label) texts.push({ id: w.id, is: "wall", rect: w.label.bbox });
+  for (const x of scene.notes ?? []) {
+    texts.push({ id: x.on, is: "note", rect: x.card ?? x.text.bbox });
+    for (const b of [x.mark, x.key]) {
+      if (b)
+        texts.push({
+          id: x.on,
+          is: "note",
+          rect: { x: b.x - b.r, y: b.y - b.r, w: 2 * b.r, h: 2 * b.r },
+        });
+    }
+  }
+  const named: [string, PlacedText | undefined][] = [
+    ["subtitle", scene.subtitle],
+    ["note", scene.note],
+    ["title", scene.title],
+  ];
+  for (const [id, t] of named) if (t) texts.push({ id, is: id, rect: t.bbox });
+  for (const [i, item] of (scene.legend ?? []).entries()) {
+    texts.push({ id: `legend-${i}`, is: "legend", rect: item.label.bbox });
+  }
+  // Lines that are not edges: a labelled wall's divider and a callout's dotted line.
+  const others: { id: string; is: string; s: Segment }[] = [];
+  for (const w of scene.walls ?? []) if (w.line) others.push({ id: w.id, is: "wall", s: w.line });
+  for (const x of scene.notes ?? []) if (x.link) others.push({ id: x.on, is: "note", s: x.link });
+  const borders = [
+    ...(scene.groups ?? []).map((g) => ({ id: g.id, is: "group", rect: g.rect })),
+    ...(scene.bands ?? []).map((b) => ({ id: b.id, is: "layer", rect: b.rect })),
+  ];
+
+  for (const e of badges) {
+    const b = e.step;
+    const c = { x: b.x, y: b.y };
+    const near = b.r + STEP_CLEAR;
+    const found = new Map<string, string>();
+    const hit = (id: string, is: string) => {
+      if (!found.has(`${id}\u0000${is}`)) found.set(`${id}\u0000${is}`, is);
+    };
+    for (const n of scene.nodes) if (toRect(c, n.rect) < near) hit(n.id, "node");
+    for (const o of scene.edges) {
+      if (o.id === e.id) continue;
+      if (segmentsOf(o.points).some((s) => toSegment(c, s) < near)) hit(o.id, "edge");
+      if (o.step && Math.hypot(o.step.x - b.x, o.step.y - b.y) < b.r + o.step.r + STEP_CLEAR) {
+        hit(o.id, "step");
+      }
+    }
+    for (const t of texts) if (toRect(c, t.rect) < near) hit(t.id, t.is);
+    for (const o of others) if (toSegment(c, o.s) < near) hit(o.id, o.is);
+    // A line that ends at a group or a band meets its border there.
+    for (const x of borders) {
+      if (x.id !== e.from && x.id !== e.to && toBorder(c, x.rect) < near) hit(x.id, x.is);
+    }
+    // Its own arrowheads: from the tip of each back along the line.
+    const head = lineLook(e.width, P).arrow.length;
+    const heads = { start: e.both === true ? head : 0, end: hasHead(e.kind) ? head : 0 };
+    if (arrowheads(e.points, heads).some((s) => toSegment(c, s) < near)) hit(e.id, "arrow");
+    for (const [key, is] of found) {
+      const id = key.split("\u0000")[0] as string;
+      out.push({ code: "step-collision", elements: [e.id, id], facts: { is } });
     }
   }
 }
@@ -556,6 +651,7 @@ export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[
   checkMarkCovers(scene, out);
   checkEdgeThroughNode(scene, out);
   checkLabelCollision(scene, out);
+  checkSteps(scene, out);
   checkEdgeOverlap(scene, out);
   checkNeedlessBend(scene, out);
   checkStepAside(diagram, scene, out);

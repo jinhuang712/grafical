@@ -4,7 +4,7 @@
 import { z } from "zod";
 import type { OpError } from "../errors.ts";
 import { issuesToErrors, OP_KEYS, show } from "./issues.ts";
-import { edgeId, idSuffix, nodeId, steps, text, weightValue } from "./schema.ts";
+import { edgeId, idSuffix, nodeId, stepNumber, steps, text, weightValue } from "./schema.ts";
 import { closest } from "./suggest.ts";
 import {
   DENSITIES,
@@ -317,6 +317,13 @@ export interface EdgeBothOp {
   /** true: one arrowhead again. */
   off?: boolean;
 }
+/** Numbers an edge as a step of a process, or clears its number (DESIGN.md, "Step badges ride the line"). */
+export interface EdgeStepOp {
+  op: "edge.step";
+  id: string;
+  /** Absent: no number. */
+  n?: number;
+}
 /** Moves one or both ends of an edge; its id, kind and label stay. */
 export interface EdgeRetargetOp {
   op: "edge.retarget";
@@ -487,6 +494,7 @@ export type Op =
   | EdgePassOp
   | EdgeEmphasizeOp
   | EdgeWeightOp
+  | EdgeStepOp
   | EdgeRetargetOp;
 
 export type OpName = Op["op"];
@@ -718,6 +726,11 @@ export const edgePassSchema = z.strictObject({
   id: edgeId,
   off: z.boolean().optional(),
 });
+export const edgeStepSchema = z.strictObject({
+  op: z.literal("edge.step"),
+  id: edgeId,
+  n: stepNumber.optional(),
+});
 export const edgeRetargetSchema = z.strictObject({
   op: z.literal("edge.retarget"),
   id: edgeId,
@@ -859,6 +872,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgePassSchema,
   edgeEmphasizeSchema,
   edgeWeightSchema,
+  edgeStepSchema,
   edgeRetargetSchema,
 ]);
 
@@ -920,6 +934,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.pass": edgePassSchema,
   "edge.emphasize": edgeEmphasizeSchema,
   "edge.weight": edgeWeightSchema,
+  "edge.step": edgeStepSchema,
   "edge.retarget": edgeRetargetSchema,
 };
 

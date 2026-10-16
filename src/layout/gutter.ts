@@ -23,7 +23,7 @@
 // Vertical positions here are in "row px": row t lies at t * pitch. Assembly turns
 // them into absolute y once the gutter's height step is known.
 
-import { ROUTE } from "../theme/geometry.ts";
+import { ROUTE, STEP } from "../theme/geometry.ts";
 import type { LabelForm, Visit, VisitLabel } from "./route.ts";
 
 const EPS = 1e-6;
@@ -69,6 +69,28 @@ export function labelBox(
   return { x0, x1: x0 + lab.w, y0, y1: y0 + lab.h };
 }
 
+/** Is the badge's end of a slot, from x0 across 2r, over the run? */
+function onRun(v: Visit, x0: number): boolean {
+  return x0 >= v.lo - EPS && x0 + 2 * STEP.r <= v.hi + EPS;
+}
+
+/**
+ * The square a step's badge takes when its run lies on row `row` (DESIGN.md, "Step badges ride the line"): centred on the run under
+ * the start of the label's text, or its end where the start is off the run; or on the line
+ * beside a label level with it.
+ */
+export function badgeBox(v: Visit, lab: VisitLabel, row: number, pitch: number): Box | undefined {
+  if (lab.badge === undefined) return undefined;
+  const r = STEP.r;
+  const y = row * pitch;
+  let x = onRun(v, lab.x0) ? lab.x0 + r : lab.x0 + lab.w - r;
+  if (lab.mode === "beside") {
+    const side = ROUTE.labelGap + 2;
+    x = lab.x0 >= v.hi - EPS ? lab.x0 - side : lab.x0 + lab.w + side;
+  }
+  return { x0: x - r, x1: x + r, y0: y - r, y1: y + r };
+}
+
 interface Candidate {
   mode: VisitLabel["mode"];
   x0: number;
@@ -97,13 +119,17 @@ function candidates(v: Visit, lab: VisitLabel): Candidate[] {
   ];
   const touch = Math.min(16, len);
   const reach = Math.max(0, (len + lab.w) / 2 - touch);
+  // A step's badge sits on the run itself, under one end of the label (DESIGN.md, "Step badges ride the line").
+  const fits = (x0: number) =>
+    lab.badge === undefined || onRun(v, x0) || onRun(v, x0 + lab.w - 2 * STEP.r);
   for (const [mode, penalty] of [
     ["above", 0],
     ["below", 24],
   ] as const) {
     for (let d = 0; d <= reach + EPS; d += 4) {
-      out.push({ mode, x0: c - lab.w / 2 + d, score: d + penalty });
-      if (d > 0) out.push({ mode, x0: c - lab.w / 2 - d, score: d + penalty });
+      for (const x0 of d > 0 ? [c - lab.w / 2 + d, c - lab.w / 2 - d] : [c - lab.w / 2]) {
+        if (fits(x0)) out.push({ mode, x0, score: d + penalty });
+      }
     }
   }
   return out.sort((a, b) => a.score - b.score);
@@ -141,8 +167,10 @@ function geometry(pitch: number) {
     if (lab === undefined || row < 0) return undefined;
     return labelBox(lab, lab.mode, lab.x0, row, pitch);
   };
+  const badgeOf = (u: Visit, row: number): Box | undefined =>
+    u.label === undefined || row < 0 ? undefined : badgeBox(u, u.label, row, pitch);
   /** Lines of u, on row ru, that touch the box. */
-  const hits = (b: Box, u: Visit, ru: number): number => {
+  const hits = (b: Box, u: Visit, ru: number, clr = ROUTE.labelClear): number => {
     let c = 0;
     for (const s of u.stubs) {
       if (!inside(s.x, b.x0 - clr, b.x1 + clr)) continue;
@@ -157,6 +185,8 @@ function geometry(pitch: number) {
   };
   const clash = (p: Box, q: Box) =>
     p.x0 < q.x1 + space && q.x0 < p.x1 + space && p.y0 < q.y1 + clr && q.y0 < p.y1 + clr;
+  const near = (p: Box, q: Box, d: number) =>
+    p.x0 < q.x1 + d && q.x0 < p.x1 + d && p.y0 < q.y1 + d && q.y0 < p.y1 + d;
   /** Conflicts between v on row rv with label box bv, and u on row ru with box bu. */
   const pair = (
     v: Visit,
@@ -191,11 +221,33 @@ function geometry(pitch: number) {
       c += hits(bv, u, ru);
       if (bu !== undefined && clash(bv, bu)) c++;
     }
+    // A step's badge reaches across its run, past its label's box, and keeps clear of the
+    // other's lines, label and badge there (DESIGN.md, "Step badges ride the line").
+    const gv = badgeOf(v, rv);
+    const gu = badgeOf(u, ru);
+    if (gu !== undefined) {
+      c += hits(gu, v, rv, STEP.clear);
+      if (bv !== undefined && near(gu, bv, STEP.clear)) c++;
+    }
+    if (gv !== undefined) {
+      c += hits(gv, u, ru, STEP.clear);
+      if (bu !== undefined && near(gv, bu, STEP.clear)) c++;
+      if (gu !== undefined && near(gv, gu, STEP.clear)) c++;
+    }
     return c;
   };
-  /** A label that leaves the gutter's top, or crosses its own line. */
+  /**
+   * A label or its badge that leaves the gutter's top, a badge on its arrowhead there,
+   * or a label that crosses its own line.
+   */
   const own = (v: Visit, rv: number, bv: Box): number => {
-    let c = bv.y0 < -pitch + 2 - EPS ? 1 : 0;
+    const g = badgeOf(v, rv);
+    const head = v.label?.badge?.top ?? 0;
+    const top = Math.min(
+      bv.y0,
+      g === undefined ? bv.y0 : g.y0 - (head > 0 ? head + STEP.arrowClear : 0),
+    );
+    let c = top < -pitch + 2 - EPS ? 1 : 0;
     for (const s of v.stubs) {
       if (!inside(s.x, bv.x0 - clr, bv.x1 + clr)) continue;
       const [y0, y1] = spanAt(s.top, rv, pitch);
@@ -345,6 +397,14 @@ export function routeGutter(
         for (const s of v.stubs) {
           if (s.top === (c.mode === "above") && inside(s.x, x0, x1)) crossed = true;
         }
+      } else if (lab.badge !== undefined) {
+        // A badge beside its text sits on the line itself, where another line near it, up
+        // or down, may pass it at any row (DESIGN.md, "Step badges ride the line").
+        const keep = { ...lab, mode: c.mode, x0: c.x0 };
+        const g = badgeBox(v, keep, 0, 0);
+        const reach = (x: number) =>
+          g !== undefined && inside(x, g.x0 - STEP.clear, g.x1 + STEP.clear);
+        if (visits.some((u) => u !== v && u.stubs.some((st) => reach(st.x)))) crossed = true;
       }
       for (const u of visits) {
         if (u === v || crossed) continue;
@@ -472,7 +532,14 @@ export function routeGutter(
     const lab = v.label;
     if (lab === undefined || v.row < 0) continue;
     const box = labelBox(lab, lab.mode, lab.x0, v.row, pitch);
-    rows = Math.max(rows, Math.ceil((box.y1 + 2) / pitch - EPS));
+    // A badge keeps clear of an arrowhead at the gutter's bottom, too.
+    const head = lab.badge?.bottom ?? 0;
+    const g = badgeBox(v, lab, v.row, pitch);
+    const bottom = Math.max(
+      box.y1,
+      g === undefined ? box.y1 : g.y1 + (head > 0 ? head + STEP.arrowClear - 2 : 0),
+    );
+    rows = Math.max(rows, Math.ceil((bottom + 2) / pitch - EPS));
   }
   const strandedIds = [...stranded].flatMap((v) => (v.label === undefined ? [] : [v.label.edgeId]));
   return { rows, stranded: strandedIds };

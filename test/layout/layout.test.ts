@@ -27,6 +27,7 @@ import {
   addEdge,
   addNode,
   moveNode,
+  numberEdge,
   randomEdges,
   removeEdge,
   removeNode,
@@ -502,6 +503,13 @@ describe('stability (DESIGN.md, "Layout computed again on every change")', () =>
 
     it(`${name}: remove each edge`, () => {
       const out = d.edges.flatMap((x) => check(d, removeEdge(d, x.id)).map((v) => `${x.id}: ${v}`));
+      expect(out).toEqual([]);
+    });
+
+    it(`${name}: number each edge`, () => {
+      const out = d.edges.flatMap((x, i) =>
+        check(d, numberEdge(d, x.id, i + 1)).map((v) => `${x.id}: ${v}`),
+      );
       expect(out).toEqual([]);
     });
   }

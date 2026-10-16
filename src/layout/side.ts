@@ -40,12 +40,12 @@ function cmp(a: string, b: string): number {
 
 /**
  * The sideways edges and their lines. `labelW` gives the one-line width of an
- * edge's label, or undefined for none; `labelH` the height of a label line.
+ * edge's label, or undefined for none; `labelH` the height of its label's box.
  */
 export function planSideways(
   d: Diagram,
   labelW: (id: string) => number | undefined,
-  labelH: number,
+  labelH: (id: string) => number,
 ): Map<string, SideSlot> {
   const at = new Map<string, { layer: number; order: number; h: number }>();
   // compute() has sized every node (size.ts); a box takes its row's height.
@@ -90,7 +90,8 @@ export function planSideways(
       const first = fits[0] as string;
       const second = fits[1] ?? plain[0];
       // Two lines are 16 px apart; each label must stay inside the row.
-      const two = p.h / 2 >= PITCH / 2 + ROUTE.labelGap + labelH;
+      const below = second !== undefined && fits.includes(second) ? labelH(second) : 0;
+      const two = p.h / 2 >= PITCH / 2 + ROUTE.labelGap + Math.max(labelH(first), below);
       lines = [{ id: first, label: "above" }];
       if (second !== undefined && two) {
         lines.push({ id: second, label: fits.includes(second) ? "below" : undefined });

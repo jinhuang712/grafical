@@ -71,6 +71,14 @@ export function removeEdge(d: Diagram, id: string): Applied {
   };
 }
 
+/** Numbers one edge as a step (DESIGN.md, "Step badges ride the line"). */
+export function numberEdge(d: Diagram, id: string, n: number): Applied {
+  return {
+    diagram: { ...d, edges: d.edges.map((e) => (e.id === id ? { ...e, step: n } : e)) },
+    named: { nodes: [], edges: [id] },
+  };
+}
+
 /** Plausible and implausible single edges from a fixed seed, with unique ids. */
 export function randomEdges(d: Diagram, count: number, seed: number): Edge[] {
   const ids = d.layers.flatMap((l) => l.nodes.map((n) => n.id));

@@ -166,6 +166,20 @@ export const WALL = {
   labelWrap: 96,
 };
 
+/** A line's step badge (DESIGN.md, "Step badges ride the line"). */
+export const STEP = {
+  /** Radius of the badge: two digits fit inside its ring. */
+  r: 9,
+  /** Space between the badge and its label's text beside it, on a line up or down. */
+  gap: 4,
+  /** How much further from its line a label's text stands when a badge rides the line under it: past the badge, and clear of it. */
+  lift: 7,
+  /** Least space between the badge and an arrowhead of its own line. */
+  arrowClear: 2,
+  /** Least space between the badge and anything else it keeps clear of. */
+  clear: 2,
+};
+
 /** Notes: callout cards and footnotes (DESIGN.md, "Notes as callouts or footnotes"). */
 export const NOTE = {
   /** Widest a note's text runs before it wraps. */
