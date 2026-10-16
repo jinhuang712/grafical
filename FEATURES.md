@@ -192,7 +192,7 @@ A line's kind says what it means and decides its style.
 | `link` | plain, with no arrowhead | related, with no direction |
 
 ```sh
-grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>] [--both]
+grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--kind <kind>] [--both] [--pass]
 grafical edge kind <file> <id> <kind>
 grafical edge relabel <file> <id> [--label <text>]
 grafical edge reverse <file> <id>
@@ -241,7 +241,9 @@ grafical edge step <file> <id> [--n <number>]
 One arrow can point at a whole system instead of each of its parts.
 
 - Either end of a line may be a box, a group, a row or a lane. A row a line ends at is drawn as a band, with its label above it, and a line meets the band straight past its other end where nothing is in the way.
-- An end may not lie inside the other (`edge-inside`), a container end must hold a box (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`).
+- A row with no box may be an end too, when the other end holds a box: a gateway or a message bus that every request passes. It is drawn as one bar across the content, 40 px high, with its label in it at the left, and each line meets it straight past its other end (DESIGN.md, "A row with no box as one bar").
+- A line that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge add --pass`, or `edge pass <file> <id> [--off]` for a line already drawn. It then names the bar in `passes`.
+- An end may not lie inside the other (`edge-inside`), a group or a lane end must hold a box (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). A line between two rows with no box is refused (`bar-to-bar`), and so is a bar between the first and last rows of a group (`bar-in-group`).
 - Two lanes are never the two ends of one line (`lane-to-lane`).
 - Removing a group or a lane removes the lines that end at it.
 
@@ -566,7 +568,7 @@ edges:
 - A row's keys are `id`, `label`, `lane` and `nodes`. A box's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane` and `column`.
 - After `layers`, a `nodes` list holds the boxes in no row, each with `from` and its steps.
 - After `groups` come `lanes`, `columns`, `walls` and `notes`, in that order. A group's keys are `id`, `label`, `sublabel` and `in`.
-- A line's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `accent` and `weight`. `both` and `accent` appear only when true, and `weight` only when it is not thin.
+- A line's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `pass`, `accent` and `weight`. `both`, `pass` and `accent` appear only when true, and `weight` only when it is not thin.
 - A field that holds its default is left out.
 - Rows, the boxes in a row and lines are ordered lists. The order of rows and boxes is their place in the picture. The order of lines is creation order and changes nothing visible.
 

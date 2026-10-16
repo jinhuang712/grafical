@@ -2,7 +2,14 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
 import type { OpError } from "../../src/errors.ts";
 import { layout } from "../../src/layout/index.ts";
-import { applyOps, type Diagram, type Op } from "../../src/model/index.ts";
+import { diffDiagrams } from "../../src/model/diff.ts";
+import {
+  applyOps,
+  type Diagram,
+  type Op,
+  readDiagram,
+  writeDiagram,
+} from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
@@ -89,5 +96,88 @@ describe('edge ends at a container (DESIGN.md, "Lines that end at containers")',
     const layerEdge = scene.edges.find((e) => e.id === "pipelines->deps");
     expect(layerEdge?.points[layerEdge.points.length - 1]?.y).toBe(band?.rect.y);
     expect(check(d, scene, m)).toEqual([]);
+  });
+});
+
+describe('a row with no box as one bar (DESIGN.md, "A row with no box as one bar")', () => {
+  const base = readDiagram(`grafical: 1
+title: bar
+density: normal
+layers:
+  - {id: apps, label: Apps, nodes: [{id: rider, label: rider, kind: actor}, {id: driver, label: driver, kind: actor}]}
+  - {id: gateway, label: API gateway, nodes: []}
+  - {id: core, label: Core, nodes: [{id: booking, label: booking, kind: service, group: sys}, {id: payments, label: payments, kind: service}]}
+  - {id: stores, label: Stores, nodes: [{id: trips, label: trips, kind: store, group: sys}]}
+groups:
+  - {id: sys, label: booking}
+`) as Diagram;
+  const into: Op[] = [
+    { op: "edge.add", from: "rider", to: "gateway" },
+    { op: "edge.add", from: "gateway", to: "booking" },
+    { op: "edge.add", from: "gateway", to: "sys" },
+  ];
+
+  it("accepts a row with no box as an end when the other end holds one", () => {
+    const d = ok(base, into);
+    expect(d.edges.map((e) => e.id)).toEqual([
+      "rider->gateway",
+      "gateway->booking",
+      "gateway->sys",
+    ]);
+  });
+
+  it("refuses a line between two rows with no box", () => {
+    const errors = fail(base, [
+      { op: "layer.add", id: "bus", label: "Bus", after: "core" },
+      { op: "edge.add", from: "gateway", to: "bus" },
+    ]);
+    expect(errors[0]).toMatchObject({ code: "bar-to-bar", found: "gateway->bus" });
+  });
+
+  it("refuses a bar between the first and last rows of a group", () => {
+    const errors = fail(base, [
+      { op: "layer.add", id: "mid", label: "Mid", after: "core" },
+      { op: "edge.add", from: "rider", to: "mid" },
+    ]);
+    expect(errors[0]).toMatchObject({ code: "bar-in-group", facts: { group: "sys", row: "mid" } });
+  });
+
+  it("refuses a line that passes a bar unless it may", () => {
+    const d = ok(base, into);
+    const passing = fail(d, [{ op: "edge.add", from: "driver", to: "payments" }]);
+    expect(passing[0]).toMatchObject({
+      code: "bar-crossed",
+      found: "driver->payments",
+      facts: { row: "gateway" },
+    });
+    expect(passing[0]?.facts?.fix).toContain("edge pass <file> driver->payments");
+    const allowed = ok(d, [{ op: "edge.add", from: "driver", to: "payments", pass: true }]);
+    expect(allowed.edges.find((e) => e.id === "driver->payments")?.pass).toBe(true);
+    const off = fail(allowed, [{ op: "edge.pass", id: "driver->payments", off: true }]);
+    expect(off[0]?.code).toBe("bar-crossed");
+    // The first line to a row makes it a bar: a line that already passes it must say it may.
+    const first = fail(ok(base, [{ op: "edge.add", from: "driver", to: "payments" }]), into);
+    expect(first[0]).toMatchObject({ code: "bar-crossed", found: "driver->payments" });
+    const later = ok(base, [{ op: "edge.add", from: "driver", to: "payments" }]);
+    expect(ok(later, [...into, { op: "edge.pass", id: "driver->payments" }]).edges).toHaveLength(4);
+  });
+
+  it("diffs a line that may pass as the operation that made it", () => {
+    const a = ok(base, [...into, { op: "edge.add", from: "driver", to: "payments", pass: true }]);
+    for (const [x, y] of [
+      [base, a],
+      [a, base],
+    ] as const) {
+      const r = applyOps(x, diffDiagrams(x, y));
+      if ("errors" in r) throw new Error(JSON.stringify(r.errors));
+      expect(writeDiagram(r.diagram)).toBe(writeDiagram(y));
+    }
+    expect(diffDiagrams(base, a)).toContainEqual({
+      op: "edge.add",
+      from: "driver",
+      to: "payments",
+      kind: "call",
+      pass: true,
+    });
   });
 });

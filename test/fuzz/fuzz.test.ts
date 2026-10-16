@@ -31,6 +31,7 @@ describe("fuzz", () => {
       let groups = 0;
       let lanes = 0;
       let walls = 0;
+      let bars = 0;
       const all = [
         ...Array.from({ length: seeds }, (_, i) => i + 1),
         ...FAILED.filter((x) => x > seeds),
@@ -42,13 +43,14 @@ describe("fuzz", () => {
         groups += diagram.groups?.length ?? 0;
         lanes += diagram.lanes?.length ?? 0;
         walls += diagram.walls?.length ?? 0;
+        if (diagram.layers.some((l) => l.id === "bar")) bars++;
         const scene = layout(diagram, m);
         for (const x of [...failures(check(diagram, scene, m)), ...geometryFailures(scene)]) {
           found.push(`seed ${seed}: ${x.code} [${x.elements.join(", ")}] ${x.found}`);
         }
       }
       console.log(
-        `${all.length} diagrams, ${(nodes / all.length).toFixed(1)} nodes, ${(edges / all.length).toFixed(1)} edges, ${(groups / all.length).toFixed(1)} groups, ${(lanes / all.length).toFixed(1)} lanes and ${(walls / all.length).toFixed(2)} walls on average`,
+        `${all.length} diagrams, ${(nodes / all.length).toFixed(1)} nodes, ${(edges / all.length).toFixed(1)} edges, ${(groups / all.length).toFixed(1)} groups, ${(lanes / all.length).toFixed(1)} lanes and ${(walls / all.length).toFixed(2)} walls on average, ${bars} with a bar`,
       );
       expect(found).toEqual([]);
     },

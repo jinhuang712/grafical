@@ -77,6 +77,10 @@ export interface SceneBand {
   id: string;
   rect: Rect;
   label: PlacedText;
+  /** A row with no box, drawn as one bar that lines meet and may pass (DESIGN.md, "A row with no box as one bar"). */
+  bar?: true;
+  /** Drawn with a box's paint and a dark label, not the band's (DESIGN.md, "A row with no box as one bar"). */
+  box?: true;
 }
 
 /** A swimlane (DESIGN.md, "Swimlanes run one way"): its whole area, the header that holds its label, and the label. */

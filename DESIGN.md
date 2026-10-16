@@ -697,6 +697,30 @@ Rejected:
 - Leaving off an alignment, steps, a lane or a column that the copy cannot keep. Nothing would tell the agent that its copy is not a copy.
 - Letting the row follow its columns afterwards, as it does after other operations. The copy would not sit where it was stated, and the `group-split` refusal that followed named copied boxes that were never written.
 
+## Decision: A row with no box as one bar — 2026-10-16
+
+Decided by the owner on 2026-10-16 (behavior: FEATURES.md, "Ends at a group, a row or a lane", "Rows and order"). Redrawing the dispatch diagram, the owner said "gateway becomes a horizontal long layer". A line could already end at a row, drawn as a band across the content ("Lines that end at containers"), but a row with no box was refused as `empty-container`. So a gateway or a message bus had to keep a box inside its band, and the picture said "gateway" twice: once as the band and once as the box.
+
+Now a row with no box may be a line end when the line's other end holds a box, and it is drawn as one bar across the content with its label in it. A row with no box that no line ends at is drawn as before, and a row that holds boxes is still a band.
+
+- **How tall.** One line of its label, with room above and below: 40 px. The row takes the bar's height, so it no longer takes a band's head and padding or a box's height.
+- **Where its label sits.** In the bar, at its left, in the first stretch that no line meets, 16 px clear of each line's end, as a band's label takes the first stretch with no box below it. Failing every stretch, it goes left of the content, and the bar reaches it. No line runs over the label.
+- **Where a line meets it.** Straight past the line's other end: down from a box above into the bar's top, up from a box below into its bottom, and at the centre of the facing member when the other end is a group. The engine adds no box to the file or the picture. While routing, a narrow stand-in sits in the bar under or over each other end, and lines whose other ends lie within 48 px share one, so that the gap router ("Our own gap router") routes these lines as any other. The route is then cut at the bar, as for every container end, and runs straight on into it. A group whose head lies below a bar keeps a group's gap from it.
+- **Lines that pass it.** A line from a row above the bar to a row below it, that does not end at it, is refused as `bar-crossed` unless it says it may: `edge add --pass`, or `edge pass` on a line already drawn. The owner chose this on 2026-10-16, asked why a passing line never touched the bar: a reader takes a line drawn over a gateway for a line through it, so the agent states each line that goes past. A line that may pass is routed as through any row, over the bar or round its end, and names the bar in `passes` and `passing` ("Records over prose"). The flag is named for those records: `across` was already the count of lines through a stranger's group ("Composition counts").
+- **Its look.** A box's: a service box's paint with a dark label. The bar is the gateway or the bus itself, not a container of other things.
+- **How it is checked.** A line between two rows with no box is refused as `bar-to-bar`: neither end says where the line goes across. A row with no box between the first and last rows of a group is refused as `bar-in-group`, since the group's box would stretch over it ("Rows unseen, groups as systems") and the bar would cut it in two. A group or a lane with no box is still refused as `empty-container`. The SVG marks a bar's rectangle `class="bar"`, so that the separate geometry check (GOALS.md, "Mechanical defects"), which knows shapes only, lets a line run across it and still treats it as a box for every other test.
+- **Tested.** The fuzz test puts a bar in three seeds of ten, on a random stream of its own so that a seed without one draws as before, with every line that passes it allowed. Over 500 seeds, 89 diagrams have a bar. None of the 306 saved drafts and none of the 15 fixtures changed, since a line to a row with no box was refused until now. While it was built, the fuzz test found two ways a line from a bar crossed a group's label, both fixed: a group's head below a bar rose into a line's run in the gutter, and outer groups seated their labels where a line from a bar came down into an inner group, because placement did not count a bar's line among those entering a box's top.
+
+Rejected:
+- A line that passes the bar drawn over it with no fact. The prototype did this; the owner asked why such a line never touched the bar.
+- An opening cut in the bar where a line passes, as a hop marks a crossing. Shown to the owner, not chosen; many passing lines would draw the bar in pieces.
+- Charging a pass like a crossing, so that the router goes round the bar's end when it can. It hides the question of whether the line goes through the gateway instead of asking it.
+- Passing lines only round the bar's ends. Long lines with more bends, for the reason "Walls as space" left routing round a partial obstacle for later.
+- An allow list on the row, as a wall has. The owner asked for a flag on the line.
+- A box's height for the bar, 56 px at medium. It would read as one very wide box.
+- A band's head and padding around an empty row, about 104 px, with the label above the row. Most of it would be empty.
+- The label centred in the bar. Groups, bands and walls put their labels at the left.
+
 ## Open questions
 
 - **A box beside every box it connects to, in a row:** "Who chose is punished" did not refuse it, because the file could not tell a slot the agent stated from one the engine chose. Since "The agent states every order" the agent states every slot, so it could become an agent defect, as it is for a box placed by steps. Not decided.

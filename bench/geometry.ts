@@ -10,7 +10,9 @@
 // - a closed shape without an outline, such as an arrowhead or the patch behind
 //   a label, is left out;
 // - a line is an open path with a stroke, unless it lies inside one box, like the
-//   lid of a store's cylinder.
+//   lid of a store's cylinder;
+// - a box marked class="bar" is one a line may run across, as grafical marks a
+//   bar that a line may pass (DESIGN.md, "A row with no box as one bar"); it is a box for every other test.
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -49,6 +51,8 @@ interface Shape extends Box {
   tag: string;
   /** The corners of a closed shape with a slanted side, such as a diamond: tests use the outline, not the box. */
   poly?: Pt[];
+  /** A bar that lines may run across. */
+  bar?: true;
 }
 interface Line {
   index: number;
@@ -334,6 +338,7 @@ export function readSvg(
     }
     if (closed) {
       const shape: Shape = { ...box, closed, outlined, tag };
+      if (a.class === "bar") shape.bar = true;
       if (points.length >= 3 && slanted(points)) shape.poly = points;
       shapes.push(shape);
     } else if (outlined)
@@ -367,7 +372,7 @@ export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
       const p = l.points[k - 1] as Pt;
       const q = l.points[k] as Pt;
       for (const b of boxes) {
-        if (throughShape(p, q, b, PORT)) {
+        if (b.bar !== true && throughShape(p, q, b, PORT)) {
           out.push({
             code: "edge-through-node",
             found: `line ${l.index} passes through the box at ${at(b)}`,

@@ -95,6 +95,7 @@ function edgeAdd(e: Edge): Op {
   if (e.id !== defaultEdgeId(e)) op.id = e.id;
   if (e.label !== undefined) op.label = e.label;
   if (e.both === true) op.both = true;
+  if (e.pass === true) op.pass = true;
   return op;
 }
 
@@ -600,6 +601,11 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (e.both !== true && was.both === true) ops.push({ op: "edge.both", id: e.id, off: true });
     if (e.kind !== was.kind) ops.push({ op: "edge.kind", id: e.id, kind: e.kind });
     if (e.both === true && was.both !== true) ops.push({ op: "edge.both", id: e.id });
+    if (e.pass !== was.pass) {
+      ops.push(
+        e.pass === true ? { op: "edge.pass", id: e.id } : { op: "edge.pass", id: e.id, off: true },
+      );
+    }
   }
   if (mainOff.length > 0) ops.push({ op: "edge.emphasize", edges: mainOff, off: true });
   if (weightOff.length > 0) ops.push({ op: "edge.weight", edges: weightOff });

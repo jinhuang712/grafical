@@ -529,10 +529,12 @@ export function renderSvg(scene: Scene): string {
     );
   }
   const bp = P.band;
+  // A row in a box's look takes a service box's paint and a node's label colour (DESIGN.md, "A row with no box as one bar").
   for (const b of scene.bands ?? []) {
+    const box = b.box === true ? P.node.kinds.service : undefined;
     out.push(
-      `<rect ${rectAttrs(b.rect)} rx="${num(bp.radius)}" fill="${bp.fill}" stroke="${bp.stroke}" stroke-width="${num(bp.strokeWidth)}"/>`,
-      ...texts(b.label, P.text.groupLabelMuted),
+      `<rect${b.bar === true ? ' class="bar"' : ""} ${rectAttrs(b.rect)} rx="${num(box ? P.node.radius : bp.radius)}" fill="${box?.fill ?? bp.fill}" stroke="${box?.stroke ?? bp.stroke}" stroke-width="${num(box ? P.node.strokeWidth : bp.strokeWidth)}"/>`,
+      ...texts(b.label, box ? P.text.nodeLabel : P.text.groupLabelMuted),
     );
   }
   for (const g of groups) out.push(...groupShapes(g, P));
@@ -596,7 +598,7 @@ export function renderSvg(scene: Scene): string {
           cy >= g.rect.y &&
           cy <= g.rect.y + g.rect.h,
       );
-      const inBand = (scene.bands ?? []).some(
+      const inBand = (scene.bands ?? []).find(
         (b) =>
           cx >= b.rect.x &&
           cx <= b.rect.x + b.rect.w &&
@@ -613,7 +615,9 @@ export function renderSvg(scene: Scene): string {
       const behind = inGroup
         ? groupFill(inGroup, P)
         : inBand
-          ? P.band.fill
+          ? inBand.box === true
+            ? P.node.kinds.service.fill
+            : P.band.fill
           : inLane
             ? P.lane.fill
             : lb.fill;

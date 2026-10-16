@@ -212,6 +212,7 @@ const edgeSchema = z.strictObject({
   kind: z.enum(EDGE_KINDS).default(DEFAULT_EDGE_KIND),
   label: text.optional(),
   both: z.boolean().optional(),
+  pass: z.boolean().optional(),
   accent: z.boolean().optional(),
   weight: weightValue.optional(),
 });
@@ -281,6 +282,7 @@ function build(p: Parsed): Diagram {
     const edge: Edge = { id: e.id, from: e.from, to: e.to, kind: e.kind };
     if (e.label !== undefined) edge.label = e.label;
     if (e.both === true) edge.both = true;
+    if (e.pass === true) edge.pass = true;
     if (e.accent === true) edge.accent = true;
     if (e.weight !== undefined) edge.weight = e.weight;
     return edge;

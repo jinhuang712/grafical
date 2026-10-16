@@ -153,6 +153,8 @@ export interface EdgeAddOp {
   kind?: EdgeKind;
   /** true: an arrowhead at both ends (DESIGN.md, "Lines meet any side"). */
   both?: boolean;
+  /** true: the line may pass rows with no box between its ends (DESIGN.md, "A row with no box as one bar"). */
+  pass?: boolean;
 }
 export interface EdgeRemoveOp {
   op: "edge.remove";
@@ -291,6 +293,13 @@ export interface EdgeWeightOp {
   edges: string[];
   /** Absent: thin again. */
   weight?: string | number;
+}
+/** Lets an edge pass the rows with no box between its ends, or no longer (DESIGN.md, "A row with no box as one bar"). */
+export interface EdgePassOp {
+  op: "edge.pass";
+  id: string;
+  /** true: the line may no longer pass them. */
+  off?: boolean;
 }
 /** Draws an arrowhead at both ends of an edge, or at one end again (DESIGN.md, "Lines meet any side"). */
 export interface EdgeBothOp {
@@ -465,6 +474,7 @@ export type Op =
   | EdgeKindOp
   | EdgeReverseOp
   | EdgeBothOp
+  | EdgePassOp
   | EdgeEmphasizeOp
   | EdgeWeightOp
   | EdgeRetargetOp;
@@ -585,6 +595,7 @@ export const edgeAddSchema = z.strictObject({
   label: text.optional(),
   kind: z.enum(EDGE_KINDS).optional(),
   both: z.boolean().optional(),
+  pass: z.boolean().optional(),
 });
 export const edgeRemoveSchema = z.strictObject({ op: z.literal("edge.remove"), id: edgeId });
 export const diagramTitleSchema = z.strictObject({ op: z.literal("diagram.title"), text });
@@ -684,6 +695,11 @@ export const edgeWeightSchema = z.strictObject({
 });
 export const edgeBothSchema = z.strictObject({
   op: z.literal("edge.both"),
+  id: edgeId,
+  off: z.boolean().optional(),
+});
+export const edgePassSchema = z.strictObject({
+  op: z.literal("edge.pass"),
   id: edgeId,
   off: z.boolean().optional(),
 });
@@ -824,6 +840,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeKindSchema,
   edgeReverseSchema,
   edgeBothSchema,
+  edgePassSchema,
   edgeEmphasizeSchema,
   edgeWeightSchema,
   edgeRetargetSchema,
@@ -883,6 +900,7 @@ const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.kind": edgeKindSchema,
   "edge.reverse": edgeReverseSchema,
   "edge.both": edgeBothSchema,
+  "edge.pass": edgePassSchema,
   "edge.emphasize": edgeEmphasizeSchema,
   "edge.weight": edgeWeightSchema,
   "edge.retarget": edgeRetargetSchema,

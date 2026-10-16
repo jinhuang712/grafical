@@ -6,6 +6,7 @@
 import { check } from "../../src/check/index.ts";
 import {
   layout,
+  placeSteps,
   validateAlignments,
   validateGroups,
   validateSteps,
@@ -217,8 +218,58 @@ export function generate(seed: number, m: Measurer): Generated {
   addNotes(d, r, text);
   addColumns(d, r);
   addSteps(d, r);
+  // A stream of its own, so that a seed with no bar is the same diagram as before bars.
+  addBars(d, rng(seed ^ 0x5bd1e995));
 
   return { diagram: d, ops, rejected };
+}
+
+/**
+ * A bar in three seeds of ten (DESIGN.md, "A row with no box as one bar"): a row with no box put between two rows, or
+ * above or below them all, with one to four lines between it and boxes or groups. Every
+ * line that then passes it says it may, as an agent does after a bar-crossed refusal.
+ * A bar that a check refuses is dropped.
+ */
+function addBars(d: Diagram, r: () => number): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  if (r() < 0.7 || laneRun(d) === "columns") return;
+  const nodes = d.layers.flatMap((l) => l.nodes.map((n) => n.id));
+  const groups = (d.groups ?? []).map((g) => g.id);
+  if (nodes.length === 0) return;
+  const trial: Diagram = structuredClone(d);
+  const at = int(0, trial.layers.length);
+  const above = trial.layers[at - 1]?.lane;
+  const bar = {
+    id: "bar",
+    label: ["gateway", "event bus", "API 网关", "message bus"][int(0, 3)] as string,
+    ...(above !== undefined && above === trial.layers[at]?.lane ? { lane: above } : {}),
+    nodes: [],
+  };
+  trial.layers.splice(at, 0, bar);
+  const count = int(1, 4);
+  for (let i = 0; i < count; i++) {
+    const other =
+      r() < 0.8 || groups.length === 0
+        ? (nodes[int(0, nodes.length - 1)] as string)
+        : (groups[int(0, groups.length - 1)] as string);
+    const [from, to] = r() < 0.5 ? [other, "bar"] : ["bar", other];
+    const edge: Edge = { id: `b${i}`, from, to, kind: EDGE_KINDS[int(0, 2)] ?? "call" };
+    if (trial.edges.some((e) => e.from === from && e.to === to)) continue;
+    trial.edges.push(edge);
+  }
+  // Boxes placed by steps sit in rows once placed, as the model checks them.
+  for (const x of checkEnds(placeSteps(trial).d, 0)) {
+    const e = trial.edges.find((y) => y.id === x.found);
+    if (x.code === "bar-crossed" && e !== undefined) e.pass = true;
+  }
+  const refused =
+    checkIntegrity(trial).length > 0 ||
+    validateGroups(trial).length > 0 ||
+    validateAlignments(trial).length > 0 ||
+    validateSteps(trial).length > 0;
+  if (refused) return;
+  d.layers = trial.layers;
+  d.edges = trial.edges;
 }
 
 /**

@@ -170,14 +170,17 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   const levels = (m: PNode, g: string) => chainOf(m).indexOf(g) + 1;
 
   // Lines that leave or enter a node by its top side: a group label above a
-  // first-row member must leave them room.
+  // first-row member must leave them room. A bar is met in its row (DESIGN.md, "A row with no box as one bar").
+  const barRow = (id: string) => layers.find((l) => l.id === id && l.nodes.length === 0)?.index;
   const topEnds = new Map<string, number>();
   for (const e of d.edges) {
     const u = nodes.get(e.from);
     const v = nodes.get(e.to);
-    if (u === undefined || v === undefined || u.layer === v.layer) continue;
-    const top = u.layer > v.layer ? u : v;
-    topEnds.set(top.id, (topEnds.get(top.id) ?? 0) + 1);
+    const lu = u?.layer ?? barRow(e.from);
+    const lv = v?.layer ?? barRow(e.to);
+    if (lu === undefined || lv === undefined || lu === lv) continue;
+    const top = lu > lv ? u : v;
+    if (top !== undefined) topEnds.set(top.id, (topEnds.get(top.id) ?? 0) + 1);
   }
   // Column lanes (DESIGN.md, "Swimlanes run one way"), and the nodes outside them, as blocks in order across.
   const ranks = laneRun(d) === "columns" ? laneRanks(d) : new Map<string, number>();

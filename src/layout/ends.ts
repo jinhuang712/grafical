@@ -6,7 +6,7 @@
 // beside the other end. A layer, drawn as a band, is met at its top or bottom.
 // A lane (DESIGN.md, "Swimlanes run one way") is met like a group: at its border across rows, or at its side.
 
-import { endKind, endNodes, endRows, meeting } from "../model/ends.ts";
+import { endKind, endNodes, endRows, isBar, meeting } from "../model/ends.ts";
 import type { Diagram, Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
 import { centreX, type PNode } from "./place.ts";
@@ -28,6 +28,8 @@ export interface EndPlan {
   ends: Map<string, { from?: ContainerEnd; to?: ContainerEnd }>;
   /** Layers that an edge ends at: they are drawn as bands. */
   bands: Set<string>;
+  /** The bands with no node: each is drawn as one bar, and its ends stand in until placement. */
+  bars: Set<string>;
 }
 
 function median<T>(xs: T[]): T | undefined {
@@ -48,6 +50,7 @@ function facing(d: Diagram, end: ContainerEnd): string[] {
 export function planEnds(d: Diagram): EndPlan {
   const ends = new Map<string, { from?: ContainerEnd; to?: ContainerEnd }>();
   const bands = new Set<string>();
+  const bars = new Set<string>();
   const edges = d.edges.map((e) => {
     const fk = endKind(d, e.from);
     const tk = endKind(d, e.to);
@@ -63,6 +66,7 @@ export function planEnds(d: Diagram): EndPlan {
       const kind = side === "from" ? fk : tk;
       if (kind !== "group" && kind !== "layer" && kind !== "lane") continue;
       if (kind === "layer") bands.add(id);
+      if (kind === "layer" && isBar(d, id)) bars.add(id);
       const own = side === "from" ? rf : rt;
       const other = side === "from" ? rt : rf;
       let end: ContainerEnd;
@@ -79,7 +83,7 @@ export function planEnds(d: Diagram): EndPlan {
     ends.set(e.id, plan);
     return out;
   });
-  return { edges, ends, bands };
+  return { edges, ends, bands, bars };
 }
 
 /**

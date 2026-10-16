@@ -76,6 +76,7 @@ function edgeOut(e: Edge): Record<string, unknown> {
   const o: Record<string, unknown> = { id: e.id, from: e.from, to: e.to, kind: e.kind };
   if (e.label !== undefined) o.label = e.label;
   if (e.both === true) o.both = true;
+  if (e.pass === true) o.pass = true;
   if (e.accent === true) o.accent = true;
   if (e.weight !== undefined) o.weight = e.weight;
   return o;

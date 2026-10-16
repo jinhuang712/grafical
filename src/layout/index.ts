@@ -43,6 +43,7 @@ import type {
 import type { Measurer } from "../text/types.ts";
 import {
   BAND,
+  BAR,
   FRAME,
   GROUP,
   LANE,
@@ -59,7 +60,7 @@ import type { AlignmentProblem } from "./align.ts";
 import { cutRoute, planEnds, refineEnds, straightIntoBand } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import { footnotesHeight, placeNotes } from "./notes.ts";
-import { placeAcross } from "./place.ts";
+import { centreX, type PNode, placeAcross } from "./place.ts";
 import {
   type AssembledLabel,
   assemble,
@@ -594,7 +595,52 @@ function compute(
     const x1 = Math.min(...edges(right, "left"));
     return [{ wall: w, x0, x1, top: split.top, bottom: split.bottom }];
   });
-  const routeEdges = refineEnds(sized, ends, nodes);
+  const refined = refineEnds(sized, ends, nodes);
+  // Bars (DESIGN.md, "A row with no box as one bar"): a row with no box that a line ends at is one bar high, and
+  // each line meets it straight past its other end. The router knows only boxes, so a
+  // narrow stand-in sits in the bar there, shared by lines whose other ends lie close.
+  const barStands = new Map<number, PNode[]>();
+  const standOf = new Map<string, { from?: string; to?: string }>();
+  for (const l of layers) {
+    if (!ends.bars.has(l.id)) continue;
+    l.rowH = BAR.h;
+    const meets: { edge: string; side: "from" | "to"; x: number }[] = [];
+    for (const e of refined) {
+      for (const side of ["from", "to"] as const) {
+        const other = nodes.get(side === "from" ? e.to : e.from);
+        if (e[side] === l.id && other !== undefined)
+          meets.push({ edge: e.id, side, x: centreX(other) });
+      }
+    }
+    meets.sort((a, b) => a.x - b.x || cmpIds(a.edge, b.edge));
+    const runs: (typeof meets)[] = [];
+    for (const mt of meets) {
+      const last = runs[runs.length - 1];
+      const lastX = last?.[last.length - 1]?.x;
+      if (last !== undefined && lastX !== undefined && mt.x - lastX < BAR.standW + BAR.standGap)
+        last.push(mt);
+      else runs.push([mt]);
+    }
+    const stands = runs.map((run, k): PNode => {
+      const id = `${l.id}\u0000${k}`;
+      for (const mt of run) standOf.set(mt.edge, { ...standOf.get(mt.edge), [mt.side]: id });
+      const x0 = (run[0]?.x ?? 0) - BAR.standW / 2;
+      const x1 = (run[run.length - 1]?.x ?? 0) + BAR.standW / 2;
+      const node = { id, label: "", kind: "service" as const };
+      return { id, node, layer: l.index, order: k, col: -1, x: x0, w: x1 - x0, h: BAR.h };
+    });
+    barStands.set(l.index, stands);
+  }
+  const routeEdges = refined.map((e) => {
+    const s = standOf.get(e.id);
+    return s === undefined ? e : { ...e, from: s.from ?? e.from, to: s.to ?? e.to };
+  });
+  const routeLayers = layers.map((l) => {
+    const stands = barStands.get(l.index);
+    return stands === undefined ? l : { ...l, nodes: stands };
+  });
+  const routeNodes = new Map(nodes);
+  for (const stands of barStands.values()) for (const n of stands) routeNodes.set(n.id, n);
 
   // Bands (DESIGN.md, "Lines that end at containers"): the layers an edge ends at, drawn across the content. Each band's
   // label sits in its head above the row, at the content's left edge.
@@ -609,12 +655,34 @@ function compute(
     contentRight = Math.max(contentRight, g.x1);
   }
   const bandStyle = T["layer-label"];
-  const bandRows = new Map<number, { id: string; label: string; labelX: number; labelW: number }>();
+  const bandRows = new Map<
+    number,
+    { id: string; label: string; labelX: number; labelW: number; bar: boolean }
+  >();
   layers.forEach((l, i) => {
     if (!ends.bands.has(l.id) || !Number.isFinite(contentLeft)) return;
+    const labelW = m.measure(l.label, bandStyle).width;
+    const stands = barStands.get(i);
+    if (stands !== undefined) {
+      // A bar's label sits in it, in its first stretch that no line meets; failing
+      // that, left of the content, and the bar reaches it.
+      let edge = contentLeft - BAND.padX + BAND.labelInset;
+      let labelX: number | undefined;
+      for (const s of [...stands, undefined]) {
+        const end =
+          s === undefined ? contentRight + BAND.padX - BAND.labelInset : s.x - GROUP.clear;
+        if (end - edge >= labelW) {
+          labelX = edge;
+          break;
+        }
+        if (s !== undefined) edge = Math.max(edge, s.x + s.w + GROUP.clear);
+      }
+      labelX ??= contentLeft - BAND.padX - labelW - BAND.labelInset;
+      bandRows.set(i, { id: l.id, label: l.label, labelX, labelW, bar: true });
+      return;
+    }
     // The label goes above the first stretch of its row with no node below it, so
     // that no line into a node's top must cross it; failing that, left of the content.
-    const labelW = m.measure(l.label, bandStyle).width;
     const need = labelW + 2 * GROUP.clear;
     let edge = contentLeft - BAND.padX + BAND.labelInset - GROUP.clear;
     let labelX: number | undefined;
@@ -627,7 +695,7 @@ function compute(
       if (n !== undefined) edge = Math.max(edge, n.x + n.w);
     }
     labelX ??= contentLeft - BAND.padX - labelW - GROUP.clear;
-    bandRows.set(i, { id: l.id, label: l.label, labelX, labelW });
+    bandRows.set(i, { id: l.id, label: l.label, labelX, labelW, bar: false });
   });
   // A band reaches the label it carries, when that sits left of the content.
   const bandLeft = Math.min(
@@ -707,7 +775,7 @@ function compute(
     list.push([x0 - GROUP.labelClear, x0 + w + GROUP.labelClear]);
     forbidGap.set(key, list);
   }
-  const routing = routeAcross(layers, nodes, routeEdges, labelSizes, sp.trackPitch, {
+  const routing = routeAcross(routeLayers, routeNodes, routeEdges, labelSizes, sp.trackPitch, {
     sideways,
     forbidTop,
     forbidGap,
@@ -730,13 +798,15 @@ function compute(
       bottom: g.bottom,
       members: new Set(g.members),
     })),
-    noSideExit: new Set(
-      run === "columns"
+    // A line meets a bar at its top or bottom, never at a stand-in's side.
+    noSideExit: new Set([
+      ...(run === "columns"
         ? [...ends.ends]
             .filter(([, p]) => p.from?.kind === "lane" || p.to?.kind === "lane")
             .map(([id]) => id)
-        : [],
-    ),
+        : []),
+      ...standOf.keys(),
+    ]),
   });
 
   // Across: the content is symmetric about the centre line.
@@ -920,12 +990,14 @@ function compute(
   /** The heads stacked above row r, and the paddings below it. */
   const headsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.top === r).map(heads));
   const padsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.bottom === r).map(pads));
+  /** A band that holds boxes has a head above its row and a padding below; a bar has neither. */
+  const bandHead = (r: number) => bandRows.get(r)?.bar === false;
   const near = (g: (typeof groups)[number], lo: number, hi: number) =>
     lo < g.x1 + GROUP.clear && hi > g.x0 - GROUP.clear;
   /** Room the heads of the groups that start below gutter i still need, besides its tracks. */
   const headRoom = (i: number, tracks: number): number => {
     // A band's head sits above its groups' heads, below the tracks, in full.
-    if (bandRows.has(i + 1)) return GROUP.head * headsAt(i + 1) + BAND.head;
+    if (bandHead(i + 1)) return GROUP.head * headsAt(i + 1) + BAND.head;
     const starting = groups.filter((g) => g.top === i + 1);
     if (starting.length === 0) return 0;
     const full = GROUP.head * headsAt(i + 1);
@@ -938,6 +1010,8 @@ function compute(
       }
       for (const o of groups) if (o.bottom === i && near(g, o.x0, o.x1)) return full;
     }
+    // A bar spans the content: the heads below it keep a group's gap from it.
+    if (bandRows.get(i)?.bar === true) return Math.max(0, full + GROUP.gap - tracks);
     const crowded = (layers[i]?.nodes ?? []).some((n) =>
       starting.some((g) => near(g, n.x, n.x + n.w)),
     );
@@ -954,7 +1028,7 @@ function compute(
   if (colLanes.length > 0) y += headH + LANE.pad;
   if (laneAt(0) !== undefined) y += LANE.pad;
   y += GROUP.head * headsAt(0);
-  if (bandRows.has(0)) y += BAND.head;
+  if (bandHead(0)) y += BAND.head;
   /** Where a row lane's border crosses gutter i, between two rows in different lanes. */
   const borders = new Map<number, number>();
   /** A row that holds a store: the gutters beside it keep more room from its cylinders. */
@@ -966,7 +1040,7 @@ function compute(
     const last = i === layers.length - 1;
     const pad =
       GROUP.pad * padsAt(i) +
-      (bandRows.has(i) ? BAND.pad : 0) +
+      (bandHead(i) ? BAND.pad : 0) +
       (rows > 0 && storeRow(i) ? ROUTE.storeRoom : 0);
     const walls = wallsAt(i);
     // A gutter with no runs keeps its least height only when no wall gives it room.
@@ -984,7 +1058,7 @@ function compute(
       wallTops.set(i, y);
       y += walls * WALL.space;
       borders.set(i, y);
-      y += LANE.pad + GROUP.head * headsAt(i + 1) + (bandRows.has(i + 1) ? BAND.head : 0);
+      y += LANE.pad + GROUP.head * headsAt(i + 1) + (bandHead(i + 1) ? BAND.head : 0);
       return;
     }
     if (walls > 0) {
@@ -1060,7 +1134,23 @@ function compute(
     return out;
   });
 
-  const sceneBands: SceneBand[] = [...bandRows].map(([i, b]) => {
+  const sceneBands: SceneBand[] = [...bandRows].map(([i, b]): SceneBand => {
+    // A bar is the gateway or the bus itself: it takes a box's look.
+    const box = b.bar ? { box: true as const } : {};
+    if (b.bar) {
+      const y0 = rowTops[i] ?? 0;
+      const rect: Rect = {
+        x: centre + bandLeft,
+        y: y0,
+        w: contentRight + BAND.padX - bandLeft,
+        h: rowH(i),
+      };
+      const top = y0 + (rowH(i) - lineHeight("layer-label", m, T)) / 2;
+      const label = withText
+        ? placeLine("layer-label", b.label, centre + b.labelX, top, m, T)
+        : empty("layer-label", centre + b.labelX, top);
+      return { id: b.id, rect, label, bar: true, ...box };
+    }
     const y0 = (rowTops[i] ?? 0) - GROUP.head * headsAt(i) - BAND.head;
     const y1 = (rowTops[i] ?? 0) + rowH(i) + GROUP.pad * padsAt(i) + BAND.pad;
     const x0 = centre + bandLeft;
@@ -1068,7 +1158,7 @@ function compute(
     const label = withText
       ? placeLine("layer-label", b.label, centre + b.labelX, y0 + BAND.labelTop, m, T)
       : empty("layer-label", centre + b.labelX, y0 + BAND.labelTop);
-    return { id: b.id, rect, label };
+    return { id: b.id, rect, label, ...box };
   });
   const sceneLanes: SceneLane[] = [];
   for (const x of rowLanes) {
@@ -1547,6 +1637,8 @@ function roundScene(s: Scene): Scene {
       id: b.id,
       rect: roundRect(b.rect),
       label: roundText(b.label),
+      ...(b.bar === true ? { bar: true as const } : {}),
+      ...(b.box === true ? { box: true as const } : {}),
     }));
   }
   if (s.lanes !== undefined) {

@@ -180,6 +180,12 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       s.x1 = Math.max(s.x1, r.x + r.w);
     }
   }
+  // A bar holds no box: a line that runs over it passes its row.
+  for (const b of scene.bands ?? []) {
+    if (spans.has(b.id)) continue;
+    const r = b.rect;
+    spans.set(b.id, { y0: r.y, y1: r.y + r.h, x0: r.x, x1: r.x + r.w });
+  }
 
   const { points, pairs, at } = crossingsOf(scene.edges);
   const crosses = new Map<string, string[]>();

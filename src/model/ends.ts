@@ -3,7 +3,10 @@
 // drawn as a band across the diagram once an edge ends at it, or a lane (DESIGN.md, "Swimlanes run one way").
 // The rules here are facts, decided from rows and order alone, so they are
 // operation errors:
-// - an end must exist, and a container end must hold at least one node;
+// - an end must exist, and a group or lane end must hold at least one node. A row
+//   with no node may be an end, drawn as a bar, when the other end holds one, and
+//   it may not lie between the first and last rows of a group;
+// - a line passes a bar between its ends only when it says it may;
 // - neither end may lie inside the other, and a layer may not cross a column lane;
 // - two lanes are never the ends of one edge: neighbouring lanes share a border;
 // - an end that shares a row with a group meets the group's side, so nothing may
@@ -46,12 +49,32 @@ export function endNodes(d: Diagram, id: string): string[] {
   return [];
 }
 
-/** The rows an end covers, first and last. Undefined for an empty container. */
+/** A row with no node: an edge that ends at it draws it as a bar. */
+export function isBar(d: Diagram, id: string): boolean {
+  return d.layers.some((l) => l.id === id && l.nodes.length === 0);
+}
+
+/** The rows drawn as bars: those with no node that an edge ends at (DESIGN.md, "A row with no box as one bar"). */
+export function barRows(d: Diagram): Set<string> {
+  const ends = new Set(d.edges.flatMap((e) => [e.from, e.to]));
+  return new Set(d.layers.filter((l) => l.nodes.length === 0 && ends.has(l.id)).map((l) => l.id));
+}
+
+/** The first bar strictly between an edge's ends, top to bottom, if any. */
+function barBetween(d: Diagram, bars: Set<string>, a: string, b: string): string | undefined {
+  const ra = endRows(d, a);
+  const rb = endRows(d, b);
+  if (ra === undefined || rb === undefined) return undefined;
+  const [lo, hi] = ra[1] < rb[0] ? [ra[1], rb[0]] : rb[1] < ra[0] ? [rb[1], ra[0]] : [0, 0];
+  return d.layers.slice(lo + 1, Math.max(lo + 1, hi)).find((l) => bars.has(l.id))?.id;
+}
+
+/** The rows an end covers, first and last. Undefined for an empty group or lane. */
 export function endRows(d: Diagram, id: string): [number, number] | undefined {
   const kind = endKind(d, id);
   if (kind === "layer") {
     const r = d.layers.findIndex((l) => l.id === id);
-    return (d.layers[r]?.nodes.length ?? 0) > 0 ? [r, r] : undefined;
+    return r < 0 ? undefined : [r, r];
   }
   const inside = new Set(endNodes(d, id));
   const rows: number[] = [];
@@ -119,6 +142,7 @@ function between(d: Diagram, a: string, b: string): Facts {
 export function checkEnds(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
   const ids = endIds(d);
+  const bars = barRows(d);
   d.edges.forEach((e, ei) => {
     let known = true;
     for (const end of ["from", "to"] as const) {
@@ -145,9 +169,49 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
       }
     }
     if (!known) return;
+    const bar = e.pass === true ? undefined : barBetween(d, bars, e.from, e.to);
+    if (bar !== undefined) {
+      errors.push({
+        code: "bar-crossed",
+        index,
+        field: `edges[${ei}]`,
+        found: e.id,
+        facts: { row: bar, fix: [`edge pass <file> ${e.id}`, `edge remove <file> ${e.id}`] },
+      });
+      return;
+    }
     const fromKind = endKind(d, e.from);
     const toKind = endKind(d, e.to);
     if (fromKind === "node" && toKind === "node") return;
+    // A bar is met straight past the other end, so the other end must hold a box.
+    if (isBar(d, e.from) && isBar(d, e.to)) {
+      errors.push({
+        code: "bar-to-bar",
+        index,
+        field: `edges[${ei}]`,
+        found: e.id,
+        facts: { is: "layer", count: 0, min: 1, fix: [`edge remove <file> ${e.id}`] },
+      });
+      return;
+    }
+    for (const end of ["from", "to"] as const) {
+      if (!isBar(d, e[end])) continue;
+      const r = d.layers.findIndex((l) => l.id === e[end]);
+      const group = (d.groups ?? []).find((g) => {
+        const rows = endRows(d, g.id);
+        return rows !== undefined && rows[0] < r && r < rows[1];
+      });
+      if (group !== undefined) {
+        errors.push({
+          code: "bar-in-group",
+          index,
+          field: `edges[${ei}].${end}`,
+          found: e[end],
+          facts: { group: group.id, row: e[end] },
+        });
+        return;
+      }
+    }
     if (fromKind === "lane" && toKind === "lane") {
       errors.push({
         code: "lane-to-lane",

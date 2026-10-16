@@ -1180,6 +1180,7 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
   const edge: Edge = { id, from: op.from, to: op.to, kind };
   if (op.label !== undefined) edge.label = op.label;
   if (op.both === true) edge.both = true;
+  if (op.pass === true) edge.pass = true;
   d.edges.push(edge);
   touch(s, id);
   return [];
@@ -1820,6 +1821,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
     case "edge.kind":
     case "edge.reverse":
     case "edge.both":
+    case "edge.pass":
     case "edge.retarget": {
       const e = d.edges.find((x) => x.id === op.id);
       if (!e) return [unknownEdge(d, op.id, i, "id")];
@@ -1834,6 +1836,9 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
         if (op.off === true) delete e.both;
         else if (e.kind === "link") return [bothOnLink(e.id, i, "id", e.id)];
         else e.both = true;
+      } else if (op.op === "edge.pass") {
+        if (op.off === true) delete e.pass;
+        else e.pass = true;
       } else {
         if (op.from === undefined && op.to === undefined) {
           return [

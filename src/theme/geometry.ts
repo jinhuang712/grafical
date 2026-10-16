@@ -142,6 +142,16 @@ export const BAND = {
   labelInset: 16,
 };
 
+/** A row with no box that a line ends at, drawn as one bar (DESIGN.md, "Lines that end at containers"). */
+export const BAR = {
+  /** Height of the bar: one line of its label, with room above and below it. */
+  h: 40,
+  /** Width of the stand-in a line meets inside the bar while it is routed. */
+  standW: 32,
+  /** Stand-ins nearer than this share one. */
+  standGap: 16,
+};
+
 /** Walls: empty space between two sides (DESIGN.md, "Walls as space"). */
 export const WALL = {
   /** The space a wall adds where it runs, for each wall there. */

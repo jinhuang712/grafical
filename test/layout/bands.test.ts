@@ -2,6 +2,7 @@
 // meets it straight past its other end, wherever that is clear.
 
 import { beforeAll, describe, expect, it } from "vitest";
+import { drawing } from "../../src/check/drawing.ts";
 import { check } from "../../src/check/index.ts";
 import { layout } from "../../src/layout/index.ts";
 import { type Diagram, readDiagram } from "../../src/model/index.ts";
@@ -53,5 +54,64 @@ edges:
       if (e === undefined) throw new Error(id);
       expect(bends(e.points), id).toBe(0);
     }
+  });
+});
+
+describe('a row with no box as one bar (DESIGN.md, "A row with no box as one bar")', () => {
+  const bar = () =>
+    readDiagram(`grafical: 1
+title: bar
+density: normal
+layers:
+  - {id: apps, label: Apps, nodes: [${node("rider", "actor")}, ${node("driver", "actor")}]}
+  - {id: gateway, label: API gateway, nodes: []}
+  - {id: core, label: Core, nodes: [${node("booking")}, ${node("matcher")}, ${node("payments")}]}
+edges:
+  - {id: rider->gateway, from: rider, to: gateway}
+  - {id: driver->gateway, from: driver, to: gateway}
+  - {id: gateway->booking, from: gateway, to: booking}
+  - {id: gateway->payments, from: gateway, to: payments}
+  - {id: driver->matcher, from: driver, to: matcher, pass: true}
+`) as Diagram;
+
+  it("draws one bar 40 px high across the content, in a box's look, its label in it", () => {
+    const s = layout(bar(), m);
+    const b = s.bands?.find((x) => x.id === "gateway");
+    if (b === undefined) throw new Error("no bar");
+    expect(b).toMatchObject({ bar: true, box: true });
+    expect(b.rect.h).toBe(40);
+    for (const n of s.nodes) {
+      expect(b.rect.x).toBeLessThan(n.rect.x);
+      expect(b.rect.x + b.rect.w).toBeGreaterThan(n.rect.x + n.rect.w);
+    }
+    const t = b.label.bbox;
+    expect(t.y).toBeGreaterThan(b.rect.y);
+    expect(t.y + t.h).toBeLessThan(b.rect.y + b.rect.h);
+  });
+
+  it("meets each line straight past its other end, at the bar's top or bottom", () => {
+    const d = bar();
+    const s = layout(d, m);
+    expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
+    const r = s.bands?.[0]?.rect;
+    if (r === undefined) throw new Error("no bar");
+    for (const [id, y] of [
+      ["rider->gateway", r.y],
+      ["driver->gateway", r.y],
+      ["gateway->booking", r.y + r.h],
+      ["gateway->payments", r.y + r.h],
+    ] as const) {
+      const e = s.edges.find((x) => x.id === id);
+      if (e === undefined) throw new Error(id);
+      expect(bends(e.points), id).toBe(0);
+      const end = id.startsWith("gateway") ? e.points[0] : e.points[e.points.length - 1];
+      expect(end?.y, id).toBe(y);
+    }
+  });
+
+  it("names the bar among the rows a line that may pass it passes", () => {
+    const d = bar();
+    const line = drawing(d, layout(d, m)).lines.find((l) => l.id === "driver->matcher");
+    expect(line?.passes).toEqual(["gateway"]);
   });
 });

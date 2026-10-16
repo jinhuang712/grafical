@@ -36,8 +36,8 @@ A good diagram:
     entry above its stores. Callers and outside services stay out of groups.
   - Put a store below or between the parts that share it, and boxes that
     talk next to each other. Connect neighbouring rows where you can.
-  - What every request passes, such as a gateway: end lines at its row
-    (edge add <file> <box> <row>), drawn as one band.
+  - What every request passes, a gateway or a bus: an empty row that
+    lines end at (edge add <file> <box> <row>), drawn as one bar.
   - Draw a queue as a box only when it is the story; otherwise draw its
     events as lines between the services.
   - Merge only what has the same connections: a merged box claims every
@@ -138,7 +138,7 @@ Batch file:
     node.add          id layer label kind sublabel size first last before
                       after align accent from down up left right
     node.move         id layer first last before after from down up left right
-    edge.add          from to id label kind both
+    edge.add          from to id label kind both pass
     group.add         id label sublabel nodes in       (nodes is a list)
     group.join        group nodes                      (a list)
     group.leave       nodes up
@@ -282,7 +282,9 @@ Example:
 Good to know:
   - Rows run top to bottom the way a request or a process moves.
   - Name a row by what it holds ("Entry", "Stores").
-  - A row is drawn as a labelled band only when an edge ends at it.
+  - A row is drawn only when a line ends at it: around its boxes as a band,
+    or, with no boxes, as one bar that lines meet straight past their other
+    ends, such as a gateway or a bus.
   - Rows and boxes share one set of ids: give rows ids like row-users.
 
 See also: layer move, layer split, node add
@@ -444,6 +446,9 @@ Good to know:
   - Lines between neighbouring rows stay straight; a line that skips rows
     has to go around.
   - One line to a group replaces a line to each of its parts.
+  - A line that passes a bar, a row with no boxes that lines end at, is
+    refused (bar-crossed) unless --pass says it may, since a reader takes a
+    line over a gateway for a line through it.
   - The id is <from>-><to> unless --id names it; a second one gets #2.
 
 See also: edge emphasize, diagram legend
@@ -647,6 +652,11 @@ Example:
 `,
   },
   "note remove": { about: "Remove the note of a node, a group or a line." },
+
+  "edge pass": {
+    about:
+      "Let a line pass the bars between its ends, rows with no boxes that lines end at; --off takes it back.",
+  },
 
   "wall allow": {
     about:

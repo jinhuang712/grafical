@@ -532,11 +532,12 @@ function build(): Command {
       .option("--id <id>", "default: <from>-><to>")
       .option("--label <text>", "what the line means; leave it out when that is obvious")
       .option("--kind <kind>", "see Kinds below")
-      .option("--both", "an arrowhead at both ends"),
+      .option("--both", "an arrowhead at both ends")
+      .option("--pass", "may pass a bar, a row with no box, between its ends"),
   ).action(async (file: string, from: string, to: string, opts: Opts) => {
     await write(
       file,
-      { op: "edge.add", from, to, ...pick(opts, ["id", "label", "kind", "both"]) },
+      { op: "edge.add", from, to, ...pick(opts, ["id", "label", "kind", "both", "pass"]) },
       opts,
     );
   });
@@ -604,6 +605,16 @@ function build(): Command {
       .option("--off", "undo it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.both", id, ...pick(opts, ["off"]) }, opts);
+  });
+  json(
+    edge
+      .command("pass")
+      .description("let a line pass the bars between its ends, or no longer with --off")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--off", "undo it"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "edge.pass", id, ...pick(opts, ["off"]) }, opts);
   });
   json(
     edge

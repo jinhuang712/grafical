@@ -203,6 +203,8 @@ export interface Edge {
   label?: string;
   /** true: an arrowhead at both ends. A link has none (DESIGN.md, "Lines meet any side"). */
   both?: boolean;
+  /** true: the line may pass the rows with no box between its ends (DESIGN.md, "A row with no box as one bar"). */
+  pass?: boolean;
   /** true: drawn thick, as part of the main path (DESIGN.md, "Lines meet any side"). Means `weight: thick`; `weight` wins. */
   accent?: boolean;
   /** A weight level the stylesheet names, or a width in pixels (DESIGN.md, "Edge weights"). Absent: thin. */
