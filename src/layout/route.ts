@@ -268,6 +268,7 @@ export function routeAcross(
     chooseSideEntries(plans, layers, extra.forbidTop, extra.noSideExit);
     placePorts(plans, extra.forbidTop);
     straightenPorts(plans);
+    centreLines(plans, extra.forbidTop, extra.boxes);
     return { plans, ...channels(plans, layers, pitch, sides) };
   };
   // A line between two boxes of a row that takes the gutter above moves the ports of its
@@ -1372,12 +1373,6 @@ function placePorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): 
  * gutter goes across that x, so that no crossing comes of it.
  */
 function straightenPorts(plans: Plan[]): void {
-  const runsIn = (pl: Plan, g: number): [number, number][] =>
-    pl.gutters.flatMap((x, j) => {
-      if (x !== g) return [];
-      const [a, b] = stubsOf(pl, j);
-      return [[Math.min(a.x, b.x), Math.max(a.x, b.x)] as [number, number]];
-    });
   for (const pl of plans) {
     if (pl.kind !== "down" && pl.kind !== "up") continue;
     if (pl.between.length > 0 || pl.turn !== undefined || pl.turnIn !== undefined) continue;
@@ -1402,6 +1397,134 @@ function straightenPorts(plans: Plan[]): void {
     if (blocked) continue;
     if (pl.kind === "down") pl.srcPort = x;
     else pl.dstPort = x;
+  }
+}
+
+/** The span across of each run of pl in gutter g. */
+function runsIn(pl: Plan, g: number): [number, number][] {
+  return pl.gutters.flatMap((x, j) => {
+    if (x !== g) return [];
+    const [a, b] = stubsOf(pl, j);
+    return [[Math.min(a.x, b.x), Math.max(a.x, b.x)] as [number, number]];
+  });
+}
+
+/**
+ * A line that runs straight between two boxes that share a centre, pushed aside by the
+ * ports beside it or by the lines it shares a corridor with, moves back to meet them at
+ * their centres where nothing bends for it. The lines from the same side of its source
+ * that share its corridor and stand in its way move with it, port and tracks alike, each
+ * still leaving its source straight and turning off where it did. Every other port on
+ * the sides they leave and enter stays the port pitch away and off group labels, every
+ * other track of a gap they pass stays as far as it was, up to the port pitch, and as
+ * far from the boxes they pass, no line comes within 8 px of where they run, and every
+ * run that crosses where they run crossed them where they were, so that no crossing
+ * comes of it. A line that another joins to the same two boxes stays, as does one with
+ * a self-loop on a side it meets: its run and label sit under that side.
+ */
+function centreLines(
+  plans: Plan[],
+  forbidTop: Map<number, [number, number][]>,
+  boxes: Box[],
+): void {
+  /** Straight from its source through every gap: the x it runs at, or undefined. */
+  const column = (pl: Plan): number | undefined => {
+    if (pl.kind !== "down" && pl.kind !== "up") return undefined;
+    if (pl.turn !== undefined || pl.turnIn !== undefined) return undefined;
+    if (pl.bus !== undefined || pl.fanIn !== undefined) return undefined;
+    const x = pl.srcPort;
+    return pl.gapX.every((t) => Math.abs(t - x) < EPS) ? x : undefined;
+  };
+  const inset = ROUTE.portMin / 2 + 2;
+  const extra = ROUTE.passClear - ROUTE.gapPad;
+  const across = (lo: number, hi: number, at: number) => lo < at - EPS && hi > at + EPS;
+  for (const pl of plans) {
+    const x = column(pl);
+    const c = centreX(pl.u);
+    if (x === undefined || Math.abs(pl.dstPort - x) > EPS) continue;
+    if (Math.abs(c - centreX(pl.v)) > EPS || Math.abs(c - x) < EPS) continue;
+    const d = c - x;
+    // The lines that share its corridor from the same side of its source and stand in
+    // its way, nearest first: each part from the corridor before their end.
+    const movers = [pl];
+    const mates = (pl.gaps.length === 0 ? [] : plans)
+      .filter(
+        (o) =>
+          o !== pl &&
+          o.u === pl.u &&
+          o.srcSide === pl.srcSide &&
+          o.gaps.length === pl.gaps.length &&
+          o.gaps.every((gap, j) => gap === pl.gaps[j]) &&
+          column(o) !== undefined &&
+          Math.sign(o.srcPort - x) === Math.sign(d),
+      )
+      .sort((a, b) => Math.abs(a.srcPort - x) - Math.abs(b.srcPort - x));
+    for (const o of mates) {
+      const last = movers[movers.length - 1] as Plan;
+      if (Math.abs(o.srcPort - last.srcPort) > ROUTE.portPitch + EPS) break;
+      movers.push(o);
+    }
+    if (movers.slice(1).some((o) => Math.abs(o.dstPort - o.srcPort) < EPS)) continue;
+    const moving = new Set(movers);
+    const ok = movers.every((m) => {
+      const to = m.srcPort + d;
+      // The sides it leaves, and enters if it runs straight to its end.
+      const ends: [PNode, Side][] = [[m.u, m.srcSide]];
+      if (m === pl) ends.push([m.v, m.dstSide]);
+      for (const [n, side] of ends) {
+        if (to < n.x + inset - EPS || to > n.x + n.w - inset + EPS) return false;
+        if (side === "top" && inSpans(to, forbidTop.get(n.layer) ?? [])) return false;
+      }
+      for (const [j, gap] of m.gaps.entries()) {
+        const from = m.gapX[j] ?? m.srcPort;
+        const room = (t: number) => Math.min(t - gap.lo, gap.hi - t);
+        if (room(to) < Math.min(extra, room(from)) - EPS) return false;
+        if (inSpans(to, [...gap.forbid, ...margins(boxes, m, gap.layer)])) return false;
+      }
+      return plans.every((o) => {
+        if (moving.has(o)) return true;
+        if ((o.u === pl.u && o.v === pl.v) || (o.u === pl.v && o.v === pl.u)) return false;
+        if (
+          o.u === o.v &&
+          ends.some(([n]) => n === o.u) &&
+          o.gutters.some((g) => m.gutters.includes(g))
+        )
+          return false;
+        for (const [n, side] of ends) {
+          const ports = [
+            ...(o.u === n && o.srcSide === side ? [o.srcPort] : []),
+            ...(o.v === n && o.dstSide === side ? [o.dstPort] : []),
+          ];
+          if (ports.some((p) => Math.abs(p - to) < ROUTE.portPitch - EPS)) return false;
+        }
+        for (const [j, gap] of o.gaps.entries()) {
+          if (!m.gaps.includes(gap)) continue;
+          const t = o.gapX[j] ?? 0;
+          const was = Math.abs(t - m.srcPort);
+          if (Math.abs(t - to) < Math.max(TRACK_MIN, Math.min(ROUTE.portPitch, was)) - EPS)
+            return false;
+        }
+        return m.gutters.every((g) => {
+          const runs = runsIn(o, g);
+          if (runs.some(([lo, hi]) => across(lo, hi, to) && !across(lo, hi, m.srcPort)))
+            return false;
+          const stubs = o.gutters.flatMap((h, j) => (h === g ? stubsOf(o, j) : []));
+          if (stubs.some((s) => Math.abs(s.x - to) < CLEAR - EPS)) return false;
+          // A line that turns off in this gutter keeps its run past the same lines.
+          const turns = m !== pl && g === m.gutters[m.gutters.length - 1];
+          return (
+            !turns ||
+            !stubs.some((s) => across(Math.min(to, m.srcPort), Math.max(to, m.srcPort), s.x))
+          );
+        });
+      });
+    });
+    if (!ok) continue;
+    for (const m of movers) {
+      m.srcPort += d;
+      m.gapX = m.gapX.map((t) => t + d);
+    }
+    pl.dstPort = c;
   }
 }
 
