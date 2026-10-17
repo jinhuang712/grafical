@@ -20,3 +20,17 @@ Not measured here: how good the pictures are. No judges; the owner may rate them
 ## The probe, one chain
 
 `photo-cloud.grafical-haiku-r1` (`stage1 --part reflect --only photo-cloud.grafical-haiku-r1`): a cloud diagram with a region, a network and two subnets, where saved drafts hit `title-blocked` most often, so that one chain exercises a new refusal, the reflection and its cost at once. Expected about $0.01 to draw, as in `p1d-help3` ($0.35 for 33), plus the reflection. The total proposed afterwards is 33 times what it measures.
+
+## The probe, measured
+
+- **Cost:** $0.021 for the chain: $0.0197 to draw, $0.0016 for the reflection. The reflection costs a tenth of a cheap draft.
+- **The new refusal, met and fixed:** the first `apply` was refused with two `title-blocked` records, the private subnet's label crossed by `lb->app` and the public subnet's by `users->lb`. The agent added a `group.title` for each, from its `clear` list, `bottom-left` and `left`, and the next write passed. A third write moved the object storage box to take the one crossing away. The final draft has no defect and no crossing.
+- **The reflection is specific:** it names commands, fields and records, and quotes them. What it found, to be checked before acting on any of it:
+  - `apply --help` lists no `group.title`, and the batch field is `at` where the command's argument is `[place]`: the agent found the field only from `unknown-field ... likely=at`. Checked: `apply --help` has no `group.title`.
+  - It picked a label place "by reading the `clear=` lists, which is workable but guessy".
+  - It gave its rows labels and found none drawn, and could not tell from the help whether that was meant.
+  - `node move --first` does not say whether the box stays in its row.
+  - Its help reads exited 1 in its shell, though their text printed. Not reproduced: each of those pages exits 0 when run alone or chained the same way.
+- **On question 1:** the agent chose the `cloud` type from the list of diagram types in `grafical --help`, and says it weighed `architecture` against it.
+
+Proposed total for the other 32 chains: 32 × $0.021 ≈ $0.67, each call capped at $1.
