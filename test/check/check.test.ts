@@ -470,7 +470,7 @@ describe("text-crossing", () => {
     expect(found.map((d) => [d.code, d.owner, ...d.elements])).toEqual([
       ["label-blocked", "agent", "a->b", "c->d"],
     ]);
-    expect(found[0]?.facts).toEqual({ is: "edge", gutters: ["top/bottom"] });
+    expect(found[0]?.facts).toMatchObject({ is: "edge", gutters: ["top/bottom"] });
   });
 
   it("fails a group's side across an edge's label, and passes a label inside the box", () => {

@@ -65,5 +65,13 @@ edges:
     expect(
       check(d, s, m).map((x) => [x.code, x.owner, ...x.elements, x.facts.is, x.facts.gutters]),
     ).toEqual([["label-blocked", "agent", "a->b#2", "a->b#3", "edge", ["top/bottom"]]]);
+    // The engine never widens a box for its lines; the refusal names the size that holds the
+    // label, tried by laying the diagram out with it (decided by the owner on 2026-10-17).
+    expect(check(d, s, m)[0]?.facts.fix).toEqual(["node resize <file> a --size l"]);
+    const wide = structuredClone(d);
+    const a = wide.layers[0]?.nodes[0];
+    if (a === undefined) throw new Error("a");
+    a.size = "l";
+    expect(check(wide, layout(wide, m), m)).toEqual([]);
   });
 });

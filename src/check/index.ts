@@ -4,15 +4,18 @@
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import { arrowheads } from "../layout/badges.ts";
 import { asideBoxes, bendsOf, layout } from "../layout/index.ts";
+import { sizeOf } from "../layout/size.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { laneNodes } from "../model/lanes.ts";
 import {
   type Diagram,
+  type DiagramNode,
   GROUP_TITLES,
   type GroupTitle,
   LINE_STYLES,
   MARK_SLOTS,
   markText,
+  SIZE_STEPS,
 } from "../model/types.ts";
 import { crossingFix, wallAllows } from "../model/walls.ts";
 import { isEmoji } from "../render/marks.ts";
@@ -20,7 +23,7 @@ import type { PlacedText, Rect, Scene, SceneBadge, SceneEdge, SceneNode } from "
 import type { Measurer } from "../text/types.ts";
 import { GROUP, NOTE, ROUTE, WALL } from "../theme/geometry.ts";
 import { hasHead, lineLook, lineStyle, PAINT } from "../theme/paint.ts";
-import { textInside } from "../theme/shapes.ts";
+import { isDot, textInside } from "../theme/shapes.ts";
 import { themeOf } from "../theme/themes.ts";
 import {
   collinearOverlap,
@@ -405,9 +408,11 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
  * changes rows, or makes the note a footnote. The elements name the line, the wall or the
  * note's target, then what lies across the text: lines, and for a line's label the borders of
  * groups, bands and lanes, for a wall's label or a card boxes; the facts name the gutters a
- * line's label tried.
+ * line's label tried, and as fix each box at an end of the line whose next larger size would
+ * hold the label, found by laying the diagram out with it. The engine never widens a box for
+ * its lines: the agent does (decided by the owner on 2026-10-17).
  */
-function checkLabelRoom(scene: Scene, out: Found[]): void {
+function checkLabelRoom(facts: Diagram, scene: Scene, measurer: Measurer, out: Found[]): void {
   const borders = [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])];
   /** The lines other than `own` that pass through r. */
   const lines = (r: Rect, own?: string) =>
@@ -436,10 +441,11 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
         if (sides.some((s) => segmentCrossesRect(s, box))) across.push(g.id);
       }
     }
+    const fix = sizeFix(facts, measurer, e);
     out.push({
       code: "label-blocked",
       elements: [e.id, ...across],
-      facts: { is: "edge", gutters: e.blocked },
+      facts: { is: "edge", gutters: e.blocked, ...(fix.length > 0 ? { fix } : {}) },
     });
   }
   // A note's card with no place beside its target, at the first place anyway: the lines and
@@ -467,6 +473,33 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
       facts: { is: "wall" },
     });
   }
+}
+
+/**
+ * For a line whose label no gutter holds: for each box at one of its ends, the command that sets
+ * the first larger size step at which the label is held, as a layout with that size alone shows;
+ * nothing for a box no step helps.
+ */
+function sizeFix(facts: Diagram, measurer: Measurer, edge: SceneEdge): string[] {
+  const nodeIn = (d: Diagram, id: string): DiagramNode | undefined =>
+    [...d.layers.flatMap((l) => l.nodes), ...(d.nodes ?? [])].find((n) => n.id === id);
+  const fix: string[] = [];
+  for (const id of new Set([edge.from, edge.to])) {
+    const node = nodeIn(facts, id);
+    if (node === undefined || isDot(node.kind)) continue;
+    const now = SIZE_STEPS.indexOf(sizeOf(node, facts, measurer));
+    for (const step of SIZE_STEPS.slice(now + 1)) {
+      const d = structuredClone(facts);
+      const n = nodeIn(d, id);
+      if (n === undefined) break;
+      n.size = step;
+      if (layout(d, measurer).edges.some((x) => x.id === edge.id && x.blocked !== undefined))
+        continue;
+      fix.push(`node resize <file> ${id} --size ${step}`);
+      break;
+    }
+  }
+  return fix;
 }
 
 /** A node that is not a member lies inside a group's box (DESIGN.md, "Rows unseen, groups as systems"). */
@@ -786,7 +819,7 @@ export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[
   checkNeedlessBend(scene, out);
   checkStepAside(diagram, scene, out);
   checkTextCrossing(scene, out);
-  checkLabelRoom(scene, out);
+  checkLabelRoom(facts, scene, measurer, out);
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);
   checkWalls(diagram, scene, out);

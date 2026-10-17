@@ -256,7 +256,7 @@ The agent says what connects. grafical draws every line.
 - A line may leave or enter a box on any side. Each line has its own place on a side, spread evenly.
 - Three or more unlabelled lines of one style that leave one side of a box leave as one line and split near their targets, with a dot at each split. Labelled lines and two-way lines keep their own place.
 - Where two lines cross, one hops over the other. Where lines join on purpose, a dot marks the join.
-- A label sits beside its line. When there is no room, it wraps or moves to another gap on its way. Where no gap on its way has room, no line moves for it: the write is refused as `label-blocked`, naming the line, the lines across the label and the gaps it tried (DESIGN.md, "The dirty work has edges"). A step's number is refused the same way.
+- A label sits beside its line. When there is no room, it wraps or moves to another gap on its way. Where no gap on its way has room, no line moves for it: the write is refused as `label-blocked`, naming the line, the lines across the label and the gaps it tried, and as `fix` the larger size of a box at either end that would hold it (DESIGN.md, "The dirty work has edges"). grafical never widens a box for its lines. A step's number is refused the same way.
 - A stylesheet may draw the corners curved, with `paint.edge.shape: curved`. The routes stay the same.
 
 ## Placing

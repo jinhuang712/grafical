@@ -454,8 +454,9 @@ When refused:
   label-blocked  no gap between rows on the line's way holds its label
                  clear of the other lines, and no line moves for it;
                  elements name the line, then what lies across the label,
-                 gutters the gaps it tried as <row above>/<row below>:
-                 shorten or drop the label, or change rows
+                 gutters the gaps it tried as <row above>/<row below>,
+                 fix a box at an end whose larger size holds it: resize
+                 it, shorten or drop the label, or change rows
 
 See also: edge emphasize, diagram legend
 `,
