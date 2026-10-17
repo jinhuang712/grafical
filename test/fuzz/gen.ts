@@ -3,7 +3,7 @@
 // model rejects (an alignment that cannot hold, say) is dropped, as an agent
 // would drop it, so every diagram that comes out is valid.
 
-import { check } from "../../src/check/index.ts";
+import { acrossTitle, check } from "../../src/check/index.ts";
 import {
   layout,
   placeSteps,
@@ -232,23 +232,35 @@ export function generate(seed: number, m: Measurer): Generated {
 
 /**
  * A stated place for each group's label in three seeds of ten (DESIGN.md, "The agent states where a group's label sits"),
- * a place of its own for each group. A place a line crosses moves to one its title-blocked
- * refusal names clear, as an agent does, and after three tries, or where none is clear, the
- * group goes back to the default.
+ * a place of its own for each group. Then, as an agent does after a title-blocked refusal, a
+ * label a line runs across, stated or seated by the engine, moves to a place no line comes near
+ * (DESIGN.md, "The dirty work has edges"), the first of the places in a random order, which picks
+ * among those the refusal names clear as a random pick would; where none is, its text shortens
+ * to one word, then to one letter.
  */
 function addTitles(d: Diagram, r: () => number, m: Measurer): void {
-  if (r() < 0.7) return;
-  const pick = (xs: readonly GroupTitle[]) => xs[Math.floor(r() * xs.length)] as GroupTitle;
-  for (const g of d.groups ?? []) g.titleAt = pick(GROUP_TITLES);
-  for (let pass = 0; ; pass++) {
-    const blocked = check(d, layout(d, m), m).filter((x) => x.code === "title-blocked");
+  if (r() >= 0.7) {
+    for (const g of d.groups ?? []) {
+      g.titleAt = GROUP_TITLES[Math.floor(r() * GROUP_TITLES.length)] as GroupTitle;
+    }
+  }
+  for (let pass = 0; pass < 12; pass++) {
+    const scene = layout(d, m);
+    const blocked = (d.groups ?? []).filter((g) => acrossTitle(scene, g.id).length > 0);
     if (blocked.length === 0) return;
-    for (const x of blocked) {
-      const g = d.groups?.find((y) => y.id === x.elements[0]);
-      if (g === undefined) continue;
-      const clear = (x.facts.clear ?? []) as GroupTitle[];
-      if (pass < 3 && clear.length > 0) g.titleAt = pick(clear);
-      else delete g.titleAt;
+    for (const g of blocked) {
+      const was = g.titleAt;
+      const order = GROUP_TITLES.filter((p) => p !== was)
+        .map((p) => ({ p, k: r() }))
+        .sort((a, b) => a.k - b.k);
+      const clear = order.find(({ p }) => {
+        g.titleAt = p;
+        return acrossTitle(layout(d, m), g.id).length === 0;
+      });
+      if (clear !== undefined) continue;
+      if (was === undefined) delete g.titleAt;
+      else g.titleAt = was;
+      g.label = g.label.includes(" ") ? (g.label.split(" ")[0] as string) : g.label.slice(0, 1);
     }
   }
 }

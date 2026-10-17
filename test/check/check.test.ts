@@ -405,7 +405,7 @@ describe("text-crossing", () => {
     expect(d[0]?.elements).toEqual(["a->b", "subtitle"]);
   });
 
-  it("fails an edge through a node's text, a group label, the note and a legend label", () => {
+  it("fails an edge through a node's text, the note and a legend label", () => {
     const through = (s: Scene): Defect[] => run(s);
     const nodeText = withEdge(
       edge("a->b", "a", "b", [
@@ -424,7 +424,8 @@ describe("text-crossing", () => {
         },
       ],
     });
-    expect(through(groupLabel).map((d) => d.elements.join("|"))).toEqual(["a->b|g"]);
+    // A line across a group's label is the agent's, title-blocked (test/layout/titles.test.ts).
+    expect(codes(through(groupLabel))).not.toContain("text-crossing");
     expect(codes(through(withEdge(down(), { note: box("note", 90, 150) })))).toEqual([
       "text-crossing",
     ]);

@@ -54,7 +54,8 @@ describe("fuzz", () => {
       );
       expect(found).toEqual([]);
     },
-    Math.max(60_000, seeds * 100),
+    // Each seed lays out again to move a title a line runs across (DESIGN.md, "The dirty work has edges").
+    Math.max(60_000, seeds * 200),
   );
 
   it("generates the same diagram from the same seed", async () => {

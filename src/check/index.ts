@@ -319,9 +319,7 @@ export const TEXT_TOLERANCE = 2;
  * labels, subtitle, note, title or legend. An edge's own label is exempt,
  * because its segments run next to it by design.
  */
-function checkTextCrossing(diagram: Diagram, scene: Scene, out: Found[]): void {
-  // A label at a place the agent stated is the agent's: a line across it is title-blocked.
-  const stated = new Set((diagram.groups ?? []).filter((g) => g.titleAt).map((g) => g.id));
+function checkTextCrossing(scene: Scene, out: Found[]): void {
   // Each text, with the element it belongs to and what that element is.
   const targets: { id: string; is: string; text: PlacedText; owner?: string }[] = [];
   for (const n of scene.nodes) {
@@ -330,11 +328,7 @@ function checkTextCrossing(diagram: Diagram, scene: Scene, out: Found[]): void {
   for (const e of scene.edges) {
     if (e.label) targets.push({ id: e.id, is: "edge", text: e.label, owner: e.id });
   }
-  for (const g of scene.groups ?? []) {
-    if (stated.has(g.id)) continue;
-    targets.push({ id: g.id, is: "group", text: g.label });
-    if (g.sublabel) targets.push({ id: g.id, is: "group", text: g.sublabel });
-  }
+  // A group's label is the agent's: a line across it is title-blocked.
   for (const b of scene.bands ?? []) targets.push({ id: b.id, is: "layer", text: b.label });
   for (const x of scene.lanes ?? []) targets.push({ id: x.id, is: "lane", text: x.label });
   for (const w of scene.walls ?? []) {
@@ -644,7 +638,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
 export { measureTaste, type TasteReport, type TasteRule } from "./taste.ts";
 
 /** The lines that pass a group's label or its sublabel nearer than the engine keeps its own lines, by id. */
-function acrossTitle(scene: Scene, id: string): string[] {
+export function acrossTitle(scene: Scene, id: string): string[] {
   const g = scene.groups?.find((x) => x.id === id);
   if (g === undefined) return [];
   const boxes = [g.label, ...(g.sublabel ? [g.sublabel] : [])].map((t) =>
@@ -663,7 +657,6 @@ function acrossTitle(scene: Scene, id: string): string[] {
 function checkTitles(facts: Diagram, scene: Scene, measurer: Measurer, out: Found[]): void {
   for (const group of facts.groups ?? []) {
     const place = group.titleAt;
-    if (place === undefined) continue;
     const lines = acrossTitle(scene, group.id);
     if (lines.length === 0) continue;
     const at = (p: GroupTitle): Diagram => ({
@@ -673,7 +666,11 @@ function checkTitles(facts: Diagram, scene: Scene, measurer: Measurer, out: Foun
     const clear = GROUP_TITLES.filter(
       (p) => p !== place && acrossTitle(layout(at(p), measurer), group.id).length === 0,
     );
-    out.push({ code: "title-blocked", elements: [group.id, ...lines], facts: { place, clear } });
+    out.push({
+      code: "title-blocked",
+      elements: [group.id, ...lines],
+      facts: { ...(place === undefined ? {} : { place }), clear },
+    });
   }
 }
 
@@ -699,7 +696,7 @@ export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[
   checkEdgeOverlap(scene, out);
   checkNeedlessBend(scene, out);
   checkStepAside(diagram, scene, out);
-  checkTextCrossing(diagram, scene, out);
+  checkTextCrossing(scene, out);
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);
   checkWalls(diagram, scene, out);

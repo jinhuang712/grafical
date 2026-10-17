@@ -12,6 +12,7 @@
 // Rows are not drawn (DESIGN.md, "Rows unseen, groups as systems"): their bands and labels stay in the scene for the
 // checker and for debugging.
 
+import { segmentCrossesRect, segmentsOf } from "../check/geometry.ts";
 import { orderByColumns } from "../model/columns.ts";
 import { laneRun, orderByLanes } from "../model/lanes.ts";
 import {
@@ -760,22 +761,15 @@ function compute(
     ...[...bandRows.values()].map((b) => b.labelX - BAND.labelInset),
   );
 
-  // Where no vertical line may pass: a group's or band's label, above its first
-  // row, and the label of an edge that runs sideways, in the gap it crosses.
+  // Where no vertical line may pass: a band's label, above its row, and the label of an
+  // edge that runs sideways, in the gap it crosses. A group's label moves no line: a line
+  // across it refuses the write (DESIGN.md, "The dirty work has edges").
   const forbidTop = new Map<number, [number, number][]>();
   // No line runs down through a wall up and down, in the rows it spans (DESIGN.md, "Walls as space").
   for (const b of besideWalls) {
     for (let r = b.top; r <= b.bottom; r++) {
       forbidTop.set(r, [...(forbidTop.get(r) ?? []), [b.x0, b.x1]]);
     }
-  }
-  // A label at a place the agent stated moves no line: a line across it refuses the write
-  // (DESIGN.md, "The agent states where a group's label sits").
-  for (const g of groups) {
-    if (g.titleAt !== undefined) continue;
-    const list = forbidTop.get(g.top) ?? [];
-    list.push([g.labelX - GROUP.labelClear, g.labelX + g.labelW + GROUP.labelClear]);
-    forbidTop.set(g.top, list);
   }
   for (const [row, b] of bandRows) {
     const list = forbidTop.get(row) ?? [];
@@ -1204,6 +1198,32 @@ function compute(
     const b = placeLine("group-label", text, 0, 0, m, T).bbox;
     return b.y + b.h / 2;
   };
+  /**
+   * Where a label the agent did not place starts: the leftmost seat in its group's head, every
+   * 4 px and the rightmost exactly, that no line and no line's label comes nearer than the
+   * engine keeps its lines. No line or box moves for it: where no seat is clear, it sits at
+   * the left, and the write is refused as title-blocked (DESIGN.md, "The dirty work has edges").
+   */
+  const seat = (g: (typeof groups)[number], ly: number): number => {
+    const first = centre + g.x0 + GROUP.labelInset;
+    if (!withText) return first;
+    const last = centre + g.x1 - GROUP.labelInset - g.labelW;
+    const xs: number[] = [];
+    for (let x = first; x <= last + 1e-6; x += 4) xs.push(x);
+    if (xs.length > 0 && (xs[xs.length - 1] as number) < last - 1e-6) xs.push(last);
+    // The label and its sublabel take one span, as high as the label.
+    const ink = placeLine("group-label", g.label, first, ly, m, T).bbox;
+    const clr = GROUP.labelClear;
+    const clear = (x: number) => {
+      const r = { x: x - clr, y: ink.y - clr, w: g.labelW + 2 * clr, h: ink.h + 2 * clr };
+      for (const a of assembled.values()) {
+        if (segmentsOf(a.points).some((s) => segmentCrossesRect(s, r))) return false;
+        if (a.label !== undefined && overlaps(a.label, r)) return false;
+      }
+      return true;
+    };
+    return xs.find(clear) ?? first;
+  };
   const sceneGroups: SceneGroup[] = outerFirst.map((g) => {
     const y0 = (rowTops[g.top] ?? 0) - heads(g) + outside(g, "top");
     const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + pads(g) - outside(g, "bottom");
@@ -1218,14 +1238,15 @@ function compute(
             : inFoot(g)
               ? y1 - GROUP.head
               : y0) + GROUP.labelTop;
+    const lx = g.titleAt === undefined ? seat(g, ly) : centre + g.labelX;
     const label = withText
-      ? placeLine("group-label", g.label, centre + g.labelX, ly, m, T)
-      : empty("group-label", centre + g.labelX, ly);
+      ? placeLine("group-label", g.label, lx, ly, m, T)
+      : empty("group-label", lx, ly);
     const out: SceneGroup = { id: g.id, rect, label, members: g.members };
     if (depthOf(g) > 1) out.depth = depthOf(g);
     const sub = d.groups?.find((x) => x.id === g.id)?.sublabel;
     if (sub !== undefined && withText) {
-      const x = centre + g.labelX + labelW(g) + GROUP.sublabelGap;
+      const x = lx + labelW(g) + GROUP.sublabelGap;
       out.sublabel = placeLine("group-sublabel", sub, x, ly, m, T);
     }
     return out;

@@ -99,7 +99,8 @@ describe('lines bent for no reason (DESIGN.md, "Who chose is punished")', () => 
 
   // Found on 2026-10-15 in a two-zone cloud diagram: web-b's top side also takes the line from the load
   // balancer, and a group label there keeps both ports right of the NAT gateway's port above. The line
-  // up to the gateway takes the gateway's port along and runs straight.
+  // up to the gateway takes the gateway's port along and runs straight. Since 2026-10-17 no label moves a
+  // port, and the file states three subnets' labels at places the title-blocked refusal named clear.
   it("run straight from a box whose side another line shares", () => {
     const file = join(import.meta.dirname, "../fixtures/two-zones.grafical.yaml");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
