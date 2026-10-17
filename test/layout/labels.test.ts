@@ -5,10 +5,11 @@ import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
 import { layout } from "../../src/layout/index.ts";
-import { type Diagram, readDiagram } from "../../src/model/index.ts";
+import { applyOps, type Diagram, type Op, readDiagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 import { lanesColumns } from "../fixtures/lanes.ts";
+import { generate } from "../fuzz/gen.ts";
 
 let m: Measurer;
 beforeAll(async () => {
@@ -73,5 +74,21 @@ edges:
     if (a === undefined) throw new Error("a");
     a.size = "l";
     expect(check(wide, layout(wide, m), m)).toEqual([]);
+  });
+
+  // Found by trying every fix a refusal suggests, on 2026-10-17: no larger box held this label,
+  // and the refusal named nothing to run.
+  it("where no larger box holds the label, its fix drops it, and grafical accepts that", () => {
+    const add: Op = { op: "edge.add", from: "n4", to: "n2", label: "a long label for this line" };
+    const checked = (ops: Op[]) => {
+      const r = applyOps(generate(35, m).diagram, ops);
+      if ("errors" in r) throw new Error(JSON.stringify(r.errors));
+      return check(r.diagram, layout(r.diagram, m), m);
+    };
+    const found = checked([add]).filter((x) => x.code === "label-blocked");
+    expect(found.map((x) => [x.elements[0], x.facts.fix])).toEqual([
+      ["n4->n2", ["edge relabel <file> n4->n2"]],
+    ]);
+    expect(checked([add, { op: "edge.relabel", id: "n4->n2" }])).toEqual([]);
   });
 });

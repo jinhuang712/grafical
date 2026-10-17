@@ -410,7 +410,10 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
  * groups, bands and lanes, for a wall's label or a card boxes; the facts name the gutters a
  * line's label tried, and as fix each box at an end of the line whose next larger size would
  * hold the label, found by laying the diagram out with it. The engine never widens a box for
- * its lines: the agent does (decided by the owner on 2026-10-17).
+ * its lines: the agent does (decided by the owner on 2026-10-17). Where no larger box holds a
+ * line's label, the fix drops it (or the step's number); a card's fix makes it a footnote, and
+ * a wall's drops its label. Each is a command grafical accepts, so the agent can act on the
+ * refusal itself (DESIGN.md, "One entry page, help where it is used").
  */
 function checkLabelRoom(facts: Diagram, scene: Scene, measurer: Measurer, out: Found[]): void {
   const borders = [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])];
@@ -441,7 +444,11 @@ function checkLabelRoom(facts: Diagram, scene: Scene, measurer: Measurer, out: F
         if (sides.some((s) => segmentCrossesRect(s, box))) across.push(g.id);
       }
     }
-    const fix = sizeFix(facts, measurer, e);
+    const sized = sizeFix(facts, measurer, e);
+    const own = facts.edges.find((x) => x.id === e.id);
+    const drop =
+      own?.label !== undefined ? `edge relabel <file> ${e.id}` : `edge step <file> ${e.id}`;
+    const fix = sized.length > 0 ? sized : [drop];
     out.push({
       code: "label-blocked",
       elements: [e.id, ...across],
@@ -456,10 +463,14 @@ function checkLabelRoom(facts: Diagram, scene: Scene, measurer: Measurer, out: F
     const boxes = scene.nodes
       .filter((n) => n.id !== x.on && rectsOverlap(n.rect, box))
       .map((n) => n.id);
+    const text = facts.notes?.find((n) => n.on === x.on)?.text ?? "";
     out.push({
       code: "label-blocked",
       elements: [x.on, ...lines(box, x.on), ...boxes],
-      facts: { is: "note" },
+      facts: {
+        is: "note",
+        fix: [`note add <file> --on ${x.on} --text ${quoted(text)} --footnote`],
+      },
     });
   }
   // A wall's label keeps its clearance from lines and boxes as the engine places it.
@@ -470,9 +481,14 @@ function checkLabelRoom(facts: Diagram, scene: Scene, measurer: Measurer, out: F
     out.push({
       code: "label-blocked",
       elements: [w.id, ...lines(box), ...boxes],
-      facts: { is: "wall" },
+      facts: { is: "wall", fix: [`wall relabel <file> ${w.id}`] },
     });
   }
+}
+
+/** Text as one shell word in a fix: in single quotes, or double ones when it holds a single quote. */
+function quoted(text: string): string {
+  return text.includes("'") ? JSON.stringify(text) : `'${text}'`;
 }
 
 /**

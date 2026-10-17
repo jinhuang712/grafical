@@ -99,9 +99,12 @@ describe('a wall across (DESIGN.md, "Walls as space")', () => {
         code: "label-blocked",
         owner: "agent",
         elements: ["net", "upstream->relay"],
-        facts: { is: "wall" },
+        facts: { is: "wall", fix: ["wall relabel <file> net"] },
       },
     ]);
+    // The fix is a change grafical accepts, and the wall stays as space.
+    const bare = ok(d, [{ op: "wall.relabel", id: "net" }]);
+    expect(check(bare, layout(bare, m), m)).toEqual([]);
   });
 
   it("reports a line that passes through it, unless it allows the line", () => {

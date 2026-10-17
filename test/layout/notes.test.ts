@@ -82,6 +82,12 @@ describe('notes in the picture (DESIGN.md, "Notes as callouts or footnotes")', (
     expect(found.map((x) => [x.code, x.owner, x.elements[0], x.facts.is])).toEqual([
       ["label-blocked", "agent", "retry", "note"],
     ]);
+    // Its fix makes it a footnote, with its own text, and grafical accepts that.
+    expect(found[0]?.facts.fix).toEqual([
+      "note add <file> --on retry --text 'retries 5 times, then the DLQ' --footnote",
+    ]);
+    const foot = ok(d, [note("retry", "retries 5 times, then the DLQ", true)]);
+    expect(check(foot, layout(foot, m), m)).toEqual([]);
   });
 
   it("a note longer than four lines is the agent's overflow", () => {
