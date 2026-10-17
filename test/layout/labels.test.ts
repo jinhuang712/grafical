@@ -45,3 +45,25 @@ describe("line labels and group sides", () => {
     }
   });
 });
+
+describe('a label no gutter holds (DESIGN.md, "The dirty work has edges")', () => {
+  // Until 2026-10-17 the middle line stepped out of the crowd with four bends to carry its label.
+  it("moves no line for it, and refuses it as label-blocked, naming the line across it", () => {
+    const d = readDiagram(`grafical: 1
+title: three
+density: normal
+layers:
+  - {id: top, label: Top, nodes: [{id: a, label: Orders API}]}
+  - {id: bottom, label: Bottom, nodes: [{id: b, label: Orders DB, kind: store}]}
+edges:
+  - {id: a->b, from: a, to: b, label: writes orders}
+  - {id: a->b#2, from: a, to: b, label: reads stock}
+  - {id: a->b#3, from: a, to: b, label: locks rows}
+`) as Diagram;
+    const s = layout(d, m);
+    for (const e of s.edges) expect(e.points.length, e.id).toBe(2);
+    expect(
+      check(d, s, m).map((x) => [x.code, x.owner, ...x.elements, x.facts.is, x.facts.gutters]),
+    ).toEqual([["label-blocked", "agent", "a->b#2", "a->b#3", "edge", ["top/bottom"]]]);
+  });
+});

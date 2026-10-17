@@ -450,6 +450,13 @@ Good to know:
     line over a gateway for a line through it.
   - The id is <from>-><to> unless --id names it; a second one gets #2.
 
+When refused:
+  label-blocked  no gap between rows on the line's way holds its label
+                 clear of the other lines, and no line moves for it;
+                 elements name the line, then what lies across the label,
+                 gutters the gaps it tried as <row above>/<row below>:
+                 shorten or drop the label, or change rows
+
 See also: edge emphasize, diagram legend
 `,
   },
@@ -494,6 +501,8 @@ Good to know:
     of its label. It never numbers, renumbers or checks the order for you.
   - Lines may share a number, for steps that happen at the same time.
   - A numbered line keeps its own way out of a box, as a labelled one does.
+  - A number with no room on the line's way is refused as label-blocked,
+    as a label is (see edge add --help).
   - edge add takes no number: in a batch, add the edges, then
     {op: edge.step, id: <edge>, n: <number>} for each.
 

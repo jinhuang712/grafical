@@ -182,7 +182,10 @@ function checkEdgeThroughNode(scene: Scene, out: Found[]): void {
 }
 
 function checkLabelCollision(scene: Scene, out: Found[]): void {
-  const labelled = scene.edges.filter((e): e is SceneEdge & { label: PlacedText } => !!e.label);
+  // A label no gutter could hold is the agent's: label-blocked.
+  const labelled = scene.edges.filter(
+    (e): e is SceneEdge & { label: PlacedText } => !!e.label && e.blocked === undefined,
+  );
   for (const e of labelled) {
     const box = e.label.bbox;
     for (const n of scene.nodes) {
@@ -231,7 +234,10 @@ export const STEP_CLEAR = 1;
  */
 function checkSteps(scene: Scene, out: Found[]): void {
   const P = scene.paint ?? PAINT;
-  const badges = scene.edges.filter((e): e is SceneEdge & { step: SceneBadge } => !!e.step);
+  // A badge or label no gutter could hold is the agent's: label-blocked.
+  const badges = scene.edges.filter(
+    (e): e is SceneEdge & { step: SceneBadge } => !!e.step && e.blocked === undefined,
+  );
   if (badges.length === 0) return;
   // Each text, with the element it belongs to and what that element is.
   const texts: { id: string; is: string; rect: Rect }[] = [];
@@ -240,7 +246,8 @@ function checkSteps(scene: Scene, out: Found[]): void {
     for (const mk of n.marks ?? []) texts.push({ id: n.id, is: "mark", rect: mk.rect });
   }
   for (const e of scene.edges)
-    if (e.label) texts.push({ id: e.id, is: "label", rect: e.label.bbox });
+    if (e.label && e.blocked === undefined)
+      texts.push({ id: e.id, is: "label", rect: e.label.bbox });
   for (const g of scene.groups ?? []) {
     texts.push({ id: g.id, is: "group", rect: g.label.bbox });
     if (g.sublabel) texts.push({ id: g.id, is: "group", rect: g.sublabel.bbox });
@@ -325,8 +332,11 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
   for (const n of scene.nodes) {
     for (const t of n.texts) targets.push({ id: n.id, is: "node", text: t });
   }
+  // A label no gutter could hold is the agent's: label-blocked.
   for (const e of scene.edges) {
-    if (e.label) targets.push({ id: e.id, is: "edge", text: e.label, owner: e.id });
+    if (e.label && e.blocked === undefined) {
+      targets.push({ id: e.id, is: "edge", text: e.label, owner: e.id });
+    }
   }
   // A group's label is the agent's: a line across it is title-blocked.
   for (const b of scene.bands ?? []) targets.push({ id: b.id, is: "layer", text: b.label });
@@ -372,12 +382,54 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
       { x, y },
     ]);
     for (const e of scene.edges) {
-      if (!e.label) continue;
+      if (!e.label || e.blocked !== undefined) continue;
       const box = inset(e.label.bbox, TEXT_TOLERANCE);
       if (sides.some((s) => segmentCrossesRect(s, box))) {
         out.push({ code: "text-crossing", elements: [g.id, e.id], facts: { is: "edge" } });
       }
     }
+  }
+}
+
+/**
+ * A line's label, or its step's badge, that no gutter of its path could hold clear of the
+ * other lines: no line moves for it, so it lies across them (DESIGN.md, "The dirty work has
+ * edges"). The agent shortens or drops the text, or changes rows. The elements name the line,
+ * then the lines and the borders of groups, bands and lanes across its text; the facts name
+ * the gutters it tried.
+ */
+function checkLabelRoom(scene: Scene, out: Found[]): void {
+  const borders = [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])];
+  for (const e of scene.edges) {
+    if (e.blocked === undefined) continue;
+    const b = e.step;
+    const rect =
+      e.label?.bbox ??
+      (b === undefined ? undefined : { x: b.x - b.r, y: b.y - b.r, w: 2 * b.r, h: 2 * b.r });
+    const across: string[] = [];
+    if (rect !== undefined) {
+      const box = inset(rect, TEXT_TOLERANCE);
+      for (const o of scene.edges) {
+        if (o.id === e.id) continue;
+        if (segmentsOf(o.points).some((s) => segmentCrossesRect(s, box))) across.push(o.id);
+      }
+      for (const g of borders) {
+        const { x, y, w, h } = g.rect;
+        const sides = segmentsOf([
+          { x, y },
+          { x: x + w, y },
+          { x: x + w, y: y + h },
+          { x, y: y + h },
+          { x, y },
+        ]);
+        if (sides.some((s) => segmentCrossesRect(s, box))) across.push(g.id);
+      }
+    }
+    out.push({
+      code: "label-blocked",
+      elements: [e.id, ...across],
+      facts: { is: "edge", gutters: e.blocked },
+    });
   }
 }
 
@@ -697,6 +749,7 @@ export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[
   checkNeedlessBend(scene, out);
   checkStepAside(diagram, scene, out);
   checkTextCrossing(scene, out);
+  checkLabelRoom(scene, out);
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);
   checkWalls(diagram, scene, out);

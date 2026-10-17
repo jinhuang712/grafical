@@ -182,6 +182,12 @@ export interface SceneEdge {
   width?: number;
   /** Its step's number in a ring centred on the line (DESIGN.md, "Step badges ride the line"). */
   step?: SceneBadge;
+  /**
+   * The gutters its label, or its step's badge, tried when none could hold it clear of the other
+   * lines, each as the rows above and below it joined by a slash. No line moves for it, so it lies
+   * across another line, and the write is refused (DESIGN.md, "The dirty work has edges").
+   */
+  blocked?: string[];
 }
 
 export interface Scene {

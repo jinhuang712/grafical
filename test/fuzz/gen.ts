@@ -224,10 +224,32 @@ export function generate(seed: number, m: Measurer): Generated {
   // A stream of its own, so that a seed with no bar is the same diagram as before bars.
   addBars(d, rng(seed ^ 0x5bd1e995));
   addStepNumbers(d, r);
+  fitLabels(d, m);
   // A stream of its own, so that a seed with no stated label place is the same diagram as before.
   addTitles(d, rng(seed ^ 0x27d4eb2f), m);
+  // A title's place may move a box, and a line with it.
+  fitLabels(d, m);
 
   return { diagram: d, ops, rejected };
+}
+
+/**
+ * As an agent does after a label-blocked refusal (DESIGN.md, "The dirty work has edges"): a line's
+ * label that no gutter of its path holds shortens to its first word, and a word, or a step's
+ * badge, that still finds no room is dropped.
+ */
+function fitLabels(d: Diagram, m: Measurer): void {
+  for (let pass = 0; pass < 8; pass++) {
+    const blocked = layout(d, m).edges.filter((e) => e.blocked !== undefined);
+    if (blocked.length === 0) return;
+    for (const b of blocked) {
+      const e = d.edges.find((x) => x.id === b.id);
+      if (e === undefined) continue;
+      if (e.label?.includes(" ") === true) e.label = e.label.split(" ")[0] as string;
+      else if (e.label !== undefined) delete e.label;
+      else delete e.step;
+    }
+  }
 }
 
 /**

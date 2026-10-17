@@ -196,20 +196,8 @@ export interface Visit {
   label: VisitLabel | undefined;
   /** Row in the gutter, top first. -1 for a straight line, which needs none. */
   row: number;
-  /** A run that steps out beyond everything else in the gutter, to carry its label there. */
-  detour?: Detour;
   /** Runs of one fan-out or fan-in share their trunk's stub: their stubs at one x are one line. */
   bus?: string | undefined;
-}
-
-/**
- * A detour: each stub runs to its own row, and the rows meet in a vertical line at
- * x, outside every other line of the gutter. The label sits beside it, on `row`.
- */
-export interface Detour {
-  x: number;
-  /** The row of each stub, in the order of the visit's stubs. */
-  rows: number[];
 }
 
 export interface VisitLabel {
@@ -236,6 +224,12 @@ export interface Routing {
   gutters: Visit[][];
   /** Rows per gutter. */
   rows: number[];
+  /**
+   * The edges whose label no gutter of their path could hold clear of the other lines, each
+   * with those gutters (DESIGN.md, "The dirty work has edges"). The label sits in the slot
+   * that costs least, and the write is refused.
+   */
+  blocked: Map<string, number[]>;
   /** Horizontal extent of all routes and labels, relative to the centre line. */
   minX: number;
   maxX: number;
@@ -300,16 +294,18 @@ export function routeAcross(
     );
     const base = route(all);
     const bentBefore = new Set(base.plans.filter(needless).map((pl) => pl.edge.id));
-    const awayBefore = new Set(base.gutters.flat().flatMap((v) => (v.detour ? [v.id] : [])));
+    const blockedBefore = new Set(base.blocked.keys());
     for (;;) {
       const bent = r.plans.filter((pl) => needless(pl) && !bentBefore.has(pl.edge.id));
-      const away = r.gutters.flatMap((vs, g) =>
-        vs.some((v) => v.detour !== undefined && !awayBefore.has(v.id)) ? [g] : [],
+      const crowded = r.plans.flatMap((pl) =>
+        r.blocked.has(pl.edge.id) && !blockedBefore.has(pl.edge.id)
+          ? [pl.gutters[pl.labelAt] ?? -1]
+          : [],
       );
       const back = above(r.plans).filter((pl) => {
         const g = pl.gutters[0] ?? -1;
         return (
-          away.includes(g) ||
+          crowded.includes(g) ||
           bent.some((o) => o.gutters[0] === g || [o.u, o.v].some((n) => n === pl.u || n === pl.v))
         );
       });
@@ -318,7 +314,7 @@ export function routeAcross(
       r = route(below);
     }
   }
-  const { plans, gutters, rows } = r;
+  const { plans, gutters, rows, blocked } = r;
 
   let minX = Number.POSITIVE_INFINITY;
   let maxX = Number.NEGATIVE_INFINITY;
@@ -331,39 +327,41 @@ export function routeAcross(
     for (const v of vs) {
       see(v.lo);
       see(v.hi);
-      if (v.detour !== undefined) see(v.detour.x);
       if (v.label !== undefined) {
         see(v.label.x0);
         see(v.label.x0 + v.label.w);
       }
     }
   }
-  return { plans, gutters, rows, minX, maxX };
+  return { plans, gutters, rows, blocked, minX, maxX };
 }
 
 /**
  * The rows and labels of every gutter. A label that its gutter cannot hold clear of
- * every other line moves to the next gutter of its path. Once it has tried them all,
- * its line steps out of the crowd in its first gutter, and the label sits beside the step.
+ * every other line moves to the next gutter of its path. Once it has tried them all, no
+ * line moves for it: it sits in the slot that costs least on its longest run, and it is
+ * returned as blocked (DESIGN.md, "The dirty work has edges").
  */
 function channels(
   plans: Plan[],
   layers: PLayer[],
   pitch: number,
   sides: number[][],
-): { gutters: Visit[][]; rows: number[] } {
+): { gutters: Visit[][]; rows: number[]; blocked: Map<string, number[]> } {
   const byId = new Map(plans.map((p) => [p.edge.id, p]));
   const moved = new Map<string, Set<number>>();
-  const away = new Set<string>();
+  /** Labels that have tried every gutter of their path, back on their longest run. */
+  const back = new Set<string>();
   let gutters: Visit[][] = [];
   let rows: number[] = [];
+  let stranded: string[] = [];
   for (let round = 0; round < 12; round++) {
     gutters = layers.map(() => []);
     buildVisits(plans, gutters, moved);
     rows = [];
-    const stranded: string[] = [];
+    stranded = [];
     for (const [g, vs] of gutters.entries()) {
-      const r = routeGutter(vs, pitch, away, sides[g]);
+      const r = routeGutter(vs, pitch, sides[g]);
       rows.push(r.rows);
       stranded.push(...r.stranded);
     }
@@ -375,14 +373,16 @@ function channels(
       tried.add(pl.labelAt);
       moved.set(id, tried);
       if (tried.size < pl.gutters.length) again = true;
-      else if (!away.has(id)) {
-        away.add(id);
+      else if (!back.has(id)) {
+        back.add(id);
         again = true;
       }
     }
     if (!again) break;
   }
-  return { gutters, rows };
+  const blocked = new Map<string, number[]>();
+  for (const id of stranded) blocked.set(id, [...(byId.get(id)?.gutters ?? [])]);
+  return { gutters, rows, blocked };
 }
 
 function cmp(a: string, b: string): number {
@@ -2254,14 +2254,7 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
         return;
       }
       const y = geo.trackY(g, visit.row);
-      const d = visit.detour;
-      if (d !== undefined) {
-        // stubs[0] is where the path enters this gutter, stubs[1] where it leaves.
-        const y0 = geo.trackY(g, d.rows[0] ?? visit.row);
-        const y1 = geo.trackY(g, d.rows[1] ?? visit.row);
-        pts.push({ x: X(cur), y: y0 }, { x: X(d.x), y: y0 }, { x: X(d.x), y: y1 });
-        pts.push({ x: X(next), y: y1 });
-      } else pts.push({ x: X(cur), y }, { x: X(next), y });
+      pts.push({ x: X(cur), y }, { x: X(next), y });
       cur = next;
       const lab = visit.label;
       if (lab !== undefined && pl.labelAt === j) {

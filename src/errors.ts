@@ -42,6 +42,8 @@ export interface Facts {
   place?: string;
   /** The places where no line would come near that label. */
   clear?: readonly string[];
+  /** The gutters a line's label tried, each as the rows above and below it joined by a slash. */
+  gutters?: readonly string[];
   /** Groups from the inside out, as they would nest. */
   chain?: readonly string[];
   /** Where in the YAML text, from 1. */
@@ -78,6 +80,7 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
   "run",
   "place",
   "clear",
+  "gutters",
   "chain",
   "line",
   "column",
@@ -115,6 +118,7 @@ export const DEFECT_CODES = [
   "needless-bend",
   "box-aside",
   "title-blocked",
+  "label-blocked",
 ] as const;
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
@@ -144,8 +148,11 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "needless-bend": "engine",
   // The agent placed the box by steps beside everything it connects to (DESIGN.md, "Who chose is punished").
   "box-aside": "agent",
-  // The agent stated where a group's label sits, and a line runs there (DESIGN.md, "The agent states where a group's label sits").
+  // A line runs where a group's label sits, and no line moves for it: the agent states a place (DESIGN.md, "The dirty work has edges").
   "title-blocked": "agent",
+  // No gutter of its path holds a line's label clear, and no line moves for it: the agent shortens
+  // or drops the text, or changes rows (DESIGN.md, "The dirty work has edges").
+  "label-blocked": "agent",
 };
 
 /**

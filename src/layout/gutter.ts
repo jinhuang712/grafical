@@ -14,8 +14,8 @@
 //    and its label touch nothing placed so far. The gutter grows rather than
 //    squeezes (DESIGN.md, "Layout computed again on every change"): the fixed order guarantees such a row further down.
 // A label with no free slot at all is returned, so that it can move to another
-// gutter of its path. When it has none left, its line takes a detour around the
-// crowd (placeDetours), which is always clear.
+// gutter of its path. When it has none left, no line moves for it: it takes the slot
+// that costs least, and the write is refused (DESIGN.md, "The dirty work has edges").
 //
 // The runs of one fan-out or fan-in carry the same `bus`: their stubs at one x are
 // the shared trunk, one line, and never count against each other.
@@ -266,32 +266,23 @@ export interface GutterResult {
 }
 
 /**
- * Orders the runs, gives each a row and places every label. The labels of the
- * edges in `away` take a detour instead (placeDetours). `sides` holds the x of each
+ * Orders the runs, gives each a row and places every label. `sides` holds the x of each
  * group side that runs through the gutter: like a line, no label lies across one.
  */
 export function routeGutter(
-  all: Visit[],
+  visits: Visit[],
   pitch: number,
-  away: ReadonlySet<string> = new Set(),
   sides: readonly number[] = [],
 ): GutterResult {
   const clr = ROUTE.labelClear;
-  for (const v of all) {
-    v.row = -1;
-    delete v.detour;
-  }
-  const detoured = all
-    .filter((v) => v.label !== undefined && away.has(v.label.edgeId) && canDetour(v))
-    .sort((a, b) => cmp(a.id, b.id));
-  const visits = all.filter((v) => !detoured.includes(v));
+  for (const v of visits) v.row = -1;
   const ranked = visits
     .filter((v) => v.hi - v.lo > EPS || v.label !== undefined)
     .sort((a, b) => cmp(a.id, b.id));
   // Straight lines without a label need no row: they cross the whole gutter.
   const fixed = visits.filter((v) => !ranked.includes(v));
   const n = ranked.length;
-  if (n === 0 && detoured.length === 0) return { rows: 0, stranded: [] };
+  if (n === 0) return { rows: 0, stranded: [] };
   const index = new Map(ranked.map((v, i) => [v, i]));
 
   // The fixed order: below[i] holds the runs that must lie below run i.
@@ -524,11 +515,9 @@ export function routeGutter(
     placed.push(v);
   });
 
-  placeDetours(detoured, visits, pitch, sides);
-
   let rows = 0;
-  for (const v of [...ranked, ...detoured]) {
-    rows = Math.max(rows, v.row + 1, ...(v.detour?.rows ?? []).map((r) => r + 1));
+  for (const v of ranked) {
+    rows = Math.max(rows, v.row + 1);
     const lab = v.label;
     if (lab === undefined || v.row < 0) continue;
     const box = labelBox(lab, lab.mode, lab.x0, v.row, pitch);
@@ -543,112 +532,6 @@ export function routeGutter(
   }
   const strandedIds = [...stranded].flatMap((v) => (v.label === undefined ? [] : [v.label.edgeId]));
   return { rows, stranded: strandedIds };
-}
-
-/** A detour serves a run between the two boundaries, a straight line, or a u-turn. */
-function canDetour(v: Visit): boolean {
-  return v.stubs.length === 2;
-}
-
-/**
- * The last resort for a label no slot can hold: its line leaves the crowd. New rows
- * open at the top of the gutter, and everything else moves down. A run between
- * the two boundaries takes the top row from its upper stub and a new bottom row to
- * its lower stub, and the two rows meet in a vertical line outside every other
- * line of the gutter, on the nearer side. A u-turn takes two top rows instead, and
- * one from the gutter's bottom boundary two new bottom rows.
- * The label sits beside the far end of the lower row, where nothing else is. Each
- * detour lies outside the ones before it, so they nest without touching.
- */
-function placeDetours(
-  detoured: Visit[],
-  visits: Visit[],
-  pitch: number,
-  sides: readonly number[],
-): void {
-  const clr = ROUTE.labelClear;
-  const side = ROUTE.labelGap + 2;
-  const done: Visit[] = [];
-  for (const v of detoured) {
-    const lab = v.label;
-    if (lab === undefined) continue;
-    let minX = Number.POSITIVE_INFINITY;
-    let maxX = Number.NEGATIVE_INFINITY;
-    let maxY = 0;
-    let tallest = lab.h;
-    const see = (x: number) => {
-      if (!Number.isFinite(x)) return;
-      minX = Math.min(minX, x);
-      maxX = Math.max(maxX, x);
-    };
-    const others = [...visits, ...done];
-    for (const u of others) {
-      for (const s of u.stubs) see(s.x);
-      const rs = u.detour?.rows ?? (u.row >= 0 ? [u.row] : []);
-      if (u.row >= 0) {
-        see(u.lo);
-        see(u.hi);
-      }
-      if (u.detour !== undefined) see(u.detour.x);
-      for (const r of rs) maxY = Math.max(maxY, r * pitch);
-      const l = u.label;
-      if (l !== undefined && u.row >= 0) {
-        const b = labelBox(l, l.mode, l.x0, u.row, pitch);
-        see(b.x0);
-        see(b.x1);
-        maxY = Math.max(maxY, b.y1);
-        tallest = Math.max(tallest, l.h);
-      }
-    }
-    const xs = v.stubs.map((s) => s.x);
-    if (!Number.isFinite(minX)) {
-      minX = Math.min(...xs);
-      maxX = Math.max(...xs);
-    }
-    const right = maxX - Math.max(...xs) <= Math.min(...xs) - minX;
-    let x = right ? Math.ceil((maxX + 16) / 4) * 4 : Math.floor((minX - 16) / 4) * 4;
-    // A label that would lie across a group's side moves out past it, line and all.
-    const across = (at: number) => {
-      const x0 = right ? at + side : at - side - lab.w;
-      return sides.find((s) => inside(s, x0 - clr, x0 + lab.w + clr));
-    };
-    for (let s = across(x); s !== undefined; s = across(x)) {
-      x = right ? Math.ceil((s + 16) / 4) * 4 : Math.floor((s - 16) / 4) * 4;
-    }
-    if (v.stubs.every((s) => !s.top)) {
-      // Below everything, the stub nearer the turn on the lower row.
-      const low = Math.ceil((maxY + lab.h / 2 + 2 * clr + 4) / pitch) + 1;
-      const near = Math.abs((xs[0] ?? 0) - x) <= Math.abs((xs[1] ?? 0) - x) ? 0 : 1;
-      v.detour = { x, rows: xs.map((_, i) => (i === near ? low + 2 : low)) };
-      v.row = low + 2;
-      lab.mode = "beside";
-      lab.x0 = right ? x + side : x - side - lab.w;
-      done.push(v);
-      continue;
-    }
-    const turn = v.stubs.every((s) => s.top);
-    // Room at the top for the new rows, clear of every label below them.
-    const shift = Math.ceil((tallest + lab.h + 3 * clr + 4) / pitch) + (turn ? 3 : 1);
-    for (const u of others) {
-      if (u.row >= 0) u.row += shift;
-      if (u.detour !== undefined) u.detour.rows = u.detour.rows.map((r) => r + shift);
-    }
-    maxY += shift * pitch;
-    let rows: number[];
-    if (turn) {
-      // The stub nearer the turn takes the top row, so the two rows do not cross.
-      const near = Math.abs((xs[0] ?? 0) - x) <= Math.abs((xs[1] ?? 0) - x) ? 0 : 1;
-      rows = xs.map((_, i) => (i === near ? 0 : 2));
-    } else {
-      const low = Math.ceil((maxY + lab.h / 2 + 2 * clr + 4) / pitch) + 1;
-      rows = v.stubs.map((s) => (s.top ? 0 : low));
-    }
-    v.detour = { x, rows };
-    v.row = Math.max(...rows);
-    lab.mode = "beside";
-    lab.x0 = right ? x + side : x - side - lab.w;
-    done.push(v);
-  }
 }
 
 /** Crossings and other harm when run a lies above run b, leaving out the label `without`. */

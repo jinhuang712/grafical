@@ -1084,7 +1084,6 @@ function compute(
         if (v.row < 0) continue;
         if (v.hi - v.lo > 1e-6 && near(g, v.lo, v.hi)) return full;
         if (v.label !== undefined && near(g, v.label.x0, v.label.x0 + v.label.w)) return full;
-        if (v.detour !== undefined && near(g, v.detour.x, v.detour.x)) return full;
       }
       for (const o of groups) if (o.bottom === i && near(g, o.x0, o.x1)) return full;
     }
@@ -1482,6 +1481,10 @@ function compute(
     const fromBox = plan?.from === undefined ? undefined : boxOf.get(plan.from.id);
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
     if (e.both === true) edge.both = true;
+    const blocked = routing.blocked.get(e.id);
+    if (blocked !== undefined) {
+      edge.blocked = blocked.map((g) => `${layers[g]?.id ?? "-"}/${layers[g + 1]?.id ?? "-"}`);
+    }
     const width = edgeWidth(e, theme.paint);
     if (width !== undefined && width !== theme.paint.edge.strokeWidth) edge.width = width;
     const text = e.label === "" ? undefined : e.label;
@@ -1784,6 +1787,7 @@ function roundScene(s: Scene): Scene {
       if (e.both === true) out.both = true;
       if (e.width !== undefined) out.width = e.width;
       if (e.step !== undefined) out.step = roundBadge(e.step);
+      if (e.blocked !== undefined) out.blocked = e.blocked;
       return out;
     }),
   };

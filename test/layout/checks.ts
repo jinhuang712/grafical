@@ -250,16 +250,19 @@ export function mechanical(d: Defects): string[] {
  * legend label. Like the checker, a line may graze a text box by 2 px.
  */
 export function textCrossings(s: Scene): string[] {
+  // A group's label and a line's label no gutter could hold are the agent's: title-blocked and
+  // label-blocked (DESIGN.md, "The dirty work has edges").
   const texts: { id: string; box: Rect; owner?: string }[] = [
     { id: "title", box: s.title.bbox },
     ...s.nodes.flatMap((n) => n.texts.map((t, i) => ({ id: `node ${n.id}#${i}`, box: t.bbox }))),
-    ...(s.groups ?? []).map((g) => ({ id: `group ${g.id}`, box: g.label.bbox })),
     ...(s.legend ?? []).map((it, i) => ({ id: `legend ${i}`, box: it.label.bbox })),
   ];
   if (s.subtitle) texts.push({ id: "subtitle", box: s.subtitle.bbox });
   if (s.note) texts.push({ id: "note", box: s.note.bbox });
   for (const e of s.edges) {
-    if (e.label) texts.push({ id: `label of ${e.id}`, box: e.label.bbox, owner: e.id });
+    if (e.label && e.blocked === undefined) {
+      texts.push({ id: `label of ${e.id}`, box: e.label.bbox, owner: e.id });
+    }
   }
   const out: string[] = [];
   for (const e of s.edges) {

@@ -457,6 +457,22 @@ describe("text-crossing", () => {
     ).toEqual([["c->d", "a->b"]]);
   });
 
+  // No line moves for a label no gutter of its path could hold (DESIGN.md, "The dirty work has edges").
+  it("refuses a label no gutter held as label-blocked, the agent's, naming the lines across it", () => {
+    const own = down();
+    own.label = box("edge-label", 95, 140);
+    own.blocked = ["top/bottom"];
+    const other = edge("c->d", "a", "b", [
+      [110, 88],
+      [110, 240],
+    ]);
+    const found = run(scene(nodes, [own, other]));
+    expect(found.map((d) => [d.code, d.owner, ...d.elements])).toEqual([
+      ["label-blocked", "agent", "a->b", "c->d"],
+    ]);
+    expect(found[0]?.facts).toEqual({ is: "edge", gutters: ["top/bottom"] });
+  });
+
   it("fails a group's side across an edge's label, and passes a label inside the box", () => {
     const labelled = (x: number): Scene => {
       const e = down();
