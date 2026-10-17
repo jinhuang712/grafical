@@ -166,6 +166,24 @@ describe('boxes placed by steps (DESIGN.md, "Steps from another box")', () => {
     expect(fail(one, [{ op: "node.swap", a: "c", b: "db" }])[0]?.code).toBe("conflicting-position");
   });
 
+  it("a box in a lane through its group is told to take the group out of the lane", () => {
+    const d = ok(base, [
+      { op: "group.add", id: "g", label: "G", nodes: ["web", "api"] },
+      { op: "lane.add", id: "team", label: "Team", members: ["g"] },
+      { op: "lane.add", id: "other", label: "Other", members: ["worker", "db"] },
+    ]);
+    const move: Op = { op: "node.move", id: "api", from: "web", down: 2 };
+    const e = fail(d, [move]);
+    expect(e[0]).toMatchObject({
+      code: "conflicting-position",
+      field: "from,lane",
+      facts: { fix: ["lane leave <file> g"] },
+    });
+    // The box alone cannot leave: its group would lie in two lanes. The group can, and then the box moves.
+    expect(fail(d, [{ op: "lane.leave", members: ["api"] }])[0]?.code).toBe("group-across-lanes");
+    ok(d, [{ op: "lane.leave", members: ["g"] }, move]);
+  });
+
   it("refuse a step that the rows' order cannot keep", () => {
     // x two steps right of web holds api in the column between; y one step right needs it.
     const d = ok(base, [{ op: "node.add", id: "x", label: "X", from: "web", right: 2 }]);

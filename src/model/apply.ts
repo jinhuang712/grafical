@@ -1041,11 +1041,13 @@ function moveStepped(s: State, op: NodeMoveOp, at: Found, i: number): OpError[] 
   const from = op.from ?? at.node.from;
   const steps = stepsOf(op, at.node);
   const errors = stepErrors(d, op.id, from, steps, placeOptions(op), i);
-  // A fact that ties a box to a box in another row or to a column goes first.
+  // A fact that ties a box to a box in another row or to a column goes first. A box in a group shares its
+  // lane with the whole group, so the group around it all leaves the lane.
+  const outer = groupChain(d, at.node.group).at(-1);
   const ties = [
     ["align", `node align <file> ${op.id}`],
     ["column", `column leave <file> ${op.id}`],
-    ["lane", `lane leave <file> ${op.id}`],
+    ["lane", `lane leave <file> ${outer ?? op.id}`],
   ] as const;
   for (const [k, fix] of ties) {
     const v = at.node[k];
