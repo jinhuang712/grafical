@@ -84,6 +84,16 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
     }
   });
 
+  it("every command names its arguments and options as its operation's fields", () => {
+    for (const [op, c] of opCommands(build())) {
+      const fields = Object.keys((SCHEMAS[op] as z.ZodObject).shape);
+      for (const a of c.registeredArguments.filter((a) => a.name() !== "file"))
+        expect(fields, `${op} <${a.name()}>`).toContain(a.name());
+      for (const o of c.options.filter((o) => o.attributeName() !== "json"))
+        expect(fields, `${op} ${o.long}`).toContain(o.attributeName());
+    }
+  });
+
   it("every error and defect code listed is one grafical prints", () => {
     const src = sources()
       .filter((t) => !t.includes("export const ERROR_CODES"))

@@ -232,7 +232,7 @@ export function build(): Command {
       .description("put nodes, or groups with everything in them, into a group")
       .argument("<file>")
       .argument("<group>")
-      .argument("<member...>"),
+      .argument("<nodes...>"),
   ).action(async (file: string, g: string, nodes: string[], opts: Opts) => {
     await write(file, { op: "group.join", group: g, nodes }, opts);
   });
@@ -241,7 +241,7 @@ export function build(): Command {
       .command("leave")
       .description("take nodes or groups out of every group")
       .argument("<file>")
-      .argument("<member...>")
+      .argument("<nodes...>")
       .option("--up", "only one level out, into the group around the one they leave"),
   ).action(async (file: string, nodes: string[], opts: Opts) => {
     await write(
@@ -297,7 +297,7 @@ export function build(): Command {
       .description("put layers, nodes or groups into a lane")
       .argument("<file>")
       .argument("<lane>")
-      .argument("<member...>"),
+      .argument("<members...>"),
   ).action(async (file: string, l: string, members: string[], opts: Opts) => {
     await write(file, { op: "lane.join", lane: l, members }, opts);
   });
@@ -306,7 +306,7 @@ export function build(): Command {
       .command("leave")
       .description("take layers, nodes or groups out of their lane")
       .argument("<file>")
-      .argument("<member...>"),
+      .argument("<members...>"),
   ).action(async (file: string, members: string[], opts: Opts) => {
     await write(file, { op: "lane.leave", members }, opts);
   });
@@ -355,7 +355,7 @@ export function build(): Command {
       .description("put nodes, or groups with their nodes, into a column")
       .argument("<file>")
       .argument("<column>")
-      .argument("<member...>"),
+      .argument("<members...>"),
   ).action(async (file: string, c: string, members: string[], opts: Opts) => {
     await write(file, { op: "column.join", column: c, members }, opts);
   });
@@ -364,7 +364,7 @@ export function build(): Command {
       .command("leave")
       .description("take nodes, or groups' nodes, out of their column")
       .argument("<file>")
-      .argument("<member...>"),
+      .argument("<members...>"),
   ).action(async (file: string, members: string[], opts: Opts) => {
     await write(file, { op: "column.leave", members }, opts);
   });
@@ -403,7 +403,7 @@ export function build(): Command {
       .description("let lines through a wall: by id, or every line of a node or group")
       .argument("<file>")
       .argument("<id>")
-      .argument("<pass...>")
+      .argument("<allow...>", "lines, or nodes and groups whose lines, may cross")
       .option("--off", "stop letting them through"),
   ).action(async (file: string, id: string, pass: string[], opts: Opts) => {
     await write(
@@ -583,7 +583,7 @@ export function build(): Command {
       .command("emphasize")
       .description("draw edges thick, as the main path, or thin again with --off")
       .argument("<file>")
-      .argument("<id...>")
+      .argument("<edges...>")
       .option("--off", "undo it"),
   ).action(async (file: string, edges: string[], opts: Opts) => {
     await write(file, { op: "edge.emphasize", edges, ...pick(opts, ["off"]) }, opts);
@@ -593,7 +593,7 @@ export function build(): Command {
       .command("weight")
       .description("set how thick edges are: a level or a width in pixels; without --weight, thin")
       .argument("<file>")
-      .argument("<id...>")
+      .argument("<edges...>")
       .option(
         "--weight <weight>",
         "thin, thick, heavy or a stylesheet's level, or pixels, 0.5 to 8",
@@ -829,10 +829,7 @@ export function build(): Command {
       )
       .argument("<file>")
       .argument("<id>")
-      .argument(
-        "[place]",
-        "top-left, top, top-right, left, right, bottom-left, bottom, bottom-right, or outside- with top, bottom, left or right",
-      ),
+      .argument("[at]", "where the label sits"),
   ).action(async (file: string, id: string, at: string | undefined, opts: Opts) => {
     await write(file, { op: "group.title", id, ...(at === undefined ? {} : { at }) }, opts);
   });

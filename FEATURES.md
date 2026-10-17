@@ -537,7 +537,7 @@ grafical --help
 grafical <command> --help
 ```
 
-`--help` says what grafical is and how to work, which kind of diagram a story is by what a box stands for and what a line means (structure, with C4, infrastructure and dependency graphs; flow, data or events; process, with swimlanes; states), every way to draw, one line each by the story it tells, what grafical does not draw, and what makes a diagram good. Each command's help adds its options, its line in a batch, when to use it, what it does in each kind of diagram, common mistakes, limits, what a refusal of it means and an example.
+`--help` says what grafical is and how to work, which kind of diagram a story is by what a box stands for and what a line means (structure, with C4, infrastructure and dependency graphs; flow, data or events; process, with swimlanes; states), every way to draw, one line each by the story it tells, what grafical does not draw, and what makes a diagram good. Each command's help adds its options, its line in a batch, when to use it, what it does in each kind of diagram, common mistakes, limits, what a refusal of it means and an example. A command's arguments are named as its batch fields.
 
 ## Files
 
