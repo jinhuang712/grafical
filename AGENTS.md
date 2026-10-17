@@ -74,6 +74,7 @@ When a picture looks bad, first draw the better picture with grafical's own comm
 - Stability tests apply one operation and assert that nothing outside the list in DESIGN.md, "Layout computed again on every change" changed position, size or route.
 - Fixtures live in `test/fixtures/`. Public benchmark briefs live in `bench/briefs/`.
 - The fuzz test (`test/fuzz/`) lays out random diagrams from fixed seeds and asserts that none has an engine-owned defect (DESIGN.md, "Defects owned by who can fix them"). CI runs 500 seeds. Run more with `FUZZ_SEEDS=5000 pnpm test test/fuzz`. A failing seed becomes a fixture before it is fixed.
+- The fix test (`test/check/fixes.test.ts`) refuses random changes to the fixtures and to fuzz diagrams, and asserts that every fix a refusal suggests is a change grafical accepts, after which that refusal is gone. CI runs 12 seeds. Run more with `FIX_SEEDS=150 pnpm test test/check/fixes.test.ts`. A refusal that carries a `fix` must keep it passing.
 - A change to layout or routing must keep the fuzz test, the stability tests and the replay of a real agent run (`test/layout/haiku.test.ts`) passing.
 - `node test/debug/check-fixtures.ts <dir>` lays out, checks and renders every fixture with the real engine, for looking at the pictures.
 
