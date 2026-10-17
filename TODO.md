@@ -12,7 +12,7 @@ Some errors are found only once the whole batch is applied, such as `align-same-
 
 ## Pages read before a first write
 
-DESIGN.md, "One entry page, help where it is used" names a risk: agents may not use the ways to draw the entry page lists, or may draft without opening a command's page. The harness counts grafical calls by outcome, but not which help pages an agent read before its first write. `bench lines` or the metrics should count each `--help` call (and `grafical help <command>`) before the first `apply` or edit, per draft, so the next paid round can say which pages agents read.
+DESIGN.md, "One entry page, help where it is used" names a risk: agents may not use the ways to draw the entry page lists, or may draft without opening a command's page. The harness counts grafical calls by outcome, but not which help pages an agent read before its first write. `bench lines` or the metrics should count each `--help` call, `grafical help <command>` and `grafical guide [<name>]` before the first `apply` or edit, per draft, so the next paid round can say which pages and guides agents read.
 
 ## A row's label is drawn twice
 

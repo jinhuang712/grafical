@@ -531,14 +531,25 @@ grafical diff <file> [<git-rev>]
 
 ### Help ✅
 
-The agent's whole reference.
+How to use grafical: the agent's whole reference for the tool.
 
 ```sh
 grafical --help
 grafical <command> --help
 ```
 
-`--help` says what grafical is and how to work, which kind of diagram a story is by what a box stands for and what a line means (structure, with C4, infrastructure and dependency graphs; flow, data or events; process, with swimlanes; states), every way to draw, one line each by the story it tells, what grafical does not draw, and what makes a diagram good. Each command's help adds its options, its line in a batch, when to use it, what it does in each kind of diagram, common mistakes, limits, what a refusal of it means and an example. A command's arguments are named as its batch fields.
+`--help` says what grafical is, what it does not draw, how to work, and every way to draw, one line each by the story it tells, such as a box beside a box, one path in order, or two parts kept apart. Each command's help adds its options, its line in a batch, when to use it, what it draws, common mistakes, limits, what a refusal of it means and an example. A command's arguments are named as its batch fields. The help does not say how a kind of diagram is drawn: the guides do.
+
+### Guides ✅
+
+How common kinds of diagram are usually drawn: best practice, for an agent that wants it.
+
+```sh
+grafical guide
+grafical guide <name>
+```
+
+`grafical guide` lists the guides by what a diagram is about: architecture, C4, infrastructure (cloud and deployment) and dependency for what exists; data flow and event flow for what moves; flowchart and swimlane for a process; state machine for one thing's states; and composition, for any kind, what makes a diagram good and what to change when a picture looks wrong. `grafical guide <name>` prints one; `cloud`, `deployment`, `process` and `states` find theirs. A name that is no guide is refused as `unknown-guide` with the likely ones. The entry page names `grafical guide` once, and nothing tells an agent to read a guide: grafical refuses only what would draw wrong.
 
 ## Files
 

@@ -63,7 +63,7 @@ Code and the other documents cite a section of this file by its heading, such as
 ### Interfaces
 
 - **The command line comes first.** Every operation is a command, every command takes `--json`, and every write reports what it changed, so that the agent need not read the diagram again. An MCP server may wrap the same operations later. Cost: each command is a process start, which a batch spreads over many operations. Holds as: `--json` prints the same fields as the records.
-- **`show` is the agent's view of a diagram, and the help is its only reference.** An agent learns grafical from `grafical --help` and each command's help, and reads a diagram through `show`, never the YAML. Cost: the help must stay short enough to read before a first draft. Holds as: the help text lives in `src/cli/help.ts`, each command's line in a batch is built from its operation's schema, and the tests apply the example in `apply --help` as printed.
+- **`show` is the agent's view of a diagram, and the help is its only reference.** An agent learns grafical from `grafical --help` and each command's help, and reads a diagram through `show`, never the YAML. Cost: the help must stay short enough to read before a first draft. Holds as: the help text lives in `src/cli/help.ts` and the guides in `src/cli/guides.ts`, each command's line in a batch is built from its operation's schema, and the tests apply the example in `apply --help` as printed.
 
 ### Performance
 
@@ -793,6 +793,8 @@ Rejected:
 
 ## Decision: One entry page, help where it is used — 2026-10-17
 
+Changed the same day by "Help for the tool, guides for best practice": the kinds of diagram, "A good diagram", the sections by kind of diagram and `try`'s "What to try" moved out of the help into `grafical guide`.
+
 Decided by the owner on 2026-10-17. The owner asked whether agents draw rows and groups because the help suggests nothing else ("only these commands? then I'll draw it like this"), and forbade putting all the help and the guides in one place. The help read before a draft had 60 characters left of its budget (11,940 of 12,000), and `apply --help` listed 15 of the 60 batch operations, so the reflect round's first agent found `group.title`'s field only from a refusal. A first restructure the same day, a map with guides and references, was withdrawn before it was committed (Rejected, below): the owner found it flat, and asked how an agent reads help and why a refusal's code should need looking up.
 
 How an agent reads a command line's help, which this follows:
@@ -815,6 +817,23 @@ Rejected:
 - A separate `grafical guide` command, as before 2026-10-12. Each hop is a place where an agent stops.
 
 Risk, to measure in the next paid round: whether agents use the ways to draw the entry page lists where the request fits, and which command pages they open before their first write. The harness does not yet count the pages (TODO.md, "Pages read before a first write").
+
+## Decision: Help for the tool, guides for best practice — 2026-10-17
+
+Decided by the owner on 2026-10-17, the same day as "One entry page, help where it is used". The help says how to use grafical. How a kind of diagram is usually drawn is best practice, kept apart for an agent that wants it. The owner's reasons: an agent that wants to draw straight away may, and a refusal corrects it where it goes wrong; guidance pressed on every agent before it draws makes every diagram alike, where a drawing should keep its freedom; and if grafical is easy to use, an agent draws well without being taught.
+
+- **The help** (`grafical --help` and each command's `--help`) holds how to work, every way to draw by the story it tells, each command's options and its line in a batch, the facts of what it draws (such as that kinds initial and final draw no label), its limits, and what a refusal of it means. It does not say how a kind of diagram is drawn.
+- **The guides** (`grafical guide`, `grafical guide <name>`): one per common kind of diagram (architecture, C4, infrastructure, dependency, data flow, event flow, flowchart, swimlane, state machine), and composition for any kind: what makes a diagram good, and what to change when a picture looks wrong. They took the entry page's kinds of diagram and "A good diagram", the command pages' sections by kind of diagram, `try`'s "What to try", the advice on naming boxes and on how much to emphasize, and three rules the morning's restructure had lost: a row per step in a flowchart, people as actor and other systems as external in C4, and what depends on top in a dependency graph. `grafical guide cloud` and a few other names find the guide for their kind. The guides live in `src/cli/guides.ts`.
+- **Nothing says to read a guide.** The entry page names `grafical guide` once, as there if wanted, and no command page names it; a test holds both.
+
+Rejected:
+- The guides in the help, as the entry page and the command pages held them in the morning: every agent reads them before it draws, and draws alike.
+- No mention of the guides at all: an agent could not know they exist.
+- Rules every diagram of a kind must follow, as a type setting would make them: grafical refuses only what would draw wrong.
+
+It reverses, in part, "The help as the reference", which rejected keeping `grafical guide` beside the help because an agent never told about it never reads it. Here that is the point.
+
+Risk, to measure in the next paid round: the 2026-10-12 round measured the help without type guides (`bench/results/p1d-guides.md`). Haiku drew a flowchart's Start and End as state-machine dots, whose labels are not drawn, left C4 and data-flow lines unlabelled, and was refused 16% of its calls against 3%. The traps that are the tool's own stay in the help (`node add --help` says initial and final draw no label, and to use terminal for Start and End); the conventions are now the agent's to take or leave. The round should count guide reads and refusals (TODO.md, "Pages read before a first write").
 
 ## Open questions
 

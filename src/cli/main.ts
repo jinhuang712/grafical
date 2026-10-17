@@ -21,6 +21,7 @@ import { yamlError } from "../model/io.ts";
 import type { Op, OpName } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
 import { STEP_KEYS } from "../model/steps.ts";
+import { closest } from "../model/suggest.ts";
 import {
   EDGE_KINDS,
   MARK_COLORS,
@@ -35,6 +36,7 @@ import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
 import { batchSection, opCommands } from "./batch.ts";
 import { atRevision, formatOps } from "./diff.ts";
+import { GUIDES, guideList, guideNamed } from "./guides.ts";
 import { PAGES, PROGRAM_ABOUT, PROGRAM_AFTER } from "./help.ts";
 import {
   emit,
@@ -1138,6 +1140,32 @@ export function build(): Command {
         process.once("SIGTERM", resolve);
       });
       await viewer.close();
+    });
+
+  // Best practice apart from the help, for an agent that wants it (DESIGN.md, "Help for the tool, guides for best
+  // practice").
+  program
+    .command("guide")
+    .description("how common kinds of diagram are usually drawn, if you want it")
+    .argument("[name]", "a guide; without one, the list of them")
+    .action((name: string | undefined) => {
+      if (name === undefined) {
+        process.stdout.write(`${guideList()}\n`);
+        return;
+      }
+      const guide = guideNamed(name);
+      if (guide === undefined) {
+        throw new CommanderError(
+          2,
+          "grafical.unknownGuide",
+          record("error", {
+            code: "unknown-guide",
+            found: name,
+            likely: closest(name, Object.keys(GUIDES), 2),
+          }),
+        );
+      }
+      process.stdout.write(`${guide.text}\n`);
     });
 
   attachHelp(program, new Map([...opCommands(program)].map(([op, c]) => [c, op])));

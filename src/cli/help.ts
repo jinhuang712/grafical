@@ -1,10 +1,10 @@
-// The help pages: all an agent reads to learn grafical (DESIGN.md, "One entry page, help where it is used"). The
-// entry page is read once, before a first draft: what grafical is, how to work, which kind of diagram a story is,
-// and every way to draw, by the story each tells. A command's page is read when the command is used: commander's
-// usage and options, its line in a batch, then this file's sections, always in this order: When to use, By kind
-// of diagram, Kinds, Good to know, Common mistakes, Limits, Batch file, Output, When refused, What to try, See
-// also, Example. A page shows the ones it has. Advice gives a direction, not a number; numbers are only the
-// limits grafical enforces.
+// The help pages: how to use grafical (DESIGN.md, "One entry page, help where it is used", "Help for the tool, guides
+// for best practice"). The entry page is read once, before a first draft: what grafical is, how to work, and every
+// way to draw, by the story each tells. A command's page is read when the command is used: commander's usage and
+// options, its line in a batch, then this file's sections, always in this order: When to use, Kinds, Good to know,
+// Common mistakes, Limits, Batch file, Output, When refused, See also, Example. A page shows the ones it has. How
+// common kinds of diagram are usually drawn is not here but in the guides (guides.ts), which no page tells an agent
+// to read. Numbers are only the limits grafical enforces.
 
 import { MAX_GROUP_DEPTH } from "../model/groups.ts";
 import { MAX_ACCENTS } from "../model/schema.ts";
@@ -15,9 +15,10 @@ export const PROGRAM_ABOUT = `grafical draws diagrams from facts: what exists an
 moves where, the steps of a process, the states of a thing. You say which row
 a box is in, what it connects to and which group it belongs to; grafical
 places, sizes and routes everything, and refuses a change that would draw
-wrong. The diagram is one YAML file, <name>.grafical.yaml, kept in git.`;
+wrong. The diagram is one YAML file, <name>.grafical.yaml, kept in git. It
+does not draw sequence diagrams, ER or class diagrams, mind maps or timelines.`;
 
-/** The rest of `grafical --help`: how to work, the kinds of diagram, every way to draw, a good diagram. */
+/** The rest of `grafical --help`: how to work, every way to draw, and where the guides are. */
 export const PROGRAM_AFTER = `
 How to work:
   1. grafical new <file> --title <text> --subtitle <text> --note <text>
@@ -30,21 +31,6 @@ How to work:
      the counts before and after each, and writes nothing.
   A refused change writes nothing; its records say what is wrong and what
   would fit. Never edit the file by hand.
-
-The kind of diagram, by what a box stands for and what a line means:
-  structure  boxes are things, lines are calls and reads, a group is a
-             system. C4, infrastructure (groups inside groups: region,
-             network, subnet) and dependency graphs are structure.
-  flow       boxes are sources, processes and stores, and each line is
-             labelled with what moves: kind data in a data flow; in an
-             event flow a queue per topic, async lines in and out.
-  process    boxes are steps: kind terminal for Start and End, decision for
-             a question. Lines mean "then". A swimlane adds a lane per
-             owner.
-  states     boxes are states of one thing: kind initial, state and final.
-             Each line is a transition, labelled with its event.
-  Any kind may use any way to draw below. Not drawn: sequence diagrams, ER
-  and class diagrams, mind maps, timelines.
 
 Ways to draw, by the story each tells:
   the way things move     rows, top to bottom (layer add); the order of a
@@ -67,18 +53,7 @@ Ways to draw, by the story each tells:
   what the boxes cannot   note add, a card or a footnote; diagram legend;
   say                     the subtitle; a note "Not shown: ..."
 
-A good diagram:
-  - One story. Merge what a reader need not tell apart, cut side paths
-    (admin, auth), or make it two diagrams.
-  - Boxes that talk sit next to each other, a store below or between the
-    parts that share it. Connect neighbouring rows where you can.
-  - Draw a queue as a box only when it is the story; otherwise its events
-    are lines between the services.
-  - Draw each flow to its end, or leave it out.
-  - Keep labels short; detail goes in the sublabel, one line of about 30
-    characters.
-  - Accent what the story is about, and name in the legend what each line
-    style, width and mark means.
+How common kinds of diagram are usually drawn, if you want it: grafical guide.
 `;
 
 /** The example of `grafical apply --help`, which the tests build and check. */
@@ -258,17 +233,6 @@ Good to know:
   - A batch it would refuse is refused as apply would refuse it; with several,
     its records end in batch=<file> and the others are still tried (exit 1).
 
-What to try, when the picture looks wrong:
-  - Lines cross: another order of a row, or another row for a box.
-  - A line runs through a group it has nothing to do with (across): one of
-    its ends in another row, or the group's boxes together.
-  - A row too wide (fullest, width): split it, merge what a reader need not
-    tell apart, or cut a side path.
-  - A line bends round boxes (bent): the boxes it joins in neighbouring
-    rows, or the store between the parts that use it.
-  - Lines too close (tight) or labels crowded (crowded): fewer labels, or
-    the boxes they join nearer each other.
-
 Example:
   grafical try shop.grafical.yaml move.yaml
   ok changed=storefront written=no
@@ -282,9 +246,7 @@ Example:
     about: "Add a row. A new row goes to the bottom unless --before or --after places it.",
     after: `
 Good to know:
-  - Rows run top to bottom the way a request or a process moves. In a
-    structure diagram: who calls, the way in, the inside, shared stores,
-    outside services.
+  - Rows run top to bottom the way a request or a process moves.
   - Name a row by what it holds ("Entry", "Stores").
   - A row is drawn only when a line ends at it: around its boxes as a band,
     or, with no boxes, as one bar that lines meet straight past their other
@@ -321,8 +283,6 @@ Kinds:
   final      the end ring of a states diagram; its label is not drawn
 
 Good to know:
-  - Name a box by its role ("orders API") and put the product in the
-    sublabel ("Postgres").
   - Leave --size out: grafical sizes the box to its text. Shorten a long
     label rather than reaching for a large box.
   - The order of a row decides most crossings. Compare two orders with
@@ -434,19 +394,7 @@ Kinds:
   optional   made only sometimes, dotted
   link       related, with no direction: no arrowhead
 
-By kind of diagram (what to label):
-  structure    only what is not obvious ("publish", "persist", "failed");
-               leave plain calls and reads unlabelled
-  C4           every line, with what its source does ("reads from")
-  dependency   none; kind optional for a dependency that degrades
-  data flow    every line, with the data ("card details")
-  event flow   the producer's line, with the event; lines in and out of a
-               topic are async
-  process      each answer out of a decision ("yes", "no"), nothing else
-  states       every transition, with its event ("pay", "cancel")
-
 Good to know:
-  - Draw each flow to its end: a retry topic needs its line back.
   - Lines between neighbouring rows stay straight; a line that skips rows
     has to go around.
   - One line to a group replaces a line to each of its parts.
@@ -468,15 +416,7 @@ See also: edge emphasize, diagram legend
   },
   "edge emphasize": {
     about: "Draw edges thick, as the main path, or thin again with --off.",
-    after: `
-By kind of diagram:
-  structure    the main request path, if there is one
-  event flow   the path of the event the diagram is about
-  states       the usual life of the thing
-
-Good to know:
-  - Keep the main path a small part of the lines, or nothing stands out.
-`,
+    after: ``,
   },
 
   "edge weight": {
@@ -490,7 +430,6 @@ Levels:
 Good to know:
   - Prefer a level to a number: levels read the same across a diagram.
   - Weight, like emphasize, replaces the other: the last one set is the look.
-  - Thick and heavy lines stand out only against thin ones; few of them.
 `,
   },
 
@@ -527,17 +466,7 @@ sit in several rows; the box spans them all.`,
     after: `
 When to use:
   - Around the parts one team owns or one service deploys together.
-  - Not around a single node: a box with one member says nothing.
   - To show who does each step of a process, use lanes (lane add --help).
-
-By kind of diagram:
-  structure       a group per system, side by side, each with its entry
-                  above its stores; callers and outside services stay out
-  C4              one group around the system's containers, sublabel
-                  "software system"; people and other systems stay out
-  infrastructure  region, network, subnet, or environment, cluster, host,
-                  each inside the last; runtime and count in the sublabel
-  process         none, unless the steps fall into clear phases
 
 Common mistakes:
   - Listing a group as a member: nest it with --in instead.
@@ -752,14 +681,6 @@ Line widths:
 Marks:
   Name a mark with --mark in place of the style: its emoji, its text or its
   file, as node icon set it. Marks with the same name share one entry.
-
-By kind of diagram:
-  C4           solid "uses"
-  dependency   solid "depends on", dotted "optional"
-  data flow    solid "data"
-  event flow   dashed "event"
-  process      solid "next step"
-  states       solid "transition"
 `,
   },
   "diagram style": {

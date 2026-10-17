@@ -6,6 +6,7 @@ import type { Command } from "commander";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { z } from "zod";
 import { opCommands } from "../../src/cli/batch.ts";
+import { GUIDES } from "../../src/cli/guides.ts";
 import { PAGES } from "../../src/cli/help.ts";
 import { build } from "../../src/cli/main.ts";
 import { DEFECT_CODES, ERROR_CODES } from "../../src/errors.ts";
@@ -108,10 +109,43 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
     for (const k of EDGE_KINDS) expect(edges).toMatch(new RegExp(`^ {2}${k} `, "m"));
   });
 
-  it("has no guide command any more", () => {
-    const r = run("guide");
+  it("guides stand apart: the entry page names them once, and no page says to read one first", () => {
+    const entry = run("--help").out;
+    expect(entry.match(/grafical guide/g)).toHaveLength(1);
+    for (const path of Object.keys(PAGES))
+      expect(run(...path.split(" "), "--help").out).not.toMatch(/grafical guide/);
+  });
+});
+
+describe('guides (DESIGN.md, "Help for the tool, guides for best practice")', () => {
+  it("grafical guide lists every guide, and prints each whole, at 80 columns", () => {
+    const list = run("guide");
+    expect(list.code).toBe(0);
+    for (const [name, g] of Object.entries(GUIDES)) {
+      expect(list.out, name).toMatch(new RegExp(`^ {4}${name} +${g.about}$`, "m"));
+      const r = run("guide", name);
+      expect(r.code, name).toBe(0);
+      expect(r.out, name).toBe(`${g.text}\n`);
+    }
+    for (const text of [list.out, ...Object.values(GUIDES).map((g) => g.text)])
+      for (const line of text.split("\n")) expect(line.length, line).toBeLessThanOrEqual(80);
+  });
+
+  it("finds a guide by another name for its kind, and refuses a name that is none", () => {
+    expect(run("guide", "cloud").out).toBe(`${GUIDES.infrastructure?.text}\n`);
+    const r = run("guide", "flowchat");
     expect(r.code).toBe(2);
-    expect(r.err).toContain("code=unknown-command");
+    expect(r.err).toMatch(/^error code=unknown-guide found=flowchat likely=flowchart/);
+  });
+
+  it("names only kinds and guides that exist", () => {
+    const kinds = new Set<string>([...NODE_KINDS, ...EDGE_KINDS]);
+    for (const [name, g] of Object.entries(GUIDES)) {
+      for (const [, k] of g.text.matchAll(/\bkinds? ([a-z]+)/g))
+        expect(kinds, `${name}: kind ${k}`).toContain(k);
+      for (const [, other] of g.text.matchAll(/grafical guide ([a-z-]+)/g))
+        expect(Object.keys(GUIDES), `${name}: ${other}`).toContain(other);
+    }
   });
 });
 
