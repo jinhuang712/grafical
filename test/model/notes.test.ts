@@ -88,4 +88,22 @@ describe('notes (DESIGN.md, "Notes as callouts or footnotes")', () => {
     ]);
     expect(writeDiagram(ok(d, ops).diagram)).toBe(writeDiagram(changed));
   });
+
+  // The agent states a footnote; the engine never makes one (DESIGN.md, "The dirty work has edges").
+  it("a footnote is stated, kept in the file, shown, and diffed", () => {
+    const foot: Op = { ...retry, footnote: true };
+    const d = ok(fx, [foot]).diagram;
+    expect(d.notes).toEqual([
+      { on: "retry", text: "retries 5 times, then the DLQ", footnote: true },
+    ]);
+    const text = writeDiagram(d);
+    expect(text).toContain("footnote: true");
+    expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
+    expect(showDiagram(d)).toContain('note on=retry footnote "retries 5 times, then the DLQ"');
+    expect(diffDiagrams(fx, d)).toEqual([foot]);
+    // A card again: the note goes and comes back without it.
+    const card = ok(d, [retry]).diagram;
+    expect(card.notes).toEqual([{ on: "retry", text: "retries 5 times, then the DLQ" }]);
+    expect(diffDiagrams(d, card)).toEqual([{ op: "note.remove", on: "retry" }, retry]);
+  });
 });

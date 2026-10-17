@@ -254,7 +254,9 @@ export const diagramSchema = z.strictObject({
   lanes: z.array(laneSchema).default([]),
   columns: z.array(z.strictObject({ id: nodeId })).default([]),
   walls: z.array(wallSchema).default([]),
-  notes: z.array(z.strictObject({ on: z.string().min(1), text })).default([]),
+  notes: z
+    .array(z.strictObject({ on: z.string().min(1), text, footnote: z.boolean().optional() }))
+    .default([]),
   edges: z.array(edgeSchema).default([]),
 });
 
@@ -343,7 +345,13 @@ function build(p: Parsed): Diagram {
       return wall;
     });
   }
-  if (p.notes.length > 0) d.notes = p.notes.map((x) => ({ on: x.on, text: x.text }));
+  if (p.notes.length > 0) {
+    d.notes = p.notes.map((x) => ({
+      on: x.on,
+      text: x.text,
+      ...(x.footnote === true ? { footnote: true as const } : {}),
+    }));
+  }
   return d;
 }
 

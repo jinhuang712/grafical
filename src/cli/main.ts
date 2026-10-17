@@ -418,9 +418,10 @@ function build(): Command {
       .description("add a note to a node, group or line, or replace the one it has")
       .argument("<file>")
       .requiredOption("--on <id>", "the node, group or line it is about")
-      .requiredOption("--text <text>", "a sentence or two"),
+      .requiredOption("--text <text>", "a sentence or two")
+      .option("--footnote", "a number on it and the text at the bottom, rather than a card"),
   ).action(async (file: string, opts: Opts) => {
-    await write(file, { op: "note.add", ...pick(opts, ["on", "text"]) }, opts);
+    await write(file, { op: "note.add", ...pick(opts, ["on", "text", "footnote"]) }, opts);
   });
   json(
     note

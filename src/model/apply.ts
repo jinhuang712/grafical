@@ -60,6 +60,7 @@ import {
   MARK_SLOTS,
   type Mark,
   type MarkStyle,
+  type Note,
   type Wall,
   weightKey,
 } from "./types.ts";
@@ -769,8 +770,10 @@ function noteStep(s: State, op: Extract<Op, { op: `note.${string}` }>, i: number
         },
       ];
     }
-    if (at >= 0) notes[at] = { on: op.on, text: op.text };
-    else notes.push({ on: op.on, text: op.text });
+    const x: Note = { on: op.on, text: op.text };
+    if (op.footnote === true) x.footnote = true;
+    if (at >= 0) notes[at] = x;
+    else notes.push(x);
     d.notes = notes;
   } else {
     if (at < 0) {

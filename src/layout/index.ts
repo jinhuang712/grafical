@@ -89,14 +89,7 @@ export function layout(diagram: Diagram, m: Measurer): Scene {
 
 /** Laid out with text. */
 function framed(diagram: Diagram, m: Measurer): { scene: Scene; centre: number } {
-  // A note whose card finds no room becomes a footnote, and the list needs room (DESIGN.md, "Notes as callouts or footnotes").
-  let footnotes = new Set<string>();
-  let out = compute(diagram, m, true, footnotes);
-  for (let pass = 0; pass < 2 && out.noRoom.length > 0; pass++) {
-    footnotes = new Set([...footnotes, ...out.noRoom]);
-    out = compute(diagram, m, true, footnotes);
-  }
-  return out;
+  return compute(diagram, m, true);
 }
 
 /**
@@ -497,12 +490,7 @@ const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
   bbox: { x, y, w: 0, h: 0 },
 });
 
-function compute(
-  facts: Diagram,
-  m: Measurer,
-  withText: boolean,
-  footnotes: ReadonlySet<string> = new Set(),
-): { scene: Scene; centre: number; noRoom: string[] } {
+function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene; centre: number } {
   // The diagram's theme decides the type sizes here and the paint in the scene (DESIGN.md, "Themes and stylesheets").
   const theme = themeOf(facts);
   const T = theme.type;
@@ -1126,6 +1114,8 @@ function compute(
   let bottom = y;
   // Footnotes (DESIGN.md, "Notes as callouts or footnotes") are listed below the content, above the footnote of DESIGN.md, "Curation stays with the agent".
   const listTop = ceil4(y + FRAME.noteGap);
+  // A note is a footnote where the agent says so (DESIGN.md, "The dirty work has edges").
+  const footnotes = new Set((d.notes ?? []).filter((x) => x.footnote === true).map((x) => x.on));
   const listH = withText ? footnotesHeight(d, footnotes, textW, m, T) : 0;
   if (listH > 0) {
     y = listTop + listH;
@@ -1651,7 +1641,7 @@ function compute(
     });
   }
 
-  // Notes (DESIGN.md, "Notes as callouts or footnotes"): a card beside its target where there is room, a footnote where not.
+  // Notes (DESIGN.md, "Notes as callouts or footnotes"): a card beside its target, or a footnote where the agent says so.
   const placedNotes = withText
     ? placeNotes(
         d,
@@ -1688,7 +1678,7 @@ function compute(
         m,
         T,
       )
-    : { notes: [], noRoom: [] };
+    : [];
 
   const scene: Scene = {
     width,
@@ -1706,8 +1696,8 @@ function compute(
   if (sceneBands.length > 0) scene.bands = sceneBands;
   if (sceneLanes.length > 0) scene.lanes = sceneLanes;
   if (sceneWalls.length > 0) scene.walls = sceneWalls;
-  if (placedNotes.notes.length > 0) scene.notes = placedNotes.notes;
-  return { scene: roundScene(scene), centre, noRoom: placedNotes.noRoom };
+  if (placedNotes.length > 0) scene.notes = placedNotes;
+  return { scene: roundScene(scene), centre };
 }
 
 function roundRect(r: Rect): Rect {
@@ -1803,6 +1793,7 @@ function roundScene(s: Scene): Scene {
       ...(x.number === undefined ? {} : { number: x.number }),
       ...(x.mark === undefined ? {} : { mark: roundBadge(x.mark) }),
       ...(x.key === undefined ? {} : { key: roundBadge(x.key) }),
+      ...(x.blocked === true ? { blocked: true as const } : {}),
     }));
   }
   if (s.walls !== undefined) {

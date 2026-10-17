@@ -226,6 +226,11 @@ export interface Note {
   /** The id of the node, group or line it is about. */
   on: string;
   text: string;
+  /**
+   * true: a footnote, a number on its target and its text in a list at the bottom. Absent: a card
+   * beside its target, refused where there is no room for one (DESIGN.md, "The dirty work has edges").
+   */
+  footnote?: true;
 }
 
 export interface Edge {

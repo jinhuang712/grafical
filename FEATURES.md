@@ -404,11 +404,11 @@ grafical wall remove <file> <id>
 A short text attached to a box, a line or a group, to keep detail out of extra boxes.
 
 ```sh
-grafical note add <file> --on <id> --text <text>
+grafical note add <file> --on <id> --text <text> [--footnote]
 grafical note remove <file> --on <id>
 ```
 
-- grafical picks how to draw it: a card beside its target, joined by a dotted line, where there is room, or a small number on the target and the text in a numbered list at the bottom, where there is not.
+- A card beside its target, joined by a dotted line, or with `--footnote` a small number on the target and the text in a numbered list at the bottom. The file holds a footnote as `footnote: true`. A card with no place beside its target clear of every box, line and text is refused as `label-blocked`, so that the agent shortens it or makes it a footnote (DESIGN.md, "The dirty work has edges").
 - A target has one note, and adding another replaces it. A note goes with its target.
 - A note that takes more than four lines is an `overflow`.
 

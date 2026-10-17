@@ -238,10 +238,15 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (!keptWalls.has(w.id)) ops.push({ op: "wall.remove", id: w.id });
   // Notes (DESIGN.md, "Notes as callouts or footnotes") the same way: one that changes, or whose target is removed and added
   // again, goes first and comes back last.
-  const aNotes = new Map((a.notes ?? []).map((x) => [x.on, x.text]));
+  const aNotes = new Map((a.notes ?? []).map((x) => [x.on, x]));
   const keptNotes = keptStart(
     (b.notes ?? [])
-      .filter((x) => aNotes.get(x.on) === x.text && !removed.has(x.on))
+      .filter(
+        (x) =>
+          aNotes.get(x.on)?.text === x.text &&
+          aNotes.get(x.on)?.footnote === x.footnote &&
+          !removed.has(x.on),
+      )
       .map((x) => x.on),
     (a.notes ?? []).map((x) => x.on),
   );
@@ -640,7 +645,10 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     ops.push(op);
   }
   for (const x of a.notes ?? []) {
-    if (!keptNotes.has(x.on)) ops.push({ op: "note.add", on: x.on, text: x.text });
+    if (keptNotes.has(x.on)) continue;
+    const op: Op = { op: "note.add", on: x.on, text: x.text };
+    if (x.footnote === true) op.footnote = true;
+    ops.push(op);
   }
   return ops;
 }

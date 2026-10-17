@@ -138,6 +138,11 @@ export interface SceneNote {
   /** The footnote's number on its target, and again before its text. */
   mark?: SceneBadge;
   key?: SceneBadge;
+  /**
+   * true: a card with no place beside its target clear of everything else, drawn at the first
+   * place anyway; the write is refused (DESIGN.md, "The dirty work has edges").
+   */
+  blocked?: true;
 }
 
 /** One line style, line width or mark in the legend, with its sample (DESIGN.md, "Looks", "A legend for widths and marks"). */

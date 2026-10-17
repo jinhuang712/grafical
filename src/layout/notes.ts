@@ -1,8 +1,8 @@
 // Notes (DESIGN.md, "Notes as callouts or footnotes"): each note is drawn as a callout card beside what it is
-// about, where there is room, or as a numbered footnote: a number on its target and
+// about, or, where the agent says so, as a numbered footnote: a number on its target and
 // its text in a list at the bottom. A card keeps clear of every box, line, text and
 // other card, and lies wholly inside or outside each group, lane and band. Nothing
-// moves to make room for one.
+// moves to make room for one, and a card with no room refuses the write.
 
 import type { Diagram } from "../model/types.ts";
 import type {
@@ -209,10 +209,10 @@ function besideLine([a, b]: Seg, w: number, h: number): Spot[] {
 }
 
 /**
- * Every note, as a callout where a place for its card is clear, and as a footnote
- * when its target is in `footnotes` or no place is. `noRoom` names the notes drawn
- * as footnotes that were not in `footnotes`: the list needs room for them, in a
- * second pass.
+ * Every note: a footnote when its target is in `footnotes`, as the agent states, and a
+ * callout card at the first place beside its target that is clear otherwise. A card with no
+ * clear place takes the first place anyway and is marked blocked: no note becomes a
+ * footnote unless the agent says so (DESIGN.md, "The dirty work has edges").
  */
 export function placeNotes(
   d: Diagram,
@@ -220,9 +220,9 @@ export function placeNotes(
   room: NoteRoom,
   m: Measurer,
   T: TypeRamp,
-): { notes: SceneNote[]; noRoom: string[] } {
+): SceneNote[] {
   const notes = d.notes ?? [];
-  if (notes.length === 0) return { notes: [], noRoom: [] };
+  if (notes.length === 0) return [];
   const lh = lineHeight("note", m, T);
   const segs = room.edges.flatMap((e) =>
     e.points.slice(1).map((b, j): Seg & { edge?: string } => {
@@ -252,7 +252,6 @@ export function placeNotes(
   };
 
   const out = new Map<string, SceneNote>();
-  const noRoom: string[] = [];
   const keyed: { on: string; at: Point; text: string }[] = [];
   for (const x of notes) {
     const lines = cardLines(x.text, m, T);
@@ -275,27 +274,30 @@ export function placeNotes(
           : edge !== undefined
             ? besideLine(longest(edge.points), w, h)
             : [];
-      const spot = spots.find((s) => clear(s, x.on));
-      if (spot !== undefined) {
-        taken.push(spot.card);
-        out.set(x.on, {
-          on: x.on,
-          as: "callout",
-          card: spot.card,
-          link: { a: spot.link[0], b: spot.link[1] },
-          text: placeLines(
-            "note",
-            lines,
-            spot.card.x + NOTE.padX,
-            spot.card.y + NOTE.padY,
-            "start",
-            m,
-            T,
-          ),
-        });
-        continue;
-      }
-      noRoom.push(x.on);
+      const free = spots.find((s) => clear(s, x.on));
+      const spot = free ??
+        spots[0] ?? {
+          card: { x: at.x, y: at.y, w, h },
+          link: [at, at],
+        };
+      taken.push(spot.card);
+      out.set(x.on, {
+        on: x.on,
+        as: "callout",
+        card: spot.card,
+        link: { a: spot.link[0], b: spot.link[1] },
+        text: placeLines(
+          "note",
+          lines,
+          spot.card.x + NOTE.padX,
+          spot.card.y + NOTE.padY,
+          "start",
+          m,
+          T,
+        ),
+        ...(free === undefined ? { blocked: true as const } : {}),
+      });
+      continue;
     }
     keyed.push({ on: x.on, at, text: x.text });
   }
@@ -378,7 +380,7 @@ export function placeNotes(
     return numberBadge(n, p.x, p.y, r, m, T);
   }
 
-  return { notes: notes.flatMap((x) => out.get(x.on) ?? []), noRoom };
+  return notes.flatMap((x) => out.get(x.on) ?? []);
 }
 
 function midpoint([a, b]: Seg): Point {

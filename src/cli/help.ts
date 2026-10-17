@@ -144,7 +144,7 @@ Batch file:
     lane.add          id label members                 (a list)
     column.add        id nodes before after            (nodes is a list)
     wall.add          id between and allow label       (lists but id, label)
-    note.add          on text                          (replaces its note)
+    note.add          on text footnote                 (replaces its note)
     edge.emphasize    edges off                        (a list)
     diagram.legend    style weight mark text (style: solid dashed dotted plain)
     diagram.subtitle  text; diagram.note text           (no text clears it)
@@ -693,17 +693,23 @@ Example:
 no box should hold. A node, group or line has one note; adding another replaces it.`,
     after: `
 How it is drawn:
-  - grafical picks: a card beside what it is about, joined to it by a short
-    dotted line, where there is room; otherwise a small number on it, and
-    the text in a numbered list at the bottom of the picture.
+  - A card beside what it is about, joined to it by a short dotted line.
+  - With --footnote, a small number on it, and the text in a numbered list
+    at the bottom of the picture.
 
 Good to know:
   - Keep it short: more than four lines at 160 px is an overflow.
   - A note goes when what it is about is removed.
   - show --drawn says how each note is drawn.
 
+When refused:
+  label-blocked  is=note: no place beside it holds the card clear of the
+                 lines and boxes around it; elements name what it is about,
+                 then what is in the way: shorten it, or add --footnote
+
 Example:
   grafical note add shop.grafical.yaml --on retry --text "retries 5 times, then the DLQ"
+  grafical note add shop.grafical.yaml --on retry --text "replayed by hand" --footnote
 `,
   },
   "note remove": { about: "Remove the note of a node, a group or a line." },

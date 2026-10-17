@@ -257,6 +257,7 @@ function checkSteps(scene: Scene, out: Found[]): void {
   for (const w of scene.walls ?? [])
     if (w.label && w.blocked !== true) texts.push({ id: w.id, is: "wall", rect: w.label.bbox });
   for (const x of scene.notes ?? []) {
+    if (x.blocked === true) continue;
     texts.push({ id: x.on, is: "note", rect: x.card ?? x.text.bbox });
     for (const b of [x.mark, x.key]) {
       if (b)
@@ -279,7 +280,9 @@ function checkSteps(scene: Scene, out: Found[]): void {
   // Lines that are not edges: a labelled wall's divider and a callout's dotted line.
   const others: { id: string; is: string; s: Segment }[] = [];
   for (const w of scene.walls ?? []) if (w.line) others.push({ id: w.id, is: "wall", s: w.line });
-  for (const x of scene.notes ?? []) if (x.link) others.push({ id: x.on, is: "note", s: x.link });
+  for (const x of scene.notes ?? []) {
+    if (x.link && x.blocked !== true) others.push({ id: x.on, is: "note", s: x.link });
+  }
   const borders = [
     ...(scene.groups ?? []).map((g) => ({ id: g.id, is: "group", rect: g.rect })),
     ...(scene.bands ?? []).map((b) => ({ id: b.id, is: "layer", rect: b.rect })),
@@ -345,7 +348,9 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
   for (const w of scene.walls ?? []) {
     if (w.label && w.blocked !== true) targets.push({ id: w.id, is: "wall", text: w.label });
   }
+  // A card with no place beside its target is the agent's: label-blocked.
   for (const x of scene.notes ?? []) {
+    if (x.blocked === true) continue;
     targets.push({ id: x.on, is: "note", text: x.text });
     for (const b of [x.mark, x.key]) if (b) targets.push({ id: x.on, is: "note", text: b.label });
   }
@@ -394,11 +399,13 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
 
 /**
  * A line's label, or its step's badge, that no gutter of its path could hold clear of the
- * other lines, and a wall's label that no place along its wall holds clear of the lines
- * across it: no line moves for it, so it lies across them (DESIGN.md, "The dirty work has
- * edges"). The agent shortens or drops the text, or changes rows. The elements name the line
- * or the wall, then what lies across the text: lines, and for a line's label the borders of
- * groups, bands and lanes, for a wall's boxes; the facts name the gutters a line's label tried.
+ * other lines, a wall's label that no place along its wall holds clear of the lines across
+ * it, and a note's card with no place beside its target: no line moves for it, so it lies
+ * across them (DESIGN.md, "The dirty work has edges"). The agent shortens or drops the text,
+ * changes rows, or makes the note a footnote. The elements name the line, the wall or the
+ * note's target, then what lies across the text: lines, and for a line's label the borders of
+ * groups, bands and lanes, for a wall's label or a card boxes; the facts name the gutters a
+ * line's label tried.
  */
 function checkLabelRoom(scene: Scene, out: Found[]): void {
   const borders = [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])];
@@ -433,6 +440,20 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
       code: "label-blocked",
       elements: [e.id, ...across],
       facts: { is: "edge", gutters: e.blocked },
+    });
+  }
+  // A note's card with no place beside its target, at the first place anyway: the lines and
+  // boxes in its way there.
+  for (const x of scene.notes ?? []) {
+    if (x.blocked !== true || x.card === undefined) continue;
+    const box = inset(x.card, -NOTE.clear);
+    const boxes = scene.nodes
+      .filter((n) => n.id !== x.on && rectsOverlap(n.rect, box))
+      .map((n) => n.id);
+    out.push({
+      code: "label-blocked",
+      elements: [x.on, ...lines(box, x.on), ...boxes],
+      facts: { is: "note" },
     });
   }
   // A wall's label keeps its clearance from lines and boxes as the engine places it.
@@ -698,7 +719,8 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
     add(w.id, "label", w.label, [`grafical wall remove <file> ${w.id}`, again]);
   }
   for (const x of diagram.notes ?? []) {
-    add(x.on, "note", x.text, `grafical note add <file> --on ${x.on} --text <text>`);
+    const as = x.footnote === true ? " --footnote" : "";
+    add(x.on, "note", x.text, `grafical note add <file> --on ${x.on} --text <text>${as}`);
   }
 }
 

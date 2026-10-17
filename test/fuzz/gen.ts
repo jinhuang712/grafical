@@ -237,7 +237,8 @@ export function generate(seed: number, m: Measurer): Generated {
 /**
  * As an agent does after a label-blocked refusal (DESIGN.md, "The dirty work has edges"): a line's
  * label that no gutter of its path holds, or a wall's that no place along its wall holds, shortens
- * to its first word, and a word, or a step's badge, that still finds no room is dropped.
+ * to its first word, and a word, or a step's badge, that still finds no room is dropped; a note
+ * whose card finds no place becomes a footnote.
  */
 function fitLabels(d: Diagram, m: Measurer): void {
   const shorten = (x: { label?: string }) => {
@@ -248,7 +249,8 @@ function fitLabels(d: Diagram, m: Measurer): void {
     const s = layout(d, m);
     const edges = s.edges.filter((e) => e.blocked !== undefined);
     const walls = (s.walls ?? []).filter((w) => w.blocked === true);
-    if (edges.length + walls.length === 0) return;
+    const notes = (s.notes ?? []).filter((x) => x.blocked === true);
+    if (edges.length + walls.length + notes.length === 0) return;
     for (const b of edges) {
       const e = d.edges.find((x) => x.id === b.id);
       if (e === undefined) continue;
@@ -258,6 +260,10 @@ function fitLabels(d: Diagram, m: Measurer): void {
     for (const b of walls) {
       const w = d.walls?.find((x) => x.id === b.id);
       if (w !== undefined) shorten(w);
+    }
+    for (const b of notes) {
+      const x = d.notes?.find((y) => y.on === b.on);
+      if (x !== undefined) x.footnote = true;
     }
   }
 }

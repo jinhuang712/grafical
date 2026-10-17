@@ -439,6 +439,8 @@ export interface NoteAddOp {
   op: "note.add";
   on: string;
   text: string;
+  /** true: a footnote rather than a card. */
+  footnote?: boolean;
 }
 export interface NoteRemoveOp {
   op: "note.remove";
@@ -825,7 +827,12 @@ export const wallAllowSchema = z.strictObject({
   off: z.boolean().optional(),
 });
 export const wallRemoveSchema = z.strictObject({ op: z.literal("wall.remove"), id: nodeId });
-export const noteAddSchema = z.strictObject({ op: z.literal("note.add"), on: edgeId, text });
+export const noteAddSchema = z.strictObject({
+  op: z.literal("note.add"),
+  on: edgeId,
+  text,
+  footnote: z.boolean().optional(),
+});
 export const noteRemoveSchema = z.strictObject({ op: z.literal("note.remove"), on: edgeId });
 
 /** Parses one operation. A batch item is exactly this. */
