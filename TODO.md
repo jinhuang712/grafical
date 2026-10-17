@@ -2,6 +2,14 @@
 
 Small fixes and follow-ups with no milestone yet. An item moves to ROADMAP.md once it has one.
 
+## A whole-diagram error points at the batch's last operation
+
+Some errors are found only once the whole batch is applied, such as `align-same-layer` after a `node swap` that puts a box in its alignment target's row. They are reported with the index of the batch's last operation, so `error op=<n>` can name an operation that did nothing wrong. The fix test (`test/check/fixes.test.ts`) found one at fuzz seed 80. Reporting the operation that caused it needs the integrity checks to run after each operation, or to know which operation last touched what they name.
+
+## Many writes in one process run the text measurer out of memory
+
+`plan` in `src/cli/pipeline.ts` makes a new HarfBuzz measurer for every write. A command line makes one write per process, and `grafical view` keeps one measurer, so no user meets it; but a few thousand writes in one process end in `RuntimeError: memory access out of bounds`, as an audit of refusals did on 2026-10-17. Reusing one measurer, or freeing each, would let tools and tests call the write path in a loop.
+
 ## Pages read before a first write
 
 DESIGN.md, "One entry page, help where it is used" names a risk: agents may not use the ways to draw the entry page lists, or may draft without opening a command's page. The harness counts grafical calls by outcome, but not which help pages an agent read before its first write. `bench lines` or the metrics should count each `--help` call (and `grafical help <command>`) before the first `apply` or edit, per draft, so the next paid round can say which pages agents read.
