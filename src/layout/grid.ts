@@ -800,12 +800,21 @@ function groupConstraints(
       if (stranger !== undefined) {
         const layer = d.layers[r]?.id ?? "";
         const s = ids[stranger] as string;
-        // The node either belongs in the group, or goes out to one side of its members.
-        const fix = [
-          `group join <file> ${g} ${s}`,
-          `node move <file> ${s} --before ${ids[list[first] as number]}`,
-          `node move <file> ${s} --after ${ids[list[last] as number]}`,
-        ];
+        // The node either belongs in the group, or goes out to one side of its members. Only a member in the row
+        // names a place in it, and a box placed by steps, which sits in the row here, takes it with --layer.
+        const inRow = new Set(
+          (d.layers[r]?.nodes ?? []).filter((n) => n.from === undefined).map((n) => n.id),
+        );
+        const placed = list
+          .slice(first, last + 1)
+          .map((i) => ids[i] as string)
+          .filter((id) => id !== s && inRow.has(id));
+        const into = inRow.has(s) ? "" : ` --layer ${layer}`;
+        const fix = [`group join <file> ${g} ${s}`];
+        if (placed.length > 0) {
+          fix.push(`node move <file> ${s}${into} --before ${placed[0]}`);
+          fix.push(`node move <file> ${s}${into} --after ${placed[placed.length - 1]}`);
+        }
         failed = {
           code: "group-split",
           group: g,

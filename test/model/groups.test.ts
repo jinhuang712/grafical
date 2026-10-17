@@ -207,6 +207,30 @@ describe("group operations", () => {
     ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y"] }]);
   });
 
+  it("group-split: a box placed by steps is told to take the row with --layer, beside a member in it", () => {
+    // c hangs right of y; swapping x and y puts c between the group's members.
+    const row = ok(empty, [
+      { op: "layer.add", id: "r", label: "R" },
+      { op: "node.add", id: "x", layer: "r", label: "X", last: true },
+      { op: "node.add", id: "y", layer: "r", label: "Y", last: true },
+      { op: "node.add", id: "z", layer: "r", label: "Z", last: true },
+      { op: "node.add", id: "c", label: "C", from: "y", right: 1 },
+      { op: "group.add", id: "g", label: "G", nodes: ["x", "y"] },
+    ]).diagram;
+    const swap: Op = { op: "node.swap", a: "x", b: "y" };
+    const e = fail(row, [swap]);
+    expect(e[0]).toMatchObject({ code: "group-split", found: "c" });
+    expect(e[0]?.facts?.fix).toEqual([
+      "group join <file> g c",
+      "node move <file> c --layer r --before y",
+      "node move <file> c --layer r --after x",
+    ]);
+    // Each fix, after the swap, is a change grafical accepts.
+    ok(row, [swap, { op: "group.join", group: "g", nodes: ["c"] }]);
+    ok(row, [swap, { op: "node.move", id: "c", layer: "r", before: "y" }]);
+    ok(row, [swap, { op: "node.move", id: "c", layer: "r", after: "x" }]);
+  });
+
   it("node.remove keeps the group, even empty", () => {
     const d1 = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a"] }]).diagram;
     const d2 = ok(d1, [{ op: "node.remove", id: "a" }]).diagram;
