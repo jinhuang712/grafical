@@ -1,9 +1,11 @@
 // Runs one chain of headless Claude Code calls: an E1 draft, then E2 change
-// requests that resume the same session (EXPERIMENTS.md, "Harness").
+// requests that resume the same session, then a reflection that resumes it once
+// more with no tools (EXPERIMENTS.md, "Harness").
 //
 // A chain is (task, arm, model, run number). Its directory holds the brief, the
 // tool and every step's files:
 //   bench/runs/<round>/[<task>.]<arm>-<model>-r<n>/steps/<step>/{transcript.jsonl,metrics.json,diagram.png}
+//   bench/runs/<round>/[<task>.]<arm>-<model>-r<n>/reflection/{prompt.txt,transcript.jsonl,reflection.md,cost.json}
 // The task prefix is left out for the public catalog-sync brief, the E1 and E2 task.
 
 import { execFileSync, spawnSync } from "node:child_process";
@@ -21,7 +23,13 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
-import { computeMetrics, type Metrics, parseTranscript, type StepKind } from "./metrics.ts";
+import {
+  computeMetrics,
+  type Metrics,
+  parseTranscript,
+  type StepKind,
+  stepTotal,
+} from "./metrics.ts";
 
 export type Arm = "grafical" | "raw" | "mermaid";
 export const ARMS: Arm[] = ["grafical", "raw", "mermaid"];
@@ -154,6 +162,32 @@ export function loadIntents(file = "intent.yaml"): Task[] {
 
 export function changePrompt(n: number, total: number, request: string): string {
   return render(prompt("change.md"), { N: String(n), TOTAL: String(total), REQUEST: request });
+}
+
+/** What the reflection calls the arm's tool. */
+const TOOL_NAME: Record<Arm, string> = {
+  grafical: "grafical",
+  mermaid: "mmdc",
+  raw: "the tools you used",
+};
+
+/**
+ * The reflection asked after a chain's last step: how the agent drew, why it changed its
+ * draft, and where the tool got in the way (EXPERIMENTS.md, "Harness").
+ */
+export function reflectPrompt(arm: Arm): string {
+  return render(prompt("reflect.md"), { TOOL: TOOL_NAME[arm] });
+}
+
+/** The reflection's call: it resumes the chain's session with no tools, so nothing can change. */
+export function reflectArgs(arm: Arm, model: string, session: string): string[] {
+  return claudeArgs({
+    prompt: reflectPrompt(arm),
+    model,
+    tools: [],
+    persist: false,
+    resume: session,
+  });
 }
 
 /** Reads `bench/changes/<name>.yaml`: a flat list of `key: value` items. */
@@ -420,7 +454,72 @@ export function runStep(o: {
   return record;
 }
 
-/** Runs the draft and then each change request, resuming the draft's session. */
+/**
+ * Asks the chain's agent to reflect, and keeps its report in `<chain>/reflection/`, outside
+ * the steps that every metric reads. Returns the call's own cost.
+ */
+export function runReflection(o: {
+  dir: string;
+  arm: Arm;
+  model: string;
+  session: string;
+  /** The session's running cost after the chain's last step. */
+  previousCostUsd: number;
+}): number {
+  const out = join(o.dir, "reflection");
+  mkdirSync(out, { recursive: true });
+  writeFileSync(join(out, "prompt.txt"), reflectPrompt(o.arm));
+  const res = spawnSync("claude", reflectArgs(o.arm, o.model, o.session), {
+    cwd: o.dir,
+    env: chainEnv(o.dir, o.arm),
+    encoding: "utf8",
+    maxBuffer: 256 * 1024 * 1024,
+    timeout: 15 * 60 * 1000,
+  });
+  writeFileSync(join(out, "transcript.jsonl"), res.stdout ?? "");
+  if (res.stderr) writeFileSync(join(out, "stderr.txt"), res.stderr);
+  const result = [...parseTranscript(res.stdout ?? "")].reverse().find((e) => e.type === "result");
+  const report: string = typeof result?.result === "string" ? result.result.trim() : "";
+  writeFileSync(join(out, "reflection.md"), `${report}\n`);
+  const sessionCostUsd: number = result?.total_cost_usd ?? 0;
+  const costUsd = stepTotal(sessionCostUsd, o.previousCostUsd);
+  writeFileSync(
+    join(out, "cost.json"),
+    `${JSON.stringify({ costUsd, sessionCostUsd, isError: result?.is_error === true }, null, 2)}\n`,
+  );
+  return costUsd;
+}
+
+/**
+ * Every chain's reflection in a round's directory, as one Markdown document: a heading per
+ * chain, in name order, then its report, and what the reflections cost together.
+ */
+export function collectReflections(roundDir: string): string {
+  const chains = existsSync(roundDir) ? readdirSync(roundDir).sort() : [];
+  const parts: string[] = [];
+  let cost = 0;
+  for (const chain of chains) {
+    const file = join(roundDir, chain, "reflection", "reflection.md");
+    if (!existsSync(file)) continue;
+    const costFile = join(roundDir, chain, "reflection", "cost.json");
+    if (existsSync(costFile)) cost += JSON.parse(readFileSync(costFile, "utf8")).costUsd ?? 0;
+    // A chain's report keeps its own headings, one level down.
+    const report = readFileSync(file, "utf8").trim().replace(/^## /gm, "### ");
+    parts.push(`## ${chain}\n\n${report || "(no report)"}`);
+  }
+  return [
+    `# Reflections: ${parts.length} chain${parts.length === 1 ? "" : "s"}, $${cost.toFixed(3)}`,
+    ...parts,
+  ].join("\n\n");
+}
+
+/** A chain's steps, and what its reflection cost, or null when no session was left to resume. */
+export interface ChainResult {
+  steps: StepRecord[];
+  reflectionUsd: number | null;
+}
+
+/** Runs the draft and then each change request, resuming the draft's session, then the reflection. */
 export function runChain(o: {
   round: string;
   arm: Arm;
@@ -432,20 +531,20 @@ export function runChain(o: {
   runs?: string;
   /** false: the grafical tool prints no hints (DESIGN.md, "Records over prose"). */
   hints?: boolean;
-}): StepRecord[] {
+}): ChainResult {
   const dir = join(o.runs ?? RUNS, o.round, chainName(o.arm, o.model, o.run, o.task));
   prepareChainDir(dir, o.arm, o.task, o.hints ?? true);
   const records: StepRecord[] = [];
   let session: string | undefined;
   let previous: { costUsd: number; apiSeconds: number } | undefined;
   for (const spec of chainSteps(o.arm, o.changes, o.task)) {
-    // Every step but the last is resumed by the next, so it must stay on disk.
+    // Every step is resumed by the next or by the reflection, so it must stay on disk.
     const rec = runStep({
       dir,
       arm: o.arm,
       model: o.model,
       spec,
-      persist: o.changes.length > 0,
+      persist: true,
       ...(session ? { resume: session } : {}),
       ...(previous ? { previous } : {}),
     });
@@ -454,5 +553,15 @@ export function runChain(o: {
     session ??= rec.sessionId ?? undefined;
     if (!session) break; // no session id: a resume is impossible, report the failure instead
   }
-  return records;
+  const reflectionUsd =
+    session === undefined
+      ? null
+      : runReflection({
+          dir,
+          arm: o.arm,
+          model: o.model,
+          session,
+          previousCostUsd: previous?.costUsd ?? 0,
+        });
+  return { steps: records, reflectionUsd };
 }

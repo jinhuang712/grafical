@@ -2,7 +2,15 @@
 // brief, grafical against a raw model, Haiku only, 3 runs each. E2 sends the
 // four change types phase 1 supports.
 
-import { ALLOWED_TOOLS, type Arm, chainDir, chainSteps, claudeArgs, loadChanges } from "./run.ts";
+import {
+  ALLOWED_TOOLS,
+  type Arm,
+  chainDir,
+  chainSteps,
+  claudeArgs,
+  loadChanges,
+  reflectArgs,
+} from "./run.ts";
 
 export const SMOKE_ARMS: Arm[] = ["grafical", "raw"];
 export const SMOKE_MODEL = "haiku";
@@ -39,6 +47,11 @@ export function planSmoke(round: string): SmokePlan {
           }),
         });
       }
+      commands.push({
+        dir,
+        step: "reflection",
+        argv: reflectArgs(arm, SMOKE_MODEL, "<session-id-of-the-e1-draft>"),
+      });
     }
   }
   return { round, chains, commands };

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -10,6 +10,7 @@ import {
   chainName,
   chainSteps,
   claudeArgs,
+  collectReflections,
   draftPrompt,
   loadChanges,
   loadIntents,
@@ -18,6 +19,8 @@ import {
   parseCheckAll,
   prepareChainDir,
   REPO,
+  reflectArgs,
+  reflectPrompt,
 } from "../../bench/run.ts";
 import { planSmoke } from "../../bench/smoke.ts";
 import { PARTS, partCommands, planPart } from "../../bench/stage1.ts";
@@ -123,8 +126,10 @@ describe("arms and prompts", () => {
 });
 
 describe("stage 1 plan", () => {
-  it("has the parts and sizes the owner approved", () => {
-    const sizes = Object.fromEntries(PARTS.map((p) => [p, partCommands(planPart(p)).length]));
+  it("has the parts and sizes the owner approved, and one reflection a chain", () => {
+    const drawing = (p: (typeof PARTS)[number]) =>
+      partCommands(planPart(p)).filter((c) => c.step !== "reflection");
+    const sizes = Object.fromEntries(PARTS.map((p) => [p, drawing(p).length]));
     expect(sizes).toEqual({
       e1e2: 81,
       opus: 6,
@@ -143,6 +148,14 @@ describe("stage 1 plan", () => {
       records: 33,
     });
     expect(planPart("mvp").runs).not.toContain(REPO);
+    for (const p of PARTS) {
+      const reflections = partCommands(planPart(p)).filter((c) => c.step === "reflection");
+      expect(reflections, p).toHaveLength(planPart(p).chains.length);
+      for (const c of reflections) {
+        expect(c.argv).toContain("--resume");
+        expect(c.argv).not.toContain("--allowedTools");
+      }
+    }
   });
 
   it("gives every model the same prompt, word for word", () => {
@@ -196,14 +209,20 @@ describe("change script", () => {
 });
 
 describe("smoke plan", () => {
-  it("is 6 chains and 30 claude calls, the E2 ones resuming", () => {
+  it("is 6 chains and 36 claude calls, the E2 ones and the reflections resuming", () => {
     const plan = planSmoke("t");
     expect(plan.chains).toHaveLength(6);
-    expect(plan.commands).toHaveLength(30);
+    expect(plan.commands).toHaveLength(36);
     const e2 = plan.commands.filter((c) => c.step.startsWith("e2-"));
     expect(e2).toHaveLength(24);
     for (const c of e2) expect(c.argv).toContain("--resume");
-    for (const c of plan.commands) expect(c.argv).not.toContain("--no-session-persistence");
+    const reflections = plan.commands.filter((c) => c.step === "reflection");
+    expect(reflections).toHaveLength(6);
+    for (const c of reflections) expect(c.argv).toContain("--resume");
+    // Every drawing call stays on disk for the next to resume; nothing resumes a reflection.
+    for (const c of plan.commands.filter((x) => x.step !== "reflection")) {
+      expect(c.argv).not.toContain("--no-session-persistence");
+    }
   });
 
   it("prints the plan on --dry-run without calling claude", () => {
@@ -216,11 +235,46 @@ describe("smoke plan", () => {
         env: { PATH: join(REPO, "node_modules", ".bin") },
       },
     );
-    expect(out).toContain("runs (claude calls): 30");
-    expect(out.match(/claude -p /g)).toHaveLength(30);
-    // Both arms get the same tools, and none is narrowed to `Bash(grafical *)`.
+    expect(out).toContain("runs (claude calls): 36");
+    expect(out.match(/claude -p /g)).toHaveLength(36);
+    // Both arms get the same tools, and none is narrowed to `Bash(grafical *)`; a reflection gets none.
     expect(out.match(/--allowedTools Bash,Read,Write,Edit/g)).toHaveLength(30);
     expect(out).not.toContain("Bash(grafical");
+  });
+});
+
+describe("reflection", () => {
+  it("asks each arm about its own tool, with no tools to change anything", () => {
+    expect(reflectPrompt("grafical")).toContain("Where grafical got in the way");
+    expect(reflectPrompt("mermaid")).toContain("Where mmdc got in the way");
+    expect(reflectPrompt("grafical")).toContain("What I changed after the first draft");
+    const a = reflectArgs("grafical", "haiku", "abc");
+    expect(a.slice(a.indexOf("--resume"), a.indexOf("--resume") + 2)).toEqual(["--resume", "abc"]);
+    expect(a).not.toContain("--allowedTools");
+    expect(a).toContain("--no-session-persistence");
+  });
+
+  it("collects a round's reports, a heading per chain, with their cost", () => {
+    const round = mkdtempSync(join(tmpdir(), "bench-round-"));
+    for (const [chain, text, cost] of [
+      ["b.grafical-haiku-r1", "## How I drew it\n\nRows by request.", 0.012],
+      ["a.grafical-haiku-r1", "## How I drew it\n\nOne group a system.", 0.008],
+    ] as const) {
+      mkdirSync(join(round, chain, "reflection"), { recursive: true });
+      writeFileSync(join(round, chain, "reflection", "reflection.md"), `${text}\n`);
+      writeFileSync(
+        join(round, chain, "reflection", "cost.json"),
+        JSON.stringify({ costUsd: cost }),
+      );
+    }
+    mkdirSync(join(round, "c.grafical-haiku-r1"));
+    expect(collectReflections(round)).toBe(
+      [
+        "# Reflections: 2 chains, $0.020",
+        "## a.grafical-haiku-r1\n\n### How I drew it\n\nOne group a system.",
+        "## b.grafical-haiku-r1\n\n### How I drew it\n\nRows by request.",
+      ].join("\n\n"),
+    );
   });
 });
 

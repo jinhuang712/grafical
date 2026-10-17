@@ -36,6 +36,7 @@ import {
   loadChanges,
   loadIntents,
   RUNS,
+  reflectArgs,
   type Task,
 } from "./run.ts";
 
@@ -184,19 +185,27 @@ export function planPart(part: Part): PartPlan {
 
 /** Every claude call of a part, as the dry run prints it. */
 export function partCommands(plan: PartPlan): { chain: string; step: string; argv: string[] }[] {
-  return plan.chains.flatMap((c) =>
-    chainSteps(c.arm, c.changes, c.task).map((spec) => ({
-      chain: chainName(c.arm, c.model, c.run, c.task),
-      step: spec.step,
-      argv: claudeArgs({
-        prompt: spec.prompt,
-        model: c.model,
-        tools: ALLOWED_TOOLS[c.arm],
-        persist: c.changes.length > 0,
-        ...(spec.step === "e1" ? {} : { resume: "<session-id-of-the-e1-draft>" }),
-      }),
-    })),
-  );
+  return plan.chains.flatMap((c) => {
+    const chain = chainName(c.arm, c.model, c.run, c.task);
+    return [
+      ...chainSteps(c.arm, c.changes, c.task).map((spec) => ({
+        chain,
+        step: spec.step,
+        argv: claudeArgs({
+          prompt: spec.prompt,
+          model: c.model,
+          tools: ALLOWED_TOOLS[c.arm],
+          persist: true,
+          ...(spec.step === "e1" ? {} : { resume: "<session-id-of-the-e1-draft>" }),
+        }),
+      })),
+      {
+        chain,
+        step: "reflection",
+        argv: reflectArgs(c.arm, c.model, "<session-id-of-the-e1-draft>"),
+      },
+    ];
+  });
 }
 
 export function formatPart(plan: PartPlan): string {

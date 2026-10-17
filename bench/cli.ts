@@ -13,6 +13,7 @@
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   mechanical defects: check every step's picture's geometry
 //   lines --round <name>                      measure each final diagram's lines, and the agent's tries (DESIGN.md, "Records over prose")
+//   reflections --round <name>                every chain's reflection, as one Markdown document (EXPERIMENTS.md, "Harness")
 //   diff <ref> [--seeds 2000] [--render <dir>]
 //                                             what the working tree's engine changes against <ref>, over saved drafts, fixtures and fuzz seeds; costs nothing
 //   speed                                     speed: time one operation and one command
@@ -26,7 +27,15 @@ import { buildGallery, SITE } from "./gallery.ts";
 import { checkRound } from "./geometry.ts";
 import { runJudging } from "./judge.ts";
 import { formatLines, measureLines } from "./lines.ts";
-import { chainName, loadChanges, prepareChainDir, RUNS, runChain, runStep } from "./run.ts";
+import {
+  chainName,
+  collectReflections,
+  loadChanges,
+  prepareChainDir,
+  RUNS,
+  runChain,
+  runStep,
+} from "./run.ts";
 import { formatPlan, planSmoke } from "./smoke.ts";
 import { measureSpeed } from "./speed.ts";
 import { formatPart, PARTS, type Part, PRIVATE, planPart } from "./stage1.ts";
@@ -75,12 +84,12 @@ function main(argv: string[]): void {
       mkdirSync(join(RUNS, round), { recursive: true });
       const changes = loadChanges().filter((c) => c.phase1);
       for (const chain of plan.chains) {
-        const recs = runChain({ round, ...chain, changes });
-        // Each step's own cost; their sum is the chain's cost (the session total after the last step).
-        const total = recs.reduce((sum, r) => sum + r.costUsd, 0);
+        const { steps: recs, reflectionUsd } = runChain({ round, ...chain, changes });
+        // Each step's own cost; their sum and the reflection's is the chain's cost (the session total).
+        const total = recs.reduce((sum, r) => sum + r.costUsd, 0) + (reflectionUsd ?? 0);
         const missing = recs.filter((r) => !r.diagramPngUpdated).map((r) => r.step);
         console.log(
-          `${chain.arm} r${chain.run}: ${recs.map((r) => `${r.step} $${r.costUsd.toFixed(3)}`).join(", ")}; total $${total.toFixed(3)}` +
+          `${chain.arm} r${chain.run}: ${recs.map((r) => `${r.step} $${r.costUsd.toFixed(3)}`).join(", ")}, reflection $${(reflectionUsd ?? 0).toFixed(3)}; total $${total.toFixed(3)}` +
             (missing.length > 0 ? `; no new diagram.png at ${missing.join(", ")}` : ""),
         );
       }
@@ -96,13 +105,14 @@ function main(argv: string[]): void {
       const run = Number(flag(args, "run") ?? 1);
       mkdirSync(join(RUNS, round), { recursive: true });
       const changes = loadChanges().filter((c) => c.phase1);
-      const recs = runChain({ round, arm, model, run, changes });
+      const { steps: recs, reflectionUsd } = runChain({ round, arm, model, run, changes });
       for (const r of recs) {
         console.log(
           `${r.step}: $${r.costUsd.toFixed(4)} (session $${r.sessionCostUsd.toFixed(4)}), ${r.wallSeconds.toFixed(0)} s, ${r.turns} turns, error ${r.isError}, new diagram.png ${r.diagramPngUpdated}`,
         );
       }
-      const total = recs.reduce((sum, r) => sum + r.costUsd, 0);
+      console.log(`reflection: $${(reflectionUsd ?? 0).toFixed(4)}`);
+      const total = recs.reduce((sum, r) => sum + r.costUsd, 0) + (reflectionUsd ?? 0);
       console.log(`total: $${total.toFixed(4)}`);
       return;
     }
@@ -169,21 +179,25 @@ function main(argv: string[]): void {
       mkdirSync(join(plan.runs, plan.round), { recursive: true });
       let spent = 0;
       for (const c of plan.chains) {
-        const recs = runChain({
+        const { steps: recs, reflectionUsd } = runChain({
           round: plan.round,
           runs: plan.runs,
           ...c,
           ...(plan.hints === false ? { hints: false } : {}),
         });
-        const total = recs.reduce((sum, r) => sum + r.costUsd, 0);
+        const total = recs.reduce((sum, r) => sum + r.costUsd, 0) + (reflectionUsd ?? 0);
         spent += total;
         const missing = recs.filter((r) => !r.diagramPngUpdated).map((r) => r.step);
         console.log(
-          `${chainName(c.arm, c.model, c.run, c.task)}: $${total.toFixed(3)} in ${recs.length} steps` +
+          `${chainName(c.arm, c.model, c.run, c.task)}: $${total.toFixed(3)} in ${recs.length} steps and a reflection` +
             (missing.length > 0 ? `; no new diagram.png at ${missing.join(", ")}` : ""),
         );
       }
       console.log(`part ${part}: $${spent.toFixed(3)} spent`);
+      return;
+    }
+    case "reflections": {
+      console.log(collectReflections(join(RUNS, round)));
       return;
     }
     case "diff": {
