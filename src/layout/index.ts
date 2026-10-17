@@ -87,19 +87,14 @@ export function layout(diagram: Diagram, m: Measurer): Scene {
   return framed(diagram, m).scene;
 }
 
-/**
- * Laid out with text. A wall's label that finds no place along its line clear of the
- * lines that cross it goes left of everything, in a second pass (DESIGN.md, "Walls as space").
- */
+/** Laid out with text. */
 function framed(diagram: Diagram, m: Measurer): { scene: Scene; centre: number } {
   // A note whose card finds no room becomes a footnote, and the list needs room (DESIGN.md, "Notes as callouts or footnotes").
-  let aside = new Set<string>();
   let footnotes = new Set<string>();
-  let out = compute(diagram, m, true, aside, footnotes);
-  for (let pass = 0; pass < 2 && out.crowded.length + out.noRoom.length > 0; pass++) {
-    aside = new Set([...aside, ...out.crowded]);
+  let out = compute(diagram, m, true, footnotes);
+  for (let pass = 0; pass < 2 && out.noRoom.length > 0; pass++) {
     footnotes = new Set([...footnotes, ...out.noRoom]);
-    out = compute(diagram, m, true, aside, footnotes);
+    out = compute(diagram, m, true, footnotes);
   }
   return out;
 }
@@ -502,17 +497,12 @@ const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
   bbox: { x, y, w: 0, h: 0 },
 });
 
-/**
- * `aside` names the walls whose label goes left of everything. `crowded` names the
- * walls whose label found no free place along its line, for the second pass.
- */
 function compute(
   facts: Diagram,
   m: Measurer,
   withText: boolean,
-  aside: ReadonlySet<string> = new Set(),
   footnotes: ReadonlySet<string> = new Set(),
-): { scene: Scene; centre: number; crowded: string[]; noRoom: string[] } {
+): { scene: Scene; centre: number; noRoom: string[] } {
   // The diagram's theme decides the type sizes here and the paint in the scene (DESIGN.md, "Themes and stylesheets").
   const theme = themeOf(facts);
   const T = theme.type;
@@ -893,20 +883,6 @@ function compute(
   }
   if (Number.isFinite(routing.minX)) see(routing.minX - 16);
   if (Number.isFinite(routing.maxX)) see(routing.maxX + 16);
-  // A wall's label set aside ends left of every box and line, as a band's may (DESIGN.md, "Walls as space").
-  const asideW = new Map<string, number>();
-  for (const w of d.walls ?? []) {
-    if (withText && aside.has(w.id) && w.label !== undefined) {
-      asideW.set(w.id, m.measure(w.label, T["layer-label"]).width);
-    }
-  }
-  const asideEnd =
-    Math.min(
-      bandRows.size > 0 ? bandLeft : contentLeft,
-      Number.isFinite(routing.minX) ? routing.minX : Number.POSITIVE_INFINITY,
-    ) - WALL.labelClear;
-  const asideLeft = asideEnd - Math.max(0, ...asideW.values());
-  if (asideW.size > 0) see(asideLeft);
 
   // Lanes (DESIGN.md, "Swimlanes run one way"). Row lanes share one header column, left of everything the rows
   // hold, lines included. Column lanes have a header on top, as wide as the lane.
@@ -934,7 +910,6 @@ function compute(
     let left = bandRows.size > 0 ? bandLeft : contentLeft;
     let right = bandRows.size > 0 ? contentRight + BAND.padX : contentRight;
     if (Number.isFinite(routing.minX)) left = Math.min(left, routing.minX);
-    if (asideW.size > 0) left = Math.min(left, asideLeft);
     if (Number.isFinite(routing.maxX)) right = Math.max(right, routing.maxX);
     laneLeft = left - LANE.padX - headW;
     laneRight = right + LANE.padX;
@@ -1531,7 +1506,6 @@ function compute(
   // line through its middle, and its label above the line at the first place along
   // it that no crossing line comes near.
   const sceneWalls: SceneWall[] = [];
-  const crowded: string[] = [];
   const boxRects = new Map<string, Rect>([
     ...sceneNodes.map((n) => [n.id, n.rect] as const),
     ...sceneGroups.map((g) => [g.id, g.rect] as const),
@@ -1578,24 +1552,11 @@ function compute(
           }
           return x + w <= end ? x : undefined;
         };
-        // Along the wall first; failing that, anywhere across the picture at that height;
-        // failing that, left of everything, in a second pass.
-        // Across the picture means inside the row lanes, right of their header column.
-        const [fieldLeft, fieldRight] =
-          rowLanes.length > 0
-            ? [centre + laneLeft + headW + WALL.labelClear, centre + laneRight - WALL.labelClear]
-            : [sp.margin, width - sp.margin];
-        const placed = aside.has(wall.id)
-          ? centre + asideEnd - w
-          : (free(x0 + WALL.reach, x1 - WALL.reach) ?? free(fieldLeft, fieldRight));
-        if (placed === undefined) crowded.push(wall.id);
-        const x = placed ?? x0 + WALL.reach;
-        out.label = placeLine("layer-label", wall.label, x, top, m, T);
-        // The line reaches a label placed past its end, so that the two read as one.
-        out.line = {
-          a: { x: Math.min(x0, x), y: mid },
-          b: { x: Math.max(x1, x + w), y: mid },
-        };
+        // Along the wall, and nowhere else: where no place is clear, the label sits at the
+        // start, and the write is refused (DESIGN.md, "The dirty work has edges").
+        const placed = free(x0 + WALL.reach, x1 - WALL.reach);
+        if (placed === undefined) out.blocked = true;
+        out.label = placeLine("layer-label", wall.label, placed ?? x0 + WALL.reach, top, m, T);
       }
     }
     sceneWalls.push(out);
@@ -1634,17 +1595,15 @@ function compute(
           e.points.slice(1).every((p, j) => !segmentHits(e.points[j] as Point, p, r)),
         );
       };
-      // Down the wall from its top; then above it, then below it, stepping away.
+      // Down the wall from its top, and nowhere else: where no place is clear, the label sits
+      // at the top, and the write is refused (DESIGN.md, "The dirty work has edges").
       const tops: number[] = [];
       for (let t = y0; t + h <= y1; t += 4) tops.push(t);
-      for (let k = 1; k <= 24; k++) tops.push(y0 - WALL.labelGap - h - 4 * (k - 1), y1 + 4 * k);
-      const y = tops.find(clear) ?? y0;
+      const placed = tops.find(clear);
+      if (placed === undefined && withText) out.blocked = true;
+      const y = placed ?? y0;
       if (withText) out.label = placeLines("layer-label", lines, mid, y, "middle", m, T);
-      // A label below the wall ends the line; one at or above its top starts it.
-      out.line =
-        y >= y1
-          ? { a: { x: mid, y: y0 }, b: { x: mid, y: y - WALL.labelGap } }
-          : { a: { x: mid, y: y + h + WALL.labelGap }, b: { x: mid, y: y1 } };
+      out.line = { a: { x: mid, y: y + h + WALL.labelGap }, b: { x: mid, y: y1 } };
     }
     sceneWalls.push(out);
   }
@@ -1748,7 +1707,7 @@ function compute(
   if (sceneLanes.length > 0) scene.lanes = sceneLanes;
   if (sceneWalls.length > 0) scene.walls = sceneWalls;
   if (placedNotes.notes.length > 0) scene.notes = placedNotes.notes;
-  return { scene: roundScene(scene), centre, crowded, noRoom: placedNotes.noRoom };
+  return { scene: roundScene(scene), centre, noRoom: placedNotes.noRoom };
 }
 
 function roundRect(r: Rect): Rect {
@@ -1866,6 +1825,7 @@ function roundScene(s: Scene): Scene {
             },
           }),
       ...(w.label === undefined ? {} : { label: roundText(w.label) }),
+      ...(w.blocked === true ? { blocked: true as const } : {}),
     }));
   }
   return out;

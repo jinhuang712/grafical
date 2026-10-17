@@ -18,7 +18,7 @@ import { crossingFix, wallAllows } from "../model/walls.ts";
 import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneBadge, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
-import { GROUP, NOTE, ROUTE } from "../theme/geometry.ts";
+import { GROUP, NOTE, ROUTE, WALL } from "../theme/geometry.ts";
 import { hasHead, lineLook, lineStyle, PAINT } from "../theme/paint.ts";
 import { textInside } from "../theme/shapes.ts";
 import { themeOf } from "../theme/themes.ts";
@@ -255,7 +255,7 @@ function checkSteps(scene: Scene, out: Found[]): void {
   for (const b of scene.bands ?? []) texts.push({ id: b.id, is: "layer", rect: b.label.bbox });
   for (const x of scene.lanes ?? []) texts.push({ id: x.id, is: "lane", rect: x.head });
   for (const w of scene.walls ?? [])
-    if (w.label) texts.push({ id: w.id, is: "wall", rect: w.label.bbox });
+    if (w.label && w.blocked !== true) texts.push({ id: w.id, is: "wall", rect: w.label.bbox });
   for (const x of scene.notes ?? []) {
     texts.push({ id: x.on, is: "note", rect: x.card ?? x.text.bbox });
     for (const b of [x.mark, x.key]) {
@@ -341,8 +341,9 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
   // A group's label is the agent's: a line across it is title-blocked.
   for (const b of scene.bands ?? []) targets.push({ id: b.id, is: "layer", text: b.label });
   for (const x of scene.lanes ?? []) targets.push({ id: x.id, is: "lane", text: x.label });
+  // A wall's label with no place along its wall is the agent's: label-blocked.
   for (const w of scene.walls ?? []) {
-    if (w.label) targets.push({ id: w.id, is: "wall", text: w.label });
+    if (w.label && w.blocked !== true) targets.push({ id: w.id, is: "wall", text: w.label });
   }
   for (const x of scene.notes ?? []) {
     targets.push({ id: x.on, is: "note", text: x.text });
@@ -393,13 +394,19 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
 
 /**
  * A line's label, or its step's badge, that no gutter of its path could hold clear of the
- * other lines: no line moves for it, so it lies across them (DESIGN.md, "The dirty work has
- * edges"). The agent shortens or drops the text, or changes rows. The elements name the line,
- * then the lines and the borders of groups, bands and lanes across its text; the facts name
- * the gutters it tried.
+ * other lines, and a wall's label that no place along its wall holds clear of the lines
+ * across it: no line moves for it, so it lies across them (DESIGN.md, "The dirty work has
+ * edges"). The agent shortens or drops the text, or changes rows. The elements name the line
+ * or the wall, then what lies across the text: lines, and for a line's label the borders of
+ * groups, bands and lanes, for a wall's boxes; the facts name the gutters a line's label tried.
  */
 function checkLabelRoom(scene: Scene, out: Found[]): void {
   const borders = [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])];
+  /** The lines other than `own` that pass through r. */
+  const lines = (r: Rect, own?: string) =>
+    scene.edges
+      .filter((o) => o.id !== own && segmentsOf(o.points).some((s) => segmentCrossesRect(s, r)))
+      .map((o) => o.id);
   for (const e of scene.edges) {
     if (e.blocked === undefined) continue;
     const b = e.step;
@@ -409,10 +416,7 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
     const across: string[] = [];
     if (rect !== undefined) {
       const box = inset(rect, TEXT_TOLERANCE);
-      for (const o of scene.edges) {
-        if (o.id === e.id) continue;
-        if (segmentsOf(o.points).some((s) => segmentCrossesRect(s, box))) across.push(o.id);
-      }
+      across.push(...lines(box, e.id));
       for (const g of borders) {
         const { x, y, w, h } = g.rect;
         const sides = segmentsOf([
@@ -429,6 +433,17 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
       code: "label-blocked",
       elements: [e.id, ...across],
       facts: { is: "edge", gutters: e.blocked },
+    });
+  }
+  // A wall's label keeps its clearance from lines and boxes as the engine places it.
+  for (const w of scene.walls ?? []) {
+    if (w.blocked !== true || w.label === undefined) continue;
+    const box = inset(w.label.bbox, -WALL.labelClear);
+    const boxes = scene.nodes.filter((n) => rectsOverlap(n.rect, box)).map((n) => n.id);
+    out.push({
+      code: "label-blocked",
+      elements: [w.id, ...lines(box), ...boxes],
+      facts: { is: "wall" },
     });
   }
 }

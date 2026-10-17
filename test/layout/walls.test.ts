@@ -81,6 +81,29 @@ describe('a wall across (DESIGN.md, "Walls as space")', () => {
     expect(check(d, scene, m)).toEqual([]);
   });
 
+  // Until 2026-10-17 such a label went across the picture past the wall's end, or left of
+  // everything in a second layout (DESIGN.md, "The dirty work has edges").
+  it("refuses a label no place along the wall holds clear of the lines, and keeps it on the wall", () => {
+    const d = ok(fx, [
+      net("the private network that no request from outside may cross on its way to the catalog"),
+    ]);
+    const scene = layout(d, m);
+    const wall = scene.walls?.[0];
+    if (wall?.line === undefined || wall.label === undefined) throw new Error("no divider");
+    expect(wall.blocked).toBe(true);
+    expect(wall.label.bbox.x).toBe(wall.rect.x + WALL.reach);
+    expect(wall.line.a.x).toBe(wall.rect.x);
+    expect(wall.line.b.x).toBe(wall.rect.x + wall.rect.w);
+    expect(check(d, scene, m)).toEqual([
+      {
+        code: "label-blocked",
+        owner: "agent",
+        elements: ["net", "upstream->relay"],
+        facts: { is: "wall" },
+      },
+    ]);
+  });
+
   it("reports a line that passes through it, unless it allows the line", () => {
     const d = ok(fx, [
       net(),

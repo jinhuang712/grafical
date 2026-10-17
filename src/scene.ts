@@ -104,6 +104,11 @@ export interface SceneWall {
   /** From a to b; `gaps` are spans along it, in x across or y up and down, where it breaks around text. */
   line?: { a: Point; b: Point; gaps?: [number, number][] };
   label?: PlacedText;
+  /**
+   * true: no place along the wall keeps its label clear of the lines across it, so the label lies
+   * across one, and the write is refused (DESIGN.md, "The dirty work has edges").
+   */
+  blocked?: true;
 }
 
 /**
