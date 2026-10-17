@@ -236,6 +236,13 @@ describe("node.rename, node.move, node.remove", () => {
     expect(fail(d, [{ op: "node.move", id: "a", layer: "bottom" }])[0]?.code).toBe(
       "align-same-layer",
     );
+    // The fix clears the alignment that would join two boxes of one row; then the move goes.
+    const up: Op = { op: "node.move", id: "n", layer: "top", last: true };
+    const down: Op = { op: "node.move", id: "a", layer: "bottom", last: true };
+    expect(fail(d, [up])[0]?.facts?.fix).toEqual(["node align <file> n"]);
+    expect(fail(d, [down])[0]?.facts?.fix).toEqual(["node align <file> n"]);
+    ok(d, [{ op: "node.align", id: "n" }, up]);
+    ok(d, [{ op: "node.align", id: "n" }, down]);
   });
   it("removes a node together with its edges, and lists them", () => {
     const d = ok(base, [

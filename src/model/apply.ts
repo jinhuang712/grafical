@@ -1132,13 +1132,14 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
   if (target.id !== at.layer?.id) {
     const own = at.node.align;
     const ownLayer = own === undefined ? undefined : findNode(d, own)?.layer?.id;
+    // An alignment holds only between rows: the one that would join the box to a box of its new row goes first.
     if (ownLayer === target.id) {
       errors.push({
         code: "align-same-layer",
         index: i,
         field: "layer",
         found: target.id,
-        facts: { node: own as string },
+        facts: { node: own as string, fix: [`node align <file> ${op.id}`] },
       });
     }
     const clash = target.nodes.find((n) => n.align === op.id);
@@ -1148,7 +1149,7 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
         index: i,
         field: "layer",
         found: target.id,
-        facts: { node: clash.id },
+        facts: { node: clash.id, fix: [`node align <file> ${clash.id}`] },
       });
     }
   }
