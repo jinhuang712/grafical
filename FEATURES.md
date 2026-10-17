@@ -389,14 +389,15 @@ Empty space between two parts of a picture, which lines cross only where the wal
 
 ```sh
 grafical wall add <file> <id> --between a,b --and c,d [--allow e,f] [--label <text>]
-grafical wall allow <file> <id> <pass...> [--off]
+grafical wall allow <file> <id> <allow...> [--off]
+grafical wall relabel <file> <id> [--label <text>]
 grafical wall remove <file> <id>
 ```
 
 - Each side is a list of boxes and groups. When one side lies above the other, the wall runs across. When they sit side by side in their rows, it runs up and down. Otherwise it is refused as `wall-sides`, and so is a box on both sides.
 - A wall is only as long as its two sides need.
 - A line from one side to the other is refused as `wall-crossed`, unless `allow` names the line or a box or group at one of its ends, such as a gateway. Any other line drawn through the wall is a defect with the same code.
-- Without a label, a wall is invisible: only its space shows. With a label, it draws a dashed divider through its middle, the label along it at the first place no line comes near. Where none is, the write is refused as `label-blocked` (DESIGN.md, "The dirty work has edges").
+- Without a label, a wall is invisible: only its space shows. With a label, it draws a dashed divider through its middle, the label along it at the first place no line comes near. Where none is, the write is refused as `label-blocked` (DESIGN.md, "The dirty work has edges"). `wall relabel` changes the label, or drops it without `--label`.
 - A box or group that is removed leaves the wall's sides, and a wall left with an empty side goes.
 
 ### Notes ✅

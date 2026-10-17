@@ -673,7 +673,7 @@ When to use:
   - With --label it draws a dashed divider through the space, the label at
     its start. Without one it is only space.
   - A label with no place along the wall clear of the lines across it is
-    refused (label-blocked): shorten or drop it.
+    refused (label-blocked): shorten or drop it with wall relabel.
 
 Crossing:
   - A line from one side to the other is refused (wall-crossed) unless the

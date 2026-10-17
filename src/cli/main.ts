@@ -378,7 +378,9 @@ export function build(): Command {
     await write(file, { op: "column.remove", id }, opts);
   });
 
-  const wall = program.command("wall").description("walls between parts: add, allow, remove");
+  const wall = program
+    .command("wall")
+    .description("walls between parts: add, allow, relabel, remove");
   json(
     wall
       .command("add")
@@ -411,6 +413,16 @@ export function build(): Command {
       { op: "wall.allow", id, allow: pass, ...(opts.off === true ? { off: true } : {}) },
       opts,
     );
+  });
+  json(
+    wall
+      .command("relabel")
+      .description("set the words on a wall's divider; without --label, it is space alone")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--label <text>", "draw a dashed divider through it with these words"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "wall.relabel", id, ...pick(opts, ["label"]) }, opts);
   });
   json(
     wall.command("remove").description("remove a wall").argument("<file>").argument("<id>"),

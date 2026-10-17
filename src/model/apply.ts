@@ -601,7 +601,7 @@ function laneStep(s: State, op: Extract<Op, { op: `lane.${string}` }>, i: number
 }
 
 /**
- * wall.add, wall.allow and wall.remove (DESIGN.md, "Walls as space"). Ids that do not exist are refused here;
+ * wall.add, wall.allow, wall.relabel and wall.remove (DESIGN.md, "Walls as space"). Ids that do not exist are refused here;
  * whether the sides lie above or beside each other, and which lines cross, is checked
  * once the whole batch is applied.
  */
@@ -662,6 +662,9 @@ function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number
     const errors = unknown(op.allow, "allow", names);
     if (errors.length > 0) return errors;
     wall.allow = unique([...(wall.allow ?? []), ...op.allow]);
+  } else if (op.op === "wall.relabel") {
+    if (op.label === undefined) delete wall.label;
+    else wall.label = op.label;
   } else if (walls.length > 1) d.walls = walls.filter((x) => x.id !== wall.id);
   else delete d.walls;
   touch(s, wall.id);
@@ -1958,6 +1961,7 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "wall.add":
     case "wall.allow":
     case "wall.remove":
+    case "wall.relabel":
       return wallStep(s, op, i);
     case "note.add":
     case "note.remove":

@@ -434,6 +434,12 @@ export interface WallRemoveOp {
   op: "wall.remove";
   id: string;
 }
+/** A wall's label: the words on its divider. Absent: no label, and the wall is space alone (DESIGN.md, "Walls as space"). */
+export interface WallRelabelOp {
+  op: "wall.relabel";
+  id: string;
+  label?: string;
+}
 /** A note on a node, group or line; adding one where there is one replaces it (DESIGN.md, "Notes as callouts or footnotes"). */
 export interface NoteAddOp {
   op: "note.add";
@@ -477,6 +483,7 @@ export type Op =
   | WallAddOp
   | WallAllowOp
   | WallRemoveOp
+  | WallRelabelOp
   | NoteAddOp
   | NoteRemoveOp
   | LayerAddOp
@@ -827,6 +834,11 @@ export const wallAllowSchema = z.strictObject({
   off: z.boolean().optional(),
 });
 export const wallRemoveSchema = z.strictObject({ op: z.literal("wall.remove"), id: nodeId });
+export const wallRelabelSchema = z.strictObject({
+  op: z.literal("wall.relabel"),
+  id: nodeId,
+  label: text.optional(),
+});
 export const noteAddSchema = z.strictObject({
   op: z.literal("note.add"),
   on: edgeId,
@@ -873,6 +885,7 @@ export const opSchema = z.discriminatedUnion("op", [
   wallAddSchema,
   wallAllowSchema,
   wallRemoveSchema,
+  wallRelabelSchema,
   noteAddSchema,
   noteRemoveSchema,
   layerRenameSchema,
@@ -937,6 +950,7 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "wall.add": wallAddSchema,
   "wall.allow": wallAllowSchema,
   "wall.remove": wallRemoveSchema,
+  "wall.relabel": wallRelabelSchema,
   "note.add": noteAddSchema,
   "note.remove": noteRemoveSchema,
   "layer.rename": layerRenameSchema,
