@@ -800,20 +800,35 @@ function groupConstraints(
       if (stranger !== undefined) {
         const layer = d.layers[r]?.id ?? "";
         const s = ids[stranger] as string;
-        // The node either belongs in the group, or goes out to one side of its members. Only a member in the row
-        // names a place in it, and a box placed by steps, which sits in the row here, takes it with --layer.
+        // The node either belongs in the group, or goes out to one side of its members. Groups nest, so it joins
+        // the innermost group whose members it stands between, or goes out past the outermost one's. A place in
+        // the row is named by the member at that end only when that member is in the row itself, not placed by
+        // steps; a box placed by steps, which sits in the row here, takes the row with --layer.
+        const at0 = list.indexOf(stranger);
+        const span = (h: string): [number, number] | undefined => {
+          const k = list.map((i, x) => (isIn(i, h) ? x : -1)).filter((x) => x >= 0);
+          return k.length > 0 ? [k[0] as number, k[k.length - 1] as number] : undefined;
+        };
+        const around = (d.groups ?? [])
+          .map((x) => x.id)
+          .filter((h) => {
+            const sp = span(h);
+            return !isIn(stranger, h) && sp !== undefined && sp[0] < at0 && at0 < sp[1];
+          })
+          .sort((a, b) => groupChain(d, a).length - groupChain(d, b).length);
+        const inner = around[around.length - 1] ?? g;
+        const [left0, right0] = span(around[0] ?? g) ?? [first, last];
         const inRow = new Set(
           (d.layers[r]?.nodes ?? []).filter((n) => n.from === undefined).map((n) => n.id),
         );
-        const placed = list
-          .slice(first, last + 1)
-          .map((i) => ids[i] as string)
-          .filter((id) => id !== s && inRow.has(id));
         const into = inRow.has(s) ? "" : ` --layer ${layer}`;
-        const fix = [`group join <file> ${g} ${s}`];
-        if (placed.length > 0) {
-          fix.push(`node move <file> ${s}${into} --before ${placed[0]}`);
-          fix.push(`node move <file> ${s}${into} --after ${placed[placed.length - 1]}`);
+        const fix = [`group join <file> ${inner} ${s}`];
+        for (const [k, side] of [
+          [left0, "before"],
+          [right0, "after"],
+        ] as const) {
+          const end = ids[list[k] as number] as string;
+          if (inRow.has(end)) fix.push(`node move <file> ${s}${into} --${side} ${end}`);
         }
         failed = {
           code: "group-split",

@@ -231,6 +231,35 @@ describe("group operations", () => {
     ok(row, [swap, { op: "node.move", id: "c", layer: "r", after: "x" }]);
   });
 
+  it("group-split in nested groups: join the innermost around the box, or go out past the outermost", () => {
+    const row = ok(empty, [
+      { op: "layer.add", id: "r", label: "R" },
+      { op: "node.add", id: "a", layer: "r", label: "A", last: true },
+      { op: "node.add", id: "b", layer: "r", label: "B", last: true },
+      { op: "node.add", id: "x", layer: "r", label: "X", last: true },
+      { op: "node.add", id: "d", layer: "r", label: "D", last: true },
+      { op: "group.add", id: "outer", label: "Outer", nodes: ["a"] },
+    ]).diagram;
+    const inner: Op = {
+      op: "group.add",
+      id: "inner",
+      label: "Inner",
+      nodes: ["b", "d"],
+      in: "outer",
+    };
+    const e = fail(row, [inner]);
+    expect(e[0]).toMatchObject({ code: "group-split", found: "x" });
+    // Joining the outer group alone, or a place between a and b, would leave x inside the inner one.
+    expect(e[0]?.facts?.fix).toEqual([
+      "group join <file> inner x",
+      "node move <file> x --before a",
+      "node move <file> x --after d",
+    ]);
+    ok(row, [inner, { op: "group.join", group: "inner", nodes: ["x"] }]);
+    ok(row, [inner, { op: "node.move", id: "x", layer: "r", before: "a" }]);
+    ok(row, [inner, { op: "node.move", id: "x", layer: "r", after: "d" }]);
+  });
+
   it("node.remove keeps the group, even empty", () => {
     const d1 = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a"] }]).diagram;
     const d2 = ok(d1, [{ op: "node.remove", id: "a" }]).diagram;
