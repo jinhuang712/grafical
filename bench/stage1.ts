@@ -56,6 +56,7 @@ export const PARTS = [
   "help2",
   "help3",
   "records",
+  "reflect",
 ] as const;
 export type Part = (typeof PARTS)[number];
 
@@ -180,6 +181,11 @@ export function planPart(part: Part): PartPlan {
     case "records":
       add(["grafical"], "haiku", runs3, helpTasks(), []);
       return { part, round: "p1e-records", runs: RUNS, chains };
+    // The same 33 tasks on everything built since p1e-records, each chain ending with a
+    // reflection (bench/results/p1f-reflect.md says what it is for).
+    case "reflect":
+      add(["grafical"], "haiku", runs3, helpTasks(), []);
+      return { part, round: "p1f-reflect", runs: RUNS, chains };
   }
 }
 

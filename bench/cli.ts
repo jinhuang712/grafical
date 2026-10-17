@@ -17,7 +17,7 @@
 //   diff <ref> [--seeds 2000] [--render <dir>]
 //                                             what the working tree's engine changes against <ref>, over saved drafts, fixtures and fuzz seeds; costs nothing
 //   speed                                     speed: time one operation and one command
-//   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints|hints2|hints3|hints4|help|brief|help2|help3|records> --dry-run | --approved [--only <chain>]
+//   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints|hints2|hints3|hints4|help|brief|help2|help3|records|reflect> --dry-run | --approved [--only <chain>]
 //                                             the end of stage 1, one part at a time
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
