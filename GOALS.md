@@ -108,7 +108,7 @@ The owner marked every draft without grafical, and every Mermaid draft, too bad 
 
 ### Token use
 
-- **Target:** an accepted diagram for fewer fresh tokens than each baseline uses for an accepted one. Also, the help an agent reads before its first operation stays under 3k tokens.
+- **Target:** an accepted diagram for fewer fresh tokens than each baseline uses for an accepted one. Also, the help an agent reads before its first operation stays under 3k tokens; suspended by the owner on 2026-10-17 while the help's correctness comes first (DESIGN.md, "One entry page, help where it is used").
 - **Method:** the benchmark harness, from each run's token counts. Fresh tokens leave out cache reads.
 - **Kill threshold:** a baseline that gets accepted diagrams for fewer tokens.
 - **Status:** ✅ met on 2026-10-12 against the baselines that ran. ⬜ The higher-thinking baseline and the `diagram-design` skill have not run, and the help read before the first operation was not measured, because the round recorded no empty baseline.

@@ -2,7 +2,7 @@
 // error means the input diagram is untouched, and the first failing operation's
 // errors are returned with its index.
 
-import type { OpError } from "../errors.ts";
+import type { ErrorCode, OpError } from "../errors.ts";
 import * as layoutModule from "../layout/index.ts";
 import { edgeWidth } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES, themeOf } from "../theme/themes.ts";
@@ -111,9 +111,12 @@ const MARK_STYLE_FIELDS = ["bg", "fg", "border", "shape"] as const;
  * file, takes a size and nothing else: it has its own colors and outline.
  */
 function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
-  const bad = (code: string, field: string, found: string, facts?: OpError["facts"]): OpError[] => [
-    { code, index: i, field, found, ...(facts === undefined ? {} : { facts }) },
-  ];
+  const bad = (
+    code: ErrorCode,
+    field: string,
+    found: string,
+    facts?: OpError["facts"],
+  ): OpError[] => [{ code, index: i, field, found, ...(facts === undefined ? {} : { facts }) }];
   const size = op.size === undefined || op.size === DEFAULT_MARK_SIZE ? undefined : op.size;
   const picture = op.sha256 !== undefined || isEmoji(icon);
   if (op.sha256 === undefined && isMarkFile(icon)) {
@@ -1190,7 +1193,7 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
 }
 
 /** A style that names no theme, or a stylesheet outside the diagram's folder (DESIGN.md, "Themes and stylesheets"). */
-export function badStyle(style: string, problem: string, i: number, field = "style"): OpError {
+export function badStyle(style: string, problem: ErrorCode, i: number, field = "style"): OpError {
   return {
     code: problem,
     index: i,

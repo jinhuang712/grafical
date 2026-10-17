@@ -400,13 +400,12 @@ describe("read commands", () => {
     expect(beside.out).toMatch(/^wrote file=single.png\nok\ncounts nodes=/);
   });
 
-  it("the help read before a draft is byte-stable and within the old guide's budget", () => {
+  // No size limit while the help's correctness comes first (DESIGN.md, "One entry page, help where it is used").
+  it("the help read before a draft is byte-stable", () => {
     const a = run("--help");
     const b = run("--help");
     expect(a.code).toBe(0);
     expect(a.out).toBe(b.out);
-    const draft = a.out + run("new", "--help").out + run("apply", "--help").out;
-    expect(draft.length).toBeLessThan(12000);
-    expect(draft).toContain("grafical apply");
+    expect(a.out + run("apply", "--help").out).toContain("grafical apply");
   });
 });

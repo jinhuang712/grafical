@@ -6,7 +6,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, isAbsolute, join, normalize } from "node:path";
-import type { OpError } from "../errors.ts";
+import type { ErrorCode, OpError } from "../errors.ts";
 import type { Op } from "../model/ops.ts";
 import { isMarkFile } from "../model/schema.ts";
 import { everyNode } from "../model/steps.ts";
@@ -41,7 +41,7 @@ function svgProblem(svg: string): string | undefined {
   return undefined;
 }
 
-function problem(code: string, index: number, found: string, fix?: string[]): OpError {
+function problem(code: ErrorCode, index: number, found: string, fix?: string[]): OpError {
   return {
     code,
     index,

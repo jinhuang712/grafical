@@ -1,10 +1,16 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Command } from "commander";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import type { z } from "zod";
+import { opCommands } from "../../src/cli/batch.ts";
 import { PAGES } from "../../src/cli/help.ts";
+import { build } from "../../src/cli/main.ts";
+import { DEFECT_CODES, ERROR_CODES } from "../../src/errors.ts";
 import { writeDiagram } from "../../src/model/io.ts";
+import { OP_NAMES, SCHEMAS } from "../../src/model/ops.ts";
 import { EDGE_KINDS, NODE_KINDS } from "../../src/model/types.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 
@@ -23,7 +29,28 @@ function run(...args: string[]) {
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 
-describe('help pages (DESIGN.md, "The help as the reference")', () => {
+const SRC = join(import.meta.dirname, "../../src");
+
+/** Every TypeScript file of the engine, as text. */
+function sources(dir = SRC): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory()
+      ? sources(join(dir, e.name))
+      : e.name.endsWith(".ts")
+        ? [readFileSync(join(dir, e.name), "utf8")]
+        : [],
+  );
+}
+
+/** A command's page as commander prints it, read in this process. */
+function page(c: Command): string {
+  let out = "";
+  c.configureOutput({ writeOut: (s) => (out += s), getOutHelpWidth: () => 80 });
+  c.outputHelp();
+  return out;
+}
+
+describe('help pages (DESIGN.md, "One entry page, help where it is used")', () => {
   it("each page belongs to a command, shows its paragraph and sections, and fits a terminal", () => {
     for (const path of ["", ...Object.keys(PAGES)]) {
       const r = run(...(path === "" ? [] : path.split(" ")), "--help");
@@ -38,6 +65,30 @@ describe('help pages (DESIGN.md, "The help as the reference")', () => {
       for (const line of prose.split("\n"))
         expect(line.length, `${path}: ${line}`).toBeLessThanOrEqual(80);
     }
+  });
+
+  it("every command of an operation shows its line in a batch, with the fields it needs", () => {
+    const commands = opCommands(build());
+    expect([...commands.keys()].sort()).toEqual([...OP_NAMES].sort());
+    for (const [op, c] of commands) {
+      const text = page(c);
+      const section = text.split("In a batch:\n")[1]?.split("\n\n")[0] ?? "";
+      expect(section, op).toMatch(new RegExp(`^ {2}- \\{op: ${op.replace(".", "\\.")}[,}]`));
+      const needed = (SCHEMAS[op] as z.ZodObject).safeParse({ op }).error?.issues ?? [];
+      for (const issue of needed) {
+        const field = String(issue.path[0]);
+        expect(section, `${op} ${field}`).toContain(`${field}: `);
+      }
+      for (const line of section.split("\n"))
+        expect(line.length, `${op}: ${line}`).toBeLessThanOrEqual(80);
+    }
+  });
+
+  it("every error and defect code listed is one grafical prints", () => {
+    const src = sources()
+      .filter((t) => !t.includes("export const ERROR_CODES"))
+      .join("\n");
+    for (const code of [...ERROR_CODES, ...DEFECT_CODES]) expect(src, code).toContain(`"${code}"`);
   });
 
   it("lists every kind of node and edge", () => {

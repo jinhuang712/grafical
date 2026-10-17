@@ -2,6 +2,10 @@
 
 Small fixes and follow-ups with no milestone yet. An item moves to ROADMAP.md once it has one.
 
+## Pages read before a first write
+
+DESIGN.md, "One entry page, help where it is used" names a risk: agents may not use the ways to draw the entry page lists, or may draft without opening a command's page. The harness counts grafical calls by outcome, but not which help pages an agent read before its first write. `bench lines` or the metrics should count each `--help` call (and `grafical help <command>`) before the first `apply` or edit, per draft, so the next paid round can say which pages agents read.
+
 ## A row's label is drawn twice
 
 A row that is in a lane and is also the end of a line gets the lane's label and a band label of its own. The band label sits away from the band's top left: top right in one picture, the middle in another.

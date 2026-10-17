@@ -5,7 +5,7 @@ import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { type Bent, bentLines, type Counts, countsText, drawing } from "../check/drawing.ts";
 import { check } from "../check/index.ts";
-import { type Defect, FACT_ORDER, type Facts, type OpError } from "../errors.ts";
+import { type Defect, type ErrorCode, FACT_ORDER, type Facts, type OpError } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
 import { readDiagram, writeDiagram } from "../model/io.ts";
@@ -114,7 +114,7 @@ export function failure(errors: OpError[]): Report {
   return { ok: false, changed: [], errors, defects: [] };
 }
 
-export function fileError(code: string, file: string, facts?: Facts): Report {
+export function fileError(code: ErrorCode, file: string, facts?: Facts): Report {
   return failure([{ code, index: 0, field: "file", found: file, ...(facts ? { facts } : {}) }]);
 }
 

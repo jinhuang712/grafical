@@ -6,12 +6,7 @@
 
 import type { Facts } from "../errors.ts";
 
-export type AlignmentCode =
-  | "unknown-node"
-  | "same-layer"
-  | "self-alignment"
-  | "alignment-cycle"
-  | "alignment-conflict";
+export type AlignmentCode = "unknown-node" | "same-layer" | "self-alignment" | "alignment-conflict";
 
 export interface AlignmentProblem {
   code: AlignmentCode;

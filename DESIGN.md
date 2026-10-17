@@ -63,7 +63,7 @@ Code and the other documents cite a section of this file by its heading, such as
 ### Interfaces
 
 - **The command line comes first.** Every operation is a command, every command takes `--json`, and every write reports what it changed, so that the agent need not read the diagram again. An MCP server may wrap the same operations later. Cost: each command is a process start, which a batch spreads over many operations. Holds as: `--json` prints the same fields as the records.
-- **`show` is the agent's view of a diagram, and the help is its only reference.** An agent learns grafical from `grafical --help` and each command's help, and reads a diagram through `show`, never the YAML. Cost: the help must stay short enough to read before a first draft. Holds as: the help text lives in `src/cli/help.ts`, and the tests apply the example in `apply --help` as printed.
+- **`show` is the agent's view of a diagram, and the help is its only reference.** An agent learns grafical from `grafical --help` and each command's help, and reads a diagram through `show`, never the YAML. Cost: the help must stay short enough to read before a first draft. Holds as: the help text lives in `src/cli/help.ts`, each command's line in a batch is built from its operation's schema, and the tests apply the example in `apply --help` as printed.
 
 ### Performance
 
@@ -445,6 +445,8 @@ Rejected, for stage 1:
 
 ## Decision: The help as the reference — 2026-10-12
 
+Changed on 2026-10-17 by "One entry page, help where it is used": the entry page gives the kinds of diagram and every way to draw in place of the diagram types, a command's page shows its line in a batch, its sections by diagram type are by kind of diagram, and the budget below is suspended.
+
 Decided on 2026-10-12 by the owner. In a real setup an agent knows only that a `grafical` command exists, and `grafical --help` and `grafical <command> --help` are how it learns the tool. The stage 1 benchmarks hid this: their prompt told every agent to run `grafical guide` first, and the main guide then sent it on to `grafical guide <type>`, two hops past the command an agent would try on its own.
 
 - **What the help holds.** `grafical --help` says what grafical is, how to work, what makes a diagram good, and one entry per diagram type in grafical's words. Each command's help adds, after its usage and options, the sections it needs, always in one order: When to use, By diagram type, Kinds, Good to know, Common mistakes, Limits, Batch file, Output, When refused, See also, Example. The text lives in `src/cli/help.ts`.
@@ -676,7 +678,7 @@ Decided on 2026-10-16 from a request that agents see how a picture is composed, 
 - **Separate counts, never one score.** PHILOSOPHY.md rejected a score of how hard a picture is to read on 2026-10-13, because readers differ. Each count is a fact the agent weighs; `try` shows the delta of each.
 - **Gutters.** `show --drawn` also prints a `gutter above=<row> below=<row> lines= crossings= tight= crowded=` record for each pair of neighbouring rows that hold boxes: the space from the bottom of the upper row's boxes to the top of the lower row's. `lines` counts the lines with a run in it, even one that only passes through; the other three count the crossings, tight pairs and crowded labels that lie in it (a vertical tight pair counts in every gutter it spans). The agent compares gutters to see which row order costs; the record gives no advice, and no sum.
 - **Measured** over the 306 saved agent drafts: `across` 66 lines in 29 drafts, `tight` 6 pairs in 3 drafts, `crowded` 88 labels in 51 drafts (GOALS.md, "Mechanical defects").
-- **Help.** The three are described in `apply --help`'s Output section, which stays within the 12,000 characters read before a draft.
+- **Help.** The three are described in `apply --help`'s Output section.
 
 Rejected:
 - One composition score: a weighted sum hides which of the three costs.
@@ -788,6 +790,30 @@ Rejected:
 - Reporting everything, even a label with no room drawn over lines. A picture that hides text is not correct, and a report beside it looks like success ("Defects owned by who can fix them").
 - The engine growing a box with no stated size to the size its lines' labels need, as it sizes one to its text. Offered on 2026-10-17 for a line's label with no room; the owner chose that the agent widens it, from the size the refusal names.
 - Keeping each fallback and reporting that it ran. The crooked form would still be drawn for the agent, and the empty space or the detour would stay in the picture.
+
+## Decision: One entry page, help where it is used — 2026-10-17
+
+Decided by the owner on 2026-10-17. The owner asked whether agents draw rows and groups because the help suggests nothing else ("only these commands? then I'll draw it like this"), and forbade putting all the help and the guides in one place. The help read before a draft had 60 characters left of its budget (11,940 of 12,000), and `apply --help` listed 15 of the 60 batch operations, so the reflect round's first agent found `group.title`'s field only from a refusal. A first restructure the same day, a map with guides and references, was withdrawn before it was committed (Rejected, below): the owner found it flat, and asked how an agent reads help and why a refusal's code should need looking up.
+
+How an agent reads a command line's help, which this follows:
+- It reads the first page once, before it starts, then acts. It opens a command's page when it uses that command and is unsure of its form. It seldom opens a page only because another names it: in the 2026-10-12 round, 4 of 33 drafts opened `diagram legend --help`.
+- It reads a refusal most closely, and fixes what the refusal names. In the reflect round's probe, the agent took a place for each `title-blocked` label from its `clear` fact, and the next write passed.
+- It cannot try what it does not know exists. A form can be learnt from refusals (`unknown-field ... likely=at`); a wall, a bar or a numbered path cannot.
+
+So:
+- **The entry page** (`grafical --help`) is enough for a first draft: what grafical is, how to work, the kind of diagram by what a box stands for and what a line means, and every way to draw, one line each by the story it tells. The four kinds are structure (C4, infrastructure and dependency graphs are structure), flow (data flow and event flow), process (a swimlane is a process with lanes) and states; infrastructure replaces the types cloud and deployment, which differed only in what their nested groups were called. The kinds and the ways to draw replace the list of diagram types, and the page says that any kind may use any way to draw, and what grafical does not draw.
+- **A command's page** is read when the command is used: its usage and options, its line in a batch, and its own sections, among them what it does in each kind of diagram ("By kind of diagram") and, on `try`, what to try when the picture looks wrong. A command's line in a batch is built from its operation's schema, so `apply --help` lists no operations: every page shows its own.
+- **A refusal carries its own fix.** A code names the kind of problem, so that the agent and the harness can tell one from another; what is wrong and what fits is in the record's facts, never in a page to look up. A refusal whose facts do not say what to change is a defect of that refusal. The codes are one typed list, and a test checks that each is one grafical prints: `alignment-cycle`, which nothing printed, left it.
+- **Depth.** Every page is at most two hops from the entry page, `grafical node --help` and then `grafical node add --help`, as before.
+- **No size limit for now.** The owner suspended the help's size limits the same day: first the help and grafical's refusals must be right, then it is decided whether a page needs a limit. The budget of "The help as the reference", 12,000 characters for the help read before a first draft, and its test are suspended with them (GOALS.md, "Token use"). That day the entry page, `new --help` and `apply --help` took 11,280 characters together, where they took 11,940.
+
+Rejected:
+- One page with all the help and the guides, the 2026-10-12 shape grown longer. The owner forbade it: the budget decides what is left out.
+- A map with three guides to read first (`grafical help diagrams`, `compose`, `workflow`) and three references (every operation, every record, every code), each reached by `grafical help <name>`. Built and withdrawn on 2026-10-17, before it was committed. A guide is a hop the agent must choose to take. The references were flat: one operation's entry was about 250 characters in a page of 16,500, one code's about 240 in 27,700. A page of what each code means asks the agent to look up what its refusal should have said.
+- A setting or a custom mode for the diagram's kind. grafical has no type mode ("Every layered diagram type"): every diagram is already composed from the same blocks, and the entry page says so.
+- A separate `grafical guide` command, as before 2026-10-12. Each hop is a place where an agent stops.
+
+Risk, to measure in the next paid round: whether agents use the ways to draw the entry page lists where the request fits, and which command pages they open before their first write. The harness does not yet count the pages (TODO.md, "Pages read before a first write").
 
 ## Open questions
 

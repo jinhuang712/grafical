@@ -898,7 +898,8 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeRetargetSchema,
 ]);
 
-const SCHEMAS: Record<OpName, z.ZodType> = {
+/** Each operation's schema, by name. Each command's line in a batch is built from them (DESIGN.md, "One entry page, help where it is used"). */
+export const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.new": diagramNewSchema,
   "diagram.sizing": diagramSizingSchema,
   "diagram.style": diagramStyleSchema,

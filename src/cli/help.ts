@@ -1,78 +1,84 @@
-// The help pages: all an agent reads to learn grafical (DESIGN.md, "The help as the reference"). A page is
-// commander's usage, options and commands, then this file's sections, always in this
-// order: When to use, By diagram type, Kinds, Good to know, Common mistakes, Limits,
-// Batch file, Output, When refused, See also, Example. A page shows the ones it has.
-// Advice gives a direction, not a number; numbers are only the limits grafical enforces.
+// The help pages: all an agent reads to learn grafical (DESIGN.md, "One entry page, help where it is used"). The
+// entry page is read once, before a first draft: what grafical is, how to work, which kind of diagram a story is,
+// and every way to draw, by the story each tells. A command's page is read when the command is used: commander's
+// usage and options, its line in a batch, then this file's sections, always in this order: When to use, By kind
+// of diagram, Kinds, Good to know, Common mistakes, Limits, Batch file, Output, When refused, What to try, See
+// also, Example. A page shows the ones it has. Advice gives a direction, not a number; numbers are only the
+// limits grafical enforces.
 
 import { MAX_GROUP_DEPTH } from "../model/groups.ts";
 import { MAX_ACCENTS } from "../model/schema.ts";
 import { MARK_COLORS, MARK_SHAPES, MARK_SIZES, STEP_NUMBER_MAX } from "../model/types.ts";
 
 /** What grafical is: the top of `grafical --help`. */
-export const PROGRAM_ABOUT = `grafical draws architecture and process diagrams from facts. You say which
-row a box is in, what it connects to and which group it belongs to; grafical
+export const PROGRAM_ABOUT = `grafical draws diagrams from facts: what exists and who talks to whom, what
+moves where, the steps of a process, the states of a thing. You say which row
+a box is in, what it connects to and which group it belongs to; grafical
 places, sizes and routes everything, and refuses a change that would draw
 wrong. The diagram is one YAML file, <name>.grafical.yaml, kept in git.`;
 
-/** The rest of `grafical --help`: how to work, what makes a diagram good, the types. */
+/** The rest of `grafical --help`: how to work, the kinds of diagram, every way to draw, a good diagram. */
 export const PROGRAM_AFTER = `
 How to work:
   1. grafical new <file> --title <text> --subtitle <text> --note <text>
-  2. Write all rows, nodes, groups and edges in one batch file, then
-     grafical apply <file> batch.yaml
+  2. Write the whole draft as one batch file, then
+     grafical apply <file> batch.yaml. apply --help has a full example, and
+     each command's --help shows its line in a batch.
   3. grafical render <file> and look at the PNG, or read
      grafical show <file> --drawn.
-  4. Fix with single commands. To weigh a change first, grafical try <file>
-     <batch> prints the counts before and after it.
-  Never edit the file by hand. Fix what a refusal names and run it again.
+  4. Improve one change at a time. grafical try <file> a.yaml b.yaml prints
+     the counts before and after each, and writes nothing.
+  A refused change writes nothing; its records say what is wrong and what
+  would fit. Never edit the file by hand.
+
+The kind of diagram, by what a box stands for and what a line means:
+  structure  boxes are things, lines are calls and reads, a group is a
+             system. C4, infrastructure (groups inside groups: region,
+             network, subnet) and dependency graphs are structure.
+  flow       boxes are sources, processes and stores, and each line is
+             labelled with what moves: kind data in a data flow; in an
+             event flow a queue per topic, async lines in and out.
+  process    boxes are steps: kind terminal for Start and End, decision for
+             a question. Lines mean "then". A swimlane adds a lane per
+             owner.
+  states     boxes are states of one thing: kind initial, state and final.
+             Each line is a transition, labelled with its event.
+  Any kind may use any way to draw below. Not drawn: sequence diagrams, ER
+  and class diagrams, mind maps, timelines.
+
+Ways to draw, by the story each tells:
+  the way things move     rows, top to bottom (layer add); the order of a
+                          row decides most crossings (node move, node swap)
+  a thing, step or state  node add --kind; node merge for several a reader
+                          need not tell apart; node icon for a mark
+  a box beside a box      node add --from <box> --right 1, which moves with
+                          it; node align, directly above or below
+  what talks to what      edge add --kind; an end may be a group, a row or
+                          a lane, for one line to the whole
+  one path, in order      edge step numbers its lines; edge emphasize draws
+                          it thick
+  what every request      a row with no boxes that lines end at, drawn as
+  passes                  one bar: a gateway or a bus
+  one system or team      group add, nested with --in; group title places
+                          its label; group copy makes a second zone
+  who does what           lane add
+  two sides               column add; wall add keeps two parts apart, and
+                          with --label draws a divider
+  what the boxes cannot   note add, a card or a footnote; diagram legend;
+  say                     the subtitle; a note "Not shown: ..."
 
 A good diagram:
-  - One story per diagram. When boxes stop serving that story, merge what a
-    reader need not tell apart, cut side paths (admin, auth), or make it
-    two diagrams.
-  - Rows follow the way a request or a process moves, top to bottom: who
-    calls, the way in, the inside, shared stores, outside services.
-  - Box each system as a group, groups side by side, each with its
-    entry above its stores. Callers and outside services stay out of groups.
-  - Put a store below or between the parts that share it, and boxes that
-    talk next to each other. Connect neighbouring rows where you can.
-  - What every request passes, a gateway or a bus: an empty row that
-    lines end at (edge add <file> <box> <row>), drawn as one bar.
-  - Draw a queue as a box only when it is the story; otherwise draw its
-    events as lines between the services.
-  - Merge only what has the same connections: a merged box claims every
-    line of every part.
+  - One story. Merge what a reader need not tell apart, cut side paths
+    (admin, auth), or make it two diagrams.
+  - Boxes that talk sit next to each other, a store below or between the
+    parts that share it. Connect neighbouring rows where you can.
+  - Draw a queue as a box only when it is the story; otherwise its events
+    are lines between the services.
   - Draw each flow to its end, or leave it out.
-  - Keep labels short. Detail (port, technology, count) goes in the
-    sublabel, one line of about 30 characters, or a note.
-  - Accent what the story is about. Name in the legend what each line style,
-    width and mark means: diagram legend <file> dashed --text event. Say
-    what you left out in a note that starts "Not shown:".
-
-Diagram types:
-  architecture   services, stores and queues; a group per system; label
-                 only the lines whose meaning is not obvious
-  c4             people are actor, other systems external, technology in
-                 the sublabel; one group around the system's containers;
-                 label every line with what its source does
-  flowchart      a row per step; kind terminal for Start and End, kind
-                 decision for a question; label each answer, nothing else
-  state machine  kind initial for the start dot and kind final for the end
-                 ring (neither draws its label), kind state for the rest;
-                 label every transition with its event
-  swimlane       lanes, only when who does what is the story
-  cloud          region, network and subnet as groups inside groups; users
-                 and the way in on top, data at the bottom
-  deployment     environment, cluster and host as groups inside groups;
-                 runtime and count in the sublabel
-  event flow     producers, a queue per topic, consumers; lines in and out
-                 of a topic are async; the producer's line names the event
-  data flow      sources, processes and stores; every line is kind data,
-                 labelled with what moves
-  dependency     what depends on top, what it needs below; no labels; kind
-                 optional where a dependency degrades gracefully
-
-Run grafical <command> --help for its options and more.
+  - Keep labels short; detail goes in the sublabel, one line of about 30
+    characters.
+  - Accent what the story is about, and name in the legend what each line
+    style, width and mark means.
 `;
 
 /** The example of `grafical apply --help`, which the tests build and check. */
@@ -131,24 +137,10 @@ one batch with every row, node, group and edge.`,
     after: `
 Batch file:
   A YAML list. Each item is {op: <noun>.<verb>, ...} with the command's
-  arguments and flags as fields, in camelCase. Operations apply in order; if
+  arguments and options as fields, in camelCase. Operations apply in order; if
   one fails, none apply, and the error gives its index, counting from 0.
-    layer.add         id label before after
-    node.add          id layer label kind sublabel size first last before
-                      after align accent from down up left right
-    node.move         id layer first last before after from down up left right
-    edge.add          from to id label kind both pass
-    group.add         id label sublabel nodes in       (nodes is a list)
-    group.join        group nodes                      (a list)
-    group.leave       nodes up
-    lane.add          id label members                 (a list)
-    column.add        id nodes before after            (nodes is a list)
-    wall.add          id between and allow label       (lists but id, label)
-    note.add          on text footnote                 (replaces its note)
-    edge.emphasize    edges off                        (a list)
-    diagram.legend    style weight mark text (style: solid dashed dotted plain)
-    diagram.subtitle  text; diagram.note text           (no text clears it)
-  Every other command works too, its arguments named as in its help.
+  Every command works in a batch: its --help shows its line, such as
+  grafical node add --help.
 
 Good to know:
   - Add rows first, then nodes, then groups and lanes, then edges.
@@ -266,6 +258,17 @@ Good to know:
   - A batch it would refuse is refused as apply would refuse it; with several,
     its records end in batch=<file> and the others are still tried (exit 1).
 
+What to try, when the picture looks wrong:
+  - Lines cross: another order of a row, or another row for a box.
+  - A line runs through a group it has nothing to do with (across): one of
+    its ends in another row, or the group's boxes together.
+  - A row too wide (fullest, width): split it, merge what a reader need not
+    tell apart, or cut a side path.
+  - A line bends round boxes (bent): the boxes it joins in neighbouring
+    rows, or the store between the parts that use it.
+  - Lines too close (tight) or labels crowded (crowded): fewer labels, or
+    the boxes they join nearer each other.
+
 Example:
   grafical try shop.grafical.yaml move.yaml
   ok changed=storefront written=no
@@ -279,7 +282,9 @@ Example:
     about: "Add a row. A new row goes to the bottom unless --before or --after places it.",
     after: `
 Good to know:
-  - Rows run top to bottom the way a request or a process moves.
+  - Rows run top to bottom the way a request or a process moves. In a
+    structure diagram: who calls, the way in, the inside, shared stores,
+    outside services.
   - Name a row by what it holds ("Entry", "Stores").
   - A row is drawn only when a line ends at it: around its boxes as a band,
     or, with no boxes, as one bar that lines meet straight past their other
@@ -309,11 +314,11 @@ Kinds:
   queue      a topic or stream; one node may stand for several
   external   something you do not own: a card processor, a SaaS API
   actor      a person or a caller outside the system
-  terminal   a flowchart's Start and End
-  decision   a flowchart's question, kept short ("Within 30 days?")
-  state      a state machine's state, named by what the thing is ("Paid")
-  initial    a state machine's start dot; its label is not drawn
-  final      a state machine's end ring; its label is not drawn
+  terminal   a process's Start and End
+  decision   a process's question, kept short ("Within 30 days?")
+  state      a state of one thing, named by what the thing is ("Paid")
+  initial    the start dot of a states diagram; its label is not drawn
+  final      the end ring of a states diagram; its label is not drawn
 
 Good to know:
   - Name a box by its role ("orders API") and put the product in the
@@ -330,7 +335,7 @@ Good to know:
 Common mistakes:
   - Giving a node its row's id: rows and boxes share one set of ids, so
     rows take ids like row-users.
-  - Start and End of a flowchart as initial and final: their labels vanish.
+  - Start and End of a process as initial and final: their labels vanish.
     Use terminal.
   - In a batch file, a sublabel with a comma unquoted.
 
@@ -429,16 +434,16 @@ Kinds:
   optional   made only sometimes, dotted
   link       related, with no direction: no arrowhead
 
-By diagram type (when to label):
-  architecture   only what is not obvious ("publish", "persist", "failed");
-                 leave plain calls and reads unlabelled
-  c4             every line, with what its source does ("reads from")
-  data flow      every line, with the data ("card details")
-  flowchart      each answer out of a decision ("yes", "no"), nothing else
-  state machine  every transition, with its event ("pay", "cancel")
-  event flow     the producer's line, with the event; lines in and out of
-                 a topic are async
-  dependency     none; kind optional for a dependency that degrades
+By kind of diagram (what to label):
+  structure    only what is not obvious ("publish", "persist", "failed");
+               leave plain calls and reads unlabelled
+  C4           every line, with what its source does ("reads from")
+  dependency   none; kind optional for a dependency that degrades
+  data flow    every line, with the data ("card details")
+  event flow   the producer's line, with the event; lines in and out of a
+               topic are async
+  process      each answer out of a decision ("yes", "no"), nothing else
+  states       every transition, with its event ("pay", "cancel")
 
 Good to know:
   - Draw each flow to its end: a retry topic needs its line back.
@@ -464,10 +469,10 @@ See also: edge emphasize, diagram legend
   "edge emphasize": {
     about: "Draw edges thick, as the main path, or thin again with --off.",
     after: `
-By diagram type:
-  architecture   the main request path, if there is one
-  state machine  the usual life of the thing
-  event flow     the path of the event the diagram is about
+By kind of diagram:
+  structure    the main request path, if there is one
+  event flow   the path of the event the diagram is about
+  states       the usual life of the thing
 
 Good to know:
   - Keep the main path a small part of the lines, or nothing stands out.
@@ -525,13 +530,14 @@ When to use:
   - Not around a single node: a box with one member says nothing.
   - To show who does each step of a process, use lanes (lane add --help).
 
-By diagram type:
-  architecture   a group per system; callers and outside services stay out
-  c4             one group around the system's containers, sublabel
-                 "software system"; people and other systems stay out
-  cloud          region, then network, then subnet, each inside the last
-  deployment     environment, then cluster, then host, each inside the last
-  flowchart      none, unless the steps fall into clear phases
+By kind of diagram:
+  structure       a group per system, side by side, each with its entry
+                  above its stores; callers and outside services stay out
+  C4              one group around the system's containers, sublabel
+                  "software system"; people and other systems stay out
+  infrastructure  region, network, subnet, or environment, cluster, host,
+                  each inside the last; runtime and count in the sublabel
+  process         none, unless the steps fall into clear phases
 
 Common mistakes:
   - Listing a group as a member: nest it with --in instead.
@@ -747,13 +753,13 @@ Marks:
   Name a mark with --mark in place of the style: its emoji, its text or its
   file, as node icon set it. Marks with the same name share one entry.
 
-By diagram type:
-  c4             solid "uses"
-  flowchart      solid "next step"
-  state machine  solid "transition"
-  event flow     dashed "event"
-  data flow      solid "data"
-  dependency     solid "depends on", dotted "optional"
+By kind of diagram:
+  C4           solid "uses"
+  dependency   solid "depends on", dotted "optional"
+  data flow    solid "data"
+  event flow   dashed "event"
+  process      solid "next step"
+  states       solid "transition"
 `,
   },
   "diagram style": {

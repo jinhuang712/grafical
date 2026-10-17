@@ -18,7 +18,7 @@ import {
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import { yamlError } from "../model/io.ts";
-import type { Op } from "../model/ops.ts";
+import type { Op, OpName } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
 import { STEP_KEYS } from "../model/steps.ts";
 import {
@@ -33,6 +33,7 @@ import {
 import { record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
+import { batchSection, opCommands } from "./batch.ts";
 import { atRevision, formatOps } from "./diff.ts";
 import { PAGES, PROGRAM_ABOUT, PROGRAM_AFTER } from "./help.ts";
 import {
@@ -111,20 +112,26 @@ function renderName(file: string): string {
 }
 
 /**
- * Gives each command its help page (DESIGN.md, "The help as the reference"): the one-line description stays the summary in
- * its parent's list, and the page's paragraph and sections show on its own help.
+ * Gives each command its help page (DESIGN.md, "One entry page, help where it is used"): the one-line description
+ * stays the summary in its parent's list, and the page's paragraph, its line in a batch and its sections show on
+ * its own help.
  */
-function attachHelp(parent: Command, path: string[] = []): void {
+function attachHelp(parent: Command, ops: Map<Command, OpName>, path: string[] = []): void {
   for (const c of parent.commands) {
     const at = [...path, c.name()];
     const page = PAGES[at.join(" ")];
+    const op = ops.get(c);
     if (page?.about !== undefined) c.summary(c.description()).description(page.about);
-    if (page?.after !== undefined) c.addHelpText("after", page.after.trimEnd());
-    attachHelp(c, at);
+    const after = [op === undefined ? "" : `\n${batchSection(op, c)}\n`, page?.after ?? ""].join(
+      "",
+    );
+    if (after !== "") c.addHelpText("after", after.trimEnd());
+    attachHelp(c, ops, at);
   }
 }
 
-function build(): Command {
+/** The command line, every command and its help; the tests read it too. */
+export function build(): Command {
   const program = new Command("grafical");
   program
     .description(PROGRAM_ABOUT)
@@ -818,7 +825,7 @@ function build(): Command {
       .command("title")
       .alias("label")
       .description(
-        "say where a group's label sits; without a place, the engine seats it in the head",
+        "say where a group's label sits; without a place, the engine seats it at the top",
       )
       .argument("<file>")
       .argument("<id>")
@@ -1124,7 +1131,7 @@ function build(): Command {
       await viewer.close();
     });
 
-  attachHelp(program);
+  attachHelp(program, new Map([...opCommands(program)].map(([op, c]) => [c, op])));
   return program;
 }
 
@@ -1227,4 +1234,5 @@ async function main(argv: string[]) {
   }
 }
 
-await main(process.argv);
+// Run only as the command, not when a test imports the command line to read it.
+if (import.meta.main) await main(process.argv);
