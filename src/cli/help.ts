@@ -408,8 +408,9 @@ When refused:
                  clear of the other lines, and no line moves for it;
                  elements name the line, then what lies across the label,
                  gutters the gaps it tried as <row above>/<row below>,
-                 fix a box at an end whose larger size holds it: resize
-                 it, shorten or drop the label, or change rows
+                 fix a box at an end whose larger size holds it, or where
+                 none does, the command that drops the label; or shorten
+                 the label, or change rows
 
 See also: edge emphasize, diagram legend
 `,
