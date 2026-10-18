@@ -118,9 +118,20 @@ ${rows.replace(", lane: ops", "")}`);
     ).toEqual({ owner: "agent", node: "a", nodes: ["b"] });
   });
 
-  // Found by review on 2026-10-18: an unknown weight named only diagram style.
-  it("an unknown weight names the commands that set a weight, as well as the stylesheet", () => {
-    expect(NEXT["unknown-weight"]).toEqual(["diagram style", "diagram legend", "edge weight"]);
+  // Found by review on 2026-10-18: an unknown weight named only diagram style, then edge weight for a legend's too.
+  it("an unknown weight names the commands that set the line's weight, or the legend's", () => {
+    expect(nextOf("unknown-weight", { edge: "a->b", allowed: ["thin"] })).toEqual([
+      "diagram style",
+      "edge weight",
+    ]);
+    expect(nextOf("unknown-weight", { edges: ["a->b"], allowed: ["thin"] })).toEqual([
+      "diagram style",
+      "edge weight",
+    ]);
+    expect(nextOf("unknown-weight", { allowed: ["thin"] }, "legend.weights")).toEqual([
+      "diagram style",
+      "diagram legend",
+    ]);
   });
 
   it("next names real commands only, in the order the help lists them", () => {

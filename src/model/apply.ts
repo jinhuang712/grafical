@@ -1834,7 +1834,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
               index: i,
               field: "weight",
               found: op.weight,
-              facts: { near: closest(op.weight, allowed), allowed },
+              facts: { edges: op.edges, near: closest(op.weight, allowed), allowed },
             },
           ];
         }

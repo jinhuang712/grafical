@@ -319,8 +319,12 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "unknown-op": [],
   "unknown-option": [],
   "unknown-wall": ["wall add"],
-  // A line or a legend names a weight its stylesheet lacks: another stylesheet, another weight, or no legend entry.
-  "unknown-weight": ["diagram style", "diagram legend", "edge weight"],
+  // A line or a legend names a weight its stylesheet lacks: another stylesheet, or another weight for the line, or no
+  // entry in the legend.
+  "unknown-weight": {
+    edge: ["diagram style", "edge weight"],
+    legend: ["diagram style", "diagram legend"],
+  },
   "unquoted-text": [],
   "wall-crossed": ["wall allow", "node move", "edge remove"],
   "wall-sides": ["wall remove", "node move"],
@@ -337,6 +341,8 @@ export function variantOf(
     case "bar-in-group":
       // A bar a line ends at, or one drawn for its look alone.
       return facts.edge === undefined ? "look" : "line";
+    case "unknown-weight":
+      return facts.edge !== undefined || facts.edges !== undefined ? "edge" : "legend";
     case "conflicting-position":
       // A box moved by steps that keeps an alignment, a column or a lane can lose that, or not move by steps.
       if (facts.node === undefined) return "placed";

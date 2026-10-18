@@ -310,6 +310,28 @@ describe("source", () => {
     expect(unread.problems[0].detail.op).toBeUndefined();
   });
 
+  // Found by the second review on 2026-10-18 (uw): a legend's weight that only a stylesheet had.
+  it("of a weight the stylesheet a later line takes away is that line, which the legend's commands can change", () => {
+    const f = fresh("uw.grafical.yaml");
+    writeFileSync(
+      join(dir, "w.grafical-style.yaml"),
+      "grafical-style: 1\npaint:\n  edge:\n    weights: { critical: 6.5 }\n",
+    );
+    writeFileSync(
+      join(dir, "uw.yaml"),
+      "- {op: diagram.style, style: w.grafical-style.yaml}\n- {op: diagram.legend, weight: critical, text: Critical path}\n- {op: diagram.style, style: default}\n",
+    );
+    const r = JSON.parse(run("apply", f, "uw.yaml", "--json").out);
+    expect(r.problems).toMatchObject([
+      {
+        code: "unknown-weight",
+        source: "uw.yaml line 3: {op: diagram.style, style: default}",
+        detail: { field: "legend.weights", found: "critical" },
+        next: ["diagram style", "diagram legend"],
+      },
+    ]);
+  });
+
   it("of an error already in the file gives --json no operation's index", () => {
     // A box between two members of a group in one row splits it, which only a write finds.
     const split = structuredClone(shop);
