@@ -275,7 +275,7 @@ export interface Warning {
 export interface OpError {
   /** Stable, machine-readable, such as "unknown-node" or "bad-value". */
   code: ErrorCode;
-  /** Index of the operation in its batch, 0 for a single command. */
+  /** Index of the operation in its batch, 0 for a single command; -1 when no operation can be named as its cause. */
   index: number;
   /** The field at fault, such as "layer" or "kind". */
   field?: string;

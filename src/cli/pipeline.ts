@@ -25,7 +25,7 @@ import {
 } from "../theme/themes.ts";
 import { bindMarkOps, loadMarks, settingSlots } from "./marks.ts";
 import { type Block, defectBlock, errorBlock, kindsOf, warningBlock } from "./problems.ts";
-import { batchItems, IN_FILE, itemSource, type Origin } from "./source.ts";
+import { batchItems, IN_FILE, itemSource, type Origin, unlined } from "./source.ts";
 
 export interface Report {
   ok: boolean;
@@ -203,15 +203,6 @@ interface Planned {
 /** What a diagram made by operations would be refused for: its errors, or the defects the agent owns. */
 type Refusal = { errors: OpError[] } | { defects: Defect[] };
 
-function refusal(base: Diagram | null, ops: readonly Op[], m: Measurer): Refusal {
-  const result = applyOps(base, ops);
-  if ("errors" in result) return { errors: result.errors };
-  const weights = unknownWeights(result.diagram);
-  if (weights.length > 0) return { errors: weights.map((e) => ({ ...e, whole: true })) };
-  const defects = check(result.diagram, layout(result.diagram, m), m, false);
-  return { defects: defects.filter((x) => x.owner === "agent") };
-}
-
 /** What makes two problems the same one in two diagrams: its code and what it is about. */
 function errorKey(e: OpError): string {
   const f = e.facts ?? {};
@@ -237,47 +228,92 @@ function defectKey(d: Defect): string {
 }
 
 /**
+ * What a prefix of a batch says of a problem: there, not there, or unknown, when the prefix is refused for another
+ * problem: the checks of a whole diagram stop at the first set that fails, and a refused diagram is not laid out.
+ */
+type Seen = "present" | "absent" | "unknown";
+
+/**
  * Where a problem of the diagram a batch makes comes from (DESIGN.md, "Refusals say what happened and which commands
- * can change it"): the number of operations after which it first appears and stays, or 0 when the diagram before the
- * batch has it. grafical applies prefixes of the batch, the batch less its last operation first, then halving the
- * range, as if what appears stays; it runs only on a refused write, so a write that succeeds costs nothing more.
- * Each prefix is laid out once for all the problems it is asked about.
+ * can change it"): the number of operations after which it is not there and after which, one more, it is; 0 when the
+ * diagram before the batch has it; undefined when no line can be known. It runs only on a refused write, so a write
+ * that succeeds costs nothing more. grafical tries the batch less its last operation first, then halves the range, as
+ * if what appears stays. A prefix refused for another problem cannot tell, and the nearest one that can is tried in
+ * its place. Each prefix is applied and laid out once for all the problems.
  */
 function locate(
   base: Diagram | null,
   ops: readonly Op[],
   m: Measurer,
   final: Refusal,
-): { errorAt: (e: OpError) => number; defectAt: (d: Defect) => number } {
-  const memo = new Map<number, Set<string>>();
-  const keys = (r: Refusal) =>
-    new Set("errors" in r ? r.errors.map(errorKey) : r.defects.map(defectKey));
-  memo.set(ops.length, keys(final));
-  const at = (k: number): Set<string> => {
-    let found = memo.get(k);
-    if (found === undefined) {
-      // No diagram before a new file: nothing is in it.
-      found = k === 0 && base === null ? new Set() : keys(refusal(base, ops.slice(0, k), m));
-      memo.set(k, found);
+): {
+  errorAt: (e: OpError) => number | undefined;
+  defectAt: (d: Defect) => number | undefined;
+} {
+  const n = ops.length;
+  type Applied = { errors: Set<string> } | { diagram: Diagram | null };
+  const applied = new Map<number, Applied>();
+  const defectsAt = new Map<number, Set<string>>();
+  if ("errors" in final) applied.set(n, { errors: new Set(final.errors.map(errorKey)) });
+  else defectsAt.set(n, new Set(final.defects.map(defectKey)));
+  const apply = (k: number): Applied => {
+    const known = applied.get(k);
+    if (known !== undefined) return known;
+    let a: Applied;
+    // No diagram before a new file: nothing is in it.
+    if (k === 0 && base === null) a = { diagram: null };
+    else {
+      const r = applyOps(base, ops.slice(0, k));
+      const weights = "errors" in r ? [] : unknownWeights(r.diagram);
+      if ("errors" in r) a = { errors: new Set(r.errors.map(errorKey)) };
+      else if (weights.length > 0)
+        a = { errors: new Set(weights.map((e) => errorKey({ ...e, whole: true }))) };
+      else a = { diagram: r.diagram };
     }
-    return found;
+    applied.set(k, a);
+    return a;
   };
-  const firstAt = (key: string): number => {
-    if (at(0).has(key)) return 0;
-    // It is there after every operation from `hi` on, and not after `lo`. A change's problem is most often its last
-    // operation's, which is tried first; then the range halves.
+  const seen = (k: number, key: string, defect: boolean): Seen => {
+    const known = defect ? defectsAt.get(k) : undefined;
+    if (known !== undefined) return known.has(key) ? "present" : "absent";
+    const a = apply(k);
+    if ("errors" in a) return a.errors.has(key) ? "present" : "unknown";
+    if (!defect || a.diagram === null) return "absent";
+    const d = a.diagram;
+    const found = check(d, layout(d, m), m, false).filter((x) => x.owner === "agent");
+    defectsAt.set(k, new Set(found.map(defectKey)));
+    return defectsAt.get(k)?.has(key) ? "present" : "absent";
+  };
+  const firstAt = (key: string, defect: boolean): number | undefined => {
+    const s0 = seen(0, key, defect);
+    if (s0 === "present") return 0;
+    if (s0 === "unknown") return undefined;
+    // It is not there after `lo` operations, and is there after `hi`.
     let lo = 0;
-    let hi = ops.length;
-    if (hi > 1 && !at(hi - 1).has(key)) lo = hi - 1;
-    else if (hi > 1) hi -= 1;
+    let hi = n;
+    const settle = (k: number): Seen => {
+      const s = seen(k, key, defect);
+      if (s === "present") hi = k;
+      else if (s === "absent") lo = k;
+      return s;
+    };
+    // A change's problem is most often its last operation's, which is tried first; then the range halves.
+    let first = true;
     while (hi - lo > 1) {
-      const mid = (lo + hi) >> 1;
-      if (at(mid).has(key)) hi = mid;
-      else lo = mid;
+      const mid = first ? hi - 1 : (lo + hi) >> 1;
+      first = false;
+      const near = [mid];
+      for (let k = mid - 1; k > lo; k--) near.push(k);
+      for (let k = mid + 1; k < hi; k++) near.push(k);
+      // A prefix refused for another problem cannot tell: the nearest one that can is tried in its place.
+      if (!near.some((k) => settle(k) !== "unknown")) return undefined;
     }
     return hi;
   };
-  return { errorAt: (e) => firstAt(errorKey(e)), defectAt: (d) => firstAt(defectKey(d)) };
+  return {
+    errorAt: (e) => firstAt(errorKey(e), false),
+    defectAt: (d) => firstAt(defectKey(d), true),
+  };
 }
 
 /**
@@ -335,11 +371,13 @@ export function attempt(
     const errors =
       "errors" in result ? result.errors : weights.map((e) => ({ ...e, whole: true as const }));
     const found = locate(base, ops, m, { errors });
-    // An error of the whole diagram is the operation's after which it first appears.
+    // An error of the whole diagram is the operation's after which it first appears. One whose line cannot be known is
+    // no operation's: it has no index.
     return failure(
       errors.map((e) => {
         if (e.whole === undefined) return { ...e, source: itemSource(origin, e.index) };
         const k = found.errorAt(e);
+        if (k === undefined) return { ...e, index: -1, source: unlined(origin) };
         return k === 0
           ? { ...e, source: IN_FILE }
           : { ...e, index: k - 1, source: itemSource(origin, k - 1) };
@@ -356,7 +394,9 @@ export function attempt(
       errors: [],
       defects: defects.map((d) => {
         const k = found.defectAt(d);
-        return { ...d, source: k === 0 ? IN_FILE : itemSource(origin, k - 1) };
+        const source =
+          k === undefined ? unlined(origin) : k === 0 ? IN_FILE : itemSource(origin, k - 1);
+        return { ...d, source };
       }),
       kinds: kindsOf(result.diagram),
     };

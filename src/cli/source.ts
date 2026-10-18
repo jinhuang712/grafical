@@ -35,6 +35,11 @@ export function itemSource(origin: Origin, index: number): string {
   return `${origin.batch.file} line ${item.line}: ${item.text}`;
 }
 
+/** The source of a problem of a batch whose line cannot be known: the batch file, with no line, or the command line. */
+export function unlined(origin: Origin): string {
+  return origin.batch?.file ?? origin.command;
+}
+
 /** A YAML node as it was written, on one line: a flow item as its text, a block one in flow form. */
 function written(n: unknown, text: string): string {
   const node = n as Node | null;

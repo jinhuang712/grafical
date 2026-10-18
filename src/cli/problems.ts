@@ -404,7 +404,7 @@ export function errorBlock(e: OpError): Block {
     code: e.code,
     description: DESCRIPTIONS[e.code],
     ...(e.source !== undefined ? { source: e.source } : {}),
-    op: e.index,
+    ...(e.index >= 0 ? { op: e.index } : {}),
     detail: {
       ...(e.field !== undefined && e.field !== "" ? { field: e.field } : {}),
       ...(e.found !== "" ? { found: e.found } : {}),

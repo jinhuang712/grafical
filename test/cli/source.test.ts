@@ -158,6 +158,69 @@ describe("source", () => {
     );
   });
 
+  // Found by review on 2026-10-18: a prefix refused for another problem was read as one without the problem, and the
+  // source named a later line.
+  describe("never names a line that cannot be known", () => {
+    const grocer = () =>
+      readFileSync(join(import.meta.dirname, "../fixtures/grocer.grafical.yaml"), "utf8");
+    const WORD = "Antidisestablishmentarianism";
+    const big = (id: string, row: string) =>
+      `- {op: node.add, id: ${id}, label: "${WORD} ${WORD} ${WORD} ${WORD}", layer: ${row}, last: true, size: s}`;
+    const node = (id: string, row: string) =>
+      `- {op: node.add, id: ${id}, label: ${id}, layer: ${row}, last: true}`;
+
+    it("passes over prefixes refused for another problem, to the line that caused it", () => {
+      writeFileSync(join(dir, "g7.grafical.yaml"), grocer());
+      // Lines 3 to 6 split the group around picker-app, which line 7 joins to it: the label is too long from line 2 on.
+      const b7 = [
+        node("n1", "row-callers"),
+        big("big", "row-callers"),
+        "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
+        node("n4", "row-edge"),
+        node("n5", "row-edge"),
+        node("n6", "row-edge"),
+        "- {op: group.join, group: g, nodes: [picker-app]}",
+        node("n8", "row-edge"),
+      ];
+      writeFileSync(join(dir, "b7.yaml"), `${b7.join("\n")}\n`);
+      const r7 = run("apply", "g7.grafical.yaml", "b7.yaml");
+      expect(r7.out).toMatch(/^defect: overflow$/m);
+      expect(sources(r7.out)).toEqual([`b7.yaml line 2: ${b7[1]?.slice(2)}`]);
+      // Lines 3 to 6 draw a bar under row-callers that lines pass, which line 7 takes away: the group splits from
+      // line 2 on.
+      writeFileSync(join(dir, "g11.grafical.yaml"), grocer());
+      const b11 = [
+        "- {op: layer.add, id: row-wire, label: Bus, after: row-callers}",
+        "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
+        "- {op: layer.look, id: row-wire, look: box}",
+        node("n4", "row-edge"),
+        node("n5", "row-edge"),
+        node("n6", "row-edge"),
+        "- {op: layer.look, id: row-wire}",
+        node("n8", "row-edge"),
+      ];
+      writeFileSync(join(dir, "b11.yaml"), `${b11.join("\n")}\n`);
+      const r11 = run("apply", "g11.grafical.yaml", "b11.yaml");
+      expect(r11.out).toMatch(/^error: group-split$/m);
+      expect(sources(r11.out)).toEqual([`b11.yaml line 2: ${b11[1]?.slice(2)}`]);
+    });
+
+    it("names the batch file with no line where no prefix can tell", () => {
+      writeFileSync(join(dir, "gx.grafical.yaml"), grocer());
+      // Every prefix that holds the long label also splits the group, until the last line joins picker-app to it.
+      const bx = [
+        "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
+        big("big", "row-callers"),
+        "- {op: group.join, group: g, nodes: [picker-app]}",
+      ];
+      writeFileSync(join(dir, "bx.yaml"), `${bx.join("\n")}\n`);
+      const r = run("apply", "gx.grafical.yaml", "bx.yaml", "--json");
+      expect(JSON.parse(r.out).problems).toMatchObject([
+        { kind: "defect", code: "overflow", source: "bx.yaml" },
+      ]);
+    });
+  });
+
   it("of a warning: none, in text or in --json, as the outcome line names what the write changed", () => {
     // sync->geo bends three times and passes a row in this fixture, and other lines bend too
     // (DESIGN.md, "Every write prints every warning").

@@ -129,7 +129,8 @@ Output:
   line before each; then, on apply, the counts:
     <kind>: <code>
     description: <what happened, one sentence per code>
-    source: <the command, its batch line, or "already in the file">
+    source: <the command, its batch line, its batch file, or "already in
+            the file">
     detail:
       <key>: <value>
     next: <the commands that can change it, or ->
