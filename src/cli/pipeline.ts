@@ -24,7 +24,7 @@ import {
   unknownWeights,
 } from "../theme/themes.ts";
 import { bindMarkOps, loadMarks, settingSlots } from "./marks.ts";
-import { type Block, defectBlock, errorBlock, kindsOf } from "./problems.ts";
+import { type Block, bentBlock, defectBlock, errorBlock, kindsOf } from "./problems.ts";
 import { batchItems, IN_FILE, itemSource, type Origin } from "./source.ts";
 
 export interface Report {
@@ -34,16 +34,20 @@ export interface Report {
   defects: Defect[];
   /** The drawing's counts (DESIGN.md, "Records over prose"): on apply, check and render, when nothing was refused. */
   counts?: Counts;
-  /** The lines drawn with more than two bends: on every write, check and render (DESIGN.md, "The dirty work has edges"). */
+  /** The lines drawn with more than two bends, each a warning: on every write, check and render (DESIGN.md, "The dirty work has edges"). */
   bent?: Bent[];
   /** What each id of the diagram the defects are found in names, so that their detail names each by its kind. */
   kinds?: ReadonlyMap<string, string>;
 }
 
-/** The report's problems as blocks: its errors, then its defects. */
+/** The report's problems as blocks: its errors, then its defects, then its warnings. */
 export function blocks(r: Report): Block[] {
   const kinds = r.kinds ?? new Map<string, string>();
-  return [...r.errors.map(errorBlock), ...r.defects.map((d) => defectBlock(d, kinds))];
+  return [
+    ...r.errors.map(errorBlock),
+    ...r.defects.map((d) => defectBlock(d, kinds)),
+    ...(r.bent ?? []).map(bentBlock),
+  ];
 }
 
 /**
@@ -62,12 +66,7 @@ export function formatReport(r: Report, head: string[] = []): string {
   ];
   const problems = blocks(r);
   for (const b of problems) out.push("", block(b));
-  const tail = [
-    ...(r.bent ?? []).map((b) => record("bent", { ...b })),
-    ...(r.counts !== undefined ? [countsText(r.counts)] : []),
-  ];
-  if (problems.length > 0 && tail.length > 0) out.push("");
-  out.push(...tail);
+  if (r.counts !== undefined) out.push(...(problems.length > 0 ? [""] : []), countsText(r.counts));
   return `${out.join("\n")}\n`;
 }
 
@@ -89,7 +88,6 @@ export function reportBody(report: Report): Record<string, unknown> {
     ok: report.ok,
     changed: report.changed,
     problems: blocks(report).map(blockBody),
-    ...(report.bent !== undefined ? { bent: report.bent } : {}),
     ...(report.counts !== undefined ? { counts: report.counts } : {}),
   };
 }

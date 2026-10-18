@@ -230,21 +230,35 @@ describe('the counts in place of hints (DESIGN.md, "Records over prose")', () =>
     return "photos.grafical.yaml";
   }
 
-  it("check prints the counts, and no hint, warning or advice", () => {
+  it("check prints the counts, and a line bent more than twice as a warning, with no advice", () => {
+    // The line round the upload queue is a warning of what happened, with the commands that can change it, and no
+    // source: the outcome line names what a write changed (DESIGN.md, "Refusals say what happened and which commands
+    // can change it").
+    const bent = [
+      "warning: bent-line",
+      "description: A line bends more than twice, mostly because it skips rows.",
+      "detail:",
+      "  edge: api->photos",
+      "  bends: 4",
+      "  skip: 1",
+      "next: layer move, node move",
+    ].join("\n");
     const out = run("check", photos()).out;
-    // The line round the upload queue is reported as a record, a fact and no warning.
-    expect(out).toMatch(
-      /^ok\nbent line=api->photos bends=4 skip=\d+\ncounts nodes=\d+ lines=\d+ crossings=\d+ bends=\d+ bent=1 /,
-    );
-    expect(out).not.toMatch(/^(hint|warning|lines):/m);
+    expect(out.startsWith(`ok\n\n${bent}\n\ncounts nodes=`)).toBe(true);
+    expect(out).toMatch(/^counts nodes=\d+ lines=\d+ crossings=\d+ bends=\d+ bent=1 /m);
+    expect(out).not.toMatch(/^(hint|lines):/m);
     // Every write reports it too, a single command as a batch (DESIGN.md, "The dirty work has edges").
     expect(run("diagram", "subtitle", photos(), "--text", "Uploads").out).toBe(
-      "ok changed=subtitle\nbent line=api->photos bends=4 skip=1\n",
+      `ok changed=subtitle\n\n${bent}\n`,
     );
     expect(run("diagram", "improve", photos()).code).toBe(2);
     const json = JSON.parse(run("check", photos(), "--json").out);
     expect(json.counts.lines).toBe(edgeLooks.edges.length);
+    expect(json.problems).toMatchObject([
+      { kind: "warning", code: "bent-line", detail: { edge: "api->photos", bends: 4, skip: 1 } },
+    ]);
+    expect(json.problems[0].source).toBeUndefined();
     expect(json.hints).toBeUndefined();
-    expect(json.warnings).toBeUndefined();
+    expect(json.bent).toBeUndefined();
   });
 });

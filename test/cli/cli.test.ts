@@ -181,9 +181,9 @@ describe("write commands", () => {
       "--json",
     );
     expect(r.code).toBe(0);
-    expect(r.out).toBe('{"ok":true,"changed":["cache"],"problems":[],"bent":[]}\n');
+    expect(r.out).toBe('{"ok":true,"changed":["cache"],"problems":[]}\n');
     const rm = run("node", "remove", "single.grafical.yaml", "cache", "--json");
-    expect(JSON.parse(rm.out)).toEqual({ ok: true, changed: ["cache"], problems: [], bent: [] });
+    expect(JSON.parse(rm.out)).toEqual({ ok: true, changed: ["cache"], problems: [] });
   });
 
   it("leaves the file untouched and exits 1 when an operation fails", () => {

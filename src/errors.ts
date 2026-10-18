@@ -66,6 +66,9 @@ export interface Facts {
   chars?: readonly string[];
   /** Pixels of one line that another shares. */
   shared?: number;
+  /** How often a line bends, and the rows between the rows of its ends. */
+  bends?: number;
+  skip?: number;
 }
 
 /**
@@ -107,6 +110,8 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
   "column",
   "chars",
   "shared",
+  "bends",
+  "skip",
 ];
 
 /**
@@ -219,6 +224,13 @@ export const USAGE_CODES = [
   "unknown-option",
 ] as const;
 export type UsageCode = (typeof USAGE_CODES)[number];
+
+/**
+ * The codes of a warning: written, exit 0, and drawn poorly (DESIGN.md, "Refusals say what happened and which
+ * commands can change it"). A line with more than two bends is one (DESIGN.md, "The dirty work has edges").
+ */
+export const WARNING_CODES = ["bent-line"] as const;
+export type WarningCode = (typeof WARNING_CODES)[number];
 
 /** An operation that cannot be applied. Nothing changes when one occurs. */
 export interface OpError {

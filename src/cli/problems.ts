@@ -2,6 +2,7 @@
 // one fixed sentence per code, which says what happened and never what to do, and the commands that can change it,
 // by name only. Both are fixed per code, never made for the case at hand.
 
+import type { Bent } from "../check/drawing.ts";
 import {
   DEFECT_CODES,
   type Defect,
@@ -13,15 +14,17 @@ import {
   type OpError,
   USAGE_CODES,
   type UsageCode,
+  WARNING_CODES,
+  type WarningCode,
 } from "../errors.ts";
 import { everyNode } from "../model/steps.ts";
 import type { Diagram } from "../model/types.ts";
 import type { Value } from "../records.ts";
 
 /** Every code a problem may carry. */
-export type Code = ErrorCode | DefectCode | UsageCode;
+export type Code = ErrorCode | DefectCode | UsageCode | WarningCode;
 export const CODES: readonly Code[] = [
-  ...new Set<Code>([...ERROR_CODES, ...DEFECT_CODES, ...USAGE_CODES]),
+  ...new Set<Code>([...ERROR_CODES, ...DEFECT_CODES, ...USAGE_CODES, ...WARNING_CODES]),
 ];
 
 /** What happened, one sentence per code. A code that is both an error and a defect has one sentence for both. */
@@ -47,6 +50,7 @@ export const DESCRIPTIONS: Record<Code, string> = {
     "A line passes a row with no boxes that lines end at, a bar, without ending at it.",
   "bar-in-group": "A line ends at a row with no boxes that lies within a group's rows.",
   "bar-to-bar": "A line joins two rows with no boxes, and a bar is met straight past a box.",
+  "bent-line": "A line bends more than twice, mostly because it skips rows.",
   "batch-unreadable": "The batch file cannot be read.",
   "both-on-link": "A link has no direction, so it takes no arrowheads.",
   "box-aside":
@@ -176,6 +180,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "bar-crossed": ["layer move", "node move", "edge remove", "edge pass"],
   "bar-in-group": ["group leave", "layer move", "node move", "edge remove"],
   "bar-to-bar": ["edge remove", "edge retarget"],
+  "bent-line": ["layer move", "node move"],
   "batch-unreadable": [],
   "both-on-link": ["edge kind"],
   "box-aside": ["node move"],
@@ -460,5 +465,16 @@ export function usageBlock(
       ...ordered(facts),
     },
     next: nextOf(code, facts),
+  };
+}
+
+/** A line drawn with more than two bends, as a warning. It has no source: the outcome line names what changed. */
+export function bentBlock(b: Bent): Block {
+  return {
+    kind: "warning",
+    code: "bent-line",
+    description: DESCRIPTIONS["bent-line"],
+    detail: { edge: b.line, bends: b.bends, skip: b.skip },
+    next: NEXT["bent-line"] as readonly string[],
   };
 }
