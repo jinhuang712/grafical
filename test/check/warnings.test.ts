@@ -64,14 +64,16 @@ describe('warnings (DESIGN.md, "Every write prints every warning")', () => {
     const seen = new Set<string>();
     for (const d of diagrams) {
       const dr = drawing(d, layout(d, m));
-      const w = warningsOf(dr);
+      const w = warningsOf(dr, d);
       const of = (code: WarningCode) => w.filter((x) => x.code === code);
       expect(of("bent-line").length, d.title).toBe(dr.counts.bent);
       expect(of("passing-row").length, d.title).toBe(dr.counts.passing);
       expect(of("line-across-group").length, d.title).toBe(dr.counts.across);
       expect(of("tight-lines").length, d.title).toBe(dr.counts.tight);
       expect(of("crowded-label").length, d.title).toBe(dr.counts.crowded);
-      expect(of("lonely-box").length, d.title).toBe(dr.boxes.filter((b) => b.lines === 0).length);
+      // A box with no lines of its own, unless a line reaches it through its group, row or lane.
+      const bare = dr.boxes.filter((b) => b.lines === 0).map((b) => b.id);
+      for (const x of of("lonely-box")) expect(bare, d.title).toContain(x.facts.node);
       // One warning per pair of lines that cross, however often they cross.
       const pairs = dr.lines.reduce((s, l) => s + l.crosses.length, 0) / 2;
       expect(of("crossing").length, d.title).toBe(pairs);
@@ -97,13 +99,45 @@ describe('warnings (DESIGN.md, "Every write prints every warning")', () => {
   });
 
   it("name a box with no lines", () => {
-    const w = warningsOf(drawing(alone, layout(alone, m)));
+    const w = warningsOf(drawing(alone, layout(alone, m)), alone);
     expect(w).toEqual([{ code: "lonely-box", facts: { node: "c" } }]);
+  });
+
+  it("leave out a box a line reaches through its group, its row or its lane", () => {
+    // Every box but the last has no line of its own: a line ends at the group of b, at the row of c and d, and at the
+    // lane of e. Only f stands alone.
+    const d = readDiagram(`grafical: 1
+title: reached
+density: normal
+lanes:
+  - {id: ops, label: Ops}
+layers:
+  - {id: top, label: Top, nodes: [{id: a, label: A}, {id: b, label: B, group: g}]}
+  - {id: mid, label: Mid, nodes: [{id: c, label: C}, {id: d, label: D}]}
+  - {id: low, label: Low, lane: ops, nodes: [{id: e, label: E}]}
+  - {id: end, label: End, nodes: [{id: f, label: F}]}
+groups:
+  - {id: g, label: G}
+edges:
+  - {id: a->g, from: a, to: g}
+  - {id: a->mid, from: a, to: mid}
+  - {id: a->ops, from: a, to: ops}
+`);
+    if (Array.isArray(d)) throw new Error(JSON.stringify(d));
+    const w = warningsOf(drawing(d, layout(d, m)), d).filter((x) => x.code === "lonely-box");
+    expect(w).toEqual([{ code: "lonely-box", facts: { node: "f" } }]);
+    // Without the lines to the group, the row and the lane, each of those boxes stands alone.
+    const bare = { ...d, edges: [] };
+    expect(
+      warningsOf(drawing(bare, layout(bare, m)), bare)
+        .filter((x) => x.code === "lonely-box")
+        .map((x) => x.facts.node),
+    ).toEqual(["a", "b", "c", "d", "e", "f"]);
   });
 
   it("name the groups a line runs through that hold neither of its ends", () => {
     const d = fixture("dispatch");
-    const w = warningsOf(drawing(d, layout(d, m))).filter((x) => x.code === "line-across-group");
+    const w = warningsOf(drawing(d, layout(d, m)), d).filter((x) => x.code === "line-across-group");
     expect(w.map((x) => `${x.facts.edge} ${x.facts.groups?.join(",")}`)).toEqual([
       "events->notify-svc booking",
       "events->payments-api matching",

@@ -406,7 +406,7 @@ export async function runWrite(
     changed: p.changed,
     errors: [],
     defects: [],
-    warnings: warningsOf(dr),
+    warnings: warningsOf(dr, p.next),
     ...(counts ? { counts: dr.counts } : {}),
   };
 }

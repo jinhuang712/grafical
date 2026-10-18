@@ -190,7 +190,8 @@ describe("write commands", () => {
           {
             kind: "warning",
             code: "lonely-box",
-            description: "A box has no lines.",
+            description:
+              "No line reaches a box: none of its own, and none to its group, row or lane.",
             detail: { node: "cache" },
             next: ["node remove", "edge add"],
           },
@@ -303,7 +304,7 @@ describe("write commands", () => {
         "ok changed=q,p->q,p->q#2",
         "",
         "warning: lonely-box",
-        "description: A box has no lines.",
+        "description: No line reaches a box: none of its own, and none to its group, row or lane.",
         "detail:",
         "  node: p",
         "next: node remove, edge add",

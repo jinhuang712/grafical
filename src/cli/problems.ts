@@ -98,7 +98,7 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "layer-not-empty": "The row still holds boxes.",
   "layer-too-small": "The row holds fewer than two boxes.",
   "line-across-group": "A line runs through the box of a group that holds neither of its ends.",
-  "lonely-box": "A box has no lines.",
+  "lonely-box": "No line reaches a box: none of its own, and none to its group, row or lane.",
   "mark-covers": "A box's mark covers its text or another box.",
   "mark-file-changed": "A mark's file changed after the mark was set.",
   "mark-file-not-found": "No file is there for the mark.",

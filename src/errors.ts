@@ -249,7 +249,7 @@ export type UsageCode = (typeof USAGE_CODES)[number];
  * The codes of a warning: written, exit 0, and drawn poorly (DESIGN.md, "Refusals say what happened and which
  * commands can change it", "Every write prints every warning"), in the order they print: a line with more than two
  * bends (DESIGN.md, "The dirty work has edges"), the places the counts passing, across, tight and crowded count
- * (DESIGN.md, "Composition counts"), a box with no lines, and two lines that cross.
+ * (DESIGN.md, "Composition counts"), a box no line reaches, and two lines that cross.
  */
 export const WARNING_CODES = [
   "bent-line",

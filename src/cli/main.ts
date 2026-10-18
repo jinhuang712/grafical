@@ -1072,7 +1072,7 @@ export function build(): Command {
         changed: [],
         errors: [],
         defects,
-        warnings: warningsOf(dr),
+        warnings: warningsOf(dr, d),
         counts: dr.counts,
         kinds: kindsOf(d),
       },
@@ -1120,7 +1120,7 @@ export function build(): Command {
       changed: [],
       errors: [],
       defects,
-      warnings: warningsOf(dr),
+      warnings: warningsOf(dr, d),
       counts: dr.counts,
       kinds: kindsOf(d),
     };

@@ -8,7 +8,7 @@
 import type { Warning } from "../errors.ts";
 import { bendsOf, crossingsOf, legendEntries } from "../layout/index.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
-import { endRows } from "../model/ends.ts";
+import { endKind, endNodes, endRows } from "../model/ends.ts";
 import type { Diagram } from "../model/index.ts";
 import { markName } from "../model/types.ts";
 import { record } from "../records.ts";
@@ -401,11 +401,19 @@ export function bentLines(lines: DrawnLine[]): DrawnLine[] {
 /**
  * What the drawing draws poorly, as warnings, in the order of their codes (DESIGN.md, "Every write prints every
  * warning"): the lines bent more than twice, the lines that pass rows, the lines across a group's box, the tight runs,
- * the crowded labels, the boxes with no lines, and each pair of lines that cross. The first five are the places that
- * bent, passing, across, tight and crowded count.
+ * the crowded labels, the boxes no line reaches, and each pair of lines that cross. The first five are the places that
+ * bent, passing, across, tight and crowded count. `facts` is the diagram drawn.
  */
-export function warningsOf(dr: Drawing): Warning[] {
+export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
   const c = dr.composition;
+  // A line to a group, a row or a lane reaches every box it holds: those boxes are connected in the picture.
+  const d = placeSteps(facts).d;
+  const reached = new Set(
+    d.edges
+      .flatMap((e) => [e.from, e.to])
+      .filter((id) => endKind(d, id) !== "node")
+      .flatMap((id) => endNodes(d, id)),
+  );
   return [
     ...bentLines(dr.lines).map(
       (l): Warning => ({ code: "bent-line", facts: { edge: l.id, bends: l.bends, skip: l.skip } }),
@@ -424,7 +432,7 @@ export function warningsOf(dr: Drawing): Warning[] {
     ),
     ...c.crowded.map((x): Warning => ({ code: "crowded-label", facts: { edge: x.id } })),
     ...dr.boxes
-      .filter((b) => b.lines === 0)
+      .filter((b) => b.lines === 0 && !reached.has(b.id))
       .map((b): Warning => ({ code: "lonely-box", facts: { node: b.id } })),
     ...dr.lines.flatMap((l) =>
       l.crosses

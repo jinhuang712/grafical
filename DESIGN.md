@@ -937,7 +937,7 @@ Decided by the owner on 2026-10-18, the same day as "Refusals say what happened 
   - `line-across-group`: a line through the box of a group that holds neither of its ends. Detail: `edge`, and `groups`, every such group.
   - `tight-lines`: runs of two lines under 12 px apart for over 100 px. Detail: `edges`, the pair, and `over`, the pixels they share.
   - `crowded-label`: a line's label with under 8 px of room on two sides. Detail: `edge`.
-  - `lonely-box`: a box with no lines. Detail: `node`.
+  - `lonely-box`: a box no line reaches, neither one of its own nor one that ends at its group, row or lane, which reaches every box it holds. Detail: `node`. Decided by the owner later the same day: a box reached through its group, row or lane is connected in the picture. Of the 16 boxes with no line of their own in the 329 saved drafts, 8 were reached that way and are no longer warned of.
   - `crossing`: a pair of lines that cross, however often. Detail: `edges`.
 
   The first five are a block for each place that `bent`, `passing`, `across`, `tight` and `crowded` count, so the counts line stays as it was. `crossings` still counts points: a pair that crosses twice is one block. `next` names the commands that rearrange the picture: rows (`layer move`), order (`node move`, `node swap`, `group order`), and also `edge relabel` for a label, `node remove` and `edge add` for a box with no lines.

@@ -58,7 +58,7 @@ export async function measureSpeed(): Promise<string[]> {
         const s = layout(r.diagram, m);
         check(r.diagram, s, m);
         // A write prints every warning of the diagram it makes (DESIGN.md, "Every write prints every warning").
-        warningsOf(drawing(r.diagram, s));
+        warningsOf(drawing(r.diagram, s), r.diagram);
         ms.push(performance.now() - t0);
       }
       if (ms.length === 0) continue;

@@ -146,7 +146,8 @@ Output:
                        over (the pixels they share)
     crowded-label      a label under 8 px from a line, box, border or label
                        on two sides: edge
-    lonely-box         a box with no lines: node
+    lonely-box         a box no line reaches, neither its own nor one to its
+                       group, row or lane: node
     crossing           two lines that cross: edges
   counts nodes= lines= crossings= bends= bent= length= width= height=
          fullest= busiest= longest= passing= across= tight= crowded=
