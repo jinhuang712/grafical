@@ -16,7 +16,8 @@ moves where, the steps of a process, the states of a thing. You say which row
 a box is in, what it connects to and which group it belongs to; grafical
 places, sizes and routes everything, and refuses a change that would draw
 wrong. The diagram is one YAML file, <name>.grafical.yaml, kept in git. It
-does not draw sequence diagrams, ER or class diagrams, mind maps or timelines.`;
+does not draw sequence diagrams, ER or class diagrams, mind maps or timelines
+on a time scale, such as Gantt charts.`;
 
 /** The rest of `grafical --help`: how to work, every way to draw, and where the guides are. */
 export const PROGRAM_AFTER = `
