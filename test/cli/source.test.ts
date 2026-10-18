@@ -10,6 +10,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { batchItems, commandLine } from "../../src/cli/source.ts";
 import { writeDiagram } from "../../src/model/io.ts";
 import type { Diagram } from "../../src/model/types.ts";
+import { nested } from "../fixtures/nested.ts";
 
 const MAIN = resolve(import.meta.dirname, "../../src/cli/main.ts");
 vi.setConfig({ testTimeout: 60_000 });
@@ -237,6 +238,22 @@ describe("source", () => {
       const r = run("apply", "gx.grafical.yaml", "bx.yaml", "--json");
       expect(JSON.parse(r.out).problems).toMatchObject([
         { kind: "defect", code: "overflow", source: "bx.yaml" },
+      ]);
+    });
+
+    it("names the line that set what the block prints, such as a title's place", () => {
+      // Found by review on 2026-10-19: both lines put vpc's title where db->backup runs, and the block prints the
+      // place line 2 set, so line 1 would contradict it.
+      writeFileSync(join(dir, "tp.grafical.yaml"), writeDiagram(nested));
+      writeFileSync(
+        join(dir, "tp1.yaml"),
+        "- {op: group.title, id: vpc, at: bottom}\n- {op: group.title, id: vpc, at: outside-bottom}\n",
+      );
+      const r = run("apply", "tp.grafical.yaml", "tp1.yaml");
+      expect(r.out).toMatch(/^defect: title-blocked$/m);
+      expect(r.out).toMatch(/^ {2}place: outside-bottom$/m);
+      expect(sources(r.out)).toEqual([
+        "tp1.yaml line 2: {op: group.title, id: vpc, at: outside-bottom}",
       ]);
     });
 

@@ -228,6 +228,7 @@ const ABOUT: readonly (keyof Facts)[] = [
   "chain",
   "top",
   "bottom",
+  "place",
 ];
 
 function about(f: Facts): string[] {
