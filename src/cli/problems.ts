@@ -319,7 +319,8 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "unknown-op": [],
   "unknown-option": [],
   "unknown-wall": ["wall add"],
-  "unknown-weight": ["diagram style"],
+  // A line or a legend names a weight its stylesheet lacks: another stylesheet, another weight, or no legend entry.
+  "unknown-weight": ["diagram style", "diagram legend", "edge weight"],
   "unquoted-text": [],
   "wall-crossed": ["wall allow", "node move", "edge remove"],
   "wall-sides": ["wall remove", "node move"],
