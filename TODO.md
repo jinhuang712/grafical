@@ -38,8 +38,4 @@ The split is on purpose: rule 4 of DESIGN.md, "A target picture with measured ru
 
 ## A line cut at a row lane's border has no room for its label
 
-A line that ends at a lane running as a row is cut at the lane's border. When the line then runs only 16 px from the border to its box, and other lines crowd every place beside that stub and past its cut end, its label stays across the border. Fuzz seeds 1126, 1719 and 4951 of 5,000 show it. Fixing it needs the gutter to keep a label's height between the border and the box. Seed 3546 shows the same at a column lane's side: a numbered line turns 100 px before the border it ends at, and its label, widened by the step's badge, has no clear place beside it.
-
-## A line from a group's top lays its label across another line
-
-In fuzz seed 3558 of 5,000, the line w0 leaves group g0 by its top for a row lane. Its label sits beside the line's stub out of the box, 20 to 35 px below the line's run across the gutter, and the vertical part of another line in that gutter, n3->n28, runs through it (`label-collision`, `text-crossing`). It shows with g0's label at any stated place but `outside-top`, and since 2026-10-17 with the label seated by the engine too, whose no-go span above the first row had moved w0's port aside. The label's place below the run suggests the run moved after the label was placed, as a line cut at a lane's border is.
+A line that ends at a lane running as a row is cut at the lane's border. When the line then runs only 16 px from the border to its box, and other lines crowd every place beside that stub and past its cut end, its label stays across the border. Fuzz seeds 1126, 1719 and 4951 of 5,000 show it. Fixing it needs the gutter to keep a label's height between the border and the box.

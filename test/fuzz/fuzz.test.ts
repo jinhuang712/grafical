@@ -17,16 +17,15 @@ const seeds = Number(process.env.FUZZ_SEEDS ?? 500);
  * through an outer label stacked above an inner one (DESIGN.md, "Every layered diagram type"); a wall's label with no
  * place along its line clear of the lines that cross it (DESIGN.md, "Walls as space"); the label of a line to a lane
  * across the top of a group's box; a label moved beside a line that runs straight on into a band, across
- * the other line between the same box and band.
+ * the other line between the same box and band; the text of a numbered line cut at a lane, pushed out of
+ * its label's place by the badge, across a lane's side or another line.
  */
-const FAILED = [512, 590, 649, 700, 1051, 1303, 1606, 1701, 2453];
+const FAILED = [512, 590, 649, 700, 1051, 1303, 1606, 1701, 2453, 3546, 3558];
 /**
  * Seeds of 5,000 that still fail: a line cut at a row lane's border with no clear place
- * for its label beside its stub, which then lies across the border (1126, 1719, 4951),
- * and a numbered line cut at a lane whose badge leaves its text no room in the label's
- * slot, so the text lies across a lane's side (3546) or another line (3558).
+ * for its label beside its stub, which then lies across the border.
  */
-const FAILING = [1126, 1719, 3546, 3558, 4951];
+const FAILING = [1126, 1719, 4951];
 
 /** The engine-owned defects of one seed's diagram. */
 function defects(seed: number, diagram: Diagram, m: Measurer): string[] {

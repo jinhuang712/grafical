@@ -411,14 +411,17 @@ function segmentHits(a: Point, b: Point, r: Rect): boolean {
  * that remains, the longest first, above or below it, or right or left of it,
  * at its middle or one of its ends, stepping away from it while other lines
  * crowd it: the first place `free` accepts, clear of the border if one is,
- * across it if not. Failing every place, it goes above or right of the middle of
- * the longest part.
+ * across it if not. `drawn` gives the text in a place, which a step's badge may
+ * push out of it (DESIGN.md, "Step badges ride the line"): the text too must be
+ * clear. Failing every place, it goes above or right of the middle of the longest
+ * part.
  */
 function besideRoute(
   points: Point[],
   at: AssembledLabel,
   boxes: Rect[],
   free: (r: Rect) => boolean,
+  drawn: (r: Rect) => Rect,
 ): AssembledLabel {
   const near = ROUTE.labelGap + 4;
   const across = (r: Rect) =>
@@ -427,8 +430,13 @@ function besideRoute(
         overlaps(r, b) &&
         !(r.x >= b.x && r.x + r.w <= b.x + b.w && r.y >= b.y && r.y + r.h <= b.y + b.h),
     );
+  const fits = (r: Rect) => {
+    const t = drawn(r);
+    return free(r) && (t === r || free(t));
+  };
+  const clear = (r: Rect) => !across(r) && !across(drawn(r)) && fits(r);
   const parts: [Point, Point][] = [];
-  const keep = !across(at) && free(at);
+  const keep = clear(at);
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1] as Point;
     const b = points[i] as Point;
@@ -474,13 +482,8 @@ function besideRoute(
   if (p0 !== undefined && p1 !== undefined) places.push(...past(p0, p1));
   if (pn !== undefined && pm !== undefined) places.push(...past(pn, pm));
   // Clear of the container's border if it can be; else across it, which a label's patch covers.
-  for (const strict of [true, false]) {
-    for (const p of places) {
-      const r = { x: p.x, y: p.y, w: at.w, h: at.h };
-      if ((!strict || !across(r)) && free(r)) return { ...at, ...p };
-    }
-  }
-  const first = places[0];
+  const rects = places.map((p) => ({ x: p.x, y: p.y, w: at.w, h: at.h }));
+  const first = rects.find(clear) ?? rects.find(fits) ?? rects[0];
   return first === undefined ? at : { ...at, ...first };
 }
 
@@ -1454,30 +1457,31 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (width !== undefined && width !== theme.paint.edge.strokeWidth) edge.width = width;
     const text = e.label === "" ? undefined : e.label;
     if (a.label !== undefined && (text !== undefined || e.step !== undefined) && withText) {
+      // The text takes the slot, or stands off the step's badge in it (DESIGN.md, "Step badges ride the line").
+      const ink = labelMetrics.ascent + labelMetrics.descent;
+      const lines =
+        text !== undefined && a.label.lines > 1 ? m.wrap(text, labelStyle, a.label.maxWidth) : [];
+      const th = lines.length > 1 ? (lines.length - 1) * labelMetrics.lineHeight + ink : ink;
+      const tw = e.step === undefined ? a.label.w : text === undefined ? 0 : a.label.w - STEP.r;
+      const head = lineLook(width, theme.paint).arrow.length;
+      const heads = { start: e.both === true ? head : 0, end: hasHead(e.kind) ? head : 0 };
+      const stepIn = (slot: Rect) =>
+        stepPlace(points, slot, { w: tw, h: th }, heads, insideOf(e.id));
+      const drawn = (slot: Rect): Rect => {
+        if (e.step === undefined || tw === 0) return slot;
+        const { text: p } = stepIn(slot);
+        return { x: p.x, y: p.y, w: tw, h: th };
+      };
       // A lane's border is kept clear of as the container's is: where it can be.
       const cutAt = [toBox, fromBox, ...sceneLanes.map((x) => x.rect)].filter(
         (b): b is Rect => b !== undefined,
       );
-      const at = points === a.points ? a.label : besideRoute(points, a.label, cutAt, clearOf(e.id));
+      const at =
+        points === a.points ? a.label : besideRoute(points, a.label, cutAt, clearOf(e.id), drawn);
       labelAt.set(e.id, at);
-      // The text takes the slot, or stands off the step's badge in it (DESIGN.md, "Step badges ride the line").
-      const ink = labelMetrics.ascent + labelMetrics.descent;
-      const lines = text !== undefined && at.lines > 1 ? m.wrap(text, labelStyle, at.maxWidth) : [];
-      const th = lines.length > 1 ? (lines.length - 1) * labelMetrics.lineHeight + ink : ink;
-      const tw = e.step === undefined ? at.w : text === undefined ? 0 : at.w - STEP.r;
       let top = { x: at.x, y: at.y };
       if (e.step !== undefined) {
-        const head = lineLook(width, theme.paint).arrow.length;
-        const place = stepPlace(
-          points,
-          at,
-          { w: tw, h: th },
-          {
-            start: e.both === true ? head : 0,
-            end: hasHead(e.kind) ? head : 0,
-          },
-          insideOf(e.id),
-        );
+        const place = stepIn(at);
         edge.step = numberBadge(e.step, place.at.x, place.at.y, STEP.r, m, T);
         top = place.text;
       }
