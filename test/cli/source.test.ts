@@ -219,6 +219,24 @@ describe("source", () => {
         { kind: "defect", code: "overflow", source: "bx.yaml" },
       ]);
     });
+
+    it("gives each of many defects its line, or the batch file once the prefixes to try are spent", () => {
+      writeFileSync(join(dir, "gm.grafical.yaml"), grocer());
+      const rows = ["row-callers", "row-edge", "row-api", "row-svc"];
+      const lines = Array.from({ length: 40 }, (_, i) =>
+        i % 4 === 3 ? big(`n${i}`, rows[i % 4] as string) : node(`n${i}`, rows[i % 4] as string),
+      );
+      writeFileSync(join(dir, "many.yaml"), `${lines.join("\n")}\n`);
+      const found = sources(run("apply", "gm.grafical.yaml", "many.yaml").out);
+      expect(found).toHaveLength(10);
+      for (const s of found) {
+        if (s === "many.yaml") continue;
+        const n = Number(s.match(/^many\.yaml line (\d+): /)?.[1]);
+        expect(lines[n - 1], s).toContain(WORD);
+        expect(s).toBe(`many.yaml line ${n}: ${lines[n - 1]?.slice(2)}`);
+      }
+      expect(found.filter((s) => s !== "many.yaml").length).toBeGreaterThan(0);
+    });
   });
 
   it("of a warning: none, in text or in --json, as the outcome line names what the write changed", () => {

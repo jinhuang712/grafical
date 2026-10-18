@@ -228,18 +228,54 @@ function defectKey(d: Defect): string {
 }
 
 /**
- * What a prefix of a batch says of a problem: there, not there, or unknown, when the prefix is refused for another
- * problem: the checks of a whole diagram stop at the first set that fails, and a refused diagram is not laid out.
+ * How many prefixes of a refused batch grafical applies, and how many of them it lays out, to find where the batch's
+ * problems come from (GOALS.md, "Speed"). A problem whose line is not found within them has the batch file as its
+ * source, with no line: never a line that is not known.
  */
-type Seen = "present" | "absent" | "unknown";
+const PREFIX_APPLIES = 16;
+const PREFIX_LAYOUTS = 8;
+
+/**
+ * What a prefix of a batch says of a problem: there, not there, or unknown, when the prefix is refused for another
+ * problem: the checks of a whole diagram stop at the first set that fails, and a refused diagram is not laid out. When
+ * the prefixes to apply or lay out are spent, it is not asked.
+ */
+type Seen = "present" | "absent" | "unknown" | "spent";
+
+/** Every value an operation names, in any of its fields. */
+function namedIn(op: Op): Set<string> {
+  const out = new Set<string>();
+  const walk = (v: unknown) => {
+    if (typeof v === "string") out.add(v);
+    else if (Array.isArray(v)) for (const x of v) walk(x);
+    else if (v !== null && typeof v === "object") {
+      for (const [k, x] of Object.entries(v)) if (k !== "op") walk(x);
+    }
+  };
+  walk(op);
+  return out;
+}
+
+/**
+ * The ids a problem is about: what an error found, a defect's elements, and the ids of its facts, with the two ends of
+ * a line. A defect's found is a text, not an id.
+ */
+function idsOf(found: string | undefined, elements: readonly string[], f: Facts): string[] {
+  const ids = [found, ...elements, f.node, f.group, f.edge, f.row, f.lane, f.wall, f.note];
+  const all = [...ids, ...(f.nodes ?? []), ...(f.ends ?? [])].filter(
+    (x): x is string => x !== undefined && x !== "",
+  );
+  return [...new Set(all.flatMap((id) => [id, ...id.split("->")]))];
+}
 
 /**
  * Where a problem of the diagram a batch makes comes from (DESIGN.md, "Refusals say what happened and which commands
  * can change it"): the number of operations after which it is not there and after which, one more, it is; 0 when the
  * diagram before the batch has it; undefined when no line can be known. It runs only on a refused write, so a write
- * that succeeds costs nothing more. grafical tries the batch less its last operation first, then halves the range, as
- * if what appears stays. A prefix refused for another problem cannot tell, and the nearest one that can is tried in
- * its place. Each prefix is applied and laid out once for all the problems.
+ * that succeeds costs nothing more. grafical tries the first and the last operation that names what the problem is
+ * about, just before and after each, then the batch less its last operation, then halves the range, as if what
+ * appears stays. A prefix refused for another problem cannot tell, and the nearest one that can is tried in its place.
+ * Each prefix is applied and laid out once for all the problems, within PREFIX_APPLIES and PREFIX_LAYOUTS.
  */
 function locate(
   base: Diagram | null,
@@ -256,13 +292,17 @@ function locate(
   const defectsAt = new Map<number, Set<string>>();
   if ("errors" in final) applied.set(n, { errors: new Set(final.errors.map(errorKey)) });
   else defectsAt.set(n, new Set(final.defects.map(defectKey)));
-  const apply = (k: number): Applied => {
+  let applies = 0;
+  let layouts = 0;
+  const apply = (k: number): Applied | undefined => {
     const known = applied.get(k);
     if (known !== undefined) return known;
     let a: Applied;
     // No diagram before a new file: nothing is in it.
     if (k === 0 && base === null) a = { diagram: null };
     else {
+      if (applies >= PREFIX_APPLIES) return undefined;
+      applies++;
       const r = applyOps(base, ops.slice(0, k));
       const weights = "errors" in r ? [] : unknownWeights(r.diagram);
       if ("errors" in r) a = { errors: new Set(r.errors.map(errorKey)) };
@@ -277,17 +317,21 @@ function locate(
     const known = defect ? defectsAt.get(k) : undefined;
     if (known !== undefined) return known.has(key) ? "present" : "absent";
     const a = apply(k);
+    if (a === undefined) return "spent";
     if ("errors" in a) return a.errors.has(key) ? "present" : "unknown";
     if (!defect || a.diagram === null) return "absent";
+    if (layouts >= PREFIX_LAYOUTS) return "spent";
+    layouts++;
     const d = a.diagram;
     const found = check(d, layout(d, m), m, false).filter((x) => x.owner === "agent");
     defectsAt.set(k, new Set(found.map(defectKey)));
     return defectsAt.get(k)?.has(key) ? "present" : "absent";
   };
-  const firstAt = (key: string, defect: boolean): number | undefined => {
+  const named = ops.map(namedIn);
+  const firstAt = (key: string, defect: boolean, ids: readonly string[]): number | undefined => {
     const s0 = seen(0, key, defect);
     if (s0 === "present") return 0;
-    if (s0 === "unknown") return undefined;
+    if (s0 !== "absent") return undefined;
     // It is not there after `lo` operations, and is there after `hi`.
     let lo = 0;
     let hi = n;
@@ -297,7 +341,14 @@ function locate(
       else if (s === "absent") lo = k;
       return s;
     };
-    // A change's problem is most often its last operation's, which is tried first; then the range halves.
+    // The first operation that names what the problem is about, and the last, are most often its cause: each is tried
+    // with the prefix just before it.
+    const names = (x: Set<string>) => ids.some((id) => x.has(id));
+    const suspects = [named.findIndex(names) + 1, named.findLastIndex(names) + 1];
+    for (const k of suspects.filter((x) => x > 0).flatMap((x) => [x, x - 1])) {
+      if (k > lo && k < hi && settle(k) === "spent") return undefined;
+    }
+    // Else a change's problem is most often its last operation's, which is tried next; then the range halves.
     let first = true;
     while (hi - lo > 1) {
       const mid = first ? hi - 1 : (lo + hi) >> 1;
@@ -305,14 +356,22 @@ function locate(
       const near = [mid];
       for (let k = mid - 1; k > lo; k--) near.push(k);
       for (let k = mid + 1; k < hi; k++) near.push(k);
-      // A prefix refused for another problem cannot tell: the nearest one that can is tried in its place.
-      if (!near.some((k) => settle(k) !== "unknown")) return undefined;
+      let told = false;
+      for (const k of near) {
+        const s = settle(k);
+        if (s === "spent") return undefined;
+        if (s !== "unknown") {
+          told = true;
+          break;
+        }
+      }
+      if (!told) return undefined;
     }
     return hi;
   };
   return {
-    errorAt: (e) => firstAt(errorKey(e), false),
-    defectAt: (d) => firstAt(defectKey(d), true),
+    errorAt: (e) => firstAt(errorKey(e), false, idsOf(e.found, [], e.facts ?? {})),
+    defectAt: (d) => firstAt(defectKey(d), true, idsOf(undefined, d.elements, d.facts)),
   };
 }
 

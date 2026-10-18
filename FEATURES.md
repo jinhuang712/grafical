@@ -85,7 +85,7 @@ next: -
 ```
 
 - The kind is `error` (could not be read or applied), `defect` (would draw wrong) or `warning` (written, drawn poorly). The description is one fixed sentence per code, which says what happened and never what to do.
-- The source is the command line as typed, the batch line and the operation as written, or `already in the file`. A warning has none. A defect found after layout, or an error of the whole diagram, names the batch line after which it first appears and stays, or the batch file alone when no line can be known: a batch that is refused for another problem part of the way cannot tell.
+- The source is the command line as typed, the batch line and the operation as written, or `already in the file`. A warning has none. A defect found after layout, or an error of the whole diagram, names the batch line after which it first appears and stays, or the batch file alone when no line can be known: a batch that is refused for another problem part of the way cannot tell, and a refused write tries at most 16 prefixes of its batch, 8 of them laid out, for all its problems.
 - The detail gives the facts, one per line: `near` (the closest IDs), `likely` (the value it most likely meant), `allowed`, `free`, `count`, `lines`, `min`, `max`, the `node`, `row`, `group`, `edge` or `lane` it concerns, `line` and `column` in the YAML. It carries what the agent needs to find the change itself, such as the first and last rows a group's box covers; no refusal writes the change for it.
 - `next` names the commands that can change it, in the order the help lists them, or `-`.
 - A YAML syntax error gives the text of its line.
