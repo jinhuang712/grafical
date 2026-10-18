@@ -27,9 +27,9 @@ describe('order (DESIGN.md, "The agent states every order")', () => {
         {
           code: "missing-field",
           index: 3,
-          field: "first,last,before,after",
+          field: "place",
           found: "",
-          facts: { row: "top", nodes: ["a"] },
+          facts: { row: "top", nodes: ["a"], allowed: ["first", "last", "before", "after"] },
         },
       ],
     });

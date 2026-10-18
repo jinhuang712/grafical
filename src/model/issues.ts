@@ -3,7 +3,7 @@
 import type { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
 import { lineStyle, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
-import { closest } from "./suggest.ts";
+import { closest, editDistance } from "./suggest.ts";
 import { EDGE_KINDS, type EdgeKind, STEP_NUMBER_MAX } from "./types.ts";
 
 export const ID_NODE = "ID_NODE";
@@ -85,37 +85,57 @@ export function issuesToErrors(
     if (issue.code === "unrecognized_keys") {
       const keys = (issue as { keys: string[] }).keys;
       const known = knownKeys(raw, path);
+      const at = getPath(raw, path);
+      const order = at !== null && typeof at === "object" ? Object.keys(at) : [];
+      // YAML ends unquoted text at a comma, and each part after it becomes a key of its own, with no value: they
+      // belong to the field before them in the text, whose value is the text's first part.
+      const cut = new Map<string, string[]>();
       for (const key of keys) {
         const f = leaf ? key : fieldName([...path, key]);
-        const near = closest(key, known, 2);
         const value = getPath(raw, [...path, key]);
         const renamed = leaf ? RENAMED[`${String(getPath(raw, ["op"]))}.${key}`] : undefined;
-        // YAML ends unquoted text at a comma or a colon, and the rest becomes a key.
-        const cut = value === null || /\s/.test(key);
+        const before = order
+          .slice(0, order.indexOf(key))
+          .reverse()
+          .find((k) => !keys.includes(k));
+        if ((value === null || /\s/.test(key)) && renamed === undefined) {
+          if (before !== undefined) cut.set(before, [...(cut.get(before) ?? []), key]);
+          else out.push({ code: "unquoted-text", index, field: f, found: key });
+          continue;
+        }
         out.push({
-          code: cut && renamed === undefined ? "unquoted-text" : "unknown-field",
+          code: "unknown-field",
           index,
           field: f,
           found: key,
           facts: {
             allowed: known,
-            ...(renamed !== undefined ? { likely: [renamed] } : cut ? {} : { likely: near }),
+            likely: renamed !== undefined ? [renamed] : closest(key, known, 2),
           },
+        });
+      }
+      for (const [key, parts] of cut) {
+        out.push({
+          code: "unquoted-text",
+          index,
+          field: leaf ? key : fieldName([...path, key]),
+          found: [show(getPath(raw, [...path, key])), ...parts].join(", "),
         });
       }
     } else if (issue.code === "invalid_value") {
       const values = ((issue as { values?: unknown[] }).values ?? []).map(String);
+      const facts =
+        field === "style" && leaf
+          ? legendStyle(found, values)
+          : field === "kind" || field?.endsWith(".kind")
+            ? guessedKind(raw, path, found, values)
+            : { allowed: values };
       out.push({
         code: "bad-value",
         index,
         ...base,
         found: show(found),
-        facts:
-          field === "style" && leaf
-            ? legendStyle(found, values)
-            : field === "kind" || field?.endsWith(".kind")
-              ? guessedKind(raw, path, found, values)
-              : { allowed: values },
+        facts: facts.likely === undefined ? { ...facts, ...nearValue(found, values) } : facts,
       });
     } else if (
       issue.message === ID_NODE ||
@@ -196,6 +216,16 @@ export function issuesToErrors(
   return out;
 }
 
+/** An allowed value a few letters from the one found, as its likely meaning: servise is service. */
+function nearValue(found: unknown, values: string[]): Facts {
+  if (typeof found !== "string") return {};
+  const [near] = closest(found, values, 1);
+  if (near === undefined) return {};
+  return editDistance(found, near) <= Math.max(1, Math.floor(found.length / 3))
+    ? { likely: [near] }
+    : {};
+}
+
 /** Kinds agents guess, and the kind each most likely means, for boxes and for lines. */
 const NODE_GUESS: Record<string, string[]> = {
   // A flowchart's Start and End are terminals; a state machine's are initial and final.
@@ -255,11 +285,7 @@ function legendStyle(found: unknown, values: string[]): Facts {
   if (typeof found === "string" && (EDGE_KINDS as readonly string[]).includes(found)) {
     return { allowed: values, likely: [lineStyle(found as EdgeKind)] };
   }
-  if (typeof found !== "string") return { allowed: values };
-  return {
-    allowed: values,
-    fix: [`diagram legend <file> <style> --text ${JSON.stringify(found)}`],
-  };
+  return { allowed: values };
 }
 
 // The set of known keys of the object at `path`, found by its shape.

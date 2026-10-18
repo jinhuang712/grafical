@@ -4,6 +4,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { drawing, drawingText } from "../../src/check/drawing.ts";
 import { check } from "../../src/check/index.ts";
+import { defectBlock, kindsOf } from "../../src/cli/problems.ts";
 import { layout } from "../../src/layout/index.ts";
 import { applyOps, type Diagram, type Op } from "../../src/model/index.ts";
 import type { Rect } from "../../src/scene.ts";
@@ -82,10 +83,13 @@ describe('notes in the picture (DESIGN.md, "Notes as callouts or footnotes")', (
     expect(found.map((x) => [x.code, x.owner, x.elements[0], x.facts.is])).toEqual([
       ["label-blocked", "agent", "retry", "note"],
     ]);
-    // Its fix makes it a footnote, with its own text, and grafical accepts that.
-    expect(found[0]?.facts.fix).toEqual([
-      "note add <file> --on retry --text 'retries 5 times, then the DLQ' --footnote",
-    ]);
+    // The note, named by what it is on, can become a footnote with note add, and grafical accepts that.
+    const [blocked] = found;
+    if (blocked === undefined) throw new Error("no refusal");
+    expect(defectBlock(blocked, kindsOf(d))).toMatchObject({
+      detail: { owner: "agent", is: "note", note: ["retry"] },
+      next: ["note add", "note remove", "node move"],
+    });
     const foot = ok(d, [note("retry", "retries 5 times, then the DLQ", true)]);
     expect(check(foot, layout(foot, m), m)).toEqual([]);
   });

@@ -247,7 +247,12 @@ export function buildGrid(d: Diagram): Grid {
       }
     }
     if (clash !== undefined) {
-      groupProblems.push({ code: "wall-sides", group: w.id, found: w.id, facts: { nodes: clash } });
+      groupProblems.push({
+        code: "wall-sides",
+        group: w.id,
+        found: w.id,
+        facts: { wall: w.id, nodes: clash },
+      });
     }
   }
 
@@ -299,7 +304,7 @@ export function buildGrid(d: Diagram): Grid {
         node: id,
         target: t,
         found: t,
-        facts: { node: id, fix: [`node align <file> ${id}`] },
+        facts: { node: id },
       });
     } else if (j === undefined) {
       alignProblems.push({
@@ -307,7 +312,7 @@ export function buildGrid(d: Diagram): Grid {
         node: id,
         target: t,
         found: t,
-        facts: { node: id, near: closest(t, ids), fix: [`node align <file> ${id}`] },
+        facts: { node: id, near: closest(t, ids) },
       });
     } else if (row[j] === row[i]) {
       alignProblems.push({
@@ -315,11 +320,7 @@ export function buildGrid(d: Diagram): Grid {
         node: id,
         target: t,
         found: t,
-        facts: {
-          node: id,
-          row: d.layers[row[i] as number]?.id ?? "",
-          fix: [`node align <file> ${id}`],
-        },
+        facts: { node: id, row: d.layers[row[i] as number]?.id ?? "" },
       });
     } else if (tryJoin(i, j) === "clash") {
       const layer = d.layers[row[i] as number]?.id ?? "";
@@ -328,7 +329,7 @@ export function buildGrid(d: Diagram): Grid {
         node: id,
         target: t,
         found: t,
-        facts: { node: id, row: layer, fix: [`node align <file> ${id}`] },
+        facts: { node: id, row: layer },
       });
     }
   }
@@ -779,15 +780,16 @@ function groupConstraints(
       if (at.length === 0) {
         // A row inside the group's span with no member (DESIGN.md, "Rows unseen, groups as systems"): the box spans it, so each
         // of its nodes sits wholly left or right of the box, the row keeping its order.
+        const layer = d.layers[r]?.id ?? "";
         const split = gapSplit(list, ms, g, rows, chainOf, links, reaches, cls);
         if (split === undefined) {
-          failed = conflict(g, ids[list[0] as number] as string);
+          failed = conflict(g, { row: layer, nodes: list.map((i) => ids[i] as string) });
           break;
         }
         for (const [k, i] of list.entries()) {
           for (const m of ms) {
             if (k < split ? addEdge(i, m, mine) : addEdge(m, i, mine)) continue;
-            failed = conflict(g, ids[i] as string);
+            failed = conflict(g, { row: layer, node: ids[i] as string });
             break;
           }
           if (failed !== undefined) break;
@@ -800,10 +802,8 @@ function groupConstraints(
       if (stranger !== undefined) {
         const layer = d.layers[r]?.id ?? "";
         const s = ids[stranger] as string;
-        // The node either belongs in the group, or goes out to one side of its members. Groups nest, so it joins
-        // the innermost group whose members it stands between, or goes out past the outermost one's. A place in
-        // the row is named by the member at that end only when that member is in the row itself, not placed by
-        // steps; a box placed by steps, which sits in the row here, takes the row with --layer.
+        // Groups nest: the facts name the innermost group whose members the box stands between, and its members
+        // nearest the box on either side.
         const at0 = list.indexOf(stranger);
         const span = (h: string): [number, number] | undefined => {
           const k = list.map((i, x) => (isIn(i, h) ? x : -1)).filter((x) => x >= 0);
@@ -817,37 +817,29 @@ function groupConstraints(
           })
           .sort((a, b) => groupChain(d, a).length - groupChain(d, b).length);
         const inner = around[around.length - 1] ?? g;
-        const [left0, right0] = span(around[0] ?? g) ?? [first, last];
-        const inRow = new Set(
-          (d.layers[r]?.nodes ?? []).filter((n) => n.from === undefined).map((n) => n.id),
-        );
-        const into = inRow.has(s) ? "" : ` --layer ${layer}`;
-        const fix = [`group join <file> ${inner} ${s}`];
-        for (const [k, side] of [
-          [left0, "before"],
-          [right0, "after"],
-        ] as const) {
-          const end = ids[list[k] as number] as string;
-          if (inRow.has(end)) fix.push(`node move <file> ${s}${into} --${side} ${end}`);
-        }
+        const members = list.map((i, x) => (isIn(i, inner) ? x : -1)).filter((x) => x >= 0);
+        const left = members.filter((x) => x < at0).at(-1) ?? first;
+        const right = members.find((x) => x > at0) ?? last;
+        const between = [left, right].map((k) => ids[list[k] as number] as string);
         failed = {
           code: "group-split",
           group: g,
           node: s,
           found: s,
-          facts: { group: g, row: layer, fix },
+          facts: { node: s, row: layer, group: inner, between },
         };
         break;
       }
       const left = list[first - 1];
       const right = list[last + 1];
+      const layer = d.layers[r]?.id ?? "";
       for (const m of ms) {
         if (left !== undefined && !addEdge(left, m, mine)) {
-          failed = conflict(g, ids[left] as string);
+          failed = conflict(g, { row: layer, node: ids[left] as string });
           break;
         }
         if (right !== undefined && !addEdge(m, right, mine)) {
-          failed = conflict(g, ids[right] as string);
+          failed = conflict(g, { row: layer, node: ids[right] as string });
           break;
         }
       }
@@ -870,7 +862,7 @@ function groupConstraints(
       for (const m of ms) {
         for (const o of os) {
           const ok = side < 0 ? addEdge(m, o, mine) : addEdge(o, m, mine);
-          if (!ok && failed === undefined) failed = conflict(g, undefined, other.group);
+          if (!ok && failed === undefined) failed = conflict(g, { beside: other.group });
         }
       }
     }
@@ -932,21 +924,19 @@ function gapSplit(
   return best;
 }
 
-/** A node or another group that lies left of group g in one row and right of it in another. */
-function conflict(g: string, node?: string, other?: string): GroupProblem {
+/**
+ * A node or another group that would lie left of group g's box in one row and right of it in another: the box
+ * covers every row from its top member to its bottom one. The facts say where: the row and the node in it, or the
+ * row whose nodes cannot all stand on one side, or the other group (`beside`).
+ */
+function conflict(g: string, at: Facts): GroupProblem {
   const p: GroupProblem = {
     code: "group-conflict",
     group: g,
-    found: other ?? node ?? "",
-    facts: {
-      is: other !== undefined ? "group" : "node",
-      group: g,
-      ...(other === undefined && node !== undefined
-        ? { fix: [`group join <file> ${g} ${node}`] }
-        : {}),
-    },
+    found: at.beside ?? at.node ?? at.row ?? "",
+    facts: { group: g, ...at },
   };
-  if (node !== undefined) p.node = node;
+  if (at.node !== undefined) p.node = at.node;
   return p;
 }
 

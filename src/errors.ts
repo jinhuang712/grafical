@@ -1,9 +1,9 @@
 // What grafical reports back to the caller (DESIGN.md, "Checking and failure", "Defects owned by who can fix them", "Interfaces").
 
 /**
- * The facts that help fix an error or a defect, as discrete values (DESIGN.md, "Records over prose"): never a
- * sentence. The code says what is wrong; these say what is there and what would do.
- * They print in this order.
+ * What is there, as discrete values (DESIGN.md, "Records over prose", "Refusals say what happened and which commands
+ * can change it"): never a sentence, and never a command to run. The code says what happened; these say what is
+ * there. They print in FACT_ORDER.
  */
 export interface Facts {
   /** What the found id names: layer, node, group, lane or edge. */
@@ -26,16 +26,27 @@ export interface Facts {
   max?: number;
   /** An unused id like the one given. */
   free?: string;
-  /** The row, group, node, edge or lane it concerns. */
+  /** The row, group, node, edge, lane or wall it concerns. */
   row?: string;
   group?: string;
   node?: string;
   edge?: string;
   lane?: string;
+  wall?: string;
+  /** A note, by what it is on. */
+  note?: string;
   /** The lanes it lies in; none for outside every lane. */
   lanes?: readonly string[];
   /** The nodes of that row or group. */
   nodes?: readonly string[];
+  /** The members of a group that a box stands between in one row. */
+  between?: readonly string[];
+  /** The lines that run across a text. */
+  across?: readonly string[];
+  /** The box that a mark covers. */
+  covers?: string;
+  /** Another group, whose boxes would sit on both sides of a group's box. */
+  beside?: string;
   /** How the lanes run: rows or columns. */
   run?: string;
   /** Where a group's label sits, as the agent stated it. */
@@ -46,6 +57,8 @@ export interface Facts {
   gutters?: readonly string[];
   /** Groups from the inside out, as they would nest. */
   chain?: readonly string[];
+  /** The arguments a command takes, as its usage names them. */
+  takes?: readonly string[];
   /** Where in the YAML text, from 1. */
   line?: number;
   column?: number;
@@ -53,40 +66,47 @@ export interface Facts {
   chars?: readonly string[];
   /** Pixels of one line that another shares. */
   shared?: number;
-  /** Operations that would fix it, in command-line form. */
-  fix?: readonly string[];
 }
 
-/** The keys of Facts, in the order they print. */
+/**
+ * The keys of Facts, in the order they print: what it concerns first, then what is there, then what is allowed and
+ * the limits.
+ */
 export const FACT_ORDER: readonly (keyof Facts)[] = [
+  "likely",
+  "near",
+  "free",
   "is",
   "kind",
   "type",
-  "near",
-  "likely",
-  "allowed",
-  "count",
-  "lines",
-  "min",
-  "max",
-  "free",
+  "node",
   "row",
   "group",
-  "node",
   "edge",
   "lane",
-  "lanes",
+  "wall",
+  "note",
   "nodes",
+  "lanes",
+  "between",
+  "across",
+  "covers",
+  "beside",
+  "chain",
   "run",
   "place",
   "clear",
   "gutters",
-  "chain",
+  "allowed",
+  "takes",
+  "count",
+  "lines",
+  "min",
+  "max",
   "line",
   "column",
   "chars",
   "shared",
-  "fix",
 ];
 
 /**
@@ -180,6 +200,26 @@ export const ERROR_CODES = [
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
+/**
+ * The codes of a command line grafical cannot read: commander's refusals, in kebab case, and grafical's own. Each
+ * exits 2 (DESIGN.md, "Refusals say what happened and which commands can change it").
+ */
+export const USAGE_CODES = [
+  "bad-port",
+  "bad-scale",
+  "conflicting-option",
+  "excess-arguments",
+  "invalid-argument",
+  "missing-argument",
+  "missing-mandatory-option-value",
+  "no-folder",
+  "option-missing-argument",
+  "unknown-command",
+  "unknown-guide",
+  "unknown-option",
+] as const;
+export type UsageCode = (typeof USAGE_CODES)[number];
+
 /** An operation that cannot be applied. Nothing changes when one occurs. */
 export interface OpError {
   /** Stable, machine-readable, such as "unknown-node" or "bad-value". */
@@ -259,6 +299,6 @@ export interface Defect {
   /** For a defect in text: the field it is in, such as label, and the text. */
   field?: string;
   found?: string;
-  /** What is there, and the operations that would fix it. */
+  /** What is there. */
   facts: Facts;
 }

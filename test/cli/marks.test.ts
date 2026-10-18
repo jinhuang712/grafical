@@ -81,14 +81,14 @@ describe("grafical node icon", () => {
     expect(read("a.svg")).toBe(read("b.svg"));
   });
 
-  it("refuses to load a diagram whose file changed, and says how to accept it", () => {
+  it("refuses to load a diagram whose file changed, and names the command that sets the slot again", () => {
     writeFileSync(
       join(dir, "warn.svg"),
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24"/></svg>',
     );
     const r = run("show", "d.grafical.yaml");
     expect(r.code).toBe(1);
-    expect(r.out).toContain("code=mark-file-changed");
+    expect(r.out).toContain("error: mark-file-changed\n");
     expect(r.out).toContain("warn.svg");
     // Another slot's command does not get past it, but setting this slot again accepts the file.
     expect(icon("top-left", "!").code).toBe(1);
@@ -114,11 +114,11 @@ describe("grafical node icon", () => {
       run(...args);
     }
     const put = (v: string) => run("node", "icon", fresh, "n", "--slot", "top-left", "--icon", v);
-    expect(put("nope.svg").out).toContain("code=mark-file-not-found");
-    expect(put("bad.svg").out).toContain("code=mark-file-unsafe");
-    expect(put("ext.svg").out).toContain("code=mark-file-unsafe");
-    expect(put("../warn.svg").out).toContain("code=mark-file-outside");
-    expect(put("/etc/x.svg").out).toContain("code=mark-file-outside");
+    expect(put("nope.svg").out).toContain("error: mark-file-not-found\n");
+    expect(put("bad.svg").out).toContain("error: mark-file-unsafe\n");
+    expect(put("ext.svg").out).toContain("error: mark-file-unsafe\n");
+    expect(put("../warn.svg").out).toContain("error: mark-file-outside\n");
+    expect(put("/etc/x.svg").out).toContain("error: mark-file-outside\n");
     expect(read(fresh)).not.toContain("icons");
   });
 
@@ -133,9 +133,9 @@ describe("grafical node icon", () => {
     }
     expect(
       run("node", "icon", fresh, "q", "--slot", "top-left", "--icon", "TOOLONG").out,
-    ).toContain("code=mark-too-long");
+    ).toContain("error: mark-too-long\n");
     expect(run("node", "icon", fresh, "q", "--slot", "left", "--icon", "!").out).toContain(
-      "allowed=top-left,top-right,bottom-left,bottom-right",
+      "allowed: top-left, top-right, bottom-left, bottom-right\n",
     );
   });
 
@@ -164,10 +164,10 @@ describe("grafical node icon", () => {
     expect(svg).toMatch(/fill="#1f2328"[^>]*>NEW</);
     expect(
       run("node", "icon", f, "n", "--slot", "left", "--icon", "⚠️", "--bg", "red").out,
-    ).toContain("code=mark-style-on-picture");
+    ).toContain("error: mark-style-on-picture\n");
     expect(
       run("node", "icon", f, "n", "--slot", "left", "--icon", "P1", "--bg", "pink").out,
-    ).toContain("allowed=red,amber,green,blue,purple,gray,dark,#rrggbb");
+    ).toContain("allowed: red, amber, green, blue, purple, gray, dark, #rrggbb\n");
   });
 
   it("draws the border, shape, text color and size a text mark is given", () => {
@@ -204,13 +204,13 @@ describe("grafical node icon", () => {
     const f = "h.grafical.yaml";
     expect(
       run("node", "icon", f, "n", "--slot", "left", "--icon", "⚠️", "--fg", "red").out,
-    ).toContain("code=mark-style-on-picture field=fg");
+    ).toContain("error: mark-style-on-picture\n");
     expect(
       run("node", "icon", f, "n", "--slot", "left", "--icon", "P0", "--shape", "star").out,
-    ).toContain("allowed=square,rounded,pill");
+    ).toContain("allowed: square, rounded, pill\n");
     expect(
       run("node", "icon", f, "n", "--slot", "left", "--icon", "P0", "--size", "xl").out,
-    ).toContain("allowed=s,m,l");
+    ).toContain("allowed: s, m, l\n");
   });
 
   it("clears a slot without --icon", () => {

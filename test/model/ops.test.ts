@@ -23,15 +23,23 @@ function fail(d: Diagram | null, ops: Op[]): OpError[] {
   return r.errors;
 }
 
-describe("refusals that say how to fix them", () => {
+describe("refusals that say what was meant", () => {
   it("an edge kind given as a legend's line names the look it is drawn in", () => {
     const e = parseOp({ op: "diagram.legend", style: "async", text: "event" }, 0) as OpError[];
     expect(e[0]).toMatchObject({ code: "bad-value", field: "style" });
     expect(e[0]?.facts?.likely).toEqual(["dashed"]);
+    // A wording given as the style is a value it does not take; the record lists the styles and gives no command.
     const worded = parseOp({ op: "diagram.legend", style: "solid: request" }, 0) as OpError[];
-    expect(worded[0]?.facts?.fix).toEqual([
-      'diagram legend <file> <style> --text "solid: request"',
-    ]);
+    expect(worded[0]).toMatchObject({ code: "bad-value", field: "style", found: "solid: request" });
+    expect(worded[0]?.facts?.likely).toBeUndefined();
+  });
+
+  it("a value a few letters off is answered with the allowed value it most likely means", () => {
+    const e = parseOp({ op: "node.kind", id: "a", kind: "servise" }, 0) as OpError[];
+    expect(e[0]).toMatchObject({ code: "bad-value", field: "kind", found: "servise" });
+    expect(e[0]?.facts?.likely).toEqual(["service"]);
+    const far = parseOp({ op: "diagram.density", density: "loose" }, 0) as OpError[];
+    expect(far[0]?.facts?.likely).toBeUndefined();
   });
 
   it("a guessed kind is answered with the kind it most likely means", () => {
@@ -60,12 +68,22 @@ describe("refusals that say how to fix them", () => {
     expect(old?.facts?.likely).toEqual(["style"]);
   });
 
-  it("text cut at a comma is named as such, and other fields come from the operation", () => {
+  it("text cut at a comma names the field it was cut from and the whole text", () => {
+    // YAML read sublabel: x, dedupe, last: true as three fields.
     const cut = parseOps([
-      { op: "node.add", id: "a", layer: "top", label: "A", sublabel: "x", dedupe: null },
+      {
+        op: "node.add",
+        id: "a",
+        layer: "top",
+        label: "A",
+        sublabel: "x",
+        dedupe: null,
+        last: true,
+      },
     ]) as OpError[];
-    expect(cut[0]).toMatchObject({ code: "unquoted-text", found: "dedupe" });
-    expect(cut[0]?.facts?.allowed).toContain("sublabel");
+    expect(cut).toEqual([
+      { code: "unquoted-text", index: 0, field: "sublabel", found: "x, dedupe" },
+    ]);
     const typo = parseOps([
       { op: "node.add", id: "a", layer: "top", label: "A", sublable: "x" },
     ]) as OpError[];
@@ -217,8 +235,8 @@ describe("node.rename, node.move, node.remove", () => {
   it('refuses a move into a row with boxes and no place (DESIGN.md, "The agent states every order")', () => {
     expect(fail(base, [{ op: "node.move", id: "a", layer: "bottom" }])[0]).toMatchObject({
       code: "missing-field",
-      field: "first,last,before,after",
-      facts: { row: "bottom", nodes: ["c"] },
+      field: "place",
+      facts: { row: "bottom", nodes: ["c"], allowed: ["first", "last", "before", "after"] },
     });
   });
   it("needs a layer or a position", () => {
@@ -236,11 +254,11 @@ describe("node.rename, node.move, node.remove", () => {
     expect(fail(d, [{ op: "node.move", id: "a", layer: "bottom" }])[0]?.code).toBe(
       "align-same-layer",
     );
-    // The fix clears the alignment that would join two boxes of one row; then the move goes.
+    // The refusal names the other box of the alignment; clearing it lets the move go.
     const up: Op = { op: "node.move", id: "n", layer: "top", last: true };
     const down: Op = { op: "node.move", id: "a", layer: "bottom", last: true };
-    expect(fail(d, [up])[0]?.facts?.fix).toEqual(["node align <file> n"]);
-    expect(fail(d, [down])[0]?.facts?.fix).toEqual(["node align <file> n"]);
+    expect(fail(d, [up])[0]?.facts?.node).toBe("a");
+    expect(fail(d, [down])[0]?.facts?.node).toBe("n");
     ok(d, [{ op: "node.align", id: "n" }, up]);
     ok(d, [{ op: "node.align", id: "n" }, down]);
   });

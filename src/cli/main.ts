@@ -15,6 +15,8 @@ import {
   drawing,
   drawingText,
 } from "../check/drawing.ts";
+import type { Facts, UsageCode } from "../errors.ts";
+import { USAGE_CODES } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
 import { yamlError } from "../model/io.ts";
@@ -31,7 +33,7 @@ import {
   NODE_KINDS,
   STEP_NUMBER_MAX,
 } from "../model/types.ts";
-import { record } from "../records.ts";
+import { block, record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
 import { batchSection, opCommands } from "./batch.ts";
@@ -52,6 +54,7 @@ import {
   tryWrite,
   writeAtomic,
 } from "./pipeline.ts";
+import { type Block, kindsOf, usageBlock } from "./problems.ts";
 import { showDiagram } from "./show.ts";
 import { openWindow, startViewer, windowSize } from "./view.ts";
 
@@ -1044,6 +1047,7 @@ export function build(): Command {
         defects,
         bent: bentLines(dr.lines),
         counts: dr.counts,
+        kinds: kindsOf(d),
       },
       opts.json === true,
     );
@@ -1060,17 +1064,7 @@ export function build(): Command {
   ).action(async (file: string, opts: Opts) => {
     const scale = Number(opts.scale);
     if (!Number.isFinite(scale) || scale < 1 || scale > 4) {
-      throw new CommanderError(
-        2,
-        "grafical.badScale",
-        record("error", {
-          code: "bad-scale",
-          field: "--scale",
-          found: String(opts.scale),
-          min: 1,
-          max: 4,
-        }),
-      );
+      throw usage("bad-scale", { field: "--scale", found: String(opts.scale) }, { min: 1, max: 4 });
     }
     const d = loadDiagram(file);
     if (isReport(d)) {
@@ -1101,10 +1095,10 @@ export function build(): Command {
       defects,
       bent: bentLines(dr.lines),
       counts: dr.counts,
+      kinds: kindsOf(d),
     };
-    if (opts.json !== true)
-      for (const f of files) process.stdout.write(`${record("wrote", { file: f })}\n`);
-    process.exitCode = emit(report, opts.json === true, { files });
+    const wrote = files.map((f) => record("wrote", { file: f }));
+    process.exitCode = emit(report, opts.json === true, { files }, wrote);
   });
 
   program
@@ -1116,25 +1110,15 @@ export function build(): Command {
     .action(async (file: string, opts: Opts) => {
       const port = Number(opts.port ?? 0);
       if (!Number.isInteger(port) || port < 0 || port > 65535) {
-        throw new CommanderError(
-          2,
-          "grafical.badPort",
-          record("error", {
-            code: "bad-port",
-            field: "--port",
-            found: String(opts.port),
-            min: 0,
-            max: 65535,
-          }),
+        throw usage(
+          "bad-port",
+          { field: "--port", found: String(opts.port) },
+          { min: 0, max: 65535 },
         );
       }
       // The file need not exist yet: the window can open before the agent starts drawing.
       if (!existsSync(dirname(file))) {
-        throw new CommanderError(
-          2,
-          "grafical.noFolder",
-          record("error", { code: "no-folder", field: "file", found: dirname(file) }),
-        );
+        throw usage("no-folder", { field: "file", found: dirname(file) });
       }
       const viewer = await startViewer(file, port);
       process.stdout.write(`${record("viewing", { file, url: viewer.url, stop: "ctrl-c" })}\n`);
@@ -1159,14 +1143,10 @@ export function build(): Command {
       }
       const guide = guideNamed(name);
       if (guide === undefined) {
-        throw new CommanderError(
-          2,
-          "grafical.unknownGuide",
-          record("error", {
-            code: "unknown-guide",
-            found: name,
-            likely: closest(name, Object.keys(GUIDES), 2),
-          }),
+        throw usage(
+          "unknown-guide",
+          { found: name },
+          { likely: closest(name, Object.keys(GUIDES), 2) },
         );
       }
       process.stdout.write(`${guide.text}\n`);
@@ -1222,7 +1202,9 @@ async function tryMany(file: string, batches: string[], json: boolean): Promise<
     const r = isReport(ops) ? ops : await tryWrite(file, ops);
     if (isReport(r)) {
       code = 1;
-      for (const line of formatReport(r).trimEnd().split("\n")) out.push(`${line} batch=${batch}`);
+      // The refusal as apply prints it, its outcome keyed by the batch.
+      const [, ...rest] = formatReport(r).trimEnd().split("\n");
+      out.push(record("failed", { batch, changed: [] }), ...rest, "");
       results.push({ batch, ...reportBody(r) });
       continue;
     }
@@ -1241,7 +1223,7 @@ async function tryMany(file: string, batches: string[], json: boolean): Promise<
     );
   } else {
     if (before !== undefined) out.unshift(countsText(before, "before"));
-    process.stdout.write(`${out.join("\n")}\n`);
+    process.stdout.write(`${out.join("\n").trimEnd()}\n`);
   }
   return code;
 }
@@ -1250,11 +1232,71 @@ function isOps(x: Op[] | unknown[]): x is Op[] {
   return x.every((i) => typeof i === "object" && i !== null && "op" in i && !("code" in i));
 }
 
-/** The parser's refusal as a record: its code in kebab case, and the first quoted word of its sentence as what it found. */
-function parserError(err: CommanderError): string {
-  const code = err.code.slice("commander.".length).replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
-  const found = /'([^']*)'/.exec(err.message)?.[1];
-  return record("error", found === undefined ? { code } : { code, found });
+/** A command line grafical cannot read: exit 2, with its block in place of anything else. */
+class UsageError extends CommanderError {
+  readonly problem: Block;
+  constructor(problem: Block) {
+    super(2, "grafical.usage", problem.code);
+    this.problem = problem;
+  }
+}
+
+function usage(code: UsageCode, given: { field?: string; found?: string }, facts?: Facts) {
+  return new UsageError(usageBlock(code, given, facts));
+}
+
+/** A usage error as grafical prints it: failed, then its block (DESIGN.md, "Refusals say what happened and which commands can change it"). */
+function usageText(b: Block): string {
+  return `${record("failed", { changed: [] })}\n\n${block(b)}\n`;
+}
+
+/** The arguments a command takes, as its usage names them: <file>, [at], <nodes...>. */
+function takes(c: Command): string[] {
+  return c.registeredArguments.map((a) => {
+    const name = `${a.name()}${a.variadic ? "..." : ""}`;
+    return a.required ? `<${name}>` : `[${name}]`;
+  });
+}
+
+/**
+ * The parser's refusal as a block: its code in kebab case, and what its sentence names. A missing argument or option
+ * is the field; extra arguments are what was found, with the arguments the command takes.
+ */
+function parserError(err: CommanderError, program: Command, args: string[]): Block {
+  const code = err.code
+    .slice("commander.".length)
+    .replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`) as UsageCode;
+  const quoted = /'([^']*)'/.exec(err.message)?.[1];
+  switch (code) {
+    case "missing-argument":
+      return usageBlock(code, { field: quoted ?? "" });
+    case "option-missing-argument":
+    case "missing-mandatory-option-value":
+      return usageBlock(code, {
+        field: (quoted ?? "").split(/[\s,]+/).find((w) => w.startsWith("--")) ?? quoted ?? "",
+      });
+    case "excess-arguments": {
+      const [command] = follow(
+        program,
+        args.filter((a) => !a.startsWith("-")),
+      );
+      const m = /Expected (\d+) arguments? but got \d+: (.*)\.$/.exec(err.message);
+      const extra = m === null ? [] : (m[2] ?? "").split(", ").slice(Number(m[1]));
+      return usageBlock(code, { found: extra }, { takes: takes(command) });
+    }
+    case "unknown-option": {
+      const likely = /Did you mean (\S+?)\?/.exec(err.message)?.[1];
+      return usageBlock(
+        code,
+        { found: quoted ?? "" },
+        likely === undefined ? {} : { likely: [likely] },
+      );
+    }
+    default:
+      return usageBlock(USAGE_CODES.includes(code) ? code : "unknown-command", {
+        found: quoted ?? "",
+      });
+  }
 }
 
 /** The commands the words name below a command, as far as they name one, and the last of them. */
@@ -1271,51 +1313,44 @@ function follow(from: Command, words: string[]): [Command, string[]] {
 }
 
 /**
- * A word where a command belongs that names none, as a record of the command it most likely means: "help" asks for a
- * page, "node add" or node.add is two names in one word, and nodee a misspelling. With --help, or "help", the command
- * is its page. Undefined when the command line names commands only; commander reads the rest. Commander would print
- * the entry page for a wrong name with --help, and say nothing of what was meant.
+ * A word where a command belongs that names none, as a block that gives the word it most likely means as a value
+ * (DESIGN.md, "Refusals say what happened and which commands can change it"): "help" means --help, "node add" or
+ * node.add is two names in one word, and nodee a misspelling. Undefined when the command line names commands only;
+ * commander reads the rest. Commander would print the entry page for a wrong name with --help, and say nothing of
+ * what was meant.
  */
-export function wrongCommand(program: Command, args: string[]): string | undefined {
+export function wrongCommand(program: Command, args: string[]): Block | undefined {
   // The program and its groups take no option with a value, so every other word up to a command is a command's name.
   const words = args.filter((a) => !a.startsWith("-"));
   const [at, path] = follow(program, words);
   const word = words[path.length];
   if (at.commands.length === 0 || word === undefined) return undefined;
-  const rest = words.slice(path.length + 1);
-  const help = word === "help" || args.includes("--help") || args.includes("-h");
-  let meant: string[] = [];
-  const split = (w: string) => w.split(/[\s.]+/);
-  if (word === "help") meant = follow(at, rest.flatMap(split))[1];
+  let likely: string | undefined;
+  const parts = word.split(/[\s.]+/);
+  const named = follow(at, parts)[1];
+  if (word === "help") likely = "--help";
+  else if (parts.length > 1 && named.length === parts.length) likely = named.join(" ");
   else {
-    const parts = split(word);
-    const [inner, named] = follow(at, parts);
-    if (parts.length > 1 && named.length === parts.length)
-      meant = [...named, ...follow(inner, rest)[1]];
-    else {
-      const [near] = closest(
-        word,
-        at.commands.map((c) => c.name()),
-        1,
-      );
-      const c = at.commands.find((x) => x.name() === near);
-      if (
-        c !== undefined &&
-        editDistance(word, c.name()) <= Math.max(1, Math.floor(word.length / 3))
-      )
-        meant = [c.name(), ...follow(c, rest)[1]];
-    }
+    const [near] = closest(
+      word,
+      at.commands.map((c) => c.name()),
+      1,
+    );
+    if (near !== undefined && editDistance(word, near) <= Math.max(1, Math.floor(word.length / 3)))
+      likely = near;
   }
-  if (!help && meant.length === 0) return record("error", { code: "unknown-command", found: word });
-  const likely = ["grafical", ...path, ...meant, ...(help ? ["--help"] : [])].join(" ");
-  return record("error", { code: "unknown-command", found: word, likely });
+  return usageBlock(
+    "unknown-command",
+    { found: word },
+    likely === undefined ? {} : { likely: [likely] },
+  );
 }
 
 async function main(argv: string[]) {
+  const program = build();
   try {
-    const program = build();
     const wrong = wrongCommand(program, argv.slice(2));
-    if (wrong !== undefined) throw new CommanderError(2, "grafical.unknownCommand", wrong);
+    if (wrong !== undefined) throw new UsageError(wrong);
     await program.parseAsync(argv);
   } catch (err) {
     if (err instanceof CommanderError) {
@@ -1323,10 +1358,11 @@ async function main(argv: string[]) {
         process.exitCode = 0;
         return;
       }
-      // grafical's own usage errors are records (DESIGN.md, "Records over prose"); commander prints its own.
-      if (err.code.startsWith("grafical.")) process.stderr.write(`${err.message}\n`);
+      // A usage error is a block too (DESIGN.md, "Refusals say what happened and which commands can change it"),
+      // in place of commander's sentence.
+      if (err instanceof UsageError) process.stderr.write(usageText(err.problem));
       else if (err.code.startsWith("commander.") && err.code !== "commander.help") {
-        process.stderr.write(`${parserError(err)}\n`);
+        process.stderr.write(usageText(parserError(err, program, argv.slice(2))));
       }
       process.exitCode = 2;
       return;

@@ -41,14 +41,8 @@ function svgProblem(svg: string): string | undefined {
   return undefined;
 }
 
-function problem(code: ErrorCode, index: number, found: string, fix?: string[]): OpError {
-  return {
-    code,
-    index,
-    field: "icon",
-    found,
-    ...(fix === undefined ? {} : { facts: { fix } }),
-  };
+function problem(code: ErrorCode, index: number, found: string): OpError {
+  return { code, index, field: "icon", found };
 }
 
 /** The SHA-256 of a file, in hex. */
@@ -71,7 +65,7 @@ function prepare(
     if (!isEmoji(text)) return {};
     const path = emojiPath(text);
     if (!existsSync(path)) {
-      return { error: problem("mark-not-drawn", index, text, ["use an emoji from Unicode 15"]) };
+      return { error: problem("mark-not-drawn", index, text) };
     }
     provideMarkImage(markKey(mark), {
       mime: "image/svg+xml",
@@ -82,7 +76,7 @@ function prepare(
   const file = typeof mark === "string" ? mark : (mark as { file: string }).file;
   if (isAbsolute(file) || normalize(file).startsWith("..")) {
     return {
-      error: problem("mark-file-outside", index, file, ["put the file next to the diagram"]),
+      error: problem("mark-file-outside", index, file),
     };
   }
   const path = join(folder, file);
@@ -91,10 +85,7 @@ function prepare(
   const sha256 = fileHash(bytes);
   if (typeof mark !== "string" && "sha256" in mark && mark.sha256 !== sha256) {
     return {
-      error: {
-        ...problem("mark-file-changed", index, file),
-        facts: { fix: [`node icon <file> <id> --slot <slot> --icon ${file}`] },
-      },
+      error: problem("mark-file-changed", index, file),
     };
   }
   if (/\.png$/i.test(file)) {

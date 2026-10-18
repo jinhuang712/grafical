@@ -77,13 +77,11 @@ describe('auto size (DESIGN.md, "Boxes sized to their text")', () => {
 });
 
 describe('sizing fixed (DESIGN.md, "Boxes sized to their text")', () => {
-  it("makes nodes with no size medium, as before, and suggests resize on overflow", () => {
+  it("makes nodes with no size medium, as before, so that long text overflows", () => {
     const d = ok(one(LONG), [{ op: "diagram.sizing", mode: "fixed" }]);
     expect(width(d)).toBe(BOX.m.w);
     const found = check(d, layout(d, m), m).filter((x) => x.code === "overflow");
-    expect(found.some((x) => x.facts.fix?.includes("grafical node resize <file> a --size l"))).toBe(
-      true,
-    );
+    expect(found.map((x) => x.elements)).toContainEqual(["a"]);
   });
 
   it("is written after density, and auto clears it", () => {

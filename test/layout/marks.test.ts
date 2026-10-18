@@ -3,6 +3,7 @@
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
+import { defectBlock, kindsOf } from "../../src/cli/problems.ts";
 import { layout } from "../../src/layout/index.ts";
 import type { Diagram, DiagramNode } from "../../src/model/types.ts";
 import { createMeasurer } from "../../src/text/index.ts";
@@ -215,7 +216,7 @@ describe("marks in the checker", () => {
     expect(check(d, layout(d, m), m).filter((x) => x.code === "mark-covers")).toEqual([]);
   });
 
-  it("names two ways out of a covered label: a larger box, or the other side", () => {
+  it("names the commands that can change a covered label: a larger box, or another slot", () => {
     const d = marked("api", { "top-left": "⚠️" });
     const scene = layout(d, m);
     const api = scene.nodes.find((n) => n.id === "api");
@@ -223,11 +224,11 @@ describe("marks in the checker", () => {
     if (api?.marks?.[0] === undefined || label === undefined) throw new Error("no mark");
     api.marks[0].rect = { ...label, w: MARK_STEP.m.h, h: MARK_STEP.m.h };
     const [defect] = check(d, scene, m).filter((x) => x.code === "mark-covers");
-    expect(defect?.facts?.fix).toEqual([
-      "grafical node resize <file> api --size l",
-      "grafical node icon <file> api --slot top-left",
-      "grafical node icon <file> api --slot bottom-left --icon <mark>",
-    ]);
+    if (defect === undefined) throw new Error("no defect");
+    expect(defectBlock(defect, kindsOf(d))).toMatchObject({
+      detail: { owner: "agent", field: "icon", found: "top-left", is: "label", node: ["api"] },
+      next: ["node resize", "node icon"],
+    });
   });
 
   it("reports a plain-text mark the bundled fonts cannot draw", () => {

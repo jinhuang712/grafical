@@ -659,7 +659,7 @@ describe("alignment", () => {
     };
     const problems = validateAlignments(d);
     expect(problems.map((p) => `${p.code} ${p.node}`)).toEqual(["alignment-conflict queue"]);
-    expect(problems[0]?.facts).toMatchObject({ node: "queue", fix: ["node align <file> queue"] });
+    expect(problems[0]?.facts).toEqual({ node: "queue", row: expect.any(String) });
     // The first alignment in row order holds, and the layout still runs.
     const f = layoutFramed(d, m);
     expect(centre(f, "db")).toBe(centre(f, "worker"));

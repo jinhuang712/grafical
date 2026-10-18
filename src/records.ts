@@ -1,6 +1,8 @@
 // What grafical prints, as records (DESIGN.md, "Records over prose"): one line each, a word that names
 // the record, then key=value fields, in the logfmt style. The fields are the JSON's,
-// under the same names, so the text and --json say the same thing in the same words.
+// under the same names, so the text and --json say the same thing in the same words. A problem
+// prints as a block of lines instead (DESIGN.md, "Refusals say what happened and which commands
+// can change it").
 
 /** A field's value: none is "-", a list is comma separated, a count by name is "name:n". */
 export type Value =
@@ -40,4 +42,41 @@ function quote(s: string, special: RegExp): string {
 export function record(name: string, fields: { readonly [k: string]: Value }): string {
   const parts = Object.entries(fields).map(([k, v]) => `${k}=${text(v)}`);
   return parts.length === 0 ? name : `${name} ${parts.join(" ")}`;
+}
+
+/** A value in a block's detail: as it reads, on one line; a list comma separated; none is "-". */
+function plain(v: Value): string {
+  if (typeof v === "string") return v.trim() === "" ? "-" : oneLine(v);
+  if (Array.isArray(v)) {
+    if (v.length === 0) return "-";
+    // An item that holds the separator, or none, is quoted as JSON quotes it.
+    return v.map((x) => (x.includes(", ") || x === "" ? JSON.stringify(x) : oneLine(x))).join(", ");
+  }
+  return text(v);
+}
+
+/** Text on one line: any run of spaces and line breaks as one space. */
+export function oneLine(s: string): string {
+  return s.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * One problem as a block of lines (DESIGN.md, "Refusals say what happened and which commands can change it"): its
+ * kind and code, its code's sentence, its source, its facts one per line, and the commands that can change it.
+ */
+export function block(b: {
+  kind: string;
+  code: string;
+  description: string;
+  source?: string;
+  detail: { readonly [k: string]: Value };
+  next: readonly string[];
+}): string {
+  const lines = [`${b.kind}: ${b.code}`, `description: ${b.description}`];
+  if (b.source !== undefined) lines.push(`source: ${oneLine(b.source)}`);
+  const facts = Object.entries(b.detail).filter(([, v]) => v !== undefined);
+  if (facts.length === 0) lines.push("detail: -");
+  else lines.push("detail:", ...facts.map(([k, v]) => `  ${k}: ${plain(v)}`));
+  lines.push(`next: ${b.next.length === 0 ? "-" : b.next.join(", ")}`);
+  return lines.join("\n");
 }

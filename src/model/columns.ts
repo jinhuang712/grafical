@@ -82,10 +82,7 @@ export function checkColumns(d: Diagram, index: number): OpError[] {
       index,
       field: "columns",
       found: ids[0] as string,
-      facts: {
-        lanes: (d.lanes ?? []).map((x) => x.id),
-        fix: ids.map((id) => `column remove <file> ${id}`),
-      },
+      facts: { lanes: (d.lanes ?? []).map((x) => x.id) },
     });
   }
   return errors;

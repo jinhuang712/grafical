@@ -102,6 +102,9 @@ function dupError(d: Diagram, id: string, i: number): OpError | undefined {
   };
 }
 
+/** The fields that give a box its place in a row (DESIGN.md, "The agent states every order"). */
+const POSITION_FIELDS = ["first", "last", "before", "after"] as const;
+
 /** The style fields of a node.icon operation, in the order errors name them. */
 const MARK_STYLE_FIELDS = ["bg", "fg", "border", "shape"] as const;
 
@@ -121,9 +124,7 @@ function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
   const picture = op.sha256 !== undefined || isEmoji(icon);
   if (op.sha256 === undefined && isMarkFile(icon)) {
     // The command line reads the file and fills in its hash before the operation gets here.
-    return bad("mark-file-unread", "icon", icon, {
-      fix: [`node icon <file> ${op.id} --slot ${op.slot} --icon ${icon}`],
-    });
+    return bad("mark-file-unread", "icon", icon);
   }
   if (op.sha256 === undefined && graphemes(icon).length > MARK_TEXT_MAX) {
     return bad("mark-too-long", "icon", icon, { max: MARK_TEXT_MAX });
@@ -132,10 +133,7 @@ function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
     for (const f of MARK_STYLE_FIELDS) {
       const v = op[f];
       if (v !== undefined) {
-        return bad("mark-style-on-picture", f, v, {
-          allowed: ["size"],
-          fix: [`node icon <file> ${op.id} --slot ${op.slot} --icon ${icon}`],
-        });
+        return bad("mark-style-on-picture", f, v, { allowed: ["size"] });
       }
     }
     if (op.sha256 !== undefined) {
@@ -282,7 +280,7 @@ function stepped(id: string, i: number, field: string, found: string): OpError {
     index: i,
     field,
     found,
-    facts: { node: id, fix: [`node move <file> ${id} --layer <row>`] },
+    facts: { node: id },
   };
 }
 
@@ -483,7 +481,7 @@ function laneTargets(
   d: Diagram,
   members: readonly string[],
   i: number,
-  lane: string,
+  _lane: string,
 ): { run: LaneRun; layers: Layer[]; nodes: DiagramNode[] } | OpError[] {
   const errors: OpError[] = [];
   const layerIds = d.layers.map((l) => l.id);
@@ -515,11 +513,7 @@ function laneTargets(
           index: i,
           field: "members",
           found: id,
-          facts: {
-            is: "layer",
-            run: "columns",
-            fix: [`lane join <file> ${lane} ${layer.nodes.map((n) => n.id).join(" ") || "<node>"}`],
-          },
+          facts: { is: "layer", run: "columns", nodes: layer.nodes.map((n) => n.id) },
         });
     } else if (node !== undefined) {
       if (node.layer === undefined) errors.push(stepped(id, i, "members", id));
@@ -530,7 +524,7 @@ function laneTargets(
           index: i,
           field: "members",
           found: id,
-          facts: { is: "node", run: "rows", fix: [`lane join <file> ${lane} ${node.layer.id}`] },
+          facts: { is: "node", run: "rows", row: node.layer.id },
         });
     } else {
       errors.push({
@@ -855,9 +849,9 @@ function resolveSlot(
       error: {
         code: "missing-field",
         index: i,
-        field: "first,last,before,after",
+        field: "place",
         found: "",
-        facts: { row: layerId, nodes: list.map((n) => n.id) },
+        facts: { row: layerId, nodes: list.map((n) => n.id), allowed: [...POSITION_FIELDS] },
       },
     };
   }
@@ -974,7 +968,13 @@ function stepErrors(
     }
   }
   if (!STEP_KEYS.some((k) => steps[k] !== undefined)) {
-    errors.push({ code: "missing-field", index: i, field: STEP_KEYS.join(","), found: "" });
+    errors.push({
+      code: "missing-field",
+      index: i,
+      field: "steps",
+      found: "",
+      facts: { allowed: [...STEP_KEYS] },
+    });
   }
   for (const pair of [["down", "up"] as const, ["left", "right"] as const]) {
     if (steps[pair[0]] === undefined || steps[pair[1]] === undefined) continue;
@@ -1051,12 +1051,7 @@ function moveStepped(s: State, op: NodeMoveOp, at: Found, i: number): OpError[] 
   // A fact that ties a box to a box in another row or to a column goes first. A box in a group shares its
   // lane with the whole group, so the group around it all leaves the lane.
   const outer = groupChain(d, at.node.group).at(-1);
-  const ties = [
-    ["align", `node align <file> ${op.id}`],
-    ["column", `column leave <file> ${op.id}`],
-    ["lane", `lane leave <file> ${outer ?? op.id}`],
-  ] as const;
-  for (const [k, fix] of ties) {
+  for (const k of ["align", "column", "lane"] as const) {
     const v = at.node[k];
     if (v === undefined) continue;
     errors.push({
@@ -1064,7 +1059,7 @@ function moveStepped(s: State, op: NodeMoveOp, at: Found, i: number): OpError[] 
       index: i,
       field: `from,${k}`,
       found: v,
-      facts: { node: op.id, fix: [fix] },
+      facts: { node: op.id, ...(k === "lane" && outer !== undefined ? { group: outer } : {}) },
     });
   }
   if (errors.length > 0) return errors;
@@ -1084,7 +1079,16 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
   const dup = dupError(d, op.id, i);
   if (dup) errors.push(dup);
   if (op.layer === undefined) {
-    return [...errors, { code: "missing-field", index: i, field: "layer,from", found: "" }];
+    return [
+      ...errors,
+      {
+        code: "missing-field",
+        index: i,
+        field: "layer",
+        found: "",
+        facts: { allowed: ["layer", "from"] },
+      },
+    ];
   }
   const layer = d.layers.find((l) => l.id === op.layer);
   if (!layer) errors.push(unknownLayer(d, op.layer, i, "layer"));
@@ -1125,7 +1129,9 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
       {
         code: "missing-field",
         index: i,
-        field: at.layer === undefined ? "layer,from" : "layer,first,last,before,after",
+        ...(at.layer === undefined
+          ? { field: "layer", facts: { allowed: ["layer", "from"] } }
+          : { field: "place", facts: { allowed: ["layer", ...POSITION_FIELDS] } }),
         found: "",
       },
     ];
@@ -1143,7 +1149,7 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
         index: i,
         field: "layer",
         found: target.id,
-        facts: { node: own as string, fix: [`node align <file> ${op.id}`] },
+        facts: { node: own as string },
       });
     }
     const clash = target.nodes.find((n) => n.align === op.id);
@@ -1153,7 +1159,7 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
         index: i,
         field: "layer",
         found: target.id,
-        facts: { node: clash.id, fix: [`node align <file> ${clash.id}`] },
+        facts: { node: clash.id },
       });
     }
   }
@@ -1238,7 +1244,6 @@ function tooManyAccents(
       count,
       max: MAX_ACCENTS,
       nodes: accented,
-      fix: [`node emphasize <file> ${accented[0] ?? "<id>"} --off`],
     },
   };
 }
@@ -1513,7 +1518,15 @@ function orderGroup(s: State, op: Extract<Op, { op: "group.order" }>, i: number)
   if (op.after !== undefined) set.push("after");
   if (set.length !== 1) {
     if (set.length > 1) return [conflicting(i, set)];
-    return [{ code: "missing-field", index: i, field: "before,after", found: "" }];
+    return [
+      {
+        code: "missing-field",
+        index: i,
+        field: "place",
+        found: "",
+        facts: { allowed: ["before", "after"] },
+      },
+    ];
   }
   const other = (op.before ?? op.after) as string;
   const field = op.before !== undefined ? "before" : "after";
@@ -1586,8 +1599,9 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
       {
         code: "missing-field",
         index: i,
-        field: "before,after",
+        field: "place",
         found: "",
+        // The groups it may sit before or after.
         facts: { allowed: sharing },
       },
     ];
@@ -1600,14 +1614,12 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
     for (const key of ["align", "from"] as const) {
       const to = n[key];
       if (to === undefined || copyOf.has(to)) continue;
-      const fix =
-        key === "align" ? `node align <file> ${n.id}` : `node move <file> ${n.id} --layer <row>`;
       errors.push({
         code: "copy-conflict",
         index: i,
         field: key,
         found: to,
-        facts: { node: n.id, fix: [fix] },
+        facts: { node: n.id },
       });
     }
   }
@@ -1935,7 +1947,6 @@ function step(s: State, op: Op, i: number): OpError[] {
           index: i,
           field: "op",
           found: op.op,
-          facts: { fix: ["grafical new <file> --title <text>"] },
         },
       ];
     case "diagram.subtitle":
@@ -2011,10 +2022,7 @@ function step(s: State, op: Op, i: number): OpError[] {
             index: i,
             field: "id",
             found: op.id,
-            facts: {
-              nodes: users,
-              fix: users.map((u) => `node move <file> ${u} --layer <row>`),
-            },
+            facts: { nodes: users },
           },
         ];
       }
@@ -2078,7 +2086,6 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
             code: "no-diagram",
             index: 0,
             found: first === undefined ? "" : first.op,
-            facts: { fix: ["grafical new <file> --title <text>"] },
           },
         ],
       };
@@ -2123,17 +2130,12 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
     };
   }
   // A group the engine cannot box without a non-member inside is an operation error (DESIGN.md, "Rows unseen, groups as systems").
-  // A row between members that holds none is boxed over, its nodes beside the box.
+  // A row between members that holds none is boxed over, its nodes beside the box. No field of an operation is at
+  // fault, so the facts name what is there.
   const groupProblems = layoutModule.validateGroups(s.d);
   if (groupProblems.length > 0) {
     return {
-      errors: groupProblems.map((p) => ({
-        code: p.code,
-        index: last,
-        field: "group",
-        found: p.found,
-        facts: p.facts,
-      })),
+      errors: groupProblems.map((p) => ({ code: p.code, index: last, found: "", facts: p.facts })),
     };
   }
   // A box placed by steps whose cell another fact keeps is an operation error (DESIGN.md, "Steps from another box").

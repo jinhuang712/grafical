@@ -21,6 +21,7 @@ import { FONT_FILES } from "../text/fonts.ts";
 import { createMeasurer } from "../text/index.ts";
 import type { FontFace } from "../text/types.ts";
 import { formatReport, inspect, isReport, loadDiagram, type Report } from "./pipeline.ts";
+import { kindsOf } from "./problems.ts";
 
 /** What the page shows: the picture, what changed, and the problems. */
 export interface Frame {
@@ -161,7 +162,10 @@ export async function startViewer(file: string, port = 0): Promise<Viewer> {
     const before = frame;
     const d = loadDiagram(file);
     if (isReport(d)) {
-      const problems = formatReport(d).trim().split("\n");
+      // The report's lines, without the blank ones between its blocks.
+      const problems = formatReport(d)
+        .split("\n")
+        .filter((l) => l !== "");
       frame = { ...frame, changed: [], problems, stale: true };
       const fresh = !same(before, frame);
       if (fresh) {
@@ -183,6 +187,7 @@ export async function startViewer(file: string, port = 0): Promise<Viewer> {
         errors: [],
         defects: inspect(d, m),
         counts: drawing(d, next).counts,
+        kinds: kindsOf(d),
       };
     } catch (err) {
       // An engine bug must not stop the window: it keeps the last good picture.
@@ -197,7 +202,10 @@ export async function startViewer(file: string, port = 0): Promise<Viewer> {
       if (fresh) frame.event = note("error", [`cannot draw the file: ${message}`]);
       return fresh;
     }
-    const lines = formatReport(report).trim().split("\n").slice(1);
+    const lines = formatReport(report)
+      .split("\n")
+      .filter((l) => l !== "")
+      .slice(1);
     frame = {
       svg: renderSvg(next),
       width: next.width,

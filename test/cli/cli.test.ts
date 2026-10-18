@@ -181,24 +181,22 @@ describe("write commands", () => {
       "--json",
     );
     expect(r.code).toBe(0);
-    expect(r.out).toBe('{"ok":true,"changed":["cache"],"errors":[],"defects":[],"bent":[]}\n');
+    expect(r.out).toBe('{"ok":true,"changed":["cache"],"problems":[],"bent":[]}\n');
     const rm = run("node", "remove", "single.grafical.yaml", "cache", "--json");
-    expect(JSON.parse(rm.out)).toEqual({
-      ok: true,
-      changed: ["cache"],
-      errors: [],
-      defects: [],
-      bent: [],
-    });
+    expect(JSON.parse(rm.out)).toEqual({ ok: true, changed: ["cache"], problems: [], bent: [] });
   });
 
   it("leaves the file untouched and exits 1 when an operation fails", () => {
     const before = read("single.grafical.yaml");
     const r = run("node", "add", "single.grafical.yaml", "x", "--layer", "servces", "--label", "X");
     expect(r.code).toBe(1);
-    expect(r.out).toContain("failed changed=-");
-    expect(r.out).toContain("code=unknown-layer field=layer");
-    expect(r.out).toContain("near=services,storage,clients");
+    expect(r.out).toMatch(
+      /^failed changed=-\n\nerror: unknown-layer\ndescription: No row has the id\.\n/,
+    );
+    expect(r.out).toContain(
+      "detail:\n  field: layer\n  found: servces\n  near: services, storage, clients\n",
+    );
+    expect(r.out).toMatch(/\nnext: layer add\n$/);
     expect(read("single.grafical.yaml")).toBe(before);
   });
 
@@ -213,11 +211,12 @@ describe("write commands", () => {
     const j = JSON.parse(r.out);
     expect(j.ok).toBe(false);
     expect(j.changed).toEqual([]);
-    expect(j.errors[0]).toMatchObject({
+    expect(j.problems[0]).toMatchObject({
+      kind: "error",
       code: "unknown-node",
-      op: 1,
-      field: "to",
-      found: "nope",
+      description: "No box has the id.",
+      detail: { op: 1, field: "to", found: "nope" },
+      next: ["node add"],
     });
     expect(read("single.grafical.yaml")).toBe(before);
   });
@@ -229,8 +228,9 @@ describe("write commands", () => {
     );
     const r = run("apply", "single.grafical.yaml", "bad2.yaml");
     expect(r.code).toBe(1);
-    expect(r.out).toContain("code=bad-value field=kind");
-    expect(r.out).toContain("likely=store allowed=service,store,queue,external,actor");
+    expect(r.out).toContain("error: bad-value\n");
+    expect(r.out).toContain("  field: kind\n  found: db\n  likely: store\n");
+    expect(r.out).toContain("  allowed: service, store, queue, external, actor,");
   });
 
   it("refuses to overwrite with new, and a missing file is an error", () => {
@@ -247,15 +247,29 @@ describe("write commands", () => {
     expect(run().code).toBe(2);
   });
 
-  it("prints the parser's refusals as error records", () => {
+  it("prints the parser's refusals as blocks", () => {
     const opt = run("show", "single.grafical.yaml", "--bogus");
     expect(opt.code).toBe(2);
-    expect(opt.err).toBe("error code=unknown-option found=--bogus\n");
-    expect(run("bogus").err).toBe("error code=unknown-command found=bogus\n");
-    expect(run("show").err).toBe("error code=missing-argument found=file\n");
-    expect(run("new", "x.grafical.yaml").err).toMatch(
-      /^error code=missing-mandatory-option-value /,
+    expect(opt.err).toBe(
+      [
+        "failed changed=-",
+        "",
+        "error: unknown-option",
+        "description: The command has no option of the name.",
+        "detail:",
+        "  found: --bogus",
+        "next: -",
+        "",
+      ].join("\n"),
     );
+    expect(run("bogus").err).toContain("error: unknown-command\n");
+    expect(run("show").err).toContain("error: missing-argument\n");
+    expect(run("show").err).toContain("detail:\n  field: file\n");
+    expect(run("new", "x.grafical.yaml").err).toContain("detail:\n  field: --title\n");
+    // Extra arguments are what was found, beside the arguments the command takes.
+    const extra = run("node", "remove", "single.grafical.yaml", "api", "worker");
+    expect(extra.err).toContain("error: excess-arguments\n");
+    expect(extra.err).toContain("detail:\n  found: worker\n  takes: <file>, <id>\n");
   });
 
   it("handles edge id suffixes and node remove cascading", () => {
@@ -285,7 +299,8 @@ describe("write commands", () => {
     expect(run("show", "s.grafical.yaml", "--drawn").out).toMatch(/^line id=p->q .* step=3$/m);
     const bad = run("edge", "step", "s.grafical.yaml", "p->q", "--n", "0");
     expect(bad.code).toBe(1);
-    expect(bad.out).toContain("error op=0 code=bad-value field=n found=0 min=1 max=99");
+    expect(bad.out).toContain("error: bad-value\n");
+    expect(bad.out).toContain("detail:\n  field: n\n  found: 0\n  min: 1\n  max: 99\n");
     expect(run("edge", "step", "s.grafical.yaml", "p->q").out).toBe("ok changed=p->q\n");
     expect(read("s.grafical.yaml")).not.toContain("step:");
     expect(run("show", "s.grafical.yaml", "--drawn").out).not.toContain("step=");
@@ -317,7 +332,7 @@ describe("read commands", () => {
     const r = run("check", "single.grafical.yaml", "--json");
     expect(r.code).toBe(0);
     const body = JSON.parse(r.out);
-    expect(body).toMatchObject({ ok: true, changed: [], errors: [], defects: [] });
+    expect(body).toMatchObject({ ok: true, changed: [], problems: [] });
     expect(body.counts.crossings).toBe(0);
   });
 
@@ -378,9 +393,13 @@ describe("read commands", () => {
     expect(lines[1]).toBe("ok batch=t1.yaml changed=api written=no");
     expect(lines[2]).toMatch(/^after batch=t1.yaml nodes=/);
     expect(lines[3]).toMatch(/^delta batch=t1.yaml nodes=0 /);
-    expect(lines[4]).toMatch(/^failed changed=- batch=t3.yaml$/);
-    expect(lines[5]).toMatch(/^error op=0 code=unknown-node .* batch=t3.yaml$/);
-    expect(lines[6]).toBe("ok batch=t2.yaml changed=api written=no");
+    // A refused batch prints its outcome keyed by the batch, then its blocks, between blank lines.
+    expect(lines[4]).toBe("failed batch=t3.yaml changed=-");
+    expect(lines[5]).toBe("");
+    expect(lines[6]).toBe("error: unknown-node");
+    const after = lines.indexOf("ok batch=t2.yaml changed=api written=no");
+    expect(lines[after - 1]).toBe("");
+    expect(lines[after - 2]).toBe("next: node add");
     expect(readFileSync(join(dir, "single.grafical.yaml"), "utf8")).toBe(before);
     const json = JSON.parse(run("try", "single.grafical.yaml", "t1.yaml", "t3.yaml", "--json").out);
     expect(json.ok).toBe(false);
@@ -393,11 +412,11 @@ describe("read commands", () => {
     const r = run("render", "single.grafical.yaml", "--png", "only.png", "--scale", "1");
     expect(r.code).toBe(0);
     expect(existsSync(join(dir, "only.png"))).toBe(true);
-    expect(r.out).toMatch(/^wrote file=only.png\nok\ncounts nodes=/);
+    expect(r.out).toMatch(/^ok\nwrote file=only.png\ncounts nodes=/);
     // A flag with no path writes only that file, beside the diagram.
     const beside = run("render", "single.grafical.yaml", "--png", "--scale", "1");
     expect(beside.code).toBe(0);
-    expect(beside.out).toMatch(/^wrote file=single.png\nok\ncounts nodes=/);
+    expect(beside.out).toMatch(/^ok\nwrote file=single.png\ncounts nodes=/);
   });
 
   // No size limit while the help's correctness comes first (DESIGN.md, "One entry page, help where it is used").

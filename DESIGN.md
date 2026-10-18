@@ -3,7 +3,7 @@
 
 > Started 2026-10-11. Rebuilt on 2026-10-15 as principles, dated decisions and open questions.
 
-grafical takes operations from a coding agent, one command or one batch at a time, and keeps a diagram file in YAML that holds the facts they state. After every write it lays the diagram out again from those facts, checks it, and answers with records: what changed, any refusal with its fixes, and counts of how the picture is drawn. `render` turns the same file into SVG and PNG. What each command does is in [FEATURES.md](FEATURES.md), and why grafical sees diagrams this way is in [PHILOSOPHY.md](PHILOSOPHY.md).
+grafical takes operations from a coding agent, one command or one batch at a time, and keeps a diagram file in YAML that holds the facts they state. After every write it lays the diagram out again from those facts, checks it, and answers with records: what changed, any refusal with what happened and the commands that can change it, and counts of how the picture is drawn. `render` turns the same file into SVG and PNG. What each command does is in [FEATURES.md](FEATURES.md), and why grafical sees diagrams this way is in [PHILOSOPHY.md](PHILOSOPHY.md).
 
 ```text
 agent ──operations──> grafical
@@ -47,13 +47,13 @@ Code and the other documents cite a section of this file by its heading, such as
 ### Checking and failure
 
 - **Every write is checked, and each defect has an owner.** A defect the agent can fix fails the write and changes nothing. A defect only the engine can avoid is an engine bug: the write goes ahead, and only `grafical check --all` reports it. The engine draws in plain forms only: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs ("The dirty work has edges"). Cost: an engine bug can reach a picture without the agent knowing. Holds as: the fuzz test lays out random diagrams from fixed seeds and finds no engine-owned defect.
-- **A refusal is a record of facts, never prose.** It names its code, the operation, the field and what was found, then facts: the allowed values, the nearest IDs, a limit, and operations that would fix it. Cost: a person reads records less easily than sentences. Holds as: every refusal prints as one `error` record of `key=value` fields.
+- **A refusal says what happened and which commands can change it, and never teaches.** It is a block: its kind and code, the code's one fixed sentence, what caused it, the facts one per line (the field, what was found, the allowed values, the nearest IDs, a limit), and the names of the commands that can change it, never a command line with values filled in ("Refusals say what happened and which commands can change it"). Cost: the agent writes the command itself, from the facts. Holds as: every code has one sentence and its commands in `src/cli/problems.ts`, and `test/cli/problems.test.ts` and `test/check/refusals.test.ts` hold them.
 - **What grafical cannot fully read, it refuses.** A file of a newer format, a field the schema does not know, a mark file that changed and a stylesheet that is missing all fail the load. Nothing is half read. Cost: an older grafical cannot open a newer file at all. Holds as: `readDiagram` returns errors, not a diagram, for any file the schema does not fully accept.
 
 ### Output and determinism
 
 - **The same file and stylesheet give the same SVG bytes and PNG pixels, on any machine.** Under one version of grafical, nothing depends on the host: not its fonts, locale, clock or the order of an unordered collection. Cost: fonts are bundled, every list keeps a fixed order, and numbers are written at a fixed precision. Holds as: CI renders the fixtures on macOS and Linux and compares them, PNGs as decoded pixels. On 2026-10-11 even the PNG bytes matched, but the promise stays at pixels, the safer one.
-- **Output is records: facts and counts, with no advice.** Cost: an agent must judge a drawing from counts, without being told what is wrong with it. Holds as: every line grafical prints starts with a record word, such as `ok`, `error`, `defect` or `counts`, and holds no sentence.
+- **Output is records: facts and counts, with no advice.** Cost: an agent must judge a drawing from counts, without being told what is wrong with it. Holds as: every line grafical prints starts with a record word, such as `ok`, `failed` or `counts`, or is a line of a problem's block, and the only sentence is a code's fixed description.
 
 ### File format
 
@@ -255,7 +255,7 @@ After each operation or batch, grafical lays out the diagram and checks it. Each
 | A box placed by steps beside every box it connects to ("Who chose is punished") | Agent: place it between them |
 | A step's badge that touches a box, another line, a text or another badge ("Step badges ride the line") | Engine |
 
-A write that leaves an agent-owned defect fails and changes nothing. The defect names its elements, the field and the text at fault, and facts: the lines the text takes and the most it may, the characters no font can draw, and the operations that would fix it ("Records over prose").
+A write that leaves an agent-owned defect fails and changes nothing. The defect names its elements, the field and the text at fault, and facts: the lines the text takes and the most it may, and the characters no font can draw; and the commands that can change it ("Refusals say what happened and which commands can change it").
 
 Engine-owned defects are about where lines and boxes go, which no operation controls ("Facts over coordinates"). The engine must avoid them itself, with the room "Layout computed again on every change" allows: the next gutter step, more track or port separation, another label slot. If it still leaves one, that is an engine bug. The write goes ahead, the agent is never told, and `grafical check --all` reports it so that benchmarks and tests count it. The checker does not count the shared trunk of a bus as an overlap. A bus is a fan-out of unlabelled edges in one line style from one node ("Our own gap router").
 
@@ -842,6 +842,8 @@ It reverses, in part, "The help as the reference", which rejected keeping `grafi
 Risk, to measure in the next paid round: the 2026-10-12 round measured the help without type guides (`bench/results/p1d-guides.md`). Haiku drew a flowchart's Start and End as state-machine dots, whose labels are not drawn, left C4 and data-flow lines unlabelled, and was refused 16% of its calls against 3%. The traps that are the tool's own stay in the help (`node add --help` says initial and final draw no label, and to use terminal for Start and End); the conventions are now the agent's to take or leave. The round should count guide reads and refusals (TODO.md, "Pages read before a first write").
 
 ## Decision: One way to a page, and a wrong command names the right one — 2026-10-18
+
+Changed the same day by "Refusals say what happened and which commands can change it": `likely` is the word meant, as a value, not a command line. `grafical help apply` gives `found: help` and `likely: --help`, and `grafical node.add --help` gives `likely: node add`.
 
 Decided by the owner on 2026-10-18, after one Haiku run (a subagent with grafical on its path, not a benchmark round) drew a refund flowchart. 32 of its 37 grafical calls read help. 11 printed the entry page in place of the page asked for, and 12 printed the page asked for but exited 2:
 - Commander adds a `help [command]` command to the program and to each group; grafical never chose it. The entry page listed it, so the agent used it. It reads one word, so `grafical help "node add"` printed the entry page, and grafical exited 2 after each page it printed, as if refused.

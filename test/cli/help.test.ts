@@ -138,40 +138,53 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
       expect(page(c), c.name()).not.toMatch(/^ +help \[command\]/m);
   });
 
-  it("answers a command it has not with the page or command it most likely means", () => {
+  it("answers a command it has not with the word it most likely means, as a value", () => {
     const program = build();
-    const wrong = (...args: string[]) => wrongCommand(program, args);
-    const meant = (found: string, likely?: string) =>
-      `error code=unknown-command found=${found}${likely === undefined ? "" : ` likely="${likely}"`}`;
+    const wrong = (...args: string[]) => {
+      const b = wrongCommand(program, args);
+      return b === undefined ? undefined : { found: b.detail.found, likely: b.detail.likely };
+    };
+    const meant = (found: string, likely?: string) => ({
+      found,
+      likely: likely === undefined ? undefined : [likely],
+    });
     // The ways an agent asked for a page in a real run, 2026-10-18.
-    expect(wrong("help", "apply")).toBe(meant("help", "grafical apply --help"));
-    expect(wrong("help")).toBe(meant("help", "grafical --help"));
-    expect(wrong("help", "node", "add")).toBe(meant("help", "grafical node add --help"));
-    expect(wrong("help", "node add")).toBe(meant("help", "grafical node add --help"));
-    expect(wrong("node", "help", "add")).toBe(meant("help", "grafical node add --help"));
-    expect(wrong("diagram", "help", "legend")).toBe(
-      meant("help", "grafical diagram legend --help"),
-    );
-    expect(wrong("node add", "--help")).toBe(meant('"node add"', "grafical node add --help"));
-    expect(wrong("node.add", "--help")).toBe(meant("node.add", "grafical node add --help"));
+    expect(wrong("help", "apply")).toEqual(meant("help", "--help"));
+    expect(wrong("help")).toEqual(meant("help", "--help"));
+    expect(wrong("help", "node", "add")).toEqual(meant("help", "--help"));
+    expect(wrong("help", "node add")).toEqual(meant("help", "--help"));
+    expect(wrong("node", "help", "add")).toEqual(meant("help", "--help"));
+    expect(wrong("diagram", "help", "legend")).toEqual(meant("help", "--help"));
+    expect(wrong("node add", "--help")).toEqual(meant("node add", "node add"));
+    expect(wrong("node.add", "--help")).toEqual(meant("node.add", "node add"));
     // A misspelling near one command's name; a word near none.
-    expect(wrong("nodee", "add", "--help")).toBe(meant("nodee", "grafical node add --help"));
-    expect(wrong("node", "ad", "-h")).toBe(meant("ad", "grafical node add --help"));
-    expect(wrong("nodee", "add", "d.grafical.yaml", "x")).toBe(meant("nodee", "grafical node add"));
-    expect(wrong("bogus")).toBe(meant("bogus"));
-    expect(wrong("bogus", "--help")).toBe(meant("bogus", "grafical --help"));
-    expect(wrong("node", "bogus")).toBe(meant("bogus"));
+    expect(wrong("nodee", "add", "--help")).toEqual(meant("nodee", "node"));
+    expect(wrong("node", "ad", "-h")).toEqual(meant("ad", "add"));
+    expect(wrong("nodee", "add", "d.grafical.yaml", "x")).toEqual(meant("nodee", "node"));
+    expect(wrong("bogus")).toEqual(meant("bogus"));
+    expect(wrong("bogus", "--help")).toEqual(meant("bogus"));
+    expect(wrong("node", "bogus")).toEqual(meant("bogus"));
     // Commands it has, and the words a command takes, are commander's to read.
     expect(wrong("node", "add", "--help")).toBeUndefined();
     expect(wrong("node", "--help")).toBeUndefined();
     expect(wrong("group", "label", "d.grafical.yaml", "g", "top")).toBeUndefined();
     expect(wrong("diagram", "legend", "help")).toBeUndefined();
     expect(wrong()).toBeUndefined();
-    // The command line prints the record alone, in place of the entry page, as a usage error.
+    // The command line prints the block alone, in place of the entry page, as a usage error.
     expect(run("node add", "--help")).toEqual({
       code: 2,
       out: "",
-      err: `${meant('"node add"', "grafical node add --help")}\n`,
+      err: [
+        "failed changed=-",
+        "",
+        "error: unknown-command",
+        "description: No command has the name.",
+        "detail:",
+        "  found: node add",
+        "  likely: node add",
+        "next: -",
+        "",
+      ].join("\n"),
     });
   });
 });
@@ -194,7 +207,8 @@ describe('guides (DESIGN.md, "Help for the tool, guides for best practice")', ()
     expect(run("guide", "cloud").out).toBe(`${GUIDES.infrastructure?.text}\n`);
     const r = run("guide", "flowchat");
     expect(r.code).toBe(2);
-    expect(r.err).toMatch(/^error code=unknown-guide found=flowchat likely=flowchart/);
+    expect(r.err).toContain("error: unknown-guide\n");
+    expect(r.err).toContain("detail:\n  found: flowchat\n  likely: flowchart, ");
   });
 
   it("names only kinds and guides that exist", () => {

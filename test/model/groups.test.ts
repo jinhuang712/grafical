@@ -194,20 +194,19 @@ describe("group operations", () => {
       { op: "node.add", id: "z", layer: "r", label: "Z", last: true },
     ]).diagram;
     const e = fail(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "z"] }]);
-    expect(e[0]).toMatchObject({ code: "group-split", field: "group" });
-    expect(e[0]).toMatchObject({ found: "y", facts: { group: "g", row: "r" } });
-    // The node in between either joins, or goes out to one side of the members.
-    expect(e[0]?.facts?.fix).toEqual([
-      "group join <file> g y",
-      "node move <file> y --before x",
-      "node move <file> y --after z",
-    ]);
+    // No field of the operation is at fault: the facts say which box stands between which members.
+    expect(e[0]).toEqual({
+      code: "group-split",
+      index: 0,
+      found: "",
+      facts: { node: "y", row: "r", group: "g", between: ["x", "z"] },
+    });
     // Joining the node in between, or grouping neighbours, is fine.
     ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y", "z"] }]);
     ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y"] }]);
   });
 
-  it("group-split: a box placed by steps is told to take the row with --layer, beside a member in it", () => {
+  it("group-split: a box placed by steps between members is named, and may join or take a row", () => {
     // c hangs right of y; swapping x and y puts c between the group's members.
     const row = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
@@ -219,19 +218,17 @@ describe("group operations", () => {
     ]).diagram;
     const swap: Op = { op: "node.swap", a: "x", b: "y" };
     const e = fail(row, [swap]);
-    expect(e[0]).toMatchObject({ code: "group-split", found: "c" });
-    expect(e[0]?.facts?.fix).toEqual([
-      "group join <file> g c",
-      "node move <file> c --layer r --before y",
-      "node move <file> c --layer r --after x",
-    ]);
-    // Each fix, after the swap, is a change grafical accepts.
+    expect(e[0]).toMatchObject({
+      code: "group-split",
+      facts: { node: "c", row: "r", group: "g", between: ["y", "x"] },
+    });
+    // Joining the group, or taking a place in the row beside it, after the swap, is a change grafical accepts.
     ok(row, [swap, { op: "group.join", group: "g", nodes: ["c"] }]);
     ok(row, [swap, { op: "node.move", id: "c", layer: "r", before: "y" }]);
     ok(row, [swap, { op: "node.move", id: "c", layer: "r", after: "x" }]);
   });
 
-  it("group-split in nested groups: join the innermost around the box, or go out past the outermost", () => {
+  it("group-split in nested groups names the innermost group around the box", () => {
     const row = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
       { op: "node.add", id: "a", layer: "r", label: "A", last: true },
@@ -248,13 +245,11 @@ describe("group operations", () => {
       in: "outer",
     };
     const e = fail(row, [inner]);
-    expect(e[0]).toMatchObject({ code: "group-split", found: "x" });
     // Joining the outer group alone, or a place between a and b, would leave x inside the inner one.
-    expect(e[0]?.facts?.fix).toEqual([
-      "group join <file> inner x",
-      "node move <file> x --before a",
-      "node move <file> x --after d",
-    ]);
+    expect(e[0]).toMatchObject({
+      code: "group-split",
+      facts: { node: "x", row: "r", group: "inner", between: ["b", "d"] },
+    });
     ok(row, [inner, { op: "group.join", group: "inner", nodes: ["x"] }]);
     ok(row, [inner, { op: "node.move", id: "x", layer: "r", before: "a" }]);
     ok(row, [inner, { op: "node.move", id: "x", layer: "r", after: "d" }]);

@@ -94,11 +94,7 @@ export function checkLanes(d: Diagram, index: number): OpError[] {
       index,
       field: "lanes",
       found: node.id,
-      facts: {
-        is: "node",
-        row: layer.id,
-        fix: [`lane leave <file> ${node.id}`, `lane leave <file> ${layer.id}`],
-      },
+      facts: { is: "node", row: layer.id },
     });
     return errors;
   }
@@ -122,7 +118,7 @@ function rowGaps(d: Diagram, index: number): OpError[] {
       index,
       field: `lanes[${i}]`,
       found: lane.id,
-      facts: { row: gap.id, fix: [`lane join <file> ${lane.id} ${gap.id}`] },
+      facts: { row: gap.id },
     });
   });
   return errors;
@@ -140,16 +136,12 @@ function groupsAcross(d: Diagram, index: number): OpError[] {
       }
     }
     if (lanes.size < 2) return;
-    const target = [...lanes].find((x) => x !== "") as string;
     errors.push({
       code: "group-across-lanes",
       index,
       field: `groups[${i}]`,
       found: g.id,
-      facts: {
-        lanes: [...lanes].map((x) => (x === "" ? "none" : x)),
-        fix: [`lane join <file> ${target} ${g.id}`, `lane leave <file> ${g.id}`],
-      },
+      facts: { lanes: [...lanes].map((x) => (x === "" ? "none" : x)) },
     });
   });
   return errors;

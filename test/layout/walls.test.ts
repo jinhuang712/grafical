@@ -99,10 +99,10 @@ describe('a wall across (DESIGN.md, "Walls as space")', () => {
         code: "label-blocked",
         owner: "agent",
         elements: ["net", "upstream->relay"],
-        facts: { is: "wall", fix: ["wall relabel <file> net"] },
+        facts: { is: "wall" },
       },
     ]);
-    // The fix is a change grafical accepts, and the wall stays as space.
+    // Dropping the label is a change grafical accepts, and the wall stays as space.
     const bare = ok(d, [{ op: "wall.relabel", id: "net" }]);
     expect(check(bare, layout(bare, m), m)).toEqual([]);
   });
@@ -120,7 +120,7 @@ describe('a wall across (DESIGN.md, "Walls as space")', () => {
         code: "wall-crossed",
         owner: "agent",
         elements: ["ops->geo", "net"],
-        facts: { fix: ["wall allow <file> net ops->geo", "edge remove <file> ops->geo"] },
+        facts: {},
       },
     ]);
     const allowed = ok(d, [{ op: "wall.allow", id: "net", allow: ["ops"] }]);

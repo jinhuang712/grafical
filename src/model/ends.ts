@@ -185,7 +185,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
-        facts: { row: bar, fix: [`edge pass <file> ${e.id}`, `edge remove <file> ${e.id}`] },
+        facts: { row: bar },
       });
       return;
     }
@@ -199,7 +199,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
-        facts: { is: "layer", count: 0, min: 1, fix: [`edge remove <file> ${e.id}`] },
+        facts: { is: "layer", count: 0, min: 1 },
       });
       return;
     }
@@ -251,7 +251,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
-        facts: { fix: [`edge remove <file> ${e.id}`] },
+        facts: {},
       });
       return;
     }
@@ -279,7 +279,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `layers[${li}].look`,
         found: l.id,
-        facts: { group: group.id, row: l.id, fix: [`layer look <file> ${l.id}`] },
+        facts: { group: group.id, row: l.id },
       });
     });
   return errors;

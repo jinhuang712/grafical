@@ -292,6 +292,17 @@ describe("defect split from grafical check --all", () => {
       engineDefects: 0,
       agentDefects: 0,
     });
+    // As blocks (DESIGN.md, "Refusals say what happened and which commands can change it"); a warning is no defect.
+    const blocks = JSON.stringify({
+      ok: false,
+      changed: [],
+      problems: [
+        { kind: "defect", code: "edge-overlap", detail: { owner: "engine" } },
+        { kind: "defect", code: "overflow", detail: { owner: "agent" } },
+        { kind: "warning", code: "bent-line", detail: { edge: "a->b" } },
+      ],
+    });
+    expect(parseCheckAll(blocks)).toEqual({ engineDefects: 1, agentDefects: 1 });
   });
 
   it("is null when the CLI has no --all yet: no output, or defects with no owner", () => {

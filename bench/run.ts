@@ -302,20 +302,28 @@ export interface DefectSplit {
 }
 
 /**
- * Reads the output of `grafical check <file> --all --json`. null when it is not that report:
- * an older CLI that has no `--all` prints nothing on stdout, or defects with no `owner`.
+ * Reads the output of `grafical check <file> --all --json`: its problems of kind defect, each with its owner in its
+ * detail, or, from a grafical before DESIGN.md, "Refusals say what happened and which commands can change it", its
+ * defects with their owner. null when it is not that report: an older CLI that has no `--all` prints nothing on
+ * stdout, or defects with no `owner`.
  */
 export function parseCheckAll(stdout: string): DefectSplit | null {
-  let j: { defects?: { owner?: string }[] };
+  let j: {
+    defects?: { owner?: string }[];
+    problems?: { kind?: string; detail?: { owner?: string } }[];
+  };
   try {
     j = JSON.parse(stdout);
   } catch {
     return null;
   }
-  if (!Array.isArray(j.defects)) return null;
-  if (j.defects.some((d) => d.owner !== "agent" && d.owner !== "engine")) return null;
-  const engineDefects = j.defects.filter((d) => d.owner === "engine").length;
-  return { engineDefects, agentDefects: j.defects.length - engineDefects };
+  const defects = Array.isArray(j.problems)
+    ? j.problems.filter((p) => p.kind === "defect").map((p) => ({ owner: p.detail?.owner }))
+    : j.defects;
+  if (!Array.isArray(defects)) return null;
+  if (defects.some((d) => d.owner !== "agent" && d.owner !== "engine")) return null;
+  const engineDefects = defects.filter((d) => d.owner === "engine").length;
+  return { engineDefects, agentDefects: defects.length - engineDefects };
 }
 
 /** Runs the check on the step's diagram. null counts, and the reason, when it cannot. */

@@ -124,7 +124,7 @@ describe("grouped diagrams", () => {
     expect(body.counts.nodes).toBe(17);
   });
 
-  it('group copy writes the copy, and prints its refusals as records (DESIGN.md, "A group copy holds its inside")', () => {
+  it('group copy writes the copy, and prints its refusals as blocks (DESIGN.md, "A group copy holds its inside")', () => {
     const f = "copy.grafical.yaml";
     run("new", f, "--title", "Copy");
     writeFileSync(
@@ -144,14 +144,24 @@ describe("grouped diagrams", () => {
     const missing = run(...args);
     expect(missing.code).toBe(1);
     expect(missing.out).toBe(
-      "failed changed=-\nerror op=0 code=missing-field field=before,after found=- allowed=zone\n",
+      [
+        "failed changed=-",
+        "",
+        "error: missing-field",
+        "description: The operation lacks a field it needs, such as a box's place in a row that has boxes.",
+        "detail:",
+        "  field: place",
+        "  allowed: zone",
+        "next: -",
+        "",
+      ].join("\n"),
     );
     expect(run(...args, "--after", "zone", "--outside").out).toBe(
       "ok changed=zone-b,web-b,lb->web-b\n",
     );
     expect(run("show", f).out).toContain('layer r2 "R2": web "Web" service group=zone | web-b');
     expect(run(...args, "--after", "zone").out).toContain(
-      "error op=0 code=duplicate-id field=into found=zone-b is=group",
+      "error: duplicate-id\ndescription: The id is taken.\ndetail:\n  field: into\n  found: zone-b\n",
     );
   });
 
@@ -180,8 +190,12 @@ describe('groups inside groups on the command line (DESIGN.md, "Every layered di
     const blocked = run("group", "title", f, "vpc", "bottom");
     expect(blocked.code).not.toBe(0);
     expect(blocked.out).toContain(
-      "defect code=title-blocked owner=agent elements=vpc,db->backup place=bottom clear=top-left,",
+      "defect: title-blocked\ndescription: A line runs where the group's title sits, and no line moves for a title.\n",
     );
+    expect(blocked.out).toContain(
+      "detail:\n  owner: agent\n  group: vpc\n  edge: db->backup\n  place: bottom\n  clear: top-left, ",
+    );
+    expect(blocked.out).toMatch(/\nnext: group title, node move, edge remove\n$/);
     expect(read(f)).toBe(before);
   });
 

@@ -58,12 +58,7 @@ describe('walls (DESIGN.md, "Walls as space")', () => {
     const { allow: _, ...closed } = net as Extract<Op, { op: "wall.add" }>;
     const errors = fail(fx, [closed]);
     expect(errors.map((e) => e.found)).toEqual(["upstream->relay", "callers->handlers"]);
-    expect(errors[0]).toMatchObject({
-      code: "wall-crossed",
-      facts: {
-        fix: ["wall allow <file> net upstream->relay", "edge remove <file> upstream->relay"],
-      },
-    });
+    expect(errors[0]).toMatchObject({ code: "wall-crossed", facts: { wall: "net" } });
     // By the line, by a node at one end, or by a group an end lies in.
     ok(fx, [{ ...closed, allow: ["upstream->relay", "callers->handlers"] }]);
     ok(fx, [{ ...closed, allow: ["catalog-sync", "callers"] }]);

@@ -165,7 +165,7 @@ describe("group copy refusals", () => {
     // The groups with a box in every row of the copy, but the ones inside it.
     expect(fail(zone, [copy({}, {})])[0]).toMatchObject({
       code: "missing-field",
-      field: "before,after",
+      field: "place",
       facts: { allowed: ["region", "zone"] },
     });
     expect(fail(zone, [copy({ before: "zone" })])[0]?.code).toBe("conflicting-position");
@@ -210,7 +210,7 @@ describe("group copy refusals", () => {
         index: 0,
         field: "align",
         found: "lb",
-        facts: { node: "web", fix: ["node align <file> web"] },
+        facts: { node: "web" },
       },
     ]);
     // A box under a, placed by steps from x beside it.
@@ -229,7 +229,7 @@ describe("group copy refusals", () => {
         index: 0,
         field: "from",
         found: "x",
-        facts: { node: "s", fix: ["node move <file> s --layer <row>"] },
+        facts: { node: "s" },
       },
     ]);
   });

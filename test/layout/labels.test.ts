@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
+import { DESCRIPTIONS, defectBlock, kindsOf } from "../../src/cli/problems.ts";
 import { layout } from "../../src/layout/index.ts";
 import { applyOps, type Diagram, type Op, readDiagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
@@ -66,9 +67,11 @@ edges:
     expect(
       check(d, s, m).map((x) => [x.code, x.owner, ...x.elements, x.facts.is, x.facts.gutters]),
     ).toEqual([["label-blocked", "agent", "a->b#2", "a->b#3", "edge", ["top/bottom"]]]);
-    // The engine never widens a box for its lines; the refusal names the size that holds the
-    // label, tried by laying the diagram out with it (decided by the owner on 2026-10-17).
-    expect(check(d, s, m)[0]?.facts.fix).toEqual(["node resize <file> a --size l"]);
+    // The engine never widens a box for its lines; the agent does (decided by the owner on
+    // 2026-10-17), and the refusal names node resize among the commands that can change it.
+    const [blocked] = check(d, s, m);
+    if (blocked === undefined) throw new Error("no refusal");
+    expect(defectBlock(blocked, kindsOf(d)).next).toContain("node resize");
     const wide = structuredClone(d);
     const a = wide.layers[0]?.nodes[0];
     if (a === undefined) throw new Error("a");
@@ -101,27 +104,30 @@ edges:
   - {id: shop->b, from: shop, to: b, label: picks}
 `) as Diagram;
     const found = check(d, layout(d, m), m);
-    expect(
-      found.map((x) => [x.code, x.owner, ...x.elements, x.facts.gutters, x.facts.fix]),
-    ).toEqual([
-      [
-        "label-blocked",
-        "agent",
-        "shop->b",
-        "shop",
-        "depot",
-        ["top/bottom"],
-        ["edge relabel <file> shop->b"],
-      ],
+    // The block names the line, the lanes across its label and the gaps it tried, and the commands that can change
+    // it, edge relabel among them (DESIGN.md, "Refusals say what happened and which commands can change it").
+    expect(found.map((x) => defectBlock(x, kindsOf(d)))).toEqual([
+      {
+        kind: "defect",
+        code: "label-blocked",
+        description: DESCRIPTIONS["label-blocked"],
+        detail: {
+          owner: "agent",
+          is: "edge",
+          edge: ["shop->b"],
+          lane: ["shop", "depot"],
+          gutters: ["top/bottom"],
+        },
+        next: ["layer move", "node resize", "node move", "edge relabel", "edge step"],
+      },
     ]);
     const r = applyOps(d, [{ op: "edge.relabel", id: "shop->b" }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     expect(check(r.diagram, layout(r.diagram, m), m)).toEqual([]);
   });
 
-  // Found by trying every fix a refusal suggests, on 2026-10-17: no larger box held this label,
-  // and the refusal named nothing to run.
-  it("where no larger box holds the label, its fix drops it, and grafical accepts that", () => {
+  // Found by trying every fix a refusal suggested, on 2026-10-17: no larger box held this label.
+  it("where no larger box holds the label, it names the command that drops it, and grafical accepts that", () => {
     const add: Op = { op: "edge.add", from: "n4", to: "n2", label: "a long label for this line" };
     const checked = (ops: Op[]) => {
       const r = applyOps(generate(35, m).diagram, ops);
@@ -129,8 +135,11 @@ edges:
       return check(r.diagram, layout(r.diagram, m), m);
     };
     const found = checked([add]).filter((x) => x.code === "label-blocked");
-    expect(found.map((x) => [x.elements[0], x.facts.fix])).toEqual([
-      ["n4->n2", ["edge relabel <file> n4->n2"]],
+    expect(found.map((x) => x.elements[0])).toEqual(["n4->n2"]);
+    const r = applyOps(generate(35, m).diagram, [add]);
+    if ("errors" in r) throw new Error(JSON.stringify(r.errors));
+    expect(found.map((x) => defectBlock(x, kindsOf(r.diagram)).next)).toEqual([
+      ["layer move", "node resize", "node move", "edge relabel", "edge step"],
     ]);
     expect(checked([add, { op: "edge.relabel", id: "n4->n2" }])).toEqual([]);
   });

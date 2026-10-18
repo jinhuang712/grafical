@@ -85,8 +85,8 @@ describe('lanes in the model (DESIGN.md, "Swimlanes run one way")', () => {
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge"] },
     ]);
     const e1 = fail(rows, [{ op: "lane.join", lane: "platform", members: ["orders"] }]);
-    expect(e1[0]).toMatchObject({ code: "lane-mixed" });
-    expect(e1[0]?.facts?.fix).toEqual(["lane join <file> platform services"]);
+    // The node's row is what the lane could take instead.
+    expect(e1[0]).toMatchObject({ code: "lane-mixed", facts: { is: "node", row: "services" } });
     const { diagram: cols } = ok(shop, [
       { op: "lane.add", id: "ord", label: "Orders", members: ["orders"] },
     ]);
@@ -98,8 +98,7 @@ describe('lanes in the model (DESIGN.md, "Swimlanes run one way")', () => {
     const gap = fail(shop, [
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge", "data"] },
     ]);
-    expect(gap[0]).toMatchObject({ code: "lane-gap" });
-    expect(gap[0]?.facts?.fix).toEqual(["lane join <file> platform services"]);
+    expect(gap[0]).toMatchObject({ code: "lane-gap", facts: { row: "services" } });
     const { diagram: d } = ok(shop, [
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge", "services"] },
       { op: "layer.add", id: "mesh", label: "Mesh", after: "edge" },

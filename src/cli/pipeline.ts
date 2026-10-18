@@ -5,13 +5,13 @@ import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { type Bent, bentLines, type Counts, countsText, drawing } from "../check/drawing.ts";
 import { check } from "../check/index.ts";
-import { type Defect, type ErrorCode, FACT_ORDER, type Facts, type OpError } from "../errors.ts";
+import type { Defect, ErrorCode, Facts, OpError } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
 import { readDiagram, writeDiagram } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import type { Diagram } from "../model/types.ts";
-import { record, type Value } from "../records.ts";
+import { block, record } from "../records.ts";
 import type { Scene } from "../scene.ts";
 import { createMeasurer } from "../text/index.ts";
 import type { Measurer } from "../text/types.ts";
@@ -23,6 +23,7 @@ import {
   unknownWeights,
 } from "../theme/themes.ts";
 import { bindMarkOps, loadMarks, settingSlots } from "./marks.ts";
+import { type Block, defectBlock, errorBlock, kindsOf } from "./problems.ts";
 
 export interface Report {
   ok: boolean;
@@ -33,54 +34,51 @@ export interface Report {
   counts?: Counts;
   /** The lines drawn with more than two bends: on every write, check and render (DESIGN.md, "The dirty work has edges"). */
   bent?: Bent[];
+  /** What each id of the diagram the defects are found in names, so that their detail names each by its kind. */
+  kinds?: ReadonlyMap<string, string>;
 }
 
-export function oneLine(s: string): string {
-  return s.replace(/\s+/g, " ").trim();
-}
-
-/** The facts of an error or a defect, in their fixed order. */
-function factFields(f: Facts | undefined): Record<string, Value> {
-  const out: Record<string, Value> = {};
-  for (const k of FACT_ORDER) if (f?.[k] !== undefined) out[k] = f[k];
-  return out;
-}
-
-/** An error as the report gives it: its operation's index as op, then its facts. */
-function errorFields(e: OpError): Record<string, Value> {
-  return {
-    op: e.index,
-    code: e.code,
-    field: e.field,
-    found: oneLine(e.found),
-    ...factFields(e.facts),
-  };
-}
-
-function defectFields(d: Defect): Record<string, Value> {
-  return {
-    code: d.code,
-    owner: d.owner,
-    elements: d.elements,
-    ...(d.field !== undefined ? { field: d.field } : {}),
-    ...(d.found !== undefined ? { found: oneLine(d.found) } : {}),
-    ...factFields(d.facts),
-  };
+/** The report's problems as blocks: its errors, then its defects. */
+export function blocks(r: Report): Block[] {
+  const kinds = r.kinds ?? new Map<string, string>();
+  return [...r.errors.map(errorBlock), ...r.defects.map((d) => defectBlock(d, kinds))];
 }
 
 /**
- * The report as records (DESIGN.md, "Records over prose"): ok with the ids it changed, or failed, then a record
- * for each error and defect, then the counts. A refused change writes nothing.
+ * The report as text (DESIGN.md, "Refusals say what happened and which commands can change it"): ok with the ids it
+ * changed, or failed, and the records of `head`; then a block for each problem, a blank line before each; then the
+ * records of the drawing. A refused change writes nothing.
  */
-export function formatReport(r: Report): string {
-  const out: string[] = [];
-  if (r.ok) out.push(r.changed.length > 0 ? record("ok", { changed: r.changed }) : "ok");
-  else out.push(record("failed", { changed: [] }));
-  for (const e of r.errors) out.push(record("error", errorFields(e)));
-  for (const d of r.defects) out.push(record("defect", defectFields(d)));
-  for (const b of r.bent ?? []) out.push(record("bent", { ...b }));
-  if (r.counts !== undefined) out.push(countsText(r.counts));
+export function formatReport(r: Report, head: string[] = []): string {
+  const out = [
+    r.ok
+      ? r.changed.length > 0
+        ? record("ok", { changed: r.changed })
+        : "ok"
+      : record("failed", { changed: [] }),
+    ...head,
+  ];
+  const problems = blocks(r);
+  for (const b of problems) out.push("", block(b));
+  const tail = [
+    ...(r.bent ?? []).map((b) => record("bent", { ...b })),
+    ...(r.counts !== undefined ? [countsText(r.counts)] : []),
+  ];
+  if (problems.length > 0 && tail.length > 0) out.push("");
+  out.push(...tail);
   return `${out.join("\n")}\n`;
+}
+
+/** A block as --json gives it: its parts, with the operation's index first in its detail. */
+export function blockBody(b: Block): Record<string, unknown> {
+  return {
+    kind: b.kind,
+    code: b.code,
+    description: b.description,
+    ...(b.source !== undefined ? { source: b.source } : {}),
+    detail: { ...(b.op !== undefined ? { op: b.op } : {}), ...b.detail },
+    next: b.next,
+  };
 }
 
 /** The report as the JSON object `--json` prints. */
@@ -88,24 +86,22 @@ export function reportBody(report: Report): Record<string, unknown> {
   return {
     ok: report.ok,
     changed: report.changed,
-    errors: report.errors.map((e) => ({
-      op: e.index,
-      code: e.code,
-      ...(e.field !== undefined ? { field: e.field } : {}),
-      found: e.found,
-      ...(e.facts !== undefined ? { facts: e.facts } : {}),
-    })),
-    defects: report.defects,
+    problems: blocks(report).map(blockBody),
     ...(report.bent !== undefined ? { bent: report.bent } : {}),
     ...(report.counts !== undefined ? { counts: report.counts } : {}),
   };
 }
 
-export function emit(report: Report, json: boolean, extra: Record<string, unknown> = {}): number {
+export function emit(
+  report: Report,
+  json: boolean,
+  extra: Record<string, unknown> = {},
+  head: string[] = [],
+): number {
   if (json) {
     process.stdout.write(`${JSON.stringify({ ...reportBody(report), ...extra })}\n`);
   } else {
-    process.stdout.write(formatReport(report));
+    process.stdout.write(formatReport(report, head));
   }
   return report.ok ? 0 : 1;
 }
@@ -121,7 +117,7 @@ export function fileError(code: ErrorCode, file: string, facts?: Facts): Report 
 /** Reads and validates a diagram file. */
 export function loadDiagram(file: string, setting: Set<string> = new Set()): Diagram | Report {
   if (!existsSync(file)) {
-    return fileError("file-not-found", file, { fix: ["grafical new <file> --title <text>"] });
+    return fileError("file-not-found", file);
   }
   let text: string;
   try {
@@ -150,7 +146,7 @@ export function loadStyles(file: string, refs: string[]): Report | undefined {
     if (styleProblem(ref) !== undefined) continue;
     const path = join(dirname(file), ref);
     if (!existsSync(path)) {
-      return fileError("style-not-found", path, { fix: ["grafical diagram style <file> default"] });
+      return fileError("style-not-found", path);
     }
     const theme = parseStylesheet(readFileSync(path, "utf8"), ref);
     if (Array.isArray(theme)) return failure(theme);
@@ -218,7 +214,9 @@ async function plan(file: string, ops: Op[], create: boolean): Promise<Planned |
   if (weights.length > 0) return failure(weights);
   const scene = layout(result.diagram, m);
   const defects = check(result.diagram, scene, m).filter((x) => x.owner === "agent");
-  if (defects.length > 0) return { ok: false, changed: [], errors: [], defects };
+  if (defects.length > 0) {
+    return { ok: false, changed: [], errors: [], defects, kinds: kindsOf(result.diagram) };
+  }
   return { base, next: result.diagram, changed: result.changed, m, scene };
 }
 

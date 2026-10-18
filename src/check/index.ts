@@ -4,26 +4,23 @@
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import { arrowheads } from "../layout/badges.ts";
 import { asideBoxes, bendsOf, layout } from "../layout/index.ts";
-import { sizeOf } from "../layout/size.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { laneNodes } from "../model/lanes.ts";
 import {
   type Diagram,
-  type DiagramNode,
   GROUP_TITLES,
   type GroupTitle,
   LINE_STYLES,
   MARK_SLOTS,
   markText,
-  SIZE_STEPS,
 } from "../model/types.ts";
-import { crossingFix, wallAllows } from "../model/walls.ts";
+import { wallAllows } from "../model/walls.ts";
 import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneBadge, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { GROUP, NOTE, ROUTE, WALL } from "../theme/geometry.ts";
 import { hasHead, lineLook, lineStyle, PAINT } from "../theme/paint.ts";
-import { isDot, textInside } from "../theme/shapes.ts";
+import { textInside } from "../theme/shapes.ts";
 import { themeOf } from "../theme/themes.ts";
 import {
   collinearOverlap,
@@ -64,15 +61,6 @@ function lineCount(t: PlacedText): number {
 }
 
 function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
-  // A node may grow to l by node resize when it is not l already. One the engine
-  // sizes (DESIGN.md, "Boxes sized to their text") is already l when its text needs it, unless sizing is fixed.
-  const canGrow = new Set<string>();
-  for (const layer of diagram.layers) {
-    for (const n of layer.nodes) {
-      const explicit = n.size !== undefined && n.size !== "l";
-      if (explicit || (n.size === undefined && diagram.sizing === "fixed")) canGrow.add(n.id);
-    }
-  }
   const texts = new Map<string, { label: string; sublabel?: string }>();
   for (const layer of diagram.layers) for (const n of layer.nodes) texts.set(n.id, n);
   for (const n of scene.nodes) {
@@ -81,17 +69,11 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
       const max = isSub ? MAX_SUBLABEL_LINES : MAX_LABEL_LINES;
       const lines = lineCount(t);
       const field = isSub ? "sublabel" : "label";
-      const fix = [
-        isSub
-          ? `grafical node describe <file> ${n.id} --text <shorter text>`
-          : `grafical node rename <file> ${n.id} --label <shorter text>`,
-        ...(canGrow.has(n.id) ? [`grafical node resize <file> ${n.id} --size l`] : []),
-      ];
       const found = (isSub ? texts.get(n.id)?.sublabel : texts.get(n.id)?.label) ?? "";
       if (lines > max) {
-        out.push({ code: "overflow", elements: [n.id], field, found, facts: { lines, max, fix } });
+        out.push({ code: "overflow", elements: [n.id], field, found, facts: { lines, max } });
       } else if (!textInside(n.kind, n.rect, t.bbox)) {
-        out.push({ code: "overflow", elements: [n.id], field, found, facts: { lines, fix } });
+        out.push({ code: "overflow", elements: [n.id], field, found, facts: { lines } });
       }
     }
   }
@@ -106,7 +88,7 @@ function checkLaneLabels(scene: Scene, out: Found[]): void {
       elements: [x.id],
       field: "label",
       found: x.label.runs.map((r) => r.text).join(" "),
-      facts: { fix: [`grafical lane rename <file> ${x.id} --label <shorter text>`] },
+      facts: {},
     });
   }
 }
@@ -135,14 +117,6 @@ function checkNodeOverlap(scene: Scene, out: Found[]): void {
 function checkMarkCovers(scene: Scene, out: Found[]): void {
   for (const n of scene.nodes) {
     for (const mark of n.marks ?? []) {
-      // Two ways out: a larger box, or the same mark on the other side of the box, which
-      // takes the old slot's mark away first.
-      const other = mark.slot.replace(/^top|^bottom/, (v) => (v === "top" ? "bottom" : "top"));
-      const fix = [
-        `grafical node resize <file> ${n.id} --size l`,
-        `grafical node icon <file> ${n.id} --slot ${mark.slot}`,
-        `grafical node icon <file> ${n.id} --slot ${other} --icon <mark>`,
-      ];
       // A text's box is taller and wider than its ink, so a few pixels of it may meet a mark.
       if (n.texts.some((t) => rectsOverlap(inset(t.bbox, MARK_TEXT_SLACK), mark.rect))) {
         out.push({
@@ -150,17 +124,18 @@ function checkMarkCovers(scene: Scene, out: Found[]): void {
           elements: [n.id],
           field: "icon",
           found: mark.slot,
-          facts: { is: "label", fix },
+          facts: { is: "label" },
         });
       }
       for (const other of scene.nodes) {
         if (other.id === n.id || !rectsOverlap(other.rect, mark.rect)) continue;
+        // The box with the mark first, then the box it covers.
         out.push({
           code: "mark-covers",
-          elements: [n.id, other.id].sort(),
+          elements: [n.id, other.id],
           field: "icon",
           found: mark.slot,
-          facts: { is: "node", fix },
+          facts: { is: "node" },
         });
       }
     }
@@ -407,17 +382,13 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
  * other lines, a wall's label that no place along its wall holds clear of the lines across
  * it, and a note's card with no place beside its target: no line moves for it, so it lies
  * across them (DESIGN.md, "The dirty work has edges"). The agent shortens or drops the text,
- * changes rows, or makes the note a footnote. The elements name the line, the wall or the
+ * widens a box, changes rows, or makes the note a footnote; the engine never widens a box for
+ * its lines (decided by the owner on 2026-10-17). The elements name the line, the wall or the
  * note's target, then what lies across the text: lines, and for a line's label the borders of
  * groups, bands and lanes, for a wall's label or a card boxes; the facts name the gutters a
- * line's label tried, and as fix each box at an end of the line whose next larger size would
- * hold the label, found by laying the diagram out with it. The engine never widens a box for
- * its lines: the agent does (decided by the owner on 2026-10-17). Where no larger box holds a
- * line's label, the fix drops it (or the step's number); a card's fix makes it a footnote, and
- * a wall's drops its label. Each is a command grafical accepts, so the agent can act on the
- * refusal itself (DESIGN.md, "One entry page, help where it is used").
+ * line's label tried.
  */
-function checkLabelRoom(facts: Diagram, scene: Scene, measurer: Measurer, out: Found[]): void {
+function checkLabelRoom(scene: Scene, out: Found[]): void {
   const borders = [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])];
   /** The lines other than `own` that pass through r. */
   const lines = (r: Rect, own?: string) =>
@@ -446,15 +417,10 @@ function checkLabelRoom(facts: Diagram, scene: Scene, measurer: Measurer, out: F
         if (sides.some((s) => segmentCrossesRect(s, box))) across.push(g.id);
       }
     }
-    const sized = sizeFix(facts, measurer, e);
-    const own = facts.edges.find((x) => x.id === e.id);
-    const drop =
-      own?.label !== undefined ? `edge relabel <file> ${e.id}` : `edge step <file> ${e.id}`;
-    const fix = sized.length > 0 ? sized : [drop];
     out.push({
       code: "label-blocked",
       elements: [e.id, ...across],
-      facts: { is: "edge", gutters: e.blocked, ...(fix.length > 0 ? { fix } : {}) },
+      facts: { is: "edge", gutters: e.blocked },
     });
   }
   // A note's card with no place beside its target, at the first place anyway: the lines and
@@ -465,14 +431,10 @@ function checkLabelRoom(facts: Diagram, scene: Scene, measurer: Measurer, out: F
     const boxes = scene.nodes
       .filter((n) => n.id !== x.on && rectsOverlap(n.rect, box))
       .map((n) => n.id);
-    const text = facts.notes?.find((n) => n.on === x.on)?.text ?? "";
     out.push({
       code: "label-blocked",
       elements: [x.on, ...lines(box, x.on), ...boxes],
-      facts: {
-        is: "note",
-        fix: [`note add <file> --on ${x.on} --text ${quoted(text)} --footnote`],
-      },
+      facts: { is: "note" },
     });
   }
   // A wall's label keeps its clearance from lines and boxes as the engine places it.
@@ -483,41 +445,9 @@ function checkLabelRoom(facts: Diagram, scene: Scene, measurer: Measurer, out: F
     out.push({
       code: "label-blocked",
       elements: [w.id, ...lines(box), ...boxes],
-      facts: { is: "wall", fix: [`wall relabel <file> ${w.id}`] },
+      facts: { is: "wall" },
     });
   }
-}
-
-/** Text as one shell word in a fix: in single quotes, or double ones when it holds a single quote. */
-function quoted(text: string): string {
-  return text.includes("'") ? JSON.stringify(text) : `'${text}'`;
-}
-
-/**
- * For a line whose label no gutter holds: for each box at one of its ends, the command that sets
- * the first larger size step at which the label is held, as a layout with that size alone shows;
- * nothing for a box no step helps.
- */
-function sizeFix(facts: Diagram, measurer: Measurer, edge: SceneEdge): string[] {
-  const nodeIn = (d: Diagram, id: string): DiagramNode | undefined =>
-    [...d.layers.flatMap((l) => l.nodes), ...(d.nodes ?? [])].find((n) => n.id === id);
-  const fix: string[] = [];
-  for (const id of new Set([edge.from, edge.to])) {
-    const node = nodeIn(facts, id);
-    if (node === undefined || isDot(node.kind)) continue;
-    const now = SIZE_STEPS.indexOf(sizeOf(node, facts, measurer));
-    for (const step of SIZE_STEPS.slice(now + 1)) {
-      const d = structuredClone(facts);
-      const n = nodeIn(d, id);
-      if (n === undefined) break;
-      n.size = step;
-      if (layout(d, measurer).edges.some((x) => x.id === edge.id && x.blocked !== undefined))
-        continue;
-      fix.push(`node resize <file> ${id} --size ${step}`);
-      break;
-    }
-  }
-  return fix;
 }
 
 /** A node that is not a member lies inside a group's box (DESIGN.md, "Rows unseen, groups as systems"). */
@@ -562,11 +492,7 @@ function checkNotes(diagram: Diagram, measurer: Measurer, out: Found[]): void {
       elements: [x.on],
       field: "note",
       found: x.text,
-      facts: {
-        lines,
-        max: NOTE.maxLines,
-        fix: [`grafical note add <file> --on ${x.on} --text <shorter text>`],
-      },
+      facts: { lines, max: NOTE.maxLines },
     });
   }
 }
@@ -587,7 +513,7 @@ function checkWalls(diagram: Diagram, scene: Scene, out: Found[]): void {
       out.push({
         code: "wall-crossed",
         elements: [e.id, sw.id],
-        facts: { fix: crossingFix(wall, fact) },
+        facts: {},
       });
     }
   }
@@ -698,7 +624,7 @@ function checkStepAside(diagram: Diagram, scene: Scene, out: Found[]): void {
 }
 
 function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
-  const add = (id: string, field: string, text: string | undefined, fix: string | string[]) => {
+  const add = (id: string, field: string, text: string | undefined) => {
     if (!text) return;
     const missing = m.missingGlyphs(text);
     if (missing.length === 0) return;
@@ -707,72 +633,41 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
       elements: [id],
       field,
       found: text,
-      facts: { chars: missing, fix: typeof fix === "string" ? [fix] : fix },
+      facts: { chars: missing },
     });
   };
-  add("title", "title", diagram.title, "grafical diagram title <file> --text <text>");
-  add("subtitle", "subtitle", diagram.subtitle, "grafical diagram subtitle <file> --text <text>");
-  add("note", "note", diagram.note, "grafical diagram note <file> --text <text>");
+  add("title", "title", diagram.title);
+  add("subtitle", "subtitle", diagram.subtitle);
+  add("note", "note", diagram.note);
   for (const g of diagram.groups ?? []) {
-    add(g.id, "label", g.label, `grafical group rename <file> ${g.id} --label <text>`);
-    add(g.id, "sublabel", g.sublabel, `grafical group describe <file> ${g.id} --text <text>`);
+    add(g.id, "label", g.label);
+    add(g.id, "sublabel", g.sublabel);
   }
-  for (const x of diagram.lanes ?? []) {
-    add(x.id, "label", x.label, `grafical lane rename <file> ${x.id} --label <text>`);
-  }
-  for (const line of LINE_STYLES) {
-    add(
-      `legend-${line}`,
-      "text",
-      diagram.legend?.[line],
-      `grafical diagram legend <file> ${line} --text <text>`,
-    );
-  }
+  for (const x of diagram.lanes ?? []) add(x.id, "label", x.label);
+  for (const line of LINE_STYLES) add(`legend-${line}`, "text", diagram.legend?.[line]);
   for (const [w, text] of Object.entries(diagram.legend?.weights ?? {})) {
-    add(`legend-${w}`, "text", text, `grafical diagram legend <file> --weight ${w} --text <text>`);
+    add(`legend-${w}`, "text", text);
   }
   for (const [mark, text] of Object.entries(diagram.legend?.marks ?? {})) {
-    add(
-      `legend-${mark}`,
-      "text",
-      text,
-      `grafical diagram legend <file> --mark ${mark} --text <text>`,
-    );
+    add(`legend-${mark}`, "text", text);
   }
   for (const layer of diagram.layers) {
-    if (!addedRow(layer.id)) {
-      add(
-        layer.id,
-        "label",
-        layer.label,
-        `grafical layer rename <file> ${layer.id} --label <text>`,
-      );
-    }
+    if (!addedRow(layer.id)) add(layer.id, "label", layer.label);
     for (const n of layer.nodes) {
-      add(n.id, "label", n.label, `grafical node rename <file> ${n.id} --label <text>`);
-      add(n.id, "sublabel", n.sublabel, `grafical node describe <file> ${n.id} --text <text>`);
+      add(n.id, "label", n.label);
+      add(n.id, "sublabel", n.sublabel);
       for (const slot of MARK_SLOTS) {
         const mark = n.icons?.[slot];
         // An emoji is drawn as a picture, so only plain text needs the fonts.
         const text = mark === undefined ? undefined : markText(mark);
-        if (text !== undefined && !isEmoji(text)) {
-          add(n.id, "icon", text, `grafical node icon <file> ${n.id} --slot ${slot} --icon <text>`);
-        }
+        if (text !== undefined && !isEmoji(text)) add(n.id, "icon", text);
       }
     }
   }
-  for (const e of diagram.edges) {
-    add(e.id, "label", e.label, `grafical edge relabel <file> ${e.id} --label <text>`);
-  }
+  for (const e of diagram.edges) add(e.id, "label", e.label);
   // A wall's label (DESIGN.md, "Walls as space") and a note (DESIGN.md, "Notes as callouts or footnotes") are drawn too.
-  for (const w of diagram.walls ?? []) {
-    const again = `grafical wall add <file> ${w.id} --between ${w.between.join(",")} --and ${w.and.join(",")} --label <text>`;
-    add(w.id, "label", w.label, [`grafical wall remove <file> ${w.id}`, again]);
-  }
-  for (const x of diagram.notes ?? []) {
-    const as = x.footnote === true ? " --footnote" : "";
-    add(x.on, "note", x.text, `grafical note add <file> --on ${x.on} --text <text>${as}`);
-  }
+  for (const w of diagram.walls ?? []) add(w.id, "label", w.label);
+  for (const x of diagram.notes ?? []) add(x.on, "note", x.text);
 }
 
 export { measureTaste, type TasteReport, type TasteRule } from "./taste.ts";
@@ -837,7 +732,7 @@ export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[
   checkNeedlessBend(scene, out);
   checkStepAside(diagram, scene, out);
   checkTextCrossing(scene, out);
-  checkLabelRoom(facts, scene, measurer, out);
+  checkLabelRoom(scene, out);
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);
   checkWalls(diagram, scene, out);

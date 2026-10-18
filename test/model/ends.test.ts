@@ -150,7 +150,6 @@ groups:
       found: "driver->payments",
       facts: { row: "gateway" },
     });
-    expect(passing[0]?.facts?.fix).toContain("edge pass <file> driver->payments");
     const allowed = ok(d, [{ op: "edge.add", from: "driver", to: "payments", pass: true }]);
     expect(allowed.edges.find((e) => e.id === "driver->payments")?.pass).toBe(true);
     const off = fail(allowed, [{ op: "edge.pass", id: "driver->payments", off: true }]);
@@ -218,7 +217,7 @@ groups:
         code: "bar-in-group",
         field: "layers[3].look",
         found: "mid",
-        facts: { group: "sys", row: "mid", fix: ["layer look <file> mid"] },
+        facts: { group: "sys", row: "mid" },
       }),
     ]);
     // A box placed by steps above the first row adds a row the file does not hold.

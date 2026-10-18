@@ -506,7 +506,7 @@ function addNotes(d: Diagram, r: () => number, text: (lo: number, hi: number) =>
  * Up to two walls across (DESIGN.md, "Walls as space"), drawn last: one to three nodes of a row against one
  * to three of the rows below it, letting through every line of either side, some of
  * them labelled. A wall the model refuses is dropped, as an agent would drop it, and
- * a line the drawing finds through a wall is let through, as its defect's fix says.
+ * a line the drawing finds through a wall is let through, as an agent would allow it.
  */
 function addWalls(
   d: Diagram,

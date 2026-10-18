@@ -76,11 +76,6 @@ export function wallAllows(d: Diagram, w: Wall, e: Edge): boolean {
   return false;
 }
 
-/** The rule's operations for a line that crosses a wall it may not. */
-export function crossingFix(w: Wall, e: Edge): string[] {
-  return [`wall allow <file> ${w.id} ${e.id}`, `edge remove <file> ${e.id}`];
-}
-
 /**
  * The rules for each wall: its sides name nodes and groups, and what it allows names
  * lines, nodes and groups; no node is on both sides; the sides lie above or beside
@@ -151,7 +146,7 @@ export function checkWalls(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
-        facts: { fix: crossingFix(w, e) },
+        facts: { wall: w.id },
       });
     });
   });

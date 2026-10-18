@@ -134,10 +134,10 @@ describe('boxes placed by steps (DESIGN.md, "Steps from another box")', () => {
       codes(fail(base, [{ op: "node.add", id: "c", label: "C", from: "nope", down: 1 }])),
     ).toEqual([["unknown-node", "from"]]);
     expect(codes(fail(base, [{ op: "node.add", id: "c", label: "C", from: "api" }]))).toEqual([
-      ["missing-field", "down,up,left,right"],
+      ["missing-field", "steps"],
     ]);
     expect(codes(fail(base, [{ op: "node.add", id: "c", label: "C" }]))).toEqual([
-      ["missing-field", "layer,from"],
+      ["missing-field", "layer"],
     ]);
     expect(
       codes(fail(base, [{ op: "node.add", id: "c", label: "C", from: "api", up: 1, down: 1 }])),
@@ -166,7 +166,7 @@ describe('boxes placed by steps (DESIGN.md, "Steps from another box")', () => {
     expect(fail(one, [{ op: "node.swap", a: "c", b: "db" }])[0]?.code).toBe("conflicting-position");
   });
 
-  it("a box in a lane through its group is told to take the group out of the lane", () => {
+  it("a box in a lane through its group is refused, naming the group", () => {
     const d = ok(base, [
       { op: "group.add", id: "g", label: "G", nodes: ["web", "api"] },
       { op: "lane.add", id: "team", label: "Team", members: ["g"] },
@@ -177,7 +177,8 @@ describe('boxes placed by steps (DESIGN.md, "Steps from another box")', () => {
     expect(e[0]).toMatchObject({
       code: "conflicting-position",
       field: "from,lane",
-      facts: { fix: ["lane leave <file> g"] },
+      found: "team",
+      facts: { node: "api", group: "g" },
     });
     // The box alone cannot leave: its group would lie in two lanes. The group can, and then the box moves.
     expect(fail(d, [{ op: "lane.leave", members: ["api"] }])[0]?.code).toBe("group-across-lanes");

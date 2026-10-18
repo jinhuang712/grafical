@@ -178,11 +178,12 @@ export type Outcome = "success" | "opError" | "defect" | "denied";
 
 /**
  * How one grafical call ended. The harness's refusal comes first: its text starts with
- * "Permission to use". Then grafical's own report, as JSON or as the plain records
- * `error op=<index> ...` and `defect code=<code> ...`, or, before DESIGN.md, "Records over prose"'s records, the lines
- * `error op <index> ...` and `defect <code> [...`. A failure with neither is an
- * operation error. The help (the guide before it) quotes these lines with placeholders,
- * so a line counts only with a real index or code.
+ * "Permission to use". Then grafical's own report, as JSON or as plain text: the blocks
+ * `error: <code>` and `defect: <code>` (DESIGN.md, "Refusals say what happened and which commands can change it"),
+ * in older rounds the records `error op=<index> ...` and `defect code=<code> ...`, and before DESIGN.md, "Records over
+ * prose"'s records the lines `error op <index> ...` and `defect <code> [...`. A warning is a success. A failure with
+ * none of these is an operation error. The help (the guide before it) quotes these lines with placeholders, so a
+ * line counts only with a real index or code.
  */
 export function classify(text: string, isError: boolean): Outcome {
   if (text.trimStart().startsWith("Permission to use")) return "denied";
@@ -190,6 +191,11 @@ export function classify(text: string, isError: boolean): Outcome {
   if (start >= 0) {
     try {
       const j = JSON.parse(text.slice(start));
+      const kinds = Array.isArray(j.problems)
+        ? j.problems.map((p: { kind?: string }) => p.kind)
+        : [];
+      if (kinds.includes("error")) return "opError";
+      if (kinds.includes("defect")) return "defect";
       if (Array.isArray(j.errors) && j.errors.length > 0) return "opError";
       if (Array.isArray(j.defects) && j.defects.length > 0) return "defect";
       if (j.ok === false) return "opError";
@@ -198,8 +204,10 @@ export function classify(text: string, isError: boolean): Outcome {
       // Not JSON (the agent did not pass --json): read the plain lines.
     }
   }
-  if (/^error op=\d+ /m.test(text) || /^error op \d+ /m.test(text)) return "opError";
-  if (/^defect code=[a-z]/m.test(text) || /^defect [a-z][a-z-]* \[/m.test(text)) return "defect";
+  if (/^error: [a-z]/m.test(text) || /^error op=\d+ /m.test(text) || /^error op \d+ /m.test(text))
+    return "opError";
+  if (/^defect: [a-z]/m.test(text) || /^defect code=[a-z]/m.test(text)) return "defect";
+  if (/^defect [a-z][a-z-]* \[/m.test(text)) return "defect";
   if (/^failed changed=/m.test(text) || /^failed, file unchanged/m.test(text)) return "opError";
   return isError ? "opError" : "success";
 }

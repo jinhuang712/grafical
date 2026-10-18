@@ -220,8 +220,26 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     expect(classify("Exit code 1\nfailed changed=-\ndefect code=overflow owner=agent", true)).toBe(
       "defect",
     );
+    // The blocks (DESIGN.md, "Refusals say what happened and which commands can change it").
+    expect(classify("Exit code 1\nfailed changed=-\n\nerror: unknown-node\ndetail:", true)).toBe(
+      "opError",
+    );
+    expect(classify("Exit code 1\nfailed changed=-\n\ndefect: overflow\ndetail:", true)).toBe(
+      "defect",
+    );
+    expect(classify("ok changed=a\n\nwarning: bent-line\nnext: node move", false)).toBe("success");
+    expect(classify('{"ok":false,"problems":[{"kind":"error","code":"unknown-node"}]}', true)).toBe(
+      "opError",
+    );
+    expect(classify('{"ok":false,"problems":[{"kind":"defect","code":"overflow"}]}', true)).toBe(
+      "defect",
+    );
+    expect(classify('{"ok":true,"problems":[{"kind":"warning","code":"bent-line"}]}', false)).toBe(
+      "success",
+    );
     // The help quotes the records with placeholders: they are not refusals.
     expect(classify("error op=<index> code=<code>\ndefect code=<code>", false)).toBe("success");
+    expect(classify("error: <code>\ndefect: <code>", false)).toBe("success");
     expect(classify("boom", true)).toBe("opError");
   });
 
