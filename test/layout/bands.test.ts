@@ -116,3 +116,47 @@ edges:
     expect(line?.passes).toEqual(["gateway"]);
   });
 });
+
+describe('a row with a look (DESIGN.md, "A row with a look is drawn")', () => {
+  const rows = (core = "", bus = "") =>
+    readDiagram(`grafical: 1
+title: looks
+density: normal
+layers:
+  - {id: apps, label: Apps, nodes: [${node("rider", "actor")}, ${node("driver", "actor")}]}
+  - {id: core, label: Core services${core}, nodes: [${node("booking")}, ${node("payments")}]}
+  - {id: bus, label: Event bus${bus}, nodes: []}
+  - {id: stores, label: Stores, nodes: [${node("trips", "store")}]}
+edges:
+  - {id: rider->booking, from: rider, to: booking}
+  - {id: driver->payments, from: driver, to: payments}
+  - {id: booking->trips, from: booking, to: trips, pass: true}
+`) as Diagram;
+
+  it("is drawn though no line ends at it, with its label; a row with none is not", () => {
+    expect(layout(rows(), m).bands).toBeUndefined();
+    const d = rows(", look: band", ", look: box");
+    const s = layout(d, m);
+    expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
+    expect(s.bands?.map((b) => b.id)).toEqual(["core", "bus"]);
+    const [core, bus] = s.bands ?? [];
+    if (core === undefined || bus === undefined) throw new Error("no band");
+    // The band: around its boxes, its label in its head above them.
+    expect(core).not.toHaveProperty("bar");
+    expect(core).not.toHaveProperty("box");
+    expect(core.label.runs.map((r) => r.text).join("")).toBe("Core services");
+    for (const id of ["booking", "payments"]) {
+      const r = s.nodes.find((x) => x.id === id)?.rect;
+      if (r === undefined) throw new Error(id);
+      expect(core.rect.y).toBeLessThan(core.label.bbox.y);
+      expect(core.label.bbox.y + core.label.bbox.h).toBeLessThan(r.y);
+      expect(r.y + r.h).toBeLessThan(core.rect.y + core.rect.h);
+    }
+    // The bar: one bar in a box's look, its label in it, passed by the line that may.
+    expect(bus).toMatchObject({ bar: true, box: true });
+    expect(bus.rect.h).toBe(40);
+    expect(bus.label.runs.map((r) => r.text).join("")).toBe("Event bus");
+    const line = drawing(d, s).lines.find((l) => l.id === "booking->trips");
+    expect(line?.passes).toEqual(["bus"]);
+  });
+});

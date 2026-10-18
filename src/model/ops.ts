@@ -204,14 +204,14 @@ export interface LayerRemoveOp {
   op: "layer.remove";
   id: string;
 }
-/** Moves a layer's nodes from `from` on (or its second half) into a new layer below it (DESIGN.md, "Curation stays with the agent"). */
-/** How a row is drawn once a line ends at it (DESIGN.md, "A row with no box as one bar"). */
+/** How a row is drawn, and that it is drawn though no line ends at it (DESIGN.md, "A row with no box as one bar", "A row with a look is drawn"). */
 export interface LayerLookOp {
   op: "layer.look";
   id: string;
-  /** Absent: the look follows the row, a box with no box in it and a band with boxes. */
+  /** Absent: the row is drawn only once a line ends at it, and its look follows the row, a box with no box in it and a band with boxes. */
   look?: RowLook;
 }
+/** Moves a layer's nodes from `from` on (or its second half) into a new layer below it (DESIGN.md, "Curation stays with the agent"). */
 export interface LayerSplitOp {
   op: "layer.split";
   id: string;

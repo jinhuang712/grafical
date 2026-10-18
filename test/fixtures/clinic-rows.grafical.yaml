@@ -1,0 +1,71 @@
+grafical: 1
+title: Pet clinic bookings
+subtitle: "Rows drawn only where they say something: the gateway, the booking services and the event bus."
+density: normal
+layers:
+  - id: row-people
+    label: People
+    nodes:
+      - id: owners
+        label: Pet owners
+        kind: actor
+        sublabel: web and app
+      - id: desk
+        label: Front desk
+        kind: actor
+  - id: row-gateway
+    label: API gateway
+    nodes: []
+  - id: row-booking
+    label: Booking services
+    look: band
+    nodes:
+      - id: booking
+        label: booking
+        kind: service
+        sublabel: slots and visits
+      - id: reminders
+        label: reminders
+        kind: service
+        sublabel: SMS and email
+  - id: row-bus
+    label: Event bus
+    look: band
+    nodes: []
+  - id: row-data
+    label: Data
+    nodes:
+      - id: visits-db
+        label: Visits DB
+        kind: store
+      - id: sms
+        label: SMS provider
+        kind: external
+edges:
+  - id: owners->row-gateway
+    from: owners
+    to: row-gateway
+    kind: call
+  - id: desk->row-gateway
+    from: desk
+    to: row-gateway
+    kind: call
+  - id: row-gateway->booking
+    from: row-gateway
+    to: booking
+    kind: call
+  - id: booking->visits-db
+    from: booking
+    to: visits-db
+    kind: data
+    pass: true
+  - id: reminders->sms
+    from: reminders
+    to: sms
+    kind: call
+    pass: true
+  - id: booking->reminders
+    from: booking
+    to: reminders
+    kind: async
+    label: visit booked

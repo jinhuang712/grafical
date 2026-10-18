@@ -454,7 +454,9 @@ export function build(): Command {
     await write(file, { op: "note.remove", ...pick(opts, ["on"]) }, opts);
   });
 
-  const layer = program.command("layer").description("rows: add, move, split, rename, remove");
+  const layer = program
+    .command("layer")
+    .description("rows: add, move, split, rename, look, remove");
   json(
     layer
       .command("add")
@@ -782,7 +784,7 @@ export function build(): Command {
   json(
     layer
       .command("look")
-      .description("draw a row as a box or a band once a line ends at it")
+      .description("draw a row as a box or a band, even when no line ends at it")
       .argument("<file>")
       .argument("<id>")
       .argument("[look]", "box or band"),

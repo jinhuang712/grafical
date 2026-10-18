@@ -26,6 +26,7 @@ import {
   type Applied,
   addEdge,
   addNode,
+  lookLayer,
   moveNode,
   numberEdge,
   randomEdges,
@@ -510,6 +511,28 @@ describe('stability (DESIGN.md, "Layout computed again on every change")', () =>
       const out = d.edges.flatMap((x, i) =>
         check(d, numberEdge(d, x.id, i + 1)).map((v) => `${x.id}: ${v}`),
       );
+      expect(out).toEqual([]);
+    });
+
+    // DESIGN.md, "A row with a look is drawn": the look draws that row and moves no box across, nor anything above it.
+    it(`${name}: give each layer a look, which draws only that row`, () => {
+      const before = layoutFramed(d, m);
+      const across = (f: typeof before) =>
+        f.scene.nodes.map((x) => `${x.id} ${Math.round((x.rect.x - f.centre) * 100) / 100}`);
+      const out = d.layers.flatMap((l, i) => {
+        const op = lookLayer(d, l.id, i % 2 === 0 ? "band" : "box");
+        const after = layoutFramed(op.diagram, m);
+        const above = new Set(d.layers.slice(0, i).flatMap((x) => x.nodes.map((y) => y.id)));
+        const ys = (f: typeof before) =>
+          f.scene.nodes.filter((x) => above.has(x.id)).map((x) => `${x.id} ${x.rect.y}`);
+        const bands = (f: typeof before) => (f.scene.bands ?? []).map((b) => b.id).sort();
+        const out = check(d, op);
+        if (across(after).join() !== across(before).join()) out.push("a box moved across");
+        if (ys(after).join() !== ys(before).join()) out.push("a box above it moved");
+        if (bands(after).join() !== [...bands(before), l.id].sort().join())
+          out.push(`drew ${bands(after).join()}`);
+        return out.map((v) => `${l.id}: ${v}`);
+      });
       expect(out).toEqual([]);
     });
   }

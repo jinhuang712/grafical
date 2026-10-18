@@ -187,4 +187,61 @@ groups:
     }
     expect(diffDiagrams(a, b)).toEqual([{ op: "layer.look", id: "gateway", look: "band" }]);
   });
+
+  // DESIGN.md, "A row with a look is drawn".
+  it("checks a row with no box and a look as a bar, though no line ends at it", () => {
+    const passing = ok(base, [{ op: "edge.add", from: "driver", to: "payments" }]);
+    const crossed = fail(passing, [{ op: "layer.look", id: "gateway", look: "box" }]);
+    expect(crossed[0]).toMatchObject({
+      code: "bar-crossed",
+      found: "driver->payments",
+      facts: { row: "gateway" },
+    });
+    const looked = ok(passing, [
+      { op: "layer.look", id: "gateway", look: "box" },
+      { op: "edge.pass", id: "driver->payments" },
+    ]);
+    expect(looked.layers[1]?.look).toBe("box");
+    expect(fail(looked, [{ op: "edge.pass", id: "driver->payments", off: true }])[0]?.code).toBe(
+      "bar-crossed",
+    );
+    // A row with boxes is a band, which lines pass as any row.
+    expect(ok(passing, [{ op: "layer.look", id: "core", look: "band" }]).layers[2]?.look).toBe(
+      "band",
+    );
+    const inGroup = fail(base, [
+      { op: "layer.add", id: "mid", label: "Mid", after: "core" },
+      { op: "layer.look", id: "mid", look: "band" },
+    ]);
+    expect(inGroup).toEqual([
+      expect.objectContaining({
+        code: "bar-in-group",
+        field: "layers[3].look",
+        found: "mid",
+        facts: { group: "sys", row: "mid", fix: ["layer look <file> mid"] },
+      }),
+    ]);
+    // A box placed by steps above the first row adds a row the file does not hold.
+    const above = fail(base, [
+      { op: "node.add", id: "boss", label: "boss", from: "rider", up: 1 },
+      { op: "layer.add", id: "mid", label: "Mid", after: "core" },
+      { op: "layer.look", id: "mid", look: "band" },
+    ]);
+    expect(above[0]).toMatchObject({ code: "bar-in-group", field: "layers[3].look" });
+  });
+
+  it("diffs a look on a row no line ends at, with the lines that pass it", () => {
+    const a = ok(base, [
+      { op: "edge.add", from: "driver", to: "payments", pass: true },
+      { op: "layer.look", id: "gateway", look: "band" },
+    ]);
+    for (const [x, y] of [
+      [base, a],
+      [a, base],
+    ] as const) {
+      const r = applyOps(x, diffDiagrams(x, y));
+      if ("errors" in r) throw new Error(JSON.stringify(r.errors));
+      expect(writeDiagram(r.diagram)).toBe(writeDiagram(y));
+    }
+  });
 });

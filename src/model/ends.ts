@@ -5,7 +5,8 @@
 // operation errors:
 // - an end must exist, and a group or lane end must hold at least one node. A row
 //   with no node may be an end, drawn as a bar, when the other end holds one, and
-//   it may not lie between the first and last rows of a group;
+//   it may not lie between the first and last rows of a group. Neither may a row with
+//   no node and a look, which is drawn as a bar too;
 // - a line passes a bar between its ends only when it says it may;
 // - neither end may lie inside the other, and a layer may not cross a column lane;
 // - two lanes are never the ends of one edge: neighbouring lanes share a border;
@@ -13,6 +14,7 @@
 //   stand between them in that row.
 
 import type { Facts, OpError } from "../errors.ts";
+import { addedRow } from "../layout/steps.ts";
 import { groupNodes } from "./groups.ts";
 import { laneNodes, laneRun } from "./lanes.ts";
 import { everyNode } from "./steps.ts";
@@ -54,10 +56,17 @@ export function isBar(d: Diagram, id: string): boolean {
   return d.layers.some((l) => l.id === id && l.nodes.length === 0);
 }
 
-/** The rows drawn as bars: those with no node that an edge ends at (DESIGN.md, "A row with no box as one bar"). */
+/**
+ * The rows drawn as bars: those with no node that an edge ends at or that have a look
+ * (DESIGN.md, "A row with no box as one bar", "A row with a look is drawn").
+ */
 export function barRows(d: Diagram): Set<string> {
   const ends = new Set(d.edges.flatMap((e) => [e.from, e.to]));
-  return new Set(d.layers.filter((l) => l.nodes.length === 0 && ends.has(l.id)).map((l) => l.id));
+  return new Set(
+    d.layers
+      .filter((l) => l.nodes.length === 0 && (ends.has(l.id) || l.look !== undefined))
+      .map((l) => l.id),
+  );
 }
 
 /** The first bar strictly between an edge's ends, top to bottom, if any. */
@@ -196,11 +205,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
     }
     for (const end of ["from", "to"] as const) {
       if (!isBar(d, e[end])) continue;
-      const r = d.layers.findIndex((l) => l.id === e[end]);
-      const group = (d.groups ?? []).find((g) => {
-        const rows = endRows(d, g.id);
-        return rows !== undefined && rows[0] < r && r < rows[1];
-      });
+      const group = groupAcross(d, e[end]);
       if (group !== undefined) {
         errors.push({
           code: "bar-in-group",
@@ -260,5 +265,31 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
       });
     }
   });
+  // A bar that no line ends at is drawn for its look, and a group's box may not stretch over it either. Rows the
+  // engine adds for boxes placed by steps are not in the file, so the field counts the file's rows only.
+  const ended = new Set(d.edges.flatMap((e) => [e.from, e.to]));
+  d.layers
+    .filter((l) => !addedRow(l.id))
+    .forEach((l, li) => {
+      if (!bars.has(l.id) || ended.has(l.id)) return;
+      const group = groupAcross(d, l.id);
+      if (group === undefined) return;
+      errors.push({
+        code: "bar-in-group",
+        index,
+        field: `layers[${li}].look`,
+        found: l.id,
+        facts: { group: group.id, row: l.id, fix: [`layer look <file> ${l.id}`] },
+      });
+    });
   return errors;
+}
+
+/** The group whose box stretches over a row: one with rows above it and below it. */
+function groupAcross(d: Diagram, row: string) {
+  const r = d.layers.findIndex((l) => l.id === row);
+  return (d.groups ?? []).find((g) => {
+    const rows = endRows(d, g.id);
+    return rows !== undefined && rows[0] < r && r < rows[1];
+  });
 }

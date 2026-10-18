@@ -635,8 +635,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     return [{ wall: w, x0, x1, top: split.top, bottom: split.bottom }];
   });
   const refined = refineEnds(sized, ends, nodes);
-  // Bars (DESIGN.md, "A row with no box as one bar"): a row with no box that a line ends at is one bar high, and
-  // each line meets it straight past its other end. The router knows only boxes, so a
+  // Bars (DESIGN.md, "A row with no box as one bar"): a row with no box that a line ends at, or that has a look,
+  // is one bar high, and each line meets it straight past its other end. The router knows only boxes, so a
   // narrow stand-in sits in the bar there, shared by lines whose other ends lie close.
   const barStands = new Map<number, PNode[]>();
   const standOf = new Map<string, { from?: string; to?: string }>();
@@ -681,8 +681,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const routeNodes = new Map(nodes);
   for (const stands of barStands.values()) for (const n of stands) routeNodes.set(n.id, n);
 
-  // Bands (DESIGN.md, "Lines that end at containers"): the layers an edge ends at, drawn across the content. Each band's
-  // label sits in its head above the row, at the content's left edge.
+  // Bands (DESIGN.md, "Lines that end at containers", "A row with a look is drawn"): the layers an edge ends at or
+  // that have a look, drawn across the content. Each band's label sits in its head above the row, at the content's
+  // left edge.
   let contentLeft = Number.POSITIVE_INFINITY;
   let contentRight = Number.NEGATIVE_INFINITY;
   for (const n of nodes.values()) {

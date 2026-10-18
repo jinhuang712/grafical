@@ -243,7 +243,7 @@ One arrow can point at a whole system instead of each of its parts.
 
 - Either end of a line may be a box, a group, a row or a lane. A row a line ends at is drawn as a band, with its label above it, and a line meets the band straight past its other end where nothing is in the way.
 - A row with no box may be an end too, when the other end holds a box: a gateway or a message bus that every request passes. It is drawn as one bar across the content, 40 px high, with its label in it at the left, and each line meets it straight past its other end (DESIGN.md, "A row with no box as one bar").
-- A line that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge add --pass`, or `edge pass <file> <id> [--off]` for a line already drawn. It then names the bar in `passes`.
+- A line that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge add --pass`, or `edge pass <file> <id> [--off]` for a line already drawn. It then names the bar in `passes`. A row with no box and a look is a bar too, though no line ends at it ("Rows and order").
 - An end may not lie inside the other (`edge-inside`), a group or a lane end must hold a box (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). A line between two rows with no box is refused (`bar-to-bar`), and so is a bar between the first and last rows of a group (`bar-in-group`).
 - Two lanes are never the two ends of one line (`lane-to-lane`).
 - Removing a group or a lane removes the lines that end at it.
@@ -263,7 +263,7 @@ The agent says what connects. grafical draws every line.
 
 ### Rows and order ✅
 
-A box sits in a row, in an order. Rows are not drawn: they only place.
+A box sits in a row, in an order. A row only places, and is not drawn unless it has a look or a line ends at it.
 
 ```sh
 grafical layer add <file> <id> --label <text> [--before <row> | --after <row>]
@@ -280,7 +280,7 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 - A box added to a row, or moved into another row, says where it goes: `--first`, `--last`, `--before` or `--after`. Without one it is refused as `missing-field`, with the row and the boxes in it. Only the first box of an empty row needs none (DESIGN.md, "The agent states every order").
 - `layer split` moves the second half of a row, or its boxes from one box on, into a new row below it.
 - A row can be removed only when it is empty, and the lines that end at it go with it.
-- `layer look` says how a row is drawn once a line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row with no box is a box and a row with boxes a band.
+- `layer look` draws a row, with its label, even when no line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row is drawn only when a line ends at it, a row with no box as a box and a row with boxes as a band. A row with no box and a look is a bar, checked as one: a line that passes it needs `--pass` (`bar-crossed`), and it may not lie between the first and last rows of a group (`bar-in-group`, fixed by `layer look <file> <row>`, which takes the look away) (DESIGN.md, "A row with a look is drawn").
 
 ### Alignment ✅
 

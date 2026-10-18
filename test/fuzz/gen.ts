@@ -223,6 +223,8 @@ export function generate(seed: number, m: Measurer): Generated {
   addSteps(d, r);
   // A stream of its own, so that a seed with no bar is the same diagram as before bars.
   addBars(d, rng(seed ^ 0x5bd1e995));
+  // A stream of its own, so that a seed with no look is the same diagram as before looks drew rows.
+  addRowLooks(d, rng(seed ^ 0x9e3779b9));
   addStepNumbers(d, r);
   fitLabels(d, m);
   const titles = JSON.stringify(d.groups ?? []);
@@ -349,6 +351,50 @@ function addBars(d: Diagram, r: () => number): void {
   if (refused) return;
   // Drawn last, so that the bar is the same with or without a look.
   if (r() < 0.25) bar.look = "band";
+  d.layers = trial.layers;
+  d.edges = trial.edges;
+}
+
+/**
+ * Rows drawn for their look alone (DESIGN.md, "A row with a look is drawn"). In two seeds of ten a row with boxes
+ * that no line ends at takes a look, box or band. In one seed of ten a row with no box and a look is put between two
+ * rows, or above or below them all, with no line to it: every line that passes it says it may, and one that a check
+ * refuses, such as inside a group's rows, is dropped.
+ */
+function addRowLooks(d: Diagram, r: () => number): void {
+  const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
+  const look = () => (r() < 0.5 ? "band" : "box");
+  const ended = new Set(d.edges.flatMap((e) => [e.from, e.to]));
+  const plain = d.layers.filter(
+    (l) => l.nodes.length > 0 && l.look === undefined && !ended.has(l.id),
+  );
+  if (r() < 0.2 && plain.length > 0) {
+    const row = plain[int(0, plain.length - 1)];
+    if (row !== undefined) row.look = look();
+  }
+  if (r() >= 0.1 || laneRun(d) === "columns" || d.layers.some((l) => l.id === "shown")) return;
+  const trial: Diagram = structuredClone(d);
+  const at = int(0, trial.layers.length);
+  const above = trial.layers[at - 1]?.lane;
+  trial.layers.splice(at, 0, {
+    id: "shown",
+    label: ["platform", "event bus", "数据总线", "edge"][int(0, 3)] as string,
+    ...(above !== undefined && above === trial.layers[at]?.lane ? { lane: above } : {}),
+    look: look(),
+    nodes: [],
+  });
+  const errors = checkEnds(placeSteps(trial).d, 0);
+  for (const x of errors) {
+    const e = trial.edges.find((y) => y.id === x.found);
+    if (x.code === "bar-crossed" && e !== undefined) e.pass = true;
+  }
+  const refused =
+    errors.some((x) => x.code !== "bar-crossed") ||
+    checkIntegrity(trial).length > 0 ||
+    validateGroups(trial).length > 0 ||
+    validateAlignments(trial).length > 0 ||
+    validateSteps(trial).length > 0;
+  if (refused) return;
   d.layers = trial.layers;
   d.edges = trial.edges;
 }

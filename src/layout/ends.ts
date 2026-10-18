@@ -3,7 +3,8 @@
 // end, and the route is then cut where it meets the container's box. A group is
 // met at its top or bottom when the other end lies above or below all its rows,
 // and at its side when the two share a row: then the facing node is the member
-// beside the other end. A layer, drawn as a band, is met at its top or bottom.
+// beside the other end. A layer, drawn as a band, is met at its top or bottom. A layer
+// with a look is drawn as a band too, though no edge ends at it.
 // A lane (DESIGN.md, "Swimlanes run one way") is met like a group: at its border across rows, or at its side.
 
 import { endKind, endNodes, endRows, isBar, meeting } from "../model/ends.ts";
@@ -26,7 +27,7 @@ export interface EndPlan {
   edges: Edge[];
   /** Container ends by edge id. */
   ends: Map<string, { from?: ContainerEnd; to?: ContainerEnd }>;
-  /** Layers that an edge ends at: they are drawn as bands. */
+  /** The layers drawn as bands: those an edge ends at, and those with a look (DESIGN.md, "A row with a look is drawn"). */
   bands: Set<string>;
   /** The bands with no node: each is drawn as one bar, and its ends stand in until placement. */
   bars: Set<string>;
@@ -83,6 +84,11 @@ export function planEnds(d: Diagram): EndPlan {
     ends.set(e.id, plan);
     return out;
   });
+  for (const l of d.layers) {
+    if (l.look === undefined) continue;
+    bands.add(l.id);
+    if (l.nodes.length === 0) bars.add(l.id);
+  }
   return { edges, ends, bands, bars };
 }
 

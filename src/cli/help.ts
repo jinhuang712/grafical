@@ -246,9 +246,10 @@ Example:
 Good to know:
   - Rows run top to bottom the way a request or a process moves.
   - Name a row by what it holds ("Entry", "Stores").
-  - A row is drawn only when a line ends at it: around its boxes as a band,
-    or, with no boxes, as one bar that lines meet straight past their other
-    ends, such as a gateway or a bus. layer look draws it as a box or a band.
+  - A row is not drawn: it only places its boxes. It is drawn, with its
+    name, when a line ends at it or layer look gives it a look: around its
+    boxes as a band, or, with no boxes, as one bar that lines meet straight
+    past their other ends, such as a gateway or a bus.
   - Rows and boxes share one set of ids: give rows ids like row-users.
 
 See also: layer move, layer split, node add
@@ -396,9 +397,9 @@ Good to know:
   - Lines between neighbouring rows stay straight; a line that skips rows
     has to go around.
   - One line to a group replaces a line to each of its parts.
-  - A line that passes a bar, a row with no boxes that lines end at, is
-    refused (bar-crossed) unless --pass says it may, since a reader takes a
-    line over a gateway for a line through it.
+  - A line that passes a bar, a row with no boxes that lines end at or
+    that has a look, is refused (bar-crossed) unless --pass says it may,
+    since a reader takes a line over a gateway for a line through it.
   - The id is <from>-><to> unless --id names it; a second one gets #2.
 
 When refused:
@@ -650,12 +651,25 @@ Example:
   "note remove": { about: "Remove the note of a node, a group or a line." },
 
   "layer look": {
-    about: `Draw a row as a box or as a band once a line ends at it. Without a look,
-a row with no boxes is a box and a row with boxes a band.`,
+    about: `Draw a row, as a box or as a band, even when no line ends at it. Without a
+look, a row is drawn only when a line ends at it: with no boxes as a box, with
+boxes as a band. Without box or band, the look is taken away.`,
+    after: `
+Good to know:
+  - A drawn row shows its name: in the head of a band, above its boxes, or
+    in the bar of a row with no boxes.
+  - A row with no boxes and a look is one bar, such as a gateway or a bus.
+    A line that passes it is refused (bar-crossed) unless edge pass lets it.
+
+When refused:
+  bar-crossed   a line passes the bar and may not; fix lets it pass
+  bar-in-group  the bar lies between the first and last rows of a group,
+                whose box would stretch over it; group names it
+`,
   },
   "edge pass": {
     about:
-      "Let a line pass the bars between its ends, rows with no boxes that lines end at; --off takes it back.",
+      "Let a line pass the bars between its ends, rows with no boxes that lines end at or that have a look; --off takes it back.",
   },
 
   "wall allow": {
