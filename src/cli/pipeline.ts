@@ -201,28 +201,51 @@ interface Planned {
   scene: Scene;
 }
 
+/**
+ * The facts that name what a problem is about, which its block prints: two problems are the same only when these
+ * are, so that the line a source names never contradicts the detail.
+ */
+const ABOUT: readonly (keyof Facts)[] = [
+  "is",
+  "node",
+  "row",
+  "group",
+  "edge",
+  "edges",
+  "ends",
+  "lane",
+  "wall",
+  "note",
+  "nodes",
+  "rows",
+  "groups",
+  "lanes",
+  "between",
+  "across",
+  "covers",
+  "beside",
+  "chain",
+  "top",
+  "bottom",
+];
+
+function about(f: Facts): string[] {
+  return ABOUT.map((k) => {
+    const v = f[k];
+    return Array.isArray(v) ? v.join(",") : String(v ?? "");
+  });
+}
+
 /** What makes two problems the same one in two diagrams: its code and what it is about. */
 export function errorKey(e: OpError): string {
-  const f = e.facts ?? {};
   // A field of a whole diagram's error is a place in the file, which other operations move.
-  return [
-    e.code,
-    e.whole ? "" : (e.field ?? ""),
-    e.found,
-    f.node,
-    f.group,
-    f.wall,
-    f.edge,
-    f.beside,
-  ]
-    .map((x) => x ?? "")
-    .join("\u0000");
+  return [e.code, e.whole ? "" : (e.field ?? ""), e.found, ...about(e.facts ?? {})].join("\u0000");
 }
 
 export function defectKey(d: Defect): string {
-  const pair = d.code === "wall-crossed" || (d.code === "mark-covers" && d.facts.is === "node");
-  const about = d.elements.slice(0, pair ? 2 : 1);
-  return [d.code, d.field ?? "", d.found ?? "", d.facts.is ?? "", ...about].join("\u0000");
+  return [d.code, d.field ?? "", d.found ?? "", d.elements.join(","), ...about(d.facts)].join(
+    "\u0000",
+  );
 }
 
 /**

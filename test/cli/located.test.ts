@@ -172,6 +172,27 @@ describe("the batch line a refused write names", () => {
     expect(refuse(grocer, nm2).report.defects.map((d) => d.source)).toEqual([BATCH]);
   });
 
+  it("is no older than the facts its block prints", () => {
+    // Lines 2 and 4 give two new rows a look; line 5 takes the first one's away. The lines from the callers cross
+    // row-w1 from line 2 on, and row-w2, the bar the blocks name, only once row-w1 is no bar.
+    const bc1 = [
+      "- {op: layer.add, id: row-w1, label: Bus1, after: row-callers}",
+      "- {op: layer.look, id: row-w1, look: box}",
+      "- {op: layer.add, id: row-w2, label: Bus2, after: row-w1}",
+      "- {op: layer.look, id: row-w2, look: box}",
+      "- {op: layer.look, id: row-w1}",
+    ];
+    const { ops, report } = refuse(grocer, bc1);
+    const crossed = report.errors.filter((e) => e.code === "bar-crossed");
+    expect(crossed.length).toBeGreaterThan(0);
+    for (const e of crossed) {
+      expect(e.facts?.row).toBe("row-w2");
+      // After line 4 the lines cross row-w1 first, which is all that prefix can say: no line can be known.
+      expect(e.source).toBe(BATCH);
+      expect(truth(grocer, ops, errorKey(e), false)).toBeUndefined();
+    }
+  });
+
   it("is, on random batches, the oracle's line or none", () => {
     const rows = grocer.layers.map((l) => l.id);
     const boxes = grocer.layers.flatMap((l) => l.nodes.map((n) => n.id));
