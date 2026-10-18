@@ -410,11 +410,11 @@ function segmentHits(a: Point, b: Point, r: Rect): boolean {
  * the label across the container's border: the label then moves beside a part
  * that remains, the longest first, above or below it, or right or left of it,
  * at its middle or one of its ends, stepping away from it while other lines
- * crowd it: the first place `free` accepts, clear of the border if one is,
- * across it if not. `drawn` gives the text in a place, which a step's badge may
- * push out of it (DESIGN.md, "Step badges ride the line"): the text too must be
- * clear. Failing every place, it goes above or right of the middle of the longest
- * part.
+ * crowd it: the first place `free` accepts, clear of the border. `drawn` gives
+ * the text in a place, which a step's badge may push out of it (DESIGN.md, "Step
+ * badges ride the line"): the text too must be clear. Failing every place, no line
+ * moves for the label: it takes the first place `free` accepts across the border,
+ * or else the first place, and is not clear (DESIGN.md, "The dirty work has edges").
  */
 function besideRoute(
   points: Point[],
@@ -422,7 +422,7 @@ function besideRoute(
   boxes: Rect[],
   free: (r: Rect) => boolean,
   drawn: (r: Rect) => Rect,
-): AssembledLabel {
+): { at: AssembledLabel; clear: boolean } {
   const near = ROUTE.labelGap + 4;
   const across = (r: Rect) =>
     boxes.some(
@@ -442,7 +442,7 @@ function besideRoute(
     const b = points[i] as Point;
     const dx = Math.max(0, at.x - Math.max(a.x, b.x), Math.min(a.x, b.x) - (at.x + at.w));
     const dy = Math.max(0, at.y - Math.max(a.y, b.y), Math.min(a.y, b.y) - (at.y + at.h));
-    if (keep && Math.max(dx, dy) <= near) return at;
+    if (keep && Math.max(dx, dy) <= near) return { at, clear: true };
     parts.push([a, b]);
   }
   const span = ([a, b]: [Point, Point]) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
@@ -481,10 +481,11 @@ function besideRoute(
   const [pn, pm] = [points[points.length - 1], points[points.length - 2]];
   if (p0 !== undefined && p1 !== undefined) places.push(...past(p0, p1));
   if (pn !== undefined && pm !== undefined) places.push(...past(pn, pm));
-  // Clear of the container's border if it can be; else across it, which a label's patch covers.
   const rects = places.map((p) => ({ x: p.x, y: p.y, w: at.w, h: at.h }));
-  const first = rects.find(clear) ?? rects.find(fits) ?? rects[0];
-  return first === undefined ? at : { ...at, ...first };
+  const place = rects.find(clear);
+  if (place !== undefined) return { at: { ...at, ...place }, clear: true };
+  const first = rects.find(fits) ?? rects[0];
+  return { at: first === undefined ? at : { ...at, ...first }, clear: false };
 }
 
 const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
@@ -1437,6 +1438,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const plan = ends.ends.get(id);
     return { start: plan?.from !== undefined, end: plan?.to !== undefined };
   };
+  /** Gutters as a refusal names them: the rows above and below each. */
+  const gutterNames = (gs: number[]) =>
+    gs.map((g) => `${layers[g]?.id ?? "-"}/${layers[g + 1]?.id ?? "-"}`);
+  const planOf = new Map(routing.plans.map((p) => [p.edge.id, p]));
   const sceneEdges: SceneEdge[] = [];
   for (const e of d.edges) {
     const a = assembled.get(e.id);
@@ -1450,9 +1455,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
     if (e.both === true) edge.both = true;
     const blocked = routing.blocked.get(e.id);
-    if (blocked !== undefined) {
-      edge.blocked = blocked.map((g) => `${layers[g]?.id ?? "-"}/${layers[g + 1]?.id ?? "-"}`);
-    }
+    if (blocked !== undefined) edge.blocked = gutterNames(blocked);
     const width = edgeWidth(e, theme.paint);
     if (width !== undefined && width !== theme.paint.edge.strokeWidth) edge.width = width;
     const text = e.label === "" ? undefined : e.label;
@@ -1472,12 +1475,17 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         const { text: p } = stepIn(slot);
         return { x: p.x, y: p.y, w: tw, h: th };
       };
-      // A lane's border is kept clear of as the container's is: where it can be.
+      // A lane's border is kept clear of as the container's is.
       const cutAt = [toBox, fromBox, ...sceneLanes.map((x) => x.rect)].filter(
         (b): b is Rect => b !== undefined,
       );
-      const at =
-        points === a.points ? a.label : besideRoute(points, a.label, cutAt, clearOf(e.id), drawn);
+      let at = a.label;
+      if (points !== a.points) {
+        const moved = besideRoute(points, a.label, cutAt, clearOf(e.id), drawn);
+        at = moved.at;
+        // No place beside what is left of the line holds it: the write is refused.
+        if (!moved.clear) edge.blocked ??= gutterNames(planOf.get(e.id)?.gutters ?? []);
+      }
       labelAt.set(e.id, at);
       let top = { x: at.x, y: at.y };
       if (e.step !== undefined) {

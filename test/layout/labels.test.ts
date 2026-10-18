@@ -76,6 +76,49 @@ edges:
     expect(check(wide, layout(wide, m), m)).toEqual([]);
   });
 
+  // Found by the fuzz test at seeds 1126, 1719 and 4951 of 5,000 on 2026-10-18: a line from a row lane
+  // to the row below is cut at the lane's border and keeps a 16 px stub, and the label, with no clear
+  // place beside the stub or past its ends, lay across the border, an engine-owned text-crossing.
+  it("refuses a label no place beside a line cut at a lane holds, naming the lanes across it", () => {
+    const d = readDiagram(`grafical: 1
+title: lanes
+density: normal
+lanes:
+  - {id: shop, label: Shop}
+  - {id: depot, label: Depot}
+layers:
+  - {id: top, label: Top, lane: shop, nodes: [{id: a, label: Cart}, {id: c, label: Pay}, {id: e, label: Ship}]}
+  - {id: bottom, label: Bottom, lane: depot, nodes: [{id: b, label: Stock}]}
+edges:
+  - {id: a->b, from: a, to: b}
+  - {id: a->b#2, from: a, to: b}
+  - {id: a->b#3, from: a, to: b}
+  - {id: c->b, from: c, to: b}
+  - {id: c->b#2, from: c, to: b}
+  - {id: e->b, from: e, to: b}
+  - {id: e->b#2, from: e, to: b}
+  - {id: e->b#3, from: e, to: b}
+  - {id: shop->b, from: shop, to: b, label: picks}
+`) as Diagram;
+    const found = check(d, layout(d, m), m);
+    expect(
+      found.map((x) => [x.code, x.owner, ...x.elements, x.facts.gutters, x.facts.fix]),
+    ).toEqual([
+      [
+        "label-blocked",
+        "agent",
+        "shop->b",
+        "shop",
+        "depot",
+        ["top/bottom"],
+        ["edge relabel <file> shop->b"],
+      ],
+    ]);
+    const r = applyOps(d, [{ op: "edge.relabel", id: "shop->b" }]);
+    if ("errors" in r) throw new Error(JSON.stringify(r.errors));
+    expect(check(r.diagram, layout(r.diagram, m), m)).toEqual([]);
+  });
+
   // Found by trying every fix a refusal suggests, on 2026-10-17: no larger box held this label,
   // and the refusal named nothing to run.
   it("where no larger box holds the label, its fix drops it, and grafical accepts that", () => {

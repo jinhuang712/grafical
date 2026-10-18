@@ -35,7 +35,3 @@ The split is on purpose: rule 4 of DESIGN.md, "A target picture with measured ru
 ## A step's badge across a lane's side
 
 `check --all` counts a lane's side across a line's label as `text-crossing`, but not across a step's badge, and the badge's place does not keep off it (DESIGN.md, "Step badges ride the line"). The badge should keep off a lane's side as the label does, and `step-collision` should count one it touches.
-
-## A line cut at a row lane's border has no room for its label
-
-A line that ends at a lane running as a row is cut at the lane's border. When the line then runs only 16 px from the border to its box, and other lines crowd every place beside that stub and past its cut end, its label stays across the border. Fuzz seeds 1126, 1719 and 4951 of 5,000 show it. Fixing it needs the gutter to keep a label's height between the border and the box.
