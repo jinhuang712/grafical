@@ -464,6 +464,8 @@ Rejected:
 
 ## Decision: Records over prose — 2026-10-13
 
+Changed on 2026-10-18 by "Refusals say what happened and which commands can change it": a refusal, a defect and a warning are blocks with a fixed sentence per code, the source and the commands that can change them; the rest of the output stays records.
+
 Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "Who owns what?"). grafical had begun to judge and advise in prose: warnings that a diagram has too many nodes "for one story", hints that pick moves by grafical's own idea of better, refusals that explain in sentences. Understanding a diagram is the coding agent's job; grafical gives it the facts to do it.
 
 - **What the diagram is:** `show`, as now: rows, nodes in order, groups, lanes and edges.
@@ -797,6 +799,8 @@ Rejected:
 
 Changed the same day by "Help for the tool, guides for best practice": the kinds of diagram, "A good diagram", the sections by kind of diagram and `try`'s "What to try" moved out of the help into `grafical guide`.
 
+Changed on 2026-10-18 by "Refusals say what happened and which commands can change it": a refusal no longer carries its own fix. It says what happened and names the commands that can change it.
+
 Decided by the owner on 2026-10-17. The owner asked whether agents draw rows and groups because the help suggests nothing else ("only these commands? then I'll draw it like this"), and forbade putting all the help and the guides in one place. The help read before a draft had 60 characters left of its budget (11,940 of 12,000), and `apply --help` listed 15 of the 60 batch operations, so the reflect round's first agent found `group.title`'s field only from a refusal. A first restructure the same day, a map with guides and references, was withdrawn before it was committed (Rejected, below): the owner found it flat, and asked how an agent reads help and why a refusal's code should need looking up.
 
 How an agent reads a command line's help, which this follows:
@@ -878,6 +882,36 @@ Decided by the owner on 2026-10-18, with "A row with a look is drawn". A row is 
 Rejected:
 - Keeping `label` required. An agent that wants a row only to place boxes must invent a name nobody sees, and one that wants a bare gateway bar must give it text.
 - Every row's name drawn at the left of its row, so that a label always shows. "A row with a look is drawn" rejected it.
+
+## Decision: Refusals say what happened and which commands can change it — 2026-10-18
+
+Decided by the owner on 2026-10-18, after round p1g (`bench/results/p1g-stage1.md`). Refusals are the target furthest from met (GOALS.md, "Operation errors"): the scale drafts were refused 19% to 26% of their calls, and two drafts of the private brief 55%. The agents got stuck where a record did not say clearly what had happened or which command could act. One change step met `title-blocked` for 15 calls: the record named the places clear of lines but no command, and the line in the way came from another batch line than the one the agent changed. Others met `missing-field` for a second box in a row and `unquoted-text` with nothing to say what to give, and read `group-conflict` as asking them to join a node of another group.
+
+grafical reports what happened and never teaches. A record gives the facts and the names of the commands that can change them, never a command line with ids or values filled in.
+
+- **One block per problem.** A command prints its outcome first, `ok changed=<ids>` or `failed changed=-`, a usage error too; then a block for each problem, with a blank line between; then, on a write, the counts as before:
+  ```text
+  <kind>: <code>
+  description: <the code's one sentence>
+  source: <what caused it>
+  detail:
+    <key>: <value>
+  next: <command names>
+  ```
+- **Three kinds.** An `error` could not be read or applied, and nothing is written: exit 2 for the command line, 1 for an operation. A `defect` would draw wrong: one the agent owns refuses the write with exit 1, and one the engine owns is grafical's bug, written, and shown only by `check --all` ("Defects owned by who can fix them"). A `warning` is written, with exit 0, and says what draws poorly: a line with more than two bends ("The dirty work has edges") is `warning: bent-line`.
+- **A description per code.** One fixed sentence for each code, in one table, that says what happened, not what to do. It is never made for the case at hand. A test holds every error, defect and warning code to one short sentence.
+- **The source.** For a single command, the command line as typed. For an operation of a batch, `<batch file> line <n>: <the operation as written>`, where `<n>` is the file's line the operation starts on, from 1; `--json` keeps the operation's index as well. For a defect found after layout, and for an error of the whole diagram found only once the whole batch is applied, the batch line after which it first appears and stays: on a refused write, grafical applies prefixes of the batch, halving the range each time, so a write that succeeds costs nothing more. Before, such an error named the batch's last operation, which may have done nothing wrong. For what was in the file before the command, `already in the file`.
+- **The detail.** One fact per line, under the names the facts had, in one fixed order; `-` for an empty value, absent keys left out, a list comma separated. The ids that a defect named in one list, `elements`, are split by what each one is: `node`, `edge`, `group`, `row`, `lane` or `wall`.
+- **Next.** The names of the commands that can change it, in the order the help lists commands, or `-` where none can, such as for a batch's syntax error or an engine bug. Never ids, values or options. A test holds every name to a real command.
+- **`likely` as a value only.** A word grafical does not know is answered with the word it most likely means, never with a command: `grafical help apply` gives `found: help` and `likely: --help`.
+- **`--json` says the same:** each problem as `{kind, code, description, source, detail, next}`, beside the outcome and the counts.
+
+It replaces two earlier choices. In "Records over prose" (2026-10-13), a refusal was one record of `key=value` fields with no sentence; it is now a block with its code's one sentence, while the counts, `show --drawn` and `try` stay records. In "One entry page, help where it is used" (2026-10-17), "A refusal carries its own fix": the generated `fix` facts are gone, about 45 of them, and with them the search for the size of a box at which a line's label fits, which laid the diagram out at each larger size ("The dirty work has edges"). The agent still widens the box itself, and `next` names `node resize`.
+
+Rejected:
+- Generated fix commands, the `fix` facts of 2026-10-17. They choose for the agent, they teach a form that the agent copies without reading, and each is engine work that a test must keep right: the fix test applied every one.
+- A sentence made for each case, such as "move pricing-svc out of row-upstream". It reads well, but it is advice in prose, worded its own way each time, and the agent has to parse English to find the ids ("Records over prose").
+- One-line records for refusals, as before. A record of a dozen `key=value` fields said what was there, but not what had happened or which command could act, and `elements=` mixed boxes, lines and groups in one list.
 
 ## Open questions
 
