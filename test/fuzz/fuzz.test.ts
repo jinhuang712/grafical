@@ -6,7 +6,8 @@
 import { describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
 import { layout } from "../../src/layout/index.ts";
-import { createMeasurer } from "../../src/text/index.ts";
+import type { Diagram } from "../../src/model/types.ts";
+import { createMeasurer, type Measurer } from "../../src/text/index.ts";
 import { failures, geometryFailures } from "./fuzz.ts";
 import { generate } from "./gen.ts";
 
@@ -19,6 +20,21 @@ const seeds = Number(process.env.FUZZ_SEEDS ?? 500);
  * the other line between the same box and band.
  */
 const FAILED = [512, 590, 649, 700, 1051, 1303, 1606, 1701, 2453];
+/**
+ * Seeds of 5,000 that still fail: a line cut at a row lane's border with no clear place
+ * for its label beside its stub, which then lies across the border (1126, 1719, 4951),
+ * and a numbered line cut at a lane whose badge leaves its text no room in the label's
+ * slot, so the text lies across a lane's side (3546) or another line (3558).
+ */
+const FAILING = [1126, 1719, 3546, 3558, 4951];
+
+/** The engine-owned defects of one seed's diagram. */
+function defects(seed: number, diagram: Diagram, m: Measurer): string[] {
+  const scene = layout(diagram, m);
+  return [...failures(check(diagram, scene, m)), ...geometryFailures(scene)].map(
+    (x) => `seed ${seed}: ${x.code} [${x.elements.join(", ")}] ${x.found}`,
+  );
+}
 
 describe("fuzz", () => {
   it(
@@ -44,10 +60,7 @@ describe("fuzz", () => {
         lanes += diagram.lanes?.length ?? 0;
         walls += diagram.walls?.length ?? 0;
         if (diagram.layers.some((l) => l.id === "bar")) bars++;
-        const scene = layout(diagram, m);
-        for (const x of [...failures(check(diagram, scene, m)), ...geometryFailures(scene)]) {
-          found.push(`seed ${seed}: ${x.code} [${x.elements.join(", ")}] ${x.found}`);
-        }
+        found.push(...defects(seed, diagram, m));
       }
       console.log(
         `${all.length} diagrams, ${(nodes / all.length).toFixed(1)} nodes, ${(edges / all.length).toFixed(1)} edges, ${(groups / all.length).toFixed(1)} groups, ${(lanes / all.length).toFixed(1)} lanes and ${(walls / all.length).toFixed(2)} walls on average, ${bars} with a bar`,
@@ -57,6 +70,11 @@ describe("fuzz", () => {
     // Each seed lays out again to move a title a line runs across (DESIGN.md, "The dirty work has edges").
     Math.max(60_000, seeds * 200),
   );
+
+  it.fails(`seeds ${FAILING.join(", ")} have no engine-owned defect`, async () => {
+    const m = await createMeasurer();
+    expect(FAILING.flatMap((seed) => defects(seed, generate(seed, m).diagram, m))).toEqual([]);
+  });
 
   it("generates the same diagram from the same seed", async () => {
     const m = await createMeasurer();
