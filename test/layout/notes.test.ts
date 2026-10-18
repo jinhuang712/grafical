@@ -87,7 +87,7 @@ describe('notes in the picture (DESIGN.md, "Notes as callouts or footnotes")', (
     const [blocked] = found;
     if (blocked === undefined) throw new Error("no refusal");
     expect(defectBlock(blocked, kindsOf(d))).toMatchObject({
-      detail: { owner: "agent", is: "note", note: ["retry"] },
+      detail: { owner: "agent", is: "note", note: "retry" },
       next: ["note add", "note remove", "node move"],
     });
     const foot = ok(d, [note("retry", "retries 5 times, then the DLQ", true)]);

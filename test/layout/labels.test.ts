@@ -114,8 +114,8 @@ edges:
         detail: {
           owner: "agent",
           is: "edge",
-          edge: ["shop->b"],
-          lane: ["shop", "depot"],
+          edge: "shop->b",
+          lanes: ["shop", "depot"],
           gutters: ["top/bottom"],
         },
         next: ["layer move", "node resize", "node move", "edge relabel", "edge step"],

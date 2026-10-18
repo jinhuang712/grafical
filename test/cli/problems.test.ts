@@ -2,7 +2,14 @@
 // sentence per code, and next names real commands only, in the order the help lists them.
 
 import { describe, expect, it } from "vitest";
-import { CODES, DESCRIPTIONS, errorBlock, NEXT, nextOf } from "../../src/cli/problems.ts";
+import {
+  CODES,
+  DESCRIPTIONS,
+  defectBlock,
+  errorBlock,
+  NEXT,
+  nextOf,
+} from "../../src/cli/problems.ts";
 import { applyOps, type Diagram, type Op, readDiagram } from "../../src/model/index.ts";
 import { commandOrder } from "./commands.ts";
 
@@ -84,6 +91,31 @@ ${rows.replace(", lane: ops", "")}`);
     expect(next(columned, { op: "node.move", id: "cache", from: "web", down: 1 } as Op)).toEqual([
       "from,column: column leave, node move",
     ]);
+  });
+
+  // Found by review on 2026-10-18: a defect's ids were lists even of one, an error's and a warning's not.
+  it("give a key for one thing one value, and a key for several a list, even of one", () => {
+    const kinds = new Map([
+      ["a", "node"],
+      ["b", "node"],
+      ["e", "edge"],
+    ]);
+    expect(
+      defectBlock({ code: "node-overlap", owner: "engine", elements: ["a", "b"], facts: {} }, kinds)
+        .detail,
+    ).toEqual({ owner: "engine", nodes: ["a", "b"] });
+    expect(
+      defectBlock(
+        { code: "edge-through-node", owner: "engine", elements: ["e", "a"], facts: {} },
+        kinds,
+      ).detail,
+    ).toEqual({ owner: "engine", node: "a", edge: "e" });
+    expect(
+      defectBlock(
+        { code: "box-aside", owner: "agent", elements: ["a"], facts: { node: "a", nodes: ["b"] } },
+        kinds,
+      ).detail,
+    ).toEqual({ owner: "agent", node: "a", nodes: ["b"] });
   });
 
   it("next names real commands only, in the order the help lists them", () => {

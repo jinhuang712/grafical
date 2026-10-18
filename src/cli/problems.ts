@@ -389,19 +389,57 @@ export function kindsOf(d: Diagram): Map<string, string> {
   return out;
 }
 
+/**
+ * The keys that may name several things. Each holds a list, even of one; every other key holds one value
+ * (DESIGN.md, "Refusals say what happened and which commands can change it").
+ */
+const LISTS: ReadonlySet<keyof Facts> = new Set<keyof Facts>([
+  "likely",
+  "near",
+  "edges",
+  "ends",
+  "nodes",
+  "rows",
+  "groups",
+  "lanes",
+  "between",
+  "across",
+  "chain",
+  "clear",
+  "gutters",
+  "allowed",
+  "takes",
+  "chars",
+]);
+/** Where several ids of one kind go, by the key for one of them. */
+const PLURAL: Readonly<Record<string, keyof Facts>> = {
+  node: "nodes",
+  edge: "edges",
+  group: "groups",
+  row: "rows",
+  lane: "lanes",
+};
+
 /** The facts in their order, as a block's detail. */
 function ordered(facts: Facts, typed: Record<string, string[]> = {}): Record<string, Value> {
+  // A key for one thing takes one id; several of one kind go under the key for several.
+  const ids: Record<string, string[]> = {};
+  for (const [k, list] of Object.entries(typed)) {
+    const key = list.length > 1 && !LISTS.has(k as keyof Facts) ? (PLURAL[k] ?? k) : k;
+    ids[key] = [...new Set([...(ids[key] ?? []), ...list])];
+  }
   const out: Record<string, Value> = {};
   for (const k of FACT_ORDER) {
     const own = facts[k];
-    const ids = typed[k];
-    if (ids === undefined) {
+    const mine = ids[k];
+    if (mine === undefined) {
       if (own !== undefined) out[k] = own;
       continue;
     }
-    // A typed key both names elements and holds a fact: one list of both, the elements first.
+    // A typed key both names elements and holds a fact: both, the elements first.
     const more = own === undefined ? [] : Array.isArray(own) ? own : [String(own)];
-    out[k] = [...new Set([...ids, ...more])];
+    const all = [...new Set([...mine, ...more])];
+    out[k] = LISTS.has(k) || all.length > 1 ? all : (all[0] as string);
   }
   return out;
 }

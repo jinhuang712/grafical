@@ -134,6 +134,8 @@ Output:
     detail:
       <key>: <value>
     next: <the commands that can change it, or ->
+  A detail key named for one thing (node, edge) holds one value; one named
+  for several (nodes, edges, ends) holds a list, even of one, in --json too.
   kind is error (nothing could be applied), defect (it would draw wrong) or
   warning (written, drawn poorly). A warning has no source line: the
   outcome line names what changed. Every write, check and render prints
