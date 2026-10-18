@@ -286,6 +286,30 @@ describe("source", () => {
     ]);
   });
 
+  // Found by the second review on 2026-10-18: a stylesheet named on line 3 gave op 0, and a file or a batch that
+  // cannot be read gave op 0 though no operation caused it.
+  it("of a stylesheet an operation names gives that operation's index, and an error of the command none", () => {
+    const f = fresh("sty.grafical.yaml");
+    writeFileSync(
+      join(dir, "sty.yaml"),
+      "- {op: node.rename, id: web, label: Web}\n- {op: node.rename, id: api, label: API}\n- {op: diagram.style, style: missing.grafical-style.yaml}\n",
+    );
+    const sty = JSON.parse(run("apply", f, "sty.yaml", "--json").out);
+    expect(sty.problems).toMatchObject([
+      {
+        code: "style-not-found",
+        source: "sty.yaml line 3: {op: diagram.style, style: missing.grafical-style.yaml}",
+        detail: { op: 2 },
+      },
+    ]);
+    const missing = JSON.parse(run("apply", "nope.grafical.yaml", "sty.yaml", "--json").out);
+    expect(missing.problems).toMatchObject([{ code: "file-not-found" }]);
+    expect(missing.problems[0].detail.op).toBeUndefined();
+    const unread = JSON.parse(run("apply", f, "nope.yaml", "--json").out);
+    expect(unread.problems).toMatchObject([{ code: "batch-unreadable" }]);
+    expect(unread.problems[0].detail.op).toBeUndefined();
+  });
+
   it("of an error already in the file gives --json no operation's index", () => {
     // A box between two members of a group in one row splits it, which only a write finds.
     const split = structuredClone(shop);

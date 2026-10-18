@@ -28,7 +28,7 @@ export function atRevision(file: string, rev: string): Diagram | null | Report {
     return failure([
       {
         code: "bad-revision",
-        index: 0,
+        index: -1,
         field: "rev",
         found: rev,
       },
@@ -37,7 +37,11 @@ export function atRevision(file: string, rev: string): Diagram | null | Report {
   const d = readDiagram(r.stdout);
   if (Array.isArray(d)) {
     return failure(
-      d.map((e) => ({ ...e, field: e.field === undefined ? "rev" : `${rev}:${e.field}` })),
+      d.map((e) => ({
+        ...e,
+        index: -1,
+        field: e.field === undefined ? "rev" : `${rev}:${e.field}`,
+      })),
     );
   }
   return d;

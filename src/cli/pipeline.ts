@@ -111,8 +111,9 @@ export function failure(errors: OpError[]): Report {
   return { ok: false, changed: [], errors, defects: [] };
 }
 
+/** A file that cannot be had, which no operation causes: its error has no operation's index. */
 export function fileError(code: ErrorCode, file: string, facts?: Facts): Report {
-  return failure([{ code, index: 0, field: "file", found: file, ...(facts ? { facts } : {}) }]);
+  return failure([{ code, index: -1, field: "file", found: file, ...(facts ? { facts } : {}) }]);
 }
 
 /** Errors given a source, those that have none yet. */
@@ -149,16 +150,16 @@ export function loadDiagram(file: string, setting: Set<string> = new Set()): Dia
 /**
  * Reads the stylesheets a diagram names, relative to its folder, and hands them
  * to layout (DESIGN.md, "Themes and stylesheets"). Returns a report for the first one that is missing or wrong,
- * its errors with the source `sourceOf` gives the stylesheet. A style that is not a valid name is left for the
- * model to refuse.
+ * its errors with the source and the operation's index `sourceOf` gives the stylesheet. A style that is not a valid
+ * name is left for the model to refuse.
  */
 export function loadStyles(
   file: string,
   refs: string[],
-  sourceOf?: (ref: string) => string,
+  sourceOf?: (ref: string) => { source: string; index: number },
 ): Report | undefined {
   const of = (ref: string, r: Report) =>
-    sourceOf === undefined ? r : failure(sourced(r.errors, () => sourceOf(ref)));
+    sourceOf === undefined ? r : failure(r.errors.map((e) => ({ ...e, ...sourceOf(ref) })));
   for (const ref of refs) {
     if (styleProblem(ref) !== undefined) continue;
     const path = join(dirname(file), ref);
@@ -381,9 +382,10 @@ async function plan(
     op.op === "diagram.style" || op.op === "diagram.new" ? op.style : undefined,
   );
   // A stylesheet an operation names is that operation's; the others are the file's.
-  const styles = loadStyles(file, stylesheetRefs(base, named), (ref) =>
-    named.includes(ref) ? itemSource(origin, named.indexOf(ref)) : IN_FILE,
-  );
+  const styles = loadStyles(file, stylesheetRefs(base, named), (ref) => {
+    const at = named.indexOf(ref);
+    return at >= 0 ? { source: itemSource(origin, at), index: at } : { source: IN_FILE, index: -1 };
+  });
   if (styles !== undefined) return styles;
   const m = await createMeasurer();
   const bound = bindMarkOps(file, ops);
