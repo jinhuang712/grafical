@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { StepRecord } from "../../bench/run.ts";
 import {
@@ -148,7 +148,7 @@ describe("stage 1 plan", () => {
       records: 33,
       reflect: 33,
     });
-    expect(planPart("mvp").runs).not.toContain(REPO);
+    expect(relative(REPO, planPart("mvp").runs)).toMatch(/^\.\.\//);
     for (const p of PARTS) {
       const reflections = partCommands(planPart(p)).filter((c) => c.step === "reflection");
       expect(reflections, p).toHaveLength(planPart(p).chains.length);
