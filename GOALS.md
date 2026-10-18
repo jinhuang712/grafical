@@ -11,7 +11,7 @@ Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It 
 
 - **The main bar: easy and consistent.** Haiku, using only the command line and its help, meets the targets of "Iteration", "Stability", "Model gap", "Operation errors", "Determinism" and "Speed", with zero mechanical defects.
 - **Beside it: the judged score.** Haiku draws the private reference brief well enough that two blind Opus judges score it at least 42 of 50. 42 is what the `diagram-design` skill scored with Opus and Sonnet on that brief on 2026-10-10.
-- **Status:** ❌ not met. On 2026-10-12 the judges scored Haiku's three drafts 40, 34 and 40 (mean 38.0). In the main bar, "Iteration" and "Operation errors" are not met.
+- **Status:** ❌ not met. On 2026-10-12 the judges scored Haiku's three drafts 40, 34 and 40 (mean 38.0). In round `p1g` on 2026-10-18 "Iteration" was met, and in the main bar "Operation errors" is still not met, and one draft had an engine-owned defect. No judges ran that day, by the owner's choice (`bench/results/p1g-stage1.md`).
 
 ## A change is one small step
 
@@ -20,7 +20,7 @@ Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It 
 - **Target:** at most 30 s and 15k fresh tokens per change request, and at least 90% of requests done right the first time.
 - **Method:** the benchmark harness runs a draft and 8 change requests on the public brief, 3 runs per arm (EXPERIMENTS.md, "E2 Iteration").
 - **Kill threshold:** slower or costlier per change than redrawing with no tool.
-- **Status:** ❌ not met on 2026-10-12. 17 of 24 change steps made the change (71%). Six of the seven misses asked about something the draft had merged away, instead of inventing it. Per step, time averaged 4 to 32 s, over the target only for adding a node, and fresh tokens averaged 0.9k to 14.6k.
+- **Status:** ✅ met on the means on 2026-10-18 (round `p1g`): 23 of 24 change steps made the change (96%). Per step, time averaged 7 to 29 s and fresh tokens 1.4k to 12k; one run of grouping took 60 s and 24k, refused by `title-blocked`. On 2026-10-12 it was not met: 17 of 24 (71%), six of the seven misses asking about something the draft had merged away.
 
 ### Stability
 
@@ -54,7 +54,7 @@ Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It 
 - **Target:** no overflow, overlap, line through a box or label collision, and a defect score from the judges of at least 4 of 5.
 - **Method:** `pnpm bench geometry` checks every rendered SVG of a round with a geometry check of its own. It does not use grafical's checker, which refuses every write it flags and so would always report zero (DESIGN.md, "Defects owned by who can fix them").
 - **Kill threshold:** any defect in an output is a bug.
-- **Status:** ❌ not met on 2026-10-12. The geometry check found no defect in all 49 grafical pictures of the stage 1 round, nor in the 46 of its rerun, but the judges gave the drafts of the reference brief a defect score of 3 or 4.
+- **Status:** ❌ not met on 2026-10-12. The geometry check found no defect in all 49 grafical pictures of the stage 1 round, nor in the 46 of its rerun, but the judges gave the drafts of the reference brief a defect score of 3 or 4. On 2026-10-18 (round `p1g`) it found none in 46 pictures, no judges ran, and one draft of 50 components had an engine-owned `needless-bend`.
 
 - **Composition, measured on 2026-10-16** over the 306 saved agent drafts (`across`, `tight` and `crowded` of DESIGN.md, "Composition counts"): 66 lines run across a group that holds neither end, in 29 drafts; 6 pairs of runs are tight, in 3 drafts; 88 labels are crowded, in 51 drafts. Not targets: facts to compare a change against.
 
@@ -63,7 +63,7 @@ Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It 
 - **Target:** no defect, and a clarity of at least 3 of 5 at 50 boxes.
 - **Method:** Haiku drafts briefs of 10, 25 and 50 components, 3 runs each, rated blind by the owner (EXPERIMENTS.md, "E4 Scale").
 - **Kill threshold:** a defect at 25 boxes.
-- **Status:** ⬜ not shown at 50 boxes. On 2026-10-12 all 9 drafts had no defect, and the 50-component drafts scored a clarity of 5, 5 and 4. But Haiku merged that brief into 15 to 19 boxes, so no picture of 50 boxes was judged.
+- **Status:** ⬜ not shown at 50 boxes. On 2026-10-12 all 9 drafts had no defect, and the 50-component drafts scored a clarity of 5, 5 and 4. But Haiku merged that brief into 15 to 19 boxes, so no picture of 50 boxes was judged. On 2026-10-18 one draft drew 51 boxes, with 174 crossings and an engine-owned defect; its clarity was not rated.
 
 ### Faithfulness
 
@@ -139,14 +139,14 @@ The owner marked every draft without grafical, and every Mermaid draft, too bad 
 - **Target:** at most 1 look at the picture per first draft, and none per change. Only taste and faithfulness need a judge, and every other check is mechanical.
 - **Method:** the benchmark harness counts the images each agent opens.
 - **Kill threshold:** the agent must look at the picture after each step.
-- **Status:** ❌ not met on 2026-10-12. Drafts looked once. Changes looked up to once per step: 1.0 when adding a node, 0.3 when adding a line.
+- **Status:** ❌ not met on 2026-10-18 (round `p1g`), closer: drafts looked once, and changes 0 to 0.3 times per step on average. On 2026-10-12 changes looked up to once per step: 1.0 when adding a node, 0.3 when adding a line.
 
 ### Operation errors
 
 - **Target:** at most 5% of operations refused, each recovered within 1 retry.
 - **Method:** the benchmark harness counts refused calls in each round.
 - **Kill threshold:** above 20%.
-- **Status:** ❌ not met on 2026-10-12. First drafts were refused 0% of their calls, but the scale drafts 20% and the loose prompts 13%.
+- **Status:** ❌ not met on 2026-10-18 (round `p1g`). The public brief's drafts were refused 0% of their calls and its changes 21%, nearly all in one grouping step; the scale drafts 19% to 26%, the loose prompts 12%, and two drafts of the private reference brief 55%, mostly `title-blocked`. On 2026-10-12: drafts 0%, scale drafts 20%, loose prompts 13%.
 
 ### Speed
 
