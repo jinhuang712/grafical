@@ -835,6 +835,20 @@ It reverses, in part, "The help as the reference", which rejected keeping `grafi
 
 Risk, to measure in the next paid round: the 2026-10-12 round measured the help without type guides (`bench/results/p1d-guides.md`). Haiku drew a flowchart's Start and End as state-machine dots, whose labels are not drawn, left C4 and data-flow lines unlabelled, and was refused 16% of its calls against 3%. The traps that are the tool's own stay in the help (`node add --help` says initial and final draw no label, and to use terminal for Start and End); the conventions are now the agent's to take or leave. The round should count guide reads and refusals (TODO.md, "Pages read before a first write").
 
+## Decision: One way to a page, and a wrong command names the right one — 2026-10-18
+
+Decided by the owner on 2026-10-18, after one Haiku run (a subagent with grafical on its path, not a benchmark round) drew a refund flowchart. 32 of its 37 grafical calls read help. 11 printed the entry page in place of the page asked for, and 12 printed the page asked for but exited 2:
+- Commander adds a `help [command]` command to the program and to each group; grafical never chose it. The entry page listed it, so the agent used it. It reads one word, so `grafical help "node add"` printed the entry page, and grafical exited 2 after each page it printed, as if refused.
+- A command name grafical does not have, with `--help`, printed the entry page and exited 0: `grafical "node add" --help`, `grafical node.add --help`. Nothing said the name was wrong.
+
+So:
+- **`--help` is the one way to a page.** The program and its groups have no `help` command, and no page lists one.
+- **A wrong command is refused with the one it most likely means.** `grafical help apply` prints `error code=unknown-command found=help likely="grafical apply --help"` and exits 2. Two names in one word (`"node add"`, `node.add`), `help` before or inside a group (`grafical node help add`), and a misspelling near one name (`nodee`, at most a third of its letters wrong, or one) are read the same way. With `--help` or `help`, `likely` is a page; without, the command. A word near no command has no `likely`, except with `--help`, where it is the page of the command before it. The record replaces the page commander would print.
+
+Rejected:
+- Keeping `help <command>` and fixing its exit code. Two ways to one page are two forms an agent tries, and the second reads one word only.
+- The entry page after the record. The agent asked for one page; the record names it, and the entry page is 75 lines the agent has read.
+
 ## Open questions
 
 - **A box beside every box it connects to, in a row:** "Who chose is punished" did not refuse it, because the file could not tell a slot the agent stated from one the engine chose. Since "The agent states every order" the agent states every slot, so it could become an agent defect, as it is for a box placed by steps. Not decided.

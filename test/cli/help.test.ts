@@ -8,7 +8,7 @@ import type { z } from "zod";
 import { opCommands } from "../../src/cli/batch.ts";
 import { GUIDES } from "../../src/cli/guides.ts";
 import { PAGES } from "../../src/cli/help.ts";
-import { build } from "../../src/cli/main.ts";
+import { build, wrongCommand } from "../../src/cli/main.ts";
 import { DEFECT_CODES, ERROR_CODES } from "../../src/errors.ts";
 import { writeDiagram } from "../../src/model/io.ts";
 import { OP_NAMES, SCHEMAS } from "../../src/model/ops.ts";
@@ -114,6 +114,49 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
     expect(entry.match(/grafical guide/g)).toHaveLength(1);
     for (const path of Object.keys(PAGES))
       expect(run(...path.split(" "), "--help").out).not.toMatch(/grafical guide/);
+  });
+
+  it("has one way to a page, --help: no page lists a help command", () => {
+    const program = build();
+    for (const c of [program, ...program.commands])
+      expect(page(c), c.name()).not.toMatch(/^ +help \[command\]/m);
+  });
+
+  it("answers a command it has not with the page or command it most likely means", () => {
+    const program = build();
+    const wrong = (...args: string[]) => wrongCommand(program, args);
+    const meant = (found: string, likely?: string) =>
+      `error code=unknown-command found=${found}${likely === undefined ? "" : ` likely="${likely}"`}`;
+    // The ways an agent asked for a page in a real run, 2026-10-18.
+    expect(wrong("help", "apply")).toBe(meant("help", "grafical apply --help"));
+    expect(wrong("help")).toBe(meant("help", "grafical --help"));
+    expect(wrong("help", "node", "add")).toBe(meant("help", "grafical node add --help"));
+    expect(wrong("help", "node add")).toBe(meant("help", "grafical node add --help"));
+    expect(wrong("node", "help", "add")).toBe(meant("help", "grafical node add --help"));
+    expect(wrong("diagram", "help", "legend")).toBe(
+      meant("help", "grafical diagram legend --help"),
+    );
+    expect(wrong("node add", "--help")).toBe(meant('"node add"', "grafical node add --help"));
+    expect(wrong("node.add", "--help")).toBe(meant("node.add", "grafical node add --help"));
+    // A misspelling near one command's name; a word near none.
+    expect(wrong("nodee", "add", "--help")).toBe(meant("nodee", "grafical node add --help"));
+    expect(wrong("node", "ad", "-h")).toBe(meant("ad", "grafical node add --help"));
+    expect(wrong("nodee", "add", "d.grafical.yaml", "x")).toBe(meant("nodee", "grafical node add"));
+    expect(wrong("bogus")).toBe(meant("bogus"));
+    expect(wrong("bogus", "--help")).toBe(meant("bogus", "grafical --help"));
+    expect(wrong("node", "bogus")).toBe(meant("bogus"));
+    // Commands it has, and the words a command takes, are commander's to read.
+    expect(wrong("node", "add", "--help")).toBeUndefined();
+    expect(wrong("node", "--help")).toBeUndefined();
+    expect(wrong("group", "label", "d.grafical.yaml", "g", "top")).toBeUndefined();
+    expect(wrong("diagram", "legend", "help")).toBeUndefined();
+    expect(wrong()).toBeUndefined();
+    // The command line prints the record alone, in place of the entry page, as a usage error.
+    expect(run("node add", "--help")).toEqual({
+      code: 2,
+      out: "",
+      err: `${meant('"node add"', "grafical node add --help")}\n`,
+    });
   });
 });
 

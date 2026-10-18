@@ -21,7 +21,7 @@ import { yamlError } from "../model/io.ts";
 import type { Op, OpName } from "../model/ops.ts";
 import { parseOp, parseOps } from "../model/ops.ts";
 import { STEP_KEYS } from "../model/steps.ts";
-import { closest } from "../model/suggest.ts";
+import { closest, editDistance } from "../model/suggest.ts";
 import {
   EDGE_KINDS,
   MARK_COLORS,
@@ -1169,6 +1169,9 @@ export function build(): Command {
     });
 
   attachHelp(program, new Map([...opCommands(program)].map(([op, c]) => [c, op])));
+  // A command's page is <command> --help, the one way to it: commander's own help command would be a second, which
+  // takes one word and prints the entry page for a wrong one.
+  for (const c of [program, ...program.commands]) c.helpCommand(false);
   return program;
 }
 
@@ -1250,9 +1253,66 @@ function parserError(err: CommanderError): string {
   return record("error", found === undefined ? { code } : { code, found });
 }
 
+/** The commands the words name below a command, as far as they name one, and the last of them. */
+function follow(from: Command, words: string[]): [Command, string[]] {
+  let at = from;
+  const path: string[] = [];
+  for (const w of words) {
+    const next = at.commands.find((c) => c.name() === w || c.aliases().includes(w));
+    if (next === undefined) break;
+    at = next;
+    path.push(w);
+  }
+  return [at, path];
+}
+
+/**
+ * A word where a command belongs that names none, as a record of the command it most likely means: "help" asks for a
+ * page, "node add" or node.add is two names in one word, and nodee a misspelling. With --help, or "help", the command
+ * is its page. Undefined when the command line names commands only; commander reads the rest. Commander would print
+ * the entry page for a wrong name with --help, and say nothing of what was meant.
+ */
+export function wrongCommand(program: Command, args: string[]): string | undefined {
+  // The program and its groups take no option with a value, so every other word up to a command is a command's name.
+  const words = args.filter((a) => !a.startsWith("-"));
+  const [at, path] = follow(program, words);
+  const word = words[path.length];
+  if (at.commands.length === 0 || word === undefined) return undefined;
+  const rest = words.slice(path.length + 1);
+  const help = word === "help" || args.includes("--help") || args.includes("-h");
+  let meant: string[] = [];
+  const split = (w: string) => w.split(/[\s.]+/);
+  if (word === "help") meant = follow(at, rest.flatMap(split))[1];
+  else {
+    const parts = split(word);
+    const [inner, named] = follow(at, parts);
+    if (parts.length > 1 && named.length === parts.length)
+      meant = [...named, ...follow(inner, rest)[1]];
+    else {
+      const [near] = closest(
+        word,
+        at.commands.map((c) => c.name()),
+        1,
+      );
+      const c = at.commands.find((x) => x.name() === near);
+      if (
+        c !== undefined &&
+        editDistance(word, c.name()) <= Math.max(1, Math.floor(word.length / 3))
+      )
+        meant = [c.name(), ...follow(c, rest)[1]];
+    }
+  }
+  if (!help && meant.length === 0) return record("error", { code: "unknown-command", found: word });
+  const likely = ["grafical", ...path, ...meant, ...(help ? ["--help"] : [])].join(" ");
+  return record("error", { code: "unknown-command", found: word, likely });
+}
+
 async function main(argv: string[]) {
   try {
-    await build().parseAsync(argv);
+    const program = build();
+    const wrong = wrongCommand(program, argv.slice(2));
+    if (wrong !== undefined) throw new CommanderError(2, "grafical.unknownCommand", wrong);
+    await program.parseAsync(argv);
   } catch (err) {
     if (err instanceof CommanderError) {
       if (err.code === "commander.helpDisplayed" || err.code === "commander.version") {
