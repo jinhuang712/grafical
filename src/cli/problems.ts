@@ -20,6 +20,7 @@ import {
 import { everyNode } from "../model/steps.ts";
 import type { Diagram } from "../model/types.ts";
 import type { Value } from "../records.ts";
+import { IN_FILE } from "./source.ts";
 
 /** Every code a problem may carry. */
 export type Code = ErrorCode | DefectCode | UsageCode | WarningCode;
@@ -412,7 +413,9 @@ export function errorBlock(e: OpError): Block {
     code: e.code,
     description: DESCRIPTIONS[e.code],
     ...(e.source !== undefined ? { source: e.source } : {}),
-    ...(e.index >= 0 ? { op: e.index } : {}),
+    // Only an error an operation caused has the operation's index: not one already in the file, nor one whose line
+    // cannot be known.
+    ...(e.index >= 0 && e.source !== IN_FILE ? { op: e.index } : {}),
     detail: {
       ...(e.field !== undefined && e.field !== "" ? { field: e.field } : {}),
       ...(e.found !== "" ? { found: e.found } : {}),

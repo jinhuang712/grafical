@@ -284,4 +284,31 @@ describe("source", () => {
       "grafical show missing.grafical.yaml",
     ]);
   });
+
+  it("of an error already in the file gives --json no operation's index", () => {
+    // A box between two members of a group in one row splits it, which only a write finds.
+    const split = structuredClone(shop);
+    const [api, db] = split.layers[1]?.nodes ?? [];
+    if (api === undefined || db === undefined) throw new Error("row-b");
+    split.layers[1]?.nodes.push({ id: "cache", label: "cache", kind: "store", group: "g" });
+    api.group = "g";
+    split.groups = [{ id: "g", label: "g" }];
+    const f = fresh("split.grafical.yaml", split);
+    writeFileSync(
+      join(dir, "two.yaml"),
+      "- {op: node.rename, id: web, label: Web}\n- {op: diagram.title, text: T}\n",
+    );
+    const r = JSON.parse(run("apply", f, "two.yaml", "--json").out);
+    expect(r.problems).toMatchObject([
+      { kind: "error", code: "group-split", source: "already in the file" },
+    ]);
+    expect(r.problems[0].detail.op).toBeUndefined();
+    // An operation's own error keeps its index.
+    writeFileSync(
+      join(dir, "own.yaml"),
+      "- {op: node.rename, id: web, label: Web}\n- {op: node.rename, id: nope, label: X}\n",
+    );
+    const own = JSON.parse(run("apply", fresh("own.grafical.yaml"), "own.yaml", "--json").out);
+    expect(own.problems[0].detail.op).toBe(1);
+  });
 });
