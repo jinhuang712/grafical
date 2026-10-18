@@ -40,6 +40,35 @@ const alone: Diagram = {
   edges: [e("a", "b", "call")],
 };
 
+/**
+ * A group of three boxes, each with a line to the hub, inside a group with one more box that has none; a second group
+ * whose two boxes each get a line from the hub, one of them labelled; and a third whose boxes each send the hub an
+ * event and a call.
+ */
+const members = readDiagram(`grafical: 1
+title: members
+density: normal
+layers:
+  - {id: top, label: Top, nodes: [{id: a, label: A, group: ctx}, {id: b, label: B, group: ctx}, {id: c, label: C, group: ctx}, {id: z, label: Z, group: outer}]}
+  - {id: mid, label: Mid, nodes: [{id: hub, label: Hub}]}
+  - {id: low, label: Low, nodes: [{id: p, label: P, group: tools}, {id: q, label: Q, group: tools}, {id: r, label: R, group: ev}, {id: s, label: S, group: ev}]}
+groups:
+  - {id: outer, label: Outer}
+  - {id: ctx, label: Context, in: outer}
+  - {id: tools, label: Tools}
+  - {id: ev, label: Events}
+edges:
+  - {id: a->hub, from: a, to: hub, kind: call}
+  - {id: b->hub, from: b, to: hub, kind: call}
+  - {id: c->hub, from: c, to: hub, kind: call}
+  - {id: hub->p, from: hub, to: p, kind: call}
+  - {id: hub->q, from: hub, to: q, kind: call, label: runs}
+  - {id: r->hub, from: r, to: hub, kind: async}
+  - {id: s->hub, from: s, to: hub, kind: async}
+  - {id: r->hub#2, from: r, to: hub, kind: call}
+  - {id: s->hub#2, from: s, to: hub, kind: call}
+`);
+
 /** The facts each warning gives, by its code. */
 const KEYS: Record<WarningCode, string[]> = {
   "bent-line": ["edge", "bends", "skip"],
@@ -48,6 +77,7 @@ const KEYS: Record<WarningCode, string[]> = {
   "tight-lines": ["edges", "over"],
   "crowded-label": ["edge"],
   "lonely-box": ["node"],
+  "line-per-member": ["group", "edges"],
   crossing: ["edges"],
 };
 
@@ -59,6 +89,7 @@ describe('warnings (DESIGN.md, "Every write prints every warning")', () => {
       catalogSync,
       dense,
       alone,
+      ...(Array.isArray(members) ? [] : [members]),
       ...[3, 4, 44].map((seed) => generate(seed, m).diagram),
     ];
     const seen = new Set<string>();
@@ -133,6 +164,27 @@ edges:
         .filter((x) => x.code === "lonely-box")
         .map((x) => x.facts.node),
     ).toEqual(["a", "b", "c", "d", "e", "f"]);
+  });
+
+  it("name a group each of whose boxes has a line alike to one end, or from it", () => {
+    if (Array.isArray(members)) throw new Error(JSON.stringify(members));
+    const w = warningsOf(drawing(members, layout(members, m)), members).filter(
+      (x) => x.code === "line-per-member",
+    );
+    // Context's boxes each call the hub, but Z in the group around it does not; the hub's lines into Tools differ
+    // in label; each box of Events sends the hub both an event and a call, which are two lines alike apart.
+    expect(w).toEqual([
+      { code: "line-per-member", facts: { group: "ctx", edges: ["a->hub", "b->hub", "c->hub"] } },
+      { code: "line-per-member", facts: { group: "ev", edges: ["r->hub", "s->hub"] } },
+      { code: "line-per-member", facts: { group: "ev", edges: ["r->hub#2", "s->hub#2"] } },
+    ]);
+    // Once Z calls the hub too, the group around Context has the same lines, and only it is named.
+    const all = { ...members, edges: [...members.edges, e("z", "hub", "call")] };
+    expect(
+      warningsOf(drawing(all, layout(all, m)), all)
+        .filter((x) => x.code === "line-per-member")
+        .map((x) => x.facts.group),
+    ).toEqual(["outer", "ev", "ev"]);
   });
 
   it("name the groups a line runs through that hold neither of its ends", () => {

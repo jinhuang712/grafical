@@ -9,10 +9,12 @@ import type { Warning } from "../errors.ts";
 import { bendsOf, crossingsOf, legendEntries } from "../layout/index.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { endKind, endNodes, endRows } from "../model/ends.ts";
+import { groupChain } from "../model/groups.ts";
 import type { Diagram } from "../model/index.ts";
 import { markName } from "../model/types.ts";
 import { record } from "../records.ts";
 import type { Point, Rect, Scene } from "../scene.ts";
+import { weightOf } from "../theme/paint.ts";
 import { themeOf } from "../theme/themes.ts";
 import { type Composition, composition, type Gutter, gutterOf } from "./composition.ts";
 import { segmentCrossesRect, segmentsOf } from "./geometry.ts";
@@ -399,10 +401,50 @@ export function bentLines(lines: DrawnLine[]): DrawnLine[] {
 }
 
 /**
+ * The groups each of whose boxes, two or more, has a line to one end outside the group, or from it, the lines alike in
+ * kind, label, weight and arrowheads, with those lines (DESIGN.md, "A line from every box of a group is a warning").
+ * A group inside another that has the same lines is left out.
+ */
+function linesPerMember(d: Diagram): { group: string; edges: string[] }[] {
+  const found: { group: string; key: string; edges: string[] }[] = [];
+  for (const g of d.groups ?? []) {
+    const boxes = endNodes(d, g.id);
+    if (boxes.length < 2) continue;
+    const inside = new Set(boxes);
+    // Each box's first line by its direction, its end outside the group and its look.
+    const by = new Map<string, Map<string, string>>();
+    for (const e of d.edges) {
+      for (const [box, end, way] of [
+        [e.from, e.to, "out"],
+        [e.to, e.from, "in"],
+      ] as const) {
+        if (!inside.has(box) || endNodes(d, end).some((n) => inside.has(n))) continue;
+        const look = [e.kind, e.label ?? "", weightOf(e) ?? "thin", e.both === true];
+        const key = JSON.stringify([way, end, ...look]);
+        const lines = by.get(key) ?? new Map<string, string>();
+        if (!lines.has(box)) lines.set(box, e.id);
+        by.set(key, lines);
+      }
+    }
+    for (const [key, lines] of by) {
+      if (lines.size === boxes.length)
+        found.push({ group: g.id, key, edges: boxes.map((b) => lines.get(b) ?? "") });
+    }
+  }
+  return found
+    .filter((x) => {
+      const outer = groupChain(d, x.group).slice(1);
+      return !found.some((o) => o.key === x.key && outer.includes(o.group));
+    })
+    .map(({ group, edges }) => ({ group, edges }));
+}
+
+/**
  * What the drawing draws poorly, as warnings, in the order of their codes (DESIGN.md, "Every write prints every
  * warning"): the lines bent more than twice, the lines that pass rows, the lines across a group's box, the tight runs,
- * the crowded labels, the boxes no line reaches, and each pair of lines that cross. The first five are the places that
- * bent, passing, across, tight and crowded count. `facts` is the diagram drawn.
+ * the crowded labels, the boxes no line reaches, the groups each of whose boxes has a line alike to one end, and each
+ * pair of lines that cross. The first five are the places that bent, passing, across, tight and crowded count. `facts`
+ * is the diagram drawn.
  */
 export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
   const c = dr.composition;
@@ -434,6 +476,7 @@ export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
     ...dr.boxes
       .filter((b) => b.lines === 0 && !reached.has(b.id))
       .map((b): Warning => ({ code: "lonely-box", facts: { node: b.id } })),
+    ...linesPerMember(d).map((x): Warning => ({ code: "line-per-member", facts: x })),
     ...dr.lines.flatMap((l) =>
       l.crosses
         .filter((o) => l.id < o)

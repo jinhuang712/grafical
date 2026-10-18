@@ -99,6 +99,8 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "layer-not-empty": "The row still holds boxes.",
   "layer-too-small": "The row holds fewer than two boxes.",
   "line-across-group": "A line runs through the box of a group that holds neither of its ends.",
+  "line-per-member":
+    "Every box of a group has a line to the same end, or from it, alike in kind, label, weight and arrowheads.",
   "lonely-box": "No line reaches a box: none of its own, and none to its group, row or lane.",
   "mark-covers": "A box's mark covers its text or another box.",
   "mark-file-changed": "A mark's file changed after the mark was set.",
@@ -251,6 +253,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "layer-not-empty": ["node move", "node remove"],
   "layer-too-small": ["node add", "node move"],
   "line-across-group": ["group order", "node move", "node swap"],
+  "line-per-member": ["edge add", "edge remove"],
   "lonely-box": ["node remove", "edge add"],
   "mark-covers": ["node resize", "node icon"],
   "mark-file-changed": ["node icon"],

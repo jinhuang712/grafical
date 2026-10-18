@@ -505,6 +505,7 @@ Every write, single commands included, and `check` and `render` print a warning 
 - `tight-lines`: runs of two lines under 12 px apart for over 100 px. Detail: `edges`, `over` (the pixels they share).
 - `crowded-label`: a line's label with under 8 px of room on two sides. Detail: `edge`.
 - `lonely-box`: a box no line reaches: none of its own, and none to its group, row or lane. Detail: `node`.
+- `line-per-member`: every box of a group, two or more, has a line alike in kind, label, weight and arrowheads to one end outside it, or from it; a group inside one with the same lines is left out. Detail: `group`, `edges` (DESIGN.md, "A line from every box of a group is a warning").
 - `crossing`: a pair of lines that cross, however often. Detail: `edges`.
 
 A warning has no source: the outcome line names what the write changed, and a warning names the ids it is about (DESIGN.md, "Every write prints every warning"):
