@@ -56,13 +56,29 @@ function written(n: unknown, text: string): string {
   return range === undefined ? String(node) : text.slice(range[0], range[1]).replace(/\s+/g, " ");
 }
 
-/** Each operation of a batch's text, by the line it starts on: none when the text is not a YAML list. */
+/**
+ * Each operation of a batch's text, by the line its dash is on: none when the text is not a YAML list. A dash may
+ * stand alone, or before a comment, with the operation's first field on a line below it.
+ */
 export function batchItems(text: string): Item[] {
   const doc = parseDocument(text);
   const list = doc.contents;
   if (!isSeq(list)) return [];
+  const lines = text.split("\n");
   return list.items.map((x) => {
     const at = (x as { range?: [number, number, number] } | null)?.range?.[0] ?? 0;
-    return { line: text.slice(0, at).split("\n").length, text: written(x, text) };
+    let line = text.slice(0, at).split("\n").length;
+    // The item's own line holds its dash, unless only blank and comment lines lie between it and a dash above.
+    if (!/^\s*-/.test(text.slice(text.lastIndexOf("\n", at - 1) + 1, at))) {
+      for (let k = line - 2; k >= 0; k--) {
+        const t = (lines[k] ?? "").trim();
+        if (t.startsWith("-")) {
+          line = k + 1;
+          break;
+        }
+        if (t !== "" && !t.startsWith("#")) break;
+      }
+    }
+    return { line, text: written(x, text) };
   });
 }

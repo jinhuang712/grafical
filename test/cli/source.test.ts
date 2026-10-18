@@ -94,6 +94,25 @@ describe("source", () => {
       { line: 10, text: "[1, 2]" },
     ]);
     expect(batchItems("op: node.add\n")).toEqual([]);
+    // Found by the second review on 2026-10-18 (ob1): a dash alone, or before a comment, is its item's line.
+    const dashes = [
+      "# a comment line",
+      "",
+      "- op: diagram.title      # first item, block style",
+      "  text: A",
+      "",
+      "# another comment",
+      "-",
+      "  op: diagram.title",
+      "  text: B",
+      "- # comment after dash",
+      "  op: diagram.title",
+      "  text: C",
+      "- {op: diagram.title,",
+      "   text: D}",
+      "",
+    ].join("\n");
+    expect(batchItems(dashes).map((x) => x.line)).toEqual([3, 7, 10, 13]);
     const f = fresh("batch.grafical.yaml");
     writeFileSync(
       join(dir, "dup.yaml"),
