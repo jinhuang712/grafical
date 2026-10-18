@@ -68,6 +68,16 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
     }
   });
 
+  it("the entry page names every subcommand in its group's line", () => {
+    const entry = run("--help").out.replace(/\s+/g, " ");
+    for (const g of build().commands.filter((c) => c.commands.length > 0)) {
+      // The line is the group's summary, as the entry page prints it: "rows: add, move, ...".
+      const named = (g.description().split(": ")[1] ?? "").split(", ");
+      expect(entry, g.name()).toContain(g.description());
+      expect([...named].sort(), g.name()).toEqual(g.commands.map((c) => c.name()).sort());
+    }
+  });
+
   it("every command of an operation shows its line in a batch, with the fields it needs", () => {
     const commands = opCommands(build());
     expect([...commands.keys()].sort()).toEqual([...OP_NAMES].sort());

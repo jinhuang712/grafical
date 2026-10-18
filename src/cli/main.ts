@@ -208,7 +208,9 @@ export function build(): Command {
 
   const group = program
     .command("group")
-    .description("a box per system: add, copy, join, leave, rename, describe, order, remove");
+    .description(
+      "a box per system: add, copy, join, leave, rename, describe, title, order, remove",
+    );
   json(
     group
       .command("add")
@@ -548,7 +550,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "lines: add, emphasize, retarget, reverse, kind, relabel, weight, both, step, remove",
+      "lines: add, emphasize, retarget, reverse, kind, relabel, weight, both, pass, step, remove",
     );
   json(
     edge
