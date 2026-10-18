@@ -46,9 +46,9 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "bad-type": "A field holds a value of another type than the one it takes.",
   "bad-value": "A field holds a value that it does not take.",
   "bad-yaml": "The text is not valid YAML.",
-  "bar-crossed":
-    "A line passes a row with no boxes that lines end at, a bar, without ending at it.",
-  "bar-in-group": "A line ends at a row with no boxes that lies within a group's rows.",
+  "bar-crossed": "A line passes a row with no boxes, drawn as a bar, without ending at it.",
+  "bar-in-group":
+    "A row with no boxes, drawn as a bar, lies inside a group's box, which covers every row from its top row to its bottom one.",
   "bar-to-bar": "A line joins two rows with no boxes, and a bar is met straight past a box.",
   "bent-line": "A line bends more than twice, mostly because it skips rows.",
   "batch-unreadable": "The batch file cannot be read.",
@@ -185,7 +185,10 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "bad-value": [],
   "bad-yaml": [],
   "bar-crossed": ["layer move", "node move", "edge remove", "edge pass"],
-  "bar-in-group": ["group leave", "layer move", "node move", "edge remove"],
+  "bar-in-group": {
+    line: ["group leave", "layer move", "node move", "edge remove"],
+    look: ["group leave", "layer look", "layer move", "node move"],
+  },
   "bar-to-bar": ["edge remove", "edge retarget"],
   "bent-line": ["layer move", "node move", "node swap"],
   "batch-unreadable": [],
@@ -323,6 +326,9 @@ export function variantOf(
   of?: string,
 ): string {
   switch (code) {
+    case "bar-in-group":
+      // A bar a line ends at, or one drawn for its look alone.
+      return facts.edge === undefined ? "look" : "line";
     case "conflicting-position":
       return facts.node === undefined ? "placed" : "stepped";
     case "duplicate-id":

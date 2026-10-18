@@ -2,7 +2,7 @@
 // sentence per code, and next names real commands only, in the order the help lists them.
 
 import { describe, expect, it } from "vitest";
-import { CODES, DESCRIPTIONS, NEXT } from "../../src/cli/problems.ts";
+import { CODES, DESCRIPTIONS, NEXT, nextOf } from "../../src/cli/problems.ts";
 import { commandOrder } from "./commands.ts";
 
 /** Every list of commands NEXT holds, with the code and variant it is for. */
@@ -25,6 +25,24 @@ describe("problems", () => {
       expect(text.slice(0, -1), code).not.toMatch(/\.\s/);
       expect(text.length, code).toBeLessThanOrEqual(140);
     }
+  });
+
+  it("a bar in a group's rows names the commands that change the rows, the group or the box", () => {
+    // Round p1g: two agents could not tell from the record why a bar there was refused. A bar a line ends at can lose
+    // the line; one drawn for its look alone, the look.
+    const bar = { row: "mid", group: "sys", top: "core", bottom: "stores" };
+    expect(nextOf("bar-in-group", { ...bar, edge: "rider->mid" })).toEqual([
+      "group leave",
+      "layer move",
+      "node move",
+      "edge remove",
+    ]);
+    expect(nextOf("bar-in-group", bar)).toEqual([
+      "group leave",
+      "layer look",
+      "layer move",
+      "node move",
+    ]);
   });
 
   it("next names real commands only, in the order the help lists them", () => {

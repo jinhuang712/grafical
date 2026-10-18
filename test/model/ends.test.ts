@@ -52,7 +52,10 @@ describe('edge ends at a container (DESIGN.md, "Lines that end at containers")',
     const inside = fail(catalogSyncGrouped, [
       { op: "edge.add", from: "handlers", to: "catalog-api" },
     ]);
-    expect(inside[0]?.code).toBe("edge-inside");
+    expect(inside[0]).toMatchObject({
+      code: "edge-inside",
+      facts: { ends: ["handlers", "catalog-api"] },
+    });
     const across = fail(catalogSyncGrouped, [{ op: "edge.add", from: "catalog-sync", to: "work" }]);
     expect(across[0]?.code).toBe("edge-inside");
     const unknown = fail(catalogSyncGrouped, [
@@ -71,7 +74,7 @@ describe('edge ends at a container (DESIGN.md, "Lines that end at containers")',
     const e = fail(d, [{ op: "edge.add", from: "probe", to: "catalog-api" }]);
     expect(e[0]).toMatchObject({
       code: "edge-blocked",
-      facts: { row: "topics", nodes: ["retry", "line_topics"] },
+      facts: { ends: ["probe", "catalog-api"], row: "topics", nodes: ["retry", "line_topics"] },
     });
   });
 
@@ -131,7 +134,11 @@ groups:
       { op: "layer.add", id: "bus", label: "Bus", after: "core" },
       { op: "edge.add", from: "gateway", to: "bus" },
     ]);
-    expect(errors[0]).toMatchObject({ code: "bar-to-bar", found: "gateway->bus" });
+    expect(errors[0]).toMatchObject({
+      code: "bar-to-bar",
+      found: "gateway->bus",
+      facts: { ends: ["gateway", "bus"] },
+    });
   });
 
   it("refuses a bar between the first and last rows of a group", () => {
@@ -139,7 +146,12 @@ groups:
       { op: "layer.add", id: "mid", label: "Mid", after: "core" },
       { op: "edge.add", from: "rider", to: "mid" },
     ]);
-    expect(errors[0]).toMatchObject({ code: "bar-in-group", facts: { group: "sys", row: "mid" } });
+    // The group's box covers every row from its top row to its bottom one, and the record names both
+    // (DESIGN.md, "Refusals say what happened and which commands can change it").
+    expect(errors[0]).toMatchObject({
+      code: "bar-in-group",
+      facts: { row: "mid", group: "sys", edge: "rider->mid", top: "core", bottom: "stores" },
+    });
   });
 
   it("refuses a line that passes a bar unless it may", () => {
@@ -148,7 +160,7 @@ groups:
     expect(passing[0]).toMatchObject({
       code: "bar-crossed",
       found: "driver->payments",
-      facts: { row: "gateway" },
+      facts: { ends: ["driver", "payments"], row: "gateway" },
     });
     const allowed = ok(d, [{ op: "edge.add", from: "driver", to: "payments", pass: true }]);
     expect(allowed.edges.find((e) => e.id === "driver->payments")?.pass).toBe(true);
@@ -217,7 +229,8 @@ groups:
         code: "bar-in-group",
         field: "layers[3].look",
         found: "mid",
-        facts: { group: "sys", row: "mid" },
+        // No line ends at the bar: the record names the row, the group and the rows its box covers.
+        facts: { row: "mid", group: "sys", top: "core", bottom: "stores" },
       }),
     ]);
     // A box placed by steps above the first row adds a row the file does not hold.

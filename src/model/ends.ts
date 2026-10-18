@@ -185,7 +185,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
-        facts: { row: bar },
+        facts: { ends: [e.from, e.to], row: bar },
       });
       return;
     }
@@ -199,20 +199,26 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
-        facts: { is: "layer", count: 0, min: 1 },
+        facts: { ends: [e.from, e.to] },
       });
       return;
     }
     for (const end of ["from", "to"] as const) {
       if (!isBar(d, e[end])) continue;
-      const group = groupAcross(d, e[end]);
-      if (group !== undefined) {
+      const across = groupAcross(d, e[end]);
+      if (across !== undefined) {
         errors.push({
           code: "bar-in-group",
           index,
           field: `edges[${ei}].${end}`,
           found: e[end],
-          facts: { group: group.id, row: e[end] },
+          facts: {
+            row: e[end],
+            group: across.group,
+            edge: e.id,
+            top: across.top,
+            bottom: across.bottom,
+          },
         });
         return;
       }
@@ -251,7 +257,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
-        facts: {},
+        facts: { ends: [e.from, e.to], ...(shared.length > 0 ? { nodes: shared } : {}) },
       });
       return;
     }
@@ -261,7 +267,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
-        facts: between(d, e.from, e.to),
+        facts: { ends: [e.from, e.to], ...between(d, e.from, e.to) },
       });
     }
   });
@@ -272,24 +278,38 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
     .filter((l) => !addedRow(l.id))
     .forEach((l, li) => {
       if (!bars.has(l.id) || ended.has(l.id)) return;
-      const group = groupAcross(d, l.id);
-      if (group === undefined) return;
+      const across = groupAcross(d, l.id);
+      if (across === undefined) return;
       errors.push({
         code: "bar-in-group",
         index,
         field: `layers[${li}].look`,
         found: l.id,
-        facts: { group: group.id, row: l.id },
+        facts: { row: l.id, group: across.group, top: across.top, bottom: across.bottom },
       });
     });
   return errors;
 }
 
-/** The group whose box stretches over a row: one with rows above it and below it. */
-function groupAcross(d: Diagram, row: string) {
+/**
+ * The group whose box stretches over a row, one with rows above it and below it, and the first and last rows its box
+ * covers, from its top member's to its bottom member's: a refusal names both, so that the row is seen to lie between
+ * them (DESIGN.md, "Refusals say what happened and which commands can change it"). A row the engine adds for boxes
+ * placed by steps is not in the file, and is named "-", as show --drawn names it.
+ */
+function groupAcross(
+  d: Diagram,
+  row: string,
+): { group: string; top: string; bottom: string } | undefined {
   const r = d.layers.findIndex((l) => l.id === row);
-  return (d.groups ?? []).find((g) => {
+  const name = (k: number) => {
+    const id = d.layers[k]?.id ?? "";
+    return addedRow(id) ? "-" : id;
+  };
+  for (const g of d.groups ?? []) {
     const rows = endRows(d, g.id);
-    return rows !== undefined && rows[0] < r && r < rows[1];
-  });
+    if (rows !== undefined && rows[0] < r && r < rows[1])
+      return { group: g.id, top: name(rows[0]), bottom: name(rows[1]) };
+  }
+  return undefined;
 }

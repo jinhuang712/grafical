@@ -291,6 +291,59 @@ export function buildGrid(d: Diagram): Grid {
     return "joined";
   };
 
+  /**
+   * The boxes in the way of joining b's class to a's, which tryJoin found to clash: those of b's column that would
+   * stand in a cell of a's, or else those the order of the rows puts between the two columns, by the first chain of
+   * "left of" and alignment from one to the other. None for a clash of offsets or of reserved cells.
+   */
+  const inTheWay = (a: number, b: number): string[] => {
+    const ca = cls[a] as number;
+    const cb = cls[b] as number;
+    if (ca === cb) return [];
+    const shift = (off[a] as number) - (off[b] as number);
+    const cells = cellsOf(ca);
+    const taken = ids.filter(
+      (_, k) => cls[k] === cb && cells.has(cellKey(row[k] as number, (off[k] as number) + shift)),
+    );
+    if (taken.length > 0) return taken;
+    const chain = (from: number, to: number): string[] => {
+      const parent = new Map<number, number>();
+      const queue: number[] = [];
+      for (let k = 0; k < N; k++) {
+        if (cls[k] !== from) continue;
+        parent.set(k, -1);
+        queue.push(k);
+      }
+      for (let q = 0; q < queue.length; q++) {
+        const k = queue[q] as number;
+        for (const x of succ[k] ?? []) {
+          if (parent.has(x)) continue;
+          parent.set(x, k);
+          if (cls[x] === to) {
+            const path: string[] = [];
+            for (
+              let y = parent.get(x) as number;
+              y >= 0 && cls[y] !== from;
+              y = parent.get(y) as number
+            )
+              path.unshift(ids[y] as string);
+            return path;
+          }
+          // A box reached means its whole column is reached, through its alignments.
+          for (let z = 0; z < N; z++) {
+            if (z === x || cls[z] !== cls[x] || parent.has(z)) continue;
+            parent.set(z, x);
+            queue.push(z);
+          }
+          queue.push(x);
+        }
+      }
+      return [];
+    };
+    const forward = chain(ca, cb);
+    return forward.length > 0 ? forward : chain(cb, ca);
+  };
+
   // Step 2a: alignment facts are joins that must hold.
   const alignProblems: AlignmentProblem[] = [];
   for (let i = 0; i < N; i++) {
@@ -324,12 +377,13 @@ export function buildGrid(d: Diagram): Grid {
       });
     } else if (tryJoin(i, j) === "clash") {
       const layer = d.layers[row[i] as number]?.id ?? "";
+      const way = inTheWay(i, j);
       alignProblems.push({
         code: "alignment-conflict",
         node: id,
         target: t,
         found: t,
-        facts: { node: id, row: layer },
+        facts: { node: id, row: layer, ...(way.length > 0 ? { nodes: way } : {}) },
       });
     }
   }
@@ -774,6 +828,9 @@ function groupConstraints(
     const r1 = Math.max(...ms.map((i) => row[i] as number));
     const mine: [number, number][] = [];
     let failed: GroupProblem | undefined;
+    // The rows the group's box covers, first and last, that a conflict names.
+    const conflict = (at: Facts) =>
+      conflictOf(g, { ...at, top: d.layers[r0]?.id ?? "", bottom: d.layers[r1]?.id ?? "" });
     for (let r = r0; r <= r1 && failed === undefined; r++) {
       const list = rows[r] ?? [];
       const at = list.map((i, k) => (isIn(i, g) ? k : -1)).filter((k) => k >= 0);
@@ -783,13 +840,13 @@ function groupConstraints(
         const layer = d.layers[r]?.id ?? "";
         const split = gapSplit(list, ms, g, rows, chainOf, links, reaches, cls);
         if (split === undefined) {
-          failed = conflict(g, { row: layer, nodes: list.map((i) => ids[i] as string) });
+          failed = conflict({ row: layer, nodes: list.map((i) => ids[i] as string) });
           break;
         }
         for (const [k, i] of list.entries()) {
           for (const m of ms) {
             if (k < split ? addEdge(i, m, mine) : addEdge(m, i, mine)) continue;
-            failed = conflict(g, { row: layer, node: ids[i] as string });
+            failed = conflict({ row: layer, node: ids[i] as string });
             break;
           }
           if (failed !== undefined) break;
@@ -835,11 +892,11 @@ function groupConstraints(
       const layer = d.layers[r]?.id ?? "";
       for (const m of ms) {
         if (left !== undefined && !addEdge(left, m, mine)) {
-          failed = conflict(g, { row: layer, node: ids[left] as string });
+          failed = conflict({ row: layer, node: ids[left] as string });
           break;
         }
         if (right !== undefined && !addEdge(m, right, mine)) {
-          failed = conflict(g, { row: layer, node: ids[right] as string });
+          failed = conflict({ row: layer, node: ids[right] as string });
           break;
         }
       }
@@ -862,7 +919,7 @@ function groupConstraints(
       for (const m of ms) {
         for (const o of os) {
           const ok = side < 0 ? addEdge(m, o, mine) : addEdge(o, m, mine);
-          if (!ok && failed === undefined) failed = conflict(g, { beside: other.group });
+          if (!ok && failed === undefined) failed = conflict({ beside: other.group });
         }
       }
     }
@@ -926,10 +983,11 @@ function gapSplit(
 
 /**
  * A node or another group that would lie left of group g's box in one row and right of it in another: the box
- * covers every row from its top member to its bottom one. The facts say where: the row and the node in it, or the
- * row whose nodes cannot all stand on one side, or the other group (`beside`).
+ * covers every row from its top member to its bottom one, which the facts name (`top`, `bottom`). The facts say
+ * where: the row and the node in it, or the row whose nodes cannot all stand on one side, or the other group
+ * (`beside`).
  */
-function conflict(g: string, at: Facts): GroupProblem {
+function conflictOf(g: string, at: Facts): GroupProblem {
   const p: GroupProblem = {
     code: "group-conflict",
     group: g,

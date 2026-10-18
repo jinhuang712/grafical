@@ -462,7 +462,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
           index,
           field,
           found: n.align,
-          facts: { row: l.id },
+          facts: { node: n.id, row: l.id },
         });
       }
     });

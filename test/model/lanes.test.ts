@@ -115,7 +115,12 @@ describe('lanes in the model (DESIGN.md, "Swimlanes run one way")', () => {
       { op: "lane.add", id: "a", label: "A", members: ["orders"] },
       { op: "lane.add", id: "b", label: "B", members: ["payments"] },
     ]);
-    expect(split.map((e) => e.code)).toContain("group-across-lanes");
+    // It names the group's first box in another lane than its first box's, and that lane.
+    expect(split.find((e) => e.code === "group-across-lanes")?.facts).toEqual({
+      node: "payments",
+      lane: "b",
+      lanes: ["a", "b"],
+    });
     const { diagram: d } = ok(grouped, [
       { op: "lane.add", id: "a", label: "A", members: ["core"] },
     ]);

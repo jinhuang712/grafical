@@ -33,6 +33,8 @@ export interface Facts {
   edge?: string;
   /** Two lines it concerns, such as two that cross. */
   edges?: readonly string[];
+  /** The two ends of the line it concerns, from first. */
+  ends?: readonly string[];
   lane?: string;
   wall?: string;
   /** A note, by what it is on. */
@@ -43,6 +45,9 @@ export interface Facts {
   nodes?: readonly string[];
   /** The rows a line runs through without meeting a box of them. */
   rows?: readonly string[];
+  /** The first and last rows a group's box covers, top to bottom. */
+  top?: string;
+  bottom?: string;
   /** The groups whose box a line runs through. */
   groups?: readonly string[];
   /** The members of a group that a box stands between in one row. */
@@ -95,12 +100,15 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
   "group",
   "edge",
   "edges",
+  "ends",
   "lane",
   "wall",
   "note",
   "nodes",
   "rows",
   "groups",
+  "top",
+  "bottom",
   "lanes",
   "between",
   "across",

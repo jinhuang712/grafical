@@ -659,7 +659,12 @@ describe("alignment", () => {
     };
     const problems = validateAlignments(d);
     expect(problems.map((p) => `${p.code} ${p.node}`)).toEqual(["alignment-conflict queue"]);
-    expect(problems[0]?.facts).toEqual({ node: "queue", row: expect.any(String) });
+    // It names the boxes in the way: worker right of api, and db, aligned to worker, left of queue.
+    expect(problems[0]?.facts).toEqual({
+      node: "queue",
+      row: expect.any(String),
+      nodes: ["worker", "db"],
+    });
     // The first alignment in row order holds, and the layout still runs.
     const f = layoutFramed(d, m);
     expect(centre(f, "db")).toBe(centre(f, "worker"));
@@ -740,6 +745,8 @@ describe("groups", () => {
       [n("c", "c", "service", "m", { group: "h" }), n("d", "d", "service", "m", { group: "g" })],
     ]);
     expect(validateGroups(d).map((p) => `${p.code} ${p.group}`)).toEqual(["group-conflict h"]);
+    // The rows h's box covers, first and last, are named.
+    expect(validateGroups(d)[0]?.facts).toMatchObject({ group: "h", top: "l0", bottom: "l1" });
     // The layout still runs, and boxes the group that holds.
     const s = layout(d, m);
     expect(s.groups?.map((g) => g.id)).toEqual(["g"]);

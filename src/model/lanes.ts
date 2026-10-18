@@ -130,18 +130,24 @@ function groupsAcross(d: Diagram, index: number): OpError[] {
   const rows = laneRun(d) === "rows";
   (d.groups ?? []).forEach((g, i) => {
     const lanes = new Set<string>();
+    // The first box, top to bottom, in another lane than the group's first box, and that lane.
+    let apart: { node: string; lane: string } | undefined;
     for (const l of d.layers) {
       for (const n of l.nodes) {
-        if (inGroup(d, n, g.id)) lanes.add((rows ? l.lane : n.lane) ?? "");
+        if (!inGroup(d, n, g.id)) continue;
+        const lane = (rows ? l.lane : n.lane) ?? "";
+        if (lanes.size > 0 && !lanes.has(lane)) apart ??= { node: n.id, lane };
+        lanes.add(lane);
       }
     }
-    if (lanes.size < 2) return;
+    if (lanes.size < 2 || apart === undefined) return;
+    const name = (x: string) => (x === "" ? "none" : x);
     errors.push({
       code: "group-across-lanes",
       index,
       field: `groups[${i}]`,
       found: g.id,
-      facts: { lanes: [...lanes].map((x) => (x === "" ? "none" : x)) },
+      facts: { node: apart.node, lane: name(apart.lane), lanes: [...lanes].map(name) },
     });
   });
   return errors;

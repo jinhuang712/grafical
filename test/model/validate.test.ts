@@ -68,6 +68,7 @@ describe("file validation", () => {
     expect(errorsOf(text)[0]).toMatchObject({
       code: "align-same-layer",
       field: "layers[0].nodes[0].align",
+      facts: { node: "n" },
     });
   });
 
