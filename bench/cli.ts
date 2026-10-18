@@ -17,8 +17,8 @@
 //   diff <ref> [--seeds 2000] [--render <dir>]
 //                                             what the working tree's engine changes against <ref>, over saved drafts, fixtures and fuzz seeds; costs nothing
 //   speed                                     speed: time one operation and one command
-//   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints|hints2|hints3|hints4|help|brief|help2|help3|records|reflect> --dry-run | --approved [--only <chain>]
-//                                             the end of stage 1, one part at a time
+//   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints|hints2|hints3|hints4|help|brief|help2|help3|records|reflect> --dry-run | --approved [--only <chain>] [--round <name>]
+//                                             the end of stage 1, one part at a time; --round runs it again into a new round
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -157,6 +157,9 @@ function main(argv: string[]): void {
         process.exit(2);
       }
       const plan = planPart(part);
+      // A part run again goes into a round of its own: a round's directory is never reused.
+      const again = flag(args, "round");
+      if (again !== undefined) plan.round = again;
       const only = flag(args, "only");
       if (only !== undefined) {
         plan.chains = plan.chains.filter((c) => chainName(c.arm, c.model, c.run, c.task) === only);
