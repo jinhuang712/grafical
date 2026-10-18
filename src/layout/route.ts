@@ -1384,8 +1384,8 @@ function placePorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): 
  * A line between neighbouring rows whose lower port was pushed off its upper port, by
  * the ports that must sit before it on the lower box's top side or by a group label
  * there, takes its upper port along when the upper box's side has room: one x then
- * serves both ends, and the line runs straight (DESIGN.md, "Who chose is punished"). Only where no other run of the
- * gutter goes across that x, so that no crossing comes of it.
+ * serves both ends, and the line runs straight (DESIGN.md, "Who chose is punished"). Only where every other run of
+ * the gutter that goes across that x had to cross the line where it bent, so that no crossing comes of it.
  */
 function straightenPorts(plans: Plan[]): void {
   for (const pl of plans) {
@@ -1397,11 +1397,23 @@ function straightenPorts(plans: Plan[]): void {
     if (g === undefined) continue;
     const upper = pl.kind === "down" ? pl.u : pl.v;
     const x = pl.kind === "down" ? pl.dstPort : pl.srcPort;
+    const was = pl.kind === "down" ? pl.srcPort : pl.dstPort;
     const inset = ROUTE.portMin / 2 + 2;
     if (x < upper.x + inset - EPS || x > upper.x + upper.w - inset + EPS) continue;
+    // A run must cross a line through its gutter when its two ends lie on either side of
+    // the line: of x on both boundaries once the line runs straight, of the upper port on
+    // the top boundary while it bends.
+    const apart = (a: number, b: number) => (a < -EPS && b > EPS) || (a > EPS && b < -EPS);
+    const crossesOnlyStraight = (other: Plan) =>
+      other.gutters.some((h, j) => {
+        if (h !== g) return false;
+        const [a, b] = stubsOf(other, j);
+        const bent = apart(a.x - (a.top ? was : x), b.x - (b.top ? was : x));
+        return apart(a.x - x, b.x - x) && !bent;
+      });
     const blocked = plans.some((other) => {
       if (other === pl || !other.gutters.includes(g)) return false;
-      if (runsIn(other, g).some(([lo, hi]) => lo < x - EPS && hi > x + EPS)) return true;
+      if (crossesOnlyStraight(other)) return true;
       // The upper box's other bottom ports keep their pitch.
       const ports = [
         ...(other.u === upper && other.srcSide === "bottom" ? [other.srcPort] : []),
