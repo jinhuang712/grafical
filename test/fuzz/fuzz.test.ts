@@ -1,6 +1,6 @@
 // The engine owns six defects (DESIGN.md, "Defects owned by who can fix them"): no valid diagram may show one.
 // Random diagrams from fixed seeds, laid out with the real measurer and judged by
-// the real checker. FUZZ_SEEDS=5000 pnpm test test/fuzz runs a larger set;
+// the real checker. FUZZ_SEEDS=5000 pnpm fuzz runs a larger set;
 // node test/fuzz/run.ts and node test/fuzz/show.ts <seed> help find out why.
 
 import { describe, expect, it } from "vitest";

@@ -44,7 +44,8 @@ This repository is public. Names, hosts, topics, databases and architecture of r
 | `pnpm install` | Install dependencies | available |
 | `pnpm typecheck` | Type-check with `tsc --noEmit` | available |
 | `pnpm lint` | Lint and format check with Biome | available |
-| `pnpm test` | Run vitest. Passes while no tests exist | available |
+| `pnpm test` | Run vitest on every test but the fuzz test. Passes while no tests exist | available |
+| `pnpm fuzz` | Run the fuzz test (`test/fuzz/`). CI runs it after `pnpm test`, so the other tests report first | available |
 | `pnpm bench <baseline\|chain\|smoke\|stage1\|judge\|gallery\|geometry\|lines\|reflections\|speed\|diff\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` and `stage1` need `--approved`. `geometry` checks every picture of a round for mechanical defects (GOALS.md, "Mechanical defects"), `speed` times one operation and one command (GOALS.md, "Speed"), and `lines` measures a round's lines and how often the agent ran `grafical try` (DESIGN.md, "Records over prose"); all three cost nothing. `reflections` prints the report each agent writes after its chain, on how it drew and where grafical got in the way (EXPERIMENTS.md, "Harness"), also at no cost. `diff <ref>` lays out every saved draft, every fixture and fuzz seeds 1..N (`--seeds <n>`, default 2000) with the engine at `<ref>` and with the working tree, and prints key=value records of what changed (bends, crossings, size, defects); `--render <dir>` writes before and after PNGs. Quote its numbers in an engine commit message; it costs nothing | available |
 
 A command added to `package.json` gets a row here in the same change.
@@ -53,7 +54,7 @@ A command added to `package.json` gets a row here in the same change.
 
 1. Change code, a fixture or a benchmark brief.
 2. Render the affected fixture and look at the PNG. A passing test does not show what the picture looks like.
-3. Run `pnpm typecheck`, `pnpm lint` and `pnpm test`.
+3. Run `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm fuzz`.
 4. Read your own diff before reporting.
 
 When a picture looks bad, first draw the better picture with grafical's own commands, as an agent would: rows, order, groups, alignment, and what to cut. Only what the commands cannot reach is engine work. On 2026-10-16 the owner's composition took a dispatch draft from 21 crossings to 1, where a day of router fixes had moved the saved drafts by 3.
@@ -73,7 +74,7 @@ When a picture looks bad, first draw the better picture with grafical's own comm
 - PNG output is compared as decoded pixels, not as compressed bytes. DESIGN.md, "Output and determinism" promises the same pixels, not the same PNG bytes.
 - Stability tests apply one operation and assert that nothing outside the list in DESIGN.md, "Layout computed again on every change" changed position, size or route.
 - Fixtures live in `test/fixtures/`. Public benchmark briefs live in `bench/briefs/`.
-- The fuzz test (`test/fuzz/`) lays out random diagrams from fixed seeds and asserts that none has an engine-owned defect (DESIGN.md, "Defects owned by who can fix them"). CI runs 500 seeds. Run more with `FUZZ_SEEDS=5000 pnpm test test/fuzz`. A failing seed becomes a fixture before it is fixed.
+- The fuzz test (`test/fuzz/`) lays out random diagrams from fixed seeds and asserts that none has an engine-owned defect (DESIGN.md, "Defects owned by who can fix them"). CI runs 500 seeds. Run more with `FUZZ_SEEDS=5000 pnpm fuzz`. A failing seed becomes a fixture before it is fixed.
 - The refusal test (`test/check/refusals.test.ts`) refuses random changes to the fixtures and to fuzz diagrams, and asserts that every refusal they produce has its code's description and names in `next` only commands that exist, in the help's order (DESIGN.md, "Refusals say what happened and which commands can change it"). CI runs 12 seeds. Run more with `REFUSAL_SEEDS=150 pnpm test test/check/refusals.test.ts`. A new code needs its sentence and its commands in `src/cli/problems.ts`, which `test/cli/problems.test.ts` holds.
 - A change to layout or routing must keep the fuzz test, the stability tests and the replay of a real agent run (`test/layout/haiku.test.ts`) passing.
 - `node test/debug/check-fixtures.ts <dir>` lays out, checks and renders every fixture with the real engine, for looking at the pictures.

@@ -19,7 +19,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run --passWithNoTests --exclude 'test/fuzz/**'",
+    "fuzz": "vitest run --dir test/fuzz",
     "bench": "node bench/cli.ts"
   },
   "devDependencies": {
