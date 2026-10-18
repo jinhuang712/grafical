@@ -2114,12 +2114,13 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
   // Columns keep each row in column order (DESIGN.md, "Columns beside rows").
   touch(s, ...orderByColumns(s.d));
   const last = Math.max(0, ops.length - 1);
-  // What follows is found in the diagram the whole batch makes.
-  const whole = (errors: OpError[]): ApplyResult => ({
-    errors: errors.map((e) => ({ ...e, whole: true })),
+  // What follows is found in the diagram the whole batch makes, by checks that run in turn: each stops the rest, and
+  // its errors say which it was (`stage`), so that a diagram one check refuses is known to pass those before it.
+  const whole = (errors: OpError[], stage: number): ApplyResult => ({
+    errors: errors.map((e) => ({ ...e, whole: true, stage })),
   });
   const broken = checkIntegrity(s.d, last);
-  if (broken.length > 0) return whole(broken);
+  if (broken.length > 0) return whole(broken, 1);
   // An alignment that cannot hold with the order of its layers is an operation error (DESIGN.md, "Layout computed again on every change").
   const problems = layoutModule.validateAlignments(s.d);
   if (problems.length > 0) {
@@ -2131,6 +2132,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
         found: p.found,
         facts: p.facts,
       })),
+      2,
     );
   }
   // A group the engine cannot box without a non-member inside is an operation error (DESIGN.md, "Rows unseen, groups as systems").
@@ -2140,6 +2142,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
   if (groupProblems.length > 0) {
     return whole(
       groupProblems.map((p) => ({ code: p.code, index: last, found: "", facts: p.facts })),
+      3,
     );
   }
   // A box placed by steps whose cell another fact keeps is an operation error (DESIGN.md, "Steps from another box").
@@ -2158,6 +2161,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
         const facts = swap ? { ...p.facts, node: p.found } : p.facts;
         return { code: p.code, index: last, field: "from", found, facts };
       }),
+      4,
     );
   }
   if (s.d.groups !== undefined && s.d.groups.length === 0) delete s.d.groups;

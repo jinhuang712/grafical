@@ -51,32 +51,46 @@ function located(r: Report) {
   return [
     ...r.errors
       .filter((e) => e.whole)
-      .map((e) => ({ key: errorKey(e), defect: false, source: e.source })),
-    ...r.defects.map((d) => ({ key: defectKey(d), defect: true, source: d.source })),
+      .map((e) => ({ key: errorKey(e), defect: false, stage: e.stage, source: e.source })),
+    ...r.defects.map((d) => ({
+      key: defectKey(d),
+      defect: true,
+      stage: undefined,
+      source: d.source,
+    })),
   ];
 }
 
 /**
  * The oracle: every prefix applied as a write does, and the problem's line, the one after the last prefix without it
  * when every longer prefix has it; 0 when every prefix and the file have it; undefined when a prefix after the last
- * one without it is refused for another problem.
+ * one without it is refused for another problem. A prefix that a later check refused passed the check that finds an
+ * error of the stage given.
  */
 function truth(
   base: Diagram,
   ops: readonly Op[],
   key: string,
   defect: boolean,
+  stage?: number,
 ): number | undefined {
   const seq: ("P" | "A" | "U")[] = [];
+  const refused = (keys: string[], at: number) =>
+    keys.includes(key) ? "P" : !defect && stage !== undefined && stage < at ? "A" : "U";
   for (let k = 0; k <= ops.length; k++) {
     const r = applyOps(base, ops.slice(0, k));
     if ("errors" in r) {
-      seq.push(r.errors.map(errorKey).includes(key) ? "P" : "U");
+      seq.push(refused(r.errors.map(errorKey), r.errors[0]?.stage ?? 0));
       continue;
     }
     const weights = unknownWeights(r.diagram);
     if (weights.length > 0) {
-      seq.push(weights.map((e) => errorKey({ ...e, whole: true })).includes(key) ? "P" : "U");
+      seq.push(
+        refused(
+          weights.map((e) => errorKey({ ...e, whole: true })),
+          5,
+        ),
+      );
       continue;
     }
     if (!defect) {
@@ -172,6 +186,34 @@ describe("the batch line a refused write names", () => {
     expect(refuse(grocer, nm2).report.defects.map((d) => d.source)).toEqual([BATCH]);
   });
 
+  it("is known where the file, or a prefix, is refused by a later check for another problem", () => {
+    const split = structuredClone(grocer);
+    for (const n of split.layers[0]?.nodes ?? []) {
+      if (n.id === "customers" || n.id === "courier-app") n.group = "g";
+    }
+    split.groups = [{ id: "g", label: "G" }];
+    // The file splits the group; line 1 mends it, and line 4 adds a label too long.
+    const u0 = [
+      "- {op: group.join, group: g, nodes: [picker-app]}",
+      "- {op: diagram.title, text: T1}",
+      "- {op: diagram.title, text: T2}",
+      `- {op: node.add, id: big, label: ${LONG}, layer: row-api, last: true, size: s}`,
+    ];
+    expect(refuse(split, u0).report.defects.map((d) => d.source)).toEqual([
+      `${BATCH} line 4: ${u0[3]?.slice(2)}`,
+    ]);
+    // Up to line 2 the split group refuses each prefix, a check that runs after the one that finds a bar the lines
+    // cross, which line 3 draws: no such bar before line 3.
+    const ul = [
+      "- {op: group.join, group: g, nodes: [cdn]}",
+      "- {op: layer.add, id: row-wire, label: Bus, after: row-callers}",
+      "- {op: layer.look, id: row-wire, look: box}",
+    ];
+    const r = refuse(split, ul);
+    expect(r.report.errors.length).toBeGreaterThan(0);
+    for (const e of r.report.errors) expect(e.source).toBe(`${BATCH} line 3: ${ul[2]?.slice(2)}`);
+  });
+
   it("is no older than the facts its block prints", () => {
     // Lines 2 and 4 give two new rows a look; line 5 takes the first one's away. The lines from the callers cross
     // row-w1 from line 2 on, and row-w2, the bar the blocks name, only once row-w1 is no bar.
@@ -251,7 +293,9 @@ describe("the batch line a refused write names", () => {
           continue;
         }
         lines++;
-        expect(said, `seed ${seed}: ${p.source}`).toBe(truth(grocer, read.ops, p.key, p.defect));
+        expect(said, `seed ${seed}: ${p.source}`).toBe(
+          truth(grocer, read.ops, p.key, p.defect, p.stage),
+        );
       }
     }
     // The batches name some lines, and leave some out.

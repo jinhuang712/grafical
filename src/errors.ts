@@ -288,6 +288,11 @@ export interface OpError {
    * commands can change it").
    */
   whole?: true;
+  /**
+   * For an error of the whole diagram: which of its checks found it, from 1, in the order they run. Each check runs
+   * only when those before it found nothing, so a diagram refused by a later check has no error of an earlier one.
+   */
+  stage?: number;
   /** What caused it, as the report prints it: the command line, a batch's line, or what was in the file before. */
   source?: string;
 }

@@ -266,6 +266,9 @@ function prefixes(...ds: (Diagram | null)[]): number {
   return Math.min(MOST_PREFIXES, Math.max(1, Math.floor(LAID_OUT / size)));
 }
 
+/** The check of a whole diagram that finds a line weight its stylesheet lacks: after those of applyOps. */
+const WEIGHTS = 5;
+
 /**
  * What a prefix of a batch says of a problem: there, not there, or unknown, when the prefix is refused for another
  * problem: the checks of a whole diagram stop at the first set that fails, and a refused diagram is not laid out.
@@ -278,8 +281,9 @@ type Seen = "present" | "absent" | "unknown";
  * the whole batch; 0 when the diagram before the batch has it and every prefix too; undefined when no line can be
  * known. It runs only on a refused write, so a write that succeeds costs nothing more. grafical applies the batch less
  * its last operation, then less its last two, and so on, back towards the file, and the problem's line is the one
- * after the last prefix without it. A prefix refused for another problem cannot tell, and the scan stops there with no
- * line, as it does after `most` prefixes. Each prefix is applied, and laid out, once for all the problems.
+ * after the last prefix without it. A prefix refused for another problem cannot tell, unless a later check refused it
+ * after the one that finds this problem passed; else the scan stops there with no line, as it does after `most`
+ * prefixes. Each prefix is applied, and laid out, once for all the problems.
  */
 function locate(
   base: Diagram | null,
@@ -291,7 +295,8 @@ function locate(
   defectAt: (d: Defect) => number | undefined;
 } {
   const n = ops.length;
-  type Applied = { errors: Set<string> } | { diagram: Diagram | null };
+  // A refused prefix: its errors, and the check that found them, 0 for an operation's own.
+  type Applied = { errors: Set<string>; stage: number } | { diagram: Diagram | null };
   const applied = new Map<number, Applied>();
   const defectsAt = new Map<number, Set<string>>();
   const apply = (k: number): Applied => {
@@ -303,17 +308,25 @@ function locate(
     else {
       const r = applyOps(base, ops.slice(0, k));
       const weights = "errors" in r ? [] : unknownWeights(r.diagram);
-      if ("errors" in r) a = { errors: new Set(r.errors.map(errorKey)) };
+      if ("errors" in r)
+        a = { errors: new Set(r.errors.map(errorKey)), stage: r.errors[0]?.stage ?? 0 };
       else if (weights.length > 0)
-        a = { errors: new Set(weights.map((e) => errorKey({ ...e, whole: true }))) };
+        a = {
+          errors: new Set(weights.map((e) => errorKey({ ...e, whole: true }))),
+          stage: WEIGHTS,
+        };
       else a = { diagram: r.diagram };
     }
     applied.set(k, a);
     return a;
   };
-  const seen = (k: number, key: string, defect: boolean): Seen => {
+  const seen = (k: number, key: string, defect: boolean, stage: number | undefined): Seen => {
     const a = apply(k);
-    if ("errors" in a) return a.errors.has(key) ? "present" : "unknown";
+    if ("errors" in a) {
+      if (a.errors.has(key)) return "present";
+      // Refused by a later check, the prefix passed the one that finds this problem.
+      return !defect && stage !== undefined && stage < a.stage ? "absent" : "unknown";
+    }
     if (!defect || a.diagram === null) return "absent";
     let found = defectsAt.get(k);
     if (found === undefined) {
@@ -324,12 +337,12 @@ function locate(
     }
     return found.has(key) ? "present" : "absent";
   };
-  const firstAt = (key: string, defect: boolean): number | undefined => {
+  const firstAt = (key: string, defect: boolean, stage?: number): number | undefined => {
     // Back from the batch less its last operation: the problem's line is the one after the last prefix without it.
     for (let k = n - 1; k >= 0; k--) {
       // The empty diagram before a new file costs nothing to ask.
       if (n - k > most && !(k === 0 && base === null)) return undefined;
-      const s = seen(k, key, defect);
+      const s = seen(k, key, defect, stage);
       if (s === "absent") return k + 1;
       if (s === "unknown") return undefined;
     }
@@ -337,7 +350,7 @@ function locate(
     return 0;
   };
   return {
-    errorAt: (e) => firstAt(errorKey(e), false),
+    errorAt: (e) => firstAt(errorKey(e), false, e.stage),
     defectAt: (d) => firstAt(defectKey(d), true),
   };
 }
@@ -395,7 +408,9 @@ export function attempt(
   const weights = "errors" in result ? [] : unknownWeights(result.diagram);
   if ("errors" in result || weights.length > 0) {
     const errors =
-      "errors" in result ? result.errors : weights.map((e) => ({ ...e, whole: true as const }));
+      "errors" in result
+        ? result.errors
+        : weights.map((e) => ({ ...e, whole: true as const, stage: WEIGHTS }));
     const found = locate(base, ops, m, prefixes(base));
     // An error of the whole diagram is the operation's after which it first appears. One whose line cannot be known is
     // no operation's: it has no index.

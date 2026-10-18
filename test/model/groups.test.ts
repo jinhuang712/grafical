@@ -201,6 +201,8 @@ describe("group operations", () => {
       found: "",
       facts: { node: "y", row: "r", group: "g", between: ["x", "z"] },
       whole: true,
+      // The groups' check runs third, after the integrity and the alignments of the whole diagram.
+      stage: 3,
     });
     // Joining the node in between, or grouping neighbours, is fine.
     ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y", "z"] }]);
