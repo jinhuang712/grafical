@@ -255,7 +255,8 @@ function checkSteps(scene: Scene, out: Found[]): void {
     texts.push({ id: g.id, is: "group", rect: g.label.bbox });
     if (g.sublabel) texts.push({ id: g.id, is: "group", rect: g.sublabel.bbox });
   }
-  for (const b of scene.bands ?? []) texts.push({ id: b.id, is: "layer", rect: b.label.bbox });
+  for (const b of scene.bands ?? [])
+    if (b.label) texts.push({ id: b.id, is: "layer", rect: b.label.bbox });
   for (const x of scene.lanes ?? []) texts.push({ id: x.id, is: "lane", rect: x.head });
   for (const w of scene.walls ?? [])
     if (w.label && w.blocked !== true) texts.push({ id: w.id, is: "wall", rect: w.label.bbox });
@@ -345,7 +346,8 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
     }
   }
   // A group's label is the agent's: a line across it is title-blocked.
-  for (const b of scene.bands ?? []) targets.push({ id: b.id, is: "layer", text: b.label });
+  for (const b of scene.bands ?? [])
+    if (b.label) targets.push({ id: b.id, is: "layer", text: b.label });
   for (const x of scene.lanes ?? []) targets.push({ id: x.id, is: "lane", text: x.label });
   // A wall's label with no place along its wall is the agent's: label-blocked.
   for (const w of scene.walls ?? []) {

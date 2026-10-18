@@ -698,12 +698,18 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const bandStyle = T["layer-label"];
   const bandRows = new Map<
     number,
-    { id: string; label: string; labelX: number; labelW: number; bar: boolean }
+    { id: string; label?: string; labelX: number; labelW: number; bar: boolean }
   >();
   layers.forEach((l, i) => {
     if (!ends.bands.has(l.id) || !Number.isFinite(contentLeft)) return;
-    const labelW = m.measure(l.label, bandStyle).width;
     const stands = barStands.get(i);
+    // A row with no label draws no name (DESIGN.md, "A row with a look is drawn"), and its band has no head.
+    if (l.label === undefined) {
+      const labelX = contentLeft - BAND.padX + BAND.labelInset;
+      bandRows.set(i, { id: l.id, labelX, labelW: 0, bar: stands !== undefined });
+      return;
+    }
+    const labelW = m.measure(l.label, bandStyle).width;
     if (stands !== undefined) {
       // A bar's label sits in it, in its first stretch that no line meets; failing
       // that, left of the content, and the bar reaches it.
@@ -755,6 +761,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     }
   }
   for (const [row, b] of bandRows) {
+    if (b.label === undefined) continue;
     const list = forbidTop.get(row) ?? [];
     list.push([b.labelX - GROUP.labelClear, b.labelX + b.labelW + GROUP.labelClear]);
     forbidTop.set(row, list);
@@ -1038,12 +1045,14 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const padsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.bottom === r).map(pads));
   /** A band that holds boxes has a head above its row and a padding below; a bar has neither. */
   const bandHead = (r: number) => bandRows.get(r)?.bar === false;
+  /** A band's head holds its label; with none, it is a padding. */
+  const bandHeadH = (r: number) => (bandRows.get(r)?.label === undefined ? BAND.pad : BAND.head);
   const near = (g: (typeof groups)[number], lo: number, hi: number) =>
     lo < g.x1 + GROUP.clear && hi > g.x0 - GROUP.clear;
   /** Room the heads of the groups that start below gutter i still need, besides its tracks. */
   const headRoom = (i: number, tracks: number): number => {
     // A band's head sits above its groups' heads, below the tracks, in full.
-    if (bandHead(i + 1)) return headsAt(i + 1) + BAND.head;
+    if (bandHead(i + 1)) return headsAt(i + 1) + bandHeadH(i + 1);
     const starting = groups.filter((g) => g.top === i + 1);
     if (starting.length === 0) return 0;
     const full = headsAt(i + 1);
@@ -1073,7 +1082,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (colLanes.length > 0) y += headH + LANE.pad;
   if (laneAt(0) !== undefined) y += LANE.pad;
   y += headsAt(0);
-  if (bandHead(0)) y += BAND.head;
+  if (bandHead(0)) y += bandHeadH(0);
   /** Where a row lane's border crosses gutter i, between two rows in different lanes. */
   const borders = new Map<number, number>();
   /** A row that holds a store: the gutters beside it keep more room from its cylinders. */
@@ -1101,7 +1110,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       wallTops.set(i, y);
       y += walls * WALL.space;
       borders.set(i, y);
-      y += LANE.pad + headsAt(i + 1) + (bandHead(i + 1) ? BAND.head : 0);
+      y += LANE.pad + headsAt(i + 1) + (bandHead(i + 1) ? bandHeadH(i + 1) : 0);
       return;
     }
     if (walls > 0) {
@@ -1148,7 +1157,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const sceneLayers: SceneLayer[] = layers.map((l, i) => {
     const top = rowTops[i] ?? 0;
     const h = rowH(i);
-    const lines = withText ? m.wrap(l.label, layerLabelStyle, 2 * half) : [];
+    const lines =
+      withText && l.label !== undefined ? m.wrap(l.label, layerLabelStyle, 2 * half) : [];
     const label = placeLines("layer-label", lines, sp.margin, top, "start", m, T);
     return { id: l.id, band: { x: sp.margin, y: top, w: width - 2 * sp.margin, h }, label };
   });
@@ -1234,15 +1244,17 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         h: rowH(i),
       };
       const top = y0 + (rowH(i) - lineHeight("layer-label", m, T)) / 2;
+      if (b.label === undefined) return { id: b.id, rect, bar: true, ...box };
       const label = withText
         ? placeLine("layer-label", b.label, centre + b.labelX, top, m, T)
         : empty("layer-label", centre + b.labelX, top);
       return { id: b.id, rect, label, bar: true, ...box };
     }
-    const y0 = (rowTops[i] ?? 0) - headsAt(i) - BAND.head;
+    const y0 = (rowTops[i] ?? 0) - headsAt(i) - bandHeadH(i);
     const y1 = (rowTops[i] ?? 0) + rowH(i) + padsAt(i) + BAND.pad;
     const x0 = centre + bandLeft;
     const rect: Rect = { x: x0, y: y0, w: contentRight + BAND.padX - bandLeft, h: y1 - y0 };
+    if (b.label === undefined) return { id: b.id, rect, ...box };
     const label = withText
       ? placeLine("layer-label", b.label, centre + b.labelX, y0 + BAND.labelTop, m, T)
       : empty("layer-label", centre + b.labelX, y0 + BAND.labelTop);
@@ -1337,7 +1349,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   for (const [id, a] of assembled) if (a.label !== undefined) labelAt.set(id, a.label);
   const captions: Rect[] = [
     ...sceneGroups.flatMap((g) => [g.label.bbox, ...(g.sublabel ? [g.sublabel.bbox] : [])]),
-    ...sceneBands.map((b) => b.label.bbox),
+    ...sceneBands.flatMap((b) => (b.label === undefined ? [] : [b.label.bbox])),
     ...sceneLanes.map((x) => x.head),
   ];
   const solid: Rect[] = [...sceneNodes.map((n) => n.rect), ...captions];
@@ -1569,7 +1581,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     ...sceneEdges.flatMap((e) => (e.label === undefined ? [] : [e.label.bbox])),
     ...sceneEdges.flatMap((e) => (e.step === undefined ? [] : [badgeRect(e.step)])),
     ...sceneGroups.flatMap((g) => [g.label.bbox, ...(g.sublabel ? [g.sublabel.bbox] : [])]),
-    ...sceneBands.map((x) => x.label.bbox),
+    ...sceneBands.flatMap((x) => (x.label === undefined ? [] : [x.label.bbox])),
     ...sceneLanes.map((x) => x.label.bbox),
   ];
   // Walls up and down: from the top of the highest box of either side to the bottom of
@@ -1781,7 +1793,7 @@ function roundScene(s: Scene): Scene {
     out.bands = s.bands.map((b) => ({
       id: b.id,
       rect: roundRect(b.rect),
-      label: roundText(b.label),
+      ...(b.label === undefined ? {} : { label: roundText(b.label) }),
       ...(b.bar === true ? { bar: true as const } : {}),
       ...(b.box === true ? { box: true as const } : {}),
     }));

@@ -182,7 +182,8 @@ export interface Group {
 
 export interface Layer {
   id: string;
-  label: string;
+  /** Its name, drawn only when the row is drawn (DESIGN.md, "A row with a look is drawn"). */
+  label?: string;
   /** The lane this layer lies in, when lanes run as rows (DESIGN.md, "Swimlanes run one way"). */
   lane?: string;
   /** How the row is drawn; a row with a look is drawn though no line ends at it. Absent: the row is drawn only once a line ends at it, a box with no box in it and a band with boxes (DESIGN.md, "A row with no box as one bar", "A row with a look is drawn"). */

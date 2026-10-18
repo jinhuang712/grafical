@@ -535,7 +535,9 @@ export function renderSvg(scene: Scene): string {
     const box = b.box === true ? P.node.kinds.service : undefined;
     out.push(
       `<rect${b.bar === true ? ' class="bar"' : ""} ${rectAttrs(b.rect)} rx="${num(box ? P.node.radius : bp.radius)}" fill="${box?.fill ?? bp.fill}" stroke="${box?.stroke ?? bp.stroke}" stroke-width="${num(box ? P.node.strokeWidth : bp.strokeWidth)}"/>`,
-      ...texts(b.label, box ? P.text.nodeLabel : P.text.groupLabelMuted),
+      ...(b.label === undefined
+        ? []
+        : texts(b.label, box ? P.text.nodeLabel : P.text.groupLabelMuted)),
     );
   }
   for (const g of groups) out.push(...groupShapes(g, P));

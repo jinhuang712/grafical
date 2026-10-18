@@ -37,7 +37,7 @@ export interface PNode {
 export interface PLayer {
   index: number;
   id: string;
-  label: string;
+  label?: string;
   nodes: PNode[];
   /** Height of the tallest box in the layer, or of a medium box if it is empty. */
   rowH: number;
@@ -135,7 +135,13 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       placed.push(pn);
     }
     const rowH = placed.length === 0 ? BOX.m.h : Math.max(...placed.map((n) => n.h));
-    return { index, id: layer.id, label: layer.label, nodes: placed, rowH };
+    return {
+      index,
+      id: layer.id,
+      ...(layer.label === undefined ? {} : { label: layer.label }),
+      nodes: placed,
+      rowH,
+    };
   });
 
   // Groups that can be boxed, with their members, the nodes of their inner groups

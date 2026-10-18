@@ -104,7 +104,7 @@ export interface GroupRemoveOp {
 export interface LayerAddOp {
   op: "layer.add";
   id: string;
-  label: string;
+  label?: string;
   before?: string;
   after?: string;
 }
@@ -582,7 +582,7 @@ export const groupRemoveSchema = z.strictObject({
 export const layerAddSchema = z.strictObject({
   op: z.literal("layer.add"),
   id: nodeId,
-  label: text,
+  label: text.optional(),
   before: nodeId.optional(),
   after: nodeId.optional(),
 });

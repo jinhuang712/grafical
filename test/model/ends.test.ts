@@ -92,7 +92,7 @@ describe('edge ends at a container (DESIGN.md, "Lines that end at containers")',
     expect(edge?.to).toBe("catalog-api");
     expect(tip?.y).toBe(box?.y);
     const band = scene.bands?.find((b) => b.id === "deps");
-    expect(band?.label.runs.map((r) => r.text).join("")).toBe("Stores and dependencies");
+    expect(band?.label?.runs.map((r) => r.text).join("")).toBe("Stores and dependencies");
     const layerEdge = scene.edges.find((e) => e.id === "pipelines->deps");
     expect(layerEdge?.points[layerEdge.points.length - 1]?.y).toBe(band?.rect.y);
     expect(check(d, scene, m)).toEqual([]);

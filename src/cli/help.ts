@@ -245,11 +245,12 @@ Example:
     after: `
 Good to know:
   - Rows run top to bottom the way a request or a process moves.
-  - Name a row by what it holds ("Entry", "Stores").
-  - A row is not drawn: it only places its boxes. It is drawn, with its
-    name, when a line ends at it or layer look gives it a look: around its
-    boxes as a band, or, with no boxes, as one bar that lines meet straight
-    past their other ends, such as a gateway or a bus.
+  - A row is not drawn: it only places its boxes. It is drawn when a line
+    ends at it or layer look gives it a look: around its boxes as a band,
+    or, with no boxes, as one bar that lines meet straight past their other
+    ends, such as a gateway or a bus.
+  - --label names a row by what it holds ("Entry", "Stores"). The name shows
+    only when the row is drawn; a row drawn with no name shows none.
   - Rows and boxes share one set of ids: give rows ids like row-users.
 
 See also: layer move, layer split, node add
@@ -656,10 +657,11 @@ look, a row is drawn only when a line ends at it: with no boxes as a box, with
 boxes as a band. Without box or band, the look is taken away.`,
     after: `
 Good to know:
-  - A drawn row shows its name: in the head of a band, above its boxes, or
-    in the bar of a row with no boxes.
+  - A drawn row shows its name, when it has one: in the head of a band,
+    above its boxes, or in the bar of a row with no boxes.
   - A row with no boxes and a look is one bar, such as a gateway or a bus.
     A line that passes it is refused (bar-crossed) unless edge pass lets it.
+  - In a batch the look is a field: {op: layer.look, id: <id>, look: box}.
 
 When refused:
   bar-crossed   a line passes the bar and may not; fix lets it pass

@@ -325,7 +325,11 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
           : { op: "layer.move", id: l.id, after: prev },
       );
     } else {
-      const op: Op = { op: "layer.add", id: l.id, label: l.label };
+      const op: Op = {
+        op: "layer.add",
+        id: l.id,
+        ...(l.label === undefined ? {} : { label: l.label }),
+      };
       if (prev !== undefined) op.after = prev;
       else if (order.length > 0) op.before = order[0] as string;
       ops.push(op);
@@ -342,7 +346,8 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
 
   for (const l of a.layers) {
     const was = b.layers.find((x) => x.id === l.id);
-    if (was !== undefined && was.label !== l.label) {
+    // No operation takes a row's label away, so a row that has none was made without one.
+    if (was !== undefined && l.label !== undefined && was.label !== l.label) {
       ops.push({ op: "layer.rename", id: l.id, label: l.label });
     }
     if (l.look !== was?.look) {

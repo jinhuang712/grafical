@@ -85,6 +85,12 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
     }
   });
 
+  it("layer add needs no label: its batch line shows only the id", () => {
+    const c = opCommands(build()).get("layer.add");
+    if (c === undefined) throw new Error("no layer.add");
+    expect(page(c)).toContain("  - {op: layer.add, id: <id>}\n");
+  });
+
   it("every command names its arguments and options as its operation's fields", () => {
     for (const [op, c] of opCommands(build())) {
       const fields = Object.keys((SCHEMAS[op] as z.ZodObject).shape);

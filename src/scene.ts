@@ -76,7 +76,8 @@ export interface SceneBand {
   /** The layer's id. */
   id: string;
   rect: Rect;
-  label: PlacedText;
+  /** Absent for a row with no label (DESIGN.md, "A row with a look is drawn"). */
+  label?: PlacedText;
   /** A row with no box, drawn as one bar that lines meet and may pass (DESIGN.md, "A row with no box as one bar"). */
   bar?: true;
   /** Drawn with a box's paint and a dark label, not the band's (DESIGN.md, "A row with no box as one bar"). */

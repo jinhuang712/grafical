@@ -463,7 +463,7 @@ export function build(): Command {
       .description("add a layer, at the bottom unless placed")
       .argument("<file>")
       .argument("<id>")
-      .requiredOption("--label <text>", "the name, short, as a reader would say it")
+      .option("--label <text>", "the name, short, as a reader would say it")
       .option("--before <layer>", "just above this row")
       .option("--after <layer>", "just below this row"),
   ).action(async (file: string, id: string, opts: Opts) => {

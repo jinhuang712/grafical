@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { drawing } from "../../src/check/drawing.ts";
 import { check } from "../../src/check/index.ts";
 import { layout } from "../../src/layout/index.ts";
-import { type Diagram, readDiagram } from "../../src/model/index.ts";
+import { applyOps, type Diagram, readDiagram, writeDiagram } from "../../src/model/index.ts";
 import type { Point } from "../../src/scene.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
@@ -84,7 +84,8 @@ edges:
       expect(b.rect.x).toBeLessThan(n.rect.x);
       expect(b.rect.x + b.rect.w).toBeGreaterThan(n.rect.x + n.rect.w);
     }
-    const t = b.label.bbox;
+    const t = b.label?.bbox;
+    if (t === undefined) throw new Error("no label");
     expect(t.y).toBeGreaterThan(b.rect.y);
     expect(t.y + t.h).toBeLessThan(b.rect.y + b.rect.h);
     expect(layout(bar(", look: band"), m).bands?.[0]?.box).toBeUndefined();
@@ -144,19 +145,48 @@ edges:
     // The band: around its boxes, its label in its head above them.
     expect(core).not.toHaveProperty("bar");
     expect(core).not.toHaveProperty("box");
-    expect(core.label.runs.map((r) => r.text).join("")).toBe("Core services");
+    expect(core.label?.runs.map((r) => r.text).join("")).toBe("Core services");
     for (const id of ["booking", "payments"]) {
       const r = s.nodes.find((x) => x.id === id)?.rect;
       if (r === undefined) throw new Error(id);
-      expect(core.rect.y).toBeLessThan(core.label.bbox.y);
-      expect(core.label.bbox.y + core.label.bbox.h).toBeLessThan(r.y);
+      expect(core.rect.y).toBeLessThan(core.label?.bbox.y ?? 0);
+      expect((core.label?.bbox.y ?? 0) + (core.label?.bbox.h ?? 0)).toBeLessThan(r.y);
       expect(r.y + r.h).toBeLessThan(core.rect.y + core.rect.h);
     }
     // The bar: one bar in a box's look, its label in it, passed by the line that may.
     expect(bus).toMatchObject({ bar: true, box: true });
     expect(bus.rect.h).toBe(40);
-    expect(bus.label.runs.map((r) => r.text).join("")).toBe("Event bus");
+    expect(bus.label?.runs.map((r) => r.text).join("")).toBe("Event bus");
     const line = drawing(d, s).lines.find((l) => l.id === "booking->trips");
     expect(line?.passes).toEqual(["bus"]);
+  });
+
+  it("draws no name for a drawn row without a label, and the file keeps it so", () => {
+    const d0 = rows(", look: band", ", look: box");
+    const r = applyOps(d0, [
+      { op: "layer.add", id: "spare", after: "bus" },
+      { op: "layer.look", id: "spare", look: "band" },
+      { op: "node.add", id: "cache", layer: "spare", label: "cache", first: true },
+    ]);
+    if ("errors" in r) throw new Error(JSON.stringify(r.errors));
+    const d = r.diagram;
+    expect(d.layers.find((l) => l.id === "spare")).not.toHaveProperty("label");
+    expect(readDiagram(writeDiagram(d))).toEqual(d);
+    const s = layout(d, m);
+    expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
+    const spare = s.bands?.find((b) => b.id === "spare");
+    expect(spare).toBeDefined();
+    expect(spare).not.toHaveProperty("label");
+    // The row with a name still shows it.
+    expect(s.bands?.find((b) => b.id === "core")?.label).toBeDefined();
+    // A bar without a label is drawn as a bar, with no name in it.
+    const bare = readDiagram(
+      writeDiagram(d).replace("  - id: bus\n    label: Event bus\n", "  - id: bus\n"),
+    ) as Diagram;
+    const bs = layout(bare, m);
+    const bus = bs.bands?.find((b) => b.id === "bus");
+    expect(bus).toMatchObject({ bar: true, box: true });
+    expect(bus).not.toHaveProperty("label");
+    expect(check(bare, bs, m).filter((x) => x.owner === "engine")).toEqual([]);
   });
 });

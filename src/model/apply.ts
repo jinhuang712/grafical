@@ -917,7 +917,11 @@ function addLayer(s: State, op: LayerAddOp, i: number): OpError[] {
     else at = op.before !== undefined ? idx : idx + 1;
   }
   if (errors.length > 0) return errors;
-  const layer: Layer = { id: op.id, label: op.label, nodes: [] };
+  const layer: Layer = {
+    id: op.id,
+    ...(op.label === undefined ? {} : { label: op.label }),
+    nodes: [],
+  };
   // A layer added inside a row lane's span joins the lane, so that the lane stays whole.
   const above = d.layers[at - 1]?.lane;
   if (above !== undefined && above === d.layers[at]?.lane) layer.lane = above;

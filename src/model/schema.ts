@@ -174,7 +174,7 @@ const wallSchema = z.strictObject({
 
 const layerSchema = z.strictObject({
   id: nodeId,
-  label: text,
+  label: text.optional(),
   lane: nodeId.optional(),
   look: z.enum(ROW_LOOKS).optional(),
   nodes: z.array(nodeSchema).default([]),
@@ -289,7 +289,7 @@ function buildNode(n: Parsed["layers"][number]["nodes"][number] | Parsed["nodes"
 function build(p: Parsed): Diagram {
   const layers: Layer[] = p.layers.map((l) => ({
     id: l.id,
-    label: l.label,
+    ...(l.label === undefined ? {} : { label: l.label }),
     ...(l.lane === undefined ? {} : { lane: l.lane }),
     ...(l.look === undefined ? {} : { look: l.look }),
     nodes: l.nodes.map(buildNode),

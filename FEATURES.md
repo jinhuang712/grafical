@@ -266,7 +266,7 @@ The agent says what connects. grafical draws every line.
 A box sits in a row, in an order. A row only places, and is not drawn unless it has a look or a line ends at it.
 
 ```sh
-grafical layer add <file> <id> --label <text> [--before <row> | --after <row>]
+grafical layer add <file> <id> [--label <text>] [--before <row> | --after <row>]
 grafical layer rename <file> <id> --label <text>
 grafical layer look <file> <id> [box|band]
 grafical layer move <file> <id> --first | --last | --before <row> | --after <row>
@@ -278,6 +278,7 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 
 - A new row goes to the bottom unless `--before` or `--after` places it.
 - A box added to a row, or moved into another row, says where it goes: `--first`, `--last`, `--before` or `--after`. Without one it is refused as `missing-field`, with the row and the boxes in it. Only the first box of an empty row needs none (DESIGN.md, "The agent states every order").
+- A row's label is optional. It is drawn only with the row: in a band's head, or in a bar. A drawn row with no label draws no name, and a band without one has no head (DESIGN.md, "A row's label is optional").
 - `layer split` moves the second half of a row, or its boxes from one box on, into a new row below it.
 - A row can be removed only when it is empty, and the lines that end at it go with it.
 - `layer look` draws a row, with its label, even when no line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row is drawn only when a line ends at it, a row with no box as a box and a row with boxes as a band. A row with no box and a look is a bar, checked as one: a line that passes it needs `--pass` (`bar-crossed`), and it may not lie between the first and last rows of a group (`bar-in-group`, fixed by `layer look <file> <row>`, which takes the look away) (DESIGN.md, "A row with a look is drawn").

@@ -63,6 +63,16 @@ describe("readDiagram and writeDiagram", () => {
     expect(out).not.toContain("align");
   });
 
+  it("reads and writes a row without a label", () => {
+    const text =
+      "grafical: 1\ntitle: T\ndensity: normal\nlayers:\n  - id: a\n    look: band\n    nodes:\n      - id: n\n        label: N\n";
+    const d = readDiagram(text) as Diagram;
+    expect(d.layers[0]).not.toHaveProperty("label");
+    const out = writeDiagram(d);
+    expect(out).not.toMatch(/label: undefined|id: a\n {4}label/);
+    expect(readDiagram(out)).toEqual(d);
+  });
+
   it("writes keys in the documented order", () => {
     const out = writeDiagram(readDiagram(FILE) as Diagram);
     const keys = out.split("\n").map((l) => l.trim().replace(/^- /, "").split(":")[0]);
