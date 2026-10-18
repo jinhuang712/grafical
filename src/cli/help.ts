@@ -21,7 +21,7 @@ does not draw sequence diagrams, ER or class diagrams, mind maps or timelines.`;
 /** The rest of `grafical --help`: how to work, every way to draw, and where the guides are. */
 export const PROGRAM_AFTER = `
 How to work:
-  1. grafical new <file> --title <text> --subtitle <text> --note <text>
+  1. grafical new <file> --title <text> --subtitle <text>
   2. Write the whole draft as one batch file, then
      grafical apply <file> batch.yaml. apply --help has a full example, and
      each command's --help shows its line in a batch.
@@ -51,13 +51,13 @@ Ways to draw, by the story each tells:
   two sides               column add; wall add keeps two parts apart, and
                           with --label draws a divider
   what the boxes cannot   note add, a card or a footnote; diagram legend;
-  say                     the subtitle; a note "Not shown: ..."
+  say                     the subtitle; a footnote (new --note)
 
 How common kinds of diagram are usually drawn, if you want it: grafical guide.
 `;
 
 /** The example of `grafical apply --help`, which the tests build and check. */
-export const EXAMPLE_NEW = `grafical new orders.grafical.yaml --title "Order desk and shipping" --subtitle "Two services coupled only by the shared orders database." --note "Not shown: payment retries, admin tools."`;
+export const EXAMPLE_NEW = `grafical new orders.grafical.yaml --title "Order desk and shipping" --subtitle "Two services coupled only by the shared orders database."`;
 export const EXAMPLE_BATCH = `- {op: layer.add, id: row-callers, label: Callers}
 - {op: layer.add, id: row-entry, label: Entry}
 - {op: layer.add, id: row-core, label: Core}
@@ -94,15 +94,13 @@ export const PAGES: Record<string, { about?: string; after?: string }> = {
     after: `
 Good to know:
   - The title names the system or process. The subtitle says in one
-    sentence what the diagram shows. The note says what it leaves out,
-    starting "Not shown:".
+    sentence what the diagram shows. The note is a footnote.
   - Leave --density, --sizing and --style out unless the user asks.
   - Next, write the whole draft as one batch: grafical apply --help.
 
 Example:
   grafical new shop.grafical.yaml --title "Shop checkout" \\
-    --subtitle "How an order reaches the warehouse." \\
-    --note "Not shown: refunds, returns."
+    --subtitle "How an order reaches the warehouse."
 `,
   },
 

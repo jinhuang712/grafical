@@ -165,7 +165,7 @@ export function build(): Command {
         "a theme (default, dark, print) or a <name>.grafical-style.yaml beside the file",
       )
       .option("--subtitle <text>", "one sentence under the title")
-      .option("--note <text>", 'a footnote, such as "Not shown: ..."'),
+      .option("--note <text>", "a footnote"),
   ).action(async (file: string, opts: Opts) => {
     const names = ["title", "density", "sizing", "style", "subtitle", "note"];
     await write(file, { op: "diagram.new", ...pick(opts, names) }, opts, true);

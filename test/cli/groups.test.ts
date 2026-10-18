@@ -47,11 +47,9 @@ describe("grouped diagrams", () => {
     expect(r.code).toBe(0);
     const text = read("orders.grafical.yaml");
     expect(text).toContain("subtitle: Two services coupled");
-    expect(text).toContain("note: ");
     expect(text).toMatch(/groups:\n {2}- id: order-desk\n {4}label: order-desk\n/);
     const s = run("show", "orders.grafical.yaml");
     expect(s.out).toContain('subtitle "Two services coupled only by the shared orders database."');
-    expect(s.out).toContain('note "Not shown: payment retries, admin tools."');
     expect(s.out).toContain('group order-desk "order-desk": gateway, checkout');
     expect(s.out).toContain('group shipping "shipping": events, dispatcher');
     expect(s.out).toContain("group=shipping");
@@ -159,7 +157,7 @@ describe("grouped diagrams", () => {
 
   it("the help teaches the grouped style", () => {
     const help = run("--help").out + run("apply", "--help").out + run("group", "add", "--help").out;
-    for (const w of ["group add", "subtitle", "Not shown:", "sublabel"]) {
+    for (const w of ["group add", "subtitle", "sublabel"]) {
       expect(help).toContain(w);
     }
   });
