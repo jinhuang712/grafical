@@ -2,7 +2,8 @@
 // sentence per code, and next names real commands only, in the order the help lists them.
 
 import { describe, expect, it } from "vitest";
-import { CODES, DESCRIPTIONS, NEXT, nextOf } from "../../src/cli/problems.ts";
+import { CODES, DESCRIPTIONS, errorBlock, NEXT, nextOf } from "../../src/cli/problems.ts";
+import { applyOps, type Diagram, type Op, readDiagram } from "../../src/model/index.ts";
 import { commandOrder } from "./commands.ts";
 
 /** Every list of commands NEXT holds, with the code and variant it is for. */
@@ -42,6 +43,46 @@ describe("problems", () => {
       "layer look",
       "layer move",
       "node move",
+    ]);
+  });
+
+  // Found by review on 2026-10-18: a box moved by steps that keeps an alignment was refused with only node move.
+  it("a box moved by steps names the commands that take away its alignment, column or lane", () => {
+    const read = (text: string) => {
+      const d = readDiagram(text);
+      if (Array.isArray(d)) throw new Error(JSON.stringify(d));
+      return d;
+    };
+    const rows = `layers:
+  - {id: top, label: Top, nodes: [{id: web, label: Web}, {id: api, label: API}]}
+  - {id: low, label: Low, nodes: [{id: db, label: DB, align: web, lane: ops}, {id: cache, label: Cache, column: left}]}
+edges: []
+`;
+    const laned = read(`grafical: 1
+title: stepped
+density: normal
+lanes:
+  - {id: ops, label: Ops}
+${rows.replace(", column: left", "")}`);
+    const columned = read(`grafical: 1
+title: stepped
+density: normal
+columns:
+  - {id: left}
+${rows.replace(", lane: ops", "")}`);
+    const next = (d: Diagram, op: Op) => {
+      const r = applyOps(d, [op]);
+      if (!("errors" in r)) throw new Error(JSON.stringify(op));
+      return r.errors
+        .filter((e) => e.code === "conflicting-position")
+        .map((e) => `${e.field}: ${errorBlock(e).next.join(", ")}`);
+    };
+    expect(next(laned, { op: "node.move", id: "db", from: "api", down: 1 } as Op)).toEqual([
+      "from,align: node move, node align",
+      "from,lane: lane leave, node move",
+    ]);
+    expect(next(columned, { op: "node.move", id: "cache", from: "web", down: 1 } as Op)).toEqual([
+      "from,column: column leave, node move",
     ]);
   });
 

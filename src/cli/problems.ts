@@ -198,7 +198,13 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "column-order": ["column join", "column leave", "node move"],
   "conflicting-fields": [],
   "conflicting-option": [],
-  "conflicting-position": { placed: [], stepped: ["node move"] },
+  "conflicting-position": {
+    placed: [],
+    stepped: ["node move"],
+    align: ["node move", "node align"],
+    column: ["column leave", "node move"],
+    lane: ["lane leave", "node move"],
+  },
   "copy-conflict": ["node move", "node align"],
   "crowded-label": ["node move", "node swap", "edge relabel"],
   crossing: ["group order", "layer move", "node move", "node swap"],
@@ -330,7 +336,9 @@ export function variantOf(
       // A bar a line ends at, or one drawn for its look alone.
       return facts.edge === undefined ? "look" : "line";
     case "conflicting-position":
-      return facts.node === undefined ? "placed" : "stepped";
+      // A box moved by steps that keeps an alignment, a column or a lane can lose that, or not move by steps.
+      if (facts.node === undefined) return "placed";
+      return field?.startsWith("from,") ? field.slice("from,".length) : "stepped";
     case "duplicate-id":
       return facts.is ?? "other";
     case "label-blocked":
