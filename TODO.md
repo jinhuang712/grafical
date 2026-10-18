@@ -31,3 +31,15 @@ The split is on purpose: rule 4 of DESIGN.md, "A target picture with measured ru
 ## A step's badge across a lane's side
 
 `check --all` counts a lane's side across a line's label as `text-crossing`, but not across a step's badge, and the badge's place does not keep off it (DESIGN.md, "Step badges ride the line"). The badge should keep off a lane's side as the label does, and `step-collision` should count one it touches.
+
+## Usage errors ignore --json
+
+A command line grafical cannot read, such as `grafical show d.grafical.yaml --bogus --json`, prints its block as text on standard error, where every other refusal with `--json` prints JSON on standard output. An agent that asked for JSON gets text it did not ask for.
+
+## No blank line before a refused batch in try
+
+`try` with several batches prints an accepted batch's `delta` record and then the next batch's `failed batch=<file> changed=-` on the next line, where every other outcome line has a blank line before the blocks that follow. The records still read, but the blocks of one refusal are harder to tell apart from the records of the batch before.
+
+## check says ok for a file every write refuses
+
+A file that the diagram's own checks refuse, such as a group split around a box in one row, loads, and `check` prints `ok` with its warnings and counts: `check` reports defects and warnings, not the whole diagram's errors. Every write is then refused with that error, `already in the file`. `check` should report them, as a write does.

@@ -859,7 +859,7 @@ Decided by the owner on 2026-10-18, after one Haiku run (a subagent with grafica
 
 So:
 - **`--help` is the one way to a page.** The program and its groups have no `help` command, and no page lists one.
-- **A wrong command is refused with the one it most likely means.** `grafical help apply` prints `error code=unknown-command found=help likely="grafical apply --help"` and exits 2. Two names in one word (`"node add"`, `node.add`), `help` before or inside a group (`grafical node help add`), and a misspelling near one name (`nodee`, at most a third of its letters wrong, or one) are read the same way. With `--help` or `help`, `likely` is a page; without, the command. A word near no command has no `likely`, except with `--help`, where it is the page of the command before it. The record replaces the page commander would print.
+- **A wrong command is refused with the one it most likely means.** `grafical help apply` prints `error code=unknown-command found=help likely="grafical apply --help"` and exits 2. Two names in one word (`"node add"`, `node.add`), `help` before or inside a group (`grafical node help add`), and a misspelling near one name (`nodee`, at most a third of its letters wrong, or one) are read the same way. `likely` is the word meant ("Refusals say what happened and which commands can change it"): `--help` for `help`, the command's name for the rest. A word near no command has no `likely`, with `--help` or without. The record replaces the page commander would print.
 
 Rejected:
 - Keeping `help <command>` and fixing its exit code. Two ways to one page are two forms an agent tries, and the second reads one word only.
