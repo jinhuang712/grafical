@@ -689,7 +689,13 @@ export function acrossTitle(scene: Scene, id: string): string[] {
  * agent's to fix: another place, or none (DESIGN.md, "The agent states where a group's label sits").
  * The facts name the places where no line would come near it.
  */
-function checkTitles(facts: Diagram, scene: Scene, measurer: Measurer, out: Found[]): void {
+function checkTitles(
+  facts: Diagram,
+  scene: Scene,
+  measurer: Measurer,
+  places: boolean,
+  out: Found[],
+): void {
   for (const group of facts.groups ?? []) {
     const place = group.titleAt;
     const lines = acrossTitle(scene, group.id);
@@ -698,13 +704,19 @@ function checkTitles(facts: Diagram, scene: Scene, measurer: Measurer, out: Foun
       ...facts,
       groups: (facts.groups ?? []).map((g) => (g.id === group.id ? { ...g, titleAt: p } : g)),
     });
-    const clear = GROUP_TITLES.filter(
-      (p) => p !== place && acrossTitle(layout(at(p), measurer), group.id).length === 0,
-    );
+    // Each place is a layout of its own.
+    const clear = places
+      ? GROUP_TITLES.filter(
+          (p) => p !== place && acrossTitle(layout(at(p), measurer), group.id).length === 0,
+        )
+      : undefined;
     out.push({
       code: "title-blocked",
       elements: [group.id, ...lines],
-      facts: { ...(place === undefined ? {} : { place }), clear },
+      facts: {
+        ...(place === undefined ? {} : { place }),
+        ...(clear === undefined ? {} : { clear }),
+      },
     });
   }
 }
@@ -716,8 +728,12 @@ function compare(a: string, b: string): number {
 /** A defect before its owner is filled in from its code. */
 type Found = Omit<Defect, "owner">;
 
-/** Every defect, agent-owned and engine-owned, in a deterministic order (DESIGN.md, "Defects owned by who can fix them"). */
-export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[] {
+/**
+ * Every defect, agent-owned and engine-owned, in a deterministic order (DESIGN.md, "Defects owned by who can fix them").
+ * Without `places`, a blocked title does not list the places clear of lines, each of which takes a layout: for the
+ * write path, which only asks which defects a diagram has while it finds where one comes from.
+ */
+export function check(facts: Diagram, scene: Scene, measurer: Measurer, places = true): Defect[] {
   // Boxes placed by steps are checked in the rows they are drawn in (DESIGN.md, "Steps from another box").
   const diagram = placeSteps(facts).d;
   const out: Found[] = [];
@@ -736,7 +752,7 @@ export function check(facts: Diagram, scene: Scene, measurer: Measurer): Defect[
   checkGroupIntruder(scene, out);
   checkLaneStray(diagram, scene, out);
   checkWalls(diagram, scene, out);
-  checkTitles(facts, scene, measurer, out);
+  checkTitles(facts, scene, measurer, places, out);
   checkNotes(diagram, measurer, out);
   checkMissingGlyphs(diagram, measurer, out);
   const order = (d: Found): number => DEFECT_CODES.indexOf(d.code);

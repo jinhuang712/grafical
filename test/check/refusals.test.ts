@@ -1,27 +1,19 @@
-// Every refusal says what happened and names only commands that exist (DESIGN.md, "Refusals say what happened and
-// which commands can change it"). Random single changes to the saved fixtures and to fuzz diagrams, of the kinds an
-// agent makes, are refused; each refusal, as the command line would print it, has its code's sentence, and its next
-// names real commands, in the order the help lists them.
+// Every refusal says what happened, what caused it, and names only commands that exist (DESIGN.md, "Refusals say
+// what happened and which commands can change it"). Random single changes to the saved fixtures and to fuzz
+// diagrams, of the kinds an agent makes, are refused, each as the second line of a batch whose first changes nothing;
+// each refusal, as the write path reports it, has its code's sentence, the change's line as its source, and in next
+// real commands, in the order the help lists them.
 
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { check } from "../../src/check/index.ts";
-import {
-  type Block,
-  DESCRIPTIONS,
-  defectBlock,
-  errorBlock,
-  kindsOf,
-} from "../../src/cli/problems.ts";
-import type { OpError } from "../../src/errors.ts";
-import { layout } from "../../src/layout/index.ts";
-import { applyOps, readDiagram } from "../../src/model/index.ts";
-import { type Op, parseOps } from "../../src/model/ops.ts";
+import { attempt, batchOps, blocks, isReport } from "../../src/cli/pipeline.ts";
+import { type Block, DESCRIPTIONS } from "../../src/cli/problems.ts";
+import { readDiagram } from "../../src/model/index.ts";
+import type { Op } from "../../src/model/ops.ts";
 import type { Diagram } from "../../src/model/types.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
-import { unknownWeights } from "../../src/theme/themes.ts";
 import { commandOrder } from "../cli/commands.ts";
 import { generate, rng } from "../fuzz/gen.ts";
 
@@ -32,18 +24,13 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-/** What a write would refuse, as a batch is read and checked, as blocks; empty when it would be written. */
-function refused(d: Diagram, raw: unknown[]): Block[] {
-  const ops = parseOps(raw);
-  if (ops.some((x) => "code" in x)) return (ops as OpError[]).map(errorBlock);
-  const r = applyOps(d, ops as Op[]);
-  if ("errors" in r) return r.errors.map(errorBlock);
-  const weights = unknownWeights(r.diagram);
-  if (weights.length > 0) return weights.map(errorBlock);
-  const kinds = kindsOf(r.diagram);
-  return check(r.diagram, layout(r.diagram, m), m)
-    .filter((x) => x.owner === "agent")
-    .map((x) => defectBlock(x, kinds));
+/** What a batch of these items would be refused for, as the write path reports it; empty when it would be written. */
+function refused(d: Diagram, items: unknown[]): Block[] {
+  const text = items.map((x) => `- ${JSON.stringify(x)}\n`).join("");
+  const read = batchOps("change.yaml", text, "grafical apply d.grafical.yaml change.yaml");
+  if (isReport(read)) return blocks(read);
+  const r = attempt(d, read.ops, read.origin, m);
+  return isReport(r) ? blocks(r) : [];
 }
 
 const PLACES = ["top-left", "top", "top-right", "bottom-left", "left", "outside-top"];
@@ -91,6 +78,11 @@ function changes(d: Diagram, seed: number, count: number): Op[] {
   return out;
 }
 
+/** An operation that changes nothing. */
+function still(d: Diagram): Op {
+  return { op: "diagram.title", text: d.title };
+}
+
 function diagrams(): [string, Diagram][] {
   const dir = join(import.meta.dirname, "../fixtures");
   const saved = readdirSync(dir)
@@ -103,7 +95,7 @@ function diagrams(): [string, Diagram][] {
   ]);
   // A diagram that refuses a change of nothing is refused for itself, not for the change.
   return [...saved, ...(fuzz as [string, Diagram][])].filter(
-    ([, d]) => refused(d, [{ op: "diagram.title", text: d.title }]).length === 0,
+    ([, d]) => refused(d, [still(d)]).length === 0,
   );
 }
 
@@ -113,16 +105,19 @@ function k0(name: string): number {
 }
 
 describe("the refusals of random changes", () => {
-  it("each say what happened and name only commands that exist, in the help's order", () => {
+  it("each say what happened and what caused it, and name only commands that exist, in the help's order", () => {
     const order = commandOrder();
     const wrong: string[] = [];
     const codes = new Set<string>();
     for (const [name, d] of diagrams()) {
       for (const [k, op] of changes(d, name.length * 31 + k0(name), 20).entries()) {
-        for (const b of refused(d, [op])) {
+        for (const b of refused(d, [still(d), op])) {
           codes.add(b.code);
           const at = `${name} change ${k} ${JSON.stringify(op)}: ${b.kind} ${b.code}`;
           if (b.description !== DESCRIPTIONS[b.code]) wrong.push(`${at}: description`);
+          // The first line changes nothing, so every problem is the change's.
+          if (b.source !== `change.yaml line 2: ${JSON.stringify(op)}`)
+            wrong.push(`${at}: source ${b.source}`);
           const places = b.next.map((x) => order.indexOf(x));
           if (places.some((p) => p < 0)) wrong.push(`${at}: next ${b.next.join(", ")}`);
           if (places.some((p, i) => i > 0 && p < (places[i - 1] as number)))

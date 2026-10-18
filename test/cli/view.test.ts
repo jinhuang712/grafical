@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { runWrite } from "../../src/cli/pipeline.ts";
+import type { Origin } from "../../src/cli/source.ts";
 import {
   changedParts,
   describeOp,
@@ -19,6 +20,9 @@ import { createMeasurer, type Measurer } from "../../src/text/index.ts";
 import { tiny } from "../fixtures/tiny.ts";
 
 vi.setConfig({ testTimeout: 30_000 });
+
+/** Where the writes of these tests come from: a command line. */
+const here: Origin = { command: "grafical node rename d.grafical.yaml api --label orders-svc" };
 
 let m: Measurer;
 let dir: string;
@@ -153,7 +157,7 @@ describe("startViewer", () => {
 
       // An edit by another process, the way an agent makes it.
       expect(
-        (await runWrite(file, [{ op: "node.rename", id: "api", label: "orders-svc" }])).ok,
+        (await runWrite(file, [{ op: "node.rename", id: "api", label: "orders-svc" }], here)).ok,
       ).toBe(true);
       const renamed = await stream.next();
       expect(renamed.svg).toContain("orders-svc");
@@ -197,7 +201,9 @@ describe("startViewer", () => {
       expect(waiting.svg).toBe("");
       expect(waiting.stale).toBe(true);
       expect(waiting.problems.join("\n")).toContain("file-not-found");
-      expect((await runWrite(file, [{ op: "diagram.new", title: "Later" }], true)).ok).toBe(true);
+      expect((await runWrite(file, [{ op: "diagram.new", title: "Later" }], here, true)).ok).toBe(
+        true,
+      );
       const drawn = await stream.next();
       expect(drawn.stale).toBe(false);
       expect(drawn.svg).toContain("Later");

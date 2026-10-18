@@ -179,6 +179,7 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
         "",
         "error: unknown-command",
         "description: No command has the name.",
+        'source: grafical "node add" --help',
         "detail:",
         "  found: node add",
         "  likely: node add",

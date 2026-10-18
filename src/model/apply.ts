@@ -2114,35 +2114,39 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
   // Columns keep each row in column order (DESIGN.md, "Columns beside rows").
   touch(s, ...orderByColumns(s.d));
   const last = Math.max(0, ops.length - 1);
+  // What follows is found in the diagram the whole batch makes.
+  const whole = (errors: OpError[]): ApplyResult => ({
+    errors: errors.map((e) => ({ ...e, whole: true })),
+  });
   const broken = checkIntegrity(s.d, last);
-  if (broken.length > 0) return { errors: broken };
+  if (broken.length > 0) return whole(broken);
   // An alignment that cannot hold with the order of its layers is an operation error (DESIGN.md, "Layout computed again on every change").
   const problems = layoutModule.validateAlignments(s.d);
   if (problems.length > 0) {
-    return {
-      errors: problems.map((p) => ({
+    return whole(
+      problems.map((p) => ({
         code: p.code,
         index: last,
         field: "align",
         found: p.found,
         facts: p.facts,
       })),
-    };
+    );
   }
   // A group the engine cannot box without a non-member inside is an operation error (DESIGN.md, "Rows unseen, groups as systems").
   // A row between members that holds none is boxed over, its nodes beside the box. No field of an operation is at
   // fault, so the facts name what is there.
   const groupProblems = layoutModule.validateGroups(s.d);
   if (groupProblems.length > 0) {
-    return {
-      errors: groupProblems.map((p) => ({ code: p.code, index: last, found: "", facts: p.facts })),
-    };
+    return whole(
+      groupProblems.map((p) => ({ code: p.code, index: last, found: "", facts: p.facts })),
+    );
   }
   // A box placed by steps whose cell another fact keeps is an operation error (DESIGN.md, "Steps from another box").
   const stepProblems = layoutModule.validateSteps(s.d);
   if (stepProblems.length > 0) {
-    return {
-      errors: stepProblems.map((p) => {
+    return whole(
+      stepProblems.map((p) => {
         // Two boxes in each other's way: the error names the one this batch moved.
         const other = typeof p.facts.node === "string" ? p.facts.node : undefined;
         const swap =
@@ -2154,7 +2158,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
         const facts = swap ? { ...p.facts, node: p.found } : p.facts;
         return { code: p.code, index: last, field: "from", found, facts };
       }),
-    };
+    );
   }
   if (s.d.groups !== undefined && s.d.groups.length === 0) delete s.d.groups;
   if (s.d.lanes !== undefined && s.d.lanes.length === 0) delete s.d.lanes;

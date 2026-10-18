@@ -149,6 +149,7 @@ describe("grouped diagrams", () => {
         "",
         "error: missing-field",
         "description: The operation lacks a field it needs, such as a box's place in a row that has boxes.",
+        'source: grafical group copy copy.grafical.yaml zone zone-b --label "Zone B" --suffix -b',
         "detail:",
         "  field: place",
         "  allowed: zone",
@@ -161,7 +162,7 @@ describe("grouped diagrams", () => {
     );
     expect(run("show", f).out).toContain('layer r2 "R2": web "Web" service group=zone | web-b');
     expect(run(...args, "--after", "zone").out).toContain(
-      "error: duplicate-id\ndescription: The id is taken.\ndetail:\n  field: into\n  found: zone-b\n",
+      'error: duplicate-id\ndescription: The id is taken.\nsource: grafical group copy copy.grafical.yaml zone zone-b --label "Zone B" --suffix -b --after zone\ndetail:\n  field: into\n  found: zone-b\n',
     );
   });
 

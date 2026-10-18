@@ -379,6 +379,7 @@ export function errorBlock(e: OpError): Block {
     kind: "error",
     code: e.code,
     description: DESCRIPTIONS[e.code],
+    ...(e.source !== undefined ? { source: e.source } : {}),
     op: e.index,
     detail: {
       ...(e.field !== undefined && e.field !== "" ? { field: e.field } : {}),
@@ -428,6 +429,7 @@ export function defectBlock(d: Defect, kinds: ReadonlyMap<string, string>): Bloc
     kind: "defect",
     code: d.code,
     description: DESCRIPTIONS[d.code],
+    ...(d.source !== undefined ? { source: d.source } : {}),
     detail: {
       owner: d.owner,
       ...(d.field !== undefined ? { field: d.field } : {}),

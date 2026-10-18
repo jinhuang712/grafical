@@ -231,6 +231,14 @@ export interface OpError {
   /** The value at fault, as given; empty when it is missing. */
   found: string;
   facts?: Facts;
+  /**
+   * Found only once the whole batch is applied, in the diagram it makes, so that no one operation's index names
+   * it; the write path finds the operation after which it appears (DESIGN.md, "Refusals say what happened and which
+   * commands can change it").
+   */
+  whole?: true;
+  /** What caused it, as the report prints it: the command line, a batch's line, or what was in the file before. */
+  source?: string;
 }
 
 export const DEFECT_CODES = [
@@ -301,4 +309,6 @@ export interface Defect {
   found?: string;
   /** What is there. */
   facts: Facts;
+  /** What caused it, as for an error. */
+  source?: string;
 }

@@ -256,6 +256,7 @@ describe("write commands", () => {
         "",
         "error: unknown-option",
         "description: The command has no option of the name.",
+        "source: grafical show single.grafical.yaml --bogus",
         "detail:",
         "  found: --bogus",
         "next: -",

@@ -200,6 +200,7 @@ describe("group operations", () => {
       index: 0,
       found: "",
       facts: { node: "y", row: "r", group: "g", between: ["x", "z"] },
+      whole: true,
     });
     // Joining the node in between, or grouping neighbours, is fine.
     ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y", "z"] }]);

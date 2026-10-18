@@ -5,7 +5,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
-import { parse } from "yaml";
 import {
   bentLines,
   type Counts,
@@ -19,9 +18,8 @@ import type { Facts, UsageCode } from "../errors.ts";
 import { USAGE_CODES } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
-import { yamlError } from "../model/io.ts";
 import type { Op, OpName } from "../model/ops.ts";
-import { parseOp, parseOps } from "../model/ops.ts";
+import { parseOp } from "../model/ops.ts";
 import { STEP_KEYS } from "../model/steps.ts";
 import { closest, editDistance } from "../model/suggest.ts";
 import {
@@ -41,6 +39,7 @@ import { atRevision, formatOps } from "./diff.ts";
 import { GUIDES, guideList, guideNamed } from "./guides.ts";
 import { PAGES, PROGRAM_ABOUT, PROGRAM_AFTER } from "./help.ts";
 import {
+  batchOps,
   emit,
   failure,
   fileError,
@@ -56,6 +55,7 @@ import {
 } from "./pipeline.ts";
 import { type Block, kindsOf, usageBlock } from "./problems.ts";
 import { showDiagram } from "./show.ts";
+import { commandLine, type Origin } from "./source.ts";
 import { openWindow, startViewer, windowSize } from "./view.ts";
 
 type Opts = Record<string, unknown>;
@@ -96,19 +96,46 @@ function withSteps(c: Command): Command {
     .option("--right <n>", "steps right");
 }
 
+/** The words of the command line, after `grafical`, as main() was given them. */
+let typed: readonly string[] = process.argv.slice(2);
+
+/** A single command's origin: the command line as typed. */
+const asTyped = (): Origin => ({ command: commandLine(typed) });
+
+/** The report, each problem with a source: the command line where nothing else caused it. */
+function own(r: Report): Report {
+  const command = commandLine(typed);
+  return {
+    ...r,
+    errors: r.errors.map((e) => (e.source !== undefined ? e : { ...e, source: command })),
+    defects: r.defects.map((d) => (d.source !== undefined ? d : { ...d, source: command })),
+  };
+}
+
+/** Prints the report, its problems with their sources, and sets the exit code. */
+function say(r: Report, json: boolean, extra?: Record<string, unknown>, head?: string[]) {
+  process.exitCode = emit(own(r), json, extra, head);
+}
+
 /** Runs an operation built from flags through the shared write path. */
 async function write(file: string, raw: Record<string, unknown>, opts: Opts, create = false) {
   const op = parseOp(raw, 0);
   if (Array.isArray(op)) {
-    process.exitCode = emit(failure(op), opts.json === true);
+    say(failure(op), opts.json === true);
     return;
   }
-  await finish(file, [op], opts, create);
+  await finish(file, [op], opts, asTyped(), create);
 }
 
-async function finish(file: string, ops: Op[], opts: Opts, create = false, counts = false) {
-  const report = await runWrite(file, ops, create, counts);
-  process.exitCode = emit(report, opts.json === true);
+async function finish(
+  file: string,
+  ops: Op[],
+  opts: Opts,
+  origin: Origin,
+  create = false,
+  counts = false,
+) {
+  say(await runWrite(file, ops, origin, create, counts), opts.json === true);
 }
 
 function renderName(file: string): string {
@@ -944,9 +971,9 @@ export function build(): Command {
       .argument("<file>")
       .argument("<batch.yaml>"),
   ).action(async (file: string, batch: string, opts: Opts) => {
-    const ops = readBatch(batch, opts);
+    const read = readBatch(batch, opts);
     // A batch is usually a draft or a large change: its report carries the counts (DESIGN.md, "Records over prose").
-    if (ops !== undefined) await finish(file, ops, opts, false, true);
+    if (read !== undefined) await finish(file, read.ops, opts, read.origin, false, true);
   });
 
   json(
@@ -957,11 +984,11 @@ export function build(): Command {
       .argument("<batch...>"),
   ).action(async (file: string, batches: string[], opts: Opts) => {
     if (batches.length === 1) {
-      const ops = readBatch(batches[0] as string, opts);
-      if (ops === undefined) return;
-      const r = await tryWrite(file, ops);
+      const read = readBatch(batches[0] as string, opts);
+      if (read === undefined) return;
+      const r = await tryWrite(file, read.ops, read.origin);
       if (isReport(r)) {
-        process.exitCode = emit(r, opts.json === true);
+        say(r, opts.json === true);
       } else if (opts.json === true) {
         const body = { ok: true, changed: r.report.changed, before: r.before, after: r.after };
         process.stdout.write(`${JSON.stringify({ ...body, delta: delta(r.before, r.after) })}\n`);
@@ -984,7 +1011,7 @@ export function build(): Command {
   ).action(async (file: string, opts: Opts) => {
     const d = loadDiagram(file);
     if (isReport(d)) {
-      process.exitCode = emit(d, opts.json === true);
+      say(d, opts.json === true);
     } else if (opts.drawn === true) {
       const dr = drawing(d, layout(d, await createMeasurer()));
       process.stdout.write(
@@ -1008,12 +1035,12 @@ export function build(): Command {
   ).action((file: string, rev: string, opts: Opts) => {
     const now = loadDiagram(file);
     if (isReport(now)) {
-      process.exitCode = emit(now, opts.json === true);
+      say(now, opts.json === true);
       return;
     }
     const was = atRevision(file, rev);
     if (was !== null && isReport(was)) {
-      process.exitCode = emit(was, opts.json === true);
+      say(was, opts.json === true);
       return;
     }
     const ops = diffDiagrams(was, now);
@@ -1033,13 +1060,13 @@ export function build(): Command {
   ).action(async (file: string, opts: Opts) => {
     const d = loadDiagram(file);
     if (isReport(d)) {
-      process.exitCode = emit(d, opts.json === true);
+      say(d, opts.json === true);
       return;
     }
     const m = await createMeasurer();
     const defects = inspect(d, m, opts.all === true);
     const dr = drawing(d, layout(d, m));
-    process.exitCode = emit(
+    say(
       {
         ok: defects.length === 0,
         changed: [],
@@ -1068,7 +1095,7 @@ export function build(): Command {
     }
     const d = loadDiagram(file);
     if (isReport(d)) {
-      process.exitCode = emit(d, opts.json === true);
+      say(d, opts.json === true);
       return;
     }
     const m = await createMeasurer();
@@ -1098,7 +1125,7 @@ export function build(): Command {
       kinds: kindsOf(d),
     };
     const wrote = files.map((f) => record("wrote", { file: f }));
-    process.exitCode = emit(report, opts.json === true, { files }, wrote);
+    say(report, opts.json === true, { files }, wrote);
   });
 
   program
@@ -1159,32 +1186,25 @@ export function build(): Command {
   return program;
 }
 
-/** A batch file's operations, or the refusal to read it. */
-function readBatchOps(batch: string): Op[] | Report {
+/** A batch file's operations and where each is in it, or the refusal to read it. */
+function readBatchOps(batch: string): { ops: Op[]; origin: Origin } | Report {
   let text: string;
-  let raw: unknown;
   try {
     text = readFileSync(batch, "utf8");
   } catch {
-    return fileError("batch-unreadable", batch);
+    return own(fileError("batch-unreadable", batch));
   }
-  try {
-    raw = parse(text);
-  } catch (err) {
-    return failure([yamlError(text, err)]);
-  }
-  const ops = parseOps(raw);
-  return isOps(ops) ? ops : failure(ops);
+  return batchOps(batch, text, commandLine(typed));
 }
 
 /** A batch file's operations, or nothing when it is refused, with the refusal printed. */
-function readBatch(batch: string, opts: Opts): Op[] | undefined {
-  const ops = readBatchOps(batch);
-  if (isReport(ops)) {
-    process.exitCode = emit(ops, opts.json === true);
+function readBatch(batch: string, opts: Opts): { ops: Op[]; origin: Origin } | undefined {
+  const read = readBatchOps(batch);
+  if (isReport(read)) {
+    say(read, opts.json === true);
     return undefined;
   }
-  return ops;
+  return read;
 }
 
 /**
@@ -1198,14 +1218,14 @@ async function tryMany(file: string, batches: string[], json: boolean): Promise<
   let before: Counts | undefined;
   let code = 0;
   for (const batch of batches) {
-    const ops = readBatchOps(batch);
-    const r = isReport(ops) ? ops : await tryWrite(file, ops);
+    const read = readBatchOps(batch);
+    const r = isReport(read) ? read : await tryWrite(file, read.ops, read.origin);
     if (isReport(r)) {
       code = 1;
       // The refusal as apply prints it, its outcome keyed by the batch.
-      const [, ...rest] = formatReport(r).trimEnd().split("\n");
+      const [, ...rest] = formatReport(own(r)).trimEnd().split("\n");
       out.push(record("failed", { batch, changed: [] }), ...rest, "");
-      results.push({ batch, ...reportBody(r) });
+      results.push({ batch, ...reportBody(own(r)) });
       continue;
     }
     before ??= r.before;
@@ -1226,10 +1246,6 @@ async function tryMany(file: string, batches: string[], json: boolean): Promise<
     process.stdout.write(`${out.join("\n").trimEnd()}\n`);
   }
   return code;
-}
-
-function isOps(x: Op[] | unknown[]): x is Op[] {
-  return x.every((i) => typeof i === "object" && i !== null && "op" in i && !("code" in i));
 }
 
 /** A command line grafical cannot read: exit 2, with its block in place of anything else. */
@@ -1347,6 +1363,7 @@ export function wrongCommand(program: Command, args: string[]): Block | undefine
 }
 
 async function main(argv: string[]) {
+  typed = argv.slice(2);
   const program = build();
   try {
     const wrong = wrongCommand(program, argv.slice(2));
@@ -1360,9 +1377,10 @@ async function main(argv: string[]) {
       }
       // A usage error is a block too (DESIGN.md, "Refusals say what happened and which commands can change it"),
       // in place of commander's sentence.
-      if (err instanceof UsageError) process.stderr.write(usageText(err.problem));
+      const source = commandLine(argv.slice(2));
+      if (err instanceof UsageError) process.stderr.write(usageText({ ...err.problem, source }));
       else if (err.code.startsWith("commander.") && err.code !== "commander.help") {
-        process.stderr.write(usageText(parserError(err, program, argv.slice(2))));
+        process.stderr.write(usageText({ ...parserError(err, program, argv.slice(2)), source }));
       }
       process.exitCode = 2;
       return;
