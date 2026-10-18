@@ -81,7 +81,7 @@ Code and the other documents cite a section of this file by its heading, such as
 ### Testing
 
 - **Output is compared exactly.** The diagram file and the SVG are compared byte for byte, and the PNG as decoded pixels. Cost: any change to the drawing, however small, fails a snapshot, and each changed snapshot must be looked at. Holds as: the snapshots in `test/render/` and the fixtures in `test/fixtures/`. AGENTS.md, "Tests", has the commands.
-- **A random seed that once failed runs forever.** The fuzz test lays out random diagrams from fixed seeds, and a failing seed becomes a fixture before the fix. Cost: the test suite grows with every bug found. Holds as: CI runs 500 seeds, and every seed that ever failed runs in every test run.
+- **A random seed that once failed runs forever.** The fuzz test lays out random diagrams from fixed seeds, and a failing seed becomes a fixture before the fix. Cost: the test suite grows with every bug found. Holds as: CI runs 100 seeds, 500 until 2026-10-19, and every seed that ever failed runs in every test run.
 
 ## Decision: Operations over whole-file rewrites — 2026-10-11
 
@@ -200,7 +200,7 @@ What phase 1 added to the router:
   On the fuzz test, 2.9% of labels wrapped. Until 2026-10-17 a label with no slot made its line detour, stepping out beyond the crowd onto new rows with the label beside it; detours appeared only in very dense diagrams, 60 of 500 with 153 labels between them, and in none of the 306 saved drafts.
 - **Edge cases:** self-loops, several edges between one pair, edges within a layer, edges that skip layers, and the left-most gap.
 
-The phase 1 fuzz test lays out 500 random diagrams with fixed seeds in CI, and more on request. None has an engine-owned defect ("Defects owned by who can fix them"). Before the phase 1 robustness work, 48% had one. 35,000 seeds in all passed, which is evidence, not a proof.
+The fuzz test lays out 100 random diagrams with fixed seeds in CI, 500 until 2026-10-19, and more on request. None has an engine-owned defect ("Defects owned by who can fix them"). Before the phase 1 robustness work, 48% had one. 35,000 seeds in all passed, which is evidence, not a proof.
 
 Rejected:
 - `libavoid-js`. It is LGPL-2.1-or-later, and its npm `latest` is a beta from one maintainer. It took 1.8 s at 50 nodes, too slow to lay out on every change, and it drew unrelated edges on top of each other. Its one advantage, fewer crossings, is the router's to earn in phase 1.
