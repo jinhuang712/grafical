@@ -169,7 +169,7 @@ describe("source", () => {
     const node = (id: string, row: string) =>
       `- {op: node.add, id: ${id}, label: ${id}, layer: ${row}, last: true}`;
 
-    it("passes over prefixes refused for another problem, to the line that caused it", () => {
+    it("names the batch file when a prefix after the last one without the problem is refused for another", () => {
       writeFileSync(join(dir, "g7.grafical.yaml"), grocer());
       // Lines 3 to 6 split the group around picker-app, which line 7 joins to it: the label is too long from line 2 on.
       const b7 = [
@@ -185,7 +185,8 @@ describe("source", () => {
       writeFileSync(join(dir, "b7.yaml"), `${b7.join("\n")}\n`);
       const r7 = run("apply", "g7.grafical.yaml", "b7.yaml");
       expect(r7.out).toMatch(/^defect: overflow$/m);
-      expect(sources(r7.out)).toEqual([`b7.yaml line 2: ${b7[1]?.slice(2)}`]);
+      // Whether the label is too long after lines 3 to 6 cannot be known, so no line can be named.
+      expect(sources(r7.out)).toEqual(["b7.yaml"]);
       // Lines 3 to 6 draw a bar under row-callers that lines pass, which line 7 takes away: the group splits from
       // line 2 on.
       writeFileSync(join(dir, "g11.grafical.yaml"), grocer());
@@ -202,7 +203,7 @@ describe("source", () => {
       writeFileSync(join(dir, "b11.yaml"), `${b11.join("\n")}\n`);
       const r11 = run("apply", "g11.grafical.yaml", "b11.yaml");
       expect(r11.out).toMatch(/^error: group-split$/m);
-      expect(sources(r11.out)).toEqual([`b11.yaml line 2: ${b11[1]?.slice(2)}`]);
+      expect(sources(r11.out)).toEqual(["b11.yaml"]);
     });
 
     it("names the batch file with no line where no prefix can tell", () => {

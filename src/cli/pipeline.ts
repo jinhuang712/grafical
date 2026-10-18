@@ -11,6 +11,7 @@ import { layout } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
 import { readDiagram, writeDiagram, yamlError } from "../model/io.ts";
 import { type Op, parseOps } from "../model/ops.ts";
+import { everyNode } from "../model/steps.ts";
 import type { Diagram } from "../model/types.ts";
 import { block, record } from "../records.ts";
 import type { Scene } from "../scene.ts";
@@ -200,11 +201,8 @@ interface Planned {
   scene: Scene;
 }
 
-/** What a diagram made by operations would be refused for: its errors, or the defects the agent owns. */
-type Refusal = { errors: OpError[] } | { defects: Defect[] };
-
 /** What makes two problems the same one in two diagrams: its code and what it is about. */
-function errorKey(e: OpError): string {
+export function errorKey(e: OpError): string {
   const f = e.facts ?? {};
   // A field of a whole diagram's error is a place in the file, which other operations move.
   return [
@@ -221,67 +219,50 @@ function errorKey(e: OpError): string {
     .join("\u0000");
 }
 
-function defectKey(d: Defect): string {
+export function defectKey(d: Defect): string {
   const pair = d.code === "wall-crossed" || (d.code === "mark-covers" && d.facts.is === "node");
   const about = d.elements.slice(0, pair ? 2 : 1);
   return [d.code, d.field ?? "", d.found ?? "", d.facts.is ?? "", ...about].join("\u0000");
 }
 
 /**
- * How many prefixes of a refused batch grafical applies, and how many of them it lays out, to find where the batch's
- * problems come from (GOALS.md, "Speed"). A problem whose line is not found within them has the batch file as its
- * source, with no line: never a line that is not known.
+ * How much a refused write may lay out to find where its problems come from, so that it stays within GOALS.md,
+ * "Speed": LAID_OUT boxes and lines in all, across the prefixes it tries, at the size of the larger of the file's
+ * diagram and the one the batch would make, and MOST_PREFIXES prefixes at most, 1 at least. A problem whose line is not
+ * found within them has the batch file as its source, with no line: never a line that is not known.
  */
-const PREFIX_APPLIES = 16;
-const PREFIX_LAYOUTS = 8;
+const LAID_OUT = 400;
+const MOST_PREFIXES = 12;
+
+/** How many prefixes a refused write tries: as many as LAID_OUT boxes and lines allow at the diagram's size. */
+function prefixes(...ds: (Diagram | null)[]): number {
+  const size = Math.max(
+    1,
+    ...ds.map((d) => (d === null ? 0 : everyNode(d).length + d.edges.length)),
+  );
+  return Math.min(MOST_PREFIXES, Math.max(1, Math.floor(LAID_OUT / size)));
+}
 
 /**
  * What a prefix of a batch says of a problem: there, not there, or unknown, when the prefix is refused for another
- * problem: the checks of a whole diagram stop at the first set that fails, and a refused diagram is not laid out. When
- * the prefixes to apply or lay out are spent, it is not asked.
+ * problem: the checks of a whole diagram stop at the first set that fails, and a refused diagram is not laid out.
  */
-type Seen = "present" | "absent" | "unknown" | "spent";
-
-/** Every value an operation names, in any of its fields. */
-function namedIn(op: Op): Set<string> {
-  const out = new Set<string>();
-  const walk = (v: unknown) => {
-    if (typeof v === "string") out.add(v);
-    else if (Array.isArray(v)) for (const x of v) walk(x);
-    else if (v !== null && typeof v === "object") {
-      for (const [k, x] of Object.entries(v)) if (k !== "op") walk(x);
-    }
-  };
-  walk(op);
-  return out;
-}
-
-/**
- * The ids a problem is about: what an error found, a defect's elements, and the ids of its facts, with the two ends of
- * a line. A defect's found is a text, not an id.
- */
-function idsOf(found: string | undefined, elements: readonly string[], f: Facts): string[] {
-  const ids = [found, ...elements, f.node, f.group, f.edge, f.row, f.lane, f.wall, f.note];
-  const all = [...ids, ...(f.nodes ?? []), ...(f.ends ?? [])].filter(
-    (x): x is string => x !== undefined && x !== "",
-  );
-  return [...new Set(all.flatMap((id) => [id, ...id.split("->")]))];
-}
+type Seen = "present" | "absent" | "unknown";
 
 /**
  * Where a problem of the diagram a batch makes comes from (DESIGN.md, "Refusals say what happened and which commands
- * can change it"): the number of operations after which it is not there and after which, one more, it is; 0 when the
- * diagram before the batch has it; undefined when no line can be known. It runs only on a refused write, so a write
- * that succeeds costs nothing more. grafical tries the first and the last operation that names what the problem is
- * about, just before and after each, then the batch less its last operation, then halves the range, as if what
- * appears stays. A prefix refused for another problem cannot tell, and the nearest one that can is tried in its place.
- * Each prefix is applied and laid out once for all the problems, within PREFIX_APPLIES and PREFIX_LAYOUTS.
+ * can change it"): the number of operations after which it is not there, while it is there after each one more, up to
+ * the whole batch; 0 when the diagram before the batch has it and every prefix too; undefined when no line can be
+ * known. It runs only on a refused write, so a write that succeeds costs nothing more. grafical applies the batch less
+ * its last operation, then less its last two, and so on, back towards the file, and the problem's line is the one
+ * after the last prefix without it. A prefix refused for another problem cannot tell, and the scan stops there with no
+ * line, as it does after `most` prefixes. Each prefix is applied, and laid out, once for all the problems.
  */
 function locate(
   base: Diagram | null,
   ops: readonly Op[],
   m: Measurer,
-  final: Refusal,
+  most: number,
 ): {
   errorAt: (e: OpError) => number | undefined;
   defectAt: (d: Defect) => number | undefined;
@@ -290,19 +271,13 @@ function locate(
   type Applied = { errors: Set<string> } | { diagram: Diagram | null };
   const applied = new Map<number, Applied>();
   const defectsAt = new Map<number, Set<string>>();
-  if ("errors" in final) applied.set(n, { errors: new Set(final.errors.map(errorKey)) });
-  else defectsAt.set(n, new Set(final.defects.map(defectKey)));
-  let applies = 0;
-  let layouts = 0;
-  const apply = (k: number): Applied | undefined => {
+  const apply = (k: number): Applied => {
     const known = applied.get(k);
     if (known !== undefined) return known;
     let a: Applied;
     // No diagram before a new file: nothing is in it.
     if (k === 0 && base === null) a = { diagram: null };
     else {
-      if (applies >= PREFIX_APPLIES) return undefined;
-      applies++;
       const r = applyOps(base, ops.slice(0, k));
       const weights = "errors" in r ? [] : unknownWeights(r.diagram);
       if ("errors" in r) a = { errors: new Set(r.errors.map(errorKey)) };
@@ -314,64 +289,33 @@ function locate(
     return a;
   };
   const seen = (k: number, key: string, defect: boolean): Seen => {
-    const known = defect ? defectsAt.get(k) : undefined;
-    if (known !== undefined) return known.has(key) ? "present" : "absent";
     const a = apply(k);
-    if (a === undefined) return "spent";
     if ("errors" in a) return a.errors.has(key) ? "present" : "unknown";
     if (!defect || a.diagram === null) return "absent";
-    if (layouts >= PREFIX_LAYOUTS) return "spent";
-    layouts++;
-    const d = a.diagram;
-    const found = check(d, layout(d, m), m, false).filter((x) => x.owner === "agent");
-    defectsAt.set(k, new Set(found.map(defectKey)));
-    return defectsAt.get(k)?.has(key) ? "present" : "absent";
+    let found = defectsAt.get(k);
+    if (found === undefined) {
+      const d = a.diagram;
+      const all = check(d, layout(d, m), m, false).filter((x) => x.owner === "agent");
+      found = new Set(all.map(defectKey));
+      defectsAt.set(k, found);
+    }
+    return found.has(key) ? "present" : "absent";
   };
-  const named = ops.map(namedIn);
-  const firstAt = (key: string, defect: boolean, ids: readonly string[]): number | undefined => {
-    const s0 = seen(0, key, defect);
-    if (s0 === "present") return 0;
-    if (s0 !== "absent") return undefined;
-    // It is not there after `lo` operations, and is there after `hi`.
-    let lo = 0;
-    let hi = n;
-    const settle = (k: number): Seen => {
+  const firstAt = (key: string, defect: boolean): number | undefined => {
+    // Back from the batch less its last operation: the problem's line is the one after the last prefix without it.
+    for (let k = n - 1; k >= 0; k--) {
+      // The empty diagram before a new file costs nothing to ask.
+      if (n - k > most && !(k === 0 && base === null)) return undefined;
       const s = seen(k, key, defect);
-      if (s === "present") hi = k;
-      else if (s === "absent") lo = k;
-      return s;
-    };
-    // The first operation that names what the problem is about, and the last, are most often its cause: each is tried
-    // with the prefix just before it.
-    const names = (x: Set<string>) => ids.some((id) => x.has(id));
-    const suspects = [named.findIndex(names) + 1, named.findLastIndex(names) + 1];
-    for (const k of suspects.filter((x) => x > 0).flatMap((x) => [x, x - 1])) {
-      if (k > lo && k < hi && settle(k) === "spent") return undefined;
+      if (s === "absent") return k + 1;
+      if (s === "unknown") return undefined;
     }
-    // Else a change's problem is most often its last operation's, which is tried next; then the range halves.
-    let first = true;
-    while (hi - lo > 1) {
-      const mid = first ? hi - 1 : (lo + hi) >> 1;
-      first = false;
-      const near = [mid];
-      for (let k = mid - 1; k > lo; k--) near.push(k);
-      for (let k = mid + 1; k < hi; k++) near.push(k);
-      let told = false;
-      for (const k of near) {
-        const s = settle(k);
-        if (s === "spent") return undefined;
-        if (s !== "unknown") {
-          told = true;
-          break;
-        }
-      }
-      if (!told) return undefined;
-    }
-    return hi;
+    // Every prefix has it, and so does the file.
+    return 0;
   };
   return {
-    errorAt: (e) => firstAt(errorKey(e), false, idsOf(e.found, [], e.facts ?? {})),
-    defectAt: (d) => firstAt(defectKey(d), true, idsOf(undefined, d.elements, d.facts)),
+    errorAt: (e) => firstAt(errorKey(e), false),
+    defectAt: (d) => firstAt(defectKey(d), true),
   };
 }
 
@@ -429,7 +373,7 @@ export function attempt(
   if ("errors" in result || weights.length > 0) {
     const errors =
       "errors" in result ? result.errors : weights.map((e) => ({ ...e, whole: true as const }));
-    const found = locate(base, ops, m, { errors });
+    const found = locate(base, ops, m, prefixes(base));
     // An error of the whole diagram is the operation's after which it first appears. One whose line cannot be known is
     // no operation's: it has no index.
     return failure(
@@ -446,7 +390,7 @@ export function attempt(
   const scene = layout(result.diagram, m);
   const defects = check(result.diagram, scene, m).filter((x) => x.owner === "agent");
   if (defects.length > 0) {
-    const found = locate(base, ops, m, { defects });
+    const found = locate(base, ops, m, prefixes(base, result.diagram));
     return {
       ok: false,
       changed: [],
