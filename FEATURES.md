@@ -18,9 +18,9 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
 
 - On the command line an operation is `grafical <noun> <verb> <file> …`, and every other value is a flag, such as `--label`.
 - `grafical new` takes the title, and optionally `--subtitle`, `--note`, `--density`, `--sizing` and `--style`.
-- Every write reports the IDs it changed and any defects. A refused write changes nothing.
+- Every write reports the IDs it changed, then a block for each problem: what it is refused for, and every warning (see "Refusals" and "Warnings"). A refused write changes nothing.
 - Every command takes `--json`, which prints the same report as JSON.
-- Exit codes: 0 for success, 1 for a refused operation or a defect, 2 for a usage error. The parser's own refusals (an unknown option, a missing argument, an unknown command) print as `error code=<code> found=<word>` on standard error, such as `error code=unknown-option found=--bogus`.
+- Exit codes: 0 for success, 1 for a refused operation or a defect, 2 for a usage error. The parser's own refusals (an unknown option, a missing argument, an unknown command) print `failed changed=-` and a block on standard error, such as `error: unknown-option` with `found: --bogus`.
 
 ### Batches ✅
 
@@ -44,7 +44,7 @@ A batch file is a YAML list. Each item has `op: <noun>.<verb>` and the same fiel
   label: read
 ```
 
-grafical checks each operation in order, and writes only when every one is valid and the picture has no defect the agent must fix. Otherwise nothing changes, and the reply names the first operation that failed.
+grafical checks each operation in order, and writes only when every one is valid and the picture has no defect the agent must fix. Otherwise nothing changes, and each problem's source names the batch line that caused it.
 
 ### Trying a change ✅
 
@@ -56,7 +56,7 @@ grafical try arch.grafical.yaml batch.yaml
 
 `try` applies the batch without writing it, and prints the drawing's counts before and after it, and a `delta` record of the change in each. The agent decides what to try, and grafical measures.
 
-`try` takes several batches, to compare arrangements in one call. It prints one `before` record, then for each batch `ok`, `after` and `delta` records that carry `batch=<file>`; a batch that would be refused prints its refusal records ending in the same `batch=<file>`, the others are still tried, and the exit code is 1. With `--json`: `{ok, before, batches: [{batch, ok, changed, after, delta}]}`. A single batch prints as before, without the key.
+`try` takes several batches, to compare arrangements in one call. It prints one `before` record, then for each batch `ok`, `after` and `delta` records that carry `batch=<file>`; a batch that would be refused prints `failed batch=<file> changed=-` and its blocks, the others are still tried, and the exit code is 1. With `--json`: `{ok, before, batches: [{batch, ok, changed, after, delta}]}`. A single batch prints as before, without the key.
 
 ### IDs ✅
 
@@ -68,14 +68,26 @@ The caller names every row, group, lane, column, wall, box and line, and a name 
 
 ### Refusals ✅
 
-A wrong operation is refused at once, as one record of facts.
+A wrong operation is refused at once, and nothing is written. Each problem is a block: what happened, what caused it, the facts, and the commands that can change it, by name (DESIGN.md, "Refusals say what happened and which commands can change it").
 
 ```text
-error op=0 code=bad-value field=kind found=database likely=store allowed=service,store,...
+failed changed=-
+
+error: bad-value
+description: A field holds a value that it does not take.
+source: batch.yaml line 4: {op: node.add, id: db, layer: row-store, label: DB, kind: database}
+detail:
+  field: kind
+  found: database
+  likely: store
+  allowed: service, store, queue, external, actor, state, terminal, decision, initial, final
+next: -
 ```
 
-- A refusal names its code, the operation, the field and what was found.
-- Then come facts: `near` (the closest IDs), `likely` (the value it most likely meant), `allowed`, `free`, `count`, `lines`, `min`, `max`, the `row`, `group` or `node` it concerns, `line` and `column` in the YAML, and `fix`, operations that would fix it.
+- The kind is `error` (could not be read or applied), `defect` (would draw wrong) or `warning` (written, drawn poorly). The description is one fixed sentence per code, which says what happened and never what to do.
+- The source is the command line as typed, the batch line and the operation as written, or `already in the file`. A warning has none. A defect found after layout, or an error of the whole diagram, names the batch line after which it first appears and stays.
+- The detail gives the facts, one per line: `near` (the closest IDs), `likely` (the value it most likely meant), `allowed`, `free`, `count`, `lines`, `min`, `max`, the `node`, `row`, `group`, `edge` or `lane` it concerns, `line` and `column` in the YAML. It carries what the agent needs to find the change itself, such as the first and last rows a group's box covers; no refusal writes the change for it.
+- `next` names the commands that can change it, in the order the help lists them, or `-`.
 - A YAML syntax error gives the text of its line.
 
 ## Boxes
@@ -256,7 +268,7 @@ The agent says what connects. grafical draws every line.
 - A line may leave or enter a box on any side. Each line has its own place on a side, spread evenly.
 - Three or more unlabelled lines of one style that leave one side of a box leave as one line and split near their targets, with a dot at each split. Labelled lines and two-way lines keep their own place.
 - Where two lines cross, one hops over the other. Where lines join on purpose, a dot marks the join.
-- A label sits beside its line. When there is no room, it wraps or moves to another gap on its way. Where no gap on its way has room, no line moves for it: the write is refused as `label-blocked`, naming the line, the lines across the label and the gaps it tried, and as `fix` the larger size of a box at either end that would hold it (DESIGN.md, "The dirty work has edges"). grafical never widens a box for its lines. A step's number is refused the same way.
+- A label sits beside its line. When there is no room, it wraps or moves to another gap on its way. Where no gap on its way has room, no line moves for it: the write is refused as `label-blocked`, naming the line, the lines across the label and the gaps it tried, with `node resize` among the commands that can change it (DESIGN.md, "The dirty work has edges"). grafical never widens a box for its lines. A step's number is refused the same way.
 - A stylesheet may draw the corners curved, with `paint.edge.shape: curved`. The routes stay the same.
 
 ## Placing
@@ -281,7 +293,7 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 - A row's label is optional. It is drawn only with the row: in a band's head, or in a bar. A drawn row with no label draws no name, and a band without one has no head (DESIGN.md, "A row's label is optional").
 - `layer split` moves the second half of a row, or its boxes from one box on, into a new row below it.
 - A row can be removed only when it is empty, and the lines that end at it go with it.
-- `layer look` draws a row, with its label, even when no line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row is drawn only when a line ends at it, a row with no box as a box and a row with boxes as a band. A row with no box and a look is a bar, checked as one: a line that passes it needs `--pass` (`bar-crossed`), and it may not lie between the first and last rows of a group (`bar-in-group`, fixed by `layer look <file> <row>`, which takes the look away) (DESIGN.md, "A row with a look is drawn").
+- `layer look` draws a row, with its label, even when no line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row is drawn only when a line ends at it, a row with no box as a box and a row with boxes as a band. A row with no box and a look is a bar, checked as one: a line that passes it needs `--pass` (`bar-crossed`), and it may not lie between the first and last rows of a group (`bar-in-group`, which `layer look` can change by taking the look away) (DESIGN.md, "A row with a look is drawn").
 
 ### Alignment ✅
 
@@ -481,13 +493,35 @@ counts nodes=3 lines=2 crossings=0 bends=1 bent=0 length=224 width=368 height=28
 
 They are facts, with no threshold and no advice: what they mean is the agent's to judge.
 
-`bent` counts the lines drawn with more than two bends. Every write, single commands included, and `check` and `render` print a record for each, before the counts, and never refuse for one (DESIGN.md, "The dirty work has edges"); `skip` is the rows between the rows of its ends:
+`bent` counts the lines drawn with more than two bends ("The dirty work has edges"), and `passing` the lines that run through a row they do not connect. Three more say how the picture is composed, each a separate count and never a score ("Composition counts"): `across`, the lines that cross the box of a group holding neither of their ends; `tight`, the pairs of runs of two different lines (not one bus) that run side by side closer than a track, 12 px, for more than 100 px; and `crowded`, the line labels with less than 8 px of room on two or more of their four sides. Each place these five count is also a warning ("Warnings").
+
+### Warnings ✅
+
+Every write, single commands included, and `check` and `render` print a warning block for each thing the picture draws poorly, before the counts, and never refuse for one (DESIGN.md, "Every write prints every warning"). All of them print every time, not only those the command caused, since every change lays the whole diagram out again.
+
+| Code | What it is | Detail |
+|---|---|---|
+| `bent-line` | a line with more than two bends | `edge`, `bends`, `skip` (rows between its ends' rows) |
+| `passing-row` | a line through rows between its ends, among their boxes, meeting none | `edge`, `rows` |
+| `line-across-group` | a line through the box of a group holding neither of its ends | `edge`, `groups` |
+| `tight-lines` | runs of two lines under 12 px apart for over 100 px | `edges`, `over` (the pixels they share) |
+| `crowded-label` | a line's label with under 8 px of room on two sides | `edge` |
+| `lonely-box` | a box with no lines | `node` |
+| `crossing` | a pair of lines that cross, however often | `edges` |
+
+A warning has no source: the outcome line names what the write changed, and a warning names the ids it is about (DESIGN.md, "Every write prints every warning"):
 
 ```text
-bent line=api->photos bends=4 skip=1
-```
+ok changed=sync->geo
 
-Three of them say how the picture is composed, each a separate count and never a score ("Composition counts"): `across`, the lines that cross the box of a group holding neither of their ends; `tight`, the pairs of runs of two different lines (not one bus) that run side by side closer than a track, 12 px, for more than 100 px; and `crowded`, the line labels with less than 8 px of room on two or more of their four sides.
+warning: bent-line
+description: A line bends more than twice, mostly because it skips rows.
+detail:
+  edge: sync->geo
+  bends: 3
+  skip: 1
+next: layer move, node move, node swap
+```
 
 ### Check ✅
 
@@ -495,7 +529,7 @@ Three of them say how the picture is composed, each a separate count and never a
 grafical check <file> [--all]
 ```
 
-`check` reports the defects the agent can fix. `--all` adds those only the engine can avoid, which are engine bugs.
+`check` reports the defects the agent can fix, every warning, and the counts. `--all` adds the defects only the engine can avoid, which are engine bugs.
 
 ### Render ✅
 
@@ -541,7 +575,7 @@ grafical <command> --help
 
 `--help` says what grafical is, what it does not draw, how to work, and every way to draw, one line each by the story it tells, such as a box beside a box, one path in order, or two parts kept apart. Each command's help adds its options, its line in a batch, when to use it, what it draws, common mistakes, limits and an example. No page says what a refusal means: the refusal's block says it (DESIGN.md, "Refusals say what happened and which commands can change it"). A command's arguments are named as its batch fields. The help does not say how a kind of diagram is drawn: the guides do.
 
-`--help` is the one way to a page: there is no `grafical help <command>`. A command grafical does not have is refused with the one it most likely means, and with `--help` its page: `grafical help apply` and `grafical node.add --help` print `error code=unknown-command found=... likely="grafical apply --help"` and `likely="grafical node add --help"`.
+`--help` is the one way to a page: there is no `grafical help <command>`. A command grafical does not have is refused with the word it most likely means, as a value and never as a command line: `grafical help apply` gives `error: unknown-command` with `found: help` and `likely: --help`, and `grafical node.add --help` gives `found: node.add` and `likely: node add`.
 
 ### Guides ✅
 

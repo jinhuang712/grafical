@@ -29,8 +29,9 @@ How to work:
      grafical show <file> --drawn.
   4. Improve one change at a time. grafical try <file> a.yaml b.yaml prints
      the counts before and after each, and writes nothing.
-  A refused change writes nothing; its records say what is wrong and what
-  would fit. Never edit the file by hand.
+  A refused change writes nothing; a block for each problem says what
+  happened, what caused it and which commands can change it. Never edit
+  the file by hand.
 
 Ways to draw, by the story each tells:
   the way things move     rows, top to bottom (layer add); the order of a
@@ -111,7 +112,7 @@ one batch with every row, node, group and edge.`,
 Batch file:
   A YAML list. Each item is {op: <noun>.<verb>, ...} with the command's
   arguments and options as fields, in camelCase. Operations apply in order; if
-  one fails, none apply, and the error gives its index, counting from 0.
+  one fails, none apply, and the refusal's source gives its line in the file.
   Every command works in a batch: its --help shows its line, such as
   grafical node add --help.
 
@@ -171,7 +172,7 @@ ${indent(EXAMPLE_BATCH)}  grafical apply orders.grafical.yaml batch.yaml
     after: `
 Good to know:
   - Look at the PNG after a draft, and after any change you are unsure of.
-  - Like apply and check, it prints the counts.
+  - Like apply and check, it prints every warning and the counts.
 `,
   },
 
@@ -234,7 +235,8 @@ Good to know:
   - Use it to compare arrangements you are weighing: a row moved, two nodes
     swapped, a node slid along its row. You decide which to keep, then apply it.
   - A batch it would refuse is refused as apply would refuse it; with several,
-    its records end in batch=<file> and the others are still tried (exit 1).
+    its outcome line carries batch=<file>, its blocks follow, and the others
+    are still tried (exit 1).
 
 Example:
   grafical try shop.grafical.yaml move.yaml

@@ -1209,8 +1209,8 @@ function readBatch(batch: string, opts: Opts): { ops: Op[]; origin: Origin } | u
 
 /**
  * Several batches tried against one file (FEATURES.md, "Trying a change"): the `before` counts once, then each
- * batch's `ok`, `after` and `delta` records keyed by `batch=<file>`; a refused batch prints its refusal records
- * with the same key, and the rest are still tried. Exit 1 when any is refused.
+ * batch's `ok`, `after` and `delta` records keyed by `batch=<file>`; a refused batch prints its outcome with the
+ * same key and then its blocks, and the rest are still tried. Exit 1 when any is refused.
  */
 async function tryMany(file: string, batches: string[], json: boolean): Promise<number> {
   const out: string[] = [];
