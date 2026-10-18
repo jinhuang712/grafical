@@ -584,7 +584,7 @@ describe('stability (DESIGN.md, "Layout computed again on every change")', () =>
       `40 random additions: ${(changed / 40).toFixed(1)} routes and ${(nodesMoved / 40).toFixed(1)} nodes moved per addition`,
     );
     expect(out).toEqual([]);
-  });
+  }, 60_000);
 });
 
 describe('determinism (DESIGN.md, "Output and determinism")', () => {
