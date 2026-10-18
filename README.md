@@ -9,7 +9,7 @@ An agent states what a diagram says, one operation at a time: this box is in tha
 
 grafical drew this picture itself, from [`docs/images/pipeline.grafical.yaml`](docs/images/pipeline.grafical.yaml).
 
-> **Status: in development, not yet released.** The command line works, and Haiku with grafical already draws as well as Opus with it. The MVP bar is not met yet: two blind judges scored Haiku's pictures 38 of 50, against a bar of 42. Where the work stands is in [ROADMAP.md](ROADMAP.md).
+> **Status: in development, not yet released.** The command line works, and Haiku with grafical already draws as well as Opus with it. The MVP bar is not met yet: in the 2026-10-18 round Haiku made 23 of 24 requested changes, but 19% to 26% of its calls on larger diagrams, and 55% on the private reference brief, were refused, against a target of 5%. Where the work stands is in [ROADMAP.md](ROADMAP.md).
 
 ## What it does
 

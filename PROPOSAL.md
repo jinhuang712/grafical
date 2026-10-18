@@ -122,7 +122,7 @@ Three bets, each of which can be tested.
 | Real diagrams need placements that rows and order cannot say, and the vocabulary grows until it is as hard as coordinates. This has started: walls, notes, columns and steps came in phase 1e | Each new fact stays only if it measurably helps, and every placement stays a fact, never a position |
 | Routing through the gaps is not enough for dense diagrams. The lines were the main complaint in the stage 1 round | Line work comes first in phases 1d and 1e, and the geometry check counts every defect |
 | Many small operations cost more round trips than one rewrite | A batch applies many operations in one call, and GOALS.md, "Time" and "Cost" measure what the round trips cost |
-| A small model still draws what the diagram says badly, even when the picture is tidy | The help teaches choosing what to draw, and the judged score keeps measuring it |
+| A small model still draws what the diagram says badly, even when the picture is tidy | The help teaches choosing what to draw, and the owner's review of each round's pictures keeps checking it |
 
 ## Prior art
 
@@ -140,4 +140,4 @@ Sources: the projects' READMEs and documentation, including [LikeC4's documentat
 
 ## How we know it works
 
-[GOALS.md](GOALS.md) holds every check. The headline is the MVP bar: Haiku, using only the command line and its help, meets the targets for changes, stability, the gap between models, operation errors, and determinism and speed, with zero mechanical defects. Beside it, Haiku's picture of a private reference brief scores at least 42 of 50 in blind judging, which is what the `diagram-design` skill scored with Opus and Sonnet.
+[GOALS.md](GOALS.md) holds every check. The headline is the MVP bar: Haiku, using only the command line and its help, meets the targets for changes, stability, the gap between models, operation errors, and determinism and speed, with zero mechanical defects.

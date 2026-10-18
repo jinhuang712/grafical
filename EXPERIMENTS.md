@@ -274,14 +274,15 @@ An ablation runs when its decision is built or questioned, not all at once.
 - **Versions:** each result records the Claude Code version, the model IDs and grafical's commit.
 - **Judging:** two Opus judges score each picture blind, each with its own random labels. They score accuracy, clarity, visual quality, defects, and fit in a doc at 1000 px wide, each from 1 to 5. That gives 25 points per judge and 50 in total. For E2 they also list what changed besides each request. They see only the brief, the request and the pictures.
   - **Order**, a sixth criterion, scores clutter: few, straight, easy lines, no tangles or staircases, no line across text. With it a judge gives 30 points and a pair 60. It was added on 2026-10-11, after the owner called the phase 1 pictures "cluttered, messy, lines are all over the place" (DESIGN.md, "A target picture with measured rules").
-  - The MVP bar in GOALS.md stays on the first five criteria, out of 50, so that it compares with its 2026-10-10 baseline.
+  - Until 2026-10-18 the MVP bar in GOALS.md stayed on the first five criteria, out of 50, so that it compared with its 2026-10-10 baseline. The owner dropped the judged score from the bar that day.
   - The DESIGN.md, "A target picture with measured rules" target picture is judged in every round as an anchor.
   - **Two scores per picture** (from 2026-10-11, after the owner's principle that the engine arranges and the agent decides what the diagram says): an engine score, from order, visual quality, defects and fit (20 per judge), and an agent score, from accuracy and clarity (10 per judge). Results report both next to the total, so that a round shows which side lost its points.
 - **The owner's ratings:** every round's pictures also go to the owner's rating page, made by `pnpm bench gallery`, under blind letters. The owner's ratings are read back and reported next to the judges' scores.
-  - From the end of stage 1 (owner, 2026-10-12): the owner's blind ratings are the final judge, and judging must stay cheap. Opus judges score only the MVP bar, whose 42 of 50 baseline came from Opus judges. Every other round is scored by the owner alone.
+  - From the end of stage 1 (owner, 2026-10-12): the owner's blind ratings are the final judge, and judging must stay cheap. Opus judges scored only the MVP bar, whose 42 of 50 baseline came from Opus judges.
+  - From 2026-10-18 (owner): no Opus judging and no scores. The owner looks at each round's pictures on a review page and names their problems in a note beside each, which is read back (GOALS.md, "The picture turned in").
 - **Briefs:** there are two kinds.
   - Public briefs live in `bench/briefs/`. They describe fictional systems and drive fixtures, tests, CI and tuning. The first is [`catalog-sync.md`](bench/briefs/catalog-sync.md).
-  - Private briefs describe real systems and never enter this repository. The private reference brief is the one from the 2026-10-10 test, used only to check the MVP bar so that its 42 of 50 baseline compares like with like. Runs on private briefs happen outside the repository, and only their scores are committed, never their content or pictures.
+  - Private briefs describe real systems and never enter this repository. The private reference brief is the one from the 2026-10-10 test, used only to check the MVP bar. Runs on private briefs happen outside the repository, and only their scores are committed, never their content or pictures.
 - **No tuning on private briefs:** grafical is tuned on public briefs only, so the MVP bar measures what it has learned, not what it has memorized.
 
 ## Rules for a result

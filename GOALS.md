@@ -10,8 +10,8 @@ A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of t
 Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It has two parts.
 
 - **The main bar: easy and consistent.** Haiku, using only the command line and its help, meets the targets of "Iteration", "Stability", "Model gap", "Operation errors", "Determinism" and "Speed", with zero mechanical defects.
-- **Beside it: the judged score.** Haiku draws the private reference brief well enough that two blind Opus judges score it at least 42 of 50. 42 is what the `diagram-design` skill scored with Opus and Sonnet on that brief on 2026-10-10.
-- **Status:** ❌ not met. On 2026-10-12 the judges scored Haiku's three drafts 40, 34 and 40 (mean 38.0). In round `p1g` on 2026-10-18 "Iteration" was met, and in the main bar "Operation errors" is still not met, and one draft had an engine-owned defect. No judges ran that day, by the owner's choice (`bench/results/p1g-stage1.md`).
+- **No judged score.** Until 2026-10-18 the bar also asked two blind Opus judges to score Haiku's picture of the private reference brief at least 42 of 50. The owner dropped it that day: a judge's number says little now that grafical's pictures are well past those drawn with no tool or with Mermaid, and what is left to improve is not how the pictures look. The owner looks at each round's pictures and names their problems instead ("The picture turned in").
+- **Status:** ❌ not met. In round `p1g` on 2026-10-18 "Iteration" was met, "Operation errors" was not, and one draft had an engine-owned defect (`bench/results/p1g-stage1.md`).
 
 ## A change is one small step
 
@@ -51,10 +51,10 @@ Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It 
 
 ### Mechanical defects
 
-- **Target:** no overflow, overlap, line through a box or label collision, and a defect score from the judges of at least 4 of 5.
+- **Target:** no overflow, overlap, line through a box or label collision. Until 2026-10-18 it also asked for a defect score from the judges of at least 4 of 5, which the owner dropped with the judged score ("The MVP bar").
 - **Method:** `pnpm bench geometry` checks every rendered SVG of a round with a geometry check of its own. It does not use grafical's checker, which refuses every write it flags and so would always report zero (DESIGN.md, "Defects owned by who can fix them").
 - **Kill threshold:** any defect in an output is a bug.
-- **Status:** ❌ not met on 2026-10-12. The geometry check found no defect in all 49 grafical pictures of the stage 1 round, nor in the 46 of its rerun, but the judges gave the drafts of the reference brief a defect score of 3 or 4. On 2026-10-18 (round `p1g`) it found none in 46 pictures, no judges ran, and one draft of 50 components had an engine-owned `needless-bend`.
+- **Status:** ✅ met on 2026-10-18 (round `p1g`): the geometry check found none in 46 pictures. One draft of 50 components had an engine-owned `needless-bend`, which is none of the four, fixed the same day (2f101d9). On 2026-10-12 the geometry check also found none, but the judges' defect score of 3 or 4 missed the part of the target dropped since.
 
 - **Composition, measured on 2026-10-16** over the 306 saved agent drafts (`across`, `tight` and `crowded` of DESIGN.md, "Composition counts"): 66 lines run across a group that holds neither end, in 29 drafts; 6 pairs of runs are tight, in 3 drafts; 88 labels are crowded, in 51 drafts. Not targets: facts to compare a change against.
 
@@ -94,10 +94,10 @@ The owner marked every draft without grafical, and every Mermaid draft, too bad 
 
 ### The picture turned in
 
-- **Target:** a judged score of at least 42 of 50 for the picture the agent turns in at the end. How many drafts or calls it took to get there is not counted: "Time", "Token use" and "Cost" measure what they cost.
-- **Method:** Haiku draws the brief from the command line and its help, 3 runs, and the final picture of each is judged blind (EXPERIMENTS.md, "E1 First draft").
-- **Kill threshold:** a score below 34, the no-tool score of the 2026-10-10 test.
-- **Status:** ❌ not met on 2026-10-12: 38.0 on the private reference brief.
+- **Target:** the owner looks at the picture the agent turns in at the end and names what is wrong with it; no score (owner, 2026-10-18). How many drafts or calls it took to get there is not counted: "Time", "Token use" and "Cost" measure what they cost.
+- **Method:** each round's final pictures go on a review page with a box for the owner's notes beside each, and the notes are read back. Pictures of private briefs stay on the owner's machine.
+- **Kill threshold:** none set.
+- **Status:** ⬜ the 25 public pictures of round `p1g` await the owner's notes. Until 2026-10-18 the target was a judged score of at least 42 of 50: 38.0 on 2026-10-12.
 
 ### Time
 
