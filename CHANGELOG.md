@@ -6,6 +6,7 @@ What changed in each release of grafical, from the side of the agent that draws 
 
 grafical has not been released; the first release is 0.1.0 (ROADMAP.md, "Release 0.1.0").
 
+- The help pages no longer have a "When refused" section, `apply --help`'s included: a refusal's block says what happened, what caused it and which commands can change it. `apply --help`'s "Output" describes the block, the outcome of a refusal and the exit codes.
 - The help no longer puts a "Not shown: ..." footnote in front of every agent: step 1 of `grafical --help`, the examples of `new --help` and `apply --help`, and `new --note`'s description no longer show one. In the 2026-10-18 round, 18 of 22 drafts wrote such a note, most of them listing parts the request never named. `--note` itself is unchanged.
 - `label` is optional on `layer add`, and its batch line shows only `id`. A row drawn without a label draws no name: a bar is empty, and a band has no text in its head. A file whose rows have no `label` reads and writes back the same.
 - `layer look <row> box|band` now draws the row, with its name, even when no line ends at it: a row with boxes as a band around them, a row with no boxes as one bar. A row with no look and no line ending at it is still not drawn, so diagrams without looks draw as before. A bar drawn for its look alone is checked as any bar: a line that passes it is refused as `bar-crossed` unless `edge pass` lets it, and one between a group's first and last rows is refused as `bar-in-group`, with `layer look <file> <row>` as the fix.

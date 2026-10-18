@@ -449,6 +449,8 @@ Rejected, for stage 1:
 
 Changed on 2026-10-17 by "One entry page, help where it is used": the entry page gives the kinds of diagram and every way to draw in place of the diagram types, a command's page shows its line in a batch, its sections by diagram type are by kind of diagram, and the budget below is suspended.
 
+Changed on 2026-10-18 by "Refusals say what happened and which commands can change it": no page has a When refused section, and a refusal no longer says how to fix a mistake; its block says what happened and which commands can change it.
+
 Decided on 2026-10-12 by the owner. In a real setup an agent knows only that a `grafical` command exists, and `grafical --help` and `grafical <command> --help` are how it learns the tool. The stage 1 benchmarks hid this: their prompt told every agent to run `grafical guide` first, and the main guide then sent it on to `grafical guide <type>`, two hops past the command an agent would try on its own.
 
 - **What the help holds.** `grafical --help` says what grafical is, how to work, what makes a diagram good, and one entry per diagram type in grafical's words. Each command's help adds, after its usage and options, the sections it needs, always in one order: When to use, By diagram type, Kinds, Good to know, Common mistakes, Limits, Batch file, Output, When refused, See also, Example. The text lives in `src/cli/help.ts`.
@@ -830,6 +832,8 @@ Risk, to measure in the next paid round: whether agents use the ways to draw the
 
 ## Decision: Help for the tool, guides for best practice — 2026-10-17
 
+Changed on 2026-10-18 by "Refusals say what happened and which commands can change it": the help no longer says what a refusal means; the refusal's block does.
+
 Decided by the owner on 2026-10-17, the same day as "One entry page, help where it is used". The help says how to use grafical. How a kind of diagram is usually drawn is best practice, kept apart for an agent that wants it. The owner's reasons: an agent that wants to draw straight away may, and a refusal corrects it where it goes wrong; guidance pressed on every agent before it draws makes every diagram alike, where a drawing should keep its freedom; and if grafical is easy to use, an agent draws well without being taught.
 
 - **The help** (`grafical --help` and each command's `--help`) holds how to work, every way to draw by the story it tells, each command's options and its line in a batch, the facts of what it draws (such as that kinds initial and final draw no label), its limits, and what a refusal of it means. It does not say how a kind of diagram is drawn.
@@ -912,6 +916,7 @@ grafical reports what happened and never teaches. A record gives the facts and t
 - **Enough to find the change.** The detail carries what the agent needs to find the change itself, and the help and the guides state no rule for it (PHILOSOPHY.md, "How does an agent learn grafical?"); decided by the owner the same day. In round p1g two agents put a bar between rows a group's box covers, were refused with `bar-in-group`, and could not tell why: the record named the group and the row, not that the box covers every row from its top member's to its bottom member's. It now names the bar's row, the group, the line, and the group's `top` and `bottom` rows; a bar drawn for its look alone ("A row with a look is drawn") is named the same way, with no line, and its `next` names `layer look` in place of `edge remove`. The same question was asked of every refusal: `group-conflict` names the group's `top` and `bottom` rows too; `alignment-conflict` names the boxes in the way, those of the other column in the same row or those the order of the rows puts between the two; `align-same-layer` found in the file names its box; `edge-inside`, `edge-blocked`, `bar-to-bar` and `bar-crossed` name the line's two `ends`; `group-across-lanes` names the group's first box in another lane than its first box's, and that lane.
 - **`likely` as a value only.** A word grafical does not know is answered with the word it most likely means, never with a command: `grafical help apply` gives `found: help` and `likely: --help`.
 - **`--json` says the same:** each problem as `{kind, code, description, source, detail, next}`, beside the outcome and the counts.
+- **No "When refused" in the help.** Decided by the owner later the same day: every command page's "When refused" section goes, `apply --help`'s too. A help page says how to use a command, and a refusal explains itself through its block. A second, hand-written copy of what the record says can go stale, as `edge add`'s did when it described a fix wrongly, and it states a rule in words before the agent makes the mistake, against PHILOSOPHY.md, "How does an agent learn grafical?". `apply --help`'s "Output" stays, and takes the outcome of a refusal and the exit codes from the section that went: it describes what the tool prints, not a rule.
 
 It replaces two earlier choices. In "Records over prose" (2026-10-13), a refusal was one record of `key=value` fields with no sentence; it is now a block with its code's one sentence, while the counts, `show --drawn` and `try` stay records. In "One entry page, help where it is used" (2026-10-17), "A refusal carries its own fix": the generated `fix` facts are gone, about 45 of them, and with them the search for the size of a box at which a line's label fits, which laid the diagram out at each larger size ("The dirty work has edges"). The agent still widens the box itself, and `next` names `node resize`.
 
@@ -919,6 +924,8 @@ Rejected:
 - Generated fix commands, the `fix` facts of 2026-10-17. They choose for the agent, they teach a form that the agent copies without reading, and each is engine work that a test must keep right: the fix test applied every one.
 - A sentence made for each case, such as "move pricing-svc out of row-upstream". It reads well, but it is advice in prose, worded its own way each time, and the agent has to parse English to find the ids ("Records over prose").
 - One-line records for refusals, as before. A record of a dozen `key=value` fields said what was there, but not what had happened or which command could act, and `elements=` mixed boxes, lines and groups in one list.
+- Generating each page's "When refused" section from the description table. It would stay right, but it is still a copy of what the block says, read before any mistake, as a rule in words.
+- Keeping the "When refused" sections hand-written, made correct for the blocks. A second copy goes stale, as `edge add`'s did.
 
 ## Decision: Every write prints every warning — 2026-10-18
 

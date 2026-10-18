@@ -539,7 +539,7 @@ grafical --help
 grafical <command> --help
 ```
 
-`--help` says what grafical is, what it does not draw, how to work, and every way to draw, one line each by the story it tells, such as a box beside a box, one path in order, or two parts kept apart. Each command's help adds its options, its line in a batch, when to use it, what it draws, common mistakes, limits, what a refusal of it means and an example. A command's arguments are named as its batch fields. The help does not say how a kind of diagram is drawn: the guides do.
+`--help` says what grafical is, what it does not draw, how to work, and every way to draw, one line each by the story it tells, such as a box beside a box, one path in order, or two parts kept apart. Each command's help adds its options, its line in a batch, when to use it, what it draws, common mistakes, limits and an example. No page says what a refusal means: the refusal's block says it (DESIGN.md, "Refusals say what happened and which commands can change it"). A command's arguments are named as its batch fields. The help does not say how a kind of diagram is drawn: the guides do.
 
 `--help` is the one way to a page: there is no `grafical help <command>`. A command grafical does not have is refused with the one it most likely means, and with `--help` its page: `grafical help apply` and `grafical node.add --help` print `error code=unknown-command found=... likely="grafical apply --help"` and `likely="grafical node add --help"`.
 

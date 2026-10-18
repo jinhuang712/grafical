@@ -2,7 +2,7 @@
 // for best practice"). The entry page is read once, before a first draft: what grafical is, how to work, and every
 // way to draw, by the story each tells. A command's page is read when the command is used: commander's usage and
 // options, its line in a batch, then this file's sections, always in this order: When to use, Kinds, Good to know,
-// Common mistakes, Limits, Batch file, Output, When refused, See also, Example. A page shows the ones it has. How
+// Common mistakes, Limits, Batch file, Output, See also, Example. A page shows the ones it has. How
 // common kinds of diagram are usually drawn is not here but in the guides (guides.ts), which no page tells an agent
 // to read. Numbers are only the limits grafical enforces.
 
@@ -123,15 +123,19 @@ Good to know:
     rows, nodes, groups, lanes and edges: a node cannot share its row's id.
 
 Output:
-  ok changed=<ids>, the change written; then a block for each warning, a
-  blank line before each; then the counts:
-    warning: <code>
+  ok changed=<ids> when the change is written, or failed changed=- when it
+  is refused and nothing is written; then a block for each problem, a blank
+  line before each; then, on apply, the counts:
+    <kind>: <code>
     description: <what happened, one sentence per code>
+    source: <the command, its batch line, or "already in the file">
     detail:
       <key>: <value>
-    next: <the commands that can change it>
-  A warning has no source: the outcome line names what changed. Every
-  write, check and render prints every warning the diagram has:
+    next: <the commands that can change it, or ->
+  kind is error (nothing could be applied), defect (it would draw wrong) or
+  warning (written, drawn poorly). A warning has no source line: the
+  outcome line names what changed. Every write, check and render prints
+  every warning the diagram has:
     bent-line          a line of over 2 bends: edge, bends, skip (the rows
                        between its ends' rows)
     passing-row        a line through rows it does not connect: edge, rows
@@ -151,23 +155,6 @@ Output:
     longest: <line>:<length>; bent, passing, across, tight and crowded
     count the warnings of their kind. grafical show <file> --drawn prints a
     record per box and line.
-
-When refused:
-  failed changed=-, the file untouched, then a record per problem:
-  error op=<index> code=<code> field=<field> found=<value> <facts>
-  defect code=<code> owner=agent elements=<ids> field=<field> found=<text>
-         <facts>
-  The code says what is wrong, and the facts what is there:
-    near       the closest existing ids
-    likely     what the value most likely means: use it
-    allowed    the values or fields allowed
-    free       an unused id like the one given
-    count, lines, min, max   counts and limits
-    row, group, node, nodes  the row or group it concerns, and its nodes
-    line, column             where in the YAML
-    fix        operations that would fix it
-  overflow: the text takes more lines than its box holds; shorten it or
-  move detail to the sublabel. missing-glyph: chars cannot be drawn.
   Exit codes: 0 done, 1 refused, 2 a usage error.
 
 Example: two systems around a shared store
@@ -324,15 +311,6 @@ Limits:
   - Each step option takes 1 to 10. A box placed by steps takes no row,
     position, --align, column or lane.
 
-When refused:
-  missing-field no place in a non-empty row; row and nodes say what is there
-  step-blocked  another box keeps the cell, or must stand where it lands;
-                node names it
-  step-cycle    the box would step from itself, through other boxes
-  step-anchor   node remove: other boxes step from it; nodes names them
-  box-aside     the box sits beside every box it connects to, so its lines
-                reach across; nodes names them: step it to between them
-
 See also: node merge, node kind, node describe, edge add
 
 Example:
@@ -421,15 +399,6 @@ Good to know:
     since a reader takes a line over a gateway for a line through it.
   - The id is <from>-><to> unless --id names it; a second one gets #2.
 
-When refused:
-  label-blocked  no gap between rows on the line's way holds its label
-                 clear of the other lines, and no line moves for it;
-                 elements name the line, then what lies across the label,
-                 gutters the gaps it tried as <row above>/<row below>,
-                 fix a box at an end whose larger size holds it, or where
-                 none does, the command that drops the label; or shorten
-                 the label, or change rows
-
 See also: edge emphasize, diagram legend
 `,
   },
@@ -466,7 +435,7 @@ Good to know:
   - Lines may share a number, for steps that happen at the same time.
   - A numbered line keeps its own way out of a box, as a labelled one does.
   - A number with no room on the line's way is refused as label-blocked,
-    as a label is (see edge add --help).
+    as a label is.
   - edge add takes no number: in a batch, add the edges, then
     {op: edge.step, id: <edge>, n: <number>} for each.
 
@@ -513,12 +482,6 @@ Without a place, the engine seats it at the top, at the leftmost spot no
 line comes near. Either way the label takes its own room, and no box or line
 moves for it.`,
     after: `
-When refused:
-  title-blocked  a line runs across the label at that place, or at every
-                 spot at the top when no place is said; elements name the
-                 group and the lines, clear lists the places no line comes
-                 near: take one
-
 Example:
   grafical group title booking.grafical.yaml app bottom-left
   grafical group title booking.grafical.yaml app
@@ -541,13 +504,6 @@ Good to know:
     lb->web gives lb->web-b.
   - A line's id <from>-><to> becomes its copy's ends: web-b->db-b.
   - Notes and walls are not copied.
-
-When refused:
-  copy-conflict    a box's align, from, lane or column cannot hold for its
-                   copy where it was put; node names the box
-  no-shared-layer  the group given has no box in row; allowed lists the
-                   groups that do
-  duplicate-id     an id the copy makes is taken
 
 See also: group order, edge retarget, diff
 
@@ -657,11 +613,6 @@ Good to know:
   - A note goes when what it is about is removed.
   - show --drawn says how each note is drawn.
 
-When refused:
-  label-blocked  is=note: no place beside it holds the card clear of the
-                 lines and boxes around it; elements name what it is about,
-                 then what is in the way: shorten it, or add --footnote
-
 Example:
   grafical note add shop.grafical.yaml --on retry --text "retries 5 times, then the DLQ"
   grafical note add shop.grafical.yaml --on retry --text "replayed by hand" --footnote
@@ -680,11 +631,6 @@ Good to know:
   - A row with no boxes and a look is one bar, such as a gateway or a bus.
     A line that passes it is refused (bar-crossed) unless edge pass lets it.
   - In a batch the look is a field: {op: layer.look, id: <id>, look: box}.
-
-When refused:
-  bar-crossed   a line passes the bar and may not; fix lets it pass
-  bar-in-group  the bar lies between the first and last rows of a group,
-                whose box would stretch over it; group names it
 `,
   },
   "edge pass": {
