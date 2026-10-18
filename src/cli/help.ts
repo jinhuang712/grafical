@@ -123,17 +123,34 @@ Good to know:
     rows, nodes, groups, lanes and edges: a node cannot share its row's id.
 
 Output:
-  ok changed=<ids>           the change is written
-  bent line= bends= skip=    a line of over 2 bends; skip: rows it skips
+  ok changed=<ids>, the change written; then a block for each warning, a
+  blank line before each; then the counts:
+    warning: <code>
+    description: <what happened, one sentence per code>
+    detail:
+      <key>: <value>
+    next: <the commands that can change it>
+  A warning has no source: the outcome line names what changed. Every
+  write, check and render prints every warning the diagram has:
+    bent-line          a line of over 2 bends: edge, bends, skip (the rows
+                       between its ends' rows)
+    passing-row        a line through rows it does not connect: edge, rows
+    line-across-group  a line through a group holding neither of its ends:
+                       edge, groups
+    tight-lines        two lines under 12 px apart for over 100 px: edges,
+                       over (the pixels they share)
+    crowded-label      a label under 8 px from a line, box, border or label
+                       on two sides: edge
+    lonely-box         a box with no lines: node
+    crossing           two lines that cross: edges
   counts nodes= lines= crossings= bends= bent= length= width= height=
          fullest= busiest= longest= passing= across= tight= crowded=
-    length is every line's length together, in pixels. fullest: the row
-    with most nodes, <row>:<nodes>; busiest: the box with most lines,
-    <box>:<lines>; longest: <line>:<length>; passing: lines that pass a row
-    they do not connect; across: lines through a group holding neither of
-    their ends; tight: pairs of runs of two lines under 12 px apart for over
-    100 px; crowded: labels under 8 px from a line, box, border or label on
-    two sides. grafical show <file> --drawn prints a record per box and line.
+    crossings counts the points where lines cross; length is every line's
+    length together, in pixels. fullest: the row with most nodes,
+    <row>:<nodes>; busiest: the box with most lines, <box>:<lines>;
+    longest: <line>:<length>; bent, passing, across, tight and crowded
+    count the warnings of their kind. grafical show <file> --drawn prints a
+    record per box and line.
 
 When refused:
   failed changed=-, the file untouched, then a record per problem:
@@ -215,8 +232,9 @@ of every change, with the changed parts marked. Ctrl-C stops it.`,
   },
 
   check: {
-    about: `Report the defects you can fix and the counts, without changing anything.
---all adds the engine's own defects, which are its bugs.`,
+    about: `Report the defects you can fix, every warning and the counts, without changing
+anything, as apply --help's Output says. --all adds the engine's own defects,
+which are its bugs.`,
   },
 
   try: {

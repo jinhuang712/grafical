@@ -21,8 +21,8 @@ export interface Tight {
 }
 
 export interface Composition {
-  /** The lines that cross the box of a group that holds neither of their ends, in id order. */
-  across: string[];
+  /** The lines that cross the box of a group that holds neither of their ends, in id order, with those groups. */
+  across: { id: string; groups: string[] }[];
   tight: Tight[];
   /** The lines whose label is crowded, with the label's box. */
   crowded: { id: string; rect: Rect }[];
@@ -41,8 +41,8 @@ function edgesOf(r: Rect): Segment[] {
   return p.map((a, i) => ({ a, b: p[(i + 1) % 4] as { x: number; y: number } }));
 }
 
-/** The lines that cross a group's box without either end in it. */
-function acrossOf(scene: Scene): string[] {
+/** The lines that cross a group's box without either end in it, in id order, each with those groups. */
+function acrossOf(scene: Scene): Composition["across"] {
   const rects = new Map<string, Rect>();
   for (const n of scene.nodes) rects.set(n.id, n.rect);
   for (const g of scene.groups ?? []) rects.set(g.id, g.rect);
@@ -59,16 +59,16 @@ function acrossOf(scene: Scene): string[] {
       r.y + r.h <= g.rect.y + g.rect.h + EPS
     );
   };
-  const out: string[] = [];
+  const out: Composition["across"] = [];
   for (const e of scene.edges) {
     const segs = segmentsOf(e.points);
-    const through = (scene.groups ?? []).some(
+    const groups = (scene.groups ?? []).filter(
       (g) =>
         !holds(g, e.from) && !holds(g, e.to) && segs.some((s) => segmentCrossesRect(s, g.rect)),
     );
-    if (through) out.push(e.id);
+    if (groups.length > 0) out.push({ id: e.id, groups: groups.map((g) => g.id) });
   }
-  return out.sort();
+  return out.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
 /** Runs of two different lines, not of one bus, that lie side by side closer than a track for more than 100 px. */

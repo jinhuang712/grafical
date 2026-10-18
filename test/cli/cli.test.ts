@@ -181,7 +181,22 @@ describe("write commands", () => {
       "--json",
     );
     expect(r.code).toBe(0);
-    expect(r.out).toBe('{"ok":true,"changed":["cache"],"problems":[]}\n');
+    // The new box has no lines yet: a warning, with no source (DESIGN.md, "Every write prints every warning").
+    expect(r.out).toBe(
+      `${JSON.stringify({
+        ok: true,
+        changed: ["cache"],
+        problems: [
+          {
+            kind: "warning",
+            code: "lonely-box",
+            description: "A box has no lines.",
+            detail: { node: "cache" },
+            next: ["node remove", "edge add"],
+          },
+        ],
+      })}\n`,
+    );
     const rm = run("node", "remove", "single.grafical.yaml", "cache", "--json");
     expect(JSON.parse(rm.out)).toEqual({ ok: true, changed: ["cache"], problems: [] });
   });
@@ -282,7 +297,19 @@ describe("write commands", () => {
     const second = run("edge", "add", "e.grafical.yaml", "p", "q", "--label", "again");
     expect(second.out).toBe("ok changed=p->q#2\n");
     const rm = run("node", "remove", "e.grafical.yaml", "q");
-    expect(rm.out).toBe("ok changed=q,p->q,p->q#2\n");
+    // p is left with no lines.
+    expect(rm.out).toBe(
+      [
+        "ok changed=q,p->q,p->q#2",
+        "",
+        "warning: lonely-box",
+        "description: A box has no lines.",
+        "detail:",
+        "  node: p",
+        "next: node remove, edge add",
+        "",
+      ].join("\n"),
+    );
   });
 
   it('edge step numbers a line, show prints it, and no --n clears it (DESIGN.md, "Step badges ride the line")', () => {

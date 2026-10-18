@@ -6,13 +6,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import {
-  bentLines,
   type Counts,
   countsText,
   delta,
   deltaText,
   drawing,
   drawingText,
+  warningsOf,
 } from "../check/drawing.ts";
 import type { Facts, UsageCode } from "../errors.ts";
 import { USAGE_CODES } from "../errors.ts";
@@ -1054,7 +1054,7 @@ export function build(): Command {
   json(
     program
       .command("check")
-      .description("the defects you can fix, and the counts")
+      .description("the defects you can fix, the warnings, and the counts")
       .argument("<file>")
       .option("--all", "also report engine-owned defects, which are engine bugs"),
   ).action(async (file: string, opts: Opts) => {
@@ -1072,7 +1072,7 @@ export function build(): Command {
         changed: [],
         errors: [],
         defects,
-        bent: bentLines(dr.lines),
+        warnings: warningsOf(dr),
         counts: dr.counts,
         kinds: kindsOf(d),
       },
@@ -1120,7 +1120,7 @@ export function build(): Command {
       changed: [],
       errors: [],
       defects,
-      bent: bentLines(dr.lines),
+      warnings: warningsOf(dr),
       counts: dr.counts,
       kinds: kindsOf(d),
     };

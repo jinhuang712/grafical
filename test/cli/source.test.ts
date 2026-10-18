@@ -158,6 +158,31 @@ describe("source", () => {
     );
   });
 
+  it("of a warning: none, in text or in --json, as the outcome line names what the write changed", () => {
+    // sync->geo bends three times and passes a row in this fixture, and other lines bend too
+    // (DESIGN.md, "Every write prints every warning").
+    const f = "bent.grafical.yaml";
+    writeFileSync(
+      join(dir, f),
+      readFileSync(
+        join(import.meta.dirname, "../fixtures/catalog-sync-help3.grafical.yaml"),
+        "utf8",
+      ),
+    );
+    expect(run("edge", "remove", f, "sync->geo").code).toBe(0);
+    const add = run("edge", "add", f, "sync", "geo", "--label", "HTTP GET");
+    expect(add.code).toBe(0);
+    expect(add.out).toMatch(/^ok changed=sync->geo\n/);
+    const warned = add.out.split("\n\n").filter((b) => b.startsWith("warning: "));
+    expect(warned.some((b) => b.includes("  edge: sync->geo\n"))).toBe(true);
+    for (const b of warned) expect(b).not.toMatch(/^source:/m);
+    run("edge", "remove", f, "sync->geo");
+    const json = JSON.parse(run("edge", "add", f, "sync", "geo", "--json").out);
+    const warnings = json.problems.filter((x: { kind: string }) => x.kind === "warning");
+    expect(warnings.length).toBeGreaterThan(0);
+    for (const w of warnings) expect(w.source).toBeUndefined();
+  });
+
   it("of what the file had before the command is already in the file", () => {
     const bad = structuredClone(shop);
     const web = bad.layers[0]?.nodes[0];

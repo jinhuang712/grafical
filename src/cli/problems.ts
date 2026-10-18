@@ -2,7 +2,6 @@
 // one fixed sentence per code, which says what happened and never what to do, and the commands that can change it,
 // by name only. Both are fixed per code, never made for the case at hand.
 
-import type { Bent } from "../check/drawing.ts";
 import {
   DEFECT_CODES,
   type Defect,
@@ -15,6 +14,7 @@ import {
   USAGE_CODES,
   type UsageCode,
   WARNING_CODES,
+  type Warning,
   type WarningCode,
 } from "../errors.ts";
 import { everyNode } from "../model/steps.ts";
@@ -64,6 +64,8 @@ export const DESCRIPTIONS: Record<Code, string> = {
     "The operation gives a box more than one place, or a place in a row to a box placed by steps.",
   "copy-conflict":
     "A copied box's alignment, steps, lane or column cannot hold for the copy where it is put.",
+  "crowded-label": "A line's label has less than 8 px of room on two or more sides.",
+  crossing: "Two lines cross.",
   "duplicate-id": "The id is taken.",
   "edge-blocked":
     "A line that ends at a group, row or lane has no way to it: other boxes stand between its ends in their row.",
@@ -95,6 +97,8 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "lane-to-lane": "A line joins two lanes.",
   "layer-not-empty": "The row still holds boxes.",
   "layer-too-small": "The row holds fewer than two boxes.",
+  "line-across-group": "A line runs through the box of a group that holds neither of its ends.",
+  "lonely-box": "A box has no lines.",
   "mark-covers": "A box's mark covers its text or another box.",
   "mark-file-changed": "A mark's file changed after the mark was set.",
   "mark-file-not-found": "No file is there for the mark.",
@@ -123,6 +127,8 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "option-missing-argument": "An option was given without its value.",
   "outside-folder": "The stylesheet lies outside the diagram's folder.",
   overflow: "A text takes more room than its box, header or card holds.",
+  "passing-row":
+    "A line runs through a row between its ends, among the row's boxes, without meeting one of them.",
   "same-layer": "A box is aligned with a box that sits in its own row.",
   "self-alignment": "A box is aligned with itself.",
   "step-anchor": "Other boxes are placed by steps from the box.",
@@ -131,6 +137,7 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "step-cycle": "A box would be placed by steps from itself, through other boxes.",
   "style-not-found": "No stylesheet is there.",
   "text-crossing": "A line runs across a text.",
+  "tight-lines": "Two lines run side by side less than 12 px apart for more than 100 px.",
   "title-blocked": "A line runs where the group's title sits, and no line moves for a title.",
   "too-many-accents": "More boxes would carry an accent than grafical allows.",
   "unknown-column": "No column has the id.",
@@ -180,7 +187,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "bar-crossed": ["layer move", "node move", "edge remove", "edge pass"],
   "bar-in-group": ["group leave", "layer move", "node move", "edge remove"],
   "bar-to-bar": ["edge remove", "edge retarget"],
-  "bent-line": ["layer move", "node move"],
+  "bent-line": ["layer move", "node move", "node swap"],
   "batch-unreadable": [],
   "both-on-link": ["edge kind"],
   "box-aside": ["node move"],
@@ -190,6 +197,8 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "conflicting-option": [],
   "conflicting-position": { placed: [], stepped: ["node move"] },
   "copy-conflict": ["node move", "node align"],
+  "crowded-label": ["node move", "node swap", "edge relabel"],
+  crossing: ["group order", "layer move", "node move", "node swap"],
   "duplicate-id": {
     layer: ["layer remove"],
     node: ["node remove"],
@@ -231,6 +240,8 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "lane-to-lane": ["edge remove", "edge retarget"],
   "layer-not-empty": ["node move", "node remove"],
   "layer-too-small": ["node add", "node move"],
+  "line-across-group": ["group order", "node move", "node swap"],
+  "lonely-box": ["node remove", "edge add"],
   "mark-covers": ["node resize", "node icon"],
   "mark-file-changed": ["node icon"],
   "mark-file-not-found": ["node icon"],
@@ -273,6 +284,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
     lane: ["lane rename"],
     note: ["note add"],
   },
+  "passing-row": ["layer move", "node move", "node swap"],
   "same-layer": ["node move", "node align"],
   "self-alignment": ["node align"],
   "step-anchor": ["node move"],
@@ -281,6 +293,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "step-cycle": ["node move"],
   "style-not-found": ["diagram style"],
   "text-crossing": [],
+  "tight-lines": ["layer move", "node move", "node swap"],
   "title-blocked": ["group title", "node move", "edge remove"],
   "too-many-accents": ["node emphasize"],
   "unknown-column": ["column add"],
@@ -468,13 +481,13 @@ export function usageBlock(
   };
 }
 
-/** A line drawn with more than two bends, as a warning. It has no source: the outcome line names what changed. */
-export function bentBlock(b: Bent): Block {
+/** Something drawn poorly, as a warning block. It has no source: the outcome line names what the write changed. */
+export function warningBlock(w: Warning): Block {
   return {
     kind: "warning",
-    code: "bent-line",
-    description: DESCRIPTIONS["bent-line"],
-    detail: { edge: b.line, bends: b.bends, skip: b.skip },
-    next: NEXT["bent-line"] as readonly string[],
+    code: w.code,
+    description: DESCRIPTIONS[w.code],
+    detail: ordered(w.facts),
+    next: nextOf(w.code, w.facts),
   };
 }

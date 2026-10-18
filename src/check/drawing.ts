@@ -5,6 +5,7 @@
 // legend's entries; and totals. The coding agent judges the drawing from them; grafical
 // judges nothing.
 
+import type { Warning } from "../errors.ts";
 import { bendsOf, crossingsOf, legendEntries } from "../layout/index.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { endRows } from "../model/ends.ts";
@@ -392,22 +393,48 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   };
 }
 
+/** The lines drawn with more than two bends (DESIGN.md, "The dirty work has edges"), in drawing order. */
+export function bentLines(lines: DrawnLine[]): DrawnLine[] {
+  return lines.filter((l) => l.bends > TASTE_LIMITS.maxBends);
+}
+
+/**
+ * What the drawing draws poorly, as warnings, in the order of their codes (DESIGN.md, "Every write prints every
+ * warning"): the lines bent more than twice, the lines that pass rows, the lines across a group's box, the tight runs,
+ * the crowded labels, the boxes with no lines, and each pair of lines that cross. The first five are the places that
+ * bent, passing, across, tight and crowded count.
+ */
+export function warningsOf(dr: Drawing): Warning[] {
+  const c = dr.composition;
+  return [
+    ...bentLines(dr.lines).map(
+      (l): Warning => ({ code: "bent-line", facts: { edge: l.id, bends: l.bends, skip: l.skip } }),
+    ),
+    ...dr.lines
+      .filter((l) => l.passes.length > 0)
+      .map((l): Warning => ({ code: "passing-row", facts: { edge: l.id, rows: l.passes } })),
+    ...c.across.map(
+      (a): Warning => ({ code: "line-across-group", facts: { edge: a.id, groups: a.groups } }),
+    ),
+    ...c.tight.map(
+      (t): Warning => ({
+        code: "tight-lines",
+        facts: { edges: [t.a, t.b], over: Math.round(t.hi - t.lo) },
+      }),
+    ),
+    ...c.crowded.map((x): Warning => ({ code: "crowded-label", facts: { edge: x.id } })),
+    ...dr.boxes
+      .filter((b) => b.lines === 0)
+      .map((b): Warning => ({ code: "lonely-box", facts: { node: b.id } })),
+    ...dr.lines.flatMap((l) =>
+      l.crosses
+        .filter((o) => l.id < o)
+        .map((o): Warning => ({ code: "crossing", facts: { edges: [l.id, o] } })),
+    ),
+  ];
+}
+
 /** The counts as one record, named by what they count: counts, before or after. */
-/** A line drawn with more than two bends, reported on every write (DESIGN.md, "The dirty work has edges"). */
-export interface Bent {
-  line: string;
-  bends: number;
-  /** Rows between the rows of its ends. */
-  skip: number;
-}
-
-/** The lines with more than two bends, in drawing order. */
-export function bentLines(lines: DrawnLine[]): Bent[] {
-  return lines
-    .filter((l) => l.bends > TASTE_LIMITS.maxBends)
-    .map((l) => ({ line: l.id, bends: l.bends, skip: l.skip }));
-}
-
 export function countsText(c: Counts, name = "counts"): string {
   return record(name, { ...c });
 }

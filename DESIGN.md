@@ -674,6 +674,8 @@ Rejected:
 
 ## Decision: Composition counts — 2026-10-16
 
+Changed on 2026-10-18 by "Every write prints every warning": each place `passing`, `across`, `tight` and `crowded` count is also a warning block, on every write.
+
 Decided on 2026-10-16 from a request that agents see how a picture is composed, not only how many lines cross. `crossings` and `bends` miss pictures that are wrong in ways an agent can fix by choosing rows differently: a line that runs over a system it has nothing to do with, two lines drawn almost on top of each other, a label with no air. The counts go on the `counts` record that `apply`, `try`, `check` and `show --drawn` print (FEATURES.md, "Counts").
 
 - **`across`:** lines that cross the box of a group that holds neither of their ends. A group holds an end when the end is the group, a member, or lies inside its box. A line is counted once, however many groups it crosses.
@@ -772,6 +774,8 @@ Rejected:
 - Moving the lines off their boxes' centres, or bending them, around a stated label. The label would move the agent's lines; offered on 2026-10-16 and not chosen.
 
 ## Decision: The dirty work has edges — 2026-10-16
+
+Changed on 2026-10-18 by "Refusals say what happened and which commands can change it" and "Every write prints every warning": a line with more than two bends is a `warning: bent-line` block, no longer a `bent line=` record.
 
 Decided by the owner on 2026-10-16 (PHILOSOPHY.md, "Who owns what?"). The engine had been widening a group's box so that no line ran under a stated title ("The agent states where a group's label sits"), and the owner found the empty space it left. Looking for the cause, the owner named the rule behind it: the engine must not do needless work beyond its edges just to get a picture drawn. Until then an engine-owned defect was the engine's to avoid whatever the agent stated ("Defects owned by who can fix them"), and that duty had no edge: every hard case grew a fallback that drew a crooked form and told the agent nothing.
 
@@ -900,9 +904,9 @@ grafical reports what happened and never teaches. A record gives the facts and t
     <key>: <value>
   next: <command names>
   ```
-- **Three kinds.** An `error` could not be read or applied, and nothing is written: exit 2 for the command line, 1 for an operation. A `defect` would draw wrong: one the agent owns refuses the write with exit 1, and one the engine owns is grafical's bug, written, and shown only by `check --all` ("Defects owned by who can fix them"). A `warning` is written, with exit 0, and says what draws poorly: a line with more than two bends ("The dirty work has edges") is `warning: bent-line`.
+- **Three kinds.** An `error` could not be read or applied, and nothing is written: exit 2 for the command line, 1 for an operation. A `defect` would draw wrong: one the agent owns refuses the write with exit 1, and one the engine owns is grafical's bug, written, and shown only by `check --all` ("Defects owned by who can fix them"). A `warning` is written, with exit 0, and says what draws poorly, such as `warning: bent-line` for a line with more than two bends ("The dirty work has edges"); the seven warnings are in "Every write prints every warning".
 - **A description per code.** One fixed sentence for each code, in one table, that says what happened, not what to do. It is never made for the case at hand. A test holds every error, defect and warning code to one short sentence.
-- **The source.** For a single command, the command line as typed. For an operation of a batch, `<batch file> line <n>: <the operation as written>`, where `<n>` is the file's line the operation starts on, from 1; `--json` keeps the operation's index as well. For a defect found after layout, and for an error of the whole diagram found only once the whole batch is applied, the batch line after which it first appears and stays: on a refused write, grafical applies prefixes of the batch, halving the range each time, so a write that succeeds costs nothing more. Before, such an error named the batch's last operation, which may have done nothing wrong. For what was in the file before the command, `already in the file`.
+- **The source.** A warning has none ("Every write prints every warning"). For a single command, the command line as typed. For an operation of a batch, `<batch file> line <n>: <the operation as written>`, where `<n>` is the file's line the operation starts on, from 1; `--json` keeps the operation's index as well. For a defect found after layout, and for an error of the whole diagram found only once the whole batch is applied, the batch line after which it first appears and stays: on a refused write, grafical applies prefixes of the batch, halving the range each time, so a write that succeeds costs nothing more. Before, such an error named the batch's last operation, which may have done nothing wrong. For what was in the file before the command, `already in the file`.
 - **The detail.** One fact per line, under the names the facts had, in one fixed order; `-` for an empty value, absent keys left out, a list comma separated. The ids that a defect named in one list, `elements`, are split by what each one is: `node`, `edge`, `group`, `row`, `lane` or `wall`.
 - **Next.** The names of the commands that can change it, in the order the help lists commands, or `-` where none can, such as for a batch's syntax error or an engine bug. Never ids, values or options. A test holds every name to a real command.
 - **`likely` as a value only.** A word grafical does not know is answered with the word it most likely means, never with a command: `grafical help apply` gives `found: help` and `likely: --help`.
@@ -914,6 +918,31 @@ Rejected:
 - Generated fix commands, the `fix` facts of 2026-10-17. They choose for the agent, they teach a form that the agent copies without reading, and each is engine work that a test must keep right: the fix test applied every one.
 - A sentence made for each case, such as "move pricing-svc out of row-upstream". It reads well, but it is advice in prose, worded its own way each time, and the agent has to parse English to find the ids ("Records over prose").
 - One-line records for refusals, as before. A record of a dozen `key=value` fields said what was there, but not what had happened or which command could act, and `elements=` mixed boxes, lines and groups in one list.
+
+## Decision: Every write prints every warning — 2026-10-18
+
+Decided by the owner on 2026-10-18, the same day as "Refusals say what happened and which commands can change it", which had kept one warning, a line with more than two bends. The composition counts ("Composition counts") told an agent how many lines pass rows or cross groups, but not which, unless it read `show --drawn`.
+
+- **Seven warnings**, each its own block, in this order:
+  - `bent-line`: a line with more than two bends ("The dirty work has edges"). Detail: `edge`, `bends`, `skip`.
+  - `passing-row`: a line that runs through rows between its ends without meeting a box of them. Detail: `edge`, `rows`.
+  - `line-across-group`: a line through the box of a group that holds neither of its ends. Detail: `edge`, and `groups`, every such group.
+  - `tight-lines`: runs of two lines under 12 px apart for over 100 px. Detail: `edges`, the pair, and `over`, the pixels they share.
+  - `crowded-label`: a line's label with under 8 px of room on two sides. Detail: `edge`.
+  - `lonely-box`: a box with no lines. Detail: `node`.
+  - `crossing`: a pair of lines that cross, however often. Detail: `edges`.
+
+  The first five are a block for each place that `bent`, `passing`, `across`, `tight` and `crowded` count, so the counts line stays as it was. `crossings` still counts points: a pair that crosses twice is one block. `next` names the commands that rearrange the picture: rows (`layer move`), order (`node move`, `node swap`, `group order`), and also `edge relabel` for a label, `node remove` and `edge add` for a box with no lines.
+- **All of them, every time.** Every write, single commands included, and `check` and `render` print every warning the diagram has, not only those the command caused. Every change lays the whole diagram out again ("Layout computed again on every change"), so the set can differ after any change.
+- **No source.** Decided by the owner later the same day: a warning has no `source:`, in text or in `--json`; errors and defects keep theirs. The outcome line `ok changed=<ids>` already tells the agent what it just changed, so it can match a warning that names those ids itself. Telling a new warning from an old one needs a second layout per write, of the diagram before it: measured on a quiet machine, it took one operation on a 50-box diagram from a median of 10.3 ms and a worst of 33.9 ms to 19.0 and 67.1 ms, against the 50 ms of GOALS.md, "Speed".
+- **Measured.** On round p1g's final drafts a write prints no warning at scale 10, 35 blocks in 220 lines at scale 25, and 173 to 232 blocks in 1,117 to 1,490 lines (31 to 41 KB) at scale 50, most of them crossings.
+
+Rejected:
+- Only the warnings the command caused. The set changes with every layout, and a warning from before may be the one to act on.
+- A source on every warning, `already in the file` or the command, by laying out the diagram before the write: the second layout per write, and the speed target missed, as measured above.
+- A source only on the warnings this write made, printed first: the same second layout, so the same cost.
+- A cache of the last layout beside the file, to compare with: a second file, which goes stale when the diagram is edited by hand or switched in git.
+- One block per crossing point. Two lines that cross twice are one thing to change.
 
 ## Open questions
 

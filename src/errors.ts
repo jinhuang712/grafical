@@ -31,6 +31,8 @@ export interface Facts {
   group?: string;
   node?: string;
   edge?: string;
+  /** Two lines it concerns, such as two that cross. */
+  edges?: readonly string[];
   lane?: string;
   wall?: string;
   /** A note, by what it is on. */
@@ -39,6 +41,10 @@ export interface Facts {
   lanes?: readonly string[];
   /** The nodes of that row or group. */
   nodes?: readonly string[];
+  /** The rows a line runs through without meeting a box of them. */
+  rows?: readonly string[];
+  /** The groups whose box a line runs through. */
+  groups?: readonly string[];
   /** The members of a group that a box stands between in one row. */
   between?: readonly string[];
   /** The lines that run across a text. */
@@ -66,6 +72,8 @@ export interface Facts {
   chars?: readonly string[];
   /** Pixels of one line that another shares. */
   shared?: number;
+  /** Pixels along which two lines run close side by side. */
+  over?: number;
   /** How often a line bends, and the rows between the rows of its ends. */
   bends?: number;
   skip?: number;
@@ -86,10 +94,13 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
   "row",
   "group",
   "edge",
+  "edges",
   "lane",
   "wall",
   "note",
   "nodes",
+  "rows",
+  "groups",
   "lanes",
   "between",
   "across",
@@ -110,6 +121,7 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
   "column",
   "chars",
   "shared",
+  "over",
   "bends",
   "skip",
 ];
@@ -227,10 +239,29 @@ export type UsageCode = (typeof USAGE_CODES)[number];
 
 /**
  * The codes of a warning: written, exit 0, and drawn poorly (DESIGN.md, "Refusals say what happened and which
- * commands can change it"). A line with more than two bends is one (DESIGN.md, "The dirty work has edges").
+ * commands can change it", "Every write prints every warning"), in the order they print: a line with more than two
+ * bends (DESIGN.md, "The dirty work has edges"), the places the counts passing, across, tight and crowded count
+ * (DESIGN.md, "Composition counts"), a box with no lines, and two lines that cross.
  */
-export const WARNING_CODES = ["bent-line"] as const;
+export const WARNING_CODES = [
+  "bent-line",
+  "passing-row",
+  "line-across-group",
+  "tight-lines",
+  "crowded-label",
+  "lonely-box",
+  "crossing",
+] as const;
 export type WarningCode = (typeof WARNING_CODES)[number];
+
+/**
+ * Something drawn poorly, which is written: its code and what is there. It has no source: the outcome line names
+ * what the write changed (DESIGN.md, "Every write prints every warning").
+ */
+export interface Warning {
+  code: WarningCode;
+  facts: Facts;
+}
 
 /** An operation that cannot be applied. Nothing changes when one occurs. */
 export interface OpError {

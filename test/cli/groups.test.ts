@@ -65,8 +65,9 @@ describe("grouped diagrams", () => {
     run("node", "add", f, "a", "--layer", "r1", "--label", "A");
     run("node", "add", f, "b", "--layer", "r2", "--label", "B");
     run("node", "add", f, "c", "--layer", "r3", "--label", "C");
-    expect(run("group", "add", f, "g", "--label", "G", "--nodes", "a,b").out).toBe(
-      "ok changed=g,a,b\n",
+    // The boxes have no lines: each write prints those warnings after its outcome.
+    expect(run("group", "add", f, "g", "--label", "G", "--nodes", "a,b").out).toMatch(
+      /^ok changed=g,a,b\n\nwarning: lonely-box\n/,
     );
     expect(run("group", "join", f, "g", "c").code).toBe(0);
     // Leaving the middle row: the box still spans it (DESIGN.md, "Rows unseen, groups as systems").
@@ -74,7 +75,7 @@ describe("grouped diagrams", () => {
     expect(run("group", "join", f, "g", "b").code).toBe(0);
     expect(run("group", "join", f, "zz", "a").out).toContain("unknown-group");
     expect(run("group", "rename", f, "g", "--label", "Renamed").code).toBe(0);
-    expect(run("group", "remove", f, "g").out).toBe("ok changed=g,a,b,c\n");
+    expect(run("group", "remove", f, "g").out).toMatch(/^ok changed=g,a,b,c\n/);
     expect(read(f)).not.toContain("group");
     expect(run("diagram", "subtitle", f).code).toBe(0);
     expect(run("diagram", "note", f, "--text", "Not shown: y.").code).toBe(0);
@@ -116,7 +117,9 @@ describe("grouped diagrams", () => {
     const w = run("apply", f, "big.yaml");
     expect(w.code).toBe(0);
     expect(w.out).toMatch(/^counts nodes=17 lines=0 crossings=0 bends=0 .*fullest=row:17 /m);
-    expect(w.out).not.toMatch(/warning|hint|too many/);
+    // No warning of too many boxes: only the facts, each box with no lines.
+    expect(w.out.match(/^warning: .*$/gm)).toEqual(Array(17).fill("warning: lonely-box"));
+    expect(w.out).not.toMatch(/hint|too many/);
     const c = run("check", f, "--json");
     expect(c.code).toBe(0);
     const body = JSON.parse(c.out);

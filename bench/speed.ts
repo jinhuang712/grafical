@@ -1,5 +1,5 @@
 // GOALS.md, "Speed": the time in process to apply, lay out and check
-// one operation on diagrams of about 50 nodes, and the wall time of one command.
+// one operation on diagrams of about 50 nodes, as a write does it, and the wall time of one command.
 // Diagrams come from the fuzz generator's fixed seeds, so every run measures the
 // same ones. Costs nothing: no agent runs.
 
@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { drawing } from "../src/check/drawing.ts";
+import { drawing, warningsOf } from "../src/check/drawing.ts";
 import { check } from "../src/check/index.ts";
 import { layout } from "../src/layout/index.ts";
 import { applyOps, type Diagram, type Op } from "../src/model/index.ts";
@@ -57,7 +57,8 @@ export async function measureSpeed(): Promise<string[]> {
         if ("errors" in r) break;
         const s = layout(r.diagram, m);
         check(r.diagram, s, m);
-        drawing(r.diagram, s);
+        // A write prints every warning of the diagram it makes (DESIGN.md, "Every write prints every warning").
+        warningsOf(drawing(r.diagram, s));
         ms.push(performance.now() - t0);
       }
       if (ms.length === 0) continue;

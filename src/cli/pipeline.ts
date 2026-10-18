@@ -4,9 +4,9 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { parse } from "yaml";
-import { type Bent, bentLines, type Counts, countsText, drawing } from "../check/drawing.ts";
+import { type Counts, countsText, drawing, warningsOf } from "../check/drawing.ts";
 import { check } from "../check/index.ts";
-import type { Defect, ErrorCode, Facts, OpError } from "../errors.ts";
+import type { Defect, ErrorCode, Facts, OpError, Warning } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
 import { readDiagram, writeDiagram, yamlError } from "../model/io.ts";
@@ -24,7 +24,7 @@ import {
   unknownWeights,
 } from "../theme/themes.ts";
 import { bindMarkOps, loadMarks, settingSlots } from "./marks.ts";
-import { type Block, bentBlock, defectBlock, errorBlock, kindsOf } from "./problems.ts";
+import { type Block, defectBlock, errorBlock, kindsOf, warningBlock } from "./problems.ts";
 import { batchItems, IN_FILE, itemSource, type Origin } from "./source.ts";
 
 export interface Report {
@@ -34,8 +34,8 @@ export interface Report {
   defects: Defect[];
   /** The drawing's counts (DESIGN.md, "Records over prose"): on apply, check and render, when nothing was refused. */
   counts?: Counts;
-  /** The lines drawn with more than two bends, each a warning: on every write, check and render (DESIGN.md, "The dirty work has edges"). */
-  bent?: Bent[];
+  /** What the drawing draws poorly: on every write, check and render (DESIGN.md, "Every write prints every warning"). */
+  warnings?: Warning[];
   /** What each id of the diagram the defects are found in names, so that their detail names each by its kind. */
   kinds?: ReadonlyMap<string, string>;
 }
@@ -46,7 +46,7 @@ export function blocks(r: Report): Block[] {
   return [
     ...r.errors.map(errorBlock),
     ...r.defects.map((d) => defectBlock(d, kinds)),
-    ...(r.bent ?? []).map(bentBlock),
+    ...(r.warnings ?? []).map(warningBlock),
   ];
 }
 
@@ -406,7 +406,7 @@ export async function runWrite(
     changed: p.changed,
     errors: [],
     defects: [],
-    bent: bentLines(dr.lines),
+    warnings: warningsOf(dr),
     ...(counts ? { counts: dr.counts } : {}),
   };
 }

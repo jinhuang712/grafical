@@ -9,7 +9,7 @@ import { opCommands } from "../../src/cli/batch.ts";
 import { GUIDES } from "../../src/cli/guides.ts";
 import { PAGES } from "../../src/cli/help.ts";
 import { build, wrongCommand } from "../../src/cli/main.ts";
-import { DEFECT_CODES, ERROR_CODES } from "../../src/errors.ts";
+import { DEFECT_CODES, ERROR_CODES, WARNING_CODES } from "../../src/errors.ts";
 import { writeDiagram } from "../../src/model/io.ts";
 import { OP_NAMES, SCHEMAS } from "../../src/model/ops.ts";
 import { EDGE_KINDS, NODE_KINDS } from "../../src/model/types.ts";
@@ -116,6 +116,12 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
       .filter((t) => !t.includes("export const ERROR_CODES"))
       .join("\n");
     for (const code of [...ERROR_CODES, ...DEFECT_CODES]) expect(src, code).toContain(`"${code}"`);
+  });
+
+  it('names every warning in apply\'s Output (DESIGN.md, "Every write prints every warning")', () => {
+    const output = PAGES.apply?.after?.split("Output:\n")[1]?.split("\n\n")[0] ?? "";
+    for (const code of WARNING_CODES)
+      expect(output, code).toMatch(new RegExp(`^ {4}${code} `, "m"));
   });
 
   it("lists every kind of node and edge", () => {
@@ -241,7 +247,7 @@ describe('the counts in place of hints (DESIGN.md, "Records over prose")', () =>
       "  edge: api->photos",
       "  bends: 4",
       "  skip: 1",
-      "next: layer move, node move",
+      "next: layer move, node move, node swap",
     ].join("\n");
     const out = run("check", photos()).out;
     expect(out.startsWith(`ok\n\n${bent}\n\ncounts nodes=`)).toBe(true);

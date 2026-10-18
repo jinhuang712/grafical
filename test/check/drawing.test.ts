@@ -263,7 +263,7 @@ describe('composition counts (DESIGN.md, "Composition counts")', () => {
         ]),
       ],
     });
-    expect(composition(s, never).across).toEqual(["through"]);
+    expect(composition(s, never).across).toEqual([{ id: "through", groups: ["g"] }]);
   });
 
   it("counts two lines closer than a track for over 100 px, but not one bus or a wide gap", () => {
