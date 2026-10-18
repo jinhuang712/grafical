@@ -664,7 +664,7 @@ These are wanted, but not scheduled. Each becomes a planned feature once ROADMAP
 - **More combinations of operations.** The owner said on 2026-10-14 that what grafical lacks is more ways to combine its operations. What form that takes is not decided, such as one operation for a common edit ("put a cache between the API and the database") or for a common shape.
 - **Flow direction:** rows become columns, so that a diagram reads left to right. Held by the owner on 2026-10-14, because most of the layout assumes rows run across, and nothing yet shows it helps.
 - **Lanes both ways in one diagram,** as a grid of lanes and phases.
-- **Diagram types with a layout of their own:** sequence, entity-relationship and class diagrams, mind maps and timelines.
+- **Diagram types with a layout of their own:** sequence diagrams, time scales such as Gantt charts, mind maps and other radial trees, shapes such as pyramids, and overlapping sets. Each is a type the agent gives a diagram, which sets its space and the operations that apply (DESIGN.md, "An optional type sets the diagram's space"). Entity-relationship and class diagrams may be a type or a kind of box.
 - **Importing** Mermaid, draw.io and Excalidraw files.
 - **An MCP server** over the same operations.
 - **Views:** one file, several pictures of parts of it, and a group drawn folded into one box.
@@ -676,7 +676,7 @@ These are wanted, but not scheduled. Each becomes a planned feature once ROADMAP
 - **A board where people edit the diagram,** with drags that become operations. Agents draw good enough diagrams with grafical, and a person asks for a change in words (PHILOSOPHY.md, "Who draws?"). Dropped by the owner on 2026-10-14.
 - **Placement by coordinates, for anyone.** Coordinates are the dirty work models fail at, and a free position would break the promise that a change moves only what it names (PHILOSOPHY.md, "What may the agent set?").
 - **A score of how readable a picture is.** Readers differ (PHILOSOPHY.md, "What makes grafical good?").
-- **A declared diagram type that checks its conventions.** grafical would be judging content (DESIGN.md, "Records over prose").
+- **A declared diagram type that checks its conventions.** grafical would be judging content (DESIGN.md, "Records over prose"). A type that sets only the diagram's space is in *Later*.
 - **Real-time collaboration, accounts or a hosted service.** The diagram is a file in git, and git already shares it and keeps its history (DESIGN.md, "Git as the history").
 - **The same facts always giving the same picture,** whatever order they arrived in. The file fixes the picture, and the same facts give mostly the same picture (DESIGN.md, "Same file exact, same facts mostly").
 - **Tidying, a row reordered by the engine.** The engine does not choose an order for the agent. The agent compares orders with `grafical try` (DESIGN.md, "The agent states every order"). Dropped by the owner on 2026-10-15.

@@ -443,7 +443,7 @@ Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and
 
 Rejected, for stage 1:
 - Sequence diagrams, entity-relationship and class diagrams, mind maps and timelines. Each needs a layout family of its own, and the core diagram has not yet met the MVP bar.
-- A setting for the diagram's type. The kinds already say what is drawn.
+- A setting for the diagram's type. The kinds already say what is drawn. Reversed in part on 2026-10-19 by "An optional type sets the diagram's space": a type sets the space, which no kind says.
 
 ## Decision: The help as the reference — 2026-10-12
 
@@ -661,7 +661,7 @@ Decided by the owner on 2026-10-15, after a field study that redrew ten publishe
 
 Rejected:
 - Keeping the default words, "call or read", "message", "optional", "related" and "main path". They suit an architecture diagram, are wrong on a flowchart, and are the engine stating a meaning.
-- Default words per diagram type. grafical has no setting for the diagram's type ("Every layered diagram type").
+- Default words per diagram type. A type sets only the diagram's space ("An optional type sets the diagram's space").
 
 ## Decision: Columns hold across rows — 2026-10-15
 
@@ -825,7 +825,7 @@ So:
 Rejected:
 - One page with all the help and the guides, the 2026-10-12 shape grown longer. The owner forbade it: the budget decides what is left out.
 - A map with three guides to read first (`grafical help diagrams`, `compose`, `workflow`) and three references (every operation, every record, every code), each reached by `grafical help <name>`. Built and withdrawn on 2026-10-17, before it was committed. A guide is a hop the agent must choose to take. The references were flat: one operation's entry was about 250 characters in a page of 16,500, one code's about 240 in 27,700. A page of what each code means asks the agent to look up what its refusal should have said.
-- A setting or a custom mode for the diagram's kind. grafical has no type mode ("Every layered diagram type"): every diagram is already composed from the same blocks, and the entry page says so.
+- A setting or a custom mode for the diagram's kind. grafical has no type mode ("Every layered diagram type"): every diagram is already composed from the same blocks, and the entry page says so. Reversed in part on 2026-10-19 by "An optional type sets the diagram's space", for the spaces other than rows.
 - A separate `grafical guide` command, as before 2026-10-12. Each hop is a place where an agent stops.
 
 Risk, to measure in the next paid round: whether agents use the ways to draw the entry page lists where the request fits, and which command pages they open before their first write. The harness does not yet count the pages (TODO.md, "Pages read before a first write").
@@ -957,6 +957,36 @@ Rejected:
 - A source only on the warnings this write made, printed first: the same second layout, so the same cost.
 - A cache of the last layout beside the file, to compare with: a second file, which goes stale when the diagram is edited by hand or switched in git.
 - One block per crossing point. Two lines that cross twice are one thing to change.
+
+## Decision: An optional type sets the diagram's space — 2026-10-19
+
+Decided by the owner on 2026-10-19. A diagram has no type by default and is drawn as it is today. An agent may give it a type, and the type sets the space the diagram is drawn in, and with it which operations apply and which are refused. Two spaces never share one picture: nobody draws a fishbone and an entity-relationship diagram together. This reverses in part "Every layered diagram type", which rejected a setting for the diagram's type because the kinds already say what is drawn. A kind says what a box is; a space says what a place and a line mean.
+
+- **What a space is.** A layout gives four things a meaning: a place across, a place down, a line, and a box around boxes. Two layouts share a space only when all four agree. When one differs, a reader cannot tell which rule a line or a place follows. A swimlane and a sequence diagram both give each actor a column and run time down the page, but in a sequence every message has a height of its own and is the event, while in a swimlane a box is the event and a line only says what comes next.
+- **The spaces found so far.**
+  - No type: rows from top to bottom, an order in each row, lines routed between them, groups as boxes and lanes as bands. Everything grafical draws today.
+  - Sequence: participants across in a stated order, and messages down in a strict order, each a straight line at its own height. A distributed system's space-time diagram is one too.
+  - A time scale: one axis in units of time, each item placed and sized by its dates, and tracks on the other axis. Gantt charts, trace waterfalls and UML timing diagrams.
+  - A radial tree: a centre, and depth as the distance from it. Mind maps and radial trees; a fishbone is a tree along a spine.
+  - A shape that is the content: pyramids, funnels and cycles.
+  - Overlapping sets: Venn and Euler diagrams, where an overlap is an intersection. A box is in one group at most, so the space with no type cannot say it.
+- **Diagrams that need no space of their own.** Drawn on 2026-10-19 with today's commands, each in the end with no crossing:
+  - Time in order only, with columns for the periods and lanes for the tracks: a roadmap by quarter (13 boxes, 3 lines, after one `layer move`) and a git history by branch (8 commits, 9 lines). Two things were missing. A column has no heading, so the quarters were boxes in a row of their own, each warned as a `lonely-box`; and no box spans two periods. The entry page says grafical draws no timelines, which holds only for a time scale.
+  - Concentric layers, as nested groups: an onion architecture of three layers (10 boxes, 8 lines) reads as three nested boxes. Groups nest three deep at most.
+  - Boxes with fields, as in entity-relationship and class diagrams, may be a kind of box in the space with no type, with lines that end at a field. Not drawn: a line's end at a field and a mark at a line's end are among the ports, end labels and tags that FEATURES.md, "Not planned" turned down.
+- **What a type changes.** The operations that apply. An operation of another space is refused, and so is a type that does not fit what the file already holds.
+- **What a type does not do.** It does not check a diagram against the conventions of its kind (FEATURES.md, "Not planned"), and it adds no default words ("The legend says only what the agent named").
+- **Not built.** Each space needs a layout, checks and help of its own (FEATURES.md, "Later").
+- **Open.**
+  - How a type is given: when the file is made, or later while it is still empty.
+  - Whether diagrams that share the space with no type, such as a flowchart or a C4 diagram, get a type. A type would only narrow their operations.
+  - Whether boxes with fields are a type or a kind of box.
+  - Several spaces side by side in one picture, with no line between them, as the views of FEATURES.md, "Later".
+
+Rejected:
+- One space for every diagram, as since "Every layered diagram type". It cannot draw a sequence or a mind map.
+- Spaces mixed in one picture. A line or a place would mean two things.
+- No type, with the operations used deciding the space, so that the first sequence operation makes the file a sequence diagram. Proposed the same day. The agent would change what the diagram is without saying so.
 
 ## Open questions
 
