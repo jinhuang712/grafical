@@ -106,4 +106,14 @@ describe('lines bent for no reason (DESIGN.md, "Who chose is punished")', () => 
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     expect(check(d, layout(d, m), m)).toEqual([]);
   });
+
+  // Found on 2026-10-18 in round p1g, in a draft of the public 50-component brief: the line from Kafka
+  // events up to the wave planner right above it bends twice. Another line from the events' top runs
+  // across its gutter to the indexer, and crosses it where it bends as much as it would where it ran
+  // straight. A known engine defect: drop `.fails` once the line runs straight.
+  it.fails("run straight up past a line they cross either way", () => {
+    const file = join(import.meta.dirname, "../fixtures/grocer.grafical.yaml");
+    const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
+    expect(check(d, layout(d, m), m)).toEqual([]);
+  });
 });

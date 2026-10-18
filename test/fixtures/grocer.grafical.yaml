@@ -1,0 +1,494 @@
+grafical: 1
+title: grocer architecture
+subtitle: Customer, warehouse and courier apps call APIs that share Kafka events and per-service stores.
+note: "Not shown: team ownership, retries, the warehouse network and internal auth between services."
+density: normal
+layers:
+  - id: row-callers
+    label: Callers
+    nodes:
+      - id: customers
+        label: Shoppers
+        kind: actor
+        sublabel: web, mobile app
+      - id: picker-app
+        label: Pickers
+        kind: actor
+        sublabel: handheld app
+      - id: courier-app
+        label: Couriers
+        kind: actor
+        sublabel: mobile app
+      - id: care-desk
+        label: Care agents
+        kind: actor
+        sublabel: web app
+      - id: partner-feeds
+        label: Suppliers
+        kind: external
+        sublabel: hourly feeds
+  - id: row-edge
+    label: Edge
+    nodes:
+      - id: cdn
+        label: CDN
+        kind: external
+      - id: api-gateway
+        label: API gateway
+        kind: service
+        sublabel: routing, rate limits
+      - id: identity-svc
+        label: Identity
+        kind: service
+        sublabel: sign-in, tokens
+  - id: row-api
+    label: APIs
+    nodes:
+      - id: storefront-bff
+        label: Storefront BFF
+        kind: service
+        sublabel: one API for shop apps
+      - id: picking-api
+        label: Picking API
+        kind: service
+      - id: courier-api
+        label: Courier API
+        kind: service
+      - id: care-api
+        label: Care API
+        kind: service
+  - id: row-svc
+    label: Services
+    nodes:
+      - id: search-api
+        label: Search API
+        kind: service
+        sublabel: product search
+      - id: cart-svc
+        label: Cart
+        kind: service
+        sublabel: carts, prices
+      - id: catalog-api
+        label: Catalog API
+        kind: service
+        sublabel: products, images
+      - id: pricing-svc
+        label: Pricing
+        kind: service
+        sublabel: prices, promotions
+      - id: orders-api
+        label: Orders API
+        kind: service
+        sublabel: place, change, cancel
+      - id: payments-svc
+        label: Payments
+        kind: service
+        sublabel: authorise, capture
+      - id: stock-svc
+        label: Stock
+        kind: service
+        sublabel: reservations
+      - id: recommender
+        label: Recommender
+        kind: service
+        sublabel: you may also like
+      - id: eta-svc
+        label: ETA
+        kind: service
+        sublabel: arrival times
+  - id: row-jobs
+    label: Workers
+    nodes:
+      - id: feed-importer
+        label: Feed importer
+        kind: service
+        sublabel: hourly
+      - id: indexer
+        label: Indexer
+        kind: service
+        sublabel: catalog to search
+      - id: wave-planner
+        label: Wave planner
+        kind: service
+        sublabel: every 10 min
+      - id: route-planner
+        label: Route planner
+        kind: service
+        sublabel: courier routes
+      - id: invoicer
+        label: Invoicer
+        kind: service
+        sublabel: invoices
+      - id: push-svc
+        label: Push
+        kind: service
+        sublabel: app pushes
+      - id: mailer
+        label: Mailer
+        kind: service
+        sublabel: sends email
+      - id: label-printer
+        label: Label printer
+        kind: service
+        sublabel: warehouse device
+  - id: row-bus
+    label: Events
+    nodes:
+      - id: events
+        label: Kafka events
+        kind: queue
+        sublabel: 6 topics
+  - id: row-db
+    label: Databases
+    nodes:
+      - id: identity-db
+        label: Identity DB
+        kind: store
+        sublabel: Postgres
+      - id: catalog-db
+        label: Catalog DB
+        kind: store
+        sublabel: Postgres
+      - id: pricing-db
+        label: Pricing DB
+        kind: store
+        sublabel: Postgres
+      - id: orders-db
+        label: Orders DB
+        kind: store
+        sublabel: Postgres
+      - id: payments-db
+        label: Payments DB
+        kind: store
+        sublabel: Postgres
+      - id: stock-db
+        label: Stock DB
+        kind: store
+        sublabel: Postgres
+      - id: waves-db
+        label: Waves DB
+        kind: store
+        sublabel: Postgres
+      - id: routes-db
+        label: Routes DB
+        kind: store
+        sublabel: Postgres
+      - id: tickets-db
+        label: Tickets DB
+        kind: store
+        sublabel: Postgres
+  - id: row-cache
+    label: Caches and search
+    nodes:
+      - id: session-redis
+        label: Sessions
+        kind: store
+        sublabel: Redis
+      - id: cart-redis
+        label: Carts
+        kind: store
+        sublabel: Redis
+      - id: reco-cache
+        label: Reco cache
+        kind: store
+        sublabel: Redis
+      - id: eta-redis
+        label: ETA cache
+        kind: store
+        sublabel: Redis
+      - id: search-index
+        label: Search index
+        kind: store
+        sublabel: Elasticsearch
+  - id: row-objects
+    label: Object storage
+    nodes:
+      - id: image-store
+        label: Image store
+        kind: store
+        sublabel: object storage
+      - id: invoice-store
+        label: Invoices
+        kind: store
+        sublabel: object storage
+      - id: analytics-lake
+        label: Analytics lake
+        kind: store
+        sublabel: nightly Kafka copy
+  - id: row-ext
+    label: External
+    nodes:
+      - id: card-gateway
+        label: Card gateway
+        kind: external
+      - id: maps-api
+        label: Maps API
+        kind: external
+      - id: mail-provider
+        label: Mail provider
+        kind: external
+      - id: push-provider
+        label: Push provider
+        kind: external
+edges:
+  - id: customers->cdn
+    from: customers
+    to: cdn
+    kind: call
+  - id: customers->api-gateway
+    from: customers
+    to: api-gateway
+    kind: call
+  - id: api-gateway->identity-svc
+    from: api-gateway
+    to: identity-svc
+    kind: call
+    label: tokens
+  - id: api-gateway->storefront-bff
+    from: api-gateway
+    to: storefront-bff
+    kind: call
+  - id: identity-svc->identity-db
+    from: identity-svc
+    to: identity-db
+    kind: call
+  - id: identity-svc->session-redis
+    from: identity-svc
+    to: session-redis
+    kind: call
+  - id: picker-app->picking-api
+    from: picker-app
+    to: picking-api
+    kind: call
+  - id: courier-app->courier-api
+    from: courier-app
+    to: courier-api
+    kind: call
+  - id: care-desk->care-api
+    from: care-desk
+    to: care-api
+    kind: call
+  - id: partner-feeds->feed-importer
+    from: partner-feeds
+    to: feed-importer
+    kind: data
+  - id: storefront-bff->catalog-api
+    from: storefront-bff
+    to: catalog-api
+    kind: call
+  - id: storefront-bff->search-api
+    from: storefront-bff
+    to: search-api
+    kind: call
+  - id: storefront-bff->cart-svc
+    from: storefront-bff
+    to: cart-svc
+    kind: call
+  - id: storefront-bff->orders-api
+    from: storefront-bff
+    to: orders-api
+    kind: call
+  - id: storefront-bff->eta-redis
+    from: storefront-bff
+    to: eta-redis
+    kind: call
+  - id: search-api->search-index
+    from: search-api
+    to: search-index
+    kind: call
+  - id: cart-svc->cart-redis
+    from: cart-svc
+    to: cart-redis
+    kind: call
+  - id: cart-svc->pricing-svc
+    from: cart-svc
+    to: pricing-svc
+    kind: call
+  - id: catalog-api->catalog-db
+    from: catalog-api
+    to: catalog-db
+    kind: call
+  - id: catalog-api->image-store
+    from: catalog-api
+    to: image-store
+    kind: call
+  - id: cdn->image-store
+    from: cdn
+    to: image-store
+    kind: data
+  - id: recommender->reco-cache
+    from: recommender
+    to: reco-cache
+    kind: call
+  - id: recommender->analytics-lake
+    from: recommender
+    to: analytics-lake
+    kind: data
+  - id: pricing-svc->pricing-db
+    from: pricing-svc
+    to: pricing-db
+    kind: call
+  - id: feed-importer->catalog-db
+    from: feed-importer
+    to: catalog-db
+    kind: call
+  - id: feed-importer->pricing-db
+    from: feed-importer
+    to: pricing-db
+    kind: call
+  - id: feed-importer->stock-db
+    from: feed-importer
+    to: stock-db
+    kind: call
+  - id: feed-importer->events
+    from: feed-importer
+    to: events
+    kind: async
+    label: catalog-changed
+  - id: events->indexer
+    from: events
+    to: indexer
+    kind: async
+  - id: indexer->search-index
+    from: indexer
+    to: search-index
+    kind: call
+  - id: orders-api->orders-db
+    from: orders-api
+    to: orders-db
+    kind: call
+  - id: orders-api->stock-svc
+    from: orders-api
+    to: stock-svc
+    kind: call
+    label: reserve
+  - id: orders-api->payments-svc
+    from: orders-api
+    to: payments-svc
+    kind: call
+  - id: orders-api->events
+    from: orders-api
+    to: events
+    kind: async
+    label: order-placed
+  - id: payments-svc->card-gateway
+    from: payments-svc
+    to: card-gateway
+    kind: call
+  - id: payments-svc->payments-db
+    from: payments-svc
+    to: payments-db
+    kind: call
+  - id: stock-svc->stock-db
+    from: stock-svc
+    to: stock-db
+    kind: call
+  - id: events->invoicer
+    from: events
+    to: invoicer
+    kind: async
+    label: order-delivered
+  - id: invoicer->invoice-store
+    from: invoicer
+    to: invoice-store
+    kind: call
+  - id: invoicer->mailer
+    from: invoicer
+    to: mailer
+    kind: call
+  - id: mailer->mail-provider
+    from: mailer
+    to: mail-provider
+    kind: call
+  - id: events->wave-planner
+    from: events
+    to: wave-planner
+    kind: async
+    label: order-placed
+  - id: wave-planner->waves-db
+    from: wave-planner
+    to: waves-db
+    kind: call
+  - id: picking-api->waves-db
+    from: picking-api
+    to: waves-db
+    kind: call
+  - id: picking-api->stock-svc
+    from: picking-api
+    to: stock-svc
+    kind: call
+  - id: picking-api->events
+    from: picking-api
+    to: events
+    kind: async
+    label: order-picked
+  - id: picking-api->label-printer
+    from: picking-api
+    to: label-printer
+    kind: call
+  - id: events->route-planner
+    from: events
+    to: route-planner
+    kind: async
+    label: order-picked
+  - id: route-planner->maps-api
+    from: route-planner
+    to: maps-api
+    kind: call
+  - id: route-planner->routes-db
+    from: route-planner
+    to: routes-db
+    kind: call
+  - id: courier-api->routes-db
+    from: courier-api
+    to: routes-db
+    kind: call
+  - id: courier-api->events
+    from: courier-api
+    to: events
+    kind: async
+    label: order-delivered
+  - id: courier-api->events-locations
+    from: courier-api
+    to: events
+    kind: async
+    label: courier-locations
+  - id: events->eta-svc
+    from: events
+    to: eta-svc
+    kind: async
+    label: courier-locations
+  - id: eta-svc->eta-redis
+    from: eta-svc
+    to: eta-redis
+    kind: call
+  - id: care-api->orders-api
+    from: care-api
+    to: orders-api
+    kind: call
+  - id: care-api->payments-svc
+    from: care-api
+    to: payments-svc
+    kind: call
+    label: refunds
+  - id: care-api->courier-api
+    from: care-api
+    to: courier-api
+    kind: call
+  - id: care-api->tickets-db
+    from: care-api
+    to: tickets-db
+    kind: call
+  - id: events->push-svc
+    from: events
+    to: push-svc
+    kind: async
+  - id: push-svc->push-provider
+    from: push-svc
+    to: push-provider
+    kind: call
+  - id: events->analytics-lake
+    from: events
+    to: analytics-lake
+    kind: data
+    label: nightly copy
