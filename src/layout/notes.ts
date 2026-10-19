@@ -328,6 +328,8 @@ export function placeNotes(
       if (room.nodes.some((x) => x.id !== on && overlaps(x.rect, box))) return false;
       if (room.solid.some((s) => overlaps(s, box)) || taken.some((t) => overlaps(t, box)))
         return false;
+      // As a card does, the number lies wholly inside a group, lane or band, or wholly outside it.
+      if (room.areas.some((a) => overlaps(a, box) && !contains(a, box))) return false;
       const marks = room.nodes.find((x) => x.id === on)?.marks ?? [];
       return !marks.some((mk) => overlaps(mk.rect, box));
     };

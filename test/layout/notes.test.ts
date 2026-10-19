@@ -12,6 +12,7 @@ import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 import { NOTE } from "../../src/theme/geometry.ts";
 import { catalogSyncGrouped as fx } from "../fixtures/catalog-sync-grouped.ts";
+import { generate } from "../fuzz/gen.ts";
 
 let m: Measurer;
 beforeAll(async () => {
@@ -112,4 +113,32 @@ describe('notes in the picture (DESIGN.md, "Notes as callouts or footnotes")', (
     expect(text).toContain("note on=retry as=footnote number=1 lines=1");
     expect(text).toContain("note on=catalog-api as=callout number=- lines=1");
   });
+
+  it("a footnote's number lies wholly inside a group, lane or band, or wholly outside it", () => {
+    const inside = (a: Rect, b: Rect) =>
+      b.x >= a.x && b.y >= a.y && b.x + b.w <= a.x + a.w && b.y + b.h <= a.y + a.h;
+    const across: string[] = [];
+    for (let seed = 1; seed <= 40; seed++) {
+      const d = generate(seed, m).diagram;
+      // Every note a footnote, and one more on each line.
+      const notes = (d.notes ?? []).map((x) => ({ ...x, footnote: true as const }));
+      const on = new Set(notes.map((x) => x.on));
+      for (const e of d.edges)
+        if (!on.has(e.id)) notes.push({ on: e.id, text: "x", footnote: true });
+      const scene = layout({ ...d, notes }, m);
+      const areas = [
+        ...(scene.groups ?? []).map((g) => g.rect),
+        ...(scene.lanes ?? []).map((x) => x.rect),
+        ...(scene.bands ?? []).map((b) => b.rect),
+      ];
+      for (const x of scene.notes ?? []) {
+        if (x.mark === undefined) continue;
+        const { x: cx, y: cy, r } = x.mark;
+        const box = { x: cx - r, y: cy - r, w: 2 * r, h: 2 * r };
+        if (areas.some((a) => overlaps(a, box) && !inside(a, box)))
+          across.push(`seed ${seed} ${x.on}`);
+      }
+    }
+    expect(across).toEqual([]);
+  }, 60_000);
 });
