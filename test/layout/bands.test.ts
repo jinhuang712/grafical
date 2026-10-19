@@ -116,6 +116,42 @@ edges:
     const line = drawing(d, layout(d, m)).lines.find((l) => l.id === "driver->matcher");
     expect(line?.passes).toEqual(["gateway"]);
   });
+
+  // Found on 2026-10-19, redrawing a microservices diagram: the bar's name took the first stretch no line
+  // ended at, and the line that passed the bar there went round the name with four bends.
+  it("seats its label clear of the lines that pass it, which run straight", () => {
+    const d = readDiagram(`grafical: 1
+title: bus
+density: normal
+layers:
+  - {id: services, nodes: [${node("orders")}, ${node("billing")}, ${node("shipping")}]}
+  - {id: bus, label: Message-oriented middleware, nodes: []}
+  - id: stores
+    nodes:
+      - {id: orders-db, label: orders-db, kind: store, align: orders}
+      - {id: shipping-db, label: shipping-db, kind: store, align: shipping}
+edges:
+  - {id: billing->bus, from: billing, to: bus}
+  - {id: orders->orders-db, from: orders, to: orders-db, pass: true}
+  - {id: shipping->shipping-db, from: shipping, to: shipping-db, pass: true}
+`) as Diagram;
+    const s = layout(d, m);
+    expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
+    const b = s.bands?.find((x) => x.id === "bus");
+    const t = b?.label?.bbox;
+    if (b === undefined || t === undefined) throw new Error("no label");
+    for (const e of s.edges) {
+      if (e.id !== "billing->bus") expect(bends(e.points), e.id).toBe(0);
+      // Every line that meets or crosses the bar keeps 16 px from its label.
+      for (let i = 1; i < e.points.length; i++) {
+        const p = e.points[i - 1] as Point;
+        const q = e.points[i] as Point;
+        if (Math.max(p.y, q.y) < b.rect.y || Math.min(p.y, q.y) > b.rect.y + b.rect.h) continue;
+        const near = Math.max(t.x - Math.max(p.x, q.x), Math.min(p.x, q.x) - (t.x + t.w));
+        expect(near, e.id).toBeGreaterThanOrEqual(16);
+      }
+    }
+  });
 });
 
 describe('a row with a look (DESIGN.md, "A row with a look is drawn")', () => {

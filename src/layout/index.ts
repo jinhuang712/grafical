@@ -711,21 +711,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     }
     const labelW = m.measure(l.label, bandStyle).width;
     if (stands !== undefined) {
-      // A bar's label sits in it, in its first stretch that no line meets; failing
-      // that, left of the content, and the bar reaches it.
-      let edge = contentLeft - BAND.padX + BAND.labelInset;
-      let labelX: number | undefined;
-      for (const s of [...stands, undefined]) {
-        const end =
-          s === undefined ? contentRight + BAND.padX - BAND.labelInset : s.x - GROUP.clear;
-        if (end - edge >= labelW) {
-          labelX = edge;
-          break;
-        }
-        if (s !== undefined) edge = Math.max(edge, s.x + s.w + GROUP.clear);
-      }
-      labelX ??= contentLeft - BAND.padX - labelW - BAND.labelInset;
-      bandRows.set(i, { id: l.id, label: l.label, labelX, labelW, bar: true });
+      // A bar's label is seated once the lines that pass it are routed, below.
+      bandRows.set(i, { id: l.id, label: l.label, labelX: Number.NaN, labelW, bar: true });
       return;
     }
     // The label goes above the first stretch of its row with no node below it, so
@@ -744,15 +731,11 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     labelX ??= contentLeft - BAND.padX - labelW - GROUP.clear;
     bandRows.set(i, { id: l.id, label: l.label, labelX, labelW, bar: false });
   });
-  // A band reaches the label it carries, when that sits left of the content.
-  const bandLeft = Math.min(
-    contentLeft - BAND.padX,
-    ...[...bandRows.values()].map((b) => b.labelX - BAND.labelInset),
-  );
 
   // Where no vertical line may pass: a band's label, above its row, and the label of an
   // edge that runs sideways, in the gap it crosses. A group's label moves no line: a line
-  // across it refuses the write (DESIGN.md, "The dirty work has edges").
+  // across it refuses the write; nor does a bar's, seated once the lines are routed
+  // (DESIGN.md, "The dirty work has edges").
   const forbidTop = new Map<number, [number, number][]>();
   // No line runs down through a wall up and down, in the rows it spans (DESIGN.md, "Walls as space").
   for (const b of besideWalls) {
@@ -761,7 +744,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     }
   }
   for (const [row, b] of bandRows) {
-    if (b.label === undefined) continue;
+    if (b.label === undefined || b.bar) continue;
     const list = forbidTop.get(row) ?? [];
     list.push([b.labelX - GROUP.labelClear, b.labelX + b.labelW + GROUP.labelClear]);
     forbidTop.set(row, list);
@@ -853,6 +836,44 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       ...standOf.keys(),
     ]),
   });
+
+  // A bar's label sits in it, at its left, in the first stretch that no line meets: 16 px clear of
+  // the stand-ins of the lines that end at it, and of each line that passes it, where the router ran
+  // it. Failing that, left of the content and of those lines, and the bar reaches it. No line moves
+  // for it (DESIGN.md, "A row with no box as one bar", "The dirty work has edges").
+  for (const [i, b] of bandRows) {
+    if (!b.bar || b.label === undefined) continue;
+    const taken: [number, number][] = (barStands.get(i) ?? []).map((s) => [s.x, s.x + s.w]);
+    for (const pl of routing.plans) {
+      // As assembled: a line runs down through each row between its ends at its gap's x.
+      let x = pl.turn ?? pl.srcPort;
+      pl.between.forEach((row, j) => {
+        x = pl.gapX[j] ?? x;
+        if (row === i) taken.push([x, x]);
+      });
+    }
+    taken.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+    let edge = contentLeft - BAND.padX + BAND.labelInset;
+    let labelX: number | undefined;
+    for (const s of [...taken, undefined]) {
+      const end = s === undefined ? contentRight + BAND.padX - BAND.labelInset : s[0] - GROUP.clear;
+      if (end - edge >= b.labelW) {
+        labelX = edge;
+        break;
+      }
+      if (s !== undefined) edge = Math.max(edge, s[1] + GROUP.clear);
+    }
+    const left = Math.min(
+      contentLeft - BAND.padX - BAND.labelInset,
+      ...taken.map((s) => s[0] - GROUP.clear),
+    );
+    bandRows.set(i, { ...b, labelX: labelX ?? left - b.labelW });
+  }
+  // A band reaches the label it carries, when that sits left of the content.
+  const bandLeft = Math.min(
+    contentLeft - BAND.padX,
+    ...[...bandRows.values()].map((b) => b.labelX - BAND.labelInset),
+  );
 
   // Across: the content is symmetric about the centre line.
   let half = 0;
