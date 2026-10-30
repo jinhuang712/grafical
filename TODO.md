@@ -73,3 +73,11 @@ Three fields tripped one agent in a single session, each refused at once and cle
 ## A pair of lines back and forth, and a self-loop, cross
 
 Two states with a line each way, such as "the reaper decides to park the host" and "the reaper leaves the host active", draw as two long parallel lines, and the return line of one pair crossed a self-loop on the box it returns to. A self-loop is drawn and its label sits to its side, but the lines that leave and enter the same box are not kept clear of it.
+
+## Labels sit close to the lines beside them in a gutter with many runs
+
+Four labelled lines out of one box run side by side in one gutter, each label 4 px from the next line (`ROUTE.labelClear`), and the picture reads crowded though no warning fires (`crowded-label` counts under 8 px on two sides). Tried on 2026-10-30: asking for 8 px, flat, made 421 of 500 fuzz diagrams 5.5% taller with crossings 40,260 to 40,326, and the dispatch fixture 2 crossings worse, and one fuzz diagram a text overlap; asking for 8 px first and falling back to 4 where a label finds no slot, and keeping it only where the gutter's own crossings did not rise, still left the dispatch fixture 4 crossings worse (20 to 24), since the rows of a gutter change what the next gutter's lines cross. Neither was landed. An empty row between the two rows only lengthened the lines (crowded 0 to 1, height +88), and `airy` density helped little. Needs the owner's choice: more air in every gutter at the price of crossings, or a taller gutter only where a crowded-label warning would fire.
+
+## A diamond's lines leave at its slanted edge, a little
+
+With `decision` ports kept to the middle 32 px of a diamond's top and bottom, a line leaves closer to the corner, but still meets the slanted edge a few px inside it. Tried on 2026-10-30: over 500 fuzz seeds 201 diagrams changed, bends +113 and crossings +32, and of 329 saved drafts 2 changed with bends +2; not landed. A `choice` (DESIGN.md, "A choice is a small diamond") is the small diamond the reference diagrams use, with every line at its corner.
