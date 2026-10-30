@@ -51,6 +51,9 @@ export function markRadius(shape: MarkShape, h: number): number {
 /** The one size of a state machine's start and end dots (DESIGN.md, "Every layered diagram type"). */
 export const DOT = 24;
 
+/** The one size of a choice, a small diamond with no label (DESIGN.md, "A choice is a small diamond"). */
+export const CHOICE = 28;
+
 export const DIAMOND: Record<SizeStep, { w: number; h: number }> = {
   s: { w: 136, h: 64 },
   m: { w: 184, h: 80 },

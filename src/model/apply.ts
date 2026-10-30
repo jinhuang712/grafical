@@ -1787,7 +1787,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       if (
         op.icon !== undefined &&
         op.slot === "left" &&
-        (n.kind === "decision" || n.kind === "initial" || n.kind === "final")
+        (n.kind === "decision" || n.kind === "initial" || n.kind === "final" || n.kind === "choice")
       ) {
         return [
           {

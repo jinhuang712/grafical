@@ -295,6 +295,8 @@ Kinds:
   state      a state of one thing, named by what the thing is ("Paid")
   initial    the start dot of a states diagram; its label is not drawn
   final      the end ring of a states diagram; its label is not drawn
+  choice     a small diamond where a line splits; its label is not drawn,
+             the question goes on the line into it
 
 Good to know:
   - Leave --size out: grafical sizes the box to its text. Shorten a long

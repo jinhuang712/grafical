@@ -5,11 +5,11 @@
 
 import type { NodeKind, SizeStep } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
-import { BOX, DIAMOND, DOT, FRAME, ROUTE } from "./geometry.ts";
+import { BOX, CHOICE, DIAMOND, DOT, FRAME, ROUTE } from "./geometry.ts";
 
-/** A state machine's start and end are dots: one size, and their label is not drawn (DESIGN.md, "Every layered diagram type"). */
+/** A state machine's start and end are dots, and a choice a small diamond: one size, and their label is not drawn (DESIGN.md, "Every layered diagram type", "A choice is a small diamond"). */
 export function isDot(kind: NodeKind): boolean {
-  return kind === "initial" || kind === "final";
+  return kind === "initial" || kind === "final" || kind === "choice";
 }
 
 /** How far from a box's corners its ports keep. A box narrower than two insets, a dot, has its ports at its centre. */
@@ -28,6 +28,7 @@ export function portReach(w: number): number {
 
 /** The box a node of this kind and size step is laid out in. A dot ignores the step. */
 export function nodeBox(kind: NodeKind, step: SizeStep): { w: number; h: number } {
+  if (kind === "choice") return { w: CHOICE, h: CHOICE };
   if (isDot(kind)) return { w: DOT, h: DOT };
   return kind === "decision" ? DIAMOND[step] : BOX[step];
 }
@@ -124,7 +125,7 @@ function circleMeet(r: Rect, end: Point, next: Point): Point {
  * curved top and bottom lie a little inside it, and a diamond's sides slant in.
  */
 export function meetOutline(kind: NodeKind, r: Rect, end: Point, next: Point): Point {
-  if (kind === "decision") return diamondMeet(r, end, next);
+  if (kind === "decision" || kind === "choice") return diamondMeet(r, end, next);
   if (isDot(kind)) return circleMeet(r, end, next);
   if (kind !== "store" || end.x !== next.x) return end;
   const inset = storeInset(r, end.x);

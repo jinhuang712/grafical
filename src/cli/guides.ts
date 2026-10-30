@@ -95,6 +95,8 @@ person or a caller. Lines are calls, reads and writes.
 - Start and End are kind terminal; a question is kind decision, kept short
   ("Within 30 days?"). Not initial and final: they draw no label.
 - Label each answer out of a decision ("yes", "no"), and nothing else.
+- A long question that splits into many answers: kind choice, a small diamond
+  with no text, and the question as the label of the line into it.
 - Groups only where the steps fall into clear phases.
 - Legend: solid "next step".`,
   },

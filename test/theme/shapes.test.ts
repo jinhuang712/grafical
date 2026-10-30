@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DIAMOND } from "../../src/theme/geometry.ts";
 import {
+  isDot,
   lineRoom,
   meetOutline,
   nodeBox,
@@ -26,6 +27,12 @@ describe('node shapes (DESIGN.md, "Every layered diagram type")', () => {
     expect(textInside("decision", r, { x: 52, y: 32, w: 80, h: 16 })).toBe(true);
     expect(textInside("decision", r, { x: 10, y: 6, w: 40, h: 16 })).toBe(false);
     expect(textInside("service", r, { x: 10, y: 6, w: 40, h: 16 })).toBe(true);
+  });
+
+  it("gives a choice one small diamond whatever the step, with its ports at its centre", () => {
+    expect(nodeBox("choice", "l")).toEqual({ w: 28, h: 28 });
+    expect(nodeBox("choice", "s")).toEqual({ w: 28, h: 28 });
+    expect(isDot("choice")).toBe(true);
   });
 
   it("gives a start and an end one small size, whatever the step", () => {

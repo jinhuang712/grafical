@@ -84,7 +84,7 @@ function nodeShape(n: SceneNode, P: Paint): string[] {
     }
     return out;
   }
-  if (n.kind === "decision") {
+  if (n.kind === "decision" || n.kind === "choice") {
     const r = n.rect;
     const cx = r.x + r.w / 2;
     const cy = r.y + r.h / 2;

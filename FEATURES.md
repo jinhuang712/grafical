@@ -107,6 +107,7 @@ A box's kind says what it is and decides how it is drawn.
 | `terminal` | a tinted pill, a flowchart's start or end |
 | `decision` | a diamond, its text in the middle |
 | `initial`, `final` | a filled dot and a ringed dot, a state machine's start and end. Their labels stay in the file and are not drawn |
+| `choice` | a small diamond where a line splits into several, with no text. Its label stays in the file and is not drawn; the question goes on the line into it |
 
 ```sh
 grafical node kind <file> <id> <kind>
