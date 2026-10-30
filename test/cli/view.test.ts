@@ -56,7 +56,7 @@ describe("changedParts", () => {
   it("marks a new node but not the nodes it pushed aside", () => {
     const before = layout(tiny, m);
     const after = layout(
-      edited(tiny, { op: "node.add", id: "cache", layer: "services", label: "cache", last: true }),
+      edited(tiny, { op: "node.add", id: "cache", layer: "services", label: "cache", first: true }),
       m,
     );
     const moved = after.nodes.filter((n) => {

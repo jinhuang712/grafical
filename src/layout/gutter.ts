@@ -105,7 +105,12 @@ interface Candidate {
 function candidates(v: Visit, lab: VisitLabel): Candidate[] {
   const side = ROUTE.labelGap + 2;
   if (v.hi - v.lo <= EPS) {
+    // On the line, centred on it: the label's patch breaks the line, as a flow chart's
+    // labels do. A step's badge rides the line, so a badge keeps its label beside.
+    const on: Candidate[] =
+      lab.badge === undefined ? [{ mode: "on", x0: v.lo - lab.w / 2, score: -1 }] : [];
     return [
+      ...on,
       { mode: "beside", x0: v.lo + side, score: 0 },
       { mode: "beside", x0: v.lo - side - lab.w, score: 1 },
     ];
@@ -249,7 +254,8 @@ function geometry(pitch: number) {
     );
     let c = top < -pitch + 2 - EPS ? 1 : 0;
     for (const s of v.stubs) {
-      if (!inside(s.x, bv.x0 - clr, bv.x1 + clr)) continue;
+      // A label on its line lies across the line's own stubs on purpose.
+      if (v.label?.mode === "on" || !inside(s.x, bv.x0 - clr, bv.x1 + clr)) continue;
       const [y0, y1] = spanAt(s.top, rv, pitch);
       if (y0 < bv.y1 + clr && bv.y0 - clr < y1) c++;
     }
@@ -384,7 +390,7 @@ export function routeGutter(
       const x1 = c.x0 + lab.w + clr;
       const pairs: [number, number][] = [];
       let crossed = sides.some((x) => inside(x, x0, x1));
-      if (c.mode !== "beside") {
+      if (c.mode === "above" || c.mode === "below") {
         for (const s of v.stubs) {
           if (s.top === (c.mode === "above") && inside(s.x, x0, x1)) crossed = true;
         }

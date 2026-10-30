@@ -66,6 +66,8 @@ interface Line {
 interface Text extends Box {
   text: string;
   anchor: Pt;
+  /** How many lines were drawn before this text: the last of them is the one its label belongs to. */
+  after: number;
 }
 
 /** A line may end this far inside a box: an arrow meets a curved outline, such as a cylinder's lid. */
@@ -308,6 +310,7 @@ export function readSvg(
         w,
         h: metrics.ascent + metrics.descent,
         anchor: { x: x0, y },
+        after: lines.length,
       });
       continue;
     }
@@ -436,7 +439,12 @@ export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
     for (const l of drawn) {
       if (home !== undefined && rides(l, home)) continue;
       for (let k = 1; k < l.points.length; k++) {
-        if (crosses(l.points[k - 1] as Pt, l.points[k] as Pt, shrink(t, 0.5))) {
+        const p = l.points[k - 1] as Pt;
+        const q = l.points[k] as Pt;
+        // A label on its own straight vertical line: the patch drawn after the line breaks it (DESIGN.md, "A label sits on its straight vertical line").
+        if (l.index === t.after - 1 && p.x === q.x && Math.abs(p.x - (t.x + t.w / 2)) <= 1)
+          continue;
+        if (crosses(p, q, shrink(t, 0.5))) {
           out.push({
             code: "label-collision",
             found: `line ${l.index} crosses text "${t.text}" at ${at(t)}`,

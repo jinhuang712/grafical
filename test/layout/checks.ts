@@ -126,7 +126,11 @@ export function defects(s: Scene): Defects {
     }
     for (const o of s.edges) {
       const grow = o.id === e.id ? 1 : 2;
-      if (segments(o.points).some((g) => segmentHitsRect(g, inflate(box, grow)))) {
+      // A label on its own straight vertical line sits across it on purpose, its patch breaking the line.
+      const centre = box.x + box.w / 2;
+      const through = (g: { a: Point; b: Point }) =>
+        o.id === e.id && g.a.x === g.b.x && Math.abs(g.a.x - centre) <= 1;
+      if (segments(o.points).some((g) => !through(g) && segmentHitsRect(g, inflate(box, grow)))) {
         out.labelCollisions.push(`${e.id} label x ${o.id === e.id ? "its own line" : o.id}`);
       }
     }

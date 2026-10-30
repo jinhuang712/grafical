@@ -202,8 +202,8 @@ export interface Visit {
 
 export interface VisitLabel {
   edgeId: string;
-  /** above or below the run, or beside a straight vertical line. */
-  mode: "above" | "below" | "beside";
+  /** above or below the run, or on or beside a straight vertical line. */
+  mode: "above" | "below" | "beside" | "on";
   x0: number;
   w: number;
   h: number;
