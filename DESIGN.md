@@ -1005,6 +1005,11 @@ Rejected:
 ## Open questions
 
 - **A box beside every box it connects to, in a row:** "Who chose is punished" did not refuse it, because the file could not tell a slot the agent stated from one the engine chose. Since "The agent states every order" the agent states every slot, so it could become an agent defect, as it is for a box placed by steps. Not decided.
+- **A box's look of its own:** a box's fill, border and shape come from its kind, through a stylesheet, so a diagram whose boxes differ in color only has to borrow kinds, and gets the cylinders and diamonds that come with them (TODO.md, "A box's color and shape come with its kind"). "What may the agent set?" in PHILOSOPHY.md says looks are free. The options, none chosen:
+  - A named look in the stylesheet, such as `looks: {fixed: {fill: ..., stroke: ...}}`, and one operation, `node look <id> <name>`, that gives a box one. The agent states a name, the stylesheet states the colors, and a theme change still restyles every box at once.
+  - A fill and a border on the box, as a mark already takes `--bg` and `--border`: `node look <id> --fill <color> --border <color>`. Simple, but the colors sit in every box of the file, and a theme change leaves them.
+  - Keep it tied to the kind and add kinds. Rejected for now: a kind says what a box is, and "a green box" is not a thing that exists.
+  The shape stays the kind's in the first two. Not decided.
 - **Marks and lines:** a corner mark is not yet checked against the lines that leave the box near its corner. A line that meets a mark is not reported.
 
 - **Too many heavy edges:** "Lines meet any side" says more than three main-path edges, and more than a third of all edges, draw a warning, because a main path stands out only against thin lines. No code does this yet. With "Edge weights" the count would be every edge heavier than `thin`.
