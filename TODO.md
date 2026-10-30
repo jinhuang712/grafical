@@ -43,3 +43,37 @@ A command line grafical cannot read, such as `grafical show d.grafical.yaml --bo
 ## check says ok for a file every write refuses
 
 A file that the diagram's own checks refuse, such as a group split around a box in one row, loads, and `check` prints `ok` with its warnings and counts: `check` reports defects and warnings, not the whole diagram's errors. Every write is then refused with that error, `already in the file`. `check` should report them, as a write does.
+
+## A box's color and shape come with its kind
+
+An agent that wants a green box, a red box and a blue box has no way to say so: a stylesheet sets the fill per kind (`paint.node.kinds`), and a kind also sets the shape. Redrawing two published state and flow diagrams on 2026-10-30, a "fixed" box had to be a `store`, drawn as a cylinder, and a "bug" box an `external`, drawn with a dashed border, only for their colors. A diagram of six states in six colors uses six kinds and gets pills, cylinders and diamonds it did not ask for.
+
+PHILOSOPHY.md, "What may the agent set?" says looks are free, so this is a gap and not a rule. DESIGN.md, "Open questions" has the options. Needs the owner's choice.
+
+## A line's label has no background
+
+A label sits beside its line with no ground of its own. Where several lines run close, as under a box with five lines out, a label reads as part of the lines around it. The two reference diagrams drawn on 2026-10-30 show a label on a ground the color of the canvas, so a line passes behind it. `crowded-label` counts the cases that sit too near, but not the ones that read badly at a distance.
+
+## The legend cannot show a box's look
+
+`diagram legend` explains line styles, widths and marks. A key made of small boxes, one per fill or border, such as "Works", "Bug" and "Fixed", is drawn today as a group of plain boxes, and every one of them gets `lonely-box`, six warnings for a picture that is right.
+
+Either a legend entry for a box's look, once a box can have a look of its own (see "A box's color and shape come with its kind"), or `lonely-box` should leave out a group whose boxes the agent drew as a key.
+
+## A box beside the chain is moved by steps, but its order is not checked
+
+`node move --from <box> --down 1 --left 1` stairs a chain of states across a group, and the order of the row below it then decides the crossings. Changing a state diagram's chain from a column to a staircase took it from 3 crossings to 5, with no hint that the row below no longer matched the order above. `try` shows the change in counts, but neither help nor a warning says that a staircase and the order of the row it lands on go together.
+
+## Help pages trip agents on three fields
+
+Three fields tripped one agent in a single session, each refused at once and clearly, but each with a wrong first guess:
+
+- A box placed with `align` also needs `first`, `last`, `before` or `after`, and the refusal (`missing-field`, `place`) is the only place that says so.
+- `group title` takes `at`, and an agent that wrote `place` was refused with `likely: at`.
+- A label with a comma, written in a batch without quotes, is refused as `unknown-field` or `unquoted-text` depending on where the comma falls.
+
+`node add --help` and `group title --help` could show each in their batch line.
+
+## A pair of lines back and forth, and a self-loop, cross
+
+Two states with a line each way, such as "the reaper decides to park the host" and "the reaper leaves the host active", draw as two long parallel lines, and the return line of one pair crossed a self-loop on the box it returns to. A self-loop is drawn and its label sits to its side, but the lines that leave and enter the same box are not kept clear of it.
