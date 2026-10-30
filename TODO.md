@@ -50,10 +50,6 @@ An agent that wants a green box, a red box and a blue box has no way to say so: 
 
 PHILOSOPHY.md, "What may the agent set?" says looks are free, so this is a gap and not a rule. DESIGN.md, "Open questions" has the options. Needs the owner's choice.
 
-## A line's label has no background
-
-A label sits beside its line with no ground of its own. Where several lines run close, as under a box with five lines out, a label reads as part of the lines around it. The two reference diagrams drawn on 2026-10-30 show a label on a ground the color of the canvas, so a line passes behind it. `crowded-label` counts the cases that sit too near, but not the ones that read badly at a distance.
-
 ## The legend cannot show a box's look
 
 `diagram legend` explains line styles, widths and marks. A key made of small boxes, one per fill or border, such as "Works", "Bug" and "Fixed", is drawn today as a group of plain boxes, and every one of them gets `lonely-box`, six warnings for a picture that is right.
