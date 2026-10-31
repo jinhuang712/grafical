@@ -60,8 +60,8 @@ export const PARTS = [
 ] as const;
 export type Part = (typeof PARTS)[number];
 
-/** The private reference brief and its runs: outside the repository, never committed. */
-export const PRIVATE = join(homedir(), "dev", "projects", "grafical-private");
+/** The private reference brief and its runs: git-ignored under .local/, never committed. */
+export const PRIVATE = join(homedir(), "dev", "projects", "grafical", ".local", "grafical-private");
 
 export interface Chain {
   arm: Arm;

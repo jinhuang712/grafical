@@ -8,3 +8,6 @@ bench/runs/
 
 .DS_Store
 *.log
+
+# Kept local, not published (private brief, runs and handoff)
+.local/
