@@ -172,7 +172,7 @@ grafical uses its own gap router. It works in three passes:
 
 A change therefore spreads to another channel only through edges that use both.
 
-The phase 0 router spike compared it with `libavoid-js` on the public brief (30 nodes, 41 edges) and on a 50-node variant. Evidence: `spikes/router/REPORT.md` on branch `spike/router`.
+The phase 0 router spike compared it with `libavoid-js` on the public brief (30 nodes, 41 edges) and on a 50-node variant. The spike code and its report were not kept; the numbers here are what remains.
 
 | | Our gap router | `libavoid-js` 0.5.0-beta.5 |
 |---|---|---|
@@ -214,7 +214,7 @@ grafical ships its own fonts, both under the SIL Open Font License, in Regular (
 
 Each character is drawn from Inter if Inter has it, and from Noto Sans SC otherwise. `harfbuzzjs` shapes and measures the text from these files, never from the system. Labels wrap at spaces, hyphens, underscores and slashes in Latin text, and between characters in Chinese text. A label that still does not fit its box is a defect. Its fix is a larger size step or a shorter label.
 
-The phase 0 text spike measured 160 labels at 12 and 14 px. Widths from `harfbuzzjs` matched the widths resvg draws within 0.0001 px. Evidence: `spikes/text/REPORT.md` on branch `spike/text-measurement`.
+The phase 0 text spike measured 160 labels at 12 and 14 px. Widths from `harfbuzzjs` matched the widths resvg draws within 0.0001 px. The spike code and its report were not kept; the numbers here are what remains.
 
 Before the first release, the font build must rewrite the subsets' name tables, which still say "Thin", and check the OFL reserved font name "Source".
 
