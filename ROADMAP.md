@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current checkpoint:** [CP10: The MVP bar, measured again](#cp10-the-mvp-bar-measured-again), with [CP11: Pictures worth keeping](#cp11-pictures-worth-keeping) running beside it. Speed is fixed; operation errors, the new checks, the missing baselines and a paid round remain.
+**Current checkpoint:** [CP2: The MVP bar, measured again](#cp2-the-mvp-bar-measured-again), with [CP3: Pictures worth keeping](#cp3-pictures-worth-keeping) running beside it. Speed is fixed; operation errors, the new checks, the missing baselines and a paid round remain.
 
 ✅ done · 🟨 in progress · ⬜ planned
 
@@ -10,27 +10,47 @@ What each checkpoint delivers is in [FEATURES.md](FEATURES.md), and every exit c
 
 ```
 Roadmap
-├── ✅ CP1: The risky questions
-├── ✅ CP2: The loop
-├── ✅ CP3: The target look
-├── ✅ CP4: The owner's additions
-├── ✅ CP5: The vocabulary and stability
-├── ✅ CP6: The stage 1 round
-├── ✅ CP7: Clearer lines and more diagram types
-├── ✅ CP8: Discrete output and freer placement
-├── ✅ CP9: Refusals that name the way out
-├── 🟨 CP10: The MVP bar, measured again
-│   ├── ✅ CP10.1: Fix the speed slip
-│   ├── 🟨 CP10.2: Bring operation errors under 5%
-│   ├── ⬜ CP10.3: Measure the new checks
-│   ├── ⬜ CP10.4: Add the missing baselines
-│   └── ⬜ CP10.5: Run one paid round
-├── 🟨 CP11: Pictures worth keeping
-├── ⬜ CP12: More combinations of operations
-└── ⬜ CP13: Release 0.1.0
+├── ✅ CP1: Stage 1 built
+│   ├── ✅ CP1.1: The risky questions
+│   ├── ✅ CP1.2: The loop
+│   ├── ✅ CP1.3: The target look
+│   ├── ✅ CP1.4: The owner's additions
+│   ├── ✅ CP1.5: The vocabulary and stability
+│   ├── ✅ CP1.6: The stage 1 round
+│   ├── ✅ CP1.7: Clearer lines and more diagram types
+│   ├── ✅ CP1.8: Discrete output and freer placement
+│   └── ✅ CP1.9: Refusals that name the way out
+├── 🟨 CP2: The MVP bar, measured again
+│   ├── ✅ CP2.1: Fix the speed slip
+│   ├── 🟨 CP2.2: Bring operation errors under 5%
+│   ├── ⬜ CP2.3: Measure the new checks
+│   ├── ⬜ CP2.4: Add the missing baselines
+│   └── ⬜ CP2.5: Run one paid round
+├── 🟨 CP3: Pictures worth keeping
+├── ⬜ CP4: More combinations of operations
+└── ⬜ CP5: Release 0.1.0
 ```
 
-## CP1: The risky questions
+## CP1: Stage 1 built
+
+**Status:** ✅ (2026-10-11 to 2026-10-19)
+
+Everything an agent needs to draw with grafical alone: the operations, the layout and routing, the checks, the help and the benchmark harness. Most of it was built before the goals were written down on 2026-10-15, so only two of its parts end on a goal.
+
+**Exit criteria:**
+
+- **Sub-checkpoints**
+  - [CP1.1: The risky questions](#cp11-the-risky-questions) is met.
+  - [CP1.2: The loop](#cp12-the-loop) is met.
+  - [CP1.3: The target look](#cp13-the-target-look) is met.
+  - [CP1.4: The owner's additions](#cp14-the-owners-additions) is met.
+  - [CP1.5: The vocabulary and stability](#cp15-the-vocabulary-and-stability) is met.
+  - [CP1.6: The stage 1 round](#cp16-the-stage-1-round) is met.
+  - [CP1.7: Clearer lines and more diagram types](#cp17-clearer-lines-and-more-diagram-types) is met.
+  - [CP1.8: Discrete output and freer placement](#cp18-discrete-output-and-freer-placement) is met.
+  - [CP1.9: Refusals that name the way out](#cp19-refusals-that-name-the-way-out) is met.
+
+### CP1.1: The risky questions
 
 **Status:** ✅ (2026-10-11)
 
@@ -41,7 +61,7 @@ Spikes chose our own gap router, `harfbuzzjs`, the 8,105-character Chinese font 
 - **Constraints**
   - [R3: Determinism](GOALS.md#r3-determinism)
 
-## CP2: The loop
+### CP1.2: The loop
 
 **Status:** ✅ (2026-10-11)
 
@@ -53,9 +73,7 @@ The smallest path from operations to a picture: an agent built the public brief 
 - [F1.2: Batches](FEATURES.md#f12-batches)
 - [F7.5: Render](FEATURES.md#f75-render)
 
-**Exit criteria:** none of its own: it ended before the goals were set, or its claim is covered by the checkpoint after it.
-
-## CP3: The target look
+### CP1.3: The target look
 
 **Status:** ✅ (2026-10-11)
 
@@ -67,9 +85,7 @@ The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, a
 - [F4.1: Rows and order](FEATURES.md#f41-rows-and-order)
 - [F5.1: Groups](FEATURES.md#f51-groups)
 
-**Exit criteria:** none of its own: it ended before the goals were set, or its claim is covered by the checkpoint after it.
-
-## CP4: The owner's additions
+### CP1.4: The owner's additions
 
 **Status:** ✅ (2026-10-11 and 2026-10-12)
 
@@ -82,9 +98,7 @@ Lines that end at containers, swimlanes, themes and stylesheets, and the live vi
 - [F6.4: Themes and stylesheets](FEATURES.md#f64-themes-and-stylesheets)
 - [F7.6: Live viewer](FEATURES.md#f76-live-viewer)
 
-**Exit criteria:** none of its own: it ended before the goals were set, or its claim is covered by the checkpoint after it.
-
-## CP5: The vocabulary and stability
+### CP1.5: The vocabulary and stability
 
 **Status:** ✅ (2026-10-12)
 
@@ -103,15 +117,13 @@ The full operation set, `apply`, `show`, `diff` and the help, with the stability
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability)
 
-## CP6: The stage 1 round
+### CP1.6: The stage 1 round
 
 **Status:** ✅ (2026-10-12)
 
 The first full benchmark round, and its rerun after the line work ([stage1](bench/results/stage1.md)). The MVP bar was not met.
 
-**Exit criteria:** none of its own: it ended before the goals were set, or its claim is covered by the checkpoint after it.
-
-## CP7: Clearer lines and more diagram types
+### CP1.7: Clearer lines and more diagram types
 
 **Status:** ✅ (2026-10-12)
 
@@ -123,9 +135,7 @@ New line kinds, lines that meet a box on any side, hops and dots, the flowchart 
 - [F3.6: How lines are drawn](FEATURES.md#f36-how-lines-are-drawn)
 - [F5.1: Groups](FEATURES.md#f51-groups)
 
-**Exit criteria:** none of its own: it ended before the goals were set, or its claim is covered by the checkpoint after it.
-
-## CP8: Discrete output and freer placement
+### CP1.8: Discrete output and freer placement
 
 **Status:** ✅ (2026-10-13 and 2026-10-14)
 
@@ -142,9 +152,7 @@ Records in place of prose, `try`, bundled fan-outs, equal heights in a row, room
 - [F3.3: Weight](FEATURES.md#f33-weight)
 - [F6.2: Legend](FEATURES.md#f62-legend)
 
-**Exit criteria:** none of its own: it ended before the goals were set, or its claim is covered by the checkpoint after it.
-
-## CP9: Refusals that name the way out
+### CP1.9: Refusals that name the way out
 
 **Status:** ✅ (2026-10-15 to 2026-10-19)
 
@@ -159,9 +167,7 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 - [F7.8: Help](FEATURES.md#f78-help)
 - [F7.9: Guides](FEATURES.md#f79-guides)
 
-**Exit criteria:** none of its own: it ended before the goals were set, or its claim is covered by the checkpoint after it.
-
-## CP10: The MVP bar, measured again
+## CP2: The MVP bar, measured again
 
 **Status:** 🟨
 
@@ -170,13 +176,13 @@ Most of what it needs is built. Round `p1g` on 2026-10-18 met "Iteration" (23 of
 **Exit criteria:**
 
 - **Sub-checkpoints**
-  - [CP10.1: Fix the speed slip](#cp101-fix-the-speed-slip) is met.
-  - [CP10.2: Bring operation errors under 5%](#cp102-bring-operation-errors-under-5) is met.
-  - [CP10.3: Measure the new checks](#cp103-measure-the-new-checks) is met.
-  - [CP10.4: Add the missing baselines](#cp104-add-the-missing-baselines) is met.
-  - [CP10.5: Run one paid round](#cp105-run-one-paid-round) is met.
+  - [CP2.1: Fix the speed slip](#cp21-fix-the-speed-slip) is met.
+  - [CP2.2: Bring operation errors under 5%](#cp22-bring-operation-errors-under-5) is met.
+  - [CP2.3: Measure the new checks](#cp23-measure-the-new-checks) is met.
+  - [CP2.4: Add the missing baselines](#cp24-add-the-missing-baselines) is met.
+  - [CP2.5: Run one paid round](#cp25-run-one-paid-round) is met.
 
-### CP10.1: Fix the speed slip
+### CP2.1: Fix the speed slip
 
 **Status:** ✅
 
@@ -187,7 +193,7 @@ Adding a box without a position took up to 189.7 ms at 50 boxes, against 50 ms. 
 - **Thresholds**
   - [T2: Speed](GOALS.md#t2-speed)
 
-### CP10.2: Bring operation errors under 5%
+### CP2.2: Bring operation errors under 5%
 
 **Status:** 🟨
 
@@ -198,22 +204,20 @@ The refusals of the private reference brief were mostly `title-blocked`. Since t
 - **Thresholds**
   - [T1: Operation errors](GOALS.md#t1-operation-errors)
 
-### CP10.3: Measure the new checks
+### CP2.3: Measure the new checks
 
 **Status:** ⬜
 
-A scan of the transcripts for placement by the agent, the requests no operation could express, and the context each diagram adds.
+A scan of the transcripts for placement by the agent, and the context each diagram adds. The same round first counts the requests no operation could express, which CP4: More combinations of operations ends on.
 
 **Exit criteria:**
 
 - **Objectives**
   - [O2: No placement by the agent](GOALS.md#o2-no-placement-by-the-agent)
-- **Measures**
-  - [M1: Enough to say](GOALS.md#m1-enough-to-say)
 - **Comparisons**
   - [C4: Context added](GOALS.md#c4-context-added)
 
-### CP10.4: Add the missing baselines
+### CP2.4: Add the missing baselines
 
 **Status:** ⬜
 
@@ -227,7 +231,7 @@ Opus with a higher thinking budget, and the `diagram-design` skill.
   - [C5: Cost](GOALS.md#c5-cost)
   - [C6: Cache hit rate](GOALS.md#c6-cache-hit-rate)
 
-### CP10.5: Run one paid round
+### CP2.5: Run one paid round
 
 **Status:** ⬜
 
@@ -239,12 +243,13 @@ With the owner's approval of its cost first. The owner's budget for stage 1 is $
   - [O1: The MVP bar](GOALS.md#o1-the-mvp-bar)
 - **Benchmarks**
   - [B1: Iteration](GOALS.md#b1-iteration)
+  - [B5: Intent](GOALS.md#b5-intent)
 - **Comparisons**
   - [C1: Model gap](GOALS.md#c1-model-gap)
 - **Constraints**
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
-## CP11: Pictures worth keeping
+## CP3: Pictures worth keeping
 
 **Status:** 🟨 (since 2026-10-30)
 
@@ -260,7 +265,7 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 - **Objectives**
   - [O3: The picture turned in](GOALS.md#o3-the-picture-turned-in)
 
-## CP12: More combinations of operations
+## CP4: More combinations of operations
 
 **Status:** ⬜
 
@@ -275,10 +280,10 @@ The form is not decided with the owner yet, such as one operation for a common e
 
 **Exit criteria:**
 
-- **Benchmarks**
-  - [B5: Intent](GOALS.md#b5-intent)
+- **Measures**
+  - [M1: Enough to say](GOALS.md#m1-enough-to-say)
 
-## CP13: Release 0.1.0
+## CP5: Release 0.1.0
 
 **Status:** ⬜
 
