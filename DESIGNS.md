@@ -35,7 +35,11 @@ A box's place is its row, its order in the row, its group, its column, an alignm
 
 **Ask:** Does this ask the agent for a position, a size in pixels or a bend point?
 
-- **Decisions:** [002. Facts over coordinates](specs/decisions/002-facts-over-coordinates.md), [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md), [027. Columns beside rows](specs/decisions/027-columns-beside-rows.md), [031. Steps from another box](specs/decisions/031-steps-from-another-box.md)
+- **Decisions:**
+  - [002. Facts over coordinates](specs/decisions/002-facts-over-coordinates.md)
+  - [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md)
+  - [027. Columns beside rows](specs/decisions/027-columns-beside-rows.md)
+  - [031. Steps from another box](specs/decisions/031-steps-from-another-box.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
 ## 3. The engine never chooses for the agent
@@ -44,7 +48,11 @@ The engine never adds, drops, merges or reorders what the agent stated, and neve
 
 **Ask:** Does the engine pick, default or repair a structural choice the agent did not state?
 
-- **Decisions:** [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md), [032. Who chose is punished](specs/decisions/032-who-chose-is-punished.md), [013. Curation stays with the agent](specs/decisions/013-curation-stays-with-the-agent.md), [011. The engine picks a new box's slot](specs/decisions/011-the-engine-picks-a-new-box-s-slot.md)
+- **Decisions:**
+  - [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)
+  - [032. Who chose is punished](specs/decisions/032-who-chose-is-punished.md)
+  - [013. Curation stays with the agent](specs/decisions/013-curation-stays-with-the-agent.md)
+  - [011. The engine picks a new box's slot](specs/decisions/011-the-engine-picks-a-new-box-s-slot.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
 ## 4. A change moves only what it names
@@ -62,7 +70,12 @@ Lines run orthogonally through the gaps between rows and boxes. The engine picks
 
 **Ask:** Does this hand the agent a side, a port or a bend, or draw a crooked form to make the facts fit?
 
-- **Decisions:** [005. Our own gap router](specs/decisions/005-our-own-gap-router.md), [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md), [015. Lines that end at containers](specs/decisions/015-lines-that-end-at-containers.md), [023. Fan-outs of three bundle](specs/decisions/023-fan-outs-of-three-bundle.md), [041. The dirty work has edges](specs/decisions/041-the-dirty-work-has-edges.md)
+- **Decisions:**
+  - [005. Our own gap router](specs/decisions/005-our-own-gap-router.md)
+  - [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md)
+  - [015. Lines that end at containers](specs/decisions/015-lines-that-end-at-containers.md)
+  - [023. Fan-outs of three bundle](specs/decisions/023-fan-outs-of-three-bundle.md)
+  - [041. The dirty work has edges](specs/decisions/041-the-dirty-work-has-edges.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
 ## 6. Every write is checked, and each defect has an owner
@@ -71,7 +84,10 @@ A defect the agent can fix fails the write and changes nothing. A defect only th
 
 **Ask:** Who can fix this defect, the agent or the engine, and does the write say so?
 
-- **Decisions:** [008. Defects owned by who can fix them](specs/decisions/008-defects-owned-by-who-can-fix-them.md), [048. Every write prints every warning](specs/decisions/048-every-write-prints-every-warning.md), [036. Composition counts](specs/decisions/036-composition-counts.md)
+- **Decisions:**
+  - [008. Defects owned by who can fix them](specs/decisions/008-defects-owned-by-who-can-fix-them.md)
+  - [048. Every write prints every warning](specs/decisions/048-every-write-prints-every-warning.md)
+  - [036. Composition counts](specs/decisions/036-composition-counts.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
 ## 7. A refusal says what happened and which commands can change it
@@ -98,7 +114,10 @@ Under one version of grafical, the same file and stylesheet give the same SVG by
 
 **Ask:** Does anything here depend on the machine it runs on?
 
-- **Decisions:** [006. Bundled fonts](specs/decisions/006-bundled-fonts.md), [007. Our own SVG writer](specs/decisions/007-our-own-svg-writer.md), [024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)
+- **Decisions:**
+  - [006. Bundled fonts](specs/decisions/006-bundled-fonts.md)
+  - [007. Our own SVG writer](specs/decisions/007-our-own-svg-writer.md)
+  - [024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
 ## 10. What grafical cannot fully read, it refuses
@@ -116,7 +135,12 @@ A theme or a stylesheet sets any color, a mark may carry any color, emoji, text 
 
 **Ask:** Is this a look the agent may choose freely, or a place that must stay a fact?
 
-- **Decisions:** [025. Marks of any kind](specs/decisions/025-marks-of-any-kind.md), [026. Edge weights](specs/decisions/026-edge-weights.md), [016. Themes and stylesheets](specs/decisions/016-themes-and-stylesheets.md), [028. A legend for widths and marks](specs/decisions/028-a-legend-for-widths-and-marks.md), [034. The legend says only what the agent named](specs/decisions/034-the-legend-says-only-what-the-agent-named.md)
+- **Decisions:**
+  - [025. Marks of any kind](specs/decisions/025-marks-of-any-kind.md)
+  - [026. Edge weights](specs/decisions/026-edge-weights.md)
+  - [016. Themes and stylesheets](specs/decisions/016-themes-and-stylesheets.md)
+  - [028. A legend for widths and marks](specs/decisions/028-a-legend-for-widths-and-marks.md)
+  - [034. The legend says only what the agent named](specs/decisions/034-the-legend-says-only-what-the-agent-named.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
 ## 12. The command line comes first, and the help is the agent's only reference
@@ -125,7 +149,10 @@ Every operation is a command, every command takes `--json`, and every write repo
 
 **Ask:** Can an agent do this, and learn how, from the command line and its help alone?
 
-- **Decisions:** [021. The help as the reference](specs/decisions/021-the-help-as-the-reference.md), [042. One entry page, help where it is used](specs/decisions/042-one-entry-page-help-where-it-is-used.md), [043. Help for the tool, guides for best practice](specs/decisions/043-help-for-the-tool-guides-for-best-practice.md)
+- **Decisions:**
+  - [021. The help as the reference](specs/decisions/021-the-help-as-the-reference.md)
+  - [042. One entry page, help where it is used](specs/decisions/042-one-entry-page-help-where-it-is-used.md)
+  - [043. Help for the tool, guides for best practice](specs/decisions/043-help-for-the-tool-guides-for-best-practice.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
 ## 13. A write is fast enough to run every time

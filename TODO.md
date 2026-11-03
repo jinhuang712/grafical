@@ -24,7 +24,7 @@ A line that meets a mark is not reported today (FEATURES.md, "Marks").
 
 - created: 2026-10-15
 - status: OPEN
-- next: count every line heavier than `thin` and warn when more than three, or more than a third of all lines, are heavy
+- next: count every line heavier than `thin` and warn when more than three lines are heavy or more than a third of all lines
 
 "Lines meet any side" (specs/decisions) says a main path stands out only against thin lines. No code does this yet.
 
@@ -126,9 +126,15 @@ An agent that wants a green box, a red box and a blue box has no way to say so: 
 
 PHILOSOPHY.md, "What may the agent set?" says looks are free, so this is a gap and not a rule. The options, none chosen:
 
-- A named look in the stylesheet, such as `looks: {fixed: {fill: ..., stroke: ...}}`, and one operation, `node look <id> <name>`, that gives a box one. The agent states a name, the stylesheet states the colors, and a theme change still restyles every box at once.
-- A fill and a border on the box, as a mark already takes `--bg` and `--border`: `node look <id> --fill <color> --border <color>`. Simple, but the colors sit in every box of the file, and a theme change leaves them.
-- Keep it tied to the kind and add kinds. Rejected for now: a kind says what a box is, and "a green box" is not a thing that exists.
+- A named look in the stylesheet, such as `looks: {fixed: {fill: ..., stroke: ...}}`.
+  - The operation `node look <id> <name>` gives a box one.
+  - The agent states a name and the stylesheet states the colors.
+  - A theme change still restyles every box at once.
+- A fill and a border on the box, as a mark already takes `--bg` and `--border`: `node look <id> --fill <color> --border <color>`.
+  - Simple, but the colors sit in every box of the file.
+  - A theme change leaves them as they are.
+- Keep it tied to the kind and add kinds.
+  - Rejected for now: a kind says what a box is, and "a green box" is not a thing that exists.
 
 The shape stays the kind's in the first two. Needs the owner's choice.
 
@@ -158,7 +164,8 @@ Three fields tripped one agent in a single session, each refused at once and cle
 
 - A box placed with `align` also needs `first`, `last`, `before` or `after`, and the refusal (`missing-field`, `place`) is the only place that says so.
 - `group title` takes `at`, and an agent that wrote `place` was refused with `likely: at`.
-- A label with a comma, written in a batch without quotes, is refused as `unknown-field` or `unquoted-text` depending on where the comma falls.
+- A label with a comma written in a batch without quotes is refused as `unknown-field` or `unquoted-text`.
+  - Which one depends on where the comma falls.
 
 `node add --help` and `group title --help` could show each in their batch line.
 

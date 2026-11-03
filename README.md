@@ -12,11 +12,18 @@ grafical drew this picture itself, from [`docs/images/pipeline.grafical.yaml`](d
 
 ## What it does
 
-- 🪜 **Small steps:** every change is one operation, such as `node add` or `edge add`, or a batch of them, all or nothing. A change moves only what it names.
-- ⚙️ **The engine does the dirty work:** it sizes, places and spaces every box, routes every line, and checks every write for defects. A mistake is refused at once, with the facts to fix it.
-- 🎨 **Looks are free, places are facts:** an agent may pick any color or line width, and states a box's place as a row, a column or steps from another box, never a coordinate.
-- 📁 **A file in git:** the diagram is one YAML file. The same file gives the same SVG and PNG on any machine, and `grafical diff` shows a change as operations.
-- 🤖 **Made for agents:** an agent learns grafical from `grafical --help`, and every reply is facts and counts, never advice.
+- 🪜 **Small steps:** every change is one operation, such as `node add` or `edge add`.
+  - A batch applies many operations, all or nothing.
+  - A change moves only what it names.
+- ⚙️ **The engine does the dirty work:** it sizes, places and spaces every box.
+  - It routes every line and checks every write for defects.
+  - A mistake is refused at once, with the facts to fix it.
+- 🎨 **Looks are free, places are facts:** an agent may pick any color or line width.
+  - It states a box's place as a row, a column or steps from another box and never as a coordinate.
+- 📁 **A file in git:** the diagram is one YAML file.
+  - The same file gives the same SVG and PNG on any machine, and `grafical diff` shows a change as operations.
+- 🤖 **Made for agents:** an agent learns grafical from `grafical --help`.
+  - Every reply is facts and counts, never advice.
 
 ## Install
 

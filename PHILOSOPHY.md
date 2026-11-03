@@ -154,12 +154,35 @@ When two answers collide, the facts the agent named win. grafical never changes 
 
 The quotes from Brooks, Larkin and Simon, and Tversky were checked against the works themselves. The others were checked against copies or works that quote them. `…` marks a cut.
 
-- Frederick P. Brooks, Jr. "No Silver Bullet: Essence and Accident in Software Engineering." 1986. Reprinted in *Computer* 20(4), 1987.
-- Jill H. Larkin and Herbert A. Simon. "Why a Diagram is (Sometimes) Worth Ten Thousand Words." *Cognitive Science* 11, 1987.
-- Barbara Tversky. "The Cognitive Design of Tools of Thought." *Review of Philosophy and Psychology* 6(1), 2015.
-- Edward R. Tufte. *Envisioning Information*. 1990.
-- Ludwig Wittgenstein. *Tractatus Logico-Philosophicus*. 1921. Translated by D. F. Pears and B. F. McGuinness.
-- Antoine de Saint-Exupéry. *Terre des hommes*. 1939. The English line is our translation.
-- Herbert A. Simon. "Rational Choice and the Structure of the Environment." *Psychological Review* 63(2), 1956.
-- Daniel L. Moody. "The 'Physics' of Notations." *IEEE Transactions on Software Engineering* 35(6), 2009.
-- Jacques Bertin. *Sémiologie graphique*. 1967. English: *Semiology of Graphics*, 1983. Not quoted.
+- Frederick P.
+  - Brooks, Jr.
+  - "No Silver Bullet: Essence and Accident in Software Engineering." 1986. Reprinted in *Computer* 20(4), 1987.
+- Jill H.
+  - Larkin and Herbert A.
+  - Simon.
+  - "Why a Diagram is (Sometimes) Worth Ten Thousand Words." *Cognitive Science* 11, 1987.
+- Barbara Tversky.
+  - "The Cognitive Design of Tools of Thought." *Review of Philosophy and Psychology* 6(1), 2015.
+- Edward R.
+  - Tufte.
+  - *Envisioning Information*.
+  - 1990.
+- Ludwig Wittgenstein.
+  - *Tractatus Logico-Philosophicus*.
+  - 1921. Translated by D.
+  - F.
+  - Pears and B.
+  - F.
+  - McGuinness.
+- Antoine de Saint-Exupéry.
+  - *Terre des hommes*.
+  - 1939. The English line is our translation.
+- Herbert A.
+  - Simon.
+  - "Rational Choice and the Structure of the Environment." *Psychological Review* 63(2), 1956.
+- Daniel L.
+  - Moody.
+  - "The 'Physics' of Notations." *IEEE Transactions on Software Engineering* 35(6), 2009.
+- Jacques Bertin.
+  - *Sémiologie graphique*.
+  - 1967. English: *Semiology of Graphics*, 1983. Not quoted.

@@ -44,8 +44,11 @@ Goals
 
 Set by the owner on 2026-10-13 (PHILOSOPHY.md, "What makes grafical good?"). It has two parts.
 
-- **The main bar: easy and consistent.** Haiku, using only the command line and its help, meets the targets of "Iteration", "Stability", "Model gap", "Operation errors", "Determinism" and "Speed", with zero mechanical defects.
-- **No judged score.** Until 2026-10-18 the bar also asked two blind Opus judges to score Haiku's picture of the private reference brief at least 42 of 50. The owner dropped it that day: a judge's number says little now that grafical's pictures are well past those drawn with no tool or with Mermaid, and what is left to improve is not how the pictures look. The owner looks at each round's pictures and names their problems instead ("The picture turned in").
+- **The main bar: easy and consistent.** Haiku uses only the command line and its help.
+  - It meets the targets of "Iteration", "Stability", "Model gap", "Operation errors", "Determinism" and "Speed".
+  - It draws with zero mechanical defects.
+- **No judged score.** Until 2026-10-18 the bar also asked two blind Opus judges to score Haiku's picture of the private reference brief at least 42 of 50. The owner dropped it that day: a judge's number says little now that grafical's pictures are well past those drawn with no tool or with Mermaid, and what is left to improve is not how the pictures look.
+  - The owner looks at each round's pictures and names their problems instead ("The picture turned in").
 
 **Want:** every want in PROPOSAL, as the headline.
 
@@ -197,7 +200,7 @@ target = at least 7 of 10
 
 The checks in this section are comparative. A number such as 35.6k tokens means nothing alone, so grafical is held against three baselines that draw the same brief:
 
-- **A stronger model with a higher thinking budget, without grafical,** such as Opus with extended thinking.
+- **A stronger model with a higher thinking budget:** Opus with extended thinking, drawing without grafical.
 - **The same model without grafical:** Haiku drawing on its own.
 - **Other tools,** such as Mermaid and the `diagram-design` skill.
 

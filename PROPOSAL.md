@@ -64,19 +64,38 @@ The agent says what the diagram holds: this box is in that row, after that one, 
 
 ## What we want
 
-- **A change is one small step.** An operation changes only the facts it names, and the picture re-spaces at once. Nothing is drawn again from scratch. This answers *Every fix redraws everything*.
-- **The agent never places anything.** It states facts, such as a row, an order, a column or a connection, and the engine places, sizes and routes. This answers *The agent has to place every box by hand*.
-- **Enough to say what is needed, without pixel work.** Shapes, marks, colors, line weights, walls and notes, and more ways to combine operations, so that an agent can say more in fewer steps. Looks may take any value. Places are always facts. This answers *Easy tools are rigid, and flexible tools are pixel work*.
-- **Complete and clear at once.** No cap on content: a large diagram draws without a defect and without hiding anything. What to cut is the agent's choice, never a limit of the tool. This answers *Pretty or complete, not both*.
-- **Fewer turns, less time, fewer tokens.** A first draft and each change cost little, so the next improvement is always worth making. This answers *A diagram costs minutes and many tokens* and the settling it causes.
-- **A small model draws like a large one.** Haiku's picture looks like Opus's, because the tool does the work a model would get wrong. This answers *The result depends on the model*.
-- **The diagram is a file.** One YAML file in git. The same file gives the same picture on any machine, and a change reads as operations in a diff. This answers *The picture cannot be reproduced or reviewed*.
+- **A change is one small step.** An operation changes only the facts it names, and the picture re-spaces at once.
+  - Nothing is drawn again from scratch.
+  - This answers *Every fix redraws everything*.
+- **The agent never places anything.** It states facts such as a row, an order, a column or a connection.
+  - The engine places, sizes and routes.
+  - This answers *The agent has to place every box by hand*.
+- **Enough to say what is needed, without pixel work.** An agent can say more in fewer steps.
+  - It has shapes, marks, colors, line weights, walls and notes.
+  - It gets more ways to combine operations.
+  - Looks may take any value.
+  - Places are always facts.
+  - This answers *Easy tools are rigid, and flexible tools are pixel work*.
+- **Complete and clear at once.** No cap on content: a large diagram draws without a defect and without hiding anything.
+  - What to cut is the agent's choice, never a limit of the tool.
+  - This answers *Pretty or complete, not both*.
+- **Fewer turns, less time, fewer tokens.** A first draft and each change cost little.
+  - So the next improvement is always worth making.
+  - This answers *A diagram costs minutes and many tokens* and the settling it causes.
+- **A small model draws like a large one.** Haiku's picture looks like Opus's, because the tool does the work a model would get wrong.
+  - This answers *The result depends on the model*.
+- **The diagram is a file.** One YAML file in git.
+  - The same file gives the same picture on any machine, and a change reads as operations in a diff.
+  - This answers *The picture cannot be reproduced or reviewed*.
 
 ## What we don't want
 
 - **A canvas where people drag boxes.** Agents draw good enough diagrams with grafical, and a person who wants a change asks for it in words.
-- **Placement by coordinates, for anyone.** Coordinates are the dirty work that models fail at, and a free position would break the promise that a change moves only what it names.
-- **grafical judging the picture.** Readers prefer different things, so grafical reports facts and counts, and the agent decides whether the diagram reads well. It gives no readability score and no advice in prose.
+- **Placement by coordinates, for anyone.** Coordinates are the dirty work that models fail at.
+  - A free position would break the promise that a change moves only what it names.
+- **grafical judging the picture.** Readers prefer different things.
+  - grafical reports facts and counts, and the agent decides whether the diagram reads well.
+  - It gives no readability score and no advice in prose.
 - **The engine deciding content.** What the diagram says belongs to the agent. grafical never drops, merges or adds a box to make a picture tidier.
 - **A new diagram language.** Drawing has always been arranging elements. grafical gives agents the best abstraction of it, and invents nothing beyond that.
 
