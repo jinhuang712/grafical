@@ -10,7 +10,9 @@ The same file must give the same SVG bytes, and resvg does not choose a font for
 
 The engine writes the SVG itself, with a fixed element and attribute order. `@resvg/resvg-js` turns it into a PNG using the same bundled fonts. No browser takes part.
 
-The writer splits each label into runs that use one font, and writes one `<text>` element per run, at x positions from its own measurements. resvg-js 2.6.2 does not choose a font per character: given a font stack, it draws the whole label from Noto Sans SC as soon as Inter lacks one of its characters. The phase 0 text spike measured errors of up to 15.67 px from this.
+The writer places each label's text itself, one font at a time, because resvg-js 2.6.2 does not choose a font per character: given a font stack, it draws the whole label from Noto Sans SC as soon as Inter lacks one of its characters. The phase 0 text spike measured errors of up to 15.67 px from this.
+
+How the SVG and the PNG are written is in [text and rendering](../text-and-rendering.md#writing-the-svg).
 
 ## Not chosen
 

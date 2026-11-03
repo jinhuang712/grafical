@@ -12,6 +12,8 @@ A theme sets every value of the look: the colors of each box kind, of groups, ba
 
 Layout reads the same values, so a theme with larger type changes the layout as well as the colors. "The same file is the same picture" still holds, read as: the same diagram file and the same stylesheet give the same picture ("Output and determinism"). Both live in git. Whether a line is solid or dashed follows its kind ("Looks"), so a stylesheet can change the dash pattern of messages but cannot dash a call.
 
+How a stylesheet merges with its theme and what it may set is in [text and rendering](../text-and-rendering.md#themes-and-stylesheets).
+
 ## Not chosen
 
 - Colors or styles on one node or edge.
