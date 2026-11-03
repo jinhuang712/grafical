@@ -258,7 +258,7 @@ grafical node kind <file> <id> <kind>
 ```
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md), [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md), [Placement: sizes](specs/placement.md#sizes)
 - **Why:** [020. Every layered diagram type](specs/decisions/020-every-layered-diagram-type.md), [052. A choice is a small diamond](specs/decisions/052-a-choice-is-a-small-diamond.md)
 
 **Stories:**
@@ -309,7 +309,7 @@ grafical diagram sizing <file> auto|fixed
 - `sizing: fixed` turns this off: a box without a size is always medium, and text that does not fit is refused.
 
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Placement: sizes](specs/placement.md#sizes)
 - **Why:** [014. Boxes sized to their text](specs/decisions/014-boxes-sized-to-their-text.md)
 
 **Stories:**
@@ -451,7 +451,7 @@ grafical edge remove <file> <id>
   - `retarget` moves one or both ends and keeps the line's ID, kind and label.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Routing: how lines are drawn](specs/routing.md#how-lines-are-drawn)
 - **Why:** [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md)
 
 **Stories:**
@@ -523,7 +523,7 @@ grafical edge step <file> <id> [--n <number>]
   - It never joins a bundle.
 
 - **Design:** [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Text placement: step badges](specs/labels.md#step-badges)
 - **Why:** [039. Step badges ride the line](specs/decisions/039-step-badges-ride-the-line.md)
 
 **Stories:**
@@ -553,7 +553,7 @@ One arrow can point at a whole system instead of each of its parts.
 - Removing a group or a lane removes the lines that end at it.
 
 - **Design:** [5. The engine routes every line, in plain forms](DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Routing: lines that end at a container](specs/routing.md#lines-that-end-at-a-container), [Placement: bands, bars and walls](specs/placement.md#bands-bars-and-walls)
 - **Why:** [015. Lines that end at containers](specs/decisions/015-lines-that-end-at-containers.md), [038. A row with no box as one bar](specs/decisions/038-a-row-with-no-box-as-one-bar.md)
 
 **Stories:**
@@ -584,7 +584,7 @@ The agent says what connects. grafical draws every line.
   - The routes stay the same.
 
 - **Design:** [5. The engine routes every line, in plain forms](DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Routing](specs/routing.md#the-steps), [Text placement: line labels](specs/labels.md#line-labels)
 - **Why:**
   - [005. Our own gap router](specs/decisions/005-our-own-gap-router.md)
   - [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md)
@@ -640,7 +640,7 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 
 - **Stance:** [What may the agent set?](PHILOSOPHY.md#what-may-the-agent-set)
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates), [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
-- **How it works:** [The model](specs/model.md), [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [The model](specs/model.md), [Placement: the column grid](specs/placement.md#the-column-grid)
 - **Why:**
   - [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md)
   - [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)
@@ -662,7 +662,7 @@ grafical node align <file> <id> [--to <node>]
 A box sits directly above or below a box in another row, and its row slides sideways as one block to put it there. An alignment that cannot hold with the order of either row is refused, as `alignment-conflict` or `alignment-cycle`. Without `--to`, the alignment is cleared.
 
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Placement: alignment](specs/placement.md#alignment)
 - **Why:** [002. Facts over coordinates](specs/decisions/002-facts-over-coordinates.md)
 
 **Stories:**
@@ -692,7 +692,7 @@ grafical column remove <file> <id>
 - Removing a column leaves its boxes where they are.
 
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Placement: columns](specs/placement.md#columns)
 - **Why:** [027. Columns beside rows](specs/decisions/027-columns-beside-rows.md), [035. Columns hold across rows](specs/decisions/035-columns-hold-across-rows.md)
 
 **Stories:**
@@ -724,7 +724,7 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
   - The refusal names those boxes.
 
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Placement: steps from another box](specs/placement.md#steps-from-another-box)
 - **Why:** [031. Steps from another box](specs/decisions/031-steps-from-another-box.md), [032. Who chose is punished](specs/decisions/032-who-chose-is-punished.md)
 
 **Stories:**
@@ -779,7 +779,7 @@ grafical group remove <file> <id> [--out]
   - A stylesheet may set `paint.nesting: shade` instead.
 
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Placement: groups](specs/placement.md#groups), [Text placement: group titles](specs/labels.md#group-titles)
 - **Why:** [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md), [040. The agent states where a group's label sits](specs/decisions/040-the-agent-states-where-a-group-s-label-sits.md)
 
 **Stories:**
@@ -825,7 +825,7 @@ grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before
 Groups nest up to five levels instead of three, as a cloud's account, region, network, zone and subnet do. The fuzz test must hold at five levels first.
 
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Placement: groups](specs/placement.md#groups)
 - **Why:** [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md)
 
 **Stories:**
@@ -857,7 +857,7 @@ grafical lane remove <file> <id>
 - `lane remove` keeps the members and removes the lines that end at the lane.
 
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Placement: lanes](specs/placement.md#lanes), [Text placement: lane labels](specs/labels.md#bands-bars-and-lanes)
 - **Why:** [018. Swimlanes run one way](specs/decisions/018-swimlanes-run-one-way.md)
 
 **Stories:**
@@ -893,7 +893,7 @@ grafical wall remove <file> <id>
 - A box or group that is removed leaves the wall's sides, and a wall left with an empty side goes.
 
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates), [5. The engine routes every line, in plain forms](DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Placement: walls](specs/placement.md#bands-bars-and-walls), [Routing: walls](specs/routing.md#walls), [Text placement: wall labels](specs/labels.md#wall-labels)
 - **Why:** [029. Walls as space](specs/decisions/029-walls-as-space.md)
 
 **Stories:**
@@ -921,7 +921,7 @@ grafical note remove <file> --on <id>
 - A note that takes more than four lines is an `overflow`.
 
 - **Design:** [5. The engine routes every line, in plain forms](DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Text placement: notes](specs/labels.md#notes)
 - **Why:** [030. Notes as callouts or footnotes](specs/decisions/030-notes-as-callouts-or-footnotes.md)
 
 **Stories:**
@@ -970,7 +970,7 @@ grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mar
 - When the legend is wider than its room, it wraps onto more lines.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [Text placement: the legend](specs/labels.md#the-legend)
 - **Why:** [028. A legend for widths and marks](specs/decisions/028-a-legend-for-widths-and-marks.md), [034. The legend says only what the agent named](specs/decisions/034-the-legend-says-only-what-the-agent-named.md)
 
 **Stories:**
@@ -986,7 +986,7 @@ grafical diagram density <file> compact|normal|airy
 ```
 
 - **Design:** [4. A change moves only what it names](DESIGNS.md#4-a-change-moves-only-what-it-names)
-- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Placement: rows down the page](specs/placement.md#rows-down-the-page)
 - **Why:** [004. Layout computed again on every change](specs/decisions/004-layout-computed-again-on-every-change.md)
 
 **Stories:**

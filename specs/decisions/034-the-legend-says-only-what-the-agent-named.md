@@ -24,6 +24,8 @@ Decided by the owner on 2026-10-15, after a field study that redrew ten publishe
   - Nothing else in their pictures moved.
   - The flowchart and the state machine already named theirs.
 
+How the legend is laid out is in [text placement](../labels.md#the-legend).
+
 ## Not chosen
 
 - Keeping the default words: "call or read", "message", "optional", "related" and "main path".

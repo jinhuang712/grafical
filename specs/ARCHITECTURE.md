@@ -27,7 +27,7 @@ Folder: `src/model/`.
 
 ## The layout
 
-Computes the picture from the facts: sizes the boxes, places them on one column grid, spaces the rows, routes every line through the gaps and seats every label. It stores no position.
+Computes the picture from the facts: sizes the boxes, places them on one column grid, spaces the rows, routes every line through the gaps and seats every label. It stores no position. How it places boxes is in [placement](placement.md), how it routes lines in [routing](routing.md), and how it seats text in [text placement](labels.md).
 
 Folder: `src/layout/`.
 
