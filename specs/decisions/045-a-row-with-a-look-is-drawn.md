@@ -29,6 +29,8 @@ Decided by the owner on 2026-10-18 (behavior: FEATURES.md, "Rows and order"). In
   - The fixture clinic-rows draws an undrawn row and a bar a line ends at.
   - It also draws a band and a bar drawn for their looks alone.
 
+How a band or a bar takes its room is in [placement](../placement.md#bands-bars-and-walls).
+
 ## Not chosen
 
 - Every row's name drawn at the left of its row.

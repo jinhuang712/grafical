@@ -10,6 +10,8 @@ Asked for by the owner on 2026-10-13 ("not just layers, we shall involve another
 
 A column is a guide, and nothing is drawn. Every box of a column lies left of every box of the next, in every row: each row is kept in column order on every write, as rows are for column lanes ("Swimlanes run one way"), and the column grid takes the same order. A box in no column keeps its place beside the box left of it, and so does a new one, at the place the agent stated ("The agent states every order"). Columns and lanes that run as columns are two ways to say one thing, so a diagram has one or the other.
 
+How columns are kept is in [placement](../placement.md#columns).
+
 ## Not chosen
 
 - Drawing columns as bands.

@@ -16,6 +16,8 @@ A diagram can turn fitting off (FEATURES.md, "Sizes"). The switch is a diagram f
 
 This was added on 2026-10-11. In the three phase 1b drafts, text overflow was the most common reason grafical refused Haiku's first batch, which it refused in 46% of draft calls (first reported as 66%, which counted every read of the guide as a refusal). The fix it suggested was to remove the node and add it again larger.
 
+How sizes and row heights are set is in [placement](../placement.md#sizes).
+
 ## Not chosen
 
 - Auto size choosing the small box for short text.

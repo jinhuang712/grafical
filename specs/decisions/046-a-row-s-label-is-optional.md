@@ -23,6 +23,8 @@ Decided by the owner on 2026-10-18, with "A row with a look is drawn". A row is 
 - **Measured.** No saved draft, fixture or fuzz seed gives a row no label.
   - So no picture changed.
 
+How a band or a bar takes its room is in [placement](../placement.md#bands-bars-and-walls).
+
 ## Not chosen
 
 - Keeping `label` required.

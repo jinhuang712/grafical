@@ -10,21 +10,13 @@ Decided by the owner on 2026-10-14. On 2026-10-13 the owner asked for "breaks" a
 
 A wall is empty space between two named sides. The agent names what it separates. Which way the wall runs, how long it is and how thick are the engine's. A wall with a label draws a dashed divider through its middle, so dividers are walls with labels, not a second fact.
 
-How the engine keeps it:
-- Across, a wall adds a fixed space after the gutter's tracks, in the gutter just below the upper side's lowest row.
-  - Up and down, it takes the boundary between two blocks of grid columns as a column lane does.
-  - No line runs down through its space in its rows.
-  - Rows and columns are shared by the whole picture, so the gap is as long as the picture.
-  - The wall, its rule and its drawing are only as long as the sides.
+Lines cross a wall only where it allows, and its label must stay readable:
 - A line between the sides is refused before layout unless the wall allows it.
   - Any other line whose route passes through the wall's space is an agent-owned defect, since the boxes the agent placed lead it there.
-- No line may cross text, so a wall's label takes the first place along the wall that no crossing line comes within 8 px of.
-  - Failing that, it took a place across the picture at that height.
-  - Failing that too, it took a place left of every box and line that a second layout pass made room for.
-  - The fuzz test found the last two cases on 2026-10-14.
-  - Since 2026-10-17 a label with no place along its wall is refused as `label-blocked` ("The dirty work has edges").
-  - It stays at the wall's start or at an up-and-down wall's top and no longer steps above or below the wall.
+- A wall's label with no place along its wall is refused, since 2026-10-17 ("The dirty work has edges").
 - Walls across were built first on 2026-10-14, and walls up and down the same day.
+
+How a wall takes its space is in [placement](../placement.md#bands-bars-and-walls), and how its label is seated in [text placement](../labels.md#wall-labels).
 
 ## Not chosen
 

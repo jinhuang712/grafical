@@ -12,6 +12,8 @@ A layered architecture diagram reads from top to bottom: callers, entry points, 
 
 A group is a system, such as "catalog-sync" around its relay, topics and pipelines. Its members may sit in several rows. The engine draws the group as one box around them, with its label at the top left, and keeps every non-member out of the box. Groups do not nest in stage 1.
 
+How rows, groups and their boxes are placed today is in [placement](../placement.md).
+
 ## Not chosen
 
 - Labelled bands for every row.

@@ -22,6 +22,8 @@ A prototype on the public brief's draft (`bench/runs/p1d-help3`) freed its seven
 - placed one step down from the box that uses each: 20 bends, 1640 px wide and 752 px high, with the seven sharing the topics' row.
   - Two steps would have given the second picture: the right step depends on the rest of the diagram, and it is the agent's to choose.
 
+How a box placed by steps finds its cell is in [placement](../placement.md#steps-from-another-box).
+
 ## Not chosen
 
 - A free box that the engine places, below what it connects to.
