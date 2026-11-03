@@ -9,15 +9,15 @@ An agent states what a diagram says, one operation at a time: this box is in tha
 
 grafical drew this picture itself, from [`docs/images/pipeline.grafical.yaml`](docs/images/pipeline.grafical.yaml).
 
-> **Status: in development, not yet released.** The command line works, and Haiku with grafical already draws as well as Opus with it. The MVP bar is not met yet: in the 2026-10-18 round Haiku made 23 of 24 requested changes, but 19% to 26% of its calls on larger diagrams, and 55% on the private reference brief, were refused, against a target of 5%. Where the work stands is in [ROADMAP.md](ROADMAP.md).
+> **Status: in development, not yet released.** The command line works. Where the work stands is in [ROADMAP.md](ROADMAP.md).
 
 ## What it does
 
-- **Small steps.** Every change is one operation, such as `node add` or `edge add`, or a batch of them, all or nothing. A change moves only what it names.
-- **The engine does the dirty work.** It sizes, places and spaces every box, routes every line, and checks every write for defects. A mistake is refused at once, with the facts to fix it.
-- **Looks are free, places are facts.** An agent may pick any color or line width, and states a box's place as a row, a column or steps from another box, never a coordinate.
-- **A file in git.** The diagram is one YAML file. The same file gives the same SVG and PNG on any machine, and `grafical diff` shows a change as operations.
-- **Made for agents.** An agent learns grafical from `grafical --help`, and every reply is facts and counts, never advice.
+- 🪜 **Small steps:** every change is one operation, such as `node add` or `edge add`, or a batch of them, all or nothing. A change moves only what it names.
+- ⚙️ **The engine does the dirty work:** it sizes, places and spaces every box, routes every line, and checks every write for defects. A mistake is refused at once, with the facts to fix it.
+- 🎨 **Looks are free, places are facts:** an agent may pick any color or line width, and states a box's place as a row, a column or steps from another box, never a coordinate.
+- 📁 **A file in git:** the diagram is one YAML file. The same file gives the same SVG and PNG on any machine, and `grafical diff` shows a change as operations.
+- 🤖 **Made for agents:** an agent learns grafical from `grafical --help`, and every reply is facts and counts, never advice.
 
 [FEATURES.md](FEATURES.md) has every feature, and [PROPOSAL.md](PROPOSAL.md) has why grafical exists.
 
@@ -65,7 +65,7 @@ grafical view arch.grafical.yaml
 
 From a clone, write `node src/cli/main.ts` in place of `grafical`.
 
-## Documents
+## Docs
 
 - [PROPOSAL.md](PROPOSAL.md): why grafical exists, what it wants and what it won't do.
 - [PHILOSOPHY.md](PHILOSOPHY.md): the questions grafical takes a stance on, and its answers.
