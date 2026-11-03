@@ -2,69 +2,127 @@
 
 Small fixes and follow-ups with no milestone yet. An item moves to ROADMAP.md once it has one.
 
-## One word, two steps
+## ongoing
+
+### [P2][DISCUSSION] Steps from another box are the nearest thing to a position
+
+- created: 2026-10-14
+- status: HALT
+- next: the owner reconsiders "places are facts" if steps grow larger, finer or more common
+
+Steps from another box (DESIGN.md, "Steps from another box") are small whole numbers on the grid, a fact like a row. They are also the nearest grafical has come to a position (PHILOSOPHY.md, "What may the agent set?"). Moved here from PHILOSOPHY.md, where it stood as an open doubt.
+
+### [P2][DISCUSSION] One word, two steps
+
+- created: 2026-11-03
+- status: HALT
+- next: the owner chooses; the text below names the options
 
 "Steps from another box" (DESIGN.md, "Steps from another box") is a placement: a box sits some cells of the grid from another. "Numbered steps" (FEATURES.md) is a number on a line for a process. The two share a word, and `GLOSSARY.md` lists both. Needs the owner's choice of a new name for one, or a decision to keep both.
 
-## Many writes in one process run the text measurer out of memory
+### [P2][ISSUE] Many writes in one process run the text measurer out of memory
+
+- created: 2026-10-17
+- status: OPEN
 
 `plan` in `src/cli/pipeline.ts` makes a new HarfBuzz measurer for every write. A command line makes one write per process, and `grafical view` keeps one measurer, so no user meets it; but a few thousand writes in one process end in `RuntimeError: memory access out of bounds`, as an audit of refusals did on 2026-10-17. Reusing one measurer, or freeing each, would let tools and tests call the write path in a loop.
 
-## Pages read before a first write
+### [P2][TASK] Pages read before a first write
+
+- created: 2026-10-17
+- status: OPEN
 
 DESIGN.md, "One entry page, help where it is used" names a risk: agents may not use the ways to draw the entry page lists, or may draft without opening a command's page. The harness counts grafical calls by outcome, but not which help pages an agent read before its first write. `bench lines` or the metrics should count each `--help` call, each `unknown-command` refusal and each `grafical guide [<name>]` before the first `apply` or edit, per draft, so the next paid round can say which pages and guides agents read.
 
-## A row's label is drawn twice
+### [P2][DISCUSSION] A row's label is drawn twice
+
+- created: 2026-10-15
+- status: HALT
+- next: the owner chooses; the text below names the options
 
 A row that is in a lane and is also the end of a line gets the lane's label and a band label of its own. The band label sits away from the band's top left: top right in one picture, the middle in another.
 
 That place follows a rule: the label goes above the first stretch of its row with no box under it, so that no line into a box's top crosses it. Fixing this needs the owner's choice: drop a band's label when its row is a lane's only row, or only when the two texts match, or put the label at the band's top left and let lines pass it.
 
-## Lines meet a diamond on a slanted side
+### [P2][DISCUSSION] Lines meet a diamond on a slanted side
+
+- created: 2026-10-15
+- status: HALT
+- next: the owner chooses; the text below names the options
 
 When two lines share a side of a `decision` box, they meet its slanted edge instead of its corner. A flowchart's lines meet a diamond at the corners.
 
 The router has no rule for diamonds: it spreads ports along a diamond's side as along a box's, and the line is cut where it meets the outline. Meeting the corners needs the owner's choice for a second line on a side: move it to the left or right corner, or join it to the first line before the corner, as a fan-in does.
 
-## A fan-out splits at two heights
+### [P2][DISCUSSION] A fan-out splits at two heights
+
+- created: 2026-10-15
+- status: HALT
+- next: the owner chooses; the text below names the options
 
 Three unlabelled lines from one box to three boxes in the row below split from their trunk at two heights, a small staircase, where an org chart draws one bar. Related to the staircase left unpunished in DESIGN.md, "Who chose is punished".
 
 The split is on purpose: rule 4 of DESIGN.md, "A target picture with measured rules" says a trunk that runs straight on with branches on both sides meets them in a junction that reads as a crossing, so each side branches at its own height (`stagger` in `src/layout/route.ts`). One bar needs the owner to change that rule, for example where a junction dot marks the meeting.
 
-## A step's badge across a lane's side
+### [P2][ISSUE] A step's badge across a lane's side
+
+- created: 2026-10-16
+- status: OPEN
 
 `check --all` counts a lane's side across a line's label as `text-crossing`, but not across a step's badge, and the badge's place does not keep off it (DESIGN.md, "Step badges ride the line"). The badge should keep off a lane's side as the label does, and `step-collision` should count one it touches.
 
-## Usage errors ignore --json
+### [P1][ISSUE] Usage errors ignore --json
+
+- created: 2026-10-18
+- status: OPEN
 
 A command line grafical cannot read, such as `grafical show d.grafical.yaml --bogus --json`, prints its block as text on standard error, where every other refusal with `--json` prints JSON on standard output. An agent that asked for JSON gets text it did not ask for.
 
-## No blank line before a refused batch in try
+### [P2][ISSUE] No blank line before a refused batch in try
+
+- created: 2026-10-18
+- status: OPEN
 
 `try` with several batches prints an accepted batch's `delta` record and then the next batch's `failed batch=<file> changed=-` on the next line, where every other outcome line has a blank line before the blocks that follow. The records still read, but the blocks of one refusal are harder to tell apart from the records of the batch before.
 
-## check says ok for a file every write refuses
+### [P1][ISSUE] check says ok for a file every write refuses
+
+- created: 2026-10-18
+- status: OPEN
 
 A file that the diagram's own checks refuse, such as a group split around a box in one row, loads, and `check` prints `ok` with its warnings and counts: `check` reports defects and warnings, not the whole diagram's errors. Every write is then refused with that error, `already in the file`. `check` should report them, as a write does.
 
-## A box's color and shape come with its kind
+### [P1][DISCUSSION] A box's color and shape come with its kind
+
+- created: 2026-10-30
+- status: HALT
+- next: the owner chooses; the text below names the options
 
 An agent that wants a green box, a red box and a blue box has no way to say so: a stylesheet sets the fill per kind (`paint.node.kinds`), and a kind also sets the shape. Redrawing two published state and flow diagrams on 2026-10-30, a "fixed" box had to be a `store`, drawn as a cylinder, and a "bug" box an `external`, drawn with a dashed border, only for their colors. A diagram of six states in six colors uses six kinds and gets pills, cylinders and diamonds it did not ask for.
 
 PHILOSOPHY.md, "What may the agent set?" says looks are free, so this is a gap and not a rule. DESIGN.md, "Open questions" has the options. Needs the owner's choice.
 
-## The legend cannot show a box's look
+### [P2][DISCUSSION] The legend cannot show a box's look
+
+- created: 2026-10-30
+- status: HALT
+- next: the owner chooses; the text below names the options
 
 `diagram legend` explains line styles, widths and marks. A key made of small boxes, one per fill or border, such as "Works", "Bug" and "Fixed", is drawn today as a group of plain boxes, and every one of them gets `lonely-box`, six warnings for a picture that is right.
 
 Either a legend entry for a box's look, once a box can have a look of its own (see "A box's color and shape come with its kind"), or `lonely-box` should leave out a group whose boxes the agent drew as a key.
 
-## A box beside the chain is moved by steps, but its order is not checked
+### [P2][IDEA] A box beside the chain is moved by steps, but its order is not checked
+
+- created: 2026-10-30
+- status: OPEN
 
 `node move --from <box> --down 1 --left 1` stairs a chain of states across a group, and the order of the row below it then decides the crossings. Changing a state diagram's chain from a column to a staircase took it from 3 crossings to 5, with no hint that the row below no longer matched the order above. `try` shows the change in counts, but neither help nor a warning says that a staircase and the order of the row it lands on go together.
 
-## Help pages trip agents on three fields
+### [P2][TASK] Help pages trip agents on three fields
+
+- created: 2026-10-30
+- status: OPEN
 
 Three fields tripped one agent in a single session, each refused at once and clearly, but each with a wrong first guess:
 
@@ -74,14 +132,25 @@ Three fields tripped one agent in a single session, each refused at once and cle
 
 `node add --help` and `group title --help` could show each in their batch line.
 
-## A pair of lines back and forth, and a self-loop, cross
+### [P2][ISSUE] A pair of lines back and forth, and a self-loop, cross
+
+- created: 2026-10-30
+- status: OPEN
 
 Two states with a line each way, such as "the reaper decides to park the host" and "the reaper leaves the host active", draw as two long parallel lines, and the return line of one pair crossed a self-loop on the box it returns to. A self-loop is drawn and its label sits to its side, but the lines that leave and enter the same box are not kept clear of it.
 
-## Labels sit close to the lines beside them in a gutter with many runs
+### [P2][DISCUSSION] Labels sit close to the lines beside them in a gutter with many runs
+
+- created: 2026-10-30
+- status: HALT
+- next: the owner chooses; the text below names the options
 
 Four labelled lines out of one box run side by side in one gutter, each label 4 px from the next line (`ROUTE.labelClear`), and the picture reads crowded though no warning fires (`crowded-label` counts under 8 px on two sides). Tried on 2026-10-30: asking for 8 px, flat, made 421 of 500 fuzz diagrams 5.5% taller with crossings 40,260 to 40,326, and the dispatch fixture 2 crossings worse, and one fuzz diagram a text overlap; asking for 8 px first and falling back to 4 where a label finds no slot, and keeping it only where the gutter's own crossings did not rise, still left the dispatch fixture 4 crossings worse (20 to 24), since the rows of a gutter change what the next gutter's lines cross. Neither was landed. An empty row between the two rows only lengthened the lines (crowded 0 to 1, height +88), and `airy` density helped little. Needs the owner's choice: more air in every gutter at the price of crossings, or a taller gutter only where a crowded-label warning would fire.
 
-## A diamond's lines leave at its slanted edge, a little
+### [P2][DISCUSSION] A diamond's lines leave at its slanted edge, a little
+
+- created: 2026-10-30
+- status: HALT
+- next: the owner chooses; the text below names the options
 
 With `decision` ports kept to the middle 32 px of a diamond's top and bottom, a line leaves closer to the corner, but still meets the slanted edge a few px inside it. Tried on 2026-10-30: over 500 fuzz seeds 201 diagrams changed, bends +113 and crossings +32, and of 329 saved drafts 2 changed with bends +2; not landed. A `choice` (DESIGN.md, "A choice is a small diamond") is the small diamond the reference diagrams use, with every line at its corner.
