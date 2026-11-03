@@ -62,7 +62,7 @@ Where drawing only costs, the picture is drawn and every write reports it. A lin
 
 No refusal writes the change for the agent. A block names the commands that can act, never a command line with values.
 
-**Not as the documents say.** Decision 040 and FEATURES.md say that `title-blocked` names, as `clear`, the places no line comes near. On a write the code leaves `clear` out, since finding it means laying the diagram out again for every place.
+**Not as the documents say.** Decision [040: The agent states where a group's label sits](decisions/040-the-agent-states-where-a-group-s-label-sits.md) and [FEATURES.md](../FEATURES.md) say that `title-blocked` names, as `clear`, the places no line comes near. On a write the code leaves `clear` out, since finding it means laying the diagram out again for every place.
 
 ## Warnings
 
@@ -115,6 +115,6 @@ The agent compares gutters to see which order of rows costs. The record gives no
 
 ## Rules that are no longer reported
 
-`src/check/taste.ts` still measures the rules of decision 012: a canvas at most 1024 px wide, at most one crossing per ten lines, at least half the lines straight, no line over two bends, at most 40% of lines labelled, at most three line styles, at most 16 boxes, and no corridor through a box. No command calls it. Only its limit of two bends is used, for `bent` and `bent-line`.
+`src/check/taste.ts` still measures the rules of decision [012: A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md): a canvas at most 1024 px wide, at most one crossing per ten lines, at least half the lines straight, no line over two bends, at most 40% of lines labelled, at most three line styles, at most 16 boxes, and no corridor through a box. No command calls it. Only its limit of two bends is used, for `bent` and `bent-line`.
 
-**Not as the documents say.** Decision 012 says `grafical check --all` reports these rules.
+**Not as the documents say.** That decision says `grafical check --all` reports these rules.

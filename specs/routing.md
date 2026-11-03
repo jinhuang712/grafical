@@ -63,7 +63,7 @@ Vertical tracks in a gap try 16 px apart, then 12, then 8, keeping 8 and then 4 
 
 A line between two boxes of one row that are not neighbours runs through the gutter below the row, or above it when fewer lines meet the boxes between its ends on their tops than on their bottoms. A tie keeps it below. The count leaves out lines between neighbours and lines with both ends inside the span. It also stays below in row 0, for a self-loop and for a member of a bus or a fan-in, and where a band's label, a wall or a lane's side lies in the gutter above.
 
-**Not as the documents say.** Decision 019 says such a line also stays below where one of its boxes lies under a group's label. The code's keep-out spans hold no group labels, though a comment in `route.ts` says they do.
+**Not as the documents say.** Decision [019: Lines meet any side](decisions/019-lines-meet-any-side.md) says such a line also stays below where one of its boxes lies under a group's label. The code's keep-out spans hold no group labels, though a comment in `route.ts` says they do.
 
 Because a port added on top moves its neighbours and a run takes room from the labels, the router first routes with every such line below, as a baseline. Then it sends back below each line in the gutter above whose gutter or boxes gain a line that bends for nothing, or a label that finds no room, until nothing is worse than the baseline.
 

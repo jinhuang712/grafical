@@ -52,7 +52,7 @@ Then each column gets its x: the largest of all the minimum distances that apply
 
 An aligned box joins its target's column, so it sits directly above or below it. Alignments are joined in the order of rows and then of boxes, so an earlier one wins. One that cannot hold with the constraints is refused as `alignment-conflict`, with the boxes in the way. An alignment to an unknown box, to a box in its own row or to itself is refused as `unknown-node`, `same-layer` or `self-alignment`.
 
-**Not as the documents say.** FEATURES.md and decision 004 say that an aligned box's row slides sideways as one block, and that rows that would follow each other are refused as `alignment-cycle`. The code joins columns instead, and has no `alignment-cycle`.
+**Not as the documents say.** [FEATURES.md](../FEATURES.md) and decision [004: Layout computed again on every change](decisions/004-layout-computed-again-on-every-change.md) say that an aligned box's row slides sideways as one block, and that rows that would follow each other are refused as `alignment-cycle`. The code joins columns instead, and has no `alignment-cycle`.
 
 ## Columns
 

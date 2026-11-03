@@ -13,7 +13,7 @@ laid-out picture ──> SVG writer ─────┴──> SVG ──> resvg,
 
 ## Fonts
 
-grafical ships four font files: Inter for Latin text and Noto Sans SC for Chinese text, each in Regular (400) and SemiBold (600). The Noto files are a subset of the Chinese font, as decision 006 records. No part of grafical loads a system font: the renderer gives resvg only these four files and turns system fonts off.
+grafical ships four font files: Inter for Latin text and Noto Sans SC for Chinese text, each in Regular (400) and SemiBold (600). The Noto files are a subset of the Chinese font, as decision [006: Bundled fonts](decisions/006-bundled-fonts.md) records. No part of grafical loads a system font: the renderer gives resvg only these four files and turns system fonts off.
 
 Each character is drawn from Inter when Inter has a glyph for it, and from Noto Sans SC otherwise. A character neither font can draw is still drawn with Noto, and the checker reports it as `missing-glyph` with the characters. Characters that shape to nothing, such as zero-width ones, do not count.
 
