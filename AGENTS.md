@@ -16,6 +16,7 @@ What each document holds is listed in [README.md](README.md). Each fact lives in
 | `DESIGN.md` | A decision is made, reversed, or found to be still open |
 | `FEATURES.md` | A feature is added, changes status or is dropped, or a vocabulary list changes |
 | `ROADMAP.md` | A milestone starts, ends or changes scope |
+| `GLOSSARY.md` | A term is added, renamed, or two words compete for one thing |
 | `TODO.md` | A small fix or follow-up is found that has no milestone yet |
 | `CHANGELOG.md` | A change a user would notice lands: add it under *Unreleased* in the same change |
 | `AGENTS.md` | The toolchain, the loop or the rules change |

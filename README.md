@@ -73,6 +73,7 @@ From a clone, write `node src/cli/main.ts` in place of `grafical`.
 - [GOALS.md](GOALS.md): the checks that say whether it works, each with its status.
 - [FEATURES.md](FEATURES.md): what it does, and what it will and won't do.
 - [ROADMAP.md](ROADMAP.md): what is done and what comes next.
+- [GLOSSARY.md](GLOSSARY.md): the words grafical uses, one name for each thing.
 - [EXPERIMENTS.md](EXPERIMENTS.md): how the benchmarks run, and the rules for a result.
 - [AGENTS.md](AGENTS.md): how agents develop in this repository.
 - [GITFLOW.md](GITFLOW.md): the git conventions.
