@@ -2,9 +2,11 @@
 
 Decided: 2026-10-16
 
-Changed on 2026-10-18 by "Refusals say what happened and which commands can change it" and "Every write prints every warning": a line with more than two bends is a `warning: bent-line` block, no longer a `bent line=` record.
+## The problem
 
 Decided by the owner on 2026-10-16 (PHILOSOPHY.md, "Who owns what?"). The engine had been widening a group's box so that no line ran under a stated title ("The agent states where a group's label sits"), and the owner found the empty space it left. Looking for the cause, the owner named the rule behind it: the engine must not do needless work beyond its edges just to get a picture drawn. Until then an engine-owned defect was the engine's to avoid whatever the agent stated ("Defects owned by who can fix them"), and that duty had no edge: every hard case grew a fallback that drew a crooked form and told the agent nothing.
+
+## The choice
 
 - **Plain forms.** The engine draws each thing in a few plain forms: a line straight or with one or two bends, a label on or beside a run of its own line, wrapped onto more lines if it must, a title at its place, a note as the agent said. Measuring text, spacing, aligning to the grid, choosing ports and tracks stay the engine's dirty work.
 - **Unreadable is refused.** Where drawing the facts in a plain form would hide what a reader needs, such as text under a line, the write is refused as an agent-owned defect that names the fact in the way. The cause is a fact the agent stated: a row, an order, a place, a text.
@@ -19,9 +21,14 @@ What it changes, each built in its own step:
 - **A wall's label with no room** along its wall no longer moves left of everything in a second layout ("Walls as space"). The write is refused. Built on 2026-10-17 as `label-blocked` with `is=wall`, naming the wall, then the lines and boxes within the label's clearance. The places past the wall's ends went too, across the picture for a wall across, above or below for a wall up and down: the label would no longer sit on its own line, which grew to reach it. The owner confirmed that on 2026-10-17. No saved draft and no fixture has a labelled wall. Over 2,000 fuzz seeds, 32 labels in 31 diagrams had no place along their wall and are now refused; bends, crossings and engine-owned defects are unchanged, and the pictures 424 px narrower in all.
 - **A note** is a card or a footnote as the agent states, no longer a card the engine turns into a footnote ("Notes as callouts or footnotes"). A card with no room is refused. Built on 2026-10-17: `note add --footnote`, the note's `footnote: true` in the file and `footnote` in a batch, `show` prints `footnote`; a note without it is a card. A card with no clear place beside its target takes its first place anyway, and the write is refused as `label-blocked` with `is=note`, naming the target, then the lines and boxes in the card's way. The second layout pass is gone, and so with the walls' every second pass: a diagram is laid out once. No saved draft and no fixture has a note. Over 2,000 fuzz seeds the engine had made 1,201 of 1,967 notes footnotes by itself, 61%; laid out by both engines, 637 diagrams changed, 1,204 cards are now refused, and bends, crossings and engine-owned defects are unchanged. Dense pictures seldom have room for a card, since nothing moves for one, so an agent should expect to state footnotes there.
 
-Rejected:
+## Not chosen
+
 - Refusing a line with more than two bends unless the agent allows it, as a wall lets a line through. Proposed on 2026-10-16; the owner chose reporting, which never blocks.
 - Refusing every line with more than two bends. Some structures need a line to skip rows, and a dense diagram might not be drawable at all.
 - Reporting everything, even a label with no room drawn over lines. A picture that hides text is not correct, and a report beside it looks like success ("Defects owned by who can fix them").
 - The engine growing a box with no stated size to the size its lines' labels need, as it sizes one to its text. Offered on 2026-10-17 for a line's label with no room; the owner chose that the agent widens it, from the size the refusal names.
 - Keeping each fallback and reporting that it ran. The crooked form would still be drawn for the agent, and the empty space or the detour would stay in the picture.
+
+## Consequences
+
+Changed on 2026-10-18 by "Refusals say what happened and which commands can change it" and "Every write prints every warning": a line with more than two bends is a `warning: bent-line` block, no longer a `bent line=` record.

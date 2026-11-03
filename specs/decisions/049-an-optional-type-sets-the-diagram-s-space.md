@@ -2,7 +2,11 @@
 
 Decided: 2026-10-19
 
+## The problem
+
 Decided by the owner on 2026-10-19. A diagram has no type by default and is drawn as it is today. An agent may give it a type, and the type sets the space the diagram is drawn in, and with it which operations apply and which are refused. Two spaces never share one picture: nobody draws a fishbone and an entity-relationship diagram together. This reverses in part "Every layered diagram type", which rejected a setting for the diagram's type because the kinds already say what is drawn. A kind says what a box is; a space says what a place and a line mean.
+
+## The choice
 
 - **What a space is.** A layout gives four things a meaning: a place across, a place down, a line, and a box around boxes. Two layouts share a space only when all four agree. When one differs, a reader cannot tell which rule a line or a place follows. A swimlane and a sequence diagram both give each actor a column and run time down the page, but in a sequence every message has a height of its own and is the event, while in a swimlane a box is the event and a line only says what comes next.
 - **The spaces found so far.**
@@ -25,7 +29,12 @@ Decided by the owner on 2026-10-19. A diagram has no type by default and is draw
   - Whether boxes with fields are a type or a kind of box.
   - Several spaces side by side in one picture, with no line between them, as the views of FEATURES.md, "Later".
 
-Rejected:
+## Not chosen
+
 - One space for every diagram, as since "Every layered diagram type". It cannot draw a sequence or a mind map.
 - Spaces mixed in one picture. A line or a place would mean two things.
 - No type, with the operations used deciding the space, so that the first sequence operation makes the file a sequence diagram. Proposed the same day. The agent would change what the diagram is without saying so.
+
+## Consequences
+
+A type sets only the diagram's space. A type that checks its conventions stays out, since grafical would be judging content.

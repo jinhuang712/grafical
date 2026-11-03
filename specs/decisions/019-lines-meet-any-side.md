@@ -2,7 +2,11 @@
 
 Decided: 2026-10-12
 
+## The problem
+
 Decided by the owner on 2026-10-12. In the stage 1 round every comment on grafical's pictures named the lines, and the owner's view was that the agent lacked the means to make a picture clear, not only that the router drew lines badly.
+
+## The choice
 
 - **Kinds.** Built 2026-10-12. The kind still decides the look ("Looks"). Two kinds were added, for a line with no direction and for a call that happens only sometimes, so that the agent can say what a line means where the old kinds forced a wrong one (FEATURES.md, "Kinds").
 - **Per edge.** Built 2026-10-12. An edge may carry arrowheads at both ends and may be emphasized to mark the main path (FEATURES.md, "Arrowheads at both ends", "Weight"). A two-way edge never shares a trunk from its start, where its second arrowhead sits, and a main-path edge shares one only with other main-path edges. Emphasis is the edge's accent, like a node's ("Looks"): a weight from a short list, never a colour, so it keeps to the rule that no operation colours one element (GOALS.md). More than three main-path edges, and more than a third of all edges, draw a warning, because a main path stands out only against thin lines.
@@ -24,7 +28,12 @@ Decided by the owner on 2026-10-12. In the stage 1 round every comment on grafic
 - **Engine marks.** Where two lines cross, one hops over the other, so a crossing never reads as a join. Where lines merge on purpose, a dot marks the join. Parallel lines keep a gap. Built 2026-10-12: at a crossing the horizontal line hops over the vertical one in an arc of 4 px, and crossings closer than one hop share a wider arc; a dot sized to the line marks every point where a line leaves or joins one it runs along, which happens only on a crowded side's trunk ("A target picture with measured rules" rule 4). The SVG writer draws both alone, so routes, checks and measures do not change, and the benchmark's geometry check finds no defect in the saved rounds. Parallel lines needed nothing: across the 42 saved drafts no two run closer than 8 px, and most run 12 to 16 px apart. A self-loop was 32 px wide and 20 px deep, too small for its arrowhead to read; its ends now sit 48 px apart and its run takes the gutter's second row, 32 px down.
 - **Room around stores**, 2026-10-13 (phase 1e). Three of six judge verdicts on the private reference brief saw lines run close under or beside a cylinder. On fifteen architecture drafts, lines passed within 16 px of a store 0.70 times a store, against 0.03 to 0.15 for every other kind: stores sit where many lines run, along the gutter's first or last track. A gutter now keeps 8 px more room on its side next to a row that holds a store; near passes fell to 0.19 a store, and the pictures grew 1.8% taller.
 
-Rejected:
+## Not chosen
+
 - The agent choosing the side a line leaves by. Spreading lines tidily is the kind of choice a weak model gets wrong.
 - Free styles per edge, such as a colour or a dash pattern. The reader would have to decode each one. Since 2026-10-13 an edge's width is the exception ("Edge weights").
 - Curves drawn freely, outside the routed channels. They could cross boxes and text, and the router could no longer keep lines apart.
+
+## Consequences
+
+A line may meet any side of a box. Some labels then have no clear slot unless two lines cross.

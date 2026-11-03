@@ -2,7 +2,11 @@
 
 Decided: 2026-10-16
 
+## The problem
+
 Decided by the owner on 2026-10-16 (behavior: FEATURES.md, "Ends at a group, a row or a lane", "Rows and order"). Redrawing the dispatch diagram, the owner said "gateway becomes a horizontal long layer". A line could already end at a row, drawn as a band across the content ("Lines that end at containers"), but a row with no box was refused as `empty-container`. So a gateway or a message bus had to keep a box inside its band, and the picture said "gateway" twice: once as the band and once as the box.
+
+## The choice
 
 Now a row with no box may be a line end when the line's other end holds a box, and it is drawn as one bar across the content with its label in it. A row with no box that no line ends at is drawn as before, and a row that holds boxes is still a band.
 
@@ -14,7 +18,8 @@ Now a row with no box may be a line end when the line's other end holds a box, a
 - **How it is checked.** A line between two rows with no box is refused as `bar-to-bar`: neither end says where the line goes across. A row with no box between the first and last rows of a group is refused as `bar-in-group`, since the group's box would stretch over it ("Rows unseen, groups as systems") and the bar would cut it in two. A group or a lane with no box is still refused as `empty-container`. The SVG marks a bar's rectangle `class="bar"`, so that the separate geometry check (GOALS.md, "Mechanical defects"), which knows shapes only, lets a line run across it and still treats it as a box for every other test.
 - **Tested.** The fuzz test puts a bar in three seeds of ten, on a random stream of its own so that a seed without one draws as before, with every line that passes it allowed, and one bar in four as a band. Over 500 seeds, 89 diagrams have a bar. None of the 306 saved drafts and none of the 15 fixtures changed, since a line to a row with no box was refused until now. While it was built, the fuzz test found two ways a line from a bar crossed a group's label, both fixed: a group's head below a bar rose into a line's run in the gutter, and outer groups seated their labels where a line from a bar came down into an inner group, because placement did not count a bar's line among those entering a box's top.
 
-Rejected:
+## Not chosen
+
 - A line that passes the bar drawn over it with no fact. The prototype did this; the owner asked why such a line never touched the bar.
 - An opening cut in the bar where a line passes, as a hop marks a crossing. Shown to the owner, not chosen; many passing lines would draw the bar in pieces.
 - Charging a pass like a crossing, so that the router goes round the bar's end when it can. It hides the question of whether the line goes through the gateway instead of asking it.
@@ -24,3 +29,7 @@ Rejected:
 - A box's height for the bar, 56 px at medium. It would read as one very wide box.
 - A band's head and padding around an empty row, about 104 px, with the label above the row. Most of it would be empty.
 - The label centred in the bar. Groups, bands and walls put their labels at the left.
+
+## Consequences
+
+A bar takes 40 px instead of a band's head and padding. A line that passes a bar is refused unless the agent lets it.

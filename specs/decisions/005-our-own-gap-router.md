@@ -2,6 +2,12 @@
 
 Decided: 2026-10-11
 
+## The problem
+
+Lines must stay clear of boxes and text, and a change must move only the lines it touches. The routers on offer either lay everything out again or have licenses an MIT project cannot take.
+
+## The choice
+
 Edges run as horizontal and vertical segments. They travel through the gutters between layers and the gaps between neighbouring nodes, never through a node. A label sits on or beside a segment of its own route, clear of nodes, other labels and other edges.
 
 grafical uses its own gap router. It works in three passes:
@@ -41,6 +47,11 @@ What phase 1 added to the router:
 
 The fuzz test lays out 100 random diagrams with fixed seeds in CI, 500 until 2026-10-19, and more on request. None has an engine-owned defect ("Defects owned by who can fix them"). Before the phase 1 robustness work, 48% had one. 35,000 seeds in all passed, which is evidence, not a proof.
 
-Rejected:
+## Not chosen
+
 - `libavoid-js`. It is LGPL-2.1-or-later, and its npm `latest` is a beta from one maintainer. It took 1.8 s at 50 nodes, too slow to lay out on every change, and it drew unrelated edges on top of each other. Its one advantage, fewer crossings, is the router's to earn in phase 1.
 - ELK for routing. ELK layered computes its own placement, and according to ELK's documentation it cannot route orthogonally around nodes that are already placed. Its fixed-layout algorithm only reuses bend points it is given. Sources, checked on 2026-10-10: the [ELK fixed algorithm reference](https://eclipse.dev/elk/reference/algorithms/org-eclipse-elk-fixed.html) and the [ELK libavoid post](https://eclipse.dev/elk/blog/posts/2022/22-11-17-libavoid.html). Graphviz, because it is another placement engine and a native binary.
+
+## Consequences
+
+grafical owns its router and maintains it. A change spreads to another channel only through the lines that use both.

@@ -2,11 +2,11 @@
 
 Decided: 2026-10-17
 
-Changed the same day by "Help for the tool, guides for best practice": the kinds of diagram, "A good diagram", the sections by kind of diagram and `try`'s "What to try" moved out of the help into `grafical guide`.
-
-Changed on 2026-10-18 by "Refusals say what happened and which commands can change it": a refusal no longer carries its own fix. It says what happened and names the commands that can change it.
+## The problem
 
 Decided by the owner on 2026-10-17. The owner asked whether agents draw rows and groups because the help suggests nothing else ("only these commands? then I'll draw it like this"), and forbade putting all the help and the guides in one place. The help read before a draft had 60 characters left of its budget (11,940 of 12,000), and `apply --help` listed 15 of the 60 batch operations, so the reflect round's first agent found `group.title`'s field only from a refusal. A first restructure the same day, a map with guides and references, was withdrawn before it was committed (Rejected, below): the owner found it flat, and asked how an agent reads help and why a refusal's code should need looking up.
+
+## The choice
 
 How an agent reads a command line's help, which this follows:
 - It reads the first page once, before it starts, then acts. It opens a command's page when it uses that command and is unsure of its form. It seldom opens a page only because another names it: in the 2026-10-12 round, 4 of 33 drafts opened `diagram legend --help`.
@@ -21,10 +21,17 @@ So:
 - **Depth.** Every page is at most two hops from the entry page, `grafical node --help` and then `grafical node add --help`, as before.
 - **No size limit for now.** The owner suspended the help's size limits the same day: first the help and grafical's refusals must be right, then it is decided whether a page needs a limit. The budget of "The help as the reference", 12,000 characters for the help read before a first draft, and its test are suspended with them (GOALS.md, "Token use"). That day the entry page, `new --help` and `apply --help` took 11,280 characters together, where they took 11,940.
 
-Rejected:
+## Not chosen
+
 - One page with all the help and the guides, the 2026-10-12 shape grown longer. The owner forbade it: the budget decides what is left out.
 - A map with three guides to read first (`grafical help diagrams`, `compose`, `workflow`) and three references (every operation, every record, every code), each reached by `grafical help <name>`. Built and withdrawn on 2026-10-17, before it was committed. A guide is a hop the agent must choose to take. The references were flat: one operation's entry was about 250 characters in a page of 16,500, one code's about 240 in 27,700. A page of what each code means asks the agent to look up what its refusal should have said.
 - A setting or a custom mode for the diagram's kind. grafical has no type mode ("Every layered diagram type"): every diagram is already composed from the same blocks, and the entry page says so. Reversed in part on 2026-10-19 by "An optional type sets the diagram's space", for the spaces other than rows.
 - A separate `grafical guide` command, as before 2026-10-12. Each hop is a place where an agent stops.
+
+## Consequences
+
+Changed the same day by "Help for the tool, guides for best practice": the kinds of diagram, "A good diagram", the sections by kind of diagram and `try`'s "What to try" moved out of the help into `grafical guide`.
+
+Changed on 2026-10-18 by "Refusals say what happened and which commands can change it": a refusal no longer carries its own fix. It says what happened and names the commands that can change it.
 
 Risk, to measure in the next paid round: whether agents use the ways to draw the entry page lists where the request fits, and which command pages they open before their first write. The harness does not yet count the pages (TODO.md, "Pages read before a first write").

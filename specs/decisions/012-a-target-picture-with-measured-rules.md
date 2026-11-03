@@ -2,7 +2,11 @@
 
 Decided: 2026-10-11
 
+## The problem
+
 On 2026-10-11 the owner judged the engine's first real output "cluttered, messy, lines are all over the place". An Opus designer then hand-drew three uncluttered versions of the public brief, using only what an engine could compute. Two blind Opus judges scored them against the engine's and a raw model's drafts, out of 60:
+
+## The choice
 
 | Picture | Score |
 |---|---|
@@ -24,6 +28,11 @@ The rules that make it uncluttered. The checker measures each one. A broken rule
 7. **Edge labels:** at most 40% of edges carry one.
 8. **Clear text:** no line crosses any text: node, edge or group label. This one is an engine-owned defect ("Defects owned by who can fix them"), except across a group's label, which is the agent's ("The agent states where a group's label sits").
 
-Rejected:
+## Not chosen
+
 - Tuning against defect counts alone. The phase 1 engine had zero defects on 5,000 random diagrams and still scored 22 of 60.
 - The compact overview as the target. It is as clean, but it folds each system into one box.
+
+## Consequences
+
+Every round judges the target picture as an anchor. A broken rule is reported by `check --all` and never refuses a write, except a line bent for no reason, which every write reports since 2026-10-16.

@@ -2,6 +2,12 @@
 
 Decided: 2026-10-11
 
+## The problem
+
+Every write must leave a tidy picture, and a reader who knew the picture before must still find everything where it was.
+
+## The choice
+
 After every operation, grafical lays out the whole diagram again from the facts, the way LaTeX typesets a document again after every edit. Positions are never stored. Layout must be fast enough to feel instant: GOALS.md, "Speed" allows 50 ms per operation in process.
 
 Placement follows the facts in a fixed order: layers from top to bottom, nodes in each layer by their order, box sizes from their steps, gaps from the density.
@@ -29,9 +35,14 @@ One exception: when a gap between two nodes is full, the next edge in id order t
 
 **Alignment.** An aligned node sits directly above or below its target. Its whole layer slides sideways as one block to put it there, and keeps its even spacing. Within one layer, the first alignment in node order holds. A later alignment that would need a different slide is rejected as `alignment-conflict`, and layers that would each slide to follow the other are rejected as `alignment-cycle`.
 
-Rejected:
+## Not chosen
+
 - Left-aligned layers that never re-spread. They keep more pixels still, but rows end up ragged, and the picture stops looking finished. The phase 0 router spike showed this.
 - Reordering nodes on every change to reduce crossings. It gives a better picture once, but any change can reshuffle the structure. Order is stated by the agent, when a node is added or moved ("The agent states every order").
 - Gutters that grow by any amount, because nearly every edge addition would then move the layers below.
 - A "gutter full" defect. Its fix (a larger density, fewer edges, a split layer) costs the agent a round, and moves more than growing would.
 - An aligned node that slides alone within its row's spacing, as phase 1 first built it. None of the three alignments in the public brief could hold that way.
+
+## Consequences
+
+Every write pays for a full layout. A gutter grows in fixed steps, which is the price of never squeezing lines together.

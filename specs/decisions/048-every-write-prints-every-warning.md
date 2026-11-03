@@ -2,7 +2,11 @@
 
 Decided: 2026-10-18
 
+## The problem
+
 Decided by the owner on 2026-10-18, the same day as "Refusals say what happened and which commands can change it", which had kept one warning, a line with more than two bends. The composition counts ("Composition counts") told an agent how many lines pass rows or cross groups, but not which, unless it read `show --drawn`.
+
+## The choice
 
 - **Seven warnings**, each its own block, in this order:
   - `bent-line`: a line with more than two bends ("The dirty work has edges"). Detail: `edge`, `bends`, `skip`.
@@ -20,9 +24,14 @@ Decided by the owner on 2026-10-18, the same day as "Refusals say what happened 
 - **No source.** Decided by the owner later the same day: a warning has no `source:`, in text or in `--json`; errors and defects keep theirs. The outcome line `ok changed=<ids>` already tells the agent what it just changed, so it can match a warning that names those ids itself. Telling a new warning from an old one needs a second layout per write, of the diagram before it: measured on a quiet machine, it took one operation on a 50-box diagram from a median of 10.3 ms and a worst of 33.9 ms to 19.0 and 67.1 ms, against the 50 ms of GOALS.md, "Speed".
 - **Measured.** On round p1g's final drafts a write prints no warning at scale 10, 35 blocks in 220 lines at scale 25, and 173 to 232 blocks in 1,117 to 1,490 lines (31 to 41 KB) at scale 50, most of them crossings.
 
-Rejected:
+## Not chosen
+
 - Only the warnings the command caused. The set changes with every layout, and a warning from before may be the one to act on.
 - A source on every warning, `already in the file` or the command, by laying out the diagram before the write: the second layout per write, and the speed target missed, as measured above.
 - A source only on the warnings this write made, printed first: the same second layout, so the same cost.
 - A cache of the last layout beside the file, to compare with: a second file, which goes stale when the diagram is edited by hand or switched in git.
 - One block per crossing point. Two lines that cross twice are one thing to change.
+
+## Consequences
+
+On a 50-box draft a write prints about 170 to 230 warning blocks, most of them crossings.

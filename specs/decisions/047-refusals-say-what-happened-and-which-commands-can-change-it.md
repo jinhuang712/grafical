@@ -2,7 +2,11 @@
 
 Decided: 2026-10-18
 
+## The problem
+
 Decided by the owner on 2026-10-18, after round p1g (`bench/results/p1g-stage1.md`). Refusals are the target furthest from met (GOALS.md, "Operation errors"): the scale drafts were refused 19% to 26% of their calls, and two drafts of the private brief 55%. The agents got stuck where a record did not say clearly what had happened or which command could act. One change step met `title-blocked` for 15 calls: the record named the places clear of lines but no command, and the line in the way came from another batch line than the one the agent changed. Others met `missing-field` for a second box in a row and `unquoted-text` with nothing to say what to give, and read `group-conflict` as asking them to join a node of another group.
+
+## The choice
 
 grafical reports what happened and never teaches. A record gives the facts and the names of the commands that can change them, never a command line with ids or values filled in.
 
@@ -31,11 +35,14 @@ grafical reports what happened and never teaches. A record gives the facts and t
 - **`--json` says the same:** each problem as `{kind, code, description, source, detail, next}`, beside the outcome and the counts.
 - **No "When refused" in the help.** Decided by the owner later the same day: every command page's "When refused" section goes, `apply --help`'s too. A help page says how to use a command, and a refusal explains itself through its block. A second, hand-written copy of what the record says can go stale, as `edge add`'s did when it described a fix wrongly, and it states a rule in words before the agent makes the mistake, against PHILOSOPHY.md, "How does an agent learn grafical?". `apply --help`'s "Output" stays, and takes the outcome of a refusal and the exit codes from the section that went: it describes what the tool prints, not a rule.
 
-It replaces two earlier choices. In "Records over prose" (2026-10-13), a refusal was one record of `key=value` fields with no sentence; it is now a block with its code's one sentence, while the counts, `show --drawn` and `try` stay records. In "One entry page, help where it is used" (2026-10-17), "A refusal carries its own fix": the generated `fix` facts are gone, about 45 of them, and with them the search for the size of a box at which a line's label fits, which laid the diagram out at each larger size ("The dirty work has edges"). The agent still widens the box itself, and `next` names `node resize`.
+## Not chosen
 
-Rejected:
 - Generated fix commands, the `fix` facts of 2026-10-17. They choose for the agent, they teach a form that the agent copies without reading, and each is engine work that a test must keep right: the fix test applied every one.
 - A sentence made for each case, such as "move pricing-svc out of row-upstream". It reads well, but it is advice in prose, worded its own way each time, and the agent has to parse English to find the ids ("Records over prose").
 - One-line records for refusals, as before. A record of a dozen `key=value` fields said what was there, but not what had happened or which command could act, and `elements=` mixed boxes, lines and groups in one list.
 - Generating each page's "When refused" section from the description table. It would stay right, but it is still a copy of what the block says, read before any mistake, as a rule in words.
 - Keeping the "When refused" sections hand-written, made correct for the blocks. A second copy goes stale, as `edge add`'s did.
+
+## Consequences
+
+It replaces two earlier choices. In "Records over prose" (2026-10-13), a refusal was one record of `key=value` fields with no sentence; it is now a block with its code's one sentence, while the counts, `show --drawn` and `try` stay records. In "One entry page, help where it is used" (2026-10-17), "A refusal carries its own fix": the generated `fix` facts are gone, about 45 of them, and with them the search for the size of a box at which a line's label fits, which laid the diagram out at each larger size ("The dirty work has edges"). The agent still widens the box itself, and `next` names `node resize`.

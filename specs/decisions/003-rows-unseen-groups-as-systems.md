@@ -2,9 +2,23 @@
 
 Decided: 2026-10-11
 
+## The problem
+
+A layered diagram needs rows to place its boxes and a way to show which boxes form one system, without a band and a label drawn for every row.
+
+## The choice
+
 A layered architecture diagram reads from top to bottom: callers, entry points, services, messaging, storage. Each layer is a row, and the nodes in a layer sit side by side in their order. Rows are not drawn: no band, no row label in the picture. A layer's label stays in the file and in `show`, for agents. The one exception is a layer an edge ends at, drawn as a band ("Lines that end at containers").
 
 A group is a system, such as "catalog-sync" around its relay, topics and pipelines. Its members may sit in several rows. The engine draws the group as one box around them, with its label at the top left, and keeps every non-member out of the box. Groups do not nest in stage 1.
+
+## Not chosen
+
+- Labelled bands for every row. They frame the picture by row, which is rarely what a reader needs, and they use a column of width on labels.
+- Groups within one row only. A system almost always spans rows, so this could not draw the systems that make an architecture diagram readable.
+- Nested groups, for stage 1.
+
+## Consequences
 
 Changed on 2026-10-12 (owner's decision): a group's members no longer need neighbouring rows. A row between two of its rows that holds no member, such as a row an agent adds inside a system for a write buffer, used to be refused (`group-gap`); now the box stretches over it, and that row's nodes sit wholly left or right of the box, each on the side the nodes it connects to are, and on the right when nothing says otherwise. In stage 1, the one grafical change step that failed on its own merits was this refusal.
 
@@ -15,10 +29,5 @@ Changed on 2026-10-17 ("The dirty work has edges"): no box and no line moves for
 Changed on 2026-10-18 ("A row with a look is drawn"): a row the agent gives a look is drawn too, with its label, though no line ends at it. A row with neither is still not drawn.
 
 This decision changed on 2026-10-11, after blind judging. The first version drew each layer as a labelled band and kept groups within one row. Two Opus judges scored a hand-drawn grouped target 57 of 60, and the engine's banded output 22 ("A target picture with measured rules").
-
-Rejected:
-- Labelled bands for every row. They frame the picture by row, which is rarely what a reader needs, and they use a column of width on labels.
-- Groups within one row only. A system almost always spans rows, so this could not draw the systems that make an architecture diagram readable.
-- Nested groups, for stage 1.
 
 Reversed in part on 2026-10-12: groups nest, up to three levels, for deployment diagrams ("Every layered diagram type").

@@ -2,6 +2,12 @@
 
 Decided: 2026-10-11
 
+## The problem
+
+Some defects only the agent can fix and others only the engine can avoid. A write refused for the engine's mistake leaves the agent retrying in vain.
+
+## The choice
+
 After each operation or batch, grafical lays out the diagram and checks it. Each defect has an owner: whoever can fix it.
 
 | Defect | Owner |
@@ -26,7 +32,12 @@ Engine-owned defects are about where lines and boxes go, which no operation cont
 
 Text is checked against its line box, which includes the fonts' full ascent and descent. The box must stay 8 px from the node's sides and 4 px from its top and bottom.
 
-Rejected:
+## Not chosen
+
 - Warnings for agent-owned defects, because a picture with a known defect looks like success.
 - Checking only at render time, because the error then surfaces long after the operation that caused it.
 - Failing the write on engine-owned defects, as this decision first said. The phase 1 measuring run showed the cost: Haiku met an edge overlap and a label collision that only the router could fix, retried 11 times, and gave up.
+
+## Consequences
+
+An engine bug can reach a picture without the agent knowing, so the fuzz test keeps looking for engine-owned defects.
