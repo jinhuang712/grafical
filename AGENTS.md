@@ -22,6 +22,17 @@ What each document holds is listed in [README.md](README.md). Each fact lives in
 | `AGENTS.md` | The toolchain, the loop or the rules change |
 | `GITFLOW.md` | A git convention changes |
 
+## Reading and keeping the documents true
+
+A window that is new, or was compacted, reads the documents in this order: PROPOSAL.md, PHILOSOPHY.md, DESIGN.md (its principles and the decisions it cites), GOALS.md, FEATURES.md, ROADMAP.md, GLOSSARY.md. Then scan TODO.md.
+
+- Read a document yourself, in full, before you change it, and read the document that owns a fact before you change that fact. Do not give a document to a subagent to read or write. A subagent may read the code.
+- A goal, a feature or a checkpoint has an ID that never changes (`T2: Speed`, `F3.6: How lines are drawn`, `CP10: The MVP bar, measured again`). A new one gets a new number. Code and documents cite one by its name, such as `GOALS.md, "Speed"`, and `test/docs/citations.test.ts` checks that the name exists. Write an ID with its name, never alone.
+- A choice that closes a fork gets its dated section in DESIGN.md at once. Something that cannot be done now goes into TODO.md at once, with a priority and a type.
+- When a change is done, update CHANGELOG.md and the feature's status in the same change, and delete the TODO item it handled.
+- When the documents and the code disagree, tell the owner and let them decide. Do not check the goals for a small change; check them when a checkpoint ends or a release is near.
+- Status marks go on a `Status:` line, never in a heading.
+
 ## The history before the rewrite
 
 Commits up to and including `f9af06e` (2026-09-11) contain an earlier design that was abandoned. Do not read, restore or quote those files as a source.
