@@ -21,7 +21,7 @@ Folder: `src/cli/`.
 
 ## The model
 
-Defines the diagram: rows, boxes, lines, groups, lanes, columns, walls, notes and marks. Turns an operation into a change of the facts, validates every file it loads, and compares two files as operations.
+Defines the diagram: rows, boxes, lines, groups, lanes, columns, walls, notes and marks. Turns an operation into a change of the facts, validates every file it loads, and compares two files as operations. How the files are laid out is in [the file formats](file-formats.md).
 
 Folder: `src/model/`.
 
@@ -39,7 +39,7 @@ Folder: `src/text/`.
 
 ## The theme
 
-Holds the built-in themes and the stylesheet format: colors, line widths, shapes and type sizes, by role.
+Holds the built-in themes and the stylesheet's values: colors, line widths, shapes and type sizes, by role ([the file formats](file-formats.md)).
 
 Folder: `src/theme/`.
 
@@ -54,6 +54,12 @@ Folder: `src/check/`.
 Writes the SVG from the laid-out picture and turns it into a PNG with `resvg`, with no browser.
 
 Folder: `src/render/`.
+
+## The shared records
+
+What the parts pass to each other and back to the caller: the scene the layout computes, the checker reads and the renderer draws; the problems, with their codes and facts; and the records grafical prints. The library entry point that the command line is built on sits here too.
+
+Folder: the files at the top of `src/`.
 
 ## The benchmark harness
 

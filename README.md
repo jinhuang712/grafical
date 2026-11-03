@@ -8,7 +8,7 @@ An agent states what a diagram says, one operation at a time: this box is in tha
 
 grafical drew this picture itself, from [`docs/images/pipeline.grafical.yaml`](docs/images/pipeline.grafical.yaml).
 
-> **Status: in development, not yet released.** The command line works. Where the work stands is in [ROADMAP.md](ROADMAP.md).
+> **Status: in development, not yet released.** The command line works. The roadmap, under *Docs*, says where the work stands.
 
 ## What it does
 
@@ -17,8 +17,6 @@ grafical drew this picture itself, from [`docs/images/pipeline.grafical.yaml`](d
 - 🎨 **Looks are free, places are facts:** an agent may pick any color or line width, and states a box's place as a row, a column or steps from another box, never a coordinate.
 - 📁 **A file in git:** the diagram is one YAML file. The same file gives the same SVG and PNG on any machine, and `grafical diff` shows a change as operations.
 - 🤖 **Made for agents:** an agent learns grafical from `grafical --help`, and every reply is facts and counts, never advice.
-
-[FEATURES.md](FEATURES.md) has every feature, and [PROPOSAL.md](PROPOSAL.md) has why grafical exists.
 
 ## Install
 
@@ -63,6 +61,21 @@ grafical view arch.grafical.yaml
 ```
 
 From a clone, write `node src/cli/main.ts` in place of `grafical`.
+
+## Architecture
+
+Every write runs the same steps, and only the agent's operations go in:
+
+```text
+agent ──operations──> grafical
+                        ├── validate ──> refusals ─────────> agent
+                        ├── apply ─────> diagram file (YAML, in git)
+                        ├── layout ────> positions, sizes, routes
+                        ├── check ─────> defects and counts ──> agent
+                        └── render ────> SVG ──resvg──> PNG
+```
+
+Each part and the folder it lives in are in the architecture document, under *Docs*.
 
 ## Docs
 

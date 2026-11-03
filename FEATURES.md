@@ -912,45 +912,11 @@ grafical guide <name>
 
 **Status:** ✅
 
-One YAML file holds the whole diagram.
+One YAML file, `<name>.grafical.yaml`, holds the whole diagram as facts: its rows and their boxes in order, its groups, lanes, columns, walls, notes and lines. The diagram on the README's front page is one: `docs/images/pipeline.grafical.yaml`.
 
-```yaml
-grafical: 1
-title: Catalog sync
-subtitle: The write side fills MongoDB; the read side serves it.
-note: "Not shown: Redis name cache, auth-svc."
-density: normal
-layers:
-  - id: ingest
-    label: Ingest
-    nodes:
-      - id: relay
-        label: catalog-relay
-        kind: service
-        sublabel: tier 1, :7101
-        group: sync
-      - id: kafka
-        label: Kafka
-        kind: queue
-        group: sync
-groups:
-  - id: sync
-    label: catalog-sync
-edges:
-  - id: relay->kafka
-    from: relay
-    to: kafka
-    kind: async
-    label: produce
-```
-
-- Keys appear in the order shown. `sizing` and `style`, when set, come right after `density`.
-- A row's keys are `id`, `label`, `lane`, `look` and `nodes`. A box's keys are `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane` and `column`.
-- After `layers`, a `nodes` list holds the boxes in no row, each with `from` and its steps.
-- After `groups` come `lanes`, `columns`, `walls` and `notes`, in that order. A group's keys are `id`, `label`, `sublabel` and `in`.
-- A line's keys are `id`, `from`, `to`, `kind`, `label`, `both`, `pass`, `accent`, `weight` and `step`. `both`, `pass` and `accent` appear only when true, `weight` only when it is not thin, and `step` only when the line is numbered.
-- A field that holds its default is left out.
-- Rows, the boxes in a row and lines are ordered lists. The order of rows and boxes is their place in the picture. The order of lines is creation order and changes nothing visible.
+- grafical writes it in a fixed key order, so the same facts give the same bytes and a change reads as a small diff in git.
+- It holds no coordinate. A field that holds its default is left out.
+- A file of a newer format, or with a field grafical does not know, is refused, never half read.
 
 **Stories:**
 
@@ -960,28 +926,10 @@ edges:
 
 **Status:** ✅
 
-```yaml
-grafical-style: 1
-base: default          # default, dark or print: every value not given comes from it
-paint:
-  background: "#ffffff"
-  group: { fill: "#eef6f0", stroke: "#9cc7a8" }
-  node:
-    kinds:
-      store: { fill: "#f0f2f5", stroke: "#b4bac3" }
-    accent: { fill: "#fff4e5", stroke: "#d9822b" }
-  edge:
-    kinds:
-      call: { stroke: "#2f6f4f" }
-      async: { stroke: "#2f6f4f", dash: "4 3" }
-    weights: { heavy: 5, critical: 6.5 }
-type:
-  title: { size: 22 }
-  node-label: { size: 14, weight: 600 }
-```
+A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and overrides any of its colors, line widths, corner radii and type sizes.
 
-- `paint` holds every colour, line width and corner radius, by role. Any box kind may take a dashed border. Only `async` and `optional` lines have a dash pattern, because a line's kind decides its style.
-- `type` holds a size, from 6 to 48, and a weight, 400 or 600, per text role. Larger type changes the layout, and text that no longer fits is refused as `overflow`.
+- Every value not given comes from the theme it starts from.
+- Larger type changes the layout, and text that no longer fits is refused as `overflow`.
 - An unknown key, a malformed colour or a weight the fonts lack is refused with the path of the value.
 - A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
 
