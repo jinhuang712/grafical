@@ -8,249 +8,49 @@ Decided by the owner on 2026-10-12. In the stage 1 round every comment on grafic
 
 ## The choice
 
-- **Kinds.** Built 2026-10-12.
-  - The kind still decides the look ("Looks").
-  - Two kinds were added: one for a line with no direction and one for a call that happens only sometimes (FEATURES.md, "Kinds").
-  - The agent can then say what a line means where the old kinds forced a wrong one.
-- **Per edge.** Built 2026-10-12.
-  - An edge may carry arrowheads at both ends and may be emphasized to mark the main path (FEATURES.md, "Arrowheads at both ends", "Weight").
-  - A two-way edge never shares a trunk from its start, where its second arrowhead sits.
-  - A main-path edge shares one only with other main-path edges.
-  - Emphasis is the edge's accent, like a node's ("Looks"): a weight from a short list and never a colour.
-  - So it keeps to the rule that no operation colours one element (GOALS.md).
-  - More than three main-path edges draw a warning, and so do main-path edges that are more than a third of all edges.
+Lines may meet a box on any side, and the router, not the agent, chooses the side and the slot. Each step below was built on its own, measured, and kept because it helped.
+
+- **Kinds**, 2026-10-12: two kinds were added, for a line with no direction and for a call that happens only sometimes, so the agent can say what a line means where the old kinds forced a wrong one (FEATURES.md, "Kinds").
+- **Per edge**, 2026-10-12: arrowheads at both ends, and emphasis for the main path as a weight from a short list, never a colour, so no operation colours one element.
   - A main path stands out only against thin lines.
-- **Curves.** A stylesheet may set `paint.edge.shape: curved` ("Themes and stylesheets").
-  - Routes stay the same orthogonal routes through the gaps ("Our own gap router"); only the drawing turns their corners into curves, and a curve never enters a box.
-  - Built 2026-10-12: each corner is as round as half of each of its two stretches.
-  - It is halved while it would come within 4 px of a box, a label or another line.
-  - It is never less round than the orthogonal style's corner.
-  - A side exit becomes one sweeping curve, and a corner beside a label or a close line stays small.
-  - The stylesheet takes `orthogonal` or `curved` and nothing else, and every built-in theme is orthogonal.
-- **Sides.** A line may leave or enter a box on any of its four sides.
-  - One side may carry several lines, each in its own evenly spaced slot.
-  - Lines on one side then never pile up or read as one.
-  - The engine chooses the side and the slot; the agent does not.
-  - **Side entry, built 2026-10-12.** This is for a line between neighbouring rows whose target lies wholly left or right of its source, and that could not leave by a side ("Our own gap router").
-    - It runs straight out of the source's top or bottom beside the target.
-    - It turns into the target's facing side at the middle of its row.
-    - That is one bend, where the route through the gutter takes two.
-    - The side must be free.
-    - The vertical part must run in the open between the target and its neighbour, clear of every line through that gap.
-    - A line that would have joined a fan-in leaves it.
-    - The owner asked for exactly this on the flowchart's loop ("should be entering from the right side instead of the bottom") and wanted room between Issue refund and End, where two lines merged; both now enter from the side.
-    - Of the pinned pictures only the row-lanes fixture changed: the mobile app's line now turns into the gateway's side instead of merging with the web shop's.
-    - Over the fifteen saved no-hint drafts, bends fell from 16.47 to 15.60 per draft.
-  - **Own slots, built 2026-10-12.** Every line meets its node side at a port of its own.
-    - Only a side with more lines than ports fit at the port pitch still merges as before.
-      - The port pitch is 16 px apart and 16 px in from each corner.
-      - Its unlabelled lines of one style leave through one trunk or arrive through one port.
-    - Turning trunks off everywhere was tried and lost: a side with twenty lines became a wide ribbon that crossed everything below it.
-    - Three orders keep separate lines from crossing each other:
-      - The ports of a side go in the order of where each line's run in the gutter ends, walking round the gutter from the box's left corner. A line that turns back into the same row then runs outside the lines that go on.
-      - Lines that share a corridor through a row go in the order of where they leave it, the one that leaves first furthest out.
-      - The unlabelled lines that leave one side past the same rows still choose one corridor together.
-    - A line of a fan-out may now leave or enter by a side, unless another line's run in that gutter crosses the vertical part.
-    - Over the 42 saved drafts of stage 1 and phase 1d, crossings fell from 5.10 to 4.79 per draft and bends rose from 15.76 to 15.86; eight drafts lost crossings and three gained some.
-    - Both pinned pictures changed and were reviewed.
-      - In the grouped catalog, the line to geo-svc leaves the pipelines' left side and the failed line goes over the top instead.
-      - In the row lanes, the gateway's line to the catalog leaves its right side.
-      - So the mobile app's line enters the gateway's top beside the web shop's, each at its own port.
-    - The dot that marks a merge came later the same day (engine marks, below).
-  - **Spread slots, built 2026-10-12 after the stage 1 rerun.** The MVP judges no longer counted shared trunks but counted the separate ports instead.
-    - They saw lines leaving one box 16 px apart "in a tight bundle" and "crowded together near the corner".
-    - The ports of a side now spread evenly over it first, up to 48 px apart.
-    - They fall back to 16 px only when the side has no room or when spreading would bend a line that could run straight.
-    - Over 54 saved drafts, crossings went from 4.39 to 4.43 per draft and bends from 16.06 to 16.13.
-    - The change is in how the lines look and not in their count.
-    - A box too narrow for its lines keeps them 16 px apart, such as six lines on a medium box.
-    - That is a placement question of where the box sits against its targets.
-    - Three pins changed and were reviewed.
-  - **Lines kept out of strangers' groups, built 2026-10-12 after the stage 1 rerun.** The MVP judges also counted lines that ran down a group's margin or along its border.
-    - The group held neither end of those lines.
-    - Such a line now keeps out of the margin and the border, from a padding inside the border to a clearance outside it.
-    - A corridor through the inside of such a group pays as much as a crossing.
-    - Forbidding margins to every line was tried first and lost: crossings rose from 4.43 to 4.67 per draft over 54 drafts.
-      - Lines between the group's own members and lines with no other way lost their room.
-    - Kept to strangers, the rule changes the counts by almost nothing.
-      - Problems went from 5.72 to 5.69 and bends from 16.13 to 16.09, and crossings stayed the same.
-    - No pinned picture changed.
-  - **Corridors that cross least, built 2026-10-12.** An edge that skips rows chose its corridor by distance alone.
-    - So the state machine's line from Placed to Cancelled went round the left of Paid and crossed the line to Shipped.
-    - A corridor now also pays for every crossing that placement already makes certain:
-      - A line straight through a gutter the route runs along.
-      - A line along a gutter the route passes straight through.
-      - A sideways line across a row it passes.
-    - That line now goes round On hold and crosses nothing.
-    - Over the 42 saved drafts, crossings fell from 4.79 to 4.14 per draft and bends from 15.86 to 15.67.
-    - Eleven drafts lost crossings against the trunk-everywhere router.
-    - One draft whose store sits far from its readers still has two more.
-    - Weighing a crossing as four or eight jogs gave the same crossings and slightly more bends.
-    - The row-lanes pin changed and was reviewed: the order events line no longer crosses the arrow from payments to the ledger.
-  - **Side turns for lines that skip rows, built 2026-10-12.** A line that skips rows runs down its corridor at one x.
-    - Where that x lies in the open beside its source in the source's row, the line now leaves by that side and turns once into the corridor.
-    - Where it lies in the open beside its target, the line turns out of the corridor into the target's side at the middle of its row.
-    - The same rules hold as for lines between neighbouring rows:
-      - The side must be free.
-      - No line may run up or down through the row between the box and the turn.
-      - No other line's run may cross the gutter at the turn.
-      - The vertical part keeps clear of the labels at the top of a row it enters.
-    - The state machine's line from Placed to Cancelled now leaves Placed's right side and runs down past On hold into Cancelled's right side.
-    - That is two bends and no crossing, where the owner saw four bends and a crossing.
-    - Over the 42 saved drafts, bends fell from 15.67 to 14.45 per draft and problems from 5.62 to 5.45.
-    - Every order-states and password-reset draft now has none.
-    - Crossings rose from 4.14 to 4.33, all of it in three drafts of 25 components.
-    - In those, a line that moved to a side left its gutter to the others.
-    - The gutter then put three runs in an order that crosses twice.
-    - It weighs a line through a label as four crossings, and two labels needed the room.
-    - A label's slot now also pays for each crossing that the order it fixes would force, as much as 64 px of sliding.
-    - That won two of those drafts back their two crossings each: crossings went from 4.33 to 4.24 per draft.
-    - The third keeps its two: the label beside a short run lies over another line's way down, and the slot at the run's other end conflicts with an order another label has fixed.
-    - The row-lanes pin changed and was reviewed: the orders database line leaves the orders API's left side and enters the database's left side, two bends instead of four.
-  - **Forced crossings counted in full, corrected 2026-10-16.** The count of crossings a slot forces missed in two ways.
-    - It weighed each order with the label being placed still where it lay before, so a slot paid for crossings that only that old place caused; it now leaves the label out.
-    - And it counted only the pairs of runs the slot names, not the pairs they imply through the order already fixed; it now counts every pair the slot adds to the order.
-    - The first came to light once labels kept off group sides ("Defects owned by who can fix them").
-      - With its centred slot closed, a label in a 25-component draft was charged four crossings for a clear slot.
-      - It went below its line instead, which put a fan-out across that line.
-    - The second came to light when the first was fixed.
-      - In the dense fixture, a label's slot put one line above another that already lay above a fan-out.
-      - So the first line crossed the fan-out too, and the count saw no harm in it.
-    - Over the 306 saved drafts, 11 changed and no draft gained a defect.
-    - Crossings fell from 679 to 676 and bends stayed at 3,196.
-    - Keeping labels off group sides had added three crossings in two drafts; two of them are gone.
-    - The third is the price of two labels that no longer lie across a group's side: neither has a clear slot unless the two lines cross.
-    - No fixture picture changed.
-  - **Two side turns in one gap, built 2026-10-15.** The code had allowed one side turn per gap between two boxes of a row, stricter than the rules above.
-    - Two now share a gap when their runs along the row's middle keep a track apart, so that neither runs along the other and neither's vertical part crosses the other's run.
-    - The owner found it in a swimlane with a column per phase, where two lines bent twice although each could turn once beside its target.
-    - Bends fell from 8 to 6.
-    - No fixture picture changed, and no other field-study drawing did.
-  - **A side entry's port moves aside, built 2026-10-15.** A side entry's line left from the middle of its source's side.
-    - A second line from that side into a box on the other hand would have started its turn where the first turned.
-    - Its run touched the first's, and it bent twice.
-    - Such a turn now moves along the source's side toward its target until its run keeps a track from every other run in the gap and its port keeps the side's spread from every port that must sit at a turn.
-    - The owner found it in the two-zone web app.
-    - The load balancer's lines into both zones now leave its bottom and turn once into each web server's facing side.
-    - Bends fell from 6 to 5.
-    - No other fixture picture changed, and no other field-study drawing did.
-  - **Several side entries into one side, built 2026-10-16.** A side entry took its target's side for itself, so a second line into that side went into the target's top with two bends.
-    - The owner marked one in a booking C4 diagram: the mobile app's line to the API should turn once into its side, above the web app's line.
-    - A side now takes as many entries as fit at its port pitch, each at its own height.
-      - The lines from above enter its upper part, the nearer the higher.
-      - The lines from below enter its lower part, the nearer the lower.
-      - So none crosses another's way in.
-    - Entries into one side keep apart from each other's turns by a track, and from every other turn in the gap as before.
-    - A line's run across the gutter could block another's entry until that line took a side entry itself, so the choice repeats while it adds one.
-    - Over the 306 saved drafts, 11 changed with one bend fewer each.
-      - Bends went from 3,190 to 3,179 and crossings from 676 to 675.
-      - Widths stayed the same.
-    - Over 2,000 fuzz seeds, 198 diagrams changed.
-      - Bends went from 20,580 to 20,254 and crossings from 20,336 to 20,257.
-      - `needless-bend` and `wall-crossed` fell by five each.
-    - The dense fixture's ticket topics now turn once into the relay's side, above the other entry there.
-  - **Wide labels between neighbours, built 2026-10-16.** A line between two neighbours in a row runs straight across the gap between them with its label above it.
-    - The gap widens to hold the label.
-    - A label wider than 120 px sent the line round through the gutter under the row instead.
-      - That gave two bends and a label hanging off its run.
-      - Examples were a booking C4 diagram's "sends confirmations via" and the dispatch diagram's "trip-requested, trip-cancelled".
-    - The limit is now 200 px, about thirty characters.
-    - A longer label still goes round, so that one label cannot spread a row without end.
-    - Over the 306 saved drafts, three changed and each got 80 px wider.
-      - Bends went from 3,196 to 3,190 and crossings stayed the same.
-    - Over 2,000 fuzz seeds, 282 diagrams changed with 5.3% more width.
-      - Bends went from 29,157 to 28,591 and crossings from 34,665 to 34,266.
-      - Checker defects of any owner went from 258 to 249.
-    - No fixture picture changed.
-  - **Lines along a row above it, built 2026-10-16.** A line between two boxes of one row that are not neighbours always ran through the gutter under the row.
-    - So every line into the bottom of a box between its ends crossed it, even where none came into their tops.
-    - It now takes the gutter above when fewer lines meet the boxes between its ends on their tops than on their bottoms; a tie keeps it below.
-    - A line of the same row with both ends from one of its ends to the other is not counted, since it runs inside the run in either gutter.
-    - The gutter above holds what the gutter below does not, between its tracks and the row.
-      - It holds the heads of the groups that start in the row, and walls and lanes' borders.
-    - So a line stays below in these cases:
-      - One of its boxes lies wholly under a group's label, where no port on its top clears the label.
-      - Its ends span a wall across in the gutter above.
-      - Its ends span a wall up and down that runs through or reaches into that gutter.
-      - Its ends span a lane's border there.
-    - It chooses once the corridors of the lines that skip rows are chosen.
-    - Those count it below its row, so its choice moves no other line's corridor.
-    - A port added to a top side moves the ports beside it, and a run added to a gutter takes room from its labels.
-    - So the router compares the whole routing with every such line below.
-    - A line that took the gutter above goes back below and everything is routed again, when either of two things happens that did not before:
-      - A line in that gutter or at one of its boxes bends for nothing ("Who chose is punished").
-      - A label in that gutter finds no room.
-    - In a saved dispatch draft, "trip-requested" and the line from events to payments-api now run above their row.
-      - The draft went from 9 crossings to 4.
-    - `pnpm bench diff` over the 306 saved drafts: five changed and none got worse.
-      - Crossings went from 675 to 654 and bends from 3,179 to 3,178.
-      - Widths stayed the same.
-    - Of the fixtures, only the dispatch fixture changed.
-      - Its "check tokens" now runs above its row and crosses one line instead of two.
-    - Over 2,000 fuzz seeds, 815 changed.
-      - Crossings went from 173,696 to 166,849 and bends from 145,303 to 145,288.
-      - `needless-bend` went from 753 to 736 and `wall-crossed` from 336 to 334.
-    - With each diagram generated once and laid out by both engines, crossings fell in 786 diagrams.
-      - They rose in 20, by 8 at most.
-      - No defect code rose in any diagram.
-    - The comparison costs time, since a diagram with a line above its row is routed at least twice.
-      - One operation at 50 boxes took a median of 9.1 ms and at most 37.0 ms (`pnpm bench speed`).
-      - Before, it took 10.2 ms and 21.9 ms.
-    - Tried first and dropped:
-      - Choosing before the corridors, which moved corridors through walls the old ones missed: `wall-crossed` rose in 17 diagrams.
-      - Choosing without the comparison, which added 31 `needless-bend` and in one diagram two detours with 30 more crossings.
-      - Keeping below every line whose box has a line that runs straight, which lost every gain in the saved drafts.
-      - Counting the lines that run inside the run, which sent a line above a row of such lines and across every line from above.
-  - **Straight lines meet their boxes' centres, built 2026-10-16.** A line that runs straight between two boxes that share a centre often met them off it.
-    - Over the 306 saved drafts, 146 of 1,565 such lines did, 17.6 px off on average.
-    - The causes, counted:
-      - 52: two lines join the same two boxes and sit evenly either side of the centre, the best two lines can do.
-      - 36: a group's label lies over the lower box at the centre, and no line crosses text.
-      - 11: another line meets one of the boxes within 16 px of the centre.
-      - 42: a line that skips rows. Mostly the lines from the same side of its source that share its corridor all wanted the centre and split it, 8 or 16 px each.
-      - 5: the ports beside it pushed it while room was left.
-    - After the ports and tracks are placed, such a line now moves back to the centre where nothing bends for it.
-      - The lines in its way that share its corridor move with it, port and tracks alike.
-    - Nothing bends for it when all of these hold:
-      - Every other port of the sides keeps the port pitch.
-      - No label lies there.
-      - Every other track of a gap keeps its distance, and its distance from the boxes it passes.
-      - No line comes within 8 px.
-      - No run crosses where it did not.
-    - A line with a self-loop on a side it meets stays, since the loop's run and label sit under that side.
-    - 119 lines stay off centre:
-      - The 52 pairs.
-      - The 36 under labels.
-      - 28 where another line's port sits within 16 px of the centre, so that centring would move that line.
-      - 3 others.
-    - `pnpm bench diff` over the saved drafts: 28 changed, and bends stayed at 3,178 and crossings at 654.
-    - Five fixtures changed with bends and crossings the same.
-      - The grouped pin was reviewed and renewed: its line from the API callers now meets the API handlers at their centre.
-    - Over 2,000 fuzz seeds, 71 changed with bends the same.
-      - Crossings went from 169,825 to 169,824.
-      - No defect code changed in any diagram.
-    - Tried first and dropped, each for what it cost the fuzz seeds:
-      - Taking the port spacing that pushes the fewest straight lines when every spacing pushes one: 146 to 140 off centre, with 146 more crossings.
-      - Weighting a track whose line runs straight from end to end so that its corridor mates make way: 111 off centre, with 93 more bends.
-      - Moving the mates' wanted x a pitch aside: 108 off centre, with 177 more bends.
-    - Moving tracks while they are placed moves the lines beside them before their ports are known, which bends some; moving them afterwards checks every port first.
-- **Engine marks.** Where two lines cross, one hops over the other, so a crossing never reads as a join.
-  - Where lines merge on purpose, a dot marks the join.
-  - Parallel lines keep a gap.
-  - Built 2026-10-12: at a crossing the horizontal line hops over the vertical one in an arc of 4 px.
-    - Crossings closer than one hop share a wider arc.
-    - A dot sized to the line marks every point where a line leaves or joins one it runs along ("A target picture with measured rules" rule 4).
-    - That happens only on a crowded side's trunk.
-  - The SVG writer draws both alone, so routes, checks and measures do not change.
-  - The benchmark's geometry check finds no defect in the saved rounds.
-  - Parallel lines needed nothing: across the 42 saved drafts no two run closer than 8 px, and most run 12 to 16 px apart.
-  - A self-loop was 32 px wide and 20 px deep, too small for its arrowhead to read.
-  - Its ends now sit 48 px apart and its run takes the gutter's second row, 32 px down.
-- **Room around stores**, 2026-10-13 (phase 1e).
-  - Three of six judge verdicts on the private reference brief saw lines run close under or beside a cylinder.
-  - On fifteen architecture drafts, lines passed within 16 px of a store 0.70 times a store, against 0.03 to 0.15 for every other kind.
-  - Stores sit where many lines run, along the gutter's first or last track.
-  - A gutter now keeps 8 px more room on its side next to a row that holds a store; near passes fell to 0.19 a store, and the pictures grew 1.8% taller.
+- **Curves**, 2026-10-12: a stylesheet may draw corners curved, while the routes stay the same orthogonal routes and a curve never enters a box.
+- **Side entry**, 2026-10-12: a line between neighbouring rows may turn once into its target's side instead of bending twice through the gutter.
+  - The owner asked for exactly this on the flowchart's loop ("should be entering from the right side instead of the bottom").
+  - Over the fifteen saved no-hint drafts, bends fell from 16.47 to 15.60 per draft.
+- **Own slots**, 2026-10-12: every line meets its side at a port of its own; only a side with more lines than ports still merges them.
+  - Turning trunks off everywhere was tried and lost: a side with twenty lines became a wide ribbon that crossed everything below it.
+  - Over the 42 saved drafts of stage 1 and phase 1d, crossings fell from 5.10 to 4.79 per draft and bends rose from 15.76 to 15.86.
+- **Spread slots**, 2026-10-12 after the stage 1 rerun: ports spread over a side first, because the judges saw lines leaving one box 16 px apart "in a tight bundle".
+  - Over 54 saved drafts, crossings went from 4.39 to 4.43 per draft and bends from 16.06 to 16.13: the change is in how the lines look.
+- **Lines kept out of strangers' groups**, 2026-10-12 after the stage 1 rerun: a line keeps out of the margin and border of a group that holds neither of its ends.
+  - Forbidding margins to every line was tried first and lost: crossings rose from 4.43 to 4.67 per draft, because lines between a group's own members lost their room.
+- **Corridors that cross least**, 2026-10-12: a line that skips rows pays for every crossing that placement already makes certain, not only for distance.
+  - Over the 42 saved drafts, crossings fell from 4.79 to 4.14 per draft and bends from 15.86 to 15.67.
+  - Weighing a crossing as four or eight jogs gave the same crossings and slightly more bends.
+- **Side turns for lines that skip rows**, 2026-10-12: such a line may leave or enter by a side at the start or end of its corridor.
+  - Over the 42 saved drafts, bends fell from 15.67 to 14.45 per draft; crossings rose from 4.14 to 4.33 in three drafts of 25 components, and a label's slot paying for forced crossings won back two of them (4.24).
+- **Forced crossings counted in full**, 2026-10-16: the count of crossings a label's slot forces now leaves the label out of its old place and counts every pair the slot implies.
+  - Over the 306 saved drafts, crossings fell from 679 to 676.
+- **Two side turns in one gap**, 2026-10-15: two turns may share a gap when their runs keep apart. In a swimlane of the field study, bends fell from 8 to 6.
+- **A side entry's port moves aside**, 2026-10-15: so that a second line from that side turns once. In the two-zone web app, bends fell from 6 to 5.
+- **Several side entries into one side**, 2026-10-16: a side takes as many entries as fit, each at its own height.
+  - Over the 306 saved drafts, 11 changed with one bend fewer each; over 2,000 fuzz seeds, bends fell from 20,580 to 20,254 and crossings from 20,336 to 20,257.
+- **Wide labels between neighbours**, 2026-10-16: a line between neighbours keeps its label above a straight line for labels up to 200 px, where 120 px sent it round.
+  - Over 2,000 fuzz seeds, bends fell from 29,157 to 28,591 and crossings from 34,665 to 34,266, with 5.3% more width.
+- **Lines along a row above it**, 2026-10-16: a line between two boxes of one row may take the gutter above when fewer lines meet the boxes between its ends from above.
+  - In a saved dispatch draft, crossings went from 9 to 4; over the 306 saved drafts, crossings fell from 675 to 654.
+  - Over 2,000 fuzz seeds, crossings fell from 173,696 to 166,849; they fell in 786 diagrams and rose in 20, by 8 at most.
+  - The comparison costs time: one operation at 50 boxes went from a median of 10.2 ms and a worst of 21.9 ms to 9.1 ms and 37.0 ms.
+  - Tried first and dropped: choosing before the corridors (`wall-crossed` rose in 17 diagrams), choosing without the comparison (31 more `needless-bend`), and two other ways of counting.
+- **Straight lines meet their boxes' centres**, 2026-10-16: a straight line pushed off its boxes' shared centre moves back where nothing bends for it.
+  - Over the 306 saved drafts, 146 of 1,565 such lines had been 17.6 px off on average, and 119 stay off, for reasons the router cannot remove.
+  - Three other ways were tried and dropped, each costing the fuzz seeds 93 to 177 more bends or 146 more crossings.
+- **Engine marks**, 2026-10-12: a crossing hops so it never reads as a join, and a dot marks a join on purpose.
+  - Parallel lines needed nothing: across the 42 saved drafts no two run closer than 8 px.
+- **Room around stores**, 2026-10-13 (phase 1e): three of six judge verdicts saw lines run close under or beside a cylinder.
+  - Lines passed within 16 px of a store 0.70 times a store, against 0.03 to 0.15 for every other kind; with the extra room, 0.19, and the pictures grew 1.8% taller.
+
+How the router does each of these today is in [routing](../routing.md).
 
 ## Not chosen
 

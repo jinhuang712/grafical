@@ -26,6 +26,8 @@ Decided on 2026-10-13, as the first feature of phase 1e (FEATURES.md). The owner
 - **The target look ("A target picture with measured rules") changes with it:** each of its two services now sends one trunk to its three stores and services below, where it sent three lines.
   - The owner sees the picture before and after.
 
+How buses form today is in [routing](../routing.md#fan-outs-and-fan-ins).
+
 ## Not chosen
 
 - Bundling labelled lines without a place for their labels: it loses the labels.
