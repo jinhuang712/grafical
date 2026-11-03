@@ -92,7 +92,7 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
 
 - **Stance:** [What does a change do?](PHILOSOPHY.md#what-does-a-change-do)
 - **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
-- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line), [The model](specs/ARCHITECTURE.md#the-model)
+- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line), [The model](specs/model.md)
 - **Why:** [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
 
 **Stories:**
@@ -167,7 +167,7 @@ The caller names every row, group, lane, column, wall, box and line, and a name 
 - A taken ID is refused, with a free one suggested.
 
 - **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
-- **How it works:** [The model](specs/ARCHITECTURE.md#the-model)
+- **How it works:** [The model](specs/model.md)
 - **Why:** [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
 
 **Stories:**
@@ -413,7 +413,7 @@ grafical node remove <file> <id>
   - A box that others are placed by steps from stays while they are (`step-anchor`).
 
 - **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes), [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
-- **How it works:** [The model](specs/ARCHITECTURE.md#the-model)
+- **How it works:** [The model](specs/model.md)
 - **Why:** [013. Curation stays with the agent](specs/decisions/013-curation-stays-with-the-agent.md)
 
 **Stories:**
@@ -640,7 +640,7 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 
 - **Stance:** [What may the agent set?](PHILOSOPHY.md#what-may-the-agent-set)
 - **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates), [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
-- **How it works:** [The model](specs/ARCHITECTURE.md#the-model), [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [The model](specs/model.md), [The layout](specs/ARCHITECTURE.md#the-layout)
 - **Why:**
   - [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md)
   - [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)
@@ -811,7 +811,7 @@ grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before
   - Notes and walls are not copied.
 
 - **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
-- **How it works:** [The model](specs/ARCHITECTURE.md#the-model)
+- **How it works:** [The model](specs/model.md)
 - **Why:** [037. A group copy holds its inside](specs/decisions/037-a-group-copy-holds-its-inside.md)
 
 **Stories:**
@@ -1200,7 +1200,7 @@ grafical diff <file> [<git-rev>]
 `diff` reports how the file differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file. Outside git it fails with `not-in-git`.
 
 - **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes), [4. A change moves only what it names](DESIGNS.md#4-a-change-moves-only-what-it-names)
-- **How it works:** [The model](specs/ARCHITECTURE.md#the-model)
+- **How it works:** [The model](specs/model.md)
 - **Why:** [009. Git as the history](specs/decisions/009-git-as-the-history.md)
 
 **Stories:**
@@ -1271,7 +1271,7 @@ One YAML file, `<name>.grafical.yaml`, holds the whole diagram as facts: its row
 - A file of a newer format or with a field grafical does not know is refused, never half read.
 
 - **Design:** [10. What grafical cannot fully read, it refuses](DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses), [9. The same file gives the same picture on any machine](DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
-- **How it works:** [The model](specs/ARCHITECTURE.md#the-model), [The file formats](specs/file-formats.md#the-diagram-file)
+- **How it works:** [The model](specs/model.md), [The file formats](specs/file-formats.md#the-diagram-file)
 - **Why:**
   - [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
   - [009. Git as the history](specs/decisions/009-git-as-the-history.md)

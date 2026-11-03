@@ -8,30 +8,18 @@ Decided by the owner on 2026-10-16, before building FEATURES.md, "Copying a grou
 
 ## The choice
 
-- **What the copy holds.** The group's inner groups at every level and its boxes.
-  - It also holds the lines whose two ends are among them or the group itself.
-  - Every id it makes is the original's with the suffix, with two exceptions:
-    - The copy's own id, which the agent names.
-    - A line id of the form `<from>-><to>`, which becomes its copied ends' id so that `diff` shows a plain `edge.add`.
-  - Each copied box keeps its label, kind, size, sublabel, marks, accent, lane and column.
-  - The copied group keeps the sublabel and sits in the group the original sits in, so it nests as deep.
+- **What the copy holds.** The group's inner groups at every level, its boxes, and the lines between them, each box with all its facts.
 - **Lines to everything else only when asked.** With `--outside`, every line between the group and something outside it is copied too.
-  - Its inside end moves to the copy: `lb->web` gives `lb->web-b`.
-  - Without it, the copy holds only what is in the group.
   - A second zone usually talks to the same load balancer.
   - A standby often does not talk to what its primary does, so the agent states which.
 - **The label is stated.** `--label` is required, as for `group add`.
   - Two groups with one label are almost always a mistake.
-- **The place is stated, as for `group order`.** Each copied box joins its original's row in every row of the copy.
-  - It goes before the first or after the last box of the group named.
-  - A group with no box in one of those rows is refused as `no-shared-layer`, and `allowed` lists the groups that have a box in every one.
-  - The group copied always does.
-- **A fact that cannot hold twice is refused, never left off.** An alignment to a box outside the group would put the box and its copy in one place.
-  - So would steps from such a box.
-  - Each is refused as `copy-conflict`, naming the box and the fact.
-  - Alignments and steps to boxes inside the group point to their copies.
-  - A lane or a column whose order would move the copy away from the place stated is refused the same way: that follows the owner's choice for alignments and steps.
+- **The place is stated, as for `group order`.** The copy goes before or after a group the agent names, in every row of the copy.
+- **A fact that cannot hold twice is refused, never left off.** An alignment or steps to a box outside the group would put the box and its copy in one place.
+  - A lane or a column that would move the copy away from the place stated is refused the same way, following the owner's choice for alignments and steps.
 - **Notes and walls are not copied.** They name what they are about, and the copy is not part of them until the agent says so.
+
+How the copy is built, how its ids are made and when it is refused is in [the model](../model.md#copying-a-group).
 
 ## Not chosen
 
