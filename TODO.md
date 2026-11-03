@@ -4,6 +4,69 @@ Small fixes and follow-ups with no milestone yet. An item moves to ROADMAP.md on
 
 ## ongoing
 
+### [P1][DISCUSSION] A write's title-blocked names no clear place
+
+- created: 2026-11-04
+- status: HALT
+- found: writing specs/checks.md from `src/check/` on 2026-11-04
+- next: the owner chooses whether a write lists `clear`, or the documents say only `check` does
+
+`title-blocked` lists as `clear` the places of a group's label that no line comes near, but only on `check`: a write leaves `clear` out, since finding each place lays the diagram out again. FEATURES.md, "Groups", the CHANGELOG and specs/decisions, "The agent states where a group's label sits" and "One entry page, help where it is used" say the refusal names them, and the last records an agent that took a place for each label from its `clear` fact.
+
+### [P1][DISCUSSION] A line along a row is not kept below a group's label
+
+- created: 2026-11-04
+- status: HALT
+- found: writing specs/routing.md from `src/layout/route.ts` on 2026-11-04
+- next: the owner chooses whether the router keeps such a line below, or the decision drops the rule
+
+specs/decisions, "Lines meet any side" says a line between two boxes of one row stays in the gutter below when one of its boxes lies under a group's label, and a comment in `route.ts` says so too. The keep-out spans the router reads hold band labels, walls and lane sides, but no group label.
+
+### [P2][DISCUSSION] An aligned box joins a column, and no row slides
+
+- created: 2026-11-04
+- status: HALT
+- found: writing specs/placement.md from `src/layout/` on 2026-11-04
+- next: the owner chooses which is right, and the other is changed
+
+FEATURES.md, "Alignment" and specs/decisions, "Layout computed again on every change" say an aligned box's row slides sideways as one block, and that rows that would follow each other are refused as `alignment-cycle`. The code joins the aligned box to its target's column instead, and has no `alignment-cycle` code.
+
+### [P2][DISCUSSION] The stability tests measure movement instead of limiting it
+
+- created: 2026-11-04
+- status: HALT
+- found: writing specs/placement.md from `test/layout/stability.ts` on 2026-11-04
+- next: the owner chooses whether AGENTS.md changes, or the tests assert a list again
+
+AGENTS.md, "Tests" says the stability tests assert that nothing outside a fixed list changed position, size or route. They assert that every other box keeps its row, its order, its group, its lane and its alignment, and they measure how far boxes move.
+
+### [P2][DISCUSSION] The rules of the target picture are measured but never reported
+
+- created: 2026-11-04
+- status: HALT
+- found: writing specs/checks.md from `src/check/taste.ts` on 2026-11-04
+- next: the owner chooses whether `check --all` reports them, or the code and the decision drop them
+
+specs/decisions, "A target picture with measured rules" says `grafical check --all` reports its eight rules. `src/check/taste.ts` still measures them, but no command calls it, and only its limit of two bends is used.
+
+### [P2][ISSUE] FEATURES.md names the wrong code for a mark file outside the folder
+
+- created: 2026-11-04
+- status: OPEN
+- found: writing specs/rendering.md from `src/cli/marks.ts` on 2026-11-04
+- next: change FEATURES.md, "Marks" to name `mark-file-outside`
+
+FEATURES.md, "Marks" says a path outside the diagram's folder is refused as `mark-file-unsafe`. The code refuses it as `mark-file-outside`.
+
+### [P2][DISCUSSION] FEATURES.md lists the guides as built and as not planned
+
+- created: 2026-11-04
+- status: HALT
+- found: reading FEATURES.md on 2026-11-04
+- next: the owner confirms the guides stay, and *Not planned* drops `grafical guide`
+
+FEATURES.md, "Guides" is built, and *Not planned* says `grafical guide` was replaced by the help (specs/decisions, "The help as the reference"). specs/decisions, "Help for the tool, guides for best practice" brought the guides back later.
+
 ### [P2][DISCUSSION] A box beside every box it connects to, in a row
 
 - created: 2026-10-15
