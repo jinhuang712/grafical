@@ -13,7 +13,9 @@ What each document holds is listed in [README.md](README.md). Each fact lives in
 | `PHILOSOPHY.md` | Only by the owner's deliberate decision |
 | `GOALS.md` | A target is met, missed or recalibrated. Only the owner changes the MVP bar |
 | `EXPERIMENTS.md` | A hypothesis, metric, experiment, harness rule or schedule changes |
-| `DESIGN.md` | A decision is made, reversed, or found to be still open |
+| `DESIGNS.md` | A commitment every design change must meet is added, changed or dropped |
+| `specs/decisions/` | A decision is made or reversed: a new file, numbered in order |
+| `specs/ARCHITECTURE.md` | A part is added, removed or moves to another folder |
 | `FEATURES.md` | A feature is added, changes status or is dropped, or a vocabulary list changes |
 | `ROADMAP.md` | A milestone starts, ends or changes scope |
 | `GLOSSARY.md` | A term is added, renamed, or two words compete for one thing |
@@ -24,11 +26,11 @@ What each document holds is listed in [README.md](README.md). Each fact lives in
 
 ## Reading and keeping the documents true
 
-A window that is new, or was compacted, reads the documents in this order: PROPOSAL.md, PHILOSOPHY.md, DESIGN.md (its principles and the decisions it cites), GOALS.md, FEATURES.md, ROADMAP.md, GLOSSARY.md. Then scan TODO.md.
+A window that is new, or was compacted, reads the documents in this order: PROPOSAL.md, PHILOSOPHY.md, DESIGNS.md, GOALS.md, FEATURES.md, ROADMAP.md, GLOSSARY.md, specs/ARCHITECTURE.md. A decision in specs/decisions is read when it is cited or when its area changes. Then scan TODO.md.
 
 - Read a document yourself, in full, before you change it, and read the document that owns a fact before you change that fact. Do not give a document to a subagent to read or write. A subagent may read the code.
 - A goal, a feature or a checkpoint has an ID that never changes (`T2: Speed`, `F3.6: How lines are drawn`, `CP10: The MVP bar, measured again`). A new one gets a new number. Code and documents cite one by its name, such as `GOALS.md, "Speed"`, and `test/docs/citations.test.ts` checks that the name exists. Write an ID with its name, never alone.
-- A choice that closes a fork gets its dated section in DESIGN.md at once. Something that cannot be done now goes into TODO.md at once, with a priority and a type.
+- A choice that closes a fork gets its file in specs/decisions at once. Something that cannot be done now goes into TODO.md at once, with a priority and a type.
 - When a change is done, update CHANGELOG.md and the feature's status in the same change, and delete the TODO item it handled.
 - When the documents and the code disagree, tell the owner and let them decide. Do not check the goals for a small change; check them when a checkpoint ends or a release is near.
 - Status marks go on a `Status:` line, never in a heading.
@@ -46,7 +48,7 @@ This repository is public. Names, hosts, topics, databases and architecture of r
 ## Environment
 
 - Node 24 or later, pnpm. The toolchain is in `package.json`.
-- macOS is the main development machine. CI runs on macOS and Linux, because output must match on both (DESIGN.md, "Output and determinism").
+- macOS is the main development machine. CI runs on macOS and Linux, because output must match on both (DESIGNS.md, "The same file gives the same picture on any machine").
 - The engine is in `src/`, with the `grafical` command at `src/cli/main.ts`. The benchmark harness is in `bench/`.
 
 ## Commands
@@ -58,7 +60,7 @@ This repository is public. Names, hosts, topics, databases and architecture of r
 | `pnpm lint` | Lint and format check with Biome | available |
 | `pnpm test` | Run vitest on every test but the fuzz test. Passes while no tests exist | available |
 | `pnpm fuzz` | Run the fuzz test (`test/fuzz/`). CI runs it after `pnpm test`, so the other tests report first | available |
-| `pnpm bench <baseline\|chain\|smoke\|stage1\|judge\|gallery\|geometry\|lines\|reflections\|speed\|diff\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` and `stage1` need `--approved`. `geometry` checks every picture of a round for mechanical defects (GOALS.md, "Mechanical defects"), `speed` times one operation and one command (GOALS.md, "Speed"), and `lines` measures a round's lines and how often the agent ran `grafical try` (DESIGN.md, "Records over prose"); all three cost nothing. `reflections` prints the report each agent writes after its chain, on how it drew and where grafical got in the way (EXPERIMENTS.md, "Harness"), also at no cost. `diff <ref>` lays out every saved draft, every fixture and fuzz seeds 1..N (`--seeds <n>`, default 2000) with the engine at `<ref>` and with the working tree, and prints key=value records of what changed (bends, crossings, size, defects); `--render <dir>` writes before and after PNGs. Quote its numbers in an engine commit message; it costs nothing | available |
+| `pnpm bench <baseline\|chain\|smoke\|stage1\|judge\|gallery\|geometry\|lines\|reflections\|speed\|diff\|summary>` | Run the benchmark harness (EXPERIMENTS.md). Real runs cost money: `smoke` and `stage1` need `--approved`. `geometry` checks every picture of a round for mechanical defects (GOALS.md, "Mechanical defects"), `speed` times one operation and one command (GOALS.md, "Speed"), and `lines` measures a round's lines and how often the agent ran `grafical try` (specs/decisions, "Records over prose"); all three cost nothing. `reflections` prints the report each agent writes after its chain, on how it drew and where grafical got in the way (EXPERIMENTS.md, "Harness"), also at no cost. `diff <ref>` lays out every saved draft, every fixture and fuzz seeds 1..N (`--seeds <n>`, default 2000) with the engine at `<ref>` and with the working tree, and prints key=value records of what changed (bends, crossings, size, defects); `--render <dir>` writes before and after PNGs. Quote its numbers in an engine commit message; it costs nothing | available |
 
 A command added to `package.json` gets a row here in the same change.
 
@@ -83,17 +85,17 @@ When a picture looks bad, first draw the better picture with grafical's own comm
 
 - The diagram file is compared byte for byte: the same operations give the same file.
 - SVG output is compared byte for byte, as text snapshots.
-- PNG output is compared as decoded pixels, not as compressed bytes. DESIGN.md, "Output and determinism" promises the same pixels, not the same PNG bytes.
-- Stability tests apply one operation and assert that nothing outside the list in DESIGN.md, "Layout computed again on every change" changed position, size or route.
+- PNG output is compared as decoded pixels, not as compressed bytes. DESIGNS.md, "The same file gives the same picture on any machine" promises the same pixels, not the same PNG bytes.
+- Stability tests apply one operation and assert that nothing outside the list in specs/decisions, "Layout computed again on every change" changed position, size or route.
 - Fixtures live in `test/fixtures/`. Public benchmark briefs live in `bench/briefs/`.
-- The fuzz test (`test/fuzz/`) lays out random diagrams from fixed seeds and asserts that none has an engine-owned defect (DESIGN.md, "Defects owned by who can fix them"). CI runs 100 seeds, and every seed past them that once failed. Run more with `FUZZ_SEEDS=5000 pnpm fuzz`. A failing seed becomes a fixture before it is fixed.
-- The refusal test (`test/check/refusals.test.ts`) refuses random changes to the fixtures and to fuzz diagrams, and asserts that every refusal they produce has its code's description and names in `next` only commands that exist, in the help's order (DESIGN.md, "Refusals say what happened and which commands can change it"). CI runs 12 seeds. Run more with `REFUSAL_SEEDS=150 pnpm test test/check/refusals.test.ts`. A new code needs its sentence and its commands in `src/cli/problems.ts`, which `test/cli/problems.test.ts` holds.
+- The fuzz test (`test/fuzz/`) lays out random diagrams from fixed seeds and asserts that none has an engine-owned defect (specs/decisions, "Defects owned by who can fix them"). CI runs 100 seeds, and every seed past them that once failed. Run more with `FUZZ_SEEDS=5000 pnpm fuzz`. A failing seed becomes a fixture before it is fixed.
+- The refusal test (`test/check/refusals.test.ts`) refuses random changes to the fixtures and to fuzz diagrams, and asserts that every refusal they produce has its code's description and names in `next` only commands that exist, in the help's order (specs/decisions, "Refusals say what happened and which commands can change it"). CI runs 12 seeds. Run more with `REFUSAL_SEEDS=150 pnpm test test/check/refusals.test.ts`. A new code needs its sentence and its commands in `src/cli/problems.ts`, which `test/cli/problems.test.ts` holds.
 - A change to layout or routing must keep the fuzz test, the stability tests and the replay of a real agent run (`test/layout/haiku.test.ts`) passing.
 - `node test/debug/check-fixtures.ts <dir>` lays out, checks and renders every fixture with the real engine, for looking at the pictures.
 
 ## Decisions and scope
 
-- A new design decision gets its own dated section in DESIGN.md, titled by its choice, with the options it rejected.
+- A new design decision gets its own numbered file in specs/decisions, with the date, the problem, the choice, the options it rejected and what it costs.
 - A change that conflicts with PHILOSOPHY.md stops, and the agent asks the owner.
 - When a choice affects scope, the file format or user-visible behavior, offer the options and ask. Do not guess.
 

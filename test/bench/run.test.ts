@@ -292,7 +292,7 @@ describe("defect split from grafical check --all", () => {
       engineDefects: 0,
       agentDefects: 0,
     });
-    // As blocks (DESIGN.md, "Refusals say what happened and which commands can change it"); a warning is no defect.
+    // As blocks (specs/decisions, "Refusals say what happened and which commands can change it"); a warning is no defect.
     const blocks = JSON.stringify({
       ok: false,
       changed: [],

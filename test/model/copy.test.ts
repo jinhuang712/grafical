@@ -1,4 +1,4 @@
-// Copying a group (FEATURES.md, "Copying a group"; DESIGN.md, "A group copy holds its inside").
+// Copying a group (FEATURES.md, "Copying a group"; specs/decisions, "A group copy holds its inside").
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";

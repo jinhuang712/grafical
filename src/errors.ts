@@ -1,7 +1,7 @@
-// What grafical reports back to the caller (DESIGN.md, "Checking and failure", "Defects owned by who can fix them", "Interfaces").
+// What grafical reports back to the caller (DESIGNS.md, "Every write is checked, and each defect has an owner", "The command line comes first, and the help is the agent's only reference", specs/decisions, "Defects owned by who can fix them").
 
 /**
- * What is there, as discrete values (DESIGN.md, "Records over prose", "Refusals say what happened and which commands
+ * What is there, as discrete values (specs/decisions, "Records over prose""Refusals say what happened and which commands
  * can change it"): never a sentence, and never a command to run. The code says what happened; these say what is
  * there. They print in FACT_ORDER.
  */
@@ -136,7 +136,7 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
 
 /**
  * Every code an operation error may carry. A code names the kind of problem, so that the agent and the harness
- * can tell one from another; what to change is in the error's own facts, never in a page to look up (DESIGN.md,
+ * can tell one from another; what to change is in the error's own facts, never in a page to look up (specs/decisions,
  * "One entry page, help where it is used").
  */
 export const ERROR_CODES = [
@@ -227,7 +227,7 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 
 /**
  * The codes of a command line grafical cannot read: commander's refusals, in kebab case, and grafical's own. Each
- * exits 2 (DESIGN.md, "Refusals say what happened and which commands can change it").
+ * exits 2 (specs/decisions, "Refusals say what happened and which commands can change it").
  */
 export const USAGE_CODES = [
   "bad-port",
@@ -246,10 +246,10 @@ export const USAGE_CODES = [
 export type UsageCode = (typeof USAGE_CODES)[number];
 
 /**
- * The codes of a warning: written, exit 0, and drawn poorly (DESIGN.md, "Refusals say what happened and which
+ * The codes of a warning: written, exit 0, and drawn poorly (specs/decisions, "Refusals say what happened and which
  * commands can change it", "Every write prints every warning"), in the order they print: a line with more than two
- * bends (DESIGN.md, "The dirty work has edges"), the places the counts passing, across, tight and crowded count
- * (DESIGN.md, "Composition counts"), a box no line reaches, a line alike from every box of a group to one end (DESIGN.md,
+ * bends (specs/decisions, "The dirty work has edges"), the places the counts passing, across, tight and crowded count
+ * (specs/decisions, "Composition counts"), a box no line reaches, a line alike from every box of a group to one end (specs/decisions,
  * "A line from every box of a group is a warning"), and two lines that cross.
  */
 export const WARNING_CODES = [
@@ -266,7 +266,7 @@ export type WarningCode = (typeof WARNING_CODES)[number];
 
 /**
  * Something drawn poorly, which is written: its code and what is there. It has no source: the outcome line names
- * what the write changed (DESIGN.md, "Every write prints every warning").
+ * what the write changed (specs/decisions, "Every write prints every warning").
  */
 export interface Warning {
   code: WarningCode;
@@ -286,7 +286,7 @@ export interface OpError {
   facts?: Facts;
   /**
    * Found only once the whole batch is applied, in the diagram it makes, so that no one operation's index names
-   * it; the write path finds the operation after which it appears (DESIGN.md, "Refusals say what happened and which
+   * it; the write path finds the operation after which it appears (specs/decisions, "Refusals say what happened and which
    * commands can change it").
    */
   whole?: true;
@@ -320,7 +320,7 @@ export const DEFECT_CODES = [
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
 /**
- * Who can fix a defect (DESIGN.md, "Defects owned by who can fix them"). The agent can shorten a label or change a
+ * Who can fix a defect (specs/decisions, "Defects owned by who can fix them"). The agent can shorten a label or change a
  * character. Only the engine can move a line or a box, so it must avoid the
  * rest itself.
  */
@@ -330,32 +330,32 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   overflow: "agent",
   "missing-glyph": "agent",
   "mark-covers": "agent",
-  // The agent's boxes lead the line through the wall; it allows the line or moves one (DESIGN.md, "Walls as space").
+  // The agent's boxes lead the line through the wall; it allows the line or moves one (specs/decisions, "Walls as space").
   "wall-crossed": "agent",
   "node-overlap": "engine",
   "edge-through-node": "engine",
   "label-collision": "engine",
-  // A step's badge rides its line, which only the engine places (DESIGN.md, "Step badges ride the line").
+  // A step's badge rides its line, which only the engine places (specs/decisions, "Step badges ride the line").
   "step-collision": "engine",
   "edge-overlap": "engine",
   "text-crossing": "engine",
   "group-intruder": "engine",
   "lane-stray": "engine",
-  // One x would have served both ends of the line (DESIGN.md, "Who chose is punished").
+  // One x would have served both ends of the line (specs/decisions, "Who chose is punished").
   "needless-bend": "engine",
-  // The agent placed the box by steps beside everything it connects to (DESIGN.md, "Who chose is punished").
+  // The agent placed the box by steps beside everything it connects to (specs/decisions, "Who chose is punished").
   "box-aside": "agent",
-  // A line runs where a group's label sits, and no line moves for it: the agent states a place (DESIGN.md, "The dirty work has edges").
+  // A line runs where a group's label sits, and no line moves for it: the agent states a place (specs/decisions, "The dirty work has edges").
   "title-blocked": "agent",
   // No gutter of its path holds a line's label clear, and no line moves for it: the agent shortens
-  // or drops the text, or changes rows (DESIGN.md, "The dirty work has edges").
+  // or drops the text, or changes rows (specs/decisions, "The dirty work has edges").
   "label-blocked": "agent",
 };
 
 /**
  * A mechanical flaw in the laid-out picture. A write that leaves an agent-owned
  * defect fails. An engine-owned one is an engine bug: the write goes ahead, and
- * only `grafical check --all` reports it (DESIGN.md, "Defects owned by who can fix them").
+ * only `grafical check --all` reports it (specs/decisions, "Defects owned by who can fix them").
  */
 export interface Defect {
   code: DefectCode;

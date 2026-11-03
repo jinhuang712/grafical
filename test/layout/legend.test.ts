@@ -1,4 +1,4 @@
-// The legend (DESIGN.md, "Looks", "Lines meet any side", "A legend for widths and marks"): what it lists and how it wraps.
+// The legend (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "Lines meet any side", "A legend for widths and marks"): what it lists and how it wraps.
 
 import { describe, expect, it } from "vitest";
 import { layout } from "../../src/layout/index.ts";
@@ -26,7 +26,7 @@ function legendLines(s: Scene) {
   return ys.map((y) => items.filter((x) => x.sample.y === y));
 }
 
-describe('the legend (DESIGN.md, "A legend for widths and marks")', () => {
+describe('the legend (specs/decisions, "A legend for widths and marks")', () => {
   it("stays on one line, level with the title, when it fits beside it", () => {
     const s = layout(tinyWith(short), m);
     const lines = legendLines(s);

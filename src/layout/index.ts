@@ -1,4 +1,4 @@
-// Layout entry point (DESIGN.md, "Rows unseen, groups as systems", "Layout computed again on every change", "Our own gap router", "A target picture with measured rules"). The whole diagram is laid
+// Layout entry point (specs/decisions, "Rows unseen, groups as systems", "Layout computed again on every change", "Our own gap router", "A target picture with measured rules"). The whole diagram is laid
 // out again from its facts on every call, in a fixed order:
 // 1. across: every node on a column of one grid shared by all rows, columns chosen
 //    so that edges run straight, then spaced for boxes, groups and labels
@@ -7,9 +7,9 @@
 // 3. down: the title, subtitle and legend, then rows and gutters top to bottom,
 //    each gutter taking the smallest height step its rows fit in, plus the room
 //    group boxes need below their last row and above their first, and the room
-//    of lane headers and borders (DESIGN.md, "Swimlanes run one way");
+//    of lane headers and borders (specs/decisions, "Swimlanes run one way");
 // 4. assembly of routes, labels, group boxes, text and the footnote.
-// Rows are not drawn (DESIGN.md, "Rows unseen, groups as systems"): their bands and labels stay in the scene for the
+// Rows are not drawn (specs/decisions, "Rows unseen, groups as systems"): their bands and labels stay in the scene for the
 // checker and for debugging.
 
 import { segmentCrossesRect, segmentsOf } from "../check/geometry.ts";
@@ -102,7 +102,7 @@ export function layoutFramed(diagram: Diagram, m: Measurer): { scene: Scene; cen
 }
 
 /**
- * Alignments that cannot hold (DESIGN.md, "Layout computed again on every change"): an aligned node must share its target's
+ * Alignments that cannot hold (specs/decisions, "Layout computed again on every change"): an aligned node must share its target's
  * column, and the order of a layer, another alignment or a group can put that
  * column on the other side of its neighbours. Also unknown targets, targets in
  * the same layer and a node aligned with itself. The command line turns each into
@@ -113,7 +113,7 @@ export function validateAlignments(diagram: Diagram): AlignmentProblem[] {
 }
 
 /**
- * Groups that cannot be drawn as one box (DESIGN.md, "Rows unseen, groups as systems"): a group whose members are split
+ * Groups that cannot be drawn as one box (specs/decisions, "Rows unseen, groups as systems"): a group whose members are split
  * by another node in a layer, and a group that another group or node would have
  * to lie both left and right of. The command line turns each into an operation
  * error.
@@ -124,7 +124,7 @@ export function validateGroups(diagram: Diagram): GroupProblem[] {
 
 /**
  * Boxes that lie wholly beside the boxes they connect to, which their lines must then
- * reach across (DESIGN.md, "Who chose is punished"): a box with lines to two or more boxes whose centres lie at least
+ * reach across (specs/decisions, "Who chose is punished"): a box with lines to two or more boxes whose centres lie at least
  * its own width apart, left of the leftmost centre or right of the rightmost.
  */
 export function asideBoxes(scene: Scene): { box: string; users: string[] }[] {
@@ -158,7 +158,7 @@ const cmpIds = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 /**
  * How bad the routes of a scene are, compared in order: crossings plus edges with
- * more than two bends (DESIGN.md, "A target picture with measured rules" rule 2) plus boxes aside of what they connect to (DESIGN.md, "Who chose is punished"), then
+ * more than two bends (specs/decisions, "A target picture with measured rules" rule 2) plus boxes aside of what they connect to (specs/decisions, "Who chose is punished"), then
  * crossings, then bends, then length.
  */
 function routeCost(scene: Scene): number[] {
@@ -179,14 +179,14 @@ function routeCost(scene: Scene): number[] {
   return [s.crossings + over + asideBoxes(scene).length, s.crossings, s.bends, s.length];
 }
 
-/** A diagram's route cost (see routeCost), laid out without text: for comparing arrangements (DESIGN.md, "The engine picks a new box's slot", "Records over prose"). */
+/** A diagram's route cost (see routeCost), laid out without text: for comparing arrangements (specs/decisions, "The engine picks a new box's slot", "Records over prose"). */
 export function arrangementCost(diagram: Diagram, m: Measurer): number[] {
   return routeCost(compute(diagram, m, false).scene);
 }
 
-/** What makes a diagram's lines hard to read (DESIGN.md, "A target picture with measured rules" rules 2 and 3): pairs that cross, and lines over two bends. */
+/** What makes a diagram's lines hard to read (specs/decisions, "A target picture with measured rules" rules 2 and 3): pairs that cross, and lines over two bends. */
 export interface LineTrouble {
-  /** Every point where two routes cross, as the route cost counts them (DESIGN.md, "The engine picks a new box's slot"). */
+  /** Every point where two routes cross, as the route cost counts them (specs/decisions, "The engine picks a new box's slot"). */
   points: number;
   /** Pairs of edge ids whose routes cross, each pair once, in id order. */
   crossings: [string, string][];
@@ -248,7 +248,7 @@ export function bendsOf(points: Point[]): number {
   return bends;
 }
 
-/** The pairs of lines that cross, and the lines that bend more than twice (DESIGN.md, "Records over prose"). */
+/** The pairs of lines that cross, and the lines that bend more than twice (specs/decisions, "Records over prose"). */
 export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
   const { scene } = compute(diagram, m, false);
   const { points, pairs } = crossingsOf(scene.edges);
@@ -259,7 +259,7 @@ export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
   return { points, crossings: pairs, bent };
 }
 
-/** The edges whose routes cross another route, or bend more than twice (DESIGN.md, "A target picture with measured rules" rules 2 and 3). */
+/** The edges whose routes cross another route, or bend more than twice (specs/decisions, "A target picture with measured rules" rules 2 and 3). */
 export function troubledEdges(diagram: Diagram, m: Measurer): Set<string> {
   const t = lineTrouble(diagram, m);
   return new Set([...t.crossings.flat(), ...t.bent.map((b) => b.edge)]);
@@ -312,27 +312,27 @@ export function gutterHeight(rows: number, sp: Spacing): number {
   return h;
 }
 
-/** A legend entry, or a style or width the picture draws with no entry (DESIGN.md, "The legend says only what the agent named"). */
+/** A legend entry, or a style or width the picture draws with no entry (specs/decisions, "The legend says only what the agent named"). */
 export interface LegendEntry {
   /** A line's entry: the style of its sample. */
   style?: LineStyleName;
   /** The agent's words; none for a style or width it has not named, which the legend leaves out. */
   text?: string;
-  /** A line width's entry: the weight as the legend names it, and its sample's width (DESIGN.md, "A legend for widths and marks"). */
+  /** A line width's entry: the weight as the legend names it, and its sample's width (specs/decisions, "A legend for widths and marks"). */
   weight?: string;
   width?: number;
-  /** A mark's entry: the mark, at the small size (DESIGN.md, "A legend for widths and marks"). */
+  /** A mark's entry: the mark, at the small size (specs/decisions, "A legend for widths and marks"). */
   mark?: Mark;
 }
 type LegendItem = LegendEntry & { text: string };
 
-/** A mark at the small size, as the legend draws it (DESIGN.md, "A legend for widths and marks"). */
+/** A mark at the small size, as the legend draws it (specs/decisions, "A legend for widths and marks"). */
 function smallMark(mk: Mark): Mark {
   return typeof mk === "string" ? { text: mk, size: "s" } : { ...mk, size: "s" };
 }
 
 /**
- * The legend's entries and what it leaves unnamed (DESIGN.md, "A legend for widths and marks", "The legend says only what the
+ * The legend's entries and what it leaves unnamed (specs/decisions, "A legend for widths and marks""The legend says only what the
  * agent named"): each line style the diagram uses, then each line width other than thin, from the thinnest,
  * each with the agent's words or none; then each mark the diagram names, drawn like the
  * first one found: rows top to bottom, nodes in order, slots in order.
@@ -374,7 +374,7 @@ export function legendEntries(d: Diagram, P: Paint): LegendEntry[] {
   return [...out, ...weighted, ...marks];
 }
 
-/** Items, by width, in lines no wider than `room`. A line holds at least one item (DESIGN.md, "A legend for widths and marks"). */
+/** Items, by width, in lines no wider than `room`. A line holds at least one item (specs/decisions, "A legend for widths and marks"). */
 function wrapItems(
   widths: number[],
   room: number,
@@ -406,15 +406,15 @@ function segmentHits(a: Point, b: Point, r: Rect): boolean {
 
 /**
  * A label stays where the router put it while it still lies beside its line, clear. A
- * route cut at a container (DESIGN.md, "Lines that end at containers") can lose the part the label sat on, or leave
+ * route cut at a container (specs/decisions, "Lines that end at containers") can lose the part the label sat on, or leave
  * the label across the container's border: the label then moves beside a part
  * that remains, the longest first, above or below it, or right or left of it,
  * at its middle or one of its ends, stepping away from it while other lines
  * crowd it: the first place `free` accepts, clear of the border. `drawn` gives
- * the text in a place, which a step's badge may push out of it (DESIGN.md, "Step
+ * the text in a place, which a step's badge may push out of it (specs/decisions, "Step
  * badges ride the line"): the text too must be clear. Failing every place, no line
  * moves for the label: it takes the first place `free` accepts across the border,
- * or else the first place, and is not clear (DESIGN.md, "The dirty work has edges").
+ * or else the first place, and is not clear (specs/decisions, "The dirty work has edges").
  */
 function besideRoute(
   points: Point[],
@@ -495,15 +495,15 @@ const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
 });
 
 function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene; centre: number } {
-  // The diagram's theme decides the type sizes here and the paint in the scene (DESIGN.md, "Themes and stylesheets").
+  // The diagram's theme decides the type sizes here and the paint in the scene (specs/decisions, "Themes and stylesheets").
   const theme = themeOf(facts);
   const T = theme.type;
-  // Boxes placed by steps sit in rows from here on (DESIGN.md, "Steps from another box").
+  // Boxes placed by steps sit in rows from here on (specs/decisions, "Steps from another box").
   const sized = withSizes(placeSteps(facts).d, m);
-  // Column lanes keep each row in lane order (DESIGN.md, "Swimlanes run one way"); a file edited by hand may not.
+  // Column lanes keep each row in lane order (specs/decisions, "Swimlanes run one way"); a file edited by hand may not.
   orderByLanes(sized);
   orderByColumns(sized);
-  // Container ends route to a stand-in node and are cut at the container (DESIGN.md, "Lines that end at containers").
+  // Container ends route to a stand-in node and are cut at the container (specs/decisions, "Lines that end at containers").
   const ends = planEnds(sized);
   const d: Diagram = { ...sized, edges: ends.edges };
   const sp = SPACING[d.density];
@@ -521,7 +521,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const text = e.label === "" ? undefined : e.label;
     if (text === undefined && e.step === undefined) continue;
     // A step's badge rides the line under one end of its label's text, and the text stands
-    // off it (DESIGN.md, "Step badges ride the line"): the router finds room for both.
+    // off it (specs/decisions, "Step badges ride the line"): the router finds room for both.
     const step = e.step !== undefined;
     const size = (w: number, h: number) =>
       !step
@@ -561,7 +561,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     (id) => labelSizes.get(id)?.w,
     (id) => labelSizes.get(id)?.h ?? labelH,
   );
-  // Edges that meet a column lane beside it (DESIGN.md, "Swimlanes run one way"), and the node at their other end.
+  // Edges that meet a column lane beside it (specs/decisions, "Swimlanes run one way"), and the node at their other end.
   const laneEnds = new Map<string, { lane: string; node: string }>();
   if (laneRun(d) === "columns") {
     for (const e of d.edges) {
@@ -573,7 +573,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       }
     }
   }
-  // Walls up and down (DESIGN.md, "Walls as space"): each label wraps to a few words, and the wall is as wide as
+  // Walls up and down (specs/decisions, "Walls as space"): each label wraps to a few words, and the wall is as wide as
   // its widest line, or its least space.
   const wallStyle = T["layer-label"];
   const wallLines = new Map(
@@ -588,7 +588,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       ceil4(Math.max(0, ...(wallLines.get(id) ?? []).map((l) => l.width)) + 2 * WALL.labelClear),
     );
   // Two numbered lines between the same neighbours need room for both badges side by
-  // side, each clear of its line's arrowheads (DESIGN.md, "Step badges ride the line").
+  // side, each clear of its line's arrowheads (specs/decisions, "Step badges ride the line").
   const numbered = new Map<string, number>();
   const factOf = new Map(d.edges.map((e) => [e.id, e]));
   for (const [id, slot] of sideways) {
@@ -635,7 +635,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     return [{ wall: w, x0, x1, top: split.top, bottom: split.bottom }];
   });
   const refined = refineEnds(sized, ends, nodes);
-  // Bars (DESIGN.md, "A row with no box as one bar"): a row with no box that a line ends at, or that has a look,
+  // Bars (specs/decisions, "A row with no box as one bar"): a row with no box that a line ends at, or that has a look,
   // is one bar high, and each line meets it straight past its other end. The router knows only boxes, so a
   // narrow stand-in sits in the bar there, shared by lines whose other ends lie close.
   const barStands = new Map<number, PNode[]>();
@@ -681,7 +681,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const routeNodes = new Map(nodes);
   for (const stands of barStands.values()) for (const n of stands) routeNodes.set(n.id, n);
 
-  // Bands (DESIGN.md, "Lines that end at containers", "A row with a look is drawn"): the layers an edge ends at or
+  // Bands (specs/decisions, "Lines that end at containers", "A row with a look is drawn"): the layers an edge ends at or
   // that have a look, drawn across the content. Each band's label sits in its head above the row, at the content's
   // left edge.
   let contentLeft = Number.POSITIVE_INFINITY;
@@ -703,7 +703,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   layers.forEach((l, i) => {
     if (!ends.bands.has(l.id) || !Number.isFinite(contentLeft)) return;
     const stands = barStands.get(i);
-    // A row with no label draws no name (DESIGN.md, "A row with a look is drawn"), and its band has no head.
+    // A row with no label draws no name (specs/decisions, "A row with a look is drawn"), and its band has no head.
     if (l.label === undefined) {
       const labelX = contentLeft - BAND.padX + BAND.labelInset;
       bandRows.set(i, { id: l.id, labelX, labelW: 0, bar: stands !== undefined });
@@ -735,9 +735,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // Where no vertical line may pass: a band's label, above its row, and the label of an
   // edge that runs sideways, in the gap it crosses. A group's label moves no line: a line
   // across it refuses the write; nor does a bar's, seated once the lines are routed
-  // (DESIGN.md, "The dirty work has edges").
+  // (specs/decisions, "The dirty work has edges").
   const forbidTop = new Map<number, [number, number][]>();
-  // No line runs down through a wall up and down, in the rows it spans (DESIGN.md, "Walls as space").
+  // No line runs down through a wall up and down, in the rows it spans (specs/decisions, "Walls as space").
   for (const b of besideWalls) {
     for (let r = b.top; r <= b.bottom; r++) {
       forbidTop.set(r, [...(forbidTop.get(r) ?? []), [b.x0, b.x1]]);
@@ -760,7 +760,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       forbidTop.set(l.index, list);
     }
   }
-  // Walls that run across (DESIGN.md, "Walls as space"): each takes its own space in the gutter just below the
+  // Walls that run across (specs/decisions, "Walls as space"): each takes its own space in the gutter just below the
   // lowest row of its upper side, after the gutter's tracks.
   const acrossWalls = (d.walls ?? []).flatMap((w) => {
     const way = wallRun(d, w);
@@ -840,7 +840,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // A bar's label sits in it, at its left, in the first stretch that no line meets: 16 px clear of
   // the stand-ins of the lines that end at it, and of each line that passes it, where the router ran
   // it. Failing that, left of the content and of those lines, and the bar reaches it. No line moves
-  // for it (DESIGN.md, "A row with no box as one bar", "The dirty work has edges").
+  // for it (specs/decisions, "A row with no box as one bar", "The dirty work has edges").
   for (const [i, b] of bandRows) {
     if (!b.bar || b.label === undefined) continue;
     const taken: [number, number][] = (barStands.get(i) ?? []).map((s) => [s.x, s.x + s.w]);
@@ -905,7 +905,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (Number.isFinite(routing.minX)) see(routing.minX - 16);
   if (Number.isFinite(routing.maxX)) see(routing.maxX + 16);
 
-  // Lanes (DESIGN.md, "Swimlanes run one way"). Row lanes share one header column, left of everything the rows
+  // Lanes (specs/decisions, "Swimlanes run one way"). Row lanes share one header column, left of everything the rows
   // hold, lines included. Column lanes have a header on top, as wide as the lane.
   const laneStyle = T["lane-label"];
   const laneLh = lineHeight("lane-label", m, T);
@@ -965,11 +965,11 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     ? placeLine("title", d.title, sp.margin, sp.margin, m, T)
     : empty("title", sp.margin, sp.margin);
   const legendStyle = T.legend;
-  // The legend draws only what the agent named (DESIGN.md, "The legend says only what the agent named").
+  // The legend draws only what the agent named (specs/decisions, "The legend says only what the agent named").
   const items = withText
     ? legendEntries(d, theme.paint).filter((it): it is LegendItem => it.text !== undefined)
     : [];
-  // A line's sample is a short line; a mark's is the mark (DESIGN.md, "A legend for widths and marks").
+  // A line's sample is a short line; a mark's is the mark (specs/decisions, "A legend for widths and marks").
   const sampleW = items.map((it) =>
     it.mark === undefined ? FRAME.legendSample : markWidth(it.mark, m),
   );
@@ -977,7 +977,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     (it, i) => (sampleW[i] ?? 0) + FRAME.legendLabelGap + m.measure(it.text, legendStyle).width,
   );
   const textW = Math.max(2 * half, FRAME.minTextWidth);
-  // A legend wider than the room right of the title wraps into more lines (DESIGN.md, "A legend for widths and marks").
+  // A legend wider than the room right of the title wraps into more lines (specs/decisions, "A legend for widths and marks").
   const legendRows = wrapItems(
     itemW,
     Math.max(0, ...itemW, textW - title.bbox.w - FRAME.legendGap),
@@ -1002,7 +1002,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const centre = width / 2 - shift;
 
   // The legend's first line is level with the title, and each further line starts
-  // at the same left edge below it (DESIGN.md, "A legend for widths and marks").
+  // at the same left edge below it (specs/decisions, "A legend for widths and marks").
   const legend: SceneLegendItem[] = [];
   const lh = lineBox("legend", m, T);
   // A line of the legend is as high as its text, or as a mark when it lists one.
@@ -1044,10 +1044,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // target, where no run, label or box of the gutter comes near the group; it
   // then adds only what the tracks do not already give it.
   // A box inside a box that starts in the same row has its head below the outer
-  // one's, and one that ends in the same row its padding above it (DESIGN.md, "Every layered diagram type").
+  // one's, and one that ends in the same row its padding above it (specs/decisions, "Every layered diagram type").
   // A label in the foot takes the head's height there, and leaves a padding's at the top; a
   // label outside the box takes a head's height outside its side, and leaves a padding's
-  // inside (DESIGN.md, "The agent states where a group's label sits").
+  // inside (specs/decisions, "The agent states where a group's label sits").
   const outside = (g: (typeof groups)[number], side: "top" | "bottom") =>
     g.titleAt === `outside-${side}` ? GROUP.head : 0;
   const inHead = (g: (typeof groups)[number]) =>
@@ -1135,7 +1135,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       return;
     }
     if (walls > 0) {
-      // Nothing is placed in a wall: the heads below it take their full room (DESIGN.md, "Walls as space").
+      // Nothing is placed in a wall: the heads below it take their full room (specs/decisions, "Walls as space").
       y += pad + tracks;
       wallTops.set(i, y);
       y += walls * WALL.space + headRoom(i, 0);
@@ -1147,9 +1147,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (colLanes.length > 0 || laneAt(layers.length - 1) !== undefined) y += LANE.pad;
   const lanesBottom = y;
   let bottom = y;
-  // Footnotes (DESIGN.md, "Notes as callouts or footnotes") are listed below the content, above the footnote of DESIGN.md, "Curation stays with the agent".
+  // Footnotes (specs/decisions, "Notes as callouts or footnotes") are listed below the content, above the footnote of specs/decisions, "Curation stays with the agent".
   const listTop = ceil4(y + FRAME.noteGap);
-  // A note is a footnote where the agent says so (DESIGN.md, "The dirty work has edges").
+  // A note is a footnote where the agent says so (specs/decisions, "The dirty work has edges").
   const footnotes = new Set((d.notes ?? []).filter((x) => x.footnote === true).map((x) => x.on));
   const listH = withText ? footnotesHeight(d, footnotes, textW, m, T) : 0;
   if (listH > 0) {
@@ -1202,7 +1202,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
    * Where a label the agent did not place starts: the leftmost seat in its group's head, every
    * 4 px and the rightmost exactly, that no line and no line's label comes nearer than the
    * engine keeps its lines. No line or box moves for it: where no seat is clear, it sits at
-   * the left, and the write is refused as title-blocked (DESIGN.md, "The dirty work has edges").
+   * the left, and the write is refused as title-blocked (specs/decisions, "The dirty work has edges").
    */
   const seat = (g: (typeof groups)[number], ly: number): number => {
     const first = centre + g.x0 + GROUP.labelInset;
@@ -1330,7 +1330,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       const marks = markRects(n.node, rect, m);
       const texts: PlacedText[] = [];
       const inset = leftInset(n.node, m);
-      // A dot's label stays in the file and in show, but is not drawn (DESIGN.md, "Every layered diagram type").
+      // A dot's label stays in the file and in show, but is not drawn (specs/decisions, "Every layered diagram type").
       if (withText && !isDot(n.node.kind)) {
         const { label: lines, sub } = nodeLines(
           n.node.kind,
@@ -1467,7 +1467,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     routes.set(e.id, points);
   }
 
-  // Which ends of a line meet a group, a row or a lane it ends at (DESIGN.md, "Step badges ride the line").
+  // Which ends of a line meet a group, a row or a lane it ends at (specs/decisions, "Step badges ride the line").
   const insideOf = (id: string) => {
     const plan = ends.ends.get(id);
     return { start: plan?.from !== undefined, end: plan?.to !== undefined };
@@ -1494,7 +1494,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (width !== undefined && width !== theme.paint.edge.strokeWidth) edge.width = width;
     const text = e.label === "" ? undefined : e.label;
     if (a.label !== undefined && (text !== undefined || e.step !== undefined) && withText) {
-      // The text takes the slot, or stands off the step's badge in it (DESIGN.md, "Step badges ride the line").
+      // The text takes the slot, or stands off the step's badge in it (specs/decisions, "Step badges ride the line").
       const ink = labelMetrics.ascent + labelMetrics.descent;
       const lines =
         text !== undefined && a.label.lines > 1 ? m.wrap(text, labelStyle, a.label.maxWidth) : [];
@@ -1538,7 +1538,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     sceneEdges.push(edge);
   }
 
-  // Walls (DESIGN.md, "Walls as space"): each as long as the boxes of its sides. A labelled one draws a dashed
+  // Walls (specs/decisions, "Walls as space"): each as long as the boxes of its sides. A labelled one draws a dashed
   // line through its middle, and its label above the line at the first place along
   // it that no crossing line comes near.
   const sceneWalls: SceneWall[] = [];
@@ -1589,7 +1589,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
           return x + w <= end ? x : undefined;
         };
         // Along the wall, and nowhere else: where no place is clear, the label sits at the
-        // start, and the write is refused (DESIGN.md, "The dirty work has edges").
+        // start, and the write is refused (specs/decisions, "The dirty work has edges").
         const placed = free(x0 + WALL.reach, x1 - WALL.reach);
         if (placed === undefined) out.blocked = true;
         out.label = placeLine("layer-label", wall.label, placed ?? x0 + WALL.reach, top, m, T);
@@ -1632,7 +1632,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         );
       };
       // Down the wall from its top, and nowhere else: where no place is clear, the label sits
-      // at the top, and the write is refused (DESIGN.md, "The dirty work has edges").
+      // at the top, and the write is refused (specs/decisions, "The dirty work has edges").
       const tops: number[] = [];
       for (let t = y0; t + h <= y1; t += 4) tops.push(t);
       const placed = tops.find(clear);
@@ -1666,7 +1666,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (gaps.length > 0) wl.line.gaps = gaps;
   }
 
-  // A badge its label's slot left touching something slides along its line (DESIGN.md, "Step badges ride the line").
+  // A badge its label's slot left touching something slides along its line (specs/decisions, "Step badges ride the line").
   if (withText) {
     settleBadges(sceneEdges, {
       solid: [
@@ -1687,7 +1687,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     });
   }
 
-  // Notes (DESIGN.md, "Notes as callouts or footnotes"): a card beside its target, or a footnote where the agent says so.
+  // Notes (specs/decisions, "Notes as callouts or footnotes"): a card beside its target, or a footnote where the agent says so.
   const placedNotes = withText
     ? placeNotes(
         d,
@@ -1762,7 +1762,7 @@ function roundBadge(b: SceneBadge): SceneBadge {
   return { x: round2(b.x), y: round2(b.y), r: b.r, label: roundText(b.label) };
 }
 
-/** Every coordinate in the scene, rounded to 2 decimals (DESIGN.md, "Output and determinism"). */
+/** Every coordinate in the scene, rounded to 2 decimals (DESIGNS.md, "The same file gives the same picture on any machine"). */
 function roundScene(s: Scene): Scene {
   const out: Scene = {
     width: round2(s.width),

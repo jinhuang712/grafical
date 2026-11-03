@@ -51,7 +51,7 @@ function page(c: Command): string {
   return out;
 }
 
-describe('help pages (DESIGN.md, "One entry page, help where it is used")', () => {
+describe('help pages (specs/decisions, "One entry page, help where it is used")', () => {
   it("each page belongs to a command, shows its paragraph and sections, and fits a terminal", () => {
     for (const path of ["", ...Object.keys(PAGES)]) {
       const r = run(...(path === "" ? [] : path.split(" ")), "--help");
@@ -118,7 +118,7 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
     for (const code of [...ERROR_CODES, ...DEFECT_CODES]) expect(src, code).toContain(`"${code}"`);
   });
 
-  it('names every warning in apply\'s Output (DESIGN.md, "Every write prints every warning")', () => {
+  it('names every warning in apply\'s Output (specs/decisions, "Every write prints every warning")', () => {
     const output = PAGES.apply?.after?.split("Output:\n")[1]?.split("\n\n")[0] ?? "";
     for (const code of WARNING_CODES)
       expect(output, code).toMatch(new RegExp(`^ {4}${code} `, "m"));
@@ -196,7 +196,7 @@ describe('help pages (DESIGN.md, "One entry page, help where it is used")', () =
   });
 });
 
-describe('guides (DESIGN.md, "Help for the tool, guides for best practice")', () => {
+describe('guides (specs/decisions, "Help for the tool, guides for best practice")', () => {
   it("grafical guide lists every guide, and prints each whole, at 80 columns", () => {
     const list = run("guide");
     expect(list.code).toBe(0);
@@ -229,7 +229,7 @@ describe('guides (DESIGN.md, "Help for the tool, guides for best practice")', ()
   });
 });
 
-describe('the counts in place of hints (DESIGN.md, "Records over prose")', () => {
+describe('the counts in place of hints (specs/decisions, "Records over prose")', () => {
   /** The photo-sharing diagram, where a line bends more than twice round the upload queue. */
   function photos(): string {
     writeFileSync(join(dir, "photos.grafical.yaml"), writeDiagram(edgeLooks));
@@ -238,7 +238,7 @@ describe('the counts in place of hints (DESIGN.md, "Records over prose")', () =>
 
   it("check prints the counts, and a line bent more than twice as a warning, with no advice", () => {
     // The line round the upload queue is a warning of what happened, with the commands that can change it, and no
-    // source: the outcome line names what a write changed (DESIGN.md, "Refusals say what happened and which commands
+    // source: the outcome line names what a write changed (specs/decisions, "Refusals say what happened and which commands
     // can change it").
     const bent = [
       "warning: bent-line",
@@ -253,7 +253,7 @@ describe('the counts in place of hints (DESIGN.md, "Records over prose")', () =>
     expect(out.startsWith(`ok\n\n${bent}\n\ncounts nodes=`)).toBe(true);
     expect(out).toMatch(/^counts nodes=\d+ lines=\d+ crossings=\d+ bends=\d+ bent=1 /m);
     expect(out).not.toMatch(/^(hint|lines):/m);
-    // Every write reports it too, a single command as a batch (DESIGN.md, "The dirty work has edges").
+    // Every write reports it too, a single command as a batch (specs/decisions, "The dirty work has edges").
     expect(run("diagram", "subtitle", photos(), "--text", "Uploads").out).toBe(
       `ok changed=subtitle\n\n${bent}\n`,
     );

@@ -1,4 +1,4 @@
-// Step badges (DESIGN.md, "Step badges ride the line"): each sits on its own line, clear of everything else, its
+// Step badges (specs/decisions, "Step badges ride the line"): each sits on its own line, clear of everything else, its
 // text beside it; and the checker finds one that touches something.
 
 import { beforeAll, describe, expect, it } from "vitest";
@@ -45,7 +45,7 @@ const FIXTURES = {
 
 const centre = (b: SceneBadge) => ({ x: b.x, y: b.y });
 
-describe('step badges (DESIGN.md, "Step badges ride the line")', () => {
+describe('step badges (specs/decisions, "Step badges ride the line")', () => {
   for (const [name, d] of Object.entries(FIXTURES)) {
     it(`${name}, every line numbered: each badge on its line, its text beside it, nothing touched`, () => {
       const facts = numbered(d);

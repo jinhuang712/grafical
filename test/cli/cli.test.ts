@@ -181,7 +181,7 @@ describe("write commands", () => {
       "--json",
     );
     expect(r.code).toBe(0);
-    // The new box has no lines yet: a warning, with no source (DESIGN.md, "Every write prints every warning").
+    // The new box has no lines yet: a warning, with no source (specs/decisions, "Every write prints every warning").
     expect(r.out).toBe(
       `${JSON.stringify({
         ok: true,
@@ -313,7 +313,7 @@ describe("write commands", () => {
     );
   });
 
-  it('edge step numbers a line, show prints it, and no --n clears it (DESIGN.md, "Step badges ride the line")', () => {
+  it('edge step numbers a line, show prints it, and no --n clears it (specs/decisions, "Step badges ride the line")', () => {
     run("new", "s.grafical.yaml", "--title", "S");
     run("layer", "add", "s.grafical.yaml", "a", "--label", "A");
     run("layer", "add", "s.grafical.yaml", "b", "--label", "B");
@@ -374,7 +374,7 @@ describe("read commands", () => {
     expect(readFileSync(join(dir, "single.svg"), "utf8").startsWith("<svg")).toBe(true);
   });
 
-  it('show --drawn prints the drawing as facts and counts (DESIGN.md, "Records over prose")', () => {
+  it('show --drawn prints the drawing as facts and counts (specs/decisions, "Records over prose")', () => {
     const r = run("show", "single.grafical.yaml", "--drawn");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(/^counts nodes=\d+ lines=\d+ crossings=\d+/);
@@ -391,7 +391,7 @@ describe("read commands", () => {
     expect(json.drawing.composition).toBeUndefined();
   });
 
-  it('try reports the counts before and after a batch, and writes nothing (DESIGN.md, "Records over prose")', () => {
+  it('try reports the counts before and after a batch, and writes nothing (specs/decisions, "Records over prose")', () => {
     const before = readFileSync(join(dir, "single.grafical.yaml"), "utf8");
     writeFileSync(join(dir, "try.yaml"), "- {op: node.rename, id: api, label: API service}\n");
     const r = run("try", "single.grafical.yaml", "try.yaml");
@@ -448,7 +448,7 @@ describe("read commands", () => {
     expect(beside.out).toMatch(/^ok\nwrote file=single.png\ncounts nodes=/);
   });
 
-  // No size limit while the help's correctness comes first (DESIGN.md, "One entry page, help where it is used").
+  // No size limit while the help's correctness comes first (specs/decisions, "One entry page, help where it is used").
   it("the help read before a draft is byte-stable", () => {
     const a = run("--help");
     const b = run("--help");

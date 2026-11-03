@@ -1,4 +1,4 @@
-// What a drawing draws poorly, as warnings (DESIGN.md, "Every write prints every warning"): each is a place that one
+// What a drawing draws poorly, as warnings (specs/decisions, "Every write prints every warning"): each is a place that one
 // of the counts counts, or a box with no lines, or a pair of lines that cross, and names what it is about.
 
 import { readFileSync } from "node:fs";
@@ -81,7 +81,7 @@ const KEYS: Record<WarningCode, string[]> = {
   crossing: ["edges"],
 };
 
-describe('warnings (DESIGN.md, "Every write prints every warning")', () => {
+describe('warnings (specs/decisions, "Every write prints every warning")', () => {
   it("are the places the counts count, each naming what it is about, in the order of their codes", () => {
     const diagrams = [
       fixture("dispatch"),

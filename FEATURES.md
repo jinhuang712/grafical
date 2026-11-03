@@ -1,7 +1,6 @@
-<!-- what-we-build: approved 2026-10-15 -->
 # Features
 
-What grafical does, from the side of the agent that draws and the person who asks. Why each one works the way it does is in [DESIGN.md](DESIGN.md). `grafical --help` and each command's `--help` hold the full syntax.
+What grafical does, from the side of the agent that draws and the person who asks. Why each one works the way it does is in [DESIGNS.md](DESIGNS.md) and in the decisions in [specs/decisions](specs/decisions/README.md). `grafical --help` and each command's `--help` hold the full syntax.
 
 ✅ built · 🚧 built, with a gap named · ⬜ planned
 
@@ -153,7 +152,7 @@ The caller names every row, group, lane, column, wall, box and line, and a name 
 
 **Status:** ✅
 
-A wrong operation is refused at once, and nothing is written. Each problem is a block: what happened, what caused it, the facts, and the commands that can change it, by name (DESIGN.md, "Refusals say what happened and which commands can change it").
+A wrong operation is refused at once, and nothing is written. Each problem is a block: what happened, what caused it, the facts, and the commands that can change it, by name (specs/decisions, "Refusals say what happened and which commands can change it").
 
 ```text
 failed changed=-
@@ -416,7 +415,7 @@ grafical edge step <file> <id> [--n <number>]
 One arrow can point at a whole system instead of each of its parts.
 
 - Either end of a line may be a box, a group, a row or a lane. A row a line ends at is drawn as a band, with its label above it, and a line meets the band straight past its other end where nothing is in the way.
-- A row with no box may be an end too, when the other end holds a box: a gateway or a message bus that every request passes. It is drawn as one bar across the content, 40 px high, with its label in it at the left, and each line meets it straight past its other end (DESIGN.md, "A row with no box as one bar").
+- A row with no box may be an end too, when the other end holds a box: a gateway or a message bus that every request passes. It is drawn as one bar across the content, 40 px high, with its label in it at the left, and each line meets it straight past its other end (specs/decisions, "A row with no box as one bar").
 - A line that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge add --pass`, or `edge pass <file> <id> [--off]` for a line already drawn. It then names the bar in `passes`. A row with no box and a look is a bar too, though no line ends at it ("Rows and order").
 - An end may not lie inside the other (`edge-inside`), a group or a lane end must hold a box (`empty-container`), and an end that shares a row with a group must sit right beside it there (`edge-blocked`). A line between two rows with no box is refused (`bar-to-bar`), and so is a bar between the first and last rows of a group (`bar-in-group`).
 - Two lanes are never the two ends of one line (`lane-to-lane`).
@@ -436,7 +435,7 @@ The agent says what connects. grafical draws every line.
 - A line may leave or enter a box on any side. Each line has its own place on a side, spread evenly.
 - Three or more unlabelled lines of one style that leave one side of a box leave as one line and split near their targets, with a dot at each split. Labelled lines and two-way lines keep their own place.
 - Where two lines cross, one hops over the other. Where lines join on purpose, a dot marks the join.
-- A label sits beside its line. When there is no room, it wraps or moves to another gap on its way. Where no gap on its way has room, no line moves for it: the write is refused as `label-blocked`, naming the line, the lines across the label and the gaps it tried, with `node resize` among the commands that can change it (DESIGN.md, "The dirty work has edges"). grafical never widens a box for its lines. A step's number is refused the same way.
+- A label sits beside its line. When there is no room, it wraps or moves to another gap on its way. Where no gap on its way has room, no line moves for it: the write is refused as `label-blocked`, naming the line, the lines across the label and the gaps it tried, with `node resize` among the commands that can change it (specs/decisions, "The dirty work has edges"). grafical never widens a box for its lines. A step's number is refused the same way.
 - A stylesheet may draw the corners curved, with `paint.edge.shape: curved`. The routes stay the same.
 
 **Stories:**
@@ -465,11 +464,11 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 ```
 
 - A new row goes to the bottom unless `--before` or `--after` places it.
-- A box added to a row, or moved into another row, says where it goes: `--first`, `--last`, `--before` or `--after`. Without one it is refused as `missing-field`, with the row and the boxes in it. Only the first box of an empty row needs none (DESIGN.md, "The agent states every order").
-- A row's label is optional. It is drawn only with the row: in a band's head, or in a bar. A drawn row with no label draws no name, and a band without one has no head (DESIGN.md, "A row's label is optional").
+- A box added to a row, or moved into another row, says where it goes: `--first`, `--last`, `--before` or `--after`. Without one it is refused as `missing-field`, with the row and the boxes in it. Only the first box of an empty row needs none (specs/decisions, "The agent states every order").
+- A row's label is optional. It is drawn only with the row: in a band's head, or in a bar. A drawn row with no label draws no name, and a band without one has no head (specs/decisions, "A row's label is optional").
 - `layer split` moves the second half of a row, or its boxes from one box on, into a new row below it.
 - A row can be removed only when it is empty, and the lines that end at it go with it.
-- `layer look` draws a row, with its label, even when no line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row is drawn only when a line ends at it, a row with no box as a box and a row with boxes as a band. A row with no box and a look is a bar, checked as one: a line that passes it needs `--pass` (`bar-crossed`), and it may not lie between the first and last rows of a group (`bar-in-group`, which `layer look` can change by taking the look away) (DESIGN.md, "A row with a look is drawn").
+- `layer look` draws a row, with its label, even when no line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row is drawn only when a line ends at it, a row with no box as a box and a row with boxes as a band. A row with no box and a look is a bar, checked as one: a line that passes it needs `--pass` (`bar-crossed`), and it may not lie between the first and last rows of a group (`bar-in-group`, which `layer look` can change by taking the look away) (specs/decisions, "A row with a look is drawn").
 
 **Stories:**
 
@@ -558,7 +557,7 @@ grafical group remove <file> <id> [--out]
 - A group's box spans every row from its top member to its bottom one. The other boxes of those rows sit beside it, and nothing else lies inside it.
 - Groups nest, up to three levels (`group-too-deep`). A group inside itself is refused as `group-cycle`.
 - `join` moves a box out of its previous group, and also moves a whole group into another. `leave` takes members out of every group, or with `--up` one level out.
-- `group title` (or `group label`) says where the group's label sits: at the left, the middle or the right of its head, or of a foot below its last row, where it takes the head's room and the head only a padding's, centred just outside its top or bottom side, or beside its rows, inside or outside its left or right side, at the middle height. It sits exactly there and takes only its own room: no box and no line moves for it. A line that comes near it refuses the write as `title-blocked`, naming the lines and the places where none would. Without a place the engine seats the label in the head, at the leftmost spot no line comes near; where a line comes near every spot, the write is refused as `title-blocked` too (DESIGN.md, "The agent states where a group's label sits"). All twelve places the owner chose are built.
+- `group title` (or `group label`) says where the group's label sits: at the left, the middle or the right of its head, or of a foot below its last row, where it takes the head's room and the head only a padding's, centred just outside its top or bottom side, or beside its rows, inside or outside its left or right side, at the middle height. It sits exactly there and takes only its own room: no box and no line moves for it. A line that comes near it refuses the write as `title-blocked`, naming the lines and the places where none would. Without a place the engine seats the label in the head, at the leftmost spot no line comes near; where a line comes near every spot, the write is refused as `title-blocked` too (specs/decisions, "The agent states where a group's label sits"). All twelve places the owner chose are built.
 - `group order` puts a group's boxes, its inner groups' too, before or after another group's, as one block in every row the two share. A group beside itself, or beside a group around or inside it, is refused as `bad-reference`.
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group. Lines that end at the group go with it.
 - A box inside a box takes the canvas's fill, so the fills alternate by depth. A stylesheet may set `paint.nesting: shade` instead.
@@ -579,8 +578,8 @@ grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before
 
 - The copy holds the group's inner groups, its boxes and the lines between them, and sits in the group the original sits in. Every id it makes ends in the suffix, except `<into>`, and a line id `<from>-><to>` follows its copied ends.
 - `--outside` also copies the lines between the group and everything outside it, their inside end moved to the copy.
-- Each copied box sits in its original's row, with its label, kind, size, marks, lane and column. `--before` or `--after` puts the copy before or after a group in every row of the copy, as `group order` does (DESIGN.md, "The agent states every order"). A group with no box in one of those rows is refused as `no-shared-layer`.
-- An alignment or steps to a box outside the group, and a lane or a column that would move the copy from its place, are refused as `copy-conflict`, naming the box (DESIGN.md, "A group copy holds its inside"). Notes and walls are not copied.
+- Each copied box sits in its original's row, with its label, kind, size, marks, lane and column. `--before` or `--after` puts the copy before or after a group in every row of the copy, as `group order` does (specs/decisions, "The agent states every order"). A group with no box in one of those rows is refused as `no-shared-layer`.
+- An alignment or steps to a box outside the group, and a lane or a column that would move the copy from its place, are refused as `copy-conflict`, naming the box (specs/decisions, "A group copy holds its inside"). Notes and walls are not copied.
 
 **Stories:**
 
@@ -636,7 +635,7 @@ grafical wall remove <file> <id>
 - Each side is a list of boxes and groups. When one side lies above the other, the wall runs across. When they sit side by side in their rows, it runs up and down. Otherwise it is refused as `wall-sides`, and so is a box on both sides.
 - A wall is only as long as its two sides need.
 - A line from one side to the other is refused as `wall-crossed`, unless `allow` names the line or a box or group at one of its ends, such as a gateway. Any other line drawn through the wall is a defect with the same code.
-- Without a label, a wall is invisible: only its space shows. With a label, it draws a dashed divider through its middle, the label along it at the first place no line comes near. Where none is, the write is refused as `label-blocked` (DESIGN.md, "The dirty work has edges"). `wall relabel` changes the label, or drops it without `--label`.
+- Without a label, a wall is invisible: only its space shows. With a label, it draws a dashed divider through its middle, the label along it at the first place no line comes near. Where none is, the write is refused as `label-blocked` (specs/decisions, "The dirty work has edges"). `wall relabel` changes the label, or drops it without `--label`.
 - A box or group that is removed leaves the wall's sides, and a wall left with an empty side goes.
 
 **Stories:**
@@ -654,7 +653,7 @@ grafical note add <file> --on <id> --text <text> [--footnote]
 grafical note remove <file> --on <id>
 ```
 
-- A card beside its target, joined by a dotted line, or with `--footnote` a small number on the target and the text in a numbered list at the bottom. The file holds a footnote as `footnote: true`. A card with no place beside its target clear of every box, line and text is refused as `label-blocked`, so that the agent shortens it or makes it a footnote (DESIGN.md, "The dirty work has edges").
+- A card beside its target, joined by a dotted line, or with `--footnote` a small number on the target and the text in a numbered list at the bottom. The file holds a footnote as `footnote: true`. A card with no place beside its target clear of every box, line and text is refused as `label-blocked`, so that the agent shortens it or makes it a footnote (specs/decisions, "The dirty work has edges").
 - A target has one note, and adding another replaces it. A note goes with its target.
 - A note that takes more than four lines is an `overflow`.
 
@@ -775,7 +774,7 @@ They are facts, with no threshold and no advice: what they mean is the agent's t
 
 **Status:** ✅
 
-Every write, single commands included, and `check` and `render` print a warning block for each thing the picture draws poorly, before the counts, and never refuse for one (DESIGN.md, "Every write prints every warning"). All of them print every time, not only those the command caused, since every change lays the whole diagram out again.
+Every write, single commands included, and `check` and `render` print a warning block for each thing the picture draws poorly, before the counts, and never refuse for one (specs/decisions, "Every write prints every warning"). All of them print every time, not only those the command caused, since every change lays the whole diagram out again.
 
 - `bent-line`: a line with more than two bends. Detail: `edge`, `bends`, `skip` (the rows between its ends' rows).
 - `passing-row`: a line through rows between its ends, among their boxes, meeting none. Detail: `edge`, `rows`.
@@ -783,10 +782,10 @@ Every write, single commands included, and `check` and `render` print a warning 
 - `tight-lines`: runs of two lines under 12 px apart for over 100 px. Detail: `edges`, `over` (the pixels they share).
 - `crowded-label`: a line's label with under 8 px of room on two sides. Detail: `edge`.
 - `lonely-box`: a box no line reaches: none of its own, and none to its group, row or lane. Detail: `node`.
-- `line-per-member`: every box of a group, two or more, has a line alike in kind, label, weight and arrowheads to one end outside it, or from it; a group inside one with the same lines is left out. Detail: `group`, `edges` (DESIGN.md, "A line from every box of a group is a warning").
+- `line-per-member`: every box of a group, two or more, has a line alike in kind, label, weight and arrowheads to one end outside it, or from it; a group inside one with the same lines is left out. Detail: `group`, `edges` (specs/decisions, "A line from every box of a group is a warning").
 - `crossing`: a pair of lines that cross, however often. Detail: `edges`.
 
-A warning has no source: the outcome line names what the write changed, and a warning names the ids it is about (DESIGN.md, "Every write prints every warning"):
+A warning has no source: the outcome line names what the write changed, and a warning names the ids it is about (specs/decisions, "Every write prints every warning"):
 
 ```text
 ok changed=sync->geo
@@ -880,7 +879,7 @@ grafical --help
 grafical <command> --help
 ```
 
-`--help` says what grafical is, what it does not draw, how to work, and every way to draw, one line each by the story it tells, such as a box beside a box, one path in order, or two parts kept apart. Each command's help adds its options, its line in a batch, when to use it, what it draws, common mistakes, limits and an example. No page says what a refusal means: the refusal's block says it (DESIGN.md, "Refusals say what happened and which commands can change it"). A command's arguments are named as its batch fields. The help does not say how a kind of diagram is drawn: the guides do.
+`--help` says what grafical is, what it does not draw, how to work, and every way to draw, one line each by the story it tells, such as a box beside a box, one path in order, or two parts kept apart. Each command's help adds its options, its line in a batch, when to use it, what it draws, common mistakes, limits and an example. No page says what a refusal means: the refusal's block says it (specs/decisions, "Refusals say what happened and which commands can change it"). A command's arguments are named as its batch fields. The help does not say how a kind of diagram is drawn: the guides do.
 
 `--help` is the one way to a page: there is no `grafical help <command>`. A command grafical does not have is refused with the word it most likely means, as a value and never as a command line: `grafical help apply` gives `error: unknown-command` with `found: help` and `likely: --help`, and `grafical node.add --help` gives `found: node.add` and `likely: node add`.
 
@@ -1007,7 +1006,7 @@ These are wanted, but not scheduled. Each becomes a planned feature once ROADMAP
 - **More combinations of operations.** The owner said on 2026-10-14 that what grafical lacks is more ways to combine its operations. What form that takes is not decided, such as one operation for a common edit ("put a cache between the API and the database") or for a common shape.
 - **Flow direction:** rows become columns, so that a diagram reads left to right. Held by the owner on 2026-10-14, because most of the layout assumes rows run across, and nothing yet shows it helps.
 - **Lanes both ways in one diagram,** as a grid of lanes and phases.
-- **Diagram types with a layout of their own:** sequence diagrams, time scales such as Gantt charts, mind maps and other radial trees, shapes such as pyramids, and overlapping sets. Each is a type the agent gives a diagram, which sets its space and the operations that apply (DESIGN.md, "An optional type sets the diagram's space"). Entity-relationship and class diagrams may be a type or a kind of box.
+- **Diagram types with a layout of their own:** sequence diagrams, time scales such as Gantt charts, mind maps and other radial trees, shapes such as pyramids, and overlapping sets. Each is a type the agent gives a diagram, which sets its space and the operations that apply (specs/decisions, "An optional type sets the diagram's space"). Entity-relationship and class diagrams may be a type or a kind of box.
 - **Importing** Mermaid, draw.io and Excalidraw files.
 - **An MCP server** over the same operations.
 - **Views:** one file, several pictures of parts of it, and a group drawn folded into one box.
@@ -1019,11 +1018,11 @@ These are wanted, but not scheduled. Each becomes a planned feature once ROADMAP
 - **A board where people edit the diagram,** with drags that become operations. Agents draw good enough diagrams with grafical, and a person asks for a change in words (PHILOSOPHY.md, "Who draws?"). Dropped by the owner on 2026-10-14.
 - **Placement by coordinates, for anyone.** Coordinates are the dirty work models fail at, and a free position would break the promise that a change moves only what it names (PHILOSOPHY.md, "What may the agent set?").
 - **A score of how readable a picture is.** Readers differ (PHILOSOPHY.md, "What makes grafical good?").
-- **A declared diagram type that checks its conventions.** grafical would be judging content (DESIGN.md, "Records over prose"). A type that sets only the diagram's space is in *Later*.
-- **Real-time collaboration, accounts or a hosted service.** The diagram is a file in git, and git already shares it and keeps its history (DESIGN.md, "Git as the history").
-- **The same facts always giving the same picture,** whatever order they arrived in. The file fixes the picture, and the same facts give mostly the same picture (DESIGN.md, "Same file exact, same facts mostly").
-- **Tidying, a row reordered by the engine.** The engine does not choose an order for the agent. The agent compares orders with `grafical try` (DESIGN.md, "The agent states every order"). Dropped by the owner on 2026-10-15.
-- **`grafical guide`.** The help replaced it (DESIGN.md, "The help as the reference").
+- **A declared diagram type that checks its conventions.** grafical would be judging content (specs/decisions, "Records over prose"). A type that sets only the diagram's space is in *Later*.
+- **Real-time collaboration, accounts or a hosted service.** The diagram is a file in git, and git already shares it and keeps its history (specs/decisions, "Git as the history").
+- **The same facts always giving the same picture,** whatever order they arrived in. The file fixes the picture, and the same facts give mostly the same picture (specs/decisions, "Same file exact, same facts mostly").
+- **Tidying, a row reordered by the engine.** The engine does not choose an order for the agent. The agent compares orders with `grafical try` (specs/decisions, "The agent states every order"). Dropped by the owner on 2026-10-15.
+- **`grafical guide`.** The help replaced it (specs/decisions, "The help as the reference").
 - **Docking to an edge, and placement such as "beside" or "between".** Columns and steps cover them, and a second way to say one thing is one more choice.
 - **Gaps between sections.** Spacing is the engine's.
 - **Zones and section titles.** Walls and groups cover them.

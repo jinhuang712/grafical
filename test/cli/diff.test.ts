@@ -32,7 +32,7 @@ function git(...args: string[]) {
   if (r.status !== 0) throw new Error(r.stderr);
 }
 
-describe('grafical diff (DESIGN.md, "Git as the history")', () => {
+describe('grafical diff (specs/decisions, "Git as the history")', () => {
   it("reports changes since a revision as a batch that replays them", () => {
     git("init", "-q");
     const f = "d.grafical.yaml";

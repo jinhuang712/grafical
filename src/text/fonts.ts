@@ -1,4 +1,4 @@
-// The bundled font files (DESIGN.md, "Bundled fonts"). The renderer loads the same files
+// The bundled font files (specs/decisions, "Bundled fonts"). The renderer loads the same files
 // into resvg, so measurement and drawing use identical fonts.
 // This is the loader side: it is the only place that touches the file system.
 

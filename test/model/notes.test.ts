@@ -1,4 +1,4 @@
-// Notes (DESIGN.md, "Notes as callouts or footnotes"): a short text about a node, a group or a line.
+// Notes (specs/decisions, "Notes as callouts or footnotes"): a short text about a node, a group or a line.
 
 import { describe, expect, it } from "vitest";
 import { showDiagram } from "../../src/cli/show.ts";
@@ -26,7 +26,7 @@ function fail(d: Diagram, ops: Op[]): OpError[] {
 
 const retry: Op = { op: "note.add", on: "retry", text: "retries 5 times, then the DLQ" };
 
-describe('notes (DESIGN.md, "Notes as callouts or footnotes")', () => {
+describe('notes (specs/decisions, "Notes as callouts or footnotes")', () => {
   it("are kept in the file, read back, and shown", () => {
     const r = ok(fx, [retry, { op: "note.add", on: "service->mongo", text: "Find only" }]);
     expect(r.changed).toEqual(["retry", "service->mongo"]);
@@ -89,7 +89,7 @@ describe('notes (DESIGN.md, "Notes as callouts or footnotes")', () => {
     expect(writeDiagram(ok(d, ops).diagram)).toBe(writeDiagram(changed));
   });
 
-  // The agent states a footnote; the engine never makes one (DESIGN.md, "The dirty work has edges").
+  // The agent states a footnote; the engine never makes one (specs/decisions, "The dirty work has edges").
   it("a footnote is stated, kept in the file, shown, and diffed", () => {
     const foot: Op = { ...retry, footnote: true };
     const d = ok(fx, [foot]).diagram;

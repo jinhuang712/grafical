@@ -4,13 +4,37 @@ Small fixes and follow-ups with no milestone yet. An item moves to ROADMAP.md on
 
 ## ongoing
 
+### [P2][DISCUSSION] A box beside every box it connects to, in a row
+
+- created: 2026-10-15
+- status: HALT
+- next: the owner decides whether it becomes an agent defect, as it is for a box placed by steps
+
+"Who chose is punished" (specs/decisions) did not refuse it, because the file could not tell a slot the agent stated from one the engine chose. Since "The agent states every order" the agent states every slot, so it could become an agent defect (`box-aside`), as it is for a box placed by steps.
+
+### [P2][TASK] A corner mark is not checked against the lines near it
+
+- created: 2026-10-15
+- status: OPEN
+- next: check a corner mark against the lines that leave the box near its corner, and report one that meets a mark
+
+A line that meets a mark is not reported today (FEATURES.md, "Marks").
+
+### [P2][IDEA] Too many heavy lines draw a warning
+
+- created: 2026-10-15
+- status: OPEN
+- next: count every line heavier than `thin` and warn when more than three, or more than a third of all lines, are heavy
+
+"Lines meet any side" (specs/decisions) says a main path stands out only against thin lines. No code does this yet.
+
 ### [P2][DISCUSSION] Steps from another box are the nearest thing to a position
 
 - created: 2026-10-14
 - status: HALT
 - next: the owner reconsiders "places are facts" if steps grow larger, finer or more common
 
-Steps from another box (DESIGN.md, "Steps from another box") are small whole numbers on the grid, a fact like a row. They are also the nearest grafical has come to a position (PHILOSOPHY.md, "What may the agent set?"). Moved here from PHILOSOPHY.md, where it stood as an open doubt.
+Steps from another box (specs/decisions, "Steps from another box") are small whole numbers on the grid, a fact like a row. They are also the nearest grafical has come to a position (PHILOSOPHY.md, "What may the agent set?"). Moved here from PHILOSOPHY.md, where it stood as an open doubt.
 
 ### [P2][DISCUSSION] One word, two steps
 
@@ -18,7 +42,7 @@ Steps from another box (DESIGN.md, "Steps from another box") are small whole num
 - status: HALT
 - next: the owner chooses; the text below names the options
 
-"Steps from another box" (DESIGN.md, "Steps from another box") is a placement: a box sits some cells of the grid from another. "Numbered steps" (FEATURES.md) is a number on a line for a process. The two share a word, and `GLOSSARY.md` lists both. Needs the owner's choice of a new name for one, or a decision to keep both.
+"Steps from another box" (specs/decisions, "Steps from another box") is a placement: a box sits some cells of the grid from another. "Numbered steps" (FEATURES.md) is a number on a line for a process. The two share a word, and `GLOSSARY.md` lists both. Needs the owner's choice of a new name for one, or a decision to keep both.
 
 ### [P2][ISSUE] Many writes in one process run the text measurer out of memory
 
@@ -32,7 +56,7 @@ Steps from another box (DESIGN.md, "Steps from another box") are small whole num
 - created: 2026-10-17
 - status: OPEN
 
-DESIGN.md, "One entry page, help where it is used" names a risk: agents may not use the ways to draw the entry page lists, or may draft without opening a command's page. The harness counts grafical calls by outcome, but not which help pages an agent read before its first write. `bench lines` or the metrics should count each `--help` call, each `unknown-command` refusal and each `grafical guide [<name>]` before the first `apply` or edit, per draft, so the next paid round can say which pages and guides agents read.
+specs/decisions, "One entry page, help where it is used" names a risk: agents may not use the ways to draw the entry page lists, or may draft without opening a command's page. The harness counts grafical calls by outcome, but not which help pages an agent read before its first write. `bench lines` or the metrics should count each `--help` call, each `unknown-command` refusal and each `grafical guide [<name>]` before the first `apply` or edit, per draft, so the next paid round can say which pages and guides agents read.
 
 ### [P2][DISCUSSION] A row's label is drawn twice
 
@@ -60,16 +84,16 @@ The router has no rule for diamonds: it spreads ports along a diamond's side as 
 - status: HALT
 - next: the owner chooses; the text below names the options
 
-Three unlabelled lines from one box to three boxes in the row below split from their trunk at two heights, a small staircase, where an org chart draws one bar. Related to the staircase left unpunished in DESIGN.md, "Who chose is punished".
+Three unlabelled lines from one box to three boxes in the row below split from their trunk at two heights, a small staircase, where an org chart draws one bar. Related to the staircase left unpunished in specs/decisions, "Who chose is punished".
 
-The split is on purpose: rule 4 of DESIGN.md, "A target picture with measured rules" says a trunk that runs straight on with branches on both sides meets them in a junction that reads as a crossing, so each side branches at its own height (`stagger` in `src/layout/route.ts`). One bar needs the owner to change that rule, for example where a junction dot marks the meeting.
+The split is on purpose: rule 4 of specs/decisions, "A target picture with measured rules" says a trunk that runs straight on with branches on both sides meets them in a junction that reads as a crossing, so each side branches at its own height (`stagger` in `src/layout/route.ts`). One bar needs the owner to change that rule, for example where a junction dot marks the meeting.
 
 ### [P2][ISSUE] A step's badge across a lane's side
 
 - created: 2026-10-16
 - status: OPEN
 
-`check --all` counts a lane's side across a line's label as `text-crossing`, but not across a step's badge, and the badge's place does not keep off it (DESIGN.md, "Step badges ride the line"). The badge should keep off a lane's side as the label does, and `step-collision` should count one it touches.
+`check --all` counts a lane's side across a line's label as `text-crossing`, but not across a step's badge, and the badge's place does not keep off it (specs/decisions, "Step badges ride the line"). The badge should keep off a lane's side as the label does, and `step-collision` should count one it touches.
 
 ### [P1][ISSUE] Usage errors ignore --json
 
@@ -100,7 +124,13 @@ A file that the diagram's own checks refuse, such as a group split around a box 
 
 An agent that wants a green box, a red box and a blue box has no way to say so: a stylesheet sets the fill per kind (`paint.node.kinds`), and a kind also sets the shape. Redrawing two published state and flow diagrams on 2026-10-30, a "fixed" box had to be a `store`, drawn as a cylinder, and a "bug" box an `external`, drawn with a dashed border, only for their colors. A diagram of six states in six colors uses six kinds and gets pills, cylinders and diamonds it did not ask for.
 
-PHILOSOPHY.md, "What may the agent set?" says looks are free, so this is a gap and not a rule. DESIGN.md, "Open questions" has the options. Needs the owner's choice.
+PHILOSOPHY.md, "What may the agent set?" says looks are free, so this is a gap and not a rule. The options, none chosen:
+
+- A named look in the stylesheet, such as `looks: {fixed: {fill: ..., stroke: ...}}`, and one operation, `node look <id> <name>`, that gives a box one. The agent states a name, the stylesheet states the colors, and a theme change still restyles every box at once.
+- A fill and a border on the box, as a mark already takes `--bg` and `--border`: `node look <id> --fill <color> --border <color>`. Simple, but the colors sit in every box of the file, and a theme change leaves them.
+- Keep it tied to the kind and add kinds. Rejected for now: a kind says what a box is, and "a green box" is not a thing that exists.
+
+The shape stays the kind's in the first two. Needs the owner's choice.
 
 ### [P2][DISCUSSION] The legend cannot show a box's look
 
@@ -153,4 +183,4 @@ Four labelled lines out of one box run side by side in one gutter, each label 4 
 - status: HALT
 - next: the owner chooses; the text below names the options
 
-With `decision` ports kept to the middle 32 px of a diamond's top and bottom, a line leaves closer to the corner, but still meets the slanted edge a few px inside it. Tried on 2026-10-30: over 500 fuzz seeds 201 diagrams changed, bends +113 and crossings +32, and of 329 saved drafts 2 changed with bends +2; not landed. A `choice` (DESIGN.md, "A choice is a small diamond") is the small diamond the reference diagrams use, with every line at its corner.
+With `decision` ports kept to the middle 32 px of a diamond's top and bottom, a line leaves closer to the corner, but still meets the slanted edge a few px inside it. Tried on 2026-10-30: over 500 fuzz seeds 201 diagrams changed, bends +113 and crossings +32, and of 329 saved drafts 2 changed with bends +2; not landed. A `choice` (specs/decisions, "A choice is a small diamond") is the small diamond the reference diagrams use, with every line at its corner.

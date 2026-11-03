@@ -179,8 +179,8 @@ export type Outcome = "success" | "opError" | "defect" | "denied";
 /**
  * How one grafical call ended. The harness's refusal comes first: its text starts with
  * "Permission to use". Then grafical's own report, as JSON or as plain text: the blocks
- * `error: <code>` and `defect: <code>` (DESIGN.md, "Refusals say what happened and which commands can change it"),
- * in older rounds the records `error op=<index> ...` and `defect code=<code> ...`, and before DESIGN.md, "Records over
+ * `error: <code>` and `defect: <code>` (specs/decisions, "Refusals say what happened and which commands can change it"),
+ * in older rounds the records `error op=<index> ...` and `defect code=<code> ...`, and before specs/decisions, "Records over
  * prose"'s records the lines `error op <index> ...` and `defect <code> [...`. A warning is a success. A failure with
  * none of these is an operation error. The help (the guide before it) quotes these lines with placeholders, so a
  * line counts only with a real index or code.

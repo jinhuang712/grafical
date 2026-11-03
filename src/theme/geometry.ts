@@ -1,7 +1,7 @@
-// Geometry tokens: box sizes per size step, spacing per density (DESIGN.md, "Facts over coordinates", "Layout computed again on every change").
+// Geometry tokens: box sizes per size step, spacing per density (specs/decisions, "Facts over coordinates", "Layout computed again on every change").
 // Owned by the layout. Every value is a multiple of 4, and every box width a
 // multiple of 8, so that box centres and edges stay on the 4 px grid.
-// The sizes follow the target picture (DESIGN.md, "A target picture with measured rules"): 136 x 56 boxes, 32 px between
+// The sizes follow the target picture (specs/decisions, "A target picture with measured rules"): 136 x 56 boxes, 32 px between
 // neighbours, 24 px of group padding.
 
 import type { Density, MarkShape, MarkSize, SizeStep } from "../model/types.ts";
@@ -13,12 +13,12 @@ export const BOX: Record<SizeStep, { w: number; h: number }> = {
 };
 
 /**
- * A decision's box per size step (DESIGN.md, "Every layered diagram type"). A diamond holds text only in its middle, so
+ * A decision's box per size step (specs/decisions, "Every layered diagram type"). A diamond holds text only in its middle, so
  * its box is larger than a plain box of the same step: medium fits "Within 30
  * days?" on one line, large two short lines of about 115 px.
  */
 /**
- * Marks on a node (DESIGN.md, "Marks of any kind"). A corner mark is centred on its corner: half its height lies
+ * Marks on a node (specs/decisions, "Marks of any kind"). A corner mark is centred on its corner: half its height lies
  * outside the box on each axis, whatever its size. The left mark takes a column inside
  * the box, which the text gives up.
  */
@@ -28,7 +28,7 @@ export const MARK = {
 };
 
 /**
- * A mark's size steps (DESIGN.md, "Marks of any kind"): its height, which is also a picture's width, the font size of a
+ * A mark's size steps (specs/decisions, "Marks of any kind"): its height, which is also a picture's width, the font size of a
  * text of one character and of several, and the space between a text and its badge's edge.
  */
 export const MARK_STEP: Record<MarkSize, { h: number; one: number; many: number; padX: number }> = {
@@ -48,10 +48,10 @@ export function markRadius(shape: MarkShape, h: number): number {
   return shape === "square" ? 0 : shape === "pill" ? h / 2 : 4;
 }
 
-/** The one size of a state machine's start and end dots (DESIGN.md, "Every layered diagram type"). */
+/** The one size of a state machine's start and end dots (specs/decisions, "Every layered diagram type"). */
 export const DOT = 24;
 
-/** The one size of a choice, a small diamond with no label (DESIGN.md, "A choice is a small diamond"). */
+/** The one size of a choice, a small diamond with no label (specs/decisions, "A choice is a small diamond"). */
 export const CHOICE = 28;
 
 export const DIAMOND: Record<SizeStep, { w: number; h: number }> = {
@@ -108,17 +108,17 @@ export const FRAME = {
   legendLabelGap: 8,
   /** Space between two legend items. */
   legendItemGap: 24,
-  /** Space between two lines of a legend that wraps (DESIGN.md, "A legend for widths and marks"). */
+  /** Space between two lines of a legend that wraps (specs/decisions, "A legend for widths and marks"). */
   legendLineGap: 6,
   /** The subtitle and the footnote wrap at the content's width, but never narrower than this. */
   minTextWidth: 480,
   /**
    * Horizontal padding inside a box. Its text wraps to the box width minus twice
-   * this, which is the room the checker allows (DESIGN.md, "Defects owned by who can fix them"), so that a line that fits is
+   * this, which is the room the checker allows (specs/decisions, "Defects owned by who can fix them"), so that a line that fits is
    * never wrapped.
    */
   textPad: 8,
-  /** Vertical padding inside a box, the room the checker allows above and below text (DESIGN.md, "Defects owned by who can fix them"). */
+  /** Vertical padding inside a box, the room the checker allows above and below text (specs/decisions, "Defects owned by who can fix them"). */
   textPadY: 4,
   /** Lines a node label may take before it overflows. */
   labelLines: 2,
@@ -131,7 +131,7 @@ export const FRAME = {
   storeLid: 7,
 };
 
-/** A layer drawn as a band, because an edge ends at it (DESIGN.md, "Lines that end at containers"). */
+/** A layer drawn as a band, because an edge ends at it (specs/decisions, "Lines that end at containers"). */
 export const BAND = {
   /** Space between the band's sides and the content's left and right edges. */
   padX: 16,
@@ -145,7 +145,7 @@ export const BAND = {
   labelInset: 16,
 };
 
-/** A row with no box that a line ends at, drawn as one bar (DESIGN.md, "Lines that end at containers"). */
+/** A row with no box that a line ends at, drawn as one bar (specs/decisions, "Lines that end at containers"). */
 export const BAR = {
   /** Height of the bar: one line of its label, with room above and below it. */
   h: 40,
@@ -155,7 +155,7 @@ export const BAR = {
   standGap: 16,
 };
 
-/** Walls: empty space between two sides (DESIGN.md, "Walls as space"). */
+/** Walls: empty space between two sides (specs/decisions, "Walls as space"). */
 export const WALL = {
   /** The space a wall adds where it runs, for each wall there. */
   space: 48,
@@ -169,7 +169,7 @@ export const WALL = {
   labelWrap: 96,
 };
 
-/** A line's step badge (DESIGN.md, "Step badges ride the line"). */
+/** A line's step badge (specs/decisions, "Step badges ride the line"). */
 export const STEP = {
   /** Radius of the badge: two digits fit inside its ring. */
   r: 9,
@@ -183,7 +183,7 @@ export const STEP = {
   clear: 2,
 };
 
-/** Notes: callout cards and footnotes (DESIGN.md, "Notes as callouts or footnotes"). */
+/** Notes: callout cards and footnotes (specs/decisions, "Notes as callouts or footnotes"). */
 export const NOTE = {
   /** Widest a note's text runs before it wraps. */
   wrap: 160,
@@ -202,7 +202,7 @@ export const NOTE = {
   keyGap: 6,
 };
 
-/** Swimlanes (DESIGN.md, "Swimlanes run one way"). */
+/** Swimlanes (specs/decisions, "Swimlanes run one way"). */
 export const LANE = {
   /** Space between a lane's side and the content in it, across. */
   padX: 20,
@@ -218,7 +218,7 @@ export const LANE = {
   lineClear: 8,
 };
 
-/** System boxes (DESIGN.md, "Rows unseen, groups as systems"). */
+/** System boxes (specs/decisions, "Rows unseen, groups as systems"). */
 export const GROUP = {
   /** Space between a group's box and its members, left, right and below. */
   pad: 24,
@@ -236,11 +236,11 @@ export const GROUP = {
   gap: 24,
   /** Space kept between a group's label and any line that passes it. */
   labelClear: 6,
-  /** Space between a group's side and its label outside it (DESIGN.md, "The agent states where a group's label sits"). */
+  /** Space between a group's side and its label outside it (specs/decisions, "The agent states where a group's label sits"). */
   outsideGap: 12,
 };
 
-/** Routing tokens (DESIGN.md, "Our own gap router"). */
+/** Routing tokens (specs/decisions, "Our own gap router"). */
 export const ROUTE = {
   /** Preferred distance between neighbouring ports on one node side. */
   portPitch: 16,
@@ -266,9 +266,9 @@ export const ROUTE = {
   labelSpace: 24,
   /** Room a gutter adds on its side next to a row that holds a store, past a cylinder's lid and base. */
   storeRoom: 8,
-  /** This many unlabelled edges of one kind on a crowded node side share a trunk (DESIGN.md, "A target picture with measured rules" rule 4). */
+  /** This many unlabelled edges of one kind on a crowded node side share a trunk (specs/decisions, "A target picture with measured rules" rule 4). */
   busMin: 2,
-  /** This many unlabelled edges of one kind leaving one node side leave as one bundle, crowded or not (DESIGN.md, "Fan-outs of three bundle"). */
+  /** This many unlabelled edges of one kind leaving one node side leave as one bundle, crowded or not (specs/decisions, "Fan-outs of three bundle"). */
   fanOut: 3,
   /** Space on each side of the label of an edge that runs sideways between neighbours. */
   sideLabelPad: 12,

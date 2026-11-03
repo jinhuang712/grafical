@@ -1,4 +1,4 @@
-// The write path shared by every write command (DESIGN.md, "Defects owned by who can fix them", "Interfaces"):
+// The write path shared by every write command (DESIGNS.md, "The command line comes first, and the help is the agent's only reference", specs/decisions, "Defects owned by who can fix them"):
 // read, apply, lay out, check, and write only if nothing is wrong.
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
@@ -33,9 +33,9 @@ export interface Report {
   changed: string[];
   errors: OpError[];
   defects: Defect[];
-  /** The drawing's counts (DESIGN.md, "Records over prose"): on apply, check and render, when nothing was refused. */
+  /** The drawing's counts (specs/decisions, "Records over prose"): on apply, check and render, when nothing was refused. */
   counts?: Counts;
-  /** What the drawing draws poorly: on every write, check and render (DESIGN.md, "Every write prints every warning"). */
+  /** What the drawing draws poorly: on every write, check and render (specs/decisions, "Every write prints every warning"). */
   warnings?: Warning[];
   /** What each id of the diagram the defects are found in names, so that their detail names each by its kind. */
   kinds?: ReadonlyMap<string, string>;
@@ -52,7 +52,7 @@ export function blocks(r: Report): Block[] {
 }
 
 /**
- * The report as text (DESIGN.md, "Refusals say what happened and which commands can change it"): ok with the ids it
+ * The report as text (specs/decisions, "Refusals say what happened and which commands can change it"): ok with the ids it
  * changed, or failed, and the records of `head`; then a block for each problem, a blank line before each; then the
  * records of the drawing. A refused change writes nothing.
  */
@@ -142,14 +142,14 @@ export function loadDiagram(file: string, setting: Set<string> = new Set()): Dia
   if (marks.length > 0) return inFile(marks);
   const styles = loadStyles(file, stylesheetRefs(d, []));
   if (styles !== undefined) return inFile(styles.errors);
-  // The file is read before its stylesheet, so a weight level is checked here (DESIGN.md, "Edge weights").
+  // The file is read before its stylesheet, so a weight level is checked here (specs/decisions, "Edge weights").
   const weights = unknownWeights(d);
   return weights.length > 0 ? inFile(weights) : d;
 }
 
 /**
  * Reads the stylesheets a diagram names, relative to its folder, and hands them
- * to layout (DESIGN.md, "Themes and stylesheets"). Returns a report for the first one that is missing or wrong,
+ * to layout (specs/decisions, "Themes and stylesheets"). Returns a report for the first one that is missing or wrong,
  * its errors with the source and the operation's index `sourceOf` gives the stylesheet. A style that is not a valid
  * name is left for the model to refuse.
  */
@@ -186,7 +186,7 @@ export function writeAtomic(file: string, content: string | Uint8Array) {
 /**
  * Lays out and checks a diagram as it is in its file, so that each defect is already in the file. Without `all`,
  * only the defects the agent can fix: engine-owned ones are the engine's to avoid, and only `check --all` reports
- * them (DESIGN.md, "Defects owned by who can fix them").
+ * them (specs/decisions, "Defects owned by who can fix them").
  */
 export function inspect(d: Diagram, m: Measurer, all = false): Defect[] {
   const defects = check(d, layout(d, m), m).map((x) => ({ ...x, source: IN_FILE }));
@@ -278,7 +278,7 @@ const WEIGHTS = 5;
 type Seen = "present" | "absent" | "unknown";
 
 /**
- * Where a problem of the diagram a batch makes comes from (DESIGN.md, "Refusals say what happened and which commands
+ * Where a problem of the diagram a batch makes comes from (specs/decisions, "Refusals say what happened and which commands
  * can change it"): the number of operations after which it is not there, while it is there after each one more, up to
  * the whole batch; 0 when the diagram before the batch has it and every prefix too; undefined when no line can be
  * known. It runs only on a refused write, so a write that succeeds costs nothing more. grafical applies the batch less
@@ -472,7 +472,7 @@ export function batchOps(
 
 /**
  * Applies operations to the file's diagram and writes it, or refuses and writes nothing.
- * With `counts`, the report carries the drawing's counts (DESIGN.md, "Records over prose"), as apply's does.
+ * With `counts`, the report carries the drawing's counts (specs/decisions, "Records over prose"), as apply's does.
  */
 export async function runWrite(
   file: string,
@@ -496,7 +496,7 @@ export async function runWrite(
 }
 
 /**
- * What a batch would do (DESIGN.md, "Records over prose"): the counts of the drawing before and after it, with
+ * What a batch would do (specs/decisions, "Records over prose"): the counts of the drawing before and after it, with
  * nothing written. The agent decides what to try; grafical measures.
  */
 export async function tryWrite(

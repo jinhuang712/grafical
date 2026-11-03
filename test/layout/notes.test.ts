@@ -1,5 +1,5 @@
-// Notes in the picture (DESIGN.md, "Notes as callouts or footnotes"): a callout card beside its target, or a
-// numbered footnote where the agent says so; a card with no room is refused (DESIGN.md, "The dirty work has edges").
+// Notes in the picture (specs/decisions, "Notes as callouts or footnotes"): a callout card beside its target, or a
+// numbered footnote where the agent says so; a card with no room is refused (specs/decisions, "The dirty work has edges").
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { drawing, drawingText } from "../../src/check/drawing.ts";
@@ -33,7 +33,7 @@ const note = (on: string, text = "retries 5 times, then the DLQ", footnote = fal
 const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
-describe('notes in the picture (DESIGN.md, "Notes as callouts or footnotes")', () => {
+describe('notes in the picture (specs/decisions, "Notes as callouts or footnotes")', () => {
   it("a note with room beside its target is a card, joined to it by a dotted line", () => {
     const d = ok(fx, [note("catalog-api", "owned by the storefront team")]);
     const scene = layout(d, m);

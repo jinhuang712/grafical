@@ -126,7 +126,7 @@ function crossLikeJunctions(edges: SceneEdge[]): string[] {
   return out;
 }
 
-describe('groups inside groups (DESIGN.md, "Every layered diagram type")', () => {
+describe('groups inside groups (specs/decisions, "Every layered diagram type")', () => {
   let scene: Scene;
   beforeAll(async () => {
     scene = layout(nested, await createMeasurer());
@@ -221,7 +221,7 @@ describe("lines past a group they do not belong to", () => {
   });
 });
 
-describe('the target look (DESIGN.md, "A target picture with measured rules")', () => {
+describe('the target look (specs/decisions, "A target picture with measured rules")', () => {
   let scene: Scene;
   let m: Measurer;
   beforeAll(async () => {
@@ -281,7 +281,7 @@ describe('the target look (DESIGN.md, "A target picture with measured rules")', 
     ).toBe("persist");
   });
 
-  it('bundles a fan-out of three or more unlabelled lines into one port and trunk (DESIGN.md, "Fan-outs of three bundle")', () => {
+  it('bundles a fan-out of three or more unlabelled lines into one port and trunk (specs/decisions, "Fan-outs of three bundle")', () => {
     const crossings = lineTrouble(catalogSyncGrouped, m).crossings;
     for (const from of ["pipelines", "service"]) {
       const out = scene.edges.filter(
@@ -294,7 +294,7 @@ describe('the target look (DESIGN.md, "A target picture with measured rules")', 
     }
   });
 
-  it('gives each line a port of its own when two leave a side with room (DESIGN.md, "Lines meet any side")', () => {
+  it('gives each line a port of its own when two leave a side with room (specs/decisions, "Lines meet any side")', () => {
     const two: Diagram = {
       grafical: 1,
       title: "Two",
@@ -339,7 +339,7 @@ describe('the target look (DESIGN.md, "A target picture with measured rules")', 
   it("has a subtitle, a footnote and a legend of the two line styles it names", () => {
     expect(scene.subtitle?.runs.length).toBeGreaterThan(0);
     expect(scene.note?.runs.length).toBeGreaterThan(0);
-    // It names nothing, so it draws no legend (DESIGN.md, "The legend says only what the agent named").
+    // It names nothing, so it draws no legend (specs/decisions, "The legend says only what the agent named").
     expect(scene.legend).toEqual([]);
     const named = layout(
       { ...catalogSyncGrouped, legend: { solid: "call or read", dashed: "message" } },
@@ -410,7 +410,7 @@ describe("edge cases", () => {
     });
   }
 
-  it('draws a self-loop wide and deep enough to read as a loop (DESIGN.md, "Lines meet any side")', () => {
+  it('draws a self-loop wide and deep enough to read as a loop (specs/decisions, "Lines meet any side")', () => {
     const loop = layout(edgeCases, m).edges.find((x) => x.from === x.to);
     const [a, b, c, d] = loop?.points ?? [];
     expect(loop?.points).toHaveLength(4);
@@ -442,7 +442,7 @@ describe("edge cases", () => {
   });
 });
 
-describe('stability (DESIGN.md, "Layout computed again on every change")', () => {
+describe('stability (specs/decisions, "Layout computed again on every change")', () => {
   let ops = 0;
   let moved = 0;
   let routes = 0;
@@ -514,7 +514,7 @@ describe('stability (DESIGN.md, "Layout computed again on every change")', () =>
       expect(out).toEqual([]);
     });
 
-    // DESIGN.md, "A row with a look is drawn": the look draws that row and moves no box across, nor anything above it.
+    // specs/decisions, "A row with a look is drawn": the look draws that row and moves no box across, nor anything above it.
     it(`${name}: give each layer a look, which draws only that row`, () => {
       const before = layoutFramed(d, m);
       const across = (f: typeof before) =>
@@ -587,7 +587,7 @@ describe('stability (DESIGN.md, "Layout computed again on every change")', () =>
   }, 60_000);
 });
 
-describe('determinism (DESIGN.md, "Output and determinism")', () => {
+describe('determinism (DESIGNS.md, "The same file gives the same picture on any machine")', () => {
   for (const [name, d] of fixtures) {
     it(`${name} gives an identical scene`, () => {
       expect(hash(layout(d, m))).toEqual(hash(layout(structuredClone(d), m)));

@@ -1,0 +1,112 @@
+# Decisions
+
+The forks grafical took: what was chosen, what was not, and why. One decision is one file, numbered in the order it was made. Code and documents cite a decision by its title, such as `specs/decisions, "Our own gap router"`, and `test/docs/citations.test.ts` checks that the title exists. The commitments the whole design must meet are in [DESIGNS.md](../../DESIGNS.md).
+
+## The decisions
+
+- [001. Operations over whole-file rewrites](001-operations-over-whole-file-rewrites.md) (2026-10-11)
+- [002. Facts over coordinates](002-facts-over-coordinates.md) (2026-10-11)
+- [003. Rows unseen, groups as systems](003-rows-unseen-groups-as-systems.md) (2026-10-11)
+- [004. Layout computed again on every change](004-layout-computed-again-on-every-change.md) (2026-10-11)
+- [005. Our own gap router](005-our-own-gap-router.md) (2026-10-11)
+- [006. Bundled fonts](006-bundled-fonts.md) (2026-10-11)
+- [007. Our own SVG writer](007-our-own-svg-writer.md) (2026-10-11)
+- [008. Defects owned by who can fix them](008-defects-owned-by-who-can-fix-them.md) (2026-10-11)
+- [009. Git as the history](009-git-as-the-history.md) (2026-10-11)
+- [010. TypeScript on Node](010-typescript-on-node.md) (2026-10-11)
+- [011. The engine picks a new box's slot](011-the-engine-picks-a-new-box-s-slot.md) (2026-10-11)
+- [012. A target picture with measured rules](012-a-target-picture-with-measured-rules.md) (2026-10-11)
+- [013. Curation stays with the agent](013-curation-stays-with-the-agent.md) (2026-10-11)
+- [014. Boxes sized to their text](014-boxes-sized-to-their-text.md) (2026-10-11)
+- [015. Lines that end at containers](015-lines-that-end-at-containers.md) (2026-10-11)
+- [016. Themes and stylesheets](016-themes-and-stylesheets.md) (2026-10-11)
+- [017. A viewer that only shows](017-a-viewer-that-only-shows.md) (2026-10-11)
+- [018. Swimlanes run one way](018-swimlanes-run-one-way.md) (2026-10-11)
+- [019. Lines meet any side](019-lines-meet-any-side.md) (2026-10-12)
+- [020. Every layered diagram type](020-every-layered-diagram-type.md) (2026-10-12)
+- [021. The help as the reference](021-the-help-as-the-reference.md) (2026-10-12)
+- [022. Records over prose](022-records-over-prose.md) (2026-10-13)
+- [023. Fan-outs of three bundle](023-fan-outs-of-three-bundle.md) (2026-10-13)
+- [024. Same file exact, same facts mostly](024-same-file-exact-same-facts-mostly.md) (2026-10-13)
+- [025. Marks of any kind](025-marks-of-any-kind.md) (2026-10-13)
+- [026. Edge weights](026-edge-weights.md) (2026-10-13)
+- [027. Columns beside rows](027-columns-beside-rows.md) (2026-10-13)
+- [028. A legend for widths and marks](028-a-legend-for-widths-and-marks.md) (2026-10-14)
+- [029. Walls as space](029-walls-as-space.md) (2026-10-14)
+- [030. Notes as callouts or footnotes](030-notes-as-callouts-or-footnotes.md) (2026-10-14)
+- [031. Steps from another box](031-steps-from-another-box.md) (2026-10-14)
+- [032. Who chose is punished](032-who-chose-is-punished.md) (2026-10-14)
+- [033. The agent states every order](033-the-agent-states-every-order.md) (2026-10-15)
+- [034. The legend says only what the agent named](034-the-legend-says-only-what-the-agent-named.md) (2026-10-15)
+- [035. Columns hold across rows](035-columns-hold-across-rows.md) (2026-10-15)
+- [036. Composition counts](036-composition-counts.md) (2026-10-16)
+- [037. A group copy holds its inside](037-a-group-copy-holds-its-inside.md) (2026-10-16)
+- [038. A row with no box as one bar](038-a-row-with-no-box-as-one-bar.md) (2026-10-16)
+- [039. Step badges ride the line](039-step-badges-ride-the-line.md) (2026-10-16)
+- [040. The agent states where a group's label sits](040-the-agent-states-where-a-group-s-label-sits.md) (2026-10-16)
+- [041. The dirty work has edges](041-the-dirty-work-has-edges.md) (2026-10-16)
+- [042. One entry page, help where it is used](042-one-entry-page-help-where-it-is-used.md) (2026-10-17)
+- [043. Help for the tool, guides for best practice](043-help-for-the-tool-guides-for-best-practice.md) (2026-10-17)
+- [044. One way to a page, and a wrong command names the right one](044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md) (2026-10-18)
+- [045. A row with a look is drawn](045-a-row-with-a-look-is-drawn.md) (2026-10-18)
+- [046. A row's label is optional](046-a-row-s-label-is-optional.md) (2026-10-18)
+- [047. Refusals say what happened and which commands can change it](047-refusals-say-what-happened-and-which-commands-can-change-it.md) (2026-10-18)
+- [048. Every write prints every warning](048-every-write-prints-every-warning.md) (2026-10-18)
+- [049. An optional type sets the diagram's space](049-an-optional-type-sets-the-diagram-s-space.md) (2026-10-19)
+- [050. A line from every box of a group is a warning](050-a-line-from-every-box-of-a-group-is-a-warning.md) (2026-10-19)
+- [051. A label sits on its straight vertical line](051-a-label-sits-on-its-straight-vertical-line.md) (2026-10-30)
+- [052. A choice is a small diamond](052-a-choice-is-a-small-diamond.md) (2026-10-30)
+
+## Former IDs
+
+Until 2026-10-15 each decision had a number. Commit messages and the dated results in `bench/results/` still use them. D9 and D20 were reversed when the board was dropped, D23 listed the toolchain that `package.json` holds, and D35 was reversed by "Records over prose".
+
+| Former ID | Now |
+|---|---|
+| D1 | "Operations over whole-file rewrites" |
+| D2 | "Facts over coordinates" |
+| D3 | "Operations" |
+| D4 | "Operations" |
+| D5 | "Checking and failure" |
+| D6 | "Facts over coordinates" |
+| D7 | "Rows unseen, groups as systems" |
+| D8 | "Looks" |
+| D9 | PHILOSOPHY.md, "Who draws?" |
+| D10 | "Layout computed again on every change" |
+| D11 | "Our own gap router" |
+| D12 | "Bundled fonts" |
+| D13 | "Our own SVG writer" |
+| D14 | "Defects owned by who can fix them" |
+| D15 | "Output and determinism" |
+| D16 | "Interfaces" |
+| D17 | "Interfaces" |
+| D18 | "Git as the history" |
+| D19 | "TypeScript on Node" |
+| D20 | PHILOSOPHY.md, "Who draws?" |
+| D21 | "Platform and dependencies" |
+| D22 | "File format" |
+| D23 | "Platform and dependencies" |
+| D24 | "The engine picks a new box's slot" |
+| D25 | "A target picture with measured rules" |
+| D26 | "Curation stays with the agent" |
+| D27 | "Boxes sized to their text" |
+| D28 | "Lines that end at containers" |
+| D29 | "Curation stays with the agent" |
+| D30 | "Themes and stylesheets" |
+| D31 | "A viewer that only shows" |
+| D32 | "Swimlanes run one way" |
+| D33 | "Lines meet any side" |
+| D34 | "Every layered diagram type" |
+| D35 | "Records over prose" |
+| D36 | "The help as the reference" |
+| D37 | "Records over prose" |
+| D38 | "Fan-outs of three bundle" |
+| D39 | "Same file exact, same facts mostly" |
+| D40 | "Marks of any kind" |
+| D41 | "Edge weights" |
+| D42 | "A legend for widths and marks" |
+| D43 | "Walls as space" |
+| D44 | "Notes as callouts or footnotes" |
+| D45 | "Columns beside rows" |
+| D46 | "Steps from another box" |
+| D47 | "Who chose is punished" |

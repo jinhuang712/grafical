@@ -1,4 +1,4 @@
-// How each font face is named in the SVG and in resvg (DESIGN.md, "Bundled fonts", "Our own SVG writer").
+// How each font face is named in the SVG and in resvg (specs/decisions, "Bundled fonts", "Our own SVG writer").
 // One family per <text>, never a font stack. Browser-safe: no file access.
 
 import type { FontFace } from "./types.ts";

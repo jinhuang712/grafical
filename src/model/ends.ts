@@ -1,6 +1,6 @@
-// Edge ends (DESIGN.md, "Lines that end at containers"). An edge joins two nodes, or a node and a container,
+// Edge ends (specs/decisions, "Lines that end at containers"). An edge joins two nodes, or a node and a container,
 // or two containers. A container is a group, drawn as its system box, a layer,
-// drawn as a band across the diagram once an edge ends at it, or a lane (DESIGN.md, "Swimlanes run one way").
+// drawn as a band across the diagram once an edge ends at it, or a lane (specs/decisions, "Swimlanes run one way").
 // The rules here are facts, decided from rows and order alone, so they are
 // operation errors:
 // - an end must exist, and a group or lane end must hold at least one node. A row
@@ -58,7 +58,7 @@ export function isBar(d: Diagram, id: string): boolean {
 
 /**
  * The rows drawn as bars: those with no node that an edge ends at or that have a look
- * (DESIGN.md, "A row with no box as one bar", "A row with a look is drawn").
+ * (specs/decisions, "A row with no box as one bar", "A row with a look is drawn").
  */
 export function barRows(d: Diagram): Set<string> {
   const ends = new Set(d.edges.flatMap((e) => [e.from, e.to]));
@@ -294,7 +294,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
 /**
  * The group whose box stretches over a row, one with rows above it and below it, and the first and last rows its box
  * covers, from its top member's to its bottom member's: a refusal names both, so that the row is seen to lie between
- * them (DESIGN.md, "Refusals say what happened and which commands can change it"). A row the engine adds for boxes
+ * them (specs/decisions, "Refusals say what happened and which commands can change it"). A row the engine adds for boxes
  * placed by steps is not in the file, and is named "-", as show --drawn names it.
  */
 function groupAcross(

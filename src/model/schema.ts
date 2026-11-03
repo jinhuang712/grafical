@@ -1,4 +1,4 @@
-// Validation of a diagram file (DESIGN.md, "Operations over whole-file rewrites", "Checking and failure", "File format").
+// Validation of a diagram file (DESIGNS.md, "Every write is checked, and each defect has an owner", "What grafical cannot fully read, it refuses", specs/decisions, "Operations over whole-file rewrites").
 
 import { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
@@ -47,17 +47,17 @@ const ID_RE = /^[a-z0-9][a-z0-9._-]*$/;
 const EDGE_ID_RE = /^[a-z0-9][a-z0-9._-]*(->[a-z0-9][a-z0-9._-]*)?(#[0-9]+)?$/;
 
 export const nodeId = z.string().regex(ID_RE, { message: ID_NODE });
-/** What a group copy appends to every id it makes (DESIGN.md, "A group copy holds its inside"). */
+/** What a group copy appends to every id it makes (specs/decisions, "A group copy holds its inside"). */
 export const idSuffix = z.string().regex(/^[a-z0-9._-]+$/, { message: ID_SUFFIX });
 export const edgeId = z.string().regex(EDGE_ID_RE, { message: ID_EDGE });
 export const text = z.string().min(1);
 /**
  * A legend entry's words. false, which left an entry out while entries had default words, is read
- * as no words (DESIGN.md, "The legend says only what the agent named").
+ * as no words (specs/decisions, "The legend says only what the agent named").
  */
 const words = z.union([text, z.literal(false)]);
 
-/** The most characters a text mark may hold; a longer text belongs in the label (DESIGN.md, "Marks of any kind"). */
+/** The most characters a text mark may hold; a longer text belongs in the label (specs/decisions, "Marks of any kind"). */
 export const MARK_TEXT_MAX = 6;
 
 /** The characters a person sees, so that one emoji counts as one. */
@@ -73,7 +73,7 @@ function compactMark(m: z.output<typeof markSchema>): Mark {
   return Object.fromEntries(Object.entries(m).filter(([, v]) => v !== undefined)) as Mark;
 }
 
-/** Does this text hold one emoji? Anything else short is drawn as text (DESIGN.md, "Marks of any kind"). */
+/** Does this text hold one emoji? Anything else short is drawn as text (specs/decisions, "Marks of any kind"). */
 export function isEmoji(text: string): boolean {
   return /^\p{Extended_Pictographic}/u.test(text) && graphemes(text).length === 1;
 }
@@ -90,7 +90,7 @@ export function isMarkFile(v: string): boolean {
   return /\.(svg|png)$/i.test(v);
 }
 
-/** Is this longer than any mark can be, so that no mark is named by it (DESIGN.md, "A legend for widths and marks")? */
+/** Is this longer than any mark can be, so that no mark is named by it (specs/decisions, "A legend for widths and marks")? */
 export function markNameTooLong(name: string): boolean {
   return !isMarkFile(name) && graphemes(name).length > MARK_TEXT_MAX;
 }
@@ -141,10 +141,10 @@ const nodeSchema = z.strictObject({
   icons: iconsSchema.optional(),
 });
 
-/** A whole number of steps (DESIGN.md, "Steps from another box"). */
+/** A whole number of steps (specs/decisions, "Steps from another box"). */
 export const steps = z.number().int().min(1).max(MAX_STEPS);
 
-/** A box in no row, placed by steps from another box (DESIGN.md, "Steps from another box"). It has no row, alignment, column or lane. */
+/** A box in no row, placed by steps from another box (specs/decisions, "Steps from another box"). It has no row, alignment, column or lane. */
 const stepNodeSchema = nodeSchema.omit({ align: true, lane: true, column: true }).extend({
   from: nodeId,
   down: steps.optional(),
@@ -163,7 +163,7 @@ const groupSchema = z.strictObject({
 
 const laneSchema = z.strictObject({ id: nodeId, label: text });
 
-/** Empty space between two sides (DESIGN.md, "Walls as space"): nodes and groups; it lets through lines, nodes and groups. */
+/** Empty space between two sides (specs/decisions, "Walls as space"): nodes and groups; it lets through lines, nodes and groups. */
 const wallSchema = z.strictObject({
   id: nodeId,
   between: z.array(nodeId).min(1),
@@ -180,11 +180,11 @@ const layerSchema = z.strictObject({
   nodes: z.array(nodeSchema).default([]),
 });
 
-/** A width in pixels, written as a legend's key (DESIGN.md, "A legend for widths and marks"). */
+/** A width in pixels, written as a legend's key (specs/decisions, "A legend for widths and marks"). */
 const WIDTH_KEY = /^[0-9]+(\.[0-9]+)?$/;
 
 /**
- * What a legend may name as a weight (DESIGN.md, "A legend for widths and marks"): a level other than thin, or a width in
+ * What a legend may name as a weight (specs/decisions, "A legend for widths and marks"): a level other than thin, or a width in
  * pixels within the limits. Returns the facts of a refusal, or undefined. `levels` are
  * the levels the stylesheet has; whether a level exists is checked once it is read.
  */
@@ -204,13 +204,13 @@ export function legendWeightProblem(
   return key !== "thin" && WEIGHT_LEVEL.test(key) ? undefined : facts;
 }
 
-/** An edge weight: a level name, or a width in pixels (DESIGN.md, "Edge weights"). Whether the level exists is checked once the stylesheet is read. */
+/** An edge weight: a level name, or a width in pixels (specs/decisions, "Edge weights"). Whether the level exists is checked once the stylesheet is read. */
 export const weightValue = z.union([
   z.string().regex(WEIGHT_LEVEL, { message: WEIGHT }),
   z.number().min(WEIGHT_MIN, { message: WEIGHT }).max(WEIGHT_MAX, { message: WEIGHT }),
 ]);
 
-/** A line's step number (DESIGN.md, "Step badges ride the line"): a whole number from 1 to STEP_NUMBER_MAX. */
+/** A line's step number (specs/decisions, "Step badges ride the line"): a whole number from 1 to STEP_NUMBER_MAX. */
 export const stepNumber = z
   .number()
   .int({ message: STEP_NUMBER })
@@ -388,7 +388,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
     claim(n.id, `nodes[${ni}].id`, "node");
     nodeIds.push(n.id);
   });
-  // Rules that depend on rows see each box placed by steps in its row (DESIGN.md, "Steps from another box").
+  // Rules that depend on rows see each box placed by steps in its row (specs/decisions, "Steps from another box").
   const placed = placeSteps(d).d;
   const layerOf = new Map(placed.layers.flatMap((l) => l.nodes.map((n) => [n.id, l.id] as const)));
   (d.groups ?? []).forEach((g, gi) => {
@@ -485,7 +485,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   return errors;
 }
 
-/** Note rules (DESIGN.md, "Notes as callouts or footnotes"): a note is about a node, a group or a line that exists, one note each. */
+/** Note rules (specs/decisions, "Notes as callouts or footnotes"): a note is about a node, a group or a line that exists, one note each. */
 function checkNotes(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
   const targets = noteTargets(d);
@@ -515,7 +515,7 @@ function checkNotes(d: Diagram, index: number): OpError[] {
 
 /**
  * Group rules: members and inner groups name an existing group, and groups sit
- * inside each other at most three deep, with no group inside itself (DESIGN.md, "Rows unseen, groups as systems", "Every layered diagram type").
+ * inside each other at most three deep, with no group inside itself (specs/decisions, "Rows unseen, groups as systems", "Every layered diagram type").
  */
 function checkGroups(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];

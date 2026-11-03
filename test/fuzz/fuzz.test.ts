@@ -1,4 +1,4 @@
-// The engine owns six defects (DESIGN.md, "Defects owned by who can fix them"): no valid diagram may show one.
+// The engine owns six defects (specs/decisions, "Defects owned by who can fix them"): no valid diagram may show one.
 // Random diagrams from fixed seeds, laid out with the real measurer and judged by
 // the real checker. FUZZ_SEEDS=5000 pnpm fuzz runs a larger set;
 // node test/fuzz/run.ts and node test/fuzz/show.ts <seed> help find out why.
@@ -13,8 +13,8 @@ import { generate } from "./gen.ts";
 const seeds = Number(process.env.FUZZ_SEEDS ?? 100);
 /**
  * Seeds past the usual 100 that once failed, kept so that CI runs them: a line
- * through an outer label stacked above an inner one (DESIGN.md, "Every layered diagram type"); a wall's label with no
- * place along its line clear of the lines that cross it (DESIGN.md, "Walls as space"); the label of a line across
+ * through an outer label stacked above an inner one (specs/decisions, "Every layered diagram type"); a wall's label with no
+ * place along its line clear of the lines that cross it (specs/decisions, "Walls as space"); the label of a line across
  * the border of a group's box, as a line to a lane across its top; a label moved beside a line that runs straight
  * on into a band, across the other line between the same box and band; a label with no clear place beside the stub of a line cut
  * at a row lane's border, laid across the border; the text of a numbered line cut at a lane, pushed out of
@@ -58,7 +58,7 @@ describe("fuzz", () => {
       );
       expect(found).toEqual([]);
     },
-    // Each seed lays out again to move a title a line runs across (DESIGN.md, "The dirty work has edges").
+    // Each seed lays out again to move a title a line runs across (specs/decisions, "The dirty work has edges").
     Math.max(60_000, seeds * 200),
   );
 

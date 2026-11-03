@@ -1,4 +1,4 @@
-// Geometry checks on a scene, written as test helpers. The real checker (DESIGN.md, "Defects owned by who can fix them") is
+// Geometry checks on a scene, written as test helpers. The real checker (specs/decisions, "Defects owned by who can fix them") is
 // another module's job; these only keep the layout honest.
 
 import type { Point, Rect, Scene, SceneEdge } from "../../src/scene.ts";
@@ -43,12 +43,12 @@ export function segmentHitsRect(s: Seg, r: Rect): boolean {
   return Math.min(hi, r.x + r.w) - Math.max(lo, r.x) > 1e-9;
 }
 
-/** Edges that share a source node and a line style may run together as a bus (DESIGN.md, "Our own gap router"). */
+/** Edges that share a source node and a line style may run together as a bus (specs/decisions, "Our own gap router"). */
 export function sameBus(a: SceneEdge, b: SceneEdge): boolean {
   return a.from === b.from && lineStyle(a.kind) === lineStyle(b.kind);
 }
 
-/** Unlabelled edges in one line style into one node may arrive through one port (DESIGN.md, "A target picture with measured rules" rule 4). */
+/** Unlabelled edges in one line style into one node may arrive through one port (specs/decisions, "A target picture with measured rules" rule 4). */
 export function sameFanIn(a: SceneEdge, b: SceneEdge): boolean {
   return (
     a.to === b.to &&
@@ -104,7 +104,7 @@ export function defects(s: Scene): Defects {
   });
 
   // Labels: clear of nodes, other text, other edges, and their own line. Rows
-  // are not drawn (DESIGN.md, "Rows unseen, groups as systems"), so their labels do not count.
+  // are not drawn (specs/decisions, "Rows unseen, groups as systems"), so their labels do not count.
   const texts = [
     { id: "title", box: s.title.bbox },
     ...(s.groups ?? []).map((g) => ({ id: `group ${g.id}`, box: g.label.bbox })),
@@ -234,7 +234,7 @@ function sorted(a: number, b: number): [number, number] {
   return a < b ? [a, b] : [b, a];
 }
 
-/** Every defect the DESIGN.md, "Defects owned by who can fix them" list names, flattened, for assertions. */
+/** Every defect the specs/decisions, "Defects owned by who can fix them" list names, flattened, for assertions. */
 export function mechanical(d: Defects): string[] {
   return [
     ...d.notOrthogonal.map((x) => `not orthogonal: ${x}`),
@@ -249,13 +249,13 @@ export function mechanical(d: Defects): string[] {
 }
 
 /**
- * Lines that cross text (DESIGN.md, "A target picture with measured rules" rule 8, DESIGN.md, "Defects owned by who can fix them"): a segment through the box of a node's
+ * Lines that cross text (specs/decisions, "A target picture with measured rules" rule 8, specs/decisions, "Defects owned by who can fix them"): a segment through the box of a node's
  * text, another edge's label, a group's label, the title, subtitle, footnote or a
  * legend label. Like the checker, a line may graze a text box by 2 px.
  */
 export function textCrossings(s: Scene): string[] {
   // A group's label and a line's label no gutter could hold are the agent's: title-blocked and
-  // label-blocked (DESIGN.md, "The dirty work has edges").
+  // label-blocked (specs/decisions, "The dirty work has edges").
   const texts: { id: string; box: Rect; owner?: string }[] = [
     { id: "title", box: s.title.bbox },
     ...s.nodes.flatMap((n) => n.texts.map((t, i) => ({ id: `node ${n.id}#${i}`, box: t.bbox }))),
@@ -280,7 +280,7 @@ export function textCrossings(s: Scene): string[] {
   return out;
 }
 
-/** Nodes inside a group's box that are not its members (DESIGN.md, "Rows unseen, groups as systems", "Defects owned by who can fix them"). */
+/** Nodes inside a group's box that are not its members (specs/decisions, "Rows unseen, groups as systems", "Defects owned by who can fix them"). */
 export function groupIntruders(s: Scene): string[] {
   const out: string[] = [];
   for (const g of s.groups ?? []) {
@@ -291,7 +291,7 @@ export function groupIntruders(s: Scene): string[] {
   return out;
 }
 
-/** The measured rules of DESIGN.md, "A target picture with measured rules", as the checker measures them. */
+/** The measured rules of specs/decisions, "A target picture with measured rules"as the checker measures them. */
 export interface Taste {
   width: number;
   height: number;

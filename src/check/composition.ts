@@ -1,4 +1,4 @@
-// How the lines sit against each other and against the boxes, as three separate counts (DESIGN.md, "Composition
+// How the lines sit against each other and against the boxes, as three separate counts (specs/decisions, "Composition
 // counts"). Each is a count of places, never a score: grafical adds nothing up and judges nothing.
 
 import type { Point, Rect, Scene, SceneEdge } from "../scene.ts";
@@ -155,7 +155,7 @@ export interface Gutter {
 
 /**
  * What lies between two neighbouring rows, from the bottom of the boxes above to the top of the boxes below
- * (DESIGN.md, "Composition counts"): the lines with a run in it, the crossings, the tight pairs and the crowded
+ * (specs/decisions, "Composition counts"): the lines with a run in it, the crossings, the tight pairs and the crowded
  * labels. A line's run that only passes through counts.
  */
 export function gutterOf(

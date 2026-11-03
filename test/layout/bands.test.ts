@@ -57,7 +57,7 @@ edges:
   });
 });
 
-describe('a row with no box as one bar (DESIGN.md, "A row with no box as one bar")', () => {
+describe('a row with no box as one bar (specs/decisions, "A row with no box as one bar")', () => {
   const bar = (look = "") =>
     readDiagram(`grafical: 1
 title: bar
@@ -154,7 +154,7 @@ edges:
   });
 });
 
-describe('a row with a look (DESIGN.md, "A row with a look is drawn")', () => {
+describe('a row with a look (specs/decisions, "A row with a look is drawn")', () => {
   const rows = (core = "", bus = "") =>
     readDiagram(`grafical: 1
 title: looks

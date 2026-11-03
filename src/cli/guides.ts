@@ -1,5 +1,5 @@
 // The guides: how common kinds of diagram are usually drawn with grafical, for an agent that wants them
-// (DESIGN.md, "Help for the tool, guides for best practice"). The help says how to use the tool; a guide is best
+// (specs/decisions, "Help for the tool, guides for best practice"). The help says how to use the tool; a guide is best
 // practice to borrow from, never a rule: grafical refuses only what would draw wrong. Nothing tells an agent to
 // read one first, so that drawings keep their own shapes. Printed at 80 columns.
 

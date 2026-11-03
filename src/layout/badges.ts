@@ -1,4 +1,4 @@
-// Step badges (DESIGN.md, "Step badges ride the line"): a line's number sits in a small ring centred on the line,
+// Step badges (specs/decisions, "Step badges ride the line"): a line's number sits in a small ring centred on the line,
 // under the start of its label's text, which stands off the line past it. The router
 // gives the slot room for both, as it does for any label, and keeps the badge's end of
 // the slot over a straight part of the line. A badge that the slot still leaves

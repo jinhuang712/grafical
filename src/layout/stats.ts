@@ -1,5 +1,5 @@
 // Route measures: crossings, bends and length. The counts report them to the agent
-// (DESIGN.md, "Records over prose"), and tests report them.
+// (specs/decisions, "Records over prose"), and tests report them.
 
 import type { Point } from "../scene.ts";
 

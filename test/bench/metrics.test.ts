@@ -220,7 +220,7 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     expect(classify("Exit code 1\nfailed changed=-\ndefect code=overflow owner=agent", true)).toBe(
       "defect",
     );
-    // The blocks (DESIGN.md, "Refusals say what happened and which commands can change it").
+    // The blocks (specs/decisions, "Refusals say what happened and which commands can change it").
     expect(classify("Exit code 1\nfailed changed=-\n\nerror: unknown-node\ndetail:", true)).toBe(
       "opError",
     );

@@ -1,4 +1,4 @@
-// Every refusal says what happened, what caused it, and names only commands that exist (DESIGN.md, "Refusals say
+// Every refusal says what happened, what caused it, and names only commands that exist (specs/decisions, "Refusals say
 // what happened and which commands can change it"). Random single changes to the saved fixtures and to fuzz
 // diagrams, of the kinds an agent makes, are refused, each as the second line of a batch whose first changes nothing;
 // each refusal, as the write path reports it, has its code's sentence, the change's line as its source, and in next

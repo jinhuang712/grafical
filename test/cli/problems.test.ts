@@ -1,4 +1,4 @@
-// The words of a problem (DESIGN.md, "Refusals say what happened and which commands can change it"): one short
+// The words of a problem (specs/decisions, "Refusals say what happened and which commands can change it"): one short
 // sentence per code, and next names real commands only, in the order the help lists them.
 
 import { describe, expect, it } from "vitest";

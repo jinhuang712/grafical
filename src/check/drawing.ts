@@ -1,4 +1,4 @@
-// The drawing as discrete facts (DESIGN.md, "Records over prose"): for each box its row, its place in the
+// The drawing as discrete facts (specs/decisions, "Records over prose"): for each box its row, its place in the
 // row, its size, its lines on each side and their length; for each line the sides it
 // leaves and enters, its bends, its length against the shortest it could be, the rows
 // between its ends, the lines it crosses and the rows it passes without connecting; the
@@ -57,9 +57,9 @@ export interface DrawnLine {
   crosses: string[];
   /** Rows between its ends that it runs through, among their boxes, without meeting a box of. */
   passes: string[];
-  /** The lines it leaves or arrives with through one port, drawn as one bundle there (DESIGN.md, "Fan-outs of three bundle"), in id order. */
+  /** The lines it leaves or arrives with through one port, drawn as one bundle there (specs/decisions, "Fan-outs of three bundle"), in id order. */
   bundle: string[];
-  /** Its step's number, drawn on it (DESIGN.md, "Step badges ride the line"); absent for a line with none. */
+  /** Its step's number, drawn on it (specs/decisions, "Step badges ride the line"); absent for a line with none. */
   step?: number;
 }
 
@@ -72,7 +72,7 @@ export interface DrawnGroup {
 
 /**
  * A line style or a line width the picture draws, or a mark the diagram names, in the legend's
- * order (DESIGN.md, "A legend for widths and marks", "The legend says only what the agent named").
+ * order (specs/decisions, "A legend for widths and marks", "The legend says only what the agent named").
  */
 export interface DrawnLegend {
   /** The line style of a line's sample; null for a mark. */
@@ -87,7 +87,7 @@ export interface DrawnLegend {
   text: string | null;
 }
 
-/** A wall (DESIGN.md, "Walls as space"): which way it runs, how long and how thick it is, and the lines through it. */
+/** A wall (specs/decisions, "Walls as space"): which way it runs, how long and how thick it is, and the lines through it. */
 export interface DrawnWall {
   id: string;
   run: string;
@@ -97,7 +97,7 @@ export interface DrawnWall {
   lines: string[];
 }
 
-/** A note (DESIGN.md, "Notes as callouts or footnotes"): what it is about, and how it is drawn: a callout, or a footnote and its number. */
+/** A note (specs/decisions, "Notes as callouts or footnotes"): what it is about, and how it is drawn: a callout, or a footnote and its number. */
 export interface DrawnNote {
   on: string;
   as: string;
@@ -111,7 +111,7 @@ export interface Counts {
   /** Every point where two lines cross. */
   crossings: number;
   bends: number;
-  /** Lines with more than two bends (DESIGN.md, "The dirty work has edges"). */
+  /** Lines with more than two bends (specs/decisions, "The dirty work has edges"). */
   bent: number;
   /** The length of every line together. */
   length: number;
@@ -127,7 +127,7 @@ export interface Counts {
   across: number;
   /** Pairs of runs of two lines, not one bus, closer than 12 px side by side for over 100 px. */
   tight: number;
-  /** Line labels with under 8 px of room on two or more sides (DESIGN.md, "Composition counts"). */
+  /** Line labels with under 8 px of room on two or more sides (specs/decisions, "Composition counts"). */
   crowded: number;
 }
 
@@ -164,7 +164,7 @@ function gapOf(a: Rect, b: Rect): number {
 }
 
 export function drawing(facts: Diagram, scene: Scene): Drawing {
-  // Boxes placed by steps count in the rows they are drawn in (DESIGN.md, "Steps from another box").
+  // Boxes placed by steps count in the rows they are drawn in (specs/decisions, "Steps from another box").
   const d = placeSteps(facts).d;
   /** A row's name in the output: a row the engine added is "-". */
   const rowName = (id: string) => (addedRow(id) ? "-" : id);
@@ -202,7 +202,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     crosses.set(b, [...(crosses.get(b) ?? []), a]);
   }
 
-  // Every line meets its box at a port of its own, except the lines of a bundle (DESIGN.md, "Lines meet any side", "Fan-outs of three bundle").
+  // Every line meets its box at a port of its own, except the lines of a bundle (specs/decisions, "Lines meet any side", "Fan-outs of three bundle").
   const bundles = new Map<string, Set<string>>();
   const ends = (e: (typeof scene.edges)[number]) => [
     `${e.from}@${e.points[0]?.x},${e.points[0]?.y}`,
@@ -395,14 +395,14 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   };
 }
 
-/** The lines drawn with more than two bends (DESIGN.md, "The dirty work has edges"), in drawing order. */
+/** The lines drawn with more than two bends (specs/decisions, "The dirty work has edges"), in drawing order. */
 export function bentLines(lines: DrawnLine[]): DrawnLine[] {
   return lines.filter((l) => l.bends > TASTE_LIMITS.maxBends);
 }
 
 /**
  * The groups each of whose boxes, two or more, has a line to one end outside the group, or from it, the lines alike in
- * kind, label, weight and arrowheads, with those lines (DESIGN.md, "A line from every box of a group is a warning").
+ * kind, label, weight and arrowheads, with those lines (specs/decisions, "A line from every box of a group is a warning").
  * A group inside another that has the same lines is left out.
  */
 function linesPerMember(d: Diagram): { group: string; edges: string[] }[] {
@@ -440,7 +440,7 @@ function linesPerMember(d: Diagram): { group: string; edges: string[] }[] {
 }
 
 /**
- * What the drawing draws poorly, as warnings, in the order of their codes (DESIGN.md, "Every write prints every
+ * What the drawing draws poorly, as warnings, in the order of their codes (specs/decisions, "Every write prints every
  * warning"): the lines bent more than twice, the lines that pass rows, the lines across a group's box, the tight runs,
  * the crowded labels, the boxes no line reaches, the groups each of whose boxes has a line alike to one end, and each
  * pair of lines that cross. The first five are the places that bent, passing, across, tight and crowded count. `facts`

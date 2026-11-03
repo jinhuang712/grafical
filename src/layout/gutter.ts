@@ -1,8 +1,8 @@
-// One gutter channel (DESIGN.md, "Our own gap router"): orders the horizontal runs inside a gutter,
+// One gutter channel (specs/decisions, "Our own gap router"): orders the horizontal runs inside a gutter,
 // gives each a row, and places the labels the gutter carries. It sees only the
 // visits inside this gutter.
 //
-// The rows are built so that no two lines and no label touch (DESIGN.md, "Defects owned by who can fix them"):
+// The rows are built so that no two lines and no label touch (specs/decisions, "Defects owned by who can fix them"):
 // 1. Two lines that would run on top of each other fix an order: the one that
 //    enters from the top ends above the one that enters from the bottom.
 // 2. Each label takes the best slot along its run that no line crosses from top to
@@ -12,10 +12,10 @@
 // 3. The runs are ordered for few crossings, within the fixed order.
 // 4. Each run, in that order, takes the first row from its earliest one where it
 //    and its label touch nothing placed so far. The gutter grows rather than
-//    squeezes (DESIGN.md, "Layout computed again on every change"): the fixed order guarantees such a row further down.
+//    squeezes (specs/decisions, "Layout computed again on every change"): the fixed order guarantees such a row further down.
 // A label with no free slot at all is returned, so that it can move to another
 // gutter of its path. When it has none left, no line moves for it: it takes the slot
-// that costs least, and the write is refused (DESIGN.md, "The dirty work has edges").
+// that costs least, and the write is refused (specs/decisions, "The dirty work has edges").
 //
 // The runs of one fan-out or fan-in carry the same `bus`: their stubs at one x are
 // the shared trunk, one line, and never count against each other.
@@ -75,7 +75,7 @@ function onRun(v: Visit, x0: number): boolean {
 }
 
 /**
- * The square a step's badge takes when its run lies on row `row` (DESIGN.md, "Step badges ride the line"): centred on the run under
+ * The square a step's badge takes when its run lies on row `row` (specs/decisions, "Step badges ride the line"): centred on the run under
  * the start of the label's text, or its end where the start is off the run; or on the line
  * beside a label level with it.
  */
@@ -124,7 +124,7 @@ function candidates(v: Visit, lab: VisitLabel): Candidate[] {
   ];
   const touch = Math.min(16, len);
   const reach = Math.max(0, (len + lab.w) / 2 - touch);
-  // A step's badge sits on the run itself, under one end of the label (DESIGN.md, "Step badges ride the line").
+  // A step's badge sits on the run itself, under one end of the label (specs/decisions, "Step badges ride the line").
   const fits = (x0: number) =>
     lab.badge === undefined || onRun(v, x0) || onRun(v, x0 + lab.w - 2 * STEP.r);
   for (const [mode, penalty] of [
@@ -227,7 +227,7 @@ function geometry(pitch: number) {
       if (bu !== undefined && clash(bv, bu)) c++;
     }
     // A step's badge reaches across its run, past its label's box, and keeps clear of the
-    // other's lines, label and badge there (DESIGN.md, "Step badges ride the line").
+    // other's lines, label and badge there (specs/decisions, "Step badges ride the line").
     const gv = badgeOf(v, rv);
     const gu = badgeOf(u, ru);
     if (gu !== undefined) {
@@ -396,7 +396,7 @@ export function routeGutter(
         }
       } else if (lab.badge !== undefined) {
         // A badge beside its text sits on the line itself, where another line near it, up
-        // or down, may pass it at any row (DESIGN.md, "Step badges ride the line").
+        // or down, may pass it at any row (specs/decisions, "Step badges ride the line").
         const keep = { ...lab, mode: c.mode, x0: c.x0 };
         const g = badgeBox(v, keep, 0, 0);
         const reach = (x: number) =>
@@ -480,7 +480,7 @@ export function routeGutter(
     if (v === undefined) return;
     // A self-loop runs two rows deeper, so that its arrowhead has room to turn back: rows
     // count from the row's bottom, which a box reaches since every box takes its row's
-    // height (DESIGN.md, "Fan-outs of three bundle").
+    // height (specs/decisions, "Fan-outs of three bundle").
     let t0 = v.members.some((m) => m.plan.u === m.plan.v) ? 2 : 0;
     for (const k of order.slice(0, pos)) {
       const u = ranked[k];

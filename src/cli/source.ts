@@ -1,4 +1,4 @@
-// What caused a problem (DESIGN.md, "Refusals say what happened and which commands can change it"): the command line
+// What caused a problem (specs/decisions, "Refusals say what happened and which commands can change it"): the command line
 // as typed, an operation of a batch by the line it starts on and as it was written, or what was already in the file.
 
 import { isMap, isSeq, type Node, parseDocument } from "yaml";

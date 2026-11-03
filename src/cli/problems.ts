@@ -1,4 +1,4 @@
-// What a problem is, in grafical's words (DESIGN.md, "Refusals say what happened and which commands can change it"):
+// What a problem is, in grafical's words (specs/decisions, "Refusals say what happened and which commands can change it"):
 // one fixed sentence per code, which says what happened and never what to do, and the commands that can change it,
 // by name only. Both are fixed per code, never made for the case at hand.
 
@@ -370,7 +370,7 @@ export function nextOf(code: Code, facts: Facts, field?: string, of?: string): N
   return (n as Record<string, Next>)[variantOf(code, facts, field, of)] ?? [];
 }
 
-/** The kinds of problem (DESIGN.md, "Refusals say what happened and which commands can change it"). */
+/** The kinds of problem (specs/decisions, "Refusals say what happened and which commands can change it"). */
 export type Kind = "error" | "defect" | "warning";
 
 /** One problem as grafical prints it: its kind and code, its code's sentence, its source, its facts, and next. */
@@ -401,7 +401,7 @@ export function kindsOf(d: Diagram): Map<string, string> {
 
 /**
  * The keys that may name several things. Each holds a list, even of one; every other key holds one value
- * (DESIGN.md, "Refusals say what happened and which commands can change it").
+ * (specs/decisions, "Refusals say what happened and which commands can change it").
  */
 const LISTS: ReadonlySet<keyof Facts> = new Set<keyof Facts>([
   "likely",

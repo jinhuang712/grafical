@@ -1,4 +1,4 @@
-// Walls (DESIGN.md, "Walls as space"): empty space between two named sides, crossed only where it allows.
+// Walls (specs/decisions, "Walls as space"): empty space between two named sides, crossed only where it allows.
 
 import { describe, expect, it } from "vitest";
 import { showDiagram } from "../../src/cli/show.ts";
@@ -34,7 +34,7 @@ const net: Op = {
   label: "private network",
 };
 
-describe('walls (DESIGN.md, "Walls as space")', () => {
+describe('walls (specs/decisions, "Walls as space")', () => {
   it("are kept in the file, read back, and shown", () => {
     const d = ok(fx, [net]).diagram;
     expect(d.walls).toEqual([

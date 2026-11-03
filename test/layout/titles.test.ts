@@ -1,4 +1,4 @@
-// Where a group's label sits when the agent states it (DESIGN.md, "The agent states where a group's label sits").
+// Where a group's label sits when the agent states it (specs/decisions, "The agent states where a group's label sits").
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";

@@ -1,4 +1,3 @@
-<!-- what-we-build: approved 2026-10-15 -->
 # Philosophy
 
 > Written 2026-10-11. Rewritten by the owner on 2026-10-14, as questions with answers.

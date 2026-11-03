@@ -1,4 +1,3 @@
-<!-- what-we-build: approved 2026-10-15 -->
 # Roadmap
 
 **Current checkpoint:** [CP10: The MVP bar, measured again](#cp10-the-mvp-bar-measured-again), with [CP11: Pictures worth keeping](#cp11-pictures-worth-keeping) running beside it. Speed is fixed; operation errors, the new checks, the missing baselines and a paid round remain.

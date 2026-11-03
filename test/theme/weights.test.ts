@@ -43,7 +43,7 @@ function fail(d: Diagram, ops: Op[]): OpError[] {
 const edge = (d: Diagram, id: string) => d.edges.find((e) => e.id === id);
 const widthOf = (d: Diagram, id: string) => layout(d, m).edges.find((e) => e.id === id)?.width;
 
-describe('edge weights (DESIGN.md, "Edge weights")', () => {
+describe('edge weights (specs/decisions, "Edge weights")', () => {
   it("a level or a width sets how thick an edge is drawn; thin is the default", () => {
     const d = ok(fx, [
       { op: "edge.weight", edges: [EDGE], weight: "heavy" },
@@ -124,7 +124,7 @@ describe('edge weights (DESIGN.md, "Edge weights")', () => {
     const d = ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: "heavy" }]);
     expect(layout(d, m).legend?.some((l) => l.width !== undefined)).toBe(false);
     const named = ok(d, [{ op: "diagram.legend", weight: "heavy", text: "critical" }]);
-    // Drawn at the width it stands for (DESIGN.md, "A legend for widths and marks").
+    // Drawn at the width it stands for (specs/decisions, "A legend for widths and marks").
     expect(layout(named, m).legend?.at(-1)).toMatchObject({ width: 4 });
   });
 
@@ -164,7 +164,7 @@ describe('edge weights (DESIGN.md, "Edge weights")', () => {
   });
 });
 
-describe('weights in a stylesheet (DESIGN.md, "Edge weights")', () => {
+describe('weights in a stylesheet (specs/decisions, "Edge weights")', () => {
   const sheet = (body: string) =>
     parseStylesheet(`grafical-style: 1\npaint:\n  edge:\n${body}`, "w.grafical-style.yaml");
 

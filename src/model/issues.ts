@@ -1,4 +1,4 @@
-// Turns zod issues into OpErrors (DESIGN.md, "Checking and failure").
+// Turns zod issues into OpErrors (DESIGNS.md, "Every write is checked, and each defect has an owner").
 
 import type { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
@@ -10,9 +10,9 @@ export const ID_NODE = "ID_NODE";
 export const ID_EDGE = "ID_EDGE";
 /** A group copy's suffix: the characters of an id, and it may start with any of them. */
 export const ID_SUFFIX = "ID_SUFFIX";
-/** An edge weight that is neither a level name nor a width within the limits (DESIGN.md, "Edge weights"). */
+/** An edge weight that is neither a level name nor a width within the limits (specs/decisions, "Edge weights"). */
 export const WEIGHT = "WEIGHT";
-/** A step number that is not a whole number within the limits (DESIGN.md, "Step badges ride the line"). */
+/** A step number that is not a whole number within the limits (specs/decisions, "Step badges ride the line"). */
 export const STEP_NUMBER = "STEP_NUMBER";
 
 /** The characters an id may hold; an edge's id may also hold -> and #<n>. */
@@ -177,7 +177,7 @@ export function issuesToErrors(
       });
     } else if (issue.code === "invalid_union" && path[0] === "legend") {
       // A legend entry holds words. An old file's false is read as none, and not offered
-      // (DESIGN.md, "The legend says only what the agent named").
+      // (specs/decisions, "The legend says only what the agent named").
       out.push({
         code: "bad-type",
         index,
@@ -186,7 +186,7 @@ export function issuesToErrors(
         facts: { type: "string" },
       });
     } else if (issue.code === "invalid_union" || issue.message === "mark-too-long") {
-      // A mark is a text or a file: a string that is refused is too long (DESIGN.md, "Marks of any kind").
+      // A mark is a text or a file: a string that is refused is too long (specs/decisions, "Marks of any kind").
       out.push(
         typeof found === "string"
           ? { code: "mark-too-long", index, ...base, found: show(found), facts: { max: 6 } }

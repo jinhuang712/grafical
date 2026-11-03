@@ -70,7 +70,7 @@ describe("grouped diagrams", () => {
       /^ok changed=g,a,b\n\nwarning: lonely-box\n/,
     );
     expect(run("group", "join", f, "g", "c").code).toBe(0);
-    // Leaving the middle row: the box still spans it (DESIGN.md, "Rows unseen, groups as systems").
+    // Leaving the middle row: the box still spans it (specs/decisions, "Rows unseen, groups as systems").
     expect(run("group", "leave", f, "b").code).toBe(0);
     expect(run("group", "join", f, "g", "b").code).toBe(0);
     expect(run("group", "join", f, "zz", "a").out).toContain("unknown-group");
@@ -104,7 +104,7 @@ describe("grouped diagrams", () => {
     expect(read(f)).not.toContain("lane");
   });
 
-  it('apply and check report the counts, in text and JSON, with no threshold (DESIGN.md, "Records over prose")', () => {
+  it('apply and check report the counts, in text and JSON, with no threshold (specs/decisions, "Records over prose")', () => {
     const f = "big.grafical.yaml";
     run("new", f, "--title", "Big");
     const items = ["- op: layer.add\n  id: row\n  label: Row\n"];
@@ -127,7 +127,7 @@ describe("grouped diagrams", () => {
     expect(body.counts.nodes).toBe(17);
   });
 
-  it('group copy writes the copy, and prints its refusals as blocks (DESIGN.md, "A group copy holds its inside")', () => {
+  it('group copy writes the copy, and prints its refusals as blocks (specs/decisions, "A group copy holds its inside")', () => {
     const f = "copy.grafical.yaml";
     run("new", f, "--title", "Copy");
     writeFileSync(
@@ -177,8 +177,8 @@ describe("grouped diagrams", () => {
   });
 });
 
-describe('groups inside groups on the command line (DESIGN.md, "Every layered diagram type")', () => {
-  it('group title and group label say where a label sits, and show prints it (DESIGN.md, "The agent states where a group\'s label sits")', () => {
+describe('groups inside groups on the command line (specs/decisions, "Every layered diagram type")', () => {
+  it('group title and group label say where a label sits, and show prints it (specs/decisions, "The agent states where a group\'s label sits")', () => {
     const f = "titled.grafical.yaml";
     writeFileSync(join(dir, f), writeDiagram(nested));
     expect(run("group", "title", f, "vpc", "top-right").code).toBe(0);

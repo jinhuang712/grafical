@@ -1,4 +1,3 @@
-<!-- what-we-build: approved 2026-10-15 -->
 # grafical
 
 > Architecture diagrams that coding agents build in small, checked steps.
@@ -69,7 +68,9 @@ From a clone, write `node src/cli/main.ts` in place of `grafical`.
 
 - [PROPOSAL.md](PROPOSAL.md): why grafical exists, what it wants and what it won't do.
 - [PHILOSOPHY.md](PHILOSOPHY.md): the questions grafical takes a stance on, and its answers.
-- [DESIGN.md](DESIGN.md): how it is built, as principles and dated decisions.
+- [DESIGNS.md](DESIGNS.md): what every design change must meet.
+- [specs/ARCHITECTURE.md](specs/ARCHITECTURE.md): the parts and how they connect.
+- [specs/decisions](specs/decisions/README.md): each fork taken, with what was not chosen.
 - [GOALS.md](GOALS.md): the checks that say whether it works, each with its status.
 - [FEATURES.md](FEATURES.md): what it does, and what it will and won't do.
 - [ROADMAP.md](ROADMAP.md): what is done and what comes next.

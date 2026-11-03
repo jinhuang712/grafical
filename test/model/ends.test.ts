@@ -41,7 +41,7 @@ const toLayer: Op[] = [
   { op: "edge.add", from: "pipelines", to: "deps", label: "calls" },
 ];
 
-describe('edge ends at a container (DESIGN.md, "Lines that end at containers")', () => {
+describe('edge ends at a container (specs/decisions, "Lines that end at containers")', () => {
   it("accepts a group or a layer as an end", () => {
     const d = ok(catalogSyncGrouped, [...toGroup, ...toLayer]);
     expect(d.edges.map((e) => e.id)).toContain("callers->catalog-api");
@@ -102,7 +102,7 @@ describe('edge ends at a container (DESIGN.md, "Lines that end at containers")',
   });
 });
 
-describe('a row with no box as one bar (DESIGN.md, "A row with no box as one bar")', () => {
+describe('a row with no box as one bar (specs/decisions, "A row with no box as one bar")', () => {
   const base = readDiagram(`grafical: 1
 title: bar
 density: normal
@@ -147,7 +147,7 @@ groups:
       { op: "edge.add", from: "rider", to: "mid" },
     ]);
     // The group's box covers every row from its top row to its bottom one, and the record names both
-    // (DESIGN.md, "Refusals say what happened and which commands can change it").
+    // (specs/decisions, "Refusals say what happened and which commands can change it").
     expect(errors[0]).toMatchObject({
       code: "bar-in-group",
       facts: { row: "mid", group: "sys", edge: "rider->mid", top: "core", bottom: "stores" },
@@ -199,7 +199,7 @@ groups:
     expect(diffDiagrams(a, b)).toEqual([{ op: "layer.look", id: "gateway", look: "band" }]);
   });
 
-  // DESIGN.md, "A row with a look is drawn".
+  // specs/decisions, "A row with a look is drawn".
   it("checks a row with no box and a look as a bar, though no line ends at it", () => {
     const passing = ok(base, [{ op: "edge.add", from: "driver", to: "payments" }]);
     const crossed = fail(passing, [{ op: "layer.look", id: "gateway", look: "box" }]);

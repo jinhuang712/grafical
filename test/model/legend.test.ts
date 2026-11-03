@@ -1,4 +1,4 @@
-// The legend's words (DESIGN.md, "A legend for widths and marks", "The legend says only what the agent named"): naming line
+// The legend's words (specs/decisions, "A legend for widths and marks", "The legend says only what the agent named"): naming line
 // styles, widths and marks, through the operation and the file.
 
 import { describe, expect, it } from "vitest";
@@ -44,7 +44,7 @@ const weighted = ok(fx, [
   { op: "edge.weight", edges: ["pipelines->postgres"], weight: 3 },
 ]);
 
-describe('the legend names line widths (DESIGN.md, "A legend for widths and marks")', () => {
+describe('the legend names line widths (specs/decisions, "A legend for widths and marks")', () => {
   it("widths it does not name have no entry", () => {
     expect(entries(weighted).filter((x) => x.width !== undefined)).toEqual([]);
   });
@@ -148,7 +148,7 @@ const marked = ok(fx, [
 ]);
 const markEntries = (d: Diagram) => (layout(d, m).legend ?? []).filter((x) => x.mark !== undefined);
 
-describe('the legend names marks (DESIGN.md, "A legend for widths and marks")', () => {
+describe('the legend names marks (specs/decisions, "A legend for widths and marks")', () => {
   it("a mark is in the legend only once it is named, and once for each name", () => {
     expect(markEntries(marked)).toEqual([]);
     const d = ok(marked, [
@@ -192,7 +192,7 @@ describe('the legend names marks (DESIGN.md, "A legend for widths and marks")', 
   });
 });
 
-describe('the legend says only what the agent named (DESIGN.md, "The legend says only what the agent named")', () => {
+describe('the legend says only what the agent named (specs/decisions, "The legend says only what the agent named")', () => {
   const styles = (d: Diagram) => (layout(d, m).legend ?? []).map((x) => x.style);
 
   it("a diagram that names nothing draws no legend", () => {

@@ -29,7 +29,7 @@ function replays(a: Diagram | null, b: Diagram): void {
   expect(writeDiagram(r.diagram)).toBe(writeDiagram(b));
 }
 
-describe('diff as operations (DESIGN.md, "Git as the history")', () => {
+describe('diff as operations (specs/decisions, "Git as the history")', () => {
   it("reports nothing for the same diagram", () => {
     expect(diffDiagrams(catalogSyncGrouped, structuredClone(catalogSyncGrouped))).toEqual([]);
   });
@@ -49,7 +49,7 @@ describe('diff as operations (DESIGN.md, "Git as the history")', () => {
     }
   });
 
-  it('reports a step cleared, and an added edge with its step (DESIGN.md, "Step badges ride the line")', () => {
+  it('reports a step cleared, and an added edge with its step (specs/decisions, "Step badges ride the line")', () => {
     const numbered = edited(catalogSyncGrouped, [
       { op: "edge.step", id: "relay->line_topics", n: 2 },
     ]);
@@ -79,7 +79,7 @@ describe('diff as operations (DESIGN.md, "Git as the history")', () => {
     ]);
   });
 
-  it('replays groups that move between groups, and removed groups that held others (DESIGN.md, "Every layered diagram type")', () => {
+  it('replays groups that move between groups, and removed groups that held others (specs/decisions, "Every layered diagram type")', () => {
     const moved = edited(nested, [
       { op: "group.join", group: "region", nodes: ["public"] },
       { op: "group.leave", nodes: ["api"], up: true },

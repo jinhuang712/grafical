@@ -48,7 +48,7 @@ describe("line labels and group sides", () => {
   });
 });
 
-describe('a label no gutter holds (DESIGN.md, "The dirty work has edges")', () => {
+describe('a label no gutter holds (specs/decisions, "The dirty work has edges")', () => {
   // Until 2026-10-17 the middle line stepped out of the crowd with four bends to carry its label.
   it("moves no line for it, and refuses it as label-blocked, naming the line across it", () => {
     const d = readDiagram(`grafical: 1
@@ -107,7 +107,7 @@ edges:
 `) as Diagram;
     const found = check(d, layout(d, m), m);
     // The block names the line, the lanes across its label and the gaps it tried, and the commands that can change
-    // it, edge relabel among them (DESIGN.md, "Refusals say what happened and which commands can change it").
+    // it, edge relabel among them (specs/decisions, "Refusals say what happened and which commands can change it").
     expect(found.map((x) => defectBlock(x, kindsOf(d)))).toEqual([
       {
         kind: "defect",

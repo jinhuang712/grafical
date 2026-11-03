@@ -1,4 +1,3 @@
-<!-- what-we-build: approved 2026-10-15 -->
 # grafical — Proposal
 
 > Architecture diagrams that coding agents build in small, checked steps.

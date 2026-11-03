@@ -1,4 +1,4 @@
-// Each command's line in a batch, shown on its help page (DESIGN.md, "One entry page, help where it is used"). It
+// Each command's line in a batch, shown on its help page (specs/decisions, "One entry page, help where it is used"). It
 // is built from the operation's schema, so it cannot drift from what a batch accepts: the operation's name and
 // the fields it needs. A command's arguments and options are named as its operation's fields.
 

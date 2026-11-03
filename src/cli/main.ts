@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The grafical command line (DESIGN.md, "Interfaces"). Exit codes: 0 success, 1 an
+// The grafical command line (DESIGNS.md, "The command line comes first, and the help is the agent's only reference"). Exit codes: 0 success, 1 an
 // operation error or a defect, 2 a usage error.
 
 import { existsSync, readFileSync } from "node:fs";
@@ -76,7 +76,7 @@ function splitIds(s: string): string[] {
 
 const POSITION = ["first", "last", "before", "after"];
 
-/** The box steps start from, and the steps, as numbers where they read as one (DESIGN.md, "Steps from another box"). */
+/** The box steps start from, and the steps, as numbers where they read as one (specs/decisions, "Steps from another box"). */
 function stepFlags(opts: Opts): Record<string, unknown> {
   const out = pick(opts, ["from"]);
   for (const k of STEP_KEYS) {
@@ -86,7 +86,7 @@ function stepFlags(opts: Opts): Record<string, unknown> {
   return out;
 }
 
-/** The step options of node add and node move (DESIGN.md, "Steps from another box"). */
+/** The step options of node add and node move (specs/decisions, "Steps from another box"). */
 function withSteps(c: Command): Command {
   return c
     .option("--from <node>", "in no row: placed by steps from this box, and moves with it")
@@ -144,7 +144,7 @@ function renderName(file: string): string {
 }
 
 /**
- * Gives each command its help page (DESIGN.md, "One entry page, help where it is used"): the one-line description
+ * Gives each command its help page (specs/decisions, "One entry page, help where it is used"): the one-line description
  * stays the summary in its parent's list, and the page's paragraph, its line in a batch and its sections show on
  * its own help.
  */
@@ -951,7 +951,7 @@ export function build(): Command {
       .option("--text <text>"),
   ).action(async (file: string, style: string | undefined, opts: Opts) => {
     const w = opts.weight;
-    // A number of pixels is a number, as in edge weight (DESIGN.md, "Edge weights").
+    // A number of pixels is a number, as in edge weight (specs/decisions, "Edge weights").
     const weight = typeof w === "string" && /^[0-9.]+$/.test(w) ? Number(w) : w;
     await write(
       file,
@@ -972,7 +972,7 @@ export function build(): Command {
       .argument("<batch.yaml>"),
   ).action(async (file: string, batch: string, opts: Opts) => {
     const read = readBatch(batch, opts);
-    // A batch is usually a draft or a large change: its report carries the counts (DESIGN.md, "Records over prose").
+    // A batch is usually a draft or a large change: its report carries the counts (specs/decisions, "Records over prose").
     if (read !== undefined) await finish(file, read.ops, opts, read.origin, false, true);
   });
 
@@ -1157,7 +1157,7 @@ export function build(): Command {
       await viewer.close();
     });
 
-  // Best practice apart from the help, for an agent that wants it (DESIGN.md, "Help for the tool, guides for best
+  // Best practice apart from the help, for an agent that wants it (specs/decisions, "Help for the tool, guides for best
   // practice").
   program
     .command("guide")
@@ -1261,7 +1261,7 @@ function usage(code: UsageCode, given: { field?: string; found?: string }, facts
   return new UsageError(usageBlock(code, given, facts));
 }
 
-/** A usage error as grafical prints it: failed, then its block (DESIGN.md, "Refusals say what happened and which commands can change it"). */
+/** A usage error as grafical prints it: failed, then its block (specs/decisions, "Refusals say what happened and which commands can change it"). */
 function usageText(b: Block): string {
   return `${record("failed", { changed: [] })}\n\n${block(b)}\n`;
 }
@@ -1330,7 +1330,7 @@ function follow(from: Command, words: string[]): [Command, string[]] {
 
 /**
  * A word where a command belongs that names none, as a block that gives the word it most likely means as a value
- * (DESIGN.md, "Refusals say what happened and which commands can change it"): "help" means --help, "node add" or
+ * (specs/decisions, "Refusals say what happened and which commands can change it"): "help" means --help, "node add" or
  * node.add is two names in one word, and nodee a misspelling. Undefined when the command line names commands only;
  * commander reads the rest. Commander would print the entry page for a wrong name with --help, and say nothing of
  * what was meant.
@@ -1375,7 +1375,7 @@ async function main(argv: string[]) {
         process.exitCode = 0;
         return;
       }
-      // A usage error is a block too (DESIGN.md, "Refusals say what happened and which commands can change it"),
+      // A usage error is a block too (specs/decisions, "Refusals say what happened and which commands can change it"),
       // in place of commander's sentence.
       const source = commandLine(argv.slice(2));
       if (err instanceof UsageError) process.stderr.write(usageText({ ...err.problem, source }));

@@ -1,4 +1,4 @@
-// A flowchart (DESIGN.md, "Every layered diagram type"): a refund request from start to end, with two decisions,
+// A flowchart (specs/decisions, "Every layered diagram type"): a refund request from start to end, with two decisions,
 // a loop back for missing details, and Start and End terminals.
 
 import type { Diagram } from "../../src/model/types.ts";

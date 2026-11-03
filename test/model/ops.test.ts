@@ -232,7 +232,7 @@ describe("node.rename, node.move, node.remove", () => {
     expect(ids(r.diagram, "top")).toEqual(["b"]);
     expect(ids(r.diagram, "bottom")).toEqual(["a", "c"]);
   });
-  it('refuses a move into a row with boxes and no place (DESIGN.md, "The agent states every order")', () => {
+  it('refuses a move into a row with boxes and no place (specs/decisions, "The agent states every order")', () => {
     expect(fail(base, [{ op: "node.move", id: "a", layer: "bottom" }])[0]).toMatchObject({
       code: "missing-field",
       field: "place",

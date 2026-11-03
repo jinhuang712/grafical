@@ -1,4 +1,3 @@
-<!-- what-we-build: approved 2026-10-15 -->
 # Goals
 
 Each goal is a check with a number or a test, under the want in [PROPOSAL.md](PROPOSAL.md) that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [EXPERIMENTS.md](EXPERIMENTS.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
@@ -257,7 +256,7 @@ C2 = wall seconds from prompt to final answer, per accepted diagram, grafical ag
 
 #### C3: Token use
 
-An accepted diagram costs fewer fresh tokens than each baseline uses for an accepted one. Also, the help an agent reads before its first operation stays under 3k tokens; suspended by the owner on 2026-10-17 while the help's correctness comes first (DESIGN.md, "One entry page, help where it is used").
+An accepted diagram costs fewer fresh tokens than each baseline uses for an accepted one. Also, the help an agent reads before its first operation stays under 3k tokens; suspended by the owner on 2026-10-17 while the help's correctness comes first (specs/decisions, "One entry page, help where it is used").
 
 **Want:** Fewer turns, less time, fewer tokens.
 
@@ -359,7 +358,7 @@ At most 50 ms in process to apply, lay out and check one operation at 50 boxes, 
 
 **How:** `pnpm bench speed`, on random diagrams of about 50 boxes.
 
-**Status:** ✅ met on 2026-10-15, after DESIGN.md, "The agent states every order" removed the slot search. One operation took a median of 8.1 ms and at most 18.6 ms. Commands took 185 to 198 ms, and a render 368 ms. Earlier the same day, adding a box without a position took up to 189.7 ms, because the slot search laid the diagram out once for every slot.
+**Status:** ✅ met on 2026-10-15, after specs/decisions, "The agent states every order" removed the slot search. One operation took a median of 8.1 ms and at most 18.6 ms. Commands took 185 to 198 ms, and a render 368 ms. Earlier the same day, adding a box without a position took up to 189.7 ms, because the slot search laid the diagram out once for every slot.
 
 ### Constraints
 
@@ -369,7 +368,7 @@ No fact changes that no operation named: a row, an order, a group, a lane or an 
 
 **Want:** A change is one small step.
 
-**Condition:** every operation changes only the facts it names (DESIGN.md, "Layout computed again on every change").
+**Condition:** every operation changes only the facts it names (specs/decisions, "Layout computed again on every change").
 
 **How:** the stability tests apply single operations, and `grafical diff` compares each change step with the one before. Restated by the owner on 2026-10-12. Any unnamed fact change is a failure.
 
@@ -383,11 +382,11 @@ No overflow, overlap, line through a box or label collision. Until 2026-10-18 it
 
 **Condition:** no rendered picture has any of the four. Any defect in an output is a bug.
 
-**How:** `pnpm bench geometry` checks every rendered SVG of a round with a geometry check of its own. It does not use grafical's checker, which refuses every write it flags and so would always report zero (DESIGN.md, "Defects owned by who can fix them").
+**How:** `pnpm bench geometry` checks every rendered SVG of a round with a geometry check of its own. It does not use grafical's checker, which refuses every write it flags and so would always report zero (specs/decisions, "Defects owned by who can fix them").
 
 **Status:** ✅ met on 2026-10-18 (round `p1g`): the geometry check found none in 46 pictures. One draft of 50 components had an engine-owned `needless-bend`, which is none of the four, fixed the same day (2f101d9). On 2026-10-12 the geometry check also found none, but the judges' defect score of 3 or 4 missed the part of the target dropped since.
 
-**Composition, measured on 2026-10-16** over the 306 saved agent drafts (`across`, `tight` and `crowded` of DESIGN.md, "Composition counts"): 66 lines run across a group that holds neither end, in 29 drafts; 6 pairs of runs are tight, in 3 drafts; 88 labels are crowded, in 51 drafts. Not targets: facts to compare a change against.
+**Composition, measured on 2026-10-16** over the 306 saved agent drafts (`across`, `tight` and `crowded` of specs/decisions, "Composition counts"): 66 lines run across a group that holds neither end, in 29 drafts; 6 pairs of runs are tight, in 3 drafts; 88 labels are crowded, in 51 drafts. Not targets: facts to compare a change against.
 
 #### R3: Determinism
 

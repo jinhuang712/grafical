@@ -1,4 +1,4 @@
-// Notes (DESIGN.md, "Notes as callouts or footnotes"): each note is drawn as a callout card beside what it is
+// Notes (specs/decisions, "Notes as callouts or footnotes"): each note is drawn as a callout card beside what it is
 // about, or, where the agent says so, as a numbered footnote: a number on its target and
 // its text in a list at the bottom. A card keeps clear of every box, line, text and
 // other card, and lies wholly inside or outside each group, lane and band. Nothing
@@ -212,7 +212,7 @@ function besideLine([a, b]: Seg, w: number, h: number): Spot[] {
  * Every note: a footnote when its target is in `footnotes`, as the agent states, and a
  * callout card at the first place beside its target that is clear otherwise. A card with no
  * clear place takes the first place anyway and is marked blocked: no note becomes a
- * footnote unless the agent says so (DESIGN.md, "The dirty work has edges").
+ * footnote unless the agent says so (specs/decisions, "The dirty work has edges").
  */
 export function placeNotes(
   d: Diagram,
@@ -389,7 +389,7 @@ function midpoint([a, b]: Seg): Point {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
-/** A numbered circle of radius r centred at (x, y): a footnote's number, or a line's step (DESIGN.md, "Step badges ride the line"). */
+/** A numbered circle of radius r centred at (x, y): a footnote's number, or a line's step (specs/decisions, "Step badges ride the line"). */
 export function numberBadge(
   n: number,
   x: number,

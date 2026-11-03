@@ -1,4 +1,4 @@
-// The difference between two diagrams, as operations (DESIGN.md, "Git as the history"). Applied to
+// The difference between two diagrams, as operations (specs/decisions, "Git as the history"). Applied to
 // `before` in one batch, the operations give `after`, file for file. Pure.
 //
 // The order makes every operation valid when it runs: edges that go, then nodes,
@@ -67,7 +67,7 @@ function keptStart(before: readonly string[], after: readonly string[]): Set<str
 
 interface Placed {
   node: DiagramNode;
-  /** The node's row; "" for a box placed by steps (DESIGN.md, "Steps from another box"). */
+  /** The node's row; "" for a box placed by steps (specs/decisions, "Steps from another box"). */
   layer: string;
 }
 
@@ -78,7 +78,7 @@ function nodesOf(d: Diagram): Map<string, Placed> {
   ]);
 }
 
-/** A box's steps as operation fields (DESIGN.md, "Steps from another box"). */
+/** A box's steps as operation fields (specs/decisions, "Steps from another box"). */
 function stepFields(n: DiagramNode): Partial<Record<(typeof STEP_KEYS)[number], number>> {
   const out: Partial<Record<(typeof STEP_KEYS)[number], number>> = {};
   for (const k of STEP_KEYS) if (n[k] !== undefined) out[k] = n[k];
@@ -150,7 +150,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   const bw = b.legend?.weights ?? {};
   for (const key of [...new Set([...Object.keys(bw), ...Object.keys(aw)])].sort()) {
     if (aw[key] === bw[key]) continue;
-    // A width in pixels is a number in the operation, as in edge.weight (DESIGN.md, "Edge weights").
+    // A width in pixels is a number in the operation, as in edge.weight (specs/decisions, "Edge weights").
     const weight = /^[0-9]/.test(key) ? Number(key) : key;
     ops.push({ op: "diagram.legend", weight, ...said(aw[key]) });
   }
@@ -181,7 +181,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   );
   const goneGroups = [...bGroups.keys()].filter((g) => !keptGroups.has(g));
   const goneLanes = [...bLanes.keys()].filter((x) => !keptLanes.has(x));
-  // Columns (DESIGN.md, "Columns beside rows") keep their order the same way: those out of step go and come back.
+  // Columns (specs/decisions, "Columns beside rows") keep their order the same way: those out of step go and come back.
   const aColumns = (a.columns ?? []).map((c) => c.id);
   const keptColumns = keptStart(
     (b.columns ?? []).map((c) => c.id),
@@ -219,7 +219,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     }
   }
 
-  // Walls (DESIGN.md, "Walls as space") that change go first and come back last, once all they name exists. So
+  // Walls (specs/decisions, "Walls as space") that change go first and come back last, once all they name exists. So
   // does a wall that names something removed and added again, which would forget it.
   const removed = new Set([
     ...b.edges.filter((e) => !keptEdges.has(e.id)).map((e) => e.id),
@@ -236,7 +236,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   );
   for (const w of b.walls ?? [])
     if (!keptWalls.has(w.id)) ops.push({ op: "wall.remove", id: w.id });
-  // Notes (DESIGN.md, "Notes as callouts or footnotes") the same way: one that changes, or whose target is removed and added
+  // Notes (specs/decisions, "Notes as callouts or footnotes") the same way: one that changes, or whose target is removed and added
   // again, goes first and comes back last.
   const aNotes = new Map((a.notes ?? []).map((x) => [x.on, x]));
   const keptNotes = keptStart(
@@ -256,7 +256,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   // 2. Edges that go.
   for (const e of b.edges) if (!keptEdges.has(e.id)) ops.push({ op: "edge.remove", id: e.id });
 
-  // Boxes placed by steps (DESIGN.md, "Steps from another box") keep creation order, and only the end of the list takes
+  // Boxes placed by steps (specs/decisions, "Steps from another box") keep creation order, and only the end of the list takes
   // a box. One placed by steps before and after, from a box that stays, keeps its entry
   // while in step; every other one waits in a row, so that no box is removed while
   // another steps from it, and goes to the end of the list once the rows are in place.
@@ -669,12 +669,12 @@ function sameWall(x: Wall, y: Wall | undefined): boolean {
   );
 }
 
-/** A legend entry's words as operation fields: text, or none for no entry (DESIGN.md, "A legend for widths and marks"). */
+/** A legend entry's words as operation fields: text, or none for no entry (specs/decisions, "A legend for widths and marks"). */
 function said(words: string | undefined): { text: string } | object {
   return words === undefined ? {} : { text: words };
 }
 
-/** How an edge is weighted: a weight wins over the old accent, and thin is no weight (DESIGN.md, "Edge weights"). */
+/** How an edge is weighted: a weight wins over the old accent, and thin is no weight (specs/decisions, "Edge weights"). */
 function weightLook(e: Edge | undefined): string {
   if (e === undefined) return "thin";
   if (e.weight !== undefined) return e.weight === "thin" ? "thin" : `w:${e.weight}`;

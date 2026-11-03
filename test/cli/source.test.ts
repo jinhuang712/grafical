@@ -1,4 +1,4 @@
-// What caused a problem (DESIGN.md, "Refusals say what happened and which commands can change it"): the command line
+// What caused a problem (specs/decisions, "Refusals say what happened and which commands can change it"): the command line
 // as typed, a batch's line and its operation as written, the batch line after which a problem of the whole diagram
 // first appears, or what was already in the file.
 
@@ -278,7 +278,7 @@ describe("source", () => {
 
   it("of a warning: none, in text or in --json, as the outcome line names what the write changed", () => {
     // sync->geo bends three times and passes a row in this fixture, and other lines bend too
-    // (DESIGN.md, "Every write prints every warning").
+    // (specs/decisions, "Every write prints every warning").
     const f = "bent.grafical.yaml";
     writeFileSync(
       join(dir, f),

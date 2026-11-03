@@ -34,7 +34,7 @@ import {
 import { checkWalls } from "../../src/model/walls.ts";
 import type { Measurer } from "../../src/text/types.ts";
 
-/** mulberry32: a small, fast, seeded generator. Never Math.random (DESIGN.md, "Output and determinism"). */
+/** mulberry32: a small, fast, seeded generator. Never Math.random (DESIGNS.md, "The same file gives the same picture on any machine"). */
 export function rng(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
@@ -237,7 +237,7 @@ export function generate(seed: number, m: Measurer): Generated {
 }
 
 /**
- * As an agent does after a label-blocked refusal (DESIGN.md, "The dirty work has edges"): a line's
+ * As an agent does after a label-blocked refusal (specs/decisions, "The dirty work has edges"): a line's
  * label that no gutter of its path holds, or a wall's that no place along its wall holds, shortens
  * to its first word, and a word, or a step's badge, that still finds no room is dropped; a note
  * whose card finds no place becomes a footnote.
@@ -271,10 +271,10 @@ function fitLabels(d: Diagram, m: Measurer): void {
 }
 
 /**
- * A stated place for each group's label in three seeds of ten (DESIGN.md, "The agent states where a group's label sits"),
+ * A stated place for each group's label in three seeds of ten (specs/decisions, "The agent states where a group's label sits"),
  * a place of its own for each group. Then, as an agent does after a title-blocked refusal, a
  * label a line runs across, stated or seated by the engine, moves to a place no line comes near
- * (DESIGN.md, "The dirty work has edges"), the first of the places in a random order, which picks
+ * (specs/decisions, "The dirty work has edges"), the first of the places in a random order, which picks
  * among those the refusal names clear as a random pick would; where none is, its text shortens
  * to one word, then to one letter.
  */
@@ -306,7 +306,7 @@ function addTitles(d: Diagram, r: () => number, m: Measurer): void {
 }
 
 /**
- * A bar in three seeds of ten (DESIGN.md, "A row with no box as one bar"): a row with no box put between two rows, or
+ * A bar in three seeds of ten (specs/decisions, "A row with no box as one bar"): a row with no box put between two rows, or
  * above or below them all, with one to four lines between it and boxes or groups. Every
  * line that then passes it says it may, as an agent does after a bar-crossed refusal,
  * and one bar in four is drawn as a band. A bar that a check refuses is dropped.
@@ -356,7 +356,7 @@ function addBars(d: Diagram, r: () => number): void {
 }
 
 /**
- * Rows drawn for their look alone (DESIGN.md, "A row with a look is drawn"). In two seeds of ten a row with boxes
+ * Rows drawn for their look alone (specs/decisions, "A row with a look is drawn"). In two seeds of ten a row with boxes
  * that no line ends at takes a look, box or band. In one seed of ten a row with no box and a look is put between two
  * rows, or above or below them all, with no line to it: every line that passes it says it may, and one that a check
  * refuses, such as inside a group's rows, is dropped.
@@ -400,7 +400,7 @@ function addRowLooks(d: Diagram, r: () => number): void {
 }
 
 /**
- * Numbered lines (DESIGN.md, "Step badges ride the line"), drawn last, in four seeds of ten: a share of the lines,
+ * Numbered lines (specs/decisions, "Step badges ride the line"), drawn last, in four seeds of ten: a share of the lines,
  * from a few to all, numbered in the order they were added, now and then two with one
  * number, and past 9 where there are enough of them.
  */
@@ -416,7 +416,7 @@ function addStepNumbers(d: Diagram, r: () => number): void {
 }
 
 /**
- * One to three boxes placed by steps (DESIGN.md, "Steps from another box"), drawn last, in three seeds of ten: each a
+ * One to three boxes placed by steps (specs/decisions, "Steps from another box"), drawn last, in three seeds of ten: each a
  * node taken out of its row, stepping up to two cells across and down from another
  * node, now and then one placed by steps itself. A box that a check refuses goes back
  * to its row, as an agent would drop the operation.
@@ -457,7 +457,7 @@ function addSteps(d: Diagram, r: () => number): void {
 }
 
 /**
- * Two or three columns (DESIGN.md, "Columns beside rows"), drawn last, in three seeds of ten: each node follows one
+ * Two or three columns (specs/decisions, "Columns beside rows"), drawn last, in three seeds of ten: each node follows one
  * at random, or none, and every row is put in column order. Columns that a check
  * refuses are dropped, as an agent would drop the operation.
  */
@@ -483,7 +483,7 @@ function addColumns(d: Diagram, r: () => number): void {
 }
 
 /**
- * Up to four notes (DESIGN.md, "Notes as callouts or footnotes"), drawn last: on nodes, groups and lines at random, each a
+ * Up to four notes (specs/decisions, "Notes as callouts or footnotes"), drawn last: on nodes, groups and lines at random, each a
  * few words to a sentence, so that some find room for a card and some are footnotes.
  */
 function addNotes(d: Diagram, r: () => number, text: (lo: number, hi: number) => string): void {
@@ -503,7 +503,7 @@ function addNotes(d: Diagram, r: () => number, text: (lo: number, hi: number) =>
 }
 
 /**
- * Up to two walls across (DESIGN.md, "Walls as space"), drawn last: one to three nodes of a row against one
+ * Up to two walls across (specs/decisions, "Walls as space"), drawn last: one to three nodes of a row against one
  * to three of the rows below it, letting through every line of either side, some of
  * them labelled. A wall the model refuses is dropped, as an agent would drop it, and
  * a line the drawing finds through a wall is let through, as an agent would allow it.
@@ -541,7 +541,7 @@ function addWalls(
 }
 
 /**
- * Up to one wall up and down (DESIGN.md, "Walls as space"), drawn after the walls across: in one or two
+ * Up to one wall up and down (specs/decisions, "Walls as space"), drawn after the walls across: in one or two
  * neighbouring rows of two nodes or more, the node left of a cut against the one
  * right of it, letting through every line of either side. A wall the model or the
  * grid refuses is dropped, and a line the drawing finds through it is let through.
@@ -584,7 +584,7 @@ const FIRST_EDGE_KINDS = ["call", "async", "data"] as const;
 const FIRST_NODE_KINDS = ["service", "store", "queue", "external", "actor"] as const;
 
 /**
- * Phase 1d's node kinds (DESIGN.md, "Every layered diagram type"), drawn last. A diamond holds less text than a box, so a
+ * Phase 1d's node kinds (specs/decisions, "Every layered diagram type"), drawn last. A diamond holds less text than a box, so a
  * node becomes one only when its text still fits, as grafical refuses a write otherwise.
  */
 function addNodeKinds(d: Diagram, r: () => number, m: Measurer): void {
@@ -598,7 +598,7 @@ function addNodeKinds(d: Diagram, r: () => number, m: Measurer): void {
   }
 }
 
-/** Phase 1d's line looks (DESIGN.md, "Lines meet any side"), drawn last: links, optional calls, two-way edges and a main path. */
+/** Phase 1d's line looks (specs/decisions, "Lines meet any side"), drawn last: links, optional calls, two-way edges and a main path. */
 function addEdgeLooks(d: Diagram, r: () => number): void {
   for (const e of d.edges) {
     const x = r();
@@ -610,7 +610,7 @@ function addEdgeLooks(d: Diagram, r: () => number): void {
 }
 
 /**
- * Groups inside groups (DESIGN.md, "Every layered diagram type"): a group may be wrapped in a new outer group, which may
+ * Groups inside groups (specs/decisions, "Every layered diagram type"): a group may be wrapped in a new outer group, which may
  * take a free node beside the group in one of its rows, and that outer group again
  * in a third. Done last, so that every seed's diagram is the same as before up to
  * here. A wrap the model refuses is dropped, as an agent would drop it.
@@ -659,7 +659,7 @@ function addNesting(d: Diagram, r: () => number, text: (lo: number, hi: number) 
 }
 
 /**
- * Up to three edges that end at a group or a layer (DESIGN.md, "Lines that end at containers"), each kept only if the
+ * Up to three edges that end at a group or a layer (specs/decisions, "Lines that end at containers"), each kept only if the
  * model's end rules allow it, as an agent keeps only what grafical accepts.
  */
 function addContainerEdges(
@@ -688,7 +688,7 @@ function addContainerEdges(
 }
 
 /**
- * Lanes (DESIGN.md, "Swimlanes run one way") in half the seeds: as rows, runs of one to three neighbouring layers
+ * Lanes (specs/decisions, "Swimlanes run one way") in half the seeds: as rows, runs of one to three neighbouring layers
  * with some layers left out; as columns, two to four lanes over the nodes with
  * some nodes left out, each group in its first member's lane. Alignments that
  * column lanes make impossible are dropped, as an agent would drop them. Then up
@@ -776,7 +776,7 @@ function addLanes(d: Diagram, r: () => number, text: (lo: number, hi: number) =>
 }
 
 /**
- * Up to three groups (DESIGN.md, "Rows unseen, groups as systems"), each a block of neighbouring nodes in one to three
+ * Up to three groups (specs/decisions, "Rows unseen, groups as systems"), each a block of neighbouring nodes in one to three
  * neighbouring layers. The model has no group operations on this branch yet, so
  * they are set on the diagram directly. A group that cannot be one box with the
  * ones before it is dropped, as an agent would drop an operation that failed.

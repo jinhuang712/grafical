@@ -1,4 +1,4 @@
-// The batch line a refused write names as a problem's source is never wrong (DESIGN.md, "Refusals say what happened
+// The batch line a refused write names as a problem's source is never wrong (specs/decisions, "Refusals say what happened
 // and which commands can change it"): it is the line after the last prefix of the batch without the problem, when
 // every longer prefix has it; or the batch file alone, when that cannot be known within the prefixes grafical tries.
 // Found by review on 2026-10-18: a search that halved the range assumed a problem that appears stays.

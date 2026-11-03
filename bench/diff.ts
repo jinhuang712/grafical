@@ -1,6 +1,6 @@
 // `pnpm bench diff <ref>`: what an engine change does to every picture we have.
 // Lays out three corpora with the engine at <ref> and with the working tree, and
-// prints key=value records (DESIGN.md, "Records over prose"). No model calls, no cost.
+// prints key=value records (specs/decisions, "Records over prose"). No model calls, no cost.
 //   drafts    every saved agent draft: bench/runs/*/*/*.grafical.yaml in the main checkout
 //   fixtures  test/fixtures/*.grafical.yaml and the TypeScript fixtures of test/debug/check-fixtures.ts
 //   fuzz      seeds 1..N of test/fuzz/gen.ts (--seeds <n>, default 2000)

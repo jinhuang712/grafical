@@ -9,7 +9,7 @@ const rows: Op[] = [
   { op: "layer.add", id: "bot", label: "Bot" },
 ];
 
-describe('order (DESIGN.md, "The agent states every order")', () => {
+describe('order (specs/decisions, "The agent states every order")', () => {
   it("takes the first box of an empty row without a place", () => {
     const r = applyOps(empty, [...rows, { op: "node.add", id: "a", layer: "top", label: "A" }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
