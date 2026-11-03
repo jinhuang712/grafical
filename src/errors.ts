@@ -1,7 +1,7 @@
 // What grafical reports back to the caller (DESIGNS.md, "Every write is checked, and each defect has an owner", "The command line comes first, and the help is the agent's only reference", specs/decisions, "Defects owned by who can fix them").
 
 /**
- * What is there, as discrete values (specs/decisions, "Records over prose""Refusals say what happened and which commands
+ * What is there, as discrete values (specs/decisions, "Records over prose", "Refusals say what happened and which commands
  * can change it"): never a sentence, and never a command to run. The code says what happened; these say what is
  * there. They print in FACT_ORDER.
  */

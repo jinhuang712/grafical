@@ -291,7 +291,7 @@ export function groupIntruders(s: Scene): string[] {
   return out;
 }
 
-/** The measured rules of specs/decisions, "A target picture with measured rules"as the checker measures them. */
+/** The measured rules of specs/decisions, "A target picture with measured rules", as the checker measures them. */
 export interface Taste {
   width: number;
   height: number;

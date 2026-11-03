@@ -303,7 +303,7 @@ export interface DefectSplit {
 
 /**
  * Reads the output of `grafical check <file> --all --json`: its problems of kind defect, each with its owner in its
- * detail, or, from a grafical before specs/decisions, "Refusals say what happened and which commands can change it"its
+ * detail, or, from a grafical before specs/decisions, "Refusals say what happened and which commands can change it", its
  * defects with their owner. null when it is not that report: an older CLI that has no `--all` prints nothing on
  * stdout, or defects with no `owner`.
  */

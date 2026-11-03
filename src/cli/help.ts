@@ -1,4 +1,4 @@
-// The help pages: how to use grafical (specs/decisions, "One entry page, help where it is used""Help for the tool, guides
+// The help pages: how to use grafical (specs/decisions, "One entry page, help where it is used", "Help for the tool, guides
 // for best practice"). The entry page is read once, before a first draft: what grafical is, how to work, and every
 // way to draw, by the story each tells. A command's page is read when the command is used: commander's usage and
 // options, its line in a batch, then this file's sections, always in this order: When to use, Kinds, Good to know,

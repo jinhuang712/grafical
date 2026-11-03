@@ -244,7 +244,7 @@ When a step resumes a session, `total_cost_usd` and `duration_api_ms` are runnin
 | DESIGNS.md, "Operations are the only way a diagram changes" batches | Batches allowed | One operation per call | Cost and wall time per draft |
 | DESIGNS.md, "The command line comes first, and the help is the agent's only reference" `guide` | A 1k-token guide | A 3k-token guide | Score and operation errors |
 | DESIGNS.md, "The command line comes first, and the help is the agent's only reference" `show` | `show` | Reading the YAML file | Tokens and operation errors |
-| specs/decisions, "The engine picks a new box's slot" slot choice | The engine picks the slot | New nodes go last | Score and crossings. Never ran: since specs/decisions, "The agent states every order"the agent states every slot |
+| specs/decisions, "The engine picks a new box's slot" slot choice | The engine picks the slot | New nodes go last | Score and crossings. Never ran: since specs/decisions, "The agent states every order", the agent states every slot |
 | specs/decisions, "Defects owned by who can fix them" checking | A check after every write | One check at the end | Operation errors and retries |
 | DESIGNS.md, "The command line comes first, and the help is the agent's only reference" output | Compact JSON reports | Full reports | Tokens and cache hit rate |
 | specs/decisions, "Every layered diagram type" type guides | The type guides | No type guides: the main guide alone | Problem lines, refused writes, and whether a draft uses its type's kinds and parts. Ran 2026-10-12 (`bench/results/p1d-guides.md`); the guides then moved into the help (specs/decisions, "The help as the reference") |

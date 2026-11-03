@@ -332,7 +332,7 @@ function smallMark(mk: Mark): Mark {
 }
 
 /**
- * The legend's entries and what it leaves unnamed (specs/decisions, "A legend for widths and marks""The legend says only what the
+ * The legend's entries and what it leaves unnamed (specs/decisions, "A legend for widths and marks", "The legend says only what the
  * agent named"): each line style the diagram uses, then each line width other than thin, from the thinnest,
  * each with the agent's words or none; then each mark the diagram names, drawn like the
  * first one found: rows top to bottom, nodes in order, slots in order.
