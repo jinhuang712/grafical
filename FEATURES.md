@@ -82,6 +82,11 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
 - Every command takes `--json`, which prints the same report as JSON.
 - Exit codes: 0 for success, 1 for a refused operation or a defect, 2 for a usage error. The parser's own refusals (an unknown option, a missing argument, an unknown command) print `failed changed=-` and a block on standard error, such as `error: unknown-option` with `found: --bogus`.
 
+- **Stance:** [What does a change do?](PHILOSOPHY.md#what-does-a-change-do)
+- **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
+- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line), [The model](specs/ARCHITECTURE.md#the-model)
+- **Why:** [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
+
 **Stories:**
 
 - An agent changes a diagram with one named command, to move only what it named.
@@ -112,6 +117,10 @@ A batch file is a YAML list. Each item has `op: <noun>.<verb>` and the same fiel
 
 grafical checks each operation in order, and writes only when every one is valid and the picture has no defect the agent must fix. Otherwise nothing changes, and each problem's source names the batch line that caused it.
 
+- **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
+- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **Why:** [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
+
 **Stories:**
 
 - An agent sends many operations in one call, to save round trips and never leave a half-made change.
@@ -130,6 +139,10 @@ grafical try arch.grafical.yaml batch.yaml
 
 `try` takes several batches, to compare arrangements in one call. It prints one `before` record, then for each batch `ok`, `after` and `delta` records that carry `batch=<file>`; a batch that would be refused prints `failed batch=<file> changed=-` and its blocks, the others are still tried, and the exit code is 1. With `--json`: `{ok, before, batches: [{batch, ok, changed, after, delta}]}`. A single batch prints as before, without the key.
 
+- **Design:** [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent), [8. Output is records, with no advice](DESIGNS.md#8-output-is-records-with-no-advice)
+- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **Why:** [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md), [022. Records over prose](specs/decisions/022-records-over-prose.md)
+
 **Stories:**
 
 - An agent compares arrangements with `try`, to pick the one with fewer crossings without writing any.
@@ -143,6 +156,10 @@ The caller names every row, group, lane, column, wall, box and line, and a name 
 - A rename changes the label, never the ID.
 - A line's ID defaults to `<from>-><to>`, with a suffix when the same pair is connected twice. A reversed line keeps its ID.
 - A taken ID is refused, with a free one suggested.
+
+- **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
+- **How it works:** [The model](specs/ARCHITECTURE.md#the-model)
+- **Why:** [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
 
 **Stories:**
 
@@ -173,6 +190,10 @@ next: -
 - The detail gives the facts, one per line: `near` (the closest IDs), `likely` (the value it most likely meant), `allowed`, `free`, `count`, `lines`, `min`, `max`, the `node`, `row`, `group`, `edge` or `lane` it concerns, `line` and `column` in the YAML. It carries what the agent needs to find the change itself, such as the first and last rows a group's box covers; no refusal writes the change for it.
 - `next` names the commands that can change it, in the order the help lists them, or `-`.
 - A YAML syntax error gives the text of its line.
+
+- **Design:** [7. A refusal says what happened and which commands can change it](DESIGNS.md#7-a-refusal-says-what-happened-and-which-commands-can-change-it)
+- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **Why:** [047. Refusals say what happened and which commands can change it](specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md), [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
 
 **Stories:**
 
@@ -205,6 +226,10 @@ A box's kind says what it is and decides how it is drawn.
 grafical node kind <file> <id> <kind>
 ```
 
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **How it works:** [The theme](specs/ARCHITECTURE.md#the-theme), [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [020. Every layered diagram type](specs/decisions/020-every-layered-diagram-type.md), [052. A choice is a small diamond](specs/decisions/052-a-choice-is-a-small-diamond.md)
+
 **Stories:**
 
 - An agent says what a box is, to get the shape a reader expects.
@@ -225,6 +250,10 @@ grafical node describe <file> <id> [--text <text>]
 - A character the bundled fonts cannot draw is refused as `missing-glyph`.
 - `describe` without `--text` clears the sublabel.
 
+- **Design:** [9. The same file gives the same picture on any machine](DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
+- **How it works:** [The text measurer](specs/ARCHITECTURE.md#the-text-measurer)
+- **Why:** [006. Bundled fonts](specs/decisions/006-bundled-fonts.md), [014. Boxes sized to their text](specs/decisions/014-boxes-sized-to-their-text.md)
+
 **Stories:**
 
 - An agent names a box and adds a port or a topic, to say more without another box.
@@ -244,6 +273,10 @@ grafical diagram sizing <file> auto|fixed
 - `resize` without `--size` returns the box to that.
 - Every box in a row is drawn as tall as the row's tallest, so their tops line up. Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a box without a size is always medium, and text that does not fit is refused.
+
+- **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [014. Boxes sized to their text](specs/decisions/014-boxes-sized-to-their-text.md)
 
 **Stories:**
 
@@ -269,6 +302,10 @@ grafical node icon <file> <id> --slot <slot> [--icon <mark>] [--bg <color>] [--f
 
 Gap: a corner mark is not checked against the lines that leave the box near its corner.
 
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind), [14. A diagram reads no file outside its folder, and its pictures run nothing](DESIGNS.md#14-a-diagram-reads-no-file-outside-its-folder-and-its-pictures-run-nothing)
+- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **Why:** [025. Marks of any kind](specs/decisions/025-marks-of-any-kind.md)
+
 **Stories:**
 
 - An agent marks a box that matters, to draw the reader's eye to it.
@@ -286,6 +323,10 @@ grafical node icon <file> <id> --slot <slot> --icon <set>:<name>
 - The set is a permissively licensed one, such as Lucide (ISC) or Tabler (MIT). A cloud vendor's own icons stay files the agent brings.
 - An unknown name is refused, with `near` and `likely`.
 
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind), [15. Every dependency allows use in an MIT project](DESIGNS.md#15-every-dependency-allows-use-in-an-mit-project)
+- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **Why:** [025. Marks of any kind](specs/decisions/025-marks-of-any-kind.md)
+
 **Stories:**
 
 - An agent names an icon, to avoid finding a file for every box.
@@ -299,6 +340,9 @@ At most two boxes stand out, as what a reader should see first.
 ```sh
 grafical node emphasize <file> <id> [--off]
 ```
+
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
 
 **Stories:**
 
@@ -317,6 +361,10 @@ grafical node remove <file> <id>
 - `merge` replaces boxes with one new box where the first one was. It keeps each of their lines once and drops the lines between them. It may reuse a merged box's ID. Boxes aligned to a merged box lose the alignment.
 - `swap` trades the places of two boxes: their row and slot.
 - `remove` takes the box's lines with it and reports their IDs. A box that others are placed by steps from stays while they are (`step-anchor`).
+
+- **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes), [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
+- **How it works:** [The model](specs/ARCHITECTURE.md#the-model)
+- **Why:** [013. Curation stays with the agent](specs/decisions/013-curation-stays-with-the-agent.md)
 
 **Stories:**
 
@@ -351,6 +399,10 @@ grafical edge remove <file> <id>
 
 - `relabel` without `--label` clears the label. `retarget` moves one or both ends, and keeps the ID, kind and label.
 
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md)
+
 **Stories:**
 
 - An agent says what a line means, to get the style a reader expects.
@@ -364,6 +416,9 @@ grafical edge both <file> <id> [--off]
 ```
 
 A `link` takes no arrowheads, so `both` on a link is refused as `both-on-link`.
+
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
 
 **Stories:**
 
@@ -386,6 +441,10 @@ grafical edge emphasize <file> <id...> [--off]
 - A stylesheet may retune the levels and add more, such as `critical`. A level the stylesheet lacks is refused as `unknown-weight`, with the allowed names.
 - The arrowhead grows with the width.
 
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **How it works:** [The theme](specs/ARCHITECTURE.md#the-theme)
+- **Why:** [026. Edge weights](specs/decisions/026-edge-weights.md)
+
 **Stories:**
 
 - An agent thickens the main path, to make it the first thing a reader follows.
@@ -404,6 +463,10 @@ grafical edge step <file> <id> [--n <number>]
 - Without `--n`, the step is cleared. In a batch: `{op: edge.step, id: <line>, n: <number>}`.
 - A numbered line keeps its own port, as a labelled one does, and never joins a bundle.
 
+- **Design:** [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [039. Step badges ride the line](specs/decisions/039-step-badges-ride-the-line.md)
+
 **Stories:**
 
 - An agent numbers the lines of a request, to let a reader follow it in order.
@@ -421,6 +484,10 @@ One arrow can point at a whole system instead of each of its parts.
 - Two lanes are never the two ends of one line (`lane-to-lane`).
 - Removing a group or a lane removes the lines that end at it.
 
+- **Design:** [5. The engine routes every line, in plain forms](DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [015. Lines that end at containers](specs/decisions/015-lines-that-end-at-containers.md), [038. A row with no box as one bar](specs/decisions/038-a-row-with-no-box-as-one-bar.md)
+
 **Stories:**
 
 - An agent points a line at a whole system, to avoid one arrow per part.
@@ -437,6 +504,10 @@ The agent says what connects. grafical draws every line.
 - Where two lines cross, one hops over the other. Where lines join on purpose, a dot marks the join.
 - A label sits beside its line. When there is no room, it wraps or moves to another gap on its way. Where no gap on its way has room, no line moves for it: the write is refused as `label-blocked`, naming the line, the lines across the label and the gaps it tried, with `node resize` among the commands that can change it (specs/decisions, "The dirty work has edges"). grafical never widens a box for its lines. A step's number is refused the same way.
 - A stylesheet may draw the corners curved, with `paint.edge.shape: curved`. The routes stay the same.
+
+- **Design:** [5. The engine routes every line, in plain forms](DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [005. Our own gap router](specs/decisions/005-our-own-gap-router.md), [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md), [023. Fan-outs of three bundle](specs/decisions/023-fan-outs-of-three-bundle.md), [041. The dirty work has edges](specs/decisions/041-the-dirty-work-has-edges.md), [051. A label sits on its straight vertical line](specs/decisions/051-a-label-sits-on-its-straight-vertical-line.md)
 
 **Stories:**
 
@@ -470,6 +541,11 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 - A row can be removed only when it is empty, and the lines that end at it go with it.
 - `layer look` draws a row, with its label, even when no line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row is drawn only when a line ends at it, a row with no box as a box and a row with boxes as a band. A row with no box and a look is a bar, checked as one: a line that passes it needs `--pass` (`bar-crossed`), and it may not lie between the first and last rows of a group (`bar-in-group`, which `layer look` can change by taking the look away) (specs/decisions, "A row with a look is drawn").
 
+- **Stance:** [What may the agent set?](PHILOSOPHY.md#what-may-the-agent-set)
+- **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates), [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
+- **How it works:** [The model](specs/ARCHITECTURE.md#the-model), [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md), [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md), [045. A row with a look is drawn](specs/decisions/045-a-row-with-a-look-is-drawn.md), [046. A row's label is optional](specs/decisions/046-a-row-s-label-is-optional.md)
+
 **Stories:**
 
 - An agent states each box's row and order, to decide the story's layout in facts.
@@ -483,6 +559,10 @@ grafical node align <file> <id> [--to <node>]
 ```
 
 A box sits directly above or below a box in another row, and its row slides sideways as one block to put it there. An alignment that cannot hold with the order of either row is refused, as `alignment-conflict` or `alignment-cycle`. Without `--to`, the alignment is cleared.
+
+- **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [002. Facts over coordinates](specs/decisions/002-facts-over-coordinates.md)
 
 **Stories:**
 
@@ -507,6 +587,10 @@ grafical column remove <file> <id>
 - A diagram has columns or lanes that run as columns, not both (`column-lanes`).
 - Removing a column leaves its boxes where they are.
 
+- **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [027. Columns beside rows](specs/decisions/027-columns-beside-rows.md), [035. Columns hold across rows](specs/decisions/035-columns-hold-across-rows.md)
+
 **Stories:**
 
 - An agent sets columns, to keep boxes of different rows in one left-to-right order.
@@ -528,6 +612,10 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
 - A cell another fact keeps is refused as `step-blocked`, a box that steps from itself as `step-cycle`. Steps are not combined with a row, a position, an alignment, a column or a lane (`conflicting-position`).
 - `node move --layer` puts the box back in a row. `node move` with steps and no `--from` keeps the box it steps from, and with `--from` alone keeps the steps.
 - A box placed by steps beside every box it connects to, wholly left or right of them, is refused as `box-aside`, naming those boxes.
+
+- **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [031. Steps from another box](specs/decisions/031-steps-from-another-box.md), [032. Who chose is punished](specs/decisions/032-who-chose-is-punished.md)
 
 **Stories:**
 
@@ -562,6 +650,10 @@ grafical group remove <file> <id> [--out]
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group. Lines that end at the group go with it.
 - A box inside a box takes the canvas's fill, so the fills alternate by depth. A stylesheet may set `paint.nesting: shade` instead.
 
+- **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md), [040. The agent states where a group's label sits](specs/decisions/040-the-agent-states-where-a-group-s-label-sits.md)
+
 **Stories:**
 
 - An agent groups boxes into a system, to show which parts belong together.
@@ -581,6 +673,10 @@ grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before
 - Each copied box sits in its original's row, with its label, kind, size, marks, lane and column. `--before` or `--after` puts the copy before or after a group in every row of the copy, as `group order` does (specs/decisions, "The agent states every order"). A group with no box in one of those rows is refused as `no-shared-layer`.
 - An alignment or steps to a box outside the group, and a lane or a column that would move the copy from its place, are refused as `copy-conflict`, naming the box (specs/decisions, "A group copy holds its inside"). Notes and walls are not copied.
 
+- **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
+- **How it works:** [The model](specs/ARCHITECTURE.md#the-model)
+- **Why:** [037. A group copy holds its inside](specs/decisions/037-a-group-copy-holds-its-inside.md)
+
 **Stories:**
 
 - An agent copies a group with its lines, to draw a second region or shard in one step.
@@ -590,6 +686,10 @@ grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before
 **Status:** ⬜
 
 Groups nest up to five levels instead of three, as a cloud's account, region, network, zone and subnet do. The fuzz test must hold at five levels first.
+
+- **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md)
 
 **Stories:**
 
@@ -615,6 +715,10 @@ grafical lane remove <file> <id>
 - A group lies inside one lane (`group-across-lanes`).
 - `lane remove` keeps the members and removes the lines that end at the lane.
 
+- **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [018. Swimlanes run one way](specs/decisions/018-swimlanes-run-one-way.md)
+
 **Stories:**
 
 - An agent sets lanes, to show who owns which step.
@@ -638,6 +742,10 @@ grafical wall remove <file> <id>
 - Without a label, a wall is invisible: only its space shows. With a label, it draws a dashed divider through its middle, the label along it at the first place no line comes near. Where none is, the write is refused as `label-blocked` (specs/decisions, "The dirty work has edges"). `wall relabel` changes the label, or drops it without `--label`.
 - A box or group that is removed leaves the wall's sides, and a wall left with an empty side goes.
 
+- **Design:** [2. Places are facts, never coordinates](DESIGNS.md#2-places-are-facts-never-coordinates), [5. The engine routes every line, in plain forms](DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [029. Walls as space](specs/decisions/029-walls-as-space.md)
+
 **Stories:**
 
 - An agent sets a wall between two parts, to keep them apart and let only named lines cross.
@@ -656,6 +764,10 @@ grafical note remove <file> --on <id>
 - A card beside its target, joined by a dotted line, or with `--footnote` a small number on the target and the text in a numbered list at the bottom. The file holds a footnote as `footnote: true`. A card with no place beside its target clear of every box, line and text is refused as `label-blocked`, so that the agent shortens it or makes it a footnote (specs/decisions, "The dirty work has edges").
 - A target has one note, and adding another replaces it. A note goes with its target.
 - A note that takes more than four lines is an `overflow`.
+
+- **Design:** [5. The engine routes every line, in plain forms](DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [030. Notes as callouts or footnotes](specs/decisions/030-notes-as-callouts-or-footnotes.md)
 
 **Stories:**
 
@@ -677,6 +789,9 @@ grafical diagram note <file> [--text <text>]
 
 The subtitle is one sentence under the title. The footnote says what the diagram leaves out, such as "Not shown: Redis name cache". Without `--text`, either one is cleared.
 
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+
 **Stories:**
 
 - An agent sets the title and says what the picture leaves out, to tell a reader what they see.
@@ -697,6 +812,10 @@ grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mar
 - Marks with the same name share one entry.
 - When the legend is wider than its room, it wraps onto more lines.
 
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **Why:** [028. A legend for widths and marks](specs/decisions/028-a-legend-for-widths-and-marks.md), [034. The legend says only what the agent named](specs/decisions/034-the-legend-says-only-what-the-agent-named.md)
+
 **Stories:**
 
 - An agent explains a style or a mark in its own words, to let a reader decode the picture.
@@ -708,6 +827,10 @@ grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mar
 ```sh
 grafical diagram density <file> compact|normal|airy
 ```
+
+- **Design:** [4. A change moves only what it names](DESIGNS.md#4-a-change-moves-only-what-it-names)
+- **How it works:** [The layout](specs/ARCHITECTURE.md#the-layout)
+- **Why:** [004. Layout computed again on every change](specs/decisions/004-layout-computed-again-on-every-change.md)
 
 **Stories:**
 
@@ -726,6 +849,10 @@ grafical diagram style <file> [<style>]
 - The built-in themes are `default`, `dark` (light lines on a dark ground) and `print` (greys with stronger lines).
 - A stylesheet, `<name>.grafical-style.yaml`, starts from a theme and overrides any of its values. Changing it changes every diagram that names it.
 - Without a style, the default theme applies.
+
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **How it works:** [The theme](specs/ARCHITECTURE.md#the-theme)
+- **Why:** [016. Themes and stylesheets](specs/decisions/016-themes-and-stylesheets.md)
 
 **Stories:**
 
@@ -748,6 +875,10 @@ grafical show <file> [--drawn]
 - `show` prints the rows, the boxes in order, the groups, the lanes, the lines, the walls, the notes and the marks, in the same words as the operations.
 - `show --drawn` prints how the picture is drawn, as records: each box's row, place, size and lines by side; each line's sides, bends, length, the shortest it could be, the rows it skips, the lines it crosses and the rows it passes; each wall's length and the lines through it; one `gutter` record for each pair of neighbouring rows, `gutter above=<row> below=<row> lines=<n> crossings=<n> tight=<n> crowded=<n>`: the lines with a run between the two rows, and the crossings, tight pairs and crowded labels there, so that the agent sees which row choice costs ("Composition counts"), with no advice; how each note is drawn; the lines bundled together; and the totals.
 
+- **Design:** [12. The command line comes first, and the help is the agent's only reference](DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference), [8. Output is records, with no advice](DESIGNS.md#8-output-is-records-with-no-advice)
+- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **Why:** [021. The help as the reference](specs/decisions/021-the-help-as-the-reference.md), [022. Records over prose](specs/decisions/022-records-over-prose.md)
+
 **Stories:**
 
 - An agent reads the diagram as facts, to see what it drew without reading the YAML.
@@ -765,6 +896,11 @@ counts nodes=3 lines=2 crossings=0 bends=1 bent=0 length=224 width=368 height=28
 They are facts, with no threshold and no advice: what they mean is the agent's to judge.
 
 `bent` counts the lines drawn with more than two bends ("The dirty work has edges"), and `passing` the lines that run through a row they do not connect. Three more say how the picture is composed, each a separate count and never a score ("Composition counts"): `across`, the lines that cross the box of a group holding neither of their ends; `tight`, the pairs of runs of two different lines (not one bus) that run side by side closer than a track, 12 px, for more than 100 px; and `crowded`, the line labels with less than 8 px of room on two or more of their four sides. Each place these five count is also a warning ("Warnings").
+
+- **Stance:** [Who owns what?](PHILOSOPHY.md#who-owns-what)
+- **Design:** [8. Output is records, with no advice](DESIGNS.md#8-output-is-records-with-no-advice)
+- **How it works:** [The checker](specs/ARCHITECTURE.md#the-checker)
+- **Why:** [022. Records over prose](specs/decisions/022-records-over-prose.md), [036. Composition counts](specs/decisions/036-composition-counts.md)
 
 **Stories:**
 
@@ -799,6 +935,10 @@ detail:
 next: layer move, node move, node swap
 ```
 
+- **Design:** [6. Every write is checked, and each defect has an owner](DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
+- **How it works:** [The checker](specs/ARCHITECTURE.md#the-checker)
+- **Why:** [048. Every write prints every warning](specs/decisions/048-every-write-prints-every-warning.md), [050. A line from every box of a group is a warning](specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)
+
 **Stories:**
 
 - An agent reads the warnings, to find the line or box its choices made awkward.
@@ -812,6 +952,10 @@ grafical check <file> [--all]
 ```
 
 `check` reports the defects the agent can fix, every warning, and the counts. `--all` adds the defects only the engine can avoid, which are engine bugs.
+
+- **Design:** [6. Every write is checked, and each defect has an owner](DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
+- **How it works:** [The checker](specs/ARCHITECTURE.md#the-checker)
+- **Why:** [008. Defects owned by who can fix them](specs/decisions/008-defects-owned-by-who-can-fix-them.md)
 
 **Stories:**
 
@@ -829,6 +973,10 @@ grafical render <file> [--svg [<out>]] [--png [<out>]] [--scale 1-4]
 - The SVG carries the title and a description for screen readers.
 - The PNG is drawn with no browser, at a scale from 1 to 4.
 - The same file gives the same SVG and the same PNG pixels on macOS and Linux.
+
+- **Design:** [9. The same file gives the same picture on any machine](DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
+- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **Why:** [007. Our own SVG writer](specs/decisions/007-our-own-svg-writer.md), [024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)
 
 **Stories:**
 
@@ -850,6 +998,11 @@ grafical view <file> [--port <n>] [--no-open]
 - While the file cannot be read, it keeps the last good picture and shows the errors.
 - Ctrl-C stops it.
 
+- **Stance:** [Who draws?](PHILOSOPHY.md#who-draws)
+- **Design:** [14. A diagram reads no file outside its folder, and its pictures run nothing](DESIGNS.md#14-a-diagram-reads-no-file-outside-its-folder-and-its-pictures-run-nothing)
+- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **Why:** [017. A viewer that only shows](specs/decisions/017-a-viewer-that-only-shows.md)
+
 **Stories:**
 
 - The owner watches a window that redraws, to see the work as it happens.
@@ -863,6 +1016,10 @@ grafical diff <file> [<git-rev>]
 ```
 
 `diff` reports how the file differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file. Outside git it fails with `not-in-git`.
+
+- **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes), [4. A change moves only what it names](DESIGNS.md#4-a-change-moves-only-what-it-names)
+- **How it works:** [The model](specs/ARCHITECTURE.md#the-model)
+- **Why:** [009. Git as the history](specs/decisions/009-git-as-the-history.md)
 
 **Stories:**
 
@@ -883,6 +1040,11 @@ grafical <command> --help
 
 `--help` is the one way to a page: there is no `grafical help <command>`. A command grafical does not have is refused with the word it most likely means, as a value and never as a command line: `grafical help apply` gives `error: unknown-command` with `found: help` and `likely: --help`, and `grafical node.add --help` gives `found: node.add` and `likely: node add`.
 
+- **Stance:** [How does an agent learn grafical?](PHILOSOPHY.md#how-does-an-agent-learn-grafical)
+- **Design:** [12. The command line comes first, and the help is the agent's only reference](DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
+- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **Why:** [021. The help as the reference](specs/decisions/021-the-help-as-the-reference.md), [042. One entry page, help where it is used](specs/decisions/042-one-entry-page-help-where-it-is-used.md), [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
+
 **Stories:**
 
 - An agent learns grafical from `--help`, to start without being told how.
@@ -899,6 +1061,10 @@ grafical guide <name>
 ```
 
 `grafical guide` lists the guides by what a diagram is about: architecture, C4, infrastructure (cloud and deployment) and dependency for what exists; data flow and event flow for what moves; flowchart and swimlane for a process; state machine for one thing's states; and composition, for any kind, what makes a diagram good and what to change when a picture looks wrong. `grafical guide <name>` prints one; `cloud`, `deployment`, `process` and `states` find theirs. A name that is no guide is refused as `unknown-guide` with the likely ones. The entry page names `grafical guide` once, and nothing tells an agent to read a guide: grafical refuses only what would draw wrong.
+
+- **Design:** [12. The command line comes first, and the help is the agent's only reference](DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
+- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **Why:** [043. Help for the tool, guides for best practice](specs/decisions/043-help-for-the-tool-guides-for-best-practice.md)
 
 **Stories:**
 
@@ -918,6 +1084,10 @@ One YAML file, `<name>.grafical.yaml`, holds the whole diagram as facts: its row
 - It holds no coordinate. A field that holds its default is left out.
 - A file of a newer format, or with a field grafical does not know, is refused, never half read.
 
+- **Design:** [10. What grafical cannot fully read, it refuses](DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses), [9. The same file gives the same picture on any machine](DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
+- **How it works:** [The model](specs/ARCHITECTURE.md#the-model), [The file formats](specs/file-formats.md#the-diagram-file)
+- **Why:** [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md), [009. Git as the history](specs/decisions/009-git-as-the-history.md), [024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)
+
 **Stories:**
 
 - An engineer keeps one YAML file in git, to review and reproduce the picture.
@@ -932,6 +1102,10 @@ A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and ove
 - Larger type changes the layout, and text that no longer fits is refused as `overflow`.
 - An unknown key, a malformed colour or a weight the fonts lack is refused with the path of the value.
 - A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
+
+- **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind), [10. What grafical cannot fully read, it refuses](DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses)
+- **How it works:** [The theme](specs/ARCHITECTURE.md#the-theme), [The file formats](specs/file-formats.md#the-stylesheet)
+- **Why:** [016. Themes and stylesheets](specs/decisions/016-themes-and-stylesheets.md)
 
 **Stories:**
 
