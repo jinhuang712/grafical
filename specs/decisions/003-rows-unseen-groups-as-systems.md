@@ -14,8 +14,11 @@ A group is a system, such as "catalog-sync" around its relay, topics and pipelin
 
 ## Not chosen
 
-- Labelled bands for every row. They frame the picture by row, which is rarely what a reader needs, and they use a column of width on labels.
-- Groups within one row only. A system almost always spans rows, so this could not draw the systems that make an architecture diagram readable.
+- Labelled bands for every row.
+  - They frame the picture by row, which is rarely what a reader needs.
+  - They use a column of width on labels.
+- Groups within one row only.
+  - A system almost always spans rows, so this could not draw the systems that make an architecture diagram readable.
 - Nested groups, for stage 1.
 
 ## Consequences

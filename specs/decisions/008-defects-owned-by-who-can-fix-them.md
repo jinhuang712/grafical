@@ -36,7 +36,10 @@ Text is checked against its line box, which includes the fonts' full ascent and 
 
 - Warnings for agent-owned defects, because a picture with a known defect looks like success.
 - Checking only at render time, because the error then surfaces long after the operation that caused it.
-- Failing the write on engine-owned defects, as this decision first said. The phase 1 measuring run showed the cost: Haiku met an edge overlap and a label collision that only the router could fix, retried 11 times, and gave up.
+- Failing the write on engine-owned defects, as this decision first said.
+  - The phase 1 measuring run showed the cost.
+  - Haiku met an edge overlap and a label collision that only the router could fix.
+  - It retried 11 times and gave up.
 
 ## Consequences
 

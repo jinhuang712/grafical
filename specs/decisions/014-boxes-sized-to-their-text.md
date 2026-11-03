@@ -18,9 +18,12 @@ This was added on 2026-10-11. In the three phase 1b drafts, text overflow was th
 
 ## Not chosen
 
-- Auto size choosing the small box for short text. Boxes of three widths in one row look uneven, and the medium box is the target's grid.
-- Storing the chosen size in the file. A later rename could then not shrink the box, and the file would hold a value the engine derived.
-- A setting outside the diagram file, such as a user config. The same file would then draw differently on two machines.
+- Auto size choosing the small box for short text.
+  - Boxes of three widths in one row look uneven, and the medium box is the target's grid.
+- Storing the chosen size in the file.
+  - A later rename could then not shrink the box, and the file would hold a value the engine derived.
+- A setting outside the diagram file, such as a user config.
+  - The same file would then draw differently on two machines.
 
 ## Consequences
 

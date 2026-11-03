@@ -14,9 +14,14 @@ A container end is met at its top or bottom when the other end lies above or bel
 
 ## Not chosen
 
-- Routing a container end to the box's border directly. The router places ports and tracks around boxes. A stand-in reuses all of that, including the label slots and the side exits.
-- A label column for every band. "Rows unseen, groups as systems" rejected one for every row. A band's label sits in its own head instead.
-- Two lanes as the two ends of one line. Neighbouring lanes share a border, so the line between them would have no length.
+- Routing a container end to the box's border directly.
+  - The router places ports and tracks around boxes.
+  - A stand-in reuses all of that, including the label slots and the side exits.
+- A label column for every band.
+  - "Rows unseen, groups as systems" rejected one for every row.
+  - A band's label sits in its own head instead.
+- Two lanes as the two ends of one line.
+  - Neighbouring lanes share a border, so the line between them would have no length.
 
 ## Consequences
 

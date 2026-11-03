@@ -12,8 +12,10 @@ The owner wants to watch an agent draw, but a window anyone can edit in would br
 
 ## Not chosen
 
-- Opening the viewer on every `new`. Benchmarks and scripts would open windows nobody watches.
-- A log of operations beside the file. The owner wants the live picture, and git already holds the history.
+- Opening the viewer on every `new`.
+  - Benchmarks and scripts would open windows nobody watches.
+- A log of operations beside the file.
+  - The owner wants the live picture, and git already holds the history.
 
 ## Consequences
 

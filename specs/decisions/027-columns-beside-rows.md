@@ -12,8 +12,11 @@ A column is a guide, and nothing is drawn. Every box of a column lies left of ev
 
 ## Not chosen
 
-- Drawing columns as bands. Lanes that run as columns are already that, and a column is a guide.
-- A box in no column that drifts to the mean column of what it connects to on every write, as the prototype did. A line added elsewhere would move it, against "Layout computed again on every change". A box that belongs to no row and no column is a separate step ("Steps from another box").
+- Drawing columns as bands.
+  - Lanes that run as columns are already that, and a column is a guide.
+- A box in no column that drifts to the mean column of what it connects to on every write, as the prototype did.
+  - A line added elsewhere would move it, against "Layout computed again on every change".
+  - A box that belongs to no row and no column is a separate step ("Steps from another box").
 
 ## Consequences
 

@@ -15,7 +15,8 @@ The writer splits each label into runs that use one font, and writes one `<text>
 ## Not chosen
 
 - One `<text>` element with a font stack, for the reason above.
-- X6 for the output. Running it outside a browser is unproven.
+- X6 for the output.
+  - Running it outside a browser is unproven.
 - A headless browser, because it is slow and large.
 
 ## Consequences

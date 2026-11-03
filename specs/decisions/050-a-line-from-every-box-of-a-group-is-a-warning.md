@@ -8,14 +8,25 @@ Decided by the owner on 2026-10-19, looking at a picture an agent drew of a codi
 
 ## The choice
 
-- **`warning: line-per-member`**, printed after `lonely-box`: a group of two or more boxes, every box of which, its inner groups' included, has a line to one end outside the group, or from it, the lines alike in kind, label, weight and arrowheads. Detail: `group`, and `edges`, one line per box in the group's order. `next`: `edge add`, `edge remove`. A group inside another that has the same lines is not named, only the outer one.
-- **A fact, not a change.** Whether the parts' lines say something that one line to the group would not is the agent's to judge ("Curation stays with the agent"). Lines that differ in label are not counted, so that the warning names only lines that one line could replace with nothing lost.
-- **Measured** on the 329 saved drafts: 8 drafts get one block each, 4 for a group of two boxes and 4 for a group of three, such as three publishers each sending events to one topic.
+- **`warning: line-per-member`**, printed after `lonely-box`.
+  - It names a group of two or more boxes each of which has a line to one end outside the group or from it.
+  - The boxes of its inner groups count.
+  - The lines are alike in kind, label, weight and arrowheads.
+  - Detail: `group`, and as `edges` one line per box in the group's order.
+  - `next`: `edge add`, `edge remove`.
+  - A group inside another that has the same lines is not named, only the outer one.
+- **A fact, not a change.** Whether the parts' lines say something that one line to the group would not is the agent's to judge ("Curation stays with the agent").
+  - Lines that differ in label are not counted, so that the warning names only lines that one line could replace with nothing lost.
+- **Measured** on the 329 saved drafts: 8 drafts get one block each.
+  - 4 are for a group of two boxes.
+  - 4 are for a group of three, such as three publishers each sending events to one topic.
 
 ## Not chosen
 
-- Drawing such lines as one line from the group. The file would no longer say what the picture shows, and the engine would choose for the agent ("Facts over coordinates").
-- Counting lines that differ in label, or in kind. One line to the group would drop what tells them apart.
+- Drawing such lines as one line from the group.
+  - The file would no longer say what the picture shows, and the engine would choose for the agent ("Facts over coordinates").
+- Counting lines that differ in label, or in kind.
+  - One line to the group would drop what tells them apart.
 
 ## Consequences
 

@@ -18,7 +18,8 @@ The engine tries every slot with the real router. One layout of a 15-node diagra
 
 ## Not chosen
 
-- Appending a node last when no position is given. The agent's order would then decide the crossings, and that order is the main reason a diagram looks messy.
+- Appending a node last when no position is given.
+  - The agent's order would then decide the crossings, and that order is the main reason a diagram looks messy.
 - Reordering automatically on every change, for the reason in "Layout computed again on every change".
 
 ## Consequences

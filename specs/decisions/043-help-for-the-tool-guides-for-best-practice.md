@@ -8,13 +8,32 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
 
 ## The choice
 
-- **The help** (`grafical --help` and each command's `--help`) holds how to work, every way to draw by the story it tells, each command's options and its line in a batch, the facts of what it draws (such as that kinds initial and final draw no label), its limits, and what a refusal of it means. It does not say how a kind of diagram is drawn.
-- **The guides** (`grafical guide`, `grafical guide <name>`): one per common kind of diagram (architecture, C4, infrastructure, dependency, data flow, event flow, flowchart, swimlane, state machine), and composition for any kind: what makes a diagram good, and what to change when a picture looks wrong. They took the entry page's kinds of diagram and "A good diagram", the command pages' sections by kind of diagram, `try`'s "What to try", the advice on naming boxes and on how much to emphasize, and three rules the morning's restructure had lost: a row per step in a flowchart, people as actor and other systems as external in C4, and what depends on top in a dependency graph. `grafical guide cloud` and a few other names find the guide for their kind. The guides live in `src/cli/guides.ts`.
-- **Nothing says to read a guide.** The entry page names `grafical guide` once, as there if wanted, and no command page names it; a test holds both.
+- **The help** (`grafical --help` and each command's `--help`) holds:
+  - How to work, and every way to draw by the story it tells.
+  - Each command's options and its line in a batch.
+  - The facts of what it draws, such as that kinds initial and final draw no label.
+  - Its limits, and what a refusal of it means.
+  - It does not say how a kind of diagram is drawn.
+- **The guides** (`grafical guide` and `grafical guide <name>`):
+  - One per common kind of diagram: architecture, C4, infrastructure, dependency, data flow, event flow, flowchart, swimlane and state machine.
+  - Composition, for any kind: what makes a diagram good and what to change when a picture looks wrong.
+  - They took these from the help:
+    - The entry page's kinds of diagram and "A good diagram".
+    - The command pages' sections by kind of diagram, and `try`'s "What to try".
+    - The advice on naming boxes and on how much to emphasize.
+  - They also took three rules the morning's restructure had lost:
+    - A row per step in a flowchart.
+    - People as actor and other systems as external in C4.
+    - What depends on top in a dependency graph.
+  - `grafical guide cloud` and a few other names find the guide for their kind.
+  - The guides live in `src/cli/guides.ts`.
+- **Nothing says to read a guide.** The entry page names `grafical guide` once, as there if wanted.
+  - No command page names it, and a test holds both.
 
 ## Not chosen
 
-- The guides in the help, as the entry page and the command pages held them in the morning: every agent reads them before it draws, and draws alike.
+- The guides in the help, as the entry page and the command pages held them in the morning.
+  - Every agent reads them before it draws and draws alike.
 - No mention of the guides at all: an agent could not know they exist.
 - Rules every diagram of a kind must follow, as a type setting would make them: grafical refuses only what would draw wrong.
 

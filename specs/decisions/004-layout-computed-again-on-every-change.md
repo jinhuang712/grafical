@@ -16,7 +16,8 @@ Placement follows the facts in a fixed order: layers from top to bottom, nodes i
 
 **Stability means the structure stays, not the pixels.** An operation never changes a fact it does not name. Positions are compared relative to the shared centre line: when the canvas widens, everything shifts by the same amount, and that is not movement. After an operation, only these may move:
 - the elements it names;
-- the other nodes in each layer whose contents changed, which re-spread sideways and keep their order. A layer's contents include its nodes' alignment facts;
+- the other nodes in each layer whose contents changed, which re-spread sideways and keep their order.
+  - A layer's contents include its nodes' alignment facts;
 - a layer that has a node aligned to a node that moved, which slides sideways as one block;
 - a box placed by steps from a node that moved, which keeps its steps ("Steps from another box");
 - the layers below a layer or gutter that changed height, which shift down as one block;
@@ -37,11 +38,19 @@ One exception: when a gap between two nodes is full, the next edge in id order t
 
 ## Not chosen
 
-- Left-aligned layers that never re-spread. They keep more pixels still, but rows end up ragged, and the picture stops looking finished. The phase 0 router spike showed this.
-- Reordering nodes on every change to reduce crossings. It gives a better picture once, but any change can reshuffle the structure. Order is stated by the agent, when a node is added or moved ("The agent states every order").
+- Left-aligned layers that never re-spread.
+  - They keep more pixels still, but rows end up ragged.
+  - The picture stops looking finished.
+  - The phase 0 router spike showed this.
+- Reordering nodes on every change to reduce crossings.
+  - It gives a better picture once, but any change can reshuffle the structure.
+  - Order is stated by the agent, when a node is added or moved ("The agent states every order").
 - Gutters that grow by any amount, because nearly every edge addition would then move the layers below.
-- A "gutter full" defect. Its fix (a larger density, fewer edges, a split layer) costs the agent a round, and moves more than growing would.
-- An aligned node that slides alone within its row's spacing, as phase 1 first built it. None of the three alignments in the public brief could hold that way.
+- A "gutter full" defect.
+  - Its fix costs the agent a round and moves more than growing would.
+  - The fix is a larger density, fewer edges or a split layer.
+- An aligned node that slides alone within its row's spacing, as phase 1 first built it.
+  - None of the three alignments in the public brief could hold that way.
 
 ## Consequences
 

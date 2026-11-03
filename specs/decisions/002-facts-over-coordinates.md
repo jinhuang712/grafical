@@ -16,9 +16,13 @@ A node's place is its layer, its order within the layer, its group, and an optio
 
 Coordinate operations, as offered by the draw.io and Excalidraw MCP servers. They move the hardest part of the work back to the model, which is exactly where the 2026-10-10 test failed.
 
-- Free positions. They make every diagram look different and give a weak model too many ways to be wrong. Changed in part on 2026-10-14 by the owner's decision: a box may be placed by whole steps on the grid from another box ("Steps from another box").
-- A general graph layout over a plain node and edge list, such as ELK layered or dagre. Those compute positions globally, so adding one node can reorder others.
-- Boxes that grow with their text. A longer label would push every layer below it down.
+- Free positions.
+  - They make every diagram look different and give a weak model too many ways to be wrong.
+  - Changed in part on 2026-10-14 by the owner's decision: a box may be placed by whole steps on the grid from another box ("Steps from another box").
+- A general graph layout over a plain node and edge list, such as ELK layered or dagre.
+  - Those compute positions globally, so adding one node can reorder others.
+- Boxes that grow with their text.
+  - A longer label would push every layer below it down.
 
 ## Consequences
 

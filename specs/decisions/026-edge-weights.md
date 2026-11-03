@@ -14,9 +14,13 @@ In the file, `accent: true` on a line stays valid and means `weight: thick` ("Fi
 
 ## Not chosen
 
-- Three fixed levels with fixed widths. The owner wants to retune them.
-- A numeric width only, with no names. The agent would pick a different number for every line, and the reader would have to decode each one. The levels give the agent the choice "Lines meet any side" wanted, and the number is there for the person who needs an exact width.
-- Raising the weight limit with the number of levels. Emphasis works because few lines have it.
+- Three fixed levels with fixed widths.
+  - The owner wants to retune them.
+- A numeric width only, with no names.
+  - The agent would pick a different number for every line, and the reader would have to decode each one.
+  - The levels give the agent the choice "Lines meet any side" wanted, and the number is there for the person who needs an exact width.
+- Raising the weight limit with the number of levels.
+  - Emphasis works because few lines have it.
 
 ## Consequences
 

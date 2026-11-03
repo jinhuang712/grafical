@@ -12,8 +12,11 @@ The file holds the current state only, and git keeps the history. `grafical diff
 
 ## Not chosen
 
-- An operation log inside the file, which could replay any past version. The file grows without limit, git merges get harder, and git already keeps the history.
-- A `grafical undo` command. It would duplicate git with less safety.
+- An operation log inside the file, which could replay any past version.
+  - The file grows without limit and git merges get harder.
+  - Git already keeps the history.
+- A `grafical undo` command.
+  - It would duplicate git with less safety.
 
 ## Consequences
 

@@ -14,9 +14,13 @@ Layout reads the same values, so a theme with larger type changes the layout as 
 
 ## Not chosen
 
-- Colors or styles on one node or edge. A model would have to choose them, and the look would drift. Reversed in part: a mark takes its own colors ("Marks of any kind") and a line its own width ("Edge weights"), and on 2026-10-14 the owner settled that looks may take any value (PHILOSOPHY.md, "What may the agent set?").
-- A stylesheet found by folder, without the diagram naming it. The diagram file would no longer say what decides its picture.
-- CSS. A stylesheet holds named values, not selectors, so that every value has one meaning and the engine can check it.
+- Colors or styles on one node or edge.
+  - A model would have to choose them, and the look would drift.
+  - Reversed in part: a mark takes its own colors ("Marks of any kind") and a line its own width ("Edge weights"), and on 2026-10-14 the owner settled that looks may take any value (PHILOSOPHY.md, "What may the agent set?").
+- A stylesheet found by folder, without the diagram naming it.
+  - The diagram file would no longer say what decides its picture.
+- CSS.
+  - A stylesheet holds named values and no selectors, so that every value has one meaning and the engine can check it.
 
 ## Consequences
 

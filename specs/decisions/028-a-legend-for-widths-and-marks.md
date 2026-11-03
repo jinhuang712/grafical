@@ -12,10 +12,15 @@ The caller gives words only. Which entries exist follows what is drawn, and wher
 
 ## Not chosen
 
-- Free entries, which the agent writes in its own order. It is the most flexible, but the legend could then list what is not drawn and leave out what is.
-- Lines and widths only. Marks would stay unexplained, and a mark's meaning is what a reader cannot guess.
-- A legend the caller places, at the bottom or the left. Placement is the engine's.
-- Default words for each level, such as "heavy". A level's name is the stylesheet's word, not the reader's, so widths with no name share one "main path" entry.
+- Free entries, which the agent writes in its own order.
+  - It is the most flexible, but the legend could then list what is not drawn and leave out what is.
+- Lines and widths only.
+  - Marks would stay unexplained, and a mark's meaning is what a reader cannot guess.
+- A legend the caller places, at the bottom or the left.
+  - Placement is the engine's.
+- Default words for each level, such as "heavy".
+  - A level's name is the stylesheet's word and not the reader's.
+  - So widths with no name share one "main path" entry.
 
 ## Consequences
 

@@ -12,9 +12,12 @@ A swimlane names who owns what. A diagram's lanes all run one way, as rows or as
 
 ## Not chosen
 
-- Rows and columns in one diagram, as a grid of lanes and phases. It is the most expressive form and the most work, and no brief needs it yet.
-- Listing members on the lane. Every other membership in the file is named by the member, and `show` then prints it on the member's line.
-- A setting for the way lanes run. It would be one more fact that could disagree with the members.
+- Rows and columns in one diagram, as a grid of lanes and phases.
+  - It is the most expressive form and the most work, and no brief needs it yet.
+- Listing members on the lane.
+  - Every other membership in the file is named by the member, and `show` then prints it on the member's line.
+- A setting for the way lanes run.
+  - It would be one more fact that could disagree with the members.
 
 ## Consequences
 
