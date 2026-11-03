@@ -11,7 +11,7 @@ grafical is designed around 15 guidelines:
 5. **The engine routes every line, in plain forms**
 6. **Every write is checked, and each defect has an owner**
 7. **A refusal gives the facts, and the agent writes the fix**
-8. **Every answer is data a script can read**
+8. **Answers are data a script can read**
 9. **The same file gives the same picture on any machine**
 10. **What grafical cannot fully read, it refuses**
 11. **Looks are free, while shape and dash follow the kind**
@@ -99,7 +99,7 @@ When grafical refuses a write, it says what went wrong, what caused it and which
 - **Decisions:** [047. Refusals say what happened and which commands can change it](specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md), [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
-## 8. Every answer is data a script can read
+## 8. Answers are data a script can read
 
 grafical answers in fixed keys and values, never in sentences of advice. The one sentence it prints is the fixed description of a problem's code. Cost: grafical never says what looks wrong, so the agent judges the picture from the counts.
 
