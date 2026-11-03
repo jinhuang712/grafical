@@ -2,6 +2,10 @@
 
 Small fixes and follow-ups with no milestone yet. An item moves to ROADMAP.md once it has one.
 
+## One word, two steps
+
+"Steps from another box" (DESIGN.md, "Steps from another box") is a placement: a box sits some cells of the grid from another. "Numbered steps" (FEATURES.md) is a number on a line for a process. The two share a word, and `GLOSSARY.md` lists both. Needs the owner's choice of a new name for one, or a decision to keep both.
+
 ## Many writes in one process run the text measurer out of memory
 
 `plan` in `src/cli/pipeline.ts` makes a new HarfBuzz measurer for every write. A command line makes one write per process, and `grafical view` keeps one measurer, so no user meets it; but a few thousand writes in one process end in `RuntimeError: memory access out of bounds`, as an audit of refusals did on 2026-10-17. Reusing one measurer, or freeing each, would let tools and tests call the write path in a loop.
