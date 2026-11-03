@@ -8,31 +8,12 @@ Decided by the owner on 2026-10-18, the same day as "Refusals say what happened 
 
 ## The choice
 
-- **Seven warnings**, each its own block in this order:
-  - `bent-line`: a line with more than two bends ("The dirty work has edges").
-    - Detail: `edge`, `bends`, `skip`.
-  - `passing-row`: a line that runs through rows between its ends without meeting a box of them.
-    - Detail: `edge`, `rows`.
-  - `line-across-group`: a line through the box of a group that holds neither of its ends.
-    - Detail: `edge`, and every such group as `groups`.
-  - `tight-lines`: runs of two lines under 12 px apart for over 100 px.
-    - Detail: the pair as `edges`, and the pixels they share as `over`.
-  - `crowded-label`: a line's label with under 8 px of room on two sides.
-    - Detail: `edge`.
-  - `lonely-box`: a box no line reaches.
-    - Neither a line of its own reaches it nor one that ends at its group, row or lane.
-    - A line to a group, row or lane reaches every box it holds.
-    - Detail: `node`.
-    - Decided by the owner later the same day: a box reached through its group, row or lane is connected in the picture.
-    - Of the 16 boxes with no line of their own in the 329 saved drafts, 8 were reached that way and are no longer warned of.
-  - `crossing`: a pair of lines that cross, however often.
-    - Detail: `edges`.
-
-  Changed on 2026-10-19 by "A line from every box of a group is a warning": an eighth, `line-per-member`, prints after `lonely-box`.
-
-  The first five are a block for each place that `bent`, `passing`, `across`, `tight` and `crowded` count, so the counts line stays as it was. `crossings` still counts points: a pair that crosses twice is one block. `next` names the commands that rearrange the picture: rows (`layer move`), order (`node move`, `node swap`, `group order`), and also `edge relabel` for a label, `node remove` and `edge add` for a box with no lines.
+- **A warning for each place the counts count**, each its own block: `bent-line`, `passing-row`, `line-across-group`, `tight-lines`, `crowded-label`, `lonely-box` and `crossing`.
+  - The counts line stays as it was, and `next` names the commands that rearrange the picture.
+  - Decided by the owner later the same day: a box reached through its group, row or lane is connected in the picture, so it is no `lonely-box`.
+  - Of the 16 boxes with no line of their own in the 329 saved drafts, 8 were reached that way and are no longer warned of.
+  - Changed on 2026-10-19 by "A line from every box of a group is a warning": an eighth, `line-per-member`, prints after `lonely-box`.
 - **All of them, every time.** Every write prints every warning the diagram has and not only those the command caused.
-  - Single commands do, and so do `check` and `render`.
   - Every change lays the whole diagram out again ("Layout computed again on every change"), so the set can differ after any change.
 - **No source.** Decided by the owner later the same day: a warning has no `source:`, in text or in `--json`; errors and defects keep theirs.
   - The outcome line `ok changed=<ids>` already tells the agent what it just changed, so it can match a warning that names those ids itself.
@@ -43,6 +24,8 @@ Decided by the owner on 2026-10-18, the same day as "Refusals say what happened 
   - At scale 10 a write prints no warning.
   - At scale 25 it prints 35 blocks in 220 lines.
   - At scale 50 it prints 173 to 232 blocks in 1,117 to 1,490 lines, 31 to 41 KB, most of them crossings.
+
+Each warning's rule, detail and `next` are in [the checker](../checks.md#warnings).
 
 ## Not chosen
 

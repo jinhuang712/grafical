@@ -67,6 +67,7 @@ What it changes, each built in its own step:
   - The owner chose that the agent widens it and never the engine.
     - The refusal carries as `fix` the command that gives a box at either end of the line the first larger size at which the label fits.
     - grafical finds that size by laying the diagram out with it, and gives none where no size fits.
+    - Removed on 2026-10-18 by "Refusals say what happened and which commands can change it": no refusal writes a command any more, and `next` names `node resize`.
   - None of the 306 saved drafts and none of the fixtures had such a label, so none changed.
   - Over 2,000 fuzz seeds generated as before, 455 diagrams had one, 1,198 lines in all, and are now refused.
   - Laid out by both engines:
@@ -105,6 +106,8 @@ What it changes, each built in its own step:
   - Bends, crossings and engine-owned defects are unchanged.
   - Dense pictures seldom have room for a card, since nothing moves for one.
   - So an agent should expect to state footnotes there.
+
+How each refusal and warning works today is in [the checker](../checks.md#when-there-is-no-plain-form).
 
 ## Not chosen
 
