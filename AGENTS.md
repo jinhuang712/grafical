@@ -16,6 +16,7 @@ What each document holds is listed in [README.md](README.md). Each fact lives in
 | `DESIGNS.md` | A commitment every design change must meet is added, changed or dropped |
 | `specs/decisions/` | A decision is made or reversed: a new file, numbered in order |
 | `specs/ARCHITECTURE.md` | A part is added, removed or moves to another folder |
+| `specs/<part>.md` | How a part works changes: update its spec in the same change as the code |
 | `FEATURES.md` | A feature is added, changes status or is dropped, or a vocabulary list changes |
 | `ROADMAP.md` | A milestone starts, ends or changes scope |
 | `GLOSSARY.md` | A term is added, renamed, or two words compete for one thing |
@@ -26,7 +27,7 @@ What each document holds is listed in [README.md](README.md). Each fact lives in
 
 ## Reading and keeping the documents true
 
-A window that is new, or was compacted, reads the documents in this order: PROPOSAL.md, PHILOSOPHY.md, DESIGNS.md, GOALS.md, FEATURES.md, ROADMAP.md, GLOSSARY.md, specs/ARCHITECTURE.md. A decision in specs/decisions is read when it is cited or when its area changes. Then scan TODO.md.
+A window that is new, or was compacted, reads the documents in this order: PROPOSAL.md, PHILOSOPHY.md, DESIGNS.md, GOALS.md, FEATURES.md, ROADMAP.md, GLOSSARY.md, specs/ARCHITECTURE.md. A part's spec in specs/ is read before its code changes, and a decision in specs/decisions when it is cited or when its area changes. Then scan TODO.md.
 
 - Read a whole document yourself before you change it.
   - Read the document that owns a fact before you change that fact.

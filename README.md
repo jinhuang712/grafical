@@ -71,15 +71,20 @@ From a clone, write `node src/cli/main.ts` in place of `grafical`.
 
 ## Architecture
 
-Every write runs the same steps, and only the agent's operations go in:
+Every write runs the same parts, and only the agent's operations go in:
 
 ```text
-agent ──operations──> grafical
-                        ├── validate ──> refusals ─────────> agent
-                        ├── apply ─────> diagram file (YAML, in git)
-                        ├── layout ────> positions, sizes, routes
-                        ├── check ─────> defects and counts ──> agent
-                        └── render ────> SVG ──resvg──> PNG
+agent ──command or batch──> command line ──records──> agent
+                              │    └──writes──> diagram file (YAML, in git)
+                              │ operations
+                              ▼
+                            model ── refusals ──> command line
+                              │ facts
+                              ▼
+  text measurer ──> layout: placement ⇄ routing ──> text placement <── theme
+                              │ laid-out picture
+                              ├──> checker ── defects, warnings, counts ──> command line
+                              └──> renderer ──> SVG ──> PNG
 ```
 
 Each part and the folder it lives in are in the architecture document, under *Docs*.
@@ -90,6 +95,7 @@ Each part and the folder it lives in are in the architecture document, under *Do
 - [PHILOSOPHY.md](PHILOSOPHY.md): the questions grafical takes a stance on, and its answers.
 - [DESIGNS.md](DESIGNS.md): what every design change must meet.
 - [specs/ARCHITECTURE.md](specs/ARCHITECTURE.md): the parts and how they connect.
+  - How each part works: [the model](specs/model.md), [the file formats](specs/file-formats.md), [placement](specs/placement.md), [routing](specs/routing.md), [text placement](specs/labels.md), [the text measurer](specs/text.md), [the theme](specs/theme.md), [the checker](specs/checks.md), [the renderer](specs/rendering.md) and [how grafical answers](specs/answers.md).
 - [specs/decisions](specs/decisions/README.md): each fork taken, with what was not chosen.
 - [GOALS.md](GOALS.md): the checks that say whether it works, each with its status.
 - [FEATURES.md](FEATURES.md): what it does, and what it will and won't do.
