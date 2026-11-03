@@ -31,7 +31,11 @@ function sources(): string[] {
   return files;
 }
 
-/** A document's headings, as they are cited: a decision without "Decision: " and its date. */
+/**
+ * A document's headings, as they are cited: a decision without "Decision: " and
+ * its date, a goal, feature or checkpoint without its ID (`T2: Speed` is cited as "Speed"),
+ * and a TODO item without its priority and type tags.
+ */
 function headings(doc: string): Set<string> {
   const out = new Set<string>();
   for (const line of readFileSync(join(ROOT, doc), "utf8").split("\n")) {
@@ -41,7 +45,9 @@ function headings(doc: string): Set<string> {
       m[1]
         .replace(/^Decision: /, "")
         .replace(/ — \d{4}-\d{2}-\d{2}$/, "")
-        .replace(/ (✅|🚧|🟨|⬜)$/u, ""),
+        .replace(/ (✅|🚧|🟨|⬜)$/u, "")
+        .replace(/^(?:O|M|B|C|T|R|F|CP)\d+(?:\.\d+)*: /, "")
+        .replace(/^\[P\d\]\[[A-Z]+\] /, ""),
     );
   }
   return out;

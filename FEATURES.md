@@ -5,9 +5,70 @@ What grafical does, from the side of the agent that draws and the person who ask
 
 ✅ built · 🚧 built, with a gap named · ⬜ planned
 
-## Drawing in steps
+## Summary
 
-### Operations ✅
+```
+Features
+├── ✅ F1: Drawing in steps — every change is one named, checked operation
+│   ├── ✅ F1.1: Operations — one named command per change
+│   ├── ✅ F1.2: Batches — many operations, all or nothing
+│   ├── ✅ F1.3: Trying a change — see counts before writing
+│   ├── ✅ F1.4: IDs — the caller names every element
+│   └── ✅ F1.5: Refusals — a wrong operation is refused with facts
+├── 🚧 F2: Boxes — what a box is, says and carries
+│   ├── ✅ F2.1: Kinds and shapes — a box's kind sets its shape
+│   ├── ✅ F2.2: Labels and sublabels — a label and a quieter sublabel
+│   ├── ✅ F2.3: Sizes — sized to the text, or by a step
+│   ├── 🚧 F2.4: Marks — up to five small marks on a box
+│   ├── ⬜ F2.5: Marks by name — a mark from one bundled icon set
+│   ├── ✅ F2.6: Emphasis — at most two boxes stand out
+│   └── ✅ F2.7: Merging and swapping — merge, swap and remove boxes
+├── ✅ F3: Lines — what a line means and how it is drawn
+│   ├── ✅ F3.1: Kinds — a line's kind sets its style
+│   ├── ✅ F3.2: Arrowheads at both ends — two-way lines
+│   ├── ✅ F3.3: Weight — thicker lines for what matters more
+│   ├── ✅ F3.4: Numbered steps — a number on a line
+│   ├── ✅ F3.5: Ends at a group, a row or a lane — one arrow to a whole system
+│   └── ✅ F3.6: How lines are drawn — grafical routes every line
+├── ✅ F4: Placing — where a box sits, stated as a fact
+│   ├── ✅ F4.1: Rows and order — a box's row and its place in it
+│   ├── ✅ F4.2: Alignment — one box above or below another
+│   ├── ✅ F4.3: Columns — a second placement fact beside rows
+│   └── ✅ F4.4: Steps from another box — a box some cells from another
+├── 🚧 F5: Grouping — systems, lanes, walls and notes around boxes
+│   ├── ✅ F5.1: Groups — a system drawn as one frame
+│   ├── ✅ F5.2: Copying a group — a second zone in one operation
+│   ├── ⬜ F5.3: Deeper nesting — up to five levels
+│   ├── ✅ F5.4: Swimlanes — bands that say who owns what
+│   ├── ✅ F5.5: Walls — space that lines cross only where allowed
+│   └── ✅ F5.6: Notes — a short text on a box, a line or a group
+├── ✅ F6: The whole picture — title, legend, spacing and look
+│   ├── ✅ F6.1: Title, subtitle and footnote — the words around the picture
+│   ├── ✅ F6.2: Legend — a key for styles, widths and marks
+│   ├── ✅ F6.3: Spacing — compact, normal or airy
+│   └── ✅ F6.4: Themes and stylesheets — the whole look from one name
+├── ✅ F7: Seeing the result — what the agent and the owner see
+│   ├── ✅ F7.1: Show — the diagram as facts
+│   ├── ✅ F7.2: Counts — facts about how the picture is drawn
+│   ├── ✅ F7.3: Warnings — what the picture draws poorly
+│   ├── ✅ F7.4: Check — defects, warnings and counts on demand
+│   ├── ✅ F7.5: Render — SVG and PNG, the same everywhere
+│   ├── ✅ F7.6: Live viewer — a window that redraws as the agent draws
+│   ├── ✅ F7.7: Diff — a change as operations
+│   ├── ✅ F7.8: Help — the agent's whole reference
+│   └── ✅ F7.9: Guides — how common diagrams are usually drawn
+└── ✅ F8: Files — the diagram and stylesheet files
+    ├── ✅ F8.1: The diagram file — one YAML file of facts
+    └── ✅ F8.2: The stylesheet file — colors, widths and type sizes
+```
+
+## F1: Drawing in steps
+
+**Status:** ✅
+
+### F1.1: Operations
+
+**Status:** ✅
 
 Every change to a diagram is one named operation, run as a command. The diagram file is `<name>.grafical.yaml` by convention.
 
@@ -22,7 +83,13 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
 - Every command takes `--json`, which prints the same report as JSON.
 - Exit codes: 0 for success, 1 for a refused operation or a defect, 2 for a usage error. The parser's own refusals (an unknown option, a missing argument, an unknown command) print `failed changed=-` and a block on standard error, such as `error: unknown-option` with `found: --bogus`.
 
-### Batches ✅
+**Stories:**
+
+- An agent changes a diagram with one named command, to move only what it named.
+
+### F1.2: Batches
+
+**Status:** ✅
 
 Many operations at once, all or nothing.
 
@@ -46,7 +113,13 @@ A batch file is a YAML list. Each item has `op: <noun>.<verb>` and the same fiel
 
 grafical checks each operation in order, and writes only when every one is valid and the picture has no defect the agent must fix. Otherwise nothing changes, and each problem's source names the batch line that caused it.
 
-### Trying a change ✅
+**Stories:**
+
+- An agent sends many operations in one call, to save round trips and never leave a half-made change.
+
+### F1.3: Trying a change
+
+**Status:** ✅
 
 See what a batch would do before making it.
 
@@ -58,7 +131,13 @@ grafical try arch.grafical.yaml batch.yaml
 
 `try` takes several batches, to compare arrangements in one call. It prints one `before` record, then for each batch `ok`, `after` and `delta` records that carry `batch=<file>`; a batch that would be refused prints `failed batch=<file> changed=-` and its blocks, the others are still tried, and the exit code is 1. With `--json`: `{ok, before, batches: [{batch, ok, changed, after, delta}]}`. A single batch prints as before, without the key.
 
-### IDs ✅
+**Stories:**
+
+- An agent compares arrangements with `try`, to pick the one with fewer crossings without writing any.
+
+### F1.4: IDs
+
+**Status:** ✅
 
 The caller names every row, group, lane, column, wall, box and line, and a name never changes while the element exists.
 
@@ -66,7 +145,13 @@ The caller names every row, group, lane, column, wall, box and line, and a name 
 - A line's ID defaults to `<from>-><to>`, with a suffix when the same pair is connected twice. A reversed line keeps its ID.
 - A taken ID is refused, with a free one suggested.
 
-### Refusals ✅
+**Stories:**
+
+- An agent names every element, to refer to it later without it ever changing.
+
+### F1.5: Refusals
+
+**Status:** ✅
 
 A wrong operation is refused at once, and nothing is written. Each problem is a block: what happened, what caused it, the facts, and the commands that can change it, by name (DESIGN.md, "Refusals say what happened and which commands can change it").
 
@@ -90,9 +175,17 @@ next: -
 - `next` names the commands that can change it, in the order the help lists them, or `-`.
 - A YAML syntax error gives the text of its line.
 
-## Boxes
+**Stories:**
 
-### Kinds and shapes ✅
+- An agent that asks for something wrong gets what happened and which commands can change it, to fix it alone.
+
+## F2: Boxes
+
+**Status:** 🚧
+
+### F2.1: Kinds and shapes
+
+**Status:** ✅
 
 A box's kind says what it is and decides how it is drawn.
 
@@ -113,7 +206,13 @@ A box's kind says what it is and decides how it is drawn.
 grafical node kind <file> <id> <kind>
 ```
 
-### Labels and sublabels ✅
+**Stories:**
+
+- An agent says what a box is, to get the shape a reader expects.
+
+### F2.2: Labels and sublabels
+
+**Status:** ✅
 
 A box has a label, and optionally a quieter sublabel, such as a port or a topic.
 
@@ -127,7 +226,13 @@ grafical node describe <file> <id> [--text <text>]
 - A character the bundled fonts cannot draw is refused as `missing-glyph`.
 - `describe` without `--text` clears the sublabel.
 
-### Sizes ✅
+**Stories:**
+
+- An agent names a box and adds a port or a topic, to say more without another box.
+
+### F2.3: Sizes
+
+**Status:** ✅
 
 A box is sized to its text, unless the agent gives it a size step.
 
@@ -141,7 +246,13 @@ grafical diagram sizing <file> auto|fixed
 - Every box in a row is drawn as tall as the row's tallest, so their tops line up. Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a box without a size is always medium, and text that does not fit is refused.
 
-### Marks 🚧
+**Stories:**
+
+- An agent leaves sizes to grafical or picks a step, to keep text inside its box.
+
+### F2.4: Marks
+
+**Status:** 🚧
 
 A box can carry up to five marks, such as `⚠️` on a box that matters, or `P0` on a badge.
 
@@ -159,7 +270,13 @@ grafical node icon <file> <id> --slot <slot> [--icon <mark>] [--bg <color>] [--f
 
 Gap: a corner mark is not checked against the lines that leave the box near its corner.
 
-### Marks by name ⬜
+**Stories:**
+
+- An agent marks a box that matters, to draw the reader's eye to it.
+
+### F2.5: Marks by name
+
+**Status:** ⬜
 
 A mark taken by name from one icon set that grafical bundles, so that an agent need not find a file for every box.
 
@@ -170,7 +287,13 @@ grafical node icon <file> <id> --slot <slot> --icon <set>:<name>
 - The set is a permissively licensed one, such as Lucide (ISC) or Tabler (MIT). A cloud vendor's own icons stay files the agent brings.
 - An unknown name is refused, with `near` and `likely`.
 
-### Emphasis ✅
+**Stories:**
+
+- An agent names an icon, to avoid finding a file for every box.
+
+### F2.6: Emphasis
+
+**Status:** ✅
 
 At most two boxes stand out, as what a reader should see first.
 
@@ -178,7 +301,13 @@ At most two boxes stand out, as what a reader should see first.
 grafical node emphasize <file> <id> [--off]
 ```
 
-### Merging and swapping ✅
+**Stories:**
+
+- An agent picks the one or two boxes to read first, to give the picture a start.
+
+### F2.7: Merging and swapping
+
+**Status:** ✅
 
 ```sh
 grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--kind <kind>]
@@ -190,9 +319,17 @@ grafical node remove <file> <id>
 - `swap` trades the places of two boxes: their row and slot.
 - `remove` takes the box's lines with it and reports their IDs. A box that others are placed by steps from stays while they are (`step-anchor`).
 
-## Lines
+**Stories:**
 
-### Kinds ✅
+- An agent merges boxes or swaps two, to change the picture without redrawing it.
+
+## F3: Lines
+
+**Status:** ✅
+
+### F3.1: Kinds
+
+**Status:** ✅
 
 A line's kind says what it means and decides its style.
 
@@ -215,7 +352,13 @@ grafical edge remove <file> <id>
 
 - `relabel` without `--label` clears the label. `retarget` moves one or both ends, and keeps the ID, kind and label.
 
-### Arrowheads at both ends ✅
+**Stories:**
+
+- An agent says what a line means, to get the style a reader expects.
+
+### F3.2: Arrowheads at both ends
+
+**Status:** ✅
 
 ```sh
 grafical edge both <file> <id> [--off]
@@ -223,7 +366,13 @@ grafical edge both <file> <id> [--off]
 
 A `link` takes no arrowheads, so `both` on a link is refused as `both-on-link`.
 
-### Weight ✅
+**Stories:**
+
+- An agent marks a line both ways, to show a call that answers.
+
+### F3.3: Weight
+
+**Status:** ✅
 
 Some lines are thicker than others, to say they matter more.
 
@@ -238,7 +387,13 @@ grafical edge emphasize <file> <id...> [--off]
 - A stylesheet may retune the levels and add more, such as `critical`. A level the stylesheet lacks is refused as `unknown-weight`, with the allowed names.
 - The arrowhead grows with the width.
 
-### Numbered steps ✅
+**Stories:**
+
+- An agent thickens the main path, to make it the first thing a reader follows.
+
+### F3.4: Numbered steps
+
+**Status:** ✅
 
 A number on a line, so that a reader can follow a request or a process in order.
 
@@ -250,7 +405,13 @@ grafical edge step <file> <id> [--n <number>]
 - Without `--n`, the step is cleared. In a batch: `{op: edge.step, id: <line>, n: <number>}`.
 - A numbered line keeps its own port, as a labelled one does, and never joins a bundle.
 
-### Ends at a group, a row or a lane ✅
+**Stories:**
+
+- An agent numbers the lines of a request, to let a reader follow it in order.
+
+### F3.5: Ends at a group, a row or a lane
+
+**Status:** ✅
 
 One arrow can point at a whole system instead of each of its parts.
 
@@ -261,7 +422,13 @@ One arrow can point at a whole system instead of each of its parts.
 - Two lanes are never the two ends of one line (`lane-to-lane`).
 - Removing a group or a lane removes the lines that end at it.
 
-### How lines are drawn ✅
+**Stories:**
+
+- An agent points a line at a whole system, to avoid one arrow per part.
+
+### F3.6: How lines are drawn
+
+**Status:** ✅
 
 The agent says what connects. grafical draws every line.
 
@@ -272,9 +439,17 @@ The agent says what connects. grafical draws every line.
 - A label sits beside its line. When there is no room, it wraps or moves to another gap on its way. Where no gap on its way has room, no line moves for it: the write is refused as `label-blocked`, naming the line, the lines across the label and the gaps it tried, with `node resize` among the commands that can change it (DESIGN.md, "The dirty work has edges"). grafical never widens a box for its lines. A step's number is refused the same way.
 - A stylesheet may draw the corners curved, with `paint.edge.shape: curved`. The routes stay the same.
 
-## Placing
+**Stories:**
 
-### Rows and order ✅
+- An agent states what connects, to get lines that avoid boxes and text without drawing any.
+
+## F4: Placing
+
+**Status:** ✅
+
+### F4.1: Rows and order
+
+**Status:** ✅
 
 A box sits in a row, in an order. A row only places, and is not drawn unless it has a look or a line ends at it.
 
@@ -296,7 +471,13 @@ grafical node move <file> <id> [--layer <row>] [--first | --last | --before <nod
 - A row can be removed only when it is empty, and the lines that end at it go with it.
 - `layer look` draws a row, with its label, even when no line ends at it: `box`, with a box's paint and a dark label, or `band`, with the band's light fill and grey label. Without one, a row is drawn only when a line ends at it, a row with no box as a box and a row with boxes as a band. A row with no box and a look is a bar, checked as one: a line that passes it needs `--pass` (`bar-crossed`), and it may not lie between the first and last rows of a group (`bar-in-group`, which `layer look` can change by taking the look away) (DESIGN.md, "A row with a look is drawn").
 
-### Alignment ✅
+**Stories:**
+
+- An agent states each box's row and order, to decide the story's layout in facts.
+
+### F4.2: Alignment
+
+**Status:** ✅
 
 ```sh
 grafical node align <file> <id> [--to <node>]
@@ -304,7 +485,13 @@ grafical node align <file> <id> [--to <node>]
 
 A box sits directly above or below a box in another row, and its row slides sideways as one block to put it there. An alignment that cannot hold with the order of either row is refused, as `alignment-conflict` or `alignment-cycle`. Without `--to`, the alignment is cleared.
 
-### Columns ✅
+**Stories:**
+
+- An agent aligns two boxes in different rows, to give a line between them a straight run.
+
+### F4.3: Columns
+
+**Status:** ✅
 
 A second placement fact beside rows. Nothing is drawn: a column is a guide.
 
@@ -321,7 +508,13 @@ grafical column remove <file> <id>
 - A diagram has columns or lanes that run as columns, not both (`column-lanes`).
 - Removing a column leaves its boxes where they are.
 
-### Steps from another box ✅
+**Stories:**
+
+- An agent sets columns, to keep boxes of different rows in one left-to-right order.
+
+### F4.4: Steps from another box
+
+**Status:** ✅
 
 A box in no row, placed some cells of the grid from another box.
 
@@ -337,9 +530,17 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
 - `node move --layer` puts the box back in a row. `node move` with steps and no `--from` keeps the box it steps from, and with `--from` alone keeps the steps.
 - A box placed by steps beside every box it connects to, wholly left or right of them, is refused as `box-aside`, naming those boxes.
 
-## Grouping
+**Stories:**
 
-### Groups ✅
+- An agent places a box some steps from another, to draw a staircase or a side path.
+
+## F5: Grouping
+
+**Status:** 🚧
+
+### F5.1: Groups
+
+**Status:** ✅
 
 A group is a system, drawn as one box around its members, which may sit in several rows.
 
@@ -362,7 +563,13 @@ grafical group remove <file> <id> [--out]
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group. Lines that end at the group go with it.
 - A box inside a box takes the canvas's fill, so the fills alternate by depth. A stylesheet may set `paint.nesting: shade` instead.
 
-### Copying a group ✅
+**Stories:**
+
+- An agent groups boxes into a system, to show which parts belong together.
+
+### F5.2: Copying a group
+
+**Status:** ✅
 
 A second zone, region or shard in one operation.
 
@@ -375,11 +582,23 @@ grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before
 - Each copied box sits in its original's row, with its label, kind, size, marks, lane and column. `--before` or `--after` puts the copy before or after a group in every row of the copy, as `group order` does (DESIGN.md, "The agent states every order"). A group with no box in one of those rows is refused as `no-shared-layer`.
 - An alignment or steps to a box outside the group, and a lane or a column that would move the copy from its place, are refused as `copy-conflict`, naming the box (DESIGN.md, "A group copy holds its inside"). Notes and walls are not copied.
 
-### Deeper nesting ⬜
+**Stories:**
+
+- An agent copies a group with its lines, to draw a second region or shard in one step.
+
+### F5.3: Deeper nesting
+
+**Status:** ⬜
 
 Groups nest up to five levels instead of three, as a cloud's account, region, network, zone and subnet do. The fuzz test must hold at five levels first.
 
-### Swimlanes ✅
+**Stories:**
+
+- An agent nests groups five deep, to draw a cloud's account, region, network, zone and subnet.
+
+### F5.4: Swimlanes
+
+**Status:** ✅
 
 A swimlane is a labelled band that says who owns what. A diagram's lanes all run one way, as rows or as columns.
 
@@ -397,7 +616,13 @@ grafical lane remove <file> <id>
 - A group lies inside one lane (`group-across-lanes`).
 - `lane remove` keeps the members and removes the lines that end at the lane.
 
-### Walls ✅
+**Stories:**
+
+- An agent sets lanes, to show who owns which step.
+
+### F5.5: Walls
+
+**Status:** ✅
 
 Empty space between two parts of a picture, which lines cross only where the wall allows.
 
@@ -414,7 +639,13 @@ grafical wall remove <file> <id>
 - Without a label, a wall is invisible: only its space shows. With a label, it draws a dashed divider through its middle, the label along it at the first place no line comes near. Where none is, the write is refused as `label-blocked` (DESIGN.md, "The dirty work has edges"). `wall relabel` changes the label, or drops it without `--label`.
 - A box or group that is removed leaves the wall's sides, and a wall left with an empty side goes.
 
-### Notes ✅
+**Stories:**
+
+- An agent sets a wall between two parts, to keep them apart and let only named lines cross.
+
+### F5.6: Notes
+
+**Status:** ✅
 
 A short text attached to a box, a line or a group, to keep detail out of extra boxes.
 
@@ -427,9 +658,17 @@ grafical note remove <file> --on <id>
 - A target has one note, and adding another replaces it. A note goes with its target.
 - A note that takes more than four lines is an `overflow`.
 
-## The whole picture
+**Stories:**
 
-### Title, subtitle and footnote ✅
+- An agent attaches a note, to keep detail out of extra boxes.
+
+## F6: The whole picture
+
+**Status:** ✅
+
+### F6.1: Title, subtitle and footnote
+
+**Status:** ✅
 
 ```sh
 grafical diagram title <file> --text <text>
@@ -439,7 +678,13 @@ grafical diagram note <file> [--text <text>]
 
 The subtitle is one sentence under the title. The footnote says what the diagram leaves out, such as "Not shown: Redis name cache". Without `--text`, either one is cleared.
 
-### Legend ✅
+**Stories:**
+
+- An agent sets the title and says what the picture leaves out, to tell a reader what they see.
+
+### F6.2: Legend
+
+**Status:** ✅
 
 A key in the top right that says, in the agent's words, what the picture's styles, widths and marks mean.
 
@@ -453,13 +698,25 @@ grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mar
 - Marks with the same name share one entry.
 - When the legend is wider than its room, it wraps onto more lines.
 
-### Spacing ✅
+**Stories:**
+
+- An agent explains a style or a mark in its own words, to let a reader decode the picture.
+
+### F6.3: Spacing
+
+**Status:** ✅
 
 ```sh
 grafical diagram density <file> compact|normal|airy
 ```
 
-### Themes and stylesheets ✅
+**Stories:**
+
+- An agent picks a density, to trade size for air.
+
+### F6.4: Themes and stylesheets
+
+**Status:** ✅
 
 A diagram takes its whole look from a built-in theme or from a stylesheet file it names.
 
@@ -471,9 +728,17 @@ grafical diagram style <file> [<style>]
 - A stylesheet, `<name>.grafical-style.yaml`, starts from a theme and overrides any of its values. Changing it changes every diagram that names it.
 - Without a style, the default theme applies.
 
-## Seeing the result
+**Stories:**
 
-### Show ✅
+- An agent picks a theme or a stylesheet, to restyle every diagram that names it.
+
+## F7: Seeing the result
+
+**Status:** ✅
+
+### F7.1: Show
+
+**Status:** ✅
 
 The agent's view of a diagram, in place of reading the YAML.
 
@@ -484,7 +749,13 @@ grafical show <file> [--drawn]
 - `show` prints the rows, the boxes in order, the groups, the lanes, the lines, the walls, the notes and the marks, in the same words as the operations.
 - `show --drawn` prints how the picture is drawn, as records: each box's row, place, size and lines by side; each line's sides, bends, length, the shortest it could be, the rows it skips, the lines it crosses and the rows it passes; each wall's length and the lines through it; one `gutter` record for each pair of neighbouring rows, `gutter above=<row> below=<row> lines=<n> crossings=<n> tight=<n> crowded=<n>`: the lines with a run between the two rows, and the crossings, tight pairs and crowded labels there, so that the agent sees which row choice costs ("Composition counts"), with no advice; how each note is drawn; the lines bundled together; and the totals.
 
-### Counts ✅
+**Stories:**
+
+- An agent reads the diagram as facts, to see what it drew without reading the YAML.
+
+### F7.2: Counts
+
+**Status:** ✅
 
 After `apply`, `check` and `render`, grafical prints the drawing's counts as one record:
 
@@ -496,7 +767,13 @@ They are facts, with no threshold and no advice: what they mean is the agent's t
 
 `bent` counts the lines drawn with more than two bends ("The dirty work has edges"), and `passing` the lines that run through a row they do not connect. Three more say how the picture is composed, each a separate count and never a score ("Composition counts"): `across`, the lines that cross the box of a group holding neither of their ends; `tight`, the pairs of runs of two different lines (not one bus) that run side by side closer than a track, 12 px, for more than 100 px; and `crowded`, the line labels with less than 8 px of room on two or more of their four sides. Each place these five count is also a warning ("Warnings").
 
-### Warnings ✅
+**Stories:**
+
+- An agent reads the counts after a write, to know how the picture is drawn.
+
+### F7.3: Warnings
+
+**Status:** ✅
 
 Every write, single commands included, and `check` and `render` print a warning block for each thing the picture draws poorly, before the counts, and never refuse for one (DESIGN.md, "Every write prints every warning"). All of them print every time, not only those the command caused, since every change lays the whole diagram out again.
 
@@ -523,7 +800,13 @@ detail:
 next: layer move, node move, node swap
 ```
 
-### Check ✅
+**Stories:**
+
+- An agent reads the warnings, to find the line or box its choices made awkward.
+
+### F7.4: Check
+
+**Status:** ✅
 
 ```sh
 grafical check <file> [--all]
@@ -531,7 +814,13 @@ grafical check <file> [--all]
 
 `check` reports the defects the agent can fix, every warning, and the counts. `--all` adds the defects only the engine can avoid, which are engine bugs.
 
-### Render ✅
+**Stories:**
+
+- An agent runs `check`, to know the file is sound.
+
+### F7.5: Render
+
+**Status:** ✅
 
 ```sh
 grafical render <file> [--svg [<out>]] [--png [<out>]] [--scale 1-4]
@@ -542,7 +831,13 @@ grafical render <file> [--svg [<out>]] [--png [<out>]] [--scale 1-4]
 - The PNG is drawn with no browser, at a scale from 1 to 4.
 - The same file gives the same SVG and the same PNG pixels on macOS and Linux.
 
-### Live viewer ✅
+**Stories:**
+
+- An agent renders the file, to hand a reader a picture.
+
+### F7.6: Live viewer
+
+**Status:** ✅
 
 A window that shows the diagram as it is now, while an agent draws it.
 
@@ -556,7 +851,13 @@ grafical view <file> [--port <n>] [--no-open]
 - While the file cannot be read, it keeps the last good picture and shows the errors.
 - Ctrl-C stops it.
 
-### Diff ✅
+**Stories:**
+
+- The owner watches a window that redraws, to see the work as it happens.
+
+### F7.7: Diff
+
+**Status:** ✅
 
 ```sh
 grafical diff <file> [<git-rev>]
@@ -564,7 +865,13 @@ grafical diff <file> [<git-rev>]
 
 `diff` reports how the file differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file. Outside git it fails with `not-in-git`.
 
-### Help ✅
+**Stories:**
+
+- A reviewer reads how a file differs from a revision, to review a diagram change like code.
+
+### F7.8: Help
+
+**Status:** ✅
 
 How to use grafical: the agent's whole reference for the tool.
 
@@ -577,7 +884,13 @@ grafical <command> --help
 
 `--help` is the one way to a page: there is no `grafical help <command>`. A command grafical does not have is refused with the word it most likely means, as a value and never as a command line: `grafical help apply` gives `error: unknown-command` with `found: help` and `likely: --help`, and `grafical node.add --help` gives `found: node.add` and `likely: node add`.
 
-### Guides ✅
+**Stories:**
+
+- An agent learns grafical from `--help`, to start without being told how.
+
+### F7.9: Guides
+
+**Status:** ✅
 
 How common kinds of diagram are usually drawn: best practice, for an agent that wants it.
 
@@ -588,9 +901,17 @@ grafical guide <name>
 
 `grafical guide` lists the guides by what a diagram is about: architecture, C4, infrastructure (cloud and deployment) and dependency for what exists; data flow and event flow for what moves; flowchart and swimlane for a process; state machine for one thing's states; and composition, for any kind, what makes a diagram good and what to change when a picture looks wrong. `grafical guide <name>` prints one; `cloud`, `deployment`, `process` and `states` find theirs. A name that is no guide is refused as `unknown-guide` with the likely ones. The entry page names `grafical guide` once, and nothing tells an agent to read a guide: grafical refuses only what would draw wrong.
 
-## Files
+**Stories:**
 
-### The diagram file ✅
+- An agent reads a guide, to draw a kind of diagram the usual way.
+
+## F8: Files
+
+**Status:** ✅
+
+### F8.1: The diagram file
+
+**Status:** ✅
 
 One YAML file holds the whole diagram.
 
@@ -632,7 +953,13 @@ edges:
 - A field that holds its default is left out.
 - Rows, the boxes in a row and lines are ordered lists. The order of rows and boxes is their place in the picture. The order of lines is creation order and changes nothing visible.
 
-### The stylesheet file ✅
+**Stories:**
+
+- An engineer keeps one YAML file in git, to review and reproduce the picture.
+
+### F8.2: The stylesheet file
+
+**Status:** ✅
 
 ```yaml
 grafical-style: 1
@@ -658,6 +985,20 @@ type:
 - `type` holds a size, from 6 to 48, and a weight, 400 or 600, per text role. Larger type changes the layout, and text that no longer fits is refused as `overflow`.
 - An unknown key, a malformed colour or a weight the fonts lack is refused with the path of the value.
 - A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
+
+**Stories:**
+
+- An engineer writes a stylesheet, to set the look of many diagrams at once.
+
+## When something fails
+
+Every failure leaves the file as it was and says what happened, in the block described under F1.5: Refusals.
+
+- **An operation is wrong:** refused with a code, the facts and the commands that can change it (F1.5: Refusals). The ones about names are in F1.4: IDs, and the ones about a whole batch in F1.2: Batches.
+- **The picture would draw wrong:** refused as a defect, such as `overflow` for a label that does not fit (F2.2: Labels and sublabels), `label-blocked` for a label with no place (F3.6: How lines are drawn, F5.5: Walls, F5.6: Notes) or `title-blocked` for a group's label (F5.1: Groups).
+- **The picture draws poorly:** written, and reported as a warning (F7.3: Warnings).
+- **A file cannot be read:** a YAML syntax error gives its line, a missing stylesheet fails every command that reads the diagram (F8.2: The stylesheet file), and a file written by a newer grafical is refused rather than guessed at (F8.1: The diagram file).
+- **A command line is wrong:** a usage error prints a block and exits 2, and a command that does not exist is refused with the one it most likely means (F7.8: Help).
 
 ## Later
 
