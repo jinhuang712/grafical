@@ -1,6 +1,22 @@
 # Text placement
 
-Text placement seats every piece of text that is not inside a box: the labels of lines, the badges of numbered steps, group titles, notes, the labels of walls, bands, bars and lanes, and the legend. It moves no box for text. Apart from a band's label, it moves no line either, and the write is refused where text has no clear place. It takes the size of each text from the text measurer. A band's label is seated before the lines, which keep clear of it. The router seats the lines' labels as it fills each gutter, and every other text is seated once the lines are routed. It lives in `src/layout/` ([the architecture](ARCHITECTURE.md#text-placement)).
+Text placement seats every piece of text that is not inside a box: the labels of lines, the badges of numbered steps, group titles, notes, the labels of walls, bands, bars and lanes, and the legend. It never moves a box, and apart from a band's label it never moves a line. Where a text has no clear place, the write is refused, so that the agent changes the facts instead of the picture hiding something. It lives in `src/layout/` ([the architecture](ARCHITECTURE.md#text-placement)).
+
+## How a text finds its place
+
+Every kind of text is seated the same way. It has a fixed list of candidate places, each kept clear of what is already drawn by a few pixels. It takes the first clear one, or the cheapest where the places have costs. When none is clear, it tries the fallbacks of its kind. When those fail too, it takes its least bad place, and the write is refused.
+
+```text
+candidate places, in a fixed order or by cost
+  │ the first clear one ─────────────────────────────> seated
+  ▼ none clear
+fallbacks of its kind: wrap, another gutter, a farther place
+  │ one is clear ────────────────────────────────────> seated
+  ▼ none clear
+the least bad place, and the write is refused ───────> label-blocked or title-blocked
+```
+
+Texts are seated in the order the layout reaches them, so each keeps clear of what came before it. A band's label is seated before the lines, which keep clear of it. The router seats the lines' labels as it fills each gutter. Bar labels, lane labels and the legend follow once the lines are routed. Group titles, wall labels, step badges and notes come last, once every row has its y. The size of each text comes from the text measurer.
 
 ## Line labels
 
@@ -14,7 +30,7 @@ A wrapped label's lines are centred on each other.
 
 ### Slots
 
-Each label gets a list of candidate slots, each with a score:
+Each label gets a list of candidate slots, each with a score, lower being better:
 
 ```text
 straight vertical line   on the line (−1), beside it on the right (0), on the left (1)
@@ -24,17 +40,17 @@ run as long as the label above, centred (0), then slid along in 4 px steps (+ th
 run shorter than label   beside its right end (−2), its left end (−1), then as above
 ```
 
-A slot on the line exists only where the line passes straight through the gutter, and never for a line with a step badge, which keeps its label beside the line. A slot's cost is its score, plus 8 for each line inside the slot, plus 64 for each crossing that the order of runs it fixes would force. The labels with the fewest open slots choose first, each taking its cheapest open slot.
+A slot on the line exists only where the line passes straight through the gutter, and never for a line with a step badge, which keeps its label beside the line. A slot's cost is its score, plus 8 for each line inside the slot, plus 64 for each crossing that the order of runs it fixes would force. Labels compete for the same room, so the label with the fewest open slots chooses first, each taking its cheapest open slot.
 
 ### When no slot is clear
 
 A label with no clear slot tries, in turn:
 
-1. Its text on 2 lines, then on 3, at the narrowest width that wraps it.
+1. Its text on 2 lines and then on 3, at the narrowest width that wraps it.
 2. The other gutters its line passes through, for up to 12 rounds.
 3. Its longest run once more.
 
-When all of these fail, it goes back to one line, takes the slot with the fewest conflicts, and the write is refused as `label-blocked`. A label whose route is later cut at a container is seated again beside what is left of the line, longest part first. It is refused the same way when that fails.
+When all of these fail, it goes back to one line, takes the slot with the fewest conflicts, and the write is refused as `label-blocked`. A label whose route is later cut at a container is seated again beside what is left of the line, longest part first, and is refused the same way when that fails.
 
 ### Between neighbours
 
@@ -44,11 +60,11 @@ A line that runs straight across the gap between two neighbours carries its labe
 
 A numbered line's badge is a ring 18 px across, centred on the run under the start of the label's text, or under its end when the start is off the run. The badge widens the label's slot by 9 px and deepens it by 7 px, so the text stands 7 px further off the line. Beside a vertical line, the badge sits on the line level with the text, which stands 13 px away. A numbered line with no label gets a slot 18 by 5 px.
 
-Once every label is seated, `settleBadges` moves any badge that still touches something along its own line, in 2 px steps, to the nearest place with 2 px of room. It keeps clear of boxes, text, walls, borders other than those of its own ends, labels, other badges, other lines and its own arrowheads. Two badges that leave each other no place try their first 40 places together. A badge that still touches something is the engine's defect `step-collision`.
+Once every label is seated, a badge that still touches something slides along its own line, in 2 px steps, to the nearest place with 2 px of room. It keeps clear of boxes, text, walls, labels, other badges, other lines, its own arrowheads, and every border except those of its own ends. Two badges that leave each other no place try their first 40 places together. A badge that still touches something is the engine's defect `step-collision`.
 
 ## Group titles
 
-A group's title sits in its head unless the agent states another place. Placement has made room for it there, and no box or line moves for it:
+A group's title sits where the agent states, in room placement has already made for it. No box or line moves for it.
 
 | Place | Where the label sits |
 |---|---|
@@ -60,13 +76,13 @@ A group's title sits in its head unless the agent states another place. Placemen
 
 A title never wraps, and its sublabel follows it 10 px apart, within the same clear span.
 
-Without a stated place, the engine seats the title once the lines are drawn. It tries every seat in the head from 16 px in on the left to 16 px in on the right, in 4 px steps, and takes the leftmost one that no line comes within 6 px of and no line label overlaps. When none is clear, the title sits at the leftmost seat.
+Without a stated place, the title is seated in the head once the lines are drawn. It tries every seat from 16 px in on the left to 16 px in on the right, in 4 px steps, and takes the leftmost one that no line comes within 6 px of and no line label overlaps. When none is clear, it sits at the leftmost seat.
 
 Wherever the title sits, a line within 6 px of it is the agent's defect `title-blocked`.
 
 ## Notes
 
-A note is a card beside its target, joined by a dotted line, or with `footnote` a number on the target and its text in a list at the bottom. Notes are seated last, after the badges settle.
+A note is a card beside its target, joined by a dotted line. With `footnote`, it is a number on the target and its text in a list at the bottom. Notes are seated last, after the badges settle, so they keep clear of everything else.
 
 A card wraps at 160 px and tries its places in a fixed order, 16 px from its target and then 32 px:
 
@@ -75,7 +91,7 @@ A card wraps at 160 px and tries its places in a fixed order, 16 px from its tar
 - **Beside a line:** at the middle, a quarter and three quarters of its longest part.
   - Below or above a horizontal part, and right or left of a vertical one.
 
-A card keeps 8 px from boxes, text, other cards, walls, lane heads, the legend, the title and the subtitle, and from a badge by 10 px. No line may touch it. It lies wholly inside or wholly outside each group, lane and band, and stays within the margins, from 14 px below the title down to the bottom of the content. Its dotted line must not meet another box, text, card or line. A card with no place takes its first place anyway, and the write is refused as `label-blocked` with `is: note`. A note on a band or a lane always has no place.
+A card keeps 8 px from boxes, text, other cards, walls, lane heads, the legend, the title and the subtitle, and 10 px from a badge. No line may touch it. It lies wholly inside or wholly outside each group, lane and band, and within the margins, from 14 px below the title down to the bottom of the content. Its dotted line must not meet another box, text, card or line. A card with no place takes its first place anyway, and the write is refused as `label-blocked` with `is: note`. A note on a band or a lane always has no place.
 
 A footnote's number is a filled circle 16 px across. On a box it sits 6 px out from a corner, trying top right, top left, bottom right and bottom left. On a group it follows the title, and on a line it sits beside the line's parts. Footnotes are numbered from the top of the picture down, then from left to right. A footnote with no free place for its number has none, and its line in the list starts with its target's name.
 
@@ -101,7 +117,7 @@ A label with no such place stays at the wall's start or its top, and the write i
   - With no such stretch it sits left of the content and of every line through the bar.
   - The bar then reaches it.
 - **A lane's label** sits in the lane's header.
-  - For lanes as rows, it sits in the header column on the left, 12 px in and 10 px down.
+  - For lanes as rows it sits in the header column on the left, 12 px in and 10 px down.
   - For lanes as columns, it is centred in the header on top and wraps at the lane's width less 24 px.
 
 ## The legend

@@ -1,6 +1,6 @@
 # How grafical answers
 
-Everything grafical prints about a diagram is a record a script can read: an outcome, a block for each problem, and facts and counts. The only sentences are each code's fixed description, and the help, which is documentation. This spec explains the forms, how a problem finds its source, and how the help is built. The code lives in `src/cli/` and `src/records.ts` ([the command line](ARCHITECTURE.md#the-command-line)).
+The reader of grafical's answers is an agent, and often a script around it. So everything grafical prints about a diagram is a record a script can read: an outcome, a block for each problem, and facts and counts. The only sentences are each code's fixed description, and the help, which is documentation. The answer says what happened and which commands can change it, and leaves the change to the agent. The command line builds every answer, from the records the other parts return. It lives in `src/cli/` ([the architecture](ARCHITECTURE.md#the-command-line)).
 
 ## A command's answer
 

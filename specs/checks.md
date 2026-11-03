@@ -1,6 +1,6 @@
 # The checker
 
-The checker looks at a laid-out picture and says what is wrong with it. It finds three things: defects, which draw wrong; warnings, which draw poorly; and counts, which say how the picture is drawn. It never changes the picture, and it gives no advice. It lives in `src/check/`, and the write path that acts on it in `src/cli/pipeline.ts` ([the architecture](ARCHITECTURE.md#the-checker)).
+The checker looks at a laid-out picture and says what is wrong with it, without changing it and without advice. Every write runs it before the file is written, and `check` and `render` run it on the file as it is. What it finds falls into three kinds, by what each costs a reader: defects draw wrong, warnings draw poorly, and counts only say how the picture is drawn. It lives in `src/check/` ([the architecture](ARCHITECTURE.md#the-checker)).
 
 ```text
 laid-out picture
@@ -12,9 +12,9 @@ laid-out picture
 
 ## Defects and who owns them
 
-Every defect has an owner: whoever can fix it. The agent owns a defect that a fact it stated caused, such as a label too long for its box. The engine owns one that the engine drew wrong where a plain form was there, such as a line through a box.
+Every defect has an owner: whoever can fix it. The agent owns a defect that a fact it stated caused, such as a label too long for its box, since only a change of facts can remove it. The engine owns one that it drew wrong where a plain form was there, such as a line through a box.
 
-A write with a defect the agent owns is refused and changes nothing. A defect the engine owns is an engine bug: the write goes ahead, the agent is not told, and only `grafical check --all` reports it, so that the tests and the benchmarks count it. Its `next` is always empty, since no command of the agent's can change it.
+A write with a defect the agent owns is refused and changes nothing. A defect the engine owns is an engine bug: the write goes ahead and the agent is not told, since no command of the agent's can change it. Only `grafical check --all` reports it, so that the tests and the benchmarks count it, and its `next` is always empty.
 
 The defects the agent owns:
 
@@ -28,27 +28,33 @@ The defects the agent owns:
 
 The defects the engine owns:
 
-- `node-overlap`, `edge-through-node` and `group-intruder`: boxes that overlap, a line through a box, and a box inside a group it is not in.
-- `label-collision`, `step-collision` and `text-crossing`: text that touches other text, a badge that touches anything, and a line across text.
+- `node-overlap`: boxes that overlap.
+- `edge-through-node`: a line through a box.
+- `group-intruder`: a box inside a group it is not in.
+- `label-collision`: text that touches other text.
+- `step-collision`: a badge that touches anything.
+- `text-crossing`: a line across text.
 - `edge-overlap`: two lines that share a stretch of 8 px or more, so a reader cannot tell them apart.
+  - Two unlabelled lines that leave one box in one style are a bus, and never an overlap.
+  - Nor is an overlap whose ends lie within 4 px of a box the two lines share.
 - `lane-stray`: a box outside its lane.
 - `needless-bend`: a line between neighbouring rows that bends although one straight run would join it.
 
-Two lines that leave one box in one style with no label are a bus and never an `edge-overlap`. Nor is an overlap whose ends lie within 4 px of a box they share.
-
 ## When there is no plain form
 
-The engine draws each thing in a few plain forms: a line straight or with one or two bends, a label on or beside a run of its own line, a title at its place, a note as the agent said. When the facts leave no plain form, what happens depends on what it would cost a reader.
+The engine draws each thing in a few plain forms: a line straight or with one or two bends, a label on or beside a run of its own line, a title at its place, a note where the agent put it. When the facts leave no plain form, what happens depends on what drawing anyway would cost a reader.
 
-Where drawing would hide something a reader needs, the write is refused as a defect the agent owns:
+Where drawing would hide something a reader needs, the write is refused as a defect the agent owns, and the refusal gives the facts the agent needs to change the diagram:
 
 - A line's label or a step's badge that no gutter on its way holds clear of the other lines is `label-blocked`.
   - The refusal names the line, and the lines across the label as `across`.
   - It also names the borders the label crosses and the gutters it tried, each `<row above>/<row below>`.
   - Its `next` is `layer move`, `node resize`, `node move`, `edge relabel` and `edge step`.
-- A wall's label with no clear place along its wall is `label-blocked` with `is: wall`, naming the wall and the lines and boxes in the way.
+- A wall's label with no clear place along its wall is `label-blocked` with `is: wall`.
+  - It names the wall and the lines and boxes in the way.
   - Its `next` is `wall relabel` and `node move`.
-- A note's card with no clear place beside its target is `label-blocked` with `is: note`, naming the target and the lines and boxes in the way.
+- A note's card with no clear place beside its target is `label-blocked` with `is: note`.
+  - It names the target and the lines and boxes in the way.
   - Its `next` is `note add`, `note remove` and `node move`.
 - A group's label that a line comes near is `title-blocked`, naming the group and the lines.
   - On `check` it also lists as `clear` the other places where no line would come near, each found by laying the diagram out again.
@@ -61,7 +67,7 @@ No refusal writes the change for the agent. A block names the commands that can 
 
 ## Warnings
 
-Every write prints every warning the diagram has, not only those the command caused, and so do `check` and `render`. A warning never refuses anything and has no source, because the outcome line already names what the write changed. Each prints as its own block, in this order:
+A warning names something the picture draws poorly. Every write prints every warning the diagram has, not only those the command caused, and so do `check` and `render`, since every write lays the whole diagram out again. A warning never refuses anything. It has no source, because the outcome line already names what the write changed. Each prints as its own block, in this order:
 
 | Code | What it names | Detail | `next` |
 |---|---|---|---|
@@ -76,17 +82,17 @@ Every write prints every warning the diagram has, not only those the command cau
 
 A line that ends at a group, a row or a lane reaches every box in it, so none of those boxes is a `lonely-box`.
 
-`line-per-member` names a group of two or more boxes, the boxes of its inner groups included, in which every box has a line to one end outside the group, or from it. The lines must agree in direction, outer end, kind, label, weight and arrowheads. `edges` holds the first such line of each box, in the group's order. A group inside one that has the same lines is left out, so only the outer group is named.
+`line-per-member` names a group of two or more boxes, the boxes of its inner groups included, in which every box has a line to one end outside the group, or from it. The lines must agree in direction, outer end, kind, label, weight and arrowheads, so that one line to the group would say the same. `edges` holds the first such line of each box, in the group's order. A group inside one that has the same lines is left out, so only the outer group is named.
 
 ## Counts
 
-The counts record is one line of facts, with no threshold. Its keys, in order: `nodes`, `lines`, `crossings`, `bends`, `bent`, `length`, `width`, `height`, `fullest`, `busiest`, `longest`, `passing`, `across`, `tight` and `crowded`. The last five count the places the first five warnings name:
+The counts record is one line of facts with no threshold, so that the agent can compare two arrangements by numbers. Its keys, in order: `nodes`, `lines`, `crossings`, `bends`, `bent`, `length`, `width`, `height`, `fullest`, `busiest`, `longest`, `passing`, `across`, `tight` and `crowded`. The last five count the places the first five warnings name:
 
 - `bent`: the lines with more than two bends.
 - `passing`: the lines with a vertical run in a row strictly between their ends' rows, within that row's height and between its outermost boxes.
   - A row with no box counts as a row here.
 - `across`: the lines with a run through the box of a group that holds neither end.
-  - A group holds an end that is the group or a member or lies inside its box.
+  - A group holds an end that is the group or a member, or that lies inside its box.
   - A line counts once, however many groups it crosses.
 - `tight`: the pairs of runs of two different lines under 12 px apart that share more than 100 px.
   - Lines that share a port are one bundle and never a pair.
@@ -99,7 +105,7 @@ The counts record is one line of facts, with no threshold. Its keys, in order: `
 
 ## Gutters
 
-`show --drawn` prints a `gutter` record for each pair of neighbouring rows, `gutter above=<row> below=<row> lines= crossings= tight= crowded=`. A row with no box, drawn as a bar, has a gutter too. The gutter is the band from the lowest bottom of the upper row's boxes to the highest top of the lower row's, across the whole picture.
+The counts say how much, and the gutters say where. `show --drawn` prints a `gutter` record for each pair of neighbouring rows: `gutter above=<row> below=<row> lines= crossings= tight= crowded=`. A row with no box, drawn as a bar, has a gutter too. The gutter is the band from the lowest bottom of the upper row's boxes to the highest top of the lower row's, across the whole picture.
 
 - `lines` counts the lines with any run in the band, including those that only pass through.
 - `crossings` counts the crossing points inside the band.
@@ -110,4 +116,4 @@ The agent compares gutters to see which order of rows costs. The record gives no
 
 ## Rules that are no longer reported
 
-`src/check/taste.ts` still measures the rules of decision [012: A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md): a canvas at most 1024 px wide, at most one crossing per ten lines, at least half the lines straight, no line over two bends, at most 40% of lines labelled, at most three line styles, at most 16 boxes, and no corridor through a box. No command calls it. Only its limit of two bends is used, for `bent` and `bent-line`.
+The checker's folder still holds a measure of the eight rules of decision [012: A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md): a canvas at most 1024 px wide, at most one crossing per ten lines, at least half the lines straight, no line over two bends, at most 40% of lines labelled, at most three line styles, at most 16 boxes, and no corridor through a box. No command calls it. Only its limit of two bends is used, for `bent` and `bent-line`.
