@@ -1,6 +1,6 @@
 # Text placement
 
-Text placement seats every piece of text that is not inside a box: the labels of lines, the badges of numbered steps, group titles, notes, the labels of walls, bands, bars and lanes, and the legend. It moves no box for text. Apart from a band's label, it moves no line either, and the write is refused where text has no clear place ([the checker](checks.md#when-there-is-no-plain-form)). It lives in `src/layout/` (`gutter.ts`, `badges.ts`, `notes.ts`, `index.ts`), and the SVG writer draws what it seats ([the architecture](ARCHITECTURE.md#the-layout)). How text is measured and wrapped is in [text and rendering](text-and-rendering.md).
+Text placement seats every piece of text that is not inside a box: the labels of lines, the badges of numbered steps, group titles, notes, the labels of walls, bands, bars and lanes, and the legend. It moves no box for text. Apart from a band's label, it moves no line either, and the write is refused where text has no clear place. It takes the size of each text from the text measurer. A band's label is seated before the lines, which keep clear of it. The router seats the lines' labels as it fills each gutter, and every other text is seated once the lines are routed. It lives in `src/layout/` ([the architecture](ARCHITECTURE.md#text-placement)).
 
 ## Line labels
 
@@ -10,7 +10,7 @@ A line's label sits on its longest run, inside the gutter that run lies in, and 
 - 24 px across and 4 px up or down from another label.
 - 4 px from the sides of group boxes and of column lanes.
 
-A wrapped label's lines are centred on each other. The SVG writer puts a patch behind every line label, 3 px wider and 1 px taller than the text, filled with whatever lies behind it, so a line that runs under the label is broken there.
+A wrapped label's lines are centred on each other.
 
 ### Slots
 
@@ -38,31 +38,31 @@ When all of these fail, it goes back to one line, takes the slot with the fewest
 
 ### Between neighbours
 
-A line between two neighbours in a row runs straight across the gap with its label above it. A second labelled line between the same pair takes its label below. The gap is widened to the label plus 24 px. A label over 200 px wide does not widen the gap: its line goes round through a gutter instead ([routing](routing.md#kinds-of-line)).
+A line that runs straight across the gap between two neighbours carries its label above it. A second labelled line in the same gap takes its label below. Placement has already made the gap wide enough for the label.
 
 ## Step badges
 
 A numbered line's badge is a ring 18 px across, centred on the run under the start of the label's text, or under its end when the start is off the run. The badge widens the label's slot by 9 px and deepens it by 7 px, so the text stands 7 px further off the line. Beside a vertical line, the badge sits on the line level with the text, which stands 13 px away. A numbered line with no label gets a slot 18 by 5 px.
 
-Once every label is seated, `settleBadges` moves any badge that still touches something along its own line, in 2 px steps, to the nearest place with 2 px of room. It keeps clear of boxes, text, walls, borders other than those of its own ends, labels, other badges, other lines and its own arrowheads. Two badges that leave each other no place try their first 40 places together. Two numbered lines between the same neighbours widen the gap to 60 px plus their arrowheads. A badge that still touches something is the engine's defect `step-collision`.
+Once every label is seated, `settleBadges` moves any badge that still touches something along its own line, in 2 px steps, to the nearest place with 2 px of room. It keeps clear of boxes, text, walls, borders other than those of its own ends, labels, other badges, other lines and its own arrowheads. Two badges that leave each other no place try their first 40 places together. A badge that still touches something is the engine's defect `step-collision`.
 
 ## Group titles
 
-A group's title sits in its head unless the agent states another place. The engine adds room only for the title itself, and moves no box and no line for it ([placement](placement.md#groups)):
+A group's title sits in its head unless the agent states another place. Placement has made room for it there, and no box or line moves for it:
 
-| Place | Where the label sits | Room it takes |
-|---|---|---|
-| `top-left`, `top`, `top-right` | in the head, 12 px down and 16 px in | a head of 40 px above the first row |
-| `bottom-left`, `bottom`, `bottom-right` | in a foot below the last row | a foot of 40 px; the top keeps only its 24 px padding |
-| `outside-top`, `outside-bottom` | centred just outside the box | 40 px outside |
-| `left`, `right` | in a strip inside, at the middle height | the label's width plus 4 px |
-| `outside-left`, `outside-right` | 12 px past the side, at the middle height | room past that side only |
+| Place | Where the label sits |
+|---|---|
+| `top-left`, `top`, `top-right` | in the head, 12 px down and 16 px in |
+| `bottom-left`, `bottom`, `bottom-right` | in a foot below the last row |
+| `outside-top`, `outside-bottom` | centred just outside the box |
+| `left`, `right` | in a strip inside, at the middle height |
+| `outside-left`, `outside-right` | 12 px past the side, at the middle height |
 
-A title never wraps, and its sublabel follows it 10 px apart, within the same clear span. A title outside one side reaches out on that side only, so the picture moves off its centre line rather than mirroring the room on the other side.
+A title never wraps, and its sublabel follows it 10 px apart, within the same clear span.
 
 Without a stated place, the engine seats the title once the lines are drawn. It tries every seat in the head from 16 px in on the left to 16 px in on the right, in 4 px steps, and takes the leftmost one that no line comes within 6 px of and no line label overlaps. When none is clear, the title sits at the leftmost seat.
 
-Wherever the title sits, a line within 6 px of it is the agent's defect `title-blocked`. On `check`, the refusal also lists as `clear` the other places where no line would come near, each found by laying the diagram out again. On a write it leaves `clear` out ([the checker](checks.md#when-there-is-no-plain-form)).
+Wherever the title sits, a line within 6 px of it is the agent's defect `title-blocked`.
 
 ## Notes
 
@@ -92,7 +92,7 @@ A label with no such place stays at the wall's start or its top, and the write i
 
 ## Bands, bars and lanes
 
-- **A band's label** sits in its 32 px head, 10 px from the top.
+- **A band's label** sits in its head, 10 px from the top.
   - It takes the first stretch of the row with no box below it that is the label's width plus 32 px.
   - With no such stretch it sits left of the content, 16 px from the band's side.
   - It is the one label that moves lines: vertical lines keep 6 px from it.
@@ -100,7 +100,7 @@ A label with no such place stays at the wall's start or its top, and the write i
   - It takes the first stretch 16 px clear of the lines that end at the bar and of the lines that pass it.
   - With no such stretch it sits left of the content and of every line through the bar.
   - The bar then reaches it.
-- **A lane's label** sits in the lane's header ([placement](placement.md#lanes)).
+- **A lane's label** sits in the lane's header.
   - For lanes as rows, it sits in the header column on the left, 12 px in and 10 px down.
   - For lanes as columns, it is centred in the header on top and wraps at the lane's width less 24 px.
 

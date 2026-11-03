@@ -12,7 +12,7 @@ The engine writes the SVG itself, with a fixed element and attribute order. `@re
 
 The writer places each label's text itself, one font at a time, because resvg-js 2.6.2 does not choose a font per character: given a font stack, it draws the whole label from Noto Sans SC as soon as Inter lacks one of its characters. The phase 0 text spike measured errors of up to 15.67 px from this.
 
-How the SVG and the PNG are written is in [text and rendering](../text-and-rendering.md#writing-the-svg).
+How the SVG and the PNG are written is in [the renderer](../rendering.md).
 
 ## Not chosen
 

@@ -18,7 +18,7 @@ A write with a defect the agent owns is refused and changes nothing. A defect th
 
 The defects the agent owns:
 
-- `overflow`: text that does not fit its box, a lane's label outside its head, or a note over 4 lines ([text and rendering](text-and-rendering.md#fitting-text-in-a-box)).
+- `overflow`: text that does not fit its box by the text measurer's test, a lane's label outside its head, or a note over 4 lines.
 - `missing-glyph`: a character neither bundled font can draw.
 - `mark-covers`: a mark that covers text or another box.
 - `wall-crossed`: a line through a wall that does not allow it.
@@ -36,10 +36,6 @@ The defects the engine owns:
 
 Two lines that leave one box in one style with no label are a bus and never an `edge-overlap`. Nor is an overlap whose ends lie within 4 px of a box they share.
 
-## Text against its box
-
-Text is checked against its line box, which runs from the fonts' full ascent to their full descent, not against the ink of the glyphs. The line box must stay 8 px from the box's sides and 4 px from its top and bottom. A diamond is tested against its diamond with the same margins.
-
 ## When there is no plain form
 
 The engine draws each thing in a few plain forms: a line straight or with one or two bends, a label on or beside a run of its own line, a title at its place, a note as the agent said. When the facts leave no plain form, what happens depends on what it would cost a reader.
@@ -47,7 +43,6 @@ The engine draws each thing in a few plain forms: a line straight or with one or
 Where drawing would hide something a reader needs, the write is refused as a defect the agent owns:
 
 - A line's label or a step's badge that no gutter on its way holds clear of the other lines is `label-blocked`.
-  - The label takes the slot that costs least on its longest run.
   - The refusal names the line, and the lines across the label as `across`.
   - It also names the borders the label crosses and the gutters it tried, each `<row above>/<row below>`.
   - Its `next` is `layer move`, `node resize`, `node move`, `edge relabel` and `edge step`.
@@ -56,13 +51,13 @@ Where drawing would hide something a reader needs, the write is refused as a def
 - A note's card with no clear place beside its target is `label-blocked` with `is: note`, naming the target and the lines and boxes in the way.
   - Its `next` is `note add`, `note remove` and `node move`.
 - A group's label that a line comes near is `title-blocked`, naming the group and the lines.
+  - On `check` it also lists as `clear` the other places where no line would come near, each found by laying the diagram out again.
+  - A write leaves `clear` out.
   - Its `next` is `group title`, `node move` and `edge remove`.
 
 Where drawing only costs, the picture is drawn and every write reports it. A line with more than two bends is the one such case today: it is a `bent-line` warning and counts in `bent`.
 
 No refusal writes the change for the agent. A block names the commands that can act, never a command line with values.
-
-**Not as the documents say.** Decision [040: The agent states where a group's label sits](decisions/040-the-agent-states-where-a-group-s-label-sits.md) and [FEATURES.md](../FEATURES.md) say that `title-blocked` names, as `clear`, the places no line comes near. On a write the code leaves `clear` out, since finding it means laying the diagram out again for every place.
 
 ## Warnings
 
@@ -116,5 +111,3 @@ The agent compares gutters to see which order of rows costs. The record gives no
 ## Rules that are no longer reported
 
 `src/check/taste.ts` still measures the rules of decision [012: A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md): a canvas at most 1024 px wide, at most one crossing per ten lines, at least half the lines straight, no line over two bends, at most 40% of lines labelled, at most three line styles, at most 16 boxes, and no corridor through a box. No command calls it. Only its limit of two bends is used, for `bent` and `bent-line`.
-
-**Not as the documents say.** That decision says `grafical check --all` reports these rules.

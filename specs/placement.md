@@ -1,34 +1,33 @@
 # Placement
 
-Placement turns the facts of a diagram into the place and size of every box: which column of one grid each box takes, how tall each row is, where groups, lanes, bands, bars and walls sit, and how big the canvas is. It stores nothing: the whole diagram is placed again from its facts on every write. It never routes a line or seats a label, which [routing](routing.md) and [text placement](labels.md) do. It lives in `src/layout/` ([the architecture](ARCHITECTURE.md#the-layout)).
+Placement turns the facts of a diagram into the place and size of every box: which column of one grid each box takes, how tall each row is, where groups, lanes, bands, bars and walls sit, and how big the canvas is. It stores nothing: the whole diagram is placed again from its facts on every write. It routes no line and seats no label, but it leaves the room both need. It lives in `src/layout/` ([the architecture](ARCHITECTURE.md#placement)).
 
 ## The steps
 
-`layout` runs these steps in order:
+Placement runs in three turns, and routing works between them:
 
 ```text
-1. boxes placed by steps join a row       (placeSteps; rows added past the ends)
-2. every box gets its size                (withSizes)
-3. each row in lane order, then column    (orderByLanes, orderByColumns)
-4. which rows draw as bands or bars       (planEnds; container ends get stand-ins)
-5. lines that run sideways between neighbours   (planSideways)
-6. the column grid and the x of everything      (placeAcross → buildGrid, solve)
-7. bars, band labels, the tracks each gutter needs   (refineEnds, routeAcross)
-8. the y of every row, and the canvas            (compute)
+1. boxes placed by steps join a row        (placeSteps; rows added past the ends)
+2. every box gets its size                 (withSizes)
+3. each row in lane order, then column     (orderByLanes, orderByColumns)
+       routing picks stand-ins for container ends and the lines between neighbours
+4. the column grid and the x of everything (placeAcross → buildGrid, solve)
+       routing routes every line and counts the tracks each gutter needs
+5. the y of every row, and the canvas      (compute)
 ```
 
 The steps read only the facts and the theme, so the same file gives the same places on every machine.
 
 ## Sizes
 
-A box's size step gives its size. A box with no step is medium when its text fits and large when it does not ([text and rendering](text-and-rendering.md#fitting-text-in-a-box)). With `sizing: fixed`, a box with no step stays medium.
+A box's size step gives its size. A box with no step is medium when its text fits a medium box and large when it does not. With `sizing: fixed`, a box with no step stays medium.
 
 | Shape | `s` | `m` | `l` |
 |---|---|---|---|
 | Box | 112 × 48 | 136 × 56 | 184 × 72 |
 | Decision diamond | 136 × 64 | 184 × 80 | 232 × 96 |
 
-A dot is 24 px across and a `choice` diamond 28 px, whatever the step. Every plain box in a row is drawn as tall as the row's tallest plain box, so their tops line up, while dots and diamonds keep their shapes. A row is as tall as its tallest shape, and a shorter shape is centred in it. A row with no box is 56 px high, and a bar 40 px.
+A dot is 24 px across and a `choice` diamond 28 px, whatever the step. Every plain box in a row is drawn as tall as the row's tallest plain box, so their tops line up, while dots and diamonds keep their shapes. A row is as tall as its tallest shape, and a shorter shape is centred in it. A row with no box is 56 px high, unless it is drawn as a bar.
 
 ## The column grid
 
@@ -48,11 +47,11 @@ A box outside every group that two or more groups use, such as a store a write s
 
 Then each column gets its x: the largest of all the minimum distances that apply to it, from box widths, gaps, groups, lanes and walls. The result is centred on a multiple of 4 px.
 
+Two neighbours in a row keep the density's box gap between them. A gap that a labelled line crosses is as wide as the label plus 24 px. Two numbered lines between the same neighbours widen it to 60 px plus their arrowheads, so that both badges fit side by side.
+
 ## Alignment
 
 An aligned box joins its target's column, so it sits directly above or below it. Alignments are joined in the order of rows and then of boxes, so an earlier one wins. One that cannot hold with the constraints is refused as `alignment-conflict`, with the boxes in the way. An alignment to an unknown box, to a box in its own row or to itself is refused as `unknown-node`, `same-layer` or `self-alignment`.
-
-**Not as the documents say.** [FEATURES.md](../FEATURES.md) and decision [004: Layout computed again on every change](decisions/004-layout-computed-again-on-every-change.md) say that an aligned box's row slides sideways as one block, and that rows that would follow each other are refused as `alignment-cycle`. The code joins columns instead, and has no `alignment-cycle`.
 
 ## Columns
 
@@ -65,12 +64,10 @@ A diagram's lanes all run one way. Rows as members make lanes that run as rows, 
 - **Lanes as columns** go left to right in the order of the diagram's `lanes` list.
   - A box outside every lane lies left of the lanes when it comes before the row's first lane box, and right of them otherwise.
   - A lane reaches 20 px past its content, and the contents of neighbouring lanes keep 40 px apart.
-  - Its label sits in a header on top with 10 px of padding above and below the text.
+  - Its header on top is as tall as its label with 10 px of padding above and below.
   - 16 px lie between the header and the lane's content.
 - **Lanes as rows** share one header column on the left: the widest label up to 112 px, plus 24 px.
   - Each lane has 16 px of padding at the top and bottom, and its border runs below the gutter's tracks and walls.
-
-A lane's side keeps lines 8 px off on either side.
 
 ## Steps from another box
 
@@ -89,20 +86,32 @@ A box placed by steps lands in the cell its steps name from its anchor: its anch
 
 A group's box spans every row from its top member to its bottom one, and the other boxes of those rows sit beside it. Its members fill a block of neighbouring columns with no other box inside. A row inside the span that holds no member is split to the left and right of the box.
 
-A group has a head 40 px high above its first row for its label, and 24 px of padding on its sides and bottom, 24 px more for each level of nesting. Groups nest up to three levels deep. A box outside a group keeps at least 16 px from its box, and two group boxes keep 24 px apart. A head may lie partly over the tracks of the gutter above when no line comes near it. Where a stated label place needs room, such as a foot or a strip beside the rows, the group takes it ([text placement](labels.md#group-titles)).
+A group has 24 px of padding on its sides and bottom, 24 px more for each level of nesting. Groups nest up to three levels deep. A box outside a group keeps at least 16 px from its box, and two group boxes keep 24 px apart.
+
+Its title takes room by the place the agent states for it, and the engine adds room only for the title itself:
+
+| Place | Room it takes |
+|---|---|
+| `top-left`, `top`, `top-right`, or no place | a head of 40 px above the first row |
+| `bottom-left`, `bottom`, `bottom-right` | a foot of 40 px below the last row; the top keeps only its 24 px padding |
+| `outside-top`, `outside-bottom` | 40 px outside the box |
+| `left`, `right` | a strip inside, as wide as the label plus 4 px |
+| `outside-left`, `outside-right` | room past that side only |
+
+A head may lie partly over the tracks of the gutter above when no line comes near it. A title outside one side reaches out on that side only, so the picture moves off its centre line rather than mirroring the room on the other side.
 
 Inner group boxes alternate their fill with depth, the even ones on the canvas's color, unless a stylesheet sets `paint.nesting: shade`.
 
 ## Bands, bars and walls
 
-A row a line ends at, or a row with a look, is drawn ([routing](routing.md#lines-that-end-at-a-container)):
+A row a line ends at, or a row with a look, is drawn as a container:
 
 - A row with boxes is a band around them, reaching 16 px past the content.
   - Its head is 32 px high with a label and 16 px without, with 16 px of padding below.
 - A row with no box is a bar 40 px high, with no head and no padding.
   - Its row takes the bar's height.
 
-A wall across adds 48 px of space after the pad and the tracks of the gutter below the upper side's lowest row. A wall up and down keeps its two sides apart in the wall's rows, and takes `max(48, label width + 16)` px across, its label wrapping at 96 px. No line runs through a wall's space in its rows, and the wall reaches 16 px past its outermost boxes.
+A wall across adds 48 px of space after the pad and the tracks of the gutter below the upper side's lowest row. A wall up and down keeps its two sides apart in the wall's rows, and takes `max(48, label width + 16)` px across. No line runs through a wall's space in its rows, and the wall reaches 16 px past its outermost boxes.
 
 ## Rows down the page
 
@@ -118,7 +127,7 @@ for each row:
 bottom margin
 ```
 
-A gutter takes the smallest of its density's fixed heights that holds its tracks: at least `(tracks + 1) × pitch`. Past the last height it grows in steps of 32 px. A gutter with no tracks takes the first height, and the last row has none. A line's label takes room in a gutter as a track does.
+Routing says how many rows of tracks each gutter holds, a line's label counting as a track. A gutter takes the smallest of its density's fixed heights that holds its tracks: at least `(tracks + 1) × pitch`. Past the last height it grows in steps of 32 px. A gutter with no tracks takes the first height, and the last row has none.
 
 | Density | Gutter heights (px) | Track pitch | Box gap | Margin |
 |---|---|---|---|---|
@@ -132,6 +141,4 @@ The canvas is as wide as the widest of its boxes, groups, bands, lanes, side lab
 
 ## What stays when the diagram changes
 
-No code limits what may move: every write places the whole diagram again from its facts. What stays is the facts. An operation changes only the facts it names, so every other box keeps its row, its order, its group, its lane and its alignment ([the model](model.md)). The stability tests in `test/layout/stability.ts` apply single operations and assert exactly that. They also check that each box is drawn in its row, in its order and inside exactly its groups' boxes. How far boxes move sideways and which routes change is measured and reported, not limited.
-
-**Not as the documents say.** AGENTS.md says the stability tests assert that nothing outside a fixed list changed position, size or route. They assert the facts above, and measure the movement.
+No code limits what may move: every write places the whole diagram again from its facts. What stays is the facts. An operation changes only the facts it names, so every other box keeps its row, its order, its group, its lane and its alignment. The stability tests in `test/layout/stability.ts` apply single operations and assert exactly that. They also check that each box is drawn in its row, in its order and inside exactly its groups' boxes. How far boxes move sideways and which routes change is measured and reported, not limited.

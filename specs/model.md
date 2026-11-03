@@ -1,6 +1,6 @@
 # The model
 
-The model holds the facts of a diagram and is the only part that changes them. It turns operations into a new diagram, checks that the diagram it makes can hold, and compares two diagrams as operations. It never computes a position: that is the layout's work ([placement](ARCHITECTURE.md#the-layout)). It lives in `src/model/`, and the write path that drives it in `src/cli/pipeline.ts`.
+The model holds the facts of a diagram and is the only part that changes them. It turns operations into a new diagram, checks that the diagram it makes can hold, and compares two diagrams as operations. It never computes a position, which is the layout's work. It lives in `src/model/`, and the write path that drives it in `src/cli/pipeline.ts`.
 
 ## A write, from operations to file
 
@@ -23,13 +23,15 @@ lay out and check the picture ── a defect the agent owns refuses the write
 write the file: a temporary file, then a rename
 ```
 
-Loading reads the YAML with unique keys and validates it against the schema. It then reads the marks' files, the stylesheets the diagram names and the weight levels the stylesheet knows. A file that fails any of these is refused as a whole, with `already in the file` as its source ([the file formats](file-formats.md)).
+Loading reads the YAML with unique keys and validates it against the schema. It then reads the marks' files, the stylesheets the diagram names and the weight levels the stylesheet knows. A file that fails any of these is refused as a whole, with `already in the file` as its source.
 
 Applying works on a copy of the loaded diagram, so a refused write leaves nothing changed. Each operation runs against the diagram the operations before it made, and returns errors or changes the copy. After each operation, walls forget the boxes and groups it removed, and notes go with their targets. When every operation has run, the rows are put in lane order and then in column order, since both follow from facts that several operations may have changed.
 
 Some problems can only be seen in the diagram the whole batch makes. Four checks look for them in turn, and the first that finds one stops the rest:
 
 1. Integrity: the rules a schema cannot state, such as that every id is unique, that every line's ends exist, that an alignment points to a box in another row, and that at most two boxes are emphasized.
+   - It also refuses a line between a wall's two sides as `wall-crossed` unless the wall allows it.
+   - A wall allows a line that it names, or one of whose ends it names, or one with an end in a group it names.
 2. Alignments: every alignment can hold with the order of the rows.
 3. Groups: every group can be boxed without a box that is not a member inside it.
 4. Steps: no box placed by steps lands on a cell that another fact keeps.

@@ -1,6 +1,6 @@
 # Routing
 
-Routing draws every line once the boxes are placed. Lines run in horizontal and vertical stretches through the gutters between rows and the gaps between neighbouring boxes, never through a box. The router picks each line's sides, ports, corridor and tracks; no operation can. It works on the 4 px grid, so the same placement always gives the same routes. It lives in `src/layout/route.ts`, `side.ts`, `gutter.ts` and `ends.ts`, called from `src/layout/index.ts` ([the architecture](ARCHITECTURE.md#the-layout)). Where a line's label goes is in [text placement](labels.md).
+Routing draws every line once the boxes are placed. Lines run in horizontal and vertical stretches through the gutters between rows and the gaps between neighbouring boxes, never through a box. The router picks each line's sides, ports, corridor and tracks; no operation can. It works on the 4 px grid, so the same placement always gives the same routes. As it fills each gutter, it also seats the labels of the lines there. It lives in `src/layout/` ([the architecture](ARCHITECTURE.md#routing)).
 
 ## The steps
 
@@ -23,12 +23,18 @@ route
   9. each gutter's rows, and the labels   (buildVisits, routeGutter)
 compare: route again with every same-row line below, keep what is no worse
 assemble: rows become y; routes are cut at containers   (assemble, cutRoute)
-draw: hops, dots and corners             (svg.ts)
 ```
 
 ## Kinds of line
 
-`makePlan` gives each line one of four kinds: down to a lower row, up to a higher row, between two boxes of one row through a gutter, or between neighbours in a row. A line between neighbours runs straight across the gap between them. With no labels, as many such lines as fit at the side pitch share the gap, kept 12 px from the corners. With labels at most two do: the first label above its line, the second below. A label wider than 200 px leaves the line plain, and the other labelled lines go round through a gutter. Placement widens the gap by the label plus 24 px.
+`makePlan` gives each line one of four kinds: down to a lower row, up to a higher row, between two boxes of one row through a gutter, or between neighbours in a row. A line between neighbours runs straight across the gap between them, and `planSideways` picks which lines of a pair take the gap:
+
+- With no labels, as many lines as fit at the side pitch share the gap, kept 12 px from the corners.
+- With labels, the first line whose label is at most 200 px wide takes the gap.
+  - A second one joins it when the row is tall enough for both: the next such labelled line, or else the first line with no label.
+- When no label is that narrow, only the first line with no label takes the gap.
+
+Every other line between the pair goes round through a gutter as a line along a row.
 
 ## Fan-outs and fan-ins
 
@@ -63,8 +69,6 @@ Vertical tracks in a gap try 16 px apart, then 12, then 8, keeping 8 and then 4 
 
 A line between two boxes of one row that are not neighbours runs through the gutter below the row, or above it when fewer lines meet the boxes between its ends on their tops than on their bottoms. A tie keeps it below. The count leaves out lines between neighbours and lines with both ends inside the span. It also stays below in row 0, for a self-loop and for a member of a bus or a fan-in, and where a band's label, a wall or a lane's side lies in the gutter above.
 
-**Not as the documents say.** Decision [019: Lines meet any side](decisions/019-lines-meet-any-side.md) says such a line also stays below where one of its boxes lies under a group's label. The code's keep-out spans hold no group labels, though a comment in `route.ts` says they do.
-
 Because a port added on top moves its neighbours and a run takes room from the labels, the router first routes with every such line below, as a baseline. Then it sends back below each line in the gutter above whose gutter or boxes gain a line that bends for nothing, or a label that finds no room, until nothing is worse than the baseline.
 
 ## Side exits and side entries
@@ -84,7 +88,7 @@ A line uses the left or right side of a box only between neighbours or for a sid
 
 `assignPorts` first tries a spread pitch, `min(48, floor((width − 32) / count / 4) × 4)`, when that is over 16 px, and pulls each port toward the x it wants. Then it falls back through six steps: a 16 px pitch with 16 px from each corner, 16 with 8, 12 with 8, 12 with 4 px from the far side's lines, 8, and 4. A step is taken only when no line that could run straight bends. When every step bends one, the first that fits is used. The last resort puts ports 2 px off the 4 px grid, so that no two lines share an x. Ports keep 8 px, and at worst 4 px, from lines that enter the gutter from its other side.
 
-Bottom sides are placed before top sides. A line that can run straight down meets the port its upper box took, when that port lies at least 8 px inside the lower box. A line between neighbouring rows that bends although one straight run would join it is the engine's defect `needless-bend` ([the checker](checks.md#defects-and-who-owns-them)).
+Bottom sides are placed before top sides. A line that can run straight down meets the port its upper box took, when that port lies at least 8 px inside the lower box.
 
 ## Back to the centre
 
@@ -99,9 +103,9 @@ It stays put when another line joins the same two boxes, or a self-loop sits on 
 
 ## Gutters
 
-A gutter holds rows of tracks `pitch` apart, 12 px, or 16 px in the airy density. `routeGutter` orders the runs in a gutter for few crossings and gives each the first free row. A line from the top ends above a line from the bottom at the same x. A line that must step sideways steps at least 12 px. A gutter next to a row that holds a store keeps 8 px more room on that side when it has runs, since stores sit where many lines run.
+A gutter holds rows of tracks one track pitch apart, which the density sets. `routeGutter` orders the runs in a gutter for few crossings and gives each the first free row. A line from the top ends above a line from the bottom at the same x. A line that must step sideways steps at least 12 px. A gutter next to a row that holds a store keeps 8 px more room on that side when it has runs, since stores sit where many lines run.
 
-The gutter is then as tall as the smallest of its density's fixed heights that holds its rows ([placement](placement.md#rows-down-the-page)). Each track's y is `gutter top + pad + (row + 1) × pitch`.
+Routing hands placement the number of rows each gutter holds, and placement gives the gutter its height. Each track's y is then `gutter top + pad + (row + 1) × pitch`.
 
 ## Lines that end at a container
 
@@ -111,21 +115,8 @@ A line that passes a bar without ending at it is refused as `bar-crossed` unless
 
 ## Walls
 
-A line between a wall's two sides is refused in the model, before layout, unless the wall allows it by the line's id or a box or group at one of its ends. The router keeps lines out of a wall that runs up and down in its rows, in its gaps, corridors and top ports, and closes the gutter above to them. A wall across is only space: lines are not routed round it, and one that crosses it is `wall-crossed`.
+The model has already refused a line between a wall's two sides that the wall does not allow. The router keeps lines out of a wall that runs up and down in its rows, in its gaps, corridors and top ports, and closes the gutter above to them. A wall across is only space: lines are not routed round it, and one that crosses it is `wall-crossed`.
 
 ## Self-loops
 
 A self-loop wants its ends 48 px apart, either side of the box's centre, though its ports may move. It always uses the gutter below its box and starts in its third row of tracks, 36 px down at a 12 px pitch.
-
-## How lines are drawn
-
-The SVG writer draws the marks of the routes alone, so routes, checks and counts never see them:
-
-- **Hops.** Where two lines cross, the horizontal part hops over the vertical one in an arc 4 px high and 8 px wide.
-  - Crossings under 10 px apart share one wider arc, and a crossing within 5 px of a part's end is drawn plain.
-- **Dots.** A dot marks every point where one line starts or stops running along another.
-  - Its radius is the line's width plus 1.5 px.
-- **Curves.** With `paint.edge.shape: curved`, each corner is as round as half of each of its two stretches.
-  - The curve is checked at three points against boxes, labels, step badges and other lines.
-  - It is halved while it comes within 4 px of one.
-  - It is never less round than `min(6, half of each stretch)`.

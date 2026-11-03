@@ -28,7 +28,7 @@ With `--json` the same answer is one object: `{ok, changed, problems, counts}`, 
 
 A record is one line: a word that names it, then `key=value` fields in the logfmt style. A record with no fields is its name alone, such as `ok`. A value that holds a space, a quote or `=` is quoted as JSON. A list is comma separated, `-` stands for none, and a count by name is `name:n`. The record's keys are the JSON's fields under the same names, so the text and `--json` say the same thing.
 
-`show --drawn` prints `counts`, then one record for each `box`, `group`, `wall`, `note`, `line`, `gutter` and `legend` entry. A `line` record gives `id`, `from`, `to`, `leaves`, `enters`, `bends`, `length`, `direct`, `detour`, `skip`, `crosses`, `passes`, `bundle`, and `step` when the line has one. Plain `show` prints the diagram in the words of the operations, not as records. What the counts and the gutters measure is in [the checker](checks.md#counts).
+`show --drawn` prints `counts`, then one record for each `box`, `group`, `wall`, `note`, `line`, `gutter` and `legend` entry. A `line` record gives `id`, `from`, `to`, `leaves`, `enters`, `bends`, `length`, `direct`, `detour`, `skip`, `crosses`, `passes`, `bundle`, and `step` when the line has one. Plain `show` prints the diagram in the words of the operations, not as records. What each count and each gutter measures is the checker's.
 
 ## A problem's block
 
@@ -62,7 +62,7 @@ The source takes one of four forms:
 
 With `--json`, a problem that an operation caused carries the operation's index as `detail.op`.
 
-An error of one operation knows its operation. Some problems are found only in the diagram the whole batch makes: an error of the whole diagram ([the model](model.md#a-write-from-operations-to-file)) and a defect the agent owns. For those, a refused write or a refused `try` looks for the operation that caused the problem. It tries ever shorter prefixes of the batch, back towards the file, each prefix once for all the problems. A problem's line is the one after the longest prefix that does not have it, and when every prefix has it, the source is `already in the file`.
+An error of one operation knows its operation. Some problems are found only in the diagram the whole batch makes: an error of the whole diagram, which the model's checks find once every operation has run, and a defect the agent owns. For those, a refused write or a refused `try` looks for the operation that caused the problem. It tries ever shorter prefixes of the batch, back towards the file, each prefix once for all the problems. A problem's line is the one after the longest prefix that does not have it, and when every prefix has it, the source is `already in the file`.
 
 ```text
 batch  op1 op2 op3 op4 op5
@@ -76,7 +76,7 @@ The scan may lay out at most 400 boxes and lines in all. It counts each prefix a
 
 ## Trying a change
 
-`grafical try` takes the path of a write without the last step ([the model](model.md#a-write-from-operations-to-file)). With one batch it prints `ok changed=... written=no`, then `before`, `after` and `delta` records of the counts. With several it prints one `before`, from the first batch that succeeds, then for each batch either `ok`, `after` and `delta` records keyed by `batch=<file>`, or `failed batch=<file> changed=-` and its blocks. Every batch is tried, and the exit code is 1 when any is refused.
+`grafical try` runs the path of a write but does not write the file. With one batch it prints `ok changed=... written=no`, then `before`, `after` and `delta` records of the counts. With several it prints one `before`, from the first batch that succeeds, then for each batch either `ok`, `after` and `delta` records keyed by `batch=<file>`, or `failed batch=<file> changed=-` and its blocks. Every batch is tried, and the exit code is 1 when any is refused.
 
 ## The help and the guides
 

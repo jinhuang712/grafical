@@ -258,7 +258,7 @@ grafical node kind <file> <id> <kind>
 ```
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md), [Placement: sizes](specs/placement.md#sizes)
+- **How it works:** [The theme: fixed sizes and outlines](specs/theme.md#fixed-sizes-and-outlines), [Placement: sizes](specs/placement.md#sizes)
 - **Why:** [020. Every layered diagram type](specs/decisions/020-every-layered-diagram-type.md), [052. A choice is a small diamond](specs/decisions/052-a-choice-is-a-small-diamond.md)
 
 **Stories:**
@@ -283,7 +283,7 @@ grafical node describe <file> <id> [--text <text>]
 - `describe` without `--text` clears the sublabel.
 
 - **Design:** [9. The same file gives the same picture on any machine](DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [The text measurer](specs/text.md)
 - **Why:** [006. Bundled fonts](specs/decisions/006-bundled-fonts.md), [014. Boxes sized to their text](specs/decisions/014-boxes-sized-to-their-text.md)
 
 **Stories:**
@@ -348,7 +348,7 @@ grafical node icon <file> <id> --slot <slot> [--icon <mark>] [--bg <color>] [--f
 Gap: a corner mark is not checked against the lines that leave the box near its corner.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind), [14. A diagram reads no file outside its folder, and its pictures run nothing](DESIGNS.md#14-a-diagram-reads-no-file-outside-its-folder-and-its-pictures-run-nothing)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [The renderer: marks](specs/rendering.md#marks)
 - **Why:** [025. Marks of any kind](specs/decisions/025-marks-of-any-kind.md)
 
 **Stories:**
@@ -370,7 +370,7 @@ grafical node icon <file> <id> --slot <slot> --icon <set>:<name>
 - An unknown name is refused, with `near` and `likely`.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind), [15. Every dependency allows use in an MIT project](DESIGNS.md#15-every-dependency-allows-use-in-an-mit-project)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [The renderer: marks](specs/rendering.md#marks)
 - **Why:** [025. Marks of any kind](specs/decisions/025-marks-of-any-kind.md)
 
 **Stories:**
@@ -388,7 +388,7 @@ grafical node emphasize <file> <id> [--off]
 ```
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [The theme](specs/theme.md)
 
 **Stories:**
 
@@ -451,7 +451,7 @@ grafical edge remove <file> <id>
   - `retarget` moves one or both ends and keeps the line's ID, kind and label.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [Routing: how lines are drawn](specs/routing.md#how-lines-are-drawn)
+- **How it works:** [The renderer: how lines are drawn](specs/rendering.md#how-lines-are-drawn)
 - **Why:** [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md)
 
 **Stories:**
@@ -469,7 +469,7 @@ grafical edge both <file> <id> [--off]
 A `link` takes no arrowheads, so `both` on a link is refused as `both-on-link`.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [The theme: line weights](specs/theme.md#line-weights)
 
 **Stories:**
 
@@ -496,7 +496,7 @@ grafical edge emphasize <file> <id...> [--off]
 - The arrowhead grows with the width.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [The theme: line weights](specs/theme.md#line-weights)
 - **Why:** [026. Edge weights](specs/decisions/026-edge-weights.md)
 
 **Stories:**
@@ -945,7 +945,7 @@ grafical diagram note <file> [--text <text>]
 The subtitle is one sentence under the title. The footnote says what the diagram leaves out, such as "Not shown: Redis name cache". Without `--text`, either one is cleared.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [Placement: rows down the page](specs/placement.md#rows-down-the-page)
 
 **Stories:**
 
@@ -1009,7 +1009,7 @@ grafical diagram style <file> [<style>]
 - Without a style, the default theme applies.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [The theme: themes and stylesheets](specs/theme.md#themes-and-stylesheets)
 - **Why:** [016. Themes and stylesheets](specs/decisions/016-themes-and-stylesheets.md)
 
 **Stories:**
@@ -1154,7 +1154,7 @@ grafical render <file> [--svg [<out>]] [--png [<out>]] [--scale 1-4]
 - The same file gives the same SVG and the same PNG pixels on macOS and Linux.
 
 - **Design:** [9. The same file gives the same picture on any machine](DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md)
+- **How it works:** [The renderer](specs/rendering.md)
 - **Why:** [007. Our own SVG writer](specs/decisions/007-our-own-svg-writer.md), [024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)
 
 **Stories:**
@@ -1293,7 +1293,7 @@ A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and ove
 - A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind), [10. What grafical cannot fully read, it refuses](DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses)
-- **How it works:** [Text and rendering](specs/text-and-rendering.md), [The file formats](specs/file-formats.md#the-stylesheet)
+- **How it works:** [The theme: themes and stylesheets](specs/theme.md#themes-and-stylesheets), [The file formats](specs/file-formats.md#the-stylesheet)
 - **Why:** [016. Themes and stylesheets](specs/decisions/016-themes-and-stylesheets.md)
 
 **Stories:**

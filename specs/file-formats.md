@@ -31,7 +31,7 @@ Rows, the boxes in a row and lines are ordered lists. The order of rows and boxe
 
 ## The stylesheet
 
-A stylesheet is `<name>.grafical-style.yaml`. It starts from a built-in theme and overrides any of its values:
+A stylesheet is `<name>.grafical-style.yaml`, and it must sit inside the diagram's folder. It starts from a built-in theme and overrides any of its values:
 
 ```text
 grafical-style: 1
@@ -45,5 +45,4 @@ type: one entry per text role, each with size and weight
   - Only `async` and `optional` lines have a dash pattern, because a line's kind decides its style.
   - `edge.weights` may retune the levels and add new ones, such as `critical`.
 - `type` holds a size from 6 to 48 and a weight of 400 or 600 for each text role, such as `title` or `node-label`.
-  - Larger type changes the layout.
 - Every value not given comes from `base`.

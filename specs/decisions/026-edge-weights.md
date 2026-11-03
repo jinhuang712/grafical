@@ -12,7 +12,7 @@ A weight is a named level or a width. The levels are the agent's usual choice, a
 
 In the file, `accent: true` on a line stays valid and means `weight: thick` ("File format": the format only grows). grafical never writes both, and when a hand-written file has both, `weight` wins. Two lines of the same width look the same, whatever their level names.
 
-How a weight becomes a width and an arrowhead is in [text and rendering](../text-and-rendering.md#line-weights).
+How a weight becomes a width and an arrowhead is in [the theme](../theme.md#line-weights).
 
 ## Not chosen
 

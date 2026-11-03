@@ -3,19 +3,50 @@
 grafical takes operations from a coding agent, one command or one batch at a time, and keeps a diagram file in YAML that holds the facts they state. After every write it lays the diagram out again from those facts, checks it, and answers with records: what changed, any refusal with what happened and the commands that can change it, and counts of how the picture is drawn. `render` turns the same file into SVG and PNG.
 
 ```text
-agent ──operations──> grafical
-                        ├── validate ──> refusals ─────────> agent
-                        ├── apply ─────> diagram file (YAML, in git)
-                        ├── layout ────> positions, sizes, routes
-                        ├── check ─────> defects and counts ──> agent
-                        └── render ────> SVG ──resvg──> PNG
+agent ──command or batch──> command line ──records──> agent
+                              │    └──writes──> diagram file (YAML, in git)
+                              │ operations
+                              ▼
+                            model ── refusals ──> command line
+                              │ facts
+                              ▼
+  text measurer ──> layout: placement ⇄ routing ──> text placement <── theme
+                              │ laid-out picture
+                              ├──> checker ── defects, warnings, counts ──> command line
+                              └──> renderer ──> SVG ──> PNG
 ```
 
 The commitments the parts must meet are in [DESIGNS.md](../DESIGNS.md), and the forks behind their shape in [specs/decisions](decisions/README.md).
 
+## How a write moves through the parts
+
+```text
+command line   reads the command or batch, and the file
+model          applies the operations to a copy and checks the whole diagram
+layout         placement, routing and text placement take turns (below)
+checker        finds defects, warnings and counts in the laid-out picture
+command line   writes the file, unless a defect the agent owns refuses it
+command line   prints the outcome, a block per problem, and the counts
+```
+
+The three parts of the layout take turns, because each needs what the one before it decided:
+
+```text
+placement   boxes placed by steps, sizes, the order of each row
+routing     stand-ins for container ends, and which lines cross between neighbours
+placement   the column grid and the x of every box, with room for those lines
+text        each band's label, which the lines keep clear of
+routing     every line through the gutters, seating each line's label as it goes
+text        bar labels, lane labels and the legend
+placement   the y of every row from the tracks each gutter holds, and the canvas
+text        group titles, wall labels, step badges and notes
+```
+
+The text measurer gives every part the size of its text. The theme gives the layout its type sizes and fixed sizes, and the renderer its paint.
+
 ## The command line
 
-Reads a command or a batch, runs the steps above in order, and prints the answer as records. It also holds the help, the guides, the refusal texts, the live viewer and `show`. How it answers is in [how grafical answers](answers.md).
+Reads a command or a batch, runs the write through the parts, and prints the answer as records. It also holds the help, the guides, the refusal texts, the live viewer, `show`, `diff` and `try`, and reads the files of marks and stylesheets. How it answers is in [how grafical answers](answers.md).
 
 Folder: `src/cli/`.
 
@@ -25,21 +56,33 @@ Defines the diagram: rows, boxes, lines, groups, lanes, columns, walls, notes an
 
 Folder: `src/model/`.
 
-## The layout
+## Placement
 
-Computes the picture from the facts: sizes the boxes, places them on one column grid, spaces the rows, routes every line through the gaps and seats every label. It stores no position. How it places boxes is in [placement](placement.md), how it routes lines in [routing](routing.md), and how it seats text in [text placement](labels.md).
+Places and sizes every box on one column grid, spaces the rows, and sizes groups, lanes, bands, bars, walls and the canvas. It stores no position. How it works is in [placement](placement.md).
+
+Folder: `src/layout/`.
+
+## Routing
+
+Routes every line through the gutters between rows and the gaps between boxes, and picks each line's sides, ports and tracks. How it works is in [routing](routing.md).
+
+Folder: `src/layout/`.
+
+## Text placement
+
+Seats every text outside a box: the labels of lines, step badges, group titles, notes, the labels of walls, bands, bars and lanes, and the legend. How it works is in [text placement](labels.md).
 
 Folder: `src/layout/`.
 
 ## The text measurer
 
-Measures every label from the bundled fonts, wraps it, and tells the layout how much room it takes ([text and rendering](text-and-rendering.md)).
+Measures every text from the bundled fonts, wraps it, and says whether a box's text fits. How it works is in [the text measurer](text.md).
 
 Folder: `src/text/`.
 
 ## The theme
 
-Holds the built-in themes and the stylesheet's values: colors, line widths, shapes and type sizes, by role ([text and rendering](text-and-rendering.md#themes-and-stylesheets), [the file formats](file-formats.md)).
+Holds the built-in themes, merges a stylesheet into them, and holds the fixed sizes and the outline of each kind of box. How it works is in [the theme](theme.md).
 
 Folder: `src/theme/`.
 
@@ -51,7 +94,7 @@ Folder: `src/check/`.
 
 ## The renderer
 
-Writes the SVG from the laid-out picture and turns it into a PNG with `resvg`, with no browser ([text and rendering](text-and-rendering.md#writing-the-svg)).
+Writes the SVG from the laid-out picture and turns it into a PNG with `resvg`, with no browser. How it works is in [the renderer](rendering.md).
 
 Folder: `src/render/`.
 
