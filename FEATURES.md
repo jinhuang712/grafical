@@ -147,7 +147,7 @@ grafical try arch.grafical.yaml batch.yaml
 
 `try` takes several batches, to compare arrangements in one call. It prints one `before` record, then for each batch `ok`, `after` and `delta` records that carry `batch=<file>`; a batch that would be refused prints `failed batch=<file> changed=-` and its blocks, the others are still tried, and the exit code is 1. With `--json`: `{ok, before, batches: [{batch, ok, changed, after, delta}]}`. A single batch prints as before, without the key.
 
-- **Design:** [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent), [8. Output is records, with no advice](DESIGNS.md#8-output-is-records-with-no-advice)
+- **Design:** [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent), [8. Every answer is data a script can read](DESIGNS.md#8-every-answer-is-data-a-script-can-read)
 - **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
 - **Why:** [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md), [022. Records over prose](specs/decisions/022-records-over-prose.md)
 
@@ -222,7 +222,7 @@ next: -
 - `next` names the commands that can change it in the order the help lists them, or `-` when none can.
 - A YAML syntax error gives the text of its line.
 
-- **Design:** [7. A refusal says what happened and which commands can change it](DESIGNS.md#7-a-refusal-says-what-happened-and-which-commands-can-change-it)
+- **Design:** [7. A refusal gives the facts, and the agent writes the fix](DESIGNS.md#7-a-refusal-gives-the-facts-and-the-agent-writes-the-fix)
 - **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
 - **Why:** [047. Refusals say what happened and which commands can change it](specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md), [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
 
@@ -1042,7 +1042,7 @@ grafical show <file> [--drawn]
   - How each note is drawn.
   - The lines bundled together, and the totals.
 
-- **Design:** [12. The command line comes first, and the help is the agent's only reference](DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference), [8. Output is records, with no advice](DESIGNS.md#8-output-is-records-with-no-advice)
+- **Design:** [12. The command line comes first, and the help is the agent's only reference](DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference), [8. Every answer is data a script can read](DESIGNS.md#8-every-answer-is-data-a-script-can-read)
 - **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
 - **Why:** [021. The help as the reference](specs/decisions/021-the-help-as-the-reference.md), [022. Records over prose](specs/decisions/022-records-over-prose.md)
 
@@ -1065,7 +1065,7 @@ They are facts, with no threshold and no advice: what they mean is the agent's t
 `bent` counts the lines drawn with more than two bends ("The dirty work has edges"), and `passing` the lines that run through a row they do not connect. Three more say how the picture is composed, each a separate count and never a score ("Composition counts"): `across`, the lines that cross the box of a group holding neither of their ends; `tight`, the pairs of runs of two different lines (not one bus) that run side by side closer than a track, 12 px, for more than 100 px; and `crowded`, the line labels with less than 8 px of room on two or more of their four sides. Each place these five count is also a warning ("Warnings").
 
 - **Stance:** [Who owns what?](PHILOSOPHY.md#who-owns-what)
-- **Design:** [8. Output is records, with no advice](DESIGNS.md#8-output-is-records-with-no-advice)
+- **Design:** [8. Every answer is data a script can read](DESIGNS.md#8-every-answer-is-data-a-script-can-read)
 - **How it works:** [The checker](specs/ARCHITECTURE.md#the-checker)
 - **Why:** [022. Records over prose](specs/decisions/022-records-over-prose.md), [036. Composition counts](specs/decisions/036-composition-counts.md)
 

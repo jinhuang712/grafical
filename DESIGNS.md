@@ -10,13 +10,13 @@ grafical is designed around 15 guidelines:
 4. **A change moves only what it names**
 5. **The engine routes every line, in plain forms**
 6. **Every write is checked, and each defect has an owner**
-7. **A refusal says what happened and which commands can change it**
-8. **Output is records, with no advice**
+7. **A refusal gives the facts, and the agent writes the fix**
+8. **Every answer is data a script can read**
 9. **The same file gives the same picture on any machine**
 10. **What grafical cannot fully read, it refuses**
 11. **Looks are free, while shape and dash follow the kind**
 12. **The command line comes first, and the help is the agent's only reference**
-13. **A write is fast enough to run every time**
+13. **Every search the engine runs has a cap**
 14. **A diagram reads no file outside its folder, and its pictures run nothing**
 15. **Every dependency allows use in an MIT project**
 
@@ -90,20 +90,20 @@ A defect the agent can fix fails the write and changes nothing. A defect only th
   - [036. Composition counts](specs/decisions/036-composition-counts.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
-## 7. A refusal says what happened and which commands can change it
+## 7. A refusal gives the facts, and the agent writes the fix
 
-A refusal is a block: its kind and code, the code's one fixed sentence, what caused it, the facts one per line, and the names of the commands that can change it. It never teaches and never writes the command with values filled in. Cost: the agent writes the command itself, from the facts.
+When grafical refuses a write, it says what went wrong, what caused it and which commands could change it. It never writes the fixed command for the agent, because choosing the fix is the agent's work. Cost: the agent spends a step working out the fix from the facts.
 
-**Ask:** Does the answer carry facts and command names only, with no advice and no ready-made fix?
+**Ask:** Can the agent find the fix from this refusal alone, without grafical writing it?
 
 - **Decisions:** [047. Refusals say what happened and which commands can change it](specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md), [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
-## 8. Output is records, with no advice
+## 8. Every answer is data a script can read
 
-Everything grafical prints is a record of fixed keys and values, or a line of a problem's block. The only sentence is a code's fixed description. Cost: an agent must judge a drawing from counts, without being told what is wrong with it.
+grafical answers in fixed keys and values, never in sentences of advice. The one sentence it prints is the fixed description of a problem's code. Cost: grafical never says what looks wrong, so the agent judges the picture from the counts.
 
-**Ask:** Could a script read this output, and does it say anything the agent must take as advice?
+**Ask:** Could a script read this answer without parsing English?
 
 - **Decisions:** [022. Records over prose](specs/decisions/022-records-over-prose.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
@@ -155,13 +155,16 @@ Every operation is a command, every command takes `--json`, and every write repo
   - [043. Help for the tool, guides for best practice](specs/decisions/043-help-for-the-tool-guides-for-best-practice.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
-## 13. A write is fast enough to run every time
+## 13. Every search the engine runs has a cap
 
-Every write lays out, routes and checks the whole diagram, so each of those must be fast enough to run on every change, even at 50 boxes. Cost: every search the engine runs, such as choosing a slot, needs a cap, so that a large diagram stays fast.
+Every write lays out, routes and checks the whole diagram again (4. A change moves only what it names), so no step may search without a bound. Each search, such as trying the prefixes of a refused batch, stops at a fixed limit. Cost: a search that could find a better answer stops at its cap.
 
-**Ask:** How long does this take at 50 boxes, and does any search in it have a cap?
+**Ask:** Does any step here search without a cap, or grow faster than the diagram?
 
-- **Decisions:** [011. The engine picks a new box's slot](specs/decisions/011-the-engine-picks-a-new-box-s-slot.md), [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)
+- **Decisions:**
+  - [011. The engine picks a new box's slot](specs/decisions/011-the-engine-picks-a-new-box-s-slot.md)
+  - [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)
+  - [047. Refusals say what happened and which commands can change it](specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md)
 - **How it works:** [ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
 ## 14. A diagram reads no file outside its folder, and its pictures run nothing
