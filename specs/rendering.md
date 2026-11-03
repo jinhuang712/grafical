@@ -23,14 +23,14 @@ Behind every line label the writer puts a patch 3 px wider and 1 px taller than 
 
 The writer adds the marks of a route as it draws it, so the routes, the checks and the counts never see them:
 
-- **Hops.** Where two lines cross, the horizontal part hops over the vertical one in an arc 4 px high and 8 px wide.
-  - Crossings under 10 px apart share one wider arc, and a crossing within 5 px of a part's end is drawn plain.
+- **Hops.** Where two lines cross, the horizontal run hops over the vertical one in an arc 4 px high and 8 px wide.
+  - Crossings under 10 px apart share one wider arc, and a crossing within 5 px of a run's end is drawn plain.
 - **Dots.** A dot marks every point where one line starts or stops running along another.
   - Its radius is the line's width plus 1.5 px.
-- **Curves.** With `paint.edge.shape: curved`, each corner is as round as half of each of its two stretches.
+- **Curves.** With `paint.edge.shape: curved`, each corner is as round as half of each of its two runs.
   - The curve is checked at three points against boxes, labels, step badges and other lines.
   - It is halved while it comes within 4 px of one.
-  - It is never less round than `min(6, half of each stretch)`.
+  - It is never less round than `min(6, half of each run)`.
 
 ## Marks
 

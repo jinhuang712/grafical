@@ -28,9 +28,9 @@ A line's label sits on its longest run, inside the gutter that run lies in, and 
 
 A wrapped label's lines are centred on each other.
 
-### Slots
+### Seats
 
-Each label gets a list of candidate slots, each with a score, lower being better:
+Each label gets a list of candidate seats, each with a score, lower being better:
 
 ```text
 straight vertical line   on the line (−1), beside it on the right (0), on the left (1)
@@ -40,17 +40,17 @@ run as long as the label above, centred (0), then slid along in 4 px steps (+ th
 run shorter than label   beside its right end (−2), its left end (−1), then as above
 ```
 
-A slot on the line exists only where the line passes straight through the gutter, and never for a line with a step badge, which keeps its label beside the line. A slot's cost is its score, plus 8 for each line inside the slot, plus 64 for each crossing that the order of runs it fixes would force. Labels compete for the same room, so the label with the fewest open slots chooses first, each taking its cheapest open slot.
+A seat on the line exists only where the line passes straight through the gutter, and never for a line with a step badge, which keeps its label beside the line. A seat's cost is its score, plus 8 for each line inside the seat, plus 64 for each crossing that the order of runs it fixes would force. Labels compete for the same room, so the label with the fewest open seats chooses first, each taking its cheapest open seat.
 
-### When no slot is clear
+### When no seat is clear
 
-A label with no clear slot tries, in turn:
+A label with no clear seat tries, in turn:
 
 1. Its text on 2 lines and then on 3, at the narrowest width that wraps it.
 2. The other gutters its line passes through, for up to 12 rounds.
 3. Its longest run once more.
 
-When all of these fail, it goes back to one line, takes the slot with the fewest conflicts, and the write is refused as `label-blocked`. A label whose route is later cut at a container is seated again beside what is left of the line, longest part first, and is refused the same way when that fails.
+When all of these fail, it goes back to one line, takes the seat with the fewest conflicts, and the write is refused as `label-blocked`. A label whose route is later cut at a container is seated again beside what is left of the line, longest run first, and is refused the same way when that fails.
 
 ### Between neighbours
 
@@ -58,9 +58,9 @@ A line that runs straight across the gap between two neighbours carries its labe
 
 ## Step badges
 
-A numbered line's badge is a ring 18 px across, centred on the run under the start of the label's text, or under its end when the start is off the run. The badge widens the label's slot by 9 px and deepens it by 7 px, so the text stands 7 px further off the line. Beside a vertical line, the badge sits on the line level with the text, which stands 13 px away. A numbered line with no label gets a slot 18 by 5 px.
+A numbered line's badge is a ring 18 px across, centred on the run under the start of the label's text, or under its end when the start is off the run. The badge widens the label's seat by 9 px and deepens it by 7 px, so the text stands 7 px further off the line. Beside a vertical line, the badge sits on the line level with the text, which stands 13 px away. A numbered line with no label gets a seat 18 by 5 px.
 
-Once every label is seated, a badge that still touches something slides along its own line, in 2 px steps, to the nearest place with 2 px of room. It keeps clear of boxes, text, walls, labels, other badges, other lines, its own arrowheads, and every border except those of its own ends. Two badges that leave each other no place try their first 40 places together. A badge that still touches something is the engine's defect `step-collision`.
+Once every label has its seat, a badge that still touches something slides along its own line, in 2 px steps, to the nearest place with 2 px of room. It keeps clear of boxes, text, walls, labels, other badges, other lines, its own arrowheads, and every border except those of its own ends. Two badges that leave each other no place try their first 40 places together. A badge that still touches something is the engine's defect `step-collision`.
 
 ## Group titles
 
@@ -88,12 +88,12 @@ A card wraps at 160 px and tries its places in a fixed order, 16 px from its tar
 
 - **Beside a box or a group:** first on the right and then on the left, each centred, top-aligned and bottom-aligned.
   - Then below and then above, each centred, left-aligned and right-aligned.
-- **Beside a line:** at the middle, a quarter and three quarters of its longest part.
-  - Below or above a horizontal part, and right or left of a vertical one.
+- **Beside a line:** at the middle, a quarter and three quarters of its longest run.
+  - Below or above a horizontal run, and right or left of a vertical one.
 
 A card keeps 8 px from boxes, text, other cards, walls, lane heads, the legend, the title and the subtitle, and 10 px from a badge. No line may touch it. It lies wholly inside or wholly outside each group, lane and band, and within the margins, from 14 px below the title down to the bottom of the content. Its dotted line must not meet another box, text, card or line. A card with no place takes its first place anyway, and the write is refused as `label-blocked` with `is: note`. A note on a band or a lane always has no place.
 
-A footnote's number is a filled circle 16 px across. On a box it sits 6 px out from a corner, trying top right, top left, bottom right and bottom left. On a group it follows the title, and on a line it sits beside the line's parts. Footnotes are numbered from the top of the picture down, then from left to right. A footnote with no free place for its number has none, and its line in the list starts with its target's name.
+A footnote's number is a filled circle 16 px across. On a box it sits 6 px out from a corner, trying top right, top left, bottom right and bottom left. On a group it follows the title, and on a line it sits beside the line's runs. Footnotes are numbered from the top of the picture down, then from left to right. A footnote with no free place for its number has none, and its line in the list starts with its target's name.
 
 ## Wall labels
 

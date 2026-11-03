@@ -6,7 +6,7 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 
 - **Row:** a line of boxes with an order.
   - A row is not drawn unless it has a look or a line ends at it.
-  - Lost names: *layer*, and *slot* for a place in a row.
+  - Lost names: *layer*, and *slot* for a place in a row, which now names only a mark's place.
   - In code and on the command line: `layer`.
 - **Box:** an element of the picture with a kind, a label and an optional sublabel.
   - Lost name: *node*.
@@ -36,7 +36,9 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 
 - **Kind:** says what a box or a line is, and decides how it is drawn.
 - **Mark:** a small image on a box: an emoji, a short text or a file.
-  - At most five.
+  - At most five, one in each slot.
+- **Slot:** one of the five places a mark takes on a box: a corner or `left`.
+  - On the command line: `--slot`.
   - Lost name: *icon*.
   - In code and on the command line: `icon`.
 - **Weight:** how thick a line is, a level or a width in pixels.
@@ -48,12 +50,23 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 
 ## How lines are drawn
 
-These four are taken from how the documents use them, and are not yet checked against the code.
+Checked against `src/layout/` and `src/render/` on 2026-11-04.
 
-- **Gutter:** the gap between two neighbouring rows, where lines run sideways.
+- **Gutter:** the space between two neighbouring rows, where lines run across.
+- **Gap:** the space between two neighbouring boxes of one row.
+- **Run:** one straight horizontal or vertical piece of a line.
+  - Lost names: *stretch*, *segment*, *part*.
+- **Track:** one of the rows of a gutter, or one of the columns of a gap, that a run takes.
+- **Corridor:** a column of the grid empty in every row a line passes, which the line runs down.
 - **Port:** the place where a line meets a side of a box.
-- **Bundle:** three or more unlabelled lines of one style that leave one side of a box as one line, and split near their targets.
+- **Bundle:** lines of one style and weight that leave one side of a box through one port and split near their targets.
+  - Lost name: *bus*.
+  - In code: `bus`.
+- **Fan-in:** lines that enter one crowded side of a box through one port.
+- **Stand-in:** the box that a line to a group, a row or a lane is routed to before it is cut at the container.
 - **Hop:** the small arc where one line passes over another.
+- **Seat:** a place a text outside a box may take, such as a line's label or a group's title.
+  - In code: `slot`.
 
 ## Operations and files
 

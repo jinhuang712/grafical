@@ -566,7 +566,7 @@ One arrow can point at a whole system instead of each of its parts.
 
 The agent says what connects. grafical draws every line.
 
-- Lines run in horizontal and vertical stretches through the gaps between rows and boxes, never through a box or across text.
+- A line is made of horizontal and vertical runs through the gaps between rows and boxes, never through a box or across text.
 - A line may leave or enter a box on any side.
   - Each line has its own place on a side, spread evenly.
 - Three or more unlabelled lines of one style that leave one side of a box leave as one line and split near their targets, with a dot at each split.
@@ -1062,7 +1062,7 @@ counts nodes=3 lines=2 crossings=0 bends=1 bent=0 length=224 width=368 height=28
 
 They are facts, with no threshold and no advice: what they mean is the agent's to judge.
 
-`bent` counts the lines drawn with more than two bends ("The dirty work has edges"), and `passing` the lines that run through a row they do not connect. Three more say how the picture is composed, each a separate count and never a score ("Composition counts"): `across`, the lines that cross the box of a group holding neither of their ends; `tight`, the pairs of runs of two different lines (not one bus) that run side by side closer than a track, 12 px, for more than 100 px; and `crowded`, the line labels with less than 8 px of room on two or more of their four sides. Each place these five count is also a warning ("Warnings").
+`bent` counts the lines drawn with more than two bends ("The dirty work has edges"), and `passing` the lines that run through a row they do not connect. Three more say how the picture is composed, each a separate count and never a score ("Composition counts"): `across`, the lines that cross the box of a group holding neither of their ends; `tight`, the pairs of runs of two different lines (not one bundle) that run side by side closer than a track, 12 px, for more than 100 px; and `crowded`, the line labels with less than 8 px of room on two or more of their four sides. Each place these five count is also a warning ("Warnings").
 
 - **Stance:** [Who owns what?](PHILOSOPHY.md#who-owns-what)
 - **Design:** [8. Answers are data a script can read](DESIGNS.md#8-answers-are-data-a-script-can-read)

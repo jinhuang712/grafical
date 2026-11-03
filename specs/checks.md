@@ -34,8 +34,8 @@ The defects the engine owns:
 - `label-collision`: text that touches other text.
 - `step-collision`: a badge that touches anything.
 - `text-crossing`: a line across text.
-- `edge-overlap`: two lines that share a stretch of 8 px or more, so a reader cannot tell them apart.
-  - Two unlabelled lines that leave one box in one style are a bus, and never an overlap.
+- `edge-overlap`: two lines that share a run of 8 px or more, so a reader cannot tell them apart.
+  - Two unlabelled lines that leave one box in one style are a bundle, and never an overlap.
   - Nor is an overlap whose ends lie within 4 px of a box the two lines share.
 - `lane-stray`: a box outside its lane.
 - `needless-bend`: a line between neighbouring rows that bends although one straight run would join it.
