@@ -126,7 +126,7 @@ A batch file is a YAML list. Each item has `op: <noun>.<verb>` and the same fiel
 grafical checks each operation in order, and writes only when every one is valid and the picture has no defect the agent must fix. Otherwise nothing changes, and each problem's source names the batch line that caused it.
 
 - **Design:** [1. Operations are the only way a diagram changes](DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
-- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **How it works:** [How grafical answers](specs/answers.md)
 - **Why:** [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
 
 **Stories:**
@@ -148,7 +148,7 @@ grafical try arch.grafical.yaml batch.yaml
 `try` takes several batches, to compare arrangements in one call. It prints one `before` record, then for each batch `ok`, `after` and `delta` records that carry `batch=<file>`; a batch that would be refused prints `failed batch=<file> changed=-` and its blocks, the others are still tried, and the exit code is 1. With `--json`: `{ok, before, batches: [{batch, ok, changed, after, delta}]}`. A single batch prints as before, without the key.
 
 - **Design:** [3. The engine never chooses for the agent](DESIGNS.md#3-the-engine-never-chooses-for-the-agent), [8. Answers are data a script can read](DESIGNS.md#8-answers-are-data-a-script-can-read)
-- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **How it works:** [How grafical answers](specs/answers.md)
 - **Why:** [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md), [022. Records over prose](specs/decisions/022-records-over-prose.md)
 
 **Stories:**
@@ -223,7 +223,7 @@ next: -
 - A YAML syntax error gives the text of its line.
 
 - **Design:** [7. A refusal gives the facts, and the agent writes the fix](DESIGNS.md#7-a-refusal-gives-the-facts-and-the-agent-writes-the-fix)
-- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **How it works:** [How grafical answers](specs/answers.md)
 - **Why:** [047. Refusals say what happened and which commands can change it](specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md), [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
 
 **Stories:**
@@ -258,7 +258,7 @@ grafical node kind <file> <id> <kind>
 ```
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [The theme](specs/ARCHITECTURE.md#the-theme), [The layout](specs/ARCHITECTURE.md#the-layout)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md), [The layout](specs/ARCHITECTURE.md#the-layout)
 - **Why:** [020. Every layered diagram type](specs/decisions/020-every-layered-diagram-type.md), [052. A choice is a small diamond](specs/decisions/052-a-choice-is-a-small-diamond.md)
 
 **Stories:**
@@ -283,7 +283,7 @@ grafical node describe <file> <id> [--text <text>]
 - `describe` without `--text` clears the sublabel.
 
 - **Design:** [9. The same file gives the same picture on any machine](DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
-- **How it works:** [The text measurer](specs/ARCHITECTURE.md#the-text-measurer)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 - **Why:** [006. Bundled fonts](specs/decisions/006-bundled-fonts.md), [014. Boxes sized to their text](specs/decisions/014-boxes-sized-to-their-text.md)
 
 **Stories:**
@@ -348,7 +348,7 @@ grafical node icon <file> <id> --slot <slot> [--icon <mark>] [--bg <color>] [--f
 Gap: a corner mark is not checked against the lines that leave the box near its corner.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind), [14. A diagram reads no file outside its folder, and its pictures run nothing](DESIGNS.md#14-a-diagram-reads-no-file-outside-its-folder-and-its-pictures-run-nothing)
-- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 - **Why:** [025. Marks of any kind](specs/decisions/025-marks-of-any-kind.md)
 
 **Stories:**
@@ -370,7 +370,7 @@ grafical node icon <file> <id> --slot <slot> --icon <set>:<name>
 - An unknown name is refused, with `near` and `likely`.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind), [15. Every dependency allows use in an MIT project](DESIGNS.md#15-every-dependency-allows-use-in-an-mit-project)
-- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 - **Why:** [025. Marks of any kind](specs/decisions/025-marks-of-any-kind.md)
 
 **Stories:**
@@ -388,7 +388,7 @@ grafical node emphasize <file> <id> [--off]
 ```
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 
 **Stories:**
 
@@ -469,7 +469,7 @@ grafical edge both <file> <id> [--off]
 A `link` takes no arrowheads, so `both` on a link is refused as `both-on-link`.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 
 **Stories:**
 
@@ -496,7 +496,7 @@ grafical edge emphasize <file> <id...> [--off]
 - The arrowhead grows with the width.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [The theme](specs/ARCHITECTURE.md#the-theme)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 - **Why:** [026. Edge weights](specs/decisions/026-edge-weights.md)
 
 **Stories:**
@@ -945,7 +945,7 @@ grafical diagram note <file> [--text <text>]
 The subtitle is one sentence under the title. The footnote says what the diagram leaves out, such as "Not shown: Redis name cache". Without `--text`, either one is cleared.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 
 **Stories:**
 
@@ -970,7 +970,7 @@ grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mar
 - When the legend is wider than its room, it wraps onto more lines.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 - **Why:** [028. A legend for widths and marks](specs/decisions/028-a-legend-for-widths-and-marks.md), [034. The legend says only what the agent named](specs/decisions/034-the-legend-says-only-what-the-agent-named.md)
 
 **Stories:**
@@ -1009,7 +1009,7 @@ grafical diagram style <file> [<style>]
 - Without a style, the default theme applies.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
-- **How it works:** [The theme](specs/ARCHITECTURE.md#the-theme)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 - **Why:** [016. Themes and stylesheets](specs/decisions/016-themes-and-stylesheets.md)
 
 **Stories:**
@@ -1043,7 +1043,7 @@ grafical show <file> [--drawn]
   - The lines bundled together, and the totals.
 
 - **Design:** [12. The command line comes first, and the help is the agent's only reference](DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference), [8. Answers are data a script can read](DESIGNS.md#8-answers-are-data-a-script-can-read)
-- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **How it works:** [How grafical answers](specs/answers.md)
 - **Why:** [021. The help as the reference](specs/decisions/021-the-help-as-the-reference.md), [022. Records over prose](specs/decisions/022-records-over-prose.md)
 
 **Stories:**
@@ -1066,7 +1066,7 @@ They are facts, with no threshold and no advice: what they mean is the agent's t
 
 - **Stance:** [Who owns what?](PHILOSOPHY.md#who-owns-what)
 - **Design:** [8. Answers are data a script can read](DESIGNS.md#8-answers-are-data-a-script-can-read)
-- **How it works:** [The checker](specs/ARCHITECTURE.md#the-checker)
+- **How it works:** [The checker](specs/checks.md)
 - **Why:** [022. Records over prose](specs/decisions/022-records-over-prose.md), [036. Composition counts](specs/decisions/036-composition-counts.md)
 
 **Stories:**
@@ -1114,7 +1114,7 @@ next: layer move, node move, node swap
 ```
 
 - **Design:** [6. Every write is checked, and each defect has an owner](DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
-- **How it works:** [The checker](specs/ARCHITECTURE.md#the-checker)
+- **How it works:** [The checker](specs/checks.md)
 - **Why:** [048. Every write prints every warning](specs/decisions/048-every-write-prints-every-warning.md), [050. A line from every box of a group is a warning](specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)
 
 **Stories:**
@@ -1132,7 +1132,7 @@ grafical check <file> [--all]
 `check` reports the defects the agent can fix, every warning, and the counts. `--all` adds the defects only the engine can avoid, which are engine bugs.
 
 - **Design:** [6. Every write is checked, and each defect has an owner](DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
-- **How it works:** [The checker](specs/ARCHITECTURE.md#the-checker)
+- **How it works:** [The checker](specs/checks.md)
 - **Why:** [008. Defects owned by who can fix them](specs/decisions/008-defects-owned-by-who-can-fix-them.md)
 
 **Stories:**
@@ -1154,7 +1154,7 @@ grafical render <file> [--svg [<out>]] [--png [<out>]] [--scale 1-4]
 - The same file gives the same SVG and the same PNG pixels on macOS and Linux.
 
 - **Design:** [9. The same file gives the same picture on any machine](DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
-- **How it works:** [The renderer](specs/ARCHITECTURE.md#the-renderer)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md)
 - **Why:** [007. Our own SVG writer](specs/decisions/007-our-own-svg-writer.md), [024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)
 
 **Stories:**
@@ -1224,7 +1224,7 @@ grafical <command> --help
 
 - **Stance:** [How does an agent learn grafical?](PHILOSOPHY.md#how-does-an-agent-learn-grafical)
 - **Design:** [12. The command line comes first, and the help is the agent's only reference](DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
-- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **How it works:** [How grafical answers](specs/answers.md)
 - **Why:**
   - [021. The help as the reference](specs/decisions/021-the-help-as-the-reference.md)
   - [042. One entry page, help where it is used](specs/decisions/042-one-entry-page-help-where-it-is-used.md)
@@ -1248,7 +1248,7 @@ grafical guide <name>
 `grafical guide` lists the guides by what a diagram is about: architecture, C4, infrastructure (cloud and deployment) and dependency for what exists; data flow and event flow for what moves; flowchart and swimlane for a process; state machine for one thing's states; and composition, for any kind, what makes a diagram good and what to change when a picture looks wrong. `grafical guide <name>` prints one; `cloud`, `deployment`, `process` and `states` find theirs. A name that is no guide is refused as `unknown-guide` with the likely ones. The entry page names `grafical guide` once, and nothing tells an agent to read a guide: grafical refuses only what would draw wrong.
 
 - **Design:** [12. The command line comes first, and the help is the agent's only reference](DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
-- **How it works:** [The command line](specs/ARCHITECTURE.md#the-command-line)
+- **How it works:** [How grafical answers](specs/answers.md)
 - **Why:** [043. Help for the tool, guides for best practice](specs/decisions/043-help-for-the-tool-guides-for-best-practice.md)
 
 **Stories:**
@@ -1293,7 +1293,7 @@ A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and ove
 - A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind), [10. What grafical cannot fully read, it refuses](DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses)
-- **How it works:** [The theme](specs/ARCHITECTURE.md#the-theme), [The file formats](specs/file-formats.md#the-stylesheet)
+- **How it works:** [Text and rendering](specs/text-and-rendering.md), [The file formats](specs/file-formats.md#the-stylesheet)
 - **Why:** [016. Themes and stylesheets](specs/decisions/016-themes-and-stylesheets.md)
 
 **Stories:**

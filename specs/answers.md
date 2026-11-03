@@ -1,0 +1,87 @@
+# How grafical answers
+
+Everything grafical prints about a diagram is a record a script can read: an outcome, a block for each problem, and facts and counts. The only sentences are each code's fixed description, and the help, which is documentation. This spec explains the forms, how a problem finds its source, and how the help is built. The code lives in `src/cli/` and `src/records.ts` ([the command line](ARCHITECTURE.md#the-command-line)).
+
+## A command's answer
+
+A command prints in this order:
+
+```text
+ok changed=<ids>          or  ok  (nothing changed)  or  failed changed=-
+<records the command adds, such as render's  wrote file=<f>>
+
+<kind>: <code>            one block per problem, a blank line before each
+description: <the code's one sentence>
+source: <what caused it>
+detail:
+  <key>: <value>
+next: <command names>
+
+counts nodes=... lines=... ...   apply, check and render only
+```
+
+A usage error, such as an unknown option or command, prints the same outcome and block on standard error. The exit code is 0 when the command succeeds, with or without warnings, 1 when a write is refused or a file cannot be read, and 2 for a usage error. Engine-owned defects exit 1 under `check --all` only.
+
+With `--json` the same answer is one object: `{ok, changed, problems, counts}`, each problem as `{kind, code, description, source, detail, next}`. A usage error is never JSON. `render` adds `files`, `show` gives `{ok, diagram}`, `show --drawn` gives `{ok, drawing}`, `diff` gives `{ok, ops}`, and `try` gives its before, after and delta.
+
+## Records
+
+A record is one line: a word that names it, then `key=value` fields in the logfmt style. A record with no fields is its name alone, such as `ok`. A value that holds a space, a quote or `=` is quoted as JSON. A list is comma separated, `-` stands for none, and a count by name is `name:n`. The record's keys are the JSON's fields under the same names, so the text and `--json` say the same thing.
+
+`show --drawn` prints `counts`, then one record for each `box`, `group`, `wall`, `note`, `line`, `gutter` and `legend` entry. A `line` record gives `id`, `from`, `to`, `leaves`, `enters`, `bends`, `length`, `direct`, `detour`, `skip`, `crosses`, `passes`, `bundle`, and `step` when the line has one. Plain `show` prints the diagram in the words of the operations, not as records. What the counts and the gutters measure is in [the checker](checks.md#counts).
+
+## A problem's block
+
+A problem is an `error`, which could not be read or applied; a `defect`, which would draw wrong; or a `warning`, which is drawn poorly. Each block has the same lines:
+
+- `<kind>: <code>`, where the code names the kind of problem.
+- `description:` the code's one fixed sentence, which says what happened and never what to do.
+  - The sentences live in one table in `src/cli/problems.ts`, and a test holds each code to one sentence of at most 140 characters.
+  - A code that is both an error and a defect has one sentence.
+- `source:` what caused it, which a warning never has.
+- `detail:` the facts one per line, or `detail: -` when there are none.
+- `next:` the names of the commands that can change it in the order the help lists them, or `-`.
+  - A code with several cases has a list for each, such as `label-blocked` for a line, a wall or a note.
+  - A test holds every name to a real command.
+
+The detail starts with `field` and `found`, or `owner` for a defect, and the other facts follow in one fixed order. An empty value or list prints `-`, and a fact that is absent is left out. A key for several things holds a list even of one: `likely`, `near`, `edges`, `ends`, `nodes`, `rows`, `groups`, `lanes`, `between`, `across`, `chain`, `clear`, `gutters`, `allowed`, `takes` and `chars`. Several ids under a key for one thing move to its plural, such as `node` to `nodes`.
+
+No block writes the change for the agent: there is no fix, and `next` names commands without ids or values. The detail carries what the agent needs to find the change itself, such as the first and last rows a group's box covers.
+
+A word grafical does not know is answered with the word it most likely means, as a value. `grafical help apply` gives `found: help` and `likely: --help`. `grafical "node add" --help` and `grafical node.add --help` give `likely: node add`, and `grafical nodee add --help` gives `found: nodee` and `likely: node`. A word is near a name when at most a third of its letters differ, or one.
+
+## Where a problem comes from
+
+The source takes one of four forms:
+
+- The command line as typed for a single command, quoted as a shell would need it.
+- `<batch file> line <n>: <the operation as written>` for an operation of a batch, with `<n>` the line it starts on from 1.
+  - A YAML error gives the text of its line instead.
+- `already in the file` for a problem the file had before the command.
+- The batch file alone where the line cannot be known, or the command line when there is no batch.
+
+With `--json`, a problem that an operation caused carries the operation's index as `detail.op`.
+
+An error of one operation knows its operation. Some problems are found only in the diagram the whole batch makes: an error of the whole diagram ([the model](model.md#a-write-from-operations-to-file)) and a defect the agent owns. For those, a refused write or a refused `try` looks for the operation that caused the problem. It tries ever shorter prefixes of the batch, back towards the file, each prefix once for all the problems. A problem's line is the one after the longest prefix that does not have it, and when every prefix has it, the source is `already in the file`.
+
+```text
+batch  op1 op2 op3 op4 op5
+                       ▲ problem first appears with op4 → source: line of op4
+prefixes tried:  1..4  1..3  1..2  1  (none)
+```
+
+A prefix that is refused for another problem cannot tell whether this one is there: a whole diagram's checks stop at the first that fails, and a refused diagram is not laid out. So the scan stops there, and the source is the batch file alone. There is one exception for errors: the checks of the whole diagram run in turn, so a prefix refused by a later check than the one that finds the problem passed that one, and is without the problem.
+
+The scan may lay out at most 400 boxes and lines in all. It counts each prefix at the size of the file's diagram for an error, and at the larger of the file's and the batch's for a defect. So it tries `min(12, max(1, floor(400 / size)))` prefixes: 3 for a diagram of 113 boxes and lines, 10 for 37. A new file's empty prefix costs nothing. A write that succeeds runs no scan.
+
+## Trying a change
+
+`grafical try` takes the path of a write without the last step ([the model](model.md#a-write-from-operations-to-file)). With one batch it prints `ok changed=... written=no`, then `before`, `after` and `delta` records of the counts. With several it prints one `before`, from the first batch that succeeds, then for each batch either `ok`, `after` and `delta` records keyed by `batch=<file>`, or `failed batch=<file> changed=-` and its blocks. Every batch is tried, and the exit code is 1 when any is refused.
+
+## The help and the guides
+
+The help is the agent's only reference. `grafical --help` is the entry page, `grafical <group> --help` a group's page, and `grafical <command> --help` a command's page, so every page is at most two hops from the entry page. There is no `help` command: the word `help` is answered as an unknown command with `likely: --help`. Every page is printed at 80 columns, so it is the same text on every terminal.
+
+A command's page starts with its usage, its paragraph, its arguments and its options. A command that is an operation then shows its line in a batch, built from the operation's schema, so the page and the batch cannot disagree. Then come the sections the page has, always in this order: When to use, Kinds, Good to know, Common mistakes, Limits, Batch file, Output, See also and Example. No page says what a refusal means: the block says it. A test applies the example of `apply --help` as printed, and no size limit is tested, only the 80 columns.
+
+The guides say how common kinds of diagram are usually drawn: architecture, C4, infrastructure, dependency, data flow, event flow, flowchart, swimlane, state machine, and composition for any kind. `grafical guide` lists them and `grafical guide <name>` prints one. `cloud` and `deployment` find infrastructure, `process` finds flowchart and `states` finds state machine. An unknown name is refused as `unknown-guide` with up to two likely names, and exits 2. The entry page names `grafical guide` once, and no command page names it; a test holds both.

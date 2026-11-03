@@ -30,6 +30,8 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
 - **Nothing says to read a guide.** The entry page names `grafical guide` once, as there if wanted.
   - No command page names it, and a test holds both.
 
+How the guides are found and printed is in [how grafical answers](../answers.md#the-help-and-the-guides).
+
 ## Not chosen
 
 - The guides in the help, as the entry page and the command pages held them in the morning.

@@ -15,7 +15,7 @@ The commitments the parts must meet are in [DESIGNS.md](../DESIGNS.md), and the 
 
 ## The command line
 
-Reads a command or a batch, runs the steps above in order, and prints the answer as records. It also holds the help, the guides, the refusal texts, the live viewer and `show`.
+Reads a command or a batch, runs the steps above in order, and prints the answer as records. It also holds the help, the guides, the refusal texts, the live viewer and `show`. How it answers is in [how grafical answers](answers.md).
 
 Folder: `src/cli/`.
 
@@ -33,25 +33,25 @@ Folder: `src/layout/`.
 
 ## The text measurer
 
-Measures every label from the bundled fonts, wraps it, and tells the layout how much room it takes.
+Measures every label from the bundled fonts, wraps it, and tells the layout how much room it takes ([text and rendering](text-and-rendering.md)).
 
 Folder: `src/text/`.
 
 ## The theme
 
-Holds the built-in themes and the stylesheet's values: colors, line widths, shapes and type sizes, by role ([the file formats](file-formats.md)).
+Holds the built-in themes and the stylesheet's values: colors, line widths, shapes and type sizes, by role ([text and rendering](text-and-rendering.md#themes-and-stylesheets), [the file formats](file-formats.md)).
 
 Folder: `src/theme/`.
 
 ## The checker
 
-Looks at the laid-out picture and reports defects, warnings and counts. A defect the agent can fix fails the write; one only the engine can avoid is reported by `check --all`.
+Looks at the laid-out picture and reports defects, warnings and counts. A defect the agent can fix fails the write; one only the engine can avoid is reported by `check --all`. How it works is in [the checker](checks.md).
 
 Folder: `src/check/`.
 
 ## The renderer
 
-Writes the SVG from the laid-out picture and turns it into a PNG with `resvg`, with no browser.
+Writes the SVG from the laid-out picture and turns it into a PNG with `resvg`, with no browser ([text and rendering](text-and-rendering.md#writing-the-svg)).
 
 Folder: `src/render/`.
 

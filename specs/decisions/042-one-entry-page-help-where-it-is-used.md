@@ -51,6 +51,8 @@ So:
     - The budget was 12,000 characters for the help read before a first draft.
   - That day the entry page, `new --help` and `apply --help` took 11,280 characters together where they had taken 11,940.
 
+How the help is built today is in [how grafical answers](../answers.md#the-help-and-the-guides).
+
 ## Not chosen
 
 - One page with all the help and the guides, the 2026-10-12 shape grown longer.
