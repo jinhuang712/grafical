@@ -16,7 +16,18 @@ fallbacks of its kind: wrap, another gutter, a farther place
 the least bad place, and the write is refused ───────> label-blocked or title-blocked
 ```
 
-Texts are seated in the order the layout reaches them, so each keeps clear of what came before it. A band's label is seated before the lines, which keep clear of it. The router seats the lines' labels as it fills each gutter. Bar labels, lane labels and the legend follow once the lines are routed. Group titles, wall labels, step badges and notes come last, once every row has its y. The size of each text comes from the text measurer.
+Texts are seated in the order the layout reaches them, so each keeps clear of what came before it:
+
+```text
+with the column grid    the labels of lines between neighbours, in the gaps made for them
+before the lines        each band's label, which the lines keep clear of
+while routing           the labels of lines in gutters, as each gutter is filled
+after routing           bar labels and the legend
+once rows have their y  lane labels, group titles, labels of routes cut at a container,
+                        wall labels, step badges, then notes
+```
+
+The size of each text comes from the text measurer.
 
 ## Line labels
 
@@ -54,7 +65,7 @@ When all of these fail, it goes back to one line, takes the seat with the fewest
 
 ### Between neighbours
 
-A line that runs straight across the gap between two neighbours carries its label above it. A second labelled line in the same gap takes its label below. Placement has already made the gap wide enough for the label.
+A line that runs straight across the gap between two neighbours carries its label above it. A second labelled line in the same gap takes its label below. These labels are seated with the column grid, which makes the gap wide enough for them.
 
 ## Step badges
 

@@ -11,9 +11,10 @@ marks' bytes ──────┘
 ## Writing the SVG
 
 The renderer writes the SVG itself, with every element and attribute in a fixed order and numbers at no more than 2 decimals. It drops the control characters XML cannot hold.
+
 Each label is split into runs of one font, and each run is its own `<text>` element at the x the text measurer gave it. resvg does not choose a font per character: given a font stack, it would draw a whole label from Noto as soon as Inter lacked one of its characters. A text mark is the one exception: it is one centred `<text>` element, in Noto when any character is CJK and in Inter otherwise.
 
-Behind every line label the writer puts a patch 3 px wider and 1 px taller than the text, filled with whatever lies behind it, so a line that runs under the label is broken there.
+Behind every line label the writer puts a patch that reaches 3 px past the text on each side and 1 px above and below it. Its fill is that of the innermost group, band or lane under the label's centre, or the theme's label background, so a line that runs under the label is broken there.
 
 ## Drawing the PNG
 
@@ -30,11 +31,13 @@ The writer adds the marks of a route as it draws it, so the routes, the checks a
 - **Curves.** With `paint.edge.shape: curved`, each corner is as round as half of each of its two runs.
   - The curve is checked at three points against boxes, labels, step badges and other lines.
   - It is halved while it comes within 4 px of one.
-  - It is never less round than `min(6, half of each run)`.
+  - It is never less round than the theme's corner radius, or half of each run when that is smaller.
+  - The corner radius is 6 px in `default` and `dark`, and 4 px in `print`.
 
 ## Marks
 
 A mark sits in a slot of its box and never at a position. A corner mark is centred on its corner, takes no room and moves nothing; a wide badge grows inward from the corner. The `left` mark sits left of the text, in room the text gives up. A diamond and a dot have no `left` slot.
+
 A mark is one of three things:
 
 - An emoji: one grapheme that starts with a pictographic character, drawn from the bundled Twemoji images and never from a font.

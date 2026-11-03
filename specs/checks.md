@@ -57,8 +57,8 @@ Where drawing would hide something a reader needs, the write is refused as a def
   - It names the target and the lines and boxes in the way.
   - Its `next` is `note add`, `note remove` and `node move`.
 - A group's label that a line comes near is `title-blocked`, naming the group and the lines.
-  - On `check` it also lists as `clear` the other places where no line would come near, each found by laying the diagram out again.
-  - A write leaves `clear` out.
+  - It also lists as `clear` the other places where no line would come near, each found by laying the diagram out again.
+  - The search for a problem's source leaves `clear` out, since it lays out many prefixes of a batch.
   - Its `next` is `group title`, `node move` and `edge remove`.
 
 Where drawing only costs, the picture is drawn and every write reports it. A line with more than two bends is the one such case today: it is a `bent-line` warning and counts in `bent`.

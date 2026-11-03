@@ -13,11 +13,11 @@ facts ──> boxes placed by steps join their rows ──> sizes ──> each r
                                                                 │
               routing: stand-ins for container ends, lines straight between neighbours
                                                                 │
-          the column grid ──> the x of every box, group, lane and wall
+          the column grid ──> the x of every box, group, lane and wall, and the canvas's width
                                                                 │
               routing: every line, and the rows of tracks each gutter holds
                                                                 │
-          the y of every row, head and gutter ──> the canvas
+          the y of every row, head and gutter ──> the canvas's height
 ```
 
 Every step reads only the facts and the theme, so the same file gives the same places on every machine.

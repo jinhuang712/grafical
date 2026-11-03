@@ -34,12 +34,12 @@ The three parts of the layout take turns, because each needs what the one before
 ```text
 placement   boxes placed by steps, sizes, the order of each row
 routing     stand-ins for container ends, and which lines cross between neighbours
-placement   the column grid and the x of every box, with room for those lines
+placement   the column grid and the x of every box, with room for those lines and their labels
 text        each band's label, which the lines keep clear of
-routing     every line through the gutters, seating each line's label as it goes
-text        bar labels, lane labels and the legend
-placement   the y of every row from the tracks each gutter holds, and the canvas
-text        group titles, wall labels, step badges and notes
+routing     every line through the gutters, seating each gutter's labels as it goes
+text        bar labels and the legend
+placement   the y of every row from the tracks each gutter holds, and the canvas's height
+text        lane labels, group titles, wall labels, step badges and notes
 ```
 
 The text measurer gives every part the size of its text. The theme gives the layout its type sizes and fixed sizes, and the renderer its paint.

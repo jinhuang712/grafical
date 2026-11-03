@@ -4,15 +4,6 @@ Small fixes and follow-ups with no milestone yet. An item moves to ROADMAP.md on
 
 ## ongoing
 
-### [P1][DISCUSSION] A write's title-blocked names no clear place
-
-- created: 2026-11-04
-- status: HALT
-- found: writing specs/checks.md from `src/check/` on 2026-11-04
-- next: the owner chooses whether a write lists `clear`, or the documents say only `check` does
-
-`title-blocked` lists as `clear` the places of a group's label that no line comes near, but only on `check`: a write leaves `clear` out, since finding each place lays the diagram out again. FEATURES.md, "Groups", the CHANGELOG and specs/decisions, "The agent states where a group's label sits" and "One entry page, help where it is used" say the refusal names them, and the last records an agent that took a place for each label from its `clear` fact.
-
 ### [P1][DISCUSSION] A line along a row is not kept below a group's label
 
 - created: 2026-11-04

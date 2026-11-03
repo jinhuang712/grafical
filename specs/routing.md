@@ -15,11 +15,9 @@ Routing works in two turns around placement. Before the boxes have their x, it d
  6. ports       each line gets its own place on every side it meets
  7. centres     a line that can run straight moves back to its boxes' centre
  8. tracks      each gutter stacks its runs into rows of tracks, and seats the labels
- 9. compare     lines sent above their row go back below where that is no worse
-10. assemble    placement turns tracks into heights, and routes are cut at containers
 ```
 
-Each step works on what the steps before it fixed, and no later step undoes one. A line from a box in the top row to a box two rows down passes most of them:
+Each step works on what the steps before it fixed, and no later step undoes one. When a line was sent above its row, the whole run is made a second time with every such line below, to compare the two. Once placement has given the rows their y, the tracks become heights, the routes become points, and each route to a container is cut at its edge. A line from a box in the top row to a box two rows down passes most of them:
 
 ```text
 row 0     [ A ]
@@ -50,10 +48,11 @@ Every other line between the two boxes, and every line between boxes of one row 
 A box with many lines on one side would need a port for each, and the lines would crowd its edge. So lines that leave one side in the same style and weight become a bundle: one port and one trunk, which splits near its targets.
 
 - Three or more such lines always bundle.
-  - Two bundle only when the side cannot give each its own port 16 px apart.
+  - Two bundle only when the side has more lines than ports 16 px apart.
 - A line that carries something of its own never joins a bundle.
   - That is a labelled line, a numbered line, a two-way line, a self-loop or a line to a container.
-- Two or more lines into one crowded side of a target share one port as a fan-in.
+- Two or more unlabelled lines of one style into one crowded side of a target share one port as a fan-in.
+  - A two-way line may join a fan-in.
 
 The members of a bundle share a track until their paths part. Their tracks are ordered by where they part, so that no two members cross. A trunk that runs straight on with branches to both sides would meet them in a junction that reads as a crossing. So it splits into two runs, each branching at its own height.
 
@@ -62,8 +61,8 @@ The members of a bundle share a track until their paths part. Their tracks are o
 A line that skips rows runs down a corridor: a column of the grid that is empty in every row it passes. Several corridors are usually open, and the router scores each one as a single sum:
 
 ```text
-cost = distance from the source  (+ 96 if the source cannot reach it straight)
-     + for each line sharing it: distance to its target (+ 96 if not straight)
+cost = distance from the source  (+ 96 if outside the source's port range)
+     + for each line sharing it: distance to its target (+ 96 if outside its range)
      + 192 × (crossings placement makes certain + groups that hold neither end)
 ```
 
@@ -81,7 +80,7 @@ When no corridor is free, the line takes a gap between two boxes in each row it 
 
 A line between two boxes of one row that are not neighbours goes round, through the gutter above or below. It takes the side where fewer other lines meet the boxes between its ends, so that it crosses fewer of them, and below on a tie. It stays below in the top row, for a self-loop, and for a member of a bundle or a fan-in. It also stays below where a band's label, a wall or a lane's side lies in the gutter above.
 
-Above is a guess, because a port added on a box's top moves the ports beside it, and a run in the gutter takes room from its labels. So the router also routes every such line below, as a baseline. A line sent above goes back below when its gutter or its boxes gain a needless bend or a label with no room, until no gutter is worse than the baseline.
+Above is a guess, because a port added on a box's top moves the ports beside it, and a run in the gutter takes room from its labels. So when any line went above, the router also routes every such line below, as a baseline. A line sent above goes back below when its gutter gains a needless bend or a label with no room, or a line that shares one of its boxes newly bends. This repeats until no line goes back.
 
 ## Side exits and side entries
 
@@ -95,13 +94,13 @@ Where no exit was taken, a line may enter its target's side instead. A side take
 
 A line meets a box's top or bottom. It meets the left or right side only to reach a neighbour, or for a side exit or entry. The ports of one side go in the order of where each line's run ends in the gutter, walking round from the box's corner, so that the lines leave the side without crossing each other.
 
-The router first spreads the ports evenly across the side, each pulled toward the x its line wants. When that bends a line that could run straight, it tries tighter spacings in turn, from 16 px apart and 16 px from the corners down to 4 px apart. It takes the first that bends no such line. As a last resort, ports sit 2 px off the grid, so that no two lines share an x.
+The router first spreads the ports evenly across the side, each pulled toward the x its line wants. When that bends a line that could run straight, it tries tighter spacings in turn, from 16 px apart and 16 px from the corners down to 4 px apart. It takes the first that bends no such line, or the first that fits when every one does. As a last resort, ports sit 2 px off the grid, so that no two lines share an x.
 
 Bottom sides are placed before top sides. A line that can run straight down then meets the port its upper box already took, when that port lies at least 8 px inside the lower box.
 
 ## Back to the centre
 
-Spreading the ports pushes lines off their boxes' centres. After ports and tracks are placed, a line that runs straight from its source through every gap into a box that shares its centre moves back to that centre, with the lines in its way. It moves only when nothing gets worse: no new crossing, no track or port too close to another, and enough room left in each gap. It stays put when another line joins the same two boxes or a self-loop sits on its side. A turning line or a member of a bundle never moves.
+Spreading the ports pushes lines off their boxes' centres. After ports and tracks are placed, a line that runs straight from its source through every gap into a box that shares its centre moves back to that centre, with the lines in its way. It moves only when nothing gets worse: no new crossing, no track or port too close to another, and enough room left in each gap. It stays put when another line joins the same two boxes or a self-loop sits on its side. A turning line, a member of a bundle and a line of a fan-in never move.
 
 ## Gutters
 

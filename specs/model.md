@@ -23,9 +23,9 @@ lay out and check the picture ── a defect the agent owns refuses the write
 write the file: a temporary file, then a rename
 ```
 
-Loading reads the YAML with unique keys and validates it against the schema. It then reads the files of the marks, the stylesheet the diagram names and the weight levels that stylesheet knows. A file that fails any of these is refused as a whole, with `already in the file` as its source, so that grafical never draws from a file it read only in part.
+Loading reads the YAML with unique keys and validates it against the schema. It then reads the files of the marks, the stylesheet the diagram names and the weight levels that stylesheet knows. A file that fails any of these is refused as a whole, with `already in the file` as its source, so that grafical never draws from a file it read only in part. A file that cannot be found or read is refused with the command as its source.
 
-The operations work on a copy of the loaded diagram, so a refused write leaves nothing changed. Each operation runs against the diagram the operations before it made, and either returns errors or changes the copy. After each one, walls forget the boxes and groups it removed, and notes go with their targets. When every operation has run, each row is put in lane order and then in column order. That waits until the end because lanes and columns are facts that several operations of one batch may change.
+The operations work on a copy of the loaded diagram, so a refused write leaves nothing changed. Each operation runs against the diagram the operations before it made, and either returns errors or changes the copy. After each one, walls forget the boxes, groups and lines it removed, a wall left with an empty side goes, and notes go with their targets. When every operation has run, each row is put in lane order and then in column order. That waits until the end because lanes and columns are facts that several operations of one batch may change.
 
 ## Checks of the whole diagram
 
@@ -40,7 +40,7 @@ An operation can only check what it touches. Some problems can only be seen in t
 3. Groups: every group can be boxed without a box inside it that is not a member.
 4. Steps: no box placed by steps lands on a cell that another fact keeps.
 
-Each error from these checks carries the number of the check that found it. A diagram refused by a later check has passed the earlier ones, and the search for the operation that caused a problem relies on that.
+On the write path a fifth check follows them: every weight a line names is a level the stylesheet knows. Each error from these checks carries the number of the check that found it. A diagram refused by a later check has passed the earlier ones, and the search for the operation that caused a problem relies on that.
 
 The new diagram then goes to the layout and the checker. A defect the agent owns refuses the write. Otherwise the file is written to a temporary file beside it and renamed over it, so that a reader never sees half a file. `grafical try` takes the same path without the last step.
 
