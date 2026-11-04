@@ -80,7 +80,7 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 - **Step:** two meanings today.
   - A box is placed some *steps* from another box, which is placement.
   - A line carries a numbered *step*, which is part of a process.
-  - Neither has won yet (TODO.md, "One word, two steps").
+  - Neither has won yet (TODO.md, "One word for two steps").
 
 ## What grafical answers
 

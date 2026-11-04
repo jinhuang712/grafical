@@ -77,4 +77,4 @@ Changed the same day by "Help for the tool, guides for best practice": the kinds
 
 Changed on 2026-10-18 by "Refusals say what happened and which commands can change it": a refusal no longer carries its own fix. It says what happened and names the commands that can change it.
 
-Risk, to measure in the next paid round: whether agents use the ways to draw the entry page lists where the request fits, and which command pages they open before their first write. The harness does not yet count the pages (TODO.md, "Pages read before a first write").
+Risk, to measure in the next paid round: whether agents use the ways to draw the entry page lists where the request fits, and which command pages they open before their first write. The harness does not yet count the pages (TODO.md, "Count the pages read before a first write").
