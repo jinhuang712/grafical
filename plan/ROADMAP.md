@@ -2,33 +2,29 @@
 
 **Current checkpoint:** [CP2: The MVP bar, measured again](#cp2-the-mvp-bar-measured-again), with [CP3: Pictures worth keeping](#cp3-pictures-worth-keeping) running beside it. Speed is fixed; operation errors, the new checks, the missing baselines and a paid round remain.
 
-✅ done · 🟨 in progress · ⬜ planned
-
-What each checkpoint delivers is in [FEATURES.md](../FEATURES.md), and every exit criterion is a check in [GOALS.md](GOALS.md). The tries, scores and costs of each round are in `bench/results/`.
-
 ## Summary
 
 ```
 Roadmap
-├── ✅ CP1: Stage 1 built
-│   ├── ✅ CP1.1: The risky questions
-│   ├── ✅ CP1.2: The loop
-│   ├── ✅ CP1.3: The target look
-│   ├── ✅ CP1.4: The owner's additions
-│   ├── ✅ CP1.5: The vocabulary and stability
-│   ├── ✅ CP1.6: The stage 1 round
-│   ├── ✅ CP1.7: Clearer lines and more diagram types
-│   ├── ✅ CP1.8: Discrete output and freer placement
-│   └── ✅ CP1.9: Refusals that name the way out
-├── 🟨 CP2: The MVP bar, measured again
-│   ├── ✅ CP2.1: Fix the speed slip
-│   ├── 🟨 CP2.2: Bring operation errors under 5%
-│   ├── ⬜ CP2.3: Measure the new checks
-│   ├── ⬜ CP2.4: Add the missing baselines
-│   └── ⬜ CP2.5: Run one paid round
-├── 🟨 CP3: Pictures worth keeping
-├── ⬜ CP4: More combinations of operations
-└── ⬜ CP5: Release 0.1.0
+├── ✅ CP1: Stage 1 built — everything an agent needs to draw with grafical alone
+│   ├── ✅ CP1.1: The risky questions — the spikes and the package
+│   ├── ✅ CP1.2: The loop — operations to a picture
+│   ├── ✅ CP1.3: The target look — the engine rebuilt toward a target
+│   ├── ✅ CP1.4: The owner's additions — containers, lanes, themes and the viewer
+│   ├── ✅ CP1.5: The vocabulary and stability — the full operation set
+│   ├── ✅ CP1.6: The stage 1 round — the first full benchmark round
+│   ├── ✅ CP1.7: Clearer lines and more diagram types — line kinds and diagram types
+│   ├── ✅ CP1.8: Discrete output and freer placement — records, columns, steps, walls and notes
+│   └── ✅ CP1.9: Refusals that name the way out — refusals with the commands that change them
+├── 🟨 CP2: The MVP bar, measured again — the MVP bar met in one round
+│   ├── ✅ CP2.1: Fix the speed slip — speed back under its limit
+│   ├── 🟨 CP2.2: Bring operation errors under 5% — fewer refused calls
+│   ├── ⬜ CP2.3: Measure the new checks — placement and context measured
+│   ├── ⬜ CP2.4: Add the missing baselines — the two baselines that never ran
+│   └── ⬜ CP2.5: Run one paid round — a round paid for and measured
+├── 🟨 CP3: Pictures worth keeping — pictures that look right where no check fails
+├── ⬜ CP4: More combinations of operations — more ways to combine operations
+└── ⬜ CP5: Release 0.1.0 — grafical on npm
 ```
 
 ## CP1: Stage 1 built
@@ -73,17 +69,21 @@ The smallest path from operations to a picture: an agent built the public brief 
 - [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
 - [F7.5: Render](../features/F7-seeing-the-result.md#f75-render)
 
+**Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
+
 ### CP1.3: The target look
 
 **Status:** ✅ (2026-10-11)
 
-The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, against 22 for the first engine: rows not drawn, groups as systems, one column grid and measured rules ([phase1b](../bench/results/phase1b.md), [phase1b2](../bench/results/phase1b2.md), [phase1b3](../bench/results/phase1b3.md)).
+The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, against 22 for the first engine: rows not drawn, groups as systems, one column grid and measured rules (`bench/results/phase1b.md`, `bench/results/phase1b2.md`, `bench/results/phase1b3.md`).
 
 **Delivers:**
 
 - [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
 - [F4.1: Rows and order](../features/F4-placing.md#f41-rows-and-order)
 - [F5.1: Groups](../features/F5-grouping.md#f51-groups)
+
+**Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
 ### CP1.4: The owner's additions
 
@@ -98,11 +98,13 @@ Lines that end at containers, swimlanes, themes and stylesheets, and the live vi
 - [F6.4: Themes and stylesheets](../features/F6-the-whole-picture.md#f64-themes-and-stylesheets)
 - [F7.6: Live viewer](../features/F7-seeing-the-result.md#f76-live-viewer)
 
+**Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
+
 ### CP1.5: The vocabulary and stability
 
 **Status:** ✅ (2026-10-12)
 
-The full operation set, `apply`, `show`, `diff` and the help, with the stability rule enforced by tests ([phase2](../bench/results/phase2.md)).
+The full operation set, `apply`, `show`, `diff` and the help, with the stability rule enforced by tests (`bench/results/phase2.md`).
 
 **Delivers:**
 
@@ -121,7 +123,9 @@ The full operation set, `apply`, `show`, `diff` and the help, with the stability
 
 **Status:** ✅ (2026-10-12)
 
-The first full benchmark round, and its rerun after the line work ([stage1](../bench/results/stage1.md)). The MVP bar was not met.
+The first full benchmark round, and its rerun after the line work (`bench/results/stage1.md`). The MVP bar was not met.
+
+**Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
 ### CP1.7: Clearer lines and more diagram types
 
@@ -134,6 +138,8 @@ New line kinds, lines that meet a box on any side, hops and dots, the flowchart 
 - [F2.1: Kinds and shapes](../features/F2-boxes.md#f21-kinds-and-shapes)
 - [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
 - [F5.1: Groups](../features/F5-grouping.md#f51-groups)
+
+**Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
 ### CP1.8: Discrete output and freer placement
 
@@ -152,6 +158,8 @@ Records in place of prose, `try`, bundled fan-outs, equal heights in a row, room
 - [F3.3: Weight](../features/F3-lines.md#f33-weight)
 - [F6.2: Legend](../features/F6-the-whole-picture.md#f62-legend)
 
+**Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
+
 ### CP1.9: Refusals that name the way out
 
 **Status:** ✅ (2026-10-15 to 2026-10-19)
@@ -166,6 +174,8 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 - [F7.3: Warnings](../features/F7-seeing-the-result.md#f73-warnings)
 - [F7.8: Help](../features/F7-seeing-the-result.md#f78-help)
 - [F7.9: Guides](../features/F7-seeing-the-result.md#f79-guides)
+
+**Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
 ## CP2: The MVP bar, measured again
 
@@ -269,7 +279,7 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 
 **Status:** ⬜
 
-The form is not decided with the owner yet, such as one operation for a common edit or for a common shape (FEATURES.md, "Later, if needed"). The first candidates were chosen on 2026-10-15 after a field study of other diagram tools; copying a group was built on 2026-10-16. A candidate stays only if a round shows it helps.
+The form is not decided with the owner yet, such as one operation for a common edit or for a common shape ([Later, if needed](../FEATURES.md#later-if-needed)). The first candidates were chosen on 2026-10-15 after a field study of other diagram tools; copying a group was built on 2026-10-16. A candidate stays only if a round shows it helps.
 
 **Delivers:**
 
@@ -287,7 +297,7 @@ The form is not decided with the owner yet, such as one operation for a common e
 
 **Status:** ⬜
 
-Publish `grafical` on npm. Every check in GOALS.md meets its target; a recorded decision may recalibrate any target except the MVP bar.
+Publish `grafical` on npm once every goal meets its target. A recorded decision may recalibrate any target except the MVP bar.
 
 **Exit criteria:**
 
@@ -295,7 +305,3 @@ Publish `grafical` on npm. Every check in GOALS.md meets its target; a recorded 
   - [B2: Scale](GOALS.md#b2-scale)
   - [B3: Faithfulness](GOALS.md#b3-faithfulness)
   - [B4: Verifiability](GOALS.md#b4-verifiability)
-
-## Later
-
-What is wanted but not scheduled is in FEATURES.md, "Later, if needed". An item gets a checkpoint here when a benchmark result shows it is needed.
