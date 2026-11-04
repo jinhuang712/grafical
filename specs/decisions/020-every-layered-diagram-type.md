@@ -2,6 +2,9 @@
 
 Decided: 2026-10-12
 
+- Replaced in part by specs/decisions, "The help as the reference": the guides' lessons moved into the help.
+- Replaced in part by specs/decisions, "An optional type sets the diagram's space": a type sets the space.
+
 ## The problem
 
 Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and infrastructure, event flow, flowcharts, state machines, swimlane processes, dependency graphs, data flow and deployment (behavior: FEATURES.md, "Kinds and shapes", "Groups", "Help").

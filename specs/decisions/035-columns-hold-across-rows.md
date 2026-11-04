@@ -16,8 +16,6 @@ Decided by the owner on 2026-10-15, after the same field study. A swimlane with 
   - The grid already kept their order, but two boxes in different rows could share an x.
   - The field study's swimlane grew from 944 px to 1448 px wide and from 4 bends to 8, because lines between boxes in different columns can no longer run straight.
 
-How the grid keeps columns across rows is in [placement](../placement.md#columns).
-
 ## Not chosen
 
 - Columns that order boxes only within a row, with FEATURES.md reworded.

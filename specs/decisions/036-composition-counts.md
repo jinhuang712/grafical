@@ -19,8 +19,6 @@ Decided on 2026-10-16 from a request that agents see how a picture is composed, 
   - `crowded`: 88 labels in 51 drafts.
 - **Help.** The three are described in `apply --help`'s Output section.
 
-How each count and each gutter is measured is in [the checker](../checks.md#counts).
-
 ## Not chosen
 
 - One composition score: a weighted sum hides which of the three costs.

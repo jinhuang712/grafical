@@ -31,8 +31,6 @@ grafical reports what happened and never teaches. A record gives the facts and t
 
 How the line is found was decided the same day, after two reviews: on a refused write only, grafical tries ever shorter prefixes of the batch back towards the file, within a fixed budget, so that the line is never wrong. Both of these stay within GOALS.md, "Speed": a `try` of 80 operations with 10 labels too long takes 0.33 to 0.37 s, and a refused 123-operation draft of a scale-50 brief 0.29 to 0.31 s. The first took 1.15 s when every line was searched for. Round p1g's title-blocked keeps its line, caused on line 5 of 8 in a diagram of 37 boxes and lines.
 
-The block, the source, the prefix scan and the detail are in [how grafical answers](../answers.md#a-problems-block).
-
 ## Not chosen
 
 - Halving the range of prefixes, which assumed that a problem stays once it appears.

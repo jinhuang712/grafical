@@ -2,6 +2,8 @@
 
 Decided: 2026-10-11
 
+Replaced in part by specs/decisions, "Every layered diagram type": groups nest up to three levels.
+
 ## The problem
 
 A layered diagram needs rows to place its boxes and a way to show which boxes form one system, without a band and a label drawn for every row.
@@ -11,8 +13,6 @@ A layered diagram needs rows to place its boxes and a way to show which boxes fo
 A layered architecture diagram reads from top to bottom: callers, entry points, services, messaging, storage. Each layer is a row, and the nodes in a layer sit side by side in their order. Rows are not drawn: no band, no row label in the picture. A layer's label stays in the file and in `show`, for agents. The one exception is a layer an edge ends at, drawn as a band ("Lines that end at containers").
 
 A group is a system, such as "catalog-sync" around its relay, topics and pipelines. Its members may sit in several rows. The engine draws the group as one box around them, with its label at the top left, and keeps every non-member out of the box. Groups do not nest in stage 1.
-
-How rows, groups and their boxes are placed today is in [placement](../placement.md).
 
 ## Not chosen
 

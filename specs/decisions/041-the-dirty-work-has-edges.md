@@ -107,8 +107,6 @@ What it changes, each built in its own step:
   - Dense pictures seldom have room for a card, since nothing moves for one.
   - So an agent should expect to state footnotes there.
 
-How each refusal and warning works today is in [the checker](../checks.md#when-there-is-no-plain-form).
-
 ## Not chosen
 
 - Refusing a line with more than two bends unless the agent allows it, as a wall lets a line through.

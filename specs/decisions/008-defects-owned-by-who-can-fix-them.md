@@ -15,8 +15,6 @@ After each operation or batch, grafical lays out the diagram and checks it. Each
   - If it still leaves one, that is an engine bug.
   - The write goes ahead, the agent is never told, and `grafical check --all` reports it so that benchmarks and tests count it.
 
-Which defects exist, who owns each, and how text is checked against its box is in [the checker](../checks.md#defects-and-who-owns-them).
-
 ## Not chosen
 
 - Warnings for agent-owned defects, because a picture with a known defect looks like success.

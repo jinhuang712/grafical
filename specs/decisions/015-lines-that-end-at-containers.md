@@ -10,7 +10,7 @@ An arrow to each part of a system adds lines that say no more than one arrow to 
 
 A line may end at a group, a row or a lane, not only at a box (behavior: FEATURES.md, "Ends at a group, a row or a lane"). One arrow to "catalog-api" says that callers call that system, without saying which part, and it replaces an arrow to each member. The owner asked for this on 2026-10-11: an arrow may point to a set, a layer or a swimlane.
 
-A container end is met at its top or bottom when the other end lies above or below all its rows, and at its side when the two share a row. How the router reaches it and where the line is cut is in [routing](../routing.md#lines-that-end-at-a-container).
+A container end is met at its top or bottom when the other end lies above or below all its rows, and at its side when the two share a row.
 
 ## Not chosen
 

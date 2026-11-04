@@ -24,8 +24,6 @@ The owner chose numbered steps on 2026-10-15 as one of the first candidates of R
     - 65 of the 3,475 lines gained a bend.
   - The fuzz test numbers a share of the lines in four seeds of ten; over 5,000 seeds no badge touches anything.
 
-How the badge is placed and settled is in [text placement](../labels.md#step-badges).
-
 ## Not chosen
 
 - The number as text before the label ("2. read"), as in Structurizr and PlantUML.

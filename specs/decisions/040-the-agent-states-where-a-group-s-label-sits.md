@@ -24,8 +24,6 @@ Decided by the owner on 2026-10-16 (behavior: FEATURES.md, "Groups"). In a booki
   - The same day the widening gave way to the refusal.
   - The fuzz test found one fault while this was built, since fixed: a group around one with a label outside let a box in.
 
-Where each place sits and how a default seat is found is in [text placement](../labels.md#group-titles).
-
 ## Not chosen
 
 - The engine moving the label to the bottom left when the head is crowded, the C4 habit.

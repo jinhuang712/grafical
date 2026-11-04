@@ -10,7 +10,7 @@ An agent must say where every box goes, but coordinates are the work models get 
 
 An operation says which layer, which position in the layer, which group, what to align with, and what to connect. No operation takes an x, a y, a width or a bend point.
 
-A node's place is its layer, its order within the layer, its group, and an optional alignment with a node in another layer. Its size is a size step, and the box has that step's fixed width and height. The diagram's spacing is a density. The allowed values are listed in [FEATURES.md](../../FEATURES.md). The theme maps each value to pixels.
+A node's place is its layer, its order within the layer, its group, and an optional alignment with a node in another layer. Its size is a size step, and the box has that step's fixed width and height. The diagram's spacing is a density. The theme maps each value to pixels.
 
 ## Not chosen
 

@@ -25,8 +25,6 @@ Drawing two reference diagrams of a chat's alerts and a host's states, with a la
     - The patch breaks the line there.
     - The check still counts every other line.
 
-How a label chooses its slot is in [text placement](../labels.md#line-labels).
-
 ## Not chosen
 
 - A stylesheet option for beside or on.

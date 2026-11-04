@@ -38,8 +38,6 @@ Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "Who owns what?"). grafical h
   - Each line now names the lines it leaves or arrives with through one port ("Fan-outs of three bundle").
   - It is read from the picture: lines whose ends meet one box at one point.
 
-How records are written today is in [how grafical answers](../answers.md#records).
-
 ## Not chosen
 
 - Phrases with the numbers in them ("most nodes in a row 4 (outside)").

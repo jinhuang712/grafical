@@ -14,7 +14,7 @@ grafical ships its own fonts, both under the SIL Open Font License, in Regular (
   - It is subset to the Table of General Standard Chinese Characters (8,105 characters) plus ASCII and common punctuation.
   - It is pinned to static weights from the variable font.
 
-`harfbuzzjs` measures the text from these files, never from the system. How characters choose a font, how labels wrap and when text fits is in [the text measurer](../text.md).
+`harfbuzzjs` measures the text from these files, never from the system.
 
 The phase 0 text spike measured 160 labels at 12 and 14 px. Widths from `harfbuzzjs` matched the widths resvg draws within 0.0001 px. The spike code and its report were not kept; the numbers here are what remains.
 

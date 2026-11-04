@@ -2,6 +2,8 @@
 
 Decided: 2026-10-12
 
+Replaced in part by specs/decisions, "Edge weights": a line takes its own width.
+
 ## The problem
 
 Decided by the owner on 2026-10-12. In the stage 1 round every comment on grafical's pictures named the lines, and the owner's view was that the agent lacked the means to make a picture clear, not only that the router drew lines badly.
@@ -49,8 +51,6 @@ Lines may meet a box on any side, and the router, not the agent, chooses the sid
   - Parallel lines needed nothing: across the 42 saved drafts no two run closer than 8 px.
 - **Room around stores**, 2026-10-13 (phase 1e): three of six judge verdicts saw lines run close under or beside a cylinder.
   - Lines passed within 16 px of a store 0.70 times a store, against 0.03 to 0.15 for every other kind; with the extra room, 0.19, and the pictures grew 1.8% taller.
-
-How the router does each of these today is in [routing](../routing.md).
 
 ## Not chosen
 

@@ -2,6 +2,8 @@
 
 Decided: 2026-10-12
 
+Replaced in part by specs/decisions, "Help for the tool, guides for best practice": the guides came back for best practice.
+
 ## The problem
 
 Decided on 2026-10-12 by the owner. In a real setup an agent knows only that a `grafical` command exists, and `grafical --help` and `grafical <command> --help` are how it learns the tool. The stage 1 benchmarks hid this: their prompt told every agent to run `grafical guide` first, and the main guide then sent it on to `grafical guide <type>`, two hops past the command an agent would try on its own.
@@ -23,7 +25,7 @@ Decided on 2026-10-12 by the owner. In a real setup an agent knows only that a `
 - **Budget.** The help read before a first draft stays under the old guide's 12,000 characters, about 2,800 tokens (GOALS.md, "Token use").
   - Suspended on 2026-10-17 by "One entry page, help where it is used".
 
-The pages were reshaped since by "One entry page, help where it is used", "Help for the tool, guides for best practice" and "Refusals say what happened and which commands can change it". How the help is built today is in [how grafical answers](../answers.md#the-help-and-the-guides).
+The pages were reshaped since by "One entry page, help where it is used", "Help for the tool, guides for best practice" and "Refusals say what happened and which commands can change it".
 
 ## Not chosen
 

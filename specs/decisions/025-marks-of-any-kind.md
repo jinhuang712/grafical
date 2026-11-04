@@ -25,8 +25,6 @@ What keeps marks within the principles:
 
 The emoji images come from `@twemoji/svg`: MIT for the package, and CC-BY 4.0 for the graphics, which asks for attribution.
 
-How marks are placed, drawn and read from their files is in [the renderer](../rendering.md#marks).
-
 ## Not chosen
 
 - A fixed list of icon names.

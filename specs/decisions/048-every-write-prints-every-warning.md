@@ -25,8 +25,6 @@ Decided by the owner on 2026-10-18, the same day as "Refusals say what happened 
   - At scale 25 it prints 35 blocks in 220 lines.
   - At scale 50 it prints 173 to 232 blocks in 1,117 to 1,490 lines, 31 to 41 KB, most of them crossings.
 
-Each warning's rule, detail and `next` are in [the checker](../checks.md#warnings).
-
 ## Not chosen
 
 - Only the warnings the command caused.

@@ -10,8 +10,6 @@ An agent that changes a diagram by writing the whole file again changes parts no
 
 Every change is a named operation: `node.add`, `edge.add`, `node.rename`, `layer.move`. grafical applies it to the diagram file. Agents never write the file directly. People may read it, but editing it by hand is not supported in stage 1. grafical validates the file on every load, and refuses a file that fails with the same errors an operation would get.
 
-How a write goes from operations to the file is in [the model](../model.md#a-write-from-operations-to-file).
-
 ## Not chosen
 
 Agents writing the whole file. That is the one-shot pattern this project exists to replace. Each rewrite can change parts nobody asked about, and a weak model rewrites more than it should.

@@ -2,6 +2,8 @@
 
 Decided: 2026-10-11
 
+Replaced in part by specs/decisions, "Records over prose": grafical prints counts and not warnings.
+
 ## The problem
 
 A good diagram leaves things out, and only the agent knows what can go.

@@ -19,8 +19,6 @@ Decided by the owner on 2026-10-16, before building FEATURES.md, "Copying a grou
   - A lane or a column that would move the copy away from the place stated is refused the same way, following the owner's choice for alignments and steps.
 - **Notes and walls are not copied.** They name what they are about, and the copy is not part of them until the agent says so.
 
-How the copy is built, how its ids are made and when it is refused is in [the model](../model.md#copying-a-group).
-
 ## Not chosen
 
 - Copying the lines to the outside every time.

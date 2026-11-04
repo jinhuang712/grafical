@@ -26,7 +26,7 @@ So:
   - A word near no command has no `likely`, with `--help` or without.
   - The record replaces the page commander would print.
 
-Since "Refusals say what happened and which commands can change it", the refusal is a block and `likely` is a value: `found: help` and `likely: --help`. How it prints is in [how grafical answers](../answers.md#a-problems-block).
+Since "Refusals say what happened and which commands can change it", the refusal is a block and `likely` is a value: `found: help` and `likely: --help`.
 
 ## Not chosen
 

@@ -2,6 +2,8 @@
 
 Decided: 2026-10-11
 
+Replaced by specs/decisions, "The agent states every order": the engine no longer picks a slot.
+
 ## The problem
 
 The order of the boxes in a row decides most crossings, and a weak model gets it wrong when it adds a box without saying where.

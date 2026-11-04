@@ -32,8 +32,6 @@ The column grid does not keep this list. It is solved again from the facts after
 
 **Alignment.** An aligned box sits directly above or below its target.
 
-How the grid, the gutters and alignments work today is in [placement](../placement.md).
-
 ## Not chosen
 
 - Left-aligned layers that never re-spread.

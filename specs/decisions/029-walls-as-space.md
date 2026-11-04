@@ -16,8 +16,6 @@ Lines cross a wall only where it allows, and its label must stay readable:
 - A wall's label with no place along its wall is refused, since 2026-10-17 ("The dirty work has edges").
 - Walls across were built first on 2026-10-14, and walls up and down the same day.
 
-How a wall takes its space is in [placement](../placement.md#bands-bars-and-walls), and how its label is seated in [text placement](../labels.md#wall-labels).
-
 ## Not chosen
 
 - A line between two rows, with gates.

@@ -30,8 +30,6 @@ Now a row with no box may be a line end when the line's other end holds a box, a
   - None of the 306 saved drafts and none of the 15 fixtures changed, since a line to a row with no box was refused until now.
   - While it was built, the fuzz test found two ways a line from a bar crossed a group's label, both fixed.
 
-How a bar takes its room is in [placement](../placement.md#bands-bars-and-walls), how lines meet it in [routing](../routing.md#lines-that-end-at-a-container), and how its label is seated in [text placement](../labels.md#bands-bars-and-lanes).
-
 ## Not chosen
 
 - A line that passes the bar drawn over it with no fact.

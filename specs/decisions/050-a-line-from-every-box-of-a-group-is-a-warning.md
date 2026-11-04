@@ -15,8 +15,6 @@ Decided by the owner on 2026-10-19, looking at a picture an agent drew of a codi
   - 4 are for a group of two boxes.
   - 4 are for a group of three, such as three publishers each sending events to one topic.
 
-The exact rule is in [the checker](../checks.md#warnings).
-
 ## Not chosen
 
 - Drawing such lines as one line from the group.

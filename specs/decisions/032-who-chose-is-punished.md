@@ -31,8 +31,6 @@ Asked for by the owner on 2026-10-14, on the public brief's draft with steps: "w
   - On the public brief's draft it comes from the boxes that sit under the busy box's own column in a row its lines must pass, so that its lines step around them; the owner proposed spreading the boxes apart so that the lines have room.
   - Not yet decided.
 
-How the router keeps a line straight is in [routing](../routing.md#ports).
-
 ## Not chosen
 
 - Rows that mix stores with services or outside services.

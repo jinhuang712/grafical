@@ -40,8 +40,6 @@ The rules that make it uncluttered. The checker measures each one. A broken rule
    - This one is an engine-owned defect ("Defects owned by who can fix them").
    - Across a group's label it is the agent's ("The agent states where a group's label sits").
 
-Which of these rules the checker measures today is in [the checker](../checks.md#rules-that-are-no-longer-reported).
-
 ## Not chosen
 
 - Tuning against defect counts alone.
