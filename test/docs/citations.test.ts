@@ -98,10 +98,10 @@ describe("citations of document headings", () => {
     const left: string[] = [];
     for (const file of files) {
       let text = readFileSync(join(ROOT, file), "utf8");
-      // The decisions' index keeps the old numbers under "Former IDs", and GOALS.md under "Former numbers".
+      // The decisions' index keeps the old numbers under "Former IDs", and EXPERIMENTS.md under "Former numbers".
       if (file === join(DECISIONS, "README.md"))
         text = text.slice(0, text.indexOf("## Former IDs"));
-      if (file === located("GOALS.md")) text = text.slice(0, text.indexOf("## Former numbers"));
+      if (file === "EXPERIMENTS.md") text = text.slice(0, text.indexOf("## Former numbers"));
       for (const m of text.matchAll(/\bD\d{1,2}\b(?!")|\b[Bb]enchmarks? \d|\b[Gg]oal \d\b/g)) {
         left.push(`${file}: ${m[0]}`);
       }

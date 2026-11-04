@@ -310,3 +310,7 @@ E1 to E4 with all arms and models, at least 3 runs each, and the MVP bar on the 
 ### End of stage 1
 
 Since 2026-10-11, the smoke test, E1 to E5 and the MVP bar run together once all of stage 1 is built (ROADMAP.md, "The MVP bar, measured again"). The owner set a $20 budget, mostly Haiku: Opus runs only for GOALS.md, "Model gap", the gap between Opus and Haiku. The owner rates E3 in person.
+
+## Former numbers
+
+Until 2026-10-15 the checks had numbers, and the dated results in `bench/results/` still use them. Benchmark 1 is "The picture turned in" and "Time", 2 "Iteration", 3 "Token use", 4 "Stability", 5 "Model gap", 6 "Operation errors", 7 "Mechanical defects", 8 "Scale", 9 "Faithfulness", 10 "Intent", 11 "Determinism" and "Speed", 12 "Cost", 13 "Cache hit rate" and 14 "Verifiability". Goal 1 is "The MVP bar".
