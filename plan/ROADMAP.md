@@ -69,9 +69,9 @@ The smallest path from operations to a picture: an agent built the public brief 
 
 **Delivers:**
 
-- [F1.1: Operations](../FEATURES.md#f11-operations)
-- [F1.2: Batches](../FEATURES.md#f12-batches)
-- [F7.5: Render](../FEATURES.md#f75-render)
+- [F1.1: Operations](../features/F1-drawing-in-steps.md#f11-operations)
+- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
+- [F7.5: Render](../features/F7-seeing-the-result.md#f75-render)
 
 ### CP1.3: The target look
 
@@ -81,9 +81,9 @@ The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, a
 
 **Delivers:**
 
-- [F3.6: How lines are drawn](../FEATURES.md#f36-how-lines-are-drawn)
-- [F4.1: Rows and order](../FEATURES.md#f41-rows-and-order)
-- [F5.1: Groups](../FEATURES.md#f51-groups)
+- [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
+- [F4.1: Rows and order](../features/F4-placing.md#f41-rows-and-order)
+- [F5.1: Groups](../features/F5-grouping.md#f51-groups)
 
 ### CP1.4: The owner's additions
 
@@ -93,10 +93,10 @@ Lines that end at containers, swimlanes, themes and stylesheets, and the live vi
 
 **Delivers:**
 
-- [F3.5: Ends at a group, a row or a lane](../FEATURES.md#f35-ends-at-a-group-a-row-or-a-lane)
-- [F5.4: Swimlanes](../FEATURES.md#f54-swimlanes)
-- [F6.4: Themes and stylesheets](../FEATURES.md#f64-themes-and-stylesheets)
-- [F7.6: Live viewer](../FEATURES.md#f76-live-viewer)
+- [F3.5: Ends at a group, a row or a lane](../features/F3-lines.md#f35-ends-at-a-group-a-row-or-a-lane)
+- [F5.4: Swimlanes](../features/F5-grouping.md#f54-swimlanes)
+- [F6.4: Themes and stylesheets](../features/F6-the-whole-picture.md#f64-themes-and-stylesheets)
+- [F7.6: Live viewer](../features/F7-seeing-the-result.md#f76-live-viewer)
 
 ### CP1.5: The vocabulary and stability
 
@@ -106,11 +106,11 @@ The full operation set, `apply`, `show`, `diff` and the help, with the stability
 
 **Delivers:**
 
-- [F1.1: Operations](../FEATURES.md#f11-operations)
-- [F1.2: Batches](../FEATURES.md#f12-batches)
-- [F7.1: Show](../FEATURES.md#f71-show)
-- [F7.7: Diff](../FEATURES.md#f77-diff)
-- [F7.8: Help](../FEATURES.md#f78-help)
+- [F1.1: Operations](../features/F1-drawing-in-steps.md#f11-operations)
+- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
+- [F7.1: Show](../features/F7-seeing-the-result.md#f71-show)
+- [F7.7: Diff](../features/F7-seeing-the-result.md#f77-diff)
+- [F7.8: Help](../features/F7-seeing-the-result.md#f78-help)
 
 **Exit criteria:**
 
@@ -131,9 +131,9 @@ New line kinds, lines that meet a box on any side, hops and dots, the flowchart 
 
 **Delivers:**
 
-- [F2.1: Kinds and shapes](../FEATURES.md#f21-kinds-and-shapes)
-- [F3.6: How lines are drawn](../FEATURES.md#f36-how-lines-are-drawn)
-- [F5.1: Groups](../FEATURES.md#f51-groups)
+- [F2.1: Kinds and shapes](../features/F2-boxes.md#f21-kinds-and-shapes)
+- [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
+- [F5.1: Groups](../features/F5-grouping.md#f51-groups)
 
 ### CP1.8: Discrete output and freer placement
 
@@ -143,14 +143,14 @@ Records in place of prose, `try`, bundled fan-outs, equal heights in a row, room
 
 **Delivers:**
 
-- [F1.3: Trying a change](../FEATURES.md#f13-trying-a-change)
-- [F4.3: Columns](../FEATURES.md#f43-columns)
-- [F4.4: Steps from another box](../FEATURES.md#f44-steps-from-another-box)
-- [F5.5: Walls](../FEATURES.md#f55-walls)
-- [F5.6: Notes](../FEATURES.md#f56-notes)
-- [F2.4: Marks](../FEATURES.md#f24-marks)
-- [F3.3: Weight](../FEATURES.md#f33-weight)
-- [F6.2: Legend](../FEATURES.md#f62-legend)
+- [F1.3: Trying a change](../features/F1-drawing-in-steps.md#f13-trying-a-change)
+- [F4.3: Columns](../features/F4-placing.md#f43-columns)
+- [F4.4: Steps from another box](../features/F4-placing.md#f44-steps-from-another-box)
+- [F5.5: Walls](../features/F5-grouping.md#f55-walls)
+- [F5.6: Notes](../features/F5-grouping.md#f56-notes)
+- [F2.4: Marks](../features/F2-boxes.md#f24-marks)
+- [F3.3: Weight](../features/F3-lines.md#f33-weight)
+- [F6.2: Legend](../features/F6-the-whole-picture.md#f62-legend)
 
 ### CP1.9: Refusals that name the way out
 
@@ -160,12 +160,12 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 
 **Delivers:**
 
-- [F1.5: Refusals](../FEATURES.md#f15-refusals)
-- [F4.1: Rows and order](../FEATURES.md#f41-rows-and-order)
-- [F5.2: Copying a group](../FEATURES.md#f52-copying-a-group)
-- [F7.3: Warnings](../FEATURES.md#f73-warnings)
-- [F7.8: Help](../FEATURES.md#f78-help)
-- [F7.9: Guides](../FEATURES.md#f79-guides)
+- [F1.5: Refusals](../features/F1-drawing-in-steps.md#f15-refusals)
+- [F4.1: Rows and order](../features/F4-placing.md#f41-rows-and-order)
+- [F5.2: Copying a group](../features/F5-grouping.md#f52-copying-a-group)
+- [F7.3: Warnings](../features/F7-seeing-the-result.md#f73-warnings)
+- [F7.8: Help](../features/F7-seeing-the-result.md#f78-help)
+- [F7.9: Guides](../features/F7-seeing-the-result.md#f79-guides)
 
 ## CP2: The MVP bar, measured again
 
@@ -257,8 +257,8 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 
 **Delivers:**
 
-- [F2.1: Kinds and shapes](../FEATURES.md#f21-kinds-and-shapes)
-- [F3.6: How lines are drawn](../FEATURES.md#f36-how-lines-are-drawn)
+- [F2.1: Kinds and shapes](../features/F2-boxes.md#f21-kinds-and-shapes)
+- [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
 
 **Exit criteria:**
 
@@ -269,14 +269,14 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 
 **Status:** ⬜
 
-The form is not decided with the owner yet, such as one operation for a common edit or for a common shape (FEATURES.md, "Later"). The first candidates were chosen on 2026-10-15 after a field study of other diagram tools; copying a group was built on 2026-10-16. A candidate stays only if a round shows it helps.
+The form is not decided with the owner yet, such as one operation for a common edit or for a common shape (FEATURES.md, "Later, if needed"). The first candidates were chosen on 2026-10-15 after a field study of other diagram tools; copying a group was built on 2026-10-16. A candidate stays only if a round shows it helps.
 
 **Delivers:**
 
-- [F3.4: Numbered steps](../FEATURES.md#f34-numbered-steps)
-- [F5.2: Copying a group](../FEATURES.md#f52-copying-a-group)
-- [F5.3: Deeper nesting](../FEATURES.md#f53-deeper-nesting)
-- [F2.5: Marks by name](../FEATURES.md#f25-marks-by-name)
+- [F3.4: Numbered steps](../features/F3-lines.md#f34-numbered-steps)
+- [F5.2: Copying a group](../features/F5-grouping.md#f52-copying-a-group)
+- [F5.3: Deeper nesting](../features/F5-grouping.md#f53-deeper-nesting)
+- [F2.5: Marks by name](../features/F2-boxes.md#f25-marks-by-name)
 
 **Exit criteria:**
 
@@ -298,4 +298,4 @@ Publish `grafical` on npm. Every check in GOALS.md meets its target; a recorded 
 
 ## Later
 
-What is wanted but not scheduled is in FEATURES.md, "Later". An item gets a checkpoint here when a benchmark result shows it is needed.
+What is wanted but not scheduled is in FEATURES.md, "Later, if needed". An item gets a checkpoint here when a benchmark result shows it is needed.

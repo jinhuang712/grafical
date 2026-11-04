@@ -11,10 +11,15 @@ import { describe, expect, it } from "vitest";
 const ROOT = join(import.meta.dirname, "..", "..");
 const DECISIONS = "specs/decisions";
 const PLAN = "plan";
+const FEATURES = "features";
 
 /** Where a cited document lives. A citation names the file alone, such as GOALS.md. */
-function located(doc: string): string {
-  return ["GOALS.md", "ROADMAP.md", "TODO.md"].includes(doc) ? join(PLAN, doc) : doc;
+function located(doc: string): string[] {
+  if (["GOALS.md", "ROADMAP.md", "TODO.md"].includes(doc)) return [join(PLAN, doc)];
+  // FEATURES.md is the index; each group's features live in a file of their own.
+  if (doc === "FEATURES.md")
+    return [doc, ...readdirSync(join(ROOT, FEATURES)).map((name) => join(FEATURES, name))];
+  return [doc];
 }
 
 /** The files that may cite: the documents, the specs, the code, the tests and the benchmark code. */
@@ -28,6 +33,7 @@ function sources(): string[] {
     }
   };
   walk(PLAN, /\.md$/);
+  walk(FEATURES, /\.md$/);
   walk("specs", /\.md$/);
   walk("src", /\.(ts|yaml|svg)$/);
   walk("test", /\.(ts|yaml|svg)$/);
@@ -66,9 +72,11 @@ function headings(doc: string): Set<string> {
     }
     return out;
   }
-  for (const line of readFileSync(join(ROOT, located(doc)), "utf8").split("\n")) {
-    const m = /^#{1,6} (.+)$/.exec(line);
-    if (m?.[1]) out.add(cited(m[1]));
+  for (const path of located(doc)) {
+    for (const line of readFileSync(join(ROOT, path), "utf8").split("\n")) {
+      const m = /^#{1,6} (.+)$/.exec(line);
+      if (m?.[1]) out.add(cited(m[1]));
+    }
   }
   return out;
 }

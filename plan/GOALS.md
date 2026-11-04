@@ -62,7 +62,7 @@ Set by the owner on 2026-10-13 ([What makes grafical good?](../PHILOSOPHY.md#wha
 
 **Checks:**
 
-- [F1: Drawing in steps](../FEATURES.md#f1-drawing-in-steps)
+- [F1: Drawing in steps](../features/F1-drawing-in-steps.md)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Acceptance:** the six named checks (B1: Iteration, R1: Stability, C1: Model gap, T1: Operation errors, R3: Determinism, T2: Speed) are met in one round on the private reference brief, and the round has no engine-owned defect.
@@ -77,7 +77,7 @@ No transcript has the agent work out a position or write a script to lay out the
 
 **Checks:**
 
-- [F4: Placing](../FEATURES.md#f4-placing)
+- [F4: Placing](../features/F4-placing.md)
 - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 
 **Acceptance:** the benchmark harness scans every grafical transcript of a round, and finds none.
@@ -92,8 +92,8 @@ The owner looks at the picture the agent turns in at the end and names what is w
 
 **Checks:**
 
-- [F3.6: How lines are drawn](../FEATURES.md#f36-how-lines-are-drawn)
-- [F6: The whole picture](../FEATURES.md#f6-the-whole-picture)
+- [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
+- [F6: The whole picture](../features/F6-the-whole-picture.md)
 - [5. The engine routes every line, in plain forms](../DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
 
 **Acceptance:** each round's final pictures go on a review page with a box for the owner's notes beside each, and the notes are read back. Pictures of private briefs stay on the owner's machine.
@@ -110,7 +110,7 @@ How often an agent wanted to state something that no operation could express, an
 
 **Checks:**
 
-- [F1.1: Operations](../FEATURES.md#f11-operations)
+- [F1.1: Operations](../features/F1-drawing-in-steps.md#f11-operations)
 - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 
 **How:** read from the refusals and the agents' own notes in a benchmark round.
@@ -134,8 +134,8 @@ A change request is done right, quickly and cheaply.
 
 **Checks:**
 
-- [F1.1: Operations](../FEATURES.md#f11-operations)
-- [F1.2: Batches](../FEATURES.md#f12-batches)
+- [F1.1: Operations](../features/F1-drawing-in-steps.md#f11-operations)
+- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
 - [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
 
 **Problem set:** the public brief: a draft and 8 change requests, 3 runs per arm ([E2 Iteration](../EXPERIMENTS.md#e2-iteration)).
@@ -160,7 +160,7 @@ A picture of 50 boxes has no defect and a clarity of at least 3 of 5.
 
 **Checks:**
 
-- [F3.6: How lines are drawn](../FEATURES.md#f36-how-lines-are-drawn)
+- [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
 - [6. Every write is checked, and each defect has an owner](../DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
 
 **Problem set:** fictional briefs of 10, 25 and 50 components, 3 runs each, rated blind by the owner ([E4 Scale](../EXPERIMENTS.md#e4-scale)).
@@ -204,8 +204,8 @@ The agent knows it is done from grafical's text output, with at most 1 look at t
 
 **Checks:**
 
-- [F7.2: Counts](../FEATURES.md#f72-counts)
-- [F7.3: Warnings](../FEATURES.md#f73-warnings)
+- [F7.2: Counts](../features/F7-seeing-the-result.md#f72-counts)
+- [F7.3: Warnings](../features/F7-seeing-the-result.md#f73-warnings)
 - [8. Answers are data a script can read](../DESIGNS.md#8-answers-are-data-a-script-can-read)
 
 **Problem set:** the runs of a round; the benchmark harness counts the images each agent opens.
@@ -229,7 +229,7 @@ A loose prompt of about three sentences is enough for Haiku to draw what the own
 
 **Checks:**
 
-- [F7.8: Help](../FEATURES.md#f78-help)
+- [F7.8: Help](../features/F7-seeing-the-result.md#f78-help)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Problem set:** 10 loose prompts about fictional systems (`bench/prompts/intent.yaml`), rated by the owner in person ([E3 Intent](../EXPERIMENTS.md#e3-intent)).
@@ -272,7 +272,7 @@ Opus's score minus Haiku's on the same task is at most 4.
 
 **Checks:**
 
-- [F7.8: Help](../FEATURES.md#f78-help)
+- [F7.8: Help](../features/F7-seeing-the-result.md#f78-help)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Against:** Opus, on the same brief.
@@ -297,7 +297,7 @@ An accepted diagram takes less wall time than each baseline takes for an accepte
 
 **Checks:**
 
-- [F1.2: Batches](../FEATURES.md#f12-batches)
+- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Against:** the three baselines above.
@@ -321,7 +321,7 @@ An accepted diagram costs fewer fresh tokens than each baseline uses for an acce
 
 **Checks:**
 
-- [F1.2: Batches](../FEATURES.md#f12-batches)
+- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Against:** the three baselines above.
@@ -345,7 +345,7 @@ An accepted diagram adds fewer tokens to the agent's conversation than each base
 
 **Checks:**
 
-- [F1.2: Batches](../FEATURES.md#f12-batches)
+- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Against:** the three baselines above.
@@ -369,7 +369,7 @@ An accepted diagram costs less money than each baseline pays for an accepted one
 
 **Checks:**
 
-- [F1.2: Batches](../FEATURES.md#f12-batches)
+- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Against:** the three baselines above.
@@ -393,7 +393,7 @@ A higher share of input is read from the cache than in each baseline that draws 
 
 **Checks:**
 
-- [F1.2: Batches](../FEATURES.md#f12-batches)
+- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Against:** the three baselines above.
@@ -419,7 +419,7 @@ At most 5% of operations are refused, each recovered within 1 retry.
 
 **Checks:**
 
-- [F1.5: Refusals](../FEATURES.md#f15-refusals)
+- [F1.5: Refusals](../features/F1-drawing-in-steps.md#f15-refusals)
 - [7. A refusal gives the facts, and the agent writes the fix](../DESIGNS.md#7-a-refusal-gives-the-facts-and-the-agent-writes-the-fix)
 
 **Limit:** 5%; above 20% is the kill threshold.
@@ -455,7 +455,7 @@ No fact changes that no operation named: a row, an order, a group, a lane or an 
 
 **Checks:**
 
-- [F1.1: Operations](../FEATURES.md#f11-operations)
+- [F1.1: Operations](../features/F1-drawing-in-steps.md#f11-operations)
 - [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
 
 **Condition:** every operation changes only the facts it names ([004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md)).
@@ -472,7 +472,7 @@ No overflow, overlap, line through a box or label collision. Until 2026-10-18 it
 
 **Checks:**
 
-- [F7.4: Check](../FEATURES.md#f74-check)
+- [F7.4: Check](../features/F7-seeing-the-result.md#f74-check)
 - [6. Every write is checked, and each defect has an owner](../DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
 
 **Condition:** no rendered picture has any of the four. Any defect in an output is a bug.
@@ -491,7 +491,7 @@ The same file gives the same SVG bytes and the same PNG pixels on macOS and Linu
 
 **Checks:**
 
-- [F7.5: Render](../FEATURES.md#f75-render)
+- [F7.5: Render](../features/F7-seeing-the-result.md#f75-render)
 - [9. The same file gives the same picture on any machine](../DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
 
 **Condition:** any difference is a failure.
