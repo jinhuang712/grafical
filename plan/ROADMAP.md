@@ -263,7 +263,12 @@ With the owner's approval of its cost first. The owner's budget for stage 1 is $
 
 **Status:** 🟨 (since 2026-10-30)
 
-Drawing reference diagrams with grafical's own commands showed where a picture still looks wrong though no check fails. Built so far: a label sits on its own straight vertical line, `choice` is a small diamond for a line that splits, a footnote's number stays wholly inside or outside a container, and a bar's name keeps clear of passing lines. Two attempts did not land and are in TODO.md (crowded gutters, a diamond's corner). Five more items wait on the owner's choice. Each round's final pictures go on a review page, and the owner's notes decide what comes next.
+Drawing reference diagrams with grafical's own commands showed where a picture still looks wrong though no check fails. Built so far: a label sits on its own straight vertical line, `choice` is a small diamond for a line that splits, a footnote's number stays wholly inside or outside a container, and a bar's name keeps clear of passing lines. Two attempts did not land and wait on the owner's choice:
+
+- [Labels sit close to the lines beside them in a crowded gutter](TODO.md#p2discussion-labels-sit-close-to-the-lines-beside-them-in-a-crowded-gutter)
+- [A diamond's lines leave at its slanted edge a little](TODO.md#p2discussion-a-diamonds-lines-leave-at-its-slanted-edge-a-little)
+
+Each round's final pictures go on a review page, and the owner's notes decide what comes next.
 
 **Delivers:**
 
