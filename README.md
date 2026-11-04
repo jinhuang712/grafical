@@ -97,14 +97,14 @@ Each part and the folder it lives in are in the architecture document, under *Do
 - [specs/ARCHITECTURE.md](specs/ARCHITECTURE.md): the parts and how they connect.
   - How each part works: [the model](specs/model.md), [the file formats](specs/file-formats.md), [placement](specs/placement.md), [routing](specs/routing.md), [text placement](specs/labels.md), [the text measurer](specs/text.md), [the theme](specs/theme.md), [the checker](specs/checks.md), [the renderer](specs/rendering.md) and [how grafical answers](specs/answers.md).
 - [specs/decisions](specs/decisions/README.md): each fork taken, with what was not chosen.
-- [GOALS.md](GOALS.md): the checks that say whether it works, each with its status.
+- [GOALS.md](plan/GOALS.md): the checks that say whether it works, each with its status.
 - [FEATURES.md](FEATURES.md): what it does, and what it will and won't do.
-- [ROADMAP.md](ROADMAP.md): what is done and what comes next.
+- [ROADMAP.md](plan/ROADMAP.md): what is done and what comes next.
 - [GLOSSARY.md](GLOSSARY.md): the words grafical uses, one name for each thing.
 - [EXPERIMENTS.md](EXPERIMENTS.md): how the benchmarks run, and the rules for a result.
 - [AGENTS.md](AGENTS.md): how agents develop in this repository.
 - [GITFLOW.md](GITFLOW.md): the git conventions.
-- [TODO.md](TODO.md): small fixes and follow-ups with no milestone yet.
+- [TODO.md](plan/TODO.md): small fixes and follow-ups with no milestone yet.
 - [CHANGELOG.md](CHANGELOG.md): what changed in each release.
 
 ## License

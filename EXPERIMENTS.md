@@ -2,7 +2,7 @@
 
 > Written 2026-10-11.
 
-How grafical's bets are tested: what each experiment asks, what it measures, how it runs, and how a result turns into a decision. The targets the results are compared with live in [GOALS.md](GOALS.md).
+How grafical's bets are tested: what each experiment asks, what it measures, how it runs, and how a result turns into a decision. The targets the results are compared with live in [GOALS.md](plan/GOALS.md).
 
 ## Hypotheses
 

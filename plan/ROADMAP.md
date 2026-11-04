@@ -4,7 +4,7 @@
 
 ✅ done · 🟨 in progress · ⬜ planned
 
-What each checkpoint delivers is in [FEATURES.md](FEATURES.md), and every exit criterion is a check in [GOALS.md](GOALS.md). The tries, scores and costs of each round are in `bench/results/`.
+What each checkpoint delivers is in [FEATURES.md](../FEATURES.md), and every exit criterion is a check in [GOALS.md](GOALS.md). The tries, scores and costs of each round are in `bench/results/`.
 
 ## Summary
 
@@ -69,21 +69,21 @@ The smallest path from operations to a picture: an agent built the public brief 
 
 **Delivers:**
 
-- [F1.1: Operations](FEATURES.md#f11-operations)
-- [F1.2: Batches](FEATURES.md#f12-batches)
-- [F7.5: Render](FEATURES.md#f75-render)
+- [F1.1: Operations](../FEATURES.md#f11-operations)
+- [F1.2: Batches](../FEATURES.md#f12-batches)
+- [F7.5: Render](../FEATURES.md#f75-render)
 
 ### CP1.3: The target look
 
 **Status:** ✅ (2026-10-11)
 
-The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, against 22 for the first engine: rows not drawn, groups as systems, one column grid and measured rules ([phase1b](bench/results/phase1b.md), [phase1b2](bench/results/phase1b2.md), [phase1b3](bench/results/phase1b3.md)).
+The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, against 22 for the first engine: rows not drawn, groups as systems, one column grid and measured rules ([phase1b](../bench/results/phase1b.md), [phase1b2](../bench/results/phase1b2.md), [phase1b3](../bench/results/phase1b3.md)).
 
 **Delivers:**
 
-- [F3.6: How lines are drawn](FEATURES.md#f36-how-lines-are-drawn)
-- [F4.1: Rows and order](FEATURES.md#f41-rows-and-order)
-- [F5.1: Groups](FEATURES.md#f51-groups)
+- [F3.6: How lines are drawn](../FEATURES.md#f36-how-lines-are-drawn)
+- [F4.1: Rows and order](../FEATURES.md#f41-rows-and-order)
+- [F5.1: Groups](../FEATURES.md#f51-groups)
 
 ### CP1.4: The owner's additions
 
@@ -93,24 +93,24 @@ Lines that end at containers, swimlanes, themes and stylesheets, and the live vi
 
 **Delivers:**
 
-- [F3.5: Ends at a group, a row or a lane](FEATURES.md#f35-ends-at-a-group-a-row-or-a-lane)
-- [F5.4: Swimlanes](FEATURES.md#f54-swimlanes)
-- [F6.4: Themes and stylesheets](FEATURES.md#f64-themes-and-stylesheets)
-- [F7.6: Live viewer](FEATURES.md#f76-live-viewer)
+- [F3.5: Ends at a group, a row or a lane](../FEATURES.md#f35-ends-at-a-group-a-row-or-a-lane)
+- [F5.4: Swimlanes](../FEATURES.md#f54-swimlanes)
+- [F6.4: Themes and stylesheets](../FEATURES.md#f64-themes-and-stylesheets)
+- [F7.6: Live viewer](../FEATURES.md#f76-live-viewer)
 
 ### CP1.5: The vocabulary and stability
 
 **Status:** ✅ (2026-10-12)
 
-The full operation set, `apply`, `show`, `diff` and the help, with the stability rule enforced by tests ([phase2](bench/results/phase2.md)).
+The full operation set, `apply`, `show`, `diff` and the help, with the stability rule enforced by tests ([phase2](../bench/results/phase2.md)).
 
 **Delivers:**
 
-- [F1.1: Operations](FEATURES.md#f11-operations)
-- [F1.2: Batches](FEATURES.md#f12-batches)
-- [F7.1: Show](FEATURES.md#f71-show)
-- [F7.7: Diff](FEATURES.md#f77-diff)
-- [F7.8: Help](FEATURES.md#f78-help)
+- [F1.1: Operations](../FEATURES.md#f11-operations)
+- [F1.2: Batches](../FEATURES.md#f12-batches)
+- [F7.1: Show](../FEATURES.md#f71-show)
+- [F7.7: Diff](../FEATURES.md#f77-diff)
+- [F7.8: Help](../FEATURES.md#f78-help)
 
 **Exit criteria:**
 
@@ -121,7 +121,7 @@ The full operation set, `apply`, `show`, `diff` and the help, with the stability
 
 **Status:** ✅ (2026-10-12)
 
-The first full benchmark round, and its rerun after the line work ([stage1](bench/results/stage1.md)). The MVP bar was not met.
+The first full benchmark round, and its rerun after the line work ([stage1](../bench/results/stage1.md)). The MVP bar was not met.
 
 ### CP1.7: Clearer lines and more diagram types
 
@@ -131,9 +131,9 @@ New line kinds, lines that meet a box on any side, hops and dots, the flowchart 
 
 **Delivers:**
 
-- [F2.1: Kinds and shapes](FEATURES.md#f21-kinds-and-shapes)
-- [F3.6: How lines are drawn](FEATURES.md#f36-how-lines-are-drawn)
-- [F5.1: Groups](FEATURES.md#f51-groups)
+- [F2.1: Kinds and shapes](../FEATURES.md#f21-kinds-and-shapes)
+- [F3.6: How lines are drawn](../FEATURES.md#f36-how-lines-are-drawn)
+- [F5.1: Groups](../FEATURES.md#f51-groups)
 
 ### CP1.8: Discrete output and freer placement
 
@@ -143,14 +143,14 @@ Records in place of prose, `try`, bundled fan-outs, equal heights in a row, room
 
 **Delivers:**
 
-- [F1.3: Trying a change](FEATURES.md#f13-trying-a-change)
-- [F4.3: Columns](FEATURES.md#f43-columns)
-- [F4.4: Steps from another box](FEATURES.md#f44-steps-from-another-box)
-- [F5.5: Walls](FEATURES.md#f55-walls)
-- [F5.6: Notes](FEATURES.md#f56-notes)
-- [F2.4: Marks](FEATURES.md#f24-marks)
-- [F3.3: Weight](FEATURES.md#f33-weight)
-- [F6.2: Legend](FEATURES.md#f62-legend)
+- [F1.3: Trying a change](../FEATURES.md#f13-trying-a-change)
+- [F4.3: Columns](../FEATURES.md#f43-columns)
+- [F4.4: Steps from another box](../FEATURES.md#f44-steps-from-another-box)
+- [F5.5: Walls](../FEATURES.md#f55-walls)
+- [F5.6: Notes](../FEATURES.md#f56-notes)
+- [F2.4: Marks](../FEATURES.md#f24-marks)
+- [F3.3: Weight](../FEATURES.md#f33-weight)
+- [F6.2: Legend](../FEATURES.md#f62-legend)
 
 ### CP1.9: Refusals that name the way out
 
@@ -160,12 +160,12 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 
 **Delivers:**
 
-- [F1.5: Refusals](FEATURES.md#f15-refusals)
-- [F4.1: Rows and order](FEATURES.md#f41-rows-and-order)
-- [F5.2: Copying a group](FEATURES.md#f52-copying-a-group)
-- [F7.3: Warnings](FEATURES.md#f73-warnings)
-- [F7.8: Help](FEATURES.md#f78-help)
-- [F7.9: Guides](FEATURES.md#f79-guides)
+- [F1.5: Refusals](../FEATURES.md#f15-refusals)
+- [F4.1: Rows and order](../FEATURES.md#f41-rows-and-order)
+- [F5.2: Copying a group](../FEATURES.md#f52-copying-a-group)
+- [F7.3: Warnings](../FEATURES.md#f73-warnings)
+- [F7.8: Help](../FEATURES.md#f78-help)
+- [F7.9: Guides](../FEATURES.md#f79-guides)
 
 ## CP2: The MVP bar, measured again
 
@@ -257,8 +257,8 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 
 **Delivers:**
 
-- [F2.1: Kinds and shapes](FEATURES.md#f21-kinds-and-shapes)
-- [F3.6: How lines are drawn](FEATURES.md#f36-how-lines-are-drawn)
+- [F2.1: Kinds and shapes](../FEATURES.md#f21-kinds-and-shapes)
+- [F3.6: How lines are drawn](../FEATURES.md#f36-how-lines-are-drawn)
 
 **Exit criteria:**
 
@@ -273,10 +273,10 @@ The form is not decided with the owner yet, such as one operation for a common e
 
 **Delivers:**
 
-- [F3.4: Numbered steps](FEATURES.md#f34-numbered-steps)
-- [F5.2: Copying a group](FEATURES.md#f52-copying-a-group)
-- [F5.3: Deeper nesting](FEATURES.md#f53-deeper-nesting)
-- [F2.5: Marks by name](FEATURES.md#f25-marks-by-name)
+- [F3.4: Numbered steps](../FEATURES.md#f34-numbered-steps)
+- [F5.2: Copying a group](../FEATURES.md#f52-copying-a-group)
+- [F5.3: Deeper nesting](../FEATURES.md#f53-deeper-nesting)
+- [F2.5: Marks by name](../FEATURES.md#f25-marks-by-name)
 
 **Exit criteria:**
 

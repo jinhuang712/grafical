@@ -10,6 +10,12 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const DECISIONS = "specs/decisions";
+const PLAN = "plan";
+
+/** Where a cited document lives. A citation names the file alone, such as GOALS.md. */
+function located(doc: string): string {
+  return ["GOALS.md", "ROADMAP.md", "TODO.md"].includes(doc) ? join(PLAN, doc) : doc;
+}
 
 /** The files that may cite: the documents, the specs, the code, the tests and the benchmark code. */
 function sources(): string[] {
@@ -21,6 +27,7 @@ function sources(): string[] {
       else if (ext.test(name)) files.push(path);
     }
   };
+  walk(PLAN, /\.md$/);
   walk("specs", /\.md$/);
   walk("src", /\.(ts|yaml|svg)$/);
   walk("test", /\.(ts|yaml|svg)$/);
@@ -59,7 +66,7 @@ function headings(doc: string): Set<string> {
     }
     return out;
   }
-  for (const line of readFileSync(join(ROOT, doc), "utf8").split("\n")) {
+  for (const line of readFileSync(join(ROOT, located(doc)), "utf8").split("\n")) {
     const m = /^#{1,6} (.+)$/.exec(line);
     if (m?.[1]) out.add(cited(m[1]));
   }
@@ -94,7 +101,7 @@ describe("citations of document headings", () => {
       // The decisions' index keeps the old numbers under "Former IDs", and GOALS.md under "Former numbers".
       if (file === join(DECISIONS, "README.md"))
         text = text.slice(0, text.indexOf("## Former IDs"));
-      if (file === "GOALS.md") text = text.slice(0, text.indexOf("## Former numbers"));
+      if (file === located("GOALS.md")) text = text.slice(0, text.indexOf("## Former numbers"));
       for (const m of text.matchAll(/\bD\d{1,2}\b(?!")|\b[Bb]enchmarks? \d|\b[Gg]oal \d\b/g)) {
         left.push(`${file}: ${m[0]}`);
       }

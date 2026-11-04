@@ -1,6 +1,6 @@
 # Goals
 
-Each goal is a check with a number or a test, under the want in [PROPOSAL.md](PROPOSAL.md) that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [EXPERIMENTS.md](EXPERIMENTS.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
+Each goal is a check with a number or a test, under the want in [PROPOSAL.md](../PROPOSAL.md) that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [EXPERIMENTS.md](../EXPERIMENTS.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
 
 A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of the measurement. A goal has an ID that never changes, and code and documents cite it by its name, such as `GOALS.md, "Speed"`.
 
