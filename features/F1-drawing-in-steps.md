@@ -24,7 +24,7 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
   - Every other value is a flag, such as `--label`.
 - `grafical new` takes the title and optionally `--subtitle` · `--note` · `--density` · `--sizing` · `--style`.
 - Every write reports the IDs it changed, then one block for each problem.
-  - A block says what the write is refused for, or what the picture draws poorly (see "Refusals" and "Warnings").
+  - A block says what the write is refused for, or what the picture draws poorly ([F1.5: Refusals](#f15-refusals) and [F7.3: Warnings](F7-seeing-the-result.md#f73-warnings)).
   - A refused write changes nothing.
 - Every command takes `--json`, which prints the same report as JSON.
 - Exit codes:
