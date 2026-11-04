@@ -16,8 +16,6 @@ agent ──command or batch──> command line ──records──> agent
                               └──> renderer ──> SVG ──> PNG
 ```
 
-The commitments the parts must meet are in [DESIGNS.md](../DESIGNS.md), and the forks behind their shape in [specs/decisions](decisions/README.md).
-
 ## How a write moves through the parts
 
 ```text

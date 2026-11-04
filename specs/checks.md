@@ -1,6 +1,6 @@
 # The checker
 
-The checker looks at a laid-out picture and says what is wrong with it, without changing it and without advice. Every write runs it before the file is written, and `check` and `render` run it on the file as it is. What it finds falls into three kinds, by what each costs a reader: defects draw wrong, warnings draw poorly, and counts only say how the picture is drawn. It lives in `src/check/` ([the architecture](ARCHITECTURE.md#the-checker)).
+The checker looks at a laid-out picture and says what is wrong with it, without changing it and without advice. Every write runs it before the file is written, and `check` and `render` run it on the file as it is. What it finds falls into three kinds, by what each costs a reader: defects draw wrong, warnings draw poorly, and counts only say how the picture is drawn. It lives in `src/check/`.
 
 ```text
 laid-out picture
@@ -18,13 +18,13 @@ A write with a defect the agent owns is refused and changes nothing. A defect th
 
 The defects the agent owns:
 
-- `overflow`: text that does not fit its box by the text measurer's test, a lane's label outside its head, or a note over 4 lines.
+- `overflow`: text that does not fit its box · a lane's label outside its head · a note over 4 lines.
 - `missing-glyph`: a character neither bundled font can draw.
 - `mark-covers`: a mark that covers text or another box.
 - `wall-crossed`: a line through a wall that does not allow it.
 - `box-aside`: a box placed by steps wholly beside every box it connects to.
 - `title-blocked`: a group's label that a line comes near.
-- `label-blocked`: a line's label, a step's badge, a wall's label or a note's card with no clear place.
+- `label-blocked`: a line's label or a step's badge or a wall's label or a note's card with no clear place.
 
 The defects the engine owns:
 
@@ -49,7 +49,7 @@ Where drawing would hide something a reader needs, the write is refused as a def
 - A line's label or a step's badge that no gutter on its way holds clear of the other lines is `label-blocked`.
   - The refusal names the line, and the lines across the label as `across`.
   - It also names the borders the label crosses and the gutters it tried, each `<row above>/<row below>`.
-  - Its `next` is `layer move`, `node resize`, `node move`, `edge relabel` and `edge step`.
+  - Its `next` is `layer move` · `node resize` · `node move` · `edge relabel` · `edge step`.
 - A wall's label with no clear place along its wall is `label-blocked` with `is: wall`.
   - It names the wall and the lines and boxes in the way.
   - Its `next` is `wall relabel` and `node move`.
@@ -71,14 +71,14 @@ A warning names something the picture draws poorly. Every write prints every war
 
 | Code | What it names | Detail | `next` |
 |---|---|---|---|
-| `bent-line` | a line with more than two bends | `edge`, `bends`, `skip` | `layer move`, `node move`, `node swap` |
-| `passing-row` | a line through rows between its ends, among their boxes, meeting none | `edge`, `rows` | `layer move`, `node move`, `node swap` |
-| `line-across-group` | a line through a group that holds neither end | `edge`, `groups` | `group order`, `node move`, `node swap` |
-| `tight-lines` | two runs closer than 12 px for over 100 px | `edges`, `over` | `layer move`, `node move`, `node swap` |
-| `crowded-label` | a label with under 8 px of room on two sides | `edge` | `node move`, `node swap`, `edge relabel` |
-| `lonely-box` | a box no line reaches | `node` | `node remove`, `edge add` |
-| `line-per-member` | a group each of whose boxes has a line alike to one end | `group`, `edges` | `edge add`, `edge remove` |
-| `crossing` | a pair of lines that cross | `edges` | `group order`, `layer move`, `node move`, `node swap` |
+| `bent-line` | a line with more than two bends | `edge` · `bends` · `skip` | `layer move` · `node move` · `node swap` |
+| `passing-row` | a line among the boxes of rows between its ends that meets none | `edge` · `rows` | `layer move` · `node move` · `node swap` |
+| `line-across-group` | a line through a group that holds neither end | `edge` · `groups` | `group order` · `node move` · `node swap` |
+| `tight-lines` | two runs closer than 12 px for over 100 px | `edges` · `over` | `layer move` · `node move` · `node swap` |
+| `crowded-label` | a label with under 8 px of room on two sides | `edge` | `node move` · `node swap` · `edge relabel` |
+| `lonely-box` | a box no line reaches | `node` | `node remove` · `edge add` |
+| `line-per-member` | a group each of whose boxes has a line alike to one end | `group` · `edges` | `edge add` · `edge remove` |
+| `crossing` | a pair of lines that cross | `edges` | `group order` · `layer move` · `node move` · `node swap` |
 
 A line that ends at a group, a row or a lane reaches every box in it, so none of those boxes is a `lonely-box`.
 
@@ -98,7 +98,7 @@ The counts record is one line of facts with no threshold, so that the agent can 
   - Lines that share a port are one bundle and never a pair.
   - A pair is a place: two lines tight in two places count twice.
 - `crowded`: the labels with under 8 px of room on two or more of their four sides.
-  - Room is measured to the sides of boxes, groups and bands, and to other lines and labels.
+  - Room is measured to the sides of boxes · groups · bands and to other lines · labels.
   - Lanes and walls do not count.
 
 `crossings` counts points, so a pair that crosses twice counts twice there and is one `crossing` warning.

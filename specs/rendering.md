@@ -29,7 +29,7 @@ The writer adds the marks of a route as it draws it, so the routes, the checks a
 - **Dots.** A dot marks every point where one line starts or stops running along another.
   - Its radius is the line's width plus 1.5 px.
 - **Curves.** With `paint.edge.shape: curved`, each corner is as round as half of each of its two runs.
-  - The curve is checked at three points against boxes, labels, step badges and other lines.
+  - The curve is checked at three points against boxes · labels · step badges · other lines.
   - It is halved while it comes within 4 px of one.
   - It is never less round than the theme's corner radius, or half of each run when that is smaller.
   - The corner radius is 6 px in `default` and `dark`, and 4 px in `print`.
@@ -54,6 +54,6 @@ The command line reads a mark's file and gives its bytes to the renderer. It rea
 
 - A path that is absolute or leaves the folder is refused as `mark-file-outside`.
 - A file that is gone is refused as `mark-file-not-found`, and one whose hash differs as `mark-file-changed`.
-- An SVG with a script, a `foreignObject`, an event handler or an outside reference is refused as `mark-file-unsafe`.
+- An SVG with a script or a `foreignObject` or an event handler or an outside reference is refused as `mark-file-unsafe`.
 - So is a file with no `<svg>` at all.
 - A PNG whose signature is wrong is refused as `mark-file-unreadable`.

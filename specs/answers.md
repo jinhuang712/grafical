@@ -1,6 +1,6 @@
 # How grafical answers
 
-The reader of grafical's answers is an agent, and often a script around it. So everything grafical prints about a diagram is a record a script can read: an outcome, a block for each problem, and facts and counts. The only sentences are each code's fixed description, and the help, which is documentation. The answer says what happened and which commands can change it, and leaves the change to the agent. The command line builds every answer, from the records the other parts return. It lives in `src/cli/` ([the architecture](ARCHITECTURE.md#the-command-line)).
+The reader of grafical's answers is an agent, and often a script around it. So everything grafical prints about a diagram is a record a script can read: an outcome, a block for each problem, and facts and counts. The only sentences are each code's fixed description, and the help, which is documentation. The answer says what happened and which commands can change it, and leaves the change to the agent. The command line builds every answer, from the records the other parts return. It lives in `src/cli/`.
 
 ## A command's answer
 
@@ -41,7 +41,7 @@ A problem is an `error`, which could not be read or applied; a `defect`, which w
 - `source:` what caused it, which a warning never has.
 - `detail:` the facts one per line, or `detail: -` when there are none.
 - `next:` the names of the commands that can change it in the order the help lists them, or `-`.
-  - A code with several cases has a list for each, such as `label-blocked` for a line, a wall or a note.
+  - A code with several cases has a list for each, such as `label-blocked` for a line or a wall or a note.
   - A test holds every name to a real command.
 
 The detail starts with `field` and `found`, or `owner` for a defect, and the other facts follow in one fixed order. An empty value or list prints `-`, and a fact that is absent is left out. A key for several things holds a list even of one: `likely`, `near`, `edges`, `ends`, `nodes`, `rows`, `groups`, `lanes`, `between`, `across`, `chain`, `clear`, `gutters`, `allowed`, `takes` and `chars`. Several ids under a key for one thing move to its plural, such as `node` to `nodes`.

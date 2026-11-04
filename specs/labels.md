@@ -1,6 +1,6 @@
 # Text placement
 
-Text placement seats every piece of text that is not inside a box: the labels of lines, the badges of numbered steps, group titles, notes, the labels of walls, bands, bars and lanes, and the legend. It never moves a box, and apart from a band's label it never moves a line. Where a text has no clear place, the write is refused, so that the agent changes the facts instead of the picture hiding something. It lives in `src/layout/` ([the architecture](ARCHITECTURE.md#text-placement)).
+Text placement seats every piece of text that is not inside a box: the labels of lines, the badges of numbered steps, group titles, notes, the labels of walls, bands, bars and lanes, and the legend. It never moves a box, and apart from a band's label it never moves a line. Where a text has no clear place, the write is refused, so that the agent changes the facts instead of the picture hiding something. It lives in `src/layout/`.
 
 ## How a text finds its place
 
@@ -79,11 +79,11 @@ A group's title sits where the agent states, in room placement has already made 
 
 | Place | Where the label sits |
 |---|---|
-| `top-left`, `top`, `top-right` | in the head, 12 px down and 16 px in |
-| `bottom-left`, `bottom`, `bottom-right` | in a foot below the last row |
-| `outside-top`, `outside-bottom` | centred just outside the box |
-| `left`, `right` | in a strip inside, at the middle height |
-| `outside-left`, `outside-right` | 12 px past the side, at the middle height |
+| `top-left` · `top` · `top-right` | in the head, 12 px down and 16 px in |
+| `bottom-left` · `bottom` · `bottom-right` | in a foot below the last row |
+| `outside-top` · `outside-bottom` | centred just outside the box |
+| `left` · `right` | in a strip inside, at the middle height |
+| `outside-left` · `outside-right` | 12 px past the side, at the middle height |
 
 A title never wraps, and its sublabel follows it 10 px apart, within the same clear span.
 
@@ -97,8 +97,8 @@ A note is a card beside its target, joined by a dotted line. With `footnote`, it
 
 A card wraps at 160 px and tries its places in a fixed order, 16 px from its target and then 32 px:
 
-- **Beside a box or a group:** first on the right and then on the left, each centred, top-aligned and bottom-aligned.
-  - Then below and then above, each centred, left-aligned and right-aligned.
+- **Beside a box or a group:** first on the right and then on the left, each centred · top-aligned · bottom-aligned.
+  - Then below and then above, each centred · left-aligned · right-aligned.
 - **Beside a line:** at the middle, a quarter and three quarters of its longest run.
   - Below or above a horizontal run, and right or left of a vertical one.
 

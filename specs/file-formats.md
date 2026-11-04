@@ -1,6 +1,6 @@
 # The file formats
 
-grafical reads and writes two kinds of file: a diagram file, which holds the facts of one diagram, and a stylesheet, which holds a look that many diagrams can share. Both are YAML, both start with their format version, and both are written in a fixed key order, so that the same facts always give the same bytes and a change reads as a small diff. [The model](ARCHITECTURE.md#the-model) reads and writes them, and [the theme](ARCHITECTURE.md#the-theme) owns the stylesheet's values.
+grafical reads and writes two kinds of file: a diagram file, which holds the facts of one diagram, and a stylesheet, which holds a look that many diagrams can share. Both are YAML, both start with their format version, and both are written in a fixed key order, so that the same facts always give the same bytes and a change reads as a small diff. The model reads and writes them, and the theme owns the stylesheet's values.
 
 ## The diagram file
 
@@ -11,18 +11,18 @@ grafical  title  subtitle  note  density  sizing  style  legend
 layers  nodes  groups  lanes  columns  walls  notes  edges
 ```
 
-- `subtitle`, `note`, `sizing`, `style` and `legend` appear only when set.
+- `subtitle` · `note` · `sizing` · `style` · `legend` appear only when set.
   - So do the lists after `layers`, except `edges`.
   - `legend` holds the words for each line style, then `weights` and `marks`.
   - Each is sorted by name, so the same words give the same file whatever order they were set in.
-- A row under `layers` has `id`, `label`, `lane`, `look` and `nodes`.
-  - A box has `id`, `label`, `kind`, `sublabel`, `size`, `accent`, `align`, `group`, `lane` and `column`.
+- A row under `layers` has `id` · `label` · `lane` · `look` · `nodes`.
+  - A box has `id` · `label` · `kind` · `sublabel` · `size` · `accent` · `align` · `group` · `lane` · `column`.
 - The top-level `nodes` list holds the boxes in no row, each with `from` and its steps.
-- A group has `id`, `label`, `sublabel`, `in` and `titleAt`.
+- A group has `id` · `label` · `sublabel` · `in` · `titleAt`.
   - A lane has `id` and `label`, and a column `id`.
-  - A wall has `id`, `between`, `and`, `allow` and `label`.
+  - A wall has `id` · `between` · `and` · `allow` · `label`.
   - A note has `on`, `text` and `footnote`.
-- A line has `id`, `from`, `to`, `kind`, `label`, `both`, `pass`, `accent`, `weight` and `step`.
+- A line has `id` · `from` · `to` · `kind` · `label` · `both` · `pass` · `accent` · `weight` · `step`.
   - `both`, `pass` and `accent` appear only when true.
   - `weight` appears only when it is not thin, and `step` only when the line is numbered.
 - A field that holds its default is left out.

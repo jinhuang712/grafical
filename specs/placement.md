@@ -1,6 +1,6 @@
 # Placement
 
-Placement turns the facts of a diagram into the place and size of every box. The agent states only facts: which row a box sits in, its order in the row, its group, its lane, its column and what it aligns to. Placement works out the rest, from which column of the grid each box takes to how tall each row is and how big the canvas is. It stores nothing: every write places the whole diagram again from its facts. It routes no line and seats no label, but it leaves the room both need. It lives in `src/layout/` ([the architecture](ARCHITECTURE.md#placement)).
+Placement turns the facts of a diagram into the place and size of every box. The agent states only facts: which row a box sits in, its order in the row, its group, its lane, its column and what it aligns to. Placement works out the rest, from which column of the grid each box takes to how tall each row is and how big the canvas is. It stores nothing: every write places the whole diagram again from its facts. It routes no line and seats no label, but it leaves the room both need. It lives in `src/layout/`.
 
 ## How a diagram is placed
 
@@ -48,8 +48,8 @@ column      0       1       2
 The grid is built in four steps:
 
 1. **Constraints.** Each box must lie left of the next in its row.
-   - Lanes, groups, column facts, walls and boxes shared by groups add more constraints of the same kind.
-2. **Joins.** Boxes in different rows are joined into one column best first: alignments, then steps, then lines.
+   - Lanes · groups · column facts · walls · boxes shared by groups add more constraints of the same kind.
+2. **Joins.** Boxes in different rows are joined into one column best first: alignments → steps → lines.
    - A line's join scores 10 when it spans one row and `max(1, 6 − span)` when it spans more.
    - It scores 4 more when the box has no other partner and 2 more for the median of its partners.
    - It scores 3 more for each end that continues a straight line.
@@ -109,11 +109,11 @@ A group's title takes room by the place the agent states for it, and the engine 
 
 | Place | Room it takes |
 |---|---|
-| `top-left`, `top`, `top-right`, or no place | a head of 40 px above the first row |
-| `bottom-left`, `bottom`, `bottom-right` | a foot of 40 px below the last row; the top keeps only its 24 px padding |
-| `outside-top`, `outside-bottom` | 40 px outside the box |
-| `left`, `right` | a strip inside, as wide as the label plus 4 px |
-| `outside-left`, `outside-right` | room past that side only |
+| `top-left` · `top` · `top-right`, or no place | a head of 40 px above the first row |
+| `bottom-left` · `bottom` · `bottom-right` | a foot of 40 px below the last row; the top keeps only its 24 px padding |
+| `outside-top` · `outside-bottom` | 40 px outside the box |
+| `left` · `right` | a strip inside, as wide as the label plus 4 px |
+| `outside-left` · `outside-right` | room past that side only |
 
 A head may lie partly over the tracks of the gutter above when no line comes near it. A title outside one side reaches out on that side only, so the picture moves off its centre line rather than mirroring the room on the other side.
 
@@ -146,9 +146,9 @@ A line's label counts as a track. A gutter takes the smallest of its density's f
 
 | Density | Gutter heights (px) | Track pitch | Box gap | Margin |
 |---|---|---|---|---|
-| `compact` | 32, 48, 64, 88, 120 | 12 | 24 | 24 |
-| `normal` | 40, 56, 72, 96, 128 | 12 | 32 | 32 |
-| `airy` | 56, 80, 104, 136, 168 | 16 | 48 | 40 |
+| `compact` | 32 · 48 · 64 · 88 · 120 | 12 | 24 | 24 |
+| `normal` | 40 · 56 · 72 · 96 · 128 | 12 | 32 | 32 |
+| `airy` | 56 · 80 · 104 · 136 · 168 | 16 | 48 | 40 |
 
 Density changes nothing else.
 

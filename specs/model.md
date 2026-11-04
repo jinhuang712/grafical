@@ -1,6 +1,6 @@
 # The model
 
-The model holds the facts of a diagram and is the only part that changes them. An agent never edits the file: it sends operations, and the model turns them into a new diagram, or refuses them and changes nothing. It also checks that every diagram it makes can be laid out, and it can say how two diagrams differ as operations. It never computes a position, which is the layout's work. It lives in `src/model/` ([the architecture](ARCHITECTURE.md#the-model)).
+The model holds the facts of a diagram and is the only part that changes them. An agent never edits the file: it sends operations, and the model turns them into a new diagram, or refuses them and changes nothing. It also checks that every diagram it makes can be laid out, and it can say how two diagrams differ as operations. It never computes a position, which is the layout's work. It lives in `src/model/`.
 
 ## A write, from operations to file
 

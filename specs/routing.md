@@ -1,6 +1,6 @@
 # Routing
 
-Routing draws every line once the boxes have their places. A line is made of horizontal and vertical runs: across the gutters between rows, and down through the gaps between boxes. It never runs through a box. The agent says only which two things a line joins. The router picks everything else: the side the line leaves and enters, its place on each side, the corridor it runs down and the track it takes in each gutter. Every value lies on a 4 px grid and every tie has a fixed rule, so the same placement always gives the same routes. It lives in `src/layout/` ([the architecture](ARCHITECTURE.md#routing)).
+Routing draws every line once the boxes have their places. A line is made of horizontal and vertical runs: across the gutters between rows, and down through the gaps between boxes. It never runs through a box. The agent says only which two things a line joins. The router picks everything else: the side the line leaves and enters, its place on each side, the corridor it runs down and the track it takes in each gutter. Every value lies on a 4 px grid and every tie has a fixed rule, so the same placement always gives the same routes. It lives in `src/layout/`.
 
 ## The steps
 
@@ -50,7 +50,7 @@ A box with many lines on one side would need a port for each, and the lines woul
 - Three or more such lines always bundle.
   - Two bundle only when the side has more lines than ports 16 px apart.
 - A line that carries something of its own never joins a bundle.
-  - That is a labelled line, a numbered line, a two-way line, a self-loop or a line to a container.
+  - That is a labelled line · a numbered line · a two-way line · a self-loop · a line to a container.
 - Two or more unlabelled lines of one style into one crowded side of a target share one port as a fan-in.
   - A two-way line may join a fan-in.
 
