@@ -103,7 +103,6 @@ Each part and the folder it lives in are in the architecture document, under *Do
 - [GLOSSARY.md](GLOSSARY.md): the words grafical uses, one name for each thing.
 - [EXPERIMENTS.md](EXPERIMENTS.md): how the benchmarks run, and the rules for a result.
 - [AGENTS.md](AGENTS.md): how agents develop in this repository.
-- [GITFLOW.md](GITFLOW.md): the git conventions.
 - [TODO.md](plan/TODO.md): small fixes and follow-ups with no milestone yet.
 - [CHANGELOG.md](CHANGELOG.md): what changed in each release.
 
