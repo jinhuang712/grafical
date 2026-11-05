@@ -114,10 +114,11 @@ Roadmap
 │   │   ├── ⬜ CP3.5.2: Measure the rate in a round
 │   │   ├── ⬜ CP3.5.3: Find where Haiku's tokens go
 │   │   └── ⬜ CP3.5.4: Cut the cost of a first draft
-│   └── ⬜ CP3.6: The MVP bar
-│       ├── ⬜ CP3.6.1: Scan transcripts for placement
-│       ├── ⬜ CP3.6.2: Run Opus at xhigh effort
-│       └── ⬜ CP3.6.3: Private reference brief
+│   └── 🟨 CP3.6: The MVP bar
+│       ├── ⬜ CP3.6.1: Measure the context added
+│       ├── ✅ CP3.6.2: Run Opus at xhigh effort
+│       ├── ⬜ CP3.6.3: Private reference brief
+│       └── ⬜ CP3.6.4: Copy reference pictures
 ├── ⬜ CP4: Release 0.1.0 — grafical on npm
 │   └── ⬜ CP4.1: The npm package
 │       ├── ⬜ CP4.1.1: A package that can be published
@@ -976,7 +977,7 @@ Diagrams with no container.
 
 **Exit criteria:**
 
-- **Benchmarks**
+- **Do not hold the release**
   - [B4: Verifiability](GOALS.md#b4-verifiability)
 
 #### CP3.1.1: State machine
@@ -1005,8 +1006,8 @@ Diagrams that show what belongs together and who owns it.
 
 **Exit criteria:**
 
-- **Benchmarks**
-  - [B5: Intent](GOALS.md#b5-intent)
+- **Do not hold the release**
+  - [M3: Better every round](GOALS.md#m3-better-every-round)
 
 #### CP3.2.1: Architecture
 
@@ -1028,7 +1029,7 @@ Diagrams that follow a request or a message across systems.
 
 **Exit criteria:**
 
-- **Benchmarks**
+- **Do not hold the release**
   - [B1: Iteration](GOALS.md#b1-iteration)
 
 #### CP3.3.1: Data flow
@@ -1063,7 +1064,7 @@ A picture of about 50 boxes that a reader can follow.
 
 **Exit criteria:**
 
-- **Benchmarks**
+- **Do not hold the release**
   - [B2: Scale](GOALS.md#b2-scale)
 
 #### CP3.4.1: 10 boxes
@@ -1094,9 +1095,9 @@ The refusals of the private reference brief were mostly `title-blocked`. Haiku s
 
 - **Comparisons**
   - [C2: Time](GOALS.md#c2-time)
-  - [C3: Token use](GOALS.md#c3-token-use)
   - [C5: Cost](GOALS.md#c5-cost)
-- **Thresholds**
+- **Do not hold the release**
+  - [C3: Token use](GOALS.md#c3-token-use)
   - [T1: Operation errors](GOALS.md#t1-operation-errors)
 
 #### CP3.5.1: Fewer blocked labels
@@ -1142,7 +1143,7 @@ Spend less on what that split shows.
 
 ### CP3.6: The MVP bar
 
-**Status:** ⬜
+**Status:** 🟨
 
 A round with the owner's approval of its cost first. The owner's budget for stage 1 is $20, mostly on Haiku. Opus runs only for the baselines and the gap between models, and both get the same prompt, word for word. The private reference brief's runs stay on the owner's machine, and only numbers are committed.
 
@@ -1150,25 +1151,24 @@ A round with the owner's approval of its cost first. The owner's budget for stag
 
 - **Objectives**
   - [O1: The MVP bar](GOALS.md#o1-the-mvp-bar)
-  - [O2: No placement by the agent](GOALS.md#o2-no-placement-by-the-agent)
-- **Benchmarks**
-  - [B3: Faithfulness](GOALS.md#b3-faithfulness)
+  - [O4: Copy a picture, better](GOALS.md#o4-copy-a-picture-better)
 - **Comparisons**
   - [C1: Model gap](GOALS.md#c1-model-gap)
+- **Do not hold the release**
   - [C4: Context added](GOALS.md#c4-context-added)
   - [C7: Beats the strongest model alone](GOALS.md#c7-beats-the-strongest-model-alone)
 
-#### CP3.6.1: Scan transcripts for placement
+#### CP3.6.1: Measure the context added
 
 **Status:** ⬜
 
-A scan of the transcripts for placement by the agent, and the context each diagram adds.
+A scan of the transcripts for the context each diagram adds.
 
 #### CP3.6.2: Run Opus at xhigh effort
 
-**Status:** ⬜
+**Status:** ✅ (reported on 2026-11-05)
 
-A run of Opus at xhigh effort drawing directly.
+A run of Opus at xhigh effort drawing directly, rated blind by the owner.
 
 #### CP3.6.3: Private reference brief
 
@@ -1176,11 +1176,17 @@ A run of Opus at xhigh effort drawing directly.
 
 The round on the private reference brief.
 
+#### CP3.6.4: Copy reference pictures
+
+**Status:** ⬜
+
+Haiku redraws each reference picture: [Choose the reference pictures](TODO.md#p2task-choose-the-reference-pictures).
+
 ## CP4: Release 0.1.0
 
 **Status:** ⬜
 
-Publish `grafical` on npm once every goal meets its target. A recorded decision may recalibrate any target except the MVP bar.
+Publish `grafical` on npm once [O1: The MVP bar](GOALS.md#o1-the-mvp-bar) is met. A recorded decision may recalibrate any target except the MVP bar.
 
 **Exit criteria:**
 

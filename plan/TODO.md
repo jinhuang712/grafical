@@ -154,6 +154,20 @@
 - next: the owner reconsiders "places are facts" if steps grow larger or finer or more common
 - related: [031. Steps from another box](../specs/decisions/031-steps-from-another-box.md)
 
+### [P2][DISCUSSION] How freely an agent can adjust a picture
+
+- description:
+  - A model that draws directly can adjust a picture to the pixel.
+  - grafical is not that free yet, and the owner sees much room to improve.
+  - Option one keeps places as facts and turns each gap into a new discrete fact.
+  - Option two adds a small adjustment within one cell of the grid.
+  - Option three allows adjustment to the pixel.
+  - [M1: Enough to say](GOALS.md#m1-enough-to-say) could count the gaps.
+- created: 2026-11-05
+- status: HALT
+- found: choosing what to measure on 2026-11-05
+- next: the owner reopens this once the documents are settled
+
 ### [P2][DISCUSSION] One word for two steps
 
 - description:
@@ -287,6 +301,15 @@
 - created: 2026-11-05
 - status: OPEN
 - next: measure where Haiku's tokens go in a first draft
+
+### [P2][TASK] Choose the reference pictures
+
+- description:
+  - [O4: Copy a picture, better](GOALS.md#o4-copy-a-picture-better) needs a fixed set of pictures drawn by others.
+  - The benchmark harness cannot give an agent a picture to copy yet.
+- created: 2026-11-05
+- status: OPEN
+- next: the owner picks the pictures
 
 ### [P2][TASK] A corner mark is not checked against the lines near it
 

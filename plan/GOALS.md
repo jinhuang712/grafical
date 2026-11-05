@@ -2,6 +2,8 @@
 
 Each goal is a check with a number or a test, listed by its kind with the want of the proposal that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [EXPERIMENTS.md](../EXPERIMENTS.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
 
+[O1: The MVP bar](#o1-the-mvp-bar) alone says whether grafical succeeds. The constraints must always hold. Every other goal is recorded to find causes and decides nothing.
+
 A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of the measurement. A goal has an ID that never changes, and code and documents cite it by its name, such as `[T2: Speed](#t2-speed)`.
 
 ## Summary
@@ -9,24 +11,23 @@ A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of t
 ```
 Goals
 ├── Objectives
-│   ├── ❌ O1: The MVP bar — Haiku, with only the command line and its help, meets the main checks
-│   └── ⬜ O2: No placement by the agent — no transcript works out a position
+│   ├── ❌ O1: The MVP bar — cheaper · faster · no strong model needed · copies a picture and beats it
+│   └── ⬜ O4: Copy a picture, better — an agent redraws someone's picture and it looks better
 ├── Measures
 │   ├── ⬜ M1: Enough to say — what an agent wanted to state and no operation could
-│   └── M2: Cache hit rate — 90.2% of input read from the cache on 2026-10-18
+│   ├── M2: Cache hit rate — 90.2% of input read from the cache on 2026-10-18
+│   └── M3: Better every round — the owner's blind rating, 24 of 25 on 2026-10-12
 ├── Benchmarks
 │   ├── ✅ B1: Iteration — a change request done right, fast and cheap
 │   ├── ⬜ B2: Scale — a clear picture at 50 boxes
-│   ├── ⬜ B3: Faithfulness — nothing invented, little missing
-│   ├── ❌ B4: Verifiability — few looks at the picture
-│   └── ✅ B5: Intent — a loose prompt is enough
+│   └── ❌ B4: Verifiability — few looks at the picture
 ├── Comparisons
 │   ├── ✅ C1: Model gap — Opus against Haiku
 │   ├── ❌ C2: Time — less than the same model drawing directly
 │   ├── ❌ C3: Token use — fewer fresh tokens than the same model drawing directly
 │   ├── ⬜ C4: Context added — less than the same model drawing directly
 │   ├── ❌ C5: Cost — less than the same model drawing directly
-│   └── ⬜ C7: Beats the strongest model alone — Haiku with grafical against Opus at xhigh effort
+│   └── ✅ C7: Beats the strongest model alone — Haiku with grafical against Opus at xhigh effort
 ├── Thresholds
 │   ├── ❌ T1: Operation errors — at most 5% of operations refused
 │   └── ✅ T2: Speed — 50 ms an operation, 400 ms a command
@@ -42,14 +43,14 @@ Goals
 
 #### O1: The MVP bar
 
-Set by the owner on 2026-10-13 ([What makes grafical good?](../PHILOSOPHY.md#what-makes-grafical-good)). Haiku uses only the command line and its help, draws with zero mechanical defects and meets the targets of six goals:
+Set by the owner on 2026-10-13 and changed on 2026-11-05 ([What makes grafical good?](../PHILOSOPHY.md#what-makes-grafical-good)). Haiku uses only the command line and its help, draws with zero mechanical defects and meets the targets of four goals:
 
-- [B1: Iteration](#b1-iteration)
-- [R1: Stability](#r1-stability)
+- [C5: Cost](#c5-cost)
+- [C2: Time](#c2-time)
 - [C1: Model gap](#c1-model-gap)
-- [T1: Operation errors](#t1-operation-errors)
-- [R3: Determinism](#r3-determinism)
-- [T2: Speed](#t2-speed)
+- [O4: Copy a picture, better](#o4-copy-a-picture-better)
+
+[M3: Better every round](#m3-better-every-round) is the fifth thing the owner watches, and it has no line to pass.
 
 **Want:** every want of the proposal, as the headline.
 
@@ -58,30 +59,31 @@ Set by the owner on 2026-10-13 ([What makes grafical good?](../PHILOSOPHY.md#wha
 - [F3: Editing](../features/F3-editing.md)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
-**Acceptance:** those six goals are met in one round on the private reference brief, and the round has no engine-owned defect.
+**Acceptance:** those four goals are met in one round that includes the private reference brief, every constraint holds, and the round has no engine-owned defect.
 
-**Status:** ❌ not met on 2026-10-18. In round `p1g` [B1: Iteration](#b1-iteration) was met, [T1: Operation errors](#t1-operation-errors) was not, and one draft had an engine-owned defect (`bench/results/p1g-stage1.md`).
+**Status:** ❌ not met on 2026-10-18. In round `p1g` [C2: Time](#c2-time) and [C5: Cost](#c5-cost) were not met, and one draft had an engine-owned defect (`bench/results/p1g-stage1.md`). [O4: Copy a picture, better](#o4-copy-a-picture-better) has not run.
 
-#### O2: No placement by the agent
+#### O4: Copy a picture, better
 
-No transcript has the agent work out a position or write a script to lay out the picture.
+Given a picture someone else drew, an agent redraws it with grafical, shows the same content and looks better than the original.
 
-**Want:** Never place a box by hand.
+**Want:** A picture that is complete and clear at once.
 
 **Checks:**
 
 - [F2: Layout](../features/F2-layout.md)
+- [F4: Look](../features/F4-look.md)
 - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 
-**Acceptance:** the benchmark harness scans every grafical transcript of a round, and finds none.
+**Acceptance:** on a fixed set of reference pictures, Haiku redraws each one with the same content, and the owner rates the redrawing above the original. The time each takes is recorded with no limit. The pictures stay outside the repository and only scores are committed, since their licenses are not known.
 
-**Status:** ⬜ not measured.
+**Status:** ⬜ not run. Open in [Choose the reference pictures](TODO.md#p2task-choose-the-reference-pictures).
 
 ### Measures
 
 #### M1: Enough to say
 
-How often an agent wanted to state something that no operation could express, and drew something else or gave up. The first measured round sets a target.
+How often an agent wanted to state something that no operation could express, and drew something else or gave up.
 
 **Want:** Never place a box by hand.
 
@@ -121,6 +123,27 @@ M2 = cache reads / (uncached input + cache writes + cache reads)
 ```
 
 **Last value:** 90.2% for Haiku with grafical on 2026-10-18 (round `p1g`), the mean of 3 first drafts of the public brief.
+
+#### M3: Better every round
+
+The pictures keep getting better, compared with the round before and not with another tool.
+
+**Want:** A picture that is complete and clear at once.
+
+**Checks:**
+
+- [F4: Look](../features/F4-look.md)
+- [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
+
+**How:** the owner rates each round's first drafts of the public brief blind, on the page `pnpm bench gallery` makes.
+
+**Formula:**
+
+```
+M3 = mean owner rating of Haiku's first drafts of the public brief (of 25), per round
+```
+
+**Last value:** 24 of 25 on 2026-10-12.
 
 ### Benchmarks
 
@@ -173,30 +196,9 @@ kill = a defect at 25 boxes
 
 **Last score:** ⬜ not shown at 50 boxes. On 2026-10-12 all 9 drafts had no defect, and the 50-component drafts scored a clarity of 5, 5 and 4. But Haiku merged that brief into 15 to 19 boxes, so no picture of 50 boxes was judged. On 2026-10-18 one draft drew 51 boxes, with 174 crossings and an engine-owned defect; its clarity was not rated.
 
-#### B3: Faithfulness
-
-The picture invents no component and misses at most 1 important item of the brief.
-
-**Want:** A picture that is complete and clear at once.
-
-**Checks:** [3. The engine never chooses for the agent](../DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
-
-**Problem set:** the briefs of each first-draft round ([E1 First draft](../EXPERIMENTS.md#e1-first-draft)), checked against the judges' checklist.
-
-**Formula:**
-
-```
-invented = components in the draft that the brief does not name
-missing  = important items of the brief that the draft does not show
-target   = invented = 0, missing <= 1
-kill = any invented component
-```
-
-**Last score:** ⬜ not measured as a count.
-
 #### B4: Verifiability
 
-The agent knows it is done from grafical's text output, with at most 1 look at the picture per first draft and none per change. Only taste and faithfulness need a judge, and every other check is mechanical.
+The agent knows it is done from grafical's text output, with at most 1 look at the picture per first draft and none per change. Only taste needs the owner, and every other check is mechanical.
 
 **Want:** Fix one thing without losing the rest.
 
@@ -218,29 +220,6 @@ kill = the agent must look at the picture after each step
 ```
 
 **Last score:** ❌ not met on 2026-10-18 (round `p1g`), closer: drafts looked once, and changes 0 to 0.3 times per step on average.
-
-#### B5: Intent
-
-A loose prompt of about three sentences is enough for Haiku to draw what the owner meant.
-
-**Want:** Get a good picture from a small model.
-
-**Checks:**
-
-- [F7.1: Help](../features/F7-help.md#f71-help)
-- [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
-
-**Problem set:** 10 loose prompts about fictional systems (`bench/prompts/intent.yaml`), rated by the owner in person ([E3 Intent](../EXPERIMENTS.md#e3-intent)).
-
-**Formula:**
-
-```
-B5 = drawings the owner accepts without changes / 10
-target = at least 7 of 10
-kill = fewer than 5 of 10
-```
-
-**Last score:** ✅ 9 of 10 on 2026-10-12.
 
 ### Comparisons
 
@@ -404,7 +383,7 @@ C7 = mean owner rating of Haiku with grafical (of 25) - mean owner rating of Opu
 target = above 0
 ```
 
-**Last result:** ⬜ not run at xhigh effort. On 2026-10-12 at the default thinking budget: 24 against 5 of 25.
+**Last result:** ✅ met by the owner's report on 2026-11-05: in a blind rating Haiku with grafical was far above Opus at xhigh effort drawing directly. The scores were not recorded. On 2026-10-12 at the default thinking budget: 24 against 5 of 25.
 
 ### Thresholds
 
