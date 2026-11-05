@@ -94,16 +94,6 @@
 - next: the owner decides whether it becomes an agent defect
 - related: [032. Who chose is punished](../specs/decisions/032-who-chose-is-punished.md)
 
-### [P2][DISCUSSION] Steps from another box are the nearest thing to a position
-
-- description:
-  - Steps from another box are small whole numbers on the grid and a fact like a row.
-  - They are also the nearest grafical has come to a position.
-- created: 2026-10-14
-- status: HALT
-- next: the owner reconsiders "places are facts" if steps grow larger or finer or more common
-- related: [031. Steps from another box](../specs/decisions/031-steps-from-another-box.md)
-
 ### [P2][DISCUSSION] How freely an agent can adjust a picture
 
 - description:
@@ -155,18 +145,6 @@
 - next: the owner chooses whether `decision` needs this at all
 - related: [052. A choice is a small diamond](../specs/decisions/052-a-choice-is-a-small-diamond.md)
 
-### [P2][DISCUSSION] A fan-out splits at two heights
-
-- description:
-  - Three unlabelled lines from one box to three boxes below split from their trunk at two heights.
-  - An org chart draws one bar instead.
-  - The split is on purpose since a trunk with branches on both sides would meet them in a junction that reads as a crossing.
-  - One bar needs the owner to change that rule, for example where a junction dot marks the meeting.
-- created: 2026-10-15
-- status: HALT
-- next: the owner chooses whether to change the rule
-- related: [012. A target picture with measured rules](../specs/decisions/012-a-target-picture-with-measured-rules.md)
-
 ### [P2][DISCUSSION] Labels sit close to the lines beside them in a crowded gutter
 
 - description:
@@ -207,35 +185,5 @@
   - Two states with a line each way draw as two long parallel lines.
   - The return line of one pair crossed a self-loop on the box it returns to.
   - The lines that leave and enter a box are not kept clear of its self-loop.
-- created: 2026-10-30
-- status: OPEN
-
-### [P2][TASK] Help pages trip agents on three fields
-
-- description:
-  - One agent guessed three fields wrong in one session and was refused at once each time.
-  - A box placed with `align` also needs `first` or `last` or `before` or `after`, and only the refusal says so.
-  - `group title` takes `at`, and an agent that wrote `place` was refused with `likely: at`.
-  - A label with a comma in a batch without quotes is refused as `unknown-field` or `unquoted-text`.
-  - `node add --help` and `group title --help` could show each in their batch line.
-- created: 2026-10-30
-- status: OPEN
-
-### [P2][IDEA] Too many heavy lines draw a warning
-
-- description:
-  - A main path stands out only against thin lines.
-  - A warning could fire when more than three lines or a third of all lines are heavier than `thin`.
-- created: 2026-10-15
-- status: OPEN
-- related: [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
-
-### [P2][IDEA] A staircase and the order of the row below it go together
-
-- description:
-  - `node move --from <box> --down 1 --left 1` stairs a chain of states across a group.
-  - The order of the row below it then decides the crossings.
-  - Changing a state diagram's chain from a column to a staircase took it from 3 crossings to 5 with no hint why.
-  - Neither the help nor a warning says that a staircase and the order of the row it lands on go together.
 - created: 2026-10-30
 - status: OPEN
