@@ -310,15 +310,6 @@
 - status: OPEN
 - found: an audit of refusals on 2026-10-17
 
-### [P2][ISSUE] No blank line before a refused batch in try
-
-- description:
-  - `try` with several batches prints an accepted batch's `delta` record and then the next batch's `failed` line right below it.
-  - Every other outcome line has a blank line before the blocks that follow.
-  - The blocks of one refusal are harder to tell apart from the records of the batch before.
-- created: 2026-10-18
-- status: OPEN
-
 ### [P2][ISSUE] A pair of lines back and forth crosses a self-loop
 
 - description:

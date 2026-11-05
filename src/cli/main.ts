@@ -1224,6 +1224,7 @@ async function tryMany(file: string, batches: string[], json: boolean): Promise<
       code = 1;
       // The refusal as apply prints it, its outcome keyed by the batch.
       const [, ...rest] = formatReport(own(r)).trimEnd().split("\n");
+      if (out.length > 0) out.push("");
       out.push(record("failed", { batch, changed: [] }), ...rest, "");
       results.push({ batch, ...reportBody(own(r)) });
       continue;
@@ -1242,7 +1243,10 @@ async function tryMany(file: string, batches: string[], json: boolean): Promise<
       `${JSON.stringify({ ok: code === 0, before: before ?? null, batches: results })}\n`,
     );
   } else {
-    if (before !== undefined) out.unshift(countsText(before, "before"));
+    if (before !== undefined) {
+      const refusedFirst = out[0]?.startsWith("failed ") === true;
+      out.unshift(countsText(before, "before"), ...(refusedFirst ? [""] : []));
+    }
     process.stdout.write(`${out.join("\n").trimEnd()}\n`);
   }
   return code;

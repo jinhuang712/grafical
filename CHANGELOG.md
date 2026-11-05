@@ -215,6 +215,7 @@ grafical has not been released; the first release will be 0.1.0.
 - The `counts` record gains `across=` (lines through a group holding neither of their ends), `tight=` (pairs of runs of two lines side by side under 12 px apart for over 100 px) and `crowded=` (line labels with under 8 px of room on two or more sides).
   - `apply --help` describes them.
 - `grafical try <file> <batch.yaml>...` takes several batches: one `before` record, then each batch's `ok` · `after` · `delta` records keyed by `batch=<file>`.
+  - A blank line comes before a refused batch's `failed` line.
 
 ### Help
 

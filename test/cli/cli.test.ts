@@ -423,12 +423,17 @@ describe("read commands", () => {
     expect(lines[2]).toMatch(/^after batch=t1.yaml nodes=/);
     expect(lines[3]).toMatch(/^delta batch=t1.yaml nodes=0 /);
     // A refused batch prints its outcome keyed by the batch, then its blocks, between blank lines.
-    expect(lines[4]).toBe("failed batch=t3.yaml changed=-");
-    expect(lines[5]).toBe("");
-    expect(lines[6]).toBe("error: unknown-node");
+    expect(lines[4]).toBe("");
+    expect(lines[5]).toBe("failed batch=t3.yaml changed=-");
+    expect(lines[6]).toBe("");
+    expect(lines[7]).toBe("error: unknown-node");
     const after = lines.indexOf("ok batch=t2.yaml changed=api written=no");
     expect(lines[after - 1]).toBe("");
     expect(lines[after - 2]).toBe("next: node add");
+    const first = run("try", "single.grafical.yaml", "t3.yaml", "t1.yaml").out.split("\n");
+    expect(first[0]).toMatch(/^before nodes=/);
+    expect(first[1]).toBe("");
+    expect(first[2]).toBe("failed batch=t3.yaml changed=-");
     expect(readFileSync(join(dir, "single.grafical.yaml"), "utf8")).toBe(before);
     const json = JSON.parse(run("try", "single.grafical.yaml", "t1.yaml", "t3.yaml", "--json").out);
     expect(json.ok).toBe(false);
