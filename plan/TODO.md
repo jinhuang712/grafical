@@ -37,6 +37,30 @@
 - next: the owner designs the legend in a talk of its own
 - related: [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
+### [P1][DISCUSSION] The diagram file's format and object model
+
+- description:
+  - grafical is the file's only writer, and a model reads it through `show`.
+  - The owner sees a diagram as objects with attributes and relations, and YAML holds one tree of containment.
+  - The file should say what a thing is, and position is one more relation.
+  - It sits between pseudocode, a structural language, a script, CSS, YAML, JSON and LaTeX.
+  - It should be easy to search and to parse.
+  - A change should stay local and read well in a diff.
+  - It should hold rich attributes, looks and relations.
+  - One set of facts has one spelling, and order stays stable.
+  - Any text fits with no trouble.
+  - An unknown field is refused, and after the first release the format only grows.
+  - Two branches that change different objects should merge.
+  - A class holds looks and structure, and an instance holds identity and place, and may override.
+  - The root holds global looks and rules, both style rules and constraints an agent states.
+  - An instance beats a class, a class beats a rule, and a rule beats the theme.
+  - Defaults are the model's edge and stay out of the file.
+  - The fallback is YAML with one element on each line.
+- created: 2026-11-06
+- status: HALT
+- next: the owner chooses whether the object model and the syntax are decided apart
+- evidence: on the dispatch fixture YAML takes 1.1 ms to parse against about 200 ms for a command, and the file is 264 lines
+
 ### [P2][DISCUSSION] Labels sit close to the lines beside them in a crowded gutter
 
 - description:
