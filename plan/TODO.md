@@ -20,10 +20,9 @@
 - description:
   - A model that draws directly can adjust a picture to the pixel.
   - grafical is not that free yet, and the owner sees much room to improve.
-  - The owner takes it one dimension at a time, and lines are decided.
-  - Still open are the canvas's proportions, where a box sits beside another, how far a bar may cross a group and where text sits.
+  - The owner takes it one dimension at a time, and lines and line labels are decided.
+  - Still open are the canvas's proportions, where a box sits beside another, how far a bar may cross a group and where other text sits.
   - Agents' reflections name lines and the canvas more than a box a few pixels off, read by sample on 2026-11-06.
-  - A picture the owner drew on 2026-11-06 owes much to its labels: a row of them at one height, each with its line passing through.
   - Option one keeps places as facts and turns each gap into a new discrete fact.
   - Option two adds a small adjustment within one cell of the grid.
   - Option three allows adjustment to the pixel.
@@ -132,7 +131,8 @@
   - Neither try was landed.
 - created: 2026-10-30
 - status: HALT
-- next: the owner chooses more air in every gutter or a taller gutter only where a crowded-label warning would fire
+- next: labels on lines may settle this, so look again once they are built
+- related: [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
 
 ### [P2][DISCUSSION] The legend cannot show a box's look
 

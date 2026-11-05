@@ -6,7 +6,8 @@ F4: Look
 ├── F4.2: Legend — a key for styles, widths and marks
 ├── F4.3: Themes and stylesheets — the whole look from one name
 ├── F4.4: The stylesheet file — colors, widths and type sizes
-└── F4.5: Brand fonts — a team's own typeface
+├── F4.5: Brand fonts — a team's own typeface
+└── F4.6: Label text — breaks and alignment
 ```
 
 The words and the look of the picture as a whole: its title, its legend, and its theme or stylesheet.
@@ -111,3 +112,24 @@ A team's own typeface in the picture.
 **Stories:**
 
 - A team draws in its own typeface, to put its brand on the pictures.
+
+## F4.6: Label text
+
+An agent may set where a label breaks and how its lines align. A text the agent leaves alone wraps where grafical wraps it and stays centred.
+
+```sh
+grafical label align <file> <id> left|center|right
+```
+
+- A label may hold a line break, and grafical keeps it.
+- `label align` takes the ID of any element with a label.
+- A box's sublabel aligns with its label.
+- A label that no longer fits is refused as before.
+
+- **Design:** [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **Why:** [067. An agent sets a label's breaks and its alignment](../specs/decisions/067-an-agent-sets-a-label-s-breaks-and-its-alignment.md)
+
+**Stories:**
+
+- An agent breaks a label by its sense, to keep two words together.
+- An agent aligns the text of a note left, to make a list read well.

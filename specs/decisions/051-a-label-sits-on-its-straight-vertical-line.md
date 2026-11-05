@@ -2,6 +2,8 @@
 
 Decided: 2026-10-30
 
+Replaced in part by specs/decisions, "A line's label sits on its line": a label sits on a line that turns too.
+
 ## The problem
 
 Drawing two reference diagrams of a chat's alerts and a host's states, with a label on every line, the owner asked why a label never sits on its own line. The code only ever offered a label above or below a run, or beside a line that runs straight up and down, although a label was meant to sit on its own run; no decision had rejected it. The labels already have a patch the colour of what lies behind them, drawn over the line, so a label on its line breaks the line, as a flowchart's labels do.

@@ -11,7 +11,8 @@ F2: Layout
 ├── F2.6: Spacing — compact, normal or airy
 ├── F2.7: How lines are drawn — grafical routes every line
 │   ├── F2.7.1: Line sides — the side a line leaves or enters by
-│   └── F2.7.2: Line shapes — square, round or smooth
+│   ├── F2.7.2: Line shapes — square, round or smooth
+│   └── F2.7.3: Labels on lines — a line carries its label
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
 
@@ -265,6 +266,22 @@ grafical diagram lines <file> square|round|smooth
 - A smooth line that would touch a box or a text is refused.
 
 - **Why:** [059. Lines may be drawn square, round or smooth](../specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
+
+### F2.7.3: Labels on lines
+
+A line carries its label, and the line passes through it. An agent may take one label off its line.
+
+```sh
+grafical edge label-at <file> <id> on|beside
+```
+
+- A label sits on its line by default, on a line that turns too.
+- Labels in one gutter spread out so that none sits on another.
+- A label wraps first, and then the lines move apart for it.
+- `beside` puts the label next to its line, where no line moves for it.
+- More room and more bends show in the counts.
+
+- **Why:** [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
 
 ## F2.8: Flow direction
 

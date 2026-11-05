@@ -31,7 +31,7 @@ Features
 │       ├── ⬜ F1.3.5: Lanes both ways — a grid of lanes and phases
 │       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
 │       └── ✅ F1.3.7: Notes — a short text on a box, a line or a group
-├── 🚧 F2: Layout — where everything goes (line sides and smooth lines and flow direction not built)
+├── 🚧 F2: Layout — where everything goes (line sides and smooth lines and labels on turning lines and flow direction not built)
 │   ├── ✅ F2.1: Placing every box — grafical gives every box its place
 │   ├── ✅ F2.2: Rows and order — a box's row and its place in it
 │   ├── ✅ F2.3: Alignment — one box above or below another
@@ -39,9 +39,10 @@ Features
 │   │   └── ⬜ F2.4.1: Column headings — a label above a column
 │   ├── ✅ F2.5: Steps from another box — a box some cells from another
 │   ├── ✅ F2.6: Spacing — compact, normal or airy
-│   ├── 🚧 F2.7: How lines are drawn — grafical routes every line (line sides and smooth lines not built)
+│   ├── 🚧 F2.7: How lines are drawn — grafical routes every line (line sides and smooth lines and labels on turning lines not built)
 │   │   ├── ⬜ F2.7.1: Line sides — the side a line leaves or enters by
-│   │   └── 🚧 F2.7.2: Line shapes — square, round or smooth (round is only in the stylesheet and smooth is not built)
+│   │   ├── 🚧 F2.7.2: Line shapes — square, round or smooth (round is only in the stylesheet and smooth is not built)
+│   │   └── 🚧 F2.7.3: Labels on lines — a line carries its label (only on straight vertical lines)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── ✅ F3.1: Operations — one named command per change
@@ -51,12 +52,13 @@ Features
 │   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts
 │   ├── ✅ F3.6: Merging and swapping — merge, swap and remove boxes
 │   └── ⬜ F3.7: More combinations of operations — one operation for a common edit
-├── 🚧 F4: Look — how the picture looks (brand fonts not built)
+├── 🚧 F4: Look — how the picture looks (brand fonts and label text not built)
 │   ├── ✅ F4.1: Title, subtitle and footnote — the words around the picture
 │   ├── ✅ F4.2: Legend — a key for styles, widths and marks
 │   ├── ✅ F4.3: Themes and stylesheets — the whole look from one name
 │   ├── ✅ F4.4: The stylesheet file — colors, widths and type sizes
-│   └── ⬜ F4.5: Brand fonts — a team's own typeface
+│   ├── ⬜ F4.5: Brand fonts — a team's own typeface
+│   └── ⬜ F4.6: Label text — breaks and alignment
 ├── ✅ F5: Checking — how an agent knows it came out right
 │   ├── ✅ F5.1: Show — the diagram as facts
 │   ├── ✅ F5.2: Counts — facts about how the picture is drawn

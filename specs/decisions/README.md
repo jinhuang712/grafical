@@ -69,6 +69,8 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [063. A wall's label stays along its wall](063-a-wall-s-label-stays-along-its-wall.md) (2026-10-17)
 - [064. A note is what the agent states](064-a-note-is-what-the-agent-states.md) (2026-10-17)
 - [065. Unreadable is refused and costly is reported](065-unreadable-is-refused-and-costly-is-reported.md) (2026-10-16)
+- [066. A line's label sits on its line](066-a-line-s-label-sits-on-its-line.md) (2026-11-06)
+- [067. An agent sets a label's breaks and its alignment](067-an-agent-sets-a-label-s-breaks-and-its-alignment.md) (2026-11-06)
 
 ## Former IDs
 

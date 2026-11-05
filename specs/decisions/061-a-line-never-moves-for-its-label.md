@@ -6,6 +6,8 @@ Split on 2026-11-06 from specs/decisions, "The dirty work has edges".
 
 Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": no refusal writes a command.
 
+Replaced in part by specs/decisions, "A line's label sits on its line": a line moves for a label on it.
+
 ## The problem
 
 A line's label with no room made its line step out of the crowd, a detour nobody asked for.
