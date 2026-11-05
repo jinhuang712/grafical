@@ -27,6 +27,29 @@ the root      global looks, rules
 | Only grows | after the first release, a field is added and never changed |
 | Merges | two branches that change different objects merge in git |
 
+## The sorts of object
+
+A block opens with one of a fixed list of sorts.
+
+| Sort | What it is |
+|---|---|
+| `<diagram>` | the root, with the title, the theme and global looks |
+| `<class>` | a sort of node or edge |
+| `<style>` | a style rule |
+| `<check>` | a constraint |
+| `<layer>` | a layer |
+| `<group>` | a group, or an instance of a class of structure |
+| `<lane>` | a lane |
+| `<column>` | a column |
+| `<wall>` | a wall |
+| `<node>` | a node |
+| `<edge>` | an edge |
+| `<order>` | the order inside one region |
+| `<label>` | a text on an object |
+| `<mark>` | a small image on a node |
+| `<note>` | a note |
+| `<legend>` | the legend, whose design is open |
+
 ## Classes and instances
 
 A class says what a sort of thing looks like, and an instance says which one it is and where it sits.

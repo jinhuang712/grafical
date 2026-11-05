@@ -43,6 +43,7 @@
   - The draft is in [the object model](../specs/object-model.md), and each fork goes to a decision as it closes.
   - Open: what happens to a node in a region that its `<order>` leaves out.
   - Open: how an edge reaches a node inside an instance, and how IDs inside an instance are named.
+  - Open: whether a node's own label is a `<label>` too.
   - Open: whether a class takes parameters.
   - Open: what a condition in a style rule may say.
   - Open: what a constraint may say.
