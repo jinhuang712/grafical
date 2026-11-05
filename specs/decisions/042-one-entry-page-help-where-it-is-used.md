@@ -23,7 +23,7 @@ How an agent reads a command line's help, which this follows:
   - A form can be learnt from refusals (`unknown-field ... likely=at`); a wall, a bar or a numbered path cannot.
 
 So:
-- **The entry page** (`grafical --help`) is enough for a first draft. It says:
+- **The entry page** (`grafical --help`) is enough for a first draft and says:
   - What grafical is and how to work.
   - The kind of diagram, by what a box stands for and what a line means.
   - Every way to draw, one line each by the story it tells.
@@ -36,7 +36,7 @@ So:
   - The kinds and the ways to draw replace the list of diagram types.
   - The page says that any kind may use any way to draw.
   - It says what grafical does not draw.
-- **A command's page** is read when the command is used. It holds:
+- **A command's page** is read when the command is used and holds:
   - Its usage and options and its line in a batch.
   - Its own sections, among them what it does in each kind of diagram ("By kind of diagram").
   - On `try`, what to try when the picture looks wrong.

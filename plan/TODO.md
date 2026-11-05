@@ -76,14 +76,14 @@
   - [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md) says the column grid does not keep that list.
 - created: 2026-11-04
 - status: HALT
-- found: writing the placement spec from `test/layout/stability.ts` on 2026-11-04
+- found: writing the placement spec from [test/layout/stability.ts](../test/layout/stability.ts) on 2026-11-04
 - next: the owner chooses whether the tests should assert a list again
 
 ### [P2][DISCUSSION] The rules of the target picture are measured but never reported
 
 - description:
   - The decision on a target picture says `grafical check --all` reports its eight rules.
-  - `src/check/taste.ts` still measures them, but no command calls it.
+  - [src/check/taste.ts](../src/check/taste.ts) still measures them, but no command calls it.
   - Only its limit of two bends is used.
 - created: 2026-11-04
 - status: HALT
