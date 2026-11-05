@@ -103,12 +103,15 @@ Roadmap
 │   │   ├── ⬜ Region gaps
 │   │   ├── ⬜ Edge looks
 │   │   └── ⬜ Region labels
-│   └── ⬜ CP2.7: The command line
-│       ├── ⬜ The file flag
-│       ├── ⬜ One name for each thing
-│       ├── ⬜ Verbs as flags
-│       ├── ⬜ One way for each situation
-│       └── ⬜ Batches from standard input
+│   ├── ⬜ CP2.7: The command line
+│   │   ├── ⬜ The file flag
+│   │   ├── ⬜ One name for each thing
+│   │   ├── ⬜ Verbs as flags
+│   │   ├── ⬜ One way for each situation
+│   │   └── ⬜ Batches from standard input
+│   └── ⬜ CP2.8: The legend
+│       ├── ⬜ Design the legend
+│       └── ⬜ Build the legend
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
 │   ├── ⬜ CP3.1: Boxes and lines
 │   │   ├── ⬜ State machine
@@ -429,6 +432,7 @@ What grafical can draw grows on top of [CP1: Stage 1 built](#cp1-stage-1-built).
   - [CP2.5: Direction and views](#cp25-direction-and-views) is met.
   - [CP2.6: Lines and labels](#cp26-lines-and-labels) is met.
   - [CP2.7: The command line](#cp27-the-command-line) is met.
+  - [CP2.8: The legend](#cp28-the-legend) is met.
 
 ### CP2.1: Fix the speed slip
 
@@ -606,6 +610,26 @@ Every command names its file the same way, a verb is a flag, each thing has one 
 
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability)
+
+### CP2.8: The legend
+
+**Status:** ⬜
+
+A legend is a small diagram, and it can explain what a picture's colors mean.
+
+**Tasks:**
+
+- ⬜ Design the legend: The owner designs it: [The legend needs a design of its own](TODO.md#p1discussion-the-legend-needs-a-design-of-its-own).
+- ⬜ Build the legend: The design is built.
+
+**Delivers:**
+
+- [F4.2.1: A legend as a small diagram](../features/F4-look.md#f421-a-legend-as-a-small-diagram)
+
+**Exit criteria:**
+
+- **Constraints**
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
 ## CP3: Experiments
 

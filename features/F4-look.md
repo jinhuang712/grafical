@@ -4,6 +4,7 @@
 F4: Look
 ├── F4.1: Title, subtitle and footnote — the words around the picture
 ├── F4.2: Legend — a key for styles, widths and marks
+│   └── F4.2.1: A legend as a small diagram — entries, their layout and their samples
 ├── F4.3: Themes and stylesheets — the whole look from one name
 ├── F4.4: The stylesheet file — colors, widths and type sizes
 ├── F4.5: Brand fonts — a team's own typeface
@@ -59,6 +60,14 @@ grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mar
 **Stories:**
 
 - An agent explains a style or a mark in its own words, to let a reader decode the picture.
+
+### F4.2.1: A legend as a small diagram
+
+A legend is a small diagram of its own, and a picture may have one or none. Its design is open: how its entries run, across or down or in a grid, what goes in it and how each sample is drawn.
+
+**Stories:**
+
+- An agent lays out a key to the colors of its nodes, to let a reader decode them.
 
 ## F4.3: Themes and stylesheets
 
