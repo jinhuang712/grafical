@@ -8,7 +8,7 @@ Decided by the owner on 2026-10-16. In a booking C4 diagram the label "Booking a
 
 ## The choice
 
-- **Unstated, seated where no line comes.** Once the lines are drawn, an unplaced label sits in the head where no line comes near.
+- **Unstated and seated where no line comes.** Once the lines are drawn, an unplaced label sits in the head where no line comes near.
   - Until 2026-10-17 it seated the label where the lines into the first row kept their boxes' centres, and moved two of those boxes apart when no seat did; the owner first chose to keep that.
   - Under "The dirty work has edges" nothing moves for it.
   - A label with no clear seat refuses the write as `title-blocked`, as a stated one does.
