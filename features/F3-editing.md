@@ -203,9 +203,9 @@ Three operations change which nodes a diagram has or where two of them sit.
 
 **Commands:**
 
-- `grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--type <kind>]`
-- `grafical node swap <file> <a> <b>`
-- `grafical node remove <file> <id>`
+- `grafical -f <file> node --merge <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--type <kind>]`
+- `grafical -f <file> node --swap <a> <b>`
+- `grafical -f <file> node --remove <id>`
 
 - `merge` replaces nodes with one new node where the first one was.
   - It keeps each of their edges once and drops the edges between them.

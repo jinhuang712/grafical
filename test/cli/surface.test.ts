@@ -70,4 +70,18 @@ describe("the words a caller types", () => {
     ).toBe(0);
     expect(run(["-f", "a.grafical.yaml", "show"]).out).toContain("y");
   });
+
+  it("show gives one object and what refers to it", () => {
+    const f = ["-f", "b.grafical.yaml"];
+    expect(run([...f, "new", "--title", "T"]).code).toBe(0);
+    run([...f, "layer", "--add", "l", "--label", "L"]);
+    run([...f, "node", "--add", "x", "--layer", "l", "--label", "X"]);
+    run([...f, "node", "--add", "y", "--layer", "l", "--last", "--label", "Y"]);
+    run([...f, "edge", "--add", "x", "y"]);
+    const out = run([...f, "show", "x"]).out;
+    expect(out).toContain("node x\n");
+    expect(out).toContain('label: "X"');
+    expect(out).toContain("used by:\n  edge x->y\n");
+    expect(run([...f, "show", "nope"]).code).toBe(2);
+  });
 });

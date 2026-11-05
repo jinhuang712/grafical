@@ -86,7 +86,7 @@ A node's kind says what it is and decides how it is drawn.
 - The labels of `initial` and `final` and `choice` stay in the file and are not drawn.
 
 ```sh
-grafical node kind <file> <id> <kind>
+grafical -f <file> node --kind <id> <kind>
 ```
 
 ### F1.1.2: Labels and sublabels
@@ -94,8 +94,8 @@ grafical node kind <file> <id> <kind>
 A node has a label, and optionally a quieter sublabel, such as a port or a topic.
 
 ```sh
-grafical node rename <file> <id> --label <text>
-grafical node describe <file> <id> [--text <text>]
+grafical -f <file> node --label <id> --label <text>
+grafical -f <file> node --sublabel <id> [--text <text>]
 ```
 
 - Labels wrap at spaces and hyphens and underscores and slashes.
@@ -109,8 +109,8 @@ grafical node describe <file> <id> [--text <text>]
 A node is sized to its text, unless the agent gives it a size step.
 
 ```sh
-grafical node resize <file> <id> [--size s|m|l]
-grafical diagram sizing <file> auto|fixed
+grafical -f <file> node --size <id> [--size s|m|l]
+grafical -f <file> diagram --sizing auto|fixed
 ```
 
 - A node without a size is medium, or large when its text does not fit the medium node.
@@ -120,7 +120,7 @@ grafical diagram sizing <file> auto|fixed
   - Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a node without a size is always medium, and text that does not fit is refused.
 - A node may take a multiple of its width, its height or both, such as 1.5.
-  - `grafical node size <file> <id> [--width <n>] [--height <n>] [--times <n>]`
+  - `grafical -f <file> node --size <id> [--width <n>] [--height <n>] [--times <n>]`
   - A taller node makes its layer taller.
   - A dot or a `choice` keeps its size and refuses a multiple.
   - Why: [080. A node takes multiples of its width and height](../specs/decisions/080-a-node-takes-multiples-of-its-width-and-height.md)
@@ -130,7 +130,7 @@ grafical diagram sizing <file> auto|fixed
 A node can carry up to five marks, such as `⚠️` on a node that matters, or `P0` on a badge.
 
 ```sh
-grafical node icon <file> <id> --slot <slot> [--icon <mark>] [--bg <color>] [--fg <color>] [--border <color>] [--shape <shape>] [--size s|m|l]
+grafical -f <file> node --mark <id> --slot <slot> [--icon <mark>] [--bg <color>] [--fg <color>] [--border <color>] [--shape <shape>] [--size s|m|l]
 ```
 
 - A node has five slots of one mark each: `top-left` and `top-right` and `bottom-left` and `bottom-right` and `left`.
@@ -159,7 +159,7 @@ A corner mark is not yet checked against the edges that leave the node near its 
 A mark taken by name from one mark set that grafical bundles, so that an agent need not find a file for every node.
 
 ```sh
-grafical node icon <file> <id> --slot <slot> --icon <set>:<name>
+grafical -f <file> node --mark <id> --slot <slot> --icon <set>:<name>
 ```
 
 - The set is a permissively licensed one, such as Lucide (ISC) or Tabler (MIT).
@@ -171,7 +171,7 @@ grafical node icon <file> <id> --slot <slot> --icon <set>:<name>
 At most two nodes stand out, as what a reader should see first.
 
 ```sh
-grafical node emphasize <file> <id> [--off]
+grafical -f <file> node --emphasize <id> [--off]
 ```
 
 ### F1.1.7: Node looks
@@ -179,8 +179,8 @@ grafical node emphasize <file> <id> [--off]
 A node may take colors of its own, so that a color says something without changing the shape. The agent sets them on the node or names a look from the stylesheet.
 
 ```sh
-grafical node look <file> <id> [--fill <color>] [--border <color>]
-grafical node look <file> <id> <name>
+grafical -f <file> node --look <id> [--fill <color>] [--border <color>]
+grafical -f <file> node --look <id> <name>
 ```
 
 - A color is `#rrggbb`.
@@ -237,12 +237,12 @@ An edge's kind says what it means and decides its style.
 
 **Commands:**
 
-- `grafical edge add <file> <from> <to> [--id <id>] [--label <text>] [--type <kind>] [--both] [--pass]`
-- `grafical edge kind <file> <id> <kind>`
-- `grafical edge relabel <file> <id> [--label <text>]`
-- `grafical edge reverse <file> <id>`
-- `grafical edge retarget <file> <id> [--from <end>] [--to <end>]`
-- `grafical edge remove <file> <id>`
+- `grafical -f <file> edge --add <from> <to> [--id <id>] [--label <text>] [--type <kind>] [--both] [--pass]`
+- `grafical -f <file> edge --kind <id> <kind>`
+- `grafical -f <file> edge --label <id> [--label <text>]`
+- `grafical -f <file> edge --reverse <id>`
+- `grafical -f <file> edge --ends <id> [--from <end>] [--to <end>]`
+- `grafical -f <file> edge --remove <id>`
 
 - `relabel` without `--label` clears the label.
   - `retarget` moves one or both ends and keeps the edge's ID, kind and label.
@@ -252,7 +252,7 @@ An edge's kind says what it means and decides its style.
 An edge can carry an arrowhead at each end, for a call that answers.
 
 ```sh
-grafical edge both <file> <id> [--off]
+grafical -f <file> edge --both <id> [--off]
 ```
 
 A `link` takes no arrowheads, so `both` on a link is refused as `both-on-link`.
@@ -262,8 +262,8 @@ A `link` takes no arrowheads, so `both` on a link is refused as `both-on-link`.
 Some edges are thicker than others, to say they matter more.
 
 ```sh
-grafical edge weight <file> <id...> [--weight <level|pixels>]
-grafical edge emphasize <file> <id...> [--off]
+grafical -f <file> edge --weight <id...> [--weight <level|pixels>]
+grafical -f <file> edge --emphasize <id...> [--off]
 ```
 
 - A weight is a level or a width from 0.5 to 8 px.
@@ -280,7 +280,7 @@ grafical edge emphasize <file> <id...> [--off]
 A number on an edge, so that a reader can follow a request or a process in order.
 
 ```sh
-grafical edge step <file> <id> [--n <number>]
+grafical -f <file> edge --number <id> [--n <number>]
 ```
 
 - The agent states each number, a whole number from 1 to 99.
@@ -318,8 +318,8 @@ One arrow can point at a whole system instead of each of its parts.
 An edge may take a color of its own, so that a color says something about one path. The agent sets it on the edge or names a look from the stylesheet.
 
 ```sh
-grafical edge look <file> <id> [--color <color>]
-grafical edge look <file> <id> <name>
+grafical -f <file> edge --look <id> [--color <color>]
+grafical -f <file> edge --look <id> <name>
 ```
 
 - A color is `#rrggbb`.
@@ -371,14 +371,14 @@ A group is a system, drawn as one node around its members, which may sit in seve
 
 **Commands:**
 
-- `grafical group add <file> <id> --label <text> [--sublabel <text>] [--nodes a,b,c] [--in <group>]`
-- `grafical group join <file> <group> <node or group...>`
-- `grafical group leave <file> <node or group...> [--up]`
-- `grafical group rename <file> <id> --label <text>`
-- `grafical group describe <file> <id> [--text <text>]`
-- `grafical group title <file> <id> [top-left|top|top-right|left|right|bottom-left|bottom|bottom-right|outside-top|outside-bottom|outside-left|outside-right]`
-- `grafical group order <file> <id> --before <group> | --after <group>`
-- `grafical group remove <file> <id> [--out]`
+- `grafical -f <file> group --add <id> --label <text> [--sublabel <text>] [--nodes a,b,c] [--in <group>]`
+- `grafical -f <file> group --join <group> <node or group...>`
+- `grafical -f <file> group --leave <node or group...> [--up]`
+- `grafical -f <file> group --label <id> --label <text>`
+- `grafical -f <file> group --sublabel <id> [--text <text>]`
+- `grafical -f <file> group --label-at <id> [top-left|top|top-right|left|right|bottom-left|bottom|bottom-right|outside-top|outside-bottom|outside-left|outside-right]`
+- `grafical -f <file> group --order <id> --before <group> | --after <group>`
+- `grafical -f <file> group --remove <id> [--out]`
 
 - A group's node spans every layer from its top member to its bottom one.
   - The other nodes of those layers sit beside it, and nothing else lies inside it.
@@ -410,7 +410,7 @@ A group is a system, drawn as one node around its members, which may sit in seve
 A second zone, region or shard in one operation.
 
 ```sh
-grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before <group> | --after <group> [--outside]
+grafical -f <file> group --copy <id> <into> --label <text> --suffix <suffix> --before <group> | --after <group> [--outside]
 ```
 
 - The copy holds the group's inner groups, its nodes and the edges between them.
@@ -437,11 +437,11 @@ A lane is a labelled band that says who owns what. A diagram's lanes all run one
 
 **Commands:**
 
-- `grafical lane add <file> <id> --label <text> [--members a,b]`
-- `grafical lane join <file> <lane> <member...>`
-- `grafical lane leave <file> <member...>`
-- `grafical lane rename <file> <id> --label <text>`
-- `grafical lane remove <file> <id>`
+- `grafical -f <file> lane --add <id> --label <text> [--members a,b]`
+- `grafical -f <file> lane --join <lane> <member...>`
+- `grafical -f <file> lane --leave <member...>`
+- `grafical -f <file> lane --label <id> --label <text>`
+- `grafical -f <file> lane --remove <id>`
 
 - Layers as members make lanes that run as layers, with the label on the left.
   - Nodes as members make lanes that run as columns, with the label on top.
@@ -463,10 +463,10 @@ Empty space between two parts of a picture, which lines cross only where the wal
 
 **Commands:**
 
-- `grafical wall add <file> <id> --between a,b --and c,d [--allow e,f] [--label <text>]`
-- `grafical wall allow <file> <id> <allow...> [--off]`
-- `grafical wall relabel <file> <id> [--label <text>]`
-- `grafical wall remove <file> <id>`
+- `grafical -f <file> wall --add <id> --between a,b --and c,d [--allow e,f] [--label <text>]`
+- `grafical -f <file> wall --allow <id> <allow...> [--off]`
+- `grafical -f <file> wall --label <id> [--label <text>]`
+- `grafical -f <file> wall --remove <id>`
 
 - Each side is a list of nodes and groups.
   - When one side lies above the other, the wall runs across.
@@ -488,8 +488,8 @@ Empty space between two parts of a picture, which lines cross only where the wal
 A short text attached to a node, an edge or a group, to keep detail out of extra nodes.
 
 ```sh
-grafical note add <file> --on <id> --text <text> [--footnote]
-grafical note remove <file> --on <id>
+grafical -f <file> note --add --on <id> --text <text> [--footnote]
+grafical -f <file> note --remove --on <id>
 ```
 
 - A note is a card beside its target, joined by a dotted line.

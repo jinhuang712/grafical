@@ -47,14 +47,14 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
 
 **Commands:**
 
-- `grafical layer add <file> <id> [--label <text>] [--before <row> | --after <row>]`
-- `grafical layer rename <file> <id> --label <text>`
-- `grafical layer look <file> <id> [box|band]`
-- `grafical layer move <file> <id> --first | --last | --before <row> | --after <row>`
-- `grafical layer remove <file> <id>`
-- `grafical layer split <file> <id> <new-id> --label <text> [--from <node>]`
-- `grafical node add <file> <id> --layer <row> --label <text> [--type <kind>] [--sublabel <text>] [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]`
-- `grafical node move <file> <id> [--layer <row>] [--first | --last | --before <node> | --after <node>]`
+- `grafical -f <file> layer --add <id> [--label <text>] [--before <row> | --after <row>]`
+- `grafical -f <file> layer --label <id> --label <text>`
+- `grafical -f <file> layer --look <id> [box|band]`
+- `grafical -f <file> layer --move <id> --first | --last | --before <row> | --after <row>`
+- `grafical -f <file> layer --remove <id>`
+- `grafical -f <file> layer --split <id> <new-id> --label <text> [--from <node>]`
+- `grafical -f <file> node --add <id> --layer <row> --label <text> [--type <kind>] [--sublabel <text>] [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]`
+- `grafical -f <file> node --move <id> [--layer <row>] [--first | --last | --before <node> | --after <node>]`
 
 - A new layer goes to the bottom unless `--before` or `--after` places it.
 - A node added to a layer or moved into another layer says where it goes: `--first` or `--last` or `--before` or `--after`.
@@ -99,7 +99,7 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
 A node sits directly above or below a node in another layer.
 
 ```sh
-grafical node align <file> <id> [--to <node>]
+grafical -f <file> node --align <id> [--to <node>]
 ```
 
 - It joins its target's column to sit there.
@@ -120,10 +120,10 @@ A second placement fact beside layers. Nothing is drawn: a column is a guide.
 
 **Commands:**
 
-- `grafical column add <file> <id> [--nodes a,b] [--before <column> | --after <column>]`
-- `grafical column join <file> <column> <member...>`
-- `grafical column leave <file> <member...>`
-- `grafical column remove <file> <id>`
+- `grafical -f <file> column --add <id> [--nodes a,b] [--before <column> | --after <column>]`
+- `grafical -f <file> column --join <column> <member...>`
+- `grafical -f <file> column --leave <member...>`
+- `grafical -f <file> column --remove <id>`
 
 - Every node of a column sits left of every node of the next column in all layers.
   - At least a layer's gap lies between them.
@@ -149,8 +149,8 @@ A second placement fact beside layers. Nothing is drawn: a column is a guide.
 
 A column may carry a heading above its first layer, such as a quarter.
 
-- `grafical column add <file> <id> --label <text>`
-- `grafical column rename <file> <id> [--label <text>]`
+- `grafical -f <file> column --add <id> --label <text>`
+- `grafical -f <file> column --label <id> [--label <text>]`
 - An edge that comes near a heading refuses the write.
 
 - **Why:** [056. A column may carry a heading](../specs/decisions/056-a-column-may-carry-a-heading.md)
@@ -160,8 +160,8 @@ A column may carry a heading above its first layer, such as a quarter.
 A node in no layer, placed some cells of the grid from another node.
 
 ```sh
-grafical node add <file> <id> --from <node> [--down <n> | --up <n>] [--left <n> | --right <n>] --label <text> [--type <kind>]
-grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <n> | --right <n>]
+grafical -f <file> node --add <id> --from <node> [--down <n> | --up <n>] [--left <n> | --right <n>] --label <text> [--type <kind>]
+grafical -f <file> node --move <id> [--from <node>] [--down <n> | --up <n>] [--left <n> | --right <n>]
 ```
 
 - Each step is a whole number from 1 to 10, and at least one is given.
@@ -192,7 +192,7 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
 A diagram's spacing is compact, normal or airy, and it changes nothing else.
 
 ```sh
-grafical diagram density <file> compact|normal|airy
+grafical -f <file> diagram --density compact|normal|airy
 ```
 
 - **Design:** [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
@@ -260,7 +260,7 @@ The agent says what connects. grafical draws every edge.
 An agent may state the side an edge leaves by or enters by. A side left unstated stays grafical's.
 
 ```sh
-grafical edge side <file> <id> [--out top|bottom|left|right] [--in top|bottom|left|right]
+grafical -f <file> edge --side <id> [--out top|bottom|left|right] [--in top|bottom|left|right]
 ```
 
 - Without `--out` or `--in`, the edge's sides are grafical's again.
@@ -274,7 +274,7 @@ grafical edge side <file> <id> [--out top|bottom|left|right] [--in top|bottom|le
 All the edges of a diagram share one shape, and the routes stay the same.
 
 ```sh
-grafical diagram lines <file> square|round|smooth
+grafical -f <file> diagram --lines square|round|smooth
 ```
 
 - `square` has sharp corners, as a new diagram does.
@@ -289,7 +289,7 @@ grafical diagram lines <file> square|round|smooth
 An edge carries its label, and the edge passes through it. An agent may take one label off its edge.
 
 ```sh
-grafical edge label-at <file> <id> on|beside
+grafical -f <file> edge --label-at <id> on|beside
 ```
 
 - A label sits on its edge by default, on an edge that turns too.

@@ -65,7 +65,7 @@ Features
 │   ├── ⬜ F4.6: Label text — breaks and alignment
 │   └── ⬜ F4.7: Region labels — where any region's label sits
 ├── ✅ F5: Checking — how an agent knows it came out right
-│   ├── 🚧 F5.1: Show — the diagram as facts (one object by its ID not built)
+│   ├── ✅ F5.1: Show — the diagram as facts
 │   ├── ✅ F5.2: Counts — facts about how the picture is drawn
 │   ├── ✅ F5.3: Warnings — what the picture draws poorly
 │   │   ├── ✅ F5.3.1: Bent edges — `bent-line`

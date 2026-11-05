@@ -25,7 +25,7 @@ How an agent knows a diagram came out right. It reads the diagram as facts, coun
 The agent's view of a diagram, in place of reading the YAML.
 
 ```sh
-grafical show <file> [--drawn]
+grafical -f <file> show [<id>] [--drawn]
 ```
 
 - `show` prints the diagram in the same words as the operations.
@@ -179,7 +179,7 @@ next: layer move, node move, node swap
 `check` reports the defects the agent can fix, every warning, and the counts. `--all` adds the defects only the engine can avoid, which are engine bugs. A file that every write would refuse gets those errors and nothing else, with exit code 1.
 
 ```sh
-grafical check <file> [--all]
+grafical -f <file> check [--all]
 ```
 
 - **Design:** [6. Every write is checked, and each defect has an owner](../DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)

@@ -116,3 +116,44 @@ export function showDiagram(d: Diagram): string {
   for (const e of d.edges) lines.push(edgeText(e));
   return `${lines.join("\n")}\n`;
 }
+
+/**
+ * One object and what refers to it (specs/decisions, "The file is blocks of attributes, and a reference carries @"), or
+ * undefined when no object has the ID. Nobody searches the file as text: this is how an agent finds what touches a name.
+ */
+export function showObject(d: Diagram, id: string): string | undefined {
+  const facts = (o: object) =>
+    Object.entries(o)
+      .filter(([k, v]) => k !== "nodes" && v !== undefined)
+      .map(([k, v]) => `  ${k}: ${JSON.stringify(v)}`);
+  const nodes = everyNode(d);
+  const kinds: [string, { id: string } | undefined][] = [
+    ["node", nodes.find((x) => x.id === id)],
+    ["edge", d.edges.find((x) => x.id === id)],
+    ["layer", d.layers.find((x) => x.id === id)],
+    ["group", d.groups?.find((x) => x.id === id)],
+    ["lane", d.lanes?.find((x) => x.id === id)],
+    ["column", d.columns?.find((x) => x.id === id)],
+    ["wall", d.walls?.find((x) => x.id === id)],
+  ];
+  const found = kinds.find(([, o]) => o !== undefined);
+  if (found === undefined) return undefined;
+  const refs = [
+    ...d.edges.filter((e) => e.from === id || e.to === id).map((e) => `edge ${e.id}`),
+    ...nodes
+      .filter((n) => {
+        const place = n as { from?: string };
+        return (
+          n.group === id || n.lane === id || n.column === id || n.align === id || place.from === id
+        );
+      })
+      .map((n) => `node ${n.id}`),
+    ...d.layers.filter((l) => l.lane === id).map((l) => `layer ${l.id}`),
+    ...(d.groups ?? []).filter((g) => g.in === id).map((g) => `group ${g.id}`),
+    ...(d.notes ?? []).filter((n) => n.on === id).map(() => "note"),
+  ];
+  const [sort, object] = found;
+  const head = [`${sort} ${id}`, ...facts(object as object)];
+  const used = refs.length === 0 ? [] : ["used by:", ...refs.map((r) => `  ${r}`)];
+  return `${[...head, ...used].join("\n")}\n`;
+}

@@ -47,7 +47,7 @@ A diagram becomes objects with attributes and relations, with types an agent can
 `render` draws a diagram file as an SVG and a PNG.
 
 ```sh
-grafical render <file> [--svg [<out>]] [--png [<out>]] [--scale 1-4]
+grafical -f <file> render [--svg [<out>]] [--png [<out>]] [--scale 1-4]
 ```
 
 - With neither flag, `render` writes `<name>.svg` and `<name>.png` beside the file.
@@ -71,7 +71,7 @@ grafical render <file> [--svg [<out>]] [--png [<out>]] [--scale 1-4]
 A window that shows the diagram as it is now, while an agent draws it.
 
 ```sh
-grafical view <file> [--port <n>] [--no-open]
+grafical -f <file> view [--port <n>] [--no-open]
 ```
 
 - The window redraws within a moment of every change to the file from any process.
@@ -96,7 +96,7 @@ grafical view <file> [--port <n>] [--no-open]
 `diff` reports how the file differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file. Outside git it fails with `not-in-git`.
 
 ```sh
-grafical diff <file> [<git-rev>]
+grafical -f <file> diff [<git-rev>]
 ```
 
 - **Design:**

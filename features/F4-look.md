@@ -20,9 +20,9 @@ The title names the picture, and two more texts tell a reader what they see.
 
 **Commands:**
 
-- `grafical diagram title <file> --text <text>`
-- `grafical diagram subtitle <file> [--text <text>]`
-- `grafical diagram note <file> [--text <text>]`
+- `grafical -f <file> diagram --label-at --text <text>`
+- `grafical -f <file> diagram --subtitle [--text <text>]`
+- `grafical -f <file> diagram --note [--text <text>]`
 
 - The subtitle is one sentence under the title.
 - The footnote says what the diagram leaves out, such as "Not shown: Redis name cache".
@@ -40,7 +40,7 @@ The title names the picture, and two more texts tell a reader what they see.
 A key in the top right that says, in the agent's words, what the picture's styles, widths and marks mean.
 
 ```sh
-grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mark <mark> [--text <text>]
+grafical -f <file> diagram --legend solid|dashed|dotted|plain|--weight <weight>|--mark <mark> [--text <text>]
 ```
 
 - An edge style or an edge width other than `thin` or a mark has an entry only when the diagram names it.
@@ -74,7 +74,7 @@ A legend is a small diagram of its own, and a picture may have one or none. Its 
 A diagram takes its whole look from a built-in theme or from a stylesheet file it names.
 
 ```sh
-grafical diagram style <file> [<style>]
+grafical -f <file> diagram --style [<style>]
 ```
 
 - The built-in themes are `default`, `dark` (light lines on a dark ground) and `print` (greys with stronger lines).

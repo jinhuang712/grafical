@@ -56,7 +56,7 @@ import {
   writeAtomic,
 } from "./pipeline.ts";
 import { type Block, kindsOf, usageBlock } from "./problems.ts";
-import { showDiagram } from "./show.ts";
+import { showDiagram, showObject } from "./show.ts";
 import { commandLine, type Origin } from "./source.ts";
 import { inward, learn, surfaceName, surfaceText } from "./surface.ts";
 import { openWindow, startViewer, windowSize } from "./view.ts";
@@ -1008,13 +1008,18 @@ export function build(): Command {
   json(
     program
       .command("show")
-      .description("print a compact view of a diagram")
+      .description("print a compact view of a diagram, or one object and what refers to it")
       .argument("<file>")
+      .argument("[id]", "an object: its facts and what refers to it")
       .option("--drawn", "how it is drawn: each box, line and group, as facts and counts"),
-  ).action(async (file: string, opts: Opts) => {
+  ).action(async (file: string, id: string | undefined, opts: Opts) => {
     const d = loadDiagram(file);
     if (isReport(d)) {
       say(d, opts.json === true);
+    } else if (id !== undefined) {
+      const text = showObject(d, id);
+      if (text === undefined) throw usage("unknown-command", { found: id });
+      process.stdout.write(text);
     } else if (opts.drawn === true) {
       const dr = drawing(d, layout(d, await createMeasurer()));
       process.stdout.write(
