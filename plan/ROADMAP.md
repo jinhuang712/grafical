@@ -429,7 +429,16 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 
 What grafical can draw grows on top of [CP1: Stage 1 built](#cp1-stage-1-built). A test and a fixture accept each item, with no model run.
 
-The work runs in this order, since each step rests on the one before: [CP2.7: The command line](#cp27-the-command-line), [CP2.9: The object model](#cp29-the-object-model), [CP2.6: Lines and labels](#cp26-lines-and-labels), [CP2.2: Pictures worth keeping](#cp22-pictures-worth-keeping), [CP2.3: Boxes](#cp23-boxes), [CP2.4: Containers](#cp24-containers), [CP2.8: The legend](#cp28-the-legend), [CP2.5: Direction and views](#cp25-direction-and-views).
+The work runs in this order, since each step rests on the one before:
+
+1. [CP2.7: The command line](#cp27-the-command-line)
+2. [CP2.9: The object model](#cp29-the-object-model)
+3. [CP2.6: Lines and labels](#cp26-lines-and-labels)
+4. [CP2.2: Pictures worth keeping](#cp22-pictures-worth-keeping)
+5. [CP2.3: Boxes](#cp23-boxes)
+6. [CP2.4: Containers](#cp24-containers)
+7. [CP2.8: The legend](#cp28-the-legend)
+8. [CP2.5: Direction and views](#cp25-direction-and-views)
 
 **Exit criteria:**
 
@@ -600,12 +609,17 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 
 **Status:** ⬜
 
-Every command names its file the same way, a verb is a flag, each thing has one name, and each situation has one shortest way.
+The command line gets one form:
+
+- Every command names its file the same way.
+- A verb is a flag.
+- Each thing has one name.
+- Each situation has one shortest way.
 
 **Tasks:**
 
 - ⬜ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
-- ⬜ One name for each thing: The commands, the file, the answers, the help, the documents and the code use one name.
+- ⬜ One name for each thing: Every surface and the code use one name.
 - ⬜ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
 - ⬜ One way for each situation: `edge --emphasize` goes, and the commands are checked for other repeats.
 - ⬜ Batches from standard input: `apply` reads a batch named `-` from standard input.

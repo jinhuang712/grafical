@@ -8,7 +8,15 @@ The guideline promised that only a fixed list of things may follow a change. The
 
 ## The choice
 
-A change keeps every fact it does not name: a row, an order, a group, a lane and an alignment. Positions may shift. A reader learns a diagram's structure and not its pixels, as the owner confirmed on 2026-11-06.
+A change keeps every fact it does not name:
+
+- a row
+- an order
+- a group
+- a lane
+- an alignment
+
+Positions may shift. A reader learns a diagram's structure and not its pixels, as the owner confirmed on 2026-11-06.
 
 ## Not chosen
 

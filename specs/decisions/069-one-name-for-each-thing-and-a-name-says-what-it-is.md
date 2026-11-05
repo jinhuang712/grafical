@@ -8,7 +8,7 @@ The help mixed two names for one thing: row and layer, box and node, line and ed
 
 ## The choice
 
-A thing has one name in the commands, the operations, the file, the answers, the help, the documents and the code. A name says what a thing is and not how it looks.
+A thing has one name everywhere it appears. A name says what a thing is and not how it looks.
 
 | Thing | Name | Gone |
 |---|---|---|
@@ -20,7 +20,18 @@ A thing has one name in the commands, the operations, the file, the answers, the
 | edges that leave as one | `bundle` | bus |
 | where a bundle splits | `knot` | dot |
 
-A command that sets a field is named for the field: `node label`, `node sublabel`, `node size`, `node mark`, `edge label`, `edge number`, `edge ends`, `group label-at`. The picture's closing text is `diagram caption`. A step is a placement only, and a number is what an edge carries.
+A command that sets a field is named for the field:
+
+- `node label`
+- `node sublabel`
+- `node size`
+- `node mark`
+- `edge label`
+- `edge number`
+- `edge ends`
+- `group label-at`
+
+The picture's closing text is `diagram caption`. A step is a placement only, and a number is what an edge carries.
 
 ## Not chosen
 

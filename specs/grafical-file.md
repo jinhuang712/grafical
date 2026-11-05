@@ -44,7 +44,7 @@ A `.grafical` file holds one diagram as objects with attributes and relations. g
 
 - An object is a block in braces, and it opens with its sort in angle brackets.
 - A block has one attribute on each line, in a fixed order for its sort.
-- A list that matters line by line, such as an order's items, takes one item on each line.
+- An order's items and a wall's sides take one item on each line.
 - An attribute that holds its default is left out, since defaults are the model's edge.
 - Length is no concern.
 
@@ -77,7 +77,38 @@ A type says what a sort of thing looks like, and an object says which one it is 
 - A change to a type changes every object of that type.
 - An object may override what its type holds, except its shape.
 
-The built-in node types are `service`, `store`, `queue`, `external`, `actor`, `state`, `terminal`, `decision`, `initial`, `final` and `choice`. The built-in edge types are `call`, `data`, `async`, `optional` and `link`. The shapes are `box`, `round`, `pill`, `cylinder`, `diamond`, `small-diamond`, `dot` and `ring`.
+The built-in node types:
+
+- `service`
+- `store`
+- `queue`
+- `external`
+- `actor`
+- `state`
+- `terminal`
+- `decision`
+- `initial`
+- `final`
+- `choice`
+
+The built-in edge types:
+
+- `call`
+- `data`
+- `async`
+- `optional`
+- `link`
+
+The shapes:
+
+- `box`
+- `round`
+- `pill`
+- `cylinder`
+- `diamond`
+- `small-diamond`
+- `dot`
+- `ring`
 
 ## Where a look comes from
 
