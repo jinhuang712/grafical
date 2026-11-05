@@ -688,7 +688,7 @@ grafical installed from npm.
 
 - ⬜ A package that can be published: `package.json` is still private at version 0.0.0.
 - ⬜ Fix the font name tables: The subsets' name tables still say "Thin" and the OFL reserved font name "Source" needs checking.
-- ⬜ Credit Twemoji: Its graphics are CC-BY 4.0, which asks for attribution, and `LICENSE` does not name it.
+- ⬜ Credit Twemoji: CC-BY 4.0 asks for attribution of its graphics and `LICENSE` does not name it.
 - ⬜ Publish 0.1.0: The first version on npm.
 - ⬜ Install from npm: The install steps use npm in place of a clone.
 
