@@ -101,7 +101,8 @@ Roadmap
 │   │   ├── ⬜ Labels on lines
 │   │   ├── ⬜ Label text
 │   │   ├── ⬜ Region gaps
-│   │   └── ⬜ Edge looks
+│   │   ├── ⬜ Edge looks
+│   │   └── ⬜ Region labels
 │   └── ⬜ CP2.7: The command line
 │       ├── ⬜ The file flag
 │       ├── ⬜ One name for each thing
@@ -563,6 +564,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - ⬜ Label text: An agent sets a label's breaks and its alignment.
 - ⬜ Region gaps: The gap between two regions takes a multiple.
 - ⬜ Edge looks: An edge takes a color of its own or a named look.
+- ⬜ Region labels: A region's label sits at a fraction of a side, inside or outside.
 
 **Delivers:**
 
@@ -572,6 +574,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - [F4.6: Label text](../features/F4-look.md#f46-label-text)
 - [F2.6.1: Region gaps](../features/F2-layout.md#f261-region-gaps)
 - [F1.2.6: Edge looks](../features/F1-elements.md#f126-edge-looks)
+- [F4.7: Region labels](../features/F4-look.md#f47-region-labels)
 
 **Exit criteria:**
 

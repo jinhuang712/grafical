@@ -7,7 +7,8 @@ F4: Look
 ├── F4.3: Themes and stylesheets — the whole look from one name
 ├── F4.4: The stylesheet file — colors, widths and type sizes
 ├── F4.5: Brand fonts — a team's own typeface
-└── F4.6: Label text — breaks and alignment
+├── F4.6: Label text — breaks and alignment
+└── F4.7: Region labels — where any region's label sits
 ```
 
 The words and the look of the picture as a whole: its title, its legend, and its theme or stylesheet.
@@ -133,3 +134,25 @@ grafical label align <file> <id> left|center|right
 
 - An agent breaks a label by its sense, to keep two words together.
 - An agent aligns the text of a note left, to make a list read well.
+
+## F4.7: Region labels
+
+A diagram, a group, a layer, a lane and a column are all regions, and each places its label the same way.
+
+```sh
+grafical -f <file> group --label-at <id> <fraction> [--top|--bottom|--left|--right] [--inside|--outside]
+grafical -f <file> diagram --label-at <fraction> [--top|--bottom]
+```
+
+- A fraction runs from 0 to 1 along the side: 0 at its start, 0.5 at its middle and 1 at its end.
+- The label's own point at that fraction meets the side's, so it never runs past the side.
+- A subtitle or a sublabel follows its label.
+- A label that would overlap anything is refused.
+- A region that states nothing keeps the place it has today.
+
+- **Why:** [084. A region's label sits at a fraction of a side](../specs/decisions/084-a-region-s-label-sits-at-a-fraction-of-a-side.md)
+
+**Stories:**
+
+- An agent centres a title, to match the look of the page it sits on.
+- An agent moves a group's label along its side, to clear a line.

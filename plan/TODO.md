@@ -9,7 +9,7 @@
   - grafical is not that free yet, and the owner sees much room to improve.
   - The owner takes it one dimension at a time, and lines, line labels, bars across groups, region gaps, node sizes and the looks of edges and containers are decided.
   - The owner needs nothing for the canvas's proportions, since a wide picture is fine.
-  - Still open are where a box sits beside another, where no gap has shown, and where other text sits.
+  - Still open are where a box sits beside another, where no gap has shown, and where notes and step badges sit.
   - Agents' reflections name lines and the canvas more than a box a few pixels off, read by sample on 2026-11-06.
   - Option one keeps places as facts and turns each gap into a new discrete fact.
   - Option two adds a small adjustment within one cell of the grid.
