@@ -1,16 +1,17 @@
-# F6: The whole picture
+# F4: Look
 
 ```
-F6: The whole picture
-├── F6.1: Title, subtitle and footnote — the words around the picture
-├── F6.2: Legend — a key for styles, widths and marks
-├── F6.3: Spacing — compact, normal or airy
-└── F6.4: Themes and stylesheets — the whole look from one name
+F4: Look
+├── F4.1: Title, subtitle and footnote — the words around the picture
+├── F4.2: Legend — a key for styles, widths and marks
+├── F4.3: Themes and stylesheets — the whole look from one name
+├── F4.4: The stylesheet file — colors, widths and type sizes
+└── F4.5: Brand fonts — a team's own typeface
 ```
 
-The words and the look of the picture as a whole: its title, its legend, how much air it has and its theme or stylesheet.
+The words and the look of the picture as a whole: its title, its legend, and its theme or stylesheet.
 
-## F6.1: Title, subtitle and footnote
+## F4.1: Title, subtitle and footnote
 
 **Commands:**
 
@@ -31,7 +32,7 @@ The title names the picture, and two more texts tell a reader what they see.
 
 - An agent sets the title and says what the picture leaves out, to tell a reader what they see.
 
-## F6.2: Legend
+## F4.2: Legend
 
 A key in the top right that says, in the agent's words, what the picture's styles, widths and marks mean.
 
@@ -57,21 +58,7 @@ grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mar
 
 - An agent explains a style or a mark in its own words, to let a reader decode the picture.
 
-## F6.3: Spacing
-
-```sh
-grafical diagram density <file> compact|normal|airy
-```
-
-- **Design:** [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
-- **How it works:** [Placement: rows down the page](../specs/placement.md#rows-down-the-page)
-- **Why:** [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md)
-
-**Stories:**
-
-- An agent picks a density, to trade size for air.
-
-## F6.4: Themes and stylesheets
+## F4.3: Themes and stylesheets
 
 A diagram takes its whole look from a built-in theme or from a stylesheet file it names.
 
@@ -91,3 +78,32 @@ grafical diagram style <file> [<style>]
 **Stories:**
 
 - An agent picks a theme or a stylesheet, to restyle every diagram that names it.
+
+## F4.4: The stylesheet file
+
+A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and overrides any of its colors, line widths, corner radii and type sizes.
+
+- Every value not given comes from the theme it starts from.
+- Larger type changes the layout, and text that no longer fits is refused as `overflow`.
+- An unknown key, a malformed colour or a weight the fonts lack is refused with the path of the value.
+- A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
+
+- **Design:**
+  - [10. What grafical cannot fully read, it refuses](../DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses)
+  - [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **How it works:**
+  - [The theme: themes and stylesheets](../specs/theme.md#themes-and-stylesheets)
+  - [The file formats](../specs/file-formats.md#the-stylesheet)
+- **Why:** [016. Themes and stylesheets](../specs/decisions/016-themes-and-stylesheets.md)
+
+**Stories:**
+
+- An engineer writes a stylesheet, to set the look of many diagrams at once.
+
+## F4.5: Brand fonts
+
+A team's own typeface in the picture.
+
+**Stories:**
+
+- A team draws in its own typeface, to put its brand on the pictures.

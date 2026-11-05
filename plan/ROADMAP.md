@@ -24,7 +24,8 @@ Roadmap
 │   └── ⬜ CP2.5: Run one paid round — a round paid for and measured
 ├── 🟨 CP3: Pictures worth keeping — pictures that look right where no check fails
 ├── ⬜ CP4: More combinations of operations — more ways to combine operations
-└── ⬜ CP5: Release 0.1.0 — grafical on npm
+├── ⬜ CP5: Release 0.1.0 — grafical on npm
+└── ⬜ CP6: After the first release — what a real need brings
 ```
 
 ## CP1: Stage 1 built
@@ -65,9 +66,9 @@ The smallest path from operations to a picture: an agent built the public brief 
 
 **Delivers:**
 
-- [F1.1: Operations](../features/F1-drawing-in-steps.md#f11-operations)
-- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
-- [F7.5: Render](../features/F7-seeing-the-result.md#f75-render)
+- [F3.1: Operations](../features/F3-editing.md#f31-operations)
+- [F3.2: Batches](../features/F3-editing.md#f32-batches)
+- [F6.2: Render](../features/F6-output.md#f62-render)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
@@ -79,9 +80,9 @@ The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, a
 
 **Delivers:**
 
-- [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
-- [F4.1: Rows and order](../features/F4-placing.md#f41-rows-and-order)
-- [F5.1: Groups](../features/F5-grouping.md#f51-groups)
+- [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
+- [F2.2: Rows and order](../features/F2-layout.md#f22-rows-and-order)
+- [F1.3.1: Groups](../features/F1-elements.md#f131-groups)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
@@ -93,10 +94,10 @@ Lines that end at containers, swimlanes, themes and stylesheets, and the live vi
 
 **Delivers:**
 
-- [F3.5: Ends at a group, a row or a lane](../features/F3-lines.md#f35-ends-at-a-group-a-row-or-a-lane)
-- [F5.4: Swimlanes](../features/F5-grouping.md#f54-swimlanes)
-- [F6.4: Themes and stylesheets](../features/F6-the-whole-picture.md#f64-themes-and-stylesheets)
-- [F7.6: Live viewer](../features/F7-seeing-the-result.md#f76-live-viewer)
+- [F1.2.5: Ends at a group, a row or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-row-or-a-lane)
+- [F1.3.4: Swimlanes](../features/F1-elements.md#f134-swimlanes)
+- [F4.3: Themes and stylesheets](../features/F4-look.md#f43-themes-and-stylesheets)
+- [F6.3: Live viewer](../features/F6-output.md#f63-live-viewer)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
@@ -108,11 +109,11 @@ The full operation set, `apply`, `show`, `diff` and the help, with the stability
 
 **Delivers:**
 
-- [F1.1: Operations](../features/F1-drawing-in-steps.md#f11-operations)
-- [F1.2: Batches](../features/F1-drawing-in-steps.md#f12-batches)
-- [F7.1: Show](../features/F7-seeing-the-result.md#f71-show)
-- [F7.7: Diff](../features/F7-seeing-the-result.md#f77-diff)
-- [F7.8: Help](../features/F7-seeing-the-result.md#f78-help)
+- [F3.1: Operations](../features/F3-editing.md#f31-operations)
+- [F3.2: Batches](../features/F3-editing.md#f32-batches)
+- [F5.1: Show](../features/F5-checking.md#f51-show)
+- [F6.4: Diff](../features/F6-output.md#f64-diff)
+- [F7.1: Help](../features/F7-help.md#f71-help)
 
 **Exit criteria:**
 
@@ -135,9 +136,9 @@ New line kinds, lines that meet a box on any side, hops and dots, the flowchart 
 
 **Delivers:**
 
-- [F2.1: Kinds and shapes](../features/F2-boxes.md#f21-kinds-and-shapes)
-- [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
-- [F5.1: Groups](../features/F5-grouping.md#f51-groups)
+- [F1.1.1: Kinds and shapes](../features/F1-elements.md#f111-kinds-and-shapes)
+- [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
+- [F1.3.1: Groups](../features/F1-elements.md#f131-groups)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
@@ -149,14 +150,14 @@ Records in place of prose, `try`, bundled fan-outs, equal heights in a row, room
 
 **Delivers:**
 
-- [F1.3: Trying a change](../features/F1-drawing-in-steps.md#f13-trying-a-change)
-- [F4.3: Columns](../features/F4-placing.md#f43-columns)
-- [F4.4: Steps from another box](../features/F4-placing.md#f44-steps-from-another-box)
-- [F5.5: Walls](../features/F5-grouping.md#f55-walls)
-- [F5.6: Notes](../features/F5-grouping.md#f56-notes)
-- [F2.4: Marks](../features/F2-boxes.md#f24-marks)
-- [F3.3: Weight](../features/F3-lines.md#f33-weight)
-- [F6.2: Legend](../features/F6-the-whole-picture.md#f62-legend)
+- [F3.3: Trying a change](../features/F3-editing.md#f33-trying-a-change)
+- [F2.4: Columns](../features/F2-layout.md#f24-columns)
+- [F2.5: Steps from another box](../features/F2-layout.md#f25-steps-from-another-box)
+- [F1.3.6: Walls](../features/F1-elements.md#f136-walls)
+- [F1.3.7: Notes](../features/F1-elements.md#f137-notes)
+- [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
+- [F1.2.3: Weight](../features/F1-elements.md#f123-weight)
+- [F4.2: Legend](../features/F4-look.md#f42-legend)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
@@ -168,12 +169,12 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 
 **Delivers:**
 
-- [F1.5: Refusals](../features/F1-drawing-in-steps.md#f15-refusals)
-- [F4.1: Rows and order](../features/F4-placing.md#f41-rows-and-order)
-- [F5.2: Copying a group](../features/F5-grouping.md#f52-copying-a-group)
-- [F7.3: Warnings](../features/F7-seeing-the-result.md#f73-warnings)
-- [F7.8: Help](../features/F7-seeing-the-result.md#f78-help)
-- [F7.9: Guides](../features/F7-seeing-the-result.md#f79-guides)
+- [F3.5: Refusals](../features/F3-editing.md#f35-refusals)
+- [F2.2: Rows and order](../features/F2-layout.md#f22-rows-and-order)
+- [F1.3.2: Copying a group](../features/F1-elements.md#f132-copying-a-group)
+- [F5.3: Warnings](../features/F5-checking.md#f53-warnings)
+- [F7.1: Help](../features/F7-help.md#f71-help)
+- [F7.2: Guides](../features/F7-help.md#f72-guides)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
@@ -231,15 +232,12 @@ A scan of the transcripts for placement by the agent, and the context each diagr
 
 **Status:** ⬜
 
-Opus with a higher thinking budget, and the `diagram-design` skill.
+Opus at xhigh effort.
 
 **Exit criteria:**
 
 - **Comparisons**
-  - [C2: Time](GOALS.md#c2-time)
-  - [C3: Token use](GOALS.md#c3-token-use)
-  - [C5: Cost](GOALS.md#c5-cost)
-  - [C6: Cache hit rate](GOALS.md#c6-cache-hit-rate)
+  - [C7: Beats the strongest model alone](GOALS.md#c7-beats-the-strongest-model-alone)
 
 ### CP2.5: Run one paid round
 
@@ -256,6 +254,9 @@ With the owner's approval of its cost first. The owner's budget for stage 1 is $
   - [B5: Intent](GOALS.md#b5-intent)
 - **Comparisons**
   - [C1: Model gap](GOALS.md#c1-model-gap)
+  - [C2: Time](GOALS.md#c2-time)
+  - [C3: Token use](GOALS.md#c3-token-use)
+  - [C5: Cost](GOALS.md#c5-cost)
 - **Constraints**
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
@@ -272,26 +273,22 @@ Each round's final pictures go on a review page, and the owner's notes decide wh
 
 **Delivers:**
 
-- [F2.1: Kinds and shapes](../features/F2-boxes.md#f21-kinds-and-shapes)
-- [F3.6: How lines are drawn](../features/F3-lines.md#f36-how-lines-are-drawn)
+- [F1.1.1: Kinds and shapes](../features/F1-elements.md#f111-kinds-and-shapes)
+- [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
 
-**Exit criteria:**
-
-- **Objectives**
-  - [O3: The picture turned in](GOALS.md#o3-the-picture-turned-in)
+**Exit criteria:** none yet.
 
 ## CP4: More combinations of operations
 
 **Status:** ⬜
 
-The form is not decided with the owner yet, such as one operation for a common edit or for a common shape ([Later, if needed](../FEATURES.md#later-if-needed)). The first candidates were chosen on 2026-10-15 after a field study of other diagram tools; copying a group was built on 2026-10-16. A candidate stays only if a round shows it helps.
+The form is not decided with the owner yet, such as one operation for a common edit or for a common shape. The first candidates were chosen on 2026-10-15 after a field study of other diagram tools; copying a group was built on 2026-10-16. A candidate stays only if a round shows it helps.
 
 **Delivers:**
 
-- [F3.4: Numbered steps](../features/F3-lines.md#f34-numbered-steps)
-- [F5.2: Copying a group](../features/F5-grouping.md#f52-copying-a-group)
-- [F5.3: Deeper nesting](../features/F5-grouping.md#f53-deeper-nesting)
-- [F2.5: Marks by name](../features/F2-boxes.md#f25-marks-by-name)
+- [F3.7: More combinations of operations](../features/F3-editing.md#f37-more-combinations-of-operations)
+- [F1.3.3: Deeper nesting](../features/F1-elements.md#f133-deeper-nesting)
+- [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
 
 **Exit criteria:**
 
@@ -304,9 +301,40 @@ The form is not decided with the owner yet, such as one operation for a common e
 
 Publish `grafical` on npm once every goal meets its target. A recorded decision may recalibrate any target except the MVP bar.
 
+**Delivers:**
+
+- [F11.1: The npm package](../features/F11-getting-grafical.md#f111-the-npm-package)
+
 **Exit criteria:**
 
 - **Benchmarks**
   - [B2: Scale](GOALS.md#b2-scale)
   - [B3: Faithfulness](GOALS.md#b3-faithfulness)
   - [B4: Verifiability](GOALS.md#b4-verifiability)
+
+## CP6: After the first release
+
+**Status:** ⬜
+
+These are built only when a real need brings one forward, in any order. Reaching this checkpoint commits to none of them.
+
+**Delivers:**
+
+- [F1.3.5: Lanes both ways](../features/F1-elements.md#f135-lanes-both-ways)
+- [F2.8: Flow direction](../features/F2-layout.md#f28-flow-direction)
+- [F4.5: Brand fonts](../features/F4-look.md#f45-brand-fonts)
+- [F8.1: Sequence diagrams](../features/F8-diagram-types.md#f81-sequence-diagrams)
+- [F8.2: Gantt charts](../features/F8-diagram-types.md#f82-gantt-charts)
+- [F8.3: Mind maps](../features/F8-diagram-types.md#f83-mind-maps)
+- [F8.4: Pyramids](../features/F8-diagram-types.md#f84-pyramids)
+- [F8.5: Overlapping sets](../features/F8-diagram-types.md#f85-overlapping-sets)
+- [F8.6: Entity-relationship and class diagrams](../features/F8-diagram-types.md#f86-entity-relationship-and-class-diagrams)
+- [F9.1: Mermaid files](../features/F9-import.md#f91-mermaid-files)
+- [F9.2: draw.io files](../features/F9-import.md#f92-drawio-files)
+- [F9.3: Excalidraw files](../features/F9-import.md#f93-excalidraw-files)
+- [F10.1: Views of one file](../features/F10-many-views.md#f101-views-of-one-file)
+- [F10.2: Folded groups](../features/F10-many-views.md#f102-folded-groups)
+- [F10.3: One catalog of systems](../features/F10-many-views.md#f103-one-catalog-of-systems)
+- [F11.2: An MCP server](../features/F11-getting-grafical.md#f112-an-mcp-server)
+
+**Exit criteria:** none yet.

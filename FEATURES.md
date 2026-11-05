@@ -8,96 +8,97 @@ What grafical does, from the side of the agent that draws and the person who ask
 
 ```
 Features
-├── ✅ F1: Drawing in steps — every change is one named, checked operation
-│   ├── ✅ F1.1: Operations — one named command per change
-│   ├── ✅ F1.2: Batches — many operations, all or nothing
-│   ├── ✅ F1.3: Trying a change — see counts before writing
-│   ├── ✅ F1.4: IDs — the caller names every element
-│   └── ✅ F1.5: Refusals — a wrong operation is refused with facts
-├── 🚧 F2: Boxes — what a box is, says and carries (marks have a gap · marks by name are planned)
-│   ├── ✅ F2.1: Kinds and shapes — a box's kind sets its shape
-│   ├── ✅ F2.2: Labels and sublabels — a label and a quieter sublabel
-│   ├── ✅ F2.3: Sizes — sized to the text, or by a step
-│   ├── 🚧 F2.4: Marks — up to five small marks on a box (a corner mark is not checked against nearby lines)
-│   ├── ⬜ F2.5: Marks by name — a mark from one bundled icon set
-│   ├── ✅ F2.6: Emphasis — at most two boxes stand out
-│   └── ✅ F2.7: Merging and swapping — merge, swap and remove boxes
-├── ✅ F3: Lines — what a line means and how it is drawn
-│   ├── ✅ F3.1: Kinds — a line's kind sets its style
-│   ├── ✅ F3.2: Arrowheads at both ends — two-way lines
-│   ├── ✅ F3.3: Weight — thicker lines for what matters more
-│   ├── ✅ F3.4: Numbered steps — a number on a line
-│   ├── ✅ F3.5: Ends at a group, a row or a lane — one arrow to a whole system
-│   └── ✅ F3.6: How lines are drawn — grafical routes every line
-├── 🚧 F4: Placing — where a box sits, stated as a fact (alignment differs from the code)
-│   ├── ✅ F4.1: Rows and order — a box's row and its place in it
-│   ├── 🚧 F4.2: Alignment — one box above or below another (the code joins a column instead)
-│   ├── ✅ F4.3: Columns — a second placement fact beside rows
-│   └── ✅ F4.4: Steps from another box — a box some cells from another
-├── 🚧 F5: Grouping — systems, lanes, walls and notes around boxes (deeper nesting is planned)
-│   ├── ✅ F5.1: Groups — a system drawn as one frame
-│   ├── ✅ F5.2: Copying a group — a second zone in one operation
-│   ├── ⬜ F5.3: Deeper nesting — up to five levels
-│   ├── ✅ F5.4: Swimlanes — bands that say who owns what
-│   ├── ✅ F5.5: Walls — space that lines cross only where allowed
-│   └── ✅ F5.6: Notes — a short text on a box, a line or a group
-├── ✅ F6: The whole picture — title, legend, spacing and look
-│   ├── ✅ F6.1: Title, subtitle and footnote — the words around the picture
-│   ├── ✅ F6.2: Legend — a key for styles, widths and marks
-│   ├── ✅ F6.3: Spacing — compact, normal or airy
-│   └── ✅ F6.4: Themes and stylesheets — the whole look from one name
-├── ✅ F7: Seeing the result — what the agent and the owner see
-│   ├── ✅ F7.1: Show — the diagram as facts
-│   ├── ✅ F7.2: Counts — facts about how the picture is drawn
-│   ├── ✅ F7.3: Warnings — what the picture draws poorly
-│   ├── ✅ F7.4: Check — defects, warnings and counts on demand
-│   ├── ✅ F7.5: Render — SVG and PNG, the same everywhere
-│   ├── ✅ F7.6: Live viewer — a window that redraws as the agent draws
-│   ├── ✅ F7.7: Diff — a change as operations
-│   ├── ✅ F7.8: Help — the agent's whole reference
-│   └── ✅ F7.9: Guides — how common diagrams are usually drawn
-└── ✅ F8: Files — the diagram and stylesheet files
-    ├── ✅ F8.1: The diagram file — one YAML file of facts
-    └── ✅ F8.2: The stylesheet file — colors, widths and type sizes
+├── 🚧 F1: Elements — what a diagram is made of
+│   ├── 🚧 F1.1: Boxes — the parts of the system
+│   │   ├── ✅ F1.1.1: Kinds and shapes — a box's kind sets its shape
+│   │   ├── ✅ F1.1.2: Labels and sublabels — a label and a quieter sublabel
+│   │   ├── ✅ F1.1.3: Sizes — sized to the text, or by a step
+│   │   ├── 🚧 F1.1.4: Marks — up to five small marks on a box (a corner mark is not checked against nearby lines)
+│   │   ├── ⬜ F1.1.5: Marks by name — a mark from one bundled icon set
+│   │   └── ✅ F1.1.6: Emphasis — at most two boxes stand out
+│   ├── ✅ F1.2: Lines — what connects to what
+│   │   ├── ✅ F1.2.1: Kinds — a line's kind sets its style
+│   │   ├── ✅ F1.2.2: Arrowheads at both ends — two-way lines
+│   │   ├── ✅ F1.2.3: Weight — thicker lines for what matters more
+│   │   ├── ✅ F1.2.4: Numbered steps — a number on a line
+│   │   └── ✅ F1.2.5: Ends at a group, a row or a lane — one arrow to a whole system
+│   └── 🚧 F1.3: Containers — what gathers boxes
+│       ├── ✅ F1.3.1: Groups — a system drawn as one frame
+│       ├── ✅ F1.3.2: Copying a group — a second zone in one operation
+│       ├── ⬜ F1.3.3: Deeper nesting — up to five levels
+│       ├── ✅ F1.3.4: Swimlanes — bands that say who owns what
+│       ├── ⬜ F1.3.5: Lanes both ways — a grid of lanes and phases
+│       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
+│       └── ✅ F1.3.7: Notes — a short text on a box, a line or a group
+├── 🚧 F2: Layout — where everything goes
+│   ├── ✅ F2.1: Placing every box — grafical gives every box its place
+│   ├── ✅ F2.2: Rows and order — a box's row and its place in it
+│   ├── 🚧 F2.3: Alignment — one box above or below another (the code joins a column instead)
+│   ├── ✅ F2.4: Columns — a second placement fact beside rows
+│   ├── ✅ F2.5: Steps from another box — a box some cells from another
+│   ├── ✅ F2.6: Spacing — compact, normal or airy
+│   ├── ✅ F2.7: How lines are drawn — grafical routes every line
+│   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
+├── 🚧 F3: Editing — how a diagram changes
+│   ├── ✅ F3.1: Operations — one named command per change
+│   ├── ✅ F3.2: Batches — many operations, all or nothing
+│   ├── ✅ F3.3: Trying a change — see counts before writing
+│   ├── ✅ F3.4: IDs — the caller names every element
+│   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts
+│   ├── ✅ F3.6: Merging and swapping — merge, swap and remove boxes
+│   └── ⬜ F3.7: More combinations of operations — one operation for a common edit
+├── 🚧 F4: Look — how the picture looks
+│   ├── ✅ F4.1: Title, subtitle and footnote — the words around the picture
+│   ├── ✅ F4.2: Legend — a key for styles, widths and marks
+│   ├── ✅ F4.3: Themes and stylesheets — the whole look from one name
+│   ├── ✅ F4.4: The stylesheet file — colors, widths and type sizes
+│   └── ⬜ F4.5: Brand fonts — a team's own typeface
+├── ✅ F5: Checking — how an agent knows it came out right
+│   ├── ✅ F5.1: Show — the diagram as facts
+│   ├── ✅ F5.2: Counts — facts about how the picture is drawn
+│   ├── ✅ F5.3: Warnings — what the picture draws poorly
+│   └── ✅ F5.4: Check — defects, warnings and counts on demand
+├── ✅ F6: Output — what a diagram leaves behind
+│   ├── ✅ F6.1: The diagram file — one YAML file of facts
+│   ├── ✅ F6.2: Render — SVG and PNG, the same everywhere
+│   ├── ✅ F6.3: Live viewer — a window that redraws as the agent draws
+│   └── ✅ F6.4: Diff — a change as operations
+├── ✅ F7: Help — how an agent learns grafical
+│   ├── ✅ F7.1: Help — the agent's whole reference
+│   └── ✅ F7.2: Guides — how common diagrams are usually drawn
+├── ⬜ F8: Diagram types — diagrams with a layout of their own
+│   ├── ⬜ F8.1: Sequence diagrams — messages in time order
+│   ├── ⬜ F8.2: Gantt charts — tasks over time
+│   ├── ⬜ F8.3: Mind maps — ideas around one topic
+│   ├── ⬜ F8.4: Pyramids — layers of a whole
+│   ├── ⬜ F8.5: Overlapping sets — what two sets share
+│   └── ⬜ F8.6: Entity-relationship and class diagrams — tables and classes
+├── ⬜ F9: Import — a diagram started from an existing file
+│   ├── ⬜ F9.1: Mermaid files — start from a Mermaid file
+│   ├── ⬜ F9.2: draw.io files — start from a draw.io file
+│   └── ⬜ F9.3: Excalidraw files — start from an Excalidraw file
+├── ⬜ F10: Many views — several pictures of one system
+│   ├── ⬜ F10.1: Views of one file — several pictures of parts of one file
+│   ├── ⬜ F10.2: Folded groups — a group drawn as one box
+│   └── ⬜ F10.3: One catalog of systems — one list many diagrams share
+└── ⬜ F11: Getting grafical — how grafical reaches an agent
+    ├── ⬜ F11.1: The npm package — install with one command
+    └── ⬜ F11.2: An MCP server — operations without a shell
 ```
 
 ## Groups
 
-- [F1: Drawing in steps](features/F1-drawing-in-steps.md)
-- [F2: Boxes](features/F2-boxes.md)
-- [F3: Lines](features/F3-lines.md)
-- [F4: Placing](features/F4-placing.md)
-- [F5: Grouping](features/F5-grouping.md)
-- [F6: The whole picture](features/F6-the-whole-picture.md)
-- [F7: Seeing the result](features/F7-seeing-the-result.md)
-- [F8: Files](features/F8-files.md)
-
-## Later, if needed
-
-Each idea becomes a planned feature once it gets a checkpoint.
-
-- **More combinations of operations:** one operation for a common edit or a common shape, such as "put a cache between the API and the database".
-  - The owner said on 2026-10-14 that this is what grafical lacks most.
-  - A round that shows agents asking for what no operation can say would bring it.
-- **Flow direction:** rows become columns so that a diagram reads left to right.
-  - The owner held it on 2026-10-14 because most of the layout assumes rows run across.
-  - A round that shows it helps would bring it.
-- **Lanes both ways in one diagram:** a grid of lanes and phases.
-  - A brief that needs both would bring it.
-- **Diagram types with a layout of their own:** sequence diagrams · Gantt charts · mind maps · pyramids · overlapping sets.
-  - Each is a type that sets a diagram's space and the operations that apply ([049. An optional type sets the diagram's space](specs/decisions/049-an-optional-type-sets-the-diagram-s-space.md)).
-  - Entity-relationship and class diagrams may be a type or a kind of box.
-  - Agents asking for one of these types would bring it.
-- **Importing Mermaid and draw.io and Excalidraw files:** a diagram started from an existing file.
-  - Users who bring such files would bring it.
-- **An MCP server:** the same operations served to an agent without a shell.
-  - An agent that cannot run commands would bring it.
-- **Views:** several pictures of parts of one file, with a group drawn folded into one box.
-  - A diagram too large for one picture would bring it.
-- **One catalog of systems:** many diagrams that share one list of systems.
-  - Teams that keep several diagrams of one system would bring it.
-- **Brand fonts:** a team's own typeface.
-  - A team that needs its brand on the pictures would bring it.
+- [F1: Elements](features/F1-elements.md)
+- [F2: Layout](features/F2-layout.md)
+- [F3: Editing](features/F3-editing.md)
+- [F4: Look](features/F4-look.md)
+- [F5: Checking](features/F5-checking.md)
+- [F6: Output](features/F6-output.md)
+- [F7: Help](features/F7-help.md)
+- [F8: Diagram types](features/F8-diagram-types.md)
+- [F9: Import](features/F9-import.md)
+- [F10: Many views](features/F10-many-views.md)
+- [F11: Getting grafical](features/F11-getting-grafical.md)
 
 ## Not planned
 

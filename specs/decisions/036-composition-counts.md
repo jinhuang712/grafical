@@ -13,7 +13,7 @@ Decided on 2026-10-16 from a request that agents see how a picture is composed, 
   - Each count is a fact the agent weighs; `try` shows the delta of each.
 - **Gutters.** `show --drawn` also prints a `gutter` record for each pair of neighbouring rows, with the same counts for the space between them.
   - The agent compares gutters to see which row order costs; the record gives no advice, and no sum.
-- **Measured** over the 306 saved agent drafts (GOALS.md, "Mechanical defects"):
+- **Measured** over the 306 saved agent drafts on 2026-10-16:
   - `across`: 66 lines in 29 drafts.
   - `tight`: 6 pairs in 3 drafts.
   - `crowded`: 88 labels in 51 drafts.

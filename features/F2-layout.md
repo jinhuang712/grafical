@@ -1,16 +1,42 @@
-# F4: Placing
+# F2: Layout
 
 ```
-F4: Placing
-├── F4.1: Rows and order — a box's row and its place in it
-├── F4.2: Alignment — one box above or below another
-├── F4.3: Columns — a second placement fact beside rows
-└── F4.4: Steps from another box — a box some cells from another
+F2: Layout
+├── F2.1: Placing every box — grafical gives every box its place
+├── F2.2: Rows and order — a box's row and its place in it
+├── F2.3: Alignment — one box above or below another
+├── F2.4: Columns — a second placement fact beside rows
+├── F2.5: Steps from another box — a box some cells from another
+├── F2.6: Spacing — compact, normal or airy
+├── F2.7: How lines are drawn — grafical routes every line
+└── F2.8: Flow direction — a diagram that reads left to right
 ```
 
-The agent says where a box sits as a fact and never as a position. A box sits in a row in a stated order, below or above another box, in a column, or some steps from another box. grafical turns those facts into places and keeps them after every change.
+Where everything goes. The agent states places as facts and never as positions, and grafical turns those facts into a picture with every box placed and every line drawn, again after every change.
 
-## F4.1: Rows and order
+## F2.1: Placing every box
+
+The agent never places a box. grafical works out every box's place and size from the facts, and works them out again after every write.
+
+- Every box takes a column of one grid that all rows share, so boxes in different rows line up.
+- The rows stack from the top, with a gutter below each as tall as its lines need.
+- A change moves only what it names and a fixed list of things that follow it.
+- The file holds no position, so there is nothing to keep in step.
+
+- **Stance:** [What does a change do?](../PHILOSOPHY.md#what-does-a-change-do)
+- **Design:**
+  - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
+  - [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
+- **How it works:** [Placement](../specs/placement.md)
+- **Why:**
+  - [002. Facts over coordinates](../specs/decisions/002-facts-over-coordinates.md)
+  - [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md)
+
+**Stories:**
+
+- An agent states facts, to get a laid-out picture without computing one position.
+
+## F2.2: Rows and order
 
 A box sits in a row, in an order. A row only places, and is not drawn unless it has a look or a line ends at it.
 
@@ -63,7 +89,7 @@ A box sits in a row, in an order. A row only places, and is not drawn unless it 
 
 - An agent states each box's row and order, to decide the story's layout in facts.
 
-## F4.2: Alignment
+## F2.3: Alignment
 
 ```sh
 grafical node align <file> <id> [--to <node>]
@@ -85,7 +111,7 @@ Gap: the code joins the aligned box to its target's column instead, and has no `
 
 - An agent aligns two boxes in different rows, to give a line between them a straight run.
 
-## F4.3: Columns
+## F2.4: Columns
 
 A second placement fact beside rows. Nothing is drawn: a column is a guide.
 
@@ -115,7 +141,7 @@ A second placement fact beside rows. Nothing is drawn: a column is a guide.
 
 - An agent sets columns, to keep boxes of different rows in one left-to-right order.
 
-## F4.4: Steps from another box
+## F2.5: Steps from another box
 
 A box in no row, placed some cells of the grid from another box.
 
@@ -146,3 +172,61 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
 **Stories:**
 
 - An agent places a box some steps from another, to draw a staircase or a side path.
+
+## F2.6: Spacing
+
+```sh
+grafical diagram density <file> compact|normal|airy
+```
+
+- **Design:** [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
+- **How it works:** [Placement: rows down the page](../specs/placement.md#rows-down-the-page)
+- **Why:** [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md)
+
+**Stories:**
+
+- An agent picks a density, to trade size for air.
+
+## F2.7: How lines are drawn
+
+The agent says what connects. grafical draws every line.
+
+- A line is made of horizontal and vertical runs through the gaps between rows and boxes, never through a box or across text.
+- A line may leave or enter a box on any side.
+  - Each line has its own place on a side, spread evenly.
+- Three or more unlabelled lines of one style that leave one side of a box leave as one line and split near their targets, with a dot at each split.
+  - Labelled lines and two-way lines keep their own place.
+- Where two lines cross, one hops over the other.
+  - Where lines join on purpose, a dot marks the join.
+- A label sits beside its line.
+  - When there is no room, it wraps or moves to another gap on its way.
+  - Where no gap on its way has room, no line moves for it and the write is refused as `label-blocked` ([041. The dirty work has edges](../specs/decisions/041-the-dirty-work-has-edges.md)).
+  - The refusal names the line, the lines across the label and the gaps it tried.
+  - `node resize` is among the commands that can change it.
+  - grafical never widens a box for its lines.
+  - A step's number is refused the same way.
+- A stylesheet may draw the corners curved, with `paint.edge.shape: curved`.
+  - The routes stay the same.
+
+- **Design:** [5. The engine routes every line, in plain forms](../DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
+- **How it works:**
+  - [Routing](../specs/routing.md#the-steps)
+  - [Text placement: line labels](../specs/labels.md#line-labels)
+- **Why:**
+  - [005. Our own gap router](../specs/decisions/005-our-own-gap-router.md)
+  - [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
+  - [023. Fan-outs of three bundle](../specs/decisions/023-fan-outs-of-three-bundle.md)
+  - [041. The dirty work has edges](../specs/decisions/041-the-dirty-work-has-edges.md)
+  - [051. A label sits on its straight vertical line](../specs/decisions/051-a-label-sits-on-its-straight-vertical-line.md)
+
+**Stories:**
+
+- An agent states what connects, to get lines that avoid boxes and text without drawing any.
+
+## F2.8: Flow direction
+
+Rows become columns, so that a diagram reads left to right.
+
+**Stories:**
+
+- An agent turns a diagram on its side, to draw a pipeline that reads left to right.

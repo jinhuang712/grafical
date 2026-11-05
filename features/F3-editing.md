@@ -1,17 +1,19 @@
-# F1: Drawing in steps
+# F3: Editing
 
 ```
-F1: Drawing in steps
-├── F1.1: Operations — one named command per change
-├── F1.2: Batches — many operations, all or nothing
-├── F1.3: Trying a change — see counts before writing
-├── F1.4: IDs — the caller names every element
-└── F1.5: Refusals — a wrong operation is refused with facts
+F3: Editing
+├── F3.1: Operations — one named command per change
+├── F3.2: Batches — many operations, all or nothing
+├── F3.3: Trying a change — see counts before writing
+├── F3.4: IDs — the caller names every element
+├── F3.5: Refusals — a wrong operation is refused with facts
+├── F3.6: Merging and swapping — merge, swap and remove boxes
+└── F3.7: More combinations of operations — one operation for a common edit
 ```
 
 An agent changes a diagram only through named operations, and grafical checks each one before it writes anything. The agent sends one command or a batch, can try a change before making it, and names every element itself. When something is wrong, the write is refused, the file stays as it was, and the refusal says what happened and which commands can change it.
 
-## F1.1: Operations
+## F3.1: Operations
 
 Every change to a diagram is one named operation, run as a command. The diagram file is `<name>.grafical.yaml` by convention.
 
@@ -24,7 +26,7 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
   - Every other value is a flag, such as `--label`.
 - `grafical new` takes the title and optionally `--subtitle` · `--note` · `--density` · `--sizing` · `--style`.
 - Every write reports the IDs it changed, then one block for each problem.
-  - A block says what the write is refused for, or what the picture draws poorly ([F1.5: Refusals](#f15-refusals) and [F7.3: Warnings](F7-seeing-the-result.md#f73-warnings)).
+  - A block says what the write is refused for, or what the picture draws poorly ([F3.5: Refusals](#f35-refusals) and [F5.3: Warnings](F5-checking.md#f53-warnings)).
   - A refused write changes nothing.
 - Every command takes `--json`, which prints the same report as JSON.
 - Exit codes:
@@ -45,7 +47,7 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
 
 - An agent changes a diagram with one named command, to move only what it named.
 
-## F1.2: Batches
+## F3.2: Batches
 
 Many operations at once, all or nothing.
 
@@ -70,7 +72,7 @@ grafical checks each operation in order, and writes only when every one is valid
 
 - An agent sends many operations in one call, to save round trips and never leave a half-made change.
 
-## F1.3: Trying a change
+## F3.3: Trying a change
 
 See what a batch would do before making it.
 
@@ -95,14 +97,14 @@ grafical try arch.grafical.yaml batch.yaml
   - [8. Answers are data a script can read](../DESIGNS.md#8-answers-are-data-a-script-can-read)
 - **How it works:** [How grafical answers](../specs/answers.md)
 - **Why:**
-  - [033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)
   - [022. Records over prose](../specs/decisions/022-records-over-prose.md)
+  - [033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)
 
 **Stories:**
 
 - An agent compares arrangements with `try`, to pick the one with fewer crossings without writing any.
 
-## F1.4: IDs
+## F3.4: IDs
 
 The caller names every row, group, lane, column, wall, box and line, and a name never changes while the element exists.
 
@@ -119,7 +121,7 @@ The caller names every row, group, lane, column, wall, box and line, and a name 
 
 - An agent names every element, to refer to it later without it ever changing.
 
-## F1.5: Refusals
+## F3.5: Refusals
 
 A wrong operation is refused at once, and nothing is written. Each problem is a block: what happened, what caused it, the facts, and the commands that can change it, by name ([047. Refusals say what happened and which commands can change it](../specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md)).
 
@@ -168,26 +170,60 @@ next: -
 - **Design:** [7. A refusal gives the facts, and the agent writes the fix](../DESIGNS.md#7-a-refusal-gives-the-facts-and-the-agent-writes-the-fix)
 - **How it works:** [How grafical answers](../specs/answers.md)
 - **Why:**
-  - [047. Refusals say what happened and which commands can change it](../specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md)
   - [044. One way to a page, and a wrong command names the right one](../specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
+  - [047. Refusals say what happened and which commands can change it](../specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md)
 
 **Stories:**
 
 - An agent that asks for something wrong gets what happened and which commands can change it, to fix it alone.
 
+## F3.6: Merging and swapping
+
+**Commands:**
+
+- `grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--kind <kind>]`
+- `grafical node swap <file> <a> <b>`
+- `grafical node remove <file> <id>`
+
+- `merge` replaces boxes with one new box where the first one was.
+  - It keeps each of their lines once and drops the lines between them.
+  - It may reuse a merged box's ID.
+  - Boxes aligned to a merged box lose the alignment.
+- `swap` trades the places of two boxes: their row and slot.
+- `remove` takes the box's lines with it and reports their IDs.
+  - A box that others are placed by steps from stays while they are (`step-anchor`).
+
+- **Design:**
+  - [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
+  - [3. The engine never chooses for the agent](../DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
+- **How it works:** [The model](../specs/model.md)
+- **Why:** [013. Curation stays with the agent](../specs/decisions/013-curation-stays-with-the-agent.md)
+
+**Stories:**
+
+- An agent merges boxes or swaps two, to change the picture without redrawing it.
+
+## F3.7: More combinations of operations
+
+One operation for a common edit or a common shape, such as "put a cache between the API and the database".
+
+**Stories:**
+
+- An agent makes a common edit in one operation, to spend fewer steps.
+
 ## When something fails
 
-Every failure leaves the file as it was and says what happened, in the block described under [F1.5: Refusals](#f15-refusals).
+Every failure leaves the file as it was and says what happened, in the block described under [F3.5: Refusals](#f35-refusals).
 
-- **An operation is wrong:** refused with a code, the facts and the commands that can change it ([F1.5: Refusals](#f15-refusals)).
-  - The ones about names are in [F1.4: IDs](#f14-ids), and the ones about a whole batch in [F1.2: Batches](#f12-batches).
+- **An operation is wrong:** refused with a code, the facts and the commands that can change it ([F3.5: Refusals](#f35-refusals)).
+  - The ones about names are in [F3.4: IDs](#f34-ids), and the ones about a whole batch in [F3.2: Batches](#f32-batches).
 - **The picture would draw wrong:** the write is refused as a defect.
-  - `overflow` for a label that does not fit ([F2.2: Labels and sublabels](F2-boxes.md#f22-labels-and-sublabels)).
-  - `label-blocked` for a label with no place ([F3.6: How lines are drawn](F3-lines.md#f36-how-lines-are-drawn), [F5.5: Walls](F5-grouping.md#f55-walls) and [F5.6: Notes](F5-grouping.md#f56-notes)).
-  - `title-blocked` for a group's label ([F5.1: Groups](F5-grouping.md#f51-groups)).
-- **The picture draws poorly:** written, and reported as a warning ([F7.3: Warnings](F7-seeing-the-result.md#f73-warnings)).
+  - `overflow` for a label that does not fit ([F1.1.2: Labels and sublabels](F1-elements.md#f112-labels-and-sublabels)).
+  - `label-blocked` for a label with no place ([F2.7: How lines are drawn](F2-layout.md#f27-how-lines-are-drawn), [F1.3.6: Walls](F1-elements.md#f136-walls) and [F1.3.7: Notes](F1-elements.md#f137-notes)).
+  - `title-blocked` for a group's label ([F1.3.1: Groups](F1-elements.md#f131-groups)).
+- **The picture draws poorly:** written, and reported as a warning ([F5.3: Warnings](F5-checking.md#f53-warnings)).
 - **A file cannot be read:** nothing is drawn from it.
   - A YAML syntax error gives its line.
-  - A missing stylesheet fails every command that reads the diagram ([F8.2: The stylesheet file](F8-files.md#f82-the-stylesheet-file)).
-  - A file written by a newer grafical is refused rather than guessed at ([F8.1: The diagram file](F8-files.md#f81-the-diagram-file)).
-- **A command line is wrong:** a usage error prints a block and exits 2, and a command that does not exist is refused with the one it most likely means ([F7.8: Help](F7-seeing-the-result.md#f78-help)).
+  - A missing stylesheet fails every command that reads the diagram ([F4.4: The stylesheet file](F4-look.md#f44-the-stylesheet-file)).
+  - A file written by a newer grafical is refused rather than guessed at ([F6.1: The diagram file](F6-output.md#f61-the-diagram-file)).
+- **A command line is wrong:** a usage error prints a block and exits 2, and a command that does not exist is refused with the one it most likely means ([F7.1: Help](F7-help.md#f71-help)).

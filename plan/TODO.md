@@ -56,7 +56,7 @@
 ### [P2][DISCUSSION] An aligned box joins a column and no row slides
 
 - description:
-  - [F4.2: Alignment](../features/F4-placing.md#f42-alignment) says an aligned box's row slides sideways as one block.
+  - [F2.3: Alignment](../features/F2-layout.md#f23-alignment) says an aligned box's row slides sideways as one block.
   - It says rows that would follow each other are refused as `alignment-cycle`.
   - The code joins the aligned box to its target's column instead and has no `alignment-cycle`.
 - created: 2026-11-04
@@ -92,7 +92,7 @@
 ### [P2][DISCUSSION] The guides are built and also not planned
 
 - description:
-  - [F7.9: Guides](../features/F7-seeing-the-result.md#f79-guides) is built.
+  - [F7.2: Guides](../features/F7-help.md#f72-guides) is built.
   - *Not planned* in [FEATURES.md](../FEATURES.md) says the help replaced `grafical guide`.
   - A later decision brought the guides back.
 - created: 2026-11-04
@@ -112,16 +112,6 @@
 - status: HALT
 - found: rewriting DESIGNS.md to the skill's guide on 2026-11-05
 - next: the owner chooses
-
-### [P2][DISCUSSION] What would bring each later idea
-
-- description:
-  - The guide asks each idea in *Later, if needed* for what would bring it.
-  - The old list gave none, so the agent wrote one for each in the rewrite of 2026-11-05.
-  - The owner has not checked them.
-- created: 2026-11-05
-- status: HALT
-- next: the owner reads the list in [FEATURES.md](../FEATURES.md) and corrects it
 
 ### [P2][DISCUSSION] The first checkpoints have no exit criteria
 
@@ -167,8 +157,8 @@
 ### [P2][DISCUSSION] One word for two steps
 
 - description:
-  - [F4.4: Steps from another box](../features/F4-placing.md#f44-steps-from-another-box) is a placement some cells of the grid from another box.
-  - [F3.4: Numbered steps](../features/F3-lines.md#f34-numbered-steps) is a number on a line for a process.
+  - [F2.5: Steps from another box](../features/F2-layout.md#f25-steps-from-another-box) is a placement some cells of the grid from another box.
+  - [F1.2.4: Numbered steps](../features/F1-elements.md#f124-numbered-steps) is a number on a line for a process.
   - The two share a word and GLOSSARY.md lists both.
 - created: 2026-11-03
 - status: HALT
@@ -286,6 +276,18 @@
 - created: 2026-10-30
 - status: OPEN
 
+### [P2][TASK] Haiku pays more with grafical than drawing directly
+
+- description:
+  - On 2026-10-18 Haiku's first draft cost more with grafical in three checks.
+  - It took 36.3 s against 27.8 s.
+  - It used 42.2k fresh tokens against 21.3k.
+  - It cost $0.015 against $0.008.
+  - The owner wants grafical to win these, so grafical gets cheaper until it does.
+- created: 2026-11-05
+- status: OPEN
+- next: measure where Haiku's tokens go in a first draft
+
 ### [P2][TASK] A corner mark is not checked against the lines near it
 
 - description:
@@ -293,7 +295,7 @@
   - A corner mark should be checked against the lines that leave the box near its corner.
 - created: 2026-10-15
 - status: OPEN
-- related: [F2.4: Marks](../features/F2-boxes.md#f24-marks)
+- related: [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
 
 ### [P2][TASK] Count the pages read before a first write
 
