@@ -2,7 +2,7 @@
 
 An agent's operations go in, a checked diagram file and a picture come out, and facts and counts go back. This is the shape between: the commitments every design change must meet. Why grafical sees diagrams this way is in [PHILOSOPHY.md](PHILOSOPHY.md). How its parts fit is in [ARCHITECTURE.md](specs/ARCHITECTURE.md).
 
-grafical is designed around 15 guidelines:
+grafical is designed around 16 guidelines:
 
 1. **Operations are the only way a diagram changes:** every change is a named and checked operation
 2. **Places are facts, never coordinates:** a place is a row or an order or a column and never a position
@@ -19,6 +19,7 @@ grafical is designed around 15 guidelines:
 13. **Every search the engine runs has a cap:** no step searches without a bound
 14. **A diagram reads no file outside its folder, and its pictures run nothing:** marks stay in the folder and an SVG holds no script
 15. **Every dependency allows use in an MIT project:** runtime dependencies are MIT-compatible
+16. **One shortest way for each situation:** a form that only repeats another is removed
 
 ## 1. Operations are the only way a diagram changes
 
@@ -220,6 +221,18 @@ grafical is MIT-licensed, so every runtime dependency is MIT, ISC, BSD or MPL-2.
 
 - **Stance:** none
 - **Decisions:** [010. TypeScript on Node](specs/decisions/010-typescript-on-node.md)
+- **How it works:** [Architecture](specs/ARCHITECTURE.md)
+
+## 16. One shortest way for each situation
+
+In one situation an agent has one shortest way to do a thing. Stating a fact while making an element and changing it later are two situations, and each keeps its own way. Cost: a convenient short form goes when it repeats another, and every new command must name the situation it serves.
+
+**Ask:** Is there already a way to do this in the same situation, and which of the two is shorter?
+
+- **Stance:** [How many ways does one thing have?](PHILOSOPHY.md#how-many-ways-does-one-thing-have)
+- **Decisions:**
+  - [070. One shortest way for each situation](specs/decisions/070-one-shortest-way-for-each-situation.md)
+  - [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
 - **How it works:** [Architecture](specs/ARCHITECTURE.md)
 
 Every other decision, such as how a row without a box is drawn, is in [specs/decisions](specs/decisions/README.md).

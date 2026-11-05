@@ -88,7 +88,7 @@ A well-made command line leaves an agent few ways to go wrong, so the help and t
 
 **One shortest way for each situation.**
 
-Two ways to do one thing look generous, and they cost a choice with no difference behind it. An agent has to weigh them, a reader of its work has to know both, and a model that picks the wrong one learns nothing from it. So grafical offers one shortest way in each situation. Stating a fact while making a thing and changing it later are two situations, and each keeps its own way. A form that only repeats another goes, however convenient it looks.
+Two ways to do one thing look generous, and they cost a choice with no difference behind it. An agent has to weigh them, a reader of its work has to know both, and a model that picks the wrong one learns nothing from it. So grafical offers one shortest way, and a form that only repeats another goes, however convenient it looks.
 
 ## What may the agent set?
 
