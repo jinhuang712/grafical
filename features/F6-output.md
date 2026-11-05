@@ -3,7 +3,7 @@
 ```
 F6: Output
 ├── F6.1: The diagram file — one YAML file of facts
-│   └── F6.1.1: The object model — objects, classes and rules in a file of their own form
+│   └── F6.1.1: The object model — objects, types and styles in a file of their own form
 ├── F6.2: Render — SVG and PNG, the same everywhere
 ├── F6.3: Live viewer — a window that redraws as the agent draws
 └── F6.4: Diff — a change as operations
@@ -37,7 +37,7 @@ One YAML file, `<name>.grafical.yaml`, holds the whole diagram as facts: rows an
 
 ### F6.1.1: The object model
 
-A diagram becomes objects with attributes and relations, with classes an agent can define and rules for the whole diagram. The file takes a form of its own, and a change still reads well in a diff.
+A diagram becomes objects with attributes and relations, with types an agent can define and styles that objects mark. The file takes a form of its own, and a change still reads well in a diff.
 
 - **How it works:** [The object model](../specs/object-model.md)
 - **Why:** [085. A diagram is objects with attributes and relations](../specs/decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)

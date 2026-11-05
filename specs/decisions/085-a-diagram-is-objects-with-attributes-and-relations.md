@@ -25,4 +25,4 @@ A diagram is objects with attributes and relations, and a place is a relation. C
 
 ## Consequences
 
-grafical owns a parser, its version and the tools around the file, and editors know nothing of the form. A batch stays what a model can write. Saved drafts and fixtures must move, and the format freezes at the first release, so this comes before it. If the form does not hold up, the fallback is YAML with one element on each line. The gain is not measured.
+grafical owns a parser, its version and the tools around the file, and editors know nothing of the form. A batch stays what a model can write. Saved drafts and fixtures must move, and the format freezes at the first release, so this comes before it. The gain is not measured until it is built. If the form proves no better than YAML, the file goes back to YAML with one element on each line.

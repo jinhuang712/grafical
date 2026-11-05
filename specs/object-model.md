@@ -182,7 +182,7 @@ density: normal
 
 Nobody searches the file as text. `grafical show <id>` gives an object's definition and what refers to it.
 
-If the design does not hold up, the fallback is YAML with one element on each line.
+Once it is built, real changes are measured in both forms. If this form proves no better, the file goes back to YAML with one element on each line.
 
 ## Decisions
 

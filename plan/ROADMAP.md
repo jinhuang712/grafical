@@ -112,10 +112,11 @@ Roadmap
 │   ├── ⬜ CP2.8: The legend
 │   │   ├── ⬜ Design the legend
 │   │   └── ⬜ Build the legend
-│   └── ⬜ CP2.9: The object model
-│       ├── ⬜ Design the model and its form
+│   └── 🟨 CP2.9: The object model
+│       ├── ✅ Design the model and its form
 │       ├── ⬜ Build the model
-│       └── ⬜ Move the saved files
+│       ├── ⬜ Move the saved files
+│       └── ⬜ Compare with YAML
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
 │   ├── ⬜ CP3.1: Boxes and lines
 │   │   ├── ⬜ State machine
@@ -640,15 +641,16 @@ A legend is a small diagram, and it can explain what a picture's colors mean.
 
 ### CP2.9: The object model
 
-**Status:** ⬜
+**Status:** 🟨 (since 2026-11-06)
 
-A diagram is objects with classes and rules, in a form of its own, before the first release freezes the file.
+A diagram is objects with types and styles, in a form of its own, before the first release freezes the file.
 
 **Tasks:**
 
-- ⬜ Design the model and its form: The owner designs them: [The diagram file's format and object model](TODO.md#p1discussion-the-diagram-files-format-and-object-model).
+- ✅ Design the model and its form: The owner designed them on 2026-11-06.
 - ⬜ Build the model: grafical reads and writes it.
 - ⬜ Move the saved files: Fixtures and saved drafts move to it.
+- ⬜ Compare with YAML: Real changes are measured in both forms, and the file goes back to YAML with one element on each line if the form is no better.
 
 **Delivers:**
 
