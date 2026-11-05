@@ -76,7 +76,8 @@ title: "Checkout"
 use: team-style
 density: normal
 
-<class> db : store {
+<class> db {
+  base: @store
   fill: #eef
 }
 
@@ -84,23 +85,32 @@ density: normal
   label: "Application"
 }
 
+<order> app-row {
+  of: @app
+  items:
+    @users
+    @orders
+}
+
 <group> pay {
   label: "Payments"
 }
 
-<node> orders : service {
+<node> orders {
+  class: @service
   label: "Orders"
   layer: @app
   group: @pay
-  after: @users
 }
 
-<node> orders-db : db {
+<node> orders-db {
+  class: @db
   label: "Orders DB"
   below: @orders
 }
 
 <edge> orders -> orders-db {
+  class: @call
   label: "read"
   weight: thick
 }
@@ -112,6 +122,9 @@ density: normal
 - `@` marks a reference, so no word is reserved and an ID may be any word, even `node`.
 - An `@` that names no object is refused.
 - A node states its own memberships.
+- A class is an attribute, `class`, and it names a sort of node or edge such as `@service`.
+- A class names what it inherits with `base`.
+- An `<order>` states only the order inside the region named by `of`, one item on each line.
 - Length is no concern.
 
 Nobody searches the file as text. `grafical show <id>` gives an object's definition and what refers to it.

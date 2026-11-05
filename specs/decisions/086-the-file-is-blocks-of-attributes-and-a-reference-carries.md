@@ -8,7 +8,7 @@ A form that reads like sentences needs many reserved words, and an ID such as `a
 
 ## The choice
 
-An object is a block in braces with one attribute on each line, and it opens with its sort in angle brackets, such as `<node>`. A value that names another object carries `@`. A sort reads as a word and neither form can meet an ID, so no word is reserved. A node states its own memberships, as attributes. Nobody searches the file as text: `show` with an ID gives an object's definition and what refers to it.
+An object is a block in braces with one attribute on each line, and it opens with its sort in angle brackets, such as `<node>`. A value that names another object carries `@`. A sort reads as a word and neither form can meet an ID, so no word is reserved. A node states its own memberships, as attributes, and its class is one more attribute. Order is an object of its own, `<order>`, that states only the order inside one region. Nobody searches the file as text: `show` with an ID gives an object's definition and what refers to it.
 
 ## Not chosen
 
@@ -18,6 +18,8 @@ An object is a block in braces with one attribute on each line, and it opens wit
   - It has no reserved word, but it reads less well than the sort's own word.
 - One line per object with symbols for common relations.
   - A change to one attribute would change the whole line.
+- A chain of `after` or a number on each node.
+  - One insert would touch two nodes, or one order would have many spellings.
 - Containers that list their members.
   - Two branches that add to one layer would conflict on one line.
 
