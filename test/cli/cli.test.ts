@@ -283,6 +283,27 @@ describe("write commands", () => {
     expect(run("show").err).toContain("error: missing-argument\n");
     expect(run("show").err).toContain("detail:\n  field: file\n");
     expect(run("new", "x.grafical.yaml").err).toContain("detail:\n  field: --title\n");
+    // With --json a usage error is the same object as any refusal, on standard output.
+    const json = run("show", "single.grafical.yaml", "--bogus", "--json");
+    expect(json.code).toBe(2);
+    expect(json.err).toBe("");
+    expect(JSON.parse(json.out)).toEqual({
+      ok: false,
+      changed: [],
+      problems: [
+        {
+          kind: "error",
+          code: "unknown-option",
+          description: "The command has no option of the name.",
+          source: "grafical show single.grafical.yaml --bogus --json",
+          detail: { found: "--bogus" },
+          next: [],
+        },
+      ],
+    });
+    expect(JSON.parse(run("bogus", "--json").out).problems[0].code).toBe("unknown-command");
+    // Past `--` the word is an argument and not the flag.
+    expect(run("bogus", "--", "--json").err).toContain("error: unknown-command\n");
     // Extra arguments are what was found, beside the arguments the command takes.
     const extra = run("node", "remove", "single.grafical.yaml", "api", "worker");
     expect(extra.err).toContain("error: excess-arguments\n");

@@ -204,6 +204,8 @@ grafical has not been released; the first release will be 0.1.0.
   - It also names the innermost group whose members the box stands between, and those two members as `between`.
 - An unknown option, a missing argument or an unknown command prints a block instead of the parser's sentence.
   - An example is `error: unknown-option` with `found: --bogus`, with exit code 2.
+  - With `--json` it prints the same object as any refusal on standard output.
+  - Before, it printed text on standard error even with `--json`.
 
 ### What the agent reads back
 

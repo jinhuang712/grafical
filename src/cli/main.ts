@@ -40,6 +40,7 @@ import { GUIDES, guideList, guideNamed } from "./guides.ts";
 import { PAGES, PROGRAM_ABOUT, PROGRAM_AFTER } from "./help.ts";
 import {
   batchOps,
+  blockBody,
   emit,
   failure,
   fileError,
@@ -1270,6 +1271,16 @@ function usageText(b: Block): string {
   return `${record("failed", { changed: [] })}\n\n${block(b)}\n`;
 }
 
+/** Prints a usage error: with --json the object of any refusal on standard output, else its text on standard error. */
+function sayUsage(b: Block, words: readonly string[]) {
+  const end = words.indexOf("--");
+  const json = (end < 0 ? words : words.slice(0, end)).includes("--json");
+  if (json) {
+    const body = { ok: false, changed: [], problems: [blockBody(b)] };
+    process.stdout.write(`${JSON.stringify(body)}\n`);
+  } else process.stderr.write(usageText(b));
+}
+
 /** The arguments a command takes, as its usage names them: <file>, [at], <nodes...>. */
 function takes(c: Command): string[] {
   return c.registeredArguments.map((a) => {
@@ -1381,10 +1392,11 @@ async function main(argv: string[]) {
       }
       // A usage error is a block too (specs/decisions, "Refusals say what happened and which commands can change it"),
       // in place of commander's sentence.
-      const source = commandLine(argv.slice(2));
-      if (err instanceof UsageError) process.stderr.write(usageText({ ...err.problem, source }));
+      const words = argv.slice(2);
+      const source = commandLine(words);
+      if (err instanceof UsageError) sayUsage({ ...err.problem, source }, words);
       else if (err.code.startsWith("commander.") && err.code !== "commander.help") {
-        process.stderr.write(usageText({ ...parserError(err, program, argv.slice(2)), source }));
+        sayUsage({ ...parserError(err, program, words), source }, words);
       }
       process.exitCode = 2;
       return;

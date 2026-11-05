@@ -20,9 +20,9 @@ next: <command names>
 counts nodes=... lines=... ...   apply, check and render only
 ```
 
-A usage error, such as an unknown option or command, prints the same outcome and block on standard error. The exit code is 0 when the command succeeds, with or without warnings, 1 when a write is refused or a file cannot be read, and 2 for a usage error. Engine-owned defects exit 1 under `check --all` only.
+A usage error, such as an unknown option or command, prints the same outcome and block on standard error, or on standard output with `--json`. The exit code is 0 when the command succeeds, with or without warnings, 1 when a write is refused or a file cannot be read, and 2 for a usage error. Engine-owned defects exit 1 under `check --all` only.
 
-With `--json` the same answer is one object: `{ok, changed, problems, counts}`, each problem as `{kind, code, description, source, detail, next}`. A usage error is never JSON. `render` adds `files`, `show` gives `{ok, diagram}`, `show --drawn` gives `{ok, drawing}`, `diff` gives `{ok, ops}`, and `try` gives its before, after and delta.
+With `--json` the same answer is one object: `{ok, changed, problems, counts}`, each problem as `{kind, code, description, source, detail, next}`. A usage error gives the same object, without counts. `render` adds `files`, `show` gives `{ok, diagram}`, `show --drawn` gives `{ok, drawing}`, `diff` gives `{ok, ops}`, and `try` gives its before, after and delta.
 
 ## Records
 

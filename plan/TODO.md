@@ -2,16 +2,6 @@
 
 ## ongoing
 
-### [P1][ISSUE] Usage errors ignore --json
-
-- description:
-  - A command line grafical cannot read prints its block as text on standard error even with `--json`.
-  - Every other refusal with `--json` prints JSON on standard output.
-  - It should print JSON on standard output too.
-- created: 2026-10-18
-- status: OPEN
-- found: `grafical show d.grafical.yaml --bogus --json`
-
 ### [P1][ISSUE] check says ok for a file every write refuses
 
 - description:

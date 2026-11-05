@@ -50,6 +50,7 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
   - 2 for a usage error.
 - The parser refuses an unknown option, a missing argument and an unknown command.
   - Its refusals print `failed changed=-` and a block on standard error, such as `error: unknown-option` with `found: --bogus`.
+  - With `--json` they print the same object as any refusal on standard output.
 
 - **Stance:** [What does a change do?](../PHILOSOPHY.md#what-does-a-change-do)
 - **Design:** [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
