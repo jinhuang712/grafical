@@ -1,12 +1,12 @@
 # Agents' own reports on the current grafical, 2026-10-17
 
-Written before the round runs (EXPERIMENTS.md, "Rules for a result", rule 1). Approved by the owner on 2026-10-17: one chain first, to measure its cost; the rest only once the owner approves a total.
+Written before the round runs (AGENTS.md, "Benchmark rounds"). Approved by the owner on 2026-10-17: one chain first, to measure its cost; the rest only once the owner approves a total.
 
 ## Why this round
 
 The last paid round, `p1e-records`, ran on 2026-10-13. Since then grafical gained walls, notes, boxes placed by steps, column guides, rows that lines end at drawn as bars, step numbers on lines, and a stated place for a group's label, none of which any saved draft could use, and under "The dirty work has edges" (DESIGN.md) a write is now refused where it used to be drawn crookedly: `title-blocked`, `label-blocked`, and every write reports a line with more than two bends. No agent has used grafical since.
 
-The owner asked on 2026-10-17 whether agents draw rows and groups because the command list does not suggest anything else ("only these commands? then I'll draw it like this"), and asked for product feedback from the agents themselves. Every chain now ends with a reflection (EXPERIMENTS.md, "Harness").
+The owner asked on 2026-10-17 whether agents draw rows and groups because the command list does not suggest anything else ("only these commands? then I'll draw it like this"), and asked for product feedback from the agents themselves. Every chain now ends with a reflection (specs/benchmark.md).
 
 ## Questions, expectations and the decision each drives
 

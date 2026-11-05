@@ -1,4 +1,4 @@
-// Builds the owner's blind rating gallery for one round (EXPERIMENTS.md).
+// Builds the owner's blind rating gallery for one round (specs/benchmark.md).
 //
 //   pnpm bench gallery --round <name>
 //

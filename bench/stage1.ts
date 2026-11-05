@@ -1,4 +1,4 @@
-// The end of stage 1 (ROADMAP.md, "The MVP bar"; EXPERIMENTS.md, "Schedule"):
+// The end of stage 1 (ROADMAP.md, "The MVP bar"; specs/benchmark.md):
 // every experiment that runs, as parts the owner can run one at a time.
 //
 //   e1e2    E1 draft and the 8 E2 change requests: grafical, raw and Mermaid, Haiku, 3 runs
@@ -21,7 +21,7 @@
 //           fan-outs bundled (specs/decisions, "Fan-outs of three bundle"), rows took one height and stores more room
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
-// the task only (EXPERIMENTS.md, "Harness").
+// the task only (specs/benchmark.md).
 
 import { homedir } from "node:os";
 import { join } from "node:path";

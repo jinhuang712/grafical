@@ -122,16 +122,6 @@
 - status: HALT
 - next: the owner chooses whether they keep none or point to the goals they met
 
-### [P2][DISCUSSION] Where EXPERIMENTS.md belongs
-
-- description:
-  - EXPERIMENTS.md holds hypotheses and metrics and the harness rules and a schedule.
-  - None of the skill's documents is meant for it.
-  - Its metrics may belong in GOALS.md and its harness rules in AGENTS.md.
-- created: 2026-11-05
-- status: HALT
-- next: the owner chooses whether it stays as it is or is split
-
 ### [P2][DISCUSSION] A box beside every box it connects to in a row
 
 - description:

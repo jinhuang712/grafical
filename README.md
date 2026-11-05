@@ -103,9 +103,9 @@ agent ──command or batch──> command line ──records──> agent
   - [specs/checks.md](specs/checks.md): the checker.
   - [specs/rendering.md](specs/rendering.md): the renderer.
   - [specs/answers.md](specs/answers.md): how grafical answers.
+  - [specs/benchmark.md](specs/benchmark.md): how the benchmarks run.
 - [specs/decisions](specs/decisions/README.md): each fork taken and what was not chosen.
 - [GLOSSARY.md](GLOSSARY.md): one name for each thing.
-- [EXPERIMENTS.md](EXPERIMENTS.md): how the benchmarks run.
 - [INSTALL.md](INSTALL.md): how to install, update and remove it.
 - [CHANGELOG.md](CHANGELOG.md): what changed in each release.
 - [AGENTS.md](AGENTS.md): how agents develop in this repository.

@@ -2,7 +2,7 @@
 
 ## Expectation
 
-Written before the round runs (EXPERIMENTS.md, rule 1). Asked for by the owner on 2026-10-18.
+Written before the round runs (AGENTS.md, "Benchmark rounds"). Asked for by the owner on 2026-10-18.
 
 Every unmet item of GOALS.md, "The MVP bar" was last measured on 2026-10-12. Since then: records in place of prose, `try`, steps, walls, notes, marks, copying a group, the agent stating every order, refusals whose fixes a test holds, and the help restructured (specs/decisions, "One entry page, help where it is used", "Help for the tool, guides for best practice", "One way to a page, and a wrong command names the right one"). This round measures them on the grafical of d983df4.
 

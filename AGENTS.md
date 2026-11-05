@@ -170,6 +170,22 @@ When a picture looks bad, first draw the better picture with grafical's own comm
 - `node test/debug/check-fixtures.ts <dir>` lays out and renders every fixture with the real engine.
   - It is for looking at the pictures.
 
+## Benchmark rounds
+
+1. Write the expectation first.
+   - Before a round runs, its results file states what is expected and which decision the outcome drives.
+2. Repeat.
+   - Every cell runs at least three times, reported as the mean and the range.
+3. Call differences honestly.
+   - A difference counts only if the ranges do not overlap.
+   - Otherwise it is "no clear difference": add runs or record it as such.
+4. Measure before spending.
+   - Each round first runs one cell and proposes a total from its real cost.
+   - The owner approves the total before the rest runs.
+   - Each run is capped at $1.
+5. Keep failures.
+   - A run that fails or errors or hits its cap is reported and never dropped or rerun silently.
+
 ## Change discipline
 
 - The repository builds and its tests pass after every commit.

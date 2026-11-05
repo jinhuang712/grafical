@@ -1,4 +1,4 @@
-# The fixed script of 8 change requests for E2 (EXPERIMENTS.md), about the
+# The fixed script of 8 change requests for E2 (specs/benchmark.md), about the
 # fictional catalog-sync system in bench/briefs/catalog-sync.md.
 # `phase1: true` marks the four types the phase 1 smoke test sends.
 # One flat list; each item has id, type, phase1 and request.

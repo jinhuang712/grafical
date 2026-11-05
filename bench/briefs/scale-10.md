@@ -1,6 +1,6 @@
 # Architecture facts: notify
 
-This brief describes a fictional system of about 10 components, for the scale experiment (E4 in [EXPERIMENTS.md](../../EXPERIMENTS.md)).
+This brief describes a fictional system of about 10 components, for the scale experiment ([specs/benchmark.md](../../specs/benchmark.md)).
 
 notify sends account messages (sign-up, receipts, password resets) by email and SMS for a small web shop.
 

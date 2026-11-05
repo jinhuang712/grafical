@@ -1,6 +1,6 @@
 # Architecture facts: dispatch
 
-This brief describes a fictional system of about 25 components, for the scale experiment (E4 in [EXPERIMENTS.md](../../EXPERIMENTS.md)).
+This brief describes a fictional system of about 25 components, for the scale experiment ([specs/benchmark.md](../../specs/benchmark.md)).
 
 dispatch matches riders with drivers for a city taxi service. Three teams own three systems: booking, matching and payments.
 

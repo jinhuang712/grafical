@@ -1,4 +1,4 @@
-// Turns a headless `stream-json` transcript into the metrics of EXPERIMENTS.md.
+// Turns a headless `stream-json` transcript into the metrics of specs/benchmark.md.
 // The transcript is JSON Lines: a `system` init event, `assistant` and `user`
 // events, and a final `result` event.
 

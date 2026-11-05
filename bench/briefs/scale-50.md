@@ -1,6 +1,6 @@
 # Architecture facts: grocer
 
-This brief describes a fictional system of about 50 components, for the scale experiment (E4 in [EXPERIMENTS.md](../../EXPERIMENTS.md)). A good diagram of it may group or merge components; the brief lists everything so that nothing has to be invented.
+This brief describes a fictional system of about 50 components, for the scale experiment ([specs/benchmark.md](../../specs/benchmark.md)). A good diagram of it may group or merge components; the brief lists everything so that nothing has to be invented.
 
 grocer is an online grocery shop with same-day delivery. Six teams own six systems: storefront, catalog, orders, fulfilment, delivery and customer care.
 

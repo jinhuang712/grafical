@@ -1,6 +1,6 @@
 # Goals
 
-Each goal is a check with a number or a test, listed by its kind with the want of the proposal that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [EXPERIMENTS.md](../EXPERIMENTS.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
+Each goal is a check with a number or a test, listed by its kind with the want of the proposal that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [specs/benchmark.md](../specs/benchmark.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
 
 [O1: The MVP bar](#o1-the-mvp-bar) alone says whether grafical succeeds. The constraints must always hold. Every other goal is recorded to find causes and decides nothing.
 
@@ -159,7 +159,7 @@ A change request is done right, quickly and cheaply.
 - [F3.2: Batches](../features/F3-editing.md#f32-batches)
 - [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
 
-**Problem set:** the public brief: a draft and 8 change requests, 3 runs per arm ([E2 Iteration](../EXPERIMENTS.md#e2-iteration)).
+**Problem set:** the public brief: a draft and 8 change requests, 3 runs per arm.
 
 **Formula:**
 
@@ -184,7 +184,7 @@ A picture of 50 boxes has no defect and a clarity of at least 3 of 5.
 - [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
 - [6. Every write is checked, and each defect has an owner](../DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
 
-**Problem set:** fictional briefs of 10, 25 and 50 components, 3 runs each, rated blind by the owner ([E4 Scale](../EXPERIMENTS.md#e4-scale)).
+**Problem set:** fictional briefs of 10, 25 and 50 components, 3 runs each, rated blind by the owner.
 
 **Formula:**
 

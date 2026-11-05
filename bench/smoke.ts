@@ -1,4 +1,4 @@
-// The phase 1 smoke test (EXPERIMENTS.md, "Schedule"): E1 and E2 on the public
+// The phase 1 smoke test (specs/benchmark.md): E1 and E2 on the public
 // brief, grafical against a raw model, Haiku only, 3 runs each. E2 sends the
 // four change types phase 1 supports.
 

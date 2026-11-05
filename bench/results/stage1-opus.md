@@ -1,6 +1,6 @@
 ## Expectation
 
-Written before the round runs (EXPERIMENTS.md, rule 1): what is expected, and which decision the outcome drives.
+Written before the round runs (AGENTS.md, "Benchmark rounds"): what is expected, and which decision the outcome drives.
 
 One expectation, written before the runs, covers every part of stage 1: [stage1.md](stage1.md).
 

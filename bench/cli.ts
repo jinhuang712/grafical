@@ -13,7 +13,7 @@
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   mechanical defects: check every step's picture's geometry
 //   lines --round <name>                      measure each final diagram's lines, and the agent's tries (specs/decisions, "Records over prose")
-//   reflections --round <name>                every chain's reflection, as one Markdown document (EXPERIMENTS.md, "Harness")
+//   reflections --round <name>                every chain's reflection, as one Markdown document (specs/benchmark.md)
 //   diff <ref> [--seeds 2000] [--render <dir>]
 //                                             what the working tree's engine changes against <ref>, over saved drafts, fixtures and fuzz seeds; costs nothing
 //   speed                                     speed: time one operation and one command
@@ -76,7 +76,7 @@ function main(argv: string[]): void {
       }
       if (!args.includes("--approved")) {
         console.error(
-          "Real runs cost money and the owner approves them (EXPERIMENTS.md, rule 4).\n" +
+          'Real runs cost money and the owner approves them (AGENTS.md, "Benchmark rounds").\n' +
             "Use --dry-run to see the plan, or --approved once the owner has approved the total.",
         );
         process.exit(2);
@@ -174,7 +174,7 @@ function main(argv: string[]): void {
       }
       if (!args.includes("--approved")) {
         console.error(
-          "Real runs cost money and the owner approves them (EXPERIMENTS.md, rule 4).\n" +
+          'Real runs cost money and the owner approves them (AGENTS.md, "Benchmark rounds").\n' +
             "Use --dry-run to see the plan, or --approved once the owner has approved the total.",
         );
         process.exit(2);

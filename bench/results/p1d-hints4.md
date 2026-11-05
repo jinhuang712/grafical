@@ -1,6 +1,6 @@
 ## Expectation
 
-Written before the round runs (EXPERIMENTS.md, rule 1): what is expected, and which decision the outcome drives.
+Written before the round runs (AGENTS.md, "Benchmark rounds"): what is expected, and which decision the outcome drives.
 
 The expectation and outcome of every hint round are in [p1d-hints.md](p1d-hints.md).
 

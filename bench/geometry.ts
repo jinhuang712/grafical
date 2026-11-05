@@ -1,4 +1,4 @@
-// The separate geometry check (GOALS.md, "Mechanical defects"; EXPERIMENTS.md): mechanical
+// The separate geometry check (GOALS.md, "Mechanical defects"; specs/benchmark.md): mechanical
 // defects found in a rendered SVG, from its shapes alone. It shares no code with
 // grafical's checker and does not know what the shapes stand for, so it also
 // catches what the renderer gets wrong. It reads flat SVG: rect, ellipse,

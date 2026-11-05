@@ -1,6 +1,6 @@
 // Runs one chain of headless Claude Code calls: an E1 draft, then E2 change
 // requests that resume the same session, then a reflection that resumes it once
-// more with no tools (EXPERIMENTS.md, "Harness").
+// more with no tools (specs/benchmark.md).
 //
 // A chain is (task, arm, model, run number). Its directory holds the brief, the
 // tool and every step's files:
@@ -173,7 +173,7 @@ const TOOL_NAME: Record<Arm, string> = {
 
 /**
  * The reflection asked after a chain's last step: how the agent drew, why it changed its
- * draft, and where the tool got in the way (EXPERIMENTS.md, "Harness").
+ * draft, and where the tool got in the way (specs/benchmark.md).
  */
 export function reflectPrompt(arm: Arm): string {
   return render(prompt("reflect.md"), { TOOL: TOOL_NAME[arm] });
