@@ -1,6 +1,6 @@
 # Goals
 
-Each goal is a check with a number or a test, listed by its kind with the want of the proposal that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [specs/benchmark.md](../specs/benchmark.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
+Each goal is a check with a number or a test, listed by its kind with the want of the proposal that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. `specs/benchmark.md` defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
 
 [O1: The MVP bar](#o1-the-mvp-bar) alone says whether grafical succeeds. The constraints must always hold. Every other goal is recorded to find causes and decides nothing.
 
@@ -43,7 +43,7 @@ Goals
 
 #### O1: The MVP bar
 
-Set by the owner on 2026-10-13 and changed on 2026-11-05 ([What makes grafical good?](../PHILOSOPHY.md#what-makes-grafical-good)). Haiku uses only the command line and its help, draws with zero mechanical defects and meets the targets of four goals:
+Set by the owner on 2026-10-13 and changed on 2026-11-05. Haiku uses only the command line and its help, draws with zero mechanical defects and meets the targets of four goals:
 
 - [C5: Cost](#c5-cost)
 - [C2: Time](#c2-time)
@@ -287,7 +287,7 @@ target = below 0
 
 #### C3: Token use
 
-A diagram costs fewer fresh tokens than the same model uses drawing directly. Also, the help an agent reads before its first operation stays under 3k tokens; suspended by the owner on 2026-10-17 while the help's correctness comes first ([042. One entry page, help where it is used](../specs/decisions/042-one-entry-page-help-where-it-is-used.md)).
+A diagram costs fewer fresh tokens than the same model uses drawing directly. Also, the help an agent reads before its first operation stays under 3k tokens; suspended by the owner on 2026-10-17 while the help's correctness comes first.
 
 **Want:** Fix one thing without losing the rest.
 
@@ -419,7 +419,7 @@ At most 50 ms in process to apply, lay out and check one operation at 50 boxes, 
 
 **How:** `pnpm bench speed`, on random diagrams of about 50 boxes.
 
-**Status:** ✅ met on 2026-10-15, after [033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md) removed the slot search. One operation took a median of 8.1 ms and at most 18.6 ms. Commands took 185 to 198 ms, and a render 368 ms.
+**Status:** ✅ met on 2026-11-05. One operation took a median of 10.2 ms and at most 32.8 ms. Commands took 207 to 219 ms, and a render 420 ms.
 
 ### Constraints
 
@@ -434,7 +434,7 @@ No fact changes that no operation named: a row, an order, a group, a lane or an 
 - [F3.1: Operations](../features/F3-editing.md#f31-operations)
 - [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
 
-**Condition:** every operation changes only the facts it names ([004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md)).
+**Condition:** every operation changes only the facts it names.
 
 **How:** the stability tests apply single operations, and `grafical diff` compares each change step with the one before. Any unnamed fact change is a failure.
 
@@ -453,7 +453,7 @@ No overflow, overlap, line through a box or label collision.
 
 **Condition:** no rendered picture has any of the four. Any defect in an output is a bug.
 
-**How:** `pnpm bench geometry` checks every rendered SVG of a round with a geometry check of its own. It does not use grafical's checker, which refuses every write it flags and so would always report zero ([008. Defects owned by who can fix them](../specs/decisions/008-defects-owned-by-who-can-fix-them.md)).
+**How:** `pnpm bench geometry` checks every rendered SVG of a round with a geometry check of its own. It does not use grafical's checker, which refuses every write it flags and so would always report zero.
 
 **Status:** ✅ met on 2026-10-18 (round `p1g`): the geometry check found none in 46 pictures. One draft of 50 components had an engine-owned `needless-bend`, which is none of the four, fixed the same day (2f101d9).
 
