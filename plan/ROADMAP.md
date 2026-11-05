@@ -92,11 +92,13 @@ Roadmap
 │   │   ├── ⬜ Flow direction
 │   │   ├── ⬜ Views of one file
 │   │   └── ⬜ Folded groups
-│   └── ⬜ CP2.6: Lines and labels
-│       ├── ⬜ Line sides
-│       ├── ⬜ Line shapes
-│       ├── ⬜ Labels on lines
-│       └── ⬜ Label text
+│   ├── ⬜ CP2.6: Lines and labels
+│   │   ├── ⬜ Line sides
+│   │   ├── ⬜ Line shapes
+│   │   ├── ⬜ Labels on lines
+│   │   └── ⬜ Label text
+│   └── ⬜ CP2.7: The command line
+│       └── ⬜ The file flag
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
 │   ├── ⬜ CP3.1: Boxes and lines
 │   │   ├── ⬜ State machine
@@ -416,6 +418,7 @@ What grafical can draw grows on top of [CP1: Stage 1 built](#cp1-stage-1-built).
   - [CP2.4: Containers](#cp24-containers) is met.
   - [CP2.5: Direction and views](#cp25-direction-and-views) is met.
   - [CP2.6: Lines and labels](#cp26-lines-and-labels) is met.
+  - [CP2.7: The command line](#cp27-the-command-line) is met.
 
 ### CP2.1: Fix the speed slip
 
@@ -556,6 +559,25 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability)
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
+
+### CP2.7: The command line
+
+**Status:** ⬜
+
+Every command names its file the same way, ahead of the command.
+
+**Tasks:**
+
+- ⬜ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
+
+**Delivers:**
+
+- [F3.1: Operations](../features/F3-editing.md#f31-operations)
+
+**Exit criteria:**
+
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
 
 ## CP3: Experiments
 

@@ -45,7 +45,7 @@ Features
 │   │   └── 🚧 F2.7.3: Labels on lines — a line carries its label (only on straight vertical lines)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
-│   ├── ✅ F3.1: Operations — one named command per change
+│   ├── 🚧 F3.1: Operations — one named command per change (the file still follows the command)
 │   ├── ✅ F3.2: Batches — many operations, all or nothing
 │   ├── ✅ F3.3: Trying a change — see counts before writing
 │   ├── ✅ F3.4: IDs — the caller names every element

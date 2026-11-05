@@ -57,7 +57,9 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
 - **How it works:**
   - [The command line](../specs/ARCHITECTURE.md#the-command-line)
   - [The model](../specs/model.md)
-- **Why:** [001. Operations over whole-file rewrites](../specs/decisions/001-operations-over-whole-file-rewrites.md)
+- **Why:**
+  - [001. Operations over whole-file rewrites](../specs/decisions/001-operations-over-whole-file-rewrites.md)
+  - [068. A command names its file with a flag](../specs/decisions/068-a-command-names-its-file-with-a-flag.md)
 
 **Stories:**
 
