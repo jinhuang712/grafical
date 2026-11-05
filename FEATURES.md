@@ -24,14 +24,15 @@ Features
 │   │   ├── ✅ F1.2.4: Numbered steps — a number on a line
 │   │   ├── 🚧 F1.2.5: Ends at a group, a row or a lane — one arrow to a whole system (a bar cannot yet cross a group)
 │   │   └── ⬜ F1.2.6: Edge looks — a color of an edge's own
-│   └── 🚧 F1.3: Containers — what gathers boxes (deeper nesting and lanes both ways not built)
+│   └── 🚧 F1.3: Containers — what gathers boxes (deeper nesting and lanes both ways and container looks not built)
 │       ├── ✅ F1.3.1: Groups — a system drawn as one frame
 │       ├── ✅ F1.3.2: Copying a group — a second zone in one operation
 │       ├── ⬜ F1.3.3: Deeper nesting — up to five levels
 │       ├── ✅ F1.3.4: Lanes — bands that say who owns what
 │       ├── ⬜ F1.3.5: Lanes both ways — a grid of lanes and phases
 │       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
-│       └── ✅ F1.3.7: Notes — a short text on a box, a line or a group
+│       ├── ✅ F1.3.7: Notes — a short text on a box, a line or a group
+│       └── ⬜ F1.3.8: Container looks — colors of a group's or a lane's own
 ├── 🚧 F2: Layout — where everything goes (region gaps and line sides and smooth lines and labels on turning lines and flow direction not built)
 │   ├── ✅ F2.1: Placing every box — grafical gives every box its place
 │   ├── ✅ F2.2: Rows and order — a box's row and its place in it

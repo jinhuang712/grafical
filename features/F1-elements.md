@@ -24,7 +24,8 @@ F1: Elements
     ├── F1.3.4: Lanes — bands that say who owns what
     ├── F1.3.5: Lanes both ways — a grid of lanes and phases
     ├── F1.3.6: Walls — space that lines cross only where allowed
-    └── F1.3.7: Notes — a short text on a box, a line or a group
+    ├── F1.3.7: Notes — a short text on a box, a line or a group
+    └── F1.3.8: Container looks — colors of a group's or a lane's own
 ```
 
 What a diagram is made of. A box is a part of the system, a line says that two things connect and how, and a container gathers boxes into systems, lanes and parts that lines keep apart. The agent says what each one is, and grafical gives it its shape.
@@ -499,3 +500,18 @@ grafical note remove <file> --on <id>
 - A target has one note, and adding another replaces it.
   - A note goes with its target.
 - A note that takes more than four lines is an `overflow`.
+
+### F1.3.8: Container looks
+
+A group or a lane may take colors of its own, so that color tells one system from another. It works as for a node.
+
+```sh
+grafical -f <file> group --look <id> [--fill <color>] [--border <color>]
+grafical -f <file> lane --look <id> [--fill <color>] [--border <color>]
+```
+
+- A named look comes from the stylesheet.
+- A container holds one of the two, and the last one set clears the other.
+- `--look` with neither clears it.
+
+- **Why:** [083. A group or a lane may take a look of its own](../specs/decisions/083-a-group-or-a-lane-may-take-a-look-of-its-own.md)
