@@ -8,7 +8,7 @@ Decided by the owner on 2026-10-19. A diagram has no type by default and is draw
 
 ## The choice
 
-- **What a space is.** A layout gives four things a meaning: a place across, a place down, a line and a box around boxes.
+- **What a space is.** A layout gives four things a meaning: a place across and a place down and a line and a box around boxes.
   - Two layouts share a space only when all four agree.
   - When one differs, a reader cannot tell which rule a line or a place follows.
   - A swimlane and a sequence diagram both give each actor a column and run time down the page.

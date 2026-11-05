@@ -16,7 +16,7 @@ Decided on 2026-10-13, as the first feature of phase 1e. The owner called a stag
   - Since 2026-10-16 numbered lines do too ("Step badges ride the line").
 - **Measured** on fifteen architecture drafts:
   - The drafts were three of the private reference brief, nine of the public brief and three of 25 components.
-  - The line drawn on the page fell 10%, from 97,508 px to 88,220 px, with a shared trunk counted once.
+  - The line drawn on the page fell 10% from 97,508 px to 88,220 px, with a shared trunk counted once.
   - Crossings went from 39 to 40 and bends from 357 to 370.
   - On the picture the owner called terrible, the line drawn fell from 5,272 px to 2,408 px and its one crossing went.
 - **Labelled lines stay apart.** Bundling them too would cut the line drawn by 22%.

@@ -10,11 +10,17 @@ Decided by the owner on 2026-10-16. Redrawing the dispatch diagram, the owner sa
 
 Now a row with no box may be a line end when the line's other end holds a box, and it is drawn as one bar across the content with its label in it. A row with no box that no line ends at is drawn as before, and a row that holds boxes is still a band.
 
-- **One bar, 40 px high**, with its label in it at the left.
+- **One bar, 40 px high** with its label in it at the left.
   - No line runs over the label, and none moves for it ("The dirty work has edges").
-  - Until 2026-10-19 the label was seated before the lines, clear only of the lines that end at the bar, and the router kept every line that passes the bar off it.
+  - Until 2026-10-19 the label was seated before the lines and clear only of the lines that end at the bar.
+  - The router kept every line that passes the bar off it.
   - Redrawing a microservices diagram, a line from a service to its database went round the bar's name with four bends.
-  - Seating the label after the lines changed 103 of 2,000 fuzz seeds: bends went from 146,809 to 146,643, `label-blocked` from 7 to 0, `title-blocked` from 3 to 1 and the engine-owned `needless-bend` from 334 to 332. None of the 329 saved drafts changed.
+  - Seating the label after the lines changed 103 of 2,000 fuzz seeds:
+    - Bends went from 146,809 to 146,643.
+    - `label-blocked` went from 7 to 0.
+    - `title-blocked` went from 3 to 1.
+    - The engine-owned `needless-bend` went from 334 to 332.
+  - None of the 329 saved drafts changed.
 - **Lines meet it straight past their other ends.** The engine adds no box to the file or the picture.
 - **Lines that pass it say so.** A line from a row above the bar to a row below it that does not end at it is refused as `bar-crossed` unless it says it may, with `edge add --pass` or `edge pass`.
   - The owner chose this on 2026-10-16 when asked why a passing line never touched the bar.
@@ -28,7 +34,7 @@ Now a row with no box may be a line end when the line's other end holds a box, a
   - The group's box would stretch over it and the bar would cut it in two ("Rows unseen, groups as systems").
 - **Tested.** The fuzz test puts a bar in three seeds of ten; over 500 seeds, 89 diagrams have a bar.
   - None of the 306 saved drafts and none of the 15 fixtures changed, since a line to a row with no box was refused until now.
-  - While it was built, the fuzz test found two ways a line from a bar crossed a group's label, both fixed.
+  - While it was built the fuzz test found two ways a line from a bar crossed a group's label, both fixed.
 
 ## Not chosen
 

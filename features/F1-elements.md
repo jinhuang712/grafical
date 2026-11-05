@@ -78,7 +78,7 @@ A box's kind says what it is and decides how it is drawn.
 
 - `initial` and `final` are a state machine's start and end.
 - `choice` is where a line splits into several, and the question goes on the line into it.
-- The labels of `initial` · `final` · `choice` stay in the file and are not drawn.
+- The labels of `initial` and `final` and `choice` stay in the file and are not drawn.
 
 ```sh
 grafical node kind <file> <id> <kind>
@@ -93,7 +93,7 @@ grafical node rename <file> <id> --label <text>
 grafical node describe <file> <id> [--text <text>]
 ```
 
-- Labels wrap at spaces · hyphens · underscores · slashes.
+- Labels wrap at spaces and hyphens and underscores and slashes.
   - Chinese text also wraps between characters.
 - A label that still does not fit its box is refused as `overflow`, with the lines it takes and the most it may.
 - A character the bundled fonts cannot draw is refused as `missing-glyph`.
@@ -123,15 +123,15 @@ A box can carry up to five marks, such as `⚠️` on a box that matters, or `P0
 grafical node icon <file> <id> --slot <slot> [--icon <mark>] [--bg <color>] [--fg <color>] [--border <color>] [--shape <shape>] [--size s|m|l]
 ```
 
-- A box has five slots of one mark each: `top-left` · `top-right` · `bottom-left` · `bottom-right` · `left`.
+- A box has five slots of one mark each: `top-left` and `top-right` and `bottom-left` and `bottom-right` and `left`.
   - A diamond and a dot have corner slots only.
   - Without `--icon`, the slot is cleared.
 - A mark is an emoji or a text of up to 6 characters or an SVG or PNG file inside the diagram's folder.
 - A text mark sits on a badge.
-  - `--bg` and `--fg` and `--border` take a color as `#rrggbb` or by name: `red` · `amber` · `green` · `blue` · `purple` · `gray` · `dark`.
+  - `--bg` and `--fg` and `--border` take a color as `#rrggbb` or by name: `red` or `amber` or `green` or `blue` or `purple` or `gray` or `dark`.
   - `--shape` is `square`, `rounded` (the default) or `pill`.
   - Without `--fg`, grafical picks the light or dark text that reads better.
-- `--size` is `s` or `m` or `l` for any mark: 16 · 20 · 28 px high.
+- `--size` is `s` or `m` or `l` for any mark: 16 or 20 or 28 px high.
   - `m` is the default.
 - A corner mark sits centred on its corner and moves nothing else.
   - The `left` mark takes a column inside the box, and the text gives up that width.
@@ -264,7 +264,7 @@ grafical edge step <file> <id> [--n <number>]
 
 One arrow can point at a whole system instead of each of its parts.
 
-- Either end of a line may be a box · a group · a row · a lane.
+- Either end of a line may be a box or a group or a row or a lane.
   - A row a line ends at is drawn as a band with its label above it.
   - A line meets the band straight past its other end where nothing is in the way.
 - A row with no box may be an end too, when the other end holds a box: a gateway or a message bus that every request passes.
@@ -370,7 +370,7 @@ grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before
   - A line id `<from>-><to>` follows its copied ends.
 - `--outside` also copies the lines between the group and everything outside it, their inside end moved to the copy.
 - Each copied box sits in its original's row.
-  - It keeps its original's label · kind · size · marks · lane · column.
+  - It keeps its original's label and kind and size and marks and lane and column.
   - `--before` or `--after` puts the copy before or after a group in every row of the copy as `group order` does ([033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)).
   - A group with no box in one of those rows is refused as `no-shared-layer`.
 - An alignment or steps to a box outside the group are refused as `copy-conflict` ([037. A group copy holds its inside](../specs/decisions/037-a-group-copy-holds-its-inside.md)).

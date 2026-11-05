@@ -6,13 +6,13 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 
 - **Row:** a line of boxes with an order.
   - A row is not drawn unless it has a look or a line ends at it.
-  - Lost names: *layer* · *slot* for a place in a row, which now names only a mark's place.
+  - Lost names: *layer* and *slot* for a place in a row, which now names only a mark's place.
   - In code and on the command line: `layer`.
 - **Box:** an element of the picture with a kind, a label and an optional sublabel.
   - Lost name: *node*.
   - In code and on the command line: `node`.
 - **Line:** a connection between two ends.
-  - Each end is a box · a group · a row · a lane.
+  - Each end is a box or a group or a row or a lane.
   - Lost names: *edge*, *connection*.
   - In code and on the command line: `edge`.
 - **Group:** a system drawn as one frame around its members.
@@ -55,7 +55,7 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 - **Gutter:** the space between two neighbouring rows, where lines run across.
 - **Gap:** the space between two neighbouring boxes of one row.
 - **Run:** one straight horizontal or vertical piece of a line.
-  - Lost names: *stretch* · *segment* · *part*.
+  - Lost names: *stretch* and *segment* and *part*.
 - **Track:** one of the rows of a gutter or one of the columns of a gap that a run takes.
 - **Corridor:** a column of the grid empty in every row a line passes, which the line runs down.
 - **Port:** the place where a line meets a side of a box.

@@ -16,10 +16,10 @@ Decided by the owner on 2026-10-16. The engine had been widening a group's box s
   - A label on or beside a run of its own line, wrapped onto more lines if it must.
   - A title at its place.
   - A note as the agent said.
-  - Measuring text, spacing, aligning to the grid and choosing ports and tracks stay the engine's dirty work.
+  - Measuring text and spacing and aligning to the grid and choosing ports and tracks stay the engine's dirty work.
 - **Unreadable is refused.** Drawing the facts in a plain form may hide what a reader needs, such as text under a line.
   - There the write is refused as an agent-owned defect that names the fact in the way.
-  - The cause is a fact the agent stated: a row, an order, a place or a text.
+  - The cause is a fact the agent stated: a row or an order or a place or a text.
 - **Costly is reported.** Where it only costs, the picture is drawn and every write reports it.
   - The picture stays correct; whether the cost is worth it is the agent's to judge.
 - **Engine-owned defects are what is left:** a plain form was there and the engine drew it wrong, such as a line through a box.
@@ -49,7 +49,7 @@ What it changes, each built in its own step:
   - The owner confirmed this on 2026-10-17 when shown its cost.
     - The two-zones fixture's private subnets had lines moved 16 px off their boxes' centres.
     - They now state their labels beside their rows, 176 px wider.
-  - Over the 306 saved drafts, 58 of 396 group labels are now refused, each with at least one place clear.
+  - Over the 306 saved drafts, 58 of 396 group labels are now refused with at least one place clear for each.
     - They sit in 40 of the 183 drafts with groups.
     - For 13 the engine had moved boxes apart or grown a box.
     - For 45 it had pushed a line off its box's centre.
@@ -72,7 +72,7 @@ What it changes, each built in its own step:
     - grafical finds that size by laying the diagram out with it, and gives none where no size fits.
     - Removed on 2026-10-18 by "Refusals say what happened and which commands can change it": no refusal writes a command any more, and `next` names `node resize`.
   - None of the 306 saved drafts and none of the fixtures had such a label, so none changed.
-  - Over 2,000 fuzz seeds generated as before, 455 diagrams had one, 1,198 lines in all, and are now refused.
+  - Over 2,000 fuzz seeds generated as before, 455 diagrams had one with 1,198 lines in all and are now refused.
   - Laid out by both engines:
     - Bends went from 149,848 to 146,678 and crossings from 185,131 to 170,143.
     - Height went down 4.1%.

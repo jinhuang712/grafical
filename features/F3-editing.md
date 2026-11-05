@@ -24,7 +24,7 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
 
 - On the command line an operation is `grafical <noun> <verb> <file> …`.
   - Every other value is a flag, such as `--label`.
-- `grafical new` takes the title and optionally `--subtitle` · `--note` · `--density` · `--sizing` · `--style`.
+- `grafical new` takes the title and optionally `--subtitle` and `--note` and `--density` and `--sizing` and `--style`.
 - Every write reports the IDs it changed, then one block for each problem.
   - A block says what the write is refused for, or what the picture draws poorly ([F3.5: Refusals](#f35-refusals) and [F5.3: Warnings](F5-checking.md#f53-warnings)).
   - A refused write changes nothing.
@@ -85,7 +85,7 @@ grafical try arch.grafical.yaml batch.yaml
 `try` takes several batches to compare arrangements in one call.
 
 - It prints one `before` record first.
-- Each batch then prints `ok` · `after` · `delta` records that carry `batch=<file>`.
+- Each batch then prints `ok` and `after` and `delta` records that carry `batch=<file>`.
 - A batch that would be refused prints `failed batch=<file> changed=-` and its blocks.
   - The other batches are still tried.
   - The exit code is 1.
@@ -159,8 +159,8 @@ next: -
 - The detail gives the facts, one per line:
   - `near`: the closest IDs.
   - `likely`: the value it most likely meant.
-  - `allowed` · `free` · `count` · `lines` · `min` · `max`.
-  - The element it concerns: `node` · `row` · `group` · `edge` · `lane`.
+  - `allowed` and `free` and `count` and `lines` and `min` and `max`.
+  - The element it concerns: `node` and `row` and `group` and `edge` and `lane`.
   - `line` and `column` in the YAML.
 - The detail carries what the agent needs to find the change itself, such as the first and last rows a group's box covers.
   - No refusal writes the change for it.

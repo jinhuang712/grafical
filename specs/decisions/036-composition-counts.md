@@ -10,7 +10,10 @@ Decided on 2026-10-16 from a request that agents see how a picture is composed, 
 
 ## The choice
 
-- **Three counts of composition:** `across` for lines through a group that holds neither end, `tight` for runs of two lines side by side, and `crowded` for labels with little room.
+- **Three counts of composition:**
+  - `across` for lines through a group that holds neither end.
+  - `tight` for runs of two lines side by side.
+  - `crowded` for labels with little room.
 - **Separate counts, never one score.** On 2026-10-13 the philosophy rejected a score of how hard a picture is to read because readers differ.
   - Each count is a fact the agent weighs; `try` shows the delta of each.
 - **Gutters.** `show --drawn` also prints a `gutter` record for each pair of neighbouring rows, with the same counts for the space between them.

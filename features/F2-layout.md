@@ -52,7 +52,7 @@ A box sits in a row, in an order. A row only places, and is not drawn unless it 
 - `grafical node move <file> <id> [--layer <row>] [--first | --last | --before <node> | --after <node>]`
 
 - A new row goes to the bottom unless `--before` or `--after` places it.
-- A box added to a row or moved into another row says where it goes: `--first` · `--last` · `--before` · `--after`.
+- A box added to a row or moved into another row says where it goes: `--first` or `--last` or `--before` or `--after`.
   - Without one it is refused as `missing-field`, with the row and the boxes in it.
   - Only the first box of an empty row needs none ([033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)).
 - A row's label is optional.
@@ -157,7 +157,7 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
   - `show --drawn` names that row `-`.
   - The boxes of a row it lands in stand aside.
 - A cell another fact keeps is refused as `step-blocked`, a box that steps from itself as `step-cycle`.
-  - Steps combined with a row · a position · an alignment · a column · a lane are refused as `conflicting-position`.
+  - Steps combined with a row or a position or an alignment or a column or a lane are refused as `conflicting-position`.
 - `node move --layer` puts the box back in a row.
   - `node move` with steps and no `--from` keeps the box it steps from, and with `--from` alone keeps the steps.
 - A box placed by steps wholly beside every box it connects to is refused as `box-aside`.

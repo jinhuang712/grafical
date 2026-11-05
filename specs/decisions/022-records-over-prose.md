@@ -10,7 +10,7 @@ Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in pr
 
 ## The choice
 
-- **What the diagram is:** `show` as now, with rows, nodes in order, groups, lanes and edges.
+- **What the diagram is:** `show` as now, with rows and nodes in order and groups and lanes and edges.
 - **How it is drawn:** a discrete report of each box, each line and the totals.
   - The agent judges the drawing from it without opening the picture.
 - **What a change would do:** `grafical try` measures a batch without writing it.

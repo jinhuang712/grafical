@@ -11,11 +11,12 @@ The owner chose numbered steps on 2026-10-15 as one of the first candidates for 
 - **The number is the agent's fact.** A step is a whole number from 1 to 99 on a line, stated with `edge step`.
   - grafical draws it and never numbers, renumbers or checks the order.
   - Two lines may share a number for steps at the same time, and numbers may skip.
-- **The look is a ring on the line**, in the line's colour, with the number inside; two digits fit, hence the limit of 99.
+- **The look is a ring on the line** in the line's colour, with the number inside.
+  - Two digits fit, hence the limit of 99.
   - A footnote's number is a filled circle beside what it is about, so a reader tells the two apart ("Notes as callouts or footnotes").
 - **The place is the label's.** The badge rides the run that carries the line's label, and the router finds its slot as it finds any label's ("Our own gap router").
   - A numbered line keeps a port of its own, as a labelled line does ("Fan-outs of three bundle"): a badge on a shared trunk could not say whose step it is.
-- **It keeps clear of what a label keeps clear of**, and a badge that touches anything is `step-collision`, owned by the engine ("Defects owned by who can fix them").
+- **It keeps clear of what a label keeps clear of**, and a badge that touches anything is `step-collision` owned by the engine ("Defects owned by who can fix them").
   - A lane's divider may still run under it.
 - **Measured.** No picture without a number changed: `pnpm bench diff` laid out the 306 saved drafts and the fixtures as before.
   - With every line of the 306 saved drafts numbered, no badge touches anything.

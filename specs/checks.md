@@ -18,7 +18,7 @@ A write with a defect the agent owns is refused and changes nothing. A defect th
 
 The defects the agent owns:
 
-- `overflow`: text that does not fit its box · a lane's label outside its head · a note over 4 lines.
+- `overflow`: text that does not fit its box or a lane's label outside its head or a note over 4 lines.
 - `missing-glyph`: a character neither bundled font can draw.
 - `mark-covers`: a mark that covers text or another box.
 - `wall-crossed`: a line through a wall that does not allow it.
@@ -49,7 +49,7 @@ Where drawing would hide something a reader needs, the write is refused as a def
 - A line's label or a step's badge that no gutter on its way holds clear of the other lines is `label-blocked`.
   - The refusal names the line, and the lines across the label as `across`.
   - It also names the borders the label crosses and the gutters it tried, each `<row above>/<row below>`.
-  - Its `next` is `layer move` · `node resize` · `node move` · `edge relabel` · `edge step`.
+  - Its `next` is `layer move` and `node resize` and `node move` and `edge relabel` and `edge step`.
 - A wall's label with no clear place along its wall is `label-blocked` with `is: wall`.
   - It names the wall and the lines and boxes in the way.
   - Its `next` is `wall relabel` and `node move`.
@@ -98,7 +98,7 @@ The counts record is one line of facts with no threshold, so that the agent can 
   - Lines that share a port are one bundle and never a pair.
   - A pair is a place: two lines tight in two places count twice.
 - `crowded`: the labels with under 8 px of room on two or more of their four sides.
-  - Room is measured to the sides of boxes · groups · bands and to other lines · labels.
+  - Room is measured to the sides of boxes and groups and bands and to other lines and labels.
   - Lanes and walls do not count.
 
 `crossings` counts points, so a pair that crosses twice counts twice there and is one `crossing` warning.

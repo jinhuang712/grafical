@@ -391,7 +391,7 @@ target = above 0
 
 At most 5% of operations are refused, each recovered within 1 retry.
 
-**Want:** Never place a box by hand · Get a good picture from a small model.
+**Want:** Never place a box by hand, Get a good picture from a small model.
 
 **Checks:**
 

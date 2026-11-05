@@ -97,8 +97,8 @@ A note is a card beside its target, joined by a dotted line. With `footnote`, it
 
 A card wraps at 160 px and tries its places in a fixed order, 16 px from its target and then 32 px:
 
-- **Beside a box or a group:** first on the right and then on the left, each centred · top-aligned · bottom-aligned.
-  - Then below and then above, each centred · left-aligned · right-aligned.
+- **Beside a box or a group:** first on the right and then on the left, each centred or top-aligned or bottom-aligned.
+  - Then below and then above, each centred or left-aligned or right-aligned.
 - **Beside a line:** at the middle, a quarter and three quarters of its longest run.
   - Below or above a horizontal run, and right or left of a vertical one.
 

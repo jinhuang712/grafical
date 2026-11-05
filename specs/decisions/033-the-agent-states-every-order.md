@@ -9,7 +9,7 @@ Decided by the owner on 2026-10-15: the engine does not choose for the agent. Un
 ## The choice
 
 - **A place is required.** A box added to a row or moved into another row says where it goes.
-  - It goes first, last, or before or after a box.
+  - It goes first or last or before or after a box.
   - Without one it is refused.
 - **No tidying.** `layer tidy` and `diagram tidy` are removed.
   - An agent that wants fewer crossings compares orders with `grafical try` and its counts ("Records over prose"), and keeps the one it prefers.

@@ -19,7 +19,7 @@ Asked for by the owner on 2026-10-14: "a box that can belong to no row / column 
 A prototype on the public brief's draft (`bench/runs/p1d-help3`) freed its seven dependency boxes, from 27 bends, 824 px wide and 1008 px high:
 - placed by the engine just below the box that uses each: 29 bends, 1336 px wide;
 - placed by the engine below everything that box connects to: 17 bends, 1136 px wide and 912 px high;
-- placed one step down from the box that uses each: 20 bends, 1640 px wide and 752 px high, with the seven sharing the topics' row.
+- placed one step down from the box that uses each: 20 bends and 1640 px wide and 752 px high, with the seven sharing the topics' row.
   - Two steps would have given the second picture: the right step depends on the rest of the diagram, and it is the agent's to choose.
 
 ## Not chosen

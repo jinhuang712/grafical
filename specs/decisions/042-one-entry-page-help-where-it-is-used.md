@@ -41,7 +41,8 @@ So:
   - Its own sections, among them what it does in each kind of diagram ("By kind of diagram").
   - On `try`, what to try when the picture looks wrong.
   - A command's line in a batch is built from its operation's schema, so `apply --help` lists no operations: every page shows its own.
-- **Arguments named as fields.** A command's arguments are named as its operation's fields: `[at]`, `<nodes...>`, `<members...>`, `<edges...>` and `<allow...>`, which were `[place]`, `<member...>`, `<id...>` and `<pass...>`.
+- **Arguments named as fields.** A command's arguments are named as its operation's fields: `[at]` and `<nodes...>` and `<members...>` and `<edges...>` and `<allow...>`.
+  - They were `[place]` and `<member...>` and `<id...>` and `<pass...>`.
   - A command's page is then also its operation's, and a test holds every argument and option to a field.
 - **A refusal carries its own fix.** A code names the kind of problem so that the agent and the harness can tell one from another.
   - What is wrong and what fits is in the record's facts and never in a page to look up.

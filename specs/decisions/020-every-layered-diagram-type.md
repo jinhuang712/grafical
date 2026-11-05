@@ -12,7 +12,7 @@ Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and
 ## The choice
 
 - **Kinds.** Five new kinds give the shapes these types need.
-  - They are a state, a decision, a terminal and the start and end dots of a state machine.
+  - They are a state and a decision and a terminal and the start and end dots of a state machine.
   - The other types need no new shape.
   - Shape, text room and line ends live in one module: `src/theme/shapes.ts`.
   - Layout, the checker and the renderer share it.
@@ -22,7 +22,7 @@ Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and
 - **Nested groups.** A group may sit inside another up to three levels deep, as a region holds a network that holds hosts.
   - This reverses part of "Rows unseen, groups as systems".
   - A group's members are its own boxes and its inner groups' boxes, for every rule that asks who is in it.
-    - Those rules are its block in each row, the boxes a line to it reaches, its lane and which boxes may lie inside its box.
+    - Those rules are its block in each row and the boxes a line to it reaches and its lane and which boxes may lie inside its box.
   - The owner chose alternating fills as the default, and asked for shades as a stylesheet choice.
   - The fuzz test nests groups in about a quarter of its diagrams.
   - It found that a line into a row under stacked heads crossed a label.
@@ -35,7 +35,7 @@ Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and
 
 For stage 1:
 
-- Sequence diagrams, entity-relationship and class diagrams, mind maps or timelines.
+- Sequence diagrams or entity-relationship and class diagrams or mind maps or timelines.
   - Each needs a layout family of its own, and the core diagram has not yet met the MVP bar.
 - A setting for the diagram's type.
   - The kinds already say what is drawn.

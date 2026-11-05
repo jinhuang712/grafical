@@ -8,13 +8,13 @@ Decided by the owner on 2026-10-16, before building the copying of a group, one 
 
 ## The choice
 
-- **What the copy holds.** The group's inner groups at every level, its boxes, and the lines between them, each box with all its facts.
+- **What the copy holds.** The group's inner groups at every level and its boxes and the lines between them, each box with all its facts.
 - **Lines to everything else only when asked.** With `--outside`, every line between the group and something outside it is copied too.
   - A second zone usually talks to the same load balancer.
   - A standby often does not talk to what its primary does, so the agent states which.
 - **The label is stated.** `--label` is required, as for `group add`.
   - Two groups with one label are almost always a mistake.
-- **The place is stated, as for `group order`.** The copy goes before or after a group the agent names, in every row of the copy.
+- **The place is stated, as for `group order`.** The copy goes before or after a group the agent names in every row of the copy.
 - **A fact that cannot hold twice is refused, never left off.** An alignment or steps to a box outside the group would put the box and its copy in one place.
   - A lane or a column that would move the copy away from the place stated is refused the same way, following the owner's choice for alignments and steps.
 - **Notes and walls are not copied.** They name what they are about, and the copy is not part of them until the agent says so.
@@ -27,7 +27,7 @@ Decided by the owner on 2026-10-16, before building the copying of a group, one 
   - A zone would need one `edge add` per line to the outside.
 - The original's label on the copy.
   - The agent would rename it almost every time.
-- Leaving off what the copy cannot keep: an alignment, steps, a lane or a column.
+- Leaving off what the copy cannot keep: an alignment or steps or a lane or a column.
   - Nothing would tell the agent that its copy is not a copy.
 - Letting the row follow its columns afterwards, as it does after other operations.
   - The copy would not sit where it was stated, and the `group-split` refusal that followed named copied boxes that were never written.

@@ -19,13 +19,13 @@ grafical show <file> [--drawn]
 ```
 
 - `show` prints the diagram in the same words as the operations.
-  - It lists the rows · the boxes in order · the groups · the lanes · the lines · the walls · the notes · the marks.
+  - It lists the rows and the boxes in order and the groups and the lanes and the lines and the walls and the notes and the marks.
 - `show --drawn` prints how the picture is drawn, as records with no advice:
-  - Each box's row · place · size · lines by side.
-  - Each line's sides · bends · length · shortest length · rows skipped · lines crossed · rows passed.
+  - Each box's row and place and size and lines by side.
+  - Each line's sides and bends and length and shortest length and rows skipped and lines crossed and rows passed.
   - Each wall's length and the lines through it.
   - One `gutter` record for each pair of neighbouring rows: `gutter above=<row> below=<row> lines=<n> crossings=<n> tight=<n> crowded=<n>`.
-    - It counts the lines with a run between the two rows and the crossings · tight pairs · crowded labels there.
+    - It counts the lines with a run between the two rows and the crossings and tight pairs and crowded labels there.
     - It shows the agent which choice of rows costs.
   - How each note is drawn.
   - The lines bundled together, and the totals.
@@ -83,7 +83,7 @@ Every write prints a warning block for each thing the picture draws poorly, and 
 The warnings:
 
 - `bent-line`: a line with more than two bends.
-  - Detail: `edge` · `bends` · `skip` (the rows between its ends' rows).
+  - Detail: `edge` and `bends` and `skip` (the rows between its ends' rows).
 - `passing-row`: a line that passes among the boxes of rows between its ends and meets none of them.
   - Detail: `edge`, `rows`.
 - `line-across-group`: a line through the box of a group holding neither of its ends.
@@ -96,7 +96,7 @@ The warnings:
   - It has no line of its own and none to its group, row or lane.
   - Detail: `node`.
 - `line-per-member`: every box of a group of two or more has a line to one end outside it, or from it.
-  - The lines are alike in kind · label · weight · arrowheads.
+  - The lines are alike in kind and label and weight and arrowheads.
   - A group inside one with the same lines is left out.
   - Detail: `group`, `edges` ([050. A line from every box of a group is a warning](../specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)).
 - `crossing`: a pair of lines that cross, however often.

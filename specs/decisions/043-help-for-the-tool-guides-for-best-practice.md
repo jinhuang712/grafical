@@ -17,7 +17,7 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
   - Its limits, and what a refusal of it means.
   - It does not say how a kind of diagram is drawn.
 - **The guides** (`grafical guide` and `grafical guide <name>`):
-  - One per common kind of diagram: architecture, C4, infrastructure, dependency, data flow, event flow, flowchart, swimlane and state machine.
+  - One per common kind of diagram: architecture and C4 and infrastructure and dependency and data flow and event flow and flowchart and swimlane and state machine.
   - Composition, for any kind: what makes a diagram good and what to change when a picture looks wrong.
   - They took these from the help:
     - The entry page's kinds of diagram and "A good diagram".

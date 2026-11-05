@@ -23,8 +23,8 @@ Each character is measured in Inter when Inter has a glyph for it, and in Noto S
 A label wraps greedily at the last break point that fits, and a piece with no break point stays whole even when it is too wide. A line break in the text always starts a new line.
 
 - A break may follow a space or a tab, and the space is trimmed from the end of the line.
-- A break may follow `-` · `_` · `/` when letters or digits stand on both sides, and the character stays at the end of the line.
-- A break may come before or after any Han · kana · Hangul · CJK punctuation · fullwidth character.
+- A break may follow `-` or `_` or `/` when letters or digits stand on both sides, and the character stays at the end of the line.
+- A break may come before or after any Han or kana or Hangul or CJK punctuation or fullwidth character.
 - Closing punctuation never starts a line, and opening brackets never end one.
 - Two of `…`, `—` or `‥` in a row are never split.
 

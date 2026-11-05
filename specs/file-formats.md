@@ -11,18 +11,18 @@ grafical  title  subtitle  note  density  sizing  style  legend
 layers  nodes  groups  lanes  columns  walls  notes  edges
 ```
 
-- `subtitle` · `note` · `sizing` · `style` · `legend` appear only when set.
+- `subtitle` and `note` and `sizing` and `style` and `legend` appear only when set.
   - So do the lists after `layers`, except `edges`.
   - `legend` holds the words for each line style, then `weights` and `marks`.
   - Each is sorted by name, so the same words give the same file whatever order they were set in.
-- A row under `layers` has `id` · `label` · `lane` · `look` · `nodes`.
-  - A box has `id` · `label` · `kind` · `sublabel` · `size` · `accent` · `align` · `group` · `lane` · `column`.
+- A row under `layers` has `id` and `label` and `lane` and `look` and `nodes`.
+  - A box has `id` and `label` and `kind` and `sublabel` and `size` and `accent` and `align` and `group` and `lane` and `column`.
 - The top-level `nodes` list holds the boxes in no row, each with `from` and its steps.
-- A group has `id` · `label` · `sublabel` · `in` · `titleAt`.
+- A group has `id` and `label` and `sublabel` and `in` and `titleAt`.
   - A lane has `id` and `label`, and a column `id`.
-  - A wall has `id` · `between` · `and` · `allow` · `label`.
+  - A wall has `id` and `between` and `and` and `allow` and `label`.
   - A note has `on`, `text` and `footnote`.
-- A line has `id` · `from` · `to` · `kind` · `label` · `both` · `pass` · `accent` · `weight` · `step`.
+- A line has `id` and `from` and `to` and `kind` and `label` and `both` and `pass` and `accent` and `weight` and `step`.
   - `both`, `pass` and `accent` appear only when true.
   - `weight` appears only when it is not thin, and `step` only when the line is numbered.
 - A field that holds its default is left out.

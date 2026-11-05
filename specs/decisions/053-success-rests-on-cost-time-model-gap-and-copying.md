@@ -12,7 +12,10 @@ Twenty goals stood side by side, and a release waited on all of them. Some could
 - **Better pictures are watched and have no line:** each round is held against the round before, by the owner's blind rating.
 - **The constraints must always hold:** stability, mechanical defects and determinism.
 - **Every other goal is recorded to find causes:** it holds no release.
-- **Three goals are dropped:** faithfulness had no scorer left, a loose prompt had already passed, and the command line has no way to state a position.
+- **Three goals are dropped:**
+  - Faithfulness had no scorer left.
+  - A loose prompt had already passed.
+  - The command line has no way to state a position.
 
 ## Not chosen
 

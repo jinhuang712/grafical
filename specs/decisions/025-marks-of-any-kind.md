@@ -20,7 +20,7 @@ What keeps marks within the principles:
   - So a changed file fails the load instead of drawing differently.
   - A named color is stored as its hex, so a change to the names never changes an existing file.
 - A picture runs nothing.
-  - An SVG with a script, a `foreignObject`, an event handler or an outside reference is refused.
+  - An SVG with a script or a `foreignObject` or an event handler or an outside reference is refused.
   - So is a path outside the diagram's folder.
 
 The emoji images come from `@twemoji/svg`: MIT for the package, and CC-BY 4.0 for the graphics, which asks for attribution.

@@ -19,7 +19,7 @@ Asked for by the owner on 2026-10-14, on the public brief's draft with steps: "w
   - It has lines to two or more boxes whose centres lie at least its own width apart.
   - Where the engine chose the slot, the route cost counts it as a crossing.
   - The slot search then compares the whole route cost instead of crossings alone, which changes "The engine picks a new box's slot".
-    - The whole route cost is crossings plus lines over two bends plus such boxes, then crossings, bends and length.
+    - The whole route cost is crossings plus lines over two bends plus such boxes, then crossings and bends and length.
   - The 74 drafts of the last three rounds were rebuilt as one batch each with both changes.
     - The rounds were p1d-help2, p1d-help3 and p1e-records.
     - They have 656 bends instead of 684 and 90 crossings instead of 93.

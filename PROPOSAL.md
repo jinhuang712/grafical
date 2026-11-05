@@ -66,14 +66,14 @@ The agent says what the diagram holds: this box is in that row, after that one, 
 
 The idea rests on three bets, each of which a test can settle:
 
-- **Discrete facts are enough:** an architecture diagram can be described by rows · order · groups · alignment · columns · size steps.
+- **Discrete facts are enough:** an architecture diagram can be described by rows and order and groups and alignment and columns and size steps.
 - **Small named operations make weak models good:** a model that only has to choose well can match a strong one.
 - **Stability can be built in:** a layout computed again from facts keeps the structure a reader already knows.
 
 ## What we want
 
 - **Fix one thing without losing the rest:** an operation changes only the facts it names, so a first draft and each change cost few turns and few tokens.
-- **Never place a box by hand:** the agent states facts such as a row · an order · a connection · a shape · a color, and the engine places and routes everything.
+- **Never place a box by hand:** the agent states facts such as a row and an order and a connection and a shape and a color, and the engine places and routes everything.
 - **A picture that is complete and clear at once:** a large diagram draws without a defect and without hiding anything, and what to cut stays the agent's choice.
 - **Get a good picture from a small model:** Haiku with grafical draws better than Opus without it, because the tool does the work a model would get wrong.
 - **Copy a picture and beat it:** an agent given someone else's diagram redraws the same content quickly, and the result looks better.

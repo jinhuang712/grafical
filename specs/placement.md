@@ -48,7 +48,7 @@ column      0       1       2
 The grid is built in four steps:
 
 1. **Constraints.** Each box must lie left of the next in its row.
-   - Lanes · groups · column facts · walls · boxes shared by groups add more constraints of the same kind.
+   - Lanes and groups and column facts and walls and boxes shared by groups add more constraints of the same kind.
 2. **Joins.** Boxes in different rows are joined into one column best first: alignments → steps → lines.
    - A line's join scores 10 when it spans one row and `max(1, 6 − span)` when it spans more.
    - It scores 4 more when the box has no other partner and 2 more for the median of its partners.

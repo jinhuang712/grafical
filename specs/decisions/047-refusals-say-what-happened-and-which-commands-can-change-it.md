@@ -10,14 +10,16 @@ Decided by the owner on 2026-10-18, after round p1g (`bench/results/p1g-stage1.m
 
 grafical reports what happened and never teaches. A record gives the facts and the names of the commands that can change them, never a command line with ids or values filled in.
 
-- **One block per problem**, after the outcome and before the counts: its kind and code, its description, its source, its detail and its next.
+- **One block per problem**, after the outcome and before the counts.
+  - It holds its kind and code and its description and its source and its detail and its next.
 - **Three kinds.** An `error` could not be read or applied; a `defect` would draw wrong ("Defects owned by who can fix them"); a `warning` is written and says what draws poorly ("Every write prints every warning").
-- **A description per code.** One fixed sentence for each code, which says what happened and not what to do, never made for the case at hand.
-- **The source** says what caused the problem, and for a problem of the whole batch it names the operation that caused it, never a guess.
+- **A description per code.** One fixed sentence for each code says what happened and not what to do, and it is never made for the case at hand.
+- **The source** says what caused the problem.
+  - For a problem of the whole batch it names the operation that caused it, never a guess.
   - Before, such an error named the batch's last operation even though it may have done nothing wrong.
 - **The detail** gives one fact per line, under the names the facts had.
-  - Found by review the same day: a defect's ids had been lists even of one, an error's and a warning's not, so the rule became one for all.
-- **Next** names the commands that can change it, never ids, values or options.
+  - Found by review the same day: a defect's ids had been lists even of one and an error's and a warning's not, so the rule became one for all.
+- **Next** names the commands that can change it and never ids or values or options.
 - **Enough to find the change.** The detail carries what the agent needs to find the change itself, and the help and the guides state no rule for it; decided by the owner the same day.
   - In round p1g two agents put a bar between rows a group's box covers and were refused with `bar-in-group`.
     - They could not tell why: the record named the group and the row.

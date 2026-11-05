@@ -29,7 +29,7 @@ The writer adds the marks of a route as it draws it, so the routes, the checks a
 - **Dots.** A dot marks every point where one line starts or stops running along another.
   - Its radius is the line's width plus 1.5 px.
 - **Curves.** With `paint.edge.shape: curved`, each corner is as round as half of each of its two runs.
-  - The curve is checked at three points against boxes · labels · step badges · other lines.
+  - The curve is checked at three points against boxes and labels and step badges and other lines.
   - It is halved while it comes within 4 px of one.
   - It is never less round than the theme's corner radius, or half of each run when that is smaller.
   - The corner radius is 6 px in `default` and `dark`, and 4 px in `print`.

@@ -26,7 +26,7 @@ Decided by the owner on 2026-10-15, after a field study that redrew ten publishe
 
 ## Not chosen
 
-- Keeping the default words: "call or read", "message", "optional", "related" and "main path".
+- Keeping the default words: "call or read" and "message" and "optional" and "related" and "main path".
   - They suit an architecture diagram but are wrong on a flowchart.
   - They are the engine stating a meaning.
 - Default words per diagram type.

@@ -8,10 +8,10 @@ Drawing two reference diagrams of a chat's alerts and a host's states, with a la
 
 ## The choice
 
-- **A new slot, `on`, for a straight vertical line:** the label is centred on the line at the height the beside slot has.
+- **A new slot `on` for a straight vertical line:** the label is centred on the line at the height the beside slot has.
   - It is the first choice, ahead of beside the line on its left and on its right.
   - Every rule that kept a label clear still holds.
-    - No other line crosses it, and no box or side of a group, lane or wall.
+    - No other line crosses it, and no box or side of a group or lane or wall.
     - A label with no clear slot wraps first and then tries another gutter.
     - When neither works it is refused as `label-blocked`.
 - **A line that turns has no `on` slot.** A label on a run that bends would lie across the bend, and the run is one the label sits above or below as before.

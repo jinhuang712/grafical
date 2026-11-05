@@ -28,7 +28,7 @@ grafical has not been released; the first release will be 0.1.0.
   - It was refused as `empty-container`.
   - `layer look <row> box|band` draws a bar or a band as a box or as a band; a bar is a box unless it says band.
   - A line that passes a bar without ending at it is refused as `bar-crossed` unless `edge add --pass` or `edge pass` lets it; `bar-to-bar` and `bar-in-group` refuse a line between two bars and a bar inside a group's rows.
-- `node add` into a row that already has boxes needs a place: `--first` · `--last` · `--before` · `--after`.
+- `node add` into a row that already has boxes needs a place: `--first` or `--last` or `--before` or `--after`.
   - So does `node move --layer`.
   - Without one the write is refused as `missing-field`, with the row and its boxes. grafical no longer picks the slot.
 - `layer tidy` and `diagram tidy` are removed.
@@ -100,7 +100,7 @@ grafical has not been released; the first release will be 0.1.0.
     - `top-left`, `top` or `top-right` in its head.
     - `bottom-left`, `bottom` or `bottom-right` in a foot below its last row.
     - `left` or `right` beside its rows inside the box.
-    - `outside-top` · `outside-bottom` · `outside-left` · `outside-right`, centred just outside the box.
+    - `outside-top` or `outside-bottom` or `outside-left` or `outside-right`, centred just outside the box.
   - The file holds it as the group's `titleAt` and a batch as `group.title`.
   - `show` prints `title=<place>`.
   - The label sits exactly there and takes only its own room; no box or line moves for it.
@@ -108,7 +108,7 @@ grafical has not been released; the first release will be 0.1.0.
   - The refusal names the lines in the way, and as `clear` the places none comes near.
   - Without a place the label is seated as before.
 - The legend says only what the agent named.
-  - Line styles and widths lose their default words: "call or read" · "message" · "optional" · "related" · "main path".
+  - Line styles and widths lose their default words: "call or read" and "message" and "optional" and "related" and "main path".
   - A diagram that names nothing draws no legend.
   - `show --drawn` prints a `legend` record with `text=-` for each style and width left unnamed, with the `weight` to name it by.
   - `diagram legend --hide` is removed; an old file's `false` is read as no words.
@@ -150,14 +150,14 @@ grafical has not been released; the first release will be 0.1.0.
 ### Refusals and warnings
 
 - The new warning `line-per-member` names a group each of whose boxes has a line to the same end or from it.
-  - The lines are alike in kind · label · weight · arrowheads.
+  - The lines are alike in kind and label and weight and arrowheads.
   - The warning names them.
   - `edge add` can draw one line to the group instead.
   - A group inside another with the same lines is left out.
   - 8 of the 329 saved drafts get one.
 - Every refusal and defect and warning prints as a block after the outcome line with a blank line before it.
   - The block holds these lines:
-    - Its kind and its code, where the kind is `error` · `defect` · `warning`.
+    - Its kind and its code, where the kind is `error` or `defect` or `warning`.
     - `description:`, one fixed sentence per code that says what happened.
     - `source:` says what caused it, and a warning has none.
     - `detail:`, its facts one per line.
@@ -167,8 +167,8 @@ grafical has not been released; the first release will be 0.1.0.
   - An error an operation caused has the operation's index as `detail.op`.
   - An error already in the file has none, and nor has a file or a batch that cannot be read.
   - The one-line `error op=... code=...` and `defect code=...` records are gone, and so is every `fix`: no refusal writes the command for the agent any more.
-  - `elements=` gives way to typed keys with one value each: `node` · `edge` · `group` · `row` · `lane` · `wall`.
-  - Several of one kind go under `nodes` · `edges` · `groups` · `rows` · `lanes`.
+  - `elements=` gives way to typed keys with one value each: `node` and `edge` and `group` and `row` and `lane` and `wall`.
+  - Several of one kind go under `nodes` and `edges` and `groups` and `rows` and `lanes`.
   - `likely` is a value only: `grafical help apply` gives `found: help` and `likely: --help`.
 - A refusal's `source` says what caused it.
   - It is one of these:
@@ -195,10 +195,10 @@ grafical has not been released; the first release will be 0.1.0.
   - The counts are as before.
   - On a 50-box draft a write prints about 170 to 230 such blocks, most of them crossings.
 - Refusals carry what an agent needs to find the change itself:
-  - `bar-in-group` names the bar's row · the group · the line · the group's `top` and `bottom` rows.
+  - `bar-in-group` names the bar's row and the group and the line and the group's `top` and `bottom` rows.
   - `group-conflict` names those rows too.
   - `alignment-conflict` names the boxes in the way.
-  - `edge-inside` · `edge-blocked` · `bar-to-bar` · `bar-crossed` name the line's `ends`.
+  - `edge-inside` and `edge-blocked` and `bar-to-bar` and `bar-crossed` name the line's `ends`.
   - `group-across-lanes` names a box in another lane and that lane.
 - `group-split` names the box and its row.
   - It also names the innermost group whose members the box stands between, and those two members as `between`.
@@ -211,10 +211,10 @@ grafical has not been released; the first release will be 0.1.0.
   - Each is also a `bent-line` warning.
   - Nothing is refused for it: it tells the agent which line its rows send round, which before only `check --all` measured.
 - `show --drawn` prints a `gutter` record for each pair of neighbouring rows.
-  - It counts the lines · crossings · tight pairs · crowded labels between them.
+  - It counts the lines and crossings and tight pairs and crowded labels between them.
 - The `counts` record gains `across=` (lines through a group holding neither of their ends), `tight=` (pairs of runs of two lines side by side under 12 px apart for over 100 px) and `crowded=` (line labels with under 8 px of room on two or more sides).
   - `apply --help` describes them.
-- `grafical try <file> <batch.yaml>...` takes several batches: one `before` record, then each batch's `ok` · `after` · `delta` records keyed by `batch=<file>`.
+- `grafical try <file> <batch.yaml>...` takes several batches: one `before` record, then each batch's `ok` and `after` and `delta` records keyed by `batch=<file>`.
   - A blank line comes before a refused batch's `failed` line.
 
 ### Help
@@ -236,7 +236,7 @@ grafical has not been released; the first release will be 0.1.0.
   - Each way is one line named by the story it tells, such as a box beside a box or one path in order.
   - The page also says what grafical does not draw.
   - Each command's `--help` shows its line in a batch, so `apply --help` no longer lists 15 of the 60 operations.
-  - `grafical guide` lists guides for these diagrams: architecture · C4 · infrastructure · dependency · data flow · event flow · flowchart · swimlane · state machine.
+  - `grafical guide` lists guides for these diagrams: architecture and C4 and infrastructure and dependency and data flow and event flow and flowchart and swimlane and state machine.
   - It also lists one on composition.
   - `grafical guide <name>` prints one.
   - Nothing tells an agent to read them.
@@ -250,7 +250,7 @@ grafical has not been released; the first release will be 0.1.0.
   - `help <command>` exited 2 after printing the page.
 - Command arguments are named as their batch fields.
   - `group title <file> <id> [at]` and `group join <file> <group> <nodes...>` show it.
-  - `lane join` · `lane leave` · `column join` · `column leave` take `<members...>`.
+  - `lane join` and `lane leave` and `column join` and `column leave` take `<members...>`.
   - `edge emphasize` and `edge weight` take `<edges...>`.
   - `wall allow` takes `<allow...>`.
   - Only the help's words change; the commands take the same values.

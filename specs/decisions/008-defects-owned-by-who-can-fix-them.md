@@ -12,10 +12,15 @@ Some defects only the agent can fix and others only the engine can avoid. A writ
 
 After each operation or batch, grafical lays out the diagram and checks it. Each defect has an owner: whoever can fix it.
 
-- **The agent owns** a defect that a fact it stated caused, such as text too long for its box. The write fails and changes nothing, and the refusal names what is at fault and the commands that can change it.
-- **The engine owns** a defect about where lines and boxes go, which no operation controls ("Facts over coordinates"). The engine must avoid it with the room "Layout computed again on every change" allows: the next gutter step, more track or port separation, another label slot.
+- **The agent owns** a defect that a fact it stated caused, such as text too long for its box.
+  - The write fails and changes nothing.
+  - The refusal names what is at fault and the commands that can change it.
+- **The engine owns** a defect about where lines and boxes go, which no operation controls ("Facts over coordinates").
+  - The engine must avoid it with the room "Layout computed again on every change" allows.
+  - That room is the next gutter step or more track or port separation or another label slot.
   - If it still leaves one, that is an engine bug.
-  - The write goes ahead, the agent is never told, and `grafical check --all` reports it so that benchmarks and tests count it.
+  - The write goes ahead and the agent is never told.
+  - `grafical check --all` reports it so that benchmarks and tests count it.
 
 ## Not chosen
 
