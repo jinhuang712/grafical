@@ -60,6 +60,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [054. A goal may exit many checkpoints](054-a-goal-may-exit-many-checkpoints.md) (2026-11-05)
 - [055. A weak model draws well and a stronger one superbly](055-a-weak-model-draws-well-and-a-stronger-one-superbly.md) (2026-11-05)
 - [056. A column may carry a heading](056-a-column-may-carry-a-heading.md) (2026-11-05)
+- [057. A box may take a look of its own](057-a-box-may-take-a-look-of-its-own.md) (2026-11-06)
 
 ## Former IDs
 

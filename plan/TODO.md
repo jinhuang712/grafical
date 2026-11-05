@@ -2,24 +2,6 @@
 
 ## ongoing
 
-### [P1][DISCUSSION] A box's color and shape come with its kind
-
-- description:
-  - An agent that wants a green box and a red box has no way to say so.
-  - A stylesheet sets the fill per kind in `paint.node.kinds`, and the kind also sets the shape.
-  - On 2026-10-30 a "fixed" box had to be a cylinder and a "bug" box a dashed box only for their colors.
-  - Looks are free in the philosophy, so this is a gap and not a rule.
-  - Option one is a named look in the stylesheet that `node look <id> <name>` gives a box.
-    - A theme change still restyles every box at once.
-  - Option two is `node look <id> --fill <color> --border <color>` on the box itself.
-    - It is simple, but a theme change leaves those colors as they are.
-  - Option three is more kinds, rejected for now because a kind says what a box is.
-  - In options one and two the shape stays the kind's.
-- created: 2026-10-30
-- status: HALT
-- next: the owner chooses an option
-- blocks: [The legend cannot show a box's look](#p2discussion-the-legend-cannot-show-a-boxs-look)
-
 ### [P1][DISCUSSION] A line along a row is not kept below a group's label
 
 - description:
@@ -157,7 +139,8 @@
   - Either a legend entry for a box's look or a `lonely-box` that leaves out a key would fix it.
 - created: 2026-10-30
 - status: HALT
-- next: waits on the choice of how a box gets a look of its own
+- next: the owner chooses a legend entry for a box's look or a `lonely-box` that leaves out a key
+- related: [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
 ### [P2][ISSUE] A step's badge across a lane's side
 

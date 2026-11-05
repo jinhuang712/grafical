@@ -8,7 +8,8 @@ F1: Elements
 │   ├── F1.1.3: Sizes — sized to the text, or by a step
 │   ├── F1.1.4: Marks — up to five small marks on a box
 │   ├── F1.1.5: Marks by name — a mark from one bundled icon set
-│   └── F1.1.6: Emphasis — at most two boxes stand out
+│   ├── F1.1.6: Emphasis — at most two boxes stand out
+│   └── F1.1.7: Box looks — colors of a box's own
 ├── F1.2: Lines — what connects to what
 │   ├── F1.2.1: Kinds — a line's kind sets its style
 │   ├── F1.2.2: Arrowheads at both ends — two-way lines
@@ -49,6 +50,7 @@ A box is a part of the system: a service, a store, a queue, a person or a step. 
   - [020. Every layered diagram type](../specs/decisions/020-every-layered-diagram-type.md)
   - [025. Marks of any kind](../specs/decisions/025-marks-of-any-kind.md)
   - [052. A choice is a small diamond](../specs/decisions/052-a-choice-is-a-small-diamond.md)
+  - [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
 **Stories:**
 
@@ -58,6 +60,7 @@ A box is a part of the system: a service, a store, a queue, a person or a step. 
 - An agent marks a box that matters, to draw the reader's eye to it.
 - An agent names an icon, to avoid finding a file for every box.
 - An agent picks the one or two boxes to read first, to give the picture a start.
+- An agent colors a box by what it means, to show a status and keep its shape.
 
 ### F1.1.1: Kinds and shapes
 
@@ -163,6 +166,25 @@ At most two boxes stand out, as what a reader should see first.
 ```sh
 grafical node emphasize <file> <id> [--off]
 ```
+
+### F1.1.7: Box looks
+
+A box may take colors of its own, so that a color says something without changing the shape. The agent sets them on the box or names a look from the stylesheet.
+
+```sh
+grafical node look <file> <id> [--fill <color>] [--border <color>]
+grafical node look <file> <id> <name>
+```
+
+- A color is `#rrggbb`.
+- A named look comes from `paint.node.looks` in the stylesheet and changes with it.
+- Colors set on the box stay when the theme changes.
+- A box holds one of the two, and the last one set clears the other.
+- `look` with neither clears the box's look.
+- A name the stylesheet lacks is refused as `unknown-look`.
+- The shape stays the kind's.
+
+- **Why:** [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
 ## F1.2: Lines
 
