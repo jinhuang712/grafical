@@ -2,6 +2,8 @@
 
 Decided: 2026-10-18
 
+Replaced in part by specs/decisions, "A line from every box of a group is a warning": an eighth warning joined.
+
 ## The problem
 
 Decided by the owner on 2026-10-18, the same day as "Refusals say what happened and which commands can change it", which had kept one warning, a line with more than two bends. The composition counts ("Composition counts") told an agent how many lines pass rows or cross groups, but not which, unless it read `show --drawn`.

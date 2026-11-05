@@ -2,7 +2,8 @@
 
 Decided: 2026-10-11
 
-Replaced by specs/decisions, "The agent states every order": the engine no longer picks a slot.
+- Replaced by specs/decisions, "The agent states every order": the engine no longer picks a slot.
+- Replaced in part by specs/decisions, "Who chose is punished": a slot took the lowest route cost.
 
 ## The problem
 

@@ -2,7 +2,8 @@
 
 Decided: 2026-10-13
 
-Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": a refusal is a block.
+- Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": a refusal is a block.
+- Replaced in part by specs/decisions, "Every write prints every warning": warnings came back.
 
 ## The problem
 
