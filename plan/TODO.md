@@ -70,18 +70,6 @@
 - next: the owner chooses whether `check --all` reports them or the code and the decision drop them
 - related: [012. A target picture with measured rules](../specs/decisions/012-a-target-picture-with-measured-rules.md)
 
-### [P2][DISCUSSION] The guides are built and also not planned
-
-- description:
-  - [F7.2: Guides](../features/F7-help.md#f72-guides) is built.
-  - *Not planned* in [FEATURES.md](../FEATURES.md) says the help replaced `grafical guide`.
-  - A later decision brought the guides back.
-- created: 2026-11-04
-- status: HALT
-- found: reading FEATURES.md on 2026-11-04
-- next: the owner confirms the guides stay and *Not planned* drops `grafical guide`
-- related: [043. Help for the tool, guides for best practice](../specs/decisions/043-help-for-the-tool-guides-for-best-practice.md)
-
 ### [P2][DISCUSSION] Guidelines 14 and 15 come from no stance
 
 - description:

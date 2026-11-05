@@ -118,7 +118,6 @@ Features
 - **Real-time collaboration or accounts or a hosted service:** git already shares the file and keeps its history ([009. Git as the history](specs/decisions/009-git-as-the-history.md)).
 - **The same facts always giving the same picture whatever order they arrived in:** the file fixes the picture ([024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)).
 - **A row reordered by the engine to tidy it:** the engine does not choose an order, and the agent compares orders with `grafical try` ([033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)).
-- **`grafical guide`:** the help replaced it ([021. The help as the reference](specs/decisions/021-the-help-as-the-reference.md)).
 - **Docking to an edge or placement such as "beside" and "between":** columns and steps cover them, and a second way to say one thing is one more choice.
 - **Gaps between sections:** spacing is the engine's.
 - **Zones and section titles:** walls and groups cover them.
