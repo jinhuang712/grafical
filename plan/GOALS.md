@@ -287,7 +287,7 @@ target = below 0
 
 #### C3: Token use
 
-A diagram costs fewer fresh tokens than the same model uses drawing directly. Also, the help an agent reads before its first operation stays under 3k tokens; suspended by the owner on 2026-10-17 while the help's correctness comes first.
+A diagram costs fewer fresh tokens than the same model uses drawing directly.
 
 **Want:** Fix one thing without losing the rest.
 
@@ -309,7 +309,7 @@ fresh tokens = uncached input + cache writes + output
 target = below 0
 ```
 
-**Last result:** ❌ not met. Haiku used 42.2k with grafical against 21.3k directly on 2026-10-18 (round `p1g`), and Opus 23.7k against 26.5k on 2026-10-12. The help read before the first operation was not measured, because the round recorded no empty baseline.
+**Last result:** ❌ not met. Haiku used 42.2k with grafical against 21.3k directly on 2026-10-18 (round `p1g`), and Opus 23.7k against 26.5k on 2026-10-12.
 
 #### C4: Context added
 

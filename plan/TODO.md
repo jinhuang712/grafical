@@ -94,15 +94,6 @@
 - status: HALT
 - next: the owner chooses whether the stance changes
 
-### [P2][DISCUSSION] The limit on help read before a first operation
-
-- description:
-  - [C3: Token use](GOALS.md#c3-token-use) keeps a limit of 3k tokens that the owner suspended on 2026-10-17.
-  - A suspended limit in a goal is neither a target nor a measure.
-- created: 2026-11-05
-- status: HALT
-- next: the owner chooses whether it moves out of the goal or stays
-
 ### [P2][DISCUSSION] A box beside every box it connects to in a row
 
 - description:
