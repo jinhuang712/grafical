@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { typed } from "./argv.ts";
 
 const MAIN = resolve(import.meta.dirname, "../../src/cli/main.ts");
 vi.setConfig({ testTimeout: 60_000 });
@@ -20,7 +21,7 @@ afterAll(() => {
 const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
 
 function run(...args: string[]) {
-  const r = spawnSync("node", [MAIN, ...args], { cwd: dir, env, encoding: "utf8" });
+  const r = spawnSync("node", [MAIN, ...typed(args)], { cwd: dir, env, encoding: "utf8" });
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 function git(...args: string[]) {

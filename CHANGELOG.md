@@ -6,6 +6,13 @@ What changed in each release of grafical, from the side of the agent that draws 
 
 grafical has not been released; the first release will be 0.1.0.
 
+### The command line
+
+- A command names its file with `-f` or `--file`, ahead of the command.
+- A verb is a flag after its noun, as in `grafical -f a.grafical edge --add a b`.
+- `apply -` reads a batch from standard input.
+- `--type` takes the place of `--kind`.
+
 ### Boxes and rows
 
 - A band in a lane whose label reads the same draws the name once, in the lane.

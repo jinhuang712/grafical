@@ -48,8 +48,8 @@ Features
 │   │   └── 🚧 F2.7.3: Labels on edges — a line carries its label (only on straight vertical lines)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
-│   ├── 🚧 F3.1: Operations — one named command per change (the file still follows the command and verbs are not flags yet and names still differ)
-│   ├── 🚧 F3.2: Batches — many operations, all or nothing (standard input not built)
+│   ├── 🚧 F3.1: Operations — one named command per change (names still differ inside)
+│   ├── ✅ F3.2: Batches — many operations, all or nothing
 │   ├── ✅ F3.3: Trying a change — see counts before writing
 │   ├── ✅ F3.4: IDs — the caller names every element
 │   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts

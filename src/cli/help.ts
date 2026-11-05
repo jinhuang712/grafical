@@ -43,7 +43,7 @@ Ways to draw, by the story each tells:
                           it; node align, directly above or below
   what talks to what      edge add --kind; an end may be a group, a row or
                           a lane, for one line to the whole
-  one path, in order      edge step numbers its lines; edge emphasize draws
+  one path, in order      edge step numbers its lines; edge weight draws
                           it thick
   what every request      a row with no boxes that lines end at, drawn as
   passes                  one bar: a gateway or a bus
@@ -478,7 +478,7 @@ Limits:
   - A box covers every row from its top member to its bottom one; other
     nodes in those rows sit beside it.
 
-See also: group join, group leave, group remove, group title, lane add
+See also: group join, group leave, group title, lane add
 
 Example:
   grafical group add cloud.grafical.yaml vpc --label "Main network" --in region

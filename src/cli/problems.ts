@@ -21,6 +21,7 @@ import { everyNode } from "../model/steps.ts";
 import type { Diagram } from "../model/types.ts";
 import type { Value } from "../records.ts";
 import { IN_FILE } from "./source.ts";
+import { surfaceName } from "./surface.ts";
 
 /** Every code a problem may carry. */
 export type Code = ErrorCode | DefectCode | UsageCode | WarningCode;
@@ -365,8 +366,10 @@ export function variantOf(
 /** The commands that can change a problem. */
 export function nextOf(code: Code, facts: Facts, field?: string, of?: string): Next {
   const n = NEXT[code];
-  if (Array.isArray(n)) return n;
-  return (n as Record<string, Next>)[variantOf(code, facts, field, of)] ?? [];
+  const named = Array.isArray(n)
+    ? n
+    : (n as Record<string, Next>)[variantOf(code, facts, field, of)];
+  return (named ?? []).map(surfaceName);
 }
 
 /** The kinds of problem (specs/decisions, "Refusals say what happened and which commands can change it"). */

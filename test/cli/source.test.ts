@@ -11,6 +11,7 @@ import { batchItems, commandLine } from "../../src/cli/source.ts";
 import { writeDiagram } from "../../src/model/io.ts";
 import type { Diagram } from "../../src/model/types.ts";
 import { nested } from "../fixtures/nested.ts";
+import { typed } from "./argv.ts";
 
 const MAIN = resolve(import.meta.dirname, "../../src/cli/main.ts");
 vi.setConfig({ testTimeout: 60_000 });
@@ -22,7 +23,7 @@ beforeAll(() => {
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
 function run(...args: string[]) {
-  const r = spawnSync("node", [MAIN, ...args], { cwd: dir, encoding: "utf8" });
+  const r = spawnSync("node", [MAIN, ...typed(args)], { cwd: dir, encoding: "utf8" });
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 
@@ -71,7 +72,7 @@ describe("source", () => {
     const f = fresh("one.grafical.yaml");
     const r = run("node", "add", f, "cache", "--layer", "row-b", "--label", "cache");
     expect(sources(r.out)).toEqual([
-      "grafical node add one.grafical.yaml cache --layer row-b --label cache",
+      "grafical -f one.grafical.yaml node --add cache --layer row-b --label cache",
     ]);
   });
 
@@ -318,7 +319,7 @@ describe("source", () => {
     expect(readFileSync(join(dir, f), "utf8")).toBe(before);
     // A file that cannot be read is the command's.
     expect(sources(run("show", "missing.grafical.yaml").out)).toEqual([
-      "grafical show missing.grafical.yaml",
+      "grafical -f missing.grafical.yaml show",
     ]);
   });
 
@@ -363,7 +364,7 @@ describe("source", () => {
         code: "unknown-weight",
         source: "uw.yaml line 3: {op: diagram.style, style: default}",
         detail: { field: "legend.weights", found: "critical" },
-        next: ["diagram style", "diagram legend"],
+        next: ["diagram --style", "diagram --legend"],
       },
     ]);
   });

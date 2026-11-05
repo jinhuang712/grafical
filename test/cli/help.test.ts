@@ -9,11 +9,13 @@ import { opCommands } from "../../src/cli/batch.ts";
 import { GUIDES } from "../../src/cli/guides.ts";
 import { PAGES } from "../../src/cli/help.ts";
 import { build, wrongCommand } from "../../src/cli/main.ts";
+import { surfaceText } from "../../src/cli/surface.ts";
 import { DEFECT_CODES, ERROR_CODES, WARNING_CODES } from "../../src/errors.ts";
 import { writeDiagram } from "../../src/model/io.ts";
 import { OP_NAMES, SCHEMAS } from "../../src/model/ops.ts";
 import { EDGE_KINDS, NODE_KINDS } from "../../src/model/types.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
+import { typed } from "./argv.ts";
 
 // Each page runs the real command line.
 vi.setConfig({ testTimeout: 60_000 });
@@ -26,7 +28,7 @@ beforeAll(() => {
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
 function run(...args: string[]) {
-  const r = spawnSync("node", [MAIN, ...args], { cwd: dir, encoding: "utf8" });
+  const r = spawnSync("node", [MAIN, ...typed(args)], { cwd: dir, encoding: "utf8" });
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 
@@ -53,14 +55,16 @@ function page(c: Command): string {
 
 describe('help pages (specs/decisions, "One entry page, help where it is used")', () => {
   it("each page belongs to a command, shows its paragraph and sections, and fits a terminal", () => {
+    build();
     for (const path of ["", ...Object.keys(PAGES)]) {
       const r = run(...(path === "" ? [] : path.split(" ")), "--help");
       expect(r.code, path).toBe(0);
       // The paragraph may be wrapped anew; its words and the sections are shown as written.
       const words = (s: string) => s.replace(/\s+/g, " ");
       const page = PAGES[path];
-      if (page?.about !== undefined) expect(words(r.out), path).toContain(words(page.about));
-      if (page?.after !== undefined) expect(r.out, path).toContain(page.after.trim());
+      if (page?.about !== undefined)
+        expect(words(r.out), path).toContain(words(surfaceText(page.about)));
+      if (page?.after !== undefined) expect(r.out, path).toContain(surfaceText(page.after.trim()));
       // Commands and batch items in an example may run long; the rest wraps at 80.
       const prose = r.out.split(/^Example/m)[0] ?? "";
       for (const line of prose.split("\n"))
@@ -161,8 +165,8 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
     expect(wrong("help", "node add")).toEqual(meant("help", "--help"));
     expect(wrong("node", "help", "add")).toEqual(meant("help", "--help"));
     expect(wrong("diagram", "help", "legend")).toEqual(meant("help", "--help"));
-    expect(wrong("node add", "--help")).toEqual(meant("node add", "node add"));
-    expect(wrong("node.add", "--help")).toEqual(meant("node.add", "node add"));
+    expect(wrong("node add", "--help")).toEqual(meant("node add", "node --add"));
+    expect(wrong("node.add", "--help")).toEqual(meant("node.add", "node --add"));
     // A misspelling near one command's name; a word near none.
     expect(wrong("nodee", "add", "--help")).toEqual(meant("nodee", "node"));
     expect(wrong("node", "ad", "-h")).toEqual(meant("ad", "add"));
@@ -188,7 +192,7 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
         'source: grafical "node add" --help',
         "detail:",
         "  found: node add",
-        "  likely: node add",
+        "  likely: node --add",
         "next: -",
         "",
       ].join("\n"),
@@ -247,7 +251,7 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
       "  edge: api->photos",
       "  bends: 4",
       "  skip: 1",
-      "next: layer move, node move, node swap",
+      "next: layer --move, node --move, node --swap",
     ].join("\n");
     const out = run("check", photos()).out;
     expect(out.startsWith(`ok\n\n${bent}\n\ncounts nodes=`)).toBe(true);

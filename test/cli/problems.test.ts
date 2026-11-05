@@ -10,6 +10,7 @@ import {
   NEXT,
   nextOf,
 } from "../../src/cli/problems.ts";
+import { surfaceName } from "../../src/cli/surface.ts";
 import { applyOps, type Diagram, type Op, readDiagram } from "../../src/model/index.ts";
 import { commandOrder } from "./commands.ts";
 
@@ -40,16 +41,16 @@ describe("problems", () => {
     // the line; one drawn for its look alone, the look.
     const bar = { row: "mid", group: "sys", top: "core", bottom: "stores" };
     expect(nextOf("bar-in-group", { ...bar, edge: "rider->mid" })).toEqual([
-      "group leave",
-      "layer move",
-      "node move",
-      "edge remove",
+      "group --leave",
+      "layer --move",
+      "node --move",
+      "edge --remove",
     ]);
     expect(nextOf("bar-in-group", bar)).toEqual([
-      "group leave",
-      "layer look",
-      "layer move",
-      "node move",
+      "group --leave",
+      "layer --look",
+      "layer --move",
+      "node --move",
     ]);
   });
 
@@ -85,11 +86,11 @@ ${rows.replace(", lane: ops", "")}`);
         .map((e) => `${e.field}: ${errorBlock(e).next.join(", ")}`);
     };
     expect(next(laned, { op: "node.move", id: "db", from: "api", down: 1 } as Op)).toEqual([
-      "from,align: node move, node align",
-      "from,lane: lane leave, node move",
+      "from,align: node --move, node --align",
+      "from,lane: lane --leave, node --move",
     ]);
     expect(next(columned, { op: "node.move", id: "cache", from: "web", down: 1 } as Op)).toEqual([
-      "from,column: column leave, node move",
+      "from,column: column --leave, node --move",
     ]);
   });
 
@@ -115,23 +116,24 @@ ${rows.replace(", lane: ops", "")}`);
   // Found by review on 2026-10-18: an unknown weight named only diagram style, then edge weight for a legend's too.
   it("an unknown weight names the commands that set the line's weight, or the legend's", () => {
     expect(nextOf("unknown-weight", { edge: "a->b", allowed: ["thin"] })).toEqual([
-      "diagram style",
-      "edge weight",
+      "diagram --style",
+      "edge --weight",
     ]);
     expect(nextOf("unknown-weight", { edges: ["a->b"], allowed: ["thin"] })).toEqual([
-      "diagram style",
-      "edge weight",
+      "diagram --style",
+      "edge --weight",
     ]);
     expect(nextOf("unknown-weight", { allowed: ["thin"] }, "legend.weights")).toEqual([
-      "diagram style",
-      "diagram legend",
+      "diagram --style",
+      "diagram --legend",
     ]);
   });
 
   it("next names real commands only, in the order the help lists them", () => {
     expect(Object.keys(NEXT).sort()).toEqual([...CODES].sort());
     const order = commandOrder();
-    for (const [at, names] of lists()) {
+    for (const [at, inner] of lists()) {
+      const names = inner.map(surfaceName);
       for (const name of names) expect(order, `${at}: ${name}`).toContain(name);
       const places = names.map((x) => order.indexOf(x));
       expect(places, at).toEqual([...places].sort((a, b) => a - b));

@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { typed } from "./argv.ts";
 
 const MAIN = resolve(import.meta.dirname, "../../src/cli/main.ts");
 
@@ -19,7 +20,7 @@ afterAll(() => {
 });
 
 function run(...args: string[]) {
-  const r = spawnSync("node", [MAIN, ...args], { cwd: dir, encoding: "utf8" });
+  const r = spawnSync("node", [MAIN, ...typed(args)], { cwd: dir, encoding: "utf8" });
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 const read = (f: string) => readFileSync(join(dir, f), "utf8");
@@ -193,7 +194,7 @@ describe("write commands", () => {
             description:
               "No line reaches a box: none of its own, and none to its group, row or lane.",
             detail: { node: "cache" },
-            next: ["node remove", "edge add"],
+            next: ["node --remove", "edge --add"],
           },
         ],
       })}\n`,
@@ -212,7 +213,7 @@ describe("write commands", () => {
     expect(r.out).toContain(
       "detail:\n  field: layer\n  found: servces\n  near: services, storage, clients\n",
     );
-    expect(r.out).toMatch(/\nnext: layer add\n$/);
+    expect(r.out).toMatch(/\nnext: layer --add\n$/);
     expect(read("single.grafical.yaml")).toBe(before);
   });
 
@@ -232,7 +233,7 @@ describe("write commands", () => {
       code: "unknown-node",
       description: "No box has the id.",
       detail: { op: 1, field: "to", found: "nope" },
-      next: ["node add"],
+      next: ["node --add"],
     });
     expect(read("single.grafical.yaml")).toBe(before);
   });
@@ -272,7 +273,7 @@ describe("write commands", () => {
         "",
         "error: unknown-option",
         "description: The command has no option of the name.",
-        "source: grafical show single.grafical.yaml --bogus",
+        "source: grafical -f single.grafical.yaml show --bogus",
         "detail:",
         "  found: --bogus",
         "next: -",
@@ -281,7 +282,7 @@ describe("write commands", () => {
     );
     expect(run("bogus").err).toContain("error: unknown-command\n");
     expect(run("show").err).toContain("error: missing-argument\n");
-    expect(run("show").err).toContain("detail:\n  field: file\n");
+    expect(run("show").err).toContain("detail:\n  field: --file\n");
     expect(run("new", "x.grafical.yaml").err).toContain("detail:\n  field: --title\n");
     // With --json a usage error is the same object as any refusal, on standard output.
     const json = run("show", "single.grafical.yaml", "--bogus", "--json");
@@ -295,7 +296,7 @@ describe("write commands", () => {
           kind: "error",
           code: "unknown-option",
           description: "The command has no option of the name.",
-          source: "grafical show single.grafical.yaml --bogus --json",
+          source: "grafical -f single.grafical.yaml show --bogus --json",
           detail: { found: "--bogus" },
           next: [],
         },
@@ -307,7 +308,7 @@ describe("write commands", () => {
     // Extra arguments are what was found, beside the arguments the command takes.
     const extra = run("node", "remove", "single.grafical.yaml", "api", "worker");
     expect(extra.err).toContain("error: excess-arguments\n");
-    expect(extra.err).toContain("detail:\n  found: worker\n  takes: <file>, <id>\n");
+    expect(extra.err).toContain("detail:\n  found: worker\n  takes: <id>\n");
   });
 
   it("handles edge id suffixes and node remove cascading", () => {
@@ -328,7 +329,7 @@ describe("write commands", () => {
         "description: No line reaches a box: none of its own, and none to its group, row or lane.",
         "detail:",
         "  node: p",
-        "next: node remove, edge add",
+        "next: node --remove, edge --add",
         "",
       ].join("\n"),
     );
@@ -450,7 +451,7 @@ describe("read commands", () => {
     expect(lines[7]).toBe("error: unknown-node");
     const after = lines.indexOf("ok batch=t2.yaml changed=api written=no");
     expect(lines[after - 1]).toBe("");
-    expect(lines[after - 2]).toBe("next: node add");
+    expect(lines[after - 2]).toBe("next: node --add");
     const first = run("try", "single.grafical.yaml", "t3.yaml", "t1.yaml").out.split("\n");
     expect(first[0]).toMatch(/^before nodes=/);
     expect(first[1]).toBe("");

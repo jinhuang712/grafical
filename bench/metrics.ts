@@ -168,7 +168,7 @@ export function perTurn(events: Event[]): Turn[] {
 function graficalCommands(command: string): string[] {
   const found: string[] = [];
   for (const part of command.split(/&&|\|\||;|\n/)) {
-    const m = /^\s*grafical\s+(\w+)/.exec(part);
+    const m = /^\s*grafical\s+(?:(?:-f|--file)\s+\S+\s+)?(\w+)/.exec(part);
     if (m) found.push(m[1] as string);
   }
   return found;
@@ -178,7 +178,7 @@ function graficalCommands(command: string): string[] {
 function diagramOf(command: string): string {
   for (const part of command.split(/&&|\|\||;|\n/)) {
     if (!/^\s*grafical\s/.test(part)) continue;
-    const m = /(\S+\.ya?ml)\b/.exec(part);
+    const m = /(\S+\.(?:ya?ml|grafical))(?:\s|$)/.exec(part);
     if (m) return (m[1] as string).replace(/^["']|["']$/g, "");
   }
   return "?";
@@ -201,7 +201,7 @@ function beforeWrite(events: Event[]): BeforeWrite {
     const unknown = results.get(t.id)?.text.includes("unknown-command") === true;
     if (unknown) seen.unknownCommands++;
     for (const part of parts) {
-      const word = /^\s*grafical\s+([\w-]+)/.exec(part)?.[1];
+      const word = /^\s*grafical\s+(?:(?:-f|--file)\s+\S+\s+)?([\w-]+)/.exec(part)?.[1];
       if (/\s(--help|-h)(\s|$)/.test(part)) seen.help++;
       else if (word === "guide") seen.guides++;
       else if (!unknown && word !== undefined && !READ_COMMANDS.has(word)) return seen;

@@ -329,7 +329,7 @@ export function parseCheckAll(stdout: string): DefectSplit | null {
 /** Runs the check on the step's diagram. null counts, and the reason, when it cannot. */
 function checkAll(dir: string, file: string): { split: DefectSplit | null; note: string | null } {
   if (!existsSync(join(dir, file))) return { split: null, note: `no ${file}` };
-  const res = spawnSync(join(dir, "bin", "grafical"), ["check", file, "--all", "--json"], {
+  const res = spawnSync(join(dir, "bin", "grafical"), ["-f", file, "check", "--all", "--json"], {
     cwd: dir,
     encoding: "utf8",
     timeout: 2 * 60 * 1000,

@@ -1,0 +1,130 @@
+// The command line a caller meets (specs/decisions, "A command names its file with a flag", "A command's verb is a
+// flag", "One name for each thing, and a name says what it is"): `grafical -f <file> edge --look <id>`. Inside, each
+// verb stays a subcommand of its noun that takes the file first, so that commander parses its arguments, options and
+// help. This file turns the words one way on the way in and the text the other way on the way out.
+
+/** The nouns that hold verbs. */
+export const NOUNS = [
+  "diagram",
+  "group",
+  "lane",
+  "column",
+  "wall",
+  "note",
+  "layer",
+  "node",
+  "edge",
+];
+
+/** The commands of a file with no noun. */
+const FILE_COMMANDS = ["new", "apply", "try", "show", "diff", "check", "render", "view"];
+
+/** A verb's name where it differs from the subcommand's, by noun. */
+const RENAMED: Record<string, Record<string, string>> = {
+  diagram: { caption: "note" },
+  group: { label: "rename", sublabel: "describe", "label-at": "title" },
+  lane: { label: "rename" },
+  wall: { label: "relabel" },
+  layer: { label: "rename" },
+  node: { label: "rename", sublabel: "describe", size: "resize", mark: "icon", type: "kind" },
+  edge: { label: "relabel", ends: "retarget", number: "step", type: "kind" },
+};
+
+/** The name a caller uses for a noun's verb. */
+function outward(noun: string, verb: string): string {
+  const pair = Object.entries(RENAMED[noun] ?? {}).find(([, inner]) => inner === verb);
+  return pair?.[0] ?? verb;
+}
+
+/** A command's name as a caller writes it: `node move` is `node --move`, and one word stays one word. */
+export function surfaceName(name: string): string {
+  const [noun, verb] = name.split(" ");
+  return noun !== undefined && verb !== undefined && NOUNS.includes(noun)
+    ? `${noun} --${outward(noun, verb)}`
+    : name;
+}
+
+/** What a call needs and did not give. */
+export interface Unread {
+  field: string;
+  found?: string;
+}
+
+const isHelp = (w: string | undefined) => w === "-h" || w === "--help";
+
+/**
+ * The words as the parser reads them: the file after the verb, the verb a subcommand. A call's first flag after its
+ * noun is its verb, so `edge --weight a --weight 2` has one verb and one value.
+ */
+export function inward(args: readonly string[]): string[] | Unread {
+  const words = [...args];
+  let file: string | undefined;
+  const at = words.findIndex((w) => w === "-f" || w === "--file");
+  if (at >= 0) {
+    file = words[at + 1];
+    if (file === undefined) return { field: "--file" };
+    words.splice(at, 2);
+  }
+  const [first, ...rest] = words;
+  if (first === undefined || isHelp(first) || first === "guide") return words;
+  if (NOUNS.includes(first)) {
+    const [flag, ...after] = rest;
+    if (flag === undefined || isHelp(flag)) return words;
+    if (!flag.startsWith("--")) return { field: "verb", found: flag };
+    const verb = flag.slice(2);
+    const inner = RENAMED[first]?.[verb] ?? verb;
+    if (isHelp(after[0])) return [first, inner, ...after];
+    if (file === undefined) return { field: "--file" };
+    return [first, inner, file, ...after.map((w) => (w === "--type" ? "--kind" : w))];
+  }
+  if (FILE_COMMANDS.includes(first)) {
+    if (isHelp(rest[0])) return words;
+    if (file === undefined) return { field: "--file" };
+    return [first, file, ...rest];
+  }
+  return words;
+}
+
+const VERB_WORDS = /\b(diagram|group|lane|column|wall|note|layer|node|edge) ([a-z][a-z-]*)\b/g;
+
+/** Every verb a noun has, by its subcommand's name. */
+const known = new Map<string, Set<string>>();
+
+/** Tells this file which commands exist, so that it rewrites them and no other words. */
+export function learn(names: readonly string[]): void {
+  for (const name of names) {
+    const [noun, verb] = name.split(" ");
+    if (noun === undefined || verb === undefined) continue;
+    known.set(noun, (known.get(noun) ?? new Set()).add(verb));
+  }
+}
+
+/** Help text as a caller reads it: every command in the form it is typed. */
+export function surfaceText(text: string): string {
+  return text
+    .replace(/--kind\b/g, "--type")
+    .replace(
+      /^Usage: grafical (diagram|group|lane|column|wall|note|layer|node|edge) ([a-z-]+) \[options\] <file>(.*)$/gm,
+      (_, noun: string, verb: string, more: string) =>
+        `Usage: grafical -f <file> ${noun} --${outward(noun, verb)}${more} [options]`,
+    )
+    .replace(
+      /^Usage: grafical (new|apply|try|show|diff|check|render|view) \[options\] <file>(.*)$/gm,
+      (_, command: string, more: string) => `Usage: grafical -f <file> ${command}${more} [options]`,
+    )
+    .replace(
+      /^Usage: grafical (diagram|group|lane|column|wall|note|layer|node|edge) \[options\] \[command\]$/gm,
+      "Usage: grafical -f <file> $1 --<verb> [options]",
+    )
+    .replace(
+      /^ {2}([a-z-]+)\|?[a-z-]* \[options\] <file>(.*)$/gm,
+      (_, verb: string, more: string) => `  --${verb}${more}`,
+    )
+    .replace(
+      /\bgrafical (new|apply|try|show|diff|check|render|view) <file>/g,
+      "grafical -f <file> $1",
+    )
+    .replace(VERB_WORDS, (whole, noun: string, verb: string) =>
+      known.get(noun)?.has(verb) === true ? `${noun} --${outward(noun, verb)}` : whole,
+    );
+}

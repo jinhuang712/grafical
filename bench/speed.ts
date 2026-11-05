@@ -80,9 +80,9 @@ export async function measureSpeed(): Promise<string[]> {
     writeFileSync(file, writeDiagram(d));
     const node = d.layers.flatMap((l) => l.nodes)[0]?.id ?? "";
     const commands: [string, string[]][] = [
-      ["node rename", ["node", "rename", file, node, "--label", "renamed"]],
-      ["check", ["check", file]],
-      ["render", ["render", file, "--png", join(dir, "speed.png")]],
+      ["node rename", ["-f", file, "node", "--label", node, "--label", "renamed"]],
+      ["check", ["-f", file, "check"]],
+      ["render", ["-f", file, "render", "--png", join(dir, "speed.png")]],
     ];
     for (const [name, args] of commands) {
       const ms: number[] = [];

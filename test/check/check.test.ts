@@ -105,9 +105,9 @@ describe("overflow", () => {
     const [over] = d;
     if (over === undefined) throw new Error("no defect");
     expect(defectBlock(over, new Map([["a", "node"]])).next).toEqual([
-      "node rename",
-      "node resize",
-      "node describe",
+      "node --label",
+      "node --size",
+      "node --sublabel",
     ]);
   });
 
@@ -347,11 +347,11 @@ describe("missing-glyph", () => {
     expect(found.map((f) => f.elements[0])).toEqual(["a", "a", "a->b", "l", "title"]);
     const kinds = kindsOf(d);
     expect(found.map((f) => defectBlock(f, kinds).next)).toEqual([
-      ["node rename", "node describe", "node icon"],
-      ["node rename", "node describe", "node icon"],
-      ["edge relabel"],
-      ["layer rename"],
-      ["diagram title"],
+      ["node --label", "node --sublabel", "node --mark"],
+      ["node --label", "node --sublabel", "node --mark"],
+      ["edge --label"],
+      ["layer --label"],
+      ["diagram --title"],
     ]);
   });
   it("fails a subtitle, note and group label with a missing glyph", () => {
@@ -364,9 +364,9 @@ describe("missing-glyph", () => {
     expect(found.map((f) => f.elements[0])).toEqual(["g", "note", "subtitle"]);
     const kinds = kindsOf(d);
     expect(found.map((f) => defectBlock(f, kinds).next)).toEqual([
-      ["group rename", "group describe"],
-      ["diagram note"],
-      ["diagram subtitle"],
+      ["group --label", "group --sublabel"],
+      ["diagram --caption"],
+      ["diagram --subtitle"],
     ]);
   });
 });

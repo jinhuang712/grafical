@@ -58,6 +58,7 @@ import {
 import { type Block, kindsOf, usageBlock } from "./problems.ts";
 import { showDiagram } from "./show.ts";
 import { commandLine, type Origin } from "./source.ts";
+import { inward, learn, surfaceName, surfaceText } from "./surface.ts";
 import { openWindow, startViewer, windowSize } from "./view.ts";
 
 type Opts = Record<string, unknown>;
@@ -171,7 +172,7 @@ export function build(): Command {
     .description(PROGRAM_ABOUT)
     .exitOverride()
     .configureOutput({
-      writeOut: (s) => process.stdout.write(s),
+      writeOut: (s) => process.stdout.write(surfaceText(s)),
       writeErr: (s) => process.stderr.write(s),
       // The same help on every terminal, so that it is the same text for every agent.
       getOutHelpWidth: () => 80,
@@ -971,7 +972,7 @@ export function build(): Command {
       .command("apply")
       .description("apply a batch of operations, all or none")
       .argument("<file>")
-      .argument("<batch.yaml>"),
+      .argument("<batch.yaml>", "a batch file, or - for standard input"),
   ).action(async (file: string, batch: string, opts: Opts) => {
     const read = readBatch(batch, opts);
     // A batch is usually a draft or a large change: its report carries the counts (specs/decisions, "Records over prose").
@@ -1190,6 +1191,7 @@ export function build(): Command {
   // A command's page is <command> --help, the one way to it: commander's own help command would be a second, which
   // takes one word and prints the entry page for a wrong one.
   for (const c of [program, ...program.commands]) c.helpCommand(false);
+  learn(program.commands.flatMap((c) => c.commands.map((s) => `${c.name()} ${s.name()}`)));
   return program;
 }
 
@@ -1197,7 +1199,8 @@ export function build(): Command {
 function readBatchOps(batch: string): { ops: Op[]; origin: Origin } | Report {
   let text: string;
   try {
-    text = readFileSync(batch, "utf8");
+    // A batch of `-` comes from standard input (specs/decisions, "A batch may come from standard input").
+    text = readFileSync(batch === "-" ? 0 : batch, "utf8");
   } catch {
     return own(fileError("batch-unreadable", batch));
   }
@@ -1289,10 +1292,12 @@ function sayUsage(b: Block, words: readonly string[]) {
 
 /** The arguments a command takes, as its usage names them: <file>, [at], <nodes...>. */
 function takes(c: Command): string[] {
-  return c.registeredArguments.map((a) => {
-    const name = `${a.name()}${a.variadic ? "..." : ""}`;
-    return a.required ? `<${name}>` : `[${name}]`;
-  });
+  return c.registeredArguments
+    .filter((a) => a.name() !== "file")
+    .map((a) => {
+      const name = `${a.name()}${a.variadic ? "..." : ""}`;
+      return a.required ? `<${name}>` : `[${name}]`;
+    });
 }
 
 /**
@@ -1366,7 +1371,7 @@ export function wrongCommand(program: Command, args: string[]): Block | undefine
   const parts = word.split(/[\s.]+/);
   const named = follow(at, parts)[1];
   if (word === "help") likely = "--help";
-  else if (parts.length > 1 && named.length === parts.length) likely = named.join(" ");
+  else if (parts.length > 1 && named.length === parts.length) likely = surfaceName(named.join(" "));
   else {
     const [near] = closest(
       word,
@@ -1387,9 +1392,14 @@ async function main(argv: string[]) {
   typed = argv.slice(2);
   const program = build();
   try {
-    const wrong = wrongCommand(program, argv.slice(2));
+    const words = inward(typed);
+    if (!Array.isArray(words)) {
+      const code = words.field === "verb" ? "unknown-command" : "missing-argument";
+      throw usage(code, words);
+    }
+    const wrong = wrongCommand(program, words);
     if (wrong !== undefined) throw new UsageError(wrong);
-    await program.parseAsync(argv);
+    await program.parseAsync(words, { from: "user" });
   } catch (err) {
     if (err instanceof CommanderError) {
       if (err.code === "commander.helpDisplayed" || err.code === "commander.version") {
@@ -1400,9 +1410,11 @@ async function main(argv: string[]) {
       // in place of commander's sentence.
       const words = argv.slice(2);
       const source = commandLine(words);
+      const inner = inward(words);
       if (err instanceof UsageError) sayUsage({ ...err.problem, source }, words);
       else if (err.code.startsWith("commander.") && err.code !== "commander.help") {
-        sayUsage({ ...parserError(err, program, words), source }, words);
+        const read = Array.isArray(inner) ? inner : words;
+        sayUsage({ ...parserError(err, program, read), source }, words);
       }
       process.exitCode = 2;
       return;

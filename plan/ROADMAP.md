@@ -105,12 +105,12 @@ Roadmap
 │   │   ├── ⬜ Region gaps
 │   │   ├── ⬜ Edge looks
 │   │   └── ⬜ Region labels
-│   ├── ⬜ CP2.7: The command line
-│   │   ├── ⬜ The file flag
+│   ├── 🟨 CP2.7: The command line
+│   │   ├── ✅ The file flag
 │   │   ├── ⬜ One name for each thing
-│   │   ├── ⬜ Verbs as flags
+│   │   ├── ✅ Verbs as flags
 │   │   ├── ⬜ One way for each situation
-│   │   └── ⬜ Batches from standard input
+│   │   └── ✅ Batches from standard input
 │   ├── ⬜ CP2.8: The legend
 │   │   ├── ⬜ Design the legend
 │   │   └── ⬜ Build the legend
@@ -611,7 +611,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 
 ### CP2.7: The command line
 
-**Status:** ⬜
+**Status:** 🟨 (since 2026-11-06)
 
 The command line gets one form:
 
@@ -622,11 +622,11 @@ The command line gets one form:
 
 **Tasks:**
 
-- ⬜ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
+- ✅ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
 - ⬜ One name for each thing: Every surface and the code use one name.
-- ⬜ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
+- ✅ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
 - ⬜ One way for each situation: `edge --emphasize` goes, and the commands are checked for other repeats.
-- ⬜ Batches from standard input: `apply` reads a batch named `-` from standard input.
+- ✅ Batches from standard input: `apply` reads a batch named `-` from standard input.
 
 **Delivers:**
 

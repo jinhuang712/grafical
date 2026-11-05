@@ -227,7 +227,7 @@ describe("marks in the checker", () => {
     if (defect === undefined) throw new Error("no defect");
     expect(defectBlock(defect, kindsOf(d))).toMatchObject({
       detail: { owner: "agent", field: "icon", found: "top-left", is: "label", node: "api" },
-      next: ["node resize", "node icon"],
+      next: ["node --size", "node --mark"],
     });
   });
 

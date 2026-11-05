@@ -73,7 +73,7 @@ edges:
     // 2026-10-17), and the refusal names node resize among the commands that can change it.
     const [blocked] = check(d, s, m);
     if (blocked === undefined) throw new Error("no refusal");
-    expect(defectBlock(blocked, kindsOf(d)).next).toContain("node resize");
+    expect(defectBlock(blocked, kindsOf(d)).next).toContain("node --size");
     const wide = structuredClone(d);
     const a = wide.layers[0]?.nodes[0];
     if (a === undefined) throw new Error("a");
@@ -120,7 +120,7 @@ edges:
           lanes: ["shop", "depot"],
           gutters: ["top/bottom"],
         },
-        next: ["layer move", "node resize", "node move", "edge relabel", "edge step"],
+        next: ["layer --move", "node --size", "node --move", "edge --label", "edge --number"],
       },
     ]);
     const r = applyOps(d, [{ op: "edge.relabel", id: "shop->b" }]);
@@ -141,7 +141,7 @@ edges:
     const r = applyOps(generate(35, m).diagram, [add]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     expect(found.map((x) => defectBlock(x, kindsOf(r.diagram)).next)).toEqual([
-      ["layer move", "node resize", "node move", "edge relabel", "edge step"],
+      ["layer --move", "node --size", "node --move", "edge --label", "edge --number"],
     ]);
     expect(checked([add, { op: "edge.relabel", id: "n4->n2" }])).toEqual([]);
   });

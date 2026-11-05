@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { writeDiagram } from "../../src/model/io.ts";
 import { nested } from "../fixtures/nested.ts";
+import { typed } from "./argv.ts";
 
 const MAIN = resolve(import.meta.dirname, "../../src/cli/main.ts");
 vi.setConfig({ testTimeout: 60_000 });
@@ -18,7 +19,7 @@ afterAll(() => {
 });
 
 function run(...args: string[]) {
-  const r = spawnSync("node", [MAIN, ...args], { cwd: dir, encoding: "utf8" });
+  const r = spawnSync("node", [MAIN, ...typed(args)], { cwd: dir, encoding: "utf8" });
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 const read = (f: string) => readFileSync(join(dir, f), "utf8");
@@ -152,7 +153,7 @@ describe("grouped diagrams", () => {
         "",
         "error: missing-field",
         "description: The operation lacks a field it needs, such as a box's place in a row that has boxes.",
-        'source: grafical group copy copy.grafical.yaml zone zone-b --label "Zone B" --suffix -b',
+        'source: grafical -f copy.grafical.yaml group --copy zone zone-b --label "Zone B" --suffix -b',
         "detail:",
         "  field: place",
         "  allowed: zone",
@@ -165,13 +166,13 @@ describe("grouped diagrams", () => {
     );
     expect(run("show", f).out).toContain('layer r2 "R2": web "Web" service group=zone | web-b');
     expect(run(...args, "--after", "zone").out).toContain(
-      'error: duplicate-id\ndescription: The id is taken.\nsource: grafical group copy copy.grafical.yaml zone zone-b --label "Zone B" --suffix -b --after zone\ndetail:\n  field: into\n  found: zone-b\n',
+      'error: duplicate-id\ndescription: The id is taken.\nsource: grafical -f copy.grafical.yaml group --copy zone zone-b --label "Zone B" --suffix -b --after zone\ndetail:\n  field: into\n  found: zone-b\n',
     );
   });
 
   it("the help teaches the grouped style", () => {
     const help = run("--help").out + run("apply", "--help").out + run("group", "add", "--help").out;
-    for (const w of ["group add", "subtitle", "sublabel"]) {
+    for (const w of ["group --add", "subtitle", "sublabel"]) {
       expect(help).toContain(w);
     }
   });
@@ -184,7 +185,7 @@ describe('groups inside groups on the command line (specs/decisions, "Every laye
     expect(run("group", "title", f, "vpc", "top-right").code).toBe(0);
     expect(read(f)).toContain("titleAt: top-right");
     expect(run("show", f).out).toContain("title=top-right");
-    expect(run("group", "label", f, "vpc").code).toBe(0);
+    expect(run("group", "title", f, "vpc").code).toBe(0);
     expect(read(f)).not.toContain("titleAt");
     const wrong = run("group", "title", f, "vpc", "middle");
     expect(wrong.code).not.toBe(0);
@@ -199,7 +200,7 @@ describe('groups inside groups on the command line (specs/decisions, "Every laye
     expect(blocked.out).toContain(
       "detail:\n  owner: agent\n  group: vpc\n  edge: db->backup\n  place: bottom\n  clear: top-left, ",
     );
-    expect(blocked.out).toMatch(/\nnext: group title, node move, edge remove\n$/);
+    expect(blocked.out).toMatch(/\nnext: group --label-at, node --move, edge --remove\n$/);
     expect(read(f)).toBe(before);
   });
 

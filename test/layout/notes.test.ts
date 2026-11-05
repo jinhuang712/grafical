@@ -89,7 +89,7 @@ describe('notes in the picture (specs/decisions, "Notes as callouts or footnotes
     if (blocked === undefined) throw new Error("no refusal");
     expect(defectBlock(blocked, kindsOf(d))).toMatchObject({
       detail: { owner: "agent", is: "note", note: "retry" },
-      next: ["note add", "note remove", "node move"],
+      next: ["note --add", "note --remove", "node --move"],
     });
     const foot = ok(d, [note("retry", "retries 5 times, then the DLQ", true)]);
     expect(check(foot, layout(foot, m), m)).toEqual([]);
