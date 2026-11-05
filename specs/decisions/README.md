@@ -83,6 +83,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [077. A line meets a diamond at a corner](077-a-line-meets-a-diamond-at-a-corner.md) (2026-11-06)
 - [078. A bar may cross a group](078-a-bar-may-cross-a-group.md) (2026-11-06)
 - [079. The gap between two regions takes a multiple](079-the-gap-between-two-regions-takes-a-multiple.md) (2026-11-06)
+- [080. A node takes multiples of its width and height](080-a-node-takes-multiples-of-its-width-and-height.md) (2026-11-06)
 
 ## Former IDs
 

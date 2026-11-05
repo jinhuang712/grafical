@@ -117,6 +117,11 @@ grafical diagram sizing <file> auto|fixed
 - Every box in a row is drawn as tall as the row's tallest, so their tops line up.
   - Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a box without a size is always medium, and text that does not fit is refused.
+- A box may take a multiple of its width, its height or both, such as 1.5.
+  - `grafical node size <file> <id> [--width <n>] [--height <n>] [--times <n>]`
+  - A taller box makes its row taller.
+  - A dot or a `choice` keeps its size and refuses a multiple.
+  - Why: [080. A node takes multiples of its width and height](../specs/decisions/080-a-node-takes-multiples-of-its-width-and-height.md)
 
 ### F1.1.4: Marks
 

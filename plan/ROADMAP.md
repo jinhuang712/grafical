@@ -83,7 +83,8 @@ Roadmap
 │   ├── ⬜ CP2.3: Boxes
 │   │   ├── ⬜ Corner marks checked
 │   │   ├── ⬜ Marks by name
-│   │   └── ⬜ Box looks
+│   │   ├── ⬜ Box looks
+│   │   └── ⬜ Size multiples
 │   ├── ⬜ CP2.4: Containers
 │   │   ├── ⬜ Column headings
 │   │   ├── ⬜ Lanes both ways
@@ -477,12 +478,14 @@ Boxes carry marks that stay clear of lines and colors of their own.
 - ⬜ Corner marks checked: A corner mark is checked against nearby lines.
 - ⬜ Marks by name: A mark can be taken by name.
 - ⬜ Box looks: A box takes colors of its own or a named look.
+- ⬜ Size multiples: A node takes multiples of its width and height.
 
 **Delivers:**
 
 - [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
 - [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
 - [F1.1.7: Box looks](../features/F1-elements.md#f117-box-looks)
+- [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
 
 **Exit criteria:**
 
