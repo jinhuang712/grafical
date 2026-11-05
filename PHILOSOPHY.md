@@ -104,7 +104,7 @@ How a thing looks is the agent's choice, in any value, since agents already judg
 
 **Only the facts you name change, and the same file is the same picture.**
 
-An operation changes the facts it names, and no other. Rows, order, groups and alignment stay as they were until an operation names them. Positions may shift so that the picture stays tidy, but a reader who learned the structure of a diagram never has to learn it again because of a change elsewhere. The file holds the facts and lives in git, so a change reads like a change to code. The file is a set of facts, as Wittgenstein's world is, with one difference: it holds the chosen facts, not all of them. The same file renders the same picture on any machine. A newer grafical that would draw a file differently says so, and a file grafical cannot fully read is refused, never guessed at.
+A reader who learned the structure of a diagram should never have to learn it again because of a change elsewhere. So a change touches the facts it names and no others, and a diagram is its facts, as Wittgenstein's world is, with one difference: it holds the chosen facts, not all of them. A picture that comes from facts alone can be read like code, compared like code and trusted to come back the same.
 
 > The world is the totality of facts, not of things.
 >
