@@ -163,6 +163,7 @@ density: normal
 - A class is an attribute, `class`, and it names a sort of node or edge such as `@service`.
 - A class names what it inherits with `base`.
 - An `<order>` states only the order inside the region named by `of`, one item on each line.
+- An `<order>` names every member of its region and nothing else, or the file is refused.
 - Length is no concern.
 
 Nobody searches the file as text. `grafical show <id>` gives an object's definition and what refers to it.
