@@ -139,17 +139,6 @@
 - status: HALT
 - next: the owner chooses whether these exits may name a test
 
-### [P2][DISCUSSION] Later sits in the roadmap and old checkpoint IDs have new meanings
-
-- description:
-  - The skill's guide keeps a *Later* list in FEATURES.md.
-  - [CP5: Later](ROADMAP.md#cp5-later) holds those features in the roadmap by the owner's choice.
-  - CP3 and CP4 and CP5 and the sub-checkpoints of CP2 reuse IDs that once meant something else.
-  - The guide says an old ID is never reused.
-- created: 2026-11-05
-- status: HALT
-- next: the owner confirms both exceptions or asks to renumber
-
 ### [P2][DISCUSSION] The philosophy does not say pictures keep getting better
 
 - description:

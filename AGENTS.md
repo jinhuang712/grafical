@@ -54,8 +54,10 @@ Then it scans [plan/TODO.md](plan/TODO.md).
 
 ## Rules for the documents
 
-- An item another document points to keeps an ID that never changes.
+- An item another document points to carries an ID that follows the structure.
   - A new item gets a new number.
+  - When the structure changes, its items are renumbered.
+  - A renumbered ID changes in every link and mention in the same change.
   - An ID is always written with its name.
 - Code and documents cite an item by its name, such as `GOALS.md, "Speed"`.
   - `test/docs/citations.test.ts` checks that the name exists.

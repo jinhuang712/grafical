@@ -4,7 +4,7 @@ Each goal is a check with a number or a test, listed by its kind with the want o
 
 [O1: The MVP bar](#o1-the-mvp-bar) alone says whether grafical succeeds. The constraints must always hold. Every other goal is recorded to find causes and decides nothing.
 
-A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of the measurement. A goal has an ID that never changes, and code and documents cite it by its name, such as `[T2: Speed](#t2-speed)`.
+A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of the measurement. Code and documents cite a goal by its name, such as `[T2: Speed](#t2-speed)`.
 
 ## Summary
 
