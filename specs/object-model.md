@@ -62,7 +62,8 @@ A type says what a sort of thing looks like, and an object says which one it is 
 - A type may inherit from another with `base`.
 - A built-in kind is a type.
   - A rule on a kind is a change to that type.
-- An object may override what its type holds.
+- A type may choose its `shape`, and an object cannot change it.
+- An object may override the rest of what its type holds.
 
 ## Groups that follow groups
 
@@ -185,3 +186,4 @@ If the design does not hold up, the fallback is YAML with one element on each li
 - [085. A diagram is objects with attributes and relations](decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)
 - [086. The file is blocks of attributes, and a reference carries @](decisions/086-the-file-is-blocks-of-attributes-and-a-reference-carries.md)
 - [087. A type holds attributes, and a group may follow a group](decisions/087-a-type-holds-attributes-and-a-group-may-follow-a-group.md)
+- [088. A type may choose its shape](decisions/088-a-type-may-choose-its-shape.md)
