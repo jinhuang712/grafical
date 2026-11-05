@@ -5,6 +5,7 @@ Decided: 2026-10-12
 - Replaced in part by specs/decisions, "Edge weights": a line takes its own width.
 - Replaced in part by specs/decisions, "An agent may state the side of a line": an agent may state a side.
 - Replaced in part by specs/decisions, "Lines may be drawn square, round or smooth": the shape leaves the stylesheet.
+- Replaced in part by specs/decisions, "An edge may take a color of its own": a line takes a color.
 
 ## The problem
 

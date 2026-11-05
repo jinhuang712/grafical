@@ -15,7 +15,8 @@ F1: Elements
 │   ├── F1.2.2: Arrowheads at both ends — two-way lines
 │   ├── F1.2.3: Weight — thicker lines for what matters more
 │   ├── F1.2.4: Numbered steps — a number on a line
-│   └── F1.2.5: Ends at a group, a row or a lane — one arrow to a whole system
+│   ├── F1.2.5: Ends at a group, a row or a lane — one arrow to a whole system
+│   └── F1.2.6: Edge looks — a color of an edge's own
 └── F1.3: Containers — what gathers boxes
     ├── F1.3.1: Groups — a system drawn as one frame
     ├── F1.3.2: Copying a group — a second zone in one operation
@@ -310,6 +311,22 @@ One arrow can point at a whole system instead of each of its parts.
   - A line between two rows with no box is refused (`bar-to-bar`), and so is a bar between the first and last rows of a group (`bar-in-group`).
 - Two lanes are never the two ends of one line (`lane-to-lane`).
 - Removing a group or a lane removes the lines that end at it.
+
+### F1.2.6: Edge looks
+
+An edge may take a color of its own, so that a color says something about one path. The agent sets it on the edge or names a look from the stylesheet.
+
+```sh
+grafical edge look <file> <id> [--color <color>]
+grafical edge look <file> <id> <name>
+```
+
+- A color is `#rrggbb`.
+- An edge holds one of the two, and the last one set clears the other.
+- `look` with neither clears the edge's look.
+- A dash stays the kind's.
+
+- **Why:** [081. An edge may take a color of its own](../specs/decisions/081-an-edge-may-take-a-color-of-its-own.md)
 
 ## F1.3: Containers
 

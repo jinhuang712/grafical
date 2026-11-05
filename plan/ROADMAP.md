@@ -99,7 +99,8 @@ Roadmap
 │   │   ├── ⬜ Line shapes
 │   │   ├── ⬜ Labels on lines
 │   │   ├── ⬜ Label text
-│   │   └── ⬜ Region gaps
+│   │   ├── ⬜ Region gaps
+│   │   └── ⬜ Edge looks
 │   └── ⬜ CP2.7: The command line
 │       ├── ⬜ The file flag
 │       ├── ⬜ One name for each thing
@@ -557,6 +558,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - ⬜ Labels on lines: A line carries its label by default, measured over the saved drafts before it lands.
 - ⬜ Label text: An agent sets a label's breaks and its alignment.
 - ⬜ Region gaps: The gap between two regions takes a multiple.
+- ⬜ Edge looks: An edge takes a color of its own or a named look.
 
 **Delivers:**
 
@@ -565,6 +567,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - [F2.7.3: Labels on lines](../features/F2-layout.md#f273-labels-on-lines)
 - [F4.6: Label text](../features/F4-look.md#f46-label-text)
 - [F2.6.1: Region gaps](../features/F2-layout.md#f261-region-gaps)
+- [F1.2.6: Edge looks](../features/F1-elements.md#f126-edge-looks)
 
 **Exit criteria:**
 
