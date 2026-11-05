@@ -19,7 +19,7 @@ F1: Elements
     ├── F1.3.1: Groups — a system drawn as one frame
     ├── F1.3.2: Copying a group — a second zone in one operation
     ├── F1.3.3: Deeper nesting — up to five levels
-    ├── F1.3.4: Swimlanes — bands that say who owns what
+    ├── F1.3.4: Lanes — bands that say who owns what
     ├── F1.3.5: Lanes both ways — a grid of lanes and phases
     ├── F1.3.6: Walls — space that lines cross only where allowed
     └── F1.3.7: Notes — a short text on a box, a line or a group
@@ -382,9 +382,9 @@ grafical group copy <file> <id> <into> --label <text> --suffix <suffix> --before
 
 Groups nest up to five levels instead of three, as a cloud's account, region, network, zone and subnet do.
 
-### F1.3.4: Swimlanes
+### F1.3.4: Lanes
 
-A swimlane is a labelled band that says who owns what. A diagram's lanes all run one way, as rows or as columns.
+A lane is a labelled band that says who owns what. A diagram's lanes all run one way, as rows or as columns.
 
 **Commands:**
 

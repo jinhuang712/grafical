@@ -189,7 +189,7 @@ next: -
   - It keeps each of their lines once and drops the lines between them.
   - It may reuse a merged box's ID.
   - Boxes aligned to a merged box lose the alignment.
-- `swap` trades the places of two boxes: their row and slot.
+- `swap` trades the places of two boxes: their row and place.
 - `remove` takes the box's lines with it and reports their IDs.
   - A box that others are placed by steps from stays while they are (`step-anchor`).
 

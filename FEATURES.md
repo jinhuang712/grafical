@@ -26,7 +26,7 @@ Features
 │       ├── ✅ F1.3.1: Groups — a system drawn as one frame
 │       ├── ✅ F1.3.2: Copying a group — a second zone in one operation
 │       ├── ⬜ F1.3.3: Deeper nesting — up to five levels
-│       ├── ✅ F1.3.4: Swimlanes — bands that say who owns what
+│       ├── ✅ F1.3.4: Lanes — bands that say who owns what
 │       ├── ⬜ F1.3.5: Lanes both ways — a grid of lanes and phases
 │       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
 │       └── ✅ F1.3.7: Notes — a short text on a box, a line or a group

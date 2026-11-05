@@ -253,7 +253,7 @@ Lines that end at containers, swimlanes, themes and stylesheets, and the live vi
 **Delivers:**
 
 - [F1.2.5: Ends at a group, a row or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-row-or-a-lane)
-- [F1.3.4: Swimlanes](../features/F1-elements.md#f134-swimlanes)
+- [F1.3.4: Lanes](../features/F1-elements.md#f134-lanes)
 - [F4.3: Themes and stylesheets](../features/F4-look.md#f43-themes-and-stylesheets)
 - [F4.4: The stylesheet file](../features/F4-look.md#f44-the-stylesheet-file)
 - [F6.3: Live viewer](../features/F6-output.md#f63-live-viewer)
