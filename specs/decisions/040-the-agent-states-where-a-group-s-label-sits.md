@@ -10,7 +10,7 @@ Decided by the owner on 2026-10-16. In a booking C4 diagram the label "Booking a
 
 - **Unstated and seated where no line comes.** Once the lines are drawn, an unplaced label sits in the head where no line comes near.
   - Until 2026-10-17 it seated the label where the lines into the first row kept their boxes' centres, and moved two of those boxes apart when no seat did; the owner first chose to keep that.
-  - Under "The dirty work has edges" nothing moves for it.
+  - Under "A group's label moves no box and no line" nothing moves for it.
   - A label with no clear seat refuses the write as `title-blocked`, as a stated one does.
 - **Stated and exactly there, and nothing moves for it.** `group title <group> <place>` (alias `group label`) sets the group's `titleAt` and the label sits exactly at that place.
   - The engine adds only the label's own room, and moves no box and no line for it.

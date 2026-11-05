@@ -2,7 +2,7 @@
 
 Decided: 2026-10-11
 
-Replaced in part by specs/decisions, "The dirty work has edges": a label with no room no longer makes its line detour.
+Replaced in part by specs/decisions, "A line never moves for its label": a label with no room no longer makes its line detour.
 
 ## The problem
 
@@ -31,7 +31,7 @@ The phase 0 router spike compared it with `libavoid-js` on the public brief (30 
 | Unrelated edges drawn on top of each other | 0 | 3 |
 | Crossings on the public brief | 68 | 40 |
 
-What phase 1 added to the router: fewer crossings, from 68 to 15 on the public brief, mostly from node order; buses; side exits; room before squeezing; labels by rule; and the edge cases of self-loops, several lines between one pair, lines within a row and lines that skip rows. Until 2026-10-17 a label with no slot made its line detour, which appeared in 60 of 500 very dense fuzz diagrams and in none of the 306 saved drafts ("The dirty work has edges").
+What phase 1 added to the router: fewer crossings, from 68 to 15 on the public brief, mostly from node order; buses; side exits; room before squeezing; labels by rule; and the edge cases of self-loops, several lines between one pair, lines within a row and lines that skip rows. Until 2026-10-17 a label with no slot made its line detour, which appeared in 60 of 500 very dense fuzz diagrams and in none of the 306 saved drafts ("A line never moves for its label").
 
 The fuzz test lays out 100 random diagrams with fixed seeds in CI, 500 until 2026-10-19, and more on request. None has an engine-owned defect ("Defects owned by who can fix them"). Before the phase 1 robustness work, 48% had one. 35,000 seeds in all passed, which is evidence, not a proof.
 

@@ -13,7 +13,7 @@ A wall is empty space between two named sides. The agent names what it separates
 Lines cross a wall only where it allows, and its label must stay readable:
 - A line between the sides is refused before layout unless the wall allows it.
   - Any other line whose route passes through the wall's space is an agent-owned defect, since the boxes the agent placed lead it there.
-- A wall's label with no place along its wall is refused, since 2026-10-17 ("The dirty work has edges").
+- A wall's label with no place along its wall is refused, since 2026-10-17 ("A wall's label stays along its wall").
 - Walls across were built first on 2026-10-14, and walls up and down the same day.
 
 ## Not chosen

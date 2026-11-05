@@ -27,7 +27,7 @@ Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and
   - The fuzz test nests groups in about a quarter of its diagrams.
   - It found that a line into a row under stacked heads crossed a label.
   - Labels were then seated outer first, and an inner label left the lines room past the outer ones.
-  - Since 2026-10-17 a label is seated after the lines are drawn ("The dirty work has edges").
+  - Since 2026-10-17 a label is seated after the lines are drawn ("A group's label moves no box and no line").
 - **Teaching.** At first `grafical guide <type>` taught each type.
   - Reversed the same day by "The help as the reference": the guides' lessons moved into the help.
 

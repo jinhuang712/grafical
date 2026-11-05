@@ -2,7 +2,7 @@
 
 Decided: 2026-10-11
 
-Replaced in part by specs/decisions, "The dirty work has edges": a fact that leaves no plain form is the agent's defect.
+Replaced in part by specs/decisions, "Unreadable is refused and costly is reported": a fact that leaves no plain form is the agent's defect.
 
 ## The problem
 

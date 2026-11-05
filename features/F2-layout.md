@@ -214,7 +214,7 @@ The agent says what connects. grafical draws every line.
   - Where lines join on purpose, a dot marks the join.
 - A label sits beside its line.
   - When there is no room, it wraps or moves to another gap on its way.
-  - Where no gap on its way has room, no line moves for it and the write is refused as `label-blocked` ([041. The dirty work has edges](../specs/decisions/041-the-dirty-work-has-edges.md)).
+  - Where no gap on its way has room, no line moves for it and the write is refused as `label-blocked` ([061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)).
   - The refusal names the line, the lines across the label and the gaps it tried.
   - `node resize` is among the commands that can change it.
   - grafical never widens a box for its lines.
@@ -230,7 +230,7 @@ The agent says what connects. grafical draws every line.
   - [005. Our own gap router](../specs/decisions/005-our-own-gap-router.md)
   - [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
   - [023. Fan-outs of three bundle](../specs/decisions/023-fan-outs-of-three-bundle.md)
-  - [041. The dirty work has edges](../specs/decisions/041-the-dirty-work-has-edges.md)
+  - [061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)
   - [051. A label sits on its straight vertical line](../specs/decisions/051-a-label-sits-on-its-straight-vertical-line.md)
 
 **Stories:**

@@ -11,7 +11,7 @@ Decided by the owner on 2026-10-16. Redrawing the dispatch diagram, the owner sa
 Now a row with no box may be a line end when the line's other end holds a box, and it is drawn as one bar across the content with its label in it. A row with no box that no line ends at is drawn as before, and a row that holds boxes is still a band.
 
 - **One bar, 40 px high** with its label in it at the left.
-  - No line runs over the label, and none moves for it ("The dirty work has edges").
+  - No line runs over the label, and none moves for it ("Unreadable is refused and costly is reported").
   - Until 2026-10-19 the label was seated before the lines and clear only of the lines that end at the bar.
   - The router kept every line that passes the bar off it.
   - Redrawing a microservices diagram, a line from a service to its database went round the bar's name with four bends.

@@ -454,7 +454,7 @@ Empty space between two parts of a picture, which lines cross only where the wal
 - Without a label, a wall is invisible: only its space shows.
   - With a label, it draws a dashed divider through its middle.
   - The label sits along it at the first place no line comes near.
-  - Where none is, the write is refused as `label-blocked` ([041. The dirty work has edges](../specs/decisions/041-the-dirty-work-has-edges.md)).
+  - Where none is, the write is refused as `label-blocked` ([063. A wall's label stays along its wall](../specs/decisions/063-a-wall-s-label-stays-along-its-wall.md)).
   - `wall relabel` changes the label, or drops it without `--label`.
 - A box or group that is removed leaves the wall's sides, and a wall left with an empty side goes.
 
@@ -470,7 +470,7 @@ grafical note remove <file> --on <id>
 - A note is a card beside its target, joined by a dotted line.
   - With `--footnote` it is a small number on the target, with the text in a numbered list at the bottom.
   - The file holds a footnote as `footnote: true`.
-  - A card with no place beside its target clear of every box, line and text is refused as `label-blocked` ([041. The dirty work has edges](../specs/decisions/041-the-dirty-work-has-edges.md)).
+  - A card with no place beside its target clear of every box, line and text is refused as `label-blocked` ([064. A note is what the agent states](../specs/decisions/064-a-note-is-what-the-agent-states.md)).
   - The agent then shortens it or makes it a footnote.
 - A target has one note, and adding another replaces it.
   - A note goes with its target.

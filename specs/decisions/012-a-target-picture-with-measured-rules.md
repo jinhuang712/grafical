@@ -20,7 +20,7 @@ On 2026-10-11 the owner judged the engine's first real output "cluttered, messy,
 
 Both judges picked the grouped version. The compact one hid the messaging and retry mechanics that engineers want. The target is `bench/targets/catalog-sync-grouped.png`, with its SVG beside it. The engine must produce pictures like it from facts alone.
 
-The rules that make it uncluttered. The checker measures each one. A broken rule is reported by `grafical check --all`, and it does not block a write; since 2026-10-16 every write reports a line that breaks rule 2 ("The dirty work has edges"):
+The rules that make it uncluttered. The checker measures each one. A broken rule is reported by `grafical check --all`, and it does not block a write; since 2026-10-16 every write reports a line that breaks rule 2 ("A bent line is reported and never refused"):
 1. **Size:** the canvas is at most 1024 px wide, so that text shows at full size in a document.
 2. **Grid:** every node centre sits on the column grid ("Layout computed again on every change").
    - At least half the edges are one straight segment, and no edge has more than 2 bends.

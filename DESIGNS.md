@@ -86,7 +86,7 @@ Lines run orthogonally through the gaps between rows and boxes. The engine picks
   - [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md)
   - [015. Lines that end at containers](specs/decisions/015-lines-that-end-at-containers.md)
   - [023. Fan-outs of three bundle](specs/decisions/023-fan-outs-of-three-bundle.md)
-  - [041. The dirty work has edges](specs/decisions/041-the-dirty-work-has-edges.md)
+  - [065. Unreadable is refused and costly is reported](specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
   - [058. An agent may state the side of a line](specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
   - [059. Lines may be drawn square, round or smooth](specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
 - **How it works:**

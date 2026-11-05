@@ -128,4 +128,5 @@ A line from a box to itself loops through the gutter below the box. Its two ends
 - [015. Lines that end at containers](decisions/015-lines-that-end-at-containers.md)
 - [019. Lines meet any side](decisions/019-lines-meet-any-side.md)
 - [023. Fan-outs of three bundle](decisions/023-fan-outs-of-three-bundle.md)
-- [041. The dirty work has edges](decisions/041-the-dirty-work-has-edges.md)
+- [060. A bent line is reported and never refused](decisions/060-a-bent-line-is-reported-and-never-refused.md)
+- [061. A line never moves for its label](decisions/061-a-line-never-moves-for-its-label.md)
