@@ -79,7 +79,9 @@ Roadmap
 │   │   ├── ✅ Choice diamonds
 │   │   ├── ✅ Footnote numbers
 │   │   ├── ⬜ Labels in a crowded gutter
-│   │   └── ⬜ A diamond's slanted lines
+│   │   ├── ⬜ A diamond's slanted lines
+│   │   ├── ⬜ Badges off a lane's side
+│   │   └── ⬜ Return lines off a self-loop
 │   ├── ⬜ CP2.3: Boxes
 │   │   ├── ⬜ Corner marks checked
 │   │   ├── ⬜ Marks by name
@@ -482,6 +484,8 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 - ✅ Footnote numbers: A footnote's number stays wholly inside or outside a container.
 - ⬜ Labels in a crowded gutter: An attempt did not land and waits on the owner's choice: [Labels sit close to the lines beside them in a crowded gutter](TODO.md#p2discussion-labels-sit-close-to-the-lines-beside-them-in-a-crowded-gutter).
 - ⬜ A diamond's slanted lines: A line meets a diamond only at a corner, measured with `pnpm bench diff` before it lands.
+- ⬜ Badges off a lane's side: A step's badge keeps off a lane's side, and `step-collision` counts one that touches it.
+- ⬜ Return lines off a self-loop: The lines that leave and enter a node keep clear of its self-loop.
 
 **Delivers:**
 
