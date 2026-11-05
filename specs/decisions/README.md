@@ -77,6 +77,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [071. A batch may come from standard input](071-a-batch-may-come-from-standard-input.md) (2026-11-06)
 - [072. A change keeps the structure and positions may shift](072-a-change-keeps-the-structure-and-positions-may-shift.md) (2026-11-06)
 - [073. The target picture's rules are not reported](073-the-target-picture-s-rules-are-not-reported.md) (2026-11-06)
+- [074. Safety and licenses are no design guidelines](074-safety-and-licenses-are-no-design-guidelines.md) (2026-11-06)
 
 ## Former IDs
 
@@ -104,9 +105,9 @@ Until 2026-10-15 each decision had a number. Commit messages and the dated resul
 | D18 | "Git as the history" |
 | D19 | "TypeScript on Node" |
 | D20 | PHILOSOPHY.md, "Who draws?" |
-| D21 | DESIGNS.md, "Every dependency allows use in an MIT project" |
+| D21 | AGENTS.md, "Change discipline" |
 | D22 | DESIGNS.md, "What grafical cannot fully read, it refuses" |
-| D23 | DESIGNS.md, "Every dependency allows use in an MIT project" |
+| D23 | AGENTS.md, "Change discipline" |
 | D24 | "The engine picks a new box's slot" |
 | D25 | "A target picture with measured rules" |
 | D26 | "Curation stays with the agent" |

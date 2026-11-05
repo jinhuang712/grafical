@@ -2,7 +2,7 @@
 
 An agent's operations go in, a checked diagram file and a picture come out, and facts and counts go back. This is the shape between: the commitments every design change must meet. Why grafical sees diagrams this way is in [PHILOSOPHY.md](PHILOSOPHY.md). How its parts fit is in [ARCHITECTURE.md](specs/ARCHITECTURE.md).
 
-grafical is designed around 16 guidelines:
+grafical is designed around 14 guidelines:
 
 1. **Operations are the only way a diagram changes:** every change is a named and checked operation
 2. **Places are facts, never coordinates:** a place is a row or an order or a column and never a position
@@ -17,9 +17,7 @@ grafical is designed around 16 guidelines:
 11. **Looks are free, while shape and dash follow the kind:** colors and widths take any value while the kind sets the shape
 12. **The command line comes first, and the help is the agent's only reference:** an agent learns and uses grafical from its commands alone
 13. **Every search the engine runs has a cap:** no step searches without a bound
-14. **A diagram reads no file outside its folder, and its pictures run nothing:** marks stay in the folder and an SVG holds no script
-15. **Every dependency allows use in an MIT project:** runtime dependencies are MIT-compatible
-16. **One shortest way for each situation:** a form that only repeats another is removed
+14. **One shortest way for each situation:** a form that only repeats another is removed
 
 ## 1. Operations are the only way a diagram changes
 
@@ -202,29 +200,7 @@ Every write lays out, routes and checks the whole diagram again ([4. A change ke
   - [How grafical answers](specs/answers.md)
   - [Placement](specs/placement.md)
 
-## 14. A diagram reads no file outside its folder, and its pictures run nothing
-
-A mark's file must sit inside the diagram's folder, is pinned by its SHA-256, and is embedded in the SVG, never linked. An SVG with a script, an embedded document, an event handler or a reference outside itself is refused. The live viewer listens on 127.0.0.1 only. Cost: diagrams cannot share one icons folder above them, and a diagram cannot be watched from another machine.
-
-**Ask:** Can this read a path outside the folder, run something, or listen beyond this machine?
-
-- **Stance:** none
-- **Decisions:** [017. A viewer that only shows](specs/decisions/017-a-viewer-that-only-shows.md)
-- **How it works:**
-  - [The file formats](specs/file-formats.md)
-  - [The renderer](specs/rendering.md)
-
-## 15. Every dependency allows use in an MIT project
-
-grafical is MIT-licensed, so every runtime dependency is MIT, ISC, BSD or MPL-2.0, the fonts are under the SIL Open Font License, and the Twemoji graphics are CC-BY 4.0, which asks for attribution. Cost: LGPL, GPL and EPL libraries are out, such as `libavoid-js` and `elkjs`, whatever they would save.
-
-**Ask:** Does the license of this dependency allow use in an MIT project?
-
-- **Stance:** none
-- **Decisions:** [010. TypeScript on Node](specs/decisions/010-typescript-on-node.md)
-- **How it works:** [Architecture](specs/ARCHITECTURE.md)
-
-## 16. One shortest way for each situation
+## 14. One shortest way for each situation
 
 In one situation an agent has one shortest way to do a thing. Stating a fact while making an element and changing it later are two situations, and each keeps its own way. Cost: a convenient short form goes when it repeats another, and every new command must name the situation it serves.
 

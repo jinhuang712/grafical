@@ -33,7 +33,6 @@ A group drawn folded into one box in a view.
 
 Many diagrams that share one list of systems.
 
-- **Design:** [14. A diagram reads no file outside its folder, and its pictures run nothing](../DESIGNS.md#14-a-diagram-reads-no-file-outside-its-folder-and-its-pictures-run-nothing)
 
 **Stories:**
 

@@ -76,7 +76,6 @@ grafical view <file> [--port <n>] [--no-open]
 - Ctrl-C stops it.
 
 - **Stance:** [Who draws?](../PHILOSOPHY.md#who-draws)
-- **Design:** [14. A diagram reads no file outside its folder, and its pictures run nothing](../DESIGNS.md#14-a-diagram-reads-no-file-outside-its-folder-and-its-pictures-run-nothing)
 - **How it works:** [The command line](../specs/ARCHITECTURE.md#the-command-line)
 - **Why:** [017. A viewer that only shows](../specs/decisions/017-a-viewer-that-only-shows.md)
 

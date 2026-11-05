@@ -20,18 +20,6 @@
 - next: the owner takes the next dimension, and the three options are settled after the last
 - related: [055. A weak model draws well and a stronger one superbly](../specs/decisions/055-a-weak-model-draws-well-and-a-stronger-one-superbly.md)
 
-### [P2][DISCUSSION] Guidelines 14 and 15 come from no stance
-
-- description:
-  - Every guideline in DESIGNS.md links to the stance it derives from.
-  - [14. A diagram reads no file outside its folder, and its pictures run nothing](../DESIGNS.md#14-a-diagram-reads-no-file-outside-its-folder-and-its-pictures-run-nothing) has none.
-  - [15. Every dependency allows use in an MIT project](../DESIGNS.md#15-every-dependency-allows-use-in-an-mit-project) has none.
-  - Either the philosophy gains a stance they come from or they move elsewhere.
-- created: 2026-11-05
-- status: HALT
-- found: rewriting DESIGNS.md to the skill's guide on 2026-11-05
-- next: the owner chooses
-
 ### [P2][DISCUSSION] A box beside every box it connects to in a row
 
 - description:

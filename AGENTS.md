@@ -200,6 +200,9 @@ When a picture looks bad, first draw the better picture with grafical's own comm
 - No option without a second value.
 - Do not refactor unrelated code in passing.
   - Note it and change it in its own step.
+- A runtime dependency is MIT, ISC, BSD or MPL-2.0.
+  - The fonts are under the SIL Open Font License, and the Twemoji graphics are CC-BY 4.0, which asks for attribution.
+  - LGPL, GPL and EPL libraries are out, such as `libavoid-js` and `elkjs`.
 
 ## Git
 

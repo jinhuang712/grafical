@@ -12,7 +12,6 @@ How grafical reaches the agent that uses it.
 
 grafical installed from npm, so that it runs without a clone.
 
-- **Design:** [15. Every dependency allows use in an MIT project](../DESIGNS.md#15-every-dependency-allows-use-in-an-mit-project)
 
 **Stories:**
 
