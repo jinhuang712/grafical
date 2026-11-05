@@ -132,7 +132,6 @@
 - description:
   - The roadmap guide asks every checkpoint for exit criteria that point to a goal.
   - Seven sub-checkpoints of [CP1: Stage 1 built](ROADMAP.md#cp1-stage-1-built) were built before the goals existed and say they have none.
-  - [CP2.3: Boxes](ROADMAP.md#cp23-boxes) and [CP2.4: Containers](ROADMAP.md#cp24-containers) and [CP2.5: Direction and views](ROADMAP.md#cp25-direction-and-views) are accepted by a test and say none yet.
   - [CP4.1: The npm package](ROADMAP.md#cp41-the-npm-package) says none yet too.
   - A goal may now exit many checkpoints, so these may point to goals already in use.
 - created: 2026-11-05

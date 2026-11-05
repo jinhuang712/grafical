@@ -468,7 +468,11 @@ Boxes line up and carry marks that stay clear of lines.
 - [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
 - [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
 
-**Exit criteria:** none yet.
+**Exit criteria:**
+
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
 ### CP2.4: Containers
 
@@ -486,7 +490,11 @@ Containers that cross and nest.
 - [F1.3.5: Lanes both ways](../features/F1-elements.md#f135-lanes-both-ways)
 - [F1.3.3: Deeper nesting](../features/F1-elements.md#f133-deeper-nesting)
 
-**Exit criteria:** none yet.
+**Exit criteria:**
+
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
 ### CP2.5: Direction and views
 
@@ -506,7 +514,12 @@ Other ways to read one diagram, which build on the nesting of [CP2.4: Containers
 - [F10.1: Views of one file](../features/F10-many-views.md#f101-views-of-one-file)
 - [F10.2: Folded groups](../features/F10-many-views.md#f102-folded-groups)
 
-**Exit criteria:** none yet.
+**Exit criteria:**
+
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
+  - [R3: Determinism](GOALS.md#r3-determinism)
 
 ## CP3: Experiments
 
