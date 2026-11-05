@@ -13,6 +13,21 @@ F3: Editing
 
 An agent changes a diagram only through named operations, and grafical checks each one before it writes anything. The agent sends one command or a batch, can try a change before making it, and names every element itself. When something is wrong, the write is refused, the file stays as it was, and the refusal says what happened and which commands can change it.
 
+Every failure leaves the file as it was and says what happened, in the block described under [F3.5: Refusals](#f35-refusals).
+
+- **An operation is wrong:** refused with a code, the facts and the commands that can change it ([F3.5: Refusals](#f35-refusals)).
+  - The ones about names are in [F3.4: IDs](#f34-ids), and the ones about a whole batch in [F3.2: Batches](#f32-batches).
+- **The picture would draw wrong:** the write is refused as a defect.
+  - `overflow` for a label that does not fit ([F1.1.2: Labels and sublabels](F1-elements.md#f112-labels-and-sublabels)).
+  - `label-blocked` for a label with no place ([F2.7: How lines are drawn](F2-layout.md#f27-how-lines-are-drawn), [F1.3.6: Walls](F1-elements.md#f136-walls) and [F1.3.7: Notes](F1-elements.md#f137-notes)).
+  - `title-blocked` for a group's label ([F1.3.1: Groups](F1-elements.md#f131-groups)).
+- **The picture draws poorly:** written, and reported as a warning ([F5.3: Warnings](F5-checking.md#f53-warnings)).
+- **A file cannot be read:** nothing is drawn from it.
+  - A YAML syntax error gives its line.
+  - A missing stylesheet fails every command that reads the diagram ([F4.4: The stylesheet file](F4-look.md#f44-the-stylesheet-file)).
+  - A file written by a newer grafical is refused rather than guessed at ([F6.1: The diagram file](F6-output.md#f61-the-diagram-file)).
+- **A command line is wrong:** a usage error prints a block and exits 2, and a command that does not exist is refused with the one it most likely means ([F7.1: Help](F7-help.md#f71-help)).
+
 ## F3.1: Operations
 
 Every change to a diagram is one named operation, run as a command. The diagram file is `<name>.grafical.yaml` by convention.
@@ -214,20 +229,3 @@ One operation for a common edit or a common shape, such as "put a cache between 
 **Stories:**
 
 - An agent makes a common edit in one operation, to spend fewer steps.
-
-## When something fails
-
-Every failure leaves the file as it was and says what happened, in the block described under [F3.5: Refusals](#f35-refusals).
-
-- **An operation is wrong:** refused with a code, the facts and the commands that can change it ([F3.5: Refusals](#f35-refusals)).
-  - The ones about names are in [F3.4: IDs](#f34-ids), and the ones about a whole batch in [F3.2: Batches](#f32-batches).
-- **The picture would draw wrong:** the write is refused as a defect.
-  - `overflow` for a label that does not fit ([F1.1.2: Labels and sublabels](F1-elements.md#f112-labels-and-sublabels)).
-  - `label-blocked` for a label with no place ([F2.7: How lines are drawn](F2-layout.md#f27-how-lines-are-drawn), [F1.3.6: Walls](F1-elements.md#f136-walls) and [F1.3.7: Notes](F1-elements.md#f137-notes)).
-  - `title-blocked` for a group's label ([F1.3.1: Groups](F1-elements.md#f131-groups)).
-- **The picture draws poorly:** written, and reported as a warning ([F5.3: Warnings](F5-checking.md#f53-warnings)).
-- **A file cannot be read:** nothing is drawn from it.
-  - A YAML syntax error gives its line.
-  - A missing stylesheet fails every command that reads the diagram ([F4.4: The stylesheet file](F4-look.md#f44-the-stylesheet-file)).
-  - A file written by a newer grafical is refused rather than guessed at ([F6.1: The diagram file](F6-output.md#f61-the-diagram-file)).
-- **A command line is wrong:** a usage error prints a block and exits 2, and a command that does not exist is refused with the one it most likely means ([F7.1: Help](F7-help.md#f71-help)).
