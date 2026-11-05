@@ -10,7 +10,9 @@ You ask your agent how a service works, and it explains it well: the queue, the 
 
 ## Why it should exist
 
-An agent can explain a system well and still cannot draw it well. Every improvement to its picture is expensive, so people and agents both settle for a diagram that is only "all right". The pains below are the moments that show it.
+An agent can explain a system well and still cannot draw it well. A stronger model does not close that gap. Every improvement to the picture is expensive, so people and agents both settle for a diagram that is only "all right". The pains below are the moments that show it.
+
+The usual tools sit on two sides. Mermaid is easy for an agent, but it has few shapes, little control over the layout and a plain look. SVG and draw.io can draw anything, but only coordinate by coordinate.
 
 No tool closes the gap. On 2026-10-10 we checked five, and none combines operations that state facts with a layout the engine owns, stability under change and a file that can be reviewed:
 
@@ -26,33 +28,25 @@ Sources: [LikeC4's documentation](https://likec4.dev/llms-full.txt), [jgraph/dra
 
 ### Pain points
 
+#### Even the strongest model draws badly
+
+A better model does not fix the picture. On 2026-10-12 the owner rated Opus's drafts with no tool 5 of 25, at $0.312 each. The owner reports the same from Opus 5.5 at xhigh effort.
+
+The agent ends up computing coordinates: where each box goes, how wide it is and where each line bends. In a test on 2026-10-10, four agents drew the same two services, and each wrote its own script to compute positions. The results had overlapping boxes, clipped text and lines through boxes, and they get worse as the diagram grows.
+
 #### Every fix redraws everything
 
 An agent draws in one shot. To fix one box it draws the whole picture again, and parts nobody asked about move or disappear. Mermaid lays out the whole graph again on every edit. A whiteboard tool with an agent command line accepts only a full rebuild or additions on top.
 
-#### The agent has to place every box by hand
-
-Whatever the tool, the agent ends up computing coordinates: where each box goes, how wide it is and where each line bends. In a test on 2026-10-10, four agents drew the same two services, and each wrote its own script to compute positions. The results had overlapping boxes, clipped text and lines through boxes, and they get worse as the diagram grows.
-
-#### Easy tools are rigid, and flexible tools are pixel work
-
-Mermaid is easy for an agent, but it has few shapes, little control over the layout and a plain look. SVG and draw.io can draw anything, but only coordinate by coordinate, which is slow, costly and error-prone.
+In the test of 2026-10-10 one diagram cost 2 to 6 minutes and 77k to 144k tokens, before any change was asked for. A fix that draws everything again pays for everything again.
 
 #### Pretty or complete, not both
 
 Tools that make diagrams look good cut content to do it. The `diagram-design` skill caps a picture at 9 nodes, and in the test of 2026-10-10 it left out the retry path and the admin entry points. Without a tool the details stayed, and the judges called the pictures walls of text.
 
-#### A diagram costs minutes and many tokens
-
-In the same test one diagram cost 2 to 6 minutes and 77k to 144k tokens, before any change was asked for.
-
-#### The result depends on the model
-
-A strong model can draw a good diagram. A cheaper one, given the same request, draws something broken, or something different each time.
-
 #### The picture cannot be reproduced or reviewed
 
-The result is an image or a one-off output. It cannot be diffed in a pull request, kept in step with the code or drawn again exactly.
+A pull request that changes the architecture shows the picture as a changed image, so a reviewer cannot see what moved. Ask for the same diagram twice, and it comes back different.
 
 ## Why now
 
@@ -78,12 +72,10 @@ The idea rests on three bets, each of which a test can settle:
 
 ## What we want
 
-- **Fix one thing without losing the rest:** an operation changes only the facts it names, and the picture re-spaces at once.
-- **Never place a box by hand:** the agent states a row or an order or a connection, and the engine places and routes everything.
-- **Say what is needed without pixel work:** shapes · marks · colors · line weights · walls · notes let an agent say more in fewer steps.
+- **Fix one thing without losing the rest:** an operation changes only the facts it names, so a first draft and each change cost few turns and few tokens.
+- **Never place a box by hand:** the agent states facts such as a row · an order · a connection · a shape · a color, and the engine places and routes everything.
 - **A picture that is complete and clear at once:** a large diagram draws without a defect and without hiding anything, and what to cut stays the agent's choice.
-- **Make the next improvement worth it:** a first draft and each change cost few turns, little time and few tokens.
-- **Get a good picture from a small model:** Haiku's picture looks like Opus's, because the tool does the work a model would get wrong.
+- **Get a good picture from a small model:** Haiku with grafical draws better than Opus without it, because the tool does the work a model would get wrong.
 - **Keep the diagram beside the code:** one YAML file in git gives the same picture on any machine, and a change reads as operations in a diff.
 
 ## What we don't want
