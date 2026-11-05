@@ -381,7 +381,7 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
  * A line's label, or its step's badge, that no gutter of its path could hold clear of the
  * other lines, a wall's label that no place along its wall holds clear of the lines across
  * it, and a note's card with no place beside its target: no line moves for it, so it lies
- * across them (specs/decisions, "The dirty work has edges"). The agent shortens or drops the text,
+ * across them (specs/decisions, "Unreadable is refused and costly is reported"). The agent shortens or drops the text,
  * widens a box, changes rows, or makes the note a footnote; the engine never widens a box for
  * its lines (decided by the owner on 2026-10-17). The elements name the line, the wall or the
  * note's target, then what lies across the text: lines, and for a line's label the borders of

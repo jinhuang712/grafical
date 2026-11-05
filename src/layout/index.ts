@@ -414,7 +414,7 @@ function segmentHits(a: Point, b: Point, r: Rect): boolean {
  * the text in a place, which a step's badge may push out of it (specs/decisions, "Step
  * badges ride the line"): the text too must be clear. Failing every place, no line
  * moves for the label: it takes the first place `free` accepts across the border,
- * or else the first place, and is not clear (specs/decisions, "The dirty work has edges").
+ * or else the first place, and is not clear (specs/decisions, "A line never moves for its label").
  */
 function besideRoute(
   points: Point[],
@@ -735,7 +735,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // Where no vertical line may pass: a band's label, above its row, and the label of an
   // edge that runs sideways, in the gap it crosses. A group's label moves no line: a line
   // across it refuses the write; nor does a bar's, seated once the lines are routed
-  // (specs/decisions, "The dirty work has edges").
+  // (specs/decisions, "A group's label moves no box and no line").
   const forbidTop = new Map<number, [number, number][]>();
   // No line runs down through a wall up and down, in the rows it spans (specs/decisions, "Walls as space").
   for (const b of besideWalls) {
@@ -840,7 +840,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // A bar's label sits in it, at its left, in the first stretch that no line meets: 16 px clear of
   // the stand-ins of the lines that end at it, and of each line that passes it, where the router ran
   // it. Failing that, left of the content and of those lines, and the bar reaches it. No line moves
-  // for it (specs/decisions, "A row with no box as one bar", "The dirty work has edges").
+  // for it (specs/decisions, "A row with no box as one bar", "Unreadable is refused and costly is reported").
   for (const [i, b] of bandRows) {
     if (!b.bar || b.label === undefined) continue;
     const taken: [number, number][] = (barStands.get(i) ?? []).map((s) => [s.x, s.x + s.w]);
@@ -1149,7 +1149,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   let bottom = y;
   // Footnotes (specs/decisions, "Notes as callouts or footnotes") are listed below the content, above the footnote of specs/decisions, "Curation stays with the agent".
   const listTop = ceil4(y + FRAME.noteGap);
-  // A note is a footnote where the agent says so (specs/decisions, "The dirty work has edges").
+  // A note is a footnote where the agent says so (specs/decisions, "A note is what the agent states").
   const footnotes = new Set((d.notes ?? []).filter((x) => x.footnote === true).map((x) => x.on));
   const listH = withText ? footnotesHeight(d, footnotes, textW, m, T) : 0;
   if (listH > 0) {
@@ -1202,7 +1202,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
    * Where a label the agent did not place starts: the leftmost seat in its group's head, every
    * 4 px and the rightmost exactly, that no line and no line's label comes nearer than the
    * engine keeps its lines. No line or box moves for it: where no seat is clear, it sits at
-   * the left, and the write is refused as title-blocked (specs/decisions, "The dirty work has edges").
+   * the left, and the write is refused as title-blocked (specs/decisions, "A group's label moves no box and no line").
    */
   const seat = (g: (typeof groups)[number], ly: number): number => {
     const first = centre + g.x0 + GROUP.labelInset;
@@ -1589,7 +1589,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
           return x + w <= end ? x : undefined;
         };
         // Along the wall, and nowhere else: where no place is clear, the label sits at the
-        // start, and the write is refused (specs/decisions, "The dirty work has edges").
+        // start, and the write is refused (specs/decisions, "A wall's label stays along its wall").
         const placed = free(x0 + WALL.reach, x1 - WALL.reach);
         if (placed === undefined) out.blocked = true;
         out.label = placeLine("layer-label", wall.label, placed ?? x0 + WALL.reach, top, m, T);
@@ -1632,7 +1632,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         );
       };
       // Down the wall from its top, and nowhere else: where no place is clear, the label sits
-      // at the top, and the write is refused (specs/decisions, "The dirty work has edges").
+      // at the top, and the write is refused (specs/decisions, "A wall's label stays along its wall").
       const tops: number[] = [];
       for (let t = y0; t + h <= y1; t += 4) tops.push(t);
       const placed = tops.find(clear);

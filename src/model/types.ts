@@ -230,7 +230,7 @@ export interface Note {
   text: string;
   /**
    * true: a footnote, a number on its target and its text in a list at the bottom. Absent: a card
-   * beside its target, refused where there is no room for one (specs/decisions, "The dirty work has edges").
+   * beside its target, refused where there is no room for one (specs/decisions, "A note is what the agent states").
    */
   footnote?: true;
 }

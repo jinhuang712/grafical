@@ -471,7 +471,7 @@ describe("text-crossing", () => {
     ).toEqual([["c->d", "a->b"]]);
   });
 
-  // No line moves for a label no gutter of its path could hold (specs/decisions, "The dirty work has edges").
+  // No line moves for a label no gutter of its path could hold (specs/decisions, "A line never moves for its label").
   it("refuses a label no gutter held as label-blocked, the agent's, naming the lines across it", () => {
     const own = down();
     own.label = box("edge-label", 95, 140);

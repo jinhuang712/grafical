@@ -254,7 +254,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   };
   /** Whether a group's label sits beside its rows rather than above or below them. */
   const besideRows = (g: string) => atSide({ titleAt: titleOf(g) });
-  // No box moves for a group's label: a line across it refuses the write (specs/decisions, "The dirty work has edges").
+  // No box moves for a group's label: a line across it refuses the write (specs/decisions, "A group's label moves no box and no line").
   const groups = solve().groups;
 
   function solve(): { groups: PGroup[] } {

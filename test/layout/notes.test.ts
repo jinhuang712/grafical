@@ -1,5 +1,5 @@
 // Notes in the picture (specs/decisions, "Notes as callouts or footnotes"): a callout card beside its target, or a
-// numbered footnote where the agent says so; a card with no room is refused (specs/decisions, "The dirty work has edges").
+// numbered footnote where the agent says so; a card with no room is refused (specs/decisions, "A note is what the agent states").
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { drawing, drawingText } from "../../src/check/drawing.ts";

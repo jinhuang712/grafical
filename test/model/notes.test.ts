@@ -89,7 +89,7 @@ describe('notes (specs/decisions, "Notes as callouts or footnotes")', () => {
     expect(writeDiagram(ok(d, ops).diagram)).toBe(writeDiagram(changed));
   });
 
-  // The agent states a footnote; the engine never makes one (specs/decisions, "The dirty work has edges").
+  // The agent states a footnote; the engine never makes one (specs/decisions, "A note is what the agent states").
   it("a footnote is stated, kept in the file, shown, and diffed", () => {
     const foot: Op = { ...retry, footnote: true };
     const d = ok(fx, [foot]).diagram;

@@ -237,7 +237,7 @@ export function generate(seed: number, m: Measurer): Generated {
 }
 
 /**
- * As an agent does after a label-blocked refusal (specs/decisions, "The dirty work has edges"): a line's
+ * As an agent does after a label-blocked refusal (specs/decisions, "A line never moves for its label"): a line's
  * label that no gutter of its path holds, or a wall's that no place along its wall holds, shortens
  * to its first word, and a word, or a step's badge, that still finds no room is dropped; a note
  * whose card finds no place becomes a footnote.
@@ -274,7 +274,7 @@ function fitLabels(d: Diagram, m: Measurer): void {
  * A stated place for each group's label in three seeds of ten (specs/decisions, "The agent states where a group's label sits"),
  * a place of its own for each group. Then, as an agent does after a title-blocked refusal, a
  * label a line runs across, stated or seated by the engine, moves to a place no line comes near
- * (specs/decisions, "The dirty work has edges"), the first of the places in a random order, which picks
+ * (specs/decisions, "A group's label moves no box and no line"), the first of the places in a random order, which picks
  * among those the refusal names clear as a random pick would; where none is, its text shortens
  * to one word, then to one letter.
  */

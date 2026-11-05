@@ -226,7 +226,7 @@ export interface Routing {
   rows: number[];
   /**
    * The edges whose label no gutter of their path could hold clear of the other lines, each
-   * with those gutters (specs/decisions, "The dirty work has edges"). The label sits in the slot
+   * with those gutters (specs/decisions, "A line never moves for its label"). The label sits in the slot
    * that costs least, and the write is refused.
    */
   blocked: Map<string, number[]>;
@@ -340,7 +340,7 @@ export function routeAcross(
  * The rows and labels of every gutter. A label that its gutter cannot hold clear of
  * every other line moves to the next gutter of its path. Once it has tried them all, no
  * line moves for it: it sits in the slot that costs least on its longest run, and it is
- * returned as blocked (specs/decisions, "The dirty work has edges").
+ * returned as blocked (specs/decisions, "A line never moves for its label").
  */
 function channels(
   plans: Plan[],

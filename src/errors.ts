@@ -248,7 +248,7 @@ export type UsageCode = (typeof USAGE_CODES)[number];
 /**
  * The codes of a warning: written, exit 0, and drawn poorly (specs/decisions, "Refusals say what happened and which
  * commands can change it", "Every write prints every warning"), in the order they print: a line with more than two
- * bends (specs/decisions, "The dirty work has edges"), the places the counts passing, across, tight and crowded count
+ * bends (specs/decisions, "A bent line is reported and never refused"), the places the counts passing, across, tight and crowded count
  * (specs/decisions, "Composition counts"), a box no line reaches, a line alike from every box of a group to one end (specs/decisions,
  * "A line from every box of a group is a warning"), and two lines that cross.
  */
@@ -345,10 +345,10 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "needless-bend": "engine",
   // The agent placed the box by steps beside everything it connects to (specs/decisions, "Who chose is punished").
   "box-aside": "agent",
-  // A line runs where a group's label sits, and no line moves for it: the agent states a place (specs/decisions, "The dirty work has edges").
+  // A line runs where a group's label sits, and no line moves for it: the agent states a place (specs/decisions, "A group's label moves no box and no line").
   "title-blocked": "agent",
   // No gutter of its path holds a line's label clear, and no line moves for it: the agent shortens
-  // or drops the text, or changes rows (specs/decisions, "The dirty work has edges").
+  // or drops the text, or changes rows (specs/decisions, "A line never moves for its label").
   "label-blocked": "agent",
 };
 

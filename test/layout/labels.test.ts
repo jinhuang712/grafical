@@ -48,7 +48,7 @@ describe("line labels and group sides", () => {
   });
 });
 
-describe('a label no gutter holds (specs/decisions, "The dirty work has edges")', () => {
+describe('a label no gutter holds (specs/decisions, "A line never moves for its label")', () => {
   // Until 2026-10-17 the middle line stepped out of the crowd with four bends to carry its label.
   it("moves no line for it, and refuses it as label-blocked, naming the line across it", () => {
     const d = readDiagram(`grafical: 1

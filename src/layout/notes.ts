@@ -212,7 +212,7 @@ function besideLine([a, b]: Seg, w: number, h: number): Spot[] {
  * Every note: a footnote when its target is in `footnotes`, as the agent states, and a
  * callout card at the first place beside its target that is clear otherwise. A card with no
  * clear place takes the first place anyway and is marked blocked: no note becomes a
- * footnote unless the agent says so (specs/decisions, "The dirty work has edges").
+ * footnote unless the agent says so (specs/decisions, "A note is what the agent states").
  */
 export function placeNotes(
   d: Diagram,

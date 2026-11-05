@@ -107,7 +107,7 @@ export interface SceneWall {
   label?: PlacedText;
   /**
    * true: no place along the wall keeps its label clear of the lines across it, so the label lies
-   * across one, and the write is refused (specs/decisions, "The dirty work has edges").
+   * across one, and the write is refused (specs/decisions, "A wall's label stays along its wall").
    */
   blocked?: true;
 }
@@ -141,7 +141,7 @@ export interface SceneNote {
   key?: SceneBadge;
   /**
    * true: a card with no place beside its target clear of everything else, drawn at the first
-   * place anyway; the write is refused (specs/decisions, "The dirty work has edges").
+   * place anyway; the write is refused (specs/decisions, "A note is what the agent states").
    */
   blocked?: true;
 }
@@ -196,7 +196,7 @@ export interface SceneEdge {
   /**
    * The gutters its label, or its step's badge, tried when none could hold it clear of the other
    * lines, each as the rows above and below it joined by a slash. No line moves for it, so it lies
-   * across another line, and the write is refused (specs/decisions, "The dirty work has edges").
+   * across another line, and the write is refused (specs/decisions, "A line never moves for its label").
    */
   blocked?: string[];
 }

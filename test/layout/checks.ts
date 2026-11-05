@@ -255,7 +255,7 @@ export function mechanical(d: Defects): string[] {
  */
 export function textCrossings(s: Scene): string[] {
   // A group's label and a line's label no gutter could hold are the agent's: title-blocked and
-  // label-blocked (specs/decisions, "The dirty work has edges").
+  // label-blocked (specs/decisions, "A line never moves for its label").
   const texts: { id: string; box: Rect; owner?: string }[] = [
     { id: "title", box: s.title.bbox },
     ...s.nodes.flatMap((n) => n.texts.map((t, i) => ({ id: `node ${n.id}#${i}`, box: t.bbox }))),

@@ -253,7 +253,7 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
     expect(out.startsWith(`ok\n\n${bent}\n\ncounts nodes=`)).toBe(true);
     expect(out).toMatch(/^counts nodes=\d+ lines=\d+ crossings=\d+ bends=\d+ bent=1 /m);
     expect(out).not.toMatch(/^(hint|lines):/m);
-    // Every write reports it too, a single command as a batch (specs/decisions, "The dirty work has edges").
+    // Every write reports it too, a single command as a batch (specs/decisions, "A bent line is reported and never refused").
     expect(run("diagram", "subtitle", photos(), "--text", "Uploads").out).toBe(
       `ok changed=subtitle\n\n${bent}\n`,
     );

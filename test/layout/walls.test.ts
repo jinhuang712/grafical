@@ -82,7 +82,7 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
   });
 
   // Until 2026-10-17 such a label went across the picture past the wall's end, or left of
-  // everything in a second layout (specs/decisions, "The dirty work has edges").
+  // everything in a second layout (specs/decisions, "A wall's label stays along its wall").
   it("refuses a label no place along the wall holds clear of the lines, and keeps it on the wall", () => {
     const d = ok(fx, [
       net("the private network that no request from outside may cross on its way to the catalog"),

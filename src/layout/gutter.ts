@@ -15,7 +15,7 @@
 //    squeezes (specs/decisions, "Layout computed again on every change"): the fixed order guarantees such a row further down.
 // A label with no free slot at all is returned, so that it can move to another
 // gutter of its path. When it has none left, no line moves for it: it takes the slot
-// that costs least, and the write is refused (specs/decisions, "The dirty work has edges").
+// that costs least, and the write is refused (specs/decisions, "A line never moves for its label").
 //
 // The runs of one fan-out or fan-in carry the same `bus`: their stubs at one x are
 // the shared trunk, one line, and never count against each other.

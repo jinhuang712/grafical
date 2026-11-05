@@ -111,7 +111,7 @@ export interface Counts {
   /** Every point where two lines cross. */
   crossings: number;
   bends: number;
-  /** Lines with more than two bends (specs/decisions, "The dirty work has edges"). */
+  /** Lines with more than two bends (specs/decisions, "A bent line is reported and never refused"). */
   bent: number;
   /** The length of every line together. */
   length: number;
@@ -395,7 +395,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   };
 }
 
-/** The lines drawn with more than two bends (specs/decisions, "The dirty work has edges"), in drawing order. */
+/** The lines drawn with more than two bends (specs/decisions, "A bent line is reported and never refused"), in drawing order. */
 export function bentLines(lines: DrawnLine[]): DrawnLine[] {
   return lines.filter((l) => l.bends > TASTE_LIMITS.maxBends);
 }
