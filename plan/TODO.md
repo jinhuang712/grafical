@@ -33,17 +33,6 @@
 - next: the owner chooses whether the router keeps such a line below or the decision drops the rule
 - related: [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
 
-### [P2][DISCUSSION] An aligned box joins a column and no row slides
-
-- description:
-  - [F2.3: Alignment](../features/F2-layout.md#f23-alignment) says an aligned box's row slides sideways as one block.
-  - The code joins the aligned box to its target's column instead.
-- created: 2026-11-04
-- status: HALT
-- found: writing the placement spec from the layout code on 2026-11-04
-- next: the owner chooses which is right and the other is changed
-- related: [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md)
-
 ### [P2][DISCUSSION] The stability tests measure movement instead of limiting it
 
 - description:

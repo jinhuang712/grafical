@@ -81,7 +81,6 @@ Roadmap
 │   │   ├── ⬜ Labels in a crowded gutter
 │   │   └── ⬜ A diamond's slanted lines
 │   ├── ⬜ CP2.3: Boxes
-│   │   ├── ⬜ Alignment
 │   │   ├── ⬜ Corner marks checked
 │   │   └── ⬜ Marks by name
 │   ├── ⬜ CP2.4: Containers
@@ -455,17 +454,15 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 
 **Status:** ⬜
 
-Boxes line up and carry marks that stay clear of lines.
+Boxes carry marks that stay clear of lines.
 
 **Tasks:**
 
-- ⬜ Alignment: The docs and the code differ, and the owner chooses which holds: [An aligned box joins a column and no row slides](TODO.md#p2discussion-an-aligned-box-joins-a-column-and-no-row-slides).
 - ⬜ Corner marks checked: A corner mark is checked against nearby lines.
 - ⬜ Marks by name: A mark can be taken by name.
 
 **Delivers:**
 
-- [F2.3: Alignment](../features/F2-layout.md#f23-alignment)
 - [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
 - [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
 

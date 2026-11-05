@@ -30,10 +30,10 @@ Features
 │       ├── ⬜ F1.3.5: Lanes both ways — a grid of lanes and phases
 │       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
 │       └── ✅ F1.3.7: Notes — a short text on a box, a line or a group
-├── 🚧 F2: Layout — where everything goes (alignment differs and flow direction not built)
+├── 🚧 F2: Layout — where everything goes (flow direction not built)
 │   ├── ✅ F2.1: Placing every box — grafical gives every box its place
 │   ├── ✅ F2.2: Rows and order — a box's row and its place in it
-│   ├── 🚧 F2.3: Alignment — one box above or below another (the code joins a column instead)
+│   ├── ✅ F2.3: Alignment — one box above or below another
 │   ├── ✅ F2.4: Columns — a second placement fact beside rows
 │   ├── ✅ F2.5: Steps from another box — a box some cells from another
 │   ├── ✅ F2.6: Spacing — compact, normal or airy
