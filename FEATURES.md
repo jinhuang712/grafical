@@ -57,6 +57,14 @@ Features
 │   ├── ✅ F5.1: Show — the diagram as facts
 │   ├── ✅ F5.2: Counts — facts about how the picture is drawn
 │   ├── ✅ F5.3: Warnings — what the picture draws poorly
+│   │   ├── ✅ F5.3.1: Bent lines — `bent-line`
+│   │   ├── ✅ F5.3.2: Lines passing a row — `passing-row`
+│   │   ├── ✅ F5.3.3: Lines across a group — `line-across-group`
+│   │   ├── ✅ F5.3.4: Tight lines — `tight-lines`
+│   │   ├── ✅ F5.3.5: Crowded labels — `crowded-label`
+│   │   ├── ✅ F5.3.6: Lonely boxes — `lonely-box`
+│   │   ├── ✅ F5.3.7: A line per member — `line-per-member`
+│   │   └── ✅ F5.3.8: Crossings — `crossing`
 │   └── ✅ F5.4: Check — defects, warnings and counts on demand
 ├── ✅ F6: Output — what a diagram leaves behind
 │   ├── ✅ F6.1: The diagram file — one YAML file of facts

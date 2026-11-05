@@ -5,6 +5,14 @@ F5: Checking
 ├── F5.1: Show — the diagram as facts
 ├── F5.2: Counts — facts about how the picture is drawn
 ├── F5.3: Warnings — what the picture draws poorly
+│   ├── F5.3.1: Bent lines — `bent-line`
+│   ├── F5.3.2: Lines passing a row — `passing-row`
+│   ├── F5.3.3: Lines across a group — `line-across-group`
+│   ├── F5.3.4: Tight lines — `tight-lines`
+│   ├── F5.3.5: Crowded labels — `crowded-label`
+│   ├── F5.3.6: Lonely boxes — `lonely-box`
+│   ├── F5.3.7: A line per member — `line-per-member`
+│   └── F5.3.8: Crossings — `crossing`
 └── F5.4: Check — defects, warnings and counts on demand
 ```
 
@@ -80,28 +88,6 @@ Every write prints a warning block for each thing the picture draws poorly, and 
 - The warnings come before the counts.
 - All of them print every time, since every change lays the whole diagram out again.
 
-The warnings:
-
-- `bent-line`: a line with more than two bends.
-  - Detail: `edge` and `bends` and `skip` (the rows between its ends' rows).
-- `passing-row`: a line that passes among the boxes of rows between its ends and meets none of them.
-  - Detail: `edge`, `rows`.
-- `line-across-group`: a line through the box of a group holding neither of its ends.
-  - Detail: `edge`, `groups`.
-- `tight-lines`: runs of two lines under 12 px apart for over 100 px.
-  - Detail: `edges`, `over` (the pixels they share).
-- `crowded-label`: a line's label with under 8 px of room on two sides.
-  - Detail: `edge`.
-- `lonely-box`: a box no line reaches.
-  - It has no line of its own and none to its group, row or lane.
-  - Detail: `node`.
-- `line-per-member`: every box of a group of two or more has a line to one end outside it, or from it.
-  - The lines are alike in kind and label and weight and arrowheads.
-  - A group inside one with the same lines is left out.
-  - Detail: `group`, `edges` ([050. A line from every box of a group is a warning](../specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)).
-- `crossing`: a pair of lines that cross, however often.
-  - Detail: `edges`.
-
 A warning has no source: the outcome line names what the write changed, and a warning names the ids it is about ([048. Every write prints every warning](../specs/decisions/048-every-write-prints-every-warning.md)):
 
 ```text
@@ -125,6 +111,57 @@ next: layer move, node move, node swap
 **Stories:**
 
 - An agent reads the warnings, to find the line or box its choices made awkward.
+
+### F5.3.1: Bent lines
+
+`bent-line` names a line with more than two bends.
+
+- Detail: `edge` and `bends` and `skip` (the rows between its ends' rows).
+
+### F5.3.2: Lines passing a row
+
+`passing-row` names a line that passes among the boxes of rows between its ends and meets none of them.
+
+- Detail: `edge`, `rows`.
+
+### F5.3.3: Lines across a group
+
+`line-across-group` names a line through the box of a group holding neither of its ends.
+
+- Detail: `edge`, `groups`.
+
+### F5.3.4: Tight lines
+
+`tight-lines` names runs of two lines under 12 px apart for over 100 px.
+
+- Detail: `edges`, `over` (the pixels they share).
+
+### F5.3.5: Crowded labels
+
+`crowded-label` names a line's label with under 8 px of room on two sides.
+
+- Detail: `edge`.
+
+### F5.3.6: Lonely boxes
+
+`lonely-box` names a box no line reaches.
+
+- It has no line of its own and none to its group, row or lane.
+- Detail: `node`.
+
+### F5.3.7: A line per member
+
+`line-per-member` names a group of two or more where every box has a line to one end outside it, or from it.
+
+- The lines are alike in kind and label and weight and arrowheads.
+- A group inside one with the same lines is left out.
+- Detail: `group`, `edges` ([050. A line from every box of a group is a warning](../specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)).
+
+### F5.3.8: Crossings
+
+`crossing` names a pair of lines that cross, however often.
+
+- Detail: `edges`.
 
 ## F5.4: Check
 
