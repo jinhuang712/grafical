@@ -141,18 +141,6 @@
 - status: HALT
 - next: the owner chooses an option
 
-### [P2][DISCUSSION] Lines meet a diamond on a slanted side
-
-- description:
-  - When two lines share a side of a `decision` box they meet its slanted edge instead of its corner.
-  - A flowchart's lines meet a diamond at the corners.
-  - The router spreads ports along a diamond's side as along a box's.
-  - Option one moves a second line to the left or right corner.
-  - Option two joins it to the first line before the corner as a fan-in does.
-- created: 2026-10-15
-- status: HALT
-- next: the owner chooses an option
-
 ### [P2][DISCUSSION] A diamond's lines leave at its slanted edge a little
 
 - description:
@@ -160,6 +148,8 @@
   - A try on 2026-10-30 changed 201 of 500 fuzz diagrams with 113 more bends and 32 more crossings.
   - It changed 2 of 329 saved drafts with 2 more bends and was not landed.
   - A `choice` is the small diamond the reference diagrams use with every line at its corner.
+  - Two lines that share a side of a `decision` could also go to its left or right corner.
+  - They could instead join before the corner as a fan-in does.
 - created: 2026-10-30
 - status: HALT
 - next: the owner chooses whether `decision` needs this at all
