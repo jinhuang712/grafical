@@ -118,7 +118,7 @@ Features
 ## Not planned
 
 - **A board where people edit the diagram:** agents draw diagrams worth keeping with grafical, and a person asks for a change in words ([Who draws?](PHILOSOPHY.md#who-draws)).
-- **Placement by coordinates for anyone:** a free position would break the promise that a change moves only what it names ([What may the agent set?](PHILOSOPHY.md#what-may-the-agent-set)).
+- **Placement by coordinates for anyone:** a free position would break the promise that a change keeps every fact it does not name ([What may the agent set?](PHILOSOPHY.md#what-may-the-agent-set)).
 - **A score of how readable a picture is:** readers differ ([What makes grafical good?](PHILOSOPHY.md#what-makes-grafical-good)).
 - **A declared diagram type that checks its conventions:** grafical would be judging content ([049. An optional type sets the diagram's space](specs/decisions/049-an-optional-type-sets-the-diagram-s-space.md)).
 - **Real-time collaboration or accounts or a hosted service:** git already shares the file and keeps its history ([009. Git as the history](specs/decisions/009-git-as-the-history.md)).

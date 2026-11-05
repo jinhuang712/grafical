@@ -75,6 +75,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [069. One name for each thing, and a name says what it is](069-one-name-for-each-thing-and-a-name-says-what-it-is.md) (2026-11-06)
 - [070. One shortest way for each situation](070-one-shortest-way-for-each-situation.md) (2026-11-06)
 - [071. A batch may come from standard input](071-a-batch-may-come-from-standard-input.md) (2026-11-06)
+- [072. A change keeps the structure and positions may shift](072-a-change-keeps-the-structure-and-positions-may-shift.md) (2026-11-06)
 
 ## Former IDs
 

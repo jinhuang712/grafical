@@ -15,7 +15,7 @@ grafical drew the picture above itself, from [docs/images/pipeline.grafical.yaml
 
 - 🪜 **Small steps:** every change is one operation, such as `node add` or `edge add`.
   - A batch applies many operations, all or nothing.
-  - A change moves only what it names.
+  - A change keeps every fact it does not name.
 - ⚙️ **The engine does the dirty work:** it sizes and places and spaces every box.
   - It routes every line and checks every write for defects.
   - A mistake is refused at once, with the facts to fix it.

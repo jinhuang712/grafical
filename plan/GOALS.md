@@ -157,7 +157,7 @@ A change request is done right, quickly and cheaply.
 
 - [F3.1: Operations](../features/F3-editing.md#f31-operations)
 - [F3.2: Batches](../features/F3-editing.md#f32-batches)
-- [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
+- [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
 
 **Problem set:** the public brief: a draft and 8 change requests, 3 runs per arm.
 
@@ -413,7 +413,7 @@ At most 50 ms in process to apply, lay out and check one operation at 50 boxes, 
 **Checks:**
 
 - [13. Every search the engine runs has a cap](../DESIGNS.md#13-every-search-the-engine-runs-has-a-cap)
-- [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
+- [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
 
 **Limit:** 50 ms an operation and 400 ms a command; a render above 2 s is the kill threshold.
 
@@ -432,7 +432,7 @@ No fact changes that no operation named: a row, an order, a group, a lane or an 
 **Checks:**
 
 - [F3.1: Operations](../features/F3-editing.md#f31-operations)
-- [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
+- [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
 
 **Condition:** every operation changes only the facts it names.
 

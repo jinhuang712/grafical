@@ -82,7 +82,7 @@ The idea rests on three bets, each of which a test can settle:
 ## What we don't want
 
 - **A canvas where people drag boxes:** agents draw diagrams worth keeping with grafical, and a person who wants a change asks for it in words.
-- **Placement by coordinates for anyone:** coordinates are the work models fail at, and a free position would break the promise that a change moves only what it names.
+- **Placement by coordinates for anyone:** coordinates are the work models fail at, and a free position would break the promise that a change keeps every fact it does not name.
 - **grafical judging the picture:** readers prefer different things, so grafical reports facts and counts and the agent decides whether the diagram reads well.
 - **The engine deciding content:** what the diagram says belongs to the agent, so grafical never drops or merges or adds a box to make a picture tidier.
 - **A new diagram language:** drawing has always been arranging elements, so grafical gives agents the best abstraction of that and invents nothing beyond it.

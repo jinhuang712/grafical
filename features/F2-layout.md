@@ -24,13 +24,13 @@ The agent never places a box. grafical works out every box's place and size from
 
 - Every box takes a column of one grid that all rows share, so boxes in different rows line up.
 - The rows stack from the top, with a gutter below each as tall as its lines need.
-- A change moves only what it names and a fixed list of things that follow it.
+- A change keeps every fact it does not name, and boxes may shift sideways.
 - The file holds no position, so there is nothing to keep in step.
 
 - **Stance:** [What does a change do?](../PHILOSOPHY.md#what-does-a-change-do)
 - **Design:**
   - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
-  - [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
+  - [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
 - **How it works:** [Placement](../specs/placement.md)
 - **Why:**
   - [002. Facts over coordinates](../specs/decisions/002-facts-over-coordinates.md)
@@ -194,7 +194,7 @@ A diagram's spacing is compact, normal or airy, and it changes nothing else.
 grafical diagram density <file> compact|normal|airy
 ```
 
-- **Design:** [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
+- **Design:** [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
 - **How it works:** [Placement: rows down the page](../specs/placement.md#rows-down-the-page)
 - **Why:** [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md)
 

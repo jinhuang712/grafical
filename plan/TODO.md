@@ -20,20 +20,6 @@
 - next: the owner takes the next dimension, and the three options are settled after the last
 - related: [055. A weak model draws well and a stronger one superbly](../specs/decisions/055-a-weak-model-draws-well-and-a-stronger-one-superbly.md)
 
-### [P2][DISCUSSION] The stability tests measure movement instead of limiting it
-
-- description:
-  - The old rule for the tests said they assert that nothing outside a fixed list moved.
-  - The tests assert that every other box keeps its row and order and group and lane and alignment.
-  - They measure how far boxes move instead of limiting it.
-  - AGENTS.md now describes what the tests do.
-  - [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names) and [F2.1: Placing every box](../features/F2-layout.md#f21-placing-every-box) still promise a fixed list.
-  - [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md) says the column grid does not keep that list.
-- created: 2026-11-04
-- status: HALT
-- found: writing the placement spec from [test/layout/stability.ts](../test/layout/stability.ts) on 2026-11-04
-- next: the owner chooses whether the tests should assert a list again
-
 ### [P2][DISCUSSION] The rules of the target picture are measured but never reported
 
 - description:

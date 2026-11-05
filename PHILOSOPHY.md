@@ -128,7 +128,7 @@ People have always drawn by placing things, grouping them, ordering them, connec
 
 **A weak model draws well with grafical. Drawing superbly takes a stronger one.**
 
-Readers prefer different things, and so do the agents that draw: one draws every dependency as its own line, another one line to a group of them. No score settles that for everyone. grafical is measured by how easily an agent reaches a finished picture (few turns, little time, few tokens) and by how steady its floor is: the same facts give the same picture, a change moves only what it names, and a weak model's picture is already good. A superb picture needs fine tuning, and fine tuning takes thought, so it stays the work of a stronger model. grafical does not supply the taste. It owes that model the means to tune what it wants.
+Readers prefer different things, and so do the agents that draw: one draws every dependency as its own line, another one line to a group of them. No score settles that for everyone. grafical is measured by how easily an agent reaches a finished picture (few turns, little time, few tokens) and by how steady its floor is: the same facts give the same picture, a change keeps every fact it does not name, and a weak model's picture is already good. A superb picture needs fine tuning, and fine tuning takes thought, so it stays the work of a stronger model. grafical does not supply the taste. It owes that model the means to tune what it wants.
 
 ## Who draws?
 

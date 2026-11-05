@@ -94,7 +94,7 @@ grafical diff <file> [<git-rev>]
 
 - **Design:**
   - [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
-  - [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names)
+  - [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
 - **How it works:** [The model](../specs/model.md)
 - **Why:** [009. Git as the history](../specs/decisions/009-git-as-the-history.md)
 

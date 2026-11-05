@@ -7,7 +7,7 @@ grafical is designed around 16 guidelines:
 1. **Operations are the only way a diagram changes:** every change is a named and checked operation
 2. **Places are facts, never coordinates:** a place is a row or an order or a column and never a position
 3. **The engine never chooses for the agent:** every structural choice is the agent's
-4. **A change moves only what it names:** the layout is computed again and only a fixed list may follow a change
+4. **A change keeps every fact it does not name:** the layout is computed again and positions may shift
 5. **The engine routes every line, in plain forms:** lines run through the gaps in a few plain forms
 6. **Every write is checked, and each defect has an owner:** a defect fails the write when the agent can fix it
 7. **A refusal gives the facts, and the agent writes the fix:** grafical states what went wrong and never writes the fix
@@ -63,16 +63,17 @@ The engine never adds, drops, merges or reorders what the agent stated, and neve
   - [Placement](specs/placement.md)
   - [The model](specs/model.md)
 
-## 4. A change moves only what it names
+## 4. A change keeps every fact it does not name
 
-The layout is computed again from the facts after every write, and positions are never stored. An operation changes the facts it names, and only a fixed list of things may follow it. Cost: every write pays for a full layout, the engine may not tidy beyond the list, and a column grid solved again can move boxes sideways in rows the change did not touch.
+The layout is computed again from the facts after every write, and positions are never stored. An operation changes the facts it names, and every other row, order, group, lane and alignment stays. Cost: every write pays for a full layout, and a column grid solved again can move boxes sideways in rows the change did not touch.
 
-**Ask:** What moves besides what the operation named, and is it on the list?
+**Ask:** Does any fact change that the operation did not name?
 
 - **Stance:** [What does a change do?](PHILOSOPHY.md#what-does-a-change-do)
 - **Decisions:**
   - [004. Layout computed again on every change](specs/decisions/004-layout-computed-again-on-every-change.md)
   - [024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)
+  - [072. A change keeps the structure and positions may shift](specs/decisions/072-a-change-keeps-the-structure-and-positions-may-shift.md)
 - **How it works:** [Placement](specs/placement.md)
 
 ## 5. The engine routes every line, in plain forms
@@ -188,7 +189,7 @@ Every operation is a command, every command takes `--json`, and every write repo
 
 ## 13. Every search the engine runs has a cap
 
-Every write lays out, routes and checks the whole diagram again ([4. A change moves only what it names](#4-a-change-moves-only-what-it-names)), so no step may search without a bound. Each search, such as trying the prefixes of a refused batch, stops at a fixed limit. Cost: a search that could find a better answer stops at its cap.
+Every write lays out, routes and checks the whole diagram again ([4. A change keeps every fact it does not name](#4-a-change-keeps-every-fact-it-does-not-name)), so no step may search without a bound. Each search, such as trying the prefixes of a refused batch, stops at a fixed limit. Cost: a search that could find a better answer stops at its cap.
 
 **Ask:** Does any step here search without a cap, or grow faster than the diagram?
 
