@@ -243,10 +243,10 @@ The agent says what connects. grafical draws every line.
 An agent may state the side a line leaves by or enters by. A side left unstated stays grafical's.
 
 ```sh
-grafical edge side <file> <id> [--from top|bottom|left|right] [--to top|bottom|left|right]
+grafical edge side <file> <id> [--out top|bottom|left|right] [--in top|bottom|left|right]
 ```
 
-- Without `--from` or `--to`, the line's sides are grafical's again.
+- Without `--out` or `--in`, the line's sides are grafical's again.
 - Where the line cannot go by the stated side, the write is refused and names what is in the way.
 - A stated side can cost more bends or crossings, and the counts show them.
 

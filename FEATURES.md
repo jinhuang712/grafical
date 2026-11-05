@@ -17,10 +17,10 @@ Features
 │   │   ├── ⬜ F1.1.5: Marks by name — a mark from one bundled icon set
 │   │   ├── ✅ F1.1.6: Emphasis — at most two boxes stand out
 │   │   └── ⬜ F1.1.7: Box looks — colors of a box's own
-│   ├── ✅ F1.2: Lines — what connects to what
+│   ├── 🚧 F1.2: Lines — what connects to what (a second way to draw a line thick)
 │   │   ├── ✅ F1.2.1: Kinds — a line's kind sets its style
 │   │   ├── ✅ F1.2.2: Arrowheads at both ends — two-way lines
-│   │   ├── ✅ F1.2.3: Weight — thicker lines for what matters more
+│   │   ├── 🚧 F1.2.3: Weight — thicker lines for what matters more (`edge emphasize` not yet removed)
 │   │   ├── ✅ F1.2.4: Numbered steps — a number on a line
 │   │   └── ✅ F1.2.5: Ends at a group, a row or a lane — one arrow to a whole system
 │   └── 🚧 F1.3: Containers — what gathers boxes (deeper nesting and lanes both ways not built)
@@ -46,7 +46,7 @@ Features
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── 🚧 F3.1: Operations — one named command per change (the file still follows the command and names still differ)
-│   ├── ✅ F3.2: Batches — many operations, all or nothing
+│   ├── 🚧 F3.2: Batches — many operations, all or nothing (standard input not built)
 │   ├── ✅ F3.3: Trying a change — see counts before writing
 │   ├── ✅ F3.4: IDs — the caller names every element
 │   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts

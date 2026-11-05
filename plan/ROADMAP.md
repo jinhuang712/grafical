@@ -99,7 +99,9 @@ Roadmap
 │   │   └── ⬜ Label text
 │   └── ⬜ CP2.7: The command line
 │       ├── ⬜ The file flag
-│       └── ⬜ One name for each thing
+│       ├── ⬜ One name for each thing
+│       ├── ⬜ One way for each situation
+│       └── ⬜ Batches from standard input
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
 │   ├── ⬜ CP3.1: Boxes and lines
 │   │   ├── ⬜ State machine
@@ -565,16 +567,20 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 
 **Status:** ⬜
 
-Every command names its file the same way, ahead of the command, and each thing has one name.
+Every command names its file the same way, each thing has one name, and each situation has one shortest way.
 
 **Tasks:**
 
 - ⬜ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
 - ⬜ One name for each thing: The commands, the file, the answers, the help, the documents and the code use one name.
+- ⬜ One way for each situation: `edge emphasize` goes, and the commands are checked for other repeats.
+- ⬜ Batches from standard input: `apply` reads a batch named `-` from standard input.
 
 **Delivers:**
 
 - [F3.1: Operations](../features/F3-editing.md#f31-operations)
+- [F3.2: Batches](../features/F3-editing.md#f32-batches)
+- [F1.2.3: Weight](../features/F1-elements.md#f123-weight)
 
 **Exit criteria:**
 
