@@ -79,36 +79,42 @@ A type says what a sort of thing looks like, and an object says which one it is 
 
 The built-in node types:
 
-- `service`
-- `store`
-- `queue`
-- `external`
-- `actor`
-- `state`
-- `terminal`
-- `decision`
-- `initial`
-- `final`
-- `choice`
+| Type | Drawn as |
+|---|---|
+| `service` | `box` |
+| `store` | `cylinder` |
+| `queue` | a tinted `box` |
+| `external` | a dashed `box` |
+| `actor` | `pill` |
+| `state` | `round` |
+| `terminal` | a tinted `pill` |
+| `decision` | `diamond` |
+| `choice` | `small-diamond` |
+| `initial` | `dot` |
+| `final` | `ring` |
 
 The built-in edge types:
 
-- `call`
-- `data`
-- `async`
-- `optional`
-- `link`
+| Type | Means | Drawn as |
+|---|---|---|
+| `call` | a call | solid with an arrowhead |
+| `data` | a data read | solid with an arrowhead |
+| `async` | a message through a queue | dashed with an arrowhead |
+| `optional` | a call that happens only sometimes | dotted with an arrowhead |
+| `link` | related with no direction | plain |
 
 The shapes:
 
-- `box`
-- `round`
-- `pill`
-- `cylinder`
-- `diamond`
-- `small-diamond`
-- `dot`
-- `ring`
+| Shape | Drawn as |
+|---|---|
+| `box` | a rectangle |
+| `round` | a rectangle with round corners |
+| `pill` | a capsule |
+| `cylinder` | a cylinder |
+| `diamond` | a diamond with its text inside |
+| `small-diamond` | a small diamond with no text |
+| `dot` | a filled dot |
+| `ring` | a ringed dot |
 
 ## Where a look comes from
 
