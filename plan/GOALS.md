@@ -43,7 +43,7 @@ Goals
 
 #### O1: The MVP bar
 
-Set by the owner on 2026-10-13 and changed on 2026-11-05. Haiku uses only the command line and its help, draws with zero mechanical defects and meets the targets of four goals:
+Set by the owner on 2026-10-13 and changed on 2026-11-05. An agent uses only the command line and its help, draws with zero mechanical defects and meets the targets of four goals, with Haiku holding the floor and a strong model reaching for the top:
 
 - [C5: Cost](#c5-cost)
 - [C2: Time](#c2-time)
@@ -75,7 +75,7 @@ Given a picture someone else drew, an agent redraws it with grafical, shows the 
 - [F4: Look](../features/F4-look.md)
 - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 
-**Acceptance:** on a fixed set of reference pictures, Haiku redraws each one with the same content, and the owner rates the redrawing above the original. The time each takes is recorded with no limit. The pictures stay outside the repository and only scores are committed, since their licenses are not known.
+**Acceptance:** on a fixed set of reference pictures, Opus redraws each one with the same content, and the owner rates the redrawing above the original. The time each takes is recorded with no limit. The pictures stay outside the repository and only scores are committed, since their licenses are not known.
 
 **Status:** ⬜ not run.
 

@@ -33,6 +33,21 @@
 - next: the owner chooses whether the router keeps such a line below or the decision drops the rule
 - related: [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
 
+### [P1][DISCUSSION] How freely an agent can adjust a picture
+
+- description:
+  - A model that draws directly can adjust a picture to the pixel.
+  - grafical is not that free yet, and the owner sees much room to improve.
+  - Option one keeps places as facts and turns each gap into a new discrete fact.
+  - Option two adds a small adjustment within one cell of the grid.
+  - Option three allows adjustment to the pixel.
+  - [M1: Enough to say](GOALS.md#m1-enough-to-say) could count the gaps.
+- created: 2026-11-05
+- status: HALT
+- found: choosing what to measure on 2026-11-05
+- next: the owner chooses the means of fine tuning
+- related: [055. A weak model draws well and a stronger one superbly](../specs/decisions/055-a-weak-model-draws-well-and-a-stronger-one-superbly.md)
+
 ### [P2][DISCUSSION] The stability tests measure movement instead of limiting it
 
 - description:
@@ -71,17 +86,6 @@
 - found: rewriting DESIGNS.md to the skill's guide on 2026-11-05
 - next: the owner chooses
 
-### [P2][DISCUSSION] The philosophy does not say pictures keep getting better
-
-- description:
-  - [What makes grafical good?](../PHILOSOPHY.md#what-makes-grafical-good) says easy and consistent and not right for every reader.
-  - [O1: The MVP bar](GOALS.md#o1-the-mvp-bar) now adds a copied picture that looks better than the original.
-  - [M3: Better every round](GOALS.md#m3-better-every-round) rests on the owner's rating.
-  - Only the owner changes the philosophy.
-- created: 2026-11-05
-- status: HALT
-- next: the owner chooses whether the stance changes
-
 ### [P2][DISCUSSION] A box beside every box it connects to in a row
 
 - description:
@@ -93,20 +97,6 @@
 - status: HALT
 - next: the owner decides whether it becomes an agent defect
 - related: [032. Who chose is punished](../specs/decisions/032-who-chose-is-punished.md)
-
-### [P2][DISCUSSION] How freely an agent can adjust a picture
-
-- description:
-  - A model that draws directly can adjust a picture to the pixel.
-  - grafical is not that free yet, and the owner sees much room to improve.
-  - Option one keeps places as facts and turns each gap into a new discrete fact.
-  - Option two adds a small adjustment within one cell of the grid.
-  - Option three allows adjustment to the pixel.
-  - [M1: Enough to say](GOALS.md#m1-enough-to-say) could count the gaps.
-- created: 2026-11-05
-- status: HALT
-- found: choosing what to measure on 2026-11-05
-- next: the owner reopens this once the documents are settled
 
 ### [P2][DISCUSSION] One word for two steps
 

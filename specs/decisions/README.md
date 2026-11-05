@@ -58,6 +58,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [052. A choice is a small diamond](052-a-choice-is-a-small-diamond.md) (2026-10-30)
 - [053. Success rests on cost, time, model gap and copying](053-success-rests-on-cost-time-model-gap-and-copying.md) (2026-11-05)
 - [054. A goal may exit many checkpoints](054-a-goal-may-exit-many-checkpoints.md) (2026-11-05)
+- [055. A weak model draws well and a stronger one superbly](055-a-weak-model-draws-well-and-a-stronger-one-superbly.md) (2026-11-05)
 
 ## Former IDs
 

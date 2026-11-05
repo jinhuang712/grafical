@@ -635,7 +635,7 @@ The refusals of the private reference brief were mostly `title-blocked`. Haiku s
 
 **Status:** 🟨
 
-A round with the owner's approval of its cost first. The owner's budget for stage 1 is $20, mostly on Haiku. Opus runs only for the baselines and the gap between models, and both get the same prompt, word for word. The private reference brief's runs stay on the owner's machine, and only numbers are committed.
+A round with the owner's approval of its cost first. The owner's budget for stage 1 is $20, mostly on Haiku. Opus runs only for the baselines, the gap between models and the copied pictures, and both get the same prompt, word for word. The private reference brief's runs stay on the owner's machine, and only numbers are committed.
 
 **Tasks:**
 
@@ -644,7 +644,7 @@ A round with the owner's approval of its cost first. The owner's budget for stag
 - ⬜ Private reference brief: The round on the private reference brief.
 - ⬜ Choose the reference pictures: The owner picks a fixed set of pictures drawn by others.
 - ⬜ Hand an agent a picture: The benchmark harness gives an agent a picture to copy.
-- ⬜ Copy reference pictures: Haiku redraws each reference picture.
+- ⬜ Copy reference pictures: Opus redraws each reference picture.
 
 **Delivers:**
 
