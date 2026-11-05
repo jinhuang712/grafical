@@ -3,6 +3,7 @@
 Decided: 2026-10-16
 
 Split on 2026-11-06 from specs/decisions, "The dirty work has edges".
+
 Replaced in part by specs/decisions, "Every write prints every warning": a bent line is a warning block.
 
 ## The problem

@@ -3,6 +3,7 @@
 Decided: 2026-10-17
 
 Split on 2026-11-06 from specs/decisions, "The dirty work has edges".
+
 Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": no refusal writes a command.
 
 ## The problem
