@@ -41,7 +41,6 @@
 
 - description:
   - The draft is in [the object model](../specs/object-model.md), and each fork goes to a decision as it closes.
-  - Open: where a membership is stated, by the node or by its container.
   - Open: how order in a layer is stated so that a change stays local.
   - Open: how an edge reaches a node inside an instance, and how IDs inside an instance are named.
   - Open: whether a class takes parameters.
@@ -49,7 +48,7 @@
   - Open: what a constraint may say.
 - created: 2026-11-06
 - status: HALT
-- next: the owner chooses where a membership is stated
+- next: the owner chooses how order in a layer is stated
 - evidence: on the dispatch fixture YAML takes 1.1 ms to parse against about 200 ms for a command, and the file is 264 lines
 
 ### [P2][DISCUSSION] Labels sit close to the lines beside them in a crowded gutter

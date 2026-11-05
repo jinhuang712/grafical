@@ -15,7 +15,7 @@ the root      global looks, rules
 
 | Property | What it asks |
 |---|---|
-| Easy to search | one search for a name shows what it is |
+| Easy to search | `show` with an ID gives an object and what refers to it |
 | Easy to parse | a line at a time |
 | Local changes | one change touches few lines |
 | A good diff | a reader sees what changed |
@@ -72,39 +72,52 @@ The form is a draft and sits between pseudocode, a structural language, a script
 
 ```text
 grafical 1
-title "Checkout"
-use team-style
-density normal
+title: "Checkout"
+use: team-style
+density: normal
 
-class db : store
-  fill #eef
+class db : store {
+  fill: #eef
+}
 
-rule group=pay
-  border #c00
+layer app {
+  label: "Application"
+}
 
-rule store only-in data warn
+group pay {
+  label: "Payments"
+}
 
-layer app "Application"
-layer data "Data"
+node orders : service {
+  label: "Orders"
+  layer: @app
+  group: @pay
+  after: @users
+}
 
-group pay "Payments"
+node orders-db : db {
+  label: "Orders DB"
+  below: @orders
+}
 
-node orders "Orders" service
-  in app, pay
-
-node orders-db "Orders DB" db
-  below orders
-
-edge orders -> orders-db "read"
-  weight thick
+edge orders -> orders-db {
+  label: "read"
+  weight: thick
+}
 ```
 
-- An object takes one block, and its first line gives its sort, ID, label and class.
-- An indented line is an attribute or a relation.
-- The file runs from the head through classes, rules, structure and objects to edges.
+- An object is a block in braces, with one attribute on each line in a fixed order.
+- A value is `@` and an ID, text in quotes, a color, a number or a word of a fixed list.
+- `@` marks a reference, so no word is reserved and an ID may be any word.
+- An `@` that names no object is refused.
+- A node states its own memberships.
+- Length is no concern.
+
+Nobody searches the file as text. `grafical show <id>` gives an object's definition and what refers to it.
 
 If the design does not hold up, the fallback is YAML with one element on each line.
 
 ## Decisions
 
 - [085. A diagram is objects with attributes and relations](decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)
+- [086. The file is blocks of attributes, and a reference carries @](decisions/086-the-file-is-blocks-of-attributes-and-a-reference-carries.md)

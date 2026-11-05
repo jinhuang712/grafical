@@ -651,6 +651,7 @@ A diagram is objects with classes and rules, in a form of its own, before the fi
 **Delivers:**
 
 - [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
+- [F5.1: Show](../features/F5-checking.md#f51-show)
 
 **Exit criteria:**
 
