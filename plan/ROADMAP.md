@@ -429,6 +429,8 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 
 What grafical can draw grows on top of [CP1: Stage 1 built](#cp1-stage-1-built). A test and a fixture accept each item, with no model run.
 
+The work runs in this order, since each step rests on the one before: [CP2.7: The command line](#cp27-the-command-line), [CP2.9: The object model](#cp29-the-object-model), [CP2.6: Lines and labels](#cp26-lines-and-labels), [CP2.2: Pictures worth keeping](#cp22-pictures-worth-keeping), [CP2.3: Boxes](#cp23-boxes), [CP2.4: Containers](#cp24-containers), [CP2.8: The legend](#cp28-the-legend), [CP2.5: Direction and views](#cp25-direction-and-views).
+
 **Exit criteria:**
 
 - **Sub-checkpoints**
