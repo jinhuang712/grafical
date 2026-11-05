@@ -76,39 +76,40 @@ title: "Checkout"
 use: team-style
 density: normal
 
-class db : store {
+<class> db : store {
   fill: #eef
 }
 
-layer app {
+<layer> app {
   label: "Application"
 }
 
-group pay {
+<group> pay {
   label: "Payments"
 }
 
-node orders : service {
+<node> orders : service {
   label: "Orders"
   layer: @app
   group: @pay
   after: @users
 }
 
-node orders-db : db {
+<node> orders-db : db {
   label: "Orders DB"
   below: @orders
 }
 
-edge orders -> orders-db {
+<edge> orders -> orders-db {
   label: "read"
   weight: thick
 }
 ```
 
 - An object is a block in braces, with one attribute on each line in a fixed order.
+- A block opens with its sort in angle brackets, so a sort reads as a word and cannot meet an ID.
 - A value is `@` and an ID, text in quotes, a color, a number or a word of a fixed list.
-- `@` marks a reference, so no word is reserved and an ID may be any word.
+- `@` marks a reference, so no word is reserved and an ID may be any word, even `node`.
 - An `@` that names no object is refused.
 - A node states its own memberships.
 - Length is no concern.
