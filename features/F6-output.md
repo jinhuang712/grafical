@@ -39,7 +39,7 @@ One YAML file, `<name>.grafical.yaml`, holds the whole diagram as facts: rows an
 
 A diagram becomes objects with attributes and relations, with types an agent can define and styles that objects mark. The file takes a form of its own, and a change still reads well in a diff.
 
-- **How it works:** [The object model](../specs/object-model.md)
+- **How it works:** [The .grafical file](../specs/grafical-file.md)
 - **Why:** [085. A diagram is objects with attributes and relations](../specs/decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)
 
 ## F6.2: Render

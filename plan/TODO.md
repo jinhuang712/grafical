@@ -37,6 +37,18 @@
 - next: the owner designs the legend in a talk of its own
 - related: [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
+### [P2][DISCUSSION] Small points of the .grafical file
+
+- description:
+  - A diagram's optional type and a node's `type` share a word, and the first needs a new name.
+  - A colon after an attribute's name may stay or go.
+  - A follower of a follower and a cycle of followers need a rule.
+  - The attributes of `<style>` should grow to every look grafical can draw.
+- created: 2026-11-06
+- status: HALT
+- next: settle each one when the file is built
+- related: [The .grafical file](../specs/grafical-file.md)
+
 ### [P2][DISCUSSION] Labels sit close to the lines beside them in a crowded gutter
 
 - description:

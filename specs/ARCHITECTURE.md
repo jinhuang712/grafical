@@ -50,7 +50,7 @@ Folder: `src/cli/`.
 
 ## The model
 
-Defines the diagram: rows, boxes, lines, groups, lanes, columns, walls, notes and marks. Turns an operation into a change of the facts, validates every file it loads, and compares two files as operations. How it works is in [the model](model.md), and how the files are laid out in [the file formats](file-formats.md). What comes next is drafted in [the object model](object-model.md).
+Defines the diagram: rows, boxes, lines, groups, lanes, columns, walls, notes and marks. Turns an operation into a change of the facts, validates every file it loads, and compares two files as operations. How it works is in [the model](model.md), and how the files are laid out in [the file formats](file-formats.md). What comes next is drafted in [the .grafical file](grafical-file.md).
 
 Folder: `src/model/`.
 
