@@ -21,7 +21,7 @@ The entry page and one page per command hold everything an agent needs to use gr
 
 - `--help` says what grafical is and what it does not draw.
 - It says how to work and lists every way to draw, one line each by the story it tells.
-  - Examples: a box beside a box and one path in order and two parts kept apart.
+  - Examples: a node beside a node and one path in order and two parts kept apart.
 - Each command's help adds its options and its line in a batch and when to use it and what it draws and common mistakes and limits and an example.
 - A command's arguments are named as its batch fields.
 - No page says what a refusal means, since the refusal's block says it.

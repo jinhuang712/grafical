@@ -29,16 +29,16 @@ grafical show <file> [--drawn]
 ```
 
 - `show` prints the diagram in the same words as the operations.
-  - It lists the rows and the boxes in order and the groups and the lanes and the lines and the walls and the notes and the marks.
+  - It lists the layers and the nodes in order and the groups and the lanes and the edges and the walls and the notes and the marks.
 - `show --drawn` prints how the picture is drawn, as records with no advice:
-  - Each box's row and place and size and lines by side.
-  - Each line's sides and bends and length and shortest length and rows skipped and lines crossed and rows passed.
-  - Each wall's length and the lines through it.
-  - One `gutter` record for each pair of neighbouring rows: `gutter above=<row> below=<row> lines=<n> crossings=<n> tight=<n> crowded=<n>`.
-    - It counts the lines with a run between the two rows and the crossings and tight pairs and crowded labels there.
-    - It shows the agent which choice of rows costs.
+  - Each node's layer and place and size and lines by side.
+  - Each edge's sides and bends and length and shortest length and layers skipped and lines crossed and layers passed.
+  - Each wall's length and the edges through it.
+  - One `gutter` record for each pair of neighbouring layers: `gutter above=<row> below=<row> lines=<n> crossings=<n> tight=<n> crowded=<n>`.
+    - It counts the edges with a run between the two layers and the crossings and tight pairs and crowded labels there.
+    - It shows the agent which choice of layers costs.
   - How each note is drawn.
-  - The lines bundled together, and the totals.
+  - The edges bundled together, and the totals.
 
 - **Design:**
   - [8. Answers are data a script can read](../DESIGNS.md#8-answers-are-data-a-script-can-read)
@@ -64,12 +64,12 @@ They are facts, with no threshold and no advice: what they mean is the agent's t
 
 Five counts say how the picture is drawn, and each place they count is also a warning in [F5.3: Warnings](#f53-warnings):
 
-- `bent` counts the lines drawn with more than two bends.
-- `passing` counts the lines that run through a row they do not connect.
-- `across` counts the lines that cross the box of a group holding neither of their ends.
-- `tight` counts the pairs of runs of two lines closer than 12 px for more than 100 px.
+- `bent` counts the edges drawn with more than two bends.
+- `passing` counts the edges that run through a layer they do not connect.
+- `across` counts the edges that cross the node of a group holding neither of their ends.
+- `tight` counts the pairs of runs of two edges closer than 12 px for more than 100 px.
   - Two runs of one bundle are left out.
-- `crowded` counts the line labels with less than 8 px of room on two or more sides.
+- `crowded` counts the edge labels with less than 8 px of room on two or more sides.
 
 - **Stance:** [Who owns what?](../PHILOSOPHY.md#who-owns-what)
 - **Design:** [8. Answers are data a script can read](../DESIGNS.md#8-answers-are-data-a-script-can-read)
@@ -112,64 +112,64 @@ next: layer move, node move, node swap
 
 **Stories:**
 
-- An agent reads the warnings, to find the line or box its choices made awkward.
+- An agent reads the warnings, to find the edge or node its choices made awkward.
 
 ### F5.3.1: Bent lines
 
-`bent-line` names a line with more than two bends.
+`bent-line` names an edge with more than two bends.
 
-- Detail: `edge` and `bends` and `skip` (the rows between its ends' rows).
+- Detail: `edge` and `bends` and `skip` (the layers between its ends' layers).
 
 ### F5.3.2: Lines passing a row
 
-`passing-row` names a line that passes among the boxes of rows between its ends and meets none of them.
+`passing-row` names an edge that passes among the nodes of layers between its ends and meets none of them.
 
 - Detail: `edge`, `rows`.
 
 ### F5.3.3: Lines across a group
 
-`line-across-group` names a line through the box of a group holding neither of its ends.
+`line-across-group` names an edge through the node of a group holding neither of its ends.
 
 - Detail: `edge`, `groups`.
 
 ### F5.3.4: Tight lines
 
-`tight-lines` names runs of two lines under 12 px apart for over 100 px.
+`tight-lines` names runs of two edges under 12 px apart for over 100 px.
 
 - Detail: `edges`, `over` (the pixels they share).
 
 ### F5.3.5: Crowded labels
 
-`crowded-label` names a line's label with under 8 px of room on two sides.
+`crowded-label` names an edge's label with under 8 px of room on two sides.
 
 - Detail: `edge`.
 
 ### F5.3.6: Lonely boxes
 
-`lonely-box` names a box no line reaches.
+`lonely-box` names a node no edge reaches.
 
-- It has no line of its own and none to its group, row or lane.
+- It has no line of its own and none to its group, layer or lane.
 - Detail: `node`.
 
 ### F5.3.7: A line per member
 
-`line-per-member` names a group of two or more where every box has a line to one end outside it, or from it.
+`line-per-member` names a group of two or more where every node has an edge to one end outside it, or from it.
 
-- The lines are alike in kind and label and weight and arrowheads.
+- The edges are alike in kind and label and weight and arrowheads.
 - A group inside one with the same lines is left out.
 - Detail: `group`, `edges` ([050. A line from every box of a group is a warning](../specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)).
 
 ### F5.3.8: Crossings
 
-`crossing` names a pair of lines that cross, however often.
+`crossing` names a pair of edges that cross, however often.
 
 - Detail: `edges`.
 
 ### F5.3.9: Boxes aside
 
-`box-aside` names a box wholly beside every box it connects to, so that its lines reach across.
+`box-aside` names a node wholly beside every node it connects to, so that its edges reach across.
 
-- It holds for a box placed in a row or by steps.
+- It holds for a node placed in a layer or by steps.
 - Detail: `node` and `nodes`.
 
 - **Why:** [075. A box beside its neighbours is a warning](../specs/decisions/075-a-box-beside-its-neighbours-is-a-warning.md)

@@ -43,10 +43,10 @@ A key in the top right that says, in the agent's words, what the picture's style
 grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mark <mark> [--text <text>]
 ```
 
-- A line style or a line width other than `thin` or a mark has an entry only when the diagram names it.
+- An edge style or an edge width other than `thin` or a mark has an entry only when the diagram names it.
   - A diagram that names nothing draws no legend.
 - Without `--text`, the words are taken away with their entry.
-- `show --drawn` prints a `legend` record for each line style and width the picture draws, and for each named mark.
+- `show --drawn` prints a `legend` record for each edge style and width the picture draws, and for each named mark.
   - `weight` is what `--weight` takes, and `text=-` marks a style or width with no entry.
 - Marks with the same name share one entry.
 - When the legend is wider than its room, it wraps onto more lines.
@@ -104,7 +104,7 @@ A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and ove
   - [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
 - **How it works:**
   - [The theme: themes and stylesheets](../specs/theme.md#themes-and-stylesheets)
-  - [The file formats](../specs/file-formats.md#the-stylesheet)
+  - [The .grafical file](../specs/grafical-file.md)
 - **Why:** [016. Themes and stylesheets](../specs/decisions/016-themes-and-stylesheets.md)
 
 **Stories:**
@@ -125,7 +125,7 @@ A team's own typeface in the picture.
 
 ## F4.6: Label text
 
-An agent may set where a label breaks and how its lines align. A text the agent leaves alone wraps where grafical wraps it and stays centred.
+An agent may set where a label breaks and how its edges align. A text the agent leaves alone wraps where grafical wraps it and stays centred.
 
 ```sh
 grafical label align <file> <id> left|center|right
@@ -133,7 +133,7 @@ grafical label align <file> <id> left|center|right
 
 - A label may hold a line break, and grafical keeps it.
 - `label align` takes the ID of any element with a label.
-- A box's sublabel aligns with its label.
+- A node's sublabel aligns with its label.
 - A label that no longer fits is refused as before.
 
 - **Design:** [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
@@ -164,4 +164,4 @@ grafical -f <file> diagram --label-at <fraction> [--top|--bottom]
 **Stories:**
 
 - An agent centres a title, to match the look of the page it sits on.
-- An agent moves a group's label along its side, to clear a line.
+- An agent moves a group's label along its side, to clear an edge.

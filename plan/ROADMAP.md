@@ -605,7 +605,7 @@ Every command names its file the same way, a verb is a flag, each thing has one 
 - ⬜ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
 - ⬜ One name for each thing: The commands, the file, the answers, the help, the documents and the code use one name.
 - ⬜ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
-- ⬜ One way for each situation: `edge emphasize` goes, and the commands are checked for other repeats.
+- ⬜ One way for each situation: `edge --emphasize` goes, and the commands are checked for other repeats.
 - ⬜ Batches from standard input: `apply` reads a batch named `-` from standard input.
 
 **Delivers:**
@@ -659,6 +659,8 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 
 **Exit criteria:**
 
+- **Comparisons**
+  - [C8: Small diffs](GOALS.md#c8-small-diffs)
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability)
   - [R3: Determinism](GOALS.md#r3-determinism)

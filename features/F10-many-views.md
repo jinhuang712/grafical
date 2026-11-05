@@ -21,7 +21,7 @@ Several pictures of parts of one file.
 
 ## F10.2: Folded groups
 
-A group drawn folded into one box in a view.
+A group drawn folded into one node in a view.
 
 - **Design:** [9. The same file gives the same picture on any machine](../DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
 

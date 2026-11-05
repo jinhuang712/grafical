@@ -10,7 +10,7 @@ F8: Diagram types
 └── F8.6: Entity-relationship and class diagrams — tables and classes
 ```
 
-Diagrams that do not fit rows. Each is a type that sets a diagram's space and the operations that apply ([049. An optional type sets the diagram's space](../specs/decisions/049-an-optional-type-sets-the-diagram-s-space.md)).
+Diagrams that do not fit layers. Each is a type that sets a diagram's space and the operations that apply ([049. An optional type sets the diagram's space](../specs/decisions/049-an-optional-type-sets-the-diagram-s-space.md)).
 
 ## F8.1: Sequence diagrams
 
@@ -64,7 +64,7 @@ Sets drawn overlapping, to show what they share.
 
 ## F8.6: Entity-relationship and class diagrams
 
-Tables or classes and how they relate. These may be a type or a kind of box.
+Tables or classes and how they relate. These may be a type or a kind of node.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 

@@ -20,7 +20,7 @@ Features
 │   ├── 🚧 F1.2: Lines — what connects to what (a second way to draw a line thick and bars across groups and edge looks not built)
 │   │   ├── ✅ F1.2.1: Kinds — a line's kind sets its style
 │   │   ├── ✅ F1.2.2: Arrowheads at both ends — two-way lines
-│   │   ├── 🚧 F1.2.3: Weight — thicker lines for what matters more (`edge emphasize` not yet removed)
+│   │   ├── 🚧 F1.2.3: Weight — thicker lines for what matters more (`edge --emphasize` not yet removed)
 │   │   ├── ✅ F1.2.4: Numbered steps — a number on a line
 │   │   ├── 🚧 F1.2.5: Ends at a group, a row or a lane — one arrow to a whole system (a bar cannot yet cross a group)
 │   │   └── ⬜ F1.2.6: Edge looks — a color of an edge's own
@@ -131,7 +131,7 @@ Features
 - **A declared diagram type that checks its conventions:** grafical would be judging content ([049. An optional type sets the diagram's space](specs/decisions/049-an-optional-type-sets-the-diagram-s-space.md)).
 - **Real-time collaboration or accounts or a hosted service:** git already shares the file and keeps its history ([009. Git as the history](specs/decisions/009-git-as-the-history.md)).
 - **The same facts always giving the same picture whatever order they arrived in:** the file fixes the picture ([024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)).
-- **A row reordered by the engine to tidy it:** the engine does not choose an order, and the agent compares orders with `grafical try` ([033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)).
+- **A layer reordered by the engine to tidy it:** the engine does not choose an order, and the agent compares orders with `grafical try` ([033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)).
 - **Docking to an edge or placement such as "beside" and "between":** columns and steps cover them, and a second way to say one thing is one more choice.
 - **Zones and section titles:** walls and groups cover them.
 - **Ports and end labels and tags:** they add choices with little gain for architecture diagrams, and a sublabel holds a port.

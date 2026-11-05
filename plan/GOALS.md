@@ -27,7 +27,8 @@ Goals
 │   ├── ❌ C3: Token use — fewer fresh tokens than the same model drawing directly
 │   ├── ⬜ C4: Context added — less than the same model drawing directly
 │   ├── ❌ C5: Cost — less than the same model drawing directly
-│   └── ✅ C7: Beats the strongest model alone — Haiku with grafical against Opus at xhigh effort
+│   ├── ✅ C7: Beats the strongest model alone — Haiku with grafical against Opus at xhigh effort
+│   └── ⬜ C8: Small diffs — fewer changed lines than YAML with one element on each line
 ├── Thresholds
 │   ├── ❌ T1: Operation errors — at most 5% of operations refused
 │   └── ✅ T2: Speed — 50 ms an operation, 400 ms a command
@@ -50,7 +51,7 @@ Set by the owner on 2026-10-13 and changed on 2026-11-05. An agent uses only the
 - [C1: Model gap](#c1-model-gap)
 - [O4: Copy a picture, better](#o4-copy-a-picture-better)
 
-[M3: Better every round](#m3-better-every-round) is the fifth thing the owner watches, and it has no line to pass.
+[M3: Better every round](#m3-better-every-round) is the fifth thing the owner watches, and it has no edge to pass.
 
 **Want:** every want of the proposal, as the headline.
 
@@ -85,7 +86,7 @@ Given a picture someone else drew, an agent redraws it with grafical, shows the 
 
 How often an agent wanted to state something that no operation could express, and drew something else or gave up.
 
-**Want:** Never place a box by hand.
+**Want:** Never place a node by hand.
 
 **Checks:**
 
@@ -175,7 +176,7 @@ kill = slower or costlier per change than redrawing with no tool
 
 #### B2: Scale
 
-A picture of 50 boxes has no defect and a clarity of at least 3 of 5.
+A picture of 50 nodes has no defect and a clarity of at least 3 of 5.
 
 **Want:** A picture that is complete and clear at once.
 
@@ -194,7 +195,7 @@ target = no defect, clarity >= 3
 kill = a defect at 25 boxes
 ```
 
-**Last score:** ⬜ not shown at 50 boxes. On 2026-10-12 all 9 drafts had no defect, and the 50-component drafts scored a clarity of 5, 5 and 4. But Haiku merged that brief into 15 to 19 boxes, so no picture of 50 boxes was judged. On 2026-10-18 one draft drew 51 boxes, with 174 crossings and an engine-owned defect; its clarity was not rated.
+**Last score:** ⬜ not shown at 50 nodes. On 2026-10-12 all 9 drafts had no defect, and the 50-component drafts scored a clarity of 5, 5 and 4. But Haiku merged that brief into 15 to 19 nodes, so no picture of 50 nodes was judged. On 2026-10-18 one draft drew 51 nodes, with 174 crossings and an engine-owned defect; its clarity was not rated.
 
 #### B4: Verifiability
 
@@ -385,13 +386,36 @@ target = above 0
 
 **Last result:** ✅ met by the owner's report on 2026-11-05: in a blind rating Haiku with grafical was far above Opus at xhigh effort drawing directly. The scores were not recorded. On 2026-10-12 at the default thinking budget: 24 against 5 of 25.
 
+#### C8: Small diffs
+
+A change to a diagram touches fewer lines of the `.grafical` file than the same change touches in YAML with one element on each line.
+
+**Want:** Keep the diagram beside the code.
+
+**Checks:**
+
+- [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
+
+**Against:** YAML with one element on each line.
+
+**How:** the change requests of the public brief, applied in both forms.
+
+**Formula:**
+
+```
+C8 = mean changed lines per change step in .grafical - the same in YAML
+target = below 0
+```
+
+**Last result:** ⬜ not measured.
+
 ### Thresholds
 
 #### T1: Operation errors
 
 At most 5% of operations are refused, each recovered within 1 retry.
 
-**Want:** Never place a box by hand, Get a good picture from a small model.
+**Want:** Never place a node by hand, Get a good picture from a small model.
 
 **Checks:**
 
@@ -406,7 +430,7 @@ At most 5% of operations are refused, each recovered within 1 retry.
 
 #### T2: Speed
 
-At most 50 ms in process to apply, lay out and check one operation at 50 boxes, and at most 400 ms for one command.
+At most 50 ms in process to apply, lay out and check one operation at 50 nodes, and at most 400 ms for one command.
 
 **Want:** Fix one thing without losing the rest.
 
@@ -417,7 +441,7 @@ At most 50 ms in process to apply, lay out and check one operation at 50 boxes, 
 
 **Limit:** 50 ms an operation and 400 ms a command; a render above 2 s is the kill threshold.
 
-**How:** `pnpm bench speed`, on random diagrams of about 50 boxes.
+**How:** `pnpm bench speed`, on random diagrams of about 50 nodes.
 
 **Status:** ✅ met on 2026-11-05. One operation took a median of 10.2 ms and at most 32.8 ms. Commands took 207 to 219 ms, and a render 420 ms.
 
@@ -425,7 +449,7 @@ At most 50 ms in process to apply, lay out and check one operation at 50 boxes, 
 
 #### R1: Stability
 
-No fact changes that no operation named: a row, an order, a group, a lane or an alignment. Boxes that move sideways in rows the change did not touch are measured, without a target.
+No fact changes that no operation named: a layer, an order, a group, a lane or an alignment. Nodes that move sideways in layers the change did not touch are measured, without a target.
 
 **Want:** Fix one thing without losing the rest.
 
@@ -442,7 +466,7 @@ No fact changes that no operation named: a row, an order, a group, a lane or an 
 
 #### R2: Mechanical defects
 
-No overflow, overlap, line through a box or label collision.
+No overflow, overlap, line through a node or label collision.
 
 **Want:** A picture that is complete and clear at once.
 

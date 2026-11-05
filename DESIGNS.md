@@ -5,10 +5,10 @@ An agent's operations go in, a checked diagram file and a picture come out, and 
 grafical is designed around 14 guidelines:
 
 1. **Operations are the only way a diagram changes:** every change is a named and checked operation
-2. **Places are facts, never coordinates:** a place is a row or an order or a column and never a position
+2. **Places are facts, never coordinates:** a place is a layer or an order or a column and never a position
 3. **The engine never chooses for the agent:** every structural choice is the agent's
 4. **A change keeps every fact it does not name:** the layout is computed again and positions may shift
-5. **The engine routes every line, in plain forms:** lines run through the gaps in a few plain forms
+5. **The engine routes every edge, in plain forms:** lines run through the gaps in a few plain forms
 6. **Every write is checked, and each defect has an owner:** a defect fails the write when the agent can fix it
 7. **A refusal gives the facts, and the agent writes the fix:** grafical states what went wrong and never writes the fix
 8. **Answers are data a script can read:** every answer is keys and values
@@ -33,7 +33,7 @@ Every change is a named operation, such as `node.add`, applied to a diagram file
 
 ## 2. Places are facts, never coordinates
 
-A box's place is its row, its order in the row, its group, its column, an alignment, or a number of steps from another box. How far apart things sit is the engine's, and an agent may ask for a multiple of it between two regions. Cost: an agent cannot nudge one box, and every new need for placement becomes a new fact.
+A node's place is its layer, its order in the layer, its group, its column, an alignment, or a number of steps from another node. How far apart things sit is the engine's, and an agent may ask for a multiple of it between two regions. Cost: an agent cannot nudge one node, and every new need for placement becomes a new fact.
 
 **Ask:** Does this ask the agent for a position, a size in pixels or a bend point?
 
@@ -48,7 +48,7 @@ A box's place is its row, its order in the row, its group, its column, an alignm
 
 ## 3. The engine never chooses for the agent
 
-The engine never adds, drops, merges or reorders what the agent stated, and never picks a fact for it: every row, order, group and place is stated. It does the dirty work, which is spacing, routing and drawing, and reports facts. Cost: a diagram stays as cluttered as the agent made it, and grafical only reports counts.
+The engine never adds, drops, merges or reorders what the agent stated, and never picks a fact for it: every layer, order, group and place is stated. It does the dirty work, which is spacing, routing and drawing, and reports facts. Cost: a diagram stays as cluttered as the agent made it, and grafical only reports counts.
 
 **Ask:** Does the engine pick, default or repair a structural choice the agent did not state?
 
@@ -64,7 +64,7 @@ The engine never adds, drops, merges or reorders what the agent stated, and neve
 
 ## 4. A change keeps every fact it does not name
 
-The layout is computed again from the facts after every write, and positions are never stored. An operation changes the facts it names, and every other row, order, group, lane and alignment stays. Cost: every write pays for a full layout, and a column grid solved again can move boxes sideways in rows the change did not touch.
+The layout is computed again from the facts after every write, and positions are never stored. An operation changes the facts it names, and every other layer, order, group, lane and alignment stays. Cost: every write pays for a full layout, and a column grid solved again can move nodes sideways in layers the change did not touch.
 
 **Ask:** Does any fact change that the operation did not name?
 
@@ -77,7 +77,7 @@ The layout is computed again from the facts after every write, and positions are
 
 ## 5. The engine routes every line, in plain forms
 
-Lines run orthogonally through the gaps between rows and boxes. The engine picks each line's ports, tracks and bundles, and no operation can. A side is the engine's unless the agent states it. It draws each thing in a few plain forms: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs. Cost: an agent cannot bend one ugly line directly, only state its sides and change the facts around it.
+Edges run orthogonally through the gaps between layers and nodes. The engine picks each edge's ports, tracks and bundles, and no operation can. A side is the engine's unless the agent states it. It draws each thing in a few plain forms: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs. Cost: an agent cannot bend one ugly line directly, only state its sides and change the facts around it.
 
 **Ask:** Does this hand the agent a port or a bend, or draw a crooked form to make the facts fit?
 
@@ -152,11 +152,11 @@ A file of a newer format, a field the schema does not know, a mark file that cha
 
 - **Stance:** [What does a change do?](PHILOSOPHY.md#what-does-a-change-do)
 - **Decisions:** [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
-- **How it works:** [The file formats](specs/file-formats.md)
+- **How it works:** [The .grafical file](specs/grafical-file.md)
 
 ## 11. Looks are free, while shape and dash follow the kind
 
-A theme or a stylesheet sets any color, a mark may carry any color, emoji, text or file, and a line may take any width from 0.5 to 8 px. A box's shape and a line's dash pattern come from its kind, so that a reader can trust them. The look comes from a theme or a stylesheet that the file names. Cost: two diagrams can look different, the legend has to say what a width or a mark means, and a look a team shares lives in a second file.
+Any object may take any color, a mark may be any emoji, text or file, and an edge may take any width from 0.5 to 8 px. A look comes from the object, then the styles it marks, then its type, then the theme. A node's shape and an edge's dash come from its type, so that a reader can trust them. Cost: two diagrams can look different, the legend has to say what a color, a width or a mark means, and a look a team shares lives in a second file.
 
 **Ask:** Is this a look the agent may choose freely, or a place that must stay a fact?
 
@@ -173,7 +173,7 @@ A theme or a stylesheet sets any color, a mark may carry any color, emoji, text 
 
 ## 12. The command line comes first, and the help is the agent's only reference
 
-Every operation is a command, every command takes `--json`, and every write reports what it changed, so that the agent need not read the diagram again. An agent learns grafical from `grafical --help` and each command's help, and reads a diagram through `show`, never the YAML. An MCP server may wrap the same operations later. Cost: each command is a process start, which a batch spreads over many operations.
+Every operation is a command, every command takes `--json`, and every write reports what it changed, so that the agent need not read the diagram again. An agent learns grafical from `grafical --help` and each command's help, and reads a diagram through `show`, never the file. An MCP server may wrap the same operations later. Cost: each command is a process start, which a batch spreads over many operations.
 
 **Ask:** Can an agent do this, and learn how, from the command line and its help alone?
 
@@ -213,4 +213,4 @@ In one situation an agent has one shortest way to do a thing. Stating a fact whi
   - [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
 - **How it works:** [Architecture](specs/ARCHITECTURE.md)
 
-Every other decision, such as how a row without a box is drawn, is in [specs/decisions](specs/decisions/README.md).
+Every other decision, such as how a layer without a node is drawn, is in [specs/decisions](specs/decisions/README.md).

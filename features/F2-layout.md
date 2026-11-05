@@ -17,15 +17,15 @@ F2: Layout
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
 
-Where everything goes. The agent states places as facts and never as positions, and grafical turns those facts into a picture with every box placed and every line drawn, again after every change.
+Where everything goes. The agent states places as facts and never as positions, and grafical turns those facts into a picture with every node placed and every edge drawn, again after every change.
 
 ## F2.1: Placing every box
 
-The agent never places a box. grafical works out every box's place and size from the facts, and works them out again after every write.
+The agent never places a node. grafical works out every node's place and size from the facts, and works them out again after every write.
 
-- Every box takes a column of one grid that all rows share, so boxes in different rows line up.
-- The rows stack from the top, with a gutter below each as tall as its lines need.
-- A change keeps every fact it does not name, and boxes may shift sideways.
+- Every node takes a column of one grid that all layers share, so nodes in different layers line up.
+- The layers stack from the top, with a gutter below each as tall as its edges need.
+- A change keeps every fact it does not name, and nodes may shift sideways.
 - The file holds no position, so there is nothing to keep in step.
 
 - **Stance:** [What does a change do?](../PHILOSOPHY.md#what-does-a-change-do)
@@ -43,7 +43,7 @@ The agent never places a box. grafical works out every box's place and size from
 
 ## F2.2: Rows and order
 
-A box sits in a row, in an order. A row only places, and is not drawn unless it has a look or a line ends at it.
+A node sits in a layer, in an order. A layer only places, and is not drawn unless it has a look or an edge ends at it.
 
 **Commands:**
 
@@ -53,29 +53,29 @@ A box sits in a row, in an order. A row only places, and is not drawn unless it 
 - `grafical layer move <file> <id> --first | --last | --before <row> | --after <row>`
 - `grafical layer remove <file> <id>`
 - `grafical layer split <file> <id> <new-id> --label <text> [--from <node>]`
-- `grafical node add <file> <id> --layer <row> --label <text> [--kind <kind>] [--sublabel <text>] [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]`
+- `grafical node add <file> <id> --layer <row> --label <text> [--type <kind>] [--sublabel <text>] [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--accent]`
 - `grafical node move <file> <id> [--layer <row>] [--first | --last | --before <node> | --after <node>]`
 
-- A new row goes to the bottom unless `--before` or `--after` places it.
-- A box added to a row or moved into another row says where it goes: `--first` or `--last` or `--before` or `--after`.
-  - Without one it is refused as `missing-field`, with the row and the boxes in it.
-  - Only the first box of an empty row needs none ([033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)).
-- A row's label is optional.
-  - It is drawn only with the row: in a band's head, or in a bar.
-  - A drawn row with no label draws no name.
+- A new layer goes to the bottom unless `--before` or `--after` places it.
+- A node added to a layer or moved into another layer says where it goes: `--first` or `--last` or `--before` or `--after`.
+  - Without one it is refused as `missing-field`, with the layer and the nodes in it.
+  - Only the first node of an empty layer needs none ([033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)).
+- A layer's label is optional.
+  - It is drawn only with the layer: in a band's head, or in a bar.
+  - A drawn layer with no label draws no name.
   - A band without one has no head ([046. A row's label is optional](../specs/decisions/046-a-row-s-label-is-optional.md)).
-- `layer split` moves the second half of a row into a new row below it.
-  - With `--from <node>` it moves the boxes from that box on.
-- A row can be removed only when it is empty, and the lines that end at it go with it.
-- `layer look` draws a row and its label even when no line ends at it.
-  - `box` draws it with a box's paint and a dark label.
+- `layer --split` moves the second half of a layer into a new layer below it.
+  - With `--from <node>` it moves the nodes from that node on.
+- A layer can be removed only when it is empty, and the edges that end at it go with it.
+- `layer --look` draws a layer and its label even when no edge ends at it.
+  - `box` draws it with a node's paint and a dark label.
   - `band` draws it with the band's light fill and grey label.
-  - Without a look, a row is drawn only when a line ends at it.
-  - Then a row with no box is drawn as a box and a row with boxes as a band.
-  - A row with no box and a look is a bar and is checked as one ([045. A row with a look is drawn](../specs/decisions/045-a-row-with-a-look-is-drawn.md)).
-  - A line that passes it needs `--pass` (`bar-crossed`).
-  - It may not lie between the first and last rows of a group (`bar-in-group`).
-  - Taking the look away with `layer look` clears `bar-in-group`.
+  - Without a look, a layer is drawn only when an edge ends at it.
+  - Then a layer with no node is drawn as a node and a layer with nodes as a band.
+  - A layer with no node and a look is a bar and is checked as one ([045. A row with a look is drawn](../specs/decisions/045-a-row-with-a-look-is-drawn.md)).
+  - An edge that passes it needs `--pass` (`bar-crossed`).
+  - It may not lie between the first and last layers of a group (`bar-in-group`).
+  - Taking the look away with `layer --look` clears `bar-in-group`.
 
 - **Stance:** [What may the agent set?](../PHILOSOPHY.md#what-may-the-agent-set)
 - **Design:**
@@ -92,18 +92,18 @@ A box sits in a row, in an order. A row only places, and is not drawn unless it 
 
 **Stories:**
 
-- An agent states each box's row and order, to decide the story's layout in facts.
+- An agent states each node's layer and order, to decide the story's layout in facts.
 
 ## F2.3: Alignment
 
-A box sits directly above or below a box in another row.
+A node sits directly above or below a node in another layer.
 
 ```sh
 grafical node align <file> <id> [--to <node>]
 ```
 
 - It joins its target's column to sit there.
-- An alignment that cannot hold with the order of either row is refused as `alignment-conflict`.
+- An alignment that cannot hold with the order of either layer is refused as `alignment-conflict`.
 - Without `--to` the alignment is cleared.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
@@ -112,11 +112,11 @@ grafical node align <file> <id> [--to <node>]
 
 **Stories:**
 
-- An agent aligns two boxes in different rows, to give a line between them a straight run.
+- An agent aligns two nodes in different layers, to give an edge between them a straight run.
 
 ## F2.4: Columns
 
-A second placement fact beside rows. Nothing is drawn: a column is a guide.
+A second placement fact beside layers. Nothing is drawn: a column is a guide.
 
 **Commands:**
 
@@ -125,14 +125,14 @@ A second placement fact beside rows. Nothing is drawn: a column is a guide.
 - `grafical column leave <file> <member...>`
 - `grafical column remove <file> <id>`
 
-- Every box of a column sits left of every box of the next column in all rows.
-  - At least a row's gap lies between them.
+- Every node of a column sits left of every node of the next column in all layers.
+  - At least a layer's gap lies between them.
   - Columns go left to right in the order they were added, unless placed `--before` or `--after` another.
-- A group as a member brings its boxes.
-  - A box in no column keeps its place beside the box left of it.
-- An order that another fact contradicts is refused as `column-order`, naming two boxes whose order cannot hold.
+- A group as a member brings its nodes.
+  - A node in no column keeps its place beside the node left of it.
+- An order that another fact contradicts is refused as `column-order`, naming two nodes whose order cannot hold.
 - A diagram has columns or lanes that run as columns, not both (`column-lanes`).
-- Removing a column leaves its boxes where they are.
+- Removing a column leaves its nodes where they are.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 - **How it works:** [Placement: columns](../specs/placement.md#columns)
@@ -143,39 +143,39 @@ A second placement fact beside rows. Nothing is drawn: a column is a guide.
 
 **Stories:**
 
-- An agent sets columns, to keep boxes of different rows in one left-to-right order.
+- An agent sets columns, to keep nodes of different layers in one left-to-right order.
 
 ### F2.4.1: Column headings
 
-A column may carry a heading above its first row, such as a quarter.
+A column may carry a heading above its first layer, such as a quarter.
 
 - `grafical column add <file> <id> --label <text>`
 - `grafical column rename <file> <id> [--label <text>]`
-- A line that comes near a heading refuses the write.
+- An edge that comes near a heading refuses the write.
 
 - **Why:** [056. A column may carry a heading](../specs/decisions/056-a-column-may-carry-a-heading.md)
 
 ## F2.5: Steps from another box
 
-A box in no row, placed some cells of the grid from another box.
+A node in no layer, placed some cells of the grid from another node.
 
 ```sh
-grafical node add <file> <id> --from <node> [--down <n> | --up <n>] [--left <n> | --right <n>] --label <text> [--kind <kind>]
+grafical node add <file> <id> --from <node> [--down <n> | --up <n>] [--left <n> | --right <n>] --label <text> [--type <kind>]
 grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <n> | --right <n>]
 ```
 
 - Each step is a whole number from 1 to 10, and at least one is given.
-  - A step is one cell of the grid: a row down or up, a column left or right.
-- The box moves with the box it steps from, which may itself be placed by steps.
-- Past the first or last row, the box lands in a row grafical adds.
-  - `show --drawn` names that row `-`.
-  - The boxes of a row it lands in stand aside.
-- A cell another fact keeps is refused as `step-blocked`, a box that steps from itself as `step-cycle`.
-  - Steps combined with a row or a position or an alignment or a column or a lane are refused as `conflicting-position`.
-- `node move --layer` puts the box back in a row.
-  - `node move` with steps and no `--from` keeps the box it steps from, and with `--from` alone keeps the steps.
-- A box wholly beside every box it connects to is a warning, `box-aside`.
-  - The warning names those boxes.
+  - A step is one cell of the grid: a layer down or up, a column left or right.
+- The node moves with the node it steps from, which may itself be placed by steps.
+- Past the first or last layer, the node lands in a layer grafical adds.
+  - `show --drawn` names that layer `-`.
+  - The nodes of a layer it lands in stand aside.
+- A cell another fact keeps is refused as `step-blocked`, a node that steps from itself as `step-cycle`.
+  - Steps combined with a layer or a position or an alignment or a column or a lane are refused as `conflicting-position`.
+- `node --move --layer` puts the node back in a layer.
+  - `node --move` with steps and no `--from` keeps the node it steps from, and with `--from` alone keeps the steps.
+- A node wholly beside every node it connects to is a warning, `box-aside`.
+  - The warning names those nodes.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 - **How it works:** [Placement: steps from another box](../specs/placement.md#steps-from-another-box)
@@ -185,7 +185,7 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
 
 **Stories:**
 
-- An agent places a box some steps from another, to draw a staircase or a side path.
+- An agent places a node some steps from another, to draw a staircase or a side path.
 
 ## F2.6: Spacing
 
@@ -221,21 +221,21 @@ grafical gap <file> <a> <b> [--times <n>]
 
 ## F2.7: How lines are drawn
 
-The agent says what connects. grafical draws every line.
+The agent says what connects. grafical draws every edge.
 
-- A line is made of horizontal and vertical runs through the gaps between rows and boxes, never through a box or across text.
-- A line may leave or enter a box on any side.
-  - Each line has its own place on a side, spread evenly.
-- Three or more unlabelled lines of one style that leave one side of a box leave as one line and split near their targets, with a dot at each split.
+- An edge is made of horizontal and vertical runs through the gaps between layers and nodes, never through a node or across text.
+- An edge may leave or enter a node on any side.
+  - Each edge has its own place on a side, spread evenly.
+- Three or more unlabelled lines of one style that leave one side of a node leave as one edge and split near their targets, with a dot at each split.
   - Labelled lines and two-way lines keep their own place.
-- Where two lines cross, one hops over the other.
+- Where two edges cross, one hops over the other.
   - Where lines join on purpose, a dot marks the join.
-- A label sits beside its line.
+- A label sits beside its edge.
   - When there is no room, it wraps or moves to another gap on its way.
-  - Where no gap on its way has room, no line moves for it and the write is refused as `label-blocked` ([061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)).
-  - The refusal names the line, the lines across the label and the gaps it tried.
-  - `node resize` is among the commands that can change it.
-  - grafical never widens a box for its lines.
+  - Where no gap on its way has room, no edge moves for it and the write is refused as `label-blocked` ([061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)).
+  - The refusal names the edge, the edges across the label and the gaps it tried.
+  - `node --size` is among the commands that can change it.
+  - grafical never widens a node for its edges.
   - A step's number is refused the same way.
 - A stylesheet may draw the corners curved, with `paint.edge.shape: curved`.
   - The routes stay the same.
@@ -253,25 +253,25 @@ The agent says what connects. grafical draws every line.
 
 **Stories:**
 
-- An agent states what connects, to get lines that avoid boxes and text without drawing any.
+- An agent states what connects, to get lines that avoid nodes and text without drawing any.
 
 ### F2.7.1: Line sides
 
-An agent may state the side a line leaves by or enters by. A side left unstated stays grafical's.
+An agent may state the side an edge leaves by or enters by. A side left unstated stays grafical's.
 
 ```sh
 grafical edge side <file> <id> [--out top|bottom|left|right] [--in top|bottom|left|right]
 ```
 
-- Without `--out` or `--in`, the line's sides are grafical's again.
-- Where the line cannot go by the stated side, the write is refused and names what is in the way.
+- Without `--out` or `--in`, the edge's sides are grafical's again.
+- Where the edge cannot go by the stated side, the write is refused and names what is in the way.
 - A stated side can cost more bends or crossings, and the counts show them.
 
 - **Why:** [058. An agent may state the side of a line](../specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
 
 ### F2.7.2: Line shapes
 
-All the lines of a diagram share one shape, and the routes stay the same.
+All the edges of a diagram share one shape, and the routes stay the same.
 
 ```sh
 grafical diagram lines <file> square|round|smooth
@@ -279,30 +279,30 @@ grafical diagram lines <file> square|round|smooth
 
 - `square` has sharp corners, as a new diagram does.
 - `round` rounds the corners and keeps the straight runs.
-- `smooth` draws a sideways run as a slope, so that the line reads as one S.
-- A smooth line that would touch a box or a text is refused.
+- `smooth` draws a sideways run as a slope, so that the edge reads as one S.
+- A smooth line that would touch a node or a text is refused.
 
 - **Why:** [059. Lines may be drawn square, round or smooth](../specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
 
 ### F2.7.3: Labels on lines
 
-A line carries its label, and the line passes through it. An agent may take one label off its line.
+An edge carries its label, and the edge passes through it. An agent may take one label off its edge.
 
 ```sh
 grafical edge label-at <file> <id> on|beside
 ```
 
-- A label sits on its line by default, on a line that turns too.
+- A label sits on its edge by default, on an edge that turns too.
 - Labels in one gutter spread out so that none sits on another.
-- A label wraps first, and then the lines move apart for it.
-- `beside` puts the label next to its line, where no line moves for it.
+- A label wraps first, and then the edges move apart for it.
+- `beside` puts the label next to its edge, where no edge moves for it.
 - More room and more bends show in the counts.
 
 - **Why:** [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
 
 ## F2.8: Flow direction
 
-Rows become columns, so that a diagram reads left to right.
+Layers become columns, so that a diagram reads left to right.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 

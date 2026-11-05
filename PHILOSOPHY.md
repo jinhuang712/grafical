@@ -1,6 +1,6 @@
 # Philosophy
 
-Words run in a line, one after another. Relationships do not: a system has parts that call, feed, contain and depend on each other all at once. A diagram puts those relationships on a plane, where the eye takes them in with one scan. That is why a good diagram explains a system faster than any paragraph, and why a bad one explains nothing.
+Words run in an edge, one after another. Relationships do not: a system has parts that call, feed, contain and depend on each other all at once. A diagram puts those relationships on a plane, where the eye takes them in with one scan. That is why a good diagram explains a system faster than any paragraph, and why a bad one explains nothing.
 
 > … sentential representations, in which the data structure is indexed by position in a list, with each element "adjacent" only to the next element in the list, and diagrammatic representations, in which information is indexed by location in a plane, many elements may share the same location, and each element may be "adjacent" to any number of other elements.
 >
@@ -58,7 +58,7 @@ The reader's eye finds relationships by where things sit. The agent that draws d
 
 **The engine does the dirty work. The agent owns the taste and the truth.**
 
-The engine measures text, places boxes, spaces them, routes lines and redraws the picture after every change, so that it is always aligned and tidy. The agent decides everything the picture says: what to include and how much, what to merge, what each box and line is called, whether the facts are correct, and whether the story reads well. grafical tells the agent facts and counts about what it drew, and never judges the diagram or advises in prose. A refusal states which input is wrong and what is allowed.
+The engine measures text, places nodes, spaces them, routes lines and redraws the picture after every change, so that it is always aligned and tidy. The agent decides everything the picture says: what to include and how much, what to merge, what each node and line is called, whether the facts are correct, and whether the story reads well. grafical tells the agent facts and counts about what it drew, and never judges the diagram or advises in prose. A refusal states which input is wrong and what is allowed.
 
 > grafical is not responsible for taste, graph correctness and clearness. grafical is a engine only to do the dirty work.
 >
@@ -128,13 +128,13 @@ People have always drawn by placing things, grouping them, ordering them, connec
 
 **A weak model draws well with grafical. Drawing superbly takes a stronger one.**
 
-Readers prefer different things, and so do the agents that draw: one draws every dependency as its own line, another one line to a group of them. No score settles that for everyone. grafical is measured by how easily an agent reaches a finished picture (few turns, little time, few tokens) and by how steady its floor is: the same facts give the same picture, a change keeps every fact it does not name, and a weak model's picture is already good. A superb picture needs fine tuning, and fine tuning takes thought, so it stays the work of a stronger model. grafical does not supply the taste. It owes that model the means to tune what it wants.
+Readers prefer different things, and so do the agents that draw: one draws every dependency as its own edge, another one edge to a group of them. No score settles that for everyone. grafical is measured by how easily an agent reaches a finished picture (few turns, little time, few tokens) and by how steady its floor is: the same facts give the same picture, a change keeps every fact it does not name, and a weak model's picture is already good. A superb picture needs fine tuning, and fine tuning takes thought, so it stays the work of a stronger model. grafical does not supply the taste. It owes that model the means to tune what it wants.
 
 ## Who draws?
 
 **Agents draw. People say what they want, and read the result.**
 
-With grafical, an agent draws a diagram worth keeping. A person who wants it changed says so in words, and the agent makes the change as operations. No person needs a canvas to drag boxes into place. What grafical lacks is not a second pair of hands but more ways to combine its operations, so that an agent can say more, in fewer steps.
+With grafical, an agent draws a diagram worth keeping. A person who wants it changed says so in words, and the agent makes the change as operations. No person needs a canvas to drag nodes into place. What grafical lacks is not a second pair of hands but more ways to combine its operations, so that an agent can say more, in fewer steps.
 
 When two answers collide, the facts the agent named win. grafical never changes what a diagram says to make it tidier, and never moves what nobody named to make it prettier.
 

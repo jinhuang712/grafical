@@ -7,21 +7,21 @@
 [![CI](https://github.com/jinhuang712/grafical/actions/workflows/ci.yml/badge.svg)](https://github.com/jinhuang712/grafical/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-An agent states what a diagram says, one operation at a time: this box is in that row, connected to that one, colored like this. grafical decides where everything goes and lays the picture out again after every change. **The agent never places a box or bends a line**, so only what it named changes and the picture always looks finished.
+An agent states what a diagram says, one operation at a time: this node is in that layer, connected to that one, colored like this. grafical decides where everything goes and lays the picture out again after every change. **The agent never places a node or bends an edge**, so only what it named changes and the picture always looks finished.
 
 grafical drew the picture above itself, from [docs/images/pipeline.grafical.yaml](docs/images/pipeline.grafical.yaml).
 
 ## What it does
 
-- 🪜 **Small steps:** every change is one operation, such as `node add` or `edge add`.
+- 🪜 **Small steps:** every change is one operation, such as `node --add` or `edge --add`.
   - A batch applies many operations, all or nothing.
   - A change keeps every fact it does not name.
-- ⚙️ **The engine does the dirty work:** it sizes and places and spaces every box.
-  - It routes every line and checks every write for defects.
+- ⚙️ **The engine does the dirty work:** it sizes and places and spaces every node.
+  - It routes every edge and checks every write for defects.
   - A mistake is refused at once, with the facts to fix it.
 - 🎨 **Looks are free, places are facts:** an agent may pick any color or line width.
-  - It states a box's place as a row or a column or steps from another box, never as a coordinate.
-- 📁 **A file in git:** the diagram is one YAML file.
+  - It states a node's place as a layer or a column or steps from another node, never as a coordinate.
+- 📁 **A file in git:** the diagram is one `.grafical` file.
   - The same file gives the same SVG and PNG on any machine.
   - `grafical diff` shows a change as operations.
 - 🤖 **Made for agents:** an agent learns grafical from `grafical --help`.
@@ -40,20 +40,20 @@ git clone https://github.com/jinhuang712/grafical.git && cd grafical && pnpm ins
 An agent's prompt only has to say to draw with `grafical`. Here is what an agent does to draw a service and its database:
 
 ```sh
-grafical new arch.grafical.yaml --title "Order flow"
-grafical layer add arch.grafical.yaml app --label App
-grafical layer add arch.grafical.yaml data --label Data
-grafical node add arch.grafical.yaml api --label "Order API" --kind service --layer app
-grafical node add arch.grafical.yaml db --label Postgres --kind store --layer data
-grafical edge add arch.grafical.yaml api db --label writes
-grafical render arch.grafical.yaml --png arch.png
+grafical -f arch.grafical new --title "Order flow"
+grafical -f arch.grafical layer --add app --label App
+grafical -f arch.grafical layer --add data --label Data
+grafical -f arch.grafical node --add api --label "Order API" --type service --layer app
+grafical -f arch.grafical node --add db --label Postgres --type store --layer data
+grafical -f arch.grafical edge --add api db --label writes
+grafical -f arch.grafical render --png arch.png
 ```
 
-Adding a cache later is two more steps, and the API and Postgres keep their rows and their order:
+Adding a cache later is two more steps, and the API and Postgres keep their layers and their order:
 
 ```sh
-grafical node add arch.grafical.yaml cache --label Redis --kind store --layer data --after db
-grafical edge add arch.grafical.yaml api cache --label reads
+grafical -f arch.grafical node --add cache --label Redis --type store --layer data --after db
+grafical -f arch.grafical edge --add api cache --label reads
 ```
 
 | Before | After |
@@ -63,7 +63,7 @@ grafical edge add arch.grafical.yaml api cache --label reads
 To watch an agent draw, open a window that redraws on every change:
 
 ```sh
-grafical view arch.grafical.yaml
+grafical -f arch.grafical view
 ```
 
 > 💡 From a clone, write `node src/cli/main.ts` in place of `grafical`.
@@ -74,7 +74,7 @@ Every write runs the same parts, and only the agent's operations go in:
 
 ```text
 agent ──command or batch──> command line ──records──> agent
-                              │    └──writes──> diagram file (YAML, in git)
+                              │    └──writes──> diagram file (.grafical, in git)
                               │ operations
                               ▼
                             model ── refusals ──> command line
@@ -97,7 +97,7 @@ agent ──command or batch──> command line ──records──> agent
 - [plan/TODO.md](plan/TODO.md): the open items with no checkpoint yet.
 - [specs/ARCHITECTURE.md](specs/ARCHITECTURE.md): the parts and how they connect.
   - [specs/model.md](specs/model.md): the model.
-  - [specs/file-formats.md](specs/file-formats.md): the file formats.
+  - [specs/grafical-file.md](specs/grafical-file.md): the .grafical file.
   - [specs/placement.md](specs/placement.md): placement.
   - [specs/routing.md](specs/routing.md): routing.
   - [specs/labels.md](specs/labels.md): text placement.

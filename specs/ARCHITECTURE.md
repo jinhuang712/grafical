@@ -1,10 +1,10 @@
 # Architecture
 
-grafical takes operations from a coding agent, one command or one batch at a time, and keeps a diagram file in YAML that holds the facts they state. After every write it lays the diagram out again from those facts, checks it, and answers with records: what changed, any refusal with what happened and the commands that can change it, and counts of how the picture is drawn. `render` turns the same file into SVG and PNG.
+grafical takes operations from a coding agent, one command or one batch at a time, and keeps a `.grafical` file that holds the facts they state. After every write it lays the diagram out again from those facts, checks it, and answers with records: what changed, any refusal with what happened and the commands that can change it, and counts of how the picture is drawn. `render` turns the same file into SVG and PNG.
 
 ```text
 agent ──command or batch──> command line ──records──> agent
-                              │    └──writes──> diagram file (YAML, in git)
+                              │    └──writes──> diagram file (.grafical, in git)
                               │ operations
                               ▼
                             model ── refusals ──> command line
@@ -50,37 +50,37 @@ Folder: `src/cli/`.
 
 ## The model
 
-Defines the diagram: rows, boxes, lines, groups, lanes, columns, walls, notes and marks. Turns an operation into a change of the facts, validates every file it loads, and compares two files as operations. How it works is in [the model](model.md), and how the files are laid out in [the file formats](file-formats.md). What comes next is drafted in [the .grafical file](grafical-file.md).
+Defines the diagram: layers, nodes, lines, groups, lanes, columns, walls, notes and marks. Turns an operation into a change of the facts, validates every file it loads, and compares two files as operations. How it works is in [the model](model.md), and how the file is laid out in [the .grafical file](grafical-file.md).
 
 Folder: `src/model/`.
 
 ## Placement
 
-Places and sizes every box on one column grid, spaces the rows, and sizes groups, lanes, bands, bars, walls and the canvas. It stores no position. How it works is in [placement](placement.md).
+Places and sizes every node on one column grid, spaces the layers, and sizes groups, lanes, bands, bars, walls and the canvas. It stores no position. How it works is in [placement](placement.md).
 
 Folder: `src/layout/`.
 
 ## Routing
 
-Routes every line through the gutters between rows and the gaps between boxes, and picks each line's sides, ports and tracks. How it works is in [routing](routing.md).
+Routes every edge through the gutters between layers and the gaps between nodes, and picks each edge's sides, ports and tracks. How it works is in [routing](routing.md).
 
 Folder: `src/layout/`.
 
 ## Text placement
 
-Seats every text outside a box: the labels of lines, step badges, group titles, notes, the labels of walls, bands, bars and lanes, and the legend. How it works is in [text placement](labels.md).
+Seats every text outside a node: the labels of edges, step badges, group titles, notes, the labels of walls, bands, bars and lanes, and the legend. How it works is in [text placement](labels.md).
 
 Folder: `src/layout/`.
 
 ## The text measurer
 
-Measures every text from the bundled fonts, wraps it, and says whether a box's text fits. How it works is in [the text measurer](text.md).
+Measures every text from the bundled fonts, wraps it, and says whether a node's text fits. How it works is in [the text measurer](text.md).
 
 Folder: `src/text/`.
 
 ## The theme
 
-Holds the built-in themes, merges a stylesheet into them, and holds the fixed sizes and the outline of each kind of box. How it works is in [the theme](theme.md).
+Holds the built-in themes, merges a stylesheet into them, and holds the fixed sizes and the outline of each kind of node. How it works is in [the theme](theme.md).
 
 Folder: `src/theme/`.
 

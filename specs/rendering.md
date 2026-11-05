@@ -1,6 +1,6 @@
 # The renderer
 
-The renderer turns a laid-out picture into an SVG and the SVG into a PNG. It places nothing: every box, route and label already has its place, and the renderer only draws them in the theme's paint. It reads no system font and no file of its own, so the same picture gives the same SVG bytes and the same PNG pixels on any machine. It lives in `src/render/`.
+The renderer turns a laid-out picture into an SVG and the SVG into a PNG. It places nothing: every node, route and label already has its place, and the renderer only draws them in the theme's paint. It reads no system font and no file of its own, so the same picture gives the same SVG bytes and the same PNG pixels on any machine. It lives in `src/render/`.
 
 ```text
 laid-out picture ──┐
@@ -14,7 +14,7 @@ The renderer writes the SVG itself, with every element and attribute in a fixed 
 
 Each label is split into runs of one font, and each run is its own `<text>` element at the x the text measurer gave it. resvg does not choose a font per character: given a font stack, it would draw a whole label from Noto as soon as Inter lacked one of its characters. A text mark is the one exception: it is one centred `<text>` element, in Noto when any character is CJK and in Inter otherwise.
 
-Behind every line label the writer puts a patch that reaches 3 px past the text on each side and 1 px above and below it. Its fill is that of the innermost group, band or lane under the label's centre, or the theme's label background, so a line that runs under the label is broken there.
+Behind every edge label the writer puts a patch that reaches 3 px past the text on each side and 1 px above and below it. Its fill is that of the innermost group, band or lane under the label's centre, or the theme's label background, so an edge that runs under the label is broken there.
 
 ## Drawing the PNG
 
@@ -24,19 +24,19 @@ Behind every line label the writer puts a patch that reaches 3 px past the text 
 
 The writer adds the marks of a route as it draws it, so the routes, the checks and the counts never see them:
 
-- **Hops.** Where two lines cross, the horizontal run hops over the vertical one in an arc 4 px high and 8 px wide.
+- **Hops.** Where two edges cross, the horizontal run hops over the vertical one in an arc 4 px high and 8 px wide.
   - Crossings under 10 px apart share one wider arc, and a crossing within 5 px of a run's end is drawn plain.
-- **Dots.** A dot marks every point where one line starts or stops running along another.
-  - Its radius is the line's width plus 1.5 px.
+- **Dots.** A dot marks every point where one edge starts or stops running along another.
+  - Its radius is the edge's width plus 1.5 px.
 - **Curves.** With `paint.edge.shape: curved`, each corner is as round as half of each of its two runs.
-  - The curve is checked at three points against boxes and labels and step badges and other lines.
+  - The curve is checked at three points against nodes and labels and step badges and other edges.
   - It is halved while it comes within 4 px of one.
   - It is never less round than the theme's corner radius, or half of each run when that is smaller.
   - The corner radius is 6 px in `default` and `dark`, and 4 px in `print`.
 
 ## Marks
 
-A mark sits in a slot of its box and never at a position. A corner mark is centred on its corner, takes no room and moves nothing; a wide badge grows inward from the corner. The `left` mark sits left of the text, in room the text gives up. A diamond and a dot have no `left` slot.
+A mark sits in a slot of its node and never at a position. A corner mark is centred on its corner, takes no room and moves nothing; a wide badge grows inward from the corner. The `left` mark sits left of the text, in room the text gives up. A diamond and a dot have no `left` slot.
 
 A mark is one of three things:
 

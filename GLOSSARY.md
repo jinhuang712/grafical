@@ -10,47 +10,46 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 
 ## The picture
 
-- **Row:** a line of boxes with an order.
-  - A row is not drawn unless it has a look or a line ends at it.
-  - Lost names: *layer* and *slot* for a place in a row, which now names only a mark's place.
-  - In code and on the command line: `layer`.
-- **Box:** an element of the picture with a kind, a label and an optional sublabel.
-  - Lost name: *node*.
-  - In code and on the command line: `node`.
+- **Layer:** a region of nodes with an order.
+  - A layer is not drawn unless it has a look or an edge ends at it.
+  - Lost names: *row*, and *slot* for a place in a layer, which now names only a mark's place.
+- **Node:** an element of the picture with a kind, a label and an optional sublabel.
+  - Lost name: *box*, since a node need not be a box.
 - **Line:** a connection between two ends.
-  - Each end is a box or a group or a row or a lane.
-  - Lost names: *edge*, *connection*.
-  - In code and on the command line: `edge`.
+  - Each end is a node or a group or a layer or a lane.
+  - Lost names: *line*, *connection*.
 - **Group:** a system drawn as one frame around its members.
-  - Its members may sit in several rows, and groups may nest.
+  - Its members may sit in several layers, and groups may nest.
 - **Lane:** a labelled band that says who owns what.
-  - All lanes of a diagram run one way, as rows or as columns.
+  - All lanes of a diagram run one way, as layers or as columns.
   - Lost name: *swimlane*.
-- **Column:** a second placement fact beside rows.
+- **Column:** a second placement fact beside layers.
   - Nothing is drawn for it.
 - **Wall:** empty space between two parts of the picture.
   - Lines cross it only where it allows.
-- **Note:** a short text attached to a box, a line or a group.
+- **Note:** a short text attached to a node, an edge or a group.
   - It is drawn as a card or as a footnote.
-- **Bar:** a row with no box that a line ends at.
+- **Bar:** a layer with no node that an edge ends at.
   - It is drawn as one 40 px bar across the picture, such as a gateway.
-- **Band:** a row with boxes that a line ends at, drawn as one band around them.
-- **Choice:** a small diamond with no text, where a line splits into several.
+- **Band:** a layer with nodes that an edge ends at, drawn as one band around them.
+- **Choice:** a small diamond with no text, where an edge splits into several.
   - Not the same as `decision`, a diamond with text inside.
 
 ## What a box or a line carries
 
-- **Kind:** says what a box or a line is, and decides how it is drawn.
-- **Mark:** a small image on a box: an emoji or a short text or a file.
+- **Type:** says what a node or an edge is, and decides how it is drawn.
+  - Lost name: *kind*.
+- **Style:** a named look that an object marks.
+- **Region:** a diagram, a group, a layer, a lane or a column.
+- **Knot:** the point where a bundle splits.
+- **Mark:** a small image on a node: an emoji or a short text or a file.
   - At most five, one in each slot.
   - Lost name: *icon*.
-  - In code and on the command line: `icon`.
-- **Slot:** one of the five places a mark takes on a box: a corner or `left`.
+- **Slot:** one of the five places a mark takes on a node: a corner or `left`.
   - On the command line: `--slot`.
-- **Weight:** how thick a line is, a level or a width in pixels.
-- **Emphasis:** at most two boxes that stand out.
+- **Weight:** how thick an edge is, a level or a width in pixels.
+- **Emphasis:** at most two nodes that stand out.
   - Lost name: *accent*.
-  - In code: `accent`.
 - **Legend:** the key in the top right.
   - It says only what the agent named.
 
@@ -58,20 +57,19 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 
 Checked against `src/layout/` and `src/render/` on 2026-11-04.
 
-- **Gutter:** the space between two neighbouring rows, where lines run across.
-- **Gap:** the space between two neighbouring boxes of one row.
-- **Run:** one straight horizontal or vertical piece of a line.
+- **Gutter:** the space between two neighbouring layers, where lines run across.
+- **Gap:** the space between two neighbouring nodes of one layer.
+- **Run:** one straight horizontal or vertical piece of an edge.
   - Lost names: *stretch* and *segment* and *part*.
 - **Track:** one of the rows of a gutter or one of the columns of a gap that a run takes.
-- **Corridor:** a column of the grid empty in every row a line passes, which the line runs down.
-- **Port:** the place where a line meets a side of a box.
-- **Bundle:** lines of one style and weight that leave one side of a box through one port and split near their targets.
+- **Corridor:** a column of the grid empty in every layer an edge passes, which the edge runs down.
+- **Port:** the place where an edge meets a side of a node.
+- **Bundle:** lines of one style and weight that leave one side of a node through one port and split near their targets.
   - Lost name: *bus*.
-  - In code: `bus`.
-- **Fan-in:** lines that enter one crowded side of a box through one port.
-- **Stand-in:** the box that a line to a group, a row or a lane is routed to before it is cut at the container.
-- **Hop:** the small arc where one line passes over another.
-- **Seat:** a place a text outside a box may take, such as a line's label or a group's title.
+- **Fan-in:** lines that enter one crowded side of a node through one port.
+- **Stand-in:** the node that an edge to a group, a layer or a lane is routed to before it is cut at the container.
+- **Hop:** the small arc where one edge passes over another.
+- **Seat:** a place a text outside a node may take, such as an edge's label or a group's title.
   - In code: `slot`.
 
 ## Operations and files
@@ -79,14 +77,13 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 - **Operation:** a named change to a diagram, such as `node.add`.
   - The only way a diagram changes.
 - **Batch:** many operations applied together, all or nothing.
-- **Diagram file:** `<name>.grafical.yaml`.
+- **Diagram file:** `<name>.grafical`.
   - It holds facts and never a coordinate.
-- **Stylesheet:** the file `<name>.grafical-style.yaml` that overrides a theme's colors, widths and type sizes.
+- **Library:** a `.grafical` file of types and styles that a diagram names.
+  - Lost name: *stylesheet*.
 - **Theme:** a built-in look: `default`, `dark` or `print`.
-- **Step:** two meanings today.
-  - A box is placed some *steps* from another box, which is placement.
-  - A line carries a numbered *step*, which is part of a process.
-  - Neither has won yet.
+- **Step:** a node is placed some steps from another node.
+- **Number:** what an edge carries as part of a process.
 
 ## The benchmarks
 

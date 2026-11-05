@@ -23,18 +23,18 @@ Every failure leaves the file as it was and says what happened, in the block des
   - `title-blocked` for a group's label ([F1.3.1: Groups](F1-elements.md#f131-groups)).
 - **The picture draws poorly:** written, and reported as a warning ([F5.3: Warnings](F5-checking.md#f53-warnings)).
 - **A file cannot be read:** nothing is drawn from it.
-  - A YAML syntax error gives its line.
+  - A YAML syntax error gives its edge.
   - A missing stylesheet fails every command that reads the diagram ([F4.4: The stylesheet file](F4-look.md#f44-the-stylesheet-file)).
   - A file written by a newer grafical is refused rather than guessed at ([F6.1: The diagram file](F6-output.md#f61-the-diagram-file)).
 - **A command line is wrong:** a usage error prints a block and exits 2, and a command that does not exist is refused with the one it most likely means ([F7.1: Help](F7-help.md#f71-help)).
 
 ## F3.1: Operations
 
-Every change to a diagram is one named operation, run as a command. The diagram file is `<name>.grafical.yaml` by convention.
+Every change to a diagram is one named operation, run as a command. The diagram file is `<name>.grafical` by convention.
 
 ```sh
-grafical new arch.grafical.yaml --title "Order flow"
-grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind service
+grafical -f arch.grafical new --title "Order flow"
+grafical -f arch.grafical node --add api --layer app --label "Order API" --type service
 ```
 
 - On the command line an operation is `grafical <noun> <verb> <file> …`.
@@ -72,7 +72,7 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
 Many operations at once, all or nothing.
 
 ```sh
-grafical apply arch.grafical.yaml batch.yaml
+grafical -f arch.grafical apply batch.yaml
 ```
 
 A batch file is a YAML list. Each item has `op: <noun>.<verb>` and the same fields as the command's flags, in camelCase:
@@ -97,7 +97,7 @@ grafical checks each operation in order, and writes only when every one is valid
 See what a batch would do before making it.
 
 ```sh
-grafical try arch.grafical.yaml batch.yaml
+grafical -f arch.grafical try batch.yaml
 ```
 
 `try` applies the batch without writing it, and prints the drawing's counts before and after it, and a `delta` record of the change in each. The agent decides what to try, and grafical measures.
@@ -126,10 +126,10 @@ grafical try arch.grafical.yaml batch.yaml
 
 ## F3.4: IDs
 
-The caller names every row, group, lane, column, wall, box and line, and a name never changes while the element exists.
+The caller names every layer, group, lane, column, wall, node and line, and a name never changes while the element exists.
 
 - A rename changes the label, never the ID.
-- A line's ID defaults to `<from>-><to>`, with a suffix when the same pair is connected twice.
+- An edge's ID defaults to `<from>-><to>`, with a suffix when the same pair is connected twice.
   - A reversed line keeps its ID.
 - A taken ID is refused, with a free one suggested.
 
@@ -171,10 +171,10 @@ next: -
 - A warning has no source.
 - A defect found after layout names the batch line that caused it, and so does an error of the whole diagram.
   - grafical finds that line by trying ever shorter prefixes of the batch, back towards the file.
-  - The line it names is the one after the last prefix without the problem.
+  - The edge it names is the one after the last prefix without the problem.
 - Where that cannot be known, the source is the batch file alone.
   - A prefix refused for another problem cannot tell.
-  - A refused write lays out at most 400 boxes and lines across all the prefixes it tries: 3 prefixes of a diagram of 113.
+  - A refused write lays out at most 400 nodes and lines across all the prefixes it tries: 3 prefixes of a diagram of 113.
   - So a problem caused early in a long batch has the batch file as its source, as in a draft.
 - The detail gives the facts, one per line:
   - `near`: the closest IDs.
@@ -182,10 +182,10 @@ next: -
   - `allowed` and `free` and `count` and `lines` and `min` and `max`.
   - The element it concerns: `node` and `row` and `group` and `edge` and `lane`.
   - `line` and `column` in the YAML.
-- The detail carries what the agent needs to find the change itself, such as the first and last rows a group's box covers.
+- The detail carries what the agent needs to find the change itself, such as the first and last layers a group's node covers.
   - No refusal writes the change for it.
 - `next` names the commands that can change it in the order the help lists them, or `-` when none can.
-- A YAML syntax error gives the text of its line.
+- A YAML syntax error gives the text of its edge.
 
 - **Design:** [7. A refusal gives the facts, and the agent writes the fix](../DESIGNS.md#7-a-refusal-gives-the-facts-and-the-agent-writes-the-fix)
 - **How it works:** [How grafical answers](../specs/answers.md)
@@ -199,21 +199,21 @@ next: -
 
 ## F3.6: Merging and swapping
 
-Three operations change which boxes a diagram has or where two of them sit.
+Three operations change which nodes a diagram has or where two of them sit.
 
 **Commands:**
 
-- `grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--kind <kind>]`
+- `grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--type <kind>]`
 - `grafical node swap <file> <a> <b>`
 - `grafical node remove <file> <id>`
 
-- `merge` replaces boxes with one new box where the first one was.
-  - It keeps each of their lines once and drops the lines between them.
-  - It may reuse a merged box's ID.
-  - Boxes aligned to a merged box lose the alignment.
-- `swap` trades the places of two boxes: their row and place.
-- `remove` takes the box's lines with it and reports their IDs.
-  - A box that others are placed by steps from stays while they are (`step-anchor`).
+- `merge` replaces nodes with one new node where the first one was.
+  - It keeps each of their edges once and drops the edges between them.
+  - It may reuse a merged node's ID.
+  - Nodes aligned to a merged node lose the alignment.
+- `swap` trades the places of two nodes: their layer and place.
+- `remove` takes the node's lines with it and reports their IDs.
+  - A node that others are placed by steps from stays while they are (`step-anchor`).
 
 - **Design:**
   - [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
@@ -223,7 +223,7 @@ Three operations change which boxes a diagram has or where two of them sit.
 
 **Stories:**
 
-- An agent merges boxes or swaps two, to change the picture without redrawing it.
+- An agent merges nodes or swaps two, to change the picture without redrawing it.
 
 ## F3.7: More combinations of operations
 

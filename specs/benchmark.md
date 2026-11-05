@@ -36,7 +36,7 @@ Private briefs describe real systems and never enter this repository. The privat
 
 Loose prompts of about three sentences live in `bench/prompts/`: `intent.yaml` and, one for each diagram type, `types.yaml`. The agent gets the prompt and no brief.
 
-The change script is `bench/changes/catalog-sync.yaml`, 8 requests sent one after another in one session. It covers adding a box between two others, moving a box to another row, renaming a box, removing a box, adding a line, reversing a line, grouping neighbours and making the diagram more compact. A request may name a component the draft merged or left out. Since 2026-10-12 the change prompt says to add it first and then make the change, so every arm is measured on the change itself.
+The change script is `bench/changes/catalog-sync.yaml`, 8 requests sent one after another in one session. It covers adding a node between two others, moving a node to another layer, renaming a node, removing a node, adding an edge, reversing an edge, grouping neighbours and making the diagram more compact. A request may name a component the draft merged or left out. Since 2026-10-12 the change prompt says to add it first and then make the change, so every arm is measured on the change itself.
 
 ## What each step records
 
@@ -55,7 +55,7 @@ Each step records the metrics below, the transcript, the final diagram file and 
 | Regenerations | changes answered by redrawing everything | the transcript · the operation log |
 | Unnamed fact changes | facts changed that no operation named | `grafical diff` |
 | Operation errors | refused ÷ all operations · retries | grafical's JSON output |
-| Mechanical defects | overflow · overlap · lines through boxes · label collisions · shared segments | `pnpm bench geometry` |
+| Mechanical defects | overflow · overlap · lines through nodes · label collisions · shared segments | `pnpm bench geometry` |
 
 The geometry check reads the rendered SVG and does not use grafical's checker. It reads shapes only, and it treats lines of one style that leave or reach one point as a bus or a fan-in.
 
