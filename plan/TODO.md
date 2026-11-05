@@ -83,16 +83,6 @@
 - next: the owner decides whether it becomes an agent defect
 - related: [032. Who chose is punished](../specs/decisions/032-who-chose-is-punished.md)
 
-### [P2][DISCUSSION] One word for two steps
-
-- description:
-  - [F2.5: Steps from another box](../features/F2-layout.md#f25-steps-from-another-box) is a placement some cells of the grid from another box.
-  - [F1.2.4: Numbered steps](../features/F1-elements.md#f124-numbered-steps) is a number on a line for a process.
-  - The two share a word and GLOSSARY.md lists both.
-- created: 2026-11-03
-- status: HALT
-- next: the owner chooses a new name for one or keeps both
-
 ### [P2][DISCUSSION] A row's label is drawn twice
 
 - description:

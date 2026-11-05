@@ -98,7 +98,8 @@ Roadmap
 │   │   ├── ⬜ Labels on lines
 │   │   └── ⬜ Label text
 │   └── ⬜ CP2.7: The command line
-│       └── ⬜ The file flag
+│       ├── ⬜ The file flag
+│       └── ⬜ One name for each thing
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
 │   ├── ⬜ CP3.1: Boxes and lines
 │   │   ├── ⬜ State machine
@@ -564,11 +565,12 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 
 **Status:** ⬜
 
-Every command names its file the same way, ahead of the command.
+Every command names its file the same way, ahead of the command, and each thing has one name.
 
 **Tasks:**
 
 - ⬜ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
+- ⬜ One name for each thing: The commands, the file, the answers, the help, the documents and the code use one name.
 
 **Delivers:**
 

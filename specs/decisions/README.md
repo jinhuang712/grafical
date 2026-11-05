@@ -72,6 +72,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [066. A line's label sits on its line](066-a-line-s-label-sits-on-its-line.md) (2026-11-06)
 - [067. An agent sets a label's breaks and its alignment](067-an-agent-sets-a-label-s-breaks-and-its-alignment.md) (2026-11-06)
 - [068. A command names its file with a flag](068-a-command-names-its-file-with-a-flag.md) (2026-11-06)
+- [069. One name for each thing, and a name says what it is](069-one-name-for-each-thing-and-a-name-says-what-it-is.md) (2026-11-06)
 
 ## Former IDs
 
