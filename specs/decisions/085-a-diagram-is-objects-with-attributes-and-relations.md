@@ -2,6 +2,8 @@
 
 Decided: 2026-11-06
 
+Replaced in part by specs/decisions, "A type holds attributes, and a group may follow a group": a type holds no structure.
+
 ## The problem
 
 The diagram file was a YAML tree, so one relation, a node in its layer, held the shape of the file and every other relation was a field or a list at the end. grafical is the file's only writer, and a model reads the file through `show`. The owner sees a diagram as objects with attributes and relations.

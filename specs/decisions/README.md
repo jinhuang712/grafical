@@ -90,6 +90,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [084. A region's label sits at a fraction of a side](084-a-region-s-label-sits-at-a-fraction-of-a-side.md) (2026-11-06)
 - [085. A diagram is objects with attributes and relations](085-a-diagram-is-objects-with-attributes-and-relations.md) (2026-11-06)
 - [086. The file is blocks of attributes, and a reference carries @](086-the-file-is-blocks-of-attributes-and-a-reference-carries.md) (2026-11-06)
+- [087. A type holds attributes, and a group may follow a group](087-a-type-holds-attributes-and-a-group-may-follow-a-group.md) (2026-11-06)
 
 ## Former IDs
 

@@ -6,8 +6,8 @@ A diagram is a set of objects with attributes and relations. This spec holds the
 
 ```text
 the root      global looks, rules
-  class       what a sort of thing looks like and holds
-  instance    which one it is and where it sits
+  type        what a sort of thing looks like
+  object      which one it is and where it sits
   relation    layers, groups, columns, lanes, edges and relative places
 ```
 
@@ -34,11 +34,11 @@ A block opens with one of a fixed list of sorts.
 | Sort | What it is |
 |---|---|
 | `<diagram>` | the root, with the title, the theme and global looks |
-| `<class>` | a sort of node or edge |
+| `<type>` | a sort of node or edge |
 | `<style>` | a style rule |
 | `<check>` | a constraint |
 | `<layer>` | a layer |
-| `<group>` | a group, or an instance of a class of structure |
+| `<group>` | a group, which may follow another |
 | `<lane>` | a lane |
 | `<column>` | a column |
 | `<wall>` | a wall |
@@ -50,22 +50,32 @@ A block opens with one of a fixed list of sorts.
 | `<note>` | a note |
 | `<legend>` | the legend, whose design is open |
 
-## Classes and instances
+## Types and objects
 
-A class says what a sort of thing looks like, and an instance says which one it is and where it sits.
+A type says what a sort of thing looks like, and an object says which one it is and where it sits.
 
 | Held by | Node | Edge |
 |---|---|---|
-| A class | kind, colors, size multiples, marks, a default sublabel | kind, weight, color, arrowheads |
-| An instance | ID, label, layer, order, column, group, emphasis, note | ends, label, number, sides |
+| A type | shape, colors, size multiples, marks, a default sublabel | line style, weight, color, arrowheads |
+| An object | ID, name, layer, order, column, group, emphasis, note | ends, label, number, sides |
 
-- A class may inherit from another.
-- A built-in kind is a class.
-  - A rule on a kind is a change to that class.
-- A class may hold structure: nodes, edges and inner groups.
-- A place inside a class is stated by steps from another node of the class.
-- An instance has one anchor, and the rest of its structure follows it.
-- An instance may override what its class holds.
+- A type may inherit from another with `base`.
+- A built-in kind is a type.
+  - A rule on a kind is a change to that type.
+- An object may override what its type holds.
+
+## Groups that follow groups
+
+Structure is not a type's work. A group may follow another group with `like`, and it then holds what that group holds and changes with it.
+
+```text
+<group> zone-b {
+  like: @zone-a
+}
+```
+
+- A node inside a follower is reached by a path, such as `@zone-b.web`.
+- A path can override one attribute of that node.
 
 ## The root
 
@@ -80,7 +90,7 @@ Defaults are the model's edge and stay out of the file.
 ## Where a look comes from
 
 ```text
-an instance  >  a class  >  a style rule  >  the theme
+an object  >  a type  >  a style rule  >  the theme
 ```
 
 The most specific wins, so a reader can find a value's source by looking down this list.
@@ -99,7 +109,7 @@ title: "Checkout"
 use: team-style
 density: normal
 
-<class> db {
+<type> db {
   base: @store
   fill: #eef
 }
@@ -128,14 +138,14 @@ density: normal
 }
 
 <node> orders {
-  class: @service
+  type: @service
   text: "Orders"
   layer: @app
   group: @pay
 }
 
 <node> orders-db {
-  class: @db
+  type: @db
   text: "Orders DB"
   below: @orders
 }
@@ -143,7 +153,7 @@ density: normal
 <edge> orders-to-db {
   from: @orders
   to: @orders-db
-  class: @call
+  type: @call
   weight: thick
 }
 
@@ -160,8 +170,8 @@ density: normal
 - An `@` that names no object is refused.
 - A node states its own memberships.
 - A node's name is its `text`, since a node has no meaning without it.
-- A class is an attribute, `class`, and it names a sort of node or edge such as `@service`.
-- A class names what it inherits with `base`.
+- A type is an attribute, `type`, and it names a sort of node or edge such as `@service`.
+- A type names what it inherits with `base`.
 - An `<order>` states only the order inside the region named by `of`, one item on each line.
 - An `<order>` names every member of its region and nothing else, or the file is refused.
 - Length is no concern.
@@ -174,3 +184,4 @@ If the design does not hold up, the fallback is YAML with one element on each li
 
 - [085. A diagram is objects with attributes and relations](decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)
 - [086. The file is blocks of attributes, and a reference carries @](decisions/086-the-file-is-blocks-of-attributes-and-a-reference-carries.md)
+- [087. A type holds attributes, and a group may follow a group](decisions/087-a-type-holds-attributes-and-a-group-may-follow-a-group.md)
