@@ -20,18 +20,6 @@
 - next: the owner takes the next dimension, and the three options are settled after the last
 - related: [055. A weak model draws well and a stronger one superbly](../specs/decisions/055-a-weak-model-draws-well-and-a-stronger-one-superbly.md)
 
-### [P2][DISCUSSION] The rules of the target picture are measured but never reported
-
-- description:
-  - The decision on a target picture says `grafical check --all` reports its eight rules.
-  - [src/check/taste.ts](../src/check/taste.ts) still measures them, but no command calls it.
-  - Only its limit of two bends is used.
-- created: 2026-11-04
-- status: HALT
-- found: writing the checker spec from the code on 2026-11-04
-- next: the owner chooses whether `check --all` reports them or the code and the decision drop them
-- related: [012. A target picture with measured rules](../specs/decisions/012-a-target-picture-with-measured-rules.md)
-
 ### [P2][DISCUSSION] Guidelines 14 and 15 come from no stance
 
 - description:

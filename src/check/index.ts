@@ -670,8 +670,6 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   for (const x of diagram.notes ?? []) add(x.on, "note", x.text);
 }
 
-export { measureTaste, type TasteReport, type TasteRule } from "./taste.ts";
-
 /** The lines that pass a group's label or its sublabel nearer than the engine keeps its own lines, by id. */
 export function acrossTitle(scene: Scene, id: string): string[] {
   const g = scene.groups?.find((x) => x.id === id);

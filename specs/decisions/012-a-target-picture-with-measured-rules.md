@@ -4,6 +4,8 @@ Decided: 2026-10-11
 
 Replaced in part by specs/decisions, "Success rests on cost, time, model gap and copying": no judge scores the target picture.
 
+Replaced in part by specs/decisions, "The target picture's rules are not reported": `check --all` does not report them.
+
 ## The problem
 
 On 2026-10-11 the owner judged the engine's first real output "cluttered, messy, lines are all over the place". An Opus designer then hand-drew three uncluttered versions of the public brief, using only what an engine could compute. Two blind Opus judges scored them against the engine's and a raw model's drafts, out of 60:

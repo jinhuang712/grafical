@@ -18,7 +18,7 @@ import { weightOf } from "../theme/paint.ts";
 import { themeOf } from "../theme/themes.ts";
 import { type Composition, composition, type Gutter, gutterOf } from "./composition.ts";
 import { segmentCrossesRect, segmentsOf } from "./geometry.ts";
-import { TASTE_LIMITS } from "./taste.ts";
+import { MAX_BENDS } from "./taste.ts";
 
 export type Side = "top" | "bottom" | "left" | "right";
 const SIDES: Side[] = ["top", "bottom", "left", "right"];
@@ -397,7 +397,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
 
 /** The lines drawn with more than two bends (specs/decisions, "A bent line is reported and never refused"), in drawing order. */
 export function bentLines(lines: DrawnLine[]): DrawnLine[] {
-  return lines.filter((l) => l.bends > TASTE_LIMITS.maxBends);
+  return lines.filter((l) => l.bends > MAX_BENDS);
 }
 
 /**
