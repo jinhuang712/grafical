@@ -64,7 +64,7 @@ The engine measures text, places boxes, spaces them, routes lines and redraws th
 >
 > — the owner, 2026-10-14
 
-The dirty work has edges. The engine draws each thing in a few plain forms: a line straight or with one or two bends, a label on or beside its own run, a title at its place, a note as the agent said. It does not invent a crooked form to make the facts fit. Where drawing the facts would hide what a reader needs, such as text under a line, the write is refused and names the fact in the way. Where it only costs, such as a line with more bends, it is drawn and reported. Either way the agent decides what to change.
+The dirty work has edges. Nothing ever overlaps: that is the engine's basic craft. It does not move what nobody named to make room. Where a reader would lose something, the write is refused. Where the picture only costs, it is drawn and the agent is always told. Either way the agent decides what to change.
 
 > Often the engine should not do a lot of needless work beyond its edges just to find a way to get the picture drawn. When a title collides with a line, the agent has to think about where it goes; when a line cannot bend into place, it cannot just be forced in either.
 >
