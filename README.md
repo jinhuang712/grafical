@@ -4,6 +4,9 @@
 
 > Architecture diagrams that coding agents build in small, checked steps.
 
+[![CI](https://github.com/jinhuang712/grafical/actions/workflows/ci.yml/badge.svg)](https://github.com/jinhuang712/grafical/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 An agent states what a diagram says, one operation at a time: this box is in that row, connected to that one, colored like this. grafical decides where everything goes and lays the picture out again after every change. **The agent never places a box or bends a line**, so only what it named changes and the picture always looks finished.
 
 grafical drew the picture above itself, from [docs/images/pipeline.grafical.yaml](docs/images/pipeline.grafical.yaml).
