@@ -168,9 +168,11 @@ Roadmap
     │   ├── ⬜ One catalog of systems
     │   ├── ⬜ Brand fonts
     │   └── ⬜ An MCP server
-    └── ⬜ CP5.4: More combinations of operations
-        ├── ⬜ Decide the form
-        └── ⬜ Test the candidates
+    ├── ⬜ CP5.4: More combinations of operations
+    │   ├── ⬜ Decide the form
+    │   └── ⬜ Test the candidates
+    └── ⬜ CP5.5: Checks of an agent's own
+        └── ⬜ Rules a diagram sets itself
 ```
 
 ## CP1: Stage 1 built
@@ -923,5 +925,21 @@ The form is not decided with the owner yet, such as one operation for a common e
 **Delivers:**
 
 - [F3.7: More combinations of operations](../features/F3-editing.md#f37-more-combinations-of-operations)
+
+**Exit criteria:** none yet.
+
+### CP5.5: Checks of an agent's own
+
+**Status:** ⬜
+
+Rules a diagram sets itself, once a real need shows which ones.
+
+**Tasks:**
+
+- ⬜ Rules a diagram sets itself: An object or a type marks a rule that warns or refuses.
+
+**Delivers:**
+
+- [F5.5: Checks of an agent's own](../features/F5-checking.md#f55-checks-of-an-agents-own)
 
 **Exit criteria:** none yet.

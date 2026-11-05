@@ -14,7 +14,8 @@ F5: Checking
 │   ├── F5.3.7: A line per member — `line-per-member`
 │   ├── F5.3.8: Crossings — `crossing`
 │   └── F5.3.9: Boxes aside — `box-aside`
-└── F5.4: Check — defects, warnings and counts on demand
+├── F5.4: Check — defects, warnings and counts on demand
+└── F5.5: Checks of an agent's own — rules a diagram sets itself
 ```
 
 How an agent knows a diagram came out right. It reads the diagram as facts, counts and warnings, and checks the file on demand.
@@ -188,3 +189,11 @@ grafical check <file> [--all]
 **Stories:**
 
 - An agent runs `check`, to know the file is sound.
+
+## F5.5: Checks of an agent's own
+
+An agent may state rules for its own diagram, and an object or a type marks the rule it follows. Each rule says whether it warns or refuses. Which rules exist is open until a real need shows.
+
+**Stories:**
+
+- An agent sets a rule for its stores, to keep them in one layer as the diagram grows.

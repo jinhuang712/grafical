@@ -36,7 +36,7 @@ A block opens with one of a fixed list of sorts.
 | `<diagram>` | the root, with the title, the theme and global looks |
 | `<type>` | a sort of node or edge |
 | `<style>` | a named look that objects mark |
-| `<check>` | a constraint |
+| `<check>` | a rule a diagram sets itself, which comes later |
 | `<layer>` | a layer |
 | `<group>` | a group, which may follow another |
 | `<lane>` | a lane |
@@ -85,7 +85,7 @@ The root holds what applies to the whole diagram.
 - **Global looks:** the theme, the density, the shape of lines and type sizes.
 - **Styles:** every look grafical can draw, under a name, and an object that wants one names it with `style`.
   - An object may name several, and a later one overrides an earlier one.
-- **Constraints:** rules an agent states for its own diagram, each saying whether it warns or refuses.
+- **Checks:** rules an agent states for its own diagram, marked by what follows them. They come later.
 
 Defaults are the model's edge and stay out of the file.
 
