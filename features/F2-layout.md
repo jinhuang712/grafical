@@ -98,10 +98,10 @@ grafical node align <file> <id> [--to <node>]
 A box sits directly above or below a box in another row.
 
 - Its row slides sideways as one block to put it there.
-- An alignment that cannot hold with the order of either row is refused as `alignment-conflict` or `alignment-cycle`.
+- An alignment that cannot hold with the order of either row is refused as `alignment-conflict`.
 - Without `--to` the alignment is cleared.
 
-Gap: the code joins the aligned box to its target's column instead, and has no `alignment-cycle`.
+Gap: the code joins the aligned box to its target's column instead.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 - **How it works:** [Placement: alignment](../specs/placement.md#alignment)

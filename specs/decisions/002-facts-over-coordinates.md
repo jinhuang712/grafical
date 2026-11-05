@@ -2,6 +2,8 @@
 
 Decided: 2026-10-11
 
+Replaced in part by specs/decisions, "Steps from another box": a box may be placed by whole steps.
+
 ## The problem
 
 An agent must say where every box goes, but coordinates are the work models get wrong, and a free position would let one change move everything around it.

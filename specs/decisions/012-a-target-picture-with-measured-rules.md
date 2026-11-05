@@ -2,6 +2,8 @@
 
 Decided: 2026-10-11
 
+Replaced in part by specs/decisions, "Success rests on cost, time, model gap and copying": no judge scores the target picture.
+
 ## The problem
 
 On 2026-10-11 the owner judged the engine's first real output "cluttered, messy, lines are all over the place". An Opus designer then hand-drew three uncluttered versions of the public brief, using only what an engine could compute. Two blind Opus judges scored them against the engine's and a raw model's drafts, out of 60:
@@ -33,7 +35,7 @@ The rules that make it uncluttered. The checker measures each one. A broken rule
      - Each crossing weighs as two jogs of travel.
      - Between equals it takes the shortest.
    - A corridor through a group box that holds neither end of the line pays as much as a crossing, and the line keeps out of such a box's margin and border.
-6. **Styles:** at most three line styles and one accent ("Looks").
+6. **Styles:** at most three line styles and one accent (DESIGNS.md, "Looks are free, while shape and dash follow the kind").
    - It was two until "Lines meet any side" added the dotted and plain lines on 2026-10-12.
 7. **Edge labels:** at most 40% of edges carry one.
 8. **Clear text:** no line crosses any text: node, edge or group label.

@@ -2,7 +2,9 @@
 
 Decided: 2026-10-12
 
-Replaced in part by specs/decisions, "Help for the tool, guides for best practice": the guides came back for best practice.
+- Replaced in part by specs/decisions, "Help for the tool, guides for best practice": the guides came back for best practice.
+- Replaced in part by specs/decisions, "One entry page, help where it is used": the budget is suspended.
+- Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": no page has a When refused section.
 
 ## The problem
 

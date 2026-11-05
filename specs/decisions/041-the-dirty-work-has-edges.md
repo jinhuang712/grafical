@@ -2,6 +2,9 @@
 
 Decided: 2026-10-16
 
+- Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": no refusal writes a command.
+- Replaced in part by specs/decisions, "Every write prints every warning": a bent line is a warning block.
+
 ## The problem
 
 Decided by the owner on 2026-10-16 (PHILOSOPHY.md, "Who owns what?"). The engine had been widening a group's box so that no line ran under a stated title ("The agent states where a group's label sits"), and the owner found the empty space it left. Looking for the cause, the owner named the rule behind it: the engine must not do needless work beyond its edges just to get a picture drawn. Until then an engine-owned defect was the engine's to avoid whatever the agent stated ("Defects owned by who can fix them"), and that duty had no edge: every hard case grew a fallback that drew a crooked form and told the agent nothing.

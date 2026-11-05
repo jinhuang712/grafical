@@ -2,6 +2,8 @@
 
 Decided: 2026-10-18
 
+Replaced in part by specs/decisions, "A row's label is optional": `label` is no longer required.
+
 ## The problem
 
 Decided by the owner on 2026-10-18 (behavior: FEATURES.md, "Rows and order"). In round p1g (bench/results/p1g-stage1.md), 8 of the 49 chains' reflections said the names they gave rows never appeared in the picture. A row was drawn only when a line ended at it ("Rows unseen, groups as systems", "Lines that end at containers"), and `layer look` chose only between a box and a band for such a row, so an agent had no way to show one. The owner's rule: unseen is the default, not always. A row with something visible is drawn; a row with nothing visible is not.

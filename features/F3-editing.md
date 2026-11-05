@@ -135,7 +135,7 @@ detail:
   field: kind
   found: database
   likely: store
-  allowed: service, store, queue, external, actor, state, terminal, decision, initial, final
+  allowed: service, store, queue, external, actor, state, terminal, decision, initial, final, choice
 next: -
 ```
 

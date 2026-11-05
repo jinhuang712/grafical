@@ -14,12 +14,12 @@ What keeps marks within the principles:
   - A corner mark is centred on its corner and takes no room.
   - So it moves no other box, text or line.
   - The `left` mark takes a column inside the box, and the box keeps its size.
-- The same file gives the same picture ("Output and determinism").
+- The same file gives the same picture (DESIGNS.md, "The same file gives the same picture on any machine").
   - Emoji are drawn from the bundled Twemoji images, not from a font.
   - The SVG embeds each picture as a data URI, and the file stores a picture file's SHA-256.
   - So a changed file fails the load instead of drawing differently.
   - A named color is stored as its hex, so a change to the names never changes an existing file.
-- A picture runs nothing ("Security").
+- A picture runs nothing (DESIGNS.md, "A diagram reads no file outside its folder, and its pictures run nothing").
   - An SVG with a script, a `foreignObject`, an event handler or an outside reference is refused.
   - So is a path outside the diagram's folder.
 

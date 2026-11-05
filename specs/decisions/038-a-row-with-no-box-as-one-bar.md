@@ -22,7 +22,7 @@ Now a row with no box may be a line end when the line's other end holds a box, a
   - The flag is named for its records: `across` was already the count of lines through a stranger's group ("Composition counts").
 - **Its look is the agent's.** `layer look <row> box|band` draws it as a box or a band.
   - A box is a service box's paint with a dark label: the bar is the gateway or the bus itself, not a container.
-  - On 2026-10-16 the owner asked for both to be chosen through the command line, since looks are the agent's ("Looks").
+  - On 2026-10-16 the owner asked for both to be chosen through the command line, since looks are the agent's (DESIGNS.md, "Looks are free, while shape and dash follow the kind").
 - **What cannot hold is refused.** A line between two rows with no box is refused as `bar-to-bar`: neither end says where the line goes across.
   - A row with no box between the first and last rows of a group is refused as `bar-in-group`.
   - The group's box would stretch over it and the bar would cut it in two ("Rows unseen, groups as systems").

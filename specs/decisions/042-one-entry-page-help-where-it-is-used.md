@@ -2,7 +2,9 @@
 
 Decided: 2026-10-17
 
-Replaced in part by specs/decisions, "An optional type sets the diagram's space": for the spaces other than rows.
+- Replaced in part by specs/decisions, "An optional type sets the diagram's space": for the spaces other than rows.
+- Replaced in part by specs/decisions, "Help for the tool, guides for best practice": the kinds of diagram moved into the guides.
+- Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": a refusal no longer carries its fix.
 
 ## The problem
 

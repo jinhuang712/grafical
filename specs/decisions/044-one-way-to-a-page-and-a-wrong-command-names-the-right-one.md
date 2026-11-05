@@ -2,6 +2,8 @@
 
 Decided: 2026-10-18
 
+Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": `likely` is a value.
+
 ## The problem
 
 Decided by the owner on 2026-10-18, after one Haiku run (a subagent with grafical on its path, not a benchmark round) drew a refund flowchart. 32 of its 37 grafical calls read help. 11 printed the entry page in place of the page asked for, and 12 printed the page asked for but exited 2:

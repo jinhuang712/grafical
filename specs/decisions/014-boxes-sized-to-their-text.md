@@ -12,7 +12,7 @@ A box given no size is fitted to its text (FEATURES.md, "Sizes"). The fit test i
 
 Since 2026-10-13 (phase 1e), every box of a row is drawn as tall as the row's tallest box, its width its own, so that the tops of a row line up: five of six judge verdicts on the private reference brief named one box taller than its neighbours. Dots and diamonds keep their shapes, and the size a node is fitted to does not change. A self-loop now runs two gutter rows below its box, since the box reaches the bottom of its row.
 
-A diagram can turn fitting off (FEATURES.md, "Sizes"). The switch is a diagram fact in the file, because the file alone decides the picture ("Output and determinism").
+A diagram can turn fitting off (FEATURES.md, "Sizes"). The switch is a diagram fact in the file, because the file alone decides the picture (DESIGNS.md, "The same file gives the same picture on any machine").
 
 This was added on 2026-10-11. In the three phase 1b drafts, text overflow was the most common reason grafical refused Haiku's first batch, which it refused in 46% of draft calls (first reported as 66%, which counted every read of the guide as a refusal). The fix it suggested was to remove the node and add it again larger.
 

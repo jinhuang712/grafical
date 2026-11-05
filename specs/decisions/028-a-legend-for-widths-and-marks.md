@@ -2,6 +2,8 @@
 
 Decided: 2026-10-14
 
+Replaced in part by specs/decisions, "The legend says only what the agent named": line styles and widths lose their default words.
+
 ## The problem
 
 Decided by the owner on 2026-10-14. When the reference picture was redrawn with grafical alone, thick lines were used to mean "writes to a store". The legend could only call them "main path", so the emphasis was dropped. Asked whether an agent should name it, the owner answered "yes, the legend needs more flexibility", and chose, of three options, a legend that names everything in the picture that carries meaning. Built the same day (behavior: FEATURES.md, "Legend").

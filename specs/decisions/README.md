@@ -56,6 +56,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [050. A line from every box of a group is a warning](050-a-line-from-every-box-of-a-group-is-a-warning.md) (2026-10-19)
 - [051. A label sits on its straight vertical line](051-a-label-sits-on-its-straight-vertical-line.md) (2026-10-30)
 - [052. A choice is a small diamond](052-a-choice-is-a-small-diamond.md) (2026-10-30)
+- [053. Success rests on cost, time, model gap and copying](053-success-rests-on-cost-time-model-gap-and-copying.md) (2026-11-05)
 
 ## Former IDs
 
@@ -65,27 +66,27 @@ Until 2026-10-15 each decision had a number. Commit messages and the dated resul
 |---|---|
 | D1 | "Operations over whole-file rewrites" |
 | D2 | "Facts over coordinates" |
-| D3 | "Operations" |
-| D4 | "Operations" |
-| D5 | "Checking and failure" |
+| D3 | DESIGNS.md, "Operations are the only way a diagram changes" |
+| D4 | DESIGNS.md, "Operations are the only way a diagram changes" |
+| D5 | DESIGNS.md, "Every write is checked, and each defect has an owner" |
 | D6 | "Facts over coordinates" |
 | D7 | "Rows unseen, groups as systems" |
-| D8 | "Looks" |
+| D8 | DESIGNS.md, "Looks are free, while shape and dash follow the kind" |
 | D9 | PHILOSOPHY.md, "Who draws?" |
 | D10 | "Layout computed again on every change" |
 | D11 | "Our own gap router" |
 | D12 | "Bundled fonts" |
 | D13 | "Our own SVG writer" |
 | D14 | "Defects owned by who can fix them" |
-| D15 | "Output and determinism" |
-| D16 | "Interfaces" |
-| D17 | "Interfaces" |
+| D15 | DESIGNS.md, "The same file gives the same picture on any machine" |
+| D16 | DESIGNS.md, "The command line comes first, and the help is the agent's only reference" |
+| D17 | DESIGNS.md, "The command line comes first, and the help is the agent's only reference" |
 | D18 | "Git as the history" |
 | D19 | "TypeScript on Node" |
 | D20 | PHILOSOPHY.md, "Who draws?" |
-| D21 | "Platform and dependencies" |
-| D22 | "File format" |
-| D23 | "Platform and dependencies" |
+| D21 | DESIGNS.md, "Every dependency allows use in an MIT project" |
+| D22 | DESIGNS.md, "What grafical cannot fully read, it refuses" |
+| D23 | DESIGNS.md, "Every dependency allows use in an MIT project" |
 | D24 | "The engine picks a new box's slot" |
 | D25 | "A target picture with measured rules" |
 | D26 | "Curation stays with the agent" |

@@ -59,6 +59,7 @@
   - The decision on lines meeting any side says a line between two boxes of one row stays in the gutter below when one box lies under a group's label.
   - A comment in the router says so too.
   - The keep-out spans the router reads hold band labels and walls and lane sides but no group label.
+  - The changelog still promises that such a line stays below.
 - created: 2026-11-04
 - status: HALT
 - found: writing the routing spec from the router's code on 2026-11-04
@@ -69,8 +70,7 @@
 
 - description:
   - [F2.3: Alignment](../features/F2-layout.md#f23-alignment) says an aligned box's row slides sideways as one block.
-  - It says rows that would follow each other are refused as `alignment-cycle`.
-  - The code joins the aligned box to its target's column instead and has no `alignment-cycle`.
+  - The code joins the aligned box to its target's column instead.
 - created: 2026-11-04
 - status: HALT
 - found: writing the placement spec from the layout code on 2026-11-04
@@ -84,6 +84,8 @@
   - The tests assert that every other box keeps its row and order and group and lane and alignment.
   - They measure how far boxes move instead of limiting it.
   - AGENTS.md now describes what the tests do.
+  - [4. A change moves only what it names](../DESIGNS.md#4-a-change-moves-only-what-it-names) and [F2.1: Placing every box](../features/F2-layout.md#f21-placing-every-box) still promise a fixed list.
+  - [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md) says the column grid does not keep that list.
 - created: 2026-11-04
 - status: HALT
 - found: writing the placement spec from `test/layout/stability.ts` on 2026-11-04
@@ -130,9 +132,43 @@
 - description:
   - The roadmap guide asks every checkpoint for exit criteria that point to a goal.
   - Seven sub-checkpoints of CP1 were built before the goals existed and say they have none.
+  - [CP2.3: Boxes](ROADMAP.md#cp23-boxes) and [CP2.4: Containers](ROADMAP.md#cp24-containers) and [CP2.5: Direction and views](ROADMAP.md#cp25-direction-and-views) are accepted by a test and say none yet.
+  - [CP4.1: The npm package](ROADMAP.md#cp41-the-npm-package) says none yet too.
+  - An exit criterion could name a passing fixture in place of a goal.
 - created: 2026-11-05
 - status: HALT
-- next: the owner chooses whether they keep none or point to the goals they met
+- next: the owner chooses whether these exits may name a test
+
+### [P2][DISCUSSION] Later sits in the roadmap and old checkpoint IDs have new meanings
+
+- description:
+  - The skill's guide keeps a *Later* list in FEATURES.md.
+  - [CP5: Later](ROADMAP.md#cp5-later) holds those features in the roadmap by the owner's choice.
+  - CP3 and CP4 and CP5 and the sub-checkpoints of CP2 reuse IDs that once meant something else.
+  - The guide says an old ID is never reused.
+- created: 2026-11-05
+- status: HALT
+- next: the owner confirms both exceptions or asks to renumber
+
+### [P2][DISCUSSION] The philosophy does not say pictures keep getting better
+
+- description:
+  - [What makes grafical good?](../PHILOSOPHY.md#what-makes-grafical-good) says easy and consistent and not right for every reader.
+  - [O1: The MVP bar](GOALS.md#o1-the-mvp-bar) now adds a copied picture that looks better than the original.
+  - [M3: Better every round](GOALS.md#m3-better-every-round) rests on the owner's rating.
+  - Only the owner changes the philosophy.
+- created: 2026-11-05
+- status: HALT
+- next: the owner chooses whether the stance changes
+
+### [P2][DISCUSSION] The limit on help read before a first operation
+
+- description:
+  - [C3: Token use](GOALS.md#c3-token-use) keeps a limit of 3k tokens that the owner suspended on 2026-10-17.
+  - A suspended limit in a goal is neither a target nor a measure.
+- created: 2026-11-05
+- status: HALT
+- next: the owner chooses whether it moves out of the goal or stays
 
 ### [P2][DISCUSSION] A box beside every box it connects to in a row
 
@@ -291,6 +327,15 @@
   - The lines that leave and enter a box are not kept clear of its self-loop.
 - created: 2026-10-30
 - status: OPEN
+
+### [P2][TASK] Fix the font name tables before the first release
+
+- description:
+  - The subsets' name tables still say "Thin".
+  - The OFL reserved font name "Source" needs checking.
+- created: 2026-11-05
+- status: OPEN
+- related: [006. Bundled fonts](../specs/decisions/006-bundled-fonts.md)
 
 ### [P2][TASK] Choose the reference pictures
 

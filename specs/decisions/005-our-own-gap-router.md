@@ -2,6 +2,8 @@
 
 Decided: 2026-10-11
 
+Replaced in part by specs/decisions, "The dirty work has edges": a label with no room no longer makes its line detour.
+
 ## The problem
 
 Lines must stay clear of boxes and text, and a change must move only the lines it touches. The routers on offer either lay everything out again or have licenses an MIT project cannot take.

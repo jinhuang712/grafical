@@ -76,7 +76,8 @@ Features
 ├── ⬜ F9: Import — a diagram started from an existing file
 │   ├── ⬜ F9.1: Mermaid files — start from a Mermaid file
 │   ├── ⬜ F9.2: draw.io files — start from a draw.io file
-│   └── ⬜ F9.3: Excalidraw files — start from an Excalidraw file
+│   ├── ⬜ F9.3: Excalidraw files — start from an Excalidraw file
+│   └── ⬜ F9.4: Someone else's picture — redraw a picture that has no source
 ├── ⬜ F10: Many views — several pictures of one system
 │   ├── ⬜ F10.1: Views of one file — several pictures of parts of one file
 │   ├── ⬜ F10.2: Folded groups — a group drawn as one box

@@ -2,6 +2,8 @@
 
 Decided: 2026-10-11
 
+Replaced in part by specs/decisions, "The dirty work has edges": a fact that leaves no plain form is the agent's defect.
+
 ## The problem
 
 Some defects only the agent can fix and others only the engine can avoid. A write refused for the engine's mistake leaves the agent retrying in vain.

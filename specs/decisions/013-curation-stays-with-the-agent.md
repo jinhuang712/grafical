@@ -2,7 +2,8 @@
 
 Decided: 2026-10-11
 
-Replaced in part by specs/decisions, "Records over prose": grafical prints counts and not warnings.
+- Replaced in part by specs/decisions, "Records over prose": grafical prints counts and not warnings.
+- Replaced in part by specs/decisions, "Every write prints every warning": warnings came back on every write.
 
 ## The problem
 

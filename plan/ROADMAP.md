@@ -1182,6 +1182,10 @@ The round on the private reference brief.
 
 Haiku redraws each reference picture: [Choose the reference pictures](TODO.md#p2task-choose-the-reference-pictures).
 
+**Delivers:**
+
+- [F9.4: Someone else's picture](../features/F9-import.md#f94-someone-elses-picture)
+
 ## CP4: Release 0.1.0
 
 **Status:** ⬜
@@ -1208,7 +1212,7 @@ grafical installed from npm.
 
 **Status:** ⬜
 
-`package.json` is still private at version 0.0.0.
+`package.json` is still private at version 0.0.0, and the fonts need work first: [Fix the font name tables before the first release](TODO.md#p2task-fix-the-font-name-tables-before-the-first-release).
 
 #### CP4.1.2: Publish 0.1.0
 
@@ -1232,13 +1236,7 @@ The install steps use npm in place of a clone.
 
 Features with no plan yet wait here, and one moves into a planned checkpoint when a real need brings it forward.
 
-**Exit criteria:**
-
-- **Sub-checkpoints**
-  - [CP5.1: Diagram types](#cp51-diagram-types) is met.
-  - [CP5.2: Import](#cp52-import) is met.
-  - [CP5.3: For teams](#cp53-for-teams) is met.
-  - [CP5.4: More combinations of operations](#cp54-more-combinations-of-operations) is met.
+**Exit criteria:** none, since nothing here is planned.
 
 ### CP5.1: Diagram types
 

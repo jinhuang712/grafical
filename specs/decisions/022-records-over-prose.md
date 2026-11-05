@@ -2,6 +2,8 @@
 
 Decided: 2026-10-13
 
+Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": a refusal is a block.
+
 ## The problem
 
 Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "Who owns what?"). grafical had begun to judge and advise in prose: warnings that a diagram has too many nodes "for one story", hints that pick moves by grafical's own idea of better, refusals that explain in sentences. Understanding a diagram is the coding agent's job; grafical gives it the facts to do it.

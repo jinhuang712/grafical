@@ -8,7 +8,7 @@ Decided on 2026-10-13 by the owner, asked whether two agents that state the same
 
 ## The choice
 
-- **The same file, the exact same picture.** This is "Output and determinism" as it stands.
+- **The same file, the exact same picture.** This is DESIGNS.md, "The same file gives the same picture on any machine" as it stands.
   - The same diagram file and stylesheet give the same SVG bytes and PNG pixels on any machine.
 - **The same facts, mostly the same picture.** The file keeps the order of each row's boxes as the agent stated it ("The agent states every order").
   - Two agents that add the same boxes at other places get another order in a row. grafical does not reorder a diagram to one canonical form.
