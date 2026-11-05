@@ -226,3 +226,28 @@ edges:
     expect(check(bare, bs, m).filter((x) => x.owner === "engine")).toEqual([]);
   });
 });
+
+describe('a band in a lane of its name (specs/decisions, "A band in a lane of its name draws no label")', () => {
+  const inLane = (lane: string) =>
+    readDiagram(`grafical: 1
+title: lane
+density: normal
+layers:
+  - {id: top, label: Top, nodes: [${node("a")}]}
+  - {id: stores, label: Stores, lane: l, nodes: [${node("db", "store")}]}
+lanes:
+  - {id: l, label: ${lane}}
+edges:
+  - {id: e, from: a, to: stores, kind: call}
+`) as Diagram;
+  const band = (d: Diagram) => layout(d, m).bands?.find((b) => b.id === "stores");
+
+  it("draws the lane's label alone when the two texts match", () => {
+    expect(band(inLane("Stores"))?.label).toBeUndefined();
+  });
+
+  it("draws both when they differ, and the file keeps the row's label", () => {
+    expect(band(inLane("Data team"))?.label?.runs).toBeDefined();
+    expect(writeDiagram(inLane("Stores"))).toContain("label: Stores");
+  });
+});

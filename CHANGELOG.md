@@ -8,6 +8,7 @@ grafical has not been released; the first release will be 0.1.0.
 
 ### Boxes and rows
 
+- A band in a lane whose label reads the same draws the name once, in the lane.
 - A box beside every box it connects to is now the warning `box-aside`, however it was placed.
   - It was refused when the box was placed by steps, and passed in silence in a row.
 - The new kind of box `choice` is a small diamond with no text where a line splits into several.

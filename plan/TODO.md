@@ -20,19 +20,6 @@
 - next: the owner takes the next dimension, and the three options are settled after the last
 - related: [055. A weak model draws well and a stronger one superbly](../specs/decisions/055-a-weak-model-draws-well-and-a-stronger-one-superbly.md)
 
-### [P2][DISCUSSION] A row's label is drawn twice
-
-- description:
-  - A row in a lane that is also the end of a line gets the lane's label and a band label of its own.
-  - The band label goes above the first stretch of its row with no box under it.
-  - That keeps lines into a box's top from crossing it, but moves it from the band's top left.
-  - Option one drops a band's label when its row is a lane's only row.
-  - Option two drops it only when the two texts match.
-  - Option three puts the label at the band's top left and lets lines pass it.
-- created: 2026-10-15
-- status: HALT
-- next: the owner chooses an option
-
 ### [P2][DISCUSSION] A diamond's lines leave at its slanted edge a little
 
 - description:

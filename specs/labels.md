@@ -120,6 +120,7 @@ A label with no such place stays at the wall's start or its top, and the write i
 ## Bands, bars and lanes
 
 - **A band's label** sits in its head, 10 px from the top.
+  - A band in a lane whose label reads the same draws none.
   - It takes the first stretch of the row with no box below it that is the label's width plus 32 px.
   - With no such stretch it sits left of the content, 16 px from the band's side.
   - It is the one label that moves lines: vertical lines keep 6 px from it.
@@ -148,3 +149,4 @@ The legend wraps onto more lines when it is wider than its room: the larger of i
 - [064. A note is what the agent states](decisions/064-a-note-is-what-the-agent-states.md)
 - [065. Unreadable is refused and costly is reported](decisions/065-unreadable-is-refused-and-costly-is-reported.md)
 - [051. A label sits on its straight vertical line](decisions/051-a-label-sits-on-its-straight-vertical-line.md)
+- [076. A band in a lane of its name draws no label](decisions/076-a-band-in-a-lane-of-its-name-draws-no-label.md)

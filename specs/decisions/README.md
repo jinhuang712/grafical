@@ -79,6 +79,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [073. The target picture's rules are not reported](073-the-target-picture-s-rules-are-not-reported.md) (2026-11-06)
 - [074. Safety and licenses are no design guidelines](074-safety-and-licenses-are-no-design-guidelines.md) (2026-11-06)
 - [075. A box beside its neighbours is a warning](075-a-box-beside-its-neighbours-is-a-warning.md) (2026-11-06)
+- [076. A band in a lane of its name draws no label](076-a-band-in-a-lane-of-its-name-draws-no-label.md) (2026-11-06)
 
 ## Former IDs
 

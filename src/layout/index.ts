@@ -703,16 +703,20 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   layers.forEach((l, i) => {
     if (!ends.bands.has(l.id) || !Number.isFinite(contentLeft)) return;
     const stands = barStands.get(i);
+    // The lane already says it (specs/decisions, "A band in a lane of its name draws no label").
+    const laneId = d.layers.find((x) => x.id === l.id)?.lane;
+    const inLane = d.lanes?.find((x) => x.id === laneId)?.label === l.label;
+    const label = inLane ? undefined : l.label;
     // A row with no label draws no name (specs/decisions, "A row with a look is drawn"), and its band has no head.
-    if (l.label === undefined) {
+    if (label === undefined) {
       const labelX = contentLeft - BAND.padX + BAND.labelInset;
       bandRows.set(i, { id: l.id, labelX, labelW: 0, bar: stands !== undefined });
       return;
     }
-    const labelW = m.measure(l.label, bandStyle).width;
+    const labelW = m.measure(label, bandStyle).width;
     if (stands !== undefined) {
       // A bar's label is seated once the lines that pass it are routed, below.
-      bandRows.set(i, { id: l.id, label: l.label, labelX: Number.NaN, labelW, bar: true });
+      bandRows.set(i, { id: l.id, label, labelX: Number.NaN, labelW, bar: true });
       return;
     }
     // The label goes above the first stretch of its row with no node below it, so
@@ -729,7 +733,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       if (n !== undefined) edge = Math.max(edge, n.x + n.w);
     }
     labelX ??= contentLeft - BAND.padX - labelW - GROUP.clear;
-    bandRows.set(i, { id: l.id, label: l.label, labelX, labelW, bar: false });
+    bandRows.set(i, { id: l.id, label, labelX, labelW, bar: false });
   });
 
   // Where no vertical line may pass: a band's label, above its row, and the label of an

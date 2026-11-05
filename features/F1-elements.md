@@ -288,6 +288,7 @@ One arrow can point at a whole system instead of each of its parts.
 
 - Either end of a line may be a box or a group or a row or a lane.
   - A row a line ends at is drawn as a band with its label above it.
+  - A band in a lane of the same name draws the name once.
   - A line meets the band straight past its other end where nothing is in the way.
 - A row with no box may be an end too, when the other end holds a box: a gateway or a message bus that every request passes.
   - It is drawn as one 40 px bar across the content with its label at the left ([038. A row with no box as one bar](../specs/decisions/038-a-row-with-no-box-as-one-bar.md)).
