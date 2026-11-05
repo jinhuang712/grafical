@@ -94,7 +94,7 @@ Two ways to do one thing look generous, and they cost a choice with no differenc
 
 **Looks are free. Places are facts.**
 
-How a thing looks is the agent's choice, in any value: a color as `#rrggbb`, a line as thick as it likes, a theme or a stylesheet of its own. Agents already judge style well. Where a thing sits is different. The agent states it as a fact, such as a row, an order, a column or a number of steps from another box, and the engine turns the fact into coordinates. No caller moves a box pixel by pixel or bends a line by hand.
+How a thing looks is the agent's choice, in any value, since agents already judge style well. Where a thing sits is different: coordinates are the work models fail at. So the agent states what is true of a place, and the engine turns it into positions. Nobody places anything by the pixel.
 
 > anything. dont constrain it. at the end its a svg/png/textBox or smth
 >
