@@ -21,6 +21,22 @@
 - next: the owner takes the next dimension, and the three options are settled after the last
 - related: [055. A weak model draws well and a stronger one superbly](../specs/decisions/055-a-weak-model-draws-well-and-a-stronger-one-superbly.md)
 
+### [P1][DISCUSSION] The legend needs a design of its own
+
+- description:
+  - The owner sees a legend as a small diagram.
+  - A picture may have one or none.
+  - Its entries may run across, down or in a grid.
+  - It is open what goes in it and how each sample is drawn.
+  - `diagram legend` explains line styles and widths and marks but not a node's fill.
+  - A key of small nodes such as "Works" and "Bug" and "Fixed" is drawn as a group of plain nodes.
+  - Every one of them gets `lonely-box`, six warnings for a picture that is right.
+- created: 2026-10-30
+- updated: 2026-11-06
+- status: HALT
+- next: the owner designs the legend in a talk of its own
+- related: [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
+
 ### [P2][DISCUSSION] Labels sit close to the lines beside them in a crowded gutter
 
 - description:
@@ -34,18 +50,6 @@
 - status: HALT
 - next: labels on lines may settle this, so look again once they are built
 - related: [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
-
-### [P2][DISCUSSION] The legend cannot show a box's look
-
-- description:
-  - `diagram legend` explains line styles and widths and marks but not a box's fill.
-  - A key of small boxes such as "Works" and "Bug" and "Fixed" is drawn as a group of plain boxes.
-  - Every one of them gets `lonely-box`, six warnings for a picture that is right.
-  - Either a legend entry for a box's look or a `lonely-box` that leaves out a key would fix it.
-- created: 2026-10-30
-- status: HALT
-- next: the owner chooses a legend entry for a box's look or a `lonely-box` that leaves out a key
-- related: [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
 ### [P2][ISSUE] A step's badge across a lane's side
 
