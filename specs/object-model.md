@@ -5,7 +5,7 @@
 A diagram is a set of objects with attributes and relations. This spec holds the model the diagram file will state and the file's form, which are designed together because each shapes the other. grafical is the file's only writer, and a model reads it through `show`, so the file is shaped for people in a diff and for git.
 
 ```text
-the root      global looks, rules
+the root      global looks, styles, checks
   type        what a sort of thing looks like
   object      which one it is and where it sits
   relation    layers, groups, columns, lanes, edges and relative places
@@ -35,7 +35,7 @@ A block opens with one of a fixed list of sorts.
 |---|---|
 | `<diagram>` | the root, with the title, the theme and global looks |
 | `<type>` | a sort of node or edge |
-| `<style>` | a style rule |
+| `<style>` | a named look that objects mark |
 | `<check>` | a constraint |
 | `<layer>` | a layer |
 | `<group>` | a group, which may follow another |
@@ -83,7 +83,7 @@ Structure is not a type's work. A group may follow another group with `like`, an
 The root holds what applies to the whole diagram.
 
 - **Global looks:** the theme, the density, the shape of lines and type sizes.
-- **Style rules:** every look grafical can draw, for what a condition picks: regions and attributes, combined with and, or and not.
+- **Styles:** every look grafical can draw, under a name, and an object that wants one names it with `style`.
 - **Constraints:** rules an agent states for its own diagram, each saying whether it warns or refuses.
 
 Defaults are the model's edge and stay out of the file.
@@ -91,7 +91,7 @@ Defaults are the model's edge and stay out of the file.
 ## Where a look comes from
 
 ```text
-an object  >  a type  >  a style rule  >  the theme
+an object  >  a style  >  a type  >  the theme
 ```
 
 The most specific wins, so a reader can find a value's source by looking down this list.

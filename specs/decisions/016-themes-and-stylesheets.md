@@ -5,7 +5,6 @@ Decided: 2026-10-11
 - Replaced in part by specs/decisions, "Marks of any kind": a mark takes its own colors.
 - Replaced in part by specs/decisions, "Edge weights": a line takes its own width.
 - Replaced in part by specs/decisions, "A box may take a look of its own": a box takes its own colors.
-- Replaced in part by specs/decisions, "A style may be as rich as it likes": a style picks by a condition.
 
 ## The problem
 

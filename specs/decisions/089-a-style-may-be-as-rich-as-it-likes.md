@@ -4,17 +4,17 @@ Decided: 2026-11-06
 
 ## The problem
 
-A `<style>` picks objects by a condition and gives them a look, and a narrow condition would leave an agent short of what it wants to say.
+An agent wants one look on objects of many sorts. A style that picks its own objects by a condition would make a look hard to trace, since an object would not say what touches it.
 
 ## The choice
 
-A style's condition may name regions and attributes and combine them with and, or and not. It may set every look that grafical can draw. `show` gives each value's source, so that a look can always be traced.
+A `<style>` holds every look grafical can draw and says nothing of who uses it. An object that wants it names it with `style`. An object beats a style, a style beats a type, and a type beats the theme. `show` gives each value's source.
 
 ## Not chosen
 
-- One region in each condition.
-  - The owner wants style as rich as it can be.
+- A condition on the style, as in CSS selectors.
+  - The owner holds that whoever uses a style marks it, so an object says all that touches it.
 
 ## Consequences
 
-One object's look can come from many places, which the fixed order of sources and `show` must keep readable. Conflicts between two styles need a rule when it is built, and the last one in the file is the plain choice.
+An agent names a style on each object that wants it, and a look that follows a whole group is named on each member or on the group. A named look of a stylesheet is a style.
