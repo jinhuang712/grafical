@@ -212,7 +212,7 @@ A mark's file must sit inside the diagram's folder, is pinned by its SHA-256, an
 
 ## 15. Every dependency allows use in an MIT project
 
-grafical is MIT-licensed, so every runtime dependency is MIT, ISC, BSD or MPL-2.0, the fonts are under the SIL Open Font License, and the Twemoji graphics are CC-BY 4.0, which asks for attribution. Cost: LGPL and GPL libraries are out, such as `libavoid-js` and `elkjs`, whatever they would save.
+grafical is MIT-licensed, so every runtime dependency is MIT, ISC, BSD or MPL-2.0, the fonts are under the SIL Open Font License, and the Twemoji graphics are CC-BY 4.0, which asks for attribution. Cost: LGPL, GPL and EPL libraries are out, such as `libavoid-js` and `elkjs`, whatever they would save.
 
 **Ask:** Does the license of this dependency allow use in an MIT project?
 
