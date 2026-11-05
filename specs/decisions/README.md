@@ -107,7 +107,7 @@ Until 2026-10-15 each decision had a number. Commit messages and the dated resul
 | D5 | DESIGNS.md, "Every write is checked, and each defect has an owner" |
 | D6 | "Facts over coordinates" |
 | D7 | "Rows unseen, groups as systems" |
-| D8 | DESIGNS.md, "Looks are free, while shape and dash follow the kind" |
+| D8 | DESIGNS.md, "Looks are free, while shape and dash follow the type" |
 | D9 | PHILOSOPHY.md, "Who draws?" |
 | D10 | "Layout computed again on every change" |
 | D11 | "Our own gap router" |

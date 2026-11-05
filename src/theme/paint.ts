@@ -1,4 +1,4 @@
-// Paint: every colour and stroke value of a theme, by role (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "Themes and stylesheets").
+// Paint: every colour and stroke value of a theme, by role (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Themes and stylesheets").
 // The SVG writer reads roles from a scene's paint and never holds a hex code itself.
 // PAINT is the default theme's paint; themes.ts holds the others.
 
@@ -13,7 +13,7 @@ export interface NodePaint {
 
 export interface EdgePaint {
   stroke: string;
-  /** Dash pattern of a dashed or dotted line: async and optional edges (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "Lines meet any side"). */
+  /** Dash pattern of a dashed or dotted line: async and optional edges (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
   dash?: string;
 }
 
@@ -96,7 +96,7 @@ const STYLES: Record<EdgeKind, LineStyleName> = {
   optional: "dotted",
 };
 
-/** The line style an edge kind is drawn in. The kind decides it (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "Lines meet any side"). */
+/** The line style an edge kind is drawn in. The kind decides it (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
 export function lineStyle(kind: EdgeKind): LineStyleName {
   return STYLES[kind];
 }

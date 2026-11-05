@@ -28,7 +28,7 @@ The title names the picture, and two more texts tell a reader what they see.
 - The footnote says what the diagram leaves out, such as "Not shown: Redis name cache".
 - Without `--text` the subtitle or the footnote is cleared.
 
-- **Design:** [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:** [Placement: rows down the page](../specs/placement.md#rows-down-the-page)
 
 **Stories:**
@@ -51,7 +51,7 @@ grafical diagram legend <file> solid|dashed|dotted|plain|--weight <weight>|--mar
 - Marks with the same name share one entry.
 - When the legend is wider than its room, it wraps onto more lines.
 
-- **Design:** [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:** [Text placement: the legend](../specs/labels.md#the-legend)
 - **Why:**
   - [028. A legend for widths and marks](../specs/decisions/028-a-legend-for-widths-and-marks.md)
@@ -82,7 +82,7 @@ grafical diagram style <file> [<style>]
   - Changing it changes every diagram that names it.
 - Without a style, the default theme applies.
 
-- **Design:** [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:** [The theme: themes and stylesheets](../specs/theme.md#themes-and-stylesheets)
 - **Why:** [016. Themes and stylesheets](../specs/decisions/016-themes-and-stylesheets.md)
 
@@ -101,7 +101,7 @@ A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and ove
 
 - **Design:**
   - [10. What grafical cannot fully read, it refuses](../DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses)
-  - [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+  - [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:**
   - [The theme: themes and stylesheets](../specs/theme.md#themes-and-stylesheets)
   - [The .grafical file](../specs/grafical-file.md)
@@ -117,7 +117,7 @@ A team's own typeface in the picture.
 
 - **Design:**
   - [9. The same file gives the same picture on any machine](../DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
-  - [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+  - [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 
 **Stories:**
 
@@ -136,7 +136,7 @@ grafical label align <file> <id> left|center|right
 - A node's sublabel aligns with its label.
 - A label that no longer fits is refused as before.
 
-- **Design:** [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+- **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **Why:** [067. An agent sets a label's breaks and its alignment](../specs/decisions/067-an-agent-sets-a-label-s-breaks-and-its-alignment.md)
 
 **Stories:**

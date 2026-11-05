@@ -83,7 +83,7 @@ Roadmap
 │   ├── ⬜ CP2.3: Boxes
 │   │   ├── ⬜ Corner marks checked
 │   │   ├── ⬜ Marks by name
-│   │   ├── ⬜ Box looks
+│   │   ├── ⬜ Node looks
 │   │   └── ⬜ Size multiples
 │   ├── ⬜ CP2.4: Containers
 │   │   ├── ⬜ Column headings
@@ -96,9 +96,9 @@ Roadmap
 │   │   ├── ⬜ Views of one file
 │   │   └── ⬜ Folded groups
 │   ├── ⬜ CP2.6: Lines and labels
-│   │   ├── ⬜ Line sides
-│   │   ├── ⬜ Line shapes
-│   │   ├── ⬜ Labels on lines
+│   │   ├── ⬜ Edge sides
+│   │   ├── ⬜ Edge shapes
+│   │   ├── ⬜ Labels on edges
 │   │   ├── ⬜ Label text
 │   │   ├── ⬜ Region gaps
 │   │   ├── ⬜ Edge looks
@@ -255,13 +255,13 @@ The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, a
 
 **Delivers:**
 
-- [F2.2: Rows and order](../features/F2-layout.md#f22-rows-and-order)
+- [F2.2: Layers and order](../features/F2-layout.md#f22-layers-and-order)
 - [F1.3.1: Groups](../features/F1-elements.md#f131-groups)
-- [F2.1: Placing every box](../features/F2-layout.md#f21-placing-every-box)
+- [F2.1: Placing every node](../features/F2-layout.md#f21-placing-every-node)
 - [F1.1.6: Emphasis](../features/F1-elements.md#f116-emphasis)
 - [F2.6: Spacing](../features/F2-layout.md#f26-spacing)
 - [F4.1: Title, subtitle and footnote](../features/F4-look.md#f41-title-subtitle-and-footnote)
-- [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
+- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
@@ -280,7 +280,7 @@ Lines that end at containers, swimlanes, themes and stylesheets, and the live vi
 
 **Delivers:**
 
-- [F1.2.5: Ends at a group, a row or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-row-or-a-lane)
+- [F1.2.5: Ends at a group, a layer or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-layer-or-a-lane)
 - [F1.3.4: Lanes](../features/F1-elements.md#f134-lanes)
 - [F4.3: Themes and stylesheets](../features/F4-look.md#f43-themes-and-stylesheets)
 - [F4.4: The stylesheet file](../features/F4-look.md#f44-the-stylesheet-file)
@@ -347,10 +347,10 @@ New line kinds, lines that meet a box on any side, hops and dots, the flowchart 
 
 **Delivers:**
 
-- [F1.2.1: Kinds](../features/F1-elements.md#f121-kinds)
+- [F1.2.1: Types](../features/F1-elements.md#f121-types)
 - [F1.2.2: Arrowheads at both ends](../features/F1-elements.md#f122-arrowheads-at-both-ends)
-- [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
-- [F1.1.1: Kinds and shapes](../features/F1-elements.md#f111-kinds-and-shapes)
+- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
+- [F1.1.1: Types and shapes](../features/F1-elements.md#f111-types-and-shapes)
 - [F1.3.1: Groups](../features/F1-elements.md#f131-groups)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
@@ -383,7 +383,7 @@ Records in place of prose, `try`, bundled fan-outs, equal heights in a row, room
 - [F3.3: Trying a change](../features/F3-editing.md#f33-trying-a-change)
 - [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
 - [F2.4: Columns](../features/F2-layout.md#f24-columns)
-- [F2.5: Steps from another box](../features/F2-layout.md#f25-steps-from-another-box)
+- [F2.5: Steps from another node](../features/F2-layout.md#f25-steps-from-another-node)
 - [F1.3.6: Walls](../features/F1-elements.md#f136-walls)
 - [F1.3.7: Notes](../features/F1-elements.md#f137-notes)
 - [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
@@ -412,14 +412,14 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 
 **Delivers:**
 
-- [F2.2: Rows and order](../features/F2-layout.md#f22-rows-and-order)
+- [F2.2: Layers and order](../features/F2-layout.md#f22-layers-and-order)
 - [F3.5: Refusals](../features/F3-editing.md#f35-refusals)
 - [F5.3: Warnings](../features/F5-checking.md#f53-warnings)
 - [F7.1: Help](../features/F7-help.md#f71-help)
 - [F7.2: Guides](../features/F7-help.md#f72-guides)
 - [F1.3.2: Copying a group](../features/F1-elements.md#f132-copying-a-group)
 - [F1.2.4: Numbered steps](../features/F1-elements.md#f124-numbered-steps)
-- [F1.2.5: Ends at a group, a row or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-row-or-a-lane)
+- [F1.2.5: Ends at a group, a layer or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-layer-or-a-lane)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
@@ -474,8 +474,8 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 
 **Delivers:**
 
-- [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
-- [F1.1.1: Kinds and shapes](../features/F1-elements.md#f111-kinds-and-shapes)
+- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
+- [F1.1.1: Types and shapes](../features/F1-elements.md#f111-types-and-shapes)
 - [F1.3.7: Notes](../features/F1-elements.md#f137-notes)
 
 **Exit criteria:**
@@ -493,14 +493,14 @@ Boxes carry marks that stay clear of lines and colors of their own.
 
 - ⬜ Corner marks checked: A corner mark is checked against nearby lines.
 - ⬜ Marks by name: A mark can be taken by name.
-- ⬜ Box looks: A box takes colors of its own or a named look.
+- ⬜ Node looks: A box takes colors of its own or a named look.
 - ⬜ Size multiples: A node takes multiples of its width and height.
 
 **Delivers:**
 
 - [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
 - [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
-- [F1.1.7: Box looks](../features/F1-elements.md#f117-box-looks)
+- [F1.1.7: Node looks](../features/F1-elements.md#f117-node-looks)
 - [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
 
 **Exit criteria:**
@@ -529,7 +529,7 @@ Containers that cross and nest and take colors of their own, and columns that ca
 - [F1.3.5: Lanes both ways](../features/F1-elements.md#f135-lanes-both-ways)
 - [F1.3.3: Deeper nesting](../features/F1-elements.md#f133-deeper-nesting)
 - [F1.3.8: Container looks](../features/F1-elements.md#f138-container-looks)
-- [F1.2.5: Ends at a group, a row or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-row-or-a-lane)
+- [F1.2.5: Ends at a group, a layer or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-layer-or-a-lane)
 
 **Exit criteria:**
 
@@ -570,9 +570,9 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 
 **Tasks:**
 
-- ⬜ Line sides: An agent states the side a line leaves or enters by.
-- ⬜ Line shapes: A command draws lines square, round or smooth.
-- ⬜ Labels on lines: A line carries its label by default, measured over the saved drafts before it lands.
+- ⬜ Edge sides: An agent states the side a line leaves or enters by.
+- ⬜ Edge shapes: A command draws lines square, round or smooth.
+- ⬜ Labels on edges: A line carries its label by default, measured over the saved drafts before it lands.
 - ⬜ Label text: An agent sets a label's breaks and its alignment.
 - ⬜ Region gaps: The gap between two regions takes a multiple.
 - ⬜ Edge looks: An edge takes a color of its own or a named look.
@@ -580,9 +580,9 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 
 **Delivers:**
 
-- [F2.7.1: Line sides](../features/F2-layout.md#f271-line-sides)
-- [F2.7.2: Line shapes](../features/F2-layout.md#f272-line-shapes)
-- [F2.7.3: Labels on lines](../features/F2-layout.md#f273-labels-on-lines)
+- [F2.7.1: Edge sides](../features/F2-layout.md#f271-edge-sides)
+- [F2.7.2: Edge shapes](../features/F2-layout.md#f272-edge-shapes)
+- [F2.7.3: Labels on edges](../features/F2-layout.md#f273-labels-on-edges)
 - [F4.6: Label text](../features/F4-look.md#f46-label-text)
 - [F2.6.1: Region gaps](../features/F2-layout.md#f261-region-gaps)
 - [F1.2.6: Edge looks](../features/F1-elements.md#f126-edge-looks)

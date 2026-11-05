@@ -9,20 +9,20 @@ What grafical does, from the side of the agent that draws and the person who ask
 ```
 Features
 ├── 🚧 F1: Elements — what a diagram is made of (gaps in boxes and containers)
-│   ├── 🚧 F1.1: Boxes — the parts of the system (diamond corners and corner marks not checked and size multiples and marks by name and box looks not built)
-│   │   ├── 🚧 F1.1.1: Kinds and shapes — a box's kind sets its shape (a line may still meet a diamond's slanted edge)
+│   ├── 🚧 F1.1: Nodes — the parts of the system (diamond corners and corner marks not checked and size multiples and marks by name and box looks not built)
+│   │   ├── 🚧 F1.1.1: Types and shapes — a box's kind sets its shape (a line may still meet a diamond's slanted edge)
 │   │   ├── ✅ F1.1.2: Labels and sublabels — a label and a quieter sublabel
 │   │   ├── 🚧 F1.1.3: Sizes — sized to the text, or by a step (multiples not built)
 │   │   ├── 🚧 F1.1.4: Marks — up to five small marks on a box (a corner mark is not checked against nearby lines)
 │   │   ├── ⬜ F1.1.5: Marks by name — a mark from one bundled icon set
 │   │   ├── ✅ F1.1.6: Emphasis — at most two boxes stand out
-│   │   └── ⬜ F1.1.7: Box looks — colors of a box's own
-│   ├── 🚧 F1.2: Lines — what connects to what (a second way to draw a line thick and bars across groups and edge looks not built)
-│   │   ├── ✅ F1.2.1: Kinds — a line's kind sets its style
+│   │   └── ⬜ F1.1.7: Node looks — colors of a box's own
+│   ├── 🚧 F1.2: Edges — what connects to what (a second way to draw a line thick and bars across groups and edge looks not built)
+│   │   ├── ✅ F1.2.1: Types — a line's kind sets its style
 │   │   ├── ✅ F1.2.2: Arrowheads at both ends — two-way lines
 │   │   ├── 🚧 F1.2.3: Weight — thicker lines for what matters more (`edge --emphasize` not yet removed)
 │   │   ├── ✅ F1.2.4: Numbered steps — a number on a line
-│   │   ├── 🚧 F1.2.5: Ends at a group, a row or a lane — one arrow to a whole system (a bar cannot yet cross a group)
+│   │   ├── 🚧 F1.2.5: Ends at a group, a layer or a lane — one arrow to a whole system (a bar cannot yet cross a group)
 │   │   └── ⬜ F1.2.6: Edge looks — a color of an edge's own
 │   └── 🚧 F1.3: Containers — what gathers boxes (deeper nesting and lanes both ways and container looks not built)
 │       ├── ✅ F1.3.1: Groups — a system drawn as one frame
@@ -34,18 +34,18 @@ Features
 │       ├── ✅ F1.3.7: Notes — a short text on a box, a line or a group
 │       └── ⬜ F1.3.8: Container looks — colors of a group's or a lane's own
 ├── 🚧 F2: Layout — where everything goes (region gaps and line sides and smooth lines and labels on turning lines and flow direction not built)
-│   ├── ✅ F2.1: Placing every box — grafical gives every box its place
-│   ├── ✅ F2.2: Rows and order — a box's row and its place in it
+│   ├── ✅ F2.1: Placing every node — grafical gives every box its place
+│   ├── ✅ F2.2: Layers and order — a box's row and its place in it
 │   ├── ✅ F2.3: Alignment — one box above or below another
 │   ├── 🚧 F2.4: Columns — a second placement fact beside rows (headings not built)
 │   │   └── ⬜ F2.4.1: Column headings — a label above a column
-│   ├── ✅ F2.5: Steps from another box — a box some cells from another
+│   ├── ✅ F2.5: Steps from another node — a box some cells from another
 │   ├── 🚧 F2.6: Spacing — compact, normal or airy (region gaps not built)
 │   │   └── ⬜ F2.6.1: Region gaps — more room between two regions
-│   ├── 🚧 F2.7: How lines are drawn — grafical routes every line (line sides and smooth lines and labels on turning lines not built)
-│   │   ├── ⬜ F2.7.1: Line sides — the side a line leaves or enters by
-│   │   ├── 🚧 F2.7.2: Line shapes — square, round or smooth (round is only in the stylesheet and smooth is not built)
-│   │   └── 🚧 F2.7.3: Labels on lines — a line carries its label (only on straight vertical lines)
+│   ├── 🚧 F2.7: How edges are drawn — grafical routes every line (line sides and smooth lines and labels on turning lines not built)
+│   │   ├── ⬜ F2.7.1: Edge sides — the side a line leaves or enters by
+│   │   ├── 🚧 F2.7.2: Edge shapes — square, round or smooth (round is only in the stylesheet and smooth is not built)
+│   │   └── 🚧 F2.7.3: Labels on edges — a line carries its label (only on straight vertical lines)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── 🚧 F3.1: Operations — one named command per change (the file still follows the command and verbs are not flags yet and names still differ)
@@ -68,15 +68,15 @@ Features
 │   ├── 🚧 F5.1: Show — the diagram as facts (one object by its ID not built)
 │   ├── ✅ F5.2: Counts — facts about how the picture is drawn
 │   ├── ✅ F5.3: Warnings — what the picture draws poorly
-│   │   ├── ✅ F5.3.1: Bent lines — `bent-line`
-│   │   ├── ✅ F5.3.2: Lines passing a row — `passing-row`
-│   │   ├── ✅ F5.3.3: Lines across a group — `line-across-group`
-│   │   ├── ✅ F5.3.4: Tight lines — `tight-lines`
+│   │   ├── ✅ F5.3.1: Bent edges — `bent-line`
+│   │   ├── ✅ F5.3.2: Edges passing a layer — `passing-row`
+│   │   ├── ✅ F5.3.3: Edges across a group — `line-across-group`
+│   │   ├── ✅ F5.3.4: Tight edges — `tight-lines`
 │   │   ├── ✅ F5.3.5: Crowded labels — `crowded-label`
-│   │   ├── ✅ F5.3.6: Lonely boxes — `lonely-box`
-│   │   ├── ✅ F5.3.7: A line per member — `line-per-member`
+│   │   ├── ✅ F5.3.6: Lonely nodes — `lonely-box`
+│   │   ├── ✅ F5.3.7: An edge per member — `line-per-member`
 │   │   ├── ✅ F5.3.8: Crossings — `crossing`
-│   │   └── ✅ F5.3.9: Boxes aside — `box-aside`
+│   │   └── ✅ F5.3.9: Nodes aside — `box-aside`
 │   ├── ✅ F5.4: Check — defects, warnings and counts on demand
 │   └── ⬜ F5.5: Checks of an agent's own — rules a diagram sets itself
 ├── ✅ F6: Output — what a diagram leaves behind

@@ -1,4 +1,4 @@
-// Node shapes (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "Every layered diagram type"). Every node is laid out as a box, and its kind
+// Node shapes (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Every layered diagram type"). Every node is laid out as a box, and its kind
 // decides the outline drawn inside that box: how much room its text has, where
 // the text block sits, and where a line that ends at the box's side meets the
 // outline. Layout, the checker and the renderer all ask here, so they agree.

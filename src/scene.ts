@@ -146,9 +146,9 @@ export interface SceneNote {
   blocked?: true;
 }
 
-/** One line style, line width or mark in the legend, with its sample (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "A legend for widths and marks"). */
+/** One line style, line width or mark in the legend, with its sample (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "A legend for widths and marks"). */
 export interface SceneLegendItem {
-  /** The line style the sample is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the kind"). A mark's entry has none. */
+  /** The line style the sample is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type"). A mark's entry has none. */
   style?: LineStyleName;
   /** The sample's width in pixels when it is not the thin one: a line width's entry (specs/decisions, "Edge weights", "A legend for widths and marks"). */
   width?: number;
@@ -211,7 +211,7 @@ export interface Scene {
   subtitle?: PlacedText;
   /** The footnote at the bottom (specs/decisions, "Curation stays with the agent"). */
   note?: PlacedText;
-  /** The line styles the diagram uses, top right (DESIGNS.md, "Looks are free, while shape and dash follow the kind"). Empty when it has no edges. */
+  /** The line styles the diagram uses, top right (DESIGNS.md, "Looks are free, while shape and dash follow the type"). Empty when it has no edges. */
   legend?: SceneLegendItem[];
   layers: SceneLayer[];
   /** System boxes, drawn behind nodes and edges (specs/decisions, "Rows unseen, groups as systems"). */

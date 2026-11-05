@@ -1,4 +1,4 @@
-// The legend (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "Lines meet any side", "A legend for widths and marks"): what it lists and how it wraps.
+// The legend (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side", "A legend for widths and marks"): what it lists and how it wraps.
 
 import { describe, expect, it } from "vitest";
 import { layout } from "../../src/layout/index.ts";

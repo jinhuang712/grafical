@@ -1,4 +1,4 @@
-// The diagram model: the facts a diagram file holds (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "Facts over coordinates", "Rows unseen, groups as systems").
+// The diagram model: the facts a diagram file holds (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Facts over coordinates", "Rows unseen, groups as systems").
 // Positions are never part of the model. The engine computes them (specs/decisions, "Layout computed again on every change").
 
 export const FORMAT_VERSION = 1;
@@ -28,7 +28,7 @@ export const DENSITIES = ["compact", "normal", "airy"] as const;
 export type Density = (typeof DENSITIES)[number];
 
 /**
- * The line styles an edge is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "Lines meet any side"): call and data are solid, async dashed,
+ * The line styles an edge is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"): call and data are solid, async dashed,
  * optional dotted, and a link is a plain line with no arrowhead. The legend names each.
  */
 export const LINE_STYLES = ["solid", "dashed", "dotted", "plain"] as const;

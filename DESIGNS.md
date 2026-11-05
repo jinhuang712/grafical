@@ -14,7 +14,7 @@ grafical is designed around 14 guidelines:
 8. **Answers are data a script can read:** every answer is keys and values
 9. **The same file gives the same picture on any machine:** nothing depends on the host
 10. **What grafical cannot fully read, it refuses:** a file is read whole or refused
-11. **Looks are free, while shape and dash follow the kind:** colors and widths take any value while the kind sets the shape
+11. **Looks are free, while shape and dash follow the type:** colors and widths take any value while the kind sets the shape
 12. **The command line comes first, and the help is the agent's only reference:** an agent learns and uses grafical from its commands alone
 13. **Every search the engine runs has a cap:** no step searches without a bound
 14. **One shortest way for each situation:** a form that only repeats another is removed
@@ -75,7 +75,7 @@ The layout is computed again from the facts after every write, and positions are
   - [072. A change keeps the structure and positions may shift](specs/decisions/072-a-change-keeps-the-structure-and-positions-may-shift.md)
 - **How it works:** [Placement](specs/placement.md)
 
-## 5. The engine routes every line, in plain forms
+## 5. The engine routes every edge, in plain forms
 
 Edges run orthogonally through the gaps between layers and nodes. The engine picks each edge's ports, tracks and bundles, and no operation can. A side is the engine's unless the agent states it. It draws each thing in a few plain forms: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs. Cost: an agent cannot bend one ugly line directly, only state its sides and change the facts around it.
 
@@ -154,7 +154,7 @@ A file of a newer format, a field the schema does not know, a mark file that cha
 - **Decisions:** [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
 - **How it works:** [The .grafical file](specs/grafical-file.md)
 
-## 11. Looks are free, while shape and dash follow the kind
+## 11. Looks are free, while shape and dash follow the type
 
 Any object may take any color, a mark may be any emoji, text or file, and an edge may take any width from 0.5 to 8 px. A look comes from the object, then the styles it marks, then its type, then the theme. A node's shape and an edge's dash come from its type, so that a reader can trust them. Cost: two diagrams can look different, the legend has to say what a color, a width or a mark means, and a look a team shares lives in a second file.
 

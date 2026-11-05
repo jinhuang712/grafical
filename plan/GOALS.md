@@ -134,7 +134,7 @@ The pictures keep getting better, compared with the round before and not with an
 **Checks:**
 
 - [F4: Look](../features/F4-look.md)
-- [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
+- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
 
 **How:** the owner rates each round's first drafts of the public brief blind, on the page `pnpm bench gallery` makes.
 
@@ -182,7 +182,7 @@ A picture of 50 nodes has no defect and a clarity of at least 3 of 5.
 
 **Checks:**
 
-- [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
+- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
 - [6. Every write is checked, and each defect has an owner](../DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
 
 **Problem set:** fictional briefs of 10, 25 and 50 components, 3 runs each, rated blind by the owner.

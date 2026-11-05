@@ -5,15 +5,15 @@ F5: Checking
 ├── F5.1: Show — the diagram as facts
 ├── F5.2: Counts — facts about how the picture is drawn
 ├── F5.3: Warnings — what the picture draws poorly
-│   ├── F5.3.1: Bent lines — `bent-line`
-│   ├── F5.3.2: Lines passing a row — `passing-row`
-│   ├── F5.3.3: Lines across a group — `line-across-group`
-│   ├── F5.3.4: Tight lines — `tight-lines`
+│   ├── F5.3.1: Bent edges — `bent-line`
+│   ├── F5.3.2: Edges passing a layer — `passing-row`
+│   ├── F5.3.3: Edges across a group — `line-across-group`
+│   ├── F5.3.4: Tight edges — `tight-lines`
 │   ├── F5.3.5: Crowded labels — `crowded-label`
-│   ├── F5.3.6: Lonely boxes — `lonely-box`
-│   ├── F5.3.7: A line per member — `line-per-member`
+│   ├── F5.3.6: Lonely nodes — `lonely-box`
+│   ├── F5.3.7: An edge per member — `line-per-member`
 │   ├── F5.3.8: Crossings — `crossing`
-│   └── F5.3.9: Boxes aside — `box-aside`
+│   └── F5.3.9: Nodes aside — `box-aside`
 ├── F5.4: Check — defects, warnings and counts on demand
 └── F5.5: Checks of an agent's own — rules a diagram sets itself
 ```
@@ -114,25 +114,25 @@ next: layer move, node move, node swap
 
 - An agent reads the warnings, to find the edge or node its choices made awkward.
 
-### F5.3.1: Bent lines
+### F5.3.1: Bent edges
 
 `bent-line` names an edge with more than two bends.
 
 - Detail: `edge` and `bends` and `skip` (the layers between its ends' layers).
 
-### F5.3.2: Lines passing a row
+### F5.3.2: Edges passing a layer
 
 `passing-row` names an edge that passes among the nodes of layers between its ends and meets none of them.
 
 - Detail: `edge`, `rows`.
 
-### F5.3.3: Lines across a group
+### F5.3.3: Edges across a group
 
 `line-across-group` names an edge through the node of a group holding neither of its ends.
 
 - Detail: `edge`, `groups`.
 
-### F5.3.4: Tight lines
+### F5.3.4: Tight edges
 
 `tight-lines` names runs of two edges under 12 px apart for over 100 px.
 
@@ -144,14 +144,14 @@ next: layer move, node move, node swap
 
 - Detail: `edge`.
 
-### F5.3.6: Lonely boxes
+### F5.3.6: Lonely nodes
 
 `lonely-box` names a node no edge reaches.
 
 - It has no line of its own and none to its group, layer or lane.
 - Detail: `node`.
 
-### F5.3.7: A line per member
+### F5.3.7: An edge per member
 
 `line-per-member` names a group of two or more where every node has an edge to one end outside it, or from it.
 
@@ -165,7 +165,7 @@ next: layer move, node move, node swap
 
 - Detail: `edges`.
 
-### F5.3.9: Boxes aside
+### F5.3.9: Nodes aside
 
 `box-aside` names a node wholly beside every node it connects to, so that its edges reach across.
 

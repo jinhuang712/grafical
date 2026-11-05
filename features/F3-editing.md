@@ -19,7 +19,7 @@ Every failure leaves the file as it was and says what happened, in the block des
   - The ones about names are in [F3.4: IDs](#f34-ids), and the ones about a whole batch in [F3.2: Batches](#f32-batches).
 - **The picture would draw wrong:** the write is refused as a defect.
   - `overflow` for a label that does not fit ([F1.1.2: Labels and sublabels](F1-elements.md#f112-labels-and-sublabels)).
-  - `label-blocked` for a label with no place ([F2.7: How lines are drawn](F2-layout.md#f27-how-lines-are-drawn), [F1.3.6: Walls](F1-elements.md#f136-walls) and [F1.3.7: Notes](F1-elements.md#f137-notes)).
+  - `label-blocked` for a label with no place ([F2.7: How edges are drawn](F2-layout.md#f27-how-edges-are-drawn), [F1.3.6: Walls](F1-elements.md#f136-walls) and [F1.3.7: Notes](F1-elements.md#f137-notes)).
   - `title-blocked` for a group's label ([F1.3.1: Groups](F1-elements.md#f131-groups)).
 - **The picture draws poorly:** written, and reported as a warning ([F5.3: Warnings](F5-checking.md#f53-warnings)).
 - **A file cannot be read:** nothing is drawn from it.

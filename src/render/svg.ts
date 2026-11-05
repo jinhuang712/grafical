@@ -397,7 +397,7 @@ function ontoOutline(end: Point, next: Point, n: SceneNode | undefined): Point {
   return n === undefined ? end : meetOutline(n.kind, n.rect, end, next);
 }
 
-/** The line stops at the arrowhead's base, if its kind has one (DESIGNS.md, "Looks are free, while shape and dash follow the kind", specs/decisions, "Lines meet any side"). */
+/** The line stops at the arrowhead's base, if its kind has one (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
 function edgeShapes(
   e: SceneEdge,
   nodes: Map<string, SceneNode>,

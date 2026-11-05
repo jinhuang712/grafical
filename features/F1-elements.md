@@ -2,20 +2,20 @@
 
 ```
 F1: Elements
-├── F1.1: Boxes — the parts of the system
-│   ├── F1.1.1: Kinds and shapes — a box's kind sets its shape
+├── F1.1: Nodes — the parts of the system
+│   ├── F1.1.1: Types and shapes — a box's kind sets its shape
 │   ├── F1.1.2: Labels and sublabels — a label and a quieter sublabel
 │   ├── F1.1.3: Sizes — sized to the text, or by a step
 │   ├── F1.1.4: Marks — up to five small marks on a box
 │   ├── F1.1.5: Marks by name — a mark from one bundled icon set
 │   ├── F1.1.6: Emphasis — at most two boxes stand out
-│   └── F1.1.7: Box looks — colors of a box's own
-├── F1.2: Lines — what connects to what
-│   ├── F1.2.1: Kinds — a line's kind sets its style
+│   └── F1.1.7: Node looks — colors of a box's own
+├── F1.2: Edges — what connects to what
+│   ├── F1.2.1: Types — a line's kind sets its style
 │   ├── F1.2.2: Arrowheads at both ends — two-way lines
 │   ├── F1.2.3: Weight — thicker lines for what matters more
 │   ├── F1.2.4: Numbered steps — a number on a line
-│   ├── F1.2.5: Ends at a group, a row or a lane — one arrow to a whole system
+│   ├── F1.2.5: Ends at a group, a layer or a lane — one arrow to a whole system
 │   └── F1.2.6: Edge looks — a color of an edge's own
 └── F1.3: Containers — what gathers boxes
     ├── F1.3.1: Groups — a system drawn as one frame
@@ -30,14 +30,14 @@ F1: Elements
 
 What a diagram is made of. A node is a part of the system, an edge says that two things connect and how, and a container gathers nodes into systems, lanes and parts that lines keep apart. The agent says what each one is, and grafical gives it its shape.
 
-## F1.1: Boxes
+## F1.1: Nodes
 
 A node is a part of the system: a service, a store, a queue, a person or a step. The agent says what kind it is and what it is called, and grafical gives it its shape and its size. The agent can mark a node or make it stand out.
 
 - **Design:**
   - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
   - [9. The same file gives the same picture on any machine](../DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
-  - [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+  - [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:**
   - [The theme: fixed sizes and outlines](../specs/theme.md#fixed-sizes-and-outlines)
   - [Placement: sizes](../specs/placement.md#sizes)
@@ -63,7 +63,7 @@ A node is a part of the system: a service, a store, a queue, a person or a step.
 - An agent picks the one or two nodes to read first, to give the picture a start.
 - An agent colors a node by what it means, to show a status and keep its shape.
 
-### F1.1.1: Kinds and shapes
+### F1.1.1: Types and shapes
 
 A node's kind says what it is and decides how it is drawn.
 
@@ -174,7 +174,7 @@ At most two nodes stand out, as what a reader should see first.
 grafical node emphasize <file> <id> [--off]
 ```
 
-### F1.1.7: Box looks
+### F1.1.7: Node looks
 
 A node may take colors of its own, so that a color says something without changing the shape. The agent sets them on the node or names a look from the stylesheet.
 
@@ -193,14 +193,14 @@ grafical node look <file> <id> <name>
 
 - **Why:** [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
-## F1.2: Lines
+## F1.2: Edges
 
 An edge says that two things connect and how. The agent states its ends, its kind, its label, its weight and its step number. An end may be a whole group, layer or lane instead of one node.
 
 - **Design:**
   - [3. The engine never chooses for the agent](../DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
-  - [5. The engine routes every line, in plain forms](../DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
-  - [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
+  - [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
+  - [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:**
   - [The renderer: how lines are drawn](../specs/rendering.md#how-lines-are-drawn)
   - [The theme: line weights](../specs/theme.md#line-weights)
@@ -223,7 +223,7 @@ An edge says that two things connect and how. The agent states its ends, its kin
 - An agent numbers the edges of a request, to let a reader follow it in order.
 - An agent points an edge at a whole system, to avoid one arrow per part.
 
-### F1.2.1: Kinds
+### F1.2.1: Types
 
 An edge's kind says what it means and decides its style.
 
@@ -292,7 +292,7 @@ grafical edge step <file> <id> [--n <number>]
 - A numbered line keeps its own port as a labelled one does.
   - It never joins a bundle.
 
-### F1.2.5: Ends at a group, a row or a lane
+### F1.2.5: Ends at a group, a layer or a lane
 
 One arrow can point at a whole system instead of each of its parts.
 
@@ -305,7 +305,7 @@ One arrow can point at a whole system instead of each of its parts.
   - Each edge meets it straight past its other end.
 - An edge that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge --add --pass`, or `edge --pass <file> <id> [--off]` for an edge already drawn.
   - It then names the bar in `passes`.
-  - A layer with no node and a look is a bar too, though no edge ends at it ([F2.2: Rows and order](F2-layout.md#f22-rows-and-order)).
+  - A layer with no node and a look is a bar too, though no edge ends at it ([F2.2: Layers and order](F2-layout.md#f22-layers-and-order)).
 - An end may not lie inside the other (`edge-inside`).
   - A group or a lane end must hold a node (`empty-container`).
   - An end that shares a layer with a group must sit right beside it there (`edge-blocked`).
@@ -336,7 +336,7 @@ Nodes are gathered into systems, lanes and parts that lines keep apart. A group 
 - **Design:**
   - [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
   - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
-  - [5. The engine routes every line, in plain forms](../DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
+  - [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
 - **How it works:**
   - [Placement: groups](../specs/placement.md#groups)
   - [Text placement: group titles](../specs/labels.md#group-titles)

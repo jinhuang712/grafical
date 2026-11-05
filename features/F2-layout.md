@@ -2,24 +2,24 @@
 
 ```
 F2: Layout
-├── F2.1: Placing every box — grafical gives every box its place
-├── F2.2: Rows and order — a box's row and its place in it
+├── F2.1: Placing every node — grafical gives every box its place
+├── F2.2: Layers and order — a box's row and its place in it
 ├── F2.3: Alignment — one box above or below another
 ├── F2.4: Columns — a second placement fact beside rows
 │   └── F2.4.1: Column headings — a label above a column
-├── F2.5: Steps from another box — a box some cells from another
+├── F2.5: Steps from another node — a box some cells from another
 ├── F2.6: Spacing — compact, normal or airy
 │   └── F2.6.1: Region gaps — more room between two regions
-├── F2.7: How lines are drawn — grafical routes every line
-│   ├── F2.7.1: Line sides — the side a line leaves or enters by
-│   ├── F2.7.2: Line shapes — square, round or smooth
-│   └── F2.7.3: Labels on lines — a line carries its label
+├── F2.7: How edges are drawn — grafical routes every line
+│   ├── F2.7.1: Edge sides — the side a line leaves or enters by
+│   ├── F2.7.2: Edge shapes — square, round or smooth
+│   └── F2.7.3: Labels on edges — a line carries its label
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
 
 Where everything goes. The agent states places as facts and never as positions, and grafical turns those facts into a picture with every node placed and every edge drawn, again after every change.
 
-## F2.1: Placing every box
+## F2.1: Placing every node
 
 The agent never places a node. grafical works out every node's place and size from the facts, and works them out again after every write.
 
@@ -41,7 +41,7 @@ The agent never places a node. grafical works out every node's place and size fr
 
 - An agent states facts, to get a laid-out picture without computing one position.
 
-## F2.2: Rows and order
+## F2.2: Layers and order
 
 A node sits in a layer, in an order. A layer only places, and is not drawn unless it has a look or an edge ends at it.
 
@@ -155,7 +155,7 @@ A column may carry a heading above its first layer, such as a quarter.
 
 - **Why:** [056. A column may carry a heading](../specs/decisions/056-a-column-may-carry-a-heading.md)
 
-## F2.5: Steps from another box
+## F2.5: Steps from another node
 
 A node in no layer, placed some cells of the grid from another node.
 
@@ -219,7 +219,7 @@ grafical gap <file> <a> <b> [--times <n>]
 
 - **Why:** [079. The gap between two regions takes a multiple](../specs/decisions/079-the-gap-between-two-regions-takes-a-multiple.md)
 
-## F2.7: How lines are drawn
+## F2.7: How edges are drawn
 
 The agent says what connects. grafical draws every edge.
 
@@ -240,7 +240,7 @@ The agent says what connects. grafical draws every edge.
 - A stylesheet may draw the corners curved, with `paint.edge.shape: curved`.
   - The routes stay the same.
 
-- **Design:** [5. The engine routes every line, in plain forms](../DESIGNS.md#5-the-engine-routes-every-line-in-plain-forms)
+- **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
 - **How it works:**
   - [Routing](../specs/routing.md#the-steps)
   - [Text placement: line labels](../specs/labels.md#line-labels)
@@ -255,7 +255,7 @@ The agent says what connects. grafical draws every edge.
 
 - An agent states what connects, to get lines that avoid nodes and text without drawing any.
 
-### F2.7.1: Line sides
+### F2.7.1: Edge sides
 
 An agent may state the side an edge leaves by or enters by. A side left unstated stays grafical's.
 
@@ -269,7 +269,7 @@ grafical edge side <file> <id> [--out top|bottom|left|right] [--in top|bottom|le
 
 - **Why:** [058. An agent may state the side of a line](../specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
 
-### F2.7.2: Line shapes
+### F2.7.2: Edge shapes
 
 All the edges of a diagram share one shape, and the routes stay the same.
 
@@ -284,7 +284,7 @@ grafical diagram lines <file> square|round|smooth
 
 - **Why:** [059. Lines may be drawn square, round or smooth](../specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
 
-### F2.7.3: Labels on lines
+### F2.7.3: Labels on edges
 
 An edge carries its label, and the edge passes through it. An agent may take one label off its edge.
 
