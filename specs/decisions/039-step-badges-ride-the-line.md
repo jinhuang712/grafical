@@ -4,7 +4,7 @@ Decided: 2026-10-16
 
 ## The problem
 
-The owner chose numbered steps on 2026-10-15 as one of the first candidates of ROADMAP.md, "More combinations of operations", after the field study (behavior: FEATURES.md, "Numbered steps"). FEATURES.md asked for "a small badge on the line". Built on 2026-10-16.
+The owner chose numbered steps on 2026-10-15 as one of the first candidates of FEATURES.md, "More combinations of operations", after the field study (behavior: FEATURES.md, "Numbered steps"). FEATURES.md asked for "a small badge on the line". Built on 2026-10-16.
 
 ## The choice
 
