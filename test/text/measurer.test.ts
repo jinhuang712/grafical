@@ -2,6 +2,10 @@ import { Resvg } from "@resvg/resvg-js";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createMeasurer, FONT_FAMILY, FONT_FILES, type Measurer } from "../../src/text/index.ts";
 
+it("keeps one measurer in a process", async () => {
+  expect(await createMeasurer()).toBe(await createMeasurer());
+});
+
 let m: Measurer;
 beforeAll(async () => {
   m = await createMeasurer();

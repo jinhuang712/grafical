@@ -16,7 +16,7 @@ Each character is measured in Inter when Inter has a glyph for it, and in Noto S
 
 ## Measuring
 
-`harfbuzzjs` shapes each run of one font and adds up the advances to give its width. A line's height is the larger ascent plus descent of the two fonts, rounded up to a multiple of 4 px. Measurements are cached, so the same text in the same face is shaped once.
+`harfbuzzjs` shapes each run of one font and adds up the advances to give its width. A line's height is the larger ascent plus descent of the two fonts, rounded up to a multiple of 4 px. Measurements are cached, so the same text in the same face is shaped once. A process keeps one measurer, because `harfbuzzjs` frees no font it loaded.
 
 ## Wrapping
 

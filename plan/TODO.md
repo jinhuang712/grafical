@@ -299,17 +299,6 @@
 - status: OPEN
 - related: [039. Step badges ride the line](../specs/decisions/039-step-badges-ride-the-line.md)
 
-### [P2][ISSUE] Many writes in one process run the text measurer out of memory
-
-- description:
-  - Each write makes a new HarfBuzz measurer.
-  - A few thousand writes in one process end in `RuntimeError: memory access out of bounds`.
-  - No user meets it, since a command makes one write and `grafical view` keeps one measurer.
-  - Reusing one measurer or freeing each would let tools and tests call the write path in a loop.
-- created: 2026-10-17
-- status: OPEN
-- found: an audit of refusals on 2026-10-17
-
 ### [P2][ISSUE] A pair of lines back and forth crosses a self-loop
 
 - description:
