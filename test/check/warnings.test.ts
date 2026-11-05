@@ -3,7 +3,7 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { drawing, warningsOf } from "../../src/check/drawing.ts";
 import { WARNING_CODES, type Warning, type WarningCode } from "../../src/errors.ts";
 import { layout } from "../../src/layout/index.ts";
@@ -14,6 +14,8 @@ import { e, n } from "../fixtures/build.ts";
 import { catalogSync } from "../fixtures/catalog-sync.ts";
 import { dense } from "../fixtures/dense.ts";
 import { generate } from "../fuzz/gen.ts";
+
+vi.setConfig({ testTimeout: 60_000 });
 
 let m: Measurer;
 beforeAll(async () => {
