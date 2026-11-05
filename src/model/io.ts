@@ -2,6 +2,7 @@
 
 import { parseDocument, stringify } from "yaml";
 import type { OpError } from "../errors.ts";
+import { parseGrafical, writeGrafical } from "./grafical-format.ts";
 import { validateDiagram } from "./schema.ts";
 import { STEP_KEYS } from "./steps.ts";
 import {
@@ -14,6 +15,10 @@ import {
 } from "./types.ts";
 
 export function readDiagram(text: string): Diagram | OpError[] {
+  if (text.startsWith("<diagram>")) {
+    const plain = parseGrafical(text);
+    return Array.isArray(plain) ? plain : validateDiagram(plain);
+  }
   const doc = parseDocument(text, { uniqueKeys: true });
   if (doc.errors.length > 0) return doc.errors.map((e) => yamlError(text, e));
   return validateDiagram(doc.toJS());
@@ -83,6 +88,11 @@ function edgeOut(e: Edge): Record<string, unknown> {
   if (e.weight !== undefined) o.weight = e.weight;
   if (e.step !== undefined) o.step = e.step;
   return o;
+}
+
+/** The file's bytes: a .grafical file in its own form, and any other as YAML until it moves. */
+export function fileBytes(d: Diagram, path: string): string {
+  return path.endsWith(".grafical") ? writeGrafical(d) : writeDiagram(d);
 }
 
 export function writeDiagram(d: Diagram): string {

@@ -116,7 +116,7 @@ Roadmap
 │   │   └── ⬜ Build the legend
 │   └── 🟨 CP2.9: The object model
 │       ├── ✅ Design the model and its form
-│       ├── ⬜ Build the model
+│       ├── 🟨 Build the model
 │       ├── ⬜ Move the saved files
 │       └── ⬜ Compare with YAML
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
@@ -668,7 +668,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 **Tasks:**
 
 - ✅ Design the model and its form: The owner designed them on 2026-11-06.
-- ⬜ Build the model: grafical reads and writes it.
+- 🟨 Build the model: grafical reads and writes the form; types and styles are not built.
 - ⬜ Move the saved files: Fixtures and saved drafts move to it.
 - ⬜ Compare with YAML: Real changes are measured in both forms, and the file goes back to YAML with one element on each line if the form is no better.
 

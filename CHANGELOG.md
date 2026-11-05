@@ -12,6 +12,8 @@ grafical has not been released; the first release will be 0.1.0.
 - A verb is a flag after its noun, as in `grafical -f a.grafical edge --add a b`.
 - `apply -` reads a batch from standard input.
 - `--type` takes the place of `--kind`.
+- `show <id>` gives one object and what refers to it.
+- A file named `.grafical` is written in the new form of blocks, and a YAML file still reads and writes as YAML.
 
 ### Boxes and rows
 
