@@ -76,9 +76,9 @@ The dirty work has edges. The engine draws each thing in a few plain forms: a li
 
 ## How does an agent learn grafical?
 
-**From the command line, not from rules in words.**
+**An agent learns a tool by using it, not by reading rules.**
 
-A well-made command line leaves an agent few ways to go wrong, so the help and the guides do not list rules for it to remember. When it does go wrong, the mistake costs little: nothing is written, and the record says what happened, which operation caused it, and which commands can change it. That is enough for the agent to find the best answer itself. grafical never writes the answer for it.
+Rules in words are the part of a tool an agent forgets. A well-made tool leaves few ways to go wrong, and when one happens the mistake costs little and says enough for the agent to find the best answer itself. So the tool teaches by answering, and never writes the answer for it.
 
 > We should not describe the rules in words. We should design a command line good enough that the model rarely makes a mistake. Even when it does, the mistake should not be a serious one, and every mistake should get enough of a response that the model can find the best answer by itself.
 >
