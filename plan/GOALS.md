@@ -1,6 +1,6 @@
 # Goals
 
-Each goal is a check with a number or a test, under the want of the proposal that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [EXPERIMENTS.md](../EXPERIMENTS.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
+Each goal is a check with a number or a test, listed by its kind with the want of the proposal that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. [EXPERIMENTS.md](../EXPERIMENTS.md) defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
 
 A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of the measurement. A goal has an ID that never changes, and code and documents cite it by its name, such as `[T2: Speed](#t2-speed)`.
 
@@ -58,7 +58,7 @@ Set by the owner on 2026-10-13 ([What makes grafical good?](../PHILOSOPHY.md#wha
 - [F3: Editing](../features/F3-editing.md)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
-**Acceptance:** the six named checks (B1: Iteration, R1: Stability, C1: Model gap, T1: Operation errors, R3: Determinism, T2: Speed) are met in one round on the private reference brief, and the round has no engine-owned defect.
+**Acceptance:** those six goals are met in one round on the private reference brief, and the round has no engine-owned defect.
 
 **Status:** ❌ not met on 2026-10-18. In round `p1g` [B1: Iteration](#b1-iteration) was met, [T1: Operation errors](#t1-operation-errors) was not, and one draft had an engine-owned defect (`bench/results/p1g-stage1.md`).
 
