@@ -38,6 +38,18 @@ export interface GraficalStats {
   retries: number;
   /** Failed calls that a later call on the same diagram followed with a success. */
   recovered: number;
+  /** What the agent read before it first tried to write. */
+  beforeWrite: BeforeWrite;
+}
+
+/** Counted up to the first grafical command that tries to change a file, refused or not. */
+export interface BeforeWrite {
+  /** Commands with `--help` or `-h`, a wrong one included. */
+  help: number;
+  /** `grafical guide` commands. */
+  guides: number;
+  /** Calls refused as `unknown-command`. */
+  unknownCommands: number;
 }
 
 export interface Metrics {
@@ -173,6 +185,30 @@ function diagramOf(command: string): string {
 }
 
 const EDIT_COMMANDS = new Set(["layer", "node", "edge", "apply"]);
+/** The grafical commands that change no file. */
+const READ_COMMANDS = new Set(["show", "check", "render", "view", "diff", "try", "guide"]);
+
+/** What a step read before its first write (specs/decisions, "One entry page, help where it is used"). */
+function beforeWrite(events: Event[]): BeforeWrite {
+  const results = toolResults(events);
+  const seen: BeforeWrite = { help: 0, guides: 0, unknownCommands: 0 };
+  for (const t of toolUses(events)) {
+    if (t.name !== "Bash" || typeof t.input.command !== "string") continue;
+    const parts = t.input.command
+      .split(/&&|\|\||;|\n/)
+      .filter((part) => /^\s*grafical(\s|$)/.test(part));
+    // A refused name changes nothing, so the call is no write.
+    const unknown = results.get(t.id)?.text.includes("unknown-command") === true;
+    if (unknown) seen.unknownCommands++;
+    for (const part of parts) {
+      const word = /^\s*grafical\s+([\w-]+)/.exec(part)?.[1];
+      if (/\s(--help|-h)(\s|$)/.test(part)) seen.help++;
+      else if (word === "guide") seen.guides++;
+      else if (!unknown && word !== undefined && !READ_COMMANDS.has(word)) return seen;
+    }
+  }
+  return seen;
+}
 
 export type Outcome = "success" | "opError" | "defect" | "denied";
 
@@ -257,6 +293,7 @@ export function graficalStats(events: Event[]): GraficalStats {
     rejectedShare: ratio(rejected, calls.length - count("denied")),
     retries,
     recovered,
+    beforeWrite: beforeWrite(events),
   };
 }
 

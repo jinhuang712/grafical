@@ -51,6 +51,7 @@ Each step records the metrics below, the transcript, the final diagram file and 
 | Cache reads | input served from the cache | `cache_read_input_tokens` |
 | Cache hit rate | cache reads ÷ all input | the fields above, per turn |
 | Image reads | times the agent opens a picture | the transcript |
+| Read before a write | `--help` commands · `grafical guide` commands · calls refused as `unknown-command`, up to the first command that tries to change a file | the transcript |
 | Regenerations | changes answered by redrawing everything | the transcript · the operation log |
 | Unnamed fact changes | facts changed that no operation named | `grafical diff` |
 | Operation errors | refused ÷ all operations · retries | grafical's JSON output |

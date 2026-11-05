@@ -335,16 +335,6 @@
 - status: OPEN
 - related: [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
 
-### [P2][TASK] Count the pages read before a first write
-
-- description:
-  - Agents may not use the ways to draw the entry page lists or may draft without opening a command's page.
-  - The harness counts grafical calls by outcome but not which help pages an agent read first.
-  - It should count each `--help` call and each `unknown-command` refusal and each `grafical guide` before the first write.
-- created: 2026-10-17
-- status: OPEN
-- related: [042. One entry page, help where it is used](../specs/decisions/042-one-entry-page-help-where-it-is-used.md)
-
 ### [P2][TASK] Help pages trip agents on three fields
 
 - description:

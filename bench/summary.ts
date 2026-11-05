@@ -3,7 +3,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { JudgedRow } from "./judge.ts";
-import { stepTotal } from "./metrics.ts";
+import { type BeforeWrite, stepTotal } from "./metrics.ts";
 import { loadChanges, REPO, RUNS, type StepRecord } from "./run.ts";
 
 /** Everything above this line in an existing results file (the expectation) is kept. */
@@ -148,6 +148,9 @@ export function buildTable(
     "Fresh tokens",
     "Cache hit (%)",
     "Image reads",
+    "Help before write",
+    "Guides before write",
+    "Unknown before write",
     "Op errors (%)",
     "Denied",
     "Off-tool",
@@ -170,6 +173,14 @@ export function buildTable(
     const rs = group.map((g) => g.record);
     const failed = rs.filter((r) => r.isError || !r.finished).length;
     const opErr = rs.flatMap((r) => (r.grafical ? [r.grafical.rejectedShare * 100] : []));
+    // Rounds before 2026-11-05 did not record it.
+    const read = (key: keyof BeforeWrite) =>
+      arm === "grafical"
+        ? stat(
+            rs.flatMap((r) => r.grafical?.beforeWrite?.[key] ?? []),
+            1,
+          )
+        : "n/a";
     const sc = group.flatMap((g) => scores.get(`${g.chain}/${g.record.step}`) ?? []);
     rows.push(
       `| ${[
@@ -209,6 +220,9 @@ export function buildTable(
           rs.map((r) => r.imageReads),
           1,
         ),
+        read("help"),
+        read("guides"),
+        read("unknownCommands"),
         arm === "grafical" ? stat(opErr, 1) : "n/a",
         arm === "grafical"
           ? stat(

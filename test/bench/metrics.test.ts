@@ -189,6 +189,38 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     expect(s.successes + s.opErrors + s.defects + s.permissionDenials).toBe(s.calls);
   });
 
+  it("counts what the agent read before its first write", () => {
+    const read = [
+      call("a", "grafical --help"),
+      toolResult("a", "Usage: grafical [options] [command]"),
+      call("b", 'grafical "node add" --help'),
+      toolResult("b", "failed changed=-\n\nerror: unknown-command\n", true),
+      call("c", "grafical node add --help && grafical edge add --help | head -20"),
+      toolResult("c", "Usage: grafical node add"),
+      call("d", "grafical guide flowchart; grafical show d.yaml"),
+      toolResult("d", "ok"),
+      call("e", "grafical nodee add d.yaml a"),
+      toolResult("e", "failed changed=-\n\nerror: unknown-command\n", true),
+      call("f", "grafical new d.yaml --title T"),
+      toolResult("f", "ok changed=d"),
+      call("g", "grafical apply --help"),
+      toolResult("g", "Usage: grafical apply"),
+      call("h", "grafical guide composition"),
+      toolResult("h", "Composition"),
+    ];
+    expect(graficalStats(read).beforeWrite).toEqual({ help: 4, guides: 1, unknownCommands: 2 });
+  });
+
+  it("counts a refused write as the first write", () => {
+    const read = [
+      call("a", "grafical node add d.yaml a --layer nope --label A"),
+      toolResult("a", "failed changed=-\n\nerror: unknown-row\n", true),
+      call("b", "grafical node add --help"),
+      toolResult("b", "Usage: grafical node add"),
+    ];
+    expect(graficalStats(read).beforeWrite).toEqual({ help: 0, guides: 0, unknownCommands: 0 });
+  });
+
   it("leaves denials out of the share grafical itself rejected", () => {
     expect(graficalStats(events).rejectedShare).toBe(3 / 7);
   });
