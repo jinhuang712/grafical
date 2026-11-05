@@ -1,6 +1,6 @@
 # The checker
 
-The checker looks at a laid-out picture and says what is wrong with it, without changing it and without advice. Every write runs it before the file is written, and `check` and `render` run it on the file as it is. What it finds falls into three kinds, by what each costs a reader: defects draw wrong, warnings draw poorly, and counts only say how the picture is drawn. It lives in `src/check/`.
+The checker looks at a laid-out picture and says what is wrong with it, without changing it and without advice. Every write runs it before the file is written, and `check` and `render` run it on the file as it is. `check` first runs the model's checks of the whole diagram, and a file they refuse is neither laid out nor looked at. What it finds falls into three kinds, by what each costs a reader: defects draw wrong, warnings draw poorly, and counts only say how the picture is drawn. It lives in `src/check/`.
 
 ```text
 laid-out picture

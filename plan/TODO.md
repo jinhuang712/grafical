@@ -2,17 +2,6 @@
 
 ## ongoing
 
-### [P1][ISSUE] check says ok for a file every write refuses
-
-- description:
-  - A file that the diagram's own checks refuse still loads.
-  - An example is a group split around a box in one row.
-  - `check` prints `ok` with its warnings and counts for such a file.
-  - Every write is then refused with that error as `already in the file`.
-  - `check` should report these errors as a write does.
-- created: 2026-10-18
-- status: OPEN
-
 ### [P1][DISCUSSION] A box's color and shape come with its kind
 
 - description:

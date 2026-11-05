@@ -209,6 +209,9 @@ grafical has not been released; the first release will be 0.1.0.
 
 ### What the agent reads back
 
+- `check` reports the errors every write would refuse in a file, with exit code 1.
+  - An example is a group split around a box in one row.
+  - Before, it printed `ok` with its warnings and counts for such a file.
 - The counts gain `bent=`: the lines drawn with more than two bends.
   - Each is also a `bent-line` warning.
   - Nothing is refused for it: it tells the agent which line its rows send round, which before only `check --all` measured.

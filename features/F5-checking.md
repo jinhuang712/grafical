@@ -165,7 +165,7 @@ next: layer move, node move, node swap
 
 ## F5.4: Check
 
-`check` reports the defects the agent can fix, every warning, and the counts. `--all` adds the defects only the engine can avoid, which are engine bugs.
+`check` reports the defects the agent can fix, every warning, and the counts. `--all` adds the defects only the engine can avoid, which are engine bugs. A file that every write would refuse gets those errors and nothing else, with exit code 1.
 
 ```sh
 grafical check <file> [--all]

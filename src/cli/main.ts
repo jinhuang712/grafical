@@ -44,6 +44,7 @@ import {
   emit,
   failure,
   fileError,
+  fileErrors,
   formatReport,
   inspect,
   isReport,
@@ -1062,6 +1063,11 @@ export function build(): Command {
     const d = loadDiagram(file);
     if (isReport(d)) {
       say(d, opts.json === true);
+      return;
+    }
+    const refused = fileErrors(d);
+    if (refused !== undefined) {
+      say(refused, opts.json === true);
       return;
     }
     const m = await createMeasurer();

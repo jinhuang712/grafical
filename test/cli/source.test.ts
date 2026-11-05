@@ -386,6 +386,16 @@ describe("source", () => {
       { kind: "error", code: "group-split", source: "already in the file" },
     ]);
     expect(r.problems[0].detail.op).toBeUndefined();
+    // check says what every write would say of the file, and draws nothing from it.
+    const check = run("check", f, "--json");
+    expect(check.code).toBe(1);
+    const report = JSON.parse(check.out);
+    expect(report.ok).toBe(false);
+    expect(report.counts).toBeUndefined();
+    expect(report.problems).toMatchObject([
+      { kind: "error", code: "group-split", source: "already in the file" },
+    ]);
+    expect(report.problems[0].detail.op).toBeUndefined();
     // An operation's own error keeps its index.
     writeFileSync(
       join(dir, "own.yaml"),

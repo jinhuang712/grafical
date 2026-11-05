@@ -183,6 +183,12 @@ export function writeAtomic(file: string, content: string | Uint8Array) {
   renameSync(tmp, file);
 }
 
+/** What every write would refuse in the file as it is: the checks of a whole diagram, with no operation applied. */
+export function fileErrors(d: Diagram): Report | undefined {
+  const r = applyOps(d, []);
+  return "errors" in r ? failure(sourced(r.errors, () => IN_FILE)) : undefined;
+}
+
 /**
  * Lays out and checks a diagram as it is in its file, so that each defect is already in the file. Without `all`,
  * only the defects the agent can fix: engine-owned ones are the engine's to avoid, and only `check --all` reports
