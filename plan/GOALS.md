@@ -283,7 +283,7 @@ C2 = mean wall seconds per first draft with grafical - the same with the same mo
 target = below 0
 ```
 
-**Last result:** ❌ not met. Haiku took 36.3 s with grafical against 27.8 s directly on 2026-10-18 (round `p1g`), and Opus 39 s against 54 s on 2026-10-12. Open in [Haiku pays more with grafical than drawing directly](TODO.md#p2task-haiku-pays-more-with-grafical-than-drawing-directly).
+**Last result:** ❌ not met. Haiku took 36.3 s with grafical against 27.8 s directly on 2026-10-18 (round `p1g`), and Opus 39 s against 54 s on 2026-10-12. Open in [Haiku pays more with grafical than drawing directly](TODO.md#p1task-haiku-pays-more-with-grafical-than-drawing-directly).
 
 #### C3: Token use
 
@@ -309,7 +309,7 @@ fresh tokens = uncached input + cache writes + output
 target = below 0
 ```
 
-**Last result:** ❌ not met. Haiku used 42.2k with grafical against 21.3k directly on 2026-10-18 (round `p1g`), and Opus 23.7k against 26.5k on 2026-10-12. Open in [Haiku pays more with grafical than drawing directly](TODO.md#p2task-haiku-pays-more-with-grafical-than-drawing-directly). The help read before the first operation was not measured, because the round recorded no empty baseline.
+**Last result:** ❌ not met. Haiku used 42.2k with grafical against 21.3k directly on 2026-10-18 (round `p1g`), and Opus 23.7k against 26.5k on 2026-10-12. Open in [Haiku pays more with grafical than drawing directly](TODO.md#p1task-haiku-pays-more-with-grafical-than-drawing-directly). The help read before the first operation was not measured, because the round recorded no empty baseline.
 
 #### C4: Context added
 
@@ -359,7 +359,7 @@ C5 = mean total_cost_usd per first draft with grafical - the same with the same 
 target = below 0
 ```
 
-**Last result:** ❌ not met. Haiku cost $0.015 with grafical against $0.008 directly on 2026-10-18 (round `p1g`), and Opus $0.259 against $0.312 on 2026-10-12. Open in [Haiku pays more with grafical than drawing directly](TODO.md#p2task-haiku-pays-more-with-grafical-than-drawing-directly).
+**Last result:** ❌ not met. Haiku cost $0.015 with grafical against $0.008 directly on 2026-10-18 (round `p1g`), and Opus $0.259 against $0.312 on 2026-10-12. Open in [Haiku pays more with grafical than drawing directly](TODO.md#p1task-haiku-pays-more-with-grafical-than-drawing-directly).
 
 #### C7: Beats the strongest model alone
 

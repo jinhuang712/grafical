@@ -1089,7 +1089,7 @@ Haiku draws the 50-component brief without merging it down.
 
 **Status:** 🟨
 
-The refusals of the private reference brief were mostly `title-blocked`. Haiku spends more with grafical than drawing directly: [Haiku pays more with grafical than drawing directly](TODO.md#p2task-haiku-pays-more-with-grafical-than-drawing-directly).
+The refusals of the private reference brief were mostly `title-blocked`. Haiku spends more with grafical than drawing directly: [Haiku pays more with grafical than drawing directly](TODO.md#p1task-haiku-pays-more-with-grafical-than-drawing-directly).
 
 **Exit criteria:**
 

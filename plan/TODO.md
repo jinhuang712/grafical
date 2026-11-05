@@ -23,6 +23,18 @@
 - created: 2026-10-18
 - status: OPEN
 
+### [P1][TASK] Haiku pays more with grafical than drawing directly
+
+- description:
+  - On 2026-10-18 Haiku's first draft cost more with grafical in three checks.
+  - It took 36.3 s against 27.8 s.
+  - It used 42.2k fresh tokens against 21.3k.
+  - It cost $0.015 against $0.008.
+  - The owner wants grafical to win these, so grafical gets cheaper until it does.
+- created: 2026-11-05
+- status: OPEN
+- next: measure where Haiku's tokens go in a first draft
+
 ### [P1][DISCUSSION] A box's color and shape come with its kind
 
 - description:
@@ -279,18 +291,6 @@
   - The lines that leave and enter a box are not kept clear of its self-loop.
 - created: 2026-10-30
 - status: OPEN
-
-### [P2][TASK] Haiku pays more with grafical than drawing directly
-
-- description:
-  - On 2026-10-18 Haiku's first draft cost more with grafical in three checks.
-  - It took 36.3 s against 27.8 s.
-  - It used 42.2k fresh tokens against 21.3k.
-  - It cost $0.015 against $0.008.
-  - The owner wants grafical to win these, so grafical gets cheaper until it does.
-- created: 2026-11-05
-- status: OPEN
-- next: measure where Haiku's tokens go in a first draft
 
 ### [P2][TASK] Choose the reference pictures
 
