@@ -22,7 +22,6 @@ The defects the agent owns:
 - `missing-glyph`: a character neither bundled font can draw.
 - `mark-covers`: a mark that covers text or another box.
 - `wall-crossed`: a line through a wall that does not allow it.
-- `box-aside`: a box placed by steps wholly beside every box it connects to.
 - `title-blocked`: a group's label that a line comes near.
 - `label-blocked`: a line's label or a step's badge or a wall's label or a note's card with no clear place.
 
@@ -77,6 +76,7 @@ A warning names something the picture draws poorly. Every write prints every war
 | `tight-lines` | `layer move` · `node move` · `node swap` |
 | `crowded-label` | `node move` · `node swap` · `edge relabel` |
 | `lonely-box` | `node remove` · `edge add` |
+| `box-aside` | `node move` |
 | `line-per-member` | `edge add` · `edge remove` |
 | `crossing` | `group order` · `layer move` · `node move` · `node swap` |
 

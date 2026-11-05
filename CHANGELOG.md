@@ -8,6 +8,8 @@ grafical has not been released; the first release will be 0.1.0.
 
 ### Boxes and rows
 
+- A box beside every box it connects to is now the warning `box-aside`, however it was placed.
+  - It was refused when the box was placed by steps, and passed in silence in a row.
 - The new kind of box `choice` is a small diamond with no text where a line splits into several.
   - The question goes on the line into it and each answer on a line out.
   - Before, a diamond was always a `decision` sized for the words inside it and at least 136 px wide.

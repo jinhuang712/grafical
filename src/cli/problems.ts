@@ -54,8 +54,7 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "bent-line": "A line bends more than twice, mostly because it skips rows.",
   "batch-unreadable": "The batch file cannot be read.",
   "both-on-link": "A link has no direction, so it takes no arrowheads.",
-  "box-aside":
-    "A box placed by steps sits beside every box it connects to, so its lines reach across.",
+  "box-aside": "A box sits beside every box it connects to, so its lines reach across.",
   "column-lanes":
     "The diagram has columns and lanes that run as columns, and it may have one of them.",
   "column-order": "A box of a column would sit right of a box of a later column in some row.",

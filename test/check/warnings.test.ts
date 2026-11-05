@@ -77,6 +77,7 @@ const KEYS: Record<WarningCode, string[]> = {
   "tight-lines": ["edges", "over"],
   "crowded-label": ["edge"],
   "lonely-box": ["node"],
+  "box-aside": ["node", "nodes"],
   "line-per-member": ["group", "edges"],
   crossing: ["edges"],
 };

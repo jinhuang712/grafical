@@ -70,7 +70,8 @@ Features
 │   │   ├── ✅ F5.3.5: Crowded labels — `crowded-label`
 │   │   ├── ✅ F5.3.6: Lonely boxes — `lonely-box`
 │   │   ├── ✅ F5.3.7: A line per member — `line-per-member`
-│   │   └── ✅ F5.3.8: Crossings — `crossing`
+│   │   ├── ✅ F5.3.8: Crossings — `crossing`
+│   │   └── ✅ F5.3.9: Boxes aside — `box-aside`
 │   └── ✅ F5.4: Check — defects, warnings and counts on demand
 ├── ✅ F6: Output — what a diagram leaves behind
 │   ├── ✅ F6.1: The diagram file — one YAML file of facts

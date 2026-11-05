@@ -2,6 +2,7 @@
 // as it counts a crossing, and one the agent placed by steps fails the write.
 
 import { beforeAll, describe, expect, it } from "vitest";
+import { drawing, warningsOf } from "../../src/check/drawing.ts";
 import { check } from "../../src/check/index.ts";
 import { arrangementCost, asideBoxes, layout } from "../../src/layout/index.ts";
 import type { Diagram, DiagramNode, Layer } from "../../src/model/index.ts";
@@ -41,19 +42,22 @@ function diagram(store: DiagramNode, low: DiagramNode[] = []): Diagram {
   return d;
 }
 
-describe('a box beside every box it connects to (specs/decisions, "Who chose is punished")', () => {
-  it("fails the write when the agent placed it there by steps", () => {
+const asides = (d: Diagram) =>
+  warningsOf(drawing(d, layout(d, m)), d).filter((w) => w.code === "box-aside");
+
+describe('a box beside every box it connects to (specs/decisions, "A box beside its neighbours is a warning")', () => {
+  it("warns and never fails the write when the agent placed it there by steps", () => {
     const aside = diagram(box("db", { kind: "store", from: "b", down: 1, right: 1 }));
     expect(asideBoxes(layout(aside, m))).toEqual([{ box: "db", users: ["a", "b"] }]);
-    const found = check(aside, layout(aside, m), m);
-    expect(found.map((d) => [d.code, d.owner, d.facts.nodes])).toEqual([
-      ["box-aside", "agent", ["a", "b"]],
+    expect(check(aside, layout(aside, m), m)).toEqual([]);
+    expect(asides(aside)).toEqual([
+      { code: "box-aside", facts: { node: "db", nodes: ["a", "b"] } },
     ]);
     const under = diagram(box("db", { kind: "store", from: "a", down: 1 }));
-    expect(check(under, layout(under, m), m)).toEqual([]);
+    expect(asides(under)).toEqual([]);
   });
 
-  it("counts like a crossing when the engine placed it, and never fails the write", () => {
+  it("warns the same in a row, and counts like a crossing", () => {
     // db last in a row where p and q sit under a and b: right of both of its users.
     const last = diagram(box("db", { kind: "store" }), [box("p"), box("q")]);
     last.edges.push(
@@ -65,6 +69,7 @@ describe('a box beside every box it connects to (specs/decisions, "Who chose is 
     const scene = layout(last, m);
     expect(asideBoxes(scene).map((x) => x.box)).toEqual(["db"]);
     expect(check(last, scene, m)).toEqual([]);
+    expect(asides(last).map((w) => w.facts.node)).toEqual(["db"]);
     expect(asideBoxes(layout(between, m))).toEqual([]);
     const [worse] = arrangementCost(last, m);
     const [better] = arrangementCost(between, m);

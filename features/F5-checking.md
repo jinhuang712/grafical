@@ -12,7 +12,8 @@ F5: Checking
 │   ├── F5.3.5: Crowded labels — `crowded-label`
 │   ├── F5.3.6: Lonely boxes — `lonely-box`
 │   ├── F5.3.7: A line per member — `line-per-member`
-│   └── F5.3.8: Crossings — `crossing`
+│   ├── F5.3.8: Crossings — `crossing`
+│   └── F5.3.9: Boxes aside — `box-aside`
 └── F5.4: Check — defects, warnings and counts on demand
 ```
 
@@ -162,6 +163,15 @@ next: layer move, node move, node swap
 `crossing` names a pair of lines that cross, however often.
 
 - Detail: `edges`.
+
+### F5.3.9: Boxes aside
+
+`box-aside` names a box wholly beside every box it connects to, so that its lines reach across.
+
+- It holds for a box placed in a row or by steps.
+- Detail: `node` and `nodes`.
+
+- **Why:** [075. A box beside its neighbours is a warning](../specs/decisions/075-a-box-beside-its-neighbours-is-a-warning.md)
 
 ## F5.4: Check
 

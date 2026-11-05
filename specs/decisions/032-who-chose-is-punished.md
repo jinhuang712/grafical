@@ -2,6 +2,8 @@
 
 Decided: 2026-10-14
 
+Replaced in part by specs/decisions, "A box beside its neighbours is a warning": no such box fails the write.
+
 ## The problem
 
 Asked for by the owner on 2026-10-14, on the public brief's draft with steps: "we should punish things like this". The owner named a box placed far from the two boxes it connects to, "making so unncessarily long edges"; two lines between a box and the box right under it "bent for no reason"; and the staircase of a busy box's lines. A rule against rows that hold stores and services together was rejected: "thats a taste problem". Who punishes follows who chose ("Defects owned by who can fix them", "Steps from another box"): what the engine chose, it must avoid; what the agent stated, refuses the write.

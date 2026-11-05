@@ -6,7 +6,7 @@
 // judges nothing.
 
 import type { Warning } from "../errors.ts";
-import { bendsOf, crossingsOf, legendEntries } from "../layout/index.ts";
+import { asideBoxes, bendsOf, crossingsOf, legendEntries } from "../layout/index.ts";
 import { addedRow, placeSteps } from "../layout/steps.ts";
 import { endKind, endNodes, endRows } from "../model/ends.ts";
 import { groupChain } from "../model/groups.ts";
@@ -143,6 +143,8 @@ export interface Drawing {
   walls: DrawnWall[];
   notes: DrawnNote[];
   legend: DrawnLegend[];
+  /** The boxes wholly beside every box they connect to, with those boxes. */
+  aside: { box: string; users: string[] }[];
 }
 
 /** The side of a box a line's end point lies on: the nearest one. */
@@ -344,6 +346,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     });
   });
   return {
+    aside: asideBoxes(scene),
     composition: comp,
     gutters,
     counts: {
@@ -442,7 +445,7 @@ function linesPerMember(d: Diagram): { group: string; edges: string[] }[] {
 /**
  * What the drawing draws poorly, as warnings, in the order of their codes (specs/decisions, "Every write prints every
  * warning"): the lines bent more than twice, the lines that pass rows, the lines across a group's box, the tight runs,
- * the crowded labels, the boxes no line reaches, the groups each of whose boxes has a line alike to one end, and each
+ * the crowded labels, the boxes no line reaches, the boxes beside all they connect to, the groups each of whose boxes has a line alike to one end, and each
  * pair of lines that cross. The first five are the places that bent, passing, across, tight and crowded count. `facts`
  * is the diagram drawn.
  */
@@ -476,6 +479,9 @@ export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
     ...dr.boxes
       .filter((b) => b.lines === 0 && !reached.has(b.id))
       .map((b): Warning => ({ code: "lonely-box", facts: { node: b.id } })),
+    ...dr.aside.map(
+      (a): Warning => ({ code: "box-aside", facts: { node: a.box, nodes: a.users } }),
+    ),
     ...linesPerMember(d).map((x): Warning => ({ code: "line-per-member", facts: x })),
     ...dr.lines.flatMap((l) =>
       l.crosses

@@ -100,7 +100,7 @@ describe("grouped diagrams", () => {
     expect(mixed.code).toBe(1);
     expect(mixed.out).toContain("lane-mixed");
     expect(run("lane", "leave", f, "order-desk").code).toBe(0);
-    expect(run("lane", "remove", f, "desk").out).toBe("ok changed=desk\n");
+    expect(run("lane", "remove", f, "desk").out).toMatch(/^ok changed=desk\n/);
     expect(read(f)).not.toContain("lane");
   });
 

@@ -110,12 +110,6 @@ ${rows.replace(", lane: ops", "")}`);
         kinds,
       ).detail,
     ).toEqual({ owner: "engine", node: "a", edge: "e" });
-    expect(
-      defectBlock(
-        { code: "box-aside", owner: "agent", elements: ["a"], facts: { node: "a", nodes: ["b"] } },
-        kinds,
-      ).detail,
-    ).toEqual({ owner: "agent", node: "a", nodes: ["b"] });
   });
 
   // Found by review on 2026-10-18: an unknown weight named only diagram style, then edge weight for a legend's too.

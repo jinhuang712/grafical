@@ -259,6 +259,7 @@ export const WARNING_CODES = [
   "tight-lines",
   "crowded-label",
   "lonely-box",
+  "box-aside",
   "line-per-member",
   "crossing",
 ] as const;
@@ -313,7 +314,6 @@ export const DEFECT_CODES = [
   "mark-covers",
   "wall-crossed",
   "needless-bend",
-  "box-aside",
   "title-blocked",
   "label-blocked",
 ] as const;
@@ -343,8 +343,6 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "lane-stray": "engine",
   // One x would have served both ends of the line (specs/decisions, "Who chose is punished").
   "needless-bend": "engine",
-  // The agent placed the box by steps beside everything it connects to (specs/decisions, "Who chose is punished").
-  "box-aside": "agent",
   // A line runs where a group's label sits, and no line moves for it: the agent states a place (specs/decisions, "A group's label moves no box and no line").
   "title-blocked": "agent",
   // No gutter of its path holds a line's label clear, and no line moves for it: the agent shortens

@@ -173,8 +173,8 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
   - Steps combined with a row or a position or an alignment or a column or a lane are refused as `conflicting-position`.
 - `node move --layer` puts the box back in a row.
   - `node move` with steps and no `--from` keeps the box it steps from, and with `--from` alone keeps the steps.
-- A box placed by steps wholly beside every box it connects to is refused as `box-aside`.
-  - The refusal names those boxes.
+- A box wholly beside every box it connects to is a warning, `box-aside`.
+  - The warning names those boxes.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 - **How it works:** [Placement: steps from another box](../specs/placement.md#steps-from-another-box)

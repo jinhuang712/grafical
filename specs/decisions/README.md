@@ -78,6 +78,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [072. A change keeps the structure and positions may shift](072-a-change-keeps-the-structure-and-positions-may-shift.md) (2026-11-06)
 - [073. The target picture's rules are not reported](073-the-target-picture-s-rules-are-not-reported.md) (2026-11-06)
 - [074. Safety and licenses are no design guidelines](074-safety-and-licenses-are-no-design-guidelines.md) (2026-11-06)
+- [075. A box beside its neighbours is a warning](075-a-box-beside-its-neighbours-is-a-warning.md) (2026-11-06)
 
 ## Former IDs
 

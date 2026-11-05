@@ -20,18 +20,6 @@
 - next: the owner takes the next dimension, and the three options are settled after the last
 - related: [055. A weak model draws well and a stronger one superbly](../specs/decisions/055-a-weak-model-draws-well-and-a-stronger-one-superbly.md)
 
-### [P2][DISCUSSION] A box beside every box it connects to in a row
-
-- description:
-  - A box placed by steps wholly beside every box it connects to is an agent defect as `box-aside`.
-  - The same box placed in a row is not refused.
-  - The file could not once tell a slot the agent stated from one the engine chose.
-  - Since the agent states every order it could become an agent defect too.
-- created: 2026-10-15
-- status: HALT
-- next: the owner decides whether it becomes an agent defect
-- related: [032. Who chose is punished](../specs/decisions/032-who-chose-is-punished.md)
-
 ### [P2][DISCUSSION] A row's label is drawn twice
 
 - description:

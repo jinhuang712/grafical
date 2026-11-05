@@ -152,6 +152,7 @@ Output:
                        on two sides: edge
     lonely-box         a box no line reaches, neither its own nor one to its
                        group, row or lane: node
+    box-aside          a box beside every box it connects to: node, nodes
     line-per-member    every box of a group has a line alike to one end, or
                        from it: group, edges
     crossing           two lines that cross: edges
