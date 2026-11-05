@@ -104,6 +104,7 @@ Roadmap
 │   └── ⬜ CP2.7: The command line
 │       ├── ⬜ The file flag
 │       ├── ⬜ One name for each thing
+│       ├── ⬜ Verbs as flags
 │       ├── ⬜ One way for each situation
 │       └── ⬜ Batches from standard input
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
@@ -579,12 +580,13 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 
 **Status:** ⬜
 
-Every command names its file the same way, each thing has one name, and each situation has one shortest way.
+Every command names its file the same way, a verb is a flag, each thing has one name, and each situation has one shortest way.
 
 **Tasks:**
 
 - ⬜ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
 - ⬜ One name for each thing: The commands, the file, the answers, the help, the documents and the code use one name.
+- ⬜ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
 - ⬜ One way for each situation: `edge emphasize` goes, and the commands are checked for other repeats.
 - ⬜ Batches from standard input: `apply` reads a batch named `-` from standard input.
 

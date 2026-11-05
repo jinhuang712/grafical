@@ -61,6 +61,7 @@ grafical node add arch.grafical.yaml api --layer app --label "Order API" --kind 
   - [001. Operations over whole-file rewrites](../specs/decisions/001-operations-over-whole-file-rewrites.md)
   - [068. A command names its file with a flag](../specs/decisions/068-a-command-names-its-file-with-a-flag.md)
   - [069. One name for each thing, and a name says what it is](../specs/decisions/069-one-name-for-each-thing-and-a-name-says-what-it-is.md)
+  - [082. A command's verb is a flag](../specs/decisions/082-a-command-s-verb-is-a-flag.md)
 
 **Stories:**
 

@@ -85,6 +85,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [079. The gap between two regions takes a multiple](079-the-gap-between-two-regions-takes-a-multiple.md) (2026-11-06)
 - [080. A node takes multiples of its width and height](080-a-node-takes-multiples-of-its-width-and-height.md) (2026-11-06)
 - [081. An edge may take a color of its own](081-an-edge-may-take-a-color-of-its-own.md) (2026-11-06)
+- [082. A command's verb is a flag](082-a-command-s-verb-is-a-flag.md) (2026-11-06)
 
 ## Former IDs
 
