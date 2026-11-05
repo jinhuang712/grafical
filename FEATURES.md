@@ -8,8 +8,8 @@ What grafical does, from the side of the agent that draws and the person who ask
 
 ```
 Features
-├── 🚧 F1: Elements — what a diagram is made of
-│   ├── 🚧 F1.1: Boxes — the parts of the system
+├── 🚧 F1: Elements — what a diagram is made of (gaps in boxes and containers)
+│   ├── 🚧 F1.1: Boxes — the parts of the system (corner marks not checked and marks by name not built)
 │   │   ├── ✅ F1.1.1: Kinds and shapes — a box's kind sets its shape
 │   │   ├── ✅ F1.1.2: Labels and sublabels — a label and a quieter sublabel
 │   │   ├── ✅ F1.1.3: Sizes — sized to the text, or by a step
@@ -22,7 +22,7 @@ Features
 │   │   ├── ✅ F1.2.3: Weight — thicker lines for what matters more
 │   │   ├── ✅ F1.2.4: Numbered steps — a number on a line
 │   │   └── ✅ F1.2.5: Ends at a group, a row or a lane — one arrow to a whole system
-│   └── 🚧 F1.3: Containers — what gathers boxes
+│   └── 🚧 F1.3: Containers — what gathers boxes (deeper nesting and lanes both ways not built)
 │       ├── ✅ F1.3.1: Groups — a system drawn as one frame
 │       ├── ✅ F1.3.2: Copying a group — a second zone in one operation
 │       ├── ⬜ F1.3.3: Deeper nesting — up to five levels
@@ -30,7 +30,7 @@ Features
 │       ├── ⬜ F1.3.5: Lanes both ways — a grid of lanes and phases
 │       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
 │       └── ✅ F1.3.7: Notes — a short text on a box, a line or a group
-├── 🚧 F2: Layout — where everything goes
+├── 🚧 F2: Layout — where everything goes (alignment differs and flow direction not built)
 │   ├── ✅ F2.1: Placing every box — grafical gives every box its place
 │   ├── ✅ F2.2: Rows and order — a box's row and its place in it
 │   ├── 🚧 F2.3: Alignment — one box above or below another (the code joins a column instead)
@@ -39,7 +39,7 @@ Features
 │   ├── ✅ F2.6: Spacing — compact, normal or airy
 │   ├── ✅ F2.7: How lines are drawn — grafical routes every line
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
-├── 🚧 F3: Editing — how a diagram changes
+├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── ✅ F3.1: Operations — one named command per change
 │   ├── ✅ F3.2: Batches — many operations, all or nothing
 │   ├── ✅ F3.3: Trying a change — see counts before writing
@@ -47,7 +47,7 @@ Features
 │   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts
 │   ├── ✅ F3.6: Merging and swapping — merge, swap and remove boxes
 │   └── ⬜ F3.7: More combinations of operations — one operation for a common edit
-├── 🚧 F4: Look — how the picture looks
+├── 🚧 F4: Look — how the picture looks (brand fonts not built)
 │   ├── ✅ F4.1: Title, subtitle and footnote — the words around the picture
 │   ├── ✅ F4.2: Legend — a key for styles, widths and marks
 │   ├── ✅ F4.3: Themes and stylesheets — the whole look from one name
@@ -106,7 +106,7 @@ Features
 - **A board where people edit the diagram:** agents draw good enough diagrams with grafical, and a person asks for a change in words ([Who draws?](PHILOSOPHY.md#who-draws)).
 - **Placement by coordinates for anyone:** a free position would break the promise that a change moves only what it names ([What may the agent set?](PHILOSOPHY.md#what-may-the-agent-set)).
 - **A score of how readable a picture is:** readers differ ([What makes grafical good?](PHILOSOPHY.md#what-makes-grafical-good)).
-- **A declared diagram type that checks its conventions:** grafical would be judging content ([022. Records over prose](specs/decisions/022-records-over-prose.md)).
+- **A declared diagram type that checks its conventions:** grafical would be judging content ([049. An optional type sets the diagram's space](specs/decisions/049-an-optional-type-sets-the-diagram-s-space.md)).
 - **Real-time collaboration or accounts or a hosted service:** git already shares the file and keeps its history ([009. Git as the history](specs/decisions/009-git-as-the-history.md)).
 - **The same facts always giving the same picture whatever order they arrived in:** the file fixes the picture ([024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)).
 - **A row reordered by the engine to tidy it:** the engine does not choose an order, and the agent compares orders with `grafical try` ([033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)).
