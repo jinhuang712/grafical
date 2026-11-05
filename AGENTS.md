@@ -4,7 +4,7 @@ How agents develop in this repository. Every window loads this file. What grafic
 
 ## Read order
 
-A window that is new or was compacted reads these documents in full and in this order:
+A window that is new or was compacted first reads the `what-we-build` skill's SKILL.md and guides in full if the skill is installed. It then reads these documents in full and in this order:
 
 1. [PROPOSAL.md](PROPOSAL.md)
 2. [PHILOSOPHY.md](PHILOSOPHY.md)
@@ -15,7 +15,7 @@ A window that is new or was compacted reads these documents in full and in this 
 7. [GLOSSARY.md](GLOSSARY.md)
 8. [specs/ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
-Then it scans [plan/TODO.md](plan/TODO.md).
+Then it scans `plan/TODO.md`.
 
 ## Layout
 
@@ -27,6 +27,7 @@ Then it scans [plan/TODO.md](plan/TODO.md).
 | `specs/decisions/` | the forks taken |
 | `plan/` | the goals · the roadmap · the open items |
 | `plan/evidence/` | the files that open items point to |
+| `docs/images/` | the pictures of the README |
 | `src/` | the engine with the `grafical` command at `src/cli/main.ts` |
 | `bench/` | the benchmark harness |
 | `test/` | the tests and the fixtures |
@@ -48,6 +49,7 @@ Then it scans [plan/TODO.md](plan/TODO.md).
 - [WHEN]  a change is done: update the changelog and the feature's status in the same change.
 - [WHEN]  an open item is done: delete it in the same change.
 - [WHEN]  you change something: check only what you touched against the rules.
+- [WHEN]  the work at hand is done and nothing is next: go through the open items with the owner.
 - [WHEN]  a checkpoint ends or a release is near: check the goals.
 - [WHEN]  the owner stops you: stop at once.
 - [WHEN]  the owner stops you: stop every agent you started and every agent those started.
@@ -61,6 +63,7 @@ Then it scans [plan/TODO.md](plan/TODO.md).
   - An ID is always written with its name.
 - Code and documents cite an item by its name, such as `GOALS.md, "Speed"`.
   - `test/docs/citations.test.ts` checks that the name exists.
+  - A decision cites only other decisions.
 - A status mark sits on a `Status:` line and never in a heading.
 - Only the owner changes the philosophy.
 - Only the owner changes the MVP bar.
