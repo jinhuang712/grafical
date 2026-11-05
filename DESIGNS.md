@@ -76,9 +76,9 @@ The layout is computed again from the facts after every write, and positions are
 
 ## 5. The engine routes every line, in plain forms
 
-Lines run orthogonally through the gaps between rows and boxes. The engine picks each line's sides, ports, tracks and bundles, and no operation can. It draws each thing in a few plain forms: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs. Cost: an agent cannot fix one ugly line directly, only change the facts around it.
+Lines run orthogonally through the gaps between rows and boxes. The engine picks each line's ports, tracks and bundles, and no operation can. A side is the engine's unless the agent states it. It draws each thing in a few plain forms: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs. Cost: an agent cannot bend one ugly line directly, only state its sides and change the facts around it.
 
-**Ask:** Does this hand the agent a side, a port or a bend, or draw a crooked form to make the facts fit?
+**Ask:** Does this hand the agent a port or a bend, or draw a crooked form to make the facts fit?
 
 - **Stance:** [Who owns what?](PHILOSOPHY.md#who-owns-what)
 - **Decisions:**
@@ -87,6 +87,8 @@ Lines run orthogonally through the gaps between rows and boxes. The engine picks
   - [015. Lines that end at containers](specs/decisions/015-lines-that-end-at-containers.md)
   - [023. Fan-outs of three bundle](specs/decisions/023-fan-outs-of-three-bundle.md)
   - [041. The dirty work has edges](specs/decisions/041-the-dirty-work-has-edges.md)
+  - [058. An agent may state the side of a line](specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
+  - [059. Lines may be drawn square, round or smooth](specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
 - **How it works:**
   - [Routing](specs/routing.md)
   - [Text placement](specs/labels.md)

@@ -10,6 +10,8 @@ F2: Layout
 ├── F2.5: Steps from another box — a box some cells from another
 ├── F2.6: Spacing — compact, normal or airy
 ├── F2.7: How lines are drawn — grafical routes every line
+│   ├── F2.7.1: Line sides — the side a line leaves or enters by
+│   └── F2.7.2: Line shapes — square, round or smooth
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
 
@@ -234,6 +236,35 @@ The agent says what connects. grafical draws every line.
 **Stories:**
 
 - An agent states what connects, to get lines that avoid boxes and text without drawing any.
+
+### F2.7.1: Line sides
+
+An agent may state the side a line leaves by or enters by. A side left unstated stays grafical's.
+
+```sh
+grafical edge side <file> <id> [--from top|bottom|left|right] [--to top|bottom|left|right]
+```
+
+- Without `--from` or `--to`, the line's sides are grafical's again.
+- Where the line cannot go by the stated side, the write is refused and names what is in the way.
+- A stated side can cost more bends or crossings, and the counts show them.
+
+- **Why:** [058. An agent may state the side of a line](../specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
+
+### F2.7.2: Line shapes
+
+All the lines of a diagram share one shape, and the routes stay the same.
+
+```sh
+grafical diagram lines <file> square|round|smooth
+```
+
+- `square` has sharp corners, as a new diagram does.
+- `round` rounds the corners and keeps the straight runs.
+- `smooth` draws a sideways run as a slope, so that the line reads as one S.
+- A smooth line that would touch a box or a text is refused.
+
+- **Why:** [059. Lines may be drawn square, round or smooth](../specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
 
 ## F2.8: Flow direction
 

@@ -88,10 +88,13 @@ Roadmap
 │   │   ├── ⬜ Column headings
 │   │   ├── ⬜ Lanes both ways
 │   │   └── ⬜ Deeper nesting
-│   └── ⬜ CP2.5: Direction and views
-│       ├── ⬜ Flow direction
-│       ├── ⬜ Views of one file
-│       └── ⬜ Folded groups
+│   ├── ⬜ CP2.5: Direction and views
+│   │   ├── ⬜ Flow direction
+│   │   ├── ⬜ Views of one file
+│   │   └── ⬜ Folded groups
+│   └── ⬜ CP2.6: Lines
+│       ├── ⬜ Line sides
+│       └── ⬜ Line shapes
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
 │   ├── ⬜ CP3.1: Boxes and lines
 │   │   ├── ⬜ State machine
@@ -410,6 +413,7 @@ What grafical can draw grows on top of [CP1: Stage 1 built](#cp1-stage-1-built).
   - [CP2.3: Boxes](#cp23-boxes) is met.
   - [CP2.4: Containers](#cp24-containers) is met.
   - [CP2.5: Direction and views](#cp25-direction-and-views) is met.
+  - [CP2.6: Lines](#cp26-lines) is met.
 
 ### CP2.1: Fix the speed slip
 
@@ -524,6 +528,28 @@ Other ways to read one diagram, which build on the nesting of [CP2.4: Containers
   - [R1: Stability](GOALS.md#r1-stability)
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
   - [R3: Determinism](GOALS.md#r3-determinism)
+
+### CP2.6: Lines
+
+**Status:** ⬜
+
+A strong model steers a line and draws it as a curve.
+
+**Tasks:**
+
+- ⬜ Line sides: An agent states the side a line leaves or enters by.
+- ⬜ Line shapes: A command draws lines square, round or smooth.
+
+**Delivers:**
+
+- [F2.7.1: Line sides](../features/F2-layout.md#f271-line-sides)
+- [F2.7.2: Line shapes](../features/F2-layout.md#f272-line-shapes)
+
+**Exit criteria:**
+
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
 ## CP3: Experiments
 

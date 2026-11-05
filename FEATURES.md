@@ -31,7 +31,7 @@ Features
 │       ├── ⬜ F1.3.5: Lanes both ways — a grid of lanes and phases
 │       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
 │       └── ✅ F1.3.7: Notes — a short text on a box, a line or a group
-├── 🚧 F2: Layout — where everything goes (flow direction not built)
+├── 🚧 F2: Layout — where everything goes (line sides and smooth lines and flow direction not built)
 │   ├── ✅ F2.1: Placing every box — grafical gives every box its place
 │   ├── ✅ F2.2: Rows and order — a box's row and its place in it
 │   ├── ✅ F2.3: Alignment — one box above or below another
@@ -39,7 +39,9 @@ Features
 │   │   └── ⬜ F2.4.1: Column headings — a label above a column
 │   ├── ✅ F2.5: Steps from another box — a box some cells from another
 │   ├── ✅ F2.6: Spacing — compact, normal or airy
-│   ├── ✅ F2.7: How lines are drawn — grafical routes every line
+│   ├── 🚧 F2.7: How lines are drawn — grafical routes every line (line sides and smooth lines not built)
+│   │   ├── ⬜ F2.7.1: Line sides — the side a line leaves or enters by
+│   │   └── 🚧 F2.7.2: Line shapes — square, round or smooth (round is only in the stylesheet and smooth is not built)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── ✅ F3.1: Operations — one named command per change

@@ -20,6 +20,10 @@
 - description:
   - A model that draws directly can adjust a picture to the pixel.
   - grafical is not that free yet, and the owner sees much room to improve.
+  - The owner takes it one dimension at a time, and lines are decided.
+  - Still open are the canvas's proportions, where a box sits beside another, how far a bar may cross a group and where text sits.
+  - Agents' reflections name lines and the canvas more than a box a few pixels off, read by sample on 2026-11-06.
+  - A picture the owner drew on 2026-11-06 owes much to its labels: a row of them at one height, each with its line passing through.
   - Option one keeps places as facts and turns each gap into a new discrete fact.
   - Option two adds a small adjustment within one cell of the grid.
   - Option three allows adjustment to the pixel.
@@ -27,7 +31,7 @@
 - created: 2026-11-05
 - status: HALT
 - found: choosing what to measure on 2026-11-05
-- next: the owner chooses the means of fine tuning
+- next: the owner takes the next dimension, and the three options are settled after the last
 - related: [055. A weak model draws well and a stronger one superbly](../specs/decisions/055-a-weak-model-draws-well-and-a-stronger-one-superbly.md)
 
 ### [P2][DISCUSSION] The stability tests measure movement instead of limiting it
