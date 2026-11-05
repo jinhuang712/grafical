@@ -104,6 +104,6 @@ Folder: the files at the top of `src/`.
 
 ## The benchmark harness
 
-Runs agents against briefs, records what they did and what it cost, and measures the pictures. It is not part of the command line a user installs.
+Runs agents against briefs, records what they did and what it cost, and measures the pictures. It is not part of the command line a user installs. How it works is in [The benchmark harness](benchmark.md).
 
 Folder: `bench/`.

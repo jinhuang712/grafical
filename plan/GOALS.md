@@ -67,7 +67,7 @@ Set by the owner on 2026-10-13 and changed on 2026-11-05 ([What makes grafical g
 
 Given a picture someone else drew, an agent redraws it with grafical, shows the same content and looks better than the original.
 
-**Want:** A picture that is complete and clear at once.
+**Want:** Copy a picture and beat it.
 
 **Checks:**
 

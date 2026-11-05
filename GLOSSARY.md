@@ -82,6 +82,15 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
   - A line carries a numbered *step*, which is part of a process.
   - Neither has won yet.
 
+## The benchmarks
+
+- **Brief:** a description of a system that an agent draws from.
+  - A public brief is fictional, and a private brief describes a real system.
+- **Arm:** what an agent draws with in a benchmark, such as grafical or nothing.
+  - **Drawing directly** is the arm with no tool.
+- **Chain:** one agent session, from a first draft through its change requests.
+- **Round:** a set of chains run and reported together.
+
 ## What grafical answers
 
 - **Refusal:** an operation that grafical will not apply.
