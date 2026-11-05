@@ -134,7 +134,7 @@ Readers prefer different things, and so do the agents that draw: one draws every
 
 **Agents draw. People say what they want, and read the result.**
 
-With grafical, an agent draws a diagram good enough to use. A person who wants it changed says so in words, and the agent makes the change as operations. No person needs a canvas to drag boxes into place. What grafical lacks is not a second pair of hands but more ways to combine its operations, so that an agent can say more, in fewer steps.
+With grafical, an agent draws a diagram worth keeping. A person who wants it changed says so in words, and the agent makes the change as operations. No person needs a canvas to drag boxes into place. What grafical lacks is not a second pair of hands but more ways to combine its operations, so that an agent can say more, in fewer steps.
 
 When two answers collide, the facts the agent named win. grafical never changes what a diagram says to make it tidier, and never moves what nobody named to make it prettier.
 
