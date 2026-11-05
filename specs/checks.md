@@ -69,16 +69,16 @@ No refusal writes the change for the agent. A block names the commands that can 
 
 A warning names something the picture draws poorly. Every write prints every warning the diagram has, not only those the command caused, and so do `check` and `render`, since every write lays the whole diagram out again. A warning never refuses anything. It has no source, because the outcome line already names what the write changed. Each prints as its own block, in this order:
 
-| Code | What it names | Detail | `next` |
-|---|---|---|---|
-| `bent-line` | a line with more than two bends | `edge` · `bends` · `skip` | `layer move` · `node move` · `node swap` |
-| `passing-row` | a line among the boxes of rows between its ends that meets none | `edge` · `rows` | `layer move` · `node move` · `node swap` |
-| `line-across-group` | a line through a group that holds neither end | `edge` · `groups` | `group order` · `node move` · `node swap` |
-| `tight-lines` | two runs closer than 12 px for over 100 px | `edges` · `over` | `layer move` · `node move` · `node swap` |
-| `crowded-label` | a label with under 8 px of room on two sides | `edge` | `node move` · `node swap` · `edge relabel` |
-| `lonely-box` | a box no line reaches | `node` | `node remove` · `edge add` |
-| `line-per-member` | a group each of whose boxes has a line alike to one end | `group` · `edges` | `edge add` · `edge remove` |
-| `crossing` | a pair of lines that cross | `edges` | `group order` · `layer move` · `node move` · `node swap` |
+| Code | `next` |
+|---|---|
+| `bent-line` | `layer move` · `node move` · `node swap` |
+| `passing-row` | `layer move` · `node move` · `node swap` |
+| `line-across-group` | `group order` · `node move` · `node swap` |
+| `tight-lines` | `layer move` · `node move` · `node swap` |
+| `crowded-label` | `node move` · `node swap` · `edge relabel` |
+| `lonely-box` | `node remove` · `edge add` |
+| `line-per-member` | `edge add` · `edge remove` |
+| `crossing` | `group order` · `layer move` · `node move` · `node swap` |
 
 A line that ends at a group, a row or a lane reaches every box in it, so none of those boxes is a `lonely-box`.
 
