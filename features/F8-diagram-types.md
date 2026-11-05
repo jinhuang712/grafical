@@ -16,6 +16,8 @@ Diagrams that do not fit rows. Each is a type that sets a diagram's space and th
 
 Messages between parties in time order.
 
+- **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
+
 **Stories:**
 
 - An agent draws a sequence diagram, to show who calls whom and when.
@@ -23,6 +25,8 @@ Messages between parties in time order.
 ## F8.2: Gantt charts
 
 Tasks laid out over time.
+
+- **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 
 **Stories:**
 
@@ -32,6 +36,8 @@ Tasks laid out over time.
 
 Ideas that branch from one topic.
 
+- **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
+
 **Stories:**
 
 - An agent draws a mind map, to show ideas around one topic.
@@ -39,6 +45,8 @@ Ideas that branch from one topic.
 ## F8.4: Pyramids
 
 Layers stacked as a pyramid.
+
+- **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 
 **Stories:**
 
@@ -48,6 +56,8 @@ Layers stacked as a pyramid.
 
 Sets drawn overlapping, to show what they share.
 
+- **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
+
 **Stories:**
 
 - An agent draws overlapping sets, to show what two things share.
@@ -55,6 +65,8 @@ Sets drawn overlapping, to show what they share.
 ## F8.6: Entity-relationship and class diagrams
 
 Tables or classes and how they relate. These may be a type or a kind of box.
+
+- **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 
 **Stories:**
 

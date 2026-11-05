@@ -12,6 +12,8 @@ How grafical reaches the agent that uses it.
 
 grafical installed from npm, so that it runs without a clone.
 
+- **Design:** [15. Every dependency allows use in an MIT project](../DESIGNS.md#15-every-dependency-allows-use-in-an-mit-project)
+
 **Stories:**
 
 - An engineer installs grafical with one command, to give an agent the tool.
@@ -19,6 +21,8 @@ grafical installed from npm, so that it runs without a clone.
 ## F11.2: An MCP server
 
 The same operations served to an agent without a shell.
+
+- **Design:** [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Stories:**
 

@@ -13,13 +13,13 @@ The words and the look of the picture as a whole: its title, its legend, and its
 
 ## F4.1: Title, subtitle and footnote
 
+The title names the picture, and two more texts tell a reader what they see.
+
 **Commands:**
 
 - `grafical diagram title <file> --text <text>`
 - `grafical diagram subtitle <file> [--text <text>]`
 - `grafical diagram note <file> [--text <text>]`
-
-The title names the picture, and two more texts tell a reader what they see.
 
 - The subtitle is one sentence under the title.
 - The footnote says what the diagram leaves out, such as "Not shown: Redis name cache".
@@ -103,6 +103,10 @@ A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and ove
 ## F4.5: Brand fonts
 
 A team's own typeface in the picture.
+
+- **Design:**
+  - [9. The same file gives the same picture on any machine](../DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
+  - [11. Looks are free, while shape and dash follow the kind](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-kind)
 
 **Stories:**
 

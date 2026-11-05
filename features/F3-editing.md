@@ -179,6 +179,8 @@ next: -
 
 ## F3.6: Merging and swapping
 
+Three operations change which boxes a diagram has or where two of them sit.
+
 **Commands:**
 
 - `grafical node merge <file> <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--kind <kind>]`
@@ -206,6 +208,8 @@ next: -
 ## F3.7: More combinations of operations
 
 One operation for a common edit or a common shape, such as "put a cache between the API and the database".
+
+- **Design:** [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
 
 **Stories:**
 

@@ -36,6 +36,8 @@ One YAML file, `<name>.grafical.yaml`, holds the whole diagram as facts: rows an
 
 ## F6.2: Render
 
+`render` draws a diagram file as an SVG and a PNG.
+
 ```sh
 grafical render <file> [--svg [<out>]] [--png [<out>]] [--scale 1-4]
 ```
@@ -84,11 +86,11 @@ grafical view <file> [--port <n>] [--no-open]
 
 ## F6.4: Diff
 
+`diff` reports how the file differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file. Outside git it fails with `not-in-git`.
+
 ```sh
 grafical diff <file> [<git-rev>]
 ```
-
-`diff` reports how the file differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file. Outside git it fails with `not-in-git`.
 
 - **Design:**
   - [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)

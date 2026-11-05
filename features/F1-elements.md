@@ -219,6 +219,8 @@ A line's kind says what it means and decides its style.
 
 ### F1.2.2: Arrowheads at both ends
 
+A line can carry an arrowhead at each end, for a call that answers.
+
 ```sh
 grafical edge both <file> <id> [--off]
 ```

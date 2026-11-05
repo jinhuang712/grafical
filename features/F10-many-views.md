@@ -13,6 +13,8 @@ Several pictures of one system, for what is too large or too shared for one file
 
 Several pictures of parts of one file.
 
+- **Design:** [9. The same file gives the same picture on any machine](../DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
+
 **Stories:**
 
 - An agent draws parts of a large diagram, to fit it in pictures a reader can follow.
@@ -21,6 +23,8 @@ Several pictures of parts of one file.
 
 A group drawn folded into one box in a view.
 
+- **Design:** [9. The same file gives the same picture on any machine](../DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
+
 **Stories:**
 
 - An agent folds a group, to hide detail a view does not need.
@@ -28,6 +32,8 @@ A group drawn folded into one box in a view.
 ## F10.3: One catalog of systems
 
 Many diagrams that share one list of systems.
+
+- **Design:** [14. A diagram reads no file outside its folder, and its pictures run nothing](../DESIGNS.md#14-a-diagram-reads-no-file-outside-its-folder-and-its-pictures-run-nothing)
 
 **Stories:**
 

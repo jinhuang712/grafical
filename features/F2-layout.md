@@ -91,11 +91,11 @@ A box sits in a row, in an order. A row only places, and is not drawn unless it 
 
 ## F2.3: Alignment
 
+A box sits directly above or below a box in another row.
+
 ```sh
 grafical node align <file> <id> [--to <node>]
 ```
-
-A box sits directly above or below a box in another row.
 
 - Its row slides sideways as one block to put it there.
 - An alignment that cannot hold with the order of either row is refused as `alignment-conflict`.
@@ -175,6 +175,8 @@ grafical node move <file> <id> [--from <node>] [--down <n> | --up <n>] [--left <
 
 ## F2.6: Spacing
 
+A diagram's spacing is compact, normal or airy, and it changes nothing else.
+
 ```sh
 grafical diagram density <file> compact|normal|airy
 ```
@@ -226,6 +228,8 @@ The agent says what connects. grafical draws every line.
 ## F2.8: Flow direction
 
 Rows become columns, so that a diagram reads left to right.
+
+- **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 
 **Stories:**
 

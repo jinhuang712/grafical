@@ -14,6 +14,8 @@ A diagram started from an existing file instead of from nothing.
 
 A diagram started from a Mermaid file.
 
+- **Design:** [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
+
 **Stories:**
 
 - An agent imports a Mermaid file, to carry on from an existing diagram.
@@ -22,6 +24,8 @@ A diagram started from a Mermaid file.
 
 A diagram started from a draw.io file.
 
+- **Design:** [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
+
 **Stories:**
 
 - An agent imports a draw.io file, to carry on from an existing diagram.
@@ -29,6 +33,8 @@ A diagram started from a draw.io file.
 ## F9.3: Excalidraw files
 
 A diagram started from an Excalidraw file.
+
+- **Design:** [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
 
 **Stories:**
 
