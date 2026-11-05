@@ -131,13 +131,14 @@
 
 - description:
   - The roadmap guide asks every checkpoint for exit criteria that point to a goal.
-  - Seven sub-checkpoints of CP1 were built before the goals existed and say they have none.
+  - Seven sub-checkpoints of [CP1: Stage 1 built](ROADMAP.md#cp1-stage-1-built) were built before the goals existed and say they have none.
   - [CP2.3: Boxes](ROADMAP.md#cp23-boxes) and [CP2.4: Containers](ROADMAP.md#cp24-containers) and [CP2.5: Direction and views](ROADMAP.md#cp25-direction-and-views) are accepted by a test and say none yet.
   - [CP4.1: The npm package](ROADMAP.md#cp41-the-npm-package) says none yet too.
-  - An exit criterion could name a passing fixture in place of a goal.
+  - A goal may now exit many checkpoints, so these may point to goals already in use.
 - created: 2026-11-05
 - status: HALT
-- next: the owner chooses whether these exits may name a test
+- next: the owner matches each of these checkpoints to the goals that check it
+- related: [054. A goal may exit many checkpoints](../specs/decisions/054-a-goal-may-exit-many-checkpoints.md)
 
 ### [P2][DISCUSSION] The philosophy does not say pictures keep getting better
 
