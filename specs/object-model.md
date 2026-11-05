@@ -45,7 +45,7 @@ A block opens with one of a fixed list of sorts.
 | `<node>` | a node |
 | `<edge>` | an edge |
 | `<order>` | the order inside one region |
-| `<label>` | a text on an object |
+| `<label>` | a text on an edge or a region |
 | `<mark>` | a small image on a node |
 | `<note>` | a note |
 | `<legend>` | the legend, whose design is open |
@@ -105,7 +105,11 @@ density: normal
 }
 
 <layer> app {
-  label: "Application"
+}
+
+<label> app-name {
+  on: @app
+  text: "Application"
 }
 
 <order> app-row {
@@ -116,26 +120,36 @@ density: normal
 }
 
 <group> pay {
-  label: "Payments"
+}
+
+<label> pay-name {
+  on: @pay
+  text: "Payments"
 }
 
 <node> orders {
   class: @service
-  label: "Orders"
+  text: "Orders"
   layer: @app
   group: @pay
 }
 
 <node> orders-db {
   class: @db
-  label: "Orders DB"
+  text: "Orders DB"
   below: @orders
 }
 
-<edge> orders -> orders-db {
+<edge> orders-to-db {
+  from: @orders
+  to: @orders-db
   class: @call
-  label: "read"
   weight: thick
+}
+
+<label> read {
+  on: @orders-to-db
+  text: "read"
 }
 ```
 
@@ -145,6 +159,7 @@ density: normal
 - `@` marks a reference, so no word is reserved and an ID may be any word, even `node`.
 - An `@` that names no object is refused.
 - A node states its own memberships.
+- A node's name is its `text`, since a node has no meaning without it.
 - A class is an attribute, `class`, and it names a sort of node or edge such as `@service`.
 - A class names what it inherits with `base`.
 - An `<order>` states only the order inside the region named by `of`, one item on each line.
