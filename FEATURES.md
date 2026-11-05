@@ -34,7 +34,8 @@ Features
 │   ├── ✅ F2.1: Placing every box — grafical gives every box its place
 │   ├── ✅ F2.2: Rows and order — a box's row and its place in it
 │   ├── ✅ F2.3: Alignment — one box above or below another
-│   ├── ✅ F2.4: Columns — a second placement fact beside rows
+│   ├── 🚧 F2.4: Columns — a second placement fact beside rows (headings not built)
+│   │   └── ⬜ F2.4.1: Column headings — a label above a column
 │   ├── ✅ F2.5: Steps from another box — a box some cells from another
 │   ├── ✅ F2.6: Spacing — compact, normal or airy
 │   ├── ✅ F2.7: How lines are drawn — grafical routes every line

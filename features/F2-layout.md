@@ -6,6 +6,7 @@ F2: Layout
 ├── F2.2: Rows and order — a box's row and its place in it
 ├── F2.3: Alignment — one box above or below another
 ├── F2.4: Columns — a second placement fact beside rows
+│   └── F2.4.1: Column headings — a label above a column
 ├── F2.5: Steps from another box — a box some cells from another
 ├── F2.6: Spacing — compact, normal or airy
 ├── F2.7: How lines are drawn — grafical routes every line
@@ -134,10 +135,21 @@ A second placement fact beside rows. Nothing is drawn: a column is a guide.
 - **Why:**
   - [027. Columns beside rows](../specs/decisions/027-columns-beside-rows.md)
   - [035. Columns hold across rows](../specs/decisions/035-columns-hold-across-rows.md)
+  - [056. A column may carry a heading](../specs/decisions/056-a-column-may-carry-a-heading.md)
 
 **Stories:**
 
 - An agent sets columns, to keep boxes of different rows in one left-to-right order.
+
+### F2.4.1: Column headings
+
+A column may carry a heading above its first row, such as a quarter.
+
+- `grafical column add <file> <id> --label <text>`
+- `grafical column rename <file> <id> [--label <text>]`
+- A line that comes near a heading refuses the write.
+
+- **Why:** [056. A column may carry a heading](../specs/decisions/056-a-column-may-carry-a-heading.md)
 
 ## F2.5: Steps from another box
 

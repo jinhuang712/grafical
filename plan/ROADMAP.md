@@ -84,6 +84,7 @@ Roadmap
 │   │   ├── ⬜ Corner marks checked
 │   │   └── ⬜ Marks by name
 │   ├── ⬜ CP2.4: Containers
+│   │   ├── ⬜ Column headings
 │   │   ├── ⬜ Lanes both ways
 │   │   └── ⬜ Deeper nesting
 │   └── ⬜ CP2.5: Direction and views
@@ -476,15 +477,17 @@ Boxes carry marks that stay clear of lines.
 
 **Status:** ⬜
 
-Containers that cross and nest.
+Containers that cross and nest, and columns that carry headings.
 
 **Tasks:**
 
+- ⬜ Column headings: A column carries a heading above its first row.
 - ⬜ Lanes both ways: Lanes that run as rows and as columns in one diagram.
 - ⬜ Deeper nesting: Groups up to five levels, with the fuzz test holding at five levels.
 
 **Delivers:**
 
+- [F2.4.1: Column headings](../features/F2-layout.md#f241-column-headings)
 - [F1.3.5: Lanes both ways](../features/F1-elements.md#f135-lanes-both-ways)
 - [F1.3.3: Deeper nesting](../features/F1-elements.md#f133-deeper-nesting)
 
