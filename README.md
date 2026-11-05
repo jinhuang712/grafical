@@ -46,7 +46,7 @@ grafical edge add arch.grafical.yaml api db --label writes
 grafical render arch.grafical.yaml --png arch.png
 ```
 
-Adding a cache later is two more steps, and the API and Postgres stay where they were:
+Adding a cache later is two more steps, and the API and Postgres keep their rows and their order:
 
 ```sh
 grafical node add arch.grafical.yaml cache --label Redis --kind store --layer data --after db
