@@ -2,6 +2,12 @@
 
 The words grafical uses, one name for each thing. Each entry gives the meaning, the names that lost (so a search still finds them), and the name in code or on the command line when it differs.
 
+## Who does what
+
+- **Agent:** the coding agent that draws with grafical.
+- **Engine:** the part of grafical that does the dirty work of placing and routing and checking and drawing.
+- **Owner:** the person who decides what grafical is.
+
 ## The picture
 
 - **Row:** a line of boxes with an order.
@@ -90,6 +96,9 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
   - **Drawing directly** is the arm with no tool.
 - **Chain:** one agent session, from a first draft through its change requests.
 - **Round:** a set of chains run and reported together.
+- **Fresh tokens:** uncached input plus cache writes plus output.
+- **Stage 1:** everything an agent needs to draw with grafical alone.
+- **MVP bar:** the one goal that says whether grafical succeeds.
 
 ## What grafical answers
 
