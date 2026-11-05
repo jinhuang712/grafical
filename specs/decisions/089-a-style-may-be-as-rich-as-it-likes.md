@@ -8,7 +8,7 @@ An agent wants one look on objects of many sorts. A style that picks its own obj
 
 ## The choice
 
-A `<style>` holds every look grafical can draw and says nothing of who uses it. An object that wants it names it with `style`. An object beats a style, a style beats a type, and a type beats the theme. `show` gives each value's source.
+A `<style>` holds every look grafical can draw and says nothing of who uses it. An object that wants it names it with `style`. It may name several, and a later one overrides an earlier one. An object beats a style, a style beats a type, and a type beats the theme. `show` gives each value's source.
 
 ## Not chosen
 

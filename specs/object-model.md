@@ -84,6 +84,7 @@ The root holds what applies to the whole diagram.
 
 - **Global looks:** the theme, the density, the shape of lines and type sizes.
 - **Styles:** every look grafical can draw, under a name, and an object that wants one names it with `style`.
+  - An object may name several, and a later one overrides an earlier one.
 - **Constraints:** rules an agent states for its own diagram, each saying whether it warns or refuses.
 
 Defaults are the model's edge and stay out of the file.
