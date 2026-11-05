@@ -451,7 +451,7 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 - ✅ Choice diamonds: `choice` is a small diamond for a line that splits.
 - ✅ Footnote numbers: A footnote's number stays wholly inside or outside a container.
 - ⬜ Labels in a crowded gutter: An attempt did not land and waits on the owner's choice: [Labels sit close to the lines beside them in a crowded gutter](TODO.md#p2discussion-labels-sit-close-to-the-lines-beside-them-in-a-crowded-gutter).
-- ⬜ A diamond's slanted lines: An attempt did not land and waits on the owner's choice: [A diamond's lines leave at its slanted edge a little](TODO.md#p2discussion-a-diamonds-lines-leave-at-its-slanted-edge-a-little).
+- ⬜ A diamond's slanted lines: A line meets a diamond only at a corner, measured with `pnpm bench diff` before it lands.
 
 **Delivers:**
 

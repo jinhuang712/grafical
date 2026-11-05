@@ -20,20 +20,6 @@
 - next: the owner takes the next dimension, and the three options are settled after the last
 - related: [055. A weak model draws well and a stronger one superbly](../specs/decisions/055-a-weak-model-draws-well-and-a-stronger-one-superbly.md)
 
-### [P2][DISCUSSION] A diamond's lines leave at its slanted edge a little
-
-- description:
-  - With `decision` ports kept to the middle 32 px of a diamond's top and bottom a line still meets the slanted edge a few px inside the corner.
-  - A try on 2026-10-30 changed 201 of 500 fuzz diagrams with 113 more bends and 32 more crossings.
-  - It changed 2 of 329 saved drafts with 2 more bends and was not landed.
-  - A `choice` is the small diamond the reference diagrams use with every line at its corner.
-  - Two lines that share a side of a `decision` could also go to its left or right corner.
-  - They could instead join before the corner as a fan-in does.
-- created: 2026-10-30
-- status: HALT
-- next: the owner chooses whether `decision` needs this at all
-- related: [052. A choice is a small diamond](../specs/decisions/052-a-choice-is-a-small-diamond.md)
-
 ### [P2][DISCUSSION] Labels sit close to the lines beside them in a crowded gutter
 
 - description:

@@ -48,6 +48,7 @@ A box is a part of the system: a service, a store, a queue, a person or a step. 
   - [020. Every layered diagram type](../specs/decisions/020-every-layered-diagram-type.md)
   - [025. Marks of any kind](../specs/decisions/025-marks-of-any-kind.md)
   - [052. A choice is a small diamond](../specs/decisions/052-a-choice-is-a-small-diamond.md)
+  - [077. A line meets a diamond at a corner](../specs/decisions/077-a-line-meets-a-diamond-at-a-corner.md)
   - [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
 **Stories:**
@@ -79,6 +80,7 @@ A box's kind says what it is and decides how it is drawn.
 
 - `initial` and `final` are a state machine's start and end.
 - `choice` is where a line splits into several, and the question goes on the line into it.
+- A line meets a diamond only at a corner, and lines that come to one side join before it.
 - The labels of `initial` and `final` and `choice` stay in the file and are not drawn.
 
 ```sh

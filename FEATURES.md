@@ -9,8 +9,8 @@ What grafical does, from the side of the agent that draws and the person who ask
 ```
 Features
 ├── 🚧 F1: Elements — what a diagram is made of (gaps in boxes and containers)
-│   ├── 🚧 F1.1: Boxes — the parts of the system (corner marks not checked and marks by name and box looks not built)
-│   │   ├── ✅ F1.1.1: Kinds and shapes — a box's kind sets its shape
+│   ├── 🚧 F1.1: Boxes — the parts of the system (diamond corners and corner marks not checked and marks by name and box looks not built)
+│   │   ├── 🚧 F1.1.1: Kinds and shapes — a box's kind sets its shape (a line may still meet a diamond's slanted edge)
 │   │   ├── ✅ F1.1.2: Labels and sublabels — a label and a quieter sublabel
 │   │   ├── ✅ F1.1.3: Sizes — sized to the text, or by a step
 │   │   ├── 🚧 F1.1.4: Marks — up to five small marks on a box (a corner mark is not checked against nearby lines)

@@ -80,6 +80,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [074. Safety and licenses are no design guidelines](074-safety-and-licenses-are-no-design-guidelines.md) (2026-11-06)
 - [075. A box beside its neighbours is a warning](075-a-box-beside-its-neighbours-is-a-warning.md) (2026-11-06)
 - [076. A band in a lane of its name draws no label](076-a-band-in-a-lane-of-its-name-draws-no-label.md) (2026-11-06)
+- [077. A line meets a diamond at a corner](077-a-line-meets-a-diamond-at-a-corner.md) (2026-11-06)
 
 ## Former IDs
 
