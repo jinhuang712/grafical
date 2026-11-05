@@ -136,3 +136,11 @@ A label with no such place stays at the wall's start or its top, and the write i
 The legend is a key in the top right, its first line level with the middle of the title and its right edge at the margin. It holds an entry only for what the agent named: a line style, a weight other than `thin`, or a mark, with marks of the same name sharing one entry. Each entry is a 28 px sample, 8 px of space and its words, with 24 px between entries.
 
 The legend wraps onto more lines when it is wider than its room: the larger of its widest entry and the picture's width, at least 480 px, less the title and 48 px. The picture widens to hold the title, 48 px and the legend. A subtitle drops below a wrapped legend.
+
+## Decisions
+
+- [030. Notes as callouts or footnotes](decisions/030-notes-as-callouts-or-footnotes.md)
+- [039. Step badges ride the line](decisions/039-step-badges-ride-the-line.md)
+- [040. The agent states where a group's label sits](decisions/040-the-agent-states-where-a-group-s-label-sits.md)
+- [041. The dirty work has edges](decisions/041-the-dirty-work-has-edges.md)
+- [051. A label sits on its straight vertical line](decisions/051-a-label-sits-on-its-straight-vertical-line.md)

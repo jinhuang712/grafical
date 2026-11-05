@@ -85,3 +85,12 @@ The help is the agent's only reference. `grafical --help` is the entry page, `gr
 A command's page starts with its usage, its paragraph, its arguments and its options. A command that is an operation then shows its line in a batch, built from the operation's schema, so the page and the batch cannot disagree. Then come the sections the page has, always in this order: When to use, Kinds, Good to know, Common mistakes, Limits, Batch file, Output, See also and Example. No page says what a refusal means: the block says it. A test applies the example of `apply --help` as printed, and no size limit is tested, only the 80 columns.
 
 The guides say how common kinds of diagram are usually drawn: architecture, C4, infrastructure, dependency, data flow, event flow, flowchart, swimlane, state machine, and composition for any kind. `grafical guide` lists them and `grafical guide <name>` prints one. `cloud` and `deployment` find infrastructure, `process` finds flowchart and `states` finds state machine. An unknown name is refused as `unknown-guide` with up to two likely names, and exits 2. The entry page names `grafical guide` once, and no command page names it; a test holds both.
+
+## Decisions
+
+- [022. Records over prose](decisions/022-records-over-prose.md)
+- [042. One entry page, help where it is used](decisions/042-one-entry-page-help-where-it-is-used.md)
+- [043. Help for the tool, guides for best practice](decisions/043-help-for-the-tool-guides-for-best-practice.md)
+- [044. One way to a page, and a wrong command names the right one](decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
+- [047. Refusals say what happened and which commands can change it](decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md)
+- [048. Every write prints every warning](decisions/048-every-write-prints-every-warning.md)

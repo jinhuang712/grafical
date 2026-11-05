@@ -33,3 +33,8 @@ A line's weight is a level or a width from 0.5 to 8 px. `thin` is the theme's li
 The arrowhead grows with the width, from the thin line's size to the main path's. A line thinner than thin keeps the thin arrowhead.
 
 `accent: true` on a line means `weight: thick`. When a line has both, `weight` wins. The operations keep only one: setting the accent clears the weight, and setting a weight clears the accent.
+
+## Decisions
+
+- [016. Themes and stylesheets](decisions/016-themes-and-stylesheets.md)
+- [026. Edge weights](decisions/026-edge-weights.md)

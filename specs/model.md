@@ -88,3 +88,10 @@ diagram settings
 ```
 
 An alignment that a move would break is cleared before the move and set again after it. The order of rows, and of the boxes in a row, is compared as the longest sequence the two share, so that only the boxes that truly moved get a move. Groups, lanes and lines keep the order they were made in, and an operation can only add one at the end. So the ones a new order puts out of step are removed and added again, and only the longest start that keeps its order stays.
+
+## Decisions
+
+- [001. Operations over whole-file rewrites](decisions/001-operations-over-whole-file-rewrites.md)
+- [009. Git as the history](decisions/009-git-as-the-history.md)
+- [033. The agent states every order](decisions/033-the-agent-states-every-order.md)
+- [037. A group copy holds its inside](decisions/037-a-group-copy-holds-its-inside.md)

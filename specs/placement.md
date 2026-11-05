@@ -159,3 +159,12 @@ The canvas is as wide as the widest of its boxes, groups, bands, lanes, side lab
 No code limits what may move: every write places the whole diagram again from its facts. What stays is the facts. An operation changes only the facts it names, so every other box keeps its row, its order, its group, its lane and its alignment, and so its place relative to its neighbours.
 
 The stability tests in `test/layout/stability.ts` apply single operations and assert exactly that. They also check that each box is drawn in its row, in its order and inside exactly its groups' boxes. How far boxes move sideways and which routes change is measured and reported, not limited.
+
+## Decisions
+
+- [002. Facts over coordinates](decisions/002-facts-over-coordinates.md)
+- [003. Rows unseen, groups as systems](decisions/003-rows-unseen-groups-as-systems.md)
+- [004. Layout computed again on every change](decisions/004-layout-computed-again-on-every-change.md)
+- [027. Columns beside rows](decisions/027-columns-beside-rows.md)
+- [031. Steps from another box](decisions/031-steps-from-another-box.md)
+- [035. Columns hold across rows](decisions/035-columns-hold-across-rows.md)

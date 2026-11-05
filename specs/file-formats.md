@@ -46,3 +46,8 @@ type: one entry per text role, each with size and weight
   - `edge.weights` may retune the levels and add new ones, such as `critical`.
 - `type` holds a size from 6 to 48 and a weight of 400 or 600 for each text role, such as `title` or `node-label`.
 - Every value not given comes from `base`.
+
+## Decisions
+
+- [001. Operations over whole-file rewrites](decisions/001-operations-over-whole-file-rewrites.md)
+- [024. Same file exact, same facts mostly](decisions/024-same-file-exact-same-facts-mostly.md)

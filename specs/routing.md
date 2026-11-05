@@ -121,3 +121,11 @@ The model has already refused a line between a wall's two sides that the wall do
 ## Self-loops
 
 A line from a box to itself loops through the gutter below the box. Its two ends sit about 48 px apart, either side of the box's centre, though the ports may move them. The loop runs at the gutter's third row of tracks.
+
+## Decisions
+
+- [005. Our own gap router](decisions/005-our-own-gap-router.md)
+- [015. Lines that end at containers](decisions/015-lines-that-end-at-containers.md)
+- [019. Lines meet any side](decisions/019-lines-meet-any-side.md)
+- [023. Fan-outs of three bundle](decisions/023-fan-outs-of-three-bundle.md)
+- [041. The dirty work has edges](decisions/041-the-dirty-work-has-edges.md)

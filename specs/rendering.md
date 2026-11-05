@@ -57,3 +57,9 @@ The command line reads a mark's file and gives its bytes to the renderer. It rea
 - An SVG with a script or a `foreignObject` or an event handler or an outside reference is refused as `mark-file-unsafe`.
 - So is a file with no `<svg>` at all.
 - A PNG whose signature is wrong is refused as `mark-file-unreadable`.
+
+## Decisions
+
+- [006. Bundled fonts](decisions/006-bundled-fonts.md)
+- [007. Our own SVG writer](decisions/007-our-own-svg-writer.md)
+- [025. Marks of any kind](decisions/025-marks-of-any-kind.md)

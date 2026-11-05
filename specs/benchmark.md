@@ -78,3 +78,7 @@ Since 2026-10-17 the harness resumes each session once more when its last step i
 ## Former numbers
 
 Older results use names that are gone. E1 is a first draft, E2 the change script, E3 the loose prompts, E4 the scale briefs and E5 a run of grafical with one design decision changed. Until 2026-10-15 the checks had numbers. Benchmark 1 is "The picture turned in" and "Time", 2 "Iteration", 3 "Token use", 4 "Stability", 5 "Model gap", 6 "Operation errors", 7 "Mechanical defects", 8 "Scale", 9 "Faithfulness", 10 "Intent", 11 "Determinism" and "Speed", 12 "Cost", 13 "Cache hit rate" and 14 "Verifiability". Goal 1 is "The MVP bar".
+
+## Decisions
+
+- [053. Success rests on cost, time, model gap and copying](decisions/053-success-rests-on-cost-time-model-gap-and-copying.md)
