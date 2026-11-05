@@ -79,7 +79,8 @@ Features
 │   │   └── ✅ F5.3.9: Boxes aside — `box-aside`
 │   └── ✅ F5.4: Check — defects, warnings and counts on demand
 ├── ✅ F6: Output — what a diagram leaves behind
-│   ├── ✅ F6.1: The diagram file — one YAML file of facts
+│   ├── 🚧 F6.1: The diagram file — one YAML file of facts (the object model not built)
+│   │   └── ⬜ F6.1.1: The object model — objects, classes and rules in a file of their own form
 │   ├── ✅ F6.2: Render — SVG and PNG, the same everywhere
 │   ├── ✅ F6.3: Live viewer — a window that redraws as the agent draws
 │   └── ✅ F6.4: Diff — a change as operations

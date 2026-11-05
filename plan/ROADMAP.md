@@ -109,9 +109,13 @@ Roadmap
 │   │   ├── ⬜ Verbs as flags
 │   │   ├── ⬜ One way for each situation
 │   │   └── ⬜ Batches from standard input
-│   └── ⬜ CP2.8: The legend
-│       ├── ⬜ Design the legend
-│       └── ⬜ Build the legend
+│   ├── ⬜ CP2.8: The legend
+│   │   ├── ⬜ Design the legend
+│   │   └── ⬜ Build the legend
+│   └── ⬜ CP2.9: The object model
+│       ├── ⬜ Design the model and its form
+│       ├── ⬜ Build the model
+│       └── ⬜ Move the saved files
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
 │   ├── ⬜ CP3.1: Boxes and lines
 │   │   ├── ⬜ State machine
@@ -433,6 +437,7 @@ What grafical can draw grows on top of [CP1: Stage 1 built](#cp1-stage-1-built).
   - [CP2.6: Lines and labels](#cp26-lines-and-labels) is met.
   - [CP2.7: The command line](#cp27-the-command-line) is met.
   - [CP2.8: The legend](#cp28-the-legend) is met.
+  - [CP2.9: The object model](#cp29-the-object-model) is met.
 
 ### CP2.1: Fix the speed slip
 
@@ -630,6 +635,28 @@ A legend is a small diagram, and it can explain what a picture's colors mean.
 
 - **Constraints**
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
+
+### CP2.9: The object model
+
+**Status:** ⬜
+
+A diagram is objects with classes and rules, in a form of its own, before the first release freezes the file.
+
+**Tasks:**
+
+- ⬜ Design the model and its form: The owner designs them: [The diagram file's format and object model](TODO.md#p1discussion-the-diagram-files-format-and-object-model).
+- ⬜ Build the model: grafical reads and writes it.
+- ⬜ Move the saved files: Fixtures and saved drafts move to it.
+
+**Delivers:**
+
+- [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
+
+**Exit criteria:**
+
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
+  - [R3: Determinism](GOALS.md#r3-determinism)
 
 ## CP3: Experiments
 

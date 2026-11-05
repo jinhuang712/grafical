@@ -88,6 +88,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [082. A command's verb is a flag](082-a-command-s-verb-is-a-flag.md) (2026-11-06)
 - [083. A group or a lane may take a look of its own](083-a-group-or-a-lane-may-take-a-look-of-its-own.md) (2026-11-06)
 - [084. A region's label sits at a fraction of a side](084-a-region-s-label-sits-at-a-fraction-of-a-side.md) (2026-11-06)
+- [085. A diagram is objects with attributes and relations](085-a-diagram-is-objects-with-attributes-and-relations.md) (2026-11-06)
 
 ## Former IDs
 
