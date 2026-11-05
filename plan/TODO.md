@@ -71,18 +71,6 @@
 - found: rewriting DESIGNS.md to the skill's guide on 2026-11-05
 - next: the owner chooses
 
-### [P2][DISCUSSION] The first checkpoints have no exit criteria
-
-- description:
-  - The roadmap guide asks every checkpoint for exit criteria that point to a goal.
-  - Seven sub-checkpoints of [CP1: Stage 1 built](ROADMAP.md#cp1-stage-1-built) were built before the goals existed and say they have none.
-  - [CP4.1: The npm package](ROADMAP.md#cp41-the-npm-package) says none yet too.
-  - A goal may now exit many checkpoints, so these may point to goals already in use.
-- created: 2026-11-05
-- status: HALT
-- next: the owner matches each of these checkpoints to the goals that check it
-- related: [054. A goal may exit many checkpoints](../specs/decisions/054-a-goal-may-exit-many-checkpoints.md)
-
 ### [P2][DISCUSSION] The philosophy does not say pictures keep getting better
 
 - description:

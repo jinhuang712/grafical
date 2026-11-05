@@ -19,4 +19,4 @@ A goal may be an exit criterion of any number of checkpoints. A parent still lis
 
 ## Consequences
 
-This is an exception to the skill's roadmap guide. A goal's first checkpoint is still the one where its check starts, and a checkpoint can now end on a goal that an earlier one already met.
+This is an exception to the skill's roadmap guide. A goal's first checkpoint is still the one where its check starts, and a checkpoint can now end on a goal that an earlier one already met. The seven sub-checkpoints built before the goals and CP4.1: The npm package keep no exit criteria.
