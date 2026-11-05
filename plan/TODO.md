@@ -41,11 +41,10 @@
 
 - description:
   - The draft is in [the object model](../specs/object-model.md), and each fork goes to a decision as it closes.
-  - Open: what a condition in a style rule may say.
   - Open: what a constraint may say.
 - created: 2026-11-06
 - status: HALT
-- next: the owner chooses what a condition in a style rule may say
+- next: the owner chooses what a constraint may say
 - evidence: on the dispatch fixture YAML takes 1.1 ms to parse against about 200 ms for a command, and the file is 264 lines
 
 ### [P2][DISCUSSION] Labels sit close to the lines beside them in a crowded gutter

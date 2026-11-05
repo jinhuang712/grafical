@@ -83,7 +83,7 @@ Structure is not a type's work. A group may follow another group with `like`, an
 The root holds what applies to the whole diagram.
 
 - **Global looks:** the theme, the density, the shape of lines and type sizes.
-- **Style rules:** a look for what a condition picks, such as the nodes of one group.
+- **Style rules:** every look grafical can draw, for what a condition picks: regions and attributes, combined with and, or and not.
 - **Constraints:** rules an agent states for its own diagram, each saying whether it warns or refuses.
 
 Defaults are the model's edge and stay out of the file.
@@ -95,6 +95,8 @@ an object  >  a type  >  a style rule  >  the theme
 ```
 
 The most specific wins, so a reader can find a value's source by looking down this list.
+
+`show` gives each value's source.
 
 ## Position as a relation
 
@@ -187,3 +189,4 @@ If the design does not hold up, the fallback is YAML with one element on each li
 - [086. The file is blocks of attributes, and a reference carries @](decisions/086-the-file-is-blocks-of-attributes-and-a-reference-carries.md)
 - [087. A type holds attributes, and a group may follow a group](decisions/087-a-type-holds-attributes-and-a-group-may-follow-a-group.md)
 - [088. A type may choose its shape](decisions/088-a-type-may-choose-its-shape.md)
+- [089. A style may be as rich as it likes](decisions/089-a-style-may-be-as-rich-as-it-likes.md)

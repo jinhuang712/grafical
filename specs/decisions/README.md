@@ -92,6 +92,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [086. The file is blocks of attributes, and a reference carries @](086-the-file-is-blocks-of-attributes-and-a-reference-carries.md) (2026-11-06)
 - [087. A type holds attributes, and a group may follow a group](087-a-type-holds-attributes-and-a-group-may-follow-a-group.md) (2026-11-06)
 - [088. A type may choose its shape](088-a-type-may-choose-its-shape.md) (2026-11-06)
+- [089. A style may be as rich as it likes](089-a-style-may-be-as-rich-as-it-likes.md) (2026-11-06)
 
 ## Former IDs
 
