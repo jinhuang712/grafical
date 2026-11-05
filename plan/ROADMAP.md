@@ -87,7 +87,8 @@ Roadmap
 │   ├── ⬜ CP2.4: Containers
 │   │   ├── ⬜ Column headings
 │   │   ├── ⬜ Lanes both ways
-│   │   └── ⬜ Deeper nesting
+│   │   ├── ⬜ Deeper nesting
+│   │   └── ⬜ Bars across groups
 │   ├── ⬜ CP2.5: Direction and views
 │   │   ├── ⬜ Flow direction
 │   │   ├── ⬜ Views of one file
@@ -499,12 +500,14 @@ Containers that cross and nest, and columns that carry headings.
 - ⬜ Column headings: A column carries a heading above its first row.
 - ⬜ Lanes both ways: Lanes that run as rows and as columns in one diagram.
 - ⬜ Deeper nesting: Groups up to five levels, with the fuzz test holding at five levels.
+- ⬜ Bars across groups: A bar crosses a group's box and overlaps no box or label.
 
 **Delivers:**
 
 - [F2.4.1: Column headings](../features/F2-layout.md#f241-column-headings)
 - [F1.3.5: Lanes both ways](../features/F1-elements.md#f135-lanes-both-ways)
 - [F1.3.3: Deeper nesting](../features/F1-elements.md#f133-deeper-nesting)
+- [F1.2.5: Ends at a group, a row or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-row-or-a-lane)
 
 **Exit criteria:**
 

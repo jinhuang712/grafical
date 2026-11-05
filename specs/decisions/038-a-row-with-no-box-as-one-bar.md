@@ -2,6 +2,8 @@
 
 Decided: 2026-10-16
 
+Replaced in part by specs/decisions, "A bar may cross a group": a bar no longer has to stay out of a group.
+
 ## The problem
 
 Decided by the owner on 2026-10-16. Redrawing the dispatch diagram, the owner said "gateway becomes a horizontal long layer". A line could already end at a row, drawn as a band across the content ("Lines that end at containers"), but a row with no box was refused as `empty-container`. So a gateway or a message bus had to keep a box inside its band, and the picture said "gateway" twice: once as the band and once as the box.

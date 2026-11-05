@@ -205,6 +205,7 @@ A line says that two things connect and how. The agent states its ends, its kind
   - [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
   - [026. Edge weights](../specs/decisions/026-edge-weights.md)
   - [038. A row with no box as one bar](../specs/decisions/038-a-row-with-no-box-as-one-bar.md)
+  - [078. A bar may cross a group](../specs/decisions/078-a-bar-may-cross-a-group.md)
   - [039. Step badges ride the line](../specs/decisions/039-step-badges-ride-the-line.md)
 
 **Stories:**

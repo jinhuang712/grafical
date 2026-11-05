@@ -81,6 +81,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [075. A box beside its neighbours is a warning](075-a-box-beside-its-neighbours-is-a-warning.md) (2026-11-06)
 - [076. A band in a lane of its name draws no label](076-a-band-in-a-lane-of-its-name-draws-no-label.md) (2026-11-06)
 - [077. A line meets a diamond at a corner](077-a-line-meets-a-diamond-at-a-corner.md) (2026-11-06)
+- [078. A bar may cross a group](078-a-bar-may-cross-a-group.md) (2026-11-06)
 
 ## Former IDs
 
