@@ -78,7 +78,6 @@ Roadmap
 │   │   ├── ✅ Labels on straight lines
 │   │   ├── ✅ Choice diamonds
 │   │   ├── ✅ Footnote numbers
-│   │   ├── ✅ Bar names clear of lines
 │   │   ├── ⬜ Labels in a crowded gutter
 │   │   └── ⬜ A diamond's slanted lines
 │   ├── ⬜ CP2.3: Boxes
@@ -118,10 +117,14 @@ Roadmap
 │       ├── ⬜ Measure the context added
 │       ├── ✅ Run Opus at xhigh effort
 │       ├── ⬜ Private reference brief
+│       ├── ⬜ Choose the reference pictures
+│       ├── ⬜ Hand an agent a picture
 │       └── ⬜ Copy reference pictures
 ├── ⬜ CP4: Release 0.1.0 — grafical on npm
 │   └── ⬜ CP4.1: The npm package
 │       ├── ⬜ A package that can be published
+│       ├── ⬜ Fix the font name tables
+│       ├── ⬜ Credit Twemoji
 │       ├── ⬜ Publish 0.1.0
 │       └── ⬜ Install from npm
 └── ⬜ CP5: Later — features with no plan yet
@@ -416,7 +419,7 @@ Adding a box without a position took up to 189.7 ms at 50 boxes, against 50 ms.
 **Tasks:**
 
 - ✅ No slot search: The agent now states every order, so no slot search runs.
-- ✅ The worst operation measured: The worst operation takes 18.6 ms.
+- ✅ The worst operation measured: The worst operation took 18.6 ms on 2026-10-15.
 
 **Exit criteria:**
 
@@ -434,7 +437,6 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 - ✅ Labels on straight lines: A label sits on its own straight vertical line.
 - ✅ Choice diamonds: `choice` is a small diamond for a line that splits.
 - ✅ Footnote numbers: A footnote's number stays wholly inside or outside a container.
-- ✅ Bar names clear of lines: A bar's name keeps clear of passing lines.
 - ⬜ Labels in a crowded gutter: An attempt did not land and waits on the owner's choice: [Labels sit close to the lines beside them in a crowded gutter](TODO.md#p2discussion-labels-sit-close-to-the-lines-beside-them-in-a-crowded-gutter).
 - ⬜ A diamond's slanted lines: An attempt did not land and waits on the owner's choice: [A diamond's lines leave at its slanted edge a little](TODO.md#p2discussion-a-diamonds-lines-leave-at-its-slanted-edge-a-little).
 
@@ -443,7 +445,6 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 - [F2.7: How lines are drawn](../features/F2-layout.md#f27-how-lines-are-drawn)
 - [F1.1.1: Kinds and shapes](../features/F1-elements.md#f111-kinds-and-shapes)
 - [F1.3.7: Notes](../features/F1-elements.md#f137-notes)
-- [F1.2.5: Ends at a group, a row or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-row-or-a-lane)
 
 **Exit criteria:**
 
@@ -609,7 +610,7 @@ A picture of about 50 boxes that a reader can follow.
 
 **Status:** 🟨
 
-The refusals of the private reference brief were mostly `title-blocked`. Haiku spends more with grafical than drawing directly: [Haiku pays more with grafical than drawing directly](TODO.md#p1task-haiku-pays-more-with-grafical-than-drawing-directly).
+The refusals of the private reference brief were mostly `title-blocked`. Haiku spends more with grafical than drawing directly: on 2026-10-18 its first draft took 36.3 s against 27.8 s, 42.2k fresh tokens against 21.3k and $0.015 against $0.008. The owner wants grafical to win these, so grafical gets cheaper until it does.
 
 **Tasks:**
 
@@ -644,7 +645,9 @@ A round with the owner's approval of its cost first. The owner's budget for stag
 - ⬜ Measure the context added: A scan of the transcripts for the context each diagram adds.
 - ✅ Run Opus at xhigh effort: A run of Opus at xhigh effort drawing directly, rated blind by the owner. (reported on 2026-11-05)
 - ⬜ Private reference brief: The round on the private reference brief.
-- ⬜ Copy reference pictures: Haiku redraws each reference picture: [Choose the reference pictures](TODO.md#p2task-choose-the-reference-pictures).
+- ⬜ Choose the reference pictures: The owner picks a fixed set of pictures drawn by others.
+- ⬜ Hand an agent a picture: The benchmark harness gives an agent a picture to copy.
+- ⬜ Copy reference pictures: Haiku redraws each reference picture.
 
 **Delivers:**
 
@@ -683,7 +686,9 @@ grafical installed from npm.
 
 **Tasks:**
 
-- ⬜ A package that can be published: `package.json` is still private at version 0.0.0, and the fonts need work first: [Fix the font name tables before the first release](TODO.md#p2task-fix-the-font-name-tables-before-the-first-release).
+- ⬜ A package that can be published: `package.json` is still private at version 0.0.0.
+- ⬜ Fix the font name tables: The subsets' name tables still say "Thin" and the OFL reserved font name "Source" needs checking.
+- ⬜ Credit Twemoji: Its graphics are CC-BY 4.0, which asks for attribution, and `LICENSE` does not name it.
 - ⬜ Publish 0.1.0: The first version on npm.
 - ⬜ Install from npm: The install steps use npm in place of a clone.
 
