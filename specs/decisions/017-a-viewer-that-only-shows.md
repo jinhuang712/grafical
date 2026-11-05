@@ -8,7 +8,7 @@ The owner wants to watch an agent draw, but a window anyone can edit in would br
 
 ## The choice
 
-`grafical view` shows the diagram as it is now while an agent draws it, and redraws within a moment of every change to the file, from any process (behavior: FEATURES.md, "Live viewer"). It only shows: nobody edits on it. It keeps no log, because the file and git hold the history. The owner asked on 2026-10-12, after seeing the window run, for a list of changes beside the picture, because the picture alone does not say what an agent just did.
+`grafical view` shows the diagram as it is now while an agent draws it, and redraws within a moment of every change to the file, from any process. It only shows: nobody edits on it. It keeps no log, because the file and git hold the history. The owner asked on 2026-10-12, after seeing the window run, for a list of changes beside the picture, because the picture alone does not say what an agent just did.
 
 ## Not chosen
 

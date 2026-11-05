@@ -4,13 +4,13 @@ Decided: 2026-10-13
 
 ## The problem
 
-Decided by the owner on 2026-10-13, built the same day. "Lines meet any side" gave a line one emphasis, the thick main path. The owner wants some lines thicker than others, in more than one step (behavior: FEATURES.md, "Weight").
+Decided by the owner on 2026-10-13, built the same day. "Lines meet any side" gave a line one emphasis, the thick main path. The owner wants some lines thicker than others, in more than one step.
 
 ## The choice
 
-A weight is a named level or a width. The levels are the agent's usual choice, and a stylesheet may retune and add them: `thin` is `paint.edge.strokeWidth`, `thick` is `paint.edge.main.strokeWidth`, and every other level lives in `paint.edge.weights`. The file is read before its stylesheet, so the levels are checked once the stylesheet is loaded. A width in pixels reverses part of "Lines meet any side", which rejected free styles per line. It reverses the width only: colour and dash stay with the kind (DESIGNS.md, "Looks are free, while shape and dash follow the kind").
+A weight is a named level or a width. The levels are the agent's usual choice, and a stylesheet may retune and add them: `thin` is `paint.edge.strokeWidth`, `thick` is `paint.edge.main.strokeWidth`, and every other level lives in `paint.edge.weights`. The file is read before its stylesheet, so the levels are checked once the stylesheet is loaded. A width in pixels reverses part of "Lines meet any side", which rejected free styles per line. It reverses the width only: colour and dash stay with the kind.
 
-In the file, `accent: true` on a line stays valid and means `weight: thick` (DESIGNS.md, "What grafical cannot fully read, it refuses": the format only grows). grafical never writes both, and when a hand-written file has both, `weight` wins. Two lines of the same width look the same, whatever their level names.
+In the file, `accent: true` on a line stays valid and means `weight: thick` (the format only grows). grafical never writes both, and when a hand-written file has both, `weight` wins. Two lines of the same width look the same, whatever their level names.
 
 ## Not chosen
 

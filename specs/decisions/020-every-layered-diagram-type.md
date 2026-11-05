@@ -7,7 +7,7 @@ Decided: 2026-10-12
 
 ## The problem
 
-Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and infrastructure, event flow, flowcharts, state machines, swimlane processes, dependency graphs, data flow and deployment (behavior: FEATURES.md, "Kinds and shapes", "Groups", "Help").
+Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and infrastructure, event flow, flowcharts, state machines, swimlane processes, dependency graphs, data flow and deployment.
 
 ## The choice
 

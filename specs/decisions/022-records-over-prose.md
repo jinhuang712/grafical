@@ -6,14 +6,14 @@ Replaced in part by specs/decisions, "Refusals say what happened and which comma
 
 ## The problem
 
-Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "Who owns what?"). grafical had begun to judge and advise in prose: warnings that a diagram has too many nodes "for one story", hints that pick moves by grafical's own idea of better, refusals that explain in sentences. Understanding a diagram is the coding agent's job; grafical gives it the facts to do it.
+Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in prose: warnings that a diagram has too many nodes "for one story", hints that pick moves by grafical's own idea of better, refusals that explain in sentences. Understanding a diagram is the coding agent's job; grafical gives it the facts to do it.
 
 ## The choice
 
 - **What the diagram is:** `show` as now, with rows, nodes in order, groups, lanes and edges.
-- **How it is drawn:** a discrete report of each box, each line and the totals (FEATURES.md, "Show").
+- **How it is drawn:** a discrete report of each box, each line and the totals.
   - The agent judges the drawing from it without opening the picture.
-- **What a change would do:** `grafical try` measures a batch without writing it (FEATURES.md, "Trying a change").
+- **What a change would do:** `grafical try` measures a batch without writing it.
   - The agent decides what to try; grafical measures.
   - It replaces hints, which chose the moves themselves.
   - On 2026-10-12 the engine searched for rearrangements and printed the best as commands.
@@ -21,7 +21,7 @@ Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "Who owns what?"). grafical h
 - **Warnings become counts** with no threshold and no advice:
   - The number of nodes and the picture's width.
   - The nodes in a row and the lines passing a row.
-- **Refusals stay terse:** a code that says what is wrong and a fixed set of facts about what is there, with no sentences (FEATURES.md, "Refusals").
+- **Refusals stay terse:** a code that says what is wrong and a fixed set of facts about what is there, with no sentences.
   - Since 2026-10-13 they are records too.
 - **The help is documentation, not output about a diagram:** its principles and examples stay.
 - **The form is records**, added on 2026-10-13 after the owner turned down phrases such as "most lines at a box 10 (sync)".
@@ -31,7 +31,7 @@ Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "Who owns what?"). grafical h
 - **How long the lines are**, added the same day.
   - The owner had found a box with one line put in the top row while its partner sat four rows down.
   - The line ran 964 px round the right edge, and nothing in the output said so.
-  - Each line now gives its length, the shortest it could be and the rows it skips (FEATURES.md, "Show").
+  - Each line now gives its length, the shortest it could be and the rows it skips.
   - Each box and the totals give the length of their lines together.
   - On that draft: `length=964 direct=480 detour=2.01 skip=3`, and `grafical try` with the box moved down to its partner's row prints `delta ... bends=-4 length=-1380`.
 - **Which lines are bundled**, added on 2026-10-14 after dogfooding.
@@ -48,7 +48,7 @@ Decided on 2026-10-13 by the owner (PHILOSOPHY.md, "Who owns what?"). grafical h
 - A table with a header row.
   - A column is read by its position, so an agent that reads one row alone cannot tell which number is which.
 - Advice in the output, however helpful.
-  - It decides for the agent, and one reader's advice is not another's (PHILOSOPHY.md, "What makes grafical good?").
+  - It decides for the agent, and one reader's advice is not another's.
 - Hints as discrete commands with numbers.
   - The numbers are facts, but which moves to try is a judgement that is the agent's.
 

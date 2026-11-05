@@ -4,7 +4,7 @@ Decided: 2026-10-16
 
 ## The problem
 
-Decided by the owner on 2026-10-16, before building FEATURES.md, "Copying a group", one of the first candidates of FEATURES.md, "More combinations of operations". A second zone, region or shard is the same boxes, groups and lines again, and drawing it took one operation for each.
+Decided by the owner on 2026-10-16, before building the copying of a group, one of the first candidates for more combinations of operations. A second zone, region or shard is the same boxes, groups and lines again, and drawing it took one operation for each.
 
 ## The choice
 

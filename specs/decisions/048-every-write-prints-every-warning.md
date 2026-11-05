@@ -19,7 +19,7 @@ Decided by the owner on 2026-10-18, the same day as "Refusals say what happened 
   - The outcome line `ok changed=<ids>` already tells the agent what it just changed, so it can match a warning that names those ids itself.
   - Telling a new warning from an old one needs a second layout per write, of the diagram before it.
     - Measured on a quiet machine, one operation on a 50-box diagram went from a median of 10.3 ms and a worst of 33.9 ms to 19.0 and 67.1 ms.
-    - The target is 50 ms (GOALS.md, "Speed").
+    - The target is 50 ms.
 - **Measured** on round p1g's final drafts:
   - At scale 10 a write prints no warning.
   - At scale 25 it prints 35 blocks in 220 lines.

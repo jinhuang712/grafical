@@ -21,7 +21,7 @@ Drawing two reference diagrams of a chat's alerts and a host's states, with a la
   - It wraps onto two lines between its neighbours now.
   - With five such lines two labels are still refused.
 - **The checks agree.** `text-crossing` already skipped a text's own line.
-  - The separate geometry check skips a line that passes through the centre of a text it was drawn just before (GOALS.md, "Mechanical defects").
+  - The separate geometry check skips a line that passes through the centre of a text it was drawn just before.
     - The patch breaks the line there.
     - The check still counts every other line.
 

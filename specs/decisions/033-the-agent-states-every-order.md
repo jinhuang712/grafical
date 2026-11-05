@@ -8,14 +8,14 @@ Decided by the owner on 2026-10-15: the engine does not choose for the agent. Un
 
 ## The choice
 
-- **A place is required.** A box added to a row or moved into another row says where it goes (FEATURES.md, "Rows and order").
+- **A place is required.** A box added to a row or moved into another row says where it goes.
   - It goes first, last, or before or after a box.
   - Without one it is refused.
 - **No tidying.** `layer tidy` and `diagram tidy` are removed.
   - An agent that wants fewer crossings compares orders with `grafical try` and its counts ("Records over prose"), and keeps the one it prefers.
-- **No exception left.** Every order in the file is one the agent stated, so DESIGNS.md, "The engine never chooses for the agent" holds without an exception.
+- **No exception left.** Every order in the file is one the agent stated, so the rule that the engine never chooses for the agent holds without an exception.
 
-The slot search was also the cause of the speed slip measured on 2026-10-15 (GOALS.md, "Speed"): it laid the whole diagram out once for every slot of the row, and adding a box without a position took up to 189.7 ms at 50 boxes.
+The slot search was also the cause of the speed slip measured on 2026-10-15: it laid the whole diagram out once for every slot of the row, and adding a box without a position took up to 189.7 ms at 50 boxes.
 
 ## Not chosen
 

@@ -4,7 +4,7 @@ Decided: 2026-10-16
 
 ## The problem
 
-Decided by the owner on 2026-10-16 (behavior: FEATURES.md, "Groups"). In a booking C4 diagram the label "Booking app software system" sat in the head between the lines into the web app and the mobile app, where placement had made room for it ("Rows unseen, groups as systems"), and the owner found it in a weird spot. Asked where a group's label should go, the owner chose to let the agent say it through the command line: eight places inside the box, its four corners and the middle of each side, and four outside it, above, below, left and right.
+Decided by the owner on 2026-10-16. In a booking C4 diagram the label "Booking app software system" sat in the head between the lines into the web app and the mobile app, where placement had made room for it ("Rows unseen, groups as systems"), and the owner found it in a weird spot. Asked where a group's label should go, the owner chose to let the agent say it through the command line: eight places inside the box, its four corners and the middle of each side, and four outside it, above, below, left and right.
 
 ## The choice
 
@@ -27,7 +27,7 @@ Decided by the owner on 2026-10-16 (behavior: FEATURES.md, "Groups"). In a booki
 ## Not chosen
 
 - The engine moving the label to the bottom left when the head is crowded, the C4 habit.
-  - The engine would choose a look for the agent (PHILOSOPHY.md, "Who owns what?").
+  - The engine would choose a look for the agent.
 - Every label at the bottom left.
   - The owner chose a place per group, stated by the agent.
 - Four corners only, or four corners inside and outside.

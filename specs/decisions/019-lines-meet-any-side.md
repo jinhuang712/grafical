@@ -12,7 +12,7 @@ Decided by the owner on 2026-10-12. In the stage 1 round every comment on grafic
 
 Lines may meet a box on any side, and the router, not the agent, chooses the side and the slot. Each step below was built on its own, measured, and kept because it helped.
 
-- **Kinds**, 2026-10-12: two kinds were added, for a line with no direction and for a call that happens only sometimes, so the agent can say what a line means where the old kinds forced a wrong one (FEATURES.md, "Kinds").
+- **Kinds**, 2026-10-12: two kinds were added, for a line with no direction and for a call that happens only sometimes, so the agent can say what a line means where the old kinds forced a wrong one.
 - **Per edge**, 2026-10-12: arrowheads at both ends, and emphasis for the main path as a weight from a short list, never a colour, so no operation colours one element.
   - A main path stands out only against thin lines.
 - **Curves**, 2026-10-12: a stylesheet may draw corners curved, while the routes stay the same orthogonal routes and a curve never enters a box.

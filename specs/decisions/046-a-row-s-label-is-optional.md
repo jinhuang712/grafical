@@ -4,7 +4,7 @@ Decided: 2026-10-18
 
 ## The problem
 
-Decided by the owner on 2026-10-18, with "A row with a look is drawn". A row is unseen by default, and its name shows only when the row is drawn, so a name is a thing a drawn row may have, not a fact every row owes. `layer add` takes `--label` or not; a file's row without `label` reads and writes back without one (FEATURES.md, "Rows and order").
+Decided by the owner on 2026-10-18, with "A row with a look is drawn". A row is unseen by default, and its name shows only when the row is drawn, so a name is a thing a drawn row may have, not a fact every row owes. `layer add` takes `--label` or not; a file's row without `label` reads and writes back without one.
 
 ## The choice
 

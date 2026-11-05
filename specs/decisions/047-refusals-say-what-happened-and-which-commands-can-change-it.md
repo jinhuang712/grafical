@@ -4,7 +4,7 @@ Decided: 2026-10-18
 
 ## The problem
 
-Decided by the owner on 2026-10-18, after round p1g (`bench/results/p1g-stage1.md`). Refusals are the target furthest from met (GOALS.md, "Operation errors"): the scale drafts were refused 19% to 26% of their calls, and two drafts of the private brief 55%. The agents got stuck where a record did not say clearly what had happened or which command could act. One change step met `title-blocked` for 15 calls: the record named the places clear of lines but no command, and the line in the way came from another batch line than the one the agent changed. Others met `missing-field` for a second box in a row and `unquoted-text` with nothing to say what to give, and read `group-conflict` as asking them to join a node of another group.
+Decided by the owner on 2026-10-18, after round p1g (`bench/results/p1g-stage1.md`). Refusals are the target furthest from met: the scale drafts were refused 19% to 26% of their calls, and two drafts of the private brief 55%. The agents got stuck where a record did not say clearly what had happened or which command could act. One change step met `title-blocked` for 15 calls: the record named the places clear of lines but no command, and the line in the way came from another batch line than the one the agent changed. Others met `missing-field` for a second box in a row and `unquoted-text` with nothing to say what to give, and read `group-conflict` as asking them to join a node of another group.
 
 ## The choice
 
@@ -18,7 +18,7 @@ grafical reports what happened and never teaches. A record gives the facts and t
 - **The detail** gives one fact per line, under the names the facts had.
   - Found by review the same day: a defect's ids had been lists even of one, an error's and a warning's not, so the rule became one for all.
 - **Next** names the commands that can change it, never ids, values or options.
-- **Enough to find the change.** The detail carries what the agent needs to find the change itself, and the help and the guides state no rule for it (PHILOSOPHY.md, "How does an agent learn grafical?"); decided by the owner the same day.
+- **Enough to find the change.** The detail carries what the agent needs to find the change itself, and the help and the guides state no rule for it; decided by the owner the same day.
   - In round p1g two agents put a bar between rows a group's box covers and were refused with `bar-in-group`.
     - They could not tell why: the record named the group and the row.
     - It did not say that the box covers every row from its top member's to its bottom member's.
@@ -27,9 +27,9 @@ grafical reports what happened and never teaches. A record gives the facts and t
 - **No "When refused" in the help.** Decided by the owner later the same day: every command page's "When refused" section goes, `apply --help`'s too.
   - A help page says how to use a command, and a refusal explains itself through its block.
   - A second hand-written copy of what the record says can go stale, as `edge add`'s did when it described a fix wrongly.
-  - It states a rule in words before the agent makes the mistake, against PHILOSOPHY.md, "How does an agent learn grafical?".
+  - It states a rule in words before the agent makes the mistake, against the stance that an agent learns grafical from the command line and not from rules in words.
 
-How the line is found was decided the same day, after two reviews: on a refused write only, grafical tries ever shorter prefixes of the batch back towards the file, within a fixed budget, so that the line is never wrong. Both of these stay within GOALS.md, "Speed": a `try` of 80 operations with 10 labels too long takes 0.33 to 0.37 s, and a refused 123-operation draft of a scale-50 brief 0.29 to 0.31 s. The first took 1.15 s when every line was searched for. Round p1g's title-blocked keeps its line, caused on line 5 of 8 in a diagram of 37 boxes and lines.
+How the line is found was decided the same day, after two reviews: on a refused write only, grafical tries ever shorter prefixes of the batch back towards the file, within a fixed budget, so that the line is never wrong. Both of these stay within the limit of 400 ms a command: a `try` of 80 operations with 10 labels too long takes 0.33 to 0.37 s, and a refused 123-operation draft of a scale-50 brief 0.29 to 0.31 s. The first took 1.15 s when every line was searched for. Round p1g's title-blocked keeps its line, caused on line 5 of 8 in a diagram of 37 boxes and lines.
 
 ## Not chosen
 

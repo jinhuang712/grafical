@@ -44,17 +44,17 @@ Decided by the owner on 2026-10-19. A diagram has no type by default and is draw
     - Groups nest three deep at most.
   - Boxes with fields may be a kind of box in the space with no type, as in entity-relationship and class diagrams.
     - Lines would then end at a field.
-    - Not drawn: a line's end at a field and a mark at a line's end are among the ports, end labels and tags that FEATURES.md, "Not planned" turned down.
+    - Not drawn: a line's end at a field and a mark at a line's end are among the ports, end labels and tags that were turned down.
 - **What a type changes.** The operations that apply.
   - An operation of another space is refused, and so is a type that does not fit what the file already holds.
-- **What a type does not do.** It does not check a diagram against the conventions of its kind (FEATURES.md, "Not planned"), and it adds no default words ("The legend says only what the agent named").
-- **Not built.** Each space needs a layout, checks and help of its own (FEATURES.md, "Diagram types").
+- **What a type does not do.** It does not check a diagram against the conventions of its kind, and it adds no default words ("The legend says only what the agent named").
+- **Not built.** Each space needs a layout, checks and help of its own.
 - **Open.**
   - How a type is given: when the file is made, or later while it is still empty.
   - Whether diagrams that share the space with no type get a type, such as a flowchart or a C4 diagram.
     - A type would only narrow their operations.
   - Whether boxes with fields are a type or a kind of box.
-  - Several spaces side by side in one picture with no line between them, as FEATURES.md, "Views of one file".
+  - Several spaces side by side in one picture with no line between them, as views of one file would be.
 
 ## Not chosen
 

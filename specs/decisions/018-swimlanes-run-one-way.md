@@ -8,7 +8,7 @@ A diagram must show who owns what, and lanes that run both ways at once would le
 
 ## The choice
 
-A swimlane names who owns what. A diagram's lanes all run one way, as rows or as columns, and the way follows from what the members are: rows make lanes that run as rows, and boxes make lanes that run as columns (behavior: FEATURES.md, "Swimlanes"). The way therefore cannot disagree with the members. A lane's members name it, as a group's do ("Rows unseen, groups as systems").
+A swimlane names who owns what. A diagram's lanes all run one way, as rows or as columns, and the way follows from what the members are: rows make lanes that run as rows, and boxes make lanes that run as columns. The way therefore cannot disagree with the members. A lane's members name it, as a group's do ("Rows unseen, groups as systems").
 
 ## Not chosen
 

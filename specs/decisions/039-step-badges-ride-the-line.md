@@ -4,7 +4,7 @@ Decided: 2026-10-16
 
 ## The problem
 
-The owner chose numbered steps on 2026-10-15 as one of the first candidates of FEATURES.md, "More combinations of operations", after the field study (behavior: FEATURES.md, "Numbered steps"). FEATURES.md asked for "a small badge on the line". Built on 2026-10-16.
+The owner chose numbered steps on 2026-10-15 as one of the first candidates for more combinations of operations, after the field study. The plan asked for "a small badge on the line". Built on 2026-10-16.
 
 ## The choice
 
@@ -16,7 +16,7 @@ The owner chose numbered steps on 2026-10-15 as one of the first candidates of F
 - **The place is the label's.** The badge rides the run that carries the line's label, and the router finds its slot as it finds any label's ("Our own gap router").
   - A numbered line keeps a port of its own, as a labelled line does ("Fan-outs of three bundle"): a badge on a shared trunk could not say whose step it is.
 - **It keeps clear of what a label keeps clear of**, and a badge that touches anything is `step-collision`, owned by the engine ("Defects owned by who can fix them").
-  - A lane's divider may still run under it (TODO.md, "A step's badge across a lane's side").
+  - A lane's divider may still run under it.
 - **Measured.** No picture without a number changed: `pnpm bench diff` laid out the 306 saved drafts and the fixtures as before.
   - With every line of the 306 saved drafts numbered, no badge touches anything.
     - Crossings went from 664 to 665 and bends from 3,178 to 3,068.
@@ -37,7 +37,7 @@ The owner chose numbered steps on 2026-10-15 as one of the first candidates of F
   - Ports sit 16 px apart, so the badges of neighbouring lines would touch.
   - The lines of a fan-out start as one trunk.
 - Numbers the engine chooses, such as creation order.
-  - The engine never chooses a fact (PHILOSOPHY.md, "Who owns what?").
+  - The engine never chooses a fact.
 - Leaving a badge off where it finds no room, as a footnote's number may be left off.
   - It would drop a fact the agent stated.
 - Numbers past 99, or text such as "2a".

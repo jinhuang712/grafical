@@ -4,7 +4,7 @@ Decided: 2026-10-14
 
 ## The problem
 
-Asked for by the owner on 2026-10-14: "a box that can belong to no row / column meaning no grid is allowed", then "we still want a free-er feature", and "why i bring in the free placement or relative placement is to avoid the row/column contraint!". Of the ways shown that day, the owner chose steps from another box: "this moves it away from the grid but keeps it kinda predictable". The owner also settled who chooses how far: the agent, because "grafical is not responsible for taste, graph correctness and clearness. grafical is a engine only to do the dirty work." (behavior: FEATURES.md, "Steps from another box")
+Asked for by the owner on 2026-10-14: "a box that can belong to no row / column meaning no grid is allowed", then "we still want a free-er feature", and "why i bring in the free placement or relative placement is to avoid the row/column contraint!". Of the ways shown that day, the owner chose steps from another box: "this moves it away from the grid but keeps it kinda predictable". The owner also settled who chooses how far: the agent, because "grafical is not responsible for taste, graph correctness and clearness. grafical is a engine only to do the dirty work."
 
 ## The choice
 

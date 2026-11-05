@@ -24,7 +24,7 @@ Decided on 2026-10-12 by the owner. In a real setup an agent knows only that a `
 - **Clear names.** A name an agent misreads is fixed at the name.
   - Fifteen drafts of the help round gave the legend an edge kind as `line: async`.
   - They read `line` as the line of async edges, so the owner renamed the field `style` on 2026-10-13.
-- **Budget.** The help read before a first draft stays under the old guide's 12,000 characters, about 2,800 tokens (GOALS.md, "Token use").
+- **Budget.** The help read before a first draft stays under the old guide's 12,000 characters, about 2,800 tokens.
   - Suspended on 2026-10-17 by "One entry page, help where it is used".
 
 The pages were reshaped since by "One entry page, help where it is used", "Help for the tool, guides for best practice" and "Refusals say what happened and which commands can change it".

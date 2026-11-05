@@ -18,7 +18,7 @@ Decided by the owner on 2026-10-15, after the same field study. A swimlane with 
 
 ## Not chosen
 
-- Columns that order boxes only within a row, with FEATURES.md reworded.
+- Columns that order boxes only within a row, with the promise reworded.
   - Lanes across with phases could not be drawn, and lanes that run down would stay the only swimlane.
 
 ## Consequences

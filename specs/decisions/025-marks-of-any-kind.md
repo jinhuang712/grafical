@@ -4,7 +4,7 @@ Decided: 2026-10-13
 
 ## The problem
 
-Decided on 2026-10-13 by the owner, who wanted a very important box flagged with `⚠️` at its top-left, and asked that a mark not be limited to a fixed list: "anything. dont constrain it. at the end its a svg/png/textBox or smth". On 2026-10-14, after a plain text over a corner looked ugly, the owner let a text mark's badge be styled, and asked for it to be "sorta adjustable" (behavior: FEATURES.md, "Marks").
+Decided on 2026-10-13 by the owner, who wanted a very important box flagged with `⚠️` at its top-left, and asked that a mark not be limited to a fixed list: "anything. dont constrain it. at the end its a svg/png/textBox or smth". On 2026-10-14, after a plain text over a corner looked ugly, the owner let a text mark's badge be styled, and asked for it to be "sorta adjustable".
 
 ## The choice
 
@@ -14,12 +14,12 @@ What keeps marks within the principles:
   - A corner mark is centred on its corner and takes no room.
   - So it moves no other box, text or line.
   - The `left` mark takes a column inside the box, and the box keeps its size.
-- The same file gives the same picture (DESIGNS.md, "The same file gives the same picture on any machine").
+- The same file gives the same picture.
   - Emoji are drawn from the bundled Twemoji images, not from a font.
   - The SVG embeds each picture as a data URI, and the file stores a picture file's SHA-256.
   - So a changed file fails the load instead of drawing differently.
   - A named color is stored as its hex, so a change to the names never changes an existing file.
-- A picture runs nothing (DESIGNS.md, "A diagram reads no file outside its folder, and its pictures run nothing").
+- A picture runs nothing.
   - An SVG with a script, a `foreignObject`, an event handler or an outside reference is refused.
   - So is a path outside the diagram's folder.
 

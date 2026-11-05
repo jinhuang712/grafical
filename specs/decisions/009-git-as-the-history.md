@@ -8,7 +8,7 @@ A diagram's changes must be reviewable and undoable, without grafical keeping a 
 
 ## The choice
 
-The file holds the current state only, and git keeps the history. `grafical diff` compares the file with a git revision and reports the difference as operations, which `apply` replays on the revision's file (behavior: FEATURES.md, "Diff"). Undo is git too: every change is a commit that can be reverted.
+The file holds the current state only, and git keeps the history. `grafical diff` compares the file with a git revision and reports the difference as operations, which `apply` replays on the revision's file. Undo is git too: every change is a commit that can be reverted.
 
 ## Not chosen
 

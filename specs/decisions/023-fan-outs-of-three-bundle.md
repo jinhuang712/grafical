@@ -4,7 +4,7 @@ Decided: 2026-10-13
 
 ## The problem
 
-Decided on 2026-10-13, as the first feature of phase 1e (FEATURES.md). The owner called a stage 1 picture "terrible... way too many lines to track", though it had one crossing: one service sent six lines out of one side, each to its own port, turning at six heights on their way to six boxes across two rows. Every architecture draft measured that day had a box with four to seven lines.
+Decided on 2026-10-13, as the first feature of phase 1e. The owner called a stage 1 picture "terrible... way too many lines to track", though it had one crossing: one service sent six lines out of one side, each to its own port, turning at six heights on their way to six boxes across two rows. Every architecture draft measured that day had a box with four to seven lines.
 
 ## The choice
 

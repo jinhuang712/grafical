@@ -4,7 +4,7 @@ Decided: 2026-10-15
 
 ## The problem
 
-Decided by the owner on 2026-10-15, after a field study that redrew ten published and classic diagrams with grafical. The legend printed "call" on a flowchart, a state machine and two swimlanes, and "related" on an org chart. Those are meanings the agent never stated, and they were wrong in all of those pictures. PHILOSOPHY.md, "What is a diagram?": grafical never adds a fact the agent did not state.
+Decided by the owner on 2026-10-15, after a field study that redrew ten published and classic diagrams with grafical. The legend printed "call" on a flowchart, a state machine and two swimlanes, and "related" on an org chart. Those are meanings the agent never stated, and they were wrong in all of those pictures. grafical never adds a fact the agent did not state.
 
 ## The choice
 

@@ -51,7 +51,7 @@ So:
 - **Depth.** As before, every page is at most two hops from the entry page.
   - The hops are `grafical node --help` and then `grafical node add --help`.
 - **No size limit for now.** The owner suspended the help's size limits the same day: first the help and grafical's refusals must be right, then it is decided whether a page needs a limit.
-  - The budget of "The help as the reference" and its test are suspended with them (GOALS.md, "Token use").
+  - The budget of "The help as the reference" and its test are suspended with them.
     - The budget was 12,000 characters for the help read before a first draft.
   - That day the entry page, `new --help` and `apply --help` took 11,280 characters together where they had taken 11,940.
 

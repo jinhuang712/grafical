@@ -33,7 +33,7 @@ The order of the rows and how to split a wide row are the agent's as well: the e
 - Refusing diagrams over a node count.
   - Some diagrams need more, and a hard limit would push agents into merging things a reader needs apart.
 - Letting the engine drop nodes.
-  - That would change facts nobody named (PHILOSOPHY.md).
+  - That would change facts nobody named.
 
 ## Consequences
 

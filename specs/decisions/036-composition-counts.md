@@ -6,12 +6,12 @@ Replaced in part by specs/decisions, "Every write prints every warning": each co
 
 ## The problem
 
-Decided on 2026-10-16 from a request that agents see how a picture is composed, not only how many lines cross. `crossings` and `bends` miss pictures that are wrong in ways an agent can fix by choosing rows differently: a line that runs over a system it has nothing to do with, two lines drawn almost on top of each other, a label with no air. The counts go on the `counts` record that `apply`, `try`, `check` and `show --drawn` print (FEATURES.md, "Counts").
+Decided on 2026-10-16 from a request that agents see how a picture is composed, not only how many lines cross. `crossings` and `bends` miss pictures that are wrong in ways an agent can fix by choosing rows differently: a line that runs over a system it has nothing to do with, two lines drawn almost on top of each other, a label with no air. The counts go on the `counts` record that `apply`, `try`, `check` and `show --drawn` print.
 
 ## The choice
 
 - **Three counts of composition:** `across` for lines through a group that holds neither end, `tight` for runs of two lines side by side, and `crowded` for labels with little room.
-- **Separate counts, never one score.** On 2026-10-13 PHILOSOPHY.md rejected a score of how hard a picture is to read because readers differ.
+- **Separate counts, never one score.** On 2026-10-13 the philosophy rejected a score of how hard a picture is to read because readers differ.
   - Each count is a fact the agent weighs; `try` shows the delta of each.
 - **Gutters.** `show --drawn` also prints a `gutter` record for each pair of neighbouring rows, with the same counts for the space between them.
   - The agent compares gutters to see which row order costs; the record gives no advice, and no sum.

@@ -6,7 +6,7 @@ Replaced in part by specs/decisions, "The dirty work has edges": the agent state
 
 ## The problem
 
-Decided by the owner on 2026-10-14. The phase planned notes: a short text that keeps detail out of extra boxes, attached to what it is about and placed by the engine. Asked whether a note should be a card beside its target or a numbered footnote, the owner chose "both, grafical picks" (behavior: FEATURES.md, "Notes").
+Decided by the owner on 2026-10-14. The phase planned notes: a short text that keeps detail out of extra boxes, attached to what it is about and placed by the engine. Asked whether a note should be a card beside its target or a numbered footnote, the owner chose "both, grafical picks".
 
 ## The choice
 
