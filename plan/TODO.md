@@ -2,19 +2,6 @@
 
 ## ongoing
 
-### [P1][DISCUSSION] A line along a row is not kept below a group's label
-
-- description:
-  - The decision on lines meeting any side says a line between two boxes of one row stays in the gutter below when one box lies under a group's label.
-  - A comment in the router says so too.
-  - The keep-out spans the router reads hold band labels and walls and lane sides but no group label.
-  - The changelog still promises that such a line stays below.
-- created: 2026-11-04
-- status: HALT
-- found: writing the routing spec from the router's code on 2026-11-04
-- next: the owner chooses whether the router keeps such a line below or the decision drops the rule
-- related: [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
-
 ### [P1][DISCUSSION] How freely an agent can adjust a picture
 
 - description:

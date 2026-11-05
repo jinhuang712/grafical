@@ -49,7 +49,7 @@ grafical has not been released; the first release will be 0.1.0.
 - A line that runs straight between two boxes centred one under the other now meets them at their centres more often: where other ports or the lines sharing its way had pushed it a little aside and nothing else would move or bend, it is put back.
 - A line between two boxes of one row may run above the row instead of under it, when fewer lines meet the boxes between its ends from above than from below: it then crosses fewer lines.
   - It stays below in three cases:
-    - Its box lies under a group's label.
+    - Its box lies under a band's label.
     - A wall or a lane's border lies above the row.
     - Going above would bend another line or push a label out of its place.
 - Several lines may turn into one side of a box, each at its own height.
