@@ -31,14 +31,15 @@ Features
 │       ├── ⬜ F1.3.5: Lanes both ways — a grid of lanes and phases
 │       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
 │       └── ✅ F1.3.7: Notes — a short text on a box, a line or a group
-├── 🚧 F2: Layout — where everything goes (line sides and smooth lines and labels on turning lines and flow direction not built)
+├── 🚧 F2: Layout — where everything goes (region gaps and line sides and smooth lines and labels on turning lines and flow direction not built)
 │   ├── ✅ F2.1: Placing every box — grafical gives every box its place
 │   ├── ✅ F2.2: Rows and order — a box's row and its place in it
 │   ├── ✅ F2.3: Alignment — one box above or below another
 │   ├── 🚧 F2.4: Columns — a second placement fact beside rows (headings not built)
 │   │   └── ⬜ F2.4.1: Column headings — a label above a column
 │   ├── ✅ F2.5: Steps from another box — a box some cells from another
-│   ├── ✅ F2.6: Spacing — compact, normal or airy
+│   ├── 🚧 F2.6: Spacing — compact, normal or airy (region gaps not built)
+│   │   └── ⬜ F2.6.1: Region gaps — more room between two regions
 │   ├── 🚧 F2.7: How lines are drawn — grafical routes every line (line sides and smooth lines and labels on turning lines not built)
 │   │   ├── ⬜ F2.7.1: Line sides — the side a line leaves or enters by
 │   │   ├── 🚧 F2.7.2: Line shapes — square, round or smooth (round is only in the stylesheet and smooth is not built)
@@ -126,7 +127,6 @@ Features
 - **The same facts always giving the same picture whatever order they arrived in:** the file fixes the picture ([024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)).
 - **A row reordered by the engine to tidy it:** the engine does not choose an order, and the agent compares orders with `grafical try` ([033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)).
 - **Docking to an edge or placement such as "beside" and "between":** columns and steps cover them, and a second way to say one thing is one more choice.
-- **Gaps between sections:** spacing is the engine's.
 - **Zones and section titles:** walls and groups cover them.
 - **Ports and end labels and tags:** they add choices with little gain for architecture diagrams, and a sublabel holds a port.
 - **Patterns as one operation for a common structure:** the help's examples teach the structures, and the idea lives on in *More combinations of operations*.

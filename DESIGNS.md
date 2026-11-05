@@ -33,7 +33,7 @@ Every change is a named operation, such as `node.add`, applied to a diagram file
 
 ## 2. Places are facts, never coordinates
 
-A box's place is its row, its order in the row, its group, its column, an alignment, or a number of steps from another box. How far apart things sit is the engine's. Cost: an agent cannot nudge one box, and every new need for placement becomes a new fact.
+A box's place is its row, its order in the row, its group, its column, an alignment, or a number of steps from another box. How far apart things sit is the engine's, and an agent may ask for a multiple of it between two regions. Cost: an agent cannot nudge one box, and every new need for placement becomes a new fact.
 
 **Ask:** Does this ask the agent for a position, a size in pixels or a bend point?
 
@@ -43,6 +43,7 @@ A box's place is its row, its order in the row, its group, its column, an alignm
   - [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md)
   - [027. Columns beside rows](specs/decisions/027-columns-beside-rows.md)
   - [031. Steps from another box](specs/decisions/031-steps-from-another-box.md)
+  - [079. The gap between two regions takes a multiple](specs/decisions/079-the-gap-between-two-regions-takes-a-multiple.md)
 - **How it works:** [Placement](specs/placement.md)
 
 ## 3. The engine never chooses for the agent

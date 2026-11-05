@@ -9,6 +9,7 @@ F2: Layout
 │   └── F2.4.1: Column headings — a label above a column
 ├── F2.5: Steps from another box — a box some cells from another
 ├── F2.6: Spacing — compact, normal or airy
+│   └── F2.6.1: Region gaps — more room between two regions
 ├── F2.7: How lines are drawn — grafical routes every line
 │   ├── F2.7.1: Line sides — the side a line leaves or enters by
 │   ├── F2.7.2: Line shapes — square, round or smooth
@@ -201,6 +202,22 @@ grafical diagram density <file> compact|normal|airy
 **Stories:**
 
 - An agent picks a density, to trade size for air.
+- An agent opens the gap between two layers, to settle one crowded place.
+
+### F2.6.1: Region gaps
+
+The gap between two neighbouring regions may take a multiple of its default. A region is a layer, a group or a column, and both must be of one kind.
+
+```sh
+grafical gap <file> <a> <b> [--times <n>]
+```
+
+- A multiple may be 1.25, 1.5 or 2.
+- It follows the density, so a multiple of a compact gap stays narrower than one of an airy gap.
+- Without `--times`, the gap goes back to its default.
+- Two regions that are not neighbours are refused.
+
+- **Why:** [079. The gap between two regions takes a multiple](../specs/decisions/079-the-gap-between-two-regions-takes-a-multiple.md)
 
 ## F2.7: How lines are drawn
 
