@@ -173,6 +173,11 @@ export interface Plan {
    * middle of the row. Undefined for every other edge.
    */
   turnIn: number | undefined;
+  /**
+   * A stated side that faces away from the other end: the turn stands beside its own box and
+   * the gutter's run takes the line on, so no port sits at the turn.
+   */
+  away?: true;
 }
 
 interface Bus {
@@ -509,7 +514,26 @@ function makePlan(
     turn: undefined,
     turnIn: undefined,
   };
+  // A top side needs a gutter above its row, open across its box.
+  const topOpen = (n: PNode) =>
+    n.layer > 0 &&
+    !(extra.closedAbove.get(n.layer) ?? []).some(([lo, hi]) => lo < n.x + n.w && hi > n.x);
   if (u.layer === v.layer) {
+    // A line of a row out of one side and into the other passes through its row.
+    const through = edge.out !== edge.in && !sideways(edge.out) && !sideways(edge.in);
+    if (side === undefined && through && edge.out !== undefined && edge.in !== undefined) {
+      if (!topOpen(edge.out === "top" ? u : v)) return undefined;
+      const fromTop = edge.out === "top";
+      return {
+        ...base,
+        kind: fromTop ? "down" : "up",
+        srcSide: edge.out,
+        dstSide: edge.in,
+        gutters: fromTop ? [u.layer - 1, u.layer] : [u.layer, u.layer - 1],
+        between: [u.layer],
+        ideal: [centreX(u), centreX(u), centreX(v)],
+      };
+    }
     if (side !== undefined) {
       const right = u.order < v.order;
       return {
@@ -533,6 +557,14 @@ function makePlan(
   const down = u.layer < v.layer;
   const gutters: number[] = [];
   const between: number[] = [];
+  // A line stated to leave away from its other end, or to enter past it, goes round its
+  // own box first or last: through the gutter on that side and through its own row.
+  const leavesAway = down ? edge.out === "top" && topOpen(u) : edge.out === "bottom";
+  const entersPast = down ? edge.in === "bottom" : edge.in === "top" && topOpen(v);
+  if (leavesAway) {
+    gutters.push(down ? u.layer - 1 : u.layer);
+    between.push(u.layer);
+  }
   if (down) {
     for (let g = u.layer; g < v.layer; g++) gutters.push(g);
     for (let m = u.layer + 1; m < v.layer; m++) between.push(m);
@@ -540,14 +572,24 @@ function makePlan(
     for (let g = u.layer - 1; g >= v.layer; g--) gutters.push(g);
     for (let m = u.layer - 1; m > v.layer; m--) between.push(m);
   }
+  if (entersPast) {
+    between.push(v.layer);
+    gutters.push(down ? v.layer : v.layer - 1);
+  }
+  const ideal = [
+    centreX(u),
+    ...(leavesAway ? [centreX(u)] : []),
+    ...(entersPast ? [centreX(v)] : []),
+    centreX(v),
+  ];
   return {
     ...base,
     kind: down ? "down" : "up",
-    srcSide: down ? "bottom" : "top",
-    dstSide: down ? "top" : "bottom",
+    srcSide: leavesAway ? (down ? "top" : "bottom") : down ? "bottom" : "top",
+    dstSide: entersPast ? (down ? "bottom" : "top") : down ? "top" : "bottom",
     gutters,
     between,
-    ideal: [centreX(u), centreX(v)],
+    ideal,
   };
 }
 
@@ -610,6 +652,9 @@ function chooseUturnGutters(
     pl.gutters = [u.layer - 1];
   }
 }
+
+/** Does the line turn straight into the port at its far end? */
+const direct = (pl: Plan) => pl.between.length === 0 && pl.away !== true;
 
 /** Has the agent stated a side of this line? */
 function stated(pl: Plan): boolean {
@@ -1179,8 +1224,14 @@ function chooseSideExits(
     // other turns above or below its target.
     const corridor = pl.between.length > 0 ? pl.gapX[0] : undefined;
     if (pl.between.length > 0 && corridor === undefined) continue;
-    const left = corridor !== undefined ? corridor < u.x : v.x + v.w <= u.x;
-    const right = corridor !== undefined ? corridor > u.x + u.w : v.x >= u.x + u.w;
+    let left = corridor !== undefined ? corridor < u.x : v.x + v.w <= u.x;
+    let right = corridor !== undefined ? corridor > u.x + u.w : v.x >= u.x + u.w;
+    const out = pl.edge.out;
+    const away = sideways(out) && corridor === undefined && !(out === "left" ? left : right);
+    if (away) {
+      left = out === "left";
+      right = !left;
+    }
     if (!left && !right) continue;
     const side: Side = left ? "left" : "right";
     if (taken.has(`${u.id}:${side}`)) continue;
@@ -1201,6 +1252,9 @@ function chooseSideExits(
       if (corridor < lo - EPS || corridor > hi + EPS) continue;
       if (pl.kind === "up" && inSpans(corridor, forbidTop.get(u.layer) ?? [])) continue;
       x = corridor;
+    } else if (away) {
+      if (hi < lo) continue;
+      x = left ? hi : lo;
     } else {
       const plo = Math.max(lo, v.x + portInset(v.w));
       const phi = Math.min(hi, v.x + v.w - portInset(v.w));
@@ -1226,6 +1280,7 @@ function chooseSideExits(
     if (runsAcross(plans, pl, pl.gutters[0] ?? u.layer, x)) continue;
     pl.srcSide = side;
     pl.turn = x;
+    if (away) pl.away = true;
     taken.add(`${u.id}:${side}`);
     addRun(gapRuns, `${u.layer}:${gk}`, x, edge);
   }
@@ -1284,7 +1339,7 @@ function chooseSideEntries(
     fixed.set(k, [...(fixed.get(k) ?? []), x]);
   };
   for (const pl of plans) {
-    if (pl.turn !== undefined && pl.between.length === 0) fix(pl.v, pl.dstSide, pl.turn);
+    if (pl.turn !== undefined && direct(pl)) fix(pl.v, pl.dstSide, pl.turn);
   }
   const endsOn = (n: PNode, side: Side) =>
     plans.filter((o) => (o.u === n && o.srcSide === side) || (o.v === n && o.dstSide === side))
@@ -1306,8 +1361,14 @@ function chooseSideEntries(
       // A line that skips rows turns out of its corridor at its last gap track.
       const corridor = pl.between.length > 0 ? pl.gapX[pl.gapX.length - 1] : undefined;
       if (pl.between.length > 0 && corridor === undefined) continue;
-      const left = corridor !== undefined ? corridor > v.x + v.w : u.x >= v.x + v.w;
-      const right = corridor !== undefined ? corridor < v.x : u.x + u.w <= v.x;
+      let left = corridor !== undefined ? corridor > v.x + v.w : u.x >= v.x + v.w;
+      let right = corridor !== undefined ? corridor < v.x : u.x + u.w <= v.x;
+      const into = pl.edge.in;
+      const away = sideways(into) && corridor === undefined && !(into === "right" ? left : right);
+      if (away) {
+        left = into === "right";
+        right = !left;
+      }
       if (!left && !right) continue;
       // The side of the target that faces the source.
       const side: Side = left ? "right" : "left";
@@ -1344,6 +1405,9 @@ function chooseSideEntries(
         if (corridor < lo - EPS || corridor > hi + EPS) continue;
         if (pl.kind === "down" && inSpans(corridor, forbidTop.get(v.layer) ?? [])) continue;
         x = corridor;
+      } else if (away) {
+        if (hi < lo) continue;
+        x = side === "right" ? lo : hi;
       } else {
         const plo = Math.max(lo, u.x + portInset(u.w));
         const phi = Math.min(hi, u.x + u.w - portInset(u.w));
@@ -1381,12 +1445,13 @@ function chooseSideEntries(
       }
       pl.dstSide = side;
       pl.turnIn = x;
+      if (away) pl.away = true;
       entering.set(sideKey, [...already, pl]);
       entryRuns.set(gap, [
         ...(entryRuns.get(gap) ?? []),
         { side: sideKey, lo: Math.min(x, edge), hi: Math.max(x, edge) },
       ]);
-      if (pl.between.length === 0) fix(u, pl.srcSide, x);
+      if (direct(pl)) fix(u, pl.srcSide, x);
       added = true;
     }
   }
@@ -1402,7 +1467,6 @@ function placePorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): 
     assignPorts(plans, forbidTop);
     // Between neighbouring rows, the far end's port must sit at the turn; a line that
     // skips rows turns at its corridor, which no port moves.
-    const direct = (pl: Plan) => pl.between.length === 0;
     const off = plans.filter(
       (pl) => pl.turn !== undefined && direct(pl) && Math.abs(pl.dstPort - pl.turn) > EPS,
     );
@@ -1670,7 +1734,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
       pl.dstPort = y;
       continue;
     }
-    if (pl.turnIn !== undefined && pl.between.length === 0) {
+    if (pl.turnIn !== undefined && direct(pl)) {
       // A side entry arrives at the middle of its side; only its source has a port.
       pl.dstPort = 0;
       push({
@@ -1686,7 +1750,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
       });
       continue;
     }
-    if (pl.turn !== undefined && pl.between.length === 0) {
+    if (pl.turn !== undefined && direct(pl)) {
       // A side exit leaves from the middle of its side; only its target has a port.
       pl.srcPort = 0;
       push({

@@ -97,8 +97,10 @@ An agent may state the side an edge leaves by, the side it enters by, or both. S
 | Line | Sides it can take |
 |---|---|
 | between neighbours | left or right facing the other, or top or bottom, going round through that gutter |
-| along a row | top or bottom, the same at both ends |
-| down or up | the side facing the other end, or left or right toward a target beside it |
+| along a row | top or bottom at each end |
+| down or up | any side of either end |
+
+A side that faces away from the other end takes the line round its own box. Out of a top or into a bottom, it runs through the gutter on that side and down its own row beside the box. Out of or into a left or right side, the turn stands beside the box and the gutter's run takes the line on.
 
 A stated top is out of reach in the first layer, under a band's label or where a wall or a lane's border closes the gutter. A line the router cannot draw by a stated side is refused as `side-blocked`, which gives the stated side and the side it would have drawn. The router never takes another side in its place. A line that leaves away from the other end has no route yet.
 

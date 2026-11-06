@@ -269,7 +269,7 @@ grafical -f <file> edge --side <id> [--out top|bottom|left|right] [--in top|bott
 - Without `--out` or `--in`, the edge's sides are grafical's again.
 - Where the edge cannot go by the stated side, the write is refused as `side-blocked`.
   - It gives the stated side and the side it would have drawn.
-- ⬜ A line that leaves away from the other end, such as out of the top of a line going down.
+- A side that faces away from the other end takes the line round its own box.
 - A stated side can cost more bends or crossings, and the counts show them.
 
 - **Why:** [058. An agent may state the side of a line](../specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)

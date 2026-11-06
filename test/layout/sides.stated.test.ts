@@ -57,6 +57,58 @@ describe("stated sides", () => {
     expect(a?.y).toBe(b?.y);
   });
 
+  describe("away from the other end", () => {
+    const three = [
+      { op: "layer.add", id: "c" } as Op,
+      node("t", "a"),
+      node("x", "b"),
+      node("y", "c"),
+      { op: "edge.add", from: "x", to: "y" } as Op,
+    ];
+    const drawn = (sides: object) => {
+      const d = build([...three, side("x->y", sides)]);
+      const s = layout(d, m);
+      const blocked = check(d, s, m).filter((p) => p.code === "side-blocked");
+      expect(blocked, JSON.stringify(sides)).toEqual([]);
+      const e = s.edges.find((x) => x.id === "x->y");
+      const box = (id: string) => s.nodes.find((n) => n.id === id)?.rect;
+      return { points: e?.points ?? [], x: box("x"), y: box("y") };
+    };
+
+    it("leaves by the top of a line going down, round its own box", () => {
+      const { points, x } = drawn({ out: "top" });
+      expect(points[0]?.y).toBe(x?.y);
+      expect(points[1]?.y).toBeLessThan(x?.y ?? 0);
+    });
+
+    it("enters by the bottom of a line coming down, past its own box", () => {
+      const { points, y } = drawn({ in: "bottom" });
+      const last = points[points.length - 1];
+      expect(last?.y).toBe((y?.y ?? 0) + (y?.h ?? 0));
+    });
+
+    it("leaves and enters by a side that faces neither end", () => {
+      for (const way of ["left", "right"] as const) {
+        const out = drawn({ out: way });
+        const start = out.points[0];
+        expect(start?.x, way).toBe(way === "left" ? out.x?.x : (out.x?.x ?? 0) + (out.x?.w ?? 0));
+        const into = drawn({ in: way });
+        const end = into.points[into.points.length - 1];
+        expect(end?.x, way).toBe(way === "left" ? into.y?.x : (into.y?.x ?? 0) + (into.y?.w ?? 0));
+      }
+    });
+
+    it("passes through its row from one side of a neighbour to the other", () => {
+      const d = build([...row, line, side("x->y", { out: "top", in: "bottom" })]);
+      const s = layout(d, m);
+      expect(check(d, s, m).filter((p) => p.code === "side-blocked")).toEqual([]);
+      const ys = s.edges[0]?.points.map((p) => p.y) ?? [];
+      const box = s.nodes.find((n) => n.id === "x")?.rect;
+      expect(Math.min(...ys)).toBeLessThan(box?.y ?? 0);
+      expect(Math.max(...ys)).toBeGreaterThan((box?.y ?? 0) + (box?.h ?? 0));
+    });
+  });
+
   it("refuses a side it has no route by, and names the side it would draw", () => {
     const d = build([
       node("x", "a"),

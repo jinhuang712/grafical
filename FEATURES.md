@@ -33,7 +33,7 @@ Features
 │       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
 │       ├── ✅ F1.3.7: Notes — a short text on a box, a line or a group
 │       └── ✅ F1.3.8: Container looks — colors from the styles a group or a lane marks
-├── 🚧 F2: Layout — where everything goes (line sides and labels on turning lines and flow direction not built)
+├── 🚧 F2: Layout — where everything goes (labels on turning lines and flow direction not built)
 │   ├── ✅ F2.1: Placing every node — grafical gives every box its place
 │   ├── ✅ F2.2: Layers and order — a box's row and its place in it
 │   ├── ✅ F2.3: Alignment — one box above or below another
@@ -43,7 +43,7 @@ Features
 │   ├── ✅ F2.6: Spacing — compact, normal or airy
 │   │   └── ✅ F2.6.1: Region gaps — more room between two regions
 │   ├── 🚧 F2.7: How edges are drawn — grafical routes every line (lines do not move apart for labels, and no line leaves away from its other end)
-│   │   ├── 🚧 F2.7.1: Edge sides — the side a line leaves or enters by (no line leaves away from its other end)
+│   │   ├── ✅ F2.7.1: Edge sides — the side a line leaves or enters by
 │   │   ├── ✅ F2.7.2: Edge shapes — square or round
 │   │   └── 🚧 F2.7.3: Labels on edges — a line carries its label (lines do not move apart for one)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
