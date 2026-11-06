@@ -486,16 +486,16 @@ Example:
 `,
   },
   "group title": {
-    about: `Say where a group's label sits: at the left, middle or right of its box's
-top (top-left, top, top-right) or bottom (bottom-left, bottom, bottom-right),
-at the middle of its left or right side (left, right), or centred just
-outside one side (outside-top, outside-bottom, outside-left, outside-right).
-Without a place, the engine seats it at the top, at the leftmost spot no
+    about: `Say where a group's label sits: a fraction from 0 to 1 along a side, the side
+(top by default), and inside (by default) or outside the group. At 0.7 the
+label's own 70% point meets the side's 70% point, so it never runs past the side.
+Without a fraction, the engine seats it at the top, at the leftmost spot no
 line comes near. Either way the label takes its own room, and no box or line
 moves for it.`,
     after: `
 Example:
-  grafical group title booking.grafical.yaml app bottom-left
+  grafical group title booking.grafical.yaml app 0 --side bottom
+  grafical group title booking.grafical.yaml app 0.5 --side left --place outside
   grafical group title booking.grafical.yaml app
 `,
   },

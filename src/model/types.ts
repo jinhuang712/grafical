@@ -47,21 +47,31 @@ export type RowLook = (typeof ROW_LOOKS)[number];
  * top or bottom side, or beside its rows inside or outside its left or right side. Absent:
  * in the head, where the lines into the group's first row keep their centres.
  */
-export const GROUP_TITLES = [
-  "top-left",
-  "top",
-  "top-right",
-  "bottom-left",
-  "bottom",
-  "bottom-right",
-  "outside-top",
-  "outside-bottom",
-  "left",
-  "right",
-  "outside-left",
-  "outside-right",
-] as const;
-export type GroupTitle = (typeof GROUP_TITLES)[number];
+export interface GroupTitle {
+  /** From 0 to 1 along the side: the label's own point at this fraction meets the side's. */
+  at: number;
+  side: EdgeSide;
+  place: LabelPlace;
+}
+
+export const LABEL_PLACES = ["inside", "outside"] as const;
+export type LabelPlace = (typeof LABEL_PLACES)[number];
+
+/** The places a blocked title is tried at: each end and the middle of the sides it reads best on. */
+export const GROUP_TITLES: readonly GroupTitle[] = [
+  { at: 0, side: "top", place: "inside" },
+  { at: 0.5, side: "top", place: "inside" },
+  { at: 1, side: "top", place: "inside" },
+  { at: 0, side: "bottom", place: "inside" },
+  { at: 0.5, side: "bottom", place: "inside" },
+  { at: 1, side: "bottom", place: "inside" },
+  { at: 0.5, side: "top", place: "outside" },
+  { at: 0.5, side: "bottom", place: "outside" },
+  { at: 0.5, side: "left", place: "inside" },
+  { at: 0.5, side: "right", place: "inside" },
+  { at: 0.5, side: "left", place: "outside" },
+  { at: 0.5, side: "right", place: "outside" },
+];
 
 /** How the engine sizes a node that has no size (specs/decisions, "Boxes sized to their text"). */
 export const SIZINGS = ["auto", "fixed"] as const;

@@ -66,7 +66,7 @@ import { badgeRect, settleBadges, stepPlace } from "./badges.ts";
 import { cutRoute, planEnds, refineEnds, straightIntoBand } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import { footnotesHeight, numberBadge, placeNotes } from "./notes.ts";
-import { atSide, centreX, type PNode, placeAcross, reach } from "./place.ts";
+import { atSide, centreX, outsideOf, type PNode, placeAcross, reach } from "./place.ts";
 import {
   type AssembledLabel,
   assemble,
@@ -1027,8 +1027,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // not on the centre line, so that the header's or label's width is not mirrored as empty space.
   const [lo, hi] = rowLanes.length > 0 ? [laneLeft, laneRight] : [low, high];
   const offCentre =
-    rowLanes.length > 0 ||
-    groups.some((g) => g.titleAt === "outside-left" || g.titleAt === "outside-right");
+    rowLanes.length > 0 || groups.some((g) => outsideOf(g, "left") || outsideOf(g, "right"));
   const shift = offCentre ? Math.round((lo + hi) / 8) * 4 : 0;
   if (offCentre) half = Math.max(shift - lo, hi - shift);
   half = ceil4(Math.max(half, 80));
@@ -1122,10 +1121,11 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // label outside the box takes a head's height outside its side, and leaves a padding's
   // inside (specs/decisions, "The agent states where a group's label sits").
   const outside = (g: (typeof groups)[number], side: "top" | "bottom") =>
-    g.titleAt === `outside-${side}` ? GROUP.head : 0;
+    outsideOf(g, side) ? GROUP.head : 0;
   const inHead = (g: (typeof groups)[number]) =>
-    g.titleAt === undefined || g.titleAt.startsWith("top");
-  const inFoot = (g: (typeof groups)[number]) => g.titleAt?.startsWith("bottom") === true;
+    g.titleAt === undefined || (g.titleAt.side === "top" && g.titleAt.place === "inside");
+  const inFoot = (g: (typeof groups)[number]) =>
+    g.titleAt?.side === "bottom" && g.titleAt.place === "inside";
   const heads = (g: (typeof groups)[number]): number =>
     outside(g, "top") +
     (inHead(g) ? GROUP.head : GROUP.pad) +
@@ -1306,11 +1306,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
     const groupLook = lookOf(d, d.groups?.find((x) => x.id === g.id)?.style);
     // In its head, in its foot, a head's height outside its top or bottom side, or beside its rows.
+    const mid = withText ? middleOf(g.label) : 0;
+    const along = g.titleAt?.at ?? 0.5;
     const ly = atSide(g)
-      ? (y0 + y1) / 2 - (withText ? middleOf(g.label) : 0)
-      : (g.titleAt === "outside-top"
+      ? y0 + GROUP.labelTop + along * (y1 - y0 - 2 * GROUP.labelTop - 2 * mid)
+      : (outsideOf(g, "top")
           ? y0 - GROUP.head
-          : g.titleAt === "outside-bottom"
+          : outsideOf(g, "bottom")
             ? y1
             : inFoot(g)
               ? y1 - GROUP.head

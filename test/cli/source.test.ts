@@ -251,13 +251,13 @@ describe("source", () => {
       writeFileSync(join(dir, "tp.grafical.yaml"), writeDiagram({ ...nested, groups: long ?? [] }));
       writeFileSync(
         join(dir, "tp1.yaml"),
-        "- {op: group.title, id: vpc, at: bottom}\n- {op: group.title, id: vpc, at: outside-bottom}\n",
+        "- {op: group.title, id: vpc, at: 0.5, side: bottom}\n- {op: group.title, id: vpc, at: 0.5, side: bottom, place: outside}\n",
       );
       const r = run("apply", "tp.grafical.yaml", "tp1.yaml");
       expect(r.out).toMatch(/^defect: title-blocked$/m);
-      expect(r.out).toMatch(/^ {2}place: outside-bottom$/m);
+      expect(r.out).toMatch(/^ {2}place: 0.5 bottom outside$/m);
       expect(sources(r.out)).toEqual([
-        "tp1.yaml line 2: {op: group.title, id: vpc, at: outside-bottom}",
+        "tp1.yaml line 2: {op: group.title, id: vpc, at: 0.5, side: bottom, place: outside}",
       ]);
     });
 

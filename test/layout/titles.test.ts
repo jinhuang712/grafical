@@ -10,12 +10,30 @@ import {
   type Diagram,
   type GroupTitle,
   type Op,
+  parseOps,
   readDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
-import { GROUP_TITLES } from "../../src/model/types.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
+
+/** The places tried for a blocked title, by the names the checks below read them by. */
+const P: Record<string, GroupTitle> = {
+  "top-left": { at: 0, side: "top", place: "inside" },
+  top: { at: 0.5, side: "top", place: "inside" },
+  "top-right": { at: 1, side: "top", place: "inside" },
+  "bottom-left": { at: 0, side: "bottom", place: "inside" },
+  bottom: { at: 0.5, side: "bottom", place: "inside" },
+  "bottom-right": { at: 1, side: "bottom", place: "inside" },
+  "outside-top": { at: 0.5, side: "top", place: "outside" },
+  "outside-bottom": { at: 0.5, side: "bottom", place: "outside" },
+  left: { at: 0.5, side: "left", place: "inside" },
+  right: { at: 0.5, side: "right", place: "inside" },
+  "outside-left": { at: 0.5, side: "left", place: "outside" },
+  "outside-right": { at: 0.5, side: "right", place: "outside" },
+};
+const NAMES = Object.keys(P);
+const words = (name: string) => `${P[name]?.at} ${P[name]?.side} ${P[name]?.place}`;
 
 let m: Measurer;
 beforeAll(async () => {
@@ -56,24 +74,24 @@ edges:
 
 describe("a group's stated label place", () => {
   it("is set, kept in the file, cleared and refused when unknown", () => {
-    const d = ok(booking, [{ op: "group.title", id: "app", at: "top-right" }]);
-    expect(d.groups?.[0]?.titleAt).toBe("top-right");
-    expect(writeDiagram(d)).toContain("titleAt: top-right");
+    const d = ok(booking, [{ op: "group.title", id: "app", ...P["top-right"] }]);
+    expect(d.groups?.[0]?.titleAt).toEqual(P["top-right"]);
+    expect(writeDiagram(d)).toContain("titleAt:");
     expect(readDiagram(writeDiagram(d))).toEqual(d);
     expect(ok(d, [{ op: "group.title", id: "app" }]).groups?.[0]?.titleAt).toBeUndefined();
-    expect(fail(d, [{ op: "group.title", id: "apq", at: "top" }])[0]?.code).toBe("unknown-group");
-    const wrong = readDiagram(writeDiagram(d).replace("titleAt: top-right", "titleAt: middle"));
+    expect(fail(d, [{ op: "group.title", id: "apq", ...P.top }])[0]?.code).toBe("unknown-group");
+    const wrong = readDiagram(writeDiagram(d).replace("side: top", "side: middle"));
     expect(wrong).toMatchObject([
       {
         code: "bad-value",
         found: "middle",
-        facts: { allowed: [...GROUP_TITLES] },
+        facts: { allowed: ["top", "bottom", "left", "right"] },
       },
     ]);
   });
 
   it("diffs as the operation that set it, and a copy keeps it", () => {
-    const a = ok(booking, [{ op: "group.title", id: "app", at: "top" }]);
+    const a = ok(booking, [{ op: "group.title", id: "app", ...P.top }]);
     for (const [x, y] of [
       [booking, a],
       [a, booking],
@@ -82,7 +100,7 @@ describe("a group's stated label place", () => {
       if ("errors" in r) throw new Error(JSON.stringify(r.errors));
       expect(writeDiagram(r.diagram)).toBe(writeDiagram(y));
     }
-    expect(diffDiagrams(booking, a)).toEqual([{ op: "group.title", id: "app", at: "top" }]);
+    expect(diffDiagrams(booking, a)).toEqual([{ op: "group.title", id: "app", ...P.top }]);
   });
 
   // Lines leave the last row by the bottom, through the foot the label sits in.
@@ -126,9 +144,9 @@ edges:
   - {id: db->pay, from: db, to: pay}
 `) as Diagram;
 
-  for (const at of GROUP_TITLES) {
+  for (const at of NAMES) {
     it(`sits exactly at ${at}`, () => {
-      const d = ok(below, [{ op: "group.title", id: "app", at }]);
+      const d = ok(below, [{ op: "group.title", id: "app", ...P[at] }]);
       const s = layout(d, m);
       const g = s.groups?.find((x) => x.id === "app");
       const web = s.nodes.find((n) => n.id === "web")?.rect;
@@ -174,8 +192,8 @@ edges:
       [below, "app"],
       [oneRow, "svc"],
     ] as const) {
-      const at = (place: GroupTitle) => layout(ok(d0, [{ op: "group.title", id, at: place }]), m);
-      const across = (place: GroupTitle) => {
+      const at = (place: string) => layout(ok(d0, [{ op: "group.title", id, ...P[place] }]), m);
+      const across = (place: string) => {
         const s = at(place);
         return {
           lines: s.edges.map((e) => e.points.map((p) => p.x)),
@@ -184,7 +202,7 @@ edges:
         };
       };
       const first = across("top-left");
-      for (const place of GROUP_TITLES.filter((x) => !["left", "right"].includes(x))) {
+      for (const place of NAMES.filter((x) => !["left", "right"].includes(x))) {
         if (place.startsWith("outside-l") || place.startsWith("outside-r")) {
           const w = (s: ReturnType<typeof at>) => s.groups?.find((g) => g.id === id)?.rect.w;
           expect(w(at(place)), place).toBe(w(at("top-left")));
@@ -203,18 +221,18 @@ edges:
       [oneRow, "svc", "left", "gw->api"],
       [oneRow, "svc", "outside-right", "db->pay"],
     ] as const) {
-      const d = ok(d0, [{ op: "group.title", id, at }]);
+      const d = ok(d0, [{ op: "group.title", id, ...P[at] }]);
       const found = check(d, layout(d, m), m).filter((x) => x.owner === "agent");
       expect(
         found.map((x) => [x.code, x.elements, x.facts.place]),
         at,
-      ).toEqual([["title-blocked", [id, line], at]]);
+      ).toEqual([["title-blocked", [id, line], words(at)]]);
       const clear = found[0]?.facts.clear ?? [];
       expect(clear.length, at).toBeGreaterThan(0);
-      for (const place of GROUP_TITLES) {
-        const e = ok(d0, [{ op: "group.title", id, at: place }]);
+      for (const place of NAMES) {
+        const e = ok(d0, [{ op: "group.title", id, ...P[place] }]);
         const blocked = check(e, layout(e, m), m).some((x) => x.code === "title-blocked");
-        expect(blocked, place).toBe(!clear.includes(place));
+        expect(blocked, place).toBe(!clear.includes(words(place)));
       }
     }
   });
@@ -228,14 +246,14 @@ edges:
       [oneRow, "svc", "top"],
       [oneRow, "svc", "outside-bottom"],
     ] as const) {
-      const d = ok(d0, [{ op: "group.title", id, at }]);
+      const d = ok(d0, [{ op: "group.title", id, ...P[at] }]);
       expect(check(d, layout(d, m), m), at).toEqual([]);
     }
   });
 
   it("outside a side, leaves no empty space past the other side", () => {
-    for (const at of ["outside-left", "outside-right"] as GroupTitle[]) {
-      const s = layout(ok(below, [{ op: "group.title", id: "app", at }]), m);
+    for (const at of ["outside-left", "outside-right"]) {
+      const s = layout(ok(below, [{ op: "group.title", id: "app", ...P[at] }]), m);
       const g = s.groups?.find((x) => x.id === "app");
       if (g === undefined) throw new Error("no group");
       const t = g.label.bbox;
@@ -247,8 +265,29 @@ edges:
     }
   });
 
+  it("sits at a fraction of its side, its own point meeting the side's", () => {
+    const place = (at: number, side: GroupTitle["side"]) =>
+      layout(
+        ok(below, [{ op: "group.title", id: "app", at, side, place: "inside" }]),
+        m,
+      ).groups?.find((g) => g.id === "app");
+    const first = place(0, "top");
+    const third = place(0.25, "top");
+    const last = place(1, "top");
+    const [a, b, c] = [first, third, last].map((g) => g?.label.bbox.x ?? 0);
+    expect(b).toBeCloseTo((a as number) + ((c as number) - (a as number)) / 4, 1);
+    const high = place(0.1, "left")?.label.bbox.y ?? 0;
+    const low = place(0.9, "left")?.label.bbox.y ?? 0;
+    expect(high).toBeLessThan(low);
+  });
+
+  it("is refused past the ends of its side", () => {
+    const ops = parseOps([{ op: "group.title", id: "app", at: 1.5 }]);
+    expect(ops).toMatchObject([{ field: "at" }]);
+  });
+
   it("leaves a picture without one as it was", () => {
-    const d = ok(booking, [{ op: "group.title", id: "app", at: "top" }]);
+    const d = ok(booking, [{ op: "group.title", id: "app", ...P.top }]);
     const back = ok(d, [{ op: "group.title", id: "app" }]);
     expect(layout(back, m)).toEqual(layout(booking, m));
   });

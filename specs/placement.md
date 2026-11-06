@@ -107,13 +107,13 @@ A group has 24 px of padding on its sides and bottom, and 24 px more for each le
 
 A group's title takes room by the place the agent states for it, and the engine adds room only for the title itself:
 
-| Place | Room it takes |
+| Side and place | Room it takes |
 |---|---|
-| `top-left` · `top` · `top-right`, or no place | a head of 40 px above the first layer |
-| `bottom-left` · `bottom` · `bottom-right` | a foot of 40 px below the last layer; the top keeps only its 24 px padding |
-| `outside-top` · `outside-bottom` | 40 px outside the node |
-| `left` · `right` | a strip inside, as wide as the label plus 4 px |
-| `outside-left` · `outside-right` | room past that side only |
+| `top`, `inside`, or no place | a head of 40 px above the first layer |
+| `bottom`, `inside` | a foot of 40 px below the last layer; the top keeps only its 24 px padding |
+| `top` or `bottom`, `outside` | 40 px outside the node |
+| `left` or `right`, `inside` | a strip inside, as wide as the label plus 4 px |
+| `left` or `right`, `outside` | room past that side only |
 
 A head may lie partly over the tracks of the gutter above when no edge comes near it. A title outside one side reaches out on that side only, so the picture moves off its centre line rather than mirroring the room on the other side.
 

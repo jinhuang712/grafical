@@ -134,7 +134,7 @@ export function writeDiagram(d: Diagram): string {
       const o: Record<string, unknown> = { id: g.id, label: g.label };
       if (g.sublabel !== undefined) o.sublabel = g.sublabel;
       if (g.in !== undefined) o.in = g.in;
-      if (g.titleAt !== undefined) o.titleAt = g.titleAt;
+      if (g.titleAt !== undefined) o.titleAt = { ...g.titleAt };
       if (g.style !== undefined) o.style = g.style;
       return o;
     });

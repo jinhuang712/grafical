@@ -26,9 +26,10 @@ import {
   type Edge,
   FORMAT_VERSION,
   GAP_MAGNIFICATIONS,
-  GROUP_TITLES,
   type Group,
+  type GroupTitle,
   LABEL_ALIGNS,
+  LABEL_PLACES,
   type Layer,
   LINE_STYLES,
   MARK_COLORS,
@@ -180,12 +181,28 @@ const stepNodeSchema = nodeSchema.omit({ align: true, lane: true, column: true }
   right: steps.optional(),
 });
 
+/** Where a region's label sits (specs/decisions, "A region's label sits at a fraction of a side"). */
+export const groupTitle = z.strictObject({
+  at: z.number().min(0).max(1),
+  side: z.enum(EDGE_SIDES),
+  place: z.enum(LABEL_PLACES),
+});
+
+/** A draft saved before fractions names its place: only the saved runs in bench/runs still do. */
+function savedTitle(v: unknown): unknown {
+  if (typeof v !== "string") return v;
+  const outside = v.startsWith("outside-");
+  const [first, end] = v.replace("outside-", "").split("-") as [GroupTitle["side"], string?];
+  const place = outside ? "outside" : "inside";
+  return { at: end === "left" ? 0 : end === "right" ? 1 : 0.5, side: first, place };
+}
+
 const groupSchema = z.strictObject({
   id: nodeId,
   label: text,
   sublabel: text.optional(),
   in: nodeId.optional(),
-  titleAt: z.enum(GROUP_TITLES).optional(),
+  titleAt: z.preprocess(savedTitle, groupTitle.optional()),
   style: styleNames,
 });
 

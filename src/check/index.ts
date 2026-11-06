@@ -694,6 +694,7 @@ function checkTitles(
     const place = group.titleAt;
     const lines = acrossTitle(scene, group.id);
     if (lines.length === 0) continue;
+    const words = (p: GroupTitle) => `${p.at} ${p.side} ${p.place}`;
     const at = (p: GroupTitle): Diagram => ({
       ...facts,
       groups: (facts.groups ?? []).map((g) => (g.id === group.id ? { ...g, titleAt: p } : g)),
@@ -701,14 +702,16 @@ function checkTitles(
     // Each place is a layout of its own.
     const clear = places
       ? GROUP_TITLES.filter(
-          (p) => p !== place && acrossTitle(layout(at(p), measurer), group.id).length === 0,
-        )
+          (p) =>
+            (place === undefined || words(p) !== words(place)) &&
+            acrossTitle(layout(at(p), measurer), group.id).length === 0,
+        ).map(words)
       : undefined;
     out.push({
       code: "title-blocked",
       elements: [group.id, ...lines],
       facts: {
-        ...(place === undefined ? {} : { place }),
+        ...(place === undefined ? {} : { place: words(place) }),
         ...(clear === undefined ? {} : { clear }),
       },
     });

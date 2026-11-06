@@ -242,16 +242,16 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   /** The strip a label beside a group's rows takes inside its box, clear of every member. */
   const strip = (g: string): { left: number; right: number } => {
     const at = titleOf(g);
-    if (at !== "left" && at !== "right") return { left: 0, right: 0 };
+    if (!atSide({ titleAt: at }) || at?.place !== "inside") return { left: 0, right: 0 };
     const w = ceil4(text.groupLabelW(g) + 2 * GROUP.labelClear + GROUP.labelInset - GROUP.pad);
-    return at === "left" ? { left: w, right: 0 } : { left: 0, right: w };
+    return at.side === "left" ? { left: w, right: 0 } : { left: 0, right: w };
   };
   /** The room a label outside a group's left or right side takes past its box. */
   const outRoom = (g: string): { left: number; right: number } => {
     const at = titleOf(g);
-    if (at !== "outside-left" && at !== "outside-right") return { left: 0, right: 0 };
+    if (!atSide({ titleAt: at }) || at?.place !== "outside") return { left: 0, right: 0 };
     const w = ceil4(GROUP.outsideGap + text.groupLabelW(g));
-    return at === "outside-left" ? { left: w, right: 0 } : { left: 0, right: w };
+    return at.side === "left" ? { left: w, right: 0 } : { left: 0, right: w };
   };
   /** Whether a group's label sits beside its rows rather than above or below them. */
   const besideRows = (g: string) => atSide({ titleAt: titleOf(g) });
@@ -698,30 +698,27 @@ function laneSides(
 
 /** Whether a group's label sits beside its rows, inside or outside its left or right side. */
 export const atSide = (g: { titleAt?: GroupTitle | undefined }): boolean =>
-  g.titleAt === "left" ||
-  g.titleAt === "right" ||
-  g.titleAt === "outside-left" ||
-  g.titleAt === "outside-right";
+  g.titleAt?.side === "left" || g.titleAt?.side === "right";
+
+/** Whether a group's label sits outside this side of its box. */
+export const outsideOf = (g: { titleAt?: GroupTitle | undefined }, side: GroupTitle["side"]) =>
+  g.titleAt?.side === side && g.titleAt.place === "outside";
 
 /** How far a group's box and a label outside its left or right side reach across. */
 export function reach(g: PGroup): [number, number] {
   const w = GROUP.outsideGap + g.labelW;
-  return [
-    g.x0 - (g.titleAt === "outside-left" ? w : 0),
-    g.x1 + (g.titleAt === "outside-right" ? w : 0),
-  ];
+  return [g.x0 - (outsideOf(g, "left") ? w : 0), g.x1 + (outsideOf(g, "right") ? w : 0)];
 }
 
-/** The left end of a label at its stated place, at the left, middle or right of its box. */
+/** The left end of a label at its stated place: its own point at the fraction meets the side's. */
 function titleX(g: PGroup): number {
-  const at = g.titleAt;
-  if (at === "outside-left") return g.x0 - GROUP.outsideGap - g.labelW;
-  if (at === "outside-right") return g.x1 + GROUP.outsideGap;
-  if (at === "top" || at === "bottom" || at?.startsWith("outside")) {
-    return (g.x0 + g.x1) / 2 - g.labelW / 2;
+  const at = g.titleAt as GroupTitle;
+  const inside = at.place === "inside";
+  if (at.side === "left")
+    return inside ? g.x0 + GROUP.labelInset : g.x0 - GROUP.outsideGap - g.labelW;
+  if (at.side === "right") {
+    return inside ? g.x1 - GROUP.labelInset - g.labelW : g.x1 + GROUP.outsideGap;
   }
-  if (at === "top-right" || at === "bottom-right" || at === "right") {
-    return g.x1 - GROUP.labelInset - g.labelW;
-  }
-  return g.x0 + GROUP.labelInset;
+  const inset = inside ? GROUP.labelInset : 0;
+  return g.x0 + inset + at.at * (g.x1 - g.x0 - 2 * inset - g.labelW);
 }

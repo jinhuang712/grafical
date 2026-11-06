@@ -1005,13 +1005,22 @@ export function build(): Command {
       .command("title")
       .alias("label")
       .description(
-        "say where a group's label sits; without a place, the engine seats it at the top",
+        "say where a group's label sits; without a fraction, the engine seats it at the top",
       )
       .argument("<file>")
       .argument("<id>")
-      .argument("[at]", "where the label sits"),
+      .argument("[at]", "0 to 1 along the side: 0 its start, 1 its end")
+      .option("--side <side>", "top by default, bottom, left or right")
+      .option("--place <place>", "inside by default, or outside"),
   ).action(async (file: string, id: string, at: string | undefined, opts: Opts) => {
-    await write(file, { op: "group.title", id, ...(at === undefined ? {} : { at }) }, opts);
+    const where =
+      at === undefined
+        ? {}
+        : {
+            at: Number.isNaN(Number(at)) ? at : Number(at),
+            ...pick(opts, ["side", "place"]),
+          };
+    await write(file, { op: "group.title", id, ...where }, opts);
   });
   json(
     group

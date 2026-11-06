@@ -84,7 +84,8 @@ export function showDiagram(d: Diagram): string {
     const sub = g.sublabel === undefined ? "" : ` sub=${JSON.stringify(g.sublabel)}`;
     const inner = (d.groups ?? []).filter((x) => x.in === g.id).map((x) => `group ${x.id}`);
     const where = g.in === undefined ? "" : ` in=${g.in}`;
-    const title = g.titleAt === undefined ? "" : ` title=${g.titleAt}`;
+    const t = g.titleAt;
+    const title = t === undefined ? "" : ` title=${t.at},${t.side},${t.place}`;
     lines.push(
       `group ${g.id} ${JSON.stringify(g.label)}${sub}${where}${title}: ${[...members, ...inner].join(", ") || "(empty)"}`,
     );

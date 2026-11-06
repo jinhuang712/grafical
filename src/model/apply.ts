@@ -2179,7 +2179,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       const g = (d.groups ?? []).find((x) => x.id === op.id);
       if (!g) return [unknownGroup(d, op.id, i, "id")];
       if (op.at === undefined) delete g.titleAt;
-      else g.titleAt = op.at;
+      else g.titleAt = { at: op.at, side: op.side ?? "top", place: op.place ?? "inside" };
       touch(s, op.id);
       return [];
     }

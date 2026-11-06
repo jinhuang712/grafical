@@ -5,6 +5,7 @@ import type { OpError } from "../errors.ts";
 import { STEP_KEYS } from "./steps.ts";
 import {
   type Diagram,
+  type GroupTitle,
   LINE_STYLES,
   MARK_SLOTS,
   type Mark,
@@ -189,7 +190,7 @@ export function writeGrafical(d: Diagram): string {
     on: string,
     text: string,
     sub?: string,
-    place?: string,
+    title?: GroupTitle,
     seat?: string,
     align?: string,
   ) =>
@@ -197,7 +198,9 @@ export function writeGrafical(d: Diagram): string {
       ["on", ref(on)],
       ["text", quote(text)],
       ["sublabel", opt(sub, quote)],
-      ["place", place],
+      ["at", title === undefined ? undefined : String(title.at)],
+      ["side", title?.side],
+      ["place", title?.place],
       ["seat", seat],
       ["align", align],
     ]);
@@ -402,7 +405,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   );
 
   const labels = new Map(of("label").map((b) => [value(b.attrs.get("on") as string) as string, b]));
-  const named = (id: string, o: Record<string, unknown>, place?: string) => {
+  const named = (id: string, o: Record<string, unknown>) => {
     const b = labels.get(id);
     if (b === undefined) return;
     take(
@@ -411,7 +414,6 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
         text: "label",
         sublabel: "sublabel",
         align: "labelAlign",
-        ...(place === undefined ? {} : { place }),
       },
       o,
     );
@@ -507,7 +509,15 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     const o: Record<string, unknown> = { id: b.id };
     take(b, { in: "in" }, o);
     styles(b, o);
-    named(b.id as string, o, "titleAt");
+    named(b.id as string, o);
+    const title = labels.get(b.id as string)?.attrs;
+    if (title?.has("at") === true) {
+      o.titleAt = {
+        at: Number(title.get("at")),
+        side: title.get("side"),
+        place: title.get("place"),
+      };
+    }
     return o;
   });
   out.lanes = of("lane").map((b) => {

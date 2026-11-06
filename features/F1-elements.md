@@ -385,7 +385,7 @@ A group is a system, drawn as one node around its members, which may sit in seve
 - `grafical -f <file> group --leave <node or group...> [--up]`
 - `grafical -f <file> group --label <id> --label <text>`
 - `grafical -f <file> group --sublabel <id> [--text <text>]`
-- `grafical -f <file> group --label-at <id> [top-left|top|top-right|left|right|bottom-left|bottom|bottom-right|outside-top|outside-bottom|outside-left|outside-right]`
+- `grafical -f <file> group --label-at <id> [<fraction>] [--side top|bottom|left|right] [--place inside|outside]`
 - `grafical -f <file> group --order <id> --before <group> | --after <group>`
 - `grafical -f <file> group --remove <id> [--out]`
 

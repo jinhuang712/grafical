@@ -56,7 +56,10 @@ groups:
   - id: ibs
     label: Internet Banking System
     sublabel: Software system
-    titleAt: bottom-left
+    titleAt:
+      at: 0
+      side: bottom
+      place: inside
 edges:
   - id: customer->webapp
     from: customer

@@ -80,18 +80,27 @@ groups:
   - id: app-a
     label: Private subnet
     in: az-a
-    titleAt: left
+    titleAt:
+      at: 0.5
+      side: left
+      place: inside
   - id: data-a
     label: Private subnet
     in: az-a
-    titleAt: bottom-left
+    titleAt:
+      at: 0
+      side: bottom
+      place: inside
   - id: pub-b
     label: Public subnet
     in: az-b
   - id: app-b
     label: Private subnet
     in: az-b
-    titleAt: right
+    titleAt:
+      at: 0.5
+      side: right
+      place: inside
   - id: data-b
     label: Private subnet
     in: az-b

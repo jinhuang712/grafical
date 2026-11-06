@@ -189,24 +189,24 @@ describe('groups inside groups on the command line (specs/decisions, "Every laye
   it('group title and group label say where a label sits, and show prints it (specs/decisions, "The agent states where a group\'s label sits")', () => {
     const f = "titled.grafical.yaml";
     writeFileSync(join(dir, f), writeDiagram(nested));
-    expect(run("group", "title", f, "vpc", "top-right").code).toBe(0);
-    expect(read(f)).toContain("titleAt: top-right");
-    expect(run("show", f).out).toContain("title=top-right");
+    expect(run("group", "title", f, "vpc", "1").code).toBe(0);
+    expect(read(f)).toContain("side: top");
+    expect(run("show", f).out).toContain("title=1,top,inside");
     expect(run("group", "title", f, "vpc").code).toBe(0);
     expect(read(f)).not.toContain("titleAt");
     const wrong = run("group", "title", f, "vpc", "middle");
     expect(wrong.code).not.toBe(0);
-    expect(wrong.err + wrong.out).toContain("bad-value");
+    expect(wrong.err + wrong.out).toContain("bad-type");
     // A line runs out of the vpc's last row where its long label would sit in the foot.
     writeFileSync(join(dir, f), writeDiagram(longVpc));
     const before = read(f);
-    const blocked = run("group", "title", f, "vpc", "bottom");
+    const blocked = run("group", "title", f, "vpc", "0.5", "--side", "bottom");
     expect(blocked.code).not.toBe(0);
     expect(blocked.out).toContain(
       "defect: title-blocked\ndescription: A line runs where the group's title sits, and no line moves for a title.\n",
     );
     expect(blocked.out).toContain(
-      "detail:\n  owner: agent\n  group: vpc\n  edge: db->backup\n  place: bottom\n  clear: top, ",
+      "detail:\n  owner: agent\n  group: vpc\n  edge: db->backup\n  place: 0.5 bottom inside\n  clear: 0.5 top inside, ",
     );
     expect(blocked.out).toMatch(/\nnext: group --label-at, node --move, edge --remove\n$/);
     expect(read(f)).toBe(before);

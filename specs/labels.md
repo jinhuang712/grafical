@@ -81,13 +81,15 @@ Once every label has its seat, a badge that still touches something slides along
 
 A group's title sits where the agent states, in room placement has already made for it. No node or line moves for it.
 
-| Place | Where the label sits |
+| Side and place | Where the label sits |
 |---|---|
-| `top-left` · `top` · `top-right` | in the head, 12 px down and 16 px in |
-| `bottom-left` · `bottom` · `bottom-right` | in a foot below the last layer |
-| `outside-top` · `outside-bottom` | centred just outside the node |
-| `left` · `right` | in a strip inside, at the middle height |
-| `outside-left` · `outside-right` | 12 px past the side, at the middle height |
+| `top`, `inside` | in the head, 12 px down, from 16 px in at one end to 16 px in at the other |
+| `bottom`, `inside` | in a foot below the last layer, across the same span |
+| `top` or `bottom`, `outside` | just outside the node, across its full width |
+| `left` or `right`, `inside` | in a strip inside, 16 px in, from the top of the side to its bottom |
+| `left` or `right`, `outside` | 12 px past the side, from the top of the side to its bottom |
+
+The fraction runs from 0 to 1 along the side, and the label's own point at that fraction meets the side's, so the label never runs past the side.
 
 A title never wraps, and its sublabel follows it 10 px apart, within the same clear span.
 

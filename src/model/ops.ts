@@ -25,9 +25,9 @@ import {
   type EdgeSide,
   GAP_MAGNIFICATIONS,
   type GapMagnified,
-  GROUP_TITLES,
   type GroupTitle,
   LABEL_ALIGNS,
+  LABEL_PLACES,
   type LabelAlign,
   LINE_STYLES,
   type LineStyleName,
@@ -422,7 +422,10 @@ export interface GroupTitleOp {
   op: "group.title";
   id: string;
   /** Absent: the engine seats the label in the head. */
-  at?: GroupTitle;
+  /** Absent: the engine seats the label in the head. */
+  at?: number;
+  side?: GroupTitle["side"];
+  place?: GroupTitle["place"];
 }
 /** Puts a group's boxes, its inner groups' too, before or after another group's, in every layer they share. */
 export interface GroupOrderOp {
@@ -925,7 +928,9 @@ export const groupDescribeSchema = z.strictObject({
 export const groupTitleSchema = z.strictObject({
   op: z.literal("group.title"),
   id: nodeId,
-  at: z.enum(GROUP_TITLES).optional(),
+  at: z.number().min(0).max(1).optional(),
+  side: z.enum(EDGE_SIDES).optional(),
+  place: z.enum(LABEL_PLACES).optional(),
 });
 export const groupOrderSchema = z.strictObject({
   op: z.literal("group.order"),

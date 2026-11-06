@@ -92,7 +92,7 @@ Roadmap
 │   │   ├── 🟨 Label text
 │   │   ├── ✅ Region gaps
 │   │   ├── ✅ Edge looks
-│   │   ├── ⬜ Region labels
+│   │   ├── 🟨 Region labels
 │   │   └── ⬜ Label looks
 │   ├── 🟨 CP2.5: Pictures worth keeping
 │   │   ├── ✅ Labels on straight lines
@@ -534,7 +534,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - 🟨 Label text: An agent sets the breaks and alignment of a node's, an edge's, a wall's and a lane's label and of a note, and the titles of regions stay one line.
 - ✅ Region gaps: The gap between two neighbouring regions may be magnified.
 - ✅ Edge looks: An edge takes a color of its own or a named look.
-- ⬜ Region labels: A region's label sits at a fraction of a side, inside or outside.
+- 🟨 Region labels: A group's label sits at a fraction of a side, inside or outside, and the other regions wait.
 - ⬜ Label looks: A label marks a style for its background, border and color.
 
 **Delivers:**

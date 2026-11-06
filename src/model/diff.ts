@@ -514,7 +514,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       const op: Op = { op: "group.add", id: g.id, label: g.label };
       if (g.sublabel !== undefined) op.sublabel = g.sublabel;
       ops.push(op);
-      if (g.titleAt !== undefined) ops.push({ op: "group.title", id: g.id, at: g.titleAt });
+      if (g.titleAt !== undefined) ops.push({ op: "group.title", id: g.id, ...g.titleAt });
       continue;
     }
     if (g.label !== was.label) ops.push({ op: "group.rename", id: g.id, label: g.label });
@@ -524,11 +524,11 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
           ? { op: "group.describe", id: g.id }
           : { op: "group.describe", id: g.id, text: g.sublabel },
       );
-    if (g.titleAt !== was.titleAt)
+    if (JSON.stringify(g.titleAt) !== JSON.stringify(was.titleAt))
       ops.push(
         g.titleAt === undefined
           ? { op: "group.title", id: g.id }
-          : { op: "group.title", id: g.id, at: g.titleAt },
+          : { op: "group.title", id: g.id, ...g.titleAt },
       );
   }
   for (const x of aLanes) {
