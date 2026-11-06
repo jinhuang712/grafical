@@ -85,7 +85,7 @@ Roadmap
 │   │   ├── 🟨 Build the model
 │   │   ├── ⬜ Move the saved files
 │   │   └── ⬜ Compare with YAML
-│   ├── ⬜ CP2.4: Lines and labels
+│   ├── ⬜ CP2.4: Edges and labels
 │   │   ├── ⬜ Edge sides
 │   │   ├── ⬜ Edge shapes
 │   │   ├── ⬜ Labels on edges
@@ -120,7 +120,7 @@ Roadmap
 │       ├── ⬜ Views of one file
 │       └── ⬜ Folded groups
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
-│   ├── ⬜ CP3.1: Boxes and lines
+│   ├── ⬜ CP3.1: Nodes and edges
 │   │   ├── ⬜ State machine
 │   │   ├── ⬜ Flowchart
 │   │   └── ⬜ Dependency graph
@@ -439,7 +439,7 @@ The numbers are the order of the work, since each step rests on the one before.
   - [CP2.1: Fix the speed slip](#cp21-fix-the-speed-slip) is met.
   - [CP2.2: The command line](#cp22-the-command-line) is met.
   - [CP2.3: The object model](#cp23-the-object-model) is met.
-  - [CP2.4: Lines and labels](#cp24-lines-and-labels) is met.
+  - [CP2.4: Edges and labels](#cp24-edges-and-labels) is met.
   - [CP2.5: Pictures worth keeping](#cp25-pictures-worth-keeping) is met.
   - [CP2.6: Nodes](#cp26-nodes) is met.
   - [CP2.7: Containers](#cp27-containers) is met.
@@ -518,7 +518,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
   - [R1: Stability](GOALS.md#r1-stability)
   - [R3: Determinism](GOALS.md#r3-determinism)
 
-### CP2.4: Lines and labels
+### CP2.4: Edges and labels
 
 **Status:** ⬜
 
@@ -685,14 +685,14 @@ Each kind of diagram runs through a model, and every goal not yet settled is che
 **Exit criteria:**
 
 - **Sub-checkpoints**
-  - [CP3.1: Boxes and lines](#cp31-boxes-and-lines) is met.
+  - [CP3.1: Nodes and edges](#cp31-nodes-and-edges) is met.
   - [CP3.2: Containers](#cp32-containers) is met.
   - [CP3.3: Systems](#cp33-systems) is met.
   - [CP3.4: Size](#cp34-size) is met.
   - [CP3.5: Errors and cost](#cp35-errors-and-cost) is met.
   - [CP3.6: The MVP bar](#cp36-the-mvp-bar) is met.
 
-### CP3.1: Boxes and lines
+### CP3.1: Nodes and edges
 
 **Status:** ⬜
 
