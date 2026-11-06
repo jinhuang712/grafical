@@ -19,7 +19,7 @@ describe("side turns", () => {
   // Found by the owner on 2026-10-15 in a swimlane with a column per phase: each of these lines
   // bent twice, because another line already turned through the gap beside its target.
   it("share a gap of a row when their runs along the row keep apart", () => {
-    const file = join(import.meta.dirname, "../fixtures/order-lanes.grafical.yaml");
+    const file = join(import.meta.dirname, "../fixtures/order-lanes.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
     const lines = drawing(d, s).edges;
@@ -35,7 +35,7 @@ describe("side turns", () => {
   // Found by the owner on 2026-10-15: the load balancer's line into zone B bent twice, because
   // its turn would have started where the line into zone A turned, at the middle of its bottom.
   it("move along the source's side to keep clear of another turn from it", () => {
-    const file = join(import.meta.dirname, "../fixtures/two-zones.grafical.yaml");
+    const file = join(import.meta.dirname, "../fixtures/two-zones.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
     const lines = drawing(d, s).edges;

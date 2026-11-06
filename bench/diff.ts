@@ -212,7 +212,7 @@ export function draftFiles(runs: string): string[] {
       } catch {
         continue; // a file, not a chain
       }
-      for (const f of names.sort()) if (f.endsWith(".grafical.yaml")) out.push(join(dir, f));
+      for (const f of names.sort()) if (/\.grafical(\.yaml)?$/.test(f)) out.push(join(dir, f));
     }
   }
   return out;
@@ -231,7 +231,7 @@ async function corpusItems(
   if (corpus === "fixtures") {
     const dir = join(o.cwd, "test", "fixtures");
     const files = readdirSync(dir)
-      .filter((f) => f.endsWith(".grafical.yaml"))
+      .filter((f) => /\.grafical(\.yaml)?$/.test(f))
       .sort()
       .map((f) => ({ id: f.replace(/\.grafical\.yaml$/, ""), file: join(dir, f), render: true }));
     const built: [string, Diagram][] = [

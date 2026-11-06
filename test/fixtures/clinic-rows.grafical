@@ -1,0 +1,165 @@
+<diagram> {
+  format: 1
+  title: "Pet clinic bookings"
+  subtitle: "Rows drawn only where they say something: the gateway, the booking services and the event bus."
+  density: normal
+}
+
+<layer> row-people {
+}
+
+<layer> row-gateway {
+}
+
+<layer> row-booking {
+  look: band
+}
+
+<layer> row-bus {
+  look: band
+}
+
+<layer> row-data {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @row-people
+    @row-gateway
+    @row-booking
+    @row-bus
+    @row-data
+}
+
+<order> row-people-order {
+  of: @row-people
+  axis: across
+  items:
+    @owners
+    @desk
+}
+
+<order> row-booking-order {
+  of: @row-booking
+  axis: across
+  items:
+    @booking
+    @reminders
+}
+
+<order> row-data-order {
+  of: @row-data
+  axis: across
+  items:
+    @visits-db
+    @sms
+}
+
+<node> owners {
+  type: @actor
+  text: "Pet owners"
+  sublabel: "web and app"
+  layer: @row-people
+}
+
+<node> desk {
+  type: @actor
+  text: "Front desk"
+  layer: @row-people
+}
+
+<node> booking {
+  type: @service
+  text: "booking"
+  sublabel: "slots and visits"
+  layer: @row-booking
+}
+
+<node> reminders {
+  type: @service
+  text: "reminders"
+  sublabel: "SMS and email"
+  layer: @row-booking
+}
+
+<node> visits-db {
+  type: @store
+  text: "Visits DB"
+  layer: @row-data
+}
+
+<node> sms {
+  type: @external
+  text: "SMS provider"
+  layer: @row-data
+}
+
+<edge> owners->row-gateway {
+  from: @owners
+  to: @row-gateway
+  type: @call
+}
+
+<edge> desk->row-gateway {
+  from: @desk
+  to: @row-gateway
+  type: @call
+}
+
+<edge> row-gateway->booking {
+  from: @row-gateway
+  to: @booking
+  type: @call
+}
+
+<edge> booking->visits-db {
+  from: @booking
+  to: @visits-db
+  type: @data
+  pass: true
+}
+
+<edge> reminders->sms {
+  from: @reminders
+  to: @sms
+  type: @call
+  pass: true
+}
+
+<edge> booking->reminders {
+  from: @booking
+  to: @reminders
+  type: @async
+}
+
+<label> row-people-label {
+  on: @row-people
+  text: "People"
+}
+
+<label> row-gateway-label {
+  on: @row-gateway
+  text: "API gateway"
+}
+
+<label> row-booking-label {
+  on: @row-booking
+  text: "Booking services"
+}
+
+<label> row-bus-label {
+  on: @row-bus
+  text: "Event bus"
+}
+
+<label> row-data-label {
+  on: @row-data
+  text: "Data"
+}
+
+<label> booking->reminders-label {
+  on: @booking->reminders
+  text: "visit booked"
+}

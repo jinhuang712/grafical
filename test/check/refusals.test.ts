@@ -87,7 +87,7 @@ function still(d: Diagram): Op {
 function diagrams(): [string, Diagram][] {
   const dir = join(import.meta.dirname, "../fixtures");
   const saved = readdirSync(dir)
-    .filter((f) => f.endsWith(".grafical.yaml"))
+    .filter((f) => f.endsWith(".grafical"))
     .map((f) => [f, readDiagram(readFileSync(join(dir, f), "utf8"))] as [string, Diagram]);
   const seeds = Number(process.env.REFUSAL_SEEDS ?? 12);
   const fuzz = Array.from({ length: seeds }, (_, k) => [

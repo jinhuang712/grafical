@@ -88,7 +88,7 @@ describe('lines bent for no reason (specs/decisions, "Who chose is punished")', 
   it("run straight between a busy box and the box under it", () => {
     // The public brief's draft: catalog-sync has eight lines on its bottom side, two of
     // them to and from its retry topic right under it.
-    const file = join(import.meta.dirname, "../fixtures/catalog-sync-help3.grafical.yaml");
+    const file = join(import.meta.dirname, "../fixtures/catalog-sync-help3.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
     for (const id of ["sync->retry-topic", "retry-topic->sync"]) {
@@ -102,7 +102,7 @@ describe('lines bent for no reason (specs/decisions, "Who chose is punished")', 
   // up to the gateway takes the gateway's port along and runs straight. Since 2026-10-17 no label moves a
   // port, and the file states three subnets' labels at places the title-blocked refusal named clear.
   it("run straight from a box whose side another line shares", () => {
-    const file = join(import.meta.dirname, "../fixtures/two-zones.grafical.yaml");
+    const file = join(import.meta.dirname, "../fixtures/two-zones.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     expect(check(d, layout(d, m), m)).toEqual([]);
   });
@@ -112,7 +112,7 @@ describe('lines bent for no reason (specs/decisions, "Who chose is punished")', 
   // across its gutter to the indexer, and crosses it where it bends as much as it would where it runs
   // straight, so the wave planner's port moves over the events' port.
   it("run straight up past a line they cross either way", () => {
-    const file = join(import.meta.dirname, "../fixtures/grocer.grafical.yaml");
+    const file = join(import.meta.dirname, "../fixtures/grocer.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     expect(check(d, layout(d, m), m)).toEqual([]);
   });

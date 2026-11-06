@@ -9,7 +9,7 @@ import { createMeasurer } from "../../src/text/index.ts";
 import { generate } from "../fuzz/gen.ts";
 
 const FIXTURES = join(import.meta.dirname, "..", "fixtures");
-const yaml = readdirSync(FIXTURES).filter((f) => f.endsWith(".yaml"));
+const saved = readdirSync(FIXTURES).filter((f) => f.endsWith(".grafical"));
 
 function roundTrip(d: Diagram) {
   const text = writeGrafical(d);
@@ -21,7 +21,7 @@ function roundTrip(d: Diagram) {
 
 describe("the .grafical file", () => {
   it("holds every fixture with nothing lost", () => {
-    for (const f of yaml)
+    for (const f of saved)
       roundTrip(readDiagram(readFileSync(join(FIXTURES, f), "utf8")) as Diagram);
   });
 
@@ -31,7 +31,7 @@ describe("the .grafical file", () => {
   }, 60_000);
 
   it("takes any text", () => {
-    const d = readDiagram(readFileSync(join(FIXTURES, yaml[0] as string), "utf8")) as Diagram;
+    const d = readDiagram(readFileSync(join(FIXTURES, saved[0] as string), "utf8")) as Diagram;
     d.title = 'a: "b" \n 中文 🚀 { } <node>';
     roundTrip(d);
   });

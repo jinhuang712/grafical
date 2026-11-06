@@ -1,0 +1,270 @@
+<diagram> {
+  format: 1
+  title: "Order fulfilment"
+  subtitle: "Who does what, from order to payment."
+  density: normal
+}
+
+<layer> r-cust {
+  lane: @l-cust
+}
+
+<layer> r-sales {
+  lane: @l-sales
+}
+
+<layer> r-wh {
+  lane: @l-wh
+}
+
+<layer> r-fin {
+  lane: @l-fin
+}
+
+<lane> l-cust {
+}
+
+<lane> l-sales {
+}
+
+<lane> l-wh {
+}
+
+<lane> l-fin {
+}
+
+<column> c1 {
+}
+
+<column> c2 {
+}
+
+<column> c3 {
+}
+
+<column> c4 {
+}
+
+<column> c5 {
+}
+
+<column> c6 {
+}
+
+<column> c7 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r-cust
+    @r-sales
+    @r-wh
+    @r-fin
+}
+
+<order> r-cust-order {
+  of: @r-cust
+  axis: across
+  items:
+    @order
+    @receive
+    @pay
+}
+
+<order> r-sales-order {
+  of: @r-sales
+  axis: across
+  items:
+    @check
+    @backorder
+}
+
+<order> r-wh-order {
+  of: @r-wh
+  axis: across
+  items:
+    @pick
+    @ship
+}
+
+<order> r-fin-order {
+  of: @r-fin
+  axis: across
+  items:
+    @invoice
+    @close
+}
+
+<node> order {
+  type: @terminal
+  text: "Place order"
+  layer: @r-cust
+  column: @c1
+}
+
+<node> receive {
+  type: @service
+  text: "Receive goods"
+  layer: @r-cust
+  column: @c5
+}
+
+<node> pay {
+  type: @service
+  text: "Pay invoice"
+  layer: @r-cust
+  column: @c6
+}
+
+<node> check {
+  type: @decision
+  text: "Check stock"
+  layer: @r-sales
+  column: @c2
+}
+
+<node> backorder {
+  type: @service
+  text: "Notify backorder"
+  layer: @r-sales
+  column: @c3
+}
+
+<node> pick {
+  type: @service
+  text: "Pick and pack"
+  layer: @r-wh
+  column: @c3
+}
+
+<node> ship {
+  type: @service
+  text: "Ship"
+  layer: @r-wh
+  column: @c4
+}
+
+<node> invoice {
+  type: @service
+  text: "Send invoice"
+  layer: @r-fin
+  column: @c4
+}
+
+<node> close {
+  type: @terminal
+  text: "Close order"
+  layer: @r-fin
+  column: @c7
+}
+
+<edge> order->check {
+  from: @order
+  to: @check
+  type: @call
+}
+
+<edge> check->pick {
+  from: @check
+  to: @pick
+  type: @call
+}
+
+<edge> check->backorder {
+  from: @check
+  to: @backorder
+  type: @call
+}
+
+<edge> backorder->order {
+  from: @backorder
+  to: @order
+  type: @optional
+}
+
+<edge> pick->ship {
+  from: @pick
+  to: @ship
+  type: @call
+}
+
+<edge> ship->invoice {
+  from: @ship
+  to: @invoice
+  type: @call
+}
+
+<edge> ship->receive {
+  from: @ship
+  to: @receive
+  type: @call
+}
+
+<edge> invoice->pay {
+  from: @invoice
+  to: @pay
+  type: @call
+}
+
+<edge> pay->close {
+  from: @pay
+  to: @close
+  type: @call
+}
+
+<label> r-cust-label {
+  on: @r-cust
+  text: "Customer"
+}
+
+<label> r-sales-label {
+  on: @r-sales
+  text: "Sales"
+}
+
+<label> r-wh-label {
+  on: @r-wh
+  text: "Warehouse"
+}
+
+<label> r-fin-label {
+  on: @r-fin
+  text: "Finance"
+}
+
+<label> l-cust-label {
+  on: @l-cust
+  text: "Customer"
+}
+
+<label> l-sales-label {
+  on: @l-sales
+  text: "Sales"
+}
+
+<label> l-wh-label {
+  on: @l-wh
+  text: "Warehouse"
+}
+
+<label> l-fin-label {
+  on: @l-fin
+  text: "Finance"
+}
+
+<label> check->pick-label {
+  on: @check->pick
+  text: "in stock"
+}
+
+<label> check->backorder-label {
+  on: @check->backorder
+  text: "out of stock"
+}
+
+<label> backorder->order-label {
+  on: @backorder->order
+  text: "reorder later"
+}

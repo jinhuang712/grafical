@@ -30,7 +30,7 @@ beforeAll(async () => {
 });
 
 const grocer = readDiagram(
-  readFileSync(join(import.meta.dirname, "../fixtures/grocer.grafical.yaml"), "utf8"),
+  readFileSync(join(import.meta.dirname, "../fixtures/grocer.grafical"), "utf8"),
 ) as Diagram;
 const WORD = "Antidisestablishmentarianism";
 const LONG = `"${WORD} ${WORD} ${WORD} ${WORD}"`;

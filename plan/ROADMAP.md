@@ -83,7 +83,7 @@ Roadmap
 │   ├── 🟨 CP2.3: The object model
 │   │   ├── ✅ Design the model and its form
 │   │   ├── 🟨 Build the model
-│   │   ├── ⬜ Move the saved files
+│   │   ├── 🟨 Move the saved files
 │   │   └── ⬜ Tune the form
 │   ├── 🟨 CP2.4: Edges and labels
 │   │   ├── ✅ Edge sides
@@ -503,7 +503,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 
 - ✅ Design the model and its form: The owner designed them on 2026-11-06.
 - 🟨 Build the model: grafical reads and writes the form, styles and types; `like` is not built.
-- ⬜ Move the saved files: Fixtures and saved drafts move to it.
+- 🟨 Move the saved files: Fixtures moved to it, and saved drafts stay in YAML, which still loads.
 - ⬜ Tune the form: Once it is built, the form is tuned against what its diffs show.
 
 **Delivers:**

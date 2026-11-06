@@ -88,7 +88,7 @@ describe("styles", () => {
   it("lines may be round, and square again", () => {
     const g = ["-f", "dispatch.grafical.yaml"];
     copyFileSync(
-      resolve(import.meta.dirname, "../fixtures/dispatch.grafical.yaml"),
+      resolve(import.meta.dirname, "../fixtures/dispatch.grafical"),
       join(dir, "dispatch.grafical.yaml"),
     );
     const go = (...args: string[]) => {

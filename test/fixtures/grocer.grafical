@@ -1,0 +1,1000 @@
+<diagram> {
+  format: 1
+  title: "grocer architecture"
+  subtitle: "Customer, warehouse and courier apps call APIs that share Kafka events and per-service stores."
+  caption: "Not shown: team ownership, retries, the warehouse network and internal auth between services."
+  density: normal
+}
+
+<layer> row-callers {
+}
+
+<layer> row-edge {
+}
+
+<layer> row-api {
+}
+
+<layer> row-svc {
+}
+
+<layer> row-jobs {
+}
+
+<layer> row-bus {
+}
+
+<layer> row-db {
+}
+
+<layer> row-cache {
+}
+
+<layer> row-objects {
+}
+
+<layer> row-ext {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @row-callers
+    @row-edge
+    @row-api
+    @row-svc
+    @row-jobs
+    @row-bus
+    @row-db
+    @row-cache
+    @row-objects
+    @row-ext
+}
+
+<order> row-callers-order {
+  of: @row-callers
+  axis: across
+  items:
+    @customers
+    @picker-app
+    @courier-app
+    @care-desk
+    @partner-feeds
+}
+
+<order> row-edge-order {
+  of: @row-edge
+  axis: across
+  items:
+    @cdn
+    @api-gateway
+    @identity-svc
+}
+
+<order> row-api-order {
+  of: @row-api
+  axis: across
+  items:
+    @storefront-bff
+    @picking-api
+    @courier-api
+    @care-api
+}
+
+<order> row-svc-order {
+  of: @row-svc
+  axis: across
+  items:
+    @search-api
+    @cart-svc
+    @catalog-api
+    @pricing-svc
+    @orders-api
+    @payments-svc
+    @stock-svc
+    @recommender
+    @eta-svc
+}
+
+<order> row-jobs-order {
+  of: @row-jobs
+  axis: across
+  items:
+    @feed-importer
+    @indexer
+    @wave-planner
+    @route-planner
+    @invoicer
+    @push-svc
+    @mailer
+    @label-printer
+}
+
+<order> row-bus-order {
+  of: @row-bus
+  axis: across
+  items:
+    @events
+}
+
+<order> row-db-order {
+  of: @row-db
+  axis: across
+  items:
+    @identity-db
+    @catalog-db
+    @pricing-db
+    @orders-db
+    @payments-db
+    @stock-db
+    @waves-db
+    @routes-db
+    @tickets-db
+}
+
+<order> row-cache-order {
+  of: @row-cache
+  axis: across
+  items:
+    @session-redis
+    @cart-redis
+    @reco-cache
+    @eta-redis
+    @search-index
+}
+
+<order> row-objects-order {
+  of: @row-objects
+  axis: across
+  items:
+    @image-store
+    @invoice-store
+    @analytics-lake
+}
+
+<order> row-ext-order {
+  of: @row-ext
+  axis: across
+  items:
+    @card-gateway
+    @maps-api
+    @mail-provider
+    @push-provider
+}
+
+<node> customers {
+  type: @actor
+  text: "Shoppers"
+  sublabel: "web, mobile app"
+  layer: @row-callers
+}
+
+<node> picker-app {
+  type: @actor
+  text: "Pickers"
+  sublabel: "handheld app"
+  layer: @row-callers
+}
+
+<node> courier-app {
+  type: @actor
+  text: "Couriers"
+  sublabel: "mobile app"
+  layer: @row-callers
+}
+
+<node> care-desk {
+  type: @actor
+  text: "Care agents"
+  sublabel: "web app"
+  layer: @row-callers
+}
+
+<node> partner-feeds {
+  type: @external
+  text: "Suppliers"
+  sublabel: "hourly feeds"
+  layer: @row-callers
+}
+
+<node> cdn {
+  type: @external
+  text: "CDN"
+  layer: @row-edge
+}
+
+<node> api-gateway {
+  type: @service
+  text: "API gateway"
+  sublabel: "routing, rate limits"
+  layer: @row-edge
+}
+
+<node> identity-svc {
+  type: @service
+  text: "Identity"
+  sublabel: "sign-in, tokens"
+  layer: @row-edge
+}
+
+<node> storefront-bff {
+  type: @service
+  text: "Storefront BFF"
+  sublabel: "one API for shop apps"
+  layer: @row-api
+}
+
+<node> picking-api {
+  type: @service
+  text: "Picking API"
+  layer: @row-api
+}
+
+<node> courier-api {
+  type: @service
+  text: "Courier API"
+  layer: @row-api
+}
+
+<node> care-api {
+  type: @service
+  text: "Care API"
+  layer: @row-api
+}
+
+<node> search-api {
+  type: @service
+  text: "Search API"
+  sublabel: "product search"
+  layer: @row-svc
+}
+
+<node> cart-svc {
+  type: @service
+  text: "Cart"
+  sublabel: "carts, prices"
+  layer: @row-svc
+}
+
+<node> catalog-api {
+  type: @service
+  text: "Catalog API"
+  sublabel: "products, images"
+  layer: @row-svc
+}
+
+<node> pricing-svc {
+  type: @service
+  text: "Pricing"
+  sublabel: "prices, promotions"
+  layer: @row-svc
+}
+
+<node> orders-api {
+  type: @service
+  text: "Orders API"
+  sublabel: "place, change, cancel"
+  layer: @row-svc
+}
+
+<node> payments-svc {
+  type: @service
+  text: "Payments"
+  sublabel: "authorise, capture"
+  layer: @row-svc
+}
+
+<node> stock-svc {
+  type: @service
+  text: "Stock"
+  sublabel: "reservations"
+  layer: @row-svc
+}
+
+<node> recommender {
+  type: @service
+  text: "Recommender"
+  sublabel: "you may also like"
+  layer: @row-svc
+}
+
+<node> eta-svc {
+  type: @service
+  text: "ETA"
+  sublabel: "arrival times"
+  layer: @row-svc
+}
+
+<node> feed-importer {
+  type: @service
+  text: "Feed importer"
+  sublabel: "hourly"
+  layer: @row-jobs
+}
+
+<node> indexer {
+  type: @service
+  text: "Indexer"
+  sublabel: "catalog to search"
+  layer: @row-jobs
+}
+
+<node> wave-planner {
+  type: @service
+  text: "Wave planner"
+  sublabel: "every 10 min"
+  layer: @row-jobs
+}
+
+<node> route-planner {
+  type: @service
+  text: "Route planner"
+  sublabel: "courier routes"
+  layer: @row-jobs
+}
+
+<node> invoicer {
+  type: @service
+  text: "Invoicer"
+  sublabel: "invoices"
+  layer: @row-jobs
+}
+
+<node> push-svc {
+  type: @service
+  text: "Push"
+  sublabel: "app pushes"
+  layer: @row-jobs
+}
+
+<node> mailer {
+  type: @service
+  text: "Mailer"
+  sublabel: "sends email"
+  layer: @row-jobs
+}
+
+<node> label-printer {
+  type: @service
+  text: "Label printer"
+  sublabel: "warehouse device"
+  layer: @row-jobs
+}
+
+<node> events {
+  type: @queue
+  text: "Kafka events"
+  sublabel: "6 topics"
+  layer: @row-bus
+}
+
+<node> identity-db {
+  type: @store
+  text: "Identity DB"
+  sublabel: "Postgres"
+  layer: @row-db
+}
+
+<node> catalog-db {
+  type: @store
+  text: "Catalog DB"
+  sublabel: "Postgres"
+  layer: @row-db
+}
+
+<node> pricing-db {
+  type: @store
+  text: "Pricing DB"
+  sublabel: "Postgres"
+  layer: @row-db
+}
+
+<node> orders-db {
+  type: @store
+  text: "Orders DB"
+  sublabel: "Postgres"
+  layer: @row-db
+}
+
+<node> payments-db {
+  type: @store
+  text: "Payments DB"
+  sublabel: "Postgres"
+  layer: @row-db
+}
+
+<node> stock-db {
+  type: @store
+  text: "Stock DB"
+  sublabel: "Postgres"
+  layer: @row-db
+}
+
+<node> waves-db {
+  type: @store
+  text: "Waves DB"
+  sublabel: "Postgres"
+  layer: @row-db
+}
+
+<node> routes-db {
+  type: @store
+  text: "Routes DB"
+  sublabel: "Postgres"
+  layer: @row-db
+}
+
+<node> tickets-db {
+  type: @store
+  text: "Tickets DB"
+  sublabel: "Postgres"
+  layer: @row-db
+}
+
+<node> session-redis {
+  type: @store
+  text: "Sessions"
+  sublabel: "Redis"
+  layer: @row-cache
+}
+
+<node> cart-redis {
+  type: @store
+  text: "Carts"
+  sublabel: "Redis"
+  layer: @row-cache
+}
+
+<node> reco-cache {
+  type: @store
+  text: "Reco cache"
+  sublabel: "Redis"
+  layer: @row-cache
+}
+
+<node> eta-redis {
+  type: @store
+  text: "ETA cache"
+  sublabel: "Redis"
+  layer: @row-cache
+}
+
+<node> search-index {
+  type: @store
+  text: "Search index"
+  sublabel: "Elasticsearch"
+  layer: @row-cache
+}
+
+<node> image-store {
+  type: @store
+  text: "Image store"
+  sublabel: "object storage"
+  layer: @row-objects
+}
+
+<node> invoice-store {
+  type: @store
+  text: "Invoices"
+  sublabel: "object storage"
+  layer: @row-objects
+}
+
+<node> analytics-lake {
+  type: @store
+  text: "Analytics lake"
+  sublabel: "nightly Kafka copy"
+  layer: @row-objects
+}
+
+<node> card-gateway {
+  type: @external
+  text: "Card gateway"
+  layer: @row-ext
+}
+
+<node> maps-api {
+  type: @external
+  text: "Maps API"
+  layer: @row-ext
+}
+
+<node> mail-provider {
+  type: @external
+  text: "Mail provider"
+  layer: @row-ext
+}
+
+<node> push-provider {
+  type: @external
+  text: "Push provider"
+  layer: @row-ext
+}
+
+<edge> customers->cdn {
+  from: @customers
+  to: @cdn
+  type: @call
+}
+
+<edge> customers->api-gateway {
+  from: @customers
+  to: @api-gateway
+  type: @call
+}
+
+<edge> api-gateway->identity-svc {
+  from: @api-gateway
+  to: @identity-svc
+  type: @call
+}
+
+<edge> api-gateway->storefront-bff {
+  from: @api-gateway
+  to: @storefront-bff
+  type: @call
+}
+
+<edge> identity-svc->identity-db {
+  from: @identity-svc
+  to: @identity-db
+  type: @call
+}
+
+<edge> identity-svc->session-redis {
+  from: @identity-svc
+  to: @session-redis
+  type: @call
+}
+
+<edge> picker-app->picking-api {
+  from: @picker-app
+  to: @picking-api
+  type: @call
+}
+
+<edge> courier-app->courier-api {
+  from: @courier-app
+  to: @courier-api
+  type: @call
+}
+
+<edge> care-desk->care-api {
+  from: @care-desk
+  to: @care-api
+  type: @call
+}
+
+<edge> partner-feeds->feed-importer {
+  from: @partner-feeds
+  to: @feed-importer
+  type: @data
+}
+
+<edge> storefront-bff->catalog-api {
+  from: @storefront-bff
+  to: @catalog-api
+  type: @call
+}
+
+<edge> storefront-bff->search-api {
+  from: @storefront-bff
+  to: @search-api
+  type: @call
+}
+
+<edge> storefront-bff->cart-svc {
+  from: @storefront-bff
+  to: @cart-svc
+  type: @call
+}
+
+<edge> storefront-bff->orders-api {
+  from: @storefront-bff
+  to: @orders-api
+  type: @call
+}
+
+<edge> storefront-bff->eta-redis {
+  from: @storefront-bff
+  to: @eta-redis
+  type: @call
+}
+
+<edge> search-api->search-index {
+  from: @search-api
+  to: @search-index
+  type: @call
+}
+
+<edge> cart-svc->cart-redis {
+  from: @cart-svc
+  to: @cart-redis
+  type: @call
+}
+
+<edge> cart-svc->pricing-svc {
+  from: @cart-svc
+  to: @pricing-svc
+  type: @call
+}
+
+<edge> catalog-api->catalog-db {
+  from: @catalog-api
+  to: @catalog-db
+  type: @call
+}
+
+<edge> catalog-api->image-store {
+  from: @catalog-api
+  to: @image-store
+  type: @call
+}
+
+<edge> cdn->image-store {
+  from: @cdn
+  to: @image-store
+  type: @data
+}
+
+<edge> recommender->reco-cache {
+  from: @recommender
+  to: @reco-cache
+  type: @call
+}
+
+<edge> recommender->analytics-lake {
+  from: @recommender
+  to: @analytics-lake
+  type: @data
+}
+
+<edge> pricing-svc->pricing-db {
+  from: @pricing-svc
+  to: @pricing-db
+  type: @call
+}
+
+<edge> feed-importer->catalog-db {
+  from: @feed-importer
+  to: @catalog-db
+  type: @call
+}
+
+<edge> feed-importer->pricing-db {
+  from: @feed-importer
+  to: @pricing-db
+  type: @call
+}
+
+<edge> feed-importer->stock-db {
+  from: @feed-importer
+  to: @stock-db
+  type: @call
+}
+
+<edge> feed-importer->events {
+  from: @feed-importer
+  to: @events
+  type: @async
+}
+
+<edge> events->indexer {
+  from: @events
+  to: @indexer
+  type: @async
+}
+
+<edge> indexer->search-index {
+  from: @indexer
+  to: @search-index
+  type: @call
+}
+
+<edge> orders-api->orders-db {
+  from: @orders-api
+  to: @orders-db
+  type: @call
+}
+
+<edge> orders-api->stock-svc {
+  from: @orders-api
+  to: @stock-svc
+  type: @call
+}
+
+<edge> orders-api->payments-svc {
+  from: @orders-api
+  to: @payments-svc
+  type: @call
+}
+
+<edge> orders-api->events {
+  from: @orders-api
+  to: @events
+  type: @async
+}
+
+<edge> payments-svc->card-gateway {
+  from: @payments-svc
+  to: @card-gateway
+  type: @call
+}
+
+<edge> payments-svc->payments-db {
+  from: @payments-svc
+  to: @payments-db
+  type: @call
+}
+
+<edge> stock-svc->stock-db {
+  from: @stock-svc
+  to: @stock-db
+  type: @call
+}
+
+<edge> events->invoicer {
+  from: @events
+  to: @invoicer
+  type: @async
+}
+
+<edge> invoicer->invoice-store {
+  from: @invoicer
+  to: @invoice-store
+  type: @call
+}
+
+<edge> invoicer->mailer {
+  from: @invoicer
+  to: @mailer
+  type: @call
+}
+
+<edge> mailer->mail-provider {
+  from: @mailer
+  to: @mail-provider
+  type: @call
+}
+
+<edge> events->wave-planner {
+  from: @events
+  to: @wave-planner
+  type: @async
+}
+
+<edge> wave-planner->waves-db {
+  from: @wave-planner
+  to: @waves-db
+  type: @call
+}
+
+<edge> picking-api->waves-db {
+  from: @picking-api
+  to: @waves-db
+  type: @call
+}
+
+<edge> picking-api->stock-svc {
+  from: @picking-api
+  to: @stock-svc
+  type: @call
+}
+
+<edge> picking-api->events {
+  from: @picking-api
+  to: @events
+  type: @async
+}
+
+<edge> picking-api->label-printer {
+  from: @picking-api
+  to: @label-printer
+  type: @call
+}
+
+<edge> events->route-planner {
+  from: @events
+  to: @route-planner
+  type: @async
+}
+
+<edge> route-planner->maps-api {
+  from: @route-planner
+  to: @maps-api
+  type: @call
+}
+
+<edge> route-planner->routes-db {
+  from: @route-planner
+  to: @routes-db
+  type: @call
+}
+
+<edge> courier-api->routes-db {
+  from: @courier-api
+  to: @routes-db
+  type: @call
+}
+
+<edge> courier-api->events {
+  from: @courier-api
+  to: @events
+  type: @async
+}
+
+<edge> courier-api->events-locations {
+  from: @courier-api
+  to: @events
+  type: @async
+}
+
+<edge> events->eta-svc {
+  from: @events
+  to: @eta-svc
+  type: @async
+}
+
+<edge> eta-svc->eta-redis {
+  from: @eta-svc
+  to: @eta-redis
+  type: @call
+}
+
+<edge> care-api->orders-api {
+  from: @care-api
+  to: @orders-api
+  type: @call
+}
+
+<edge> care-api->payments-svc {
+  from: @care-api
+  to: @payments-svc
+  type: @call
+}
+
+<edge> care-api->courier-api {
+  from: @care-api
+  to: @courier-api
+  type: @call
+}
+
+<edge> care-api->tickets-db {
+  from: @care-api
+  to: @tickets-db
+  type: @call
+}
+
+<edge> events->push-svc {
+  from: @events
+  to: @push-svc
+  type: @async
+}
+
+<edge> push-svc->push-provider {
+  from: @push-svc
+  to: @push-provider
+  type: @call
+}
+
+<edge> events->analytics-lake {
+  from: @events
+  to: @analytics-lake
+  type: @data
+}
+
+<label> row-callers-label {
+  on: @row-callers
+  text: "Callers"
+}
+
+<label> row-edge-label {
+  on: @row-edge
+  text: "Edge"
+}
+
+<label> row-api-label {
+  on: @row-api
+  text: "APIs"
+}
+
+<label> row-svc-label {
+  on: @row-svc
+  text: "Services"
+}
+
+<label> row-jobs-label {
+  on: @row-jobs
+  text: "Workers"
+}
+
+<label> row-bus-label {
+  on: @row-bus
+  text: "Events"
+}
+
+<label> row-db-label {
+  on: @row-db
+  text: "Databases"
+}
+
+<label> row-cache-label {
+  on: @row-cache
+  text: "Caches and search"
+}
+
+<label> row-objects-label {
+  on: @row-objects
+  text: "Object storage"
+}
+
+<label> row-ext-label {
+  on: @row-ext
+  text: "External"
+}
+
+<label> api-gateway->identity-svc-label {
+  on: @api-gateway->identity-svc
+  text: "tokens"
+}
+
+<label> feed-importer->events-label {
+  on: @feed-importer->events
+  text: "catalog-changed"
+}
+
+<label> orders-api->stock-svc-label {
+  on: @orders-api->stock-svc
+  text: "reserve"
+}
+
+<label> orders-api->events-label {
+  on: @orders-api->events
+  text: "order-placed"
+}
+
+<label> events->invoicer-label {
+  on: @events->invoicer
+  text: "order-delivered"
+}
+
+<label> events->wave-planner-label {
+  on: @events->wave-planner
+  text: "order-placed"
+}
+
+<label> picking-api->events-label {
+  on: @picking-api->events
+  text: "order-picked"
+}
+
+<label> events->route-planner-label {
+  on: @events->route-planner
+  text: "order-picked"
+}
+
+<label> courier-api->events-label {
+  on: @courier-api->events
+  text: "order-delivered"
+}
+
+<label> courier-api->events-locations-label {
+  on: @courier-api->events-locations
+  text: "courier-locations"
+}
+
+<label> events->eta-svc-label {
+  on: @events->eta-svc
+  text: "courier-locations"
+}
+
+<label> care-api->payments-svc-label {
+  on: @care-api->payments-svc
+  text: "refunds"
+}
+
+<label> events->analytics-lake-label {
+  on: @events->analytics-lake
+  text: "nightly copy"
+}

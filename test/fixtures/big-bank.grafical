@@ -1,0 +1,263 @@
+<diagram> {
+  format: 1
+  title: "Internet Banking System"
+  subtitle: "Container diagram (C4 level 2), after Simon Brown's Big Bank plc example."
+  density: normal
+}
+
+<layer> row-people {
+}
+
+<layer> row-front {
+}
+
+<layer> row-api {
+}
+
+<layer> row-data {
+}
+
+<group> ibs {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @row-people
+    @row-front
+    @row-api
+    @row-data
+}
+
+<order> row-people-order {
+  of: @row-people
+  axis: across
+  items:
+    @customer
+}
+
+<order> row-front-order {
+  of: @row-front
+  axis: across
+  items:
+    @webapp
+    @spa
+    @mobile
+}
+
+<order> row-api-order {
+  of: @row-api
+  axis: across
+  items:
+    @api
+    @email
+}
+
+<order> row-data-order {
+  of: @row-data
+  axis: across
+  items:
+    @db
+    @mainframe
+}
+
+<node> customer {
+  type: @actor
+  text: "Personal Banking Customer"
+  sublabel: "has personal bank accounts"
+  layer: @row-people
+}
+
+<node> webapp {
+  type: @service
+  text: "Web Application"
+  sublabel: "Java, Spring MVC"
+  layer: @row-front
+  group: @ibs
+}
+
+<node> spa {
+  type: @service
+  text: "Single-Page Application"
+  sublabel: "JavaScript, Angular"
+  layer: @row-front
+  group: @ibs
+}
+
+<node> mobile {
+  type: @service
+  text: "Mobile App"
+  sublabel: "Xamarin"
+  layer: @row-front
+  group: @ibs
+}
+
+<node> api {
+  type: @service
+  text: "API Application"
+  sublabel: "Java, Spring MVC"
+  layer: @row-api
+  group: @ibs
+}
+
+<node> email {
+  type: @external
+  text: "E-mail System"
+  sublabel: "Microsoft Exchange"
+  layer: @row-api
+}
+
+<node> db {
+  type: @store
+  text: "Database"
+  sublabel: "Oracle schema"
+  layer: @row-data
+  group: @ibs
+}
+
+<node> mainframe {
+  type: @external
+  text: "Mainframe Banking System"
+  sublabel: "core banking data"
+  layer: @row-data
+}
+
+<edge> customer->webapp {
+  from: @customer
+  to: @webapp
+  type: @call
+}
+
+<edge> customer->spa {
+  from: @customer
+  to: @spa
+  type: @call
+}
+
+<edge> customer->mobile {
+  from: @customer
+  to: @mobile
+  type: @call
+}
+
+<edge> webapp->spa {
+  from: @webapp
+  to: @spa
+  type: @call
+}
+
+<edge> spa->api {
+  from: @spa
+  to: @api
+  type: @call
+}
+
+<edge> mobile->api {
+  from: @mobile
+  to: @api
+  type: @call
+}
+
+<edge> api->db {
+  from: @api
+  to: @db
+  type: @call
+}
+
+<edge> api->mainframe {
+  from: @api
+  to: @mainframe
+  type: @call
+}
+
+<edge> api->email {
+  from: @api
+  to: @email
+  type: @call
+}
+
+<edge> email->customer {
+  from: @email
+  to: @customer
+  type: @call
+}
+
+<label> row-people-label {
+  on: @row-people
+  text: "People"
+}
+
+<label> row-front-label {
+  on: @row-front
+  text: "Front ends"
+}
+
+<label> row-api-label {
+  on: @row-api
+  text: "API"
+}
+
+<label> row-data-label {
+  on: @row-data
+  text: "Data"
+}
+
+<label> ibs-label {
+  on: @ibs
+  text: "Internet Banking System"
+  sublabel: "Software system"
+  at: 0
+  side: bottom
+  place: inside
+}
+
+<label> customer->webapp-label {
+  on: @customer->webapp
+  text: "visits bigbank.com/ib"
+}
+
+<label> customer->spa-label {
+  on: @customer->spa
+  text: "views balances, pays"
+}
+
+<label> customer->mobile-label {
+  on: @customer->mobile
+  text: "views balances, pays"
+}
+
+<label> webapp->spa-label {
+  on: @webapp->spa
+  text: "delivers"
+}
+
+<label> spa->api-label {
+  on: @spa->api
+  text: "API calls, JSON/HTTPS"
+}
+
+<label> mobile->api-label {
+  on: @mobile->api
+  text: "API calls, JSON/HTTPS"
+}
+
+<label> api->db-label {
+  on: @api->db
+  text: "reads, writes (JDBC)"
+}
+
+<label> api->mainframe-label {
+  on: @api->mainframe
+  text: "API calls, XML/HTTPS"
+}
+
+<label> api->email-label {
+  on: @api->email
+  text: "sends e-mail, SMTP"
+}
+
+<label> email->customer-label {
+  on: @email->customer
+  text: "sends e-mails"
+}

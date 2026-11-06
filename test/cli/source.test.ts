@@ -183,7 +183,7 @@ describe("source", () => {
   // source named a later line.
   describe("never names a line that cannot be known", () => {
     const grocer = () =>
-      readFileSync(join(import.meta.dirname, "../fixtures/grocer.grafical.yaml"), "utf8");
+      readFileSync(join(import.meta.dirname, "../fixtures/grocer.grafical"), "utf8");
     const WORD = "Antidisestablishmentarianism";
     const big = (id: string, row: string) =>
       `- {op: node.add, id: ${id}, label: "${WORD} ${WORD} ${WORD} ${WORD}", layer: ${row}, last: true, size: s}`;
@@ -286,10 +286,7 @@ describe("source", () => {
     const f = "bent.grafical.yaml";
     writeFileSync(
       join(dir, f),
-      readFileSync(
-        join(import.meta.dirname, "../fixtures/catalog-sync-help3.grafical.yaml"),
-        "utf8",
-      ),
+      readFileSync(join(import.meta.dirname, "../fixtures/catalog-sync-help3.grafical"), "utf8"),
     );
     expect(run("edge", "remove", f, "sync->geo").code).toBe(0);
     const add = run("edge", "add", f, "sync", "geo", "--label", "HTTP GET");

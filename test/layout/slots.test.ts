@@ -31,7 +31,7 @@ describe("label slots", () => {
   // crossings counted with the label where it lay before, so it went below the line and
   // pushed the events fan-out above it, across matcher->events.
   it("weigh a slot without the label's earlier place", () => {
-    const file = join(import.meta.dirname, "../fixtures/dispatch.grafical.yaml");
+    const file = join(import.meta.dirname, "../fixtures/dispatch.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m)).toEqual([]);

@@ -24,7 +24,7 @@ beforeAll(async () => {
 
 function fixture(name: string): Diagram {
   const d = readDiagram(
-    readFileSync(join(import.meta.dirname, `../fixtures/${name}.grafical.yaml`), "utf8"),
+    readFileSync(join(import.meta.dirname, `../fixtures/${name}.grafical`), "utf8"),
   );
   if (Array.isArray(d)) throw new Error(name);
   return d;

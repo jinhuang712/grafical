@@ -21,7 +21,7 @@ describe("line labels and group sides", () => {
   // Found on 2026-10-15 in a C4 container diagram: the labels of two lines that leave the
   // system's group to the right lay across its side.
   it("keep a label off the side of a group its line leaves", () => {
-    const file = join(import.meta.dirname, "../fixtures/big-bank.grafical.yaml");
+    const file = join(import.meta.dirname, "../fixtures/big-bank.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m)).toEqual([]);

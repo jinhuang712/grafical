@@ -1,0 +1,348 @@
+<diagram> {
+  format: 1
+  title: "Highly available web app"
+  subtitle: "Two availability zones; the database fails over to the standby."
+  density: normal
+}
+
+<layer> row-users {
+}
+
+<layer> row-edge {
+}
+
+<layer> row-public {
+}
+
+<layer> row-app {
+}
+
+<layer> row-data {
+}
+
+<group> vpc {
+}
+
+<group> az-a {
+  in: @vpc
+}
+
+<group> az-b {
+  in: @vpc
+}
+
+<group> pub-a {
+  in: @az-a
+}
+
+<group> app-a {
+  in: @az-a
+}
+
+<group> data-a {
+  in: @az-a
+}
+
+<group> pub-b {
+  in: @az-b
+}
+
+<group> app-b {
+  in: @az-b
+}
+
+<group> data-b {
+  in: @az-b
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @row-users
+    @row-edge
+    @row-public
+    @row-app
+    @row-data
+}
+
+<order> row-users-order {
+  of: @row-users
+  axis: across
+  items:
+    @users
+}
+
+<order> row-edge-order {
+  of: @row-edge
+  axis: across
+  items:
+    @dns
+    @cdn
+    @s3
+}
+
+<order> row-public-order {
+  of: @row-public
+  axis: across
+  items:
+    @nat-a
+    @alb
+    @nat-b
+}
+
+<order> row-app-order {
+  of: @row-app
+  axis: across
+  items:
+    @web-a
+    @web-b
+}
+
+<order> row-data-order {
+  of: @row-data
+  axis: across
+  items:
+    @rds-a
+    @rds-b
+}
+
+<node> users {
+  type: @actor
+  text: "Users"
+  layer: @row-users
+}
+
+<node> dns {
+  type: @service
+  text: "Route 53"
+  sublabel: "DNS"
+  layer: @row-edge
+}
+
+<node> cdn {
+  type: @service
+  text: "CloudFront"
+  sublabel: "CDN"
+  layer: @row-edge
+}
+
+<node> s3 {
+  type: @store
+  text: "S3"
+  sublabel: "static assets"
+  layer: @row-edge
+}
+
+<node> nat-a {
+  type: @service
+  text: "NAT gateway"
+  layer: @row-public
+  group: @pub-a
+}
+
+<node> alb {
+  type: @service
+  text: "Load balancer"
+  sublabel: "ALB"
+  layer: @row-public
+  group: @vpc
+}
+
+<node> nat-b {
+  type: @service
+  text: "NAT gateway"
+  layer: @row-public
+  group: @pub-b
+}
+
+<node> web-a {
+  type: @service
+  text: "Web server"
+  sublabel: "EC2"
+  layer: @row-app
+  group: @app-a
+}
+
+<node> web-b {
+  type: @service
+  text: "Web server"
+  sublabel: "EC2"
+  layer: @row-app
+  group: @app-b
+}
+
+<node> rds-a {
+  type: @store
+  text: "RDS primary"
+  layer: @row-data
+  group: @data-a
+}
+
+<node> rds-b {
+  type: @store
+  text: "RDS standby"
+  layer: @row-data
+  group: @data-b
+}
+
+<edge> users->dns {
+  from: @users
+  to: @dns
+  type: @call
+}
+
+<edge> users->cdn {
+  from: @users
+  to: @cdn
+  type: @call
+}
+
+<edge> cdn->s3 {
+  from: @cdn
+  to: @s3
+  type: @call
+}
+
+<edge> cdn->alb {
+  from: @cdn
+  to: @alb
+  type: @call
+}
+
+<edge> alb->web-a {
+  from: @alb
+  to: @web-a
+  type: @call
+}
+
+<edge> alb->web-b {
+  from: @alb
+  to: @web-b
+  type: @call
+}
+
+<edge> web-a->rds-a {
+  from: @web-a
+  to: @rds-a
+  type: @call
+}
+
+<edge> web-b->rds-a {
+  from: @web-b
+  to: @rds-a
+  type: @call
+}
+
+<edge> rds-a->rds-b {
+  from: @rds-a
+  to: @rds-b
+  type: @call
+}
+
+<edge> web-a->nat-a {
+  from: @web-a
+  to: @nat-a
+  type: @optional
+}
+
+<edge> web-b->nat-b {
+  from: @web-b
+  to: @nat-b
+  type: @optional
+}
+
+<label> row-users-label {
+  on: @row-users
+  text: "Users"
+}
+
+<label> row-edge-label {
+  on: @row-edge
+  text: "Edge"
+}
+
+<label> row-public-label {
+  on: @row-public
+  text: "Public subnets"
+}
+
+<label> row-app-label {
+  on: @row-app
+  text: "App subnets"
+}
+
+<label> row-data-label {
+  on: @row-data
+  text: "Data subnets"
+}
+
+<label> vpc-label {
+  on: @vpc
+  text: "VPC"
+  sublabel: "10.0.0.0/16"
+}
+
+<label> az-a-label {
+  on: @az-a
+  text: "Availability Zone A"
+}
+
+<label> az-b-label {
+  on: @az-b
+  text: "Availability Zone B"
+}
+
+<label> pub-a-label {
+  on: @pub-a
+  text: "Public subnet"
+}
+
+<label> app-a-label {
+  on: @app-a
+  text: "Private subnet"
+  at: 0.5
+  side: left
+  place: inside
+}
+
+<label> data-a-label {
+  on: @data-a
+  text: "Private subnet"
+  at: 0
+  side: bottom
+  place: inside
+}
+
+<label> pub-b-label {
+  on: @pub-b
+  text: "Public subnet"
+}
+
+<label> app-b-label {
+  on: @app-b
+  text: "Private subnet"
+  at: 0.5
+  side: right
+  place: inside
+}
+
+<label> data-b-label {
+  on: @data-b
+  text: "Private subnet"
+}
+
+<label> rds-a->rds-b-label {
+  on: @rds-a->rds-b
+  text: "sync replication"
+}
+
+<label> web-a->nat-a-label {
+  on: @web-a->nat-a
+  text: "outbound"
+}
+
+<label> web-b->nat-b-label {
+  on: @web-b->nat-b
+  text: "outbound"
+}

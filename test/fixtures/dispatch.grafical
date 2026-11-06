@@ -1,0 +1,542 @@
+<diagram> {
+  format: 1
+  title: "dispatch"
+  subtitle: "How a trip request reaches a driver and is paid, across the booking, matching and payments systems."
+  caption: "Not shown: ops console admin paths, auth token flow details, retries."
+  density: normal
+}
+
+<layer> callers {
+}
+
+<layer> edge {
+}
+
+<layer> services {
+}
+
+<layer> bus {
+}
+
+<layer> stores {
+}
+
+<layer> outside {
+}
+
+<group> booking {
+}
+
+<group> matching {
+}
+
+<group> payments {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @callers
+    @edge
+    @services
+    @bus
+    @stores
+    @outside
+}
+
+<order> callers-order {
+  of: @callers
+  axis: across
+  items:
+    @rider-app
+    @ops-console
+    @driver-app
+}
+
+<order> edge-order {
+  of: @edge
+  axis: across
+  items:
+    @edge-gateway
+    @driver-socket
+    @auth-svc
+}
+
+<order> services-order {
+  of: @services
+  axis: across
+  items:
+    @notify-svc
+    @booking-api
+    @fare-estimator
+    @matcher
+    @location-ingest
+    @surge-calculator
+    @payments-api
+    @payout-batch
+}
+
+<order> bus-order {
+  of: @bus
+  axis: across
+  items:
+    @events
+}
+
+<order> stores-order {
+  of: @stores
+  axis: across
+  items:
+    @trips-db
+    @zones-db
+    @geo-index
+    @surge-cache
+    @ledger-db
+    @auth-redis
+}
+
+<order> outside-order {
+  of: @outside
+  axis: across
+  items:
+    @push-provider
+    @card-processor
+    @bank-transfers
+}
+
+<node> rider-app {
+  type: @actor
+  text: "rider-app"
+  sublabel: "mobile"
+  layer: @callers
+}
+
+<node> ops-console {
+  type: @actor
+  text: "ops-console"
+  sublabel: "web"
+  layer: @callers
+}
+
+<node> driver-app {
+  type: @actor
+  text: "driver-app"
+  sublabel: "mobile"
+  layer: @callers
+}
+
+<node> edge-gateway {
+  type: @service
+  text: "edge-gateway"
+  sublabel: "TLS, rate limits"
+  layer: @edge
+}
+
+<node> driver-socket {
+  type: @service
+  text: "driver-socket"
+  sublabel: "WebSocket"
+  layer: @edge
+}
+
+<node> auth-svc {
+  type: @service
+  text: "auth-svc"
+  sublabel: "tokens"
+  layer: @edge
+}
+
+<node> notify-svc {
+  type: @service
+  text: "notify-svc"
+  sublabel: "push"
+  layer: @services
+}
+
+<node> booking-api {
+  type: @service
+  text: "booking-api"
+  sublabel: "trips"
+  layer: @services
+  group: @booking
+}
+
+<node> fare-estimator {
+  type: @service
+  text: "fare-estimator"
+  sublabel: "quotes"
+  layer: @services
+  group: @booking
+}
+
+<node> matcher {
+  type: @service
+  text: "matcher"
+  sublabel: "offers trips"
+  layer: @services
+  group: @matching
+}
+
+<node> location-ingest {
+  type: @service
+  text: "location-ingest"
+  layer: @services
+  group: @matching
+}
+
+<node> surge-calculator {
+  type: @service
+  text: "surge-calculator"
+  sublabel: "every minute"
+  layer: @services
+  group: @matching
+}
+
+<node> payments-api {
+  type: @service
+  text: "payments-api"
+  sublabel: "holds, captures"
+  layer: @services
+  group: @payments
+}
+
+<node> payout-batch {
+  type: @service
+  text: "payout-batch"
+  sublabel: "nightly"
+  layer: @services
+  group: @payments
+}
+
+<node> events {
+  type: @queue
+  text: "events"
+  sublabel: "Kafka topics"
+  layer: @bus
+}
+
+<node> trips-db {
+  type: @store
+  text: "trips-db"
+  sublabel: "Postgres"
+  layer: @stores
+  group: @booking
+}
+
+<node> zones-db {
+  type: @store
+  text: "zones-db"
+  sublabel: "Postgres"
+  layer: @stores
+  group: @booking
+}
+
+<node> geo-index {
+  type: @store
+  text: "geo-index"
+  sublabel: "Redis geo"
+  layer: @stores
+  group: @matching
+}
+
+<node> surge-cache {
+  type: @store
+  text: "surge-cache"
+  sublabel: "Redis"
+  layer: @stores
+  group: @matching
+}
+
+<node> ledger-db {
+  type: @store
+  text: "ledger-db"
+  sublabel: "Postgres"
+  layer: @stores
+  group: @payments
+}
+
+<node> auth-redis {
+  type: @store
+  text: "auth-redis"
+  sublabel: "Redis"
+  layer: @stores
+}
+
+<node> push-provider {
+  type: @external
+  text: "push-provider"
+  layer: @outside
+}
+
+<node> card-processor {
+  type: @external
+  text: "card-processor"
+  layer: @outside
+}
+
+<node> bank-transfers {
+  type: @external
+  text: "bank-transfers"
+  layer: @outside
+}
+
+<edge> rider-app->edge-gateway {
+  from: @rider-app
+  to: @edge-gateway
+  type: @call
+}
+
+<edge> driver-app->edge-gateway {
+  from: @driver-app
+  to: @edge-gateway
+  type: @call
+}
+
+<edge> ops-console->edge-gateway {
+  from: @ops-console
+  to: @edge-gateway
+  type: @call
+}
+
+<edge> driver-app->driver-socket {
+  from: @driver-app
+  to: @driver-socket
+  type: @call
+}
+
+<edge> edge-gateway->auth-svc {
+  from: @edge-gateway
+  to: @auth-svc
+  type: @call
+}
+
+<edge> edge-gateway->booking-api {
+  from: @edge-gateway
+  to: @booking-api
+  type: @call
+}
+
+<edge> edge-gateway->payments-api {
+  from: @edge-gateway
+  to: @payments-api
+  type: @call
+}
+
+<edge> auth-svc->auth-redis {
+  from: @auth-svc
+  to: @auth-redis
+  type: @call
+}
+
+<edge> booking-api->trips-db {
+  from: @booking-api
+  to: @trips-db
+  type: @call
+}
+
+<edge> booking-api->fare-estimator {
+  from: @booking-api
+  to: @fare-estimator
+  type: @call
+}
+
+<edge> fare-estimator->zones-db {
+  from: @fare-estimator
+  to: @zones-db
+  type: @call
+}
+
+<edge> fare-estimator->surge-cache {
+  from: @fare-estimator
+  to: @surge-cache
+  type: @call
+}
+
+<edge> booking-api->events {
+  from: @booking-api
+  to: @events
+  type: @async
+}
+
+<edge> driver-socket->events {
+  from: @driver-socket
+  to: @events
+  type: @async
+}
+
+<edge> events->location-ingest {
+  from: @events
+  to: @location-ingest
+  type: @async
+}
+
+<edge> location-ingest->geo-index {
+  from: @location-ingest
+  to: @geo-index
+  type: @call
+}
+
+<edge> events->matcher {
+  from: @events
+  to: @matcher
+  type: @async
+}
+
+<edge> matcher->geo-index {
+  from: @matcher
+  to: @geo-index
+  type: @call
+}
+
+<edge> matcher->driver-socket {
+  from: @matcher
+  to: @driver-socket
+  type: @call
+}
+
+<edge> matcher->events {
+  from: @matcher
+  to: @events
+  type: @async
+}
+
+<edge> surge-calculator->surge-cache {
+  from: @surge-calculator
+  to: @surge-cache
+  type: @call
+}
+
+<edge> events->payments-api {
+  from: @events
+  to: @payments-api
+  type: @async
+}
+
+<edge> events->notify-svc {
+  from: @events
+  to: @notify-svc
+  type: @async
+}
+
+<edge> payments-api->ledger-db {
+  from: @payments-api
+  to: @ledger-db
+  type: @call
+}
+
+<edge> payments-api->card-processor {
+  from: @payments-api
+  to: @card-processor
+  type: @call
+}
+
+<edge> payout-batch->ledger-db {
+  from: @payout-batch
+  to: @ledger-db
+  type: @call
+}
+
+<edge> payout-batch->bank-transfers {
+  from: @payout-batch
+  to: @bank-transfers
+  type: @call
+}
+
+<edge> notify-svc->push-provider {
+  from: @notify-svc
+  to: @push-provider
+  type: @call
+}
+
+<edge> push-provider->rider-app {
+  from: @push-provider
+  to: @rider-app
+  type: @async
+}
+
+<edge> push-provider->driver-app {
+  from: @push-provider
+  to: @driver-app
+  type: @async
+}
+
+<label> callers-label {
+  on: @callers
+  text: "Callers"
+}
+
+<label> edge-label {
+  on: @edge
+  text: "Edge"
+}
+
+<label> services-label {
+  on: @services
+  text: "Services"
+}
+
+<label> bus-label {
+  on: @bus
+  text: "Events"
+}
+
+<label> stores-label {
+  on: @stores
+  text: "Stores"
+}
+
+<label> outside-label {
+  on: @outside
+  text: "External"
+}
+
+<label> booking-label {
+  on: @booking
+  text: "booking"
+}
+
+<label> matching-label {
+  on: @matching
+  text: "matching"
+}
+
+<label> payments-label {
+  on: @payments
+  text: "payments"
+}
+
+<label> driver-app->driver-socket-label {
+  on: @driver-app->driver-socket
+  text: "WebSocket"
+}
+
+<label> edge-gateway->auth-svc-label {
+  on: @edge-gateway->auth-svc
+  text: "check tokens"
+}
+
+<label> auth-svc->auth-redis-label {
+  on: @auth-svc->auth-redis
+  text: "sessions"
+}
+
+<label> booking-api->events-label {
+  on: @booking-api->events
+  text: "trip-requested, trip-cancelled"
+}
+
+<label> driver-socket->events-label {
+  on: @driver-socket->events
+  text: "locations"
+}
+
+<label> matcher->driver-socket-label {
+  on: @matcher->driver-socket
+  text: "offer trip"
+}
+
+<label> matcher->events-label {
+  on: @matcher->events
+  text: "trip-matched"
+}
