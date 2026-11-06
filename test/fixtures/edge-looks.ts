@@ -31,9 +31,9 @@ export const edgeLooks: Diagram = {
     },
   ],
   edges: [
-    { ...e("web", "api", "call", "HTTPS"), accent: true },
-    { ...e("api", "uploads", "async", "publish"), accent: true },
-    { ...e("uploads", "thumbs", "async", "consume"), accent: true },
+    { ...e("web", "api", "call", "HTTPS"), weight: "thick" },
+    { ...e("api", "uploads", "async", "publish"), weight: "thick" },
+    { ...e("uploads", "thumbs", "async", "consume"), weight: "thick" },
     e("api", "photos", "data", "write"),
     { ...e("thumbs", "photos", "data", "read, write"), both: true },
     e("api", "cache", "optional", "warm reads"),

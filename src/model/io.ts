@@ -93,7 +93,6 @@ function edgeOut(e: Edge): Record<string, unknown> {
   if (e.seat !== undefined) o.seat = e.seat;
   if (e.out !== undefined) o.out = e.out;
   if (e.in !== undefined) o.in = e.in;
-  if (e.accent === true) o.accent = true;
   if (e.weight !== undefined) o.weight = e.weight;
   if (e.step !== undefined) o.step = e.step;
   if (e.type !== undefined) o.type = e.type;

@@ -2046,19 +2046,6 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, op.id);
       return [];
     }
-    case "edge.emphasize": {
-      const missing = op.edges.filter((id) => !d.edges.some((e) => e.id === id));
-      if (missing.length > 0) return missing.map((id) => unknownEdge(d, id, i, "edges"));
-      for (const e of d.edges) {
-        if (!op.edges.includes(e.id)) continue;
-        // The old accent and a weight never both stay: the last one set is the edge's look (specs/decisions, "Edge weights").
-        delete e.weight;
-        if (op.off === true) delete e.accent;
-        else e.accent = true;
-        touch(s, e.id);
-      }
-      return [];
-    }
     case "edge.weight": {
       if (typeof op.weight === "string") {
         const P = themeOf(d).paint;
@@ -2079,7 +2066,6 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       if (missing.length > 0) return missing.map((id) => unknownEdge(d, id, i, "edges"));
       for (const e of d.edges) {
         if (!op.edges.includes(e.id)) continue;
-        delete e.accent;
         if (op.weight === undefined || op.weight === "thin") delete e.weight;
         else e.weight = op.weight;
         touch(s, e.id);

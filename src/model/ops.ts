@@ -387,13 +387,6 @@ export interface EdgeReverseOp {
   op: "edge.reverse";
   id: string;
 }
-/** Draws edges thick, as the main path, or thin again (specs/decisions, "Lines meet any side"). */
-export interface EdgeEmphasizeOp {
-  op: "edge.emphasize";
-  edges: string[];
-  /** true: thin again. */
-  off?: boolean;
-}
 /** Gives edges a weight, a level or a width in pixels (specs/decisions, "Edge weights"). */
 export interface EdgeWeightOp {
   op: "edge.weight";
@@ -638,7 +631,6 @@ export type Op =
   | EdgeReverseOp
   | EdgeBothOp
   | EdgePassOp
-  | EdgeEmphasizeOp
   | EdgeWeightOp
   | EdgeStepOp
   | EdgeRetargetOp;
@@ -917,11 +909,6 @@ export const edgeKindSchema = z.strictObject({
   kind: z.enum(EDGE_KINDS),
 });
 export const edgeReverseSchema = z.strictObject({ op: z.literal("edge.reverse"), id: edgeId });
-export const edgeEmphasizeSchema = z.strictObject({
-  op: z.literal("edge.emphasize"),
-  edges: z.array(edgeId).min(1),
-  off: z.boolean().optional(),
-});
 export const edgeSideSchema = z.strictObject({
   op: z.literal("edge.side"),
   id: z.string(),
@@ -1141,7 +1128,6 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeReverseSchema,
   edgeBothSchema,
   edgePassSchema,
-  edgeEmphasizeSchema,
   edgeWeightSchema,
   edgeSeatSchema,
   edgeSideSchema,
@@ -1226,7 +1212,6 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.reverse": edgeReverseSchema,
   "edge.both": edgeBothSchema,
   "edge.pass": edgePassSchema,
-  "edge.emphasize": edgeEmphasizeSchema,
   "edge.weight": edgeWeightSchema,
   "edge.seat": edgeSeatSchema,
   "edge.side": edgeSideSchema,

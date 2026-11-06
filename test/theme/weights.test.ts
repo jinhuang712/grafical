@@ -66,20 +66,14 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
     expect(writeDiagram(thin)).toBe(writeDiagram(fx));
   });
 
-  it("the last one set is the look: emphasize and weight replace each other", () => {
-    const heavy = ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: "heavy" }]);
-    const accent = ok(heavy, [{ op: "edge.emphasize", edges: [EDGE] }]);
-    expect(edge(accent, EDGE)).toMatchObject({ accent: true });
-    expect(edge(accent, EDGE)?.weight).toBeUndefined();
-    const back = ok(accent, [{ op: "edge.weight", edges: [EDGE], weight: "heavy" }]);
-    expect(edge(back, EDGE)?.accent).toBeUndefined();
-    const off = ok(heavy, [{ op: "edge.emphasize", edges: [EDGE], off: true }]);
-    expect(edge(off, EDGE)?.weight).toBeUndefined();
-  });
-
-  it("an old accent is the thick level", () => {
-    const d = ok(fx, [{ op: "edge.emphasize", edges: [EDGE] }]);
-    expect(widthOf(d, EDGE)).toBe(PAINT.edge.main.strokeWidth);
+  it("an old accent reads as the thick level", () => {
+    const text = writeDiagram(fx).replace(
+      /(from: pipelines\n\s+to: mongo\n)/,
+      "$1    accent: true\n",
+    );
+    const d = readDiagram(text) as Diagram;
+    expect(edge(d, EDGE)?.weight).toBe("thick");
+    expect(edge(d, EDGE)).not.toHaveProperty("accent");
   });
 
   it("refuses an unknown level, a width out of range and an unknown edge", () => {
@@ -149,7 +143,7 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
   it("the diff replays as weight operations", () => {
     const heavy = ok(fx, [
       { op: "edge.weight", edges: [EDGE], weight: "heavy" },
-      { op: "edge.emphasize", edges: [OTHER] },
+      { op: "edge.weight", edges: [OTHER], weight: "thick" },
     ]);
     const ops = diffDiagrams(fx, heavy);
     expect(ops).toContainEqual({ op: "edge.weight", edges: [EDGE], weight: "heavy" });
@@ -178,7 +172,7 @@ describe('weights in a stylesheet (specs/decisions, "Edge weights")', () => {
   it("sets thin and thick where they always were", () => {
     const t = sheet("    strokeWidth: 1\n    main: { strokeWidth: 3 }\n") as Theme;
     expect(edgeWidth({}, t.paint)).toBe(1);
-    expect(edgeWidth({ accent: true }, t.paint)).toBe(3);
+    expect(edgeWidth({ weight: "thick" }, t.paint)).toBe(3);
   });
 
   it("refuses thin and thick as names, bad names and widths out of range", () => {

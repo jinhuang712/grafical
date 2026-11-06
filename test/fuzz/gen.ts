@@ -605,7 +605,7 @@ function addEdgeLooks(d: Diagram, r: () => number): void {
     if (x < 0.1) e.kind = "link";
     else if (x < 0.2) e.kind = "optional";
     else if (x < 0.27) e.both = true;
-    if (r() < 0.08) e.accent = true;
+    if (r() < 0.08) e.weight = "thick";
   }
 }
 

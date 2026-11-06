@@ -58,7 +58,7 @@ import {
   STEP,
   WALL,
 } from "../theme/geometry.ts";
-import { edgeWidth, hasHead, lineLook, lineStyle, type Paint, weightOf } from "../theme/paint.ts";
+import { edgeWidth, hasHead, lineLook, lineStyle, type Paint } from "../theme/paint.ts";
 import { isDot, textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
@@ -382,7 +382,7 @@ export function legendEntries(d: Diagram, P: Paint): LegendEntry[] {
   }
   const widths = new Map<string, number>();
   for (const e of d.edges) {
-    const w = weightOf(e);
+    const w = e.weight;
     const px = edgeWidth(e, P);
     if (w !== undefined && w !== "thin" && px !== undefined) widths.set(weightKey(w), px);
   }

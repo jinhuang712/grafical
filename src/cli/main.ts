@@ -711,7 +711,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "lines: add, emphasize, retarget, reverse, kind, relabel, side, seat, weight, both, pass, step, type, style, remove",
+      "lines: add, retarget, reverse, kind, relabel, side, seat, weight, both, pass, step, type, style, remove",
     );
   json(
     edge
@@ -782,16 +782,6 @@ export function build(): Command {
       .argument("<kind>", EDGE_KINDS.join(", ")),
   ).action(async (file: string, id: string, kind: string, opts: Opts) => {
     await write(file, { op: "edge.kind", id, kind }, opts);
-  });
-  json(
-    edge
-      .command("emphasize")
-      .description("draw edges thick, as the main path, or thin again with --off")
-      .argument("<file>")
-      .argument("<edges...>")
-      .option("--off", "undo it"),
-  ).action(async (file: string, edges: string[], opts: Opts) => {
-    await write(file, { op: "edge.emphasize", edges, ...pick(opts, ["off"]) }, opts);
   });
   json(
     edge
@@ -1041,7 +1031,6 @@ export function build(): Command {
   json(
     group
       .command("title")
-      .alias("label")
       .description(
         "say where a group's label sits; without a fraction, the engine seats it at the top",
       )

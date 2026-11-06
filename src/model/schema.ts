@@ -389,8 +389,9 @@ function build(p: Parsed): Diagram {
     if (e.seat !== undefined) edge.seat = e.seat;
     if (e.out !== undefined) edge.out = e.out;
     if (e.in !== undefined) edge.in = e.in;
-    if (e.accent === true) edge.accent = true;
+    // A saved run's emphasis on an edge is the thick level (specs/decisions, "One shortest way for each situation").
     if (e.weight !== undefined) edge.weight = e.weight;
+    else if (e.accent === true) edge.weight = "thick";
     if (e.step !== undefined) edge.step = e.step;
     if (e.type !== undefined) edge.type = e.type;
     if (e.style !== undefined) edge.style = [...e.style];

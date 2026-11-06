@@ -609,8 +609,6 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   }
 
   // 9. Edges that come, and the facts of the edges that stay. The weights come last.
-  const mainOn: string[] = [];
-  const mainOff: string[] = [];
   const weightOff: string[] = [];
   const weighted = new Map<string | number, string[]>();
   for (const e of a.edges) {
@@ -618,9 +616,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (weightLook(e) !== weightLook(was)) {
       if (e.weight !== undefined && e.weight !== "thin") {
         weighted.set(e.weight, [...(weighted.get(e.weight) ?? []), e.id]);
-      } else if (e.accent === true && e.weight === undefined) mainOn.push(e.id);
-      else if (was?.weight === undefined) mainOff.push(e.id);
-      else weightOff.push(e.id);
+      } else weightOff.push(e.id);
     }
     if (was === undefined) {
       ops.push(edgeAdd(e));
@@ -675,10 +671,8 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
           : { op: "edge.step", id: e.id, n: e.step },
       );
   }
-  if (mainOff.length > 0) ops.push({ op: "edge.emphasize", edges: mainOff, off: true });
   if (weightOff.length > 0) ops.push({ op: "edge.weight", edges: weightOff });
   for (const [weight, edges] of weighted) ops.push({ op: "edge.weight", edges, weight });
-  if (mainOn.length > 0) ops.push({ op: "edge.emphasize", edges: mainOn });
   for (const w of a.walls ?? []) {
     if (keptWalls.has(w.id)) continue;
     const op: Op = { op: "wall.add", id: w.id, between: w.between, and: w.and };
@@ -803,5 +797,5 @@ function said(words: string | undefined): { text: string } | object {
 function weightLook(e: Edge | undefined): string {
   if (e === undefined) return "thin";
   if (e.weight !== undefined) return e.weight === "thin" ? "thin" : `w:${e.weight}`;
-  return e.accent === true ? "accent" : "thin";
+  return "thin";
 }

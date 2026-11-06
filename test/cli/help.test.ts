@@ -177,7 +177,6 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
     // Commands it has, and the words a command takes, are commander's to read.
     expect(wrong("node", "add", "--help")).toBeUndefined();
     expect(wrong("node", "--help")).toBeUndefined();
-    expect(wrong("group", "label", "d.grafical.yaml", "g", "top")).toBeUndefined();
     expect(wrong("diagram", "legend", "help")).toBeUndefined();
     expect(wrong()).toBeUndefined();
     // The command line prints the block alone, in place of the entry page, as a usage error.

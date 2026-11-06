@@ -109,20 +109,9 @@ export const WEIGHT_LEVEL = /^[a-z][a-z0-9-]*$/;
 /** The longest arrowhead a heavy line grows to, unless the thick one is longer (specs/decisions, "Edge weights"). */
 const ARROW_MAX = 12;
 
-/** The weight an edge is drawn at: its `weight`, else `thick` for the old `accent`, else none (specs/decisions, "Edge weights"). */
-export function weightOf(e: {
-  accent?: boolean;
-  weight?: string | number;
-}): string | number | undefined {
-  return e.weight ?? (e.accent === true ? "thick" : undefined);
-}
-
 /** The width of an edge in pixels, or undefined for a level the paint lacks (specs/decisions, "Edge weights"). */
-export function edgeWidth(
-  e: { accent?: boolean; weight?: string | number },
-  P: Paint,
-): number | undefined {
-  const w = weightOf(e) ?? "thin";
+export function edgeWidth(e: { weight?: string | number }, P: Paint): number | undefined {
+  const w = e.weight ?? "thin";
   if (typeof w === "number") return w;
   if (w === "thin") return P.edge.strokeWidth;
   if (w === "thick") return P.edge.main.strokeWidth;

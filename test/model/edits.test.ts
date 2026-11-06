@@ -186,11 +186,11 @@ describe("edges", () => {
     ).toMatchObject({ code: "unknown-node", field: "to" });
   });
 
-  it('emphasize draws edges thick, as the main path, and the legend names it once the agent does (specs/decisions, "Lines meet any side")', () => {
-    const d = ok(fx, [{ op: "edge.emphasize", edges: ["pipelines->mongo", "service->mongo"] }]);
+  it('the thick weight draws the main path, and the legend names it once the agent does (specs/decisions, "Lines meet any side")', () => {
+    const d = ok(fx, [
+      { op: "edge.weight", edges: ["pipelines->mongo", "service->mongo"], weight: "thick" },
+    ]);
     roundTrips(d);
-    expect(edge(d, "pipelines->mongo")?.accent).toBe(true);
-    expect(writeDiagram(d)).toContain("accent: true");
     const scene = layout(d, m);
     expect(scene.edges.filter((e) => e.width === 2.5).map((e) => e.id)).toEqual([
       "pipelines->mongo",
@@ -201,12 +201,6 @@ describe("edges", () => {
     expect(layout(named, m).legend?.at(-1)).toMatchObject({
       width: 2.5,
       label: { runs: [{ text: "main path" }] },
-    });
-    const off = ok(d, [{ op: "edge.emphasize", edges: ["service->mongo"], off: true }]);
-    expect(edge(off, "service->mongo")?.accent).toBeUndefined();
-    expect(fail(fx, [{ op: "edge.emphasize", edges: ["nope"] }])[0]).toMatchObject({
-      code: "unknown-edge",
-      field: "edges",
     });
   });
 
@@ -394,7 +388,7 @@ describe("parsing", () => {
       { op: "edge.relabel", id: "a->b", label: "x" },
       { op: "edge.kind", id: "a->b", kind: "async" },
       { op: "edge.both", id: "a->b", off: true },
-      { op: "edge.emphasize", edges: ["a->b"] },
+      { op: "edge.weight", edges: ["a->b"], weight: "thick" },
       { op: "edge.reverse", id: "a->b" },
       { op: "edge.retarget", id: "a->b", to: "c" },
       { op: "group.describe", id: "g", text: "t" },

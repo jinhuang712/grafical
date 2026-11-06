@@ -411,25 +411,19 @@ Good to know:
     since a reader takes a line over a gateway for a line through it.
   - The id is <from>-><to> unless --id names it; a second one gets #2.
 
-See also: edge emphasize, diagram legend
+See also: edge weight, diagram legend
 `,
   },
-  "edge emphasize": {
-    about: "Draw edges thick, as the main path, or thin again with --off.",
-    after: ``,
-  },
-
   "edge weight": {
     about: "Set how thick edges are, by level or in pixels; without --weight, thin again.",
     after: `
 Levels:
-  thin is the default, thick is what edge emphasize gives, heavy is thicker.
+  thin is the default, then thick and heavy.
   A stylesheet may retune them and add levels; an unknown level is refused
   and the error lists the allowed ones. A number of pixels runs from 0.5 to 8.
 
 Good to know:
   - Prefer a level to a number: levels read the same across a diagram.
-  - Weight, like emphasize, replaces the other: the last one set is the look.
 `,
   },
 

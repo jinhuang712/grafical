@@ -274,7 +274,6 @@ Some edges are thicker than others, to say they matter more.
 
 ```sh
 grafical -f <file> edge --weight <id...> [--weight <level|pixels>]
-grafical -f <file> edge --emphasize <id...> [--off]
 ```
 
 - A weight is a level or a width from 0.5 to 8 px.
@@ -395,7 +394,7 @@ A group is a system, drawn as one node around its members, which may sit in seve
   - A group inside itself is refused as `group-cycle`.
 - `join` moves a node out of its previous group, and also moves a whole group into another.
   - `leave` takes members out of every group, or with `--up` one level out.
-- `group --label-at` (or `group --label`) says where the group's label sits.
+- `group --label-at` says where the group's label sits.
   - It takes one of these places:
     - In its head: at the left, the middle or the right.
     - In a foot below its last layer: at the left, the middle or the right.

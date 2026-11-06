@@ -14,7 +14,6 @@ import type { Diagram } from "../model/index.ts";
 import { markName } from "../model/types.ts";
 import { record } from "../records.ts";
 import type { Point, Rect, Scene } from "../scene.ts";
-import { weightOf } from "../theme/paint.ts";
 import { themeOf } from "../theme/themes.ts";
 import { type Composition, composition, type Gutter, gutterOf } from "./composition.ts";
 import { segmentCrossesRect, segmentsOf } from "./geometry.ts";
@@ -422,7 +421,7 @@ function linesPerMember(d: Diagram): { group: string; edges: string[] }[] {
         [e.to, e.from, "in"],
       ] as const) {
         if (!inside.has(box) || endNodes(d, end).some((n) => inside.has(n))) continue;
-        const look = [e.kind, e.label ?? "", weightOf(e) ?? "thin", e.both === true];
+        const look = [e.kind, e.label ?? "", e.weight ?? "thin", e.both === true];
         const key = JSON.stringify([way, end, ...look]);
         const lines = by.get(key) ?? new Map<string, string>();
         if (!lines.has(box)) lines.set(box, e.id);

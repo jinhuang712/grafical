@@ -137,7 +137,8 @@ export function surfaceText(text: string): string {
     .replace(USAGE_NOUN, "Usage: grafical -f <file> $1 --<verb> [options]")
     .replace(
       /^ {2}([a-z-]+)\|?[a-z-]* \[options\] <file>(.*)$/gm,
-      (_, verb: string, more: string) => `  --${verb}${more}`,
+      (_, verb: string, more: string) =>
+        FILE_COMMANDS.includes(verb) ? `  ${verb}${more}` : `  --${verb}${more}`,
     )
     .replace(
       /\bgrafical (new|apply|try|show|diff|check|render|view) <file>/g,

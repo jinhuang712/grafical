@@ -47,7 +47,6 @@ function edgeText(e: Edge): string {
   if (e.out !== undefined) s += ` [out ${e.out}]`;
   if (e.in !== undefined) s += ` [in ${e.in}]`;
   if (e.weight !== undefined) s += ` [weight ${e.weight}]`;
-  else if (e.accent === true) s += " [main]";
   if (e.step !== undefined) s += ` [step ${e.step}]`;
   if (e.label !== undefined) s += ` ${e.label.includes("\n") ? JSON.stringify(e.label) : e.label}`;
   return s;

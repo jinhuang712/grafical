@@ -299,8 +299,6 @@ export interface Edge {
   both?: boolean;
   /** true: the line may pass the rows with no box between its ends (specs/decisions, "A row with no box as one bar"). */
   pass?: boolean;
-  /** true: drawn thick, as part of the main path (specs/decisions, "Lines meet any side"). Means `weight: thick`; `weight` wins. */
-  accent?: boolean;
   /** A weight level the stylesheet names, or a width in pixels (specs/decisions, "Edge weights"). Absent: thin. */
   weight?: string | number;
   /** The side it leaves by, where the agent states one. Absent: the router's. */
