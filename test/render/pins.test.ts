@@ -24,8 +24,8 @@ const pixels = (png: Uint8Array): string => sha(PNG.sync.read(Buffer.from(png)).
 const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
   grouped: {
     diagram: catalogSyncGrouped,
-    svg: "04af29755b0aaeaee852089a3cf75ed52fd3fcc8ff2f277c53257cf50e5e3204",
-    png: "88c7d95c52ed3f7c08d7daae4679f88f88ceb75d141b9f0da9710e1f6791ed95",
+    svg: "3008f7aa87af3554ceb31cacb3d76ac27f57377f1283be731d156554be018415",
+    png: "cb3d00892554e306de6aeb64aaa5ff328739ed6fa5a48d2758326982f72dc715",
   },
   lanesRows: {
     diagram: lanesRows,

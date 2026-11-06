@@ -2135,41 +2135,6 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
       pl.visits[j] = visit;
     });
   }
-  for (const visit of shared.values()) stagger(visit, gutters[visit.gutter]);
-}
-
-/**
- * A trunk that goes on straight through its run, with branches on both sides,
- * would meet them in a junction that reads as a crossing. The branches on each
- * side then take a run of their own, on different rows (specs/decisions, "A target picture with measured rules" rule 4).
- */
-function stagger(visit: Visit, list: Visit[] | undefined): void {
-  const entry = visit.stubs[0];
-  if (entry === undefined || list === undefined) return;
-  const exits = visit.stubs.slice(1);
-  const on = (s: Stub) => Math.abs(s.x - entry.x) < EPS;
-  const straight = exits.some((s) => on(s) && s.top !== entry.top);
-  const left = exits.filter((s) => s.x < entry.x - EPS);
-  const right = exits.filter((s) => s.x > entry.x + EPS);
-  if (!straight || left.length === 0 || right.length === 0) return;
-  const part = (id: string, stubs: Stub[]): Visit => ({
-    ...visit,
-    id,
-    members: [],
-    stubs: [entry, ...stubs],
-    lo: Math.min(entry.x, ...stubs.map((s) => s.x)),
-    hi: Math.max(entry.x, ...stubs.map((s) => s.x)),
-  });
-  const a = part(`${visit.id} <`, [...left, ...exits.filter(on)]);
-  const b = part(`${visit.id} >`, right);
-  for (const m of visit.members) {
-    const exit = stubsOf(m.plan, m.j)[1];
-    const into = exit.x > entry.x + EPS ? b : a;
-    into.members.push(m);
-    m.plan.visits[m.j] = into;
-  }
-  const at = list.indexOf(visit);
-  if (at >= 0) list.splice(at, 1, a, b);
 }
 
 // Pass 3: assembly ----------------------------------------------------------

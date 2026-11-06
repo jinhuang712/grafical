@@ -87,6 +87,7 @@ Edges run orthogonally through the gaps between layers and nodes. The engine pic
   - [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md)
   - [015. Lines that end at containers](specs/decisions/015-lines-that-end-at-containers.md)
   - [023. Fan-outs of three bundle](specs/decisions/023-fan-outs-of-three-bundle.md)
+  - [090. A bundle splits at one knot](specs/decisions/090-a-bundle-splits-at-one-knot.md)
   - [065. Unreadable is refused and costly is reported](specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
   - [058. An agent may state the side of a line](specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
   - [059. Lines may be drawn square, round or smooth](specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)

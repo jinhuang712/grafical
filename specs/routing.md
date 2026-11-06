@@ -54,7 +54,7 @@ A node with many edges on one side would need a port for each, and the edges wou
 - Two or more unlabelled lines of one style into one crowded side of a target share one port as a fan-in.
   - A two-way line may join a fan-in.
 
-The members of a bundle share a track until their paths part. Their tracks are ordered by where they part, so that no two members cross. A trunk that runs straight on with branches to both sides would meet them in a junction that reads as a crossing. So it splits into two runs, each branching at its own height.
+The members of a bundle share a track until their paths part, and their tracks are ordered by where they part, so that no two members cross. A trunk with branches to both sides splits at one knot, and its dot marks a four-way join as a join.
 
 ## Corridors and gaps
 
@@ -128,5 +128,6 @@ An edge from a node to itself loops through the gutter below the node. Its two e
 - [015. Lines that end at containers](decisions/015-lines-that-end-at-containers.md)
 - [019. Lines meet any side](decisions/019-lines-meet-any-side.md)
 - [023. Fan-outs of three bundle](decisions/023-fan-outs-of-three-bundle.md)
+- [090. A bundle splits at one knot](decisions/090-a-bundle-splits-at-one-knot.md)
 - [060. A bent line is reported and never refused](decisions/060-a-bent-line-is-reported-and-never-refused.md)
 - [061. A line never moves for its label](decisions/061-a-line-never-moves-for-its-label.md)
