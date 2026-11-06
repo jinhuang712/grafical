@@ -28,7 +28,7 @@ Goals
 │   ├── ⬜ C4: Context added — less than the same model drawing directly
 │   ├── ❌ C5: Cost — less than the same model drawing directly
 │   ├── ✅ C7: Beats the strongest model alone — Haiku with grafical against Opus at xhigh effort
-│   └── ⬜ C8: Small diffs — fewer changed lines than YAML with one element on each line
+│   └── ❌ C8: Small diffs — fewer changed lines than YAML with one element on each line
 ├── Thresholds
 │   ├── ❌ T1: Operation errors — at most 5% of operations refused
 │   └── ✅ T2: Speed — 50 ms an operation, 400 ms a command
@@ -407,7 +407,7 @@ C8 = mean changed lines per change step in .grafical - the same in YAML
 target = below 0
 ```
 
-**Last result:** ⬜ not measured.
+**Last result:** ❌ not met on 2026-11-06, over the 24 change steps of round `p1g`, with the file as it first stands. Mean changed lines per step: 17.3 in `.grafical`, 2.9 in YAML with one element on each line and 8.7 in YAML as it is. Mean changed characters per step: 231, 217 and 173. Mean file length: 417, 57 and 180 lines.
 
 ### Thresholds
 
