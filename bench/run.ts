@@ -436,7 +436,7 @@ export function runStep(o: {
   const diagramPngUpdated = diagramPng && sha256(pngFile) !== pngBefore;
   const defects =
     o.arm === "grafical"
-      ? checkAll(o.dir, "diagram.grafical.yaml")
+      ? checkAll(o.dir, SOURCE_FILE.grafical as string)
       : { split: null, note: "raw arm: no grafical diagram" };
   const v = versions();
   const record: StepRecord = {
