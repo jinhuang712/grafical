@@ -268,6 +268,7 @@ A label is a text on an edge or a region. A node's name is its `text`, since a n
 | `place` | `inside` or `outside` |
 | `seat` | `on` or `beside`, for an edge |
 | `align` | `left`, `center` or `right` |
+| `style` | styles |
 
 ### `<mark>`
 

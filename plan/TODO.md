@@ -68,6 +68,18 @@
 - next: look again now that labels sit on their lines
 - related: [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
 
+### [P2][ISSUE] A label takes most of a short run
+
+- description:
+  - The `resync` label of the catalog-sync-grouped fixture sits on a run little longer than itself.
+  - The line shows only two short pieces past the label, and the owner finds it less natural than the others.
+  - A seat on a run keeps 8 px from each corner today.
+- created: 2026-11-06
+- status: OPEN
+- found: the owner, looking at the catalog-sync-grouped fixture
+- next: try a larger clearance, and try a label with a fill once labels mark styles
+- related: [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
+
 ### [P2][ISSUE] Arrowheads land off centre and unevenly
 
 - description:

@@ -9,7 +9,8 @@ F4: Look
 ├── F4.4: The stylesheet file — colors, widths and type sizes
 ├── F4.5: Brand fonts — a team's own typeface
 ├── F4.6: Label text — breaks and alignment
-└── F4.7: Region labels — where any region's label sits
+├── F4.7: Region labels — where any region's label sits
+└── F4.8: Label looks — a label's background, border and color
 ```
 
 The words and the look of the picture as a whole: its title, its legend, and its theme or stylesheet.
@@ -128,11 +129,11 @@ A team's own typeface in the picture.
 An agent may set where a label breaks and how its edges align. A text the agent leaves alone wraps where grafical wraps it and stays centred.
 
 ```sh
-grafical label align <file> <id> left|center|right
+grafical -f <file> label --align <id> left|center|right
 ```
 
 - A label may hold a line break, and grafical keeps it.
-- `label align` takes the ID of any element with a label.
+- `label --align` takes the ID of any element with a label.
 - A node's sublabel aligns with its label.
 - A label that no longer fits is refused as before.
 
@@ -165,3 +166,23 @@ grafical -f <file> diagram --label-at <fraction> [--top|--bottom]
 
 - An agent centres a title, to match the look of the page it sits on.
 - An agent moves a group's label along its side, to clear an edge.
+
+## F4.8: Label looks
+
+A label may mark styles, as any object does.
+
+```sh
+grafical -f <file> label --style <id> [--style <name>]...
+```
+
+- `--style` takes the ID of any element with a label, and names styles as other objects do.
+- The label's patch takes the style's `fill` and `border`.
+- The label's text takes the style's `color`.
+- Without `--style`, the label marks no style and its patch takes the color behind it.
+
+- **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
+- **Why:** [091. A label may mark a style](../specs/decisions/091-a-label-may-mark-a-style.md)
+
+**Stories:**
+
+- An agent gives a label a background, to make one line's meaning stand out.

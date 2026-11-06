@@ -94,6 +94,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [088. A type may choose its shape](088-a-type-may-choose-its-shape.md) (2026-11-06)
 - [089. A style may be as rich as it likes](089-a-style-may-be-as-rich-as-it-likes.md) (2026-11-06)
 - [090. A bundle splits at one knot](090-a-bundle-splits-at-one-knot.md) (2026-11-06)
+- [091. A label may mark a style](091-a-label-may-mark-a-style.md) (2026-11-06)
 
 ## Former IDs
 

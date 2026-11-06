@@ -168,6 +168,7 @@ Any object may take any color, a mark may be any emoji, text or file, and an edg
   - [016. Themes and stylesheets](specs/decisions/016-themes-and-stylesheets.md)
   - [028. A legend for widths and marks](specs/decisions/028-a-legend-for-widths-and-marks.md)
   - [034. The legend says only what the agent named](specs/decisions/034-the-legend-says-only-what-the-agent-named.md)
+  - [091. A label may mark a style](specs/decisions/091-a-label-may-mark-a-style.md)
 - **How it works:**
   - [The theme](specs/theme.md)
   - [The renderer](specs/rendering.md)
