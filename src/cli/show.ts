@@ -94,7 +94,7 @@ export function showDiagram(d: Diagram): string {
   const run = laneRun(d);
   for (const x of d.lanes ?? []) {
     const members =
-      run === "rows"
+      run === "layers"
         ? d.layers.filter((l) => l.lane === x.id).map((l) => l.id)
         : laneNodes(d, x.id);
     const way = run === undefined ? "" : ` (${run})`;

@@ -43,8 +43,8 @@ export function segmentHitsRect(s: Seg, r: Rect): boolean {
   return Math.min(hi, r.x + r.w) - Math.max(lo, r.x) > 1e-9;
 }
 
-/** Edges that share a source node and a line style may run together as a bus (specs/decisions, "Our own gap router"). */
-export function sameBus(a: SceneEdge, b: SceneEdge): boolean {
+/** Edges that share a source node and a line style may run together as a bundle (specs/decisions, "Our own gap router"). */
+export function sameBundle(a: SceneEdge, b: SceneEdge): boolean {
   return a.from === b.from && lineStyle(a.kind) === lineStyle(b.kind);
 }
 
@@ -156,7 +156,7 @@ export function defects(s: Scene): Defects {
       const [q0, q1] = pv ? sorted(q.g.a.y, q.g.b.y) : sorted(q.g.a.x, q.g.b.x);
       const overlap = Math.min(p1, q1) - Math.max(p0, q0);
       if (overlap <= 1) continue;
-      if (sameBus(p.e, q.e)) continue;
+      if (sameBundle(p.e, q.e)) continue;
       // A fan-in's lines share the last stretch into their node, as the checker
       // allows for any stretch that ends at a shared node.
       if (d === 0 && sameFanIn(p.e, q.e)) {
@@ -205,8 +205,8 @@ export function defects(s: Scene): Defects {
       if (a.node !== b.node || a.side !== b.side || a.id === b.id) continue;
       const shared = s.edges.find((x) => x.id === a.id);
       const other = s.edges.find((x) => x.id === b.id);
-      // Bus members share their source port by design, fan-in members their target port.
-      if (shared && other && sameBus(shared, other) && a.at === b.at && shared.from === a.node)
+      // Bundle members share their source port by design, fan-in members their target port.
+      if (shared && other && sameBundle(shared, other) && a.at === b.at && shared.from === a.node)
         continue;
       if (shared && other && sameFanIn(shared, other) && a.at === b.at && shared.to === a.node)
         continue;

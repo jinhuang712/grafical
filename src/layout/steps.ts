@@ -13,7 +13,7 @@ import { buildGrid, type StepProblem } from "./grid.ts";
  * Whether a row is one the engine adds for boxes placed past the first or last row. Its
  * id is "-" and a number, which no id in a file can be; output names it "-".
  */
-export function addedRow(id: string): boolean {
+export function addedLayer(id: string): boolean {
   return id.startsWith("-");
 }
 
@@ -35,11 +35,11 @@ export function placeSteps(d: Diagram): { d: Diagram; problems: StepPlaceProblem
   const { nodes: _nodes, ...rest } = d;
   const base: Diagram = { ...rest, layers: d.layers.map((l) => ({ ...l, nodes: [...l.nodes] })) };
   const grid = buildGrid(base);
-  const rowOf = new Map<string, number>();
+  const layerOf = new Map<string, number>();
   const colOf = new Map<string, number>();
   base.layers.forEach((l, r) => {
     for (const n of l.nodes) {
-      rowOf.set(n.id, r);
+      layerOf.set(n.id, r);
       colOf.set(n.id, grid.col.get(n.id) ?? 0);
     }
   });
@@ -50,11 +50,11 @@ export function placeSteps(d: Diagram): { d: Diagram; problems: StepPlaceProblem
     grew = false;
     for (const n of free) {
       const from = n.from;
-      if (!left.has(n.id) || from === undefined || !rowOf.has(from) || left.has(from)) continue;
+      if (!left.has(n.id) || from === undefined || !layerOf.has(from) || left.has(from)) continue;
       const { dx, dy } = stepOf(n);
-      const r = (rowOf.get(from) as number) + dy;
+      const r = (layerOf.get(from) as number) + dy;
       const c = (colOf.get(from) as number) + dx;
-      rowOf.set(n.id, r);
+      layerOf.set(n.id, r);
       colOf.set(n.id, c);
       placed.push({ n, r, c, dx });
       left.delete(n.id);
@@ -62,7 +62,7 @@ export function placeSteps(d: Diagram): { d: Diagram; problems: StepPlaceProblem
     }
   }
   const problems: StepPlaceProblem[] = [];
-  const known = new Set([...rowOf.keys(), ...left]);
+  const known = new Set([...layerOf.keys(), ...left]);
   const stray = free.filter((n) => left.has(n.id));
   for (const n of stray) {
     const from = n.from ?? "";

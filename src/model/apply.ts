@@ -572,7 +572,7 @@ function laneTargets(
   let run = laneRun(d);
   for (const id of members) {
     if (run !== undefined) break;
-    if (layerIds.includes(id)) run = "rows";
+    if (layerIds.includes(id)) run = "layers";
     else if (findNode(d, id)) run = "columns";
   }
   const settled = run ?? "columns";
@@ -585,11 +585,11 @@ function laneTargets(
       for (const l of d.layers) {
         const mine = l.nodes.filter((n) => inGroup(d, n, id));
         if (mine.length === 0) continue;
-        if (settled === "rows") layers.push(l);
+        if (settled === "layers") layers.push(l);
         else nodes.push(...mine);
       }
     } else if (layer !== undefined) {
-      if (settled === "rows") layers.push(layer);
+      if (settled === "layers") layers.push(layer);
       else
         errors.push({
           code: "lane-mixed",
@@ -607,7 +607,7 @@ function laneTargets(
           index: i,
           field: "members",
           found: id,
-          facts: { is: "node", run: "rows", row: node.layer.id },
+          facts: { is: "node", run: "layers", layer: node.layer.id },
         });
     } else {
       errors.push({
@@ -910,7 +910,7 @@ function checkAlign(d: Diagram, nodeLayer: string, target: string, i: number): O
       index: i,
       field: "align",
       found: target,
-      facts: { row: nodeLayer },
+      facts: { layer: nodeLayer },
     };
   }
   return undefined;
@@ -955,7 +955,7 @@ function resolveSlot(
         index: i,
         field: "place",
         found: "",
-        facts: { row: layerId, nodes: list.map((n) => n.id), allowed: [...POSITION_FIELDS] },
+        facts: { layer: layerId, nodes: list.map((n) => n.id), allowed: [...POSITION_FIELDS] },
       },
     };
   }
@@ -984,7 +984,7 @@ function resolveSlot(
           index: i,
           field,
           found: ref,
-          facts: { row: layerId, nodes: list.map((n) => n.id) },
+          facts: { layer: layerId, nodes: list.map((n) => n.id) },
         },
       };
     }
@@ -1417,7 +1417,7 @@ function moveLayer(s: State, op: Extract<Op, { op: "layer.move" }>, i: number): 
           index: i,
           field: op.before !== undefined ? "before" : "after",
           found: ref,
-          facts: { row: op.id },
+          facts: { layer: op.id },
         },
       ];
     }
@@ -1487,7 +1487,7 @@ function splitLayer(s: State, op: Extract<Op, { op: "layer.split" }>, i: number)
           index: i,
           field: "from",
           found: op.from,
-          facts: { row: op.id, nodes: layer.nodes.map((n) => n.id) },
+          facts: { layer: op.id, nodes: layer.nodes.map((n) => n.id) },
         },
       ];
     }
@@ -1498,7 +1498,7 @@ function splitLayer(s: State, op: Extract<Op, { op: "layer.split" }>, i: number)
           index: i,
           field: "from",
           found: op.from,
-          facts: { row: op.id, allowed: layer.nodes.slice(1).map((n) => n.id) },
+          facts: { layer: op.id, allowed: layer.nodes.slice(1).map((n) => n.id) },
         },
       ];
     }
@@ -1775,7 +1775,7 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
         index: i,
         field,
         found: other,
-        facts: { allowed: sharing, row: unshared.id, group: g.id },
+        facts: { allowed: sharing, layer: unshared.id, group: g.id },
       },
     ];
   }

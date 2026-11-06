@@ -198,7 +198,7 @@ describe("group copy refusals", () => {
       code: "no-shared-layer",
       field: "after",
       found: "front",
-      facts: { allowed: ["region", "zone"], row: "row-app", group: "zone" },
+      facts: { allowed: ["region", "zone"], layer: "row-app", group: "zone" },
     });
   });
 

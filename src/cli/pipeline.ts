@@ -215,7 +215,7 @@ interface Planned {
 const ABOUT: readonly (keyof Facts)[] = [
   "is",
   "node",
-  "row",
+  "layer",
   "group",
   "edge",
   "edges",
@@ -224,7 +224,7 @@ const ABOUT: readonly (keyof Facts)[] = [
   "wall",
   "note",
   "nodes",
-  "rows",
+  "layers",
   "groups",
   "lanes",
   "between",

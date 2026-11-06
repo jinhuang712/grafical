@@ -18,7 +18,7 @@ import { nodeBox } from "../theme/shapes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import type { SideSlot } from "./side.ts";
-import { rowHeights } from "./size.ts";
+import { layerHeights } from "./size.ts";
 
 export interface PNode {
   id: string;
@@ -41,7 +41,7 @@ export interface PLayer {
   label?: string;
   nodes: PNode[];
   /** Height of the tallest box in the layer, or of a medium box if it is empty. */
-  rowH: number;
+  layerH: number;
 }
 
 /** A group's box across, and its label. */
@@ -114,7 +114,7 @@ const ceil4 = (x: number) => Math.ceil(x / 4 - 1e-9) * 4;
 export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   const sp = SPACING[d.density];
   const grid = buildGrid(d);
-  const heights = rowHeights(d);
+  const heights = layerHeights(d);
   const nodes = new Map<string, PNode>();
   const layers: PLayer[] = d.layers.map((layer, index) => {
     const placed: PNode[] = [];
@@ -135,13 +135,13 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       nodes.set(node.id, pn);
       placed.push(pn);
     }
-    const rowH = placed.length === 0 ? BOX.m.h : Math.max(...placed.map((n) => n.h));
+    const layerH = placed.length === 0 ? BOX.m.h : Math.max(...placed.map((n) => n.h));
     return {
       index,
       id: layer.id,
       ...(layer.label === undefined ? {} : { label: layer.label }),
       nodes: placed,
-      rowH,
+      layerH,
     };
   });
 
@@ -402,7 +402,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     for (const w of d.walls ?? []) {
       const way = wallRun(d, w);
       const split = way?.run === "beside" ? wallSplit(d, way) : undefined;
-      if (split === undefined || "row" in split) continue;
+      if (split === undefined || "layer" in split) continue;
       const space = text.wallSpace?.(w.id) ?? WALL.space;
       const side = (ids: string[]) => ids.flatMap((id) => nodes.get(id) ?? []);
       for (const a of side(split.left)) {

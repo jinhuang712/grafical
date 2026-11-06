@@ -188,7 +188,7 @@ export function sizeOf(node: DiagramNode, d: Diagram, m: Measurer): SizeStep {
  * tallest box, so that their tops line up. Dots and diamonds keep their own shapes.
  * The nodes must be sized (withSizes).
  */
-export function rowHeights(d: Diagram): Map<string, number> {
+export function layerHeights(d: Diagram): Map<string, number> {
   const out = new Map<string, number>();
   for (const l of d.layers) {
     const boxes = l.nodes.filter((n) => !isDot(n.kind) && n.kind !== "decision");

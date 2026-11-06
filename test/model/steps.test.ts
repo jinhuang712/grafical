@@ -110,7 +110,7 @@ describe('boxes placed by steps (specs/decisions, "Steps from another box")', ()
       ["audit"],
     ]);
     const drawn = drawing(d, layout(d, m));
-    expect(drawn.boxes.find((b) => b.id === "audit")).toMatchObject({ row: "-", place: 1 });
+    expect(drawn.boxes.find((b) => b.id === "audit")).toMatchObject({ layer: "-", place: 1 });
     // Two steps across keep two columns, though no other box is in the one between.
     const two = ok(base, [{ op: "node.add", id: "far", label: "Far", from: "db", right: 2 }]);
     const c = cols(two);

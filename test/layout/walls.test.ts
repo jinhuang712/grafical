@@ -164,11 +164,11 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
         id: "net",
         run: "across",
         space: WALL.space,
-        lines: ["callers->handlers", "upstream->relay"],
+        edges: ["callers->handlers", "upstream->relay"],
       }),
     ]);
     expect(drawingText(dr)).toMatch(
-      /\nwall id=net run=across length=\d+ space=48 lines=callers->handlers,upstream->relay\n/,
+      /\nwall id=net run=across length=\d+ space=48 edges=callers->handlers,upstream->relay\n/,
     );
   });
 });

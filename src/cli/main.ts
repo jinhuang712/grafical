@@ -23,12 +23,10 @@ import { parseOp } from "../model/ops.ts";
 import { STEP_KEYS } from "../model/steps.ts";
 import { closest, editDistance } from "../model/suggest.ts";
 import {
-  EDGE_KINDS,
   MARK_COLORS,
   MARK_SHAPES,
   MARK_SIZES,
   MARK_SLOTS,
-  NODE_KINDS,
   SHAPE_KINDS,
   STEP_NUMBER_MAX,
 } from "../model/types.ts";

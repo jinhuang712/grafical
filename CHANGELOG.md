@@ -13,6 +13,7 @@ grafical has not been released; the first release will be 0.1.0.
 - `apply -` reads a batch from standard input.
 - Batches and files use the names of the commands: `node.label`, `node.mark`, `edge.number`, `group.label-at`, `diagram.caption` and the rest, with `mark`, `marks`, `emphasis` and `caption` as fields.
 - Help and refusals say node, layer and edge throughout, and the codes follow: `lonely-node`, `bent-edge`, `node-aside`, `passing-layer`, `edge-across-group`, `edge-per-member` and `tight-edges`.
+- Refusals say `layer` and `layers` in their details, and `show --drawn` prints `node` and `edge` records, with `layer=` and `edges=`, as do the counts.
 - `node --kind` and `edge --kind` went, since `--type` takes a built-in type or one of your own, and a batch says `type` too.
 - `edge --emphasize` went, since `edge --weight <id> --weight thick` draws the same line, and a saved edge's `accent` reads as that weight.
 - A help page writes its examples as a caller types them, with `-f` first, and a verb in the old form names the new one as `likely`.

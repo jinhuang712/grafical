@@ -17,7 +17,7 @@
 // gutter of its path. When it has none left, no line moves for it: it takes the slot
 // that costs least, and the write is refused (specs/decisions, "A line never moves for its label").
 //
-// The runs of one fan-out or fan-in carry the same `bus`: their stubs at one x are
+// The runs of one fan-out or fan-in carry the same `bundle`: their stubs at one x are
 // the shared trunk, one line, and never count against each other.
 //
 // Vertical positions here are in "row px": row t lies at t * pitch. Assembly turns
@@ -237,7 +237,7 @@ function geometry(pitch: number) {
     if (rv >= 0 && rv === ru && v.hi - v.lo > EPS && u.hi - u.lo > EPS) {
       if (v.lo - sep < u.hi && u.lo < v.hi + sep) c += LINE;
     }
-    const oneBus = v.bus !== undefined && v.bus === u.bus;
+    const oneBus = v.bundle !== undefined && v.bundle === u.bundle;
     for (const s of v.stubs) {
       for (const t of u.stubs) {
         const d = Math.abs(s.x - t.x);

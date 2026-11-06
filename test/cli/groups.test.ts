@@ -119,7 +119,7 @@ describe("grouped diagrams", () => {
     writeFileSync(join(dir, "big.yaml"), items.join(""));
     const w = run("apply", f, "big.yaml");
     expect(w.code).toBe(0);
-    expect(w.out).toMatch(/^counts nodes=17 lines=0 crossings=0 bends=0 .*fullest=row:17 /m);
+    expect(w.out).toMatch(/^counts nodes=17 edges=0 crossings=0 bends=0 .*fullest=row:17 /m);
     // No warning of too many boxes: only the facts, each box with no lines.
     expect(w.out.match(/^warning: .*$/gm)).toEqual(Array(17).fill("warning: lonely-node"));
     expect(w.out).not.toMatch(/hint|too many/);

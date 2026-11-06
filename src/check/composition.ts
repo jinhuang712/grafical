@@ -71,15 +71,15 @@ function acrossOf(scene: Scene): Composition["across"] {
   return out.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
-/** Runs of two different lines, not of one bus, that lie side by side closer than a track for more than 100 px. */
-function tightOf(edges: SceneEdge[], sameBus: (a: string, b: string) => boolean): Tight[] {
+/** Runs of two different lines, not of one bundle, that lie side by side closer than a track for more than 100 px. */
+function tightOf(edges: SceneEdge[], sameBundle: (a: string, b: string) => boolean): Tight[] {
   const runs = edges.flatMap((e) => segmentsOf(e.points).map((s) => ({ id: e.id, s })));
   const out: Tight[] = [];
   for (let i = 0; i < runs.length; i++) {
     const p = runs[i] as (typeof runs)[number];
     for (let j = i + 1; j < runs.length; j++) {
       const q = runs[j] as (typeof runs)[number];
-      if (p.id === q.id || sameBus(p.id, q.id)) continue;
+      if (p.id === q.id || sameBundle(p.id, q.id)) continue;
       const h = horizontal(p.s);
       if (h !== horizontal(q.s)) continue;
       const [pa, pb] = h ? [p.s.a.x, p.s.b.x] : [p.s.a.y, p.s.b.y];
@@ -147,7 +147,7 @@ export interface Gutter {
   above: string;
   below: string;
   /** Lines that run in the gutter, even only through it. */
-  lines: number;
+  edges: number;
   crossings: number;
   tight: number;
   crowded: number;
@@ -169,7 +169,7 @@ export function gutterOf(
     segmentsOf(e.points).some((s) => inside(Math.min(s.a.y, s.b.y), Math.max(s.a.y, s.b.y))),
   ).length;
   return {
-    lines,
+    edges: lines,
     crossings: crossings.filter((p) => p.y > y0 + EPS && p.y < y1 - EPS).length,
     tight: comp.tight.filter((t) => (t.vertical ? inside(t.lo, t.hi) : inside(t.at, t.at))).length,
     crowded: comp.crowded.filter(
@@ -178,7 +178,10 @@ export function gutterOf(
   };
 }
 
-export function composition(scene: Scene, sameBus: (a: string, b: string) => boolean): Composition {
+export function composition(
+  scene: Scene,
+  sameBundle: (a: string, b: string) => boolean,
+): Composition {
   const crowded: Composition["crowded"] = [];
   for (const e of scene.edges) {
     if (e.label === undefined) continue;
@@ -186,5 +189,5 @@ export function composition(scene: Scene, sameBus: (a: string, b: string) => boo
     if (roomsOf(rect, e.id, scene).filter((r) => r < ROOM).length >= 2)
       crowded.push({ id: e.id, rect });
   }
-  return { across: acrossOf(scene), tight: tightOf(scene.edges, sameBus), crowded };
+  return { across: acrossOf(scene), tight: tightOf(scene.edges, sameBundle), crowded };
 }

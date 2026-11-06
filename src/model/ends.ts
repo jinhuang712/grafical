@@ -14,7 +14,7 @@
 //   stand between them in that row.
 
 import type { Facts, OpError } from "../errors.ts";
-import { addedRow } from "../layout/steps.ts";
+import { addedLayer } from "../layout/steps.ts";
 import { groupNodes } from "./groups.ts";
 import { laneNodes, laneRun } from "./lanes.ts";
 import { everyNode } from "./steps.ts";
@@ -71,15 +71,15 @@ export function barRows(d: Diagram): Set<string> {
 
 /** The first bar strictly between an edge's ends, top to bottom, if any. */
 function barBetween(d: Diagram, bars: Set<string>, a: string, b: string): string | undefined {
-  const ra = endRows(d, a);
-  const rb = endRows(d, b);
+  const ra = endLayers(d, a);
+  const rb = endLayers(d, b);
   if (ra === undefined || rb === undefined) return undefined;
   const [lo, hi] = ra[1] < rb[0] ? [ra[1], rb[0]] : rb[1] < ra[0] ? [rb[1], ra[0]] : [0, 0];
   return d.layers.slice(lo + 1, Math.max(lo + 1, hi)).find((l) => bars.has(l.id))?.id;
 }
 
 /** The rows an end covers, first and last. Undefined for an empty group or lane. */
-export function endRows(d: Diagram, id: string): [number, number] | undefined {
+export function endLayers(d: Diagram, id: string): [number, number] | undefined {
   const kind = endKind(d, id);
   if (kind === "layer") {
     const r = d.layers.findIndex((l) => l.id === id);
@@ -103,8 +103,8 @@ export function endRows(d: Diagram, id: string): [number, number] | undefined {
 export type Meeting = { kind: "across" } | { kind: "beside"; row: number; a: string; b: string };
 
 export function meeting(d: Diagram, a: string, b: string): Meeting | undefined {
-  const ra = endRows(d, a);
-  const rb = endRows(d, b);
+  const ra = endLayers(d, a);
+  const rb = endLayers(d, b);
   if (ra === undefined || rb === undefined) return undefined;
   if (ra[1] < rb[0] || rb[1] < ra[0]) return { kind: "across" };
   const inA = new Set(endNodes(d, a));
@@ -142,7 +142,7 @@ function between(d: Diagram, a: string, b: string): Facts {
       .slice(l + 1, Math.max(l + 1, r))
       .filter((n) => !inA.has(n.id) && !inB.has(n.id))
       .map((n) => n.id);
-    return { row: layer.id, nodes };
+    return { layer: layer.id, nodes };
   }
   return {};
 }
@@ -166,7 +166,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
           found: id,
           facts: { near: closest(id, ids) },
         });
-      } else if (kind !== "node" && endRows(d, id) === undefined) {
+      } else if (kind !== "node" && endLayers(d, id) === undefined) {
         known = false;
         errors.push({
           code: "empty-container",
@@ -185,7 +185,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `edges[${ei}]`,
         found: e.id,
-        facts: { ends: [e.from, e.to], row: bar },
+        facts: { ends: [e.from, e.to], layer: bar },
       });
       return;
     }
@@ -213,7 +213,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
           field: `edges[${ei}].${end}`,
           found: e[end],
           facts: {
-            row: e[end],
+            layer: e[end],
             group: across.group,
             edge: e.id,
             top: across.top,
@@ -238,7 +238,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
     const shared = b.filter((n) => a.has(n));
     // A row lane covers whole rows, as a layer does. A layer crosses every column lane.
     const rowLike = (k: EndKind | undefined) =>
-      k === "layer" || (k === "lane" && laneRun(d) === "rows");
+      k === "layer" || (k === "lane" && laneRun(d) === "layers");
     const crossing =
       (fromKind === "layer" || toKind === "layer") &&
       (fromKind === "lane" || toKind === "lane") &&
@@ -247,8 +247,8 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
       crossing ||
       ((rowLike(fromKind) || rowLike(toKind)) &&
         (() => {
-          const ra = endRows(d, e.from) as [number, number];
-          const rb = endRows(d, e.to) as [number, number];
+          const ra = endLayers(d, e.from) as [number, number];
+          const rb = endLayers(d, e.to) as [number, number];
           return !(ra[1] < rb[0] || rb[1] < ra[0]);
         })());
     if (shared.length > 0 || layerAndRows) {
@@ -275,7 +275,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
   // engine adds for boxes placed by steps are not in the file, so the field counts the file's rows only.
   const ended = new Set(d.edges.flatMap((e) => [e.from, e.to]));
   d.layers
-    .filter((l) => !addedRow(l.id))
+    .filter((l) => !addedLayer(l.id))
     .forEach((l, li) => {
       if (!bars.has(l.id) || ended.has(l.id)) return;
       const across = groupAcross(d, l.id);
@@ -285,7 +285,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
         index,
         field: `layers[${li}].look`,
         found: l.id,
-        facts: { row: l.id, group: across.group, top: across.top, bottom: across.bottom },
+        facts: { layer: l.id, group: across.group, top: across.top, bottom: across.bottom },
       });
     });
   return errors;
@@ -304,10 +304,10 @@ function groupAcross(
   const r = d.layers.findIndex((l) => l.id === row);
   const name = (k: number) => {
     const id = d.layers[k]?.id ?? "";
-    return addedRow(id) ? "-" : id;
+    return addedLayer(id) ? "-" : id;
   };
   for (const g of d.groups ?? []) {
-    const rows = endRows(d, g.id);
+    const rows = endLayers(d, g.id);
     if (rows !== undefined && rows[0] < r && r < rows[1])
       return { group: g.id, top: name(rows[0]), bottom: name(rows[1]) };
   }

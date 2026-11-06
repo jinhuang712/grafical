@@ -267,7 +267,7 @@ export const ROUTE = {
   /** Room a gutter adds on its side next to a row that holds a store, past a cylinder's lid and base. */
   storeRoom: 8,
   /** This many unlabelled edges of one kind on a crowded node side share a trunk (specs/decisions, "A target picture with measured rules" rule 4). */
-  busMin: 2,
+  bundleMin: 2,
   /** This many unlabelled edges of one kind leaving one node side leave as one bundle, crowded or not (specs/decisions, "Fan-outs of three bundle"). */
   fanOut: 3,
   /** Space on each side of the label of an edge that runs sideways between neighbours. */

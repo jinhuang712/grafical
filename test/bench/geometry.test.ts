@@ -53,11 +53,11 @@ describe('the separate geometry check (GOALS.md, "Mechanical defects")', () => {
     ).toEqual(["edge-overlap"]);
   });
 
-  it("accepts what is drawn on purpose: ports at a box, a bus, a fan-in, a container", () => {
+  it("accepts what is drawn on purpose: ports at a box, a bundle, a fan-in, a container", () => {
     const ports = `${box(100, 100)}\n${line("M150 20L150 100")}\n${line("M150 140L150 250")}`;
     expect(codes(svg(ports))).toEqual([]);
-    const bus = `${line("M50 10L50 100L100 100L100 200")}\n${line("M50 10L50 100L20 100L20 200")}`;
-    expect(codes(svg(bus))).toEqual([]);
+    const bundle = `${line("M50 10L50 100L100 100L100 200")}\n${line("M50 10L50 100L20 100L20 200")}`;
+    expect(codes(svg(bundle))).toEqual([]);
     const fanIn = `${line("M10 10L10 100L100 100L100 200")}\n${line("M200 10L200 100L100 100L100 200")}`;
     expect(codes(svg(fanIn))).toEqual([]);
     const lanes = `<rect x="5" y="5" width="300" height="250" fill="#ffffff" stroke="#cccccc" stroke-width="1"/>\n${box(20, 20)}\n${box(150, 20)}`;

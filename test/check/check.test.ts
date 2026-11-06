@@ -277,7 +277,7 @@ describe("edge-overlap", () => {
     expect(codes(d)).toEqual(["edge-overlap"]);
     expect(d[0]?.facts.shared).toBe(50);
   });
-  it("passes a bus: unlabelled edges of one kind from one node, sharing a trunk", () => {
+  it("passes a bundle: unlabelled edges of one kind from one node, sharing a trunk", () => {
     const withE = [...nodes, node("e", 172, 240)];
     const toD = edge("a->d", "a", "d", [
       [100, 88],

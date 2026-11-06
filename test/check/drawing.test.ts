@@ -53,15 +53,15 @@ const skipping: Diagram = {
 describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
   it("names each box's row, place and lines by side, and each line's sides and crossings", () => {
     const dr = drawing(crossed, layout(crossed, m));
-    expect(dr.counts).toMatchObject({ nodes: 4, lines: 2, crossings: 1, busiest: { lines: 1 } });
-    expect(dr.boxes.map((b) => `${b.id} ${b.row} ${b.place}/${b.of}`)).toEqual([
+    expect(dr.counts).toMatchObject({ nodes: 4, edges: 2, crossings: 1, busiest: { edges: 1 } });
+    expect(dr.boxes.map((b) => `${b.id} ${b.layer} ${b.place}/${b.of}`)).toEqual([
       "a1 top 1/2",
       "a2 top 2/2",
       "b1 bottom 1/2",
       "b2 bottom 2/2",
     ]);
     expect(dr.boxes.find((b) => b.id === "a1")?.sides).toEqual({ bottom: 1 });
-    const line = dr.lines.find((l) => l.id === "a1->b2");
+    const line = dr.edges.find((l) => l.id === "a1->b2");
     expect(line).toMatchObject({
       leaves: "bottom",
       enters: "top",
@@ -72,7 +72,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
 
   it("counts the lines at a box, and names a row a line passes without meeting it", () => {
     const dr = drawing(skipping, layout(skipping, m));
-    expect(dr.counts.busiest).toEqual({ id: "a", lines: 3 });
+    expect(dr.counts.busiest).toEqual({ id: "a", edges: 3 });
     // A drawn picture where a->z runs down through the middle row, between m1 and m2.
     const box = (id: string, layer: string, x: number, y: number) => ({
       id,
@@ -103,7 +103,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
         },
       ],
     };
-    const line = drawing(skipping, scene).lines[0];
+    const line = drawing(skipping, scene).edges[0];
     expect(line).toMatchObject({
       leaves: "bottom",
       enters: "top",
@@ -149,9 +149,9 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     };
     const dr = drawing(skipping, scene);
     // 120 across, 200 down, 70 back; the boxes are 150 apart down and overlap across.
-    expect(dr.lines[0]).toMatchObject({ length: 390, direct: 150, detour: 2.6, skip: 1 });
-    expect(dr.boxes.find((b) => b.id === "a")).toMatchObject({ lines: 1, reach: 390 });
-    expect(dr.boxes.find((b) => b.id === "m1")).toMatchObject({ lines: 0, reach: 0 });
+    expect(dr.edges[0]).toMatchObject({ length: 390, direct: 150, detour: 2.6, skip: 1 });
+    expect(dr.boxes.find((b) => b.id === "a")).toMatchObject({ edges: 1, reach: 390 });
+    expect(dr.boxes.find((b) => b.id === "m1")).toMatchObject({ edges: 0, reach: 0 });
     expect(dr.counts).toMatchObject({ length: 390, longest: { id: "a->z", length: 390 } });
   });
 
@@ -171,7 +171,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       edges: [e("a", "b1", "call"), e("a", "b2", "call"), e("a", "b3", "call", label)],
     });
     const lines = (d: Diagram) =>
-      Object.fromEntries(drawing(d, layout(d, m)).lines.map((l) => [l.id, l.bundle]));
+      Object.fromEntries(drawing(d, layout(d, m)).edges.map((l) => [l.id, l.bundle]));
     expect(lines(fan())).toEqual({
       "a->b1": ["a->b2", "a->b3"],
       "a->b2": ["a->b1", "a->b3"],
@@ -189,7 +189,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     expect(d).toMatchObject({ nodes: 0, crossings: -1, bends: 2, length: -40 });
     expect(Object.keys(d)).not.toContain("busiest");
     expect(deltaText(d)).toMatch(
-      /^delta nodes=0 lines=0 crossings=-1 bends=\+2 bent=0 length=-40 /,
+      /^delta nodes=0 edges=0 crossings=-1 bends=\+2 bent=0 length=-40 /,
     );
   });
 
@@ -198,11 +198,11 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     expect(drawingText(drawing(crossed, layout(crossed, m)))).toBe(a);
     const lines = a.trimEnd().split("\n");
     expect(lines[0]).toMatch(
-      /^counts nodes=4 lines=2 crossings=1 bends=\d+ bent=\d+ length=\d+ width=\d+ height=\d+ /,
+      /^counts nodes=4 edges=2 crossings=1 bends=\d+ bent=\d+ length=\d+ width=\d+ height=\d+ /,
     );
     const a1 = drawing(crossed, layout(crossed, m)).boxes[0];
     expect(lines).toContain(
-      `box id=a1 row=top place=1 of=2 width=${a1?.width} height=56 lines=1 sides=bottom:1 reach=${a1?.reach}`,
+      `node id=a1 layer=top place=1 of=2 width=${a1?.width} height=56 edges=1 sides=bottom:1 reach=${a1?.reach}`,
     );
     // Every field is key=value: a record is its name, then fields with no spaces in them.
     for (const l of lines) expect(l).toMatch(/^[a-z]+( [a-z]+=[^ =]+)+$/);
@@ -266,7 +266,7 @@ describe('composition counts (specs/decisions, "Composition counts")', () => {
     expect(composition(s, never).across).toEqual([{ id: "through", groups: ["g"] }]);
   });
 
-  it("counts two lines closer than a track for over 100 px, but not one bus or a wide gap", () => {
+  it("counts two lines closer than a track for over 100 px, but not one bundle or a wide gap", () => {
     const s = scene({
       edges: [
         edge("p", "a", "b", [

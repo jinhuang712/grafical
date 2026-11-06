@@ -7,8 +7,8 @@
 
 import type { Warning } from "../errors.ts";
 import { asideBoxes, bendsOf, crossingsOf, legendEntries } from "../layout/index.ts";
-import { addedRow, placeSteps } from "../layout/steps.ts";
-import { endKind, endNodes, endRows } from "../model/ends.ts";
+import { addedLayer, placeSteps } from "../layout/steps.ts";
+import { endKind, endLayers, endNodes } from "../model/ends.ts";
 import { groupChain } from "../model/groups.ts";
 import type { Diagram } from "../model/index.ts";
 import { markName } from "../model/types.ts";
@@ -24,14 +24,14 @@ const SIDES: Side[] = ["top", "bottom", "left", "right"];
 
 export interface DrawnBox {
   id: string;
-  row: string;
+  layer: string;
   /** Its place in its row, left to right, from 1, and how many boxes the row holds. */
   place: number;
   of: number;
   width: number;
   height: number;
   /** Line ends at the box: a line from the box to itself counts twice. */
-  lines: number;
+  edges: number;
   /** Lines that meet the box, by side; a side no line meets is left out. */
   sides: Partial<Record<Side, number>>;
   /** The length of its lines together, each counted once. */
@@ -93,7 +93,7 @@ export interface DrawnWall {
   length: number;
   space: number;
   /** The lines that cross it, in id order. */
-  lines: string[];
+  edges: string[];
 }
 
 /** A note (specs/decisions, "Notes as callouts or footnotes"): what it is about, and how it is drawn: a callout, or a footnote and its number. */
@@ -106,7 +106,7 @@ export interface DrawnNote {
 
 export interface Counts {
   nodes: number;
-  lines: number;
+  edges: number;
   /** Every point where two lines cross. */
   crossings: number;
   bends: number;
@@ -118,13 +118,13 @@ export interface Counts {
   height: number;
   /** The row with the most boxes, the box with the most lines and the longest line; ties go to the first. */
   fullest: { id: string; nodes: number } | null;
-  busiest: { id: string; lines: number } | null;
+  busiest: { id: string; edges: number } | null;
   longest: { id: string; length: number } | null;
   /** Lines that pass at least one row. */
   passing: number;
   /** Lines that cross a group's box holding neither of their ends. */
   across: number;
-  /** Pairs of runs of two lines, not one bus, closer than 12 px side by side for over 100 px. */
+  /** Pairs of runs of two lines, not one bundle, closer than 12 px side by side for over 100 px. */
   tight: number;
   /** Line labels with under 8 px of room on two or more sides (specs/decisions, "Composition counts"). */
   crowded: number;
@@ -137,7 +137,7 @@ export interface Drawing {
   boxes: DrawnBox[];
   /** One for each pair of neighbouring rows that hold boxes. */
   gutters: Gutter[];
-  lines: DrawnLine[];
+  edges: DrawnLine[];
   groups: DrawnGroup[];
   walls: DrawnWall[];
   notes: DrawnNote[];
@@ -168,7 +168,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   // Boxes placed by steps count in the rows they are drawn in (specs/decisions, "Steps from another box").
   const d = placeSteps(facts).d;
   /** A row's name in the output: a row the engine added is "-". */
-  const rowName = (id: string) => (addedRow(id) ? "-" : id);
+  const layerName = (id: string) => (addedLayer(id) ? "-" : id);
   // Every element a line can end at, with the box it is drawn in.
   const rects = new Map<string, Rect>();
   for (const n of scene.nodes) rects.set(n.id, n.rect);
@@ -245,8 +245,8 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       length += Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     }
     const passes: string[] = [];
-    const a = endRows(d, e.from);
-    const b = endRows(d, e.to);
+    const a = endLayers(d, e.from);
+    const b = endLayers(d, e.to);
     let skip = 0;
     if (a !== undefined && b !== undefined) {
       skip = Math.max(0, Math.max(a[0], b[0]) - Math.min(a[1], b[1]) - 1);
@@ -260,7 +260,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
           if (q === undefined || p.x !== q.x) return false;
           return Math.min(p.y, q.y) < s.y1 && Math.max(p.y, q.y) > s.y0 && p.x > s.x0 && p.x < s.x1;
         });
-        if (through) passes.push(rowName(layer.id));
+        if (through) passes.push(layerName(layer.id));
       }
     }
     const direct =
@@ -297,12 +297,12 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       for (const s of SIDES) if (at[s] !== undefined) sides[s] = at[s];
       boxes.push({
         id: n.id,
-        row: rowName(layer.id),
+        layer: layerName(layer.id),
         place: i + 1,
         of: row.length,
         width: Math.round(n.rect.w),
         height: Math.round(n.rect.h),
-        lines: Object.values(sides).reduce((s, x) => s + (x ?? 0), 0),
+        edges: Object.values(sides).reduce((s, x) => s + (x ?? 0), 0),
         sides,
         reach: reach.get(n.id) ?? 0,
       });
@@ -319,12 +319,12 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   let fullest: Counts["fullest"] = null;
   for (const layer of d.layers) {
     if (fullest === null || layer.nodes.length > fullest.nodes)
-      fullest = { id: rowName(layer.id), nodes: layer.nodes.length };
+      fullest = { id: layerName(layer.id), nodes: layer.nodes.length };
   }
   let busiest: Counts["busiest"] = null;
   for (const box of boxes) {
-    if (box.lines > 0 && (busiest === null || box.lines > busiest.lines))
-      busiest = { id: box.id, lines: box.lines };
+    if (box.edges > 0 && (busiest === null || box.edges > busiest.edges))
+      busiest = { id: box.id, edges: box.edges };
   }
   let longest: Counts["longest"] = null;
   for (const l of lines) {
@@ -339,8 +339,8 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     const b = next === undefined ? undefined : spans.get(next.id);
     if (next === undefined || a === undefined || b === undefined) return;
     gutters.push({
-      above: rowName(l.id),
-      below: rowName(next.id),
+      above: layerName(l.id),
+      below: layerName(next.id),
       ...gutterOf([a.y1, b.y0], scene, comp, at),
     });
   });
@@ -350,7 +350,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     gutters,
     counts: {
       nodes: scene.nodes.length,
-      lines: scene.edges.length,
+      edges: scene.edges.length,
       crossings: points,
       bends: lines.reduce((s, l) => s + l.bends, 0),
       bent: bentLines(lines).length,
@@ -366,7 +366,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       crowded: comp.crowded.length,
     },
     boxes,
-    lines,
+    edges: lines,
     groups,
     walls: (scene.walls ?? []).map((w) => {
       const across = w.run === "across";
@@ -375,7 +375,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
         run: w.run,
         length: Math.round(across ? w.rect.w : w.rect.h),
         space: Math.round(across ? w.rect.h : w.rect.w),
-        lines: scene.edges
+        edges: scene.edges
           .filter((e) => segmentsOf(e.points).some((s) => segmentCrossesRect(s, w.rect)))
           .map((e) => e.id)
           .sort(),
@@ -459,12 +459,12 @@ export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
       .flatMap((id) => endNodes(d, id)),
   );
   return [
-    ...bentLines(dr.lines).map(
+    ...bentLines(dr.edges).map(
       (l): Warning => ({ code: "bent-edge", facts: { edge: l.id, bends: l.bends, skip: l.skip } }),
     ),
-    ...dr.lines
+    ...dr.edges
       .filter((l) => l.passes.length > 0)
-      .map((l): Warning => ({ code: "passing-layer", facts: { edge: l.id, rows: l.passes } })),
+      .map((l): Warning => ({ code: "passing-layer", facts: { edge: l.id, layers: l.passes } })),
     ...c.across.map(
       (a): Warning => ({ code: "edge-across-group", facts: { edge: a.id, groups: a.groups } }),
     ),
@@ -476,13 +476,13 @@ export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
     ),
     ...c.crowded.map((x): Warning => ({ code: "crowded-label", facts: { edge: x.id } })),
     ...dr.boxes
-      .filter((b) => b.lines === 0 && !reached.has(b.id))
+      .filter((b) => b.edges === 0 && !reached.has(b.id))
       .map((b): Warning => ({ code: "lonely-node", facts: { node: b.id } })),
     ...dr.aside.map(
       (a): Warning => ({ code: "node-aside", facts: { node: a.box, nodes: a.users } }),
     ),
     ...linesPerMember(d).map((x): Warning => ({ code: "edge-per-member", facts: x })),
-    ...dr.lines.flatMap((l) =>
+    ...dr.edges.flatMap((l) =>
       l.crosses
         .filter((o) => l.id < o)
         .map((o): Warning => ({ code: "crossing", facts: { edges: [l.id, o] } })),
@@ -516,11 +516,11 @@ export function deltaText(d: Record<string, number>): string {
 /** The whole drawing as records: the counts, then each box, group and line, then the legend. */
 export function drawingText(dr: Drawing): string {
   const out = [countsText(dr.counts)];
-  for (const b of dr.boxes) out.push(record("box", { ...b }));
+  for (const b of dr.boxes) out.push(record("node", { ...b }));
   for (const g of dr.groups) out.push(record("group", { ...g }));
   for (const w of dr.walls) out.push(record("wall", { ...w }));
   for (const x of dr.notes) out.push(record("note", { ...x }));
-  for (const l of dr.lines) out.push(record("line", { ...l }));
+  for (const l of dr.edges) out.push(record("edge", { ...l }));
   for (const g of dr.gutters) out.push(record("gutter", { ...g }));
   for (const x of dr.legend) out.push(record("legend", { ...x }));
   return `${out.join("\n")}\n`;

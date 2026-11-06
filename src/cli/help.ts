@@ -46,7 +46,7 @@ Ways to draw, by the story each tells:
   one path, in order      edge number numbers its edges; edge weight draws
                           it thick
   what every request      a layer with no nodes that edges end at, drawn as
-  passes                  one bar: a gateway or a bus
+  passes                  one bar: a gateway or a bundle
   one system or team      group add, nested with --in; group label-at places
                           its label; group copy makes a second zone
   who does what           lane add
@@ -156,7 +156,7 @@ Output:
     edge-per-member    every node of a group has an edge alike to one end, or
                        from it: group, edges
     crossing           two lines that cross: edges
-  counts nodes= lines= crossings= bends= bent= length= width= height=
+  counts nodes= edges= crossings= bends= bent= length= width= height=
          fullest= busiest= longest= passing= across= tight= crowded=
     crossings counts the points where edges cross; length is every edge's
     length together, in pixels. fullest: the layer with most nodes,
@@ -191,12 +191,12 @@ edges, in the words of the operations. Read it instead of the file.`,
 Good to know:
   - --drawn prints how it is drawn, one record per line, as key=value:
       counts ...                    as apply prints them
-      node id= layer= place= of= width= height= lines= sides= reach=
+      node id= layer= place= of= width= height= edges= sides= reach=
       group id= members= width= height=
       edge id= from= to= leaves= enters= bends= length= direct= detour=
            skip= crosses= passes= bundle=
-      gutter above= below= lines= crossings= tight= crowded=
-      wall id= run= length= space= lines=   edges: the edges through it
+      gutter above= below= edges= crossings= tight= crowded=
+      wall id= run= length= space= edges=   edges: the edges through it
       note on= as= number= lines=   as: callout or footnote
       legend style= weight= width= mark= text=   each style and width the
            picture draws, and each named mark; text=- has no entry
@@ -249,9 +249,9 @@ Good to know:
 Example:
   grafical try shop.grafical move.yaml
   ok changed=storefront written=no
-  before nodes=9 lines=10 crossings=1 bends=12 length=3140 ...
-  after nodes=9 lines=10 crossings=1 bends=8 length=2380 ...
-  delta nodes=0 lines=0 crossings=0 bends=-4 length=-760 ...
+  before nodes=9 edges=10 crossings=1 bends=12 length=3140 ...
+  after nodes=9 edges=10 crossings=1 bends=8 length=2380 ...
+  delta nodes=0 edges=0 crossings=0 bends=-4 length=-760 ...
 `,
   },
 
@@ -263,7 +263,7 @@ Good to know:
   - A layer is not drawn: it only places its nodes. It is drawn when an edge
     ends at it or layer look gives it a look: around its nodes as a band,
     or, with no nodes, as one bar that edges meet straight past their other
-    ends, such as a gateway or a bus.
+    ends, such as a gateway or a bundle.
   - --label names a layer by what it holds ("Entry", "Stores"). The name shows
     only when the layer is drawn; a layer drawn with no name shows none.
   - Layers and nodes share one set of ids: give layers ids like row-users.
@@ -631,7 +631,7 @@ nodes as a band. Without box or band, the look is taken away.`,
 Good to know:
   - A drawn layer shows its name, when it has one: in the head of a band,
     above its nodes, or in the bar of a layer with no nodes.
-  - A layer with no nodes and a look is one bar, such as a gateway or a bus.
+  - A layer with no nodes and a look is one bar, such as a gateway or a bundle.
     An edge that passes it is refused (bar-crossed) unless edge pass lets it.
   - In a batch the look is a field: {op: layer.look, id: <id>, look: node}.
 `,

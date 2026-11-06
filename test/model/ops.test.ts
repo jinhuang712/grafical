@@ -255,7 +255,7 @@ describe("node.rename, node.move, node.remove", () => {
     expect(fail(base, [{ op: "node.move", id: "a", layer: "bottom" }])[0]).toMatchObject({
       code: "missing-field",
       field: "place",
-      facts: { row: "bottom", nodes: ["c"], allowed: ["first", "last", "before", "after"] },
+      facts: { layer: "bottom", nodes: ["c"], allowed: ["first", "last", "before", "after"] },
     });
   });
   it("needs a layer or a position", () => {

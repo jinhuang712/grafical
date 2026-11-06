@@ -22,7 +22,7 @@ person or a caller. Edges are calls, reads and writes.
   shared stores, outside services.
 - Node each system as a group, the groups side by side, each with its entry
   above its stores. Callers and outside services stay out of groups.
-- What every request passes, a gateway or a bus, can be a layer with no
+- What every request passes, a gateway or a bundle, can be a layer with no
   nodes that edges end at, drawn as one bar.
 - Put a store below or between the parts that share it, and nodes that
   talk next to each other.

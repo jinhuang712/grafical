@@ -4,7 +4,7 @@
 import { DEFECT_CODES, DEFECT_OWNER, type Defect } from "../errors.ts";
 import { arrowheads } from "../layout/badges.ts";
 import { bendsOf, layout } from "../layout/index.ts";
-import { addedRow, placeSteps } from "../layout/steps.ts";
+import { addedLayer, placeSteps } from "../layout/steps.ts";
 import { laneNodes } from "../model/lanes.ts";
 import {
   type Diagram,
@@ -540,7 +540,7 @@ function sharedEndpoints(a: SceneEdge, b: SceneEdge): string[] {
 
 /**
  * The router draws a fan-out of unlabelled edges in one line style from one node as a
- * bus: one trunk that branches (specs/decisions, "Our own gap router"). Its members share segments on purpose, and
+ * bundle: one trunk that branches (specs/decisions, "Our own gap router"). Its members share segments on purpose, and
  * a reader loses nothing, since they carry no label and look the same.
  */
 function isBus(a: SceneEdge, b: SceneEdge): boolean {
@@ -653,7 +653,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
     add(`legend-${mark}`, "text", text);
   }
   for (const layer of diagram.layers) {
-    if (!addedRow(layer.id)) add(layer.id, "label", layer.label);
+    if (!addedLayer(layer.id)) add(layer.id, "label", layer.label);
     for (const n of layer.nodes) {
       add(n.id, "label", n.label, true);
       add(n.id, "sublabel", n.sublabel, true);

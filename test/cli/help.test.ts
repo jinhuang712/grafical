@@ -254,7 +254,7 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
     ].join("\n");
     const out = run("check", photos()).out;
     expect(out.startsWith(`ok\n\n${bent}\n\ncounts nodes=`)).toBe(true);
-    expect(out).toMatch(/^counts nodes=\d+ lines=\d+ crossings=\d+ bends=\d+ bent=1 /m);
+    expect(out).toMatch(/^counts nodes=\d+ edges=\d+ crossings=\d+ bends=\d+ bent=1 /m);
     expect(out).not.toMatch(/^(hint|lines):/m);
     // Every write reports it too, a single command as a batch (specs/decisions, "A bent line is reported and never refused").
     expect(run("diagram", "subtitle", photos(), "--text", "Uploads").out).toBe(
@@ -262,7 +262,7 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
     );
     expect(run("diagram", "improve", photos()).code).toBe(2);
     const json = JSON.parse(run("check", photos(), "--json").out);
-    expect(json.counts.lines).toBe(edgeLooks.edges.length);
+    expect(json.counts.edges).toBe(edgeLooks.edges.length);
     expect(json.problems).toMatchObject([
       { kind: "warning", code: "bent-edge", detail: { edge: "api->photos", bends: 4, skip: 1 } },
     ]);

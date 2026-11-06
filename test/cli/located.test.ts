@@ -228,7 +228,7 @@ describe("the batch line a refused write names", () => {
     const crossed = report.errors.filter((e) => e.code === "bar-crossed");
     expect(crossed.length).toBeGreaterThan(0);
     for (const e of crossed) {
-      expect(e.facts?.row).toBe("row-w2");
+      expect(e.facts?.layer).toBe("row-w2");
       // After line 4 the lines cross row-w1 first, which is all that prefix can say: no line can be known.
       expect(e.source).toBe(BATCH);
       expect(truth(grocer, ops, errorKey(e), false)).toBeUndefined();

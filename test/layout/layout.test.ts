@@ -93,13 +93,13 @@ describe("with the real measurer", () => {
 /** Points where lines of one fan-out leave in all four directions: a junction that reads as a crossing. */
 function crossLikeJunctions(edges: SceneEdge[]): string[] {
   const out: string[] = [];
-  const buses = new Map<string, SceneEdge[]>();
+  const bundles = new Map<string, SceneEdge[]>();
   for (const x of edges) {
     if (x.label !== undefined) continue;
     const key = `${x.from}:${x.kind}`;
-    buses.set(key, [...(buses.get(key) ?? []), x]);
+    bundles.set(key, [...(bundles.get(key) ?? []), x]);
   }
-  for (const [key, members] of buses) {
+  for (const [key, members] of bundles) {
     if (members.length < 2) continue;
     const dirs = new Map<string, Set<string>>();
     const at = (p: Point) => `${p.x},${p.y}`;
@@ -398,7 +398,7 @@ describe("edge cases", () => {
         e("a1", t, i % 2 ? "async" : "call", `e${i}`),
       ]),
     ],
-    ["a fan-out bus", ["b1", "b2", "b3", "c1"].map((t) => e("a2", t, "data"))],
+    ["a fan-out bundle", ["b1", "b2", "b3", "c1"].map((t) => e("a2", t, "data"))],
   ];
   for (const [name, edges] of cases) {
     it(name, () => {
@@ -662,7 +662,7 @@ describe("alignment", () => {
     // It names the boxes in the way: worker right of api, and db, aligned to worker, left of queue.
     expect(problems[0]?.facts).toEqual({
       node: "queue",
-      row: expect.any(String),
+      layer: expect.any(String),
       nodes: ["worker", "db"],
     });
     // The first alignment in row order holds, and the layout still runs.

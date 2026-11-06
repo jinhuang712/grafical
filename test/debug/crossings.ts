@@ -17,7 +17,7 @@ const fixtures: Record<string, Diagram> = {
 };
 const d = fixtures[process.argv[2] ?? "catalog-sync"] ?? catalogSync;
 const s = layout(d, createStubMeasurer());
-const rowOf = (y: number) => {
+const layerOf = (y: number) => {
   for (const l of s.layers) if (y < l.band.y) return `above ${l.id}`;
   return "below all";
 };
@@ -37,7 +37,7 @@ for (let i = 0; i < s.edges.length; i++) {
         if (ah === bh) continue;
         const [h0, h1, v0, v1] = ah ? [p, q, r, t] : [r, t, p, q];
         if (between(v0.x, h0.x, h1.x) && between(h0.y, v0.y, v1.y)) {
-          const k = rowOf(h0.y);
+          const k = layerOf(h0.y);
           where.set(k, (where.get(k) ?? 0) + 1);
           console.log(`${a.id} x ${b.id} at ${v0.x},${h0.y} (${k})`);
         }

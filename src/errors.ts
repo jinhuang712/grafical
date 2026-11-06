@@ -27,7 +27,7 @@ export interface Facts {
   /** An unused id like the one given. */
   free?: string;
   /** The row, group, node, edge, lane or wall it concerns. */
-  row?: string;
+  layer?: string;
   group?: string;
   node?: string;
   edge?: string;
@@ -44,7 +44,7 @@ export interface Facts {
   /** The nodes of that row or group. */
   nodes?: readonly string[];
   /** The rows a line runs through without meeting a box of them. */
-  rows?: readonly string[];
+  layers?: readonly string[];
   /** The first and last rows a group's box covers, top to bottom. */
   top?: string;
   bottom?: string;
@@ -98,7 +98,7 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
   "kind",
   "type",
   "node",
-  "row",
+  "layer",
   "group",
   "edge",
   "edges",
@@ -107,7 +107,7 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
   "wall",
   "note",
   "nodes",
-  "rows",
+  "layers",
   "groups",
   "top",
   "bottom",

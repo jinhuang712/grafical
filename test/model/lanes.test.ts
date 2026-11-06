@@ -65,7 +65,7 @@ describe('lanes in the model (specs/decisions, "Swimlanes run one way")', () => 
     expect(d.layers.map((l) => l.lane)).toEqual(["customer", "platform", "platform", undefined]);
     const back = readDiagram(writeDiagram(d));
     expect(back).toEqual(d);
-    expect(showDiagram(d)).toContain('lane platform "Platform team" (rows): edge, services');
+    expect(showDiagram(d)).toContain('lane platform "Platform team" (layers): edge, services');
   });
 
   it("runs as columns when nodes join, and keeps each row in lane order", () => {
@@ -86,7 +86,7 @@ describe('lanes in the model (specs/decisions, "Swimlanes run one way")', () => 
     ]);
     const e1 = fail(rows, [{ op: "lane.join", lane: "platform", members: ["orders"] }]);
     // The node's row is what the lane could take instead.
-    expect(e1[0]).toMatchObject({ code: "lane-mixed", facts: { is: "node", row: "services" } });
+    expect(e1[0]).toMatchObject({ code: "lane-mixed", facts: { is: "node", layer: "services" } });
     const { diagram: cols } = ok(shop, [
       { op: "lane.add", id: "ord", label: "Orders", members: ["orders"] },
     ]);
@@ -98,7 +98,7 @@ describe('lanes in the model (specs/decisions, "Swimlanes run one way")', () => 
     const gap = fail(shop, [
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge", "data"] },
     ]);
-    expect(gap[0]).toMatchObject({ code: "lane-gap", facts: { row: "services" } });
+    expect(gap[0]).toMatchObject({ code: "lane-gap", facts: { layer: "services" } });
     const { diagram: d } = ok(shop, [
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge", "services"] },
       { op: "layer.add", id: "mesh", label: "Mesh", after: "edge" },
@@ -171,7 +171,7 @@ describe('lanes in the picture (specs/decisions, "Swimlanes run one way")', () =
     expect(check(d, s, m)).toEqual([]);
     const customer = lane(s, "customer");
     const platform = lane(s, "platform");
-    expect(customer?.run).toBe("rows");
+    expect(customer?.run).toBe("layers");
     expect(inside(rect(s, "web"), customer?.rect as Rect)).toBe(true);
     for (const id of ["gateway", "orders", "payments"]) {
       expect(inside(rect(s, id), platform?.rect as Rect)).toBe(true);

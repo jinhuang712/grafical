@@ -303,7 +303,7 @@ export function placeNotes(
   keyed.forEach((k, i) => {
     const n = i + 1;
     const lines = m.wrap(footnoteText(d, k.on, k.text), T.note, keyedWidth(room.list.w));
-    const rowH = Math.max(lines.length * lh, 2 * r);
+    const layerH = Math.max(lines.length * lh, 2 * r);
     // The number sits level with the first line of its text.
     const first = Math.max(lh, 2 * r);
     const key = numberBadge(n, room.list.x + r, y + first / 2, r, m, T);
@@ -311,7 +311,7 @@ export function placeNotes(
     const text = placeLines("note", lines, room.list.x + 2 * r + NOTE.keyGap, top, "start", m, T);
     const mark = markOn(k.on, n);
     out.set(k.on, { on: k.on, as: "footnote", number: n, ...(mark ? { mark } : {}), key, text });
-    y += rowH + NOTE.keyGap;
+    y += layerH + NOTE.keyGap;
   });
 
   /** A footnote's number on its target: a free corner of a box, after a group's label, beside a line. */

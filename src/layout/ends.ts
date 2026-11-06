@@ -7,7 +7,7 @@
 // with a look is drawn as a band too, though no edge ends at it.
 // A lane (specs/decisions, "Swimlanes run one way") is met like a group: at its border across rows, or at its side.
 
-import { endKind, endNodes, endRows, isBar, meeting } from "../model/ends.ts";
+import { endKind, endLayers, endNodes, isBar, meeting } from "../model/ends.ts";
 import type { Diagram, Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
 import { centreX, type PNode } from "./place.ts";
@@ -57,8 +57,8 @@ export function planEnds(d: Diagram): EndPlan {
     const tk = endKind(d, e.to);
     if (fk === "node" && tk === "node") return e;
     const meet = meeting(d, e.from, e.to);
-    const rf = endRows(d, e.from);
-    const rt = endRows(d, e.to);
+    const rf = endLayers(d, e.from);
+    const rt = endLayers(d, e.to);
     if (meet === undefined || rf === undefined || rt === undefined) return e;
     const out: Edge = { ...e };
     const plan: { from?: ContainerEnd; to?: ContainerEnd } = {};

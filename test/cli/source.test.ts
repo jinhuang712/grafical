@@ -212,7 +212,7 @@ describe("source", () => {
       // line 2 on.
       writeFileSync(join(dir, "g11.grafical.yaml"), grocer());
       const b11 = [
-        "- {op: layer.add, id: row-wire, label: Bus, after: row-callers}",
+        "- {op: layer.add, id: row-wire, label: Bundle, after: row-callers}",
         "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
         "- {op: layer.look, id: row-wire, look: box}",
         node("n4", "row-edge"),

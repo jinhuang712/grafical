@@ -74,7 +74,7 @@ describe('edge ends at a container (specs/decisions, "Lines that end at containe
     const e = fail(d, [{ op: "edge.add", from: "probe", to: "catalog-api" }]);
     expect(e[0]).toMatchObject({
       code: "edge-blocked",
-      facts: { ends: ["probe", "catalog-api"], row: "topics", nodes: ["retry", "line_topics"] },
+      facts: { ends: ["probe", "catalog-api"], layer: "topics", nodes: ["retry", "line_topics"] },
     });
   });
 
@@ -131,13 +131,13 @@ groups:
 
   it("refuses a line between two rows with no box", () => {
     const errors = fail(base, [
-      { op: "layer.add", id: "bus", label: "Bus", after: "core" },
-      { op: "edge.add", from: "gateway", to: "bus" },
+      { op: "layer.add", id: "bundle", label: "Bundle", after: "core" },
+      { op: "edge.add", from: "gateway", to: "bundle" },
     ]);
     expect(errors[0]).toMatchObject({
       code: "bar-to-bar",
-      found: "gateway->bus",
-      facts: { ends: ["gateway", "bus"] },
+      found: "gateway->bundle",
+      facts: { ends: ["gateway", "bundle"] },
     });
   });
 
@@ -150,7 +150,7 @@ groups:
     // (specs/decisions, "Refusals say what happened and which commands can change it").
     expect(errors[0]).toMatchObject({
       code: "bar-in-group",
-      facts: { row: "mid", group: "sys", edge: "rider->mid", top: "core", bottom: "stores" },
+      facts: { layer: "mid", group: "sys", edge: "rider->mid", top: "core", bottom: "stores" },
     });
   });
 
@@ -160,7 +160,7 @@ groups:
     expect(passing[0]).toMatchObject({
       code: "bar-crossed",
       found: "driver->payments",
-      facts: { ends: ["driver", "payments"], row: "gateway" },
+      facts: { ends: ["driver", "payments"], layer: "gateway" },
     });
     const allowed = ok(d, [{ op: "edge.add", from: "driver", to: "payments", pass: true }]);
     expect(allowed.edges.find((e) => e.id === "driver->payments")?.pass).toBe(true);
@@ -206,7 +206,7 @@ groups:
     expect(crossed[0]).toMatchObject({
       code: "bar-crossed",
       found: "driver->payments",
-      facts: { row: "gateway" },
+      facts: { layer: "gateway" },
     });
     const looked = ok(passing, [
       { op: "layer.look", id: "gateway", look: "box" },
@@ -230,7 +230,7 @@ groups:
         field: "layers[3].look",
         found: "mid",
         // No line ends at the bar: the record names the row, the group and the rows its box covers.
-        facts: { row: "mid", group: "sys", top: "core", bottom: "stores" },
+        facts: { layer: "mid", group: "sys", top: "core", bottom: "stores" },
       }),
     ]);
     // A box placed by steps above the first row adds a row the file does not hold.

@@ -22,7 +22,7 @@ describe("side turns", () => {
     const file = join(import.meta.dirname, "../fixtures/order-lanes.grafical.yaml");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
-    const lines = drawing(d, s).lines;
+    const lines = drawing(d, s).edges;
     const of = (id: string) => lines.find((l) => l.id === id);
     expect(of("ship->receive")).toMatchObject({ leaves: "top", enters: "left", bends: 1 });
     expect(of("pay->close")).toMatchObject({ enters: "left", bends: 1 });
@@ -38,7 +38,7 @@ describe("side turns", () => {
     const file = join(import.meta.dirname, "../fixtures/two-zones.grafical.yaml");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
-    const lines = drawing(d, s).lines;
+    const lines = drawing(d, s).edges;
     const of = (id: string) => lines.find((l) => l.id === id);
     expect(of("alb->web-a")).toMatchObject({ leaves: "bottom", enters: "right", bends: 1 });
     expect(of("alb->web-b")).toMatchObject({ leaves: "bottom", enters: "left", bends: 1 });
@@ -57,7 +57,7 @@ edges:
 `) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-    const line = drawing(d, s).lines.find((l) => l.id === "api->mail");
+    const line = drawing(d, s).edges.find((l) => l.id === "api->mail");
     expect(line).toMatchObject({ leaves: "right", enters: "left", bends: 0 });
   });
   // Found by the owner on 2026-10-16 in a booking C4 diagram: the web app's line turned
@@ -76,7 +76,7 @@ edges:
 `) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-    const lines = drawing(d, s).lines;
+    const lines = drawing(d, s).edges;
     const of = (id: string) => lines.find((l) => l.id === id);
     expect(of("web->api")).toMatchObject({ enters: "left", bends: 1, crosses: [] });
     expect(of("mobile->api")).toMatchObject({ enters: "left", bends: 1, crosses: [] });

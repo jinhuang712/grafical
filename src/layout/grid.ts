@@ -232,7 +232,7 @@ export function buildGrid(d: Diagram): Grid {
   for (const w of d.walls ?? []) {
     const way = wallRun(d, w);
     const split = way?.run === "beside" ? wallSplit(d, way) : undefined;
-    if (split === undefined || "row" in split) continue;
+    if (split === undefined || "layer" in split) continue;
     let clash: string[] | undefined;
     for (const a of split.left) {
       for (const b of split.right) {
@@ -373,7 +373,7 @@ export function buildGrid(d: Diagram): Grid {
         node: id,
         target: t,
         found: t,
-        facts: { node: id, row: d.layers[row[i] as number]?.id ?? "" },
+        facts: { node: id, layer: d.layers[row[i] as number]?.id ?? "" },
       });
     } else if (tryJoin(i, j) === "clash") {
       const layer = d.layers[row[i] as number]?.id ?? "";
@@ -383,7 +383,7 @@ export function buildGrid(d: Diagram): Grid {
         node: id,
         target: t,
         found: t,
-        facts: { node: id, row: layer, ...(way.length > 0 ? { nodes: way } : {}) },
+        facts: { node: id, layer: layer, ...(way.length > 0 ? { nodes: way } : {}) },
       });
     }
   }
@@ -410,7 +410,7 @@ export function buildGrid(d: Diagram): Grid {
         code: "step-blocked",
         node: ids[s] as string,
         found: ids[s] as string,
-        facts: { node: ids[block] as string, row: d.layers[row[s] as number]?.id ?? "" },
+        facts: { node: ids[block] as string, layer: d.layers[row[s] as number]?.id ?? "" },
       });
     }
   }
@@ -840,13 +840,13 @@ function groupConstraints(
         const layer = d.layers[r]?.id ?? "";
         const split = gapSplit(list, ms, g, rows, chainOf, links, reaches, cls);
         if (split === undefined) {
-          failed = conflict({ row: layer, nodes: list.map((i) => ids[i] as string) });
+          failed = conflict({ layer: layer, nodes: list.map((i) => ids[i] as string) });
           break;
         }
         for (const [k, i] of list.entries()) {
           for (const m of ms) {
             if (k < split ? addEdge(i, m, mine) : addEdge(m, i, mine)) continue;
-            failed = conflict({ row: layer, node: ids[i] as string });
+            failed = conflict({ layer: layer, node: ids[i] as string });
             break;
           }
           if (failed !== undefined) break;
@@ -883,7 +883,7 @@ function groupConstraints(
           group: g,
           node: s,
           found: s,
-          facts: { node: s, row: layer, group: inner, between },
+          facts: { node: s, layer: layer, group: inner, between },
         };
         break;
       }
@@ -892,11 +892,11 @@ function groupConstraints(
       const layer = d.layers[r]?.id ?? "";
       for (const m of ms) {
         if (left !== undefined && !addEdge(left, m, mine)) {
-          failed = conflict({ row: layer, node: ids[left] as string });
+          failed = conflict({ layer: layer, node: ids[left] as string });
           break;
         }
         if (right !== undefined && !addEdge(m, right, mine)) {
-          failed = conflict({ row: layer, node: ids[right] as string });
+          failed = conflict({ layer: layer, node: ids[right] as string });
           break;
         }
       }
@@ -991,7 +991,7 @@ function conflictOf(g: string, at: Facts): GroupProblem {
   const p: GroupProblem = {
     code: "group-conflict",
     group: g,
-    found: at.beside ?? at.node ?? at.row ?? "",
+    found: at.beside ?? at.node ?? at.layer ?? "",
     facts: { group: g, ...at },
   };
   if (at.node !== undefined) p.node = at.node;

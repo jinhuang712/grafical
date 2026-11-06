@@ -10,11 +10,11 @@ import { inGroup } from "./groups.ts";
 import { closest } from "./suggest.ts";
 import type { Diagram, Layer } from "./types.ts";
 
-export type LaneRun = "rows" | "columns";
+export type LaneRun = "layers" | "columns";
 
 /** How the diagram's lanes run, or undefined while no layer or node names a lane. */
 export function laneRun(d: Diagram): LaneRun | undefined {
-  if (d.layers.some((l) => l.lane !== undefined)) return "rows";
+  if (d.layers.some((l) => l.lane !== undefined)) return "layers";
   if (d.layers.some((l) => l.nodes.some((n) => n.lane !== undefined))) return "columns";
   return undefined;
 }
@@ -94,7 +94,7 @@ export function checkLanes(d: Diagram, index: number): OpError[] {
       index,
       field: "lanes",
       found: node.id,
-      facts: { is: "node", row: layer.id },
+      facts: { is: "node", layer: layer.id },
     });
     return errors;
   }
@@ -118,7 +118,7 @@ function rowGaps(d: Diagram, index: number): OpError[] {
       index,
       field: `lanes[${i}]`,
       found: lane.id,
-      facts: { row: gap.id },
+      facts: { layer: gap.id },
     });
   });
   return errors;
@@ -127,7 +127,7 @@ function rowGaps(d: Diagram, index: number): OpError[] {
 /** A group lies inside one lane, or outside every lane. */
 function groupsAcross(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
-  const rows = laneRun(d) === "rows";
+  const rows = laneRun(d) === "layers";
   (d.groups ?? []).forEach((g, i) => {
     const lanes = new Set<string>();
     // The first box, top to bottom, in another lane than the group's first box, and that lane.

@@ -28,7 +28,7 @@ export function wallRun(d: Diagram, w: Wall): WallRun | undefined {
   const a = sideNodes(d, w.between);
   const b = sideNodes(d, w.and);
   if (a.length === 0 || b.length === 0) return undefined;
-  const row = rowOf(d);
+  const row = layerOf(d);
   const rows = (ns: string[]) => ns.map((n) => row.get(n) ?? 0);
   const [ra, rb] = [rows(a), rows(b)];
   if (Math.max(...ra) < Math.min(...rb)) return { run: "across", first: a, second: b };
@@ -47,7 +47,7 @@ export function wallRun(d: Diagram, w: Wall): WallRun | undefined {
   return left ? { run: "beside", first: a, second: b } : { run: "beside", first: b, second: a };
 }
 
-function rowOf(d: Diagram): Map<string, number> {
+function layerOf(d: Diagram): Map<string, number> {
   return new Map(d.layers.flatMap((l, i) => l.nodes.map((n) => [n.id, i] as const)));
 }
 
@@ -126,7 +126,7 @@ export function checkWalls(d: Diagram, index: number): OpError[] {
         ? { nodes: both }
         : run === undefined
           ? sharedRow(d, a, b)
-          : split !== undefined && "row" in split
+          : split !== undefined && "layer" in split
             ? split
             : undefined;
     if (problem !== undefined) {
@@ -171,8 +171,8 @@ export interface WallSplit {
 export function wallSplit(
   d: Diagram,
   run: Extract<WallRun, { run: "beside" }>,
-): WallSplit | { row: string; nodes: string[] } {
-  const row = rowOf(d);
+): WallSplit | { layer: string; nodes: string[] } {
+  const row = layerOf(d);
   const rows = [...run.first, ...run.second].map((n) => row.get(n) ?? 0);
   const top = Math.min(...rows);
   const bottom = Math.max(...rows);
@@ -184,10 +184,10 @@ export function wallSplit(
     const ids = l.nodes.map((n) => n.id);
     const lastA = ids.findLastIndex((id) => run.first.includes(id));
     const firstB = ids.findIndex((id) => run.second.includes(id));
-    if (lastA < 0 && firstB < 0) return { row: l.id, nodes: [] };
+    if (lastA < 0 && firstB < 0) return { layer: l.id, nodes: [] };
     const cut = lastA >= 0 ? lastA + 1 : firstB;
     if (lastA >= 0 && firstB >= 0 && firstB > cut) {
-      return { row: l.id, nodes: ids.slice(cut, firstB) };
+      return { layer: l.id, nodes: ids.slice(cut, firstB) };
     }
     left.push(...ids.slice(0, cut));
     right.push(...ids.slice(cut));
@@ -196,12 +196,12 @@ export function wallSplit(
 }
 
 /** The first row both sides hold nodes in, with those nodes; or the nodes of a side that is empty. */
-function sharedRow(d: Diagram, a: string[], b: string[]): { row?: string; nodes: string[] } {
+function sharedRow(d: Diagram, a: string[], b: string[]): { layer?: string; nodes: string[] } {
   if (a.length === 0 || b.length === 0) return { nodes: [] };
   for (const l of d.layers) {
     const here = l.nodes.filter((n) => a.includes(n.id) || b.includes(n.id)).map((n) => n.id);
     if (here.some((n) => a.includes(n)) && here.some((n) => b.includes(n))) {
-      return { row: l.id, nodes: here };
+      return { layer: l.id, nodes: here };
     }
   }
   // The sides interleave by rows: name each side's nodes.

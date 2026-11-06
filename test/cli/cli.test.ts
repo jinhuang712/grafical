@@ -161,7 +161,7 @@ describe("write commands", () => {
     expect(r.code, r.out + r.err).toBe(0);
     expect(r.out).toBe(
       "ok changed=clients,services,storage,web,api,worker,db,mq,web->api,api->db,api->mq,mq->worker\n" +
-        "counts nodes=5 lines=4 crossings=0 bends=2 bent=0 length=256 width=368 height=376 fullest=services:2 busiest=api:3 longest=api->mq:120 passing=0 across=0 tight=0 crowded=0\n",
+        "counts nodes=5 edges=4 crossings=0 bends=2 bent=0 length=256 width=368 height=376 fullest=services:2 busiest=api:3 longest=api->mq:120 passing=0 across=0 tight=0 crowded=0\n",
     );
     const single = read("single.grafical.yaml");
     expect(read("batch.grafical.yaml")).toBe(single);
@@ -348,7 +348,7 @@ describe("write commands", () => {
     );
     expect(read("s.grafical.yaml")).toContain("step: 3");
     expect(run("show", "s.grafical.yaml").out).toContain("p->q [step 3] read");
-    expect(run("show", "s.grafical.yaml", "--drawn").out).toMatch(/^line id=p->q .* step=3$/m);
+    expect(run("show", "s.grafical.yaml", "--drawn").out).toMatch(/^edge id=p->q .* step=3$/m);
     const bad = run("edge", "number", "s.grafical.yaml", "p->q", "--n", "0");
     expect(bad.code).toBe(1);
     expect(bad.out).toContain("error: bad-value\n");
@@ -400,13 +400,13 @@ describe("read commands", () => {
   it('show --drawn prints the drawing as facts and counts (specs/decisions, "Records over prose")', () => {
     const r = run("show", "single.grafical.yaml", "--drawn");
     expect(r.code).toBe(0);
-    expect(r.out).toMatch(/^counts nodes=\d+ lines=\d+ crossings=\d+/);
-    expect(r.out).toMatch(/^box id=api row=\S+ place=\d+ of=\d+/m);
+    expect(r.out).toMatch(/^counts nodes=\d+ edges=\d+ crossings=\d+/);
+    expect(r.out).toMatch(/^node id=api layer=\S+ place=\d+ of=\d+/m);
     expect(r.out).toMatch(
-      /^line id=api->db from=api to=db leaves=\w+ enters=\w+ bends=\d+ length=\d+/m,
+      /^edge id=api->db from=api to=db leaves=\w+ enters=\w+ bends=\d+ length=\d+/m,
     );
     expect(r.out).toMatch(
-      /^gutter above=clients below=services lines=\d+ crossings=\d+ tight=\d+ crowded=\d+$/m,
+      /^gutter above=clients below=services edges=\d+ crossings=\d+ tight=\d+ crowded=\d+$/m,
     );
     const json = JSON.parse(run("show", "single.grafical.yaml", "--drawn", "--json").out);
     expect(json.drawing.counts.nodes).toBeGreaterThan(0);
@@ -420,7 +420,7 @@ describe("read commands", () => {
     const r = run("try", "single.grafical.yaml", "try.yaml");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(
-      /^ok changed=api written=no\nbefore nodes=\d+ lines=\d+ crossings=\d+.*\nafter nodes=\d+.*\ndelta nodes=0 lines=0 crossings=[-+]?\d+ /,
+      /^ok changed=api written=no\nbefore nodes=\d+ edges=\d+ crossings=\d+.*\nafter nodes=\d+.*\ndelta nodes=0 edges=0 crossings=[-+]?\d+ /,
     );
     expect(readFileSync(join(dir, "single.grafical.yaml"), "utf8")).toBe(before);
     const json = JSON.parse(run("try", "single.grafical.yaml", "try.yaml", "--json").out);

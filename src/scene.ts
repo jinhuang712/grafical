@@ -94,7 +94,7 @@ export interface SceneLane {
   /** What its styles set. */
   look?: Look;
   /** Rows: the header is on the left. Columns: on top. */
-  run: "rows" | "columns";
+  run: "layers" | "columns";
   rect: Rect;
   head: Rect;
   label: PlacedText;

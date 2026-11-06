@@ -113,7 +113,7 @@ edges:
 
   it("names the bar among the rows a line that may pass it passes", () => {
     const d = bar();
-    const line = drawing(d, layout(d, m)).lines.find((l) => l.id === "driver->matcher");
+    const line = drawing(d, layout(d, m)).edges.find((l) => l.id === "driver->matcher");
     expect(line?.passes).toEqual(["gateway"]);
   });
 
@@ -121,27 +121,27 @@ edges:
   // ended at, and the line that passed the bar there went round the name with four bends.
   it("seats its label clear of the lines that pass it, which run straight", () => {
     const d = readDiagram(`grafical: 1
-title: bus
+title: bundle
 density: normal
 layers:
   - {id: services, nodes: [${node("orders")}, ${node("billing")}, ${node("shipping")}]}
-  - {id: bus, label: Message-oriented middleware, nodes: []}
+  - {id: bundle, label: Message-oriented middleware, nodes: []}
   - id: stores
     nodes:
       - {id: orders-db, label: orders-db, kind: store, align: orders}
       - {id: shipping-db, label: shipping-db, kind: store, align: shipping}
 edges:
-  - {id: billing->bus, from: billing, to: bus}
+  - {id: billing->bundle, from: billing, to: bundle}
   - {id: orders->orders-db, from: orders, to: orders-db, pass: true}
   - {id: shipping->shipping-db, from: shipping, to: shipping-db, pass: true}
 `) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-    const b = s.bands?.find((x) => x.id === "bus");
+    const b = s.bands?.find((x) => x.id === "bundle");
     const t = b?.label?.bbox;
     if (b === undefined || t === undefined) throw new Error("no label");
     for (const e of s.edges) {
-      if (e.id !== "billing->bus") expect(bends(e.points), e.id).toBe(0);
+      if (e.id !== "billing->bundle") expect(bends(e.points), e.id).toBe(0);
       // Every line that meets or crosses the bar keeps 16 px from its label.
       for (let i = 1; i < e.points.length; i++) {
         const p = e.points[i - 1] as Point;
@@ -155,14 +155,14 @@ edges:
 });
 
 describe('a row with a look (specs/decisions, "A row with a look is drawn")', () => {
-  const rows = (core = "", bus = "") =>
+  const rows = (core = "", bundle = "") =>
     readDiagram(`grafical: 1
 title: looks
 density: normal
 layers:
   - {id: apps, label: Apps, nodes: [${node("rider", "actor")}, ${node("driver", "actor")}]}
   - {id: core, label: Core services${core}, nodes: [${node("booking")}, ${node("payments")}]}
-  - {id: bus, label: Event bus${bus}, nodes: []}
+  - {id: bundle, label: Event bundle${bundle}, nodes: []}
   - {id: stores, label: Stores, nodes: [${node("trips", "store")}]}
 edges:
   - {id: rider->booking, from: rider, to: booking}
@@ -175,9 +175,9 @@ edges:
     const d = rows(", look: band", ", look: box");
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-    expect(s.bands?.map((b) => b.id)).toEqual(["core", "bus"]);
-    const [core, bus] = s.bands ?? [];
-    if (core === undefined || bus === undefined) throw new Error("no band");
+    expect(s.bands?.map((b) => b.id)).toEqual(["core", "bundle"]);
+    const [core, bundle] = s.bands ?? [];
+    if (core === undefined || bundle === undefined) throw new Error("no band");
     // The band: around its boxes, its label in its head above them.
     expect(core).not.toHaveProperty("bar");
     expect(core).not.toHaveProperty("box");
@@ -190,17 +190,17 @@ edges:
       expect(r.y + r.h).toBeLessThan(core.rect.y + core.rect.h);
     }
     // The bar: one bar in a box's look, its label in it, passed by the line that may.
-    expect(bus).toMatchObject({ bar: true, box: true });
-    expect(bus.rect.h).toBe(40);
-    expect(bus.label?.runs.map((r) => r.text).join("")).toBe("Event bus");
-    const line = drawing(d, s).lines.find((l) => l.id === "booking->trips");
-    expect(line?.passes).toEqual(["bus"]);
+    expect(bundle).toMatchObject({ bar: true, box: true });
+    expect(bundle.rect.h).toBe(40);
+    expect(bundle.label?.runs.map((r) => r.text).join("")).toBe("Event bundle");
+    const line = drawing(d, s).edges.find((l) => l.id === "booking->trips");
+    expect(line?.passes).toEqual(["bundle"]);
   });
 
   it("draws no name for a drawn row without a label, and the file keeps it so", () => {
     const d0 = rows(", look: band", ", look: box");
     const r = applyOps(d0, [
-      { op: "layer.add", id: "spare", after: "bus" },
+      { op: "layer.add", id: "spare", after: "bundle" },
       { op: "layer.look", id: "spare", look: "band" },
       { op: "node.add", id: "cache", layer: "spare", label: "cache", first: true },
     ]);
@@ -217,12 +217,12 @@ edges:
     expect(s.bands?.find((b) => b.id === "core")?.label).toBeDefined();
     // A bar without a label is drawn as a bar, with no name in it.
     const bare = readDiagram(
-      writeDiagram(d).replace("  - id: bus\n    label: Event bus\n", "  - id: bus\n"),
+      writeDiagram(d).replace("  - id: bundle\n    label: Event bundle\n", "  - id: bundle\n"),
     ) as Diagram;
     const bs = layout(bare, m);
-    const bus = bs.bands?.find((b) => b.id === "bus");
-    expect(bus).toMatchObject({ bar: true, box: true });
-    expect(bus).not.toHaveProperty("label");
+    const bundle = bs.bands?.find((b) => b.id === "bundle");
+    expect(bundle).toMatchObject({ bar: true, box: true });
+    expect(bundle).not.toHaveProperty("label");
     expect(check(bare, bs, m).filter((x) => x.owner === "engine")).toEqual([]);
   });
 });

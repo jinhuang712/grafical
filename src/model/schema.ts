@@ -588,7 +588,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
           index,
           field,
           found: n.align,
-          facts: { node: n.id, row: l.id },
+          facts: { node: n.id, layer: l.id },
         });
       }
     });

@@ -466,7 +466,7 @@ export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
         out.push({ code: "label-collision", found: `texts "${a.text}" and "${b.text}" overlap` });
     }
   }
-  // Two lines drawn over each other, except a bus or a fan-in: lines of one style
+  // Two lines drawn over each other, except a bundle or a fan-in: lines of one style
   // that leave one point, or reach one point, share a trunk on purpose.
   for (let i = 0; i < drawn.length; i++) {
     for (let j = i + 1; j < drawn.length; j++) {

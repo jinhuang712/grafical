@@ -283,7 +283,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
     lane: ["lane label"],
     wall: ["wall label"],
     "on-note": ["note add"],
-    row: ["layer label"],
+    layer: ["layer label"],
     node: ["node label", "node sublabel", "node mark"],
     edge: ["edge label"],
   },
@@ -401,7 +401,7 @@ export interface Block {
 /** What each id of a diagram names, by the key its facts take: row, node, group, lane, edge, wall or column. */
 export function kindsOf(d: Diagram): Map<string, string> {
   const out = new Map<string, string>();
-  for (const l of d.layers) out.set(l.id, "row");
+  for (const l of d.layers) out.set(l.id, "layer");
   for (const n of everyNode(d)) out.set(n.id, "node");
   for (const g of d.groups ?? []) out.set(g.id, "group");
   for (const x of d.lanes ?? []) out.set(x.id, "lane");
@@ -421,7 +421,7 @@ const LISTS: ReadonlySet<keyof Facts> = new Set<keyof Facts>([
   "edges",
   "ends",
   "nodes",
-  "rows",
+  "layers",
   "groups",
   "lanes",
   "between",
@@ -438,7 +438,7 @@ const PLURAL: Readonly<Record<string, keyof Facts>> = {
   node: "nodes",
   edge: "edges",
   group: "groups",
-  row: "rows",
+  layer: "layers",
   lane: "lanes",
 };
 

@@ -19,9 +19,7 @@ import { closest } from "./suggest.ts";
 import {
   DENSITIES,
   type Density,
-  EDGE_KINDS,
   EDGE_SIDES,
-  type EdgeKind,
   type EdgeSide,
   GAP_MAGNIFICATIONS,
   type GapMagnified,
@@ -37,8 +35,6 @@ import {
   type MarkShape,
   type MarkSize,
   type MarkSlot,
-  NODE_KINDS,
-  type NodeKind,
   ROW_LOOKS,
   type RowLook,
   type Shape,

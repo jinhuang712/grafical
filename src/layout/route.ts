@@ -155,9 +155,9 @@ export interface Plan {
   /** Index into gutters of the gutter that carries the label. */
   labelAt: number;
   /** The fan-out this edge leaves by: one port and one trunk. */
-  bus: Bus | undefined;
+  bundle: Bundle | undefined;
   /** The fan-in this edge arrives by: one port, each line joining it on its own row. */
-  fanIn: Bus | undefined;
+  fanIn: Bundle | undefined;
   /** Where a sideways edge runs. */
   side: SideSlot | undefined;
   /** The label of a sideways edge, in its row beside its line. */
@@ -180,7 +180,7 @@ export interface Plan {
   away?: true;
 }
 
-interface Bus {
+interface Bundle {
   id: string;
   members: Plan[];
   port: number;
@@ -192,7 +192,7 @@ export interface Stub {
   top: boolean;
 }
 
-/** One horizontal run in one gutter, shared by the members of a bus. */
+/** One horizontal run in one gutter, shared by the members of a bundle. */
 export interface Visit {
   id: string;
   gutter: number;
@@ -204,7 +204,7 @@ export interface Visit {
   /** Row in the gutter, top first. -1 for a straight line, which needs none. */
   row: number;
   /** Runs of one fan-out or fan-in share their trunk's stub: their stubs at one x are one line. */
-  bus?: string | undefined;
+  bundle?: string | undefined;
 }
 
 export interface VisitLabel {
@@ -285,7 +285,7 @@ export function routeAcross(
       const pl = makePlan(edge, nodes, labels, extra);
       if (pl !== undefined) plans.push(pl);
     }
-    assignBuses(plans, alone);
+    assignBundles(plans, alone);
     chooseGaps(plans, gapsByLayer, extra.forbidTop, extra.boxes, extra.bandEnds);
     assignGapTracks(plans, extra.boxes);
     chooseUturnGutters(plans, layers, extra.forbidTop, extra.closedAbove, below);
@@ -507,7 +507,7 @@ function makePlan(
     visits: [],
     label,
     labelAt: -1,
-    bus: undefined,
+    bundle: undefined,
     fanIn: undefined,
     side,
     sideLabel,
@@ -618,7 +618,7 @@ function chooseUturnGutters(
     const want = pl.edge.out ?? pl.edge.in;
     if (pl.kind !== "uturn" || u === v || u.layer === 0) continue;
     if (want === "bottom" || (below.has(pl.edge.id) && want !== "top")) continue;
-    if (pl.bus !== undefined || pl.fanIn !== undefined) continue;
+    if (pl.bundle !== undefined || pl.fanIn !== undefined) continue;
     // A box whose top lies under a band's label has no port there.
     const labels = forbidTop.get(u.layer) ?? [];
     const lo = (n: PNode) => n.x + portInset(n.w);
@@ -687,7 +687,7 @@ function mayEnter(pl: Plan): boolean {
  */
 function needless(pl: Plan): boolean {
   if ((pl.kind !== "down" && pl.kind !== "up") || pl.between.length > 0) return false;
-  if (pl.bus !== undefined || pl.fanIn !== undefined) return false;
+  if (pl.bundle !== undefined || pl.fanIn !== undefined) return false;
   if (pl.turn !== undefined || pl.turnIn !== undefined) return false;
   if (Math.abs(pl.srcPort - pl.dstPort) < EPS) return false;
   const inset = ROUTE.portMin / 2 + 2;
@@ -702,13 +702,13 @@ function portsOn(n: PNode): number {
 
 /**
  * Every line meets its node side at a port of its own (specs/decisions, "Lines meet any side"), with two exceptions.
- * Unlabelled edges in one line style that leave one side leave as a bus, one port
+ * Unlabelled edges in one line style that leave one side leave as a bundle, one port
  * and one trunk that splits near their targets: three or more of them from any
  * side (specs/decisions, "Fan-outs of three bundle"), two or more from a side with more lines than slots. Of the rest, a
  * fan-in of unlabelled edges in one style into such a crowded side arrives through
  * one port.
  */
-function assignBuses(plans: Plan[], alone: Set<string>): void {
+function assignBundles(plans: Plan[], alone: Set<string>): void {
   const load = new Map<string, number>();
   for (const pl of plans) {
     if (pl.kind === "neighbour") continue;
@@ -730,23 +730,23 @@ function assignBuses(plans: Plan[], alone: Set<string>): void {
     return [...groups.keys()]
       .sort(cmp)
       .map((k) => ({ id: k, members: groups.get(k) ?? [], port: 0 }))
-      .filter((b) => b.members.length >= ROUTE.busMin);
+      .filter((b) => b.members.length >= ROUTE.bundleMin);
   };
   // A two-way edge has an arrowhead at its start, so it never shares a trunk from there, and
   // a main-path edge shares one only with main-path edges, which are as thick (specs/decisions, "Lines meet any side").
   // Edges of one weight share a trunk (specs/decisions, "Edge weights").
   const look = (pl: Plan) => `${lineStyle(pl.edge.kind)}:${pl.edge.weight ?? ""}`;
-  for (const bus of collect(
+  for (const bundle of collect(
     (pl) => `${pl.u.id}:${pl.srcSide}:${look(pl)}`,
     (pl) => pl.edge.both === true,
   )) {
-    const first = bus.members[0] as Plan;
-    if (bus.members.length < ROUTE.fanOut && roomy(first.u, first.srcSide)) continue;
-    for (const pl of bus.members) pl.bus = bus;
+    const first = bundle.members[0] as Plan;
+    if (bundle.members.length < ROUTE.fanOut && roomy(first.u, first.srcSide)) continue;
+    for (const pl of bundle.members) pl.bundle = bundle;
   }
   for (const fan of collect(
     (pl) => `in ${pl.v.id}:${pl.dstSide}:${look(pl)}`,
-    (pl) => pl.bus !== undefined || roomy(pl.v, pl.dstSide),
+    (pl) => pl.bundle !== undefined || roomy(pl.v, pl.dstSide),
   )) {
     for (const pl of fan.members) pl.fanIn = fan;
   }
@@ -990,22 +990,22 @@ function chooseGaps(
   }
 }
 
-/** The track a path takes through the last of `gaps`: shared by bus members with the same way so far. */
+/** The track a path takes through the last of `gaps`: shared by bundle members with the same way so far. */
 function trackKey(pl: Plan, gaps: Gap[]): string {
-  if (pl.bus === undefined) return pl.edge.id;
-  return `${pl.bus.id}|${gaps.map(gapKey).join(",")}`;
+  if (pl.bundle === undefined) return pl.edge.id;
+  return `${pl.bundle.id}|${gaps.map(gapKey).join(",")}`;
 }
 
 // Pass 2a: gap tracks -------------------------------------------------------
 
 /**
- * The members of one bus that have passed the same gaps before gutter j share the
+ * The members of one bundle that have passed the same gaps before gutter j share the
  * run in gutter j, and the trunk through the next gap they share.
  */
 function trunkKey(pl: Plan, j: number): string | undefined {
-  if (pl.bus === undefined) return undefined;
+  if (pl.bundle === undefined) return undefined;
   const passed = pl.gaps.slice(0, j).map(gapKey);
-  return `${pl.bus.id}|${passed.join(",")}`;
+  return `${pl.bundle.id}|${passed.join(",")}`;
 }
 
 interface Track {
@@ -1217,7 +1217,7 @@ function chooseSideExits(
   for (const pl of statedFirst(plans)) {
     const { u, v } = pl;
     if (pl.kind !== "down" && pl.kind !== "up") continue;
-    if (pl.bus !== undefined || pl.fanIn !== undefined) continue;
+    if (pl.bundle !== undefined || pl.fanIn !== undefined) continue;
     if (noSideExit.has(pl.edge.id)) continue;
     if (!mayExit(pl)) continue;
     // A line that skips rows turns into its corridor at its first gap track; any
@@ -1353,7 +1353,7 @@ function chooseSideEntries(
       const { u, v } = pl;
       if (pl.turnIn !== undefined || !mayEnter(pl)) continue;
       if (pl.kind !== "down" && pl.kind !== "up") continue;
-      if (pl.bus !== undefined) continue;
+      if (pl.bundle !== undefined) continue;
       // A line between neighbouring rows turns once: by a side exit or a side entry.
       if (pl.between.length === 0 && pl.turn !== undefined) continue;
       // Only between two nodes: a container end is cut at the container's box (specs/decisions, "Lines that end at containers").
@@ -1440,7 +1440,7 @@ function chooseSideEntries(
       const fan = pl.fanIn;
       if (fan !== undefined) {
         fan.members = fan.members.filter((m) => m !== pl);
-        if (fan.members.length < ROUTE.busMin) for (const m of fan.members) m.fanIn = undefined;
+        if (fan.members.length < ROUTE.bundleMin) for (const m of fan.members) m.fanIn = undefined;
         pl.fanIn = undefined;
       }
       pl.dstSide = side;
@@ -1496,7 +1496,7 @@ function straightenPorts(plans: Plan[]): void {
   for (const pl of plans) {
     if (pl.kind !== "down" && pl.kind !== "up") continue;
     if (pl.between.length > 0 || pl.turn !== undefined || pl.turnIn !== undefined) continue;
-    if (pl.bus !== undefined || pl.fanIn !== undefined) continue;
+    if (pl.bundle !== undefined || pl.fanIn !== undefined) continue;
     if (Math.abs(pl.srcPort - pl.dstPort) < EPS) continue;
     const g = pl.gutters[0];
     if (g === undefined) continue;
@@ -1563,7 +1563,7 @@ function centreLines(
   const column = (pl: Plan): number | undefined => {
     if (pl.kind !== "down" && pl.kind !== "up") return undefined;
     if (pl.turn !== undefined || pl.turnIn !== undefined) return undefined;
-    if (pl.bus !== undefined || pl.fanIn !== undefined) return undefined;
+    if (pl.bundle !== undefined || pl.fanIn !== undefined) return undefined;
     const x = pl.srcPort;
     return pl.gapX.every((t) => Math.abs(t - x) < EPS) ? x : undefined;
   };
@@ -1806,7 +1806,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
         // A branch of a fan-out ends at its node's centre, and a line into a
         // fan-in starts at its node's centre; other lines lean toward each other.
         ds = pl.fanIn !== undefined ? snap(centreX(u)) : toward(u, centreX(v));
-        dt = pl.bus !== undefined ? snap(centreX(v)) : toward(v, centreX(u));
+        dt = pl.bundle !== undefined ? snap(centreX(v)) : toward(v, centreX(u));
       }
     }
     const back = pl.kind === "uturn";
@@ -1892,19 +1892,19 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     // A fan-out leaves through one port and a fan-in arrives through one, each
     // placed like a single end.
     const slots: End[] = [];
-    const buses = new Map<string, { bus: Bus; ends: End[]; src: boolean }>();
+    const bundles = new Map<string, { bundle: Bundle; ends: End[]; src: boolean }>();
     for (const end of ends) {
-      const bus = end.src ? end.plan.bus : end.plan.fanIn;
-      if (bus === undefined) {
+      const bundle = end.src ? end.plan.bundle : end.plan.fanIn;
+      if (bundle === undefined) {
         slots.push({ ...end, key: end.plan.edge.id });
         continue;
       }
-      const entry = buses.get(bus.id);
-      if (entry === undefined) buses.set(bus.id, { bus, ends: [end], src: end.src });
+      const entry = bundles.get(bundle.id);
+      if (entry === undefined) bundles.set(bundle.id, { bundle, ends: [end], src: end.src });
       else entry.ends.push(end);
     }
-    for (const id of [...buses.keys()].sort(cmp)) {
-      const entry = buses.get(id);
+    for (const id of [...bundles.keys()].sort(cmp)) {
+      const entry = bundles.get(id);
       if (entry === undefined || entry.ends[0] === undefined) continue;
       // A member that can run straight keeps its line straight: the trunk is
       // that line, and the others branch off it. Otherwise the port sits at the
@@ -1932,8 +1932,8 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     const g = first.side === "bottom" ? n.layer : n.layer - 1;
     const facing = (first.side === "bottom" ? below.get(g) : above.get(g)) ?? [];
     const spans = first.side === "top" ? (forbidTop.get(n.layer) ?? []) : [];
-    const sameBus = (a: Plan, b: Plan) =>
-      (a.bus !== undefined && b.bus?.id === a.bus.id) ||
+    const sameBundle = (a: Plan, b: Plan) =>
+      (a.bundle !== undefined && b.bundle?.id === a.bundle.id) ||
       (a.fanIn !== undefined && b.fanIn?.id === a.fanIn.id);
     const allowed = (i: number, x: number, radius: number) => {
       const s = slots[i];
@@ -1942,7 +1942,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
       const own = s.plan;
       for (const f of facing) {
         if (Math.abs(f.x - x) >= radius) continue;
-        if (f.plan === own || sameBus(own, f.plan)) continue;
+        if (f.plan === own || sameBundle(own, f.plan)) continue;
         return false;
       }
       return true;
@@ -1956,10 +1956,10 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     slots.forEach((s, i) => {
       const x = xs[i] ?? centreX(n);
       if (s.key.startsWith("\u0001")) {
-        const entry = buses.get(s.key.slice(1));
+        const entry = bundles.get(s.key.slice(1));
         if (entry === undefined) return;
-        entry.bus.port = x;
-        for (const pl of entry.bus.members) {
+        entry.bundle.port = x;
+        for (const pl of entry.bundle.members) {
           if (entry.src) pl.srcPort = x;
           else pl.dstPort = x;
           if (first.side === "bottom") mark(above, g, { x, plan: pl });
@@ -2183,7 +2183,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
         let visit = shared.get(trunk);
         if (visit === undefined) {
           visit = {
-            id: `bus ${trunk}`,
+            id: `bundle ${trunk}`,
             gutter: g,
             members: [],
             stubs: [entry],
@@ -2191,7 +2191,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
             hi: entry.x,
             label: undefined,
             row: -1,
-            bus: pl.bus?.id,
+            bundle: pl.bundle?.id,
           };
           shared.set(trunk, visit);
           list.push(visit);
@@ -2229,7 +2229,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
         row: -1,
       };
       // The lines of a fan-in meet at its port, each on its own row.
-      if (pl.fanIn !== undefined && j === last) visit.bus = pl.fanIn.id;
+      if (pl.fanIn !== undefined && j === last) visit.bundle = pl.fanIn.id;
       list.push(visit);
       pl.visits[j] = visit;
     });
@@ -2244,7 +2244,7 @@ export interface Vertical {
   centre: number;
   top(n: PNode): number;
   /** The middle of a layer's row, for edges between neighbours. */
-  rowMid(layer: number): number;
+  layerMid(layer: number): number;
   trackY(gutter: number, row: number): number;
 }
 
@@ -2290,8 +2290,8 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
     const { u, v } = pl;
     if (pl.kind === "neighbour") {
       const right = pl.srcSide === "right";
-      const ys = geo.rowMid(u.layer) + pl.srcPort;
-      const yt = geo.rowMid(v.layer) + pl.dstPort;
+      const ys = geo.layerMid(u.layer) + pl.srcPort;
+      const yt = geo.layerMid(v.layer) + pl.dstPort;
       const pts = [
         { x: X(right ? u.x + u.w : u.x), y: ys },
         { x: X(right ? v.x : v.x + v.w), y: yt },
@@ -2325,7 +2325,7 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
     let cur = pl.srcPort;
     if (pl.turn !== undefined) {
       // A side exit: out of the side at the row's middle, then along the row to the turn.
-      const my = geo.rowMid(u.layer) + pl.srcPort;
+      const my = geo.layerMid(u.layer) + pl.srcPort;
       pts.push({ x: X(pl.srcSide === "left" ? u.x : u.x + u.w), y: my }, { x: X(pl.turn), y: my });
       cur = pl.turn;
     } else {
@@ -2361,7 +2361,7 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
     });
     if (pl.turnIn !== undefined) {
       // A side entry: on beside the target to the row's middle, then into its side.
-      const my = geo.rowMid(v.layer) + pl.dstPort + (entryAt.get(pl) ?? 0);
+      const my = geo.layerMid(v.layer) + pl.dstPort + (entryAt.get(pl) ?? 0);
       pts.push(
         { x: X(pl.turnIn), y: my },
         { x: X(pl.dstSide === "left" ? v.x : v.x + v.w), y: my },

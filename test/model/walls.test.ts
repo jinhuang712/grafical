@@ -123,11 +123,11 @@ describe('walls (specs/decisions, "Walls as space")', () => {
     });
     expect(fail(fx, [beside(["catalog-sync"], ["catalog-api"])])[0]).toMatchObject({
       code: "wall-sides",
-      facts: { row: "work", nodes: ["mongo"] },
+      facts: { layer: "work", nodes: ["mongo"] },
     });
     expect(fail(fx, [beside(["relay", "pipelines"], ["service"])])[0]).toMatchObject({
       code: "wall-sides",
-      facts: { row: "topics", nodes: [] },
+      facts: { layer: "topics", nodes: [] },
     });
     expect(ok(fx, [beside(["upstream"], ["callers"])]).diagram.walls).toHaveLength(1);
     expect(fail(fx, [{ ...net, id: "relay" } as Op])[0]).toMatchObject({ code: "duplicate-id" });

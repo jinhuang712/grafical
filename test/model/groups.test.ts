@@ -199,7 +199,7 @@ describe("group operations", () => {
       code: "group-split",
       index: 0,
       found: "",
-      facts: { node: "y", row: "r", group: "g", between: ["x", "z"] },
+      facts: { node: "y", layer: "r", group: "g", between: ["x", "z"] },
       whole: true,
       // The groups' check runs third, after the integrity and the alignments of the whole diagram.
       stage: 3,
@@ -223,7 +223,7 @@ describe("group operations", () => {
     const e = fail(row, [swap]);
     expect(e[0]).toMatchObject({
       code: "group-split",
-      facts: { node: "c", row: "r", group: "g", between: ["y", "x"] },
+      facts: { node: "c", layer: "r", group: "g", between: ["y", "x"] },
     });
     // Joining the group, or taking a place in the row beside it, after the swap, is a change grafical accepts.
     ok(row, [swap, { op: "group.join", group: "g", nodes: ["c"] }]);
@@ -251,7 +251,7 @@ describe("group operations", () => {
     // Joining the outer group alone, or a place between a and b, would leave x inside the inner one.
     expect(e[0]).toMatchObject({
       code: "group-split",
-      facts: { node: "x", row: "r", group: "inner", between: ["b", "d"] },
+      facts: { node: "x", layer: "r", group: "inner", between: ["b", "d"] },
     });
     ok(row, [inner, { op: "group.join", group: "inner", nodes: ["x"] }]);
     ok(row, [inner, { op: "node.move", id: "x", layer: "r", before: "a" }]);

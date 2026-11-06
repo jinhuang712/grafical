@@ -11,7 +11,7 @@
 import { DEFAULT_SIZE, type Diagram } from "../model/types.ts";
 import { ROUTE } from "../theme/geometry.ts";
 import { nodeBox } from "../theme/shapes.ts";
-import { rowHeights } from "./size.ts";
+import { layerHeights } from "./size.ts";
 
 export interface SideSlot {
   /** y of the line, from the middle of the row. */
@@ -51,7 +51,7 @@ export function planSideways(
 ): Map<string, SideSlot> {
   const at = new Map<string, { layer: number; order: number; h: number }>();
   // compute() has sized every node (size.ts); a box takes its row's height.
-  const heights = rowHeights(d);
+  const heights = layerHeights(d);
   d.layers.forEach((l, layer) => {
     l.nodes.forEach((n, order) => {
       if (!at.has(n.id))

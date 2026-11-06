@@ -85,7 +85,7 @@ import { alignedIn, lineBox, lineHeight, placeLine, placeLines } from "./text.ts
 export type { AlignmentCode, AlignmentProblem } from "./align.ts";
 export type { GroupCode, GroupProblem, StepProblem } from "./grid.ts";
 export { type RouteStats, routeStats } from "./stats.ts";
-export { addedRow, placeSteps, validateSteps } from "./steps.ts";
+export { addedLayer, placeSteps, validateSteps } from "./steps.ts";
 
 export function layout(diagram: Diagram, m: Measurer): Scene {
   return framed(diagram, m).scene;
@@ -731,7 +731,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const besideWalls = (d.walls ?? []).flatMap((w) => {
     const way = wallRun(d, w);
     const split = way?.run === "beside" ? wallSplit(d, way) : undefined;
-    if (split === undefined || "row" in split) return [];
+    if (split === undefined || "layer" in split) return [];
     const left = new Set(split.left);
     const right = new Set(split.right);
     const edges = (ids: Set<string>, side: "right" | "left") => [
@@ -755,7 +755,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const standOf = new Map<string, { from?: string; to?: string }>();
   for (const l of layers) {
     if (!ends.bars.has(l.id)) continue;
-    l.rowH = BAR.h;
+    l.layerH = BAR.h;
     const meets: { edge: string; side: "from" | "to"; x: number }[] = [];
     for (const e of refined) {
       for (const side of ["from", "to"] as const) {
@@ -815,7 +815,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const right = contentRight + BAND.padX - BAND.labelInset;
     return left + at * (right - left - w);
   };
-  const bandRows = new Map<
+  const bandLayers = new Map<
     number,
     { id: string; label?: string; labelX: number; labelW: number; bar: boolean; blocked?: true }
   >();
@@ -829,13 +829,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     // A row with no label draws no name (specs/decisions, "A row with a look is drawn"), and its band has no head.
     if (label === undefined) {
       const labelX = contentLeft - BAND.padX + BAND.labelInset;
-      bandRows.set(i, { id: l.id, labelX, labelW: 0, bar: stands !== undefined });
+      bandLayers.set(i, { id: l.id, labelX, labelW: 0, bar: stands !== undefined });
       return;
     }
     const labelW = m.measure(label, bandStyle).width;
     if (stands !== undefined) {
       // A bar's label is seated once the lines that pass it are routed, below.
-      bandRows.set(i, { id: l.id, label, labelX: Number.NaN, labelW, bar: true });
+      bandLayers.set(i, { id: l.id, label, labelX: Number.NaN, labelW, bar: true });
       return;
     }
     // The label goes above the first stretch of its row with no node below it, so
@@ -846,7 +846,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const fraction = d.layers[i]?.labelAt;
     const atFraction = fraction === undefined ? undefined : headX(fraction, labelW);
     if (atFraction !== undefined) {
-      bandRows.set(i, { id: l.id, label, labelX: atFraction, labelW, bar: false });
+      bandLayers.set(i, { id: l.id, label, labelX: atFraction, labelW, bar: false });
       return;
     }
     for (const n of [...l.nodes, undefined]) {
@@ -858,7 +858,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       if (n !== undefined) edge = Math.max(edge, n.x + n.w);
     }
     labelX ??= contentLeft - BAND.padX - labelW - GROUP.clear;
-    bandRows.set(i, { id: l.id, label, labelX, labelW, bar: false });
+    bandLayers.set(i, { id: l.id, label, labelX, labelW, bar: false });
   });
 
   // Where no vertical line may pass: a band's label, above its row, and the label of an
@@ -872,7 +872,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       forbidTop.set(r, [...(forbidTop.get(r) ?? []), [b.x0, b.x1]]);
     }
   }
-  for (const [row, b] of bandRows) {
+  for (const [row, b] of bandLayers) {
     if (b.label === undefined || b.bar) continue;
     const list = forbidTop.get(row) ?? [];
     list.push([b.labelX - GROUP.labelClear, b.labelX + b.labelW + GROUP.labelClear]);
@@ -914,7 +914,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   }
   // A wall up and down reaches past its boxes, into the gutters above and below its rows.
   for (const b of besideWalls) for (let r = b.top; r <= b.bottom + 1; r++) close(r, [b.x0, b.x1]);
-  if (run === "rows") {
+  if (run === "layers") {
     const laneOf = (i: number) => d.layers[layers[i]?.index ?? -1]?.lane;
     for (let i = 1; i < layers.length; i++) {
       if (laneOf(i) !== laneOf(i - 1)) close(i, [-Infinity, Infinity]);
@@ -970,7 +970,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // the stand-ins of the lines that end at it, and of each line that passes it, where the router ran
   // it. Failing that, left of the content and of those lines, and the bar reaches it. No line moves
   // for it (specs/decisions, "A row with no box as one bar", "Unreadable is refused and costly is reported").
-  for (const [i, b] of bandRows) {
+  for (const [i, b] of bandLayers) {
     if (!b.bar || b.label === undefined) continue;
     const taken: [number, number][] = (barStands.get(i) ?? []).map((s) => [s.x, s.x + s.w]);
     for (const pl of routing.plans) {
@@ -988,7 +988,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (stated !== undefined) {
       const x = headX(stated, b.labelW);
       const hit = taken.some((s) => s[0] - GROUP.clear < x + b.labelW && x < s[1] + GROUP.clear);
-      bandRows.set(i, { ...b, labelX: x, ...(hit ? { blocked: true as const } : {}) });
+      bandLayers.set(i, { ...b, labelX: x, ...(hit ? { blocked: true as const } : {}) });
       continue;
     }
     for (const s of [...taken, undefined]) {
@@ -1003,12 +1003,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       contentLeft - BAND.padX - BAND.labelInset,
       ...taken.map((s) => s[0] - GROUP.clear),
     );
-    bandRows.set(i, { ...b, labelX: labelX ?? left - b.labelW });
+    bandLayers.set(i, { ...b, labelX: labelX ?? left - b.labelW });
   }
   // A band reaches the label it carries, when that sits left of the content.
   const bandLeft = Math.min(
     contentLeft - BAND.padX,
-    ...[...bandRows.values()].map((b) => b.labelX - BAND.labelInset),
+    ...[...bandLayers.values()].map((b) => b.labelX - BAND.labelInset),
   );
 
   // Across: the content is symmetric about the centre line.
@@ -1030,7 +1030,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     see(x0);
     see(x1);
   }
-  if (bandRows.size > 0) {
+  if (bandLayers.size > 0) {
     see(bandLeft);
     see(contentRight + BAND.padX);
   }
@@ -1045,12 +1045,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // hold, lines included. Column lanes have a header on top, as wide as the lane.
   const laneStyle = T["lane-label"];
   const laneLh = lineHeight("lane-label", m, T);
-  const rowLanes: { id: string; label: string; first: number; last: number }[] = [];
-  if (run === "rows") {
+  const layerLanes: { id: string; label: string; first: number; last: number }[] = [];
+  if (run === "layers") {
     for (const lane of d.lanes ?? []) {
       const rows = layers.filter((l) => d.layers[l.index]?.lane === lane.id).map((l) => l.index);
       if (rows.length === 0) continue;
-      rowLanes.push({
+      layerLanes.push({
         id: lane.id,
         label: lane.label,
         first: rows[0] as number,
@@ -1061,11 +1061,11 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   let laneLeft = 0;
   let laneRight = 0;
   let headW = 0;
-  if (rowLanes.length > 0 && Number.isFinite(contentLeft)) {
-    const widest = Math.max(...rowLanes.map((x) => m.measure(x.label, laneStyle).width));
+  if (layerLanes.length > 0 && Number.isFinite(contentLeft)) {
+    const widest = Math.max(...layerLanes.map((x) => m.measure(x.label, laneStyle).width));
     headW = ceil4(Math.min(widest, LANE.headMax) + 2 * LANE.labelInset);
-    let left = bandRows.size > 0 ? bandLeft : contentLeft;
-    let right = bandRows.size > 0 ? contentRight + BAND.padX : contentRight;
+    let left = bandLayers.size > 0 ? bandLeft : contentLeft;
+    let right = bandLayers.size > 0 ? contentRight + BAND.padX : contentRight;
     if (Number.isFinite(routing.minX)) left = Math.min(left, routing.minX);
     if (Number.isFinite(routing.maxX)) right = Math.max(right, routing.maxX);
     laneLeft = left - LANE.padX - headW;
@@ -1073,7 +1073,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     see(laneLeft);
     see(laneRight);
   }
-  const laneAt = (i: number) => rowLanes.find((x) => x.first <= i && i <= x.last)?.id;
+  const laneAt = (i: number) => layerLanes.find((x) => x.first <= i && i <= x.last)?.id;
   const colLines = colLanes.map((l) =>
     withText ? m.wrap(l.label, laneStyle, l.x1 - l.x0 - 2 * LANE.labelInset) : [],
   );
@@ -1088,9 +1088,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // Row lanes hold everything across, header included, and a group's label outside its
   // left or right side reaches out on one side only: the picture centres on what it holds,
   // not on the centre line, so that the header's or label's width is not mirrored as empty space.
-  const [lo, hi] = rowLanes.length > 0 ? [laneLeft, laneRight] : [low, high];
+  const [lo, hi] = layerLanes.length > 0 ? [laneLeft, laneRight] : [low, high];
   const offCentre =
-    rowLanes.length > 0 || groups.some((g) => outsideOf(g, "left") || outsideOf(g, "right"));
+    layerLanes.length > 0 || groups.some((g) => outsideOf(g, "left") || outsideOf(g, "right"));
   const shift = offCentre ? Math.round((lo + hi) / 8) * 4 : 0;
   if (offCentre) half = Math.max(shift - lo, hi - shift);
   half = ceil4(Math.max(half, 80));
@@ -1220,9 +1220,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const headsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.top === r).map(heads));
   const padsAt = (r: number) => Math.max(0, ...groups.filter((g) => g.bottom === r).map(pads));
   /** A band that holds boxes has a head above its row and a padding below; a bar has neither. */
-  const bandHead = (r: number) => bandRows.get(r)?.bar === false;
+  const bandHead = (r: number) => bandLayers.get(r)?.bar === false;
   /** A band's head holds its label; with none, it is a padding. */
-  const bandHeadH = (r: number) => (bandRows.get(r)?.label === undefined ? BAND.pad : BAND.head);
+  const bandHeadH = (r: number) => (bandLayers.get(r)?.label === undefined ? BAND.pad : BAND.head);
   const near = (g: (typeof groups)[number], lo: number, hi: number) =>
     lo < g.x1 + GROUP.clear && hi > g.x0 - GROUP.clear;
   /** Room the heads of the groups that start below gutter i still need, besides its tracks. */
@@ -1241,7 +1241,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       for (const o of groups) if (o.bottom === i && near(g, o.x0, o.x1)) return full;
     }
     // A bar spans the content: the heads below it keep a group's gap from it.
-    if (bandRows.get(i)?.bar === true) return Math.max(0, full + GROUP.gap - tracks);
+    if (bandLayers.get(i)?.bar === true) return Math.max(0, full + GROUP.gap - tracks);
     const crowded = (layers[i]?.nodes ?? []).some((n) =>
       starting.some((g) => near(g, n.x, n.x + n.w)),
     );
@@ -1250,7 +1250,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const wallsAt = (i: number) => acrossWalls.filter((x) => x.gutter === i).length;
   /** Where the walls of gutter i start, top to bottom. */
   const wallTops = new Map<number, number>();
-  const rowTops: number[] = [];
+  const layerTops: number[] = [];
   const gutterTops: number[] = [];
   const endPads: number[] = [];
   let y = ceil4(headBottom + FRAME.titleGap);
@@ -1262,14 +1262,14 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   /** Where a row lane's border crosses gutter i, between two rows in different lanes. */
   const borders = new Map<number, number>();
   /** A row that holds a store: the gutters beside it keep more room from its cylinders. */
-  const storeRow = (i: number) => (layers[i]?.nodes ?? []).some((n) => n.node.kind === "store");
+  const storeLayer = (i: number) => (layers[i]?.nodes ?? []).some((n) => n.node.kind === "store");
   layers.forEach((l, i) => {
-    rowTops.push(y);
-    y += l.rowH;
+    layerTops.push(y);
+    y += l.layerH;
     const rows = routing.rows[i] ?? 0;
     const last = i === layers.length - 1;
     const pad =
-      padsAt(i) + (bandHead(i) ? BAND.pad : 0) + (rows > 0 && storeRow(i) ? ROUTE.storeRoom : 0);
+      padsAt(i) + (bandHead(i) ? BAND.pad : 0) + (rows > 0 && storeLayer(i) ? ROUTE.storeRoom : 0);
     const walls = wallsAt(i);
     // A gutter with no runs keeps its least height only when no wall gives it room.
     const times = gutterMagnified(d, i);
@@ -1279,7 +1279,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
           ? last || walls > 0
             ? 0
             : (sp.gutterSteps[0] ?? 48)
-          : gutterHeight(rows, sp) + (storeRow(i + 1) ? ROUTE.storeRoom : 0)),
+          : gutterHeight(rows, sp) + (storeLayer(i + 1) ? ROUTE.storeRoom : 0)),
     );
     gutterTops.push(y);
     endPads.push(pad);
@@ -1327,12 +1327,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   }
   const height = ceil4(bottom + sp.margin);
 
-  const rowH = (i: number) => layers[i]?.rowH ?? 0;
-  const nodeTop = (layer: number, h: number) => (rowTops[layer] ?? 0) + (rowH(layer) - h) / 2;
+  const layerH = (i: number) => layers[i]?.layerH ?? 0;
+  const nodeTop = (layer: number, h: number) => (layerTops[layer] ?? 0) + (layerH(layer) - h) / 2;
   const assembled = assemble(routing, {
     centre,
     top: (n) => nodeTop(n.layer, n.h),
-    rowMid: (layer) => (rowTops[layer] ?? 0) + rowH(layer) / 2,
+    layerMid: (layer) => (layerTops[layer] ?? 0) + layerH(layer) / 2,
     // Rows sit on fixed slots from the top of the gutter's tracks, so that a row
     // keeps its place when rows are added below it.
     trackY: (g, row) => (gutterTops[g] ?? 0) + (endPads[g] ?? 0) + (row + 1) * sp.trackPitch,
@@ -1340,8 +1340,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
 
   const layerLabelStyle = T["layer-label"];
   const sceneLayers: SceneLayer[] = layers.map((l, i) => {
-    const top = rowTops[i] ?? 0;
-    const h = rowH(i);
+    const top = layerTops[i] ?? 0;
+    const h = layerH(i);
     const lines =
       withText && l.label !== undefined ? m.wrap(l.label, layerLabelStyle, 2 * half) : [];
     const label = placeLines("layer-label", lines, sp.margin, top, "start", m, T);
@@ -1389,8 +1389,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     return xs.find(clear) ?? first;
   };
   const sceneGroups: SceneGroup[] = outerFirst.map((g) => {
-    const y0 = (rowTops[g.top] ?? 0) - heads(g) + outside(g, "top");
-    const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + pads(g) - outside(g, "bottom");
+    const y0 = (layerTops[g.top] ?? 0) - heads(g) + outside(g, "top");
+    const y1 = (layerTops[g.bottom] ?? 0) + layerH(g.bottom) + pads(g) - outside(g, "bottom");
     const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
     const groupLook = lookOf(d, d.groups?.find((x) => x.id === g.id)?.style);
     // In its head, in its foot, a head's height outside its top or bottom side, or beside its rows.
@@ -1420,19 +1420,19 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     return out;
   });
 
-  const sceneBands: SceneBand[] = [...bandRows].map(([i, b]): SceneBand => {
+  const sceneBands: SceneBand[] = [...bandLayers].map(([i, b]): SceneBand => {
     // A row's look is the agent's; without one, a bar is a box and a band a band.
     const box =
       (d.layers[i]?.look ?? (b.bar ? "box" : "band")) === "box" ? { box: true as const } : {};
     if (b.bar) {
-      const y0 = rowTops[i] ?? 0;
+      const y0 = layerTops[i] ?? 0;
       const rect: Rect = {
         x: centre + bandLeft,
         y: y0,
         w: contentRight + BAND.padX - bandLeft,
-        h: rowH(i),
+        h: layerH(i),
       };
-      const top = y0 + (rowH(i) - lineHeight("layer-label", m, T)) / 2;
+      const top = y0 + (layerH(i) - lineHeight("layer-label", m, T)) / 2;
       if (b.label === undefined) return { id: b.id, rect, bar: true, ...box };
       const label = withText
         ? placeLine("layer-label", b.label, centre + b.labelX, top, m, T)
@@ -1440,8 +1440,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       const blocked = b.blocked === true ? { blocked: true as const } : {};
       return { id: b.id, rect, label, bar: true, ...box, ...blocked };
     }
-    const y0 = (rowTops[i] ?? 0) - headsAt(i) - bandHeadH(i);
-    const y1 = (rowTops[i] ?? 0) + rowH(i) + padsAt(i) + BAND.pad;
+    const y0 = (layerTops[i] ?? 0) - headsAt(i) - bandHeadH(i);
+    const y1 = (layerTops[i] ?? 0) + layerH(i) + padsAt(i) + BAND.pad;
     const x0 = centre + bandLeft;
     const rect: Rect = { x: x0, y: y0, w: contentRight + BAND.padX - bandLeft, h: y1 - y0 };
     if (b.label === undefined) return { id: b.id, rect, ...box };
@@ -1470,7 +1470,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const down = along === undefined ? 0 : along * spare;
     return placeLines("lane-label", lines, at.x, y + LANE.labelTop + down, at.align, m, T);
   };
-  for (const x of rowLanes) {
+  for (const x of layerLanes) {
     const y0 = x.first === 0 ? lanesTop : (borders.get(x.first - 1) ?? 0);
     const y1 = x.last === layers.length - 1 ? lanesBottom : (borders.get(x.last) ?? 0);
     const rect: Rect = { x: centre + laneLeft, y: y0, w: laneRight - laneLeft, h: y1 - y0 };
@@ -1479,7 +1479,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     sceneLanes.push({
       id: x.id,
       ...lookPart(d, d.lanes?.find((y) => y.id === x.id)?.style),
-      run: "rows",
+      run: "layers",
       rect,
       head: { x: rect.x, y: y0, w: headW, h: y1 - y0 },
       label: laneLabel(

@@ -29,7 +29,7 @@ describe('order (specs/decisions, "The agent states every order")', () => {
           index: 3,
           field: "place",
           found: "",
-          facts: { row: "top", nodes: ["a"], allowed: ["first", "last", "before", "after"] },
+          facts: { layer: "top", nodes: ["a"], allowed: ["first", "last", "before", "after"] },
         },
       ],
     });

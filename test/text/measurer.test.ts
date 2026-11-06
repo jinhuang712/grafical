@@ -34,7 +34,7 @@ const LABELS = [
   "Type Me, Wave Yo",
   "100% 成功率",
   "a,b;c.d:e",
-  "事件总线 Event Bus",
+  "事件总线 Event Bundle",
   "商品中心",
   "Search Index 搜索索引",
   "cron */5 * * * *",
