@@ -39,7 +39,7 @@ An edge's label sits on its line, inside the gutter of its longest run, and the 
 
 A label's patch takes the color behind it unless the label marks a style, whose `fill`, `border` and `color` it then takes. A wrapped label's lines are centred on each other unless the agent aligns them. A break the agent states holds on every form, and the engine may still wrap each stated line.
 
-Once the lines are drawn, a label on a vertical run moves to the run's middle, keeping 12 px from each end. Where that is not clear, it takes the nearest clear place on the way back to its seat, in 4 px steps. It moves no line. Clear means 4 px from other lines and labels, wholly inside or outside each group, band and lane, and out of a wall.
+Once the lines are drawn, a label the gutter seated off its line goes onto its line where room shows, longest run first and nearest the run's middle first, unless the picture has step badges, which look for their places later. A gutter counts every line in its height, though a run may leave the label's own height clear. A label on a vertical run then moves to the run's middle, keeping 12 px from each end. Where that is not clear, it takes the nearest clear place on the way back to its seat, in 4 px steps. It moves no line. Clear means 4 px from other lines and labels, wholly inside or outside each group, band and lane, and out of a wall.
 
 ### Seats
 

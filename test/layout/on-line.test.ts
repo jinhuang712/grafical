@@ -1,5 +1,6 @@
 // A line carries its label (specs/decisions, "A line's label sits on its line").
 
+import { readFileSync } from "node:fs";
 import { beforeAll, describe, expect, it } from "vitest";
 import { layout } from "../../src/layout/index.ts";
 import { writeGrafical } from "../../src/model/grafical-format.ts";
@@ -38,6 +39,13 @@ const turning = [
 ];
 
 describe("labels on lines", () => {
+  it("goes onto its line where the gutter saw no room but a run leaves its height clear", () => {
+    const d = readDiagram(readFileSync("test/fixtures/big-bank.grafical.yaml", "utf8")) as Diagram;
+    const e = layout(d, m).edges.find((x) => x.id === "customer->spa");
+    const box = e?.label?.bbox;
+    expect((box?.x ?? 0) + (box?.w ?? 0) / 2).toBeCloseTo(e?.points[0]?.x ?? 0, 0);
+  });
+
   it("sits on the long run of a line that turns, with the run through its middle", () => {
     const e = layout(build(turning), m).edges[0];
     const box = e?.label?.bbox;

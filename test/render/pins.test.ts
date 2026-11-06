@@ -39,8 +39,8 @@ const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
   },
   stateMachine: {
     diagram: stateMachine,
-    svg: "3e26293dc1dfb2768c23e6ce8102f5a925b362ec3b8cde80d6998ae5510eed88",
-    png: "65c789856ec9880568ede8964dcfd1fcd0149d1d6ecc4fe806430452a842ef96",
+    svg: "b06ca31a5efb61deef19def2441ff77b2e8cb3690a98fe690a2a8ad8f9344545",
+    png: "00e001dfff02615cda7a2aa4032cff7a7f75e7b93e860918a3c44e3c16b22625",
   },
   nested: {
     diagram: nested,

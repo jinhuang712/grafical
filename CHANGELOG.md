@@ -15,6 +15,7 @@ grafical has not been released; the first release will be 0.1.0.
 - `show <id>` gives one object and what refers to it.
 - `diagram --lines square|round` sets how lines are drawn.
 - A line's label now sits on the line, which passes through it, and at the middle of a vertical run.
+  - A label goes onto its line wherever room shows once the lines are drawn.
   - `edge --label-at <id> beside` puts one label back beside its line.
   - Pictures get 0.9% shorter over the saved drafts, and a gap with a label on its line gets 16 px wider.
 - A node's label, a line's label, a note, a lane's label and a subtitle keep a line break, written as a real break or as `\n`.

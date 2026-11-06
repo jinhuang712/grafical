@@ -31,6 +31,8 @@ Built on 2026-11-06, and measured with `pnpm bench diff` against the line of lab
 
 Over the fuzz seeds `label-blocked` fell from 50 to 0 and `title-blocked` from 15 to 1. `needless-bend` went from 343 to 345. Lines do not yet move apart for a label, so a label with no place on its line still sits beside it.
 
+Later the same day a label the gutter seated off its line went onto its line where room shows once the lines are drawn. Over 2,000 fuzz seeds 596 changed, with bends, crossings and sizes the same and `label-blocked` from 3 to 0. Over the fixtures, labels off their lines fell from 11 of 54 to 7.
+
 The rest was written before the build.
 
 Every existing picture may change, and how much wider or more crossed they get is not measured. A line moves for text again, as a detour once did at a cost, so this is measured before it lands. A label takes more of a gutter, so pictures grow.

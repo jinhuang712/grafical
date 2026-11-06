@@ -38,7 +38,7 @@ const SLOT_CROSS = 64;
 /** A line on another line weighs more than a line through a label: a free row always avoids it. */
 const LINE = 100;
 /** How far a label on a run keeps from the run's corners. */
-const ON_CLEAR = 8;
+export const ON_CLEAR = 8;
 /** Rows a run may go below every run placed so far, besides the height of two labels. */
 const SEARCH = 4;
 

@@ -65,6 +65,7 @@ import type { AlignmentProblem } from "./align.ts";
 import { badgeRect, settleBadges, stepPlace } from "./badges.ts";
 import { cutRoute, planEnds, refineEnds, straightIntoBand } from "./ends.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
+import { ON_CLEAR } from "./gutter.ts";
 import { footnotesHeight, numberBadge, placeNotes } from "./notes.ts";
 import { atSide, centreX, outsideOf, type PNode, placeAcross, reach } from "./place.ts";
 import {
@@ -545,6 +546,49 @@ function centred(points: Point[], at: AssembledLabel, free: (r: Rect) => boolean
       if (y >= lo && y <= hi && free({ ...at, y })) return { ...at, y };
     }
     return at;
+  }
+  return at;
+}
+
+/**
+ * A label the gutter seated off its line goes onto its line where `free` finds room: the gutter
+ * counts every line in its height, though a run may leave the label's own height clear. Longest
+ * run first, nearest the run's middle first (specs/decisions, "A line's label sits on its line").
+ */
+function ontoLine(points: Point[], at: AssembledLabel, free: (r: Rect) => boolean): AssembledLabel {
+  const runs = points.slice(1).flatMap((b, i) => {
+    const a = points[i] as Point;
+    return a.x === b.x || a.y === b.y
+      ? [{ a, b, len: Math.abs(a.x - b.x) + Math.abs(a.y - b.y) }]
+      : [];
+  });
+  const through = runs.some(({ a, b }) =>
+    a.x === b.x
+      ? a.x >= at.x &&
+        a.x <= at.x + at.w &&
+        Math.min(a.y, b.y) < at.y + at.h &&
+        Math.max(a.y, b.y) > at.y
+      : a.y >= at.y &&
+        a.y <= at.y + at.h &&
+        Math.min(a.x, b.x) < at.x + at.w &&
+        Math.max(a.x, b.x) > at.x,
+  );
+  if (through) return at;
+  for (const { a, b } of [...runs].sort((p, q) => q.len - p.len)) {
+    const down = a.x === b.x;
+    const pad = down ? ROUTE.onArrow : ON_CLEAR;
+    const size = down ? at.h : at.w;
+    const lo = Math.min(down ? a.y : a.x, down ? b.y : b.x) + pad;
+    const hi = Math.max(down ? a.y : a.x, down ? b.y : b.x) - pad - size;
+    if (hi < lo) continue;
+    const mid = (lo + hi) / 2;
+    for (let d = 0; d <= (hi - lo) / 2 + 1e-9; d += 4) {
+      for (const p of d > 0 ? [mid - d, mid + d] : [mid]) {
+        const r = down ? { ...at, x: a.x - at.w / 2, y: p } : { ...at, x: p, y: a.y - at.h / 2 };
+        const others = runs.filter((o) => o.a !== a);
+        if (others.every((o) => !segmentHits(o.a, o.b, r)) && free(r)) return r;
+      }
+    }
   }
   return at;
 }
@@ -1532,6 +1576,11 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const borders = [...sceneGroups, ...sceneBands].map((x) => x.rect);
     if (borders.some((b) => overlaps(wide, b) && !within(b))) return false;
     for (const [other, l] of labelAt) if (other !== id && overlaps(wide, l)) return false;
+    // A label still to come stands where the gutter seated it.
+    for (const [other, a] of assembled) {
+      if (other === id || labelAt.has(other) || a.label === undefined) continue;
+      if (overlaps(wide, a.label)) return false;
+    }
     // Clear of every other line as routed, and as drawn: a line that meets a band may
     // since run straight on into it.
     for (const [other, a] of assembled) {
@@ -1687,11 +1736,15 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       if (e.step === undefined && e.seat === undefined) {
         // Clear of what is near as a label in a gutter is, and of a lane's border and a wall.
         const clearHere = clearOf(e.id);
-        at = centred(points, at, (r) => {
+        const open = (r: Rect) => {
           const wide = { x: r.x - 2, y: r.y - 2, w: r.w + 4, h: r.h + 4 };
           const cut = sceneLanes.some((l) => overlaps(wide, l.rect) && !holds(l.rect, wide));
           return !cut && !inWall(wide) && clearHere(wide);
-        });
+        };
+        // Step badges look for their places once every label has its seat, so a picture
+        // with steps keeps the seats the gutters left them room around.
+        const numbered = d.edges.some((x) => x.step !== undefined);
+        at = centred(points, numbered ? at : ontoLine(points, at, open), open);
       }
       labelAt.set(e.id, at);
       let top = { x: at.x, y: at.y };
