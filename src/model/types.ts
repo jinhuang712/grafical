@@ -291,6 +291,8 @@ export interface Edge {
   to: string;
   kind: EdgeKind;
   label?: string;
+  /** The styles its label marks (specs/decisions, "A label may mark a style"). */
+  labelStyle?: string[];
   /** Absent: centred. */
   labelAlign?: LabelAlign;
   /** true: an arrowhead at both ends. A link has none (specs/decisions, "Lines meet any side"). */

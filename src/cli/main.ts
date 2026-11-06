@@ -561,7 +561,17 @@ export function build(): Command {
   ).action(async (file: string, a: string, b: string, opts: Opts) => {
     await write(file, { op: "gap.between", a, b, ...pick(opts, ["magnified"]) }, opts);
   });
-  const label = program.command("label").description("how a text's lines line up: align");
+  const label = program.command("label").description("how a text looks: align, style");
+  json(
+    label
+      .command("style")
+      .description("mark styles on a line's label; with none, clear them")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("[styles...]"),
+  ).action(async (file: string, id: string, styles: string[], opts: Opts) => {
+    await write(file, { op: "label.style", id, ...(styles.length > 0 ? { styles } : {}) }, opts);
+  });
   json(
     label
       .command("align")

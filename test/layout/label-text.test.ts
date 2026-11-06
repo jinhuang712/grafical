@@ -146,3 +146,47 @@ describe("label.align", () => {
     expect(back.layers[1]?.nodes[0]?.labelAlign).toBe("left");
   });
 });
+
+describe("label.style", () => {
+  const styled = build([
+    { op: "style.add", id: "hot", fill: "#ffe0e0", border: "#c00000", color: "#800000" } as Op,
+    { op: "edge.add", from: "x", to: "y", label: "pays" } as Op,
+  ]);
+  const go = (d: Diagram, ...ops: object[]) => {
+    const r = applyOps(d, ops as Op[]);
+    if ("errors" in r) throw new Error(JSON.stringify(r.errors));
+    return r.diagram;
+  };
+
+  it("gives a line's label the style's fill, border and color", () => {
+    const d = go(styled, { op: "label.style", id: "x->y", styles: ["hot"] });
+    expect(layout(d, m).edges[0]?.labelLook).toMatchObject({
+      fill: "#ffe0e0",
+      border: "#c00000",
+      color: "#800000",
+    });
+    expect(layout(styled, m).edges[0]?.labelLook).toBeUndefined();
+  });
+
+  it("clears with none, with its label and with its style", () => {
+    const d = go(styled, { op: "label.style", id: "x->y", styles: ["hot"] });
+    expect(go(d, { op: "label.style", id: "x->y" })).toEqual(styled);
+    expect(go(d, { op: "edge.relabel", id: "x->y" }).edges[0]?.labelStyle).toBeUndefined();
+    expect(go(d, { op: "style.remove", id: "hot" }).edges[0]?.labelStyle).toBeUndefined();
+  });
+
+  it("refuses an unknown style and what has no line's label", () => {
+    const codes = (op: object) => {
+      const r = applyOps(styled, [op as Op]);
+      return "errors" in r ? r.errors[0]?.code : "written";
+    };
+    expect(codes({ op: "label.style", id: "x->y", styles: ["cold"] })).toBe("unknown-style");
+    expect(codes({ op: "label.style", id: "x", styles: ["hot"] })).toBe("bad-value");
+  });
+
+  it("survives a .grafical file", () => {
+    const d = go(styled, { op: "label.style", id: "x->y", styles: ["hot"] });
+    const back = readDiagram(writeGrafical(d));
+    expect(Array.isArray(back) ? undefined : back.edges[0]?.labelStyle).toEqual(["hot"]);
+  });
+});

@@ -619,9 +619,14 @@ export function renderSvg(scene: Scene): string {
         h: b.h + 2 * lb.padY,
       };
       const behind = behindAt(b.x + b.w / 2, b.y + b.h / 2);
+      const line = e.labelLook;
+      const border =
+        line?.border === undefined
+          ? ""
+          : ` stroke="${line.border}" stroke-width="${num(line.borderWidth ?? P.edge.strokeWidth)}"`;
       out.push(
-        `<rect ${rectAttrs(bg)} rx="${num(lb.radius)}" fill="${behind}"/>`,
-        ...texts(e.label, P.text.edgeLabel),
+        `<rect ${rectAttrs(bg)} rx="${num(lb.radius)}" fill="${e.labelLook?.fill ?? behind}"${border}/>`,
+        ...texts(e.label, e.labelLook?.color ?? P.text.edgeLabel),
       );
     }
   }

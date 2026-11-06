@@ -43,6 +43,7 @@ function edgeText(e: Edge): string {
   if (e.pass === true) s += " [passes bars]";
   if (e.seat !== undefined) s += " [label beside]";
   if (e.labelAlign !== undefined) s += ` [label ${e.labelAlign}]`;
+  if (e.labelStyle !== undefined) s += ` [label style ${e.labelStyle.join(",")}]`;
   if (e.out !== undefined) s += ` [out ${e.out}]`;
   if (e.in !== undefined) s += ` [in ${e.in}]`;
   if (e.weight !== undefined) s += ` [weight ${e.weight}]`;

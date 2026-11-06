@@ -196,6 +196,7 @@ export function writeGrafical(d: Diagram): string {
     seat?: string,
     align?: string,
     along?: number,
+    style?: string[],
   ) =>
     block("label", `${id}-label`, [
       ["on", ref(on)],
@@ -209,6 +210,7 @@ export function writeGrafical(d: Diagram): string {
       ["place", title?.place],
       ["seat", seat],
       ["align", align],
+      ["style", marks(style)],
     ]);
   for (const l of d.layers) {
     if (l.label === undefined) continue;
@@ -228,7 +230,8 @@ export function writeGrafical(d: Diagram): string {
   }
   for (const e of d.edges) {
     if (e.label !== undefined) {
-      blocks.push(label(e.id, e.id, e.label, undefined, undefined, e.seat, e.labelAlign));
+      const none = undefined;
+      blocks.push(label(e.id, e.id, e.label, none, none, e.seat, e.labelAlign, none, e.labelStyle));
     }
   }
   for (const { n } of nodes) {
@@ -590,6 +593,8 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     named(b.id as string, o);
     const seat = labels.get(b.id as string)?.attrs.get("seat");
     if (seat !== undefined) o.seat = seat;
+    const look = labels.get(b.id as string)?.attrs.get("style");
+    if (typeof look === "string") o.labelStyle = look.split(" ").map((x) => x.slice(1));
     return o;
   });
   out.types = types.map((b) => {

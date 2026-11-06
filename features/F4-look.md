@@ -189,7 +189,8 @@ A label may mark styles, as any object does.
 grafical -f <file> label --style <id> [--style <name>]...
 ```
 
-- `--style` takes the ID of any element with a label, and names styles as other objects do.
+- `--style` takes the ID of an edge with a label, and names styles as other objects do.
+- A node, a group and a lane take the style of the object itself, and only a line's label has a patch of its own.
 - The label's patch takes the style's `fill` and `border`.
 - The label's text takes the style's `color`.
 - Without `--style`, the label marks no style and its patch takes the color behind it.

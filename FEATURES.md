@@ -64,7 +64,7 @@ Features
 │   ├── ⬜ F4.5: Brand fonts — a team's own typeface
 │   ├── 🚧 F4.6: Label text — breaks and alignment (titles of regions one line)
 │   ├── 🚧 F4.7: Region labels — where any region's label sits (a column has no label)
-│   └── ⬜ F4.8: Label looks — a label's background, border and color
+│   └── 🚧 F4.8: Label looks — a label's background, border and color (a line's label only)
 ├── ✅ F5: Checking — how an agent knows it came out right
 │   ├── ✅ F5.1: Show — the diagram as facts
 │   ├── ✅ F5.2: Counts — facts about how the picture is drawn

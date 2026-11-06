@@ -87,6 +87,7 @@ function edgeOut(e: Edge): Record<string, unknown> {
   const o: Record<string, unknown> = { id: e.id, from: e.from, to: e.to, kind: e.kind };
   if (e.label !== undefined) o.label = e.label;
   if (e.labelAlign !== undefined) o.labelAlign = e.labelAlign;
+  if (e.labelStyle !== undefined) o.labelStyle = e.labelStyle;
   if (e.both === true) o.both = true;
   if (e.pass === true) o.pass = true;
   if (e.seat !== undefined) o.seat = e.seat;

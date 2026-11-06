@@ -1949,6 +1949,12 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       };
       for (const o of [...everyNode(d), ...d.edges, ...(d.groups ?? []), ...(d.lanes ?? [])])
         clear(o);
+      for (const e of d.edges) {
+        const rest = e.labelStyle?.filter((x) => x !== op.id);
+        if (rest === undefined) continue;
+        if (rest.length > 0) e.labelStyle = rest;
+        else delete e.labelStyle;
+      }
       touch(s, op.id);
       return [];
     }
@@ -2096,6 +2102,27 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, e.id);
       return [];
     }
+    case "label.style": {
+      const e = d.edges.find((x) => x.id === op.id);
+      if (e === undefined || (e.label ?? "") === "") {
+        return [
+          {
+            code: "bad-value",
+            index: i,
+            field: "id",
+            found: op.id,
+            facts: { allowed: ["an edge with a label"] },
+          },
+        ];
+      }
+      for (const name of op.styles ?? []) {
+        if (!(d.styles ?? []).some((x) => x.id === name)) return [unknownStyle(d, name, i)];
+      }
+      if (op.styles === undefined) delete e.labelStyle;
+      else e.labelStyle = [...op.styles];
+      touch(s, e.id);
+      return [];
+    }
     case "label.align": {
       // A lane's default depends on how it runs, so every lane keeps what was stated.
       const lane = d.lanes?.find((x) => x.id === op.id);
@@ -2153,6 +2180,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
           delete e.label;
           delete e.seat;
           delete e.labelAlign;
+          delete e.labelStyle;
         } else e.label = op.label;
       } else if (op.op === "edge.kind") {
         if (op.kind === "link" && e.both === true) return [bothOnLink(e.id, i, "kind", op.kind)];

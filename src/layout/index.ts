@@ -1637,6 +1637,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
     const edgeLook = lookOf(d, real.style, real.type);
     if (edgeLook !== undefined) edge.look = edgeLook;
+    const labelLook = lookOf(d, e.labelStyle);
+    if (labelLook !== undefined) edge.labelLook = labelLook;
     if (e.both === true) edge.both = true;
     const routed = planOf.get(e.id);
     const unmet = [
@@ -1957,6 +1959,7 @@ function roundScene(s: Scene): Scene {
       };
       if (e.label !== undefined) out.label = roundText(e.label);
       if (e.look !== undefined) out.look = e.look;
+      if (e.labelLook !== undefined) out.labelLook = e.labelLook;
       if (e.both === true) out.both = true;
       if (e.width !== undefined) out.width = e.width;
       if (e.step !== undefined) out.step = roundBadge(e.step);

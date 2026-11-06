@@ -197,6 +197,8 @@ export interface SceneEdge {
   /** Orthogonal polyline from the source port to the target port. The arrowhead sits at the last point. */
   points: Point[];
   label?: PlacedText;
+  /** What the styles its label marks set. Absent: a patch the color behind it, and the labels' color. */
+  labelLook?: Look;
   /** true: a second arrowhead at the first point (specs/decisions, "Lines meet any side"). */
   both?: boolean;
   /** The line width in pixels when it is not the thin one: a heavier edge (specs/decisions, "Lines meet any side", "Edge weights"). */

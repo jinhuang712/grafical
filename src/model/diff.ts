@@ -723,6 +723,12 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       ops.push(x.style === undefined ? { op, id: x.id } : { op, id: x.id, styles: x.style });
     }
   };
+  for (const e of a.edges) {
+    const was = b.edges.find((y) => y.id === e.id)?.labelStyle;
+    if (same(was, e.labelStyle)) continue;
+    const styles = e.labelStyle;
+    ops.push({ op: "label.style", id: e.id, ...(styles === undefined ? {} : { styles }) });
+  }
   marks("node.style", everyNode(b), everyNode(a));
   marks("edge.style", b.edges, a.edges);
   marks("group.style", b.groups ?? [], a.groups ?? []);

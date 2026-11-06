@@ -93,7 +93,7 @@ Roadmap
 │   │   ├── ✅ Region gaps
 │   │   ├── ✅ Edge looks
 │   │   ├── ✅ Region labels
-│   │   └── ⬜ Label looks
+│   │   └── ✅ Label looks
 │   ├── 🟨 CP2.5: Pictures worth keeping
 │   │   ├── ✅ Labels on straight lines
 │   │   ├── ✅ Choice diamonds
@@ -535,7 +535,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - ✅ Region gaps: The gap between two neighbouring regions may be magnified.
 - ✅ Edge looks: An edge takes a color of its own or a named look.
 - ✅ Region labels: A diagram's, a group's, a layer's and a lane's label sits at a fraction, and a column's waits for Column headings.
-- ⬜ Label looks: A label marks a style for its background, border and color.
+- ✅ Label looks: A line's label marks a style for its background, border and color.
 
 **Delivers:**
 
