@@ -101,7 +101,7 @@ Roadmap
 │   │   ├── ⬜ A diamond's slanted lines
 │   │   ├── ⬜ Badges off a lane's side
 │   │   └── ⬜ Return lines off a self-loop
-│   ├── ⬜ CP2.6: Boxes
+│   ├── ⬜ CP2.6: Nodes
 │   │   ├── ⬜ Corner marks checked
 │   │   ├── ⬜ Marks by name
 │   │   ├── ⬜ Node looks
@@ -441,7 +441,7 @@ The numbers are the order of the work, since each step rests on the one before.
   - [CP2.3: The object model](#cp23-the-object-model) is met.
   - [CP2.4: Lines and labels](#cp24-lines-and-labels) is met.
   - [CP2.5: Pictures worth keeping](#cp25-pictures-worth-keeping) is met.
-  - [CP2.6: Boxes](#cp26-boxes) is met.
+  - [CP2.6: Nodes](#cp26-nodes) is met.
   - [CP2.7: Containers](#cp27-containers) is met.
   - [CP2.8: The legend](#cp28-the-legend) is met.
   - [CP2.9: Direction and views](#cp29-direction-and-views) is met.
@@ -577,11 +577,11 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 - **Constraints**
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
-### CP2.6: Boxes
+### CP2.6: Nodes
 
 **Status:** ⬜
 
-Boxes carry marks that stay clear of lines and colors of their own.
+Nodes carry marks that stay clear of edges and colors of their own.
 
 **Tasks:**
 
