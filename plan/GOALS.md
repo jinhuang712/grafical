@@ -16,7 +16,8 @@ Goals
 ├── Measures
 │   ├── ⬜ M1: Enough to say — what an agent wanted to state and no operation could
 │   ├── M2: Cache hit rate — 90.2% of input read from the cache on 2026-10-18
-│   └── M3: Better every round — the owner's blind rating, 24 of 25 on 2026-10-12
+│   ├── M3: Better every round — the owner's blind rating, 24 of 25 on 2026-10-12
+│   └── M4: Diff size — 17.3 changed lines and 231 characters a change step on 2026-11-06
 ├── Benchmarks
 │   ├── ✅ B1: Iteration — a change request done right, fast and cheap
 │   ├── ⬜ B2: Scale — a clear picture at 50 boxes
@@ -27,15 +28,15 @@ Goals
 │   ├── ❌ C3: Token use — fewer fresh tokens than the same model drawing directly
 │   ├── ⬜ C4: Context added — less than the same model drawing directly
 │   ├── ❌ C5: Cost — less than the same model drawing directly
-│   ├── ✅ C7: Beats the strongest model alone — Haiku with grafical against Opus at xhigh effort
-│   └── ❌ C8: Small diffs — fewer changed lines than YAML with one element on each line
+│   └── ✅ C7: Beats the strongest model alone — Haiku with grafical against Opus at xhigh effort
 ├── Thresholds
 │   ├── ❌ T1: Operation errors — at most 5% of operations refused
 │   └── ✅ T2: Speed — 50 ms an operation, 400 ms a command
 └── Constraints
     ├── ✅ R1: Stability — no fact changes that no operation named
     ├── ✅ R2: Mechanical defects — no overflow, overlap, line through a box or label collision
-    └── ✅ R3: Determinism — the same pixels on macOS and Linux
+    ├── ✅ R3: Determinism — the same pixels on macOS and Linux
+    └── ⬜ R4: A sound file — strict, one spelling, and any text
 ```
 
 ## Goals
@@ -145,6 +146,32 @@ M3 = mean owner rating of Haiku's first drafts of the public brief (of 25), per 
 ```
 
 **Last value:** 24 of 25 on 2026-10-12.
+
+#### M4: Diff size
+
+How much a change touches in the `.grafical` file. It is watched while the form is tuned, and a smaller number is no aim in itself, since the file also serves strictness and plain objects.
+
+**Want:** Keep the diagram beside the code.
+
+**Checks:**
+
+- [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
+
+**How:** the change steps of a round, written in each form and compared with `git diff`.
+
+**Formula:**
+
+```
+M4 = mean changed lines, and mean changed characters, per change step
+```
+
+**Last value:** on 2026-11-06, over the 24 change steps of round `p1g`:
+
+| Form | Changed lines | Changed characters | File lines |
+|---|---|---|---|
+| `.grafical` | 17.3 | 231 | 417 |
+| YAML with one element on each line | 2.9 | 217 | 57 |
+| YAML as it is | 8.7 | 173 | 180 |
 
 ### Benchmarks
 
@@ -386,29 +413,6 @@ target = above 0
 
 **Last result:** ✅ met by the owner's report on 2026-11-05: in a blind rating Haiku with grafical was far above Opus at xhigh effort drawing directly. The scores were not recorded. On 2026-10-12 at the default thinking budget: 24 against 5 of 25.
 
-#### C8: Small diffs
-
-A change to a diagram touches fewer lines of the `.grafical` file than the same change touches in YAML with one element on each line.
-
-**Want:** Keep the diagram beside the code.
-
-**Checks:**
-
-- [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
-
-**Against:** YAML with one element on each line.
-
-**How:** the change requests of the public brief, applied in both forms.
-
-**Formula:**
-
-```
-C8 = mean changed lines per change step in .grafical - the same in YAML
-target = below 0
-```
-
-**Last result:** ❌ not met on 2026-11-06, over the 24 change steps of round `p1g`, with the file as it first stands. Mean changed lines per step: 17.3 in `.grafical`, 2.9 in YAML with one element on each line and 8.7 in YAML as it is. Mean changed characters per step: 231, 217 and 173. Mean file length: 417, 57 and 180 lines.
-
 ### Thresholds
 
 #### T1: Operation errors
@@ -497,3 +501,27 @@ The same file gives the same SVG bytes and the same PNG pixels on macOS and Linu
 **How:** CI renders the pinned fixtures on both systems and compares them on every push.
 
 **Status:** ✅ met on 2026-10-14, in CI run 38584033554.
+
+#### R4: A sound file
+
+The `.grafical` file does what a plain data file cannot promise:
+
+- Every reference names an object, or the file is refused.
+- An ID may be any word, since no word is reserved.
+- One set of facts gives one set of bytes.
+- Any text fits with no trouble.
+- An unknown field or block is refused.
+- An order names every member of its region and nothing else.
+
+**Want:** Keep the diagram beside the code.
+
+**Checks:**
+
+- [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
+- [10. What grafical cannot fully read, it refuses](../DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses)
+
+**Condition:** any of these that does not hold is a failure.
+
+**How:** `test/model/grafical-format.test.ts`, over the fixtures and 200 random diagrams.
+
+**Status:** ⬜ not measured.

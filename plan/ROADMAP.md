@@ -84,7 +84,7 @@ Roadmap
 │   │   ├── ✅ Design the model and its form
 │   │   ├── 🟨 Build the model
 │   │   ├── ⬜ Move the saved files
-│   │   └── ⬜ Compare with YAML
+│   │   └── ⬜ Tune the form
 │   ├── ⬜ CP2.4: Edges and labels
 │   │   ├── ⬜ Edge sides
 │   │   ├── ⬜ Edge shapes
@@ -503,7 +503,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 - ✅ Design the model and its form: The owner designed them on 2026-11-06.
 - 🟨 Build the model: grafical reads and writes the form and styles; types are not built.
 - ⬜ Move the saved files: Fixtures and saved drafts move to it.
-- ⬜ Compare with YAML: Real changes are measured in both forms, and the file goes back to YAML with one element on each line if the form is no better.
+- ⬜ Tune the form: Once it is built, the form is tuned against what its diffs show.
 
 **Delivers:**
 
@@ -512,11 +512,12 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 
 **Exit criteria:**
 
-- **Comparisons**
-  - [C8: Small diffs](GOALS.md#c8-small-diffs)
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability)
   - [R3: Determinism](GOALS.md#r3-determinism)
+  - [R4: A sound file](GOALS.md#r4-a-sound-file)
+- **Do not hold the release**
+  - [M4: Diff size](GOALS.md#m4-diff-size)
 
 ### CP2.4: Edges and labels
 

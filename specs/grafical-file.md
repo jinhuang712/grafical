@@ -385,9 +385,9 @@ The legend is a small diagram, and its attributes are open.
 
 A `.grafical` file with `<type>` and `<style>` blocks and no others is a library, and a diagram names it with `library`. It must sit inside the diagram's folder. It takes the place of the stylesheet.
 
-## Once it is built
+## Tuning it
 
-Real changes are measured in both forms. If this form proves no better, the file goes back to YAML with one element on each line.
+The form serves strictness, plain objects and a file that reads as what it holds, so a count of changed lines does not judge it alone. Its diffs are watched and it is tuned once it is built.
 
 ## Decisions
 
