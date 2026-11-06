@@ -89,6 +89,17 @@ A node's kind says what it is and decides how it is drawn.
 grafical -f <file> node --kind <id> <kind>
 ```
 
+A type of your own names a sort of node with its own shape and look. A change to it reaches every node of it.
+
+```sh
+grafical -f <file> type --add <id> --base <type> [--shape <shape>] [--fill <color>] [--border <color>]
+grafical -f <file> node --type <id> <type>
+```
+
+- **Why:**
+  - [087. A type holds attributes, and a group may follow a group](../specs/decisions/087-a-type-holds-attributes-and-a-group-may-follow-a-group.md)
+  - [088. A type may choose its shape](../specs/decisions/088-a-type-may-choose-its-shape.md)
+
 ### F1.1.2: Labels and sublabels
 
 A node has a label, and optionally a quieter sublabel, such as a port or a topic.

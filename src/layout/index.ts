@@ -124,18 +124,33 @@ export function validateGroups(diagram: Diagram): GroupProblem[] {
 }
 
 /** What an object's styles set, a later one over an earlier one (specs/decisions, "A style may be as rich as it likes"). */
-function lookOf(d: Diagram, names: readonly string[] | undefined): Look | undefined {
-  if (names === undefined) return undefined;
+function lookOf(d: Diagram, names: readonly string[] | undefined, type?: string): Look | undefined {
   const look: Look = {};
-  for (const name of names) {
+  const chain: string[] = [];
+  for (let at = type; at !== undefined; at = d.types?.find((x) => x.id === at)?.base)
+    chain.unshift(at);
+  for (const id of chain) {
+    const { fill, border, borderWidth, color } = d.types?.find((x) => x.id === id) ?? {};
+    Object.assign(look, {
+      ...(fill === undefined ? {} : { fill }),
+      ...(border === undefined ? {} : { border }),
+      ...(borderWidth === undefined ? {} : { borderWidth }),
+      ...(color === undefined ? {} : { color }),
+    });
+  }
+  for (const name of names ?? []) {
     const { id: _id, ...values } = d.styles?.find((x) => x.id === name) ?? { id: "" };
     Object.assign(look, values);
   }
   return Object.keys(look).length > 0 ? look : undefined;
 }
 
-function lookPart(d: Diagram, names: readonly string[] | undefined): { look?: Look } {
-  const look = lookOf(d, names);
+function lookPart(
+  d: Diagram,
+  names: readonly string[] | undefined,
+  type?: string,
+): { look?: Look } {
+  const look = lookOf(d, names, type);
   return look === undefined ? {} : { look };
 }
 
@@ -1383,7 +1398,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         layer: l.id,
         kind: n.node.kind,
         accent: n.node.accent ?? false,
-        ...lookPart(d, n.node.style),
+        ...lookPart(d, n.node.style, n.node.type),
         rect,
         ...(marks.length > 0 ? { marks } : {}),
         texts,
@@ -1513,7 +1528,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const toBox = plan?.to === undefined ? undefined : boxOf.get(plan.to.id);
     const fromBox = plan?.from === undefined ? undefined : boxOf.get(plan.from.id);
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
-    const edgeLook = lookOf(d, real.style);
+    const edgeLook = lookOf(d, real.style, real.type);
     if (edgeLook !== undefined) edge.look = edgeLook;
     if (e.both === true) edge.both = true;
     const blocked = routing.blocked.get(e.id);

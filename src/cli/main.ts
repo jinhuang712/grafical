@@ -29,6 +29,7 @@ import {
   MARK_SIZES,
   MARK_SLOTS,
   NODE_KINDS,
+  SHAPE_KINDS,
   STEP_NUMBER_MAX,
 } from "../model/types.ts";
 import { block, record } from "../records.ts";
@@ -68,6 +69,13 @@ function pick(opts: Opts, names: string[]): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const n of names) if (opts[n] !== undefined && opts[n] !== false) out[n] = opts[n];
   return out;
+}
+
+/** An add with a type of the agent's own: `--type db` names no built-in, so it goes as `type`. */
+function ownType(raw: Record<string, unknown>, kinds: readonly string[]): Record<string, unknown> {
+  const { kind, ...rest } = raw;
+  if (kind === undefined || kinds.includes(kind as string)) return raw;
+  return { ...rest, type: kind };
 }
 
 function splitIds(s: string): string[] {
@@ -312,6 +320,32 @@ export function build(): Command {
     );
   });
 
+  const type = program
+    .command("type")
+    .description("sorts of node or edge of your own: add, remove");
+  json(
+    type
+      .command("add")
+      .description("define a type, or change one; a change reaches every object of it")
+      .argument("<file>")
+      .argument("<id>")
+      .requiredOption("--base <base>", "a built-in type or one of your own")
+      .option("--shape <shape>", Object.keys(SHAPE_KINDS).join(", "))
+      .option("--fill <color>", "a color such as #eef")
+      .option("--border <color>", "a color")
+      .option("--border-width <n>", "pixels, 0 to 8")
+      .option("--color <color>", "an edge's color"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const width = opts.borderWidth === undefined ? {} : { borderWidth: Number(opts.borderWidth) };
+    const names = ["base", "shape", "fill", "border", "color"];
+    await write(file, { op: "type.add", id, ...pick(opts, names), ...width }, opts);
+  });
+  json(
+    type.command("remove").description("remove a type").argument("<file>").argument("<id>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "type.remove", id }, opts);
+  });
+
   const style = program.command("style").description("named looks that objects mark: add, remove");
   json(
     style
@@ -537,7 +571,7 @@ export function build(): Command {
   const node = program
     .command("node")
     .description(
-      "boxes: add, move, swap, align, merge, kind, describe, icon, rename, resize, emphasize, style, remove",
+      "boxes: add, move, swap, align, merge, kind, describe, icon, rename, resize, emphasize, type, style, remove",
     );
   json(
     withSteps(
@@ -560,7 +594,8 @@ export function build(): Command {
     ),
   ).action(async (file: string, id: string, opts: Opts) => {
     const names = ["layer", "label", "kind", "sublabel", "size", "align", "accent", ...POSITION];
-    await write(file, { op: "node.add", id, ...pick(opts, names), ...stepFlags(opts) }, opts);
+    const raw = { op: "node.add", id, ...pick(opts, names), ...stepFlags(opts) };
+    await write(file, ownType(raw, NODE_KINDS), opts);
   });
   json(
     node
@@ -612,7 +647,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "lines: add, emphasize, retarget, reverse, kind, relabel, weight, both, pass, step, style, remove",
+      "lines: add, emphasize, retarget, reverse, kind, relabel, weight, both, pass, step, type, style, remove",
     );
   json(
     edge
@@ -629,7 +664,10 @@ export function build(): Command {
   ).action(async (file: string, from: string, to: string, opts: Opts) => {
     await write(
       file,
-      { op: "edge.add", from, to, ...pick(opts, ["id", "label", "kind", "both", "pass"]) },
+      ownType(
+        { op: "edge.add", from, to, ...pick(opts, ["id", "label", "kind", "both", "pass"]) },
+        EDGE_KINDS,
+      ),
       opts,
     );
   });
@@ -1221,6 +1259,22 @@ export function build(): Command {
       process.stdout.write(`${guide.text}\n`);
     });
 
+  for (const noun of [node, edge]) {
+    json(
+      noun
+        .command("type")
+        .description("give it a type of your own; without one, go back to its kind")
+        .argument("<file>")
+        .argument("<id>")
+        .argument("[type]"),
+    ).action(async (file: string, id: string, type: string | undefined, opts: Opts) => {
+      await write(
+        file,
+        { op: `${noun.name()}.type`, id, ...(type === undefined ? {} : { type }) },
+        opts,
+      );
+    });
+  }
   for (const noun of [node, edge, group, lane]) {
     json(
       noun

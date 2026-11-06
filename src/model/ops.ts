@@ -9,6 +9,7 @@ import {
   idSuffix,
   lookFields,
   nodeId,
+  shapeField,
   stepNumber,
   steps,
   text,
@@ -34,6 +35,7 @@ import {
   type NodeKind,
   ROW_LOOKS,
   type RowLook,
+  type Shape,
   SIZE_STEPS,
   SIZINGS,
   type SizeStep,
@@ -128,6 +130,7 @@ export interface Steps {
 /** A node goes in a row (`layer`), or in no row, by steps from another box (`from`). */
 export interface NodeAddOp extends Position, Steps {
   op: "node.add";
+  type?: string;
   id: string;
   layer?: string;
   label: string;
@@ -159,6 +162,7 @@ export interface NodeRemoveOp {
 }
 export interface EdgeAddOp {
   op: "edge.add";
+  type?: string;
   from: string;
   to: string;
   id?: string;
@@ -214,6 +218,25 @@ export interface LayerRemoveOp {
   id: string;
 }
 /** How a row is drawn, and that it is drawn though no line ends at it (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
+export interface TypeAddOp {
+  op: "type.add";
+  id: string;
+  base: string;
+  shape?: Shape;
+  fill?: string;
+  border?: string;
+  borderWidth?: number;
+  color?: string;
+}
+export interface TypeRemoveOp {
+  op: "type.remove";
+  id: string;
+}
+export interface SetTypeOp {
+  op: "node.type" | "edge.type";
+  id: string;
+  type?: string;
+}
 export interface StyleAddOp {
   op: "style.add";
   id: string;
@@ -517,6 +540,9 @@ export type Op =
   | LayerMoveOp
   | LayerRemoveOp
   | LayerLookOp
+  | TypeAddOp
+  | TypeRemoveOp
+  | SetTypeOp
   | StyleAddOp
   | StyleRemoveOp
   | MarkStyleOp
@@ -628,6 +654,7 @@ export const nodeAddSchema = z.strictObject({
   layer: nodeId.optional(),
   label: text,
   kind: z.enum(NODE_KINDS).optional(),
+  type: nodeId.optional(),
   sublabel: text.optional(),
   size: z.enum(SIZE_STEPS).optional(),
   align: nodeId.optional(),
@@ -660,6 +687,7 @@ export const edgeAddSchema = z.strictObject({
   id: edgeId.optional(),
   label: text.optional(),
   kind: z.enum(EDGE_KINDS).optional(),
+  type: nodeId.optional(),
   both: z.boolean().optional(),
   pass: z.boolean().optional(),
 });
@@ -687,6 +715,24 @@ export const layerMoveSchema = z.strictObject({
   ...position,
 });
 export const layerRemoveSchema = z.strictObject({ op: z.literal("layer.remove"), id: nodeId });
+export const typeAddSchema = z.strictObject({
+  op: z.literal("type.add"),
+  id: nodeId,
+  base: nodeId,
+  shape: shapeField,
+  ...lookFields,
+});
+export const typeRemoveSchema = z.strictObject({ op: z.literal("type.remove"), id: nodeId });
+export const nodeTypeSchema = z.strictObject({
+  op: z.literal("node.type"),
+  id: nodeId,
+  type: nodeId.optional(),
+});
+export const edgeTypeSchema = z.strictObject({
+  op: z.literal("edge.type"),
+  id: edgeId,
+  type: nodeId.optional(),
+});
 export const styleAddSchema = z.strictObject({
   op: z.literal("style.add"),
   id: nodeId,
@@ -937,6 +983,10 @@ export const opSchema = z.discriminatedUnion("op", [
   layerMoveSchema,
   layerRemoveSchema,
   layerLookSchema,
+  typeAddSchema,
+  typeRemoveSchema,
+  nodeTypeSchema,
+  edgeTypeSchema,
   styleAddSchema,
   styleRemoveSchema,
   nodeStyleSchema,
@@ -1008,6 +1058,10 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,
   "layer.look": layerLookSchema,
+  "type.add": typeAddSchema,
+  "type.remove": typeRemoveSchema,
+  "node.type": nodeTypeSchema,
+  "edge.type": edgeTypeSchema,
   "style.add": styleAddSchema,
   "style.remove": styleRemoveSchema,
   "node.style": nodeStyleSchema,

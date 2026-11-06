@@ -46,6 +46,7 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
   if (n.group !== undefined) o.group = n.group;
   if (n.lane !== undefined) o.lane = n.lane;
   if (n.column !== undefined) o.column = n.column;
+  if (n.type !== undefined) o.type = n.type;
   if (n.style !== undefined) o.style = n.style;
   if (n.icons !== undefined && Object.keys(n.icons).length > 0) {
     const icons: Record<string, unknown> = {};
@@ -88,6 +89,7 @@ function edgeOut(e: Edge): Record<string, unknown> {
   if (e.accent === true) o.accent = true;
   if (e.weight !== undefined) o.weight = e.weight;
   if (e.step !== undefined) o.step = e.step;
+  if (e.type !== undefined) o.type = e.type;
   if (e.style !== undefined) o.style = e.style;
   return o;
 }
@@ -104,6 +106,7 @@ export function writeDiagram(d: Diagram): string {
   out.density = d.density;
   if (d.sizing === "fixed") out.sizing = "fixed";
   if (d.style !== undefined) out.style = d.style;
+  if (d.types !== undefined && d.types.length > 0) out.types = d.types;
   if (d.styles !== undefined && d.styles.length > 0) out.styles = d.styles;
   if (d.legend !== undefined && Object.keys(d.legend).length > 0) {
     const legend: Record<string, unknown> = {};

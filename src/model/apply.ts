@@ -52,6 +52,7 @@ import {
   DEFAULT_NODE_KIND,
   type Diagram,
   type DiagramNode,
+  EDGE_KINDS,
   type Edge,
   FORMAT_VERSION,
   type Group,
@@ -61,7 +62,9 @@ import {
   MARK_SLOTS,
   type Mark,
   type MarkStyle,
+  NODE_KINDS,
   type Note,
+  SHAPE_KINDS,
   type Wall,
   weightKey,
 } from "./types.ts";
@@ -293,6 +296,45 @@ function unknownNode(d: Diagram, id: string, i: number, field: string): OpError 
     found: id,
     facts: { near: closest(id, nodeIds(d)) },
   };
+}
+
+function unknownType(d: Diagram, id: string, i: number): OpError {
+  return {
+    code: "unknown-type",
+    index: i,
+    field: "type",
+    found: id,
+    facts: {
+      near: closest(
+        id,
+        (d.types ?? []).map((x) => x.id),
+        3,
+      ),
+    },
+  };
+}
+
+/** The kind that draws a type: its shape's, or its base's. */
+function drawnKind(d: Diagram, id: string): string {
+  const t = d.types?.find((x) => x.id === id);
+  if (t === undefined) return id;
+  return t.shape === undefined ? drawnKind(d, t.base) : SHAPE_KINDS[t.shape];
+}
+
+/** Gives an object a defined type, whose base must be a kind of that sort of object. */
+function setType(
+  d: Diagram,
+  o: { kind: string; type?: string } | undefined,
+  type: string,
+  kinds: readonly string[],
+  i: number,
+): OpError[] {
+  if (!(d.types ?? []).some((x) => x.id === type)) return [unknownType(d, type, i)];
+  const kind = drawnKind(d, type);
+  if (o === undefined || !kinds.includes(kind)) return [unknownType(d, type, i)];
+  o.type = type;
+  o.kind = kind;
+  return [];
 }
 
 function unknownStyle(d: Diagram, id: string, i: number): OpError {
@@ -1763,6 +1805,69 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, op.id);
       return [];
     }
+    case "type.add": {
+      const { op: _op, ...type } = op;
+      const others = (d.types ?? []).filter((x) => x.id !== op.id);
+      const chainOf = (id: string): string[] => {
+        const up = others.find((x) => x.id === id);
+        return up === undefined ? [id] : [id, ...chainOf(up.base)];
+      };
+      const root = chainOf(op.base).at(-1) as string;
+      const known = [...NODE_KINDS, ...EDGE_KINDS] as readonly string[];
+      if (!known.includes(root) || chainOf(op.base).includes(op.id)) {
+        return [unknownType(d, op.base, i)];
+      }
+      const list = d.types ?? [];
+      const at = list.findIndex((x) => x.id === op.id);
+      if (at >= 0) list[at] = type;
+      else list.push(type);
+      d.types = list;
+      for (const o of [...everyNode(d), ...d.edges]) {
+        if (o.type !== undefined) (o as { kind: string }).kind = drawnKind(d, o.type);
+      }
+      touch(s, op.id);
+      return [];
+    }
+    case "type.remove": {
+      if (!(d.types ?? []).some((x) => x.id === op.id)) return [unknownType(d, op.id, i)];
+      const left = (d.types ?? []).filter((x) => x.id !== op.id);
+      if (left.some((x) => x.base === op.id)) return [unknownType(d, op.id, i)];
+      if (left.length > 0) d.types = left;
+      else delete d.types;
+      for (const o of [...everyNode(d), ...d.edges]) if (o.type === op.id) delete o.type;
+      touch(s, op.id);
+      return [];
+    }
+    case "node.type": {
+      const n = findNode(d, op.id)?.node;
+      if (n === undefined) return [unknownNode(d, op.id, i, "id")];
+      touch(s, op.id);
+      if (op.type === undefined) {
+        delete n.type;
+        return [];
+      }
+      if ((NODE_KINDS as readonly string[]).includes(op.type)) {
+        delete n.type;
+        n.kind = op.type as typeof n.kind;
+        return [];
+      }
+      return setType(d, n, op.type, NODE_KINDS, i);
+    }
+    case "edge.type": {
+      const e = d.edges.find((x) => x.id === op.id);
+      if (e === undefined) return [unknownEdge(d, op.id, i, "id")];
+      touch(s, op.id);
+      if (op.type === undefined) {
+        delete e.type;
+        return [];
+      }
+      if ((EDGE_KINDS as readonly string[]).includes(op.type)) {
+        delete e.type;
+        e.kind = op.type as typeof e.kind;
+        return [];
+      }
+      return setType(d, e, op.type, EDGE_KINDS, i);
+    }
     case "style.add": {
       const { op: _op, ...style } = op;
       const list = d.styles ?? [];
@@ -2056,12 +2161,18 @@ function step(s: State, op: Op, i: number): OpError[] {
       return columnStep(s, op, i);
     case "layer.add":
       return addLayer(s, op, i);
-    case "node.add":
-      return addNode(s, op, i);
+    case "node.add": {
+      const errors = addNode(s, op, i);
+      if (errors.length > 0 || op.type === undefined) return errors;
+      return setType(d, findNode(d, op.id)?.node, op.type, NODE_KINDS, i);
+    }
     case "node.move":
       return moveNode(s, op, i);
-    case "edge.add":
-      return addEdge(s, op, i);
+    case "edge.add": {
+      const errors = addEdge(s, op, i);
+      if (errors.length > 0 || op.type === undefined) return errors;
+      return setType(d, d.edges.at(-1), op.type, EDGE_KINDS, i);
+    }
     case "node.rename": {
       const at = findNode(d, op.id);
       if (!at) return [unknownNode(d, op.id, i, "id")];

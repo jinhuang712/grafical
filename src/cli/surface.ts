@@ -6,6 +6,7 @@
 /** The nouns that hold verbs. */
 export const NOUNS = [
   "diagram",
+  "type",
   "style",
   "group",
   "lane",
@@ -27,8 +28,8 @@ const RENAMED: Record<string, Record<string, string>> = {
   lane: { label: "rename" },
   wall: { label: "relabel" },
   layer: { label: "rename" },
-  node: { label: "rename", sublabel: "describe", size: "resize", mark: "icon", type: "kind" },
-  edge: { label: "relabel", ends: "retarget", number: "step", type: "kind" },
+  node: { label: "rename", sublabel: "describe", size: "resize", mark: "icon" },
+  edge: { label: "relabel", ends: "retarget", number: "step" },
 };
 
 /** The name a caller uses for a noun's verb. */
@@ -87,7 +88,7 @@ export function inward(args: readonly string[]): string[] | Unread {
 }
 
 const VERB_WORDS =
-  /\b(diagram|style|group|lane|column|wall|note|layer|node|edge) ([a-z][a-z-]*)\b/g;
+  /\b(diagram|type|style|group|lane|column|wall|note|layer|node|edge) ([a-z][a-z-]*)\b/g;
 
 /** Every verb a noun has, by its subcommand's name. */
 const known = new Map<string, Set<string>>();
@@ -106,7 +107,7 @@ export function surfaceText(text: string): string {
   return text
     .replace(/--kind\b/g, "--type")
     .replace(
-      /^Usage: grafical (diagram|style|group|lane|column|wall|note|layer|node|edge) ([a-z-]+) \[options\] <file>(.*)$/gm,
+      /^Usage: grafical (diagram|type|style|group|lane|column|wall|note|layer|node|edge) ([a-z-]+) \[options\] <file>(.*)$/gm,
       (_, noun: string, verb: string, more: string) =>
         `Usage: grafical -f <file> ${noun} --${outward(noun, verb)}${more} [options]`,
     )
@@ -115,7 +116,7 @@ export function surfaceText(text: string): string {
       (_, command: string, more: string) => `Usage: grafical -f <file> ${command}${more} [options]`,
     )
     .replace(
-      /^Usage: grafical (diagram|style|group|lane|column|wall|note|layer|node|edge) \[options\] \[command\]$/gm,
+      /^Usage: grafical (diagram|type|style|group|lane|column|wall|note|layer|node|edge) \[options\] \[command\]$/gm,
       "Usage: grafical -f <file> $1 --<verb> [options]",
     )
     .replace(

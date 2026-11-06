@@ -34,10 +34,13 @@ import {
   type Mark,
   NODE_KINDS,
   ROW_LOOKS,
+  SHAPE_KINDS,
+  type Shape,
   SIZE_STEPS,
   SIZINGS,
   STEP_NUMBER_MAX,
   type Style,
+  type TypeDef,
   type Wall,
 } from "./types.ts";
 import { checkWalls } from "./walls.ts";
@@ -140,6 +143,10 @@ export const lookFields = {
 
 const styleNames = z.array(nodeId).min(1).optional();
 
+export const shapeField = z.enum(Object.keys(SHAPE_KINDS) as [Shape, ...Shape[]]).optional();
+
+const typeSchema = z.strictObject({ id: nodeId, base: nodeId, shape: shapeField, ...lookFields });
+
 const nodeSchema = z.strictObject({
   id: nodeId,
   label: text,
@@ -151,6 +158,7 @@ const nodeSchema = z.strictObject({
   group: nodeId.optional(),
   lane: nodeId.optional(),
   column: nodeId.optional(),
+  type: nodeId.optional(),
   style: styleNames,
   icons: iconsSchema.optional(),
 });
@@ -243,6 +251,7 @@ const edgeSchema = z.strictObject({
   accent: z.boolean().optional(),
   weight: weightValue.optional(),
   step: stepNumber.optional(),
+  type: nodeId.optional(),
   style: styleNames,
 });
 
@@ -254,6 +263,7 @@ export const diagramSchema = z.strictObject({
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
   sizing: z.enum(SIZINGS).optional(),
   style: text.optional(),
+  types: z.array(typeSchema).default([]),
   styles: z.array(z.strictObject({ id: nodeId, ...lookFields })).default([]),
   legend: z
     .strictObject({
@@ -296,6 +306,7 @@ function buildNode(n: Parsed["layers"][number]["nodes"][number] | Parsed["nodes"
     }
     if (Object.keys(icons).length > 0) node.icons = icons;
   }
+  if (n.type !== undefined) node.type = n.type;
   if (n.style !== undefined) node.style = [...n.style];
   if ("from" in n) {
     node.from = n.from;
@@ -320,12 +331,21 @@ function build(p: Parsed): Diagram {
     if (e.accent === true) edge.accent = true;
     if (e.weight !== undefined) edge.weight = e.weight;
     if (e.step !== undefined) edge.step = e.step;
+    if (e.type !== undefined) edge.type = e.type;
     if (e.style !== undefined) edge.style = [...e.style];
     return edge;
   });
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
   if (p.sizing === "fixed") d.sizing = "fixed";
   if (p.style !== undefined) d.style = p.style;
+  if (p.types.length > 0) {
+    d.types = p.types.map(
+      (s) =>
+        Object.fromEntries(
+          Object.entries(s).filter(([, v]) => v !== undefined),
+        ) as unknown as TypeDef,
+    );
+  }
   if (p.styles.length > 0) {
     d.styles = p.styles.map(
       (s) =>

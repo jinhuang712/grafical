@@ -253,7 +253,11 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   for (const x of b.notes ?? [])
     if (!keptNotes.has(x.on)) ops.push({ op: "note.remove", on: x.on });
 
-  // Styles come before what marks them.
+  // Types and styles come before what marks them.
+  const wasType = new Map((b.types ?? []).map((x) => [x.id, x]));
+  for (const x of a.types ?? []) {
+    if (JSON.stringify(wasType.get(x.id)) !== JSON.stringify(x)) ops.push({ op: "type.add", ...x });
+  }
   const wasStyle = new Map((b.styles ?? []).map((x) => [x.id, x]));
   for (const x of a.styles ?? []) {
     if (JSON.stringify(wasStyle.get(x.id)) !== JSON.stringify(x))
@@ -679,6 +683,22 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   marks("edge.style", b.edges, a.edges);
   marks("group.style", b.groups ?? [], a.groups ?? []);
   marks("lane.style", b.lanes ?? [], a.lanes ?? []);
+  const types = <T extends { id: string; type?: string }>(
+    op: "node.type" | "edge.type",
+    was: readonly T[],
+    now: readonly T[],
+  ) => {
+    for (const x of now) {
+      const old = was.find((y) => y.id === x.id);
+      if (old?.type === x.type) continue;
+      ops.push(x.type === undefined ? { op, id: x.id } : { op, id: x.id, type: x.type });
+    }
+  };
+  types("node.type", everyNode(b), everyNode(a));
+  types("edge.type", b.edges, a.edges);
+  const keptTypes = new Set((a.types ?? []).map((x) => x.id));
+  for (const x of b.types ?? [])
+    if (!keptTypes.has(x.id)) ops.push({ op: "type.remove", id: x.id });
   const kept = new Set((a.styles ?? []).map((x) => x.id));
   for (const x of b.styles ?? []) if (!kept.has(x.id)) ops.push({ op: "style.remove", id: x.id });
 

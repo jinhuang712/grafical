@@ -215,6 +215,7 @@ export const ERROR_CODES = [
   "unknown-lane",
   "unknown-layer",
   "unknown-style",
+  "unknown-type",
   "unknown-node",
   "unknown-note",
   "unknown-op",

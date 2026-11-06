@@ -158,6 +158,8 @@ export interface DiagramNode {
   lane?: string;
   /** The column this node follows (specs/decisions, "Columns beside rows"). */
   column?: string;
+  /** The type it is, when an agent defined it. `kind` then holds the kind that draws it. */
+  type?: string;
   /** The styles it marks, a later one over an earlier one. */
   style?: string[];
   /** Marks in fixed slots, such as a warning at the top-left (specs/decisions, "Marks of any kind"). */
@@ -255,6 +257,8 @@ export interface Edge {
   accent?: boolean;
   /** A weight level the stylesheet names, or a width in pixels (specs/decisions, "Edge weights"). Absent: thin. */
   weight?: string | number;
+  /** The type it is, when an agent defined it. */
+  type?: string;
   /** The styles it marks. */
   style?: string[];
   /** Its number in a process, drawn as a badge on the line (specs/decisions, "Step badges ride the line"). Absent: none. */
@@ -288,6 +292,31 @@ export interface Style {
   color?: string;
 }
 
+/** The shapes a type may choose (specs/decisions, "A type may choose its shape"), with the kind that draws each. */
+export const SHAPE_KINDS = {
+  box: "service",
+  round: "state",
+  pill: "actor",
+  cylinder: "store",
+  diamond: "decision",
+  "small-diamond": "choice",
+  dot: "initial",
+  ring: "final",
+} as const;
+export type Shape = keyof typeof SHAPE_KINDS;
+
+/** A sort of node or edge an agent defines (specs/decisions, "A type holds attributes, and a group may follow a group"). */
+export interface TypeDef {
+  id: string;
+  /** A built-in kind or another type. */
+  base: string;
+  shape?: Shape;
+  fill?: string;
+  border?: string;
+  borderWidth?: number;
+  color?: string;
+}
+
 /** What a style sets. */
 export type Look = Omit<Style, "id">;
 
@@ -304,6 +333,8 @@ export interface Diagram {
   sizing?: "fixed";
   /** A built-in theme's name, or a stylesheet's path relative to the file (specs/decisions, "Themes and stylesheets"). Absent: the default theme. */
   style?: string;
+  /** Types an agent defined, in creation order. Absent: none. */
+  types?: TypeDef[];
   /** Named looks, in creation order. Absent: none. */
   styles?: Style[];
   /** The legend's words (specs/decisions, "A legend for widths and marks", "The legend says only what the agent named"). */

@@ -3,7 +3,14 @@
 
 import type { OpError } from "../errors.ts";
 import { STEP_KEYS } from "./steps.ts";
-import { type Diagram, LINE_STYLES, MARK_SLOTS, type Mark } from "./types.ts";
+import {
+  type Diagram,
+  LINE_STYLES,
+  MARK_SLOTS,
+  type Mark,
+  SHAPE_KINDS,
+  type Shape,
+} from "./types.ts";
 
 const quote = (s: string) => JSON.stringify(s);
 const ref = (id: string) => `@${id}`;
@@ -59,6 +66,18 @@ export function writeGrafical(d: Diagram): string {
       ["sizing", d.sizing === "fixed" ? "fixed" : undefined],
     ]),
   );
+  for (const s of d.types ?? []) {
+    blocks.push(
+      block("type", s.id, [
+        ["base", ref(s.base)],
+        ["shape", s.shape],
+        ["fill", s.fill],
+        ["border", s.border],
+        ["border-width", num(s.borderWidth)],
+        ["color", s.color],
+      ]),
+    );
+  }
   for (const s of d.styles ?? []) {
     blocks.push(
       block("style", s.id, [
@@ -121,7 +140,7 @@ export function writeGrafical(d: Diagram): string {
   for (const { n, layer } of nodes) {
     blocks.push(
       block("node", n.id, [
-        ["type", ref(n.kind)],
+        ["type", ref(n.type ?? n.kind)],
         ["text", quote(n.label)],
         ["sublabel", opt(n.sublabel, quote)],
         ["layer", opt(layer)],
@@ -142,7 +161,7 @@ export function writeGrafical(d: Diagram): string {
       block("edge", e.id, [
         ["from", ref(e.from)],
         ["to", ref(e.to)],
-        ["type", ref(e.kind)],
+        ["type", ref(e.type ?? e.kind)],
         ["weight", e.weight === undefined ? undefined : String(e.weight)],
         ["both", flag(e.both)],
         ["pass", flag(e.pass)],
@@ -275,6 +294,29 @@ function styles(b: Block, o: Record<string, unknown>): void {
   if (typeof v === "string") o.style = v.split(" ").map((x) => x.slice(1));
 }
 
+/** The kind that draws a type: its shape's, or its base's. */
+function kindOf(types: Block[], id: string): string {
+  const seen = new Set<string>();
+  let at = id;
+  for (;;) {
+    const b = types.find((x) => x.id === at);
+    if (b === undefined || seen.has(at)) return at;
+    seen.add(at);
+    const shape = b.attrs.get("shape");
+    if (typeof shape === "string") return SHAPE_KINDS[shape as Shape] ?? at;
+    at = value(b.attrs.get("base") as string) as string;
+  }
+}
+
+/** An object's type: `kind` for the kind that draws it, and `type` when an agent defined it. */
+function typed(b: Block, types: Block[], o: Record<string, unknown>): void {
+  const v = b.attrs.get("type");
+  if (typeof v !== "string") return;
+  const id = value(v) as string;
+  o.kind = kindOf(types, id);
+  if (types.some((x) => x.id === id)) o.type = id;
+}
+
 function take(b: Block, map: Record<string, string>, o: Record<string, unknown>): void {
   for (const [key, field] of Object.entries(map)) {
     const v = b.attrs.get(key);
@@ -289,6 +331,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   const of = (sort: string) => blocks.filter((b) => b.sort === sort);
   const known = [
     "diagram",
+    "type",
     "style",
     "layer",
     "group",
@@ -305,6 +348,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   ];
   const stray = blocks.find((b) => !known.includes(b.sort));
   if (stray !== undefined) return [bad(text, stray.line)];
+  const types = of("type");
   const root = of("diagram")[0];
   if (root === undefined) return [bad(text, 1)];
   const out: Record<string, unknown> = {};
@@ -357,7 +401,6 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     take(
       b,
       {
-        type: "kind",
         text: "label",
         sublabel: "sublabel",
         group: "group",
@@ -371,6 +414,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       },
       o,
     );
+    typed(b, types, o);
     styles(b, o);
     const icons = marks.get(b.id as string);
     if (icons !== undefined) o.icons = icons;
@@ -451,7 +495,6 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       {
         from: "from",
         to: "to",
-        type: "kind",
         weight: "weight",
         both: "both",
         pass: "pass",
@@ -460,8 +503,25 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       },
       o,
     );
+    typed(b, types, o);
     styles(b, o);
     named(b.id as string, o);
+    return o;
+  });
+  out.types = types.map((b) => {
+    const o: Record<string, unknown> = { id: b.id };
+    take(
+      b,
+      {
+        base: "base",
+        shape: "shape",
+        fill: "fill",
+        border: "border",
+        "border-width": "borderWidth",
+        color: "color",
+      },
+      o,
+    );
     return o;
   });
   out.styles = of("style").map((b) => {

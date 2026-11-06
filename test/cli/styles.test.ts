@@ -49,4 +49,39 @@ describe("styles", () => {
     expect(run("style", "--remove", "red").code).toBe(0);
     expect(readFileSync(join(dir, "a.grafical"), "utf8")).not.toContain("@red");
   });
+
+  it("a type of one's own sets a shape and a look, and a style beats it", () => {
+    const g = ["-f", "t.grafical"];
+    const go = (...args: string[]) => {
+      const r = spawnSync("node", [MAIN, ...g, ...args], { cwd: dir, encoding: "utf8" });
+      return { code: r.status, out: r.stdout + r.stderr };
+    };
+    expect(go("new", "--title", "T").code).toBe(0);
+    go("layer", "--add", "l", "--label", "L");
+    expect(go("type", "--add", "db", "--base", "store", "--fill", "#eef").code).toBe(0);
+    expect(
+      go("type", "--add", "cache", "--base", "db", "--shape", "pill", "--border", "#090").code,
+    ).toBe(0);
+    expect(go("node", "--add", "a", "--layer", "l", "--label", "A", "--type", "db").code).toBe(0);
+    expect(
+      go("node", "--add", "b", "--layer", "l", "--last", "--label", "B", "--type", "cache").code,
+    ).toBe(0);
+    expect(
+      go("node", "--add", "c", "--layer", "l", "--last", "--label", "C", "--type", "nope").out,
+    ).toContain("unknown-type");
+    expect(go("render", "--svg", "t.svg").code).toBe(0);
+    const svg = readFileSync(join(dir, "t.svg"), "utf8");
+    expect(svg).toContain("#eef");
+    expect(svg).toContain('stroke="#090"');
+    const file = readFileSync(join(dir, "t.grafical"), "utf8");
+    expect(file).toContain("<type> db {");
+    expect(file).toContain("type: @cache");
+    expect(go("show").code).toBe(0);
+    expect(go("node", "--type", "b", "actor").code).toBe(0);
+    expect(readFileSync(join(dir, "t.grafical"), "utf8")).toContain("type: @actor");
+    expect(go("node", "--type", "b", "cache").code).toBe(0);
+    expect(go("type", "--add", "db", "--base", "store", "--fill", "#123").code).toBe(0);
+    expect(go("type", "--remove", "cache").code).toBe(0);
+    expect(readFileSync(join(dir, "t.grafical"), "utf8")).not.toContain("@cache");
+  });
 });
