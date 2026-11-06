@@ -18,6 +18,7 @@ import { laneRun, orderByLanes } from "../model/lanes.ts";
 import {
   type Diagram,
   EDGE_KINDS,
+  type LabelAlign,
   LINE_STYLES,
   type LineStyleName,
   type Look,
@@ -42,7 +43,7 @@ import type {
   SceneNode,
   SceneWall,
 } from "../scene.ts";
-import type { Measurer } from "../text/types.ts";
+import type { Line, Measurer } from "../text/types.ts";
 import {
   BAND,
   BAR,
@@ -77,7 +78,7 @@ import { planSideways } from "./side.ts";
 import { leftInset, markRects, markWidth, nodeLines, withSizes } from "./size.ts";
 import { routeStats } from "./stats.ts";
 import { placeSteps } from "./steps.ts";
-import { lineBox, lineHeight, placeLine, placeLines } from "./text.ts";
+import { alignedIn, lineBox, lineHeight, placeLine, placeLines } from "./text.ts";
 
 export type { AlignmentCode, AlignmentProblem } from "./align.ts";
 export type { GroupCode, GroupProblem, StepProblem } from "./grid.ts";
@@ -1355,6 +1356,17 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     return { id: b.id, rect, label, ...box };
   });
   const sceneLanes: SceneLane[] = [];
+  const laneLabel = (
+    id: string,
+    lines: Line[],
+    x: number,
+    w: number,
+    y: number,
+    plain: LabelAlign,
+  ) => {
+    const at = alignedIn(d.lanes?.find((l) => l.id === id)?.labelAlign ?? plain, x, w);
+    return placeLines("lane-label", lines, at.x, y + LANE.labelTop, at.align, m, T);
+  };
   for (const x of rowLanes) {
     const y0 = x.first === 0 ? lanesTop : (borders.get(x.first - 1) ?? 0);
     const y1 = x.last === layers.length - 1 ? lanesBottom : (borders.get(x.last) ?? 0);
@@ -1367,27 +1379,20 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       run: "rows",
       rect,
       head: { x: rect.x, y: y0, w: headW, h: y1 - y0 },
-      label: placeLines("lane-label", lines, lx, y0 + LANE.labelTop, "start", m, T),
+      label: laneLabel(x.id, lines, lx, headW - 2 * LANE.labelInset, y0, "left"),
     });
   }
   colLanes.forEach((l, k) => {
     const rect: Rect = { x: centre + l.x0, y: lanesTop, w: l.x1 - l.x0, h: lanesBottom - lanesTop };
     const cx = centre + (l.x0 + l.x1) / 2;
+    const laneRoom = l.x1 - l.x0 - 2 * LANE.labelInset;
     sceneLanes.push({
       id: l.id,
       ...lookPart(d, d.lanes?.find((y) => y.id === l.id)?.style),
       run: "columns",
       rect,
       head: { x: rect.x, y: lanesTop, w: rect.w, h: headH },
-      label: placeLines(
-        "lane-label",
-        colLines[k] ?? [],
-        cx,
-        lanesTop + LANE.labelTop,
-        "middle",
-        m,
-        T,
-      ),
+      label: laneLabel(l.id, colLines[k] ?? [], cx - laneRoom / 2, laneRoom, lanesTop, "center"),
     });
   });
   const boxOf = new Map<string, Rect>();
@@ -1407,24 +1412,20 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       const inset = leftInset(n.node, m);
       // A dot's label stays in the file and in show, but is not drawn (specs/decisions, "Every layered diagram type").
       if (withText && !isDot(n.node.kind)) {
-        const { label: lines, sub } = nodeLines(
-          n.node.kind,
-          n.w,
-          n.h,
-          n.node.label,
-          n.node.sublabel,
-          m,
-          T,
-          inset,
-        );
+        const {
+          label: lines,
+          sub,
+          room,
+        } = nodeLines(n.node.kind, n.w, n.h, n.node.label, n.node.sublabel, m, T, inset);
         const block = lines.length * nodeLh + sub.length * subLh;
         const top = textTop(n.node.kind, rect, block);
         // A left mark takes a column, so the text centres in what is left.
         const cx = rect.x + rect.w / 2 + inset / 2;
-        texts.push(placeLines("node-label", lines, cx, top, "middle", m, T));
+        const at = alignedIn(n.node.labelAlign, cx - room / 2, room);
+        texts.push(placeLines("node-label", lines, at.x, top, at.align, m, T));
         if (sub.length > 0) {
           texts.push(
-            placeLines("node-sublabel", sub, cx, top + lines.length * nodeLh, "middle", m, T),
+            placeLines("node-sublabel", sub, at.x, top + lines.length * nodeLh, at.align, m, T),
           );
         }
       }
@@ -1633,7 +1634,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       if (lines.length > 1) {
         // A wrapped label: its lines centred on each other, its ink box at its place.
         const lead = (labelMetrics.lineHeight - ink) / 2;
-        edge.label = placeLines("edge-label", lines, top.x + tw / 2, top.y - lead, "middle", m, T);
+        const place = alignedIn(e.labelAlign, top.x, tw);
+        edge.label = placeLines("edge-label", lines, place.x, top.y - lead, place.align, m, T);
       } else if (text !== undefined) {
         edge.label = placeLine("edge-label", text, top.x, top.y, m, T);
       }
@@ -1741,7 +1743,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       const placed = tops.find(clear);
       if (placed === undefined && withText) out.blocked = true;
       const y = placed ?? y0;
-      if (withText) out.label = placeLines("layer-label", lines, mid, y, "middle", m, T);
+      if (withText) {
+        const place = alignedIn(b.wall.labelAlign, mid - w / 2, w);
+        out.label = placeLines("layer-label", lines, place.x, y, place.align, m, T);
+      }
       out.line = { a: { x: mid, y: y + h + WALL.labelGap }, b: { x: mid, y: y1 } };
     }
     sceneWalls.push(out);

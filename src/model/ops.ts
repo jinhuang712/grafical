@@ -25,6 +25,8 @@ import {
   type EdgeSide,
   GROUP_TITLES,
   type GroupTitle,
+  LABEL_ALIGNS,
+  type LabelAlign,
   LINE_STYLES,
   type LineStyleName,
   MARK_SHAPES,
@@ -344,6 +346,12 @@ export interface EdgeSeatOp {
   seat: "on" | "beside";
 }
 
+/** How a text's lines line up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
+export interface LabelAlignOp {
+  op: "label.align";
+  id: string;
+  align: LabelAlign;
+}
 export interface EdgeRelabelOp {
   op: "edge.relabel";
   id: string;
@@ -582,6 +590,7 @@ export type Op =
   | EdgeAddOp
   | EdgeRemoveOp
   | EdgeRelabelOp
+  | LabelAlignOp
   | EdgeSeatOp
   | EdgeSideOp
   | EdgeKindOp
@@ -831,6 +840,11 @@ export const nodeMergeSchema = z.strictObject({
   sublabel: text.optional(),
   kind: z.enum(NODE_KINDS).optional(),
 });
+export const labelAlignSchema = z.strictObject({
+  op: z.literal("label.align"),
+  id: z.string().min(1),
+  align: z.enum(LABEL_ALIGNS),
+});
 export const edgeRelabelSchema = z.strictObject({
   op: z.literal("edge.relabel"),
   id: edgeId,
@@ -1042,6 +1056,7 @@ export const opSchema = z.discriminatedUnion("op", [
   nodeSwapSchema,
   nodeMergeSchema,
   edgeRelabelSchema,
+  labelAlignSchema,
   edgeKindSchema,
   edgeReverseSchema,
   edgeBothSchema,
@@ -1120,6 +1135,7 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "node.swap": nodeSwapSchema,
   "node.merge": nodeMergeSchema,
   "edge.relabel": edgeRelabelSchema,
+  "label.align": labelAlignSchema,
   "edge.kind": edgeKindSchema,
   "edge.reverse": edgeReverseSchema,
   "edge.both": edgeBothSchema,

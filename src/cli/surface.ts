@@ -13,6 +13,7 @@ export const NOUNS = [
   "column",
   "wall",
   "note",
+  "label",
   "layer",
   "node",
   "edge",

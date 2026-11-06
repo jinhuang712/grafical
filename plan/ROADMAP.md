@@ -89,7 +89,7 @@ Roadmap
 │   │   ├── 🟨 Edge sides
 │   │   ├── ✅ Edge shapes
 │   │   ├── 🟨 Labels on edges
-│   │   ├── ⬜ Label text
+│   │   ├── 🟨 Label text
 │   │   ├── ⬜ Region gaps
 │   │   ├── ✅ Edge looks
 │   │   ├── ⬜ Region labels
@@ -531,7 +531,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - 🟨 Edge sides: An agent states the side a line leaves or enters by, and a line that leaves away from its other end has no route yet.
 - ✅ Edge shapes: A command draws lines square or round.
 - 🟨 Labels on edges: A line carries its label by default, and lines do not yet move apart for one.
-- ⬜ Label text: An agent sets a label's breaks and its alignment.
+- 🟨 Label text: An agent sets the breaks and alignment of a node's, an edge's, a wall's and a lane's label, and a note stays left aligned.
 - ⬜ Region gaps: The gap between two regions takes a multiple.
 - ✅ Edge looks: An edge takes a color of its own or a named look.
 - ⬜ Region labels: A region's label sits at a fraction of a side, inside or outside.

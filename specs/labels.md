@@ -37,7 +37,7 @@ An edge's label sits on its line, inside the gutter of its longest run, and the 
 - 24 px across and 4 px up or down from another label.
 - 4 px from the sides of group nodes and of column lanes.
 
-A wrapped label's lines are centred on each other. A break the agent states holds on every form, and the engine may still wrap each stated line.
+A wrapped label's lines are centred on each other unless the agent aligns them. A break the agent states holds on every form, and the engine may still wrap each stated line.
 
 Once the lines are drawn, a label on a vertical run moves to the run's middle, keeping 12 px from each end. Where that is not clear, it takes the nearest clear place on the way back to its seat, in 4 px steps. It moves no line. Clear means 4 px from other lines and labels, wholly inside or outside each group, band and lane, and out of a wall.
 

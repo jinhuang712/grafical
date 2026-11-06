@@ -26,6 +26,7 @@ import {
   FORMAT_VERSION,
   GROUP_TITLES,
   type Group,
+  LABEL_ALIGNS,
   type Layer,
   LINE_STYLES,
   MARK_COLORS,
@@ -153,6 +154,7 @@ const nodeSchema = z.strictObject({
   label: text,
   kind: z.enum(NODE_KINDS).default(DEFAULT_NODE_KIND),
   sublabel: text.optional(),
+  labelAlign: z.enum(LABEL_ALIGNS).optional(),
   size: z.enum(SIZE_STEPS).optional(),
   accent: z.boolean().optional(),
   align: nodeId.optional(),
@@ -185,7 +187,12 @@ const groupSchema = z.strictObject({
   style: styleNames,
 });
 
-const laneSchema = z.strictObject({ id: nodeId, label: text, style: styleNames });
+const laneSchema = z.strictObject({
+  id: nodeId,
+  label: text,
+  labelAlign: z.enum(LABEL_ALIGNS).optional(),
+  style: styleNames,
+});
 
 /** Empty space between two sides (specs/decisions, "Walls as space"): nodes and groups; it lets through lines, nodes and groups. */
 const wallSchema = z.strictObject({
@@ -194,6 +201,7 @@ const wallSchema = z.strictObject({
   and: z.array(nodeId).min(1),
   allow: z.array(z.string().min(1)).optional(),
   label: text.optional(),
+  labelAlign: z.enum(LABEL_ALIGNS).optional(),
 });
 
 const layerSchema = z.strictObject({
@@ -247,6 +255,7 @@ const edgeSchema = z.strictObject({
   to: nodeId,
   kind: z.enum(EDGE_KINDS).default(DEFAULT_EDGE_KIND),
   label: text.optional(),
+  labelAlign: z.enum(LABEL_ALIGNS).optional(),
   both: z.boolean().optional(),
   pass: z.boolean().optional(),
   seat: z.enum(["beside"]).optional(),
@@ -297,6 +306,7 @@ type Parsed = z.output<typeof diagramSchema>;
 function buildNode(n: Parsed["layers"][number]["nodes"][number] | Parsed["nodes"][number]) {
   const node: DiagramNode = { id: n.id, label: n.label, kind: n.kind };
   if (n.sublabel !== undefined) node.sublabel = n.sublabel;
+  if (n.labelAlign !== undefined) node.labelAlign = n.labelAlign;
   if (n.size !== undefined) node.size = n.size;
   if (n.accent === true) node.accent = true;
   if ("align" in n && n.align !== undefined) node.align = n.align;
@@ -331,6 +341,7 @@ function build(p: Parsed): Diagram {
   const edges: Edge[] = p.edges.map((e) => {
     const edge: Edge = { id: e.id, from: e.from, to: e.to, kind: e.kind };
     if (e.label !== undefined) edge.label = e.label;
+    if (e.labelAlign !== undefined) edge.labelAlign = e.labelAlign;
     if (e.both === true) edge.both = true;
     if (e.pass === true) edge.pass = true;
     if (e.seat !== undefined) edge.seat = e.seat;
@@ -396,6 +407,7 @@ function build(p: Parsed): Diagram {
     d.lanes = p.lanes.map((x) => ({
       id: x.id,
       label: x.label,
+      ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
       ...(x.style === undefined ? {} : { style: [...x.style] }),
     }));
   }
@@ -405,6 +417,7 @@ function build(p: Parsed): Diagram {
       const wall: Wall = { id: x.id, between: [...x.between], and: [...x.and] };
       if (x.allow !== undefined && x.allow.length > 0) wall.allow = [...x.allow];
       if (x.label !== undefined) wall.label = x.label;
+      if (x.labelAlign !== undefined) wall.labelAlign = x.labelAlign;
       return wall;
     });
   }

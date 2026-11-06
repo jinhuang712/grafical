@@ -3,7 +3,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
 import { layout } from "../../src/layout/index.ts";
-import { applyOps, type Diagram, type Op, parseOps } from "../../src/model/index.ts";
+import { writeGrafical } from "../../src/model/grafical-format.ts";
+import { applyOps, type Diagram, type Op, parseOps, readDiagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 
@@ -57,5 +58,66 @@ describe("a stated break", () => {
   it("is refused on a title, which is one line", () => {
     const d = { ...build([]), title: "one\ntwo" };
     expect(check(d, layout(d, m), m).map((f) => f.code)).toContain("missing-glyph");
+  });
+});
+
+describe("label.align", () => {
+  const go = (d: Diagram, ...ops: object[]) => {
+    const r = applyOps(d, ops as Op[]);
+    if ("errors" in r) throw new Error(JSON.stringify(r.errors));
+    return r.diagram;
+  };
+  const edge = { op: "edge.add", from: "x", to: "y", label: "reads\nand writes" };
+  const lefts = (runs: { x: number }[] = []) => runs.map((r) => r.x);
+
+  it("lines up a node's label and sublabel at one side of the box", () => {
+    const d = build([{ op: "node.describe", id: "y", text: "keeps" } as Op]);
+    const plain = layout(d, m).nodes[1];
+    const left = layout(go(d, { op: "label.align", id: "y", align: "left" }), m).nodes[1];
+    const right = layout(go(d, { op: "label.align", id: "y", align: "right" }), m).nodes[1];
+    const [name, sub] = left?.texts ?? [];
+    expect(name?.bbox.x).toBe(sub?.bbox.x);
+    expect(name?.bbox.x).toBeLessThan(plain?.texts[0]?.bbox.x ?? 0);
+    const [rn, rs] = right?.texts ?? [];
+    expect((rn?.bbox.x ?? 0) + (rn?.bbox.w ?? 0)).toBeCloseTo(
+      (rs?.bbox.x ?? 0) + (rs?.bbox.w ?? 0),
+    );
+  });
+
+  it("lines up an edge label's lines and keeps its box", () => {
+    const d = build([edge as Op]);
+    const plain = layout(d, m).edges[0]?.label;
+    const left = layout(go(d, { op: "label.align", id: "x->y", align: "left" }), m).edges[0]?.label;
+    expect(new Set(lefts(left?.runs)).size).toBe(1);
+    expect(left?.bbox).toEqual(plain?.bbox);
+  });
+
+  it("writes nothing for center on a node, and refuses what has no label to line up", () => {
+    const d = build([edge as Op]);
+    const back = go(
+      d,
+      { op: "label.align", id: "x", align: "left" },
+      { op: "label.align", id: "x", align: "center" },
+    );
+    expect(back).toEqual(d);
+    const r = applyOps(build([]), [{ op: "label.align", id: "a", align: "left" } as Op]);
+    expect("errors" in r ? r.errors[0]?.code : "written").toBe("bad-value");
+  });
+
+  it("goes with the label when the label goes", () => {
+    const d = go(build([edge as Op]), { op: "label.align", id: "x->y", align: "right" });
+    expect(go(d, { op: "edge.relabel", id: "x->y" }).edges[0]?.labelAlign).toBeUndefined();
+  });
+
+  it("survives a .grafical file", () => {
+    const d = go(
+      build([edge as Op]),
+      { op: "label.align", id: "x->y", align: "right" },
+      { op: "label.align", id: "y", align: "left" },
+    );
+    const back = readDiagram(writeGrafical(d));
+    if (Array.isArray(back)) throw new Error(JSON.stringify(back));
+    expect(back.edges[0]?.labelAlign).toBe("right");
+    expect(back.layers[1]?.nodes[0]?.labelAlign).toBe("left");
   });
 });

@@ -144,6 +144,7 @@ export function writeGrafical(d: Diagram): string {
         ["type", ref(n.type ?? n.kind)],
         ["text", quote(n.label)],
         ["sublabel", opt(n.sublabel, quote)],
+        ["text-align", n.labelAlign],
         ["layer", opt(layer)],
         ["group", opt(n.group)],
         ["lane", opt(n.lane)],
@@ -181,6 +182,7 @@ export function writeGrafical(d: Diagram): string {
     sub?: string,
     place?: string,
     seat?: string,
+    align?: string,
   ) =>
     block("label", `${id}-label`, [
       ["on", ref(on)],
@@ -188,16 +190,22 @@ export function writeGrafical(d: Diagram): string {
       ["sublabel", opt(sub, quote)],
       ["place", place],
       ["seat", seat],
+      ["align", align],
     ]);
   for (const l of d.layers) if (l.label !== undefined) blocks.push(label(l.id, l.id, l.label));
   for (const g of d.groups ?? []) {
     blocks.push(label(g.id, g.id, g.label, g.sublabel, g.titleAt));
   }
-  for (const l of d.lanes ?? []) blocks.push(label(l.id, l.id, l.label));
-  for (const w of d.walls ?? []) if (w.label !== undefined) blocks.push(label(w.id, w.id, w.label));
+  for (const l of d.lanes ?? []) {
+    blocks.push(label(l.id, l.id, l.label, undefined, undefined, undefined, l.labelAlign));
+  }
+  for (const w of d.walls ?? []) {
+    if (w.label === undefined) continue;
+    blocks.push(label(w.id, w.id, w.label, undefined, undefined, undefined, w.labelAlign));
+  }
   for (const e of d.edges) {
     if (e.label !== undefined) {
-      blocks.push(label(e.id, e.id, e.label, undefined, undefined, e.seat));
+      blocks.push(label(e.id, e.id, e.label, undefined, undefined, e.seat, e.labelAlign));
     }
   }
   for (const { n } of nodes) {
@@ -386,7 +394,16 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   const named = (id: string, o: Record<string, unknown>, place?: string) => {
     const b = labels.get(id);
     if (b === undefined) return;
-    take(b, { text: "label", sublabel: "sublabel", ...(place === undefined ? {} : { place }) }, o);
+    take(
+      b,
+      {
+        text: "label",
+        sublabel: "sublabel",
+        align: "labelAlign",
+        ...(place === undefined ? {} : { place }),
+      },
+      o,
+    );
   };
   const marks = new Map<string, Record<string, unknown>>();
   for (const b of of("mark")) {
@@ -419,6 +436,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       {
         text: "label",
         sublabel: "sublabel",
+        "text-align": "labelAlign",
         group: "group",
         lane: "lane",
         column: "column",

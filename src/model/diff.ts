@@ -16,6 +16,7 @@ import {
   type DiagramNode,
   type Edge,
   type Group,
+  type LabelAlign,
   type Lane,
   LINE_STYLES,
   MARK_SLOTS,
@@ -715,6 +716,16 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       ops.push(x.type === undefined ? { op, id: x.id } : { op, id: x.id, type: x.type });
     }
   };
+  const aligns = <T extends { id: string; labelAlign?: LabelAlign }>(was: T[], now: T[]) => {
+    for (const x of now) {
+      if (was.find((y) => y.id === x.id)?.labelAlign === x.labelAlign) continue;
+      ops.push({ op: "label.align", id: x.id, align: x.labelAlign ?? "center" });
+    }
+  };
+  aligns(everyNode(b), everyNode(a));
+  aligns(b.edges, a.edges);
+  aligns(b.lanes ?? [], a.lanes ?? []);
+  aligns(b.walls ?? [], a.walls ?? []);
   types("node.type", everyNode(b), everyNode(a));
   types("edge.type", b.edges, a.edges);
   const keptTypes = new Set((a.types ?? []).map((x) => x.id));

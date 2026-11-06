@@ -530,6 +530,17 @@ export function build(): Command {
     await write(file, { op: "wall.remove", id }, opts);
   });
 
+  const label = program.command("label").description("how a text's lines line up: align");
+  json(
+    label
+      .command("align")
+      .description("line up the text of a node, an edge, a wall or a lane")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("<align>", "left, center or right"),
+  ).action(async (file: string, id: string, align: string) => {
+    await write(file, { op: "label.align", id, align }, {});
+  });
   const note = program.command("note").description("notes on a box, line, group: add, remove");
   json(
     note

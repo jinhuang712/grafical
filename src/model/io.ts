@@ -40,6 +40,7 @@ export function yamlError(text: string, err: unknown): OpError {
 function nodeOut(n: DiagramNode): Record<string, unknown> {
   const o: Record<string, unknown> = { id: n.id, label: n.label, kind: n.kind };
   if (n.sublabel !== undefined) o.sublabel = n.sublabel;
+  if (n.labelAlign !== undefined) o.labelAlign = n.labelAlign;
   if (n.size !== undefined) o.size = n.size;
   if (n.accent === true) o.accent = true;
   if (n.align !== undefined) o.align = n.align;
@@ -84,6 +85,7 @@ function layerOut(l: Layer): Record<string, unknown> {
 function edgeOut(e: Edge): Record<string, unknown> {
   const o: Record<string, unknown> = { id: e.id, from: e.from, to: e.to, kind: e.kind };
   if (e.label !== undefined) o.label = e.label;
+  if (e.labelAlign !== undefined) o.labelAlign = e.labelAlign;
   if (e.both === true) o.both = true;
   if (e.pass === true) o.pass = true;
   if (e.seat !== undefined) o.seat = e.seat;
@@ -141,6 +143,7 @@ export function writeDiagram(d: Diagram): string {
     out.lanes = d.lanes.map((x) => ({
       id: x.id,
       label: x.label,
+      ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
       ...(x.style === undefined ? {} : { style: x.style }),
     }));
   }
@@ -152,6 +155,7 @@ export function writeDiagram(d: Diagram): string {
       const o: Record<string, unknown> = { id: x.id, between: x.between, and: x.and };
       if (x.allow !== undefined && x.allow.length > 0) o.allow = x.allow;
       if (x.label !== undefined) o.label = x.label;
+      if (x.labelAlign !== undefined) o.labelAlign = x.labelAlign;
       return o;
     });
   }

@@ -226,6 +226,7 @@ A `gap` line between two items gives the multiple of the gap between them.
 | `type` | a type |
 | `text` | text |
 | `sublabel` | text |
+| `text-align` | `left`, `center` or `right` |
 | `layer` | a layer |
 | `group` | a group |
 | `lane` | a lane |

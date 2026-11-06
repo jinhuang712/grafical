@@ -20,3 +20,9 @@ A label may hold a line break, which the engine keeps. Any label may be aligned 
 ## Consequences
 
 A stated break can make a label taller than the engine would, and a label that no longer fits is refused as before.
+
+Built on 2026-11-06, with less than the choice says:
+
+- A title and the label of a group, a row or a wall stay one line, since their room is made for one line.
+- `label --align` reaches a node, an edge, a wall and a lane, since a note has no ID and a region's label waits for "A region's label sits at a fraction of a side".
+- A lane keeps a stated `center`, since its default depends on how it runs.

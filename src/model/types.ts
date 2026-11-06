@@ -143,6 +143,8 @@ export function markName(m: Mark): string {
 export interface DiagramNode {
   id: string;
   label: string;
+  /** Absent: centred. */
+  labelAlign?: LabelAlign;
   kind: NodeKind;
   /** Absent: the engine sizes the box to its text, unless the diagram's sizing is fixed (specs/decisions, "Boxes sized to their text"). */
   size?: SizeStep;
@@ -209,9 +211,15 @@ export interface Column {
   id: string;
 }
 
+/** How a text's lines line up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
+export const LABEL_ALIGNS = ["left", "center", "right"] as const;
+export type LabelAlign = (typeof LABEL_ALIGNS)[number];
+
 export interface Lane {
   id: string;
   label: string;
+  /** Absent: left in a lane of rows and centred in a lane of columns. */
+  labelAlign?: LabelAlign;
   /** The styles it marks. */
   style?: string[];
 }
@@ -229,6 +237,8 @@ export interface Wall {
   allow?: string[];
   /** Drawn as a dashed line through the wall's middle, with these words at its start. Absent: invisible. */
   label?: string;
+  /** Absent: centred. */
+  labelAlign?: LabelAlign;
 }
 
 /** A note (specs/decisions, "Notes as callouts or footnotes"): a short text about a node, a group or a line, drawn as a callout or a footnote. */
@@ -249,6 +259,8 @@ export interface Edge {
   to: string;
   kind: EdgeKind;
   label?: string;
+  /** Absent: centred. */
+  labelAlign?: LabelAlign;
   /** true: an arrowhead at both ends. A link has none (specs/decisions, "Lines meet any side"). */
   both?: boolean;
   /** true: the line may pass the rows with no box between its ends (specs/decisions, "A row with no box as one bar"). */

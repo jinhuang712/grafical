@@ -724,8 +724,10 @@ function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number
     if (errors.length > 0) return errors;
     wall.allow = unique([...(wall.allow ?? []), ...op.allow]);
   } else if (op.op === "wall.relabel") {
-    if (op.label === undefined) delete wall.label;
-    else wall.label = op.label;
+    if (op.label === undefined) {
+      delete wall.label;
+      delete wall.labelAlign;
+    } else wall.label = op.label;
   } else if (walls.length > 1) d.walls = walls.filter((x) => x.id !== wall.id);
   else delete d.walls;
   touch(s, wall.id);
@@ -2043,6 +2045,30 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, e.id);
       return [];
     }
+    case "label.align": {
+      // A lane's default depends on how it runs, so every lane keeps what was stated.
+      const lane = d.lanes?.find((x) => x.id === op.id);
+      const held =
+        lane ??
+        d.walls?.find((x) => x.id === op.id) ??
+        d.edges.find((x) => x.id === op.id) ??
+        findNode(d, op.id)?.node;
+      if (held === undefined || (held.label ?? "") === "") {
+        return [
+          {
+            code: "bad-value",
+            index: i,
+            field: "id",
+            found: op.id,
+            facts: { allowed: ["a node, an edge, a wall or a lane with a label"] },
+          },
+        ];
+      }
+      if (op.align === "center" && lane === undefined) delete held.labelAlign;
+      else held.labelAlign = op.align;
+      touch(s, op.id);
+      return [];
+    }
     case "edge.seat": {
       const e = d.edges.find((x) => x.id === op.id);
       if (!e) return [unknownEdge(d, op.id, i, "id")];
@@ -2075,6 +2101,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
         if (op.label === undefined) {
           delete e.label;
           delete e.seat;
+          delete e.labelAlign;
         } else e.label = op.label;
       } else if (op.op === "edge.kind") {
         if (op.kind === "link" && e.both === true) return [bothOnLink(e.id, i, "kind", op.kind)];

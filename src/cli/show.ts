@@ -23,6 +23,7 @@ function nodeText(n: DiagramNode): string {
   if (n.lane !== undefined) s += ` lane=${n.lane}`;
   if (n.column !== undefined) s += ` column=${n.column}`;
   if (n.sublabel !== undefined) s += ` sub=${JSON.stringify(n.sublabel)}`;
+  if (n.labelAlign !== undefined) s += ` [label ${n.labelAlign}]`;
   if (n.from !== undefined) s += ` from=${n.from}`;
   for (const k of STEP_KEYS) if (n[k] !== undefined) s += ` ${k}=${n[k]}`;
   for (const slot of MARK_SLOTS) {
@@ -41,6 +42,7 @@ function edgeText(e: Edge): string {
   if (e.both === true) s += " [both ends]";
   if (e.pass === true) s += " [passes bars]";
   if (e.seat !== undefined) s += " [label beside]";
+  if (e.labelAlign !== undefined) s += ` [label ${e.labelAlign}]`;
   if (e.out !== undefined) s += ` [out ${e.out}]`;
   if (e.in !== undefined) s += ` [in ${e.in}]`;
   if (e.weight !== undefined) s += ` [weight ${e.weight}]`;

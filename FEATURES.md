@@ -55,14 +55,14 @@ Features
 │   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts
 │   ├── ✅ F3.6: Merging and swapping — merge, swap and remove boxes
 │   └── ⬜ F3.7: More combinations of operations — one operation for a common edit
-├── 🚧 F4: Look — how the picture looks (the legend as a small diagram and brand fonts and label text and region labels not built)
+├── 🚧 F4: Look — how the picture looks (the legend as a small diagram and brand fonts and region labels not built)
 │   ├── ✅ F4.1: Title, subtitle and footnote — the words around the picture
 │   ├── 🚧 F4.2: Legend — a key for styles, widths and marks (the legend as a small diagram not built)
 │   │   └── ⬜ F4.2.1: A legend as a small diagram — entries, their layout and their samples
 │   ├── ✅ F4.3: Themes and stylesheets — the whole look from one name
 │   ├── ✅ F4.4: The stylesheet file — colors, widths and type sizes
 │   ├── ⬜ F4.5: Brand fonts — a team's own typeface
-│   ├── ⬜ F4.6: Label text — breaks and alignment
+│   ├── 🚧 F4.6: Label text — breaks and alignment (a note always left, and titles of regions one line)
 │   ├── ⬜ F4.7: Region labels — where any region's label sits
 │   └── ⬜ F4.8: Label looks — a label's background, border and color
 ├── ✅ F5: Checking — how an agent knows it came out right

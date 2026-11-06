@@ -126,15 +126,19 @@ A team's own typeface in the picture.
 
 ## F4.6: Label text
 
-An agent may set where a label breaks and how its edges align. A text the agent leaves alone wraps where grafical wraps it and stays centred.
+An agent may set where a text breaks and how its lines line up. A text the agent leaves alone wraps where grafical wraps it and keeps the alignment of its kind.
 
 ```sh
 grafical -f <file> label --align <id> left|center|right
 ```
 
-- A label may hold a line break, and grafical keeps it.
-- `label --align` takes the ID of any element with a label.
-- A node's sublabel aligns with its label.
+- The label of a node, an edge or a lane may hold a line break, and so may a sublabel, a note and a subtitle.
+- A break is a real line break or `\n`, and grafical keeps it.
+- A diagram's title and the label of a group, a row or a wall are one line, and a break in one is refused as `missing-glyph`.
+- `label --align` takes the ID of a node, an edge, a wall or a lane.
+- In a node, left and right mean the sides of the room for its text, and its sublabel follows its label.
+- On an edge, it lines up the lines of a label of two or more lines.
+- A note has no ID and stays left aligned.
 - A label that no longer fits is refused as before.
 
 - **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)

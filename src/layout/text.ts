@@ -2,6 +2,7 @@
 // wrapped to the room it is given, and whatever does not fit is left for the
 // checker to report as overflow.
 
+import type { LabelAlign } from "../model/types.ts";
 import type { PlacedText, Rect, TextRole } from "../scene.ts";
 import type { Line, Measurer } from "../text/types.ts";
 import type { TypeRamp } from "../theme/themes.ts";
@@ -19,15 +20,15 @@ export function lineBox(role: TextRole, m: Measurer, ramp: TypeRamp = TYPE_RAMP)
 }
 
 /**
- * Lines stacked from `top`, each taking one line height, and each aligned at the
- * start of `x` or centred on `x`. The bbox is the union of the lines' ink boxes.
+ * Lines stacked from `top`, each taking one line height, and each starting at `x`,
+ * centred on it or ending at it. The bbox is the union of the lines' ink boxes.
  */
 export function placeLines(
   role: TextRole,
   lines: Line[],
   x: number,
   top: number,
-  align: "start" | "middle",
+  align: "start" | "middle" | "end",
   m: Measurer,
   ramp: TypeRamp = TYPE_RAMP,
 ): PlacedText {
@@ -39,7 +40,7 @@ export function placeLines(
   let x0 = Number.POSITIVE_INFINITY;
   let x1 = Number.NEGATIVE_INFINITY;
   lines.forEach((line, i) => {
-    const left = align === "middle" ? x - line.width / 2 : x;
+    const left = x - (align === "middle" ? line.width / 2 : align === "end" ? line.width : 0);
     x0 = Math.min(x0, left);
     x1 = Math.max(x1, left + line.width);
     const baseline = top + i * mt.lineHeight + lead + mt.ascent;
@@ -58,6 +59,17 @@ export function placeLines(
     h: lines.length === 0 ? 0 : (lines.length - 1) * mt.lineHeight + ink,
   };
   return { role, runs, bbox };
+}
+
+/** Where lines stated to align sit in a block from `x` that is `w` wide, by the anchor of placeLines. */
+export function alignedIn(
+  align: LabelAlign | undefined,
+  x: number,
+  w: number,
+): { x: number; align: "start" | "middle" | "end" } {
+  if (align === "left") return { x, align: "start" };
+  if (align === "right") return { x: x + w, align: "end" };
+  return { x: x + w / 2, align: "middle" };
 }
 
 /** One unwrapped line whose ink box has its top left corner at (x, top). */
