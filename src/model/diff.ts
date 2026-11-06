@@ -638,6 +638,23 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (e.both !== true && was.both === true) ops.push({ op: "edge.both", id: e.id, off: true });
     if (e.kind !== was.kind) ops.push({ op: "edge.kind", id: e.id, kind: e.kind });
     if (e.both === true && was.both !== true) ops.push({ op: "edge.both", id: e.id });
+    if (e.out !== was.out || e.in !== was.in) {
+      // A side taken away has no op of its own: both go, and what stays is stated again.
+      if (
+        (e.out === undefined && was.out !== undefined) ||
+        (e.in === undefined && was.in !== undefined)
+      ) {
+        ops.push({ op: "edge.side", id: e.id });
+      }
+      if (e.out !== undefined || e.in !== undefined) {
+        ops.push({
+          op: "edge.side",
+          id: e.id,
+          ...(e.out === undefined ? {} : { out: e.out }),
+          ...(e.in === undefined ? {} : { in: e.in }),
+        });
+      }
+    }
     if (e.seat !== was.seat) {
       ops.push({ op: "edge.seat", id: e.id, seat: e.seat ?? "on" });
     }

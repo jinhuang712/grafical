@@ -163,6 +163,8 @@ export function writeGrafical(d: Diagram): string {
         ["from", ref(e.from)],
         ["to", ref(e.to)],
         ["type", ref(e.type ?? e.kind)],
+        ["out", e.out],
+        ["in", e.in],
         ["weight", e.weight === undefined ? undefined : String(e.weight)],
         ["both", flag(e.both)],
         ["pass", flag(e.pass)],
@@ -514,6 +516,8 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
         pass: "pass",
         emphasis: "accent",
         number: "step",
+        out: "out",
+        in: "in",
       },
       o,
     );

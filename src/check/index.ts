@@ -423,6 +423,16 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
       facts: { is: "edge", gutters: e.blocked },
     });
   }
+  // A stated side the router could not take: it never takes another in its place.
+  for (const e of scene.edges) {
+    for (const u of e.unmet ?? []) {
+      out.push({
+        code: "side-blocked",
+        elements: [e.id],
+        facts: { place: `${u.end} ${u.stated}`, drawn: u.drawn },
+      });
+    }
+  }
   // A note's card with no place beside its target, at the first place anyway: the lines and
   // boxes in its way there.
   for (const x of scene.notes ?? []) {

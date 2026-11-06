@@ -257,6 +257,10 @@ export interface Edge {
   accent?: boolean;
   /** A weight level the stylesheet names, or a width in pixels (specs/decisions, "Edge weights"). Absent: thin. */
   weight?: string | number;
+  /** The side it leaves by, where the agent states one. Absent: the router's. */
+  out?: EdgeSide;
+  /** The side it enters by, where the agent states one. Absent: the router's. */
+  in?: EdgeSide;
   /** Its label sits beside it, where the agent took it off the line. Absent: on the line. */
   seat?: "beside";
   /** The type it is, when an agent defined it. */
@@ -318,6 +322,10 @@ export interface TypeDef {
   borderWidth?: number;
   color?: string;
 }
+
+/** A side of a node that an edge leaves or enters by. */
+export const EDGE_SIDES = ["top", "bottom", "left", "right"] as const;
+export type EdgeSide = (typeof EDGE_SIDES)[number];
 
 /** What a style sets. */
 export type Look = Omit<Style, "id">;

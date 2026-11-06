@@ -1,6 +1,6 @@
 # Routing
 
-Routing draws every edge once the nodes have their places. An edge is made of horizontal and vertical runs: across the gutters between layers, and down through the gaps between nodes. It never runs through a node. The agent says only which two things an edge joins. The router picks everything else: the side the edge leaves and enters, its place on each side, the corridor it runs down and the track it takes in each gutter. Every value lies on a 4 px grid and every tie has a fixed rule, so the same placement always gives the same routes. It lives in `src/layout/`.
+Routing draws every edge once the nodes have their places. An edge is made of horizontal and vertical runs: across the gutters between layers, and down through the gaps between nodes. It never runs through a node. The agent says only which two things an edge joins. The router picks everything else, a side unless the agent states it: the side the edge leaves and enters, its place on each side, the corridor it runs down and the track it takes in each gutter. Every value lies on a 4 px grid and every tie has a fixed rule, so the same placement always gives the same routes. It lives in `src/layout/`.
 
 ## The steps
 
@@ -89,6 +89,18 @@ An edge to a node in the next layer that lies wholly to one side would leave fro
 An exit needs room: the layer clear between the source and the turn, no track close to the turn, and a turn that falls within the target's top or bottom ports. Each side takes at most one exit, and none when an edge to a neighbour already uses it.
 
 Where no exit was taken, an edge may enter its target's side instead. A side takes several entries, each at its own height: the edges from above enter its upper part, and the edges from below its lower part. Lines to bars and lanes take no side exit, and lines to containers take no side entry.
+
+## Stated sides
+
+An agent may state the side an edge leaves by, the side it enters by, or both. Such a line keeps its own port and joins no bundle or fan-in, and it chooses a side exit or a side entry before the others do. What each kind of line can take:
+
+| Line | Sides it can take |
+|---|---|
+| between neighbours | left or right facing the other, or top or bottom, going round through that gutter |
+| along a row | top or bottom, the same at both ends |
+| down or up | the side facing the other end, or left or right toward a target beside it |
+
+A stated top is out of reach in the first layer, under a band's label or where a wall or a lane's border closes the gutter. A line the router cannot draw by a stated side is refused as `side-blocked`, which gives the stated side and the side it would have drawn. The router never takes another side in its place. A line that leaves away from the other end has no route yet.
 
 ## Ports
 

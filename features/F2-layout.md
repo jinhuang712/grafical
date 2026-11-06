@@ -263,8 +263,11 @@ An agent may state the side an edge leaves by or enters by. A side left unstated
 grafical -f <file> edge --side <id> [--out top|bottom|left|right] [--in top|bottom|left|right]
 ```
 
+- A side the command does not name stays as it was.
 - Without `--out` or `--in`, the edge's sides are grafical's again.
-- Where the edge cannot go by the stated side, the write is refused and names what is in the way.
+- Where the edge cannot go by the stated side, the write is refused as `side-blocked`.
+  - It gives the stated side and the side it would have drawn.
+- ⬜ A line that leaves away from the other end, such as out of the top of a line going down.
 - A stated side can cost more bends or crossings, and the counts show them.
 
 - **Why:** [058. An agent may state the side of a line](../specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)

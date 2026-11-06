@@ -86,7 +86,7 @@ Roadmap
 │   │   ├── ⬜ Move the saved files
 │   │   └── ⬜ Tune the form
 │   ├── 🟨 CP2.4: Edges and labels
-│   │   ├── ⬜ Edge sides
+│   │   ├── 🟨 Edge sides
 │   │   ├── ✅ Edge shapes
 │   │   ├── 🟨 Labels on edges
 │   │   ├── ⬜ Label text
@@ -528,7 +528,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 
 **Tasks:**
 
-- ⬜ Edge sides: An agent states the side a line leaves or enters by.
+- 🟨 Edge sides: An agent states the side a line leaves or enters by, and a line that leaves away from its other end has no route yet.
 - ✅ Edge shapes: A command draws lines square or round.
 - 🟨 Labels on edges: A line carries its label by default, and lines do not yet move apart for one.
 - ⬜ Label text: An agent sets a label's breaks and its alignment.

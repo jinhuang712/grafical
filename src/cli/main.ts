@@ -647,7 +647,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "lines: add, emphasize, retarget, reverse, kind, relabel, seat, weight, both, pass, step, type, style, remove",
+      "lines: add, emphasize, retarget, reverse, kind, relabel, side, seat, weight, both, pass, step, type, style, remove",
     );
   json(
     edge
@@ -685,6 +685,19 @@ export function build(): Command {
       .option("--label <text>", "what the line means; leave it out when that is obvious"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.relabel", id, ...pick(opts, ["label"]) }, opts);
+  });
+  json(
+    edge
+      .command("side")
+      .description(
+        "state the side an edge leaves or enters by; with neither, the sides are grafical's",
+      )
+      .argument("<file>")
+      .argument("<id>")
+      .option("--out <side>", "top, bottom, left or right")
+      .option("--in <side>", "top, bottom, left or right"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "edge.side", id, ...pick(opts, ["out", "in"]) }, opts);
   });
   json(
     edge

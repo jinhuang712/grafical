@@ -22,4 +22,7 @@ An agent may state the side a line leaves by, the side it enters by, or both. A 
 
 ## Consequences
 
+Built on 2026-11-06 as `edge --side`, refused as `side-blocked`. A line that leaves away from the other end, such as out of the top of a line going down, has no route yet and is refused. No saved draft or fixture changed, since none states a side.
+
+
 A stated side can force more bends or crossings, and those are reported as usual. The router gains lines it may not turn to another side, and how much that costs is not measured.

@@ -89,6 +89,8 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "group-too-deep": "Groups would nest deeper than grafical draws.",
   invalid: "A field holds a value that is not valid there.",
   "invalid-argument": "An option holds a value that it does not take.",
+  "side-blocked":
+    "No route leaves or enters by the stated side, and no line takes another side unasked.",
   "label-blocked":
     "A text has no place clear of the lines and boxes around it, and no line moves for a text.",
   "label-collision": "A line's label lies on a box, a line or another label.",
@@ -242,6 +244,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "group-too-deep": ["group leave", "group remove"],
   invalid: [],
   "invalid-argument": [],
+  "side-blocked": ["layer move", "node move", "edge side"],
   "label-blocked": {
     edge: ["layer move", "node resize", "node move", "edge relabel", "edge step"],
     note: ["note add", "note remove", "node move"],

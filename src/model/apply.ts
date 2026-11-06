@@ -2031,6 +2031,18 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       return swapNodes(s, op, i);
     case "node.merge":
       return mergeNodes(s, op, i);
+    case "edge.side": {
+      const e = d.edges.find((x) => x.id === op.id);
+      if (!e) return [unknownEdge(d, op.id, i, "id")];
+      if (op.out === undefined && op.in === undefined) {
+        delete e.out;
+        delete e.in;
+      }
+      if (op.out !== undefined) e.out = op.out;
+      if (op.in !== undefined) e.in = op.in;
+      touch(s, e.id);
+      return [];
+    }
     case "edge.seat": {
       const e = d.edges.find((x) => x.id === op.id);
       if (!e) return [unknownEdge(d, op.id, i, "id")];

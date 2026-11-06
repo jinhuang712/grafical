@@ -23,6 +23,7 @@ The defects the agent owns:
 - `mark-covers`: a mark that covers text or another node.
 - `wall-crossed`: an edge through a wall that does not allow it.
 - `title-blocked`: a group's label that an edge comes near.
+- `side-blocked`: a stated side that no route takes.
 - `label-blocked`: an edge's label or a step's badge or a wall's label or a note's card with no clear place.
 
 The defects the engine owns:

@@ -20,7 +20,9 @@ import {
   DENSITIES,
   type Density,
   EDGE_KINDS,
+  EDGE_SIDES,
   type EdgeKind,
+  type EdgeSide,
   GROUP_TITLES,
   type GroupTitle,
   LINE_STYLES,
@@ -329,6 +331,13 @@ export interface NodeMergeOp {
   sublabel?: string;
   kind?: NodeKind;
 }
+export interface EdgeSideOp {
+  op: "edge.side";
+  id: string;
+  /** Absent here and in `in`: both sides are the router's again. */
+  out?: EdgeSide;
+  in?: EdgeSide;
+}
 export interface EdgeSeatOp {
   op: "edge.seat";
   id: string;
@@ -574,6 +583,7 @@ export type Op =
   | EdgeRemoveOp
   | EdgeRelabelOp
   | EdgeSeatOp
+  | EdgeSideOp
   | EdgeKindOp
   | EdgeReverseOp
   | EdgeBothOp
@@ -837,6 +847,13 @@ export const edgeEmphasizeSchema = z.strictObject({
   edges: z.array(edgeId).min(1),
   off: z.boolean().optional(),
 });
+export const edgeSideSchema = z.strictObject({
+  op: z.literal("edge.side"),
+  id: z.string(),
+  out: z.enum(EDGE_SIDES).optional(),
+  in: z.enum(EDGE_SIDES).optional(),
+});
+
 export const edgeSeatSchema = z.strictObject({
   op: z.literal("edge.seat"),
   id: z.string(),
@@ -1032,6 +1049,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeEmphasizeSchema,
   edgeWeightSchema,
   edgeSeatSchema,
+  edgeSideSchema,
   edgeStepSchema,
   edgeRetargetSchema,
 ]);
@@ -1109,6 +1127,7 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.emphasize": edgeEmphasizeSchema,
   "edge.weight": edgeWeightSchema,
   "edge.seat": edgeSeatSchema,
+  "edge.side": edgeSideSchema,
   "edge.step": edgeStepSchema,
   "edge.retarget": edgeRetargetSchema,
 };

@@ -201,6 +201,8 @@ export interface SceneEdge {
   width?: number;
   /** Its step's number in a ring centred on the line (specs/decisions, "Step badges ride the line"). */
   step?: SceneBadge;
+  /** The stated side the line could not take, and the side it took (specs/decisions, "An agent may state the side of a line"). */
+  unmet?: { end: "out" | "in"; stated: string; drawn: string }[];
   /**
    * The gutters its label, or its step's badge, tried when none could hold it clear of the other
    * lines, each as the rows above and below it joined by a slash. No line moves for it, so it lies

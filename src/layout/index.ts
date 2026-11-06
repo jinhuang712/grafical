@@ -1567,6 +1567,16 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const edgeLook = lookOf(d, real.style, real.type);
     if (edgeLook !== undefined) edge.look = edgeLook;
     if (e.both === true) edge.both = true;
+    const routed = planOf.get(e.id);
+    const unmet = [
+      ...(routed !== undefined && e.out !== undefined && e.out !== routed.srcSide
+        ? [{ end: "out" as const, stated: e.out, drawn: routed.srcSide }]
+        : []),
+      ...(routed !== undefined && e.in !== undefined && e.in !== routed.dstSide
+        ? [{ end: "in" as const, stated: e.in, drawn: routed.dstSide }]
+        : []),
+    ];
+    if (unmet.length > 0) edge.unmet = unmet;
     const blocked = routing.blocked.get(e.id);
     if (blocked !== undefined) edge.blocked = gutterNames(blocked);
     const width = edgeWidth(e, theme.paint);
@@ -1874,6 +1884,7 @@ function roundScene(s: Scene): Scene {
       if (e.width !== undefined) out.width = e.width;
       if (e.step !== undefined) out.step = roundBadge(e.step);
       if (e.blocked !== undefined) out.blocked = e.blocked;
+      if (e.unmet !== undefined) out.unmet = e.unmet;
       return out;
     }),
   };

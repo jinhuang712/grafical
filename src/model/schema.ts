@@ -21,6 +21,7 @@ import {
   type Diagram,
   type DiagramNode,
   EDGE_KINDS,
+  EDGE_SIDES,
   type Edge,
   FORMAT_VERSION,
   GROUP_TITLES,
@@ -249,6 +250,8 @@ const edgeSchema = z.strictObject({
   both: z.boolean().optional(),
   pass: z.boolean().optional(),
   seat: z.enum(["beside"]).optional(),
+  out: z.enum(EDGE_SIDES).optional(),
+  in: z.enum(EDGE_SIDES).optional(),
   accent: z.boolean().optional(),
   weight: weightValue.optional(),
   step: stepNumber.optional(),
@@ -331,6 +334,8 @@ function build(p: Parsed): Diagram {
     if (e.both === true) edge.both = true;
     if (e.pass === true) edge.pass = true;
     if (e.seat !== undefined) edge.seat = e.seat;
+    if (e.out !== undefined) edge.out = e.out;
+    if (e.in !== undefined) edge.in = e.in;
     if (e.accent === true) edge.accent = true;
     if (e.weight !== undefined) edge.weight = e.weight;
     if (e.step !== undefined) edge.step = e.step;

@@ -62,6 +62,8 @@ export interface Facts {
   run?: string;
   /** Where a group's label sits, as the agent stated it. */
   place?: string;
+  /** The side a line was drawn by. */
+  drawn?: string;
   /** The places where no line would come near that label. */
   clear?: readonly string[];
   /** The gutters a line's label tried, each as the rows above and below it joined by a slash. */
@@ -117,6 +119,7 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
   "chain",
   "run",
   "place",
+  "drawn",
   "clear",
   "gutters",
   "allowed",
@@ -318,6 +321,7 @@ export const DEFECT_CODES = [
   "needless-bend",
   "title-blocked",
   "label-blocked",
+  "side-blocked",
 ] as const;
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
@@ -350,6 +354,9 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   // No gutter of its path holds a line's label clear, and no line moves for it: the agent shortens
   // or drops the text, or changes rows (specs/decisions, "A line never moves for its label").
   "label-blocked": "agent",
+  // The router has no route by a stated side, and takes no other: the agent changes the side or the rows
+  // (specs/decisions, "An agent may state the side of a line").
+  "side-blocked": "agent",
 };
 
 /**

@@ -271,11 +271,16 @@ export function routeAcross(
   ]);
   const route = (below: ReadonlySet<string>) => {
     const plans: Plan[] = [];
+    // A line with a stated side keeps its own port.
+    const alone = new Set([
+      ...extra.alone,
+      ...sorted.filter((e) => e.out !== undefined || e.in !== undefined).map((e) => e.id),
+    ]);
     for (const edge of sorted) {
       const pl = makePlan(edge, nodes, labels, extra);
       if (pl !== undefined) plans.push(pl);
     }
-    assignBuses(plans, extra.alone);
+    assignBuses(plans, alone);
     chooseGaps(plans, gapsByLayer, extra.forbidTop, extra.boxes, extra.bandEnds);
     assignGapTracks(plans, extra.boxes);
     chooseUturnGutters(plans, layers, extra.forbidTop, extra.closedAbove, below);
@@ -293,7 +298,8 @@ export function routeAcross(
   // below (specs/decisions, "Who chose is punished").
   const below = new Set<string>();
   let r = route(below);
-  const above = (ps: Plan[]) => ps.filter((pl) => pl.kind === "uturn" && pl.srcSide === "top");
+  const above = (ps: Plan[]) =>
+    ps.filter((pl) => pl.kind === "uturn" && pl.srcSide === "top" && !stated(pl));
   if (above(r.plans).length > 0) {
     const all = new Set(
       sorted.filter((e) => nodes.get(e.from)?.layer === nodes.get(e.to)?.layer).map((e) => e.id),
@@ -567,7 +573,9 @@ function chooseUturnGutters(
 ): void {
   for (const pl of plans) {
     const { u, v } = pl;
-    if (pl.kind !== "uturn" || u === v || u.layer === 0 || below.has(pl.edge.id)) continue;
+    const want = pl.edge.out ?? pl.edge.in;
+    if (pl.kind !== "uturn" || u === v || u.layer === 0) continue;
+    if (want === "bottom" || (below.has(pl.edge.id) && want !== "top")) continue;
     if (pl.bus !== undefined || pl.fanIn !== undefined) continue;
     // A box whose top lies under a band's label has no port there.
     const labels = forbidTop.get(u.layer) ?? [];
@@ -594,13 +602,37 @@ function chooseUturnGutters(
         else bottoms++;
       }
     }
-    if (tops >= bottoms) continue;
+    if (tops >= bottoms && want !== "top") continue;
     const closed = closedAbove.get(u.layer) ?? [];
     if (closed.some(([lo, hi]) => lo < b.x + b.w && hi > a.x)) continue;
     pl.srcSide = "top";
     pl.dstSide = "top";
     pl.gutters = [u.layer - 1];
   }
+}
+
+/** Has the agent stated a side of this line? */
+function stated(pl: Plan): boolean {
+  return pl.edge.out !== undefined || pl.edge.in !== undefined;
+}
+
+/** Lines with a stated side choose before the others, in their own order. */
+function statedFirst(plans: Plan[]): Plan[] {
+  return [...plans.filter(stated), ...plans.filter((pl) => !stated(pl))];
+}
+
+const sideways = (s: Side | undefined) => s === "left" || s === "right";
+
+/** A side exit turns once and enters a top or a bottom: only what the agent left open allows it. */
+function mayExit(pl: Plan): boolean {
+  const out = pl.edge.out;
+  return (out === undefined || sideways(out)) && !sideways(pl.edge.in);
+}
+
+/** A side entry leaves a top or a bottom: only what the agent left open allows it. */
+function mayEnter(pl: Plan): boolean {
+  const into = pl.edge.in;
+  return (into === undefined || sideways(into)) && !sideways(pl.edge.out);
 }
 
 /**
@@ -1137,11 +1169,12 @@ function chooseSideExits(
   }
   const pad = ROUTE.corridorPad;
   const gapRuns: GapRuns = new Map();
-  for (const pl of plans) {
+  for (const pl of statedFirst(plans)) {
     const { u, v } = pl;
     if (pl.kind !== "down" && pl.kind !== "up") continue;
     if (pl.bus !== undefined || pl.fanIn !== undefined) continue;
     if (noSideExit.has(pl.edge.id)) continue;
+    if (!mayExit(pl)) continue;
     // A line that skips rows turns into its corridor at its first gap track; any
     // other turns above or below its target.
     const corridor = pl.between.length > 0 ? pl.gapX[0] : undefined;
@@ -1151,6 +1184,7 @@ function chooseSideExits(
     if (!left && !right) continue;
     const side: Side = left ? "left" : "right";
     if (taken.has(`${u.id}:${side}`)) continue;
+    if (pl.edge.out !== undefined && pl.edge.out !== side) continue;
     const row = layers[u.layer]?.nodes ?? [];
     const k = row.indexOf(u);
     const next = row[left ? k - 1 : k + 1];
@@ -1260,9 +1294,9 @@ function chooseSideEntries(
   // side too, so the pass repeats while it adds an entry.
   for (let added = true; added; ) {
     added = false;
-    for (const pl of plans) {
+    for (const pl of statedFirst(plans)) {
       const { u, v } = pl;
-      if (pl.turnIn !== undefined) continue;
+      if (pl.turnIn !== undefined || !mayEnter(pl)) continue;
       if (pl.kind !== "down" && pl.kind !== "up") continue;
       if (pl.bus !== undefined) continue;
       // A line between neighbouring rows turns once: by a side exit or a side entry.
@@ -1279,6 +1313,7 @@ function chooseSideEntries(
       const side: Side = left ? "right" : "left";
       const sideKey = `${v.id}:${side}`;
       if (taken.has(sideKey)) continue;
+      if (pl.edge.in !== undefined && pl.edge.in !== side) continue;
       const already = entering.get(sideKey) ?? [];
       if (already.length > 0 && sidePitch(already.length + 1, v.h) === undefined) continue;
       const gap = gapOf(v, side);
