@@ -6,6 +6,7 @@
 /** The nouns that hold verbs. */
 export const NOUNS = [
   "diagram",
+  "style",
   "group",
   "lane",
   "column",
@@ -85,7 +86,8 @@ export function inward(args: readonly string[]): string[] | Unread {
   return words;
 }
 
-const VERB_WORDS = /\b(diagram|group|lane|column|wall|note|layer|node|edge) ([a-z][a-z-]*)\b/g;
+const VERB_WORDS =
+  /\b(diagram|style|group|lane|column|wall|note|layer|node|edge) ([a-z][a-z-]*)\b/g;
 
 /** Every verb a noun has, by its subcommand's name. */
 const known = new Map<string, Set<string>>();
@@ -104,7 +106,7 @@ export function surfaceText(text: string): string {
   return text
     .replace(/--kind\b/g, "--type")
     .replace(
-      /^Usage: grafical (diagram|group|lane|column|wall|note|layer|node|edge) ([a-z-]+) \[options\] <file>(.*)$/gm,
+      /^Usage: grafical (diagram|style|group|lane|column|wall|note|layer|node|edge) ([a-z-]+) \[options\] <file>(.*)$/gm,
       (_, noun: string, verb: string, more: string) =>
         `Usage: grafical -f <file> ${noun} --${outward(noun, verb)}${more} [options]`,
     )
@@ -113,7 +115,7 @@ export function surfaceText(text: string): string {
       (_, command: string, more: string) => `Usage: grafical -f <file> ${command}${more} [options]`,
     )
     .replace(
-      /^Usage: grafical (diagram|group|lane|column|wall|note|layer|node|edge) \[options\] \[command\]$/gm,
+      /^Usage: grafical (diagram|style|group|lane|column|wall|note|layer|node|edge) \[options\] \[command\]$/gm,
       "Usage: grafical -f <file> $1 --<verb> [options]",
     )
     .replace(

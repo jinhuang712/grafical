@@ -91,7 +91,7 @@ Roadmap
 │   │   ├── ⬜ Labels on edges
 │   │   ├── ⬜ Label text
 │   │   ├── ⬜ Region gaps
-│   │   ├── ⬜ Edge looks
+│   │   ├── ✅ Edge looks
 │   │   └── ⬜ Region labels
 │   ├── 🟨 CP2.5: Pictures worth keeping
 │   │   ├── ✅ Labels on straight lines
@@ -104,14 +104,14 @@ Roadmap
 │   ├── ⬜ CP2.6: Nodes
 │   │   ├── ⬜ Corner marks checked
 │   │   ├── ⬜ Marks by name
-│   │   ├── ⬜ Node looks
+│   │   ├── ✅ Node looks
 │   │   └── ⬜ Size multiples
 │   ├── ⬜ CP2.7: Containers
 │   │   ├── ⬜ Column headings
 │   │   ├── ⬜ Lanes both ways
 │   │   ├── ⬜ Deeper nesting
 │   │   ├── ⬜ Bars across groups
-│   │   └── ⬜ Container looks
+│   │   └── ✅ Container looks
 │   ├── ⬜ CP2.8: The legend
 │   │   ├── ⬜ Design the legend
 │   │   └── ⬜ Build the legend
@@ -501,7 +501,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 **Tasks:**
 
 - ✅ Design the model and its form: The owner designed them on 2026-11-06.
-- 🟨 Build the model: grafical reads and writes the form; types and styles are not built.
+- 🟨 Build the model: grafical reads and writes the form and styles; types are not built.
 - ⬜ Move the saved files: Fixtures and saved drafts move to it.
 - ⬜ Compare with YAML: Real changes are measured in both forms, and the file goes back to YAML with one element on each line if the form is no better.
 
@@ -531,7 +531,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - ⬜ Labels on edges: A line carries its label by default, measured over the saved drafts before it lands.
 - ⬜ Label text: An agent sets a label's breaks and its alignment.
 - ⬜ Region gaps: The gap between two regions takes a multiple.
-- ⬜ Edge looks: An edge takes a color of its own or a named look.
+- ✅ Edge looks: An edge takes a color of its own or a named look.
 - ⬜ Region labels: A region's label sits at a fraction of a side, inside or outside.
 
 **Delivers:**
@@ -587,7 +587,7 @@ Nodes carry marks that stay clear of edges and colors of their own.
 
 - ⬜ Corner marks checked: A corner mark is checked against nearby lines.
 - ⬜ Marks by name: A mark can be taken by name.
-- ⬜ Node looks: A box takes colors of its own or a named look.
+- ✅ Node looks: A box takes colors of its own or a named look.
 - ⬜ Size multiples: A node takes multiples of its width and height.
 
 **Delivers:**
@@ -615,7 +615,7 @@ Containers that cross and nest and take colors of their own, and columns that ca
 - ⬜ Lanes both ways: Lanes that run as rows and as columns in one diagram.
 - ⬜ Deeper nesting: Groups up to five levels, with the fuzz test holding at five levels.
 - ⬜ Bars across groups: A bar crosses a group's box and overlaps no box or label.
-- ⬜ Container looks: A group or a lane takes colors of its own or a named look.
+- ✅ Container looks: A group or a lane takes colors of its own or a named look.
 
 **Delivers:**
 

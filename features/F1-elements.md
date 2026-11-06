@@ -9,14 +9,14 @@ F1: Elements
 │   ├── F1.1.4: Marks — up to five small marks on a box
 │   ├── F1.1.5: Marks by name — a mark from one bundled icon set
 │   ├── F1.1.6: Emphasis — at most two boxes stand out
-│   └── F1.1.7: Node looks — colors of a box's own
+│   └── F1.1.7: Node looks — colors from the styles a node marks
 ├── F1.2: Edges — what connects to what
 │   ├── F1.2.1: Types — a line's kind sets its style
 │   ├── F1.2.2: Arrowheads at both ends — two-way lines
 │   ├── F1.2.3: Weight — thicker lines for what matters more
 │   ├── F1.2.4: Numbered steps — a number on a line
 │   ├── F1.2.5: Ends at a group, a layer or a lane — one arrow to a whole system
-│   └── F1.2.6: Edge looks — a color of an edge's own
+│   └── F1.2.6: Edge looks — a color from the styles an edge marks
 └── F1.3: Containers — what gathers boxes
     ├── F1.3.1: Groups — a system drawn as one frame
     ├── F1.3.2: Copying a group — a second zone in one operation
@@ -25,7 +25,7 @@ F1: Elements
     ├── F1.3.5: Lanes both ways — a grid of lanes and phases
     ├── F1.3.6: Walls — space that lines cross only where allowed
     ├── F1.3.7: Notes — a short text on a box, a line or a group
-    └── F1.3.8: Container looks — colors of a group's or a lane's own
+    └── F1.3.8: Container looks — colors from the styles a group or a lane marks
 ```
 
 What a diagram is made of. A node is a part of the system, an edge says that two things connect and how, and a container gathers nodes into systems, lanes and parts that lines keep apart. The agent says what each one is, and grafical gives it its shape.
@@ -176,22 +176,22 @@ grafical -f <file> node --emphasize <id> [--off]
 
 ### F1.1.7: Node looks
 
-A node may take colors of its own, so that a color says something without changing the shape. The agent sets them on the node or names a look from the stylesheet.
+A node takes its colors from the styles it marks, so that a color says something without changing the shape.
 
 ```sh
-grafical -f <file> node --look <id> [--fill <color>] [--border <color>]
-grafical -f <file> node --look <id> <name>
+grafical -f <file> style --add <id> [--fill <color>] [--border <color>] [--border-width <n>]
+grafical -f <file> node --style <id> <styles...>
 ```
 
-- A color is `#rrggbb`.
-- A named look comes from `paint.node.looks` in the stylesheet and changes with it.
-- Colors set on the node stay when the theme changes.
-- A node holds one of the two, and the last one set clears the other.
-- `look` with neither clears the node's look.
-- A name the stylesheet lacks is refused as `unknown-look`.
-- The shape stays the kind's.
+- A color is `#` and hex digits.
+- A node may mark several styles, and a later one overrides an earlier one.
+- `node --style` with no styles clears them.
+- A style the diagram lacks is refused as `unknown-style`.
+- The shape stays the type's.
 
-- **Why:** [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
+- **Why:**
+  - [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
+  - [089. A style may be as rich as it likes](../specs/decisions/089-a-style-may-be-as-rich-as-it-likes.md)
 
 ## F1.2: Edges
 
@@ -315,17 +315,15 @@ One arrow can point at a whole system instead of each of its parts.
 
 ### F1.2.6: Edge looks
 
-An edge may take a color of its own, so that a color says something about one path. The agent sets it on the edge or names a look from the stylesheet.
+An edge takes its color from the styles it marks, so that a color says something about one path.
 
 ```sh
-grafical -f <file> edge --look <id> [--color <color>]
-grafical -f <file> edge --look <id> <name>
+grafical -f <file> style --add <id> --color <color>
+grafical -f <file> edge --style <id> <styles...>
 ```
 
-- A color is `#rrggbb`.
-- An edge holds one of the two, and the last one set clears the other.
-- `look` with neither clears the edge's look.
-- A dash stays the kind's.
+- The arrowhead takes the color too.
+- A dash stays the type's.
 
 - **Why:** [081. An edge may take a color of its own](../specs/decisions/081-an-edge-may-take-a-color-of-its-own.md)
 
@@ -503,15 +501,11 @@ grafical -f <file> note --remove --on <id>
 
 ### F1.3.8: Container looks
 
-A group or a lane may take colors of its own, so that color tells one system from another. It works as for a node.
+A group or a lane takes its colors from the styles it marks, so that color tells one system from another.
 
 ```sh
-grafical -f <file> group --look <id> [--fill <color>] [--border <color>]
-grafical -f <file> lane --look <id> [--fill <color>] [--border <color>]
+grafical -f <file> group --style <id> <styles...>
+grafical -f <file> lane --style <id> <styles...>
 ```
-
-- A named look comes from the stylesheet.
-- A container holds one of the two, and the last one set clears the other.
-- `--look` with neither clears it.
 
 - **Why:** [083. A group or a lane may take a look of its own](../specs/decisions/083-a-group-or-a-lane-may-take-a-look-of-its-own.md)

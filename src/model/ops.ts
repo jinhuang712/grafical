@@ -4,7 +4,16 @@
 import { z } from "zod";
 import type { OpError } from "../errors.ts";
 import { issuesToErrors, OP_KEYS, show } from "./issues.ts";
-import { edgeId, idSuffix, nodeId, stepNumber, steps, text, weightValue } from "./schema.ts";
+import {
+  edgeId,
+  idSuffix,
+  lookFields,
+  nodeId,
+  stepNumber,
+  steps,
+  text,
+  weightValue,
+} from "./schema.ts";
 import { closest } from "./suggest.ts";
 import {
   DENSITIES,
@@ -205,6 +214,23 @@ export interface LayerRemoveOp {
   id: string;
 }
 /** How a row is drawn, and that it is drawn though no line ends at it (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
+export interface StyleAddOp {
+  op: "style.add";
+  id: string;
+  fill?: string;
+  border?: string;
+  borderWidth?: number;
+  color?: string;
+}
+export interface StyleRemoveOp {
+  op: "style.remove";
+  id: string;
+}
+export interface MarkStyleOp {
+  op: "node.style" | "edge.style" | "group.style" | "lane.style";
+  id: string;
+  styles?: string[];
+}
 export interface LayerLookOp {
   op: "layer.look";
   id: string;
@@ -491,6 +517,9 @@ export type Op =
   | LayerMoveOp
   | LayerRemoveOp
   | LayerLookOp
+  | StyleAddOp
+  | StyleRemoveOp
+  | MarkStyleOp
   | LayerSplitOp
   | NodeAddOp
   | NodeRenameOp
@@ -658,6 +687,22 @@ export const layerMoveSchema = z.strictObject({
   ...position,
 });
 export const layerRemoveSchema = z.strictObject({ op: z.literal("layer.remove"), id: nodeId });
+export const styleAddSchema = z.strictObject({
+  op: z.literal("style.add"),
+  id: nodeId,
+  ...lookFields,
+});
+export const styleRemoveSchema = z.strictObject({ op: z.literal("style.remove"), id: nodeId });
+const styleMark = <N extends string>(name: N) =>
+  z.strictObject({
+    op: z.literal(name),
+    id: z.string().min(1),
+    styles: z.array(nodeId).min(1).optional(),
+  });
+export const nodeStyleSchema = styleMark("node.style");
+export const edgeStyleSchema = styleMark("edge.style");
+export const groupStyleSchema = styleMark("group.style");
+export const laneStyleSchema = styleMark("lane.style");
 export const layerLookSchema = z.strictObject({
   op: z.literal("layer.look"),
   id: nodeId,
@@ -892,6 +937,12 @@ export const opSchema = z.discriminatedUnion("op", [
   layerMoveSchema,
   layerRemoveSchema,
   layerLookSchema,
+  styleAddSchema,
+  styleRemoveSchema,
+  nodeStyleSchema,
+  edgeStyleSchema,
+  groupStyleSchema,
+  laneStyleSchema,
   layerSplitSchema,
   nodeDescribeSchema,
   nodeKindSchema,
@@ -957,6 +1008,12 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,
   "layer.look": layerLookSchema,
+  "style.add": styleAddSchema,
+  "style.remove": styleRemoveSchema,
+  "node.style": nodeStyleSchema,
+  "edge.style": edgeStyleSchema,
+  "group.style": groupStyleSchema,
+  "lane.style": laneStyleSchema,
   "layer.split": layerSplitSchema,
   "node.describe": nodeDescribeSchema,
   "node.kind": nodeKindSchema,

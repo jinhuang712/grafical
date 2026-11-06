@@ -34,6 +34,10 @@ The writer adds the marks of a route as it draws it, so the routes, the checks a
   - It is never less round than the theme's corner radius, or half of each run when that is smaller.
   - The corner radius is 6 px in `default` and `dark`, and 4 px in `print`.
 
+## Styles
+
+What an object's styles set goes over what its kind sets: a fill and a border on a node, a group or a lane, and a color on an edge and its arrowhead.
+
 ## Marks
 
 A mark sits in a slot of its node and never at a position. A corner mark is centred on its corner, takes no room and moves nothing; a wide badge grows inward from the corner. The `left` mark sits left of the text, in room the text gives up. A diamond and a dot have no `left` slot.

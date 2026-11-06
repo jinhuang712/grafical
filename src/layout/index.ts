@@ -20,6 +20,7 @@ import {
   EDGE_KINDS,
   LINE_STYLES,
   type LineStyleName,
+  type Look,
   MARK_SLOTS,
   type Mark,
   markName,
@@ -120,6 +121,22 @@ export function validateAlignments(diagram: Diagram): AlignmentProblem[] {
  */
 export function validateGroups(diagram: Diagram): GroupProblem[] {
   return buildGrid(placeSteps(diagram).d).groupProblems;
+}
+
+/** What an object's styles set, a later one over an earlier one (specs/decisions, "A style may be as rich as it likes"). */
+function lookOf(d: Diagram, names: readonly string[] | undefined): Look | undefined {
+  if (names === undefined) return undefined;
+  const look: Look = {};
+  for (const name of names) {
+    const { id: _id, ...values } = d.styles?.find((x) => x.id === name) ?? { id: "" };
+    Object.assign(look, values);
+  }
+  return Object.keys(look).length > 0 ? look : undefined;
+}
+
+function lookPart(d: Diagram, names: readonly string[] | undefined): { look?: Look } {
+  const look = lookOf(d, names);
+  return look === undefined ? {} : { look };
 }
 
 /**
@@ -1232,6 +1249,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const y0 = (rowTops[g.top] ?? 0) - heads(g) + outside(g, "top");
     const y1 = (rowTops[g.bottom] ?? 0) + rowH(g.bottom) + pads(g) - outside(g, "bottom");
     const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
+    const groupLook = lookOf(d, d.groups?.find((x) => x.id === g.id)?.style);
     // In its head, in its foot, a head's height outside its top or bottom side, or beside its rows.
     const ly = atSide(g)
       ? (y0 + y1) / 2 - (withText ? middleOf(g.label) : 0)
@@ -1247,6 +1265,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       ? placeLine("group-label", g.label, lx, ly, m, T)
       : empty("group-label", lx, ly);
     const out: SceneGroup = { id: g.id, rect, label, members: g.members };
+    if (groupLook !== undefined) out.look = groupLook;
     if (depthOf(g) > 1) out.depth = depthOf(g);
     const sub = d.groups?.find((x) => x.id === g.id)?.sublabel;
     if (sub !== undefined && withText) {
@@ -1294,6 +1313,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const lines = withText ? m.wrap(x.label, laneStyle, headW - 2 * LANE.labelInset) : [];
     sceneLanes.push({
       id: x.id,
+      ...lookPart(d, d.lanes?.find((y) => y.id === x.id)?.style),
       run: "rows",
       rect,
       head: { x: rect.x, y: y0, w: headW, h: y1 - y0 },
@@ -1305,6 +1325,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const cx = centre + (l.x0 + l.x1) / 2;
     sceneLanes.push({
       id: l.id,
+      ...lookPart(d, d.lanes?.find((y) => y.id === l.id)?.style),
       run: "columns",
       rect,
       head: { x: rect.x, y: lanesTop, w: rect.w, h: headH },
@@ -1362,6 +1383,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         layer: l.id,
         kind: n.node.kind,
         accent: n.node.accent ?? false,
+        ...lookPart(d, n.node.style),
         rect,
         ...(marks.length > 0 ? { marks } : {}),
         texts,
@@ -1491,6 +1513,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const toBox = plan?.to === undefined ? undefined : boxOf.get(plan.to.id);
     const fromBox = plan?.from === undefined ? undefined : boxOf.get(plan.from.id);
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
+    const edgeLook = lookOf(d, real.style);
+    if (edgeLook !== undefined) edge.look = edgeLook;
     if (e.both === true) edge.both = true;
     const blocked = routing.blocked.get(e.id);
     if (blocked !== undefined) edge.blocked = gutterNames(blocked);
@@ -1783,6 +1807,7 @@ function roundScene(s: Scene): Scene {
         points: e.points.map((p) => ({ x: round2(p.x), y: round2(p.y) })),
       };
       if (e.label !== undefined) out.label = roundText(e.label);
+      if (e.look !== undefined) out.look = e.look;
       if (e.both === true) out.both = true;
       if (e.width !== undefined) out.width = e.width;
       if (e.step !== undefined) out.step = roundBadge(e.step);
@@ -1812,6 +1837,7 @@ function roundScene(s: Scene): Scene {
       members: [...g.members],
       ...(g.sublabel === undefined ? {} : { sublabel: roundText(g.sublabel) }),
       ...(g.depth === undefined ? {} : { depth: g.depth }),
+      ...(g.look === undefined ? {} : { look: g.look }),
     }));
   }
   if (s.bands !== undefined) {
@@ -1830,6 +1856,7 @@ function roundScene(s: Scene): Scene {
       rect: roundRect(x.rect),
       head: roundRect(x.head),
       label: roundText(x.label),
+      ...(x.look === undefined ? {} : { look: x.look }),
     }));
   }
   if (s.notes !== undefined) {

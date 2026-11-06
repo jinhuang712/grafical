@@ -37,6 +37,7 @@ import {
   SIZE_STEPS,
   SIZINGS,
   STEP_NUMBER_MAX,
+  type Style,
   type Wall,
 } from "./types.ts";
 import { checkWalls } from "./walls.ts";
@@ -127,6 +128,18 @@ const iconsSchema = z.strictObject({
   left: markSchema.optional(),
 });
 
+const COLOR = /^#[0-9a-fA-F]{3,8}$/;
+
+/** A style's values (specs/decisions, "A style may be as rich as it likes"). */
+export const lookFields = {
+  fill: z.string().regex(COLOR).optional(),
+  border: z.string().regex(COLOR).optional(),
+  borderWidth: z.number().min(0).max(8).optional(),
+  color: z.string().regex(COLOR).optional(),
+};
+
+const styleNames = z.array(nodeId).min(1).optional();
+
 const nodeSchema = z.strictObject({
   id: nodeId,
   label: text,
@@ -138,6 +151,7 @@ const nodeSchema = z.strictObject({
   group: nodeId.optional(),
   lane: nodeId.optional(),
   column: nodeId.optional(),
+  style: styleNames,
   icons: iconsSchema.optional(),
 });
 
@@ -159,9 +173,10 @@ const groupSchema = z.strictObject({
   sublabel: text.optional(),
   in: nodeId.optional(),
   titleAt: z.enum(GROUP_TITLES).optional(),
+  style: styleNames,
 });
 
-const laneSchema = z.strictObject({ id: nodeId, label: text });
+const laneSchema = z.strictObject({ id: nodeId, label: text, style: styleNames });
 
 /** Empty space between two sides (specs/decisions, "Walls as space"): nodes and groups; it lets through lines, nodes and groups. */
 const wallSchema = z.strictObject({
@@ -228,6 +243,7 @@ const edgeSchema = z.strictObject({
   accent: z.boolean().optional(),
   weight: weightValue.optional(),
   step: stepNumber.optional(),
+  style: styleNames,
 });
 
 export const diagramSchema = z.strictObject({
@@ -238,6 +254,7 @@ export const diagramSchema = z.strictObject({
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
   sizing: z.enum(SIZINGS).optional(),
   style: text.optional(),
+  styles: z.array(z.strictObject({ id: nodeId, ...lookFields })).default([]),
   legend: z
     .strictObject({
       solid: words.optional(),
@@ -279,6 +296,7 @@ function buildNode(n: Parsed["layers"][number]["nodes"][number] | Parsed["nodes"
     }
     if (Object.keys(icons).length > 0) node.icons = icons;
   }
+  if (n.style !== undefined) node.style = [...n.style];
   if ("from" in n) {
     node.from = n.from;
     for (const k of STEP_KEYS) if (n[k] !== undefined) node[k] = n[k];
@@ -302,11 +320,20 @@ function build(p: Parsed): Diagram {
     if (e.accent === true) edge.accent = true;
     if (e.weight !== undefined) edge.weight = e.weight;
     if (e.step !== undefined) edge.step = e.step;
+    if (e.style !== undefined) edge.style = [...e.style];
     return edge;
   });
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
   if (p.sizing === "fixed") d.sizing = "fixed";
   if (p.style !== undefined) d.style = p.style;
+  if (p.styles.length > 0) {
+    d.styles = p.styles.map(
+      (s) =>
+        Object.fromEntries(
+          Object.entries(s).filter(([, v]) => v !== undefined),
+        ) as unknown as Style,
+    );
+  }
   if (p.legend !== undefined) {
     const legend: NonNullable<Diagram["legend"]> = {};
     for (const line of LINE_STYLES) {
@@ -331,11 +358,18 @@ function build(p: Parsed): Diagram {
       if (g.sublabel !== undefined) group.sublabel = g.sublabel;
       if (g.in !== undefined) group.in = g.in;
       if (g.titleAt !== undefined) group.titleAt = g.titleAt;
+      if (g.style !== undefined) group.style = [...g.style];
       return group;
     });
   }
   if (p.nodes.length > 0) d.nodes = p.nodes.map(buildNode);
-  if (p.lanes.length > 0) d.lanes = p.lanes.map((x) => ({ id: x.id, label: x.label }));
+  if (p.lanes.length > 0) {
+    d.lanes = p.lanes.map((x) => ({
+      id: x.id,
+      label: x.label,
+      ...(x.style === undefined ? {} : { style: [...x.style] }),
+    }));
+  }
   if (p.columns.length > 0) d.columns = p.columns.map((x) => ({ id: x.id }));
   if (p.walls.length > 0) {
     d.walls = p.walls.map((x) => {

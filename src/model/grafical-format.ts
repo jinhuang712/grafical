@@ -27,6 +27,7 @@ const opt = (v: string | undefined, f: (s: string) => string = ref) =>
   v === undefined ? undefined : f(v);
 const flag = (v: boolean | undefined) => (v === true ? "true" : undefined);
 const num = (v: number | undefined) => (v === undefined ? undefined : String(v));
+const marks = (v: string[] | undefined) => (v === undefined ? undefined : v.map(ref).join(" "));
 
 function markAttrs(m: Mark): Attr[] {
   if (typeof m === "string") return [["text", quote(m)]];
@@ -58,6 +59,16 @@ export function writeGrafical(d: Diagram): string {
       ["sizing", d.sizing === "fixed" ? "fixed" : undefined],
     ]),
   );
+  for (const s of d.styles ?? []) {
+    blocks.push(
+      block("style", s.id, [
+        ["fill", s.fill],
+        ["border", s.border],
+        ["border-width", num(s.borderWidth)],
+        ["color", s.color],
+      ]),
+    );
+  }
   for (const l of d.layers) {
     blocks.push(
       block("layer", l.id, [
@@ -66,8 +77,14 @@ export function writeGrafical(d: Diagram): string {
       ]),
     );
   }
-  for (const g of d.groups ?? []) blocks.push(block("group", g.id, [["in", opt(g.in)]]));
-  for (const l of d.lanes ?? []) blocks.push(block("lane", l.id, []));
+  for (const g of d.groups ?? [])
+    blocks.push(
+      block("group", g.id, [
+        ["in", opt(g.in)],
+        ["style", marks(g.style)],
+      ]),
+    );
+  for (const l of d.lanes ?? []) blocks.push(block("lane", l.id, [["style", marks(l.style)]]));
   for (const c of d.columns ?? []) blocks.push(block("column", c.id, []));
   for (const w of d.walls ?? []) {
     blocks.push(
@@ -116,6 +133,7 @@ export function writeGrafical(d: Diagram): string {
         ...STEP_KEYS.map((k): Attr => [k, num(n[k])]),
         ["size", n.size],
         ["emphasis", flag(n.accent)],
+        ["style", marks(n.style)],
       ]),
     );
   }
@@ -130,6 +148,7 @@ export function writeGrafical(d: Diagram): string {
         ["pass", flag(e.pass)],
         ["emphasis", flag(e.accent)],
         ["number", num(e.step)],
+        ["style", marks(e.style)],
       ]),
     );
   }
@@ -250,6 +269,12 @@ function value(v: string): unknown {
 const list = (v: string | string[] | undefined) =>
   Array.isArray(v) ? v.map((x) => value(x) as string) : undefined;
 
+/** An object's styles, a later one over an earlier one. */
+function styles(b: Block, o: Record<string, unknown>): void {
+  const v = b.attrs.get("style");
+  if (typeof v === "string") o.style = v.split(" ").map((x) => x.slice(1));
+}
+
 function take(b: Block, map: Record<string, string>, o: Record<string, unknown>): void {
   for (const [key, field] of Object.entries(map)) {
     const v = b.attrs.get(key);
@@ -264,6 +289,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   const of = (sort: string) => blocks.filter((b) => b.sort === sort);
   const known = [
     "diagram",
+    "style",
     "layer",
     "group",
     "lane",
@@ -345,6 +371,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       },
       o,
     );
+    styles(b, o);
     const icons = marks.get(b.id as string);
     if (icons !== undefined) o.icons = icons;
     return o;
@@ -390,11 +417,13 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   out.groups = of("group").map((b) => {
     const o: Record<string, unknown> = { id: b.id };
     take(b, { in: "in" }, o);
+    styles(b, o);
     named(b.id as string, o, "titleAt");
     return o;
   });
   out.lanes = of("lane").map((b) => {
     const o: Record<string, unknown> = { id: b.id };
+    styles(b, o);
     named(b.id as string, o);
     return o;
   });
@@ -431,7 +460,13 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       },
       o,
     );
+    styles(b, o);
     named(b.id as string, o);
+    return o;
+  });
+  out.styles = of("style").map((b) => {
+    const o: Record<string, unknown> = { id: b.id };
+    take(b, { fill: "fill", border: "border", "border-width": "borderWidth", color: "color" }, o);
     return o;
   });
   const legend = of("legend")[0];

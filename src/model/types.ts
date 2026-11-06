@@ -158,6 +158,8 @@ export interface DiagramNode {
   lane?: string;
   /** The column this node follows (specs/decisions, "Columns beside rows"). */
   column?: string;
+  /** The styles it marks, a later one over an earlier one. */
+  style?: string[];
   /** Marks in fixed slots, such as a warning at the top-left (specs/decisions, "Marks of any kind"). */
   icons?: Partial<Record<MarkSlot, Mark>>;
   /** The box a box in no row is placed from, by the steps below (specs/decisions, "Steps from another box"). */
@@ -179,6 +181,8 @@ export interface Group {
   in?: string;
   /** Where its label sits. Absent: the engine seats it in the head. */
   titleAt?: GroupTitle;
+  /** The styles it marks. */
+  style?: string[];
 }
 
 export interface Layer {
@@ -206,6 +210,8 @@ export interface Column {
 export interface Lane {
   id: string;
   label: string;
+  /** The styles it marks. */
+  style?: string[];
 }
 
 /**
@@ -249,6 +255,8 @@ export interface Edge {
   accent?: boolean;
   /** A weight level the stylesheet names, or a width in pixels (specs/decisions, "Edge weights"). Absent: thin. */
   weight?: string | number;
+  /** The styles it marks. */
+  style?: string[];
   /** Its number in a process, drawn as a badge on the line (specs/decisions, "Step badges ride the line"). Absent: none. */
   step?: number;
 }
@@ -271,6 +279,18 @@ export function weightKey(w: string | number): string {
   return typeof w === "number" ? String(w) : w;
 }
 
+/** A named look that objects mark (specs/decisions, "A style may be as rich as it likes"). */
+export interface Style {
+  id: string;
+  fill?: string;
+  border?: string;
+  borderWidth?: number;
+  color?: string;
+}
+
+/** What a style sets. */
+export type Look = Omit<Style, "id">;
+
 export interface Diagram {
   /** The format version (DESIGNS.md, "What grafical cannot fully read, it refuses"). */
   grafical: number;
@@ -284,6 +304,8 @@ export interface Diagram {
   sizing?: "fixed";
   /** A built-in theme's name, or a stylesheet's path relative to the file (specs/decisions, "Themes and stylesheets"). Absent: the default theme. */
   style?: string;
+  /** Named looks, in creation order. Absent: none. */
+  styles?: Style[];
   /** The legend's words (specs/decisions, "A legend for widths and marks", "The legend says only what the agent named"). */
   legend?: Legend;
   /** Ordered top to bottom. */

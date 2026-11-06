@@ -10,7 +10,7 @@
 // new order puts out of step are removed and added again.
 
 import type { Op } from "./ops.ts";
-import { STEP_KEYS } from "./steps.ts";
+import { everyNode, STEP_KEYS } from "./steps.ts";
 import {
   type Diagram,
   type DiagramNode,
@@ -252,6 +252,13 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   );
   for (const x of b.notes ?? [])
     if (!keptNotes.has(x.on)) ops.push({ op: "note.remove", on: x.on });
+
+  // Styles come before what marks them.
+  const wasStyle = new Map((b.styles ?? []).map((x) => [x.id, x]));
+  for (const x of a.styles ?? []) {
+    if (JSON.stringify(wasStyle.get(x.id)) !== JSON.stringify(x))
+      ops.push({ op: "style.add", ...x });
+  }
 
   // 2. Edges that go.
   for (const e of b.edges) if (!keptEdges.has(e.id)) ops.push({ op: "edge.remove", id: e.id });
@@ -655,6 +662,26 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (x.footnote === true) op.footnote = true;
     ops.push(op);
   }
+  // 10. Who marks which style, then the styles that went.
+  const same = (x?: string[], y?: string[]) => JSON.stringify(x ?? []) === JSON.stringify(y ?? []);
+  const marks = <T extends { id: string; style?: string[] }>(
+    op: "node.style" | "edge.style" | "group.style" | "lane.style",
+    was: readonly T[],
+    now: readonly T[],
+  ) => {
+    for (const x of now) {
+      const old = was.find((y) => y.id === x.id);
+      if (same(old?.style, x.style)) continue;
+      ops.push(x.style === undefined ? { op, id: x.id } : { op, id: x.id, styles: x.style });
+    }
+  };
+  marks("node.style", everyNode(b), everyNode(a));
+  marks("edge.style", b.edges, a.edges);
+  marks("group.style", b.groups ?? [], a.groups ?? []);
+  marks("lane.style", b.lanes ?? [], a.lanes ?? []);
+  const kept = new Set((a.styles ?? []).map((x) => x.id));
+  for (const x of b.styles ?? []) if (!kept.has(x.id)) ops.push({ op: "style.remove", id: x.id });
+
   return ops;
 }
 

@@ -67,9 +67,9 @@ function dashAttr(dash: string | undefined): string {
 function nodeShape(n: SceneNode, P: Paint): string[] {
   const p = P.node;
   const kind: { fill: string; stroke: string; dash?: string } = p.kinds[n.kind];
-  const stroke = n.accent ? p.accent.stroke : kind.stroke;
-  const fill = n.accent ? p.accent.fill : kind.fill;
-  const sw = n.accent ? p.accent.strokeWidth : p.strokeWidth;
+  const stroke = n.look?.border ?? (n.accent ? p.accent.stroke : kind.stroke);
+  const fill = n.look?.fill ?? (n.accent ? p.accent.fill : kind.fill);
+  const sw = n.look?.borderWidth ?? (n.accent ? p.accent.strokeWidth : p.strokeWidth);
   if (n.kind === "store") return cylinder(n.rect, fill, stroke, sw);
   if (n.kind === "initial" || n.kind === "final") {
     // A start is a filled dot; an end is a ring around a smaller dot.
@@ -406,7 +406,8 @@ function edgeShapes(
   room?: Room,
 ): string[] {
   const paint = P.edge;
-  const kind: { stroke: string; dash?: string } = paint.kinds[e.kind];
+  const base: { stroke: string; dash?: string } = paint.kinds[e.kind];
+  const kind = e.look?.color === undefined ? base : { ...base, stroke: e.look.color };
   const look = lineLook(e.width, P);
   const pts = simplify(e.points);
   if (pts.length < 2) return [];
@@ -482,7 +483,7 @@ function groupFill(g: SceneGroup, P: Paint): string {
 function groupShapes(g: SceneGroup, P: Paint): string[] {
   const p = P.group;
   const out = [
-    `<rect ${rectAttrs(g.rect)} rx="${num(p.radius)}" fill="${groupFill(g, P)}" stroke="${p.stroke}" stroke-width="${num(p.strokeWidth)}"/>`,
+    `<rect ${rectAttrs(g.rect)} rx="${num(p.radius)}" fill="${g.look?.fill ?? groupFill(g, P)}" stroke="${g.look?.border ?? p.stroke}" stroke-width="${num(p.strokeWidth)}"/>`,
   ];
   for (const r of g.label.runs) {
     const light = FONT_FAMILY[r.face].weight < 600;
@@ -524,7 +525,7 @@ export function renderSvg(scene: Scene): string {
   const lane = `stroke="${lp.stroke}" stroke-width="${num(lp.strokeWidth)}"`;
   for (const x of lanes) {
     out.push(
-      `<rect ${rectAttrs(x.rect)} rx="${num(lp.radius)}" fill="${lp.fill}" ${lane}/>`,
+      `<rect ${rectAttrs(x.rect)} rx="${num(lp.radius)}" fill="${x.look?.fill ?? lp.fill}" ${lane}/>`,
       `<rect ${rectAttrs(x.head)} rx="${num(lp.radius)}" fill="${lp.headFill}" ${lane}/>`,
       ...texts(x.label, P.text.laneLabel),
     );

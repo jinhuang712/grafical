@@ -2,7 +2,7 @@
 // The layout produces it, the checker inspects it, the renderer draws it.
 // Coordinates are px, origin top left, y down.
 
-import type { EdgeKind, LineStyleName, Mark, MarkSlot, NodeKind } from "./model/types.ts";
+import type { EdgeKind, LineStyleName, Look, Mark, MarkSlot, NodeKind } from "./model/types.ts";
 import type { FontFace } from "./text/types.ts";
 import type { Paint } from "./theme/paint.ts";
 
@@ -62,6 +62,8 @@ export interface SceneLayer {
 export interface SceneGroup {
   id: string;
   rect: Rect;
+  /** What its styles set. */
+  look?: Look;
   label: PlacedText;
   /** Ids of the member nodes, the nodes of its inner groups included. */
   members: string[];
@@ -87,6 +89,8 @@ export interface SceneBand {
 /** A swimlane (specs/decisions, "Swimlanes run one way"): its whole area, the header that holds its label, and the label. */
 export interface SceneLane {
   id: string;
+  /** What its styles set. */
+  look?: Look;
   /** Rows: the header is on the left. Columns: on top. */
   run: "rows" | "columns";
   rect: Rect;
@@ -172,6 +176,8 @@ export interface SceneNode {
   layer: string;
   kind: NodeKind;
   accent: boolean;
+  /** What its styles set. Absent: its kind's look. */
+  look?: Look;
   rect: Rect;
   /** Marks, in slot order. Absent: none. */
   marks?: SceneMark[];
@@ -184,6 +190,8 @@ export interface SceneEdge {
   from: string;
   to: string;
   kind: EdgeKind;
+  /** What its styles set. */
+  look?: Look;
   /** Orthogonal polyline from the source port to the target port. The arrowhead sits at the last point. */
   points: Point[];
   label?: PlacedText;

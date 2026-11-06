@@ -23,6 +23,7 @@ import type {
   EdgeAddOp,
   GroupCopyOp,
   LayerAddOp,
+  MarkStyleOp,
   NodeAddOp,
   NodeIconOp,
   NodeMoveOp,
@@ -292,6 +293,30 @@ function unknownNode(d: Diagram, id: string, i: number, field: string): OpError 
     found: id,
     facts: { near: closest(id, nodeIds(d)) },
   };
+}
+
+function unknownStyle(d: Diagram, id: string, i: number): OpError {
+  return {
+    code: "unknown-style",
+    index: i,
+    field: "styles",
+    found: id,
+    facts: {
+      near: closest(
+        id,
+        (d.styles ?? []).map((x) => x.id),
+        3,
+      ),
+    },
+  };
+}
+
+/** The object a style operation names, of the operation's sort. */
+function styled(d: Diagram, op: MarkStyleOp): { style?: string[] } | undefined {
+  if (op.op === "node.style") return everyNode(d).find((x) => x.id === op.id);
+  if (op.op === "edge.style") return d.edges.find((x) => x.id === op.id);
+  if (op.op === "group.style") return d.groups?.find((x) => x.id === op.id);
+  return d.lanes?.find((x) => x.id === op.id);
 }
 
 function unknownLayer(d: Diagram, id: string, i: number, field: string): OpError {
@@ -1735,6 +1760,48 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       const layer = d.layers.find((l) => l.id === op.id);
       if (!layer) return [unknownLayer(d, op.id, i, "id")];
       layer.label = op.label;
+      touch(s, op.id);
+      return [];
+    }
+    case "style.add": {
+      const { op: _op, ...style } = op;
+      const list = d.styles ?? [];
+      const at = list.findIndex((x) => x.id === op.id);
+      if (at >= 0) list[at] = style;
+      else list.push(style);
+      d.styles = list;
+      touch(s, op.id);
+      return [];
+    }
+    case "style.remove": {
+      if (!(d.styles ?? []).some((x) => x.id === op.id)) return [unknownStyle(d, op.id, i)];
+      const left = (d.styles ?? []).filter((x) => x.id !== op.id);
+      if (left.length > 0) d.styles = left;
+      else delete d.styles;
+      const clear = (o: { style?: string[] }) => {
+        const rest = o.style?.filter((x) => x !== op.id);
+        if (rest === undefined) return;
+        if (rest.length > 0) o.style = rest;
+        else delete o.style;
+      };
+      for (const o of [...everyNode(d), ...d.edges, ...(d.groups ?? []), ...(d.lanes ?? [])])
+        clear(o);
+      touch(s, op.id);
+      return [];
+    }
+    case "node.style":
+    case "edge.style":
+    case "group.style":
+    case "lane.style": {
+      const target = styled(d, op);
+      if (target === undefined) {
+        return [{ code: "unknown-node", index: i, field: "id", found: op.id, facts: {} }];
+      }
+      for (const name of op.styles ?? []) {
+        if (!(d.styles ?? []).some((x) => x.id === name)) return [unknownStyle(d, name, i)];
+      }
+      if (op.styles === undefined) delete target.style;
+      else target.style = [...op.styles];
       touch(s, op.id);
       return [];
     }

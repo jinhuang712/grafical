@@ -214,6 +214,7 @@ export const ERROR_CODES = [
   "unknown-group",
   "unknown-lane",
   "unknown-layer",
+  "unknown-style",
   "unknown-node",
   "unknown-note",
   "unknown-op",

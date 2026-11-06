@@ -46,6 +46,7 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
   if (n.group !== undefined) o.group = n.group;
   if (n.lane !== undefined) o.lane = n.lane;
   if (n.column !== undefined) o.column = n.column;
+  if (n.style !== undefined) o.style = n.style;
   if (n.icons !== undefined && Object.keys(n.icons).length > 0) {
     const icons: Record<string, unknown> = {};
     for (const slot of MARK_SLOTS) {
@@ -87,6 +88,7 @@ function edgeOut(e: Edge): Record<string, unknown> {
   if (e.accent === true) o.accent = true;
   if (e.weight !== undefined) o.weight = e.weight;
   if (e.step !== undefined) o.step = e.step;
+  if (e.style !== undefined) o.style = e.style;
   return o;
 }
 
@@ -102,6 +104,7 @@ export function writeDiagram(d: Diagram): string {
   out.density = d.density;
   if (d.sizing === "fixed") out.sizing = "fixed";
   if (d.style !== undefined) out.style = d.style;
+  if (d.styles !== undefined && d.styles.length > 0) out.styles = d.styles;
   if (d.legend !== undefined && Object.keys(d.legend).length > 0) {
     const legend: Record<string, unknown> = {};
     for (const line of LINE_STYLES) {
@@ -123,11 +126,16 @@ export function writeDiagram(d: Diagram): string {
       if (g.sublabel !== undefined) o.sublabel = g.sublabel;
       if (g.in !== undefined) o.in = g.in;
       if (g.titleAt !== undefined) o.titleAt = g.titleAt;
+      if (g.style !== undefined) o.style = g.style;
       return o;
     });
   }
   if (d.lanes !== undefined && d.lanes.length > 0) {
-    out.lanes = d.lanes.map((x) => ({ id: x.id, label: x.label }));
+    out.lanes = d.lanes.map((x) => ({
+      id: x.id,
+      label: x.label,
+      ...(x.style === undefined ? {} : { style: x.style }),
+    }));
   }
   if (d.columns !== undefined && d.columns.length > 0) {
     out.columns = d.columns.map((x) => ({ id: x.id }));

@@ -242,7 +242,7 @@ export function build(): Command {
   const group = program
     .command("group")
     .description(
-      "a box per system: add, copy, join, leave, rename, describe, title, order, remove",
+      "a box per system: add, copy, join, leave, rename, describe, title, order, style, remove",
     );
   json(
     group
@@ -312,9 +312,38 @@ export function build(): Command {
     );
   });
 
+  const style = program.command("style").description("named looks that objects mark: add, remove");
+  json(
+    style
+      .command("add")
+      .description("name a look, or change one; objects mark it with --style")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--fill <color>", "a color such as #eef")
+      .option("--border <color>", "a color")
+      .option("--border-width <n>", "pixels, 0 to 8")
+      .option("--color <color>", "an edge's color"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const width = opts.borderWidth === undefined ? {} : { borderWidth: Number(opts.borderWidth) };
+    await write(
+      file,
+      { op: "style.add", id, ...pick(opts, ["fill", "border", "color"]), ...width },
+      opts,
+    );
+  });
+  json(
+    style
+      .command("remove")
+      .description("remove a style and every mark of it")
+      .argument("<file>")
+      .argument("<id>"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "style.remove", id }, opts);
+  });
+
   const lane = program
     .command("lane")
-    .description("swimlanes, who owns what: add, join, leave, rename, remove");
+    .description("swimlanes, who owns what: add, join, leave, rename, style, remove");
   json(
     lane
       .command("add")
@@ -508,7 +537,7 @@ export function build(): Command {
   const node = program
     .command("node")
     .description(
-      "boxes: add, move, swap, align, merge, kind, describe, icon, rename, resize, emphasize, remove",
+      "boxes: add, move, swap, align, merge, kind, describe, icon, rename, resize, emphasize, style, remove",
     );
   json(
     withSteps(
@@ -583,7 +612,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "lines: add, emphasize, retarget, reverse, kind, relabel, weight, both, pass, step, remove",
+      "lines: add, emphasize, retarget, reverse, kind, relabel, weight, both, pass, step, style, remove",
     );
   json(
     edge
@@ -1191,6 +1220,20 @@ export function build(): Command {
       }
       process.stdout.write(`${guide.text}\n`);
     });
+
+  for (const noun of [node, edge, group, lane]) {
+    json(
+      noun
+        .command("style")
+        .description("mark styles, a later one over an earlier one; with none, clear them")
+        .argument("<file>")
+        .argument("<id>")
+        .argument("[styles...]"),
+    ).action(async (file: string, id: string, styles: string[], opts: Opts) => {
+      const raw = { op: `${noun.name()}.style`, id, ...(styles.length > 0 ? { styles } : {}) };
+      await write(file, raw, opts);
+    });
+  }
 
   attachHelp(program, new Map([...opCommands(program)].map(([op, c]) => [c, op])));
   // A command's page is <command> --help, the one way to it: commander's own help command would be a second, which
