@@ -765,9 +765,15 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     contentRight = Math.max(contentRight, x1);
   }
   const bandStyle = T["layer-label"];
+  /** Where a row's label starts at a fraction of its head, its own point meeting the head's. */
+  const headX = (at: number, w: number) => {
+    const left = contentLeft - BAND.padX + BAND.labelInset;
+    const right = contentRight + BAND.padX - BAND.labelInset;
+    return left + at * (right - left - w);
+  };
   const bandRows = new Map<
     number,
-    { id: string; label?: string; labelX: number; labelW: number; bar: boolean }
+    { id: string; label?: string; labelX: number; labelW: number; bar: boolean; blocked?: true }
   >();
   layers.forEach((l, i) => {
     if (!ends.bands.has(l.id) || !Number.isFinite(contentLeft)) return;
@@ -793,6 +799,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const need = labelW + 2 * GROUP.clear;
     let edge = contentLeft - BAND.padX + BAND.labelInset - GROUP.clear;
     let labelX: number | undefined;
+    const fraction = d.layers[i]?.labelAt;
+    const atFraction = fraction === undefined ? undefined : headX(fraction, labelW);
+    if (atFraction !== undefined) {
+      bandRows.set(i, { id: l.id, label, labelX: atFraction, labelW, bar: false });
+      return;
+    }
     for (const n of [...l.nodes, undefined]) {
       const end = n === undefined ? contentRight + BAND.padX - BAND.labelInset + GROUP.clear : n.x;
       if (end - edge >= need) {
@@ -928,6 +940,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     taken.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
     let edge = contentLeft - BAND.padX + BAND.labelInset;
     let labelX: number | undefined;
+    const stated = d.layers[i]?.labelAt;
+    if (stated !== undefined) {
+      const x = headX(stated, b.labelW);
+      const hit = taken.some((s) => s[0] - GROUP.clear < x + b.labelW && x < s[1] + GROUP.clear);
+      bandRows.set(i, { ...b, labelX: x, ...(hit ? { blocked: true as const } : {}) });
+      continue;
+    }
     for (const s of [...taken, undefined]) {
       const end = s === undefined ? contentRight + BAND.padX - BAND.labelInset : s[0] - GROUP.clear;
       if (end - edge >= b.labelW) {
@@ -1033,7 +1052,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   half = ceil4(Math.max(half, 80));
 
   // The frame: title, subtitle and legend at the top, the footnote at the bottom.
-  const title = withText
+  let title = withText
     ? placeLine("title", d.title, sp.margin, sp.margin, m, T)
     : empty("title", sp.margin, sp.margin);
   const legendStyle = T.legend;
@@ -1104,11 +1123,30 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const legendBottom = firstMid + (legendRows.length - 1) * legendPitch + lineH / 2;
   // A subtitle starts below the title, and below the legend when it wraps.
   const titleBottom = Math.max(title.bbox.y + ceil4(title.bbox.h), ceil4(legendBottom));
-  const subtitle =
+  // A stated title sits at a fraction of the picture's width, short of the legend, and a
+  // subtitle follows it (specs/decisions, "A region's label sits at a fraction of a side").
+  const stated = d.titleAt;
+  const along = stated?.at ?? 0;
+  const textRoom = width - 2 * sp.margin;
+  const titleRoom = textRoom - (items.length > 0 ? FRAME.legendGap + legendW : 0);
+  const titleLine = (y: number) =>
+    withText
+      ? placeLine("title", d.title, sp.margin + along * (titleRoom - title.bbox.w), y, m, T)
+      : empty("title", sp.margin, y);
+  const subtitleAt = (y: number) =>
     subLines.length > 0
-      ? placeLines("subtitle", subLines, sp.margin, titleBottom + FRAME.subtitleGap, "start", m, T)
+      ? placeLines("subtitle", subLines, sp.margin + along * textRoom, y, along, m, T)
       : undefined;
-  const headBottom = subtitle !== undefined ? subtitle.bbox.y + subtitle.bbox.h : titleBottom;
+  const below = stated?.side === "bottom";
+  if (stated !== undefined && !below) title = titleLine(sp.margin);
+  let subtitle = below ? undefined : subtitleAt(titleBottom + FRAME.subtitleGap);
+  const headBottom = below
+    ? items.length > 0
+      ? ceil4(legendBottom)
+      : sp.margin - FRAME.titleGap
+    : subtitle !== undefined
+      ? subtitle.bbox.y + subtitle.bbox.h
+      : titleBottom;
 
   // Down: rows and gutters. A gutter holds, top to bottom, the padding of the
   // groups whose last row is above it, its tracks, and the head of the groups
@@ -1237,6 +1275,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       ? placeLines("note", noteLines, sp.margin, ceil4(y + FRAME.noteGap), "start", m, T)
       : undefined;
   if (note !== undefined) bottom = note.bbox.y + note.bbox.h;
+  if (below) {
+    title = titleLine(ceil4(bottom + FRAME.noteGap));
+    bottom = title.bbox.y + title.bbox.h;
+    subtitle = subtitleAt(ceil4(bottom) + FRAME.subtitleGap);
+    if (subtitle !== undefined) bottom = subtitle.bbox.y + subtitle.bbox.h;
+  }
   const height = ceil4(bottom + sp.margin);
 
   const rowH = (i: number) => layers[i]?.rowH ?? 0;
@@ -1349,7 +1393,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       const label = withText
         ? placeLine("layer-label", b.label, centre + b.labelX, top, m, T)
         : empty("layer-label", centre + b.labelX, top);
-      return { id: b.id, rect, label, bar: true, ...box };
+      const blocked = b.blocked === true ? { blocked: true as const } : {};
+      return { id: b.id, rect, label, bar: true, ...box, ...blocked };
     }
     const y0 = (rowTops[i] ?? 0) - headsAt(i) - bandHeadH(i);
     const y1 = (rowTops[i] ?? 0) + rowH(i) + padsAt(i) + BAND.pad;
@@ -1369,9 +1414,17 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     w: number,
     y: number,
     plain: LabelAlign,
+    /** The room a row lane's head leaves below its label. */
+    spare = 0,
   ) => {
-    const at = alignedIn(d.lanes?.find((l) => l.id === id)?.labelAlign ?? plain, x, w);
-    return placeLines("lane-label", lines, at.x, y + LANE.labelTop, at.align, m, T);
+    const lane = d.lanes?.find((l) => l.id === id);
+    const at = alignedIn(lane?.labelAlign ?? plain, x, w);
+    const along = lane?.labelAt;
+    if (along !== undefined && spare === 0 && plain === "center") {
+      return placeLines("lane-label", lines, x + along * w, y + LANE.labelTop, along, m, T);
+    }
+    const down = along === undefined ? 0 : along * spare;
+    return placeLines("lane-label", lines, at.x, y + LANE.labelTop + down, at.align, m, T);
   };
   for (const x of rowLanes) {
     const y0 = x.first === 0 ? lanesTop : (borders.get(x.first - 1) ?? 0);
@@ -1385,7 +1438,15 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       run: "rows",
       rect,
       head: { x: rect.x, y: y0, w: headW, h: y1 - y0 },
-      label: laneLabel(x.id, lines, lx, headW - 2 * LANE.labelInset, y0, "left"),
+      label: laneLabel(
+        x.id,
+        lines,
+        lx,
+        headW - 2 * LANE.labelInset,
+        y0,
+        "left",
+        Math.max(0, y1 - y0 - 2 * LANE.labelTop - lines.length * laneLh),
+      ),
     });
   }
   colLanes.forEach((l, k) => {
@@ -1936,6 +1997,7 @@ function roundScene(s: Scene): Scene {
       ...(b.label === undefined ? {} : { label: roundText(b.label) }),
       ...(b.bar === true ? { bar: true as const } : {}),
       ...(b.box === true ? { box: true as const } : {}),
+      ...(b.blocked === true ? { blocked: true as const } : {}),
     }));
   }
   if (s.lanes !== undefined) {

@@ -21,7 +21,7 @@ The title names the picture, and two more texts tell a reader what they see.
 
 **Commands:**
 
-- `grafical -f <file> diagram --label-at --text <text>`
+- `grafical -f <file> diagram --title --text <text>`
 - `grafical -f <file> diagram --subtitle [--text <text>]`
 - `grafical -f <file> diagram --note [--text <text>]`
 
@@ -157,6 +157,9 @@ A diagram, a group, a layer, a lane and a column are all regions, and each place
 
 ```sh
 grafical -f <file> group --label-at <id> <fraction> [--side top|bottom|left|right] [--place inside|outside]
+grafical -f <file> diagram --label-at <fraction> [--side top|bottom]
+grafical -f <file> layer --label-at <id> <fraction>
+grafical -f <file> lane --label-at <id> <fraction>
 ```
 
 - A fraction runs from 0 to 1 along the side: 0 at its start, 0.5 at its middle and 1 at its end.
@@ -165,7 +168,11 @@ grafical -f <file> group --label-at <id> <fraction> [--side top|bottom|left|righ
 - A label that would overlap anything is refused.
 - A region that states nothing keeps the place it has today.
 - The side is `top` and the place `inside` unless the agent states them.
-- A group's label takes these today, and the title and the labels of a layer, a lane and a column are not built.
+- A title stops short of the legend, and at `bottom` it sits below the footnote.
+- A layer's and a lane's label run along their head, so they take a fraction and no side.
+- A bar's label with a line through its place is refused as `label-blocked`.
+- A column has no label until [F2.4.1: Column headings](F2-layout.md).
+- Without a fraction, the engine seats a label as it did.
 
 - **Why:** [084. A region's label sits at a fraction of a side](../specs/decisions/084-a-region-s-label-sits-at-a-fraction-of-a-side.md)
 

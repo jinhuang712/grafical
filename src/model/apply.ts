@@ -1800,6 +1800,37 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
 function editStep(s: State, op: Op, i: number): OpError[] | undefined {
   const d = s.d;
   switch (op.op) {
+    case "layer.label-at":
+    case "lane.label-at": {
+      const lane = op.op === "lane.label-at";
+      const held = lane
+        ? d.lanes?.find((x) => x.id === op.id)
+        : d.layers.find((x) => x.id === op.id);
+      if (held === undefined) {
+        return [lane ? unknownLane(d, op.id, i, "id") : unknownLayer(d, op.id, i, "id")];
+      }
+      if ((held.label ?? "") === "") {
+        return [
+          {
+            code: "bad-value",
+            index: i,
+            field: "id",
+            found: op.id,
+            facts: { allowed: ["a row with a label"] },
+          },
+        ];
+      }
+      if (op.at === undefined) delete held.labelAt;
+      else held.labelAt = op.at;
+      touch(s, op.id);
+      return [];
+    }
+    case "diagram.label-at": {
+      if (op.at === undefined) delete d.titleAt;
+      else d.titleAt = { at: op.at, side: op.side ?? "top" };
+      touch(s, "title");
+      return [];
+    }
     case "diagram.title":
       d.title = op.text;
       touch(s, "title");

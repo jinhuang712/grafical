@@ -72,7 +72,8 @@ export function showDiagram(d: Diagram): string {
     const lane = l.lane === undefined ? "" : ` lane=${l.lane}`;
     const look = l.look === undefined ? "" : ` look=${l.look}`;
     const label = l.label === undefined ? "" : ` ${JSON.stringify(l.label)}`;
-    lines.push(`layer ${l.id}${label}${lane}${look}: ${nodes}`);
+    const at = l.labelAt === undefined ? "" : ` label-at=${l.labelAt}`;
+    lines.push(`layer ${l.id}${label}${lane}${look}${at}: ${nodes}`);
   }
   if (d.layers.length === 0) lines.push("(no layers)");
   // Boxes in no row, placed by steps from another box (specs/decisions, "Steps from another box").
@@ -97,7 +98,10 @@ export function showDiagram(d: Diagram): string {
         ? d.layers.filter((l) => l.lane === x.id).map((l) => l.id)
         : laneNodes(d, x.id);
     const way = run === undefined ? "" : ` (${run})`;
-    lines.push(`lane ${x.id} ${JSON.stringify(x.label)}${way}: ${members.join(", ") || "(empty)"}`);
+    const at = x.labelAt === undefined ? "" : ` label-at=${x.labelAt}`;
+    lines.push(
+      `lane ${x.id} ${JSON.stringify(x.label)}${way}${at}: ${members.join(", ") || "(empty)"}`,
+    );
   }
   for (const c of d.columns ?? []) {
     const members = d.layers.flatMap((l) =>

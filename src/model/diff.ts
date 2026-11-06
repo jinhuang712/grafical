@@ -137,6 +137,9 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   }
   if (a.density !== b.density) ops.push({ op: "diagram.density", density: a.density });
   if (a.lines !== b.lines) ops.push({ op: "diagram.lines", lines: a.lines ?? "square" });
+  if (JSON.stringify(a.titleAt) !== JSON.stringify(b.titleAt)) {
+    ops.push({ op: "diagram.label-at", ...a.titleAt });
+  }
   if ((a.sizing ?? "auto") !== (b.sizing ?? "auto")) {
     ops.push({ op: "diagram.sizing", mode: a.sizing ?? "auto" });
   }
@@ -735,6 +738,24 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       ops.push(x.type === undefined ? { op, id: x.id } : { op, id: x.id, type: x.type });
     }
   };
+  for (const x of a.layers) {
+    const was = b.layers.find((y) => y.id === x.id)?.labelAt;
+    if (was === x.labelAt) continue;
+    ops.push({
+      op: "layer.label-at",
+      id: x.id,
+      ...(x.labelAt === undefined ? {} : { at: x.labelAt }),
+    });
+  }
+  for (const x of a.lanes ?? []) {
+    const was = (b.lanes ?? []).find((y) => y.id === x.id)?.labelAt;
+    if (was === x.labelAt) continue;
+    ops.push({
+      op: "lane.label-at",
+      id: x.id,
+      ...(x.labelAt === undefined ? {} : { at: x.labelAt }),
+    });
+  }
   const aligns = <T extends { id: string; labelAlign?: LabelAlign }>(was: T[], now: T[]) => {
     for (const x of now) {
       if (was.find((y) => y.id === x.id)?.labelAlign === x.labelAlign) continue;

@@ -78,6 +78,7 @@ function layerOut(l: Layer): Record<string, unknown> {
   if (l.label !== undefined) o.label = l.label;
   if (l.lane !== undefined) o.lane = l.lane;
   if (l.look !== undefined) o.look = l.look;
+  if (l.labelAt !== undefined) o.labelAt = l.labelAt;
   o.nodes = l.nodes.map(nodeOut);
   return o;
 }
@@ -110,6 +111,7 @@ export function writeDiagram(d: Diagram): string {
   if (d.note !== undefined) out.note = d.note;
   out.density = d.density;
   if (d.lines !== undefined) out.lines = d.lines;
+  if (d.titleAt !== undefined) out.titleAt = { ...d.titleAt };
   if (d.sizing === "fixed") out.sizing = "fixed";
   if (d.style !== undefined) out.style = d.style;
   if (d.types !== undefined && d.types.length > 0) out.types = d.types;
@@ -144,6 +146,7 @@ export function writeDiagram(d: Diagram): string {
       id: x.id,
       label: x.label,
       ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
+      ...(x.labelAt === undefined ? {} : { labelAt: x.labelAt }),
       ...(x.style === undefined ? {} : { style: x.style }),
     }));
   }

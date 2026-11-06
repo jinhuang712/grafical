@@ -224,6 +224,18 @@ export interface LayerRemoveOp {
   id: string;
 }
 /** How a row is drawn, and that it is drawn though no line ends at it (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
+/** Where the title sits. Absent `at`: top left. */
+export interface DiagramLabelAtOp {
+  op: "diagram.label-at";
+  at?: number;
+  side?: "top" | "bottom";
+}
+/** Where a row's or a lane's label sits along its head. Absent `at`: where the engine seats it. */
+export interface HeadLabelAtOp {
+  op: "layer.label-at" | "lane.label-at";
+  id: string;
+  at?: number;
+}
 export interface DiagramLinesOp {
   op: "diagram.lines";
   lines: "square" | "round";
@@ -588,6 +600,8 @@ export type Op =
   | LayerRemoveOp
   | LayerLookOp
   | DiagramLinesOp
+  | DiagramLabelAtOp
+  | HeadLabelAtOp
   | TypeAddOp
   | TypeRemoveOp
   | SetTypeOp
@@ -743,6 +757,21 @@ export const edgeAddSchema = z.strictObject({
   pass: z.boolean().optional(),
 });
 export const edgeRemoveSchema = z.strictObject({ op: z.literal("edge.remove"), id: edgeId });
+export const layerLabelAtSchema = z.strictObject({
+  op: z.literal("layer.label-at"),
+  id: nodeId,
+  at: z.number().min(0).max(1).optional(),
+});
+export const laneLabelAtSchema = z.strictObject({
+  op: z.literal("lane.label-at"),
+  id: nodeId,
+  at: z.number().min(0).max(1).optional(),
+});
+export const diagramLabelAtSchema = z.strictObject({
+  op: z.literal("diagram.label-at"),
+  at: z.number().min(0).max(1).optional(),
+  side: z.enum(["top", "bottom"]).optional(),
+});
 export const diagramTitleSchema = z.strictObject({ op: z.literal("diagram.title"), text });
 export const diagramLinesSchema = z.strictObject({
   op: z.literal("diagram.lines"),
@@ -1045,6 +1074,9 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeAddSchema,
   edgeRemoveSchema,
   diagramTitleSchema,
+  diagramLabelAtSchema,
+  layerLabelAtSchema,
+  laneLabelAtSchema,
   diagramDensitySchema,
   diagramLinesSchema,
   diagramLegendSchema,
@@ -1125,6 +1157,9 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.add": edgeAddSchema,
   "edge.remove": edgeRemoveSchema,
   "diagram.title": diagramTitleSchema,
+  "diagram.label-at": diagramLabelAtSchema,
+  "layer.label-at": layerLabelAtSchema,
+  "lane.label-at": laneLabelAtSchema,
   "diagram.density": diagramDensitySchema,
   "diagram.lines": diagramLinesSchema,
   "diagram.legend": diagramLegendSchema,

@@ -65,6 +65,8 @@ export function writeGrafical(d: Diagram): string {
       ["style", opt(d.style, quote)],
       ["density", d.density],
       ["lines", d.lines],
+      ["title-at", d.titleAt === undefined ? undefined : String(d.titleAt.at)],
+      ["title-side", d.titleAt?.side],
       ["sizing", d.sizing === "fixed" ? "fixed" : undefined],
     ]),
   );
@@ -193,23 +195,32 @@ export function writeGrafical(d: Diagram): string {
     title?: GroupTitle,
     seat?: string,
     align?: string,
+    along?: number,
   ) =>
     block("label", `${id}-label`, [
       ["on", ref(on)],
       ["text", quote(text)],
       ["sublabel", opt(sub, quote)],
-      ["at", title === undefined ? undefined : String(title.at)],
+      [
+        "at",
+        title !== undefined ? String(title.at) : along === undefined ? undefined : String(along),
+      ],
       ["side", title?.side],
       ["place", title?.place],
       ["seat", seat],
       ["align", align],
     ]);
-  for (const l of d.layers) if (l.label !== undefined) blocks.push(label(l.id, l.id, l.label));
+  for (const l of d.layers) {
+    if (l.label === undefined) continue;
+    const none = undefined;
+    blocks.push(label(l.id, l.id, l.label, none, none, none, none, l.labelAt));
+  }
   for (const g of d.groups ?? []) {
     blocks.push(label(g.id, g.id, g.label, g.sublabel, g.titleAt));
   }
   for (const l of d.lanes ?? []) {
-    blocks.push(label(l.id, l.id, l.label, undefined, undefined, undefined, l.labelAlign));
+    const none = undefined;
+    blocks.push(label(l.id, l.id, l.label, none, none, none, l.labelAlign, l.labelAt));
   }
   for (const w of d.walls ?? []) {
     if (w.label === undefined) continue;
@@ -389,6 +400,9 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   const root = of("diagram")[0];
   if (root === undefined) return [bad(text, 1)];
   const out: Record<string, unknown> = {};
+  if (root.attrs.has("title-at")) {
+    out.titleAt = { at: Number(root.attrs.get("title-at")), side: root.attrs.get("title-side") };
+  }
   take(
     root,
     {
@@ -417,6 +431,11 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       },
       o,
     );
+  };
+  /** A label along a head, which holds only its fraction. */
+  const along = (id: string, o: Record<string, unknown>) => {
+    const at = labels.get(id)?.attrs.get("at");
+    if (at !== undefined) o.labelAt = Number(at);
   };
   const marks = new Map<string, Record<string, unknown>>();
   for (const b of of("mark")) {
@@ -482,6 +501,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     const o: Record<string, unknown> = { id };
     if (b !== undefined) take(b, { lane: "lane", look: "look" }, o);
     named(id, o);
+    along(id, o);
     o.nodes = (orders.get(id) ?? []).map((n) => {
       const nb = byId.get(n);
       return nb === undefined ? { id: n } : node(nb);
@@ -524,6 +544,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     const o: Record<string, unknown> = { id: b.id };
     styles(b, o);
     named(b.id as string, o);
+    along(b.id as string, o);
     return o;
   });
   out.columns = of("column").map((b) => ({ id: b.id }));

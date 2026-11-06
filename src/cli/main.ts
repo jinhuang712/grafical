@@ -214,7 +214,9 @@ export function build(): Command {
 
   const diagram = program
     .command("diagram")
-    .description("the whole diagram: title, subtitle, note, legend, style, density, sizing, lines");
+    .description(
+      "the whole diagram: title, label-at, subtitle, note, legend, style, density, sizing, lines",
+    );
   json(
     diagram
       .command("style")
@@ -377,7 +379,20 @@ export function build(): Command {
 
   const lane = program
     .command("lane")
-    .description("swimlanes, who owns what: add, join, leave, rename, style, remove");
+    .description("swimlanes, who owns what: add, join, label-at, leave, rename, style, remove");
+  json(
+    lane
+      .command("label-at")
+      .description(
+        "say where its label sits along its head; without a fraction, the engine seats it",
+      )
+      .argument("<file>")
+      .argument("<id>")
+      .argument("[at]", "0 to 1 along its head"),
+  ).action(async (file: string, id: string, at: string | undefined, opts: Opts) => {
+    const where = at === undefined ? {} : { at: Number.isNaN(Number(at)) ? at : Number(at) };
+    await write(file, { op: "lane.label-at", id, ...where }, opts);
+  });
   json(
     lane
       .command("add")
@@ -593,7 +608,7 @@ export function build(): Command {
 
   const layer = program
     .command("layer")
-    .description("rows: add, move, split, rename, look, remove");
+    .description("rows: add, label-at, move, split, rename, look, remove");
   json(
     layer
       .command("add")
@@ -957,6 +972,19 @@ export function build(): Command {
   });
   json(
     layer
+      .command("label-at")
+      .description(
+        "say where its label sits along its head; without a fraction, the engine seats it",
+      )
+      .argument("<file>")
+      .argument("<id>")
+      .argument("[at]", "0 to 1 along its head"),
+  ).action(async (file: string, id: string, at: string | undefined, opts: Opts) => {
+    const where = at === undefined ? {} : { at: Number.isNaN(Number(at)) ? at : Number(at) };
+    await write(file, { op: "layer.label-at", id, ...where }, opts);
+  });
+  json(
+    layer
       .command("move")
       .description("move a layer up or down")
       .argument("<file>")
@@ -1058,6 +1086,20 @@ export function build(): Command {
     await write(file, raw, opts);
   });
 
+  json(
+    diagram
+      .command("label-at")
+      .description("say where the title sits; without a fraction, at the top left")
+      .argument("<file>")
+      .argument("[at]", "0 to 1 across the picture: 0 its left, 1 its right")
+      .option("--side <side>", "top by default, or bottom"),
+  ).action(async (file: string, at: string | undefined, opts: Opts) => {
+    const where =
+      at === undefined
+        ? {}
+        : { at: Number.isNaN(Number(at)) ? at : Number(at), ...pick(opts, ["side"]) };
+    await write(file, { op: "diagram.label-at", ...where }, opts);
+  });
   json(
     diagram
       .command("title")

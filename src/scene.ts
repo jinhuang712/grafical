@@ -84,6 +84,8 @@ export interface SceneBand {
   bar?: true;
   /** Drawn with a box's paint and a dark label, not the band's (specs/decisions, "A row with no box as one bar"). */
   box?: true;
+  /** true: a line runs through the place the agent stated for the bar's label, and the write is refused. */
+  blocked?: true;
 }
 
 /** A swimlane (specs/decisions, "Swimlanes run one way"): its whole area, the header that holds its label, and the label. */

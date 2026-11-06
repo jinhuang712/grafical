@@ -125,16 +125,16 @@ A label with no such place stays at the wall's start or its top, and the write i
 
 ## Bands, bars and lanes
 
-- **A band's label** sits in its head, 10 px from the top.
+- **A band's label** sits in its head, 10 px from the top, at the agent's fraction of it when stated.
   - A band in a lane whose label reads the same draws none.
   - It takes the first stretch of the layer with no node below it that is the label's width plus 32 px.
   - With no such stretch it sits left of the content, 16 px from the band's side.
   - It is the one label that moves lines: vertical lines keep 6 px from it.
-- **A bar's label** sits in the bar at its left, once the edges are routed.
+- **A bar's label** sits in the bar at its left, once the edges are routed, or at the agent's fraction, where a line through it is refused as `label-blocked`.
   - It takes the first stretch 16 px clear of the edges that end at the bar and of the edges that pass it.
   - With no such stretch it sits left of the content and of every edge through the bar.
   - The bar then reaches it.
-- **A lane's label** sits in the lane's header.
+- **A lane's label** sits in the lane's header, at the agent's fraction along it when stated.
   - For lanes as layers it sits in the header column on the left, 12 px in and 10 px down.
   - For lanes as columns, it is centred in the header on top and wraps at the lane's width less 24 px.
 

@@ -5,6 +5,7 @@ import { check } from "../../src/check/index.ts";
 import type { OpError } from "../../src/errors.ts";
 import { layout } from "../../src/layout/index.ts";
 import { diffDiagrams } from "../../src/model/diff.ts";
+import { writeGrafical } from "../../src/model/grafical-format.ts";
 import {
   applyOps,
   type Diagram,
@@ -71,6 +72,93 @@ edges:
   - {id: portal->api, from: portal, to: api}
   - {id: api->db, from: api, to: db}
 `) as Diagram;
+
+describe("a diagram's title at a fraction", () => {
+  const go = (ops: object[]) => ok(booking, ops as Op[]);
+  const title = (d: Diagram) => layout(d, m).title.bbox;
+
+  it("sits across the picture, its own point meeting the width's, and a subtitle follows", () => {
+    const d = go([
+      { op: "diagram.subtitle", text: "Who books what" },
+      { op: "diagram.label-at", at: 0.5 },
+    ]);
+    const s = layout(d, m);
+    expect(s.title.bbox.x + s.title.bbox.w / 2).toBeCloseTo(s.width / 2, 0);
+    const sub = s.subtitle?.bbox;
+    expect((sub?.x ?? 0) + (sub?.w ?? 0) / 2).toBeCloseTo(s.width / 2, 0);
+    expect(title(go([{ op: "diagram.label-at", at: 1 }])).x).toBeGreaterThan(s.title.bbox.x);
+  });
+
+  it("moves to the foot with its subtitle, and the content takes the head's room", () => {
+    const top = layout(go([{ op: "diagram.subtitle", text: "Who books what" }]), m);
+    const low = layout(
+      go([
+        { op: "diagram.subtitle", text: "Who books what" },
+        { op: "diagram.label-at", at: 0, side: "bottom" },
+      ]),
+      m,
+    );
+    const lowest = Math.max(...low.nodes.map((n) => n.rect.y + n.rect.h));
+    expect(low.title.bbox.y).toBeGreaterThan(lowest);
+    expect(low.subtitle?.bbox.y).toBeGreaterThan(low.title.bbox.y);
+    expect(Math.min(...low.nodes.map((n) => n.rect.y))).toBeLessThan(
+      Math.min(...top.nodes.map((n) => n.rect.y)),
+    );
+  });
+
+  it("clears with no fraction, diffs as its operation and survives a .grafical file", () => {
+    const d = go([{ op: "diagram.label-at", at: 0.5, side: "bottom" }]);
+    expect(ok(d, [{ op: "diagram.label-at" } as Op])).toEqual(booking);
+    expect(diffDiagrams(booking, d)).toEqual([{ op: "diagram.label-at", at: 0.5, side: "bottom" }]);
+    expect(diffDiagrams(d, booking)).toEqual([{ op: "diagram.label-at" }]);
+    const back = readDiagram(writeGrafical(d));
+    expect(Array.isArray(back) ? undefined : back.titleAt).toEqual(d.titleAt);
+  });
+});
+
+describe("a row's and a lane's label along its head", () => {
+  const rows = (labelAt?: number) =>
+    readDiagram(`grafical: 1
+title: Rows
+density: normal
+lanes:
+  - {id: l, label: Lane${labelAt === undefined ? "" : `, labelAt: ${labelAt}`}}
+layers:
+  - {id: a, label: Front, lane: l${labelAt === undefined ? "" : `, labelAt: ${labelAt}`}, look: band, nodes: [{id: x, label: X}, {id: y, label: Y}]}
+  - {id: b, label: Back, lane: l, look: band, nodes: [{id: z, label: Z}]}
+edges:
+  - {id: x->z, from: x, to: z}
+`) as Diagram;
+  const band = (d: Diagram) => layout(d, m).bands?.find((b) => b.id === "a")?.label?.bbox;
+  const lane = (d: Diagram) => layout(d, m).lanes?.find((x) => x.id === "l")?.label.bbox;
+
+  it("moves a row's label along its head", () => {
+    const start = ok(rows(), [{ op: "layer.label-at", id: "a", at: 0 } as Op]);
+    const end = ok(rows(), [{ op: "layer.label-at", id: "a", at: 1 } as Op]);
+    expect(band(end)?.x).toBeGreaterThan(band(start)?.x ?? 0);
+  });
+
+  it("moves a row lane's label down its head", () => {
+    const end = ok(rows(), [{ op: "lane.label-at", id: "l", at: 1 } as Op]);
+    expect(lane(end)?.y).toBeGreaterThan(lane(rows())?.y ?? 0);
+    expect(ok(end, [{ op: "lane.label-at", id: "l" } as Op])).toEqual(rows());
+  });
+
+  it("refuses a row with no label", () => {
+    const d = ok(rows(), [{ op: "layer.add", id: "c" } as Op]);
+    expect(fail(d, [{ op: "layer.label-at", id: "c", at: 0 } as Op])[0]?.code).toBe("bad-value");
+  });
+
+  it("survives a .grafical file and diffs as its operation", () => {
+    const d = rows(0.5);
+    const back = readDiagram(writeGrafical(d));
+    expect(back).toEqual(d);
+    expect(diffDiagrams(rows(), d)).toEqual([
+      { op: "layer.label-at", id: "a", at: 0.5 },
+      { op: "lane.label-at", id: "l", at: 0.5 },
+    ]);
+  });
+});
 
 describe("a group's stated label place", () => {
   it("is set, kept in the file, cleared and refused when unknown", () => {

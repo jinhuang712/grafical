@@ -209,6 +209,7 @@ const groupSchema = z.strictObject({
 const laneSchema = z.strictObject({
   id: nodeId,
   label: text,
+  labelAt: z.number().min(0).max(1).optional(),
   labelAlign: z.enum(LABEL_ALIGNS).optional(),
   style: styleNames,
 });
@@ -226,6 +227,7 @@ const wallSchema = z.strictObject({
 const layerSchema = z.strictObject({
   id: nodeId,
   label: text.optional(),
+  labelAt: z.number().min(0).max(1).optional(),
   lane: nodeId.optional(),
   look: z.enum(ROW_LOOKS).optional(),
   nodes: z.array(nodeSchema).default([]),
@@ -294,6 +296,9 @@ export const diagramSchema = z.strictObject({
   note: text.optional(),
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
   lines: z.enum(["round"]).optional(),
+  titleAt: z
+    .strictObject({ at: z.number().min(0).max(1), side: z.enum(["top", "bottom"]) })
+    .optional(),
   sizing: z.enum(SIZINGS).optional(),
   style: text.optional(),
   types: z.array(typeSchema).default([]),
@@ -370,6 +375,7 @@ function build(p: Parsed): Diagram {
     ...(l.label === undefined ? {} : { label: l.label }),
     ...(l.lane === undefined ? {} : { lane: l.lane }),
     ...(l.look === undefined ? {} : { look: l.look }),
+    ...(l.labelAt === undefined ? {} : { labelAt: l.labelAt }),
     nodes: l.nodes.map(buildNode),
   }));
   const edges: Edge[] = p.edges.map((e) => {
@@ -391,6 +397,7 @@ function build(p: Parsed): Diagram {
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
   if (p.sizing === "fixed") d.sizing = "fixed";
   if (p.lines !== undefined) d.lines = p.lines;
+  if (p.titleAt !== undefined) d.titleAt = p.titleAt;
   if (p.style !== undefined) d.style = p.style;
   if (p.types.length > 0) {
     d.types = p.types.map(
@@ -442,6 +449,7 @@ function build(p: Parsed): Diagram {
       id: x.id,
       label: x.label,
       ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
+      ...(x.labelAt === undefined ? {} : { labelAt: x.labelAt }),
       ...(x.style === undefined ? {} : { style: [...x.style] }),
     }));
   }

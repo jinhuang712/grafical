@@ -447,6 +447,11 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
       facts: { is: "note" },
     });
   }
+  for (const b of scene.bands ?? []) {
+    if (b.blocked !== true || b.label === undefined) continue;
+    const box = inset(b.label.bbox, -GROUP.clear);
+    out.push({ code: "label-blocked", elements: [b.id, ...lines(box)], facts: { is: "layer" } });
+  }
   // A wall's label keeps its clearance from lines and boxes as the engine places it.
   for (const w of scene.walls ?? []) {
     if (w.blocked !== true || w.label === undefined) continue;

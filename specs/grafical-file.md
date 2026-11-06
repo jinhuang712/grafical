@@ -148,6 +148,8 @@ The root has no ID, and a file has exactly one.
 | `density` | `compact`, `normal` or `airy` |
 | `sizing` | `auto` or `fixed` |
 | `lines` | `square` or `round` |
+| `title-at` | a fraction from 0 to 1 |
+| `title-side` | `top` or `bottom` |
 
 ### `<type>`
 

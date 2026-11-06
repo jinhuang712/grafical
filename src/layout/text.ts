@@ -28,7 +28,8 @@ export function placeLines(
   lines: Line[],
   x: number,
   top: number,
-  align: "start" | "middle" | "end",
+  /** A number is the fraction of each line that meets `x`. */
+  align: "start" | "middle" | "end" | number,
   m: Measurer,
   ramp: TypeRamp = TYPE_RAMP,
 ): PlacedText {
@@ -40,7 +41,9 @@ export function placeLines(
   let x0 = Number.POSITIVE_INFINITY;
   let x1 = Number.NEGATIVE_INFINITY;
   lines.forEach((line, i) => {
-    const left = x - (align === "middle" ? line.width / 2 : align === "end" ? line.width : 0);
+    const share =
+      typeof align === "number" ? align : align === "middle" ? 0.5 : align === "end" ? 1 : 0;
+    const left = x - share * line.width;
     x0 = Math.min(x0, left);
     x1 = Math.max(x1, left + line.width);
     const baseline = top + i * mt.lineHeight + lead + mt.ascent;

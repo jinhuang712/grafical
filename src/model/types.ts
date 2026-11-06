@@ -47,6 +47,12 @@ export type RowLook = (typeof ROW_LOOKS)[number];
  * top or bottom side, or beside its rows inside or outside its left or right side. Absent:
  * in the head, where the lines into the group's first row keep their centres.
  */
+export interface DiagramTitle {
+  /** From 0 to 1 across the picture: the title's own point at this fraction meets the width's. */
+  at: number;
+  side: "top" | "bottom";
+}
+
 export interface GroupTitle {
   /** From 0 to 1 along the side: the label's own point at this fraction meets the side's. */
   at: number;
@@ -201,6 +207,8 @@ export interface Group {
 
 export interface Layer {
   id: string;
+  /** Where its label sits, from 0 to 1 along its head (specs/decisions, "A region's label sits at a fraction of a side"). */
+  labelAt?: number;
   /** Its name, drawn only when the row is drawn (specs/decisions, "A row with a look is drawn"). */
   label?: string;
   /** The lane this layer lies in, when lanes run as rows (specs/decisions, "Swimlanes run one way"). */
@@ -238,6 +246,8 @@ export type LabelAlign = (typeof LABEL_ALIGNS)[number];
 export interface Lane {
   id: string;
   label: string;
+  /** Where its label sits, from 0 to 1 along its head (specs/decisions, "A region's label sits at a fraction of a side"). */
+  labelAt?: number;
   /** Absent: left in a lane of rows and centred in a lane of columns. */
   labelAlign?: LabelAlign;
   /** The styles it marks. */
@@ -375,6 +385,8 @@ export interface Diagram {
   density: Density;
   /** How lines are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Lines may be drawn square, round or smooth"). */
   lines?: "round";
+  /** Where the title sits (specs/decisions, "A region's label sits at a fraction of a side"). Absent: top left. */
+  titleAt?: DiagramTitle;
   /** "fixed": a node with no size is a medium box, whatever its text. Absent: auto (specs/decisions, "Boxes sized to their text"). */
   sizing?: "fixed";
   /** A built-in theme's name, or a stylesheet's path relative to the file (specs/decisions, "Themes and stylesheets"). Absent: the default theme. */
