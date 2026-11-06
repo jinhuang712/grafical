@@ -52,6 +52,8 @@ export function surfaceName(name: string): string {
 export interface Unread {
   field: string;
   found?: string;
+  /** The command a caller meant, when the verb exists in the old form. */
+  likely?: string;
 }
 
 const isHelp = (w: string | undefined) => w === "-h" || w === "--help";
@@ -74,7 +76,11 @@ export function inward(args: readonly string[]): string[] | Unread {
   if (NOUNS.includes(first)) {
     const [flag, ...after] = rest;
     if (flag === undefined || isHelp(flag)) return words;
-    if (!flag.startsWith("--")) return { field: "verb", found: flag };
+    if (!flag.startsWith("--")) {
+      const meant =
+        known.get(first)?.has(flag) === true ? surfaceName(`${first} ${flag}`) : undefined;
+      return { field: "verb", found: flag, ...(meant === undefined ? {} : { likely: meant }) };
+    }
     const verb = flag.slice(2);
     const inner = RENAMED[first]?.[verb] ?? verb;
     if (isHelp(after[0])) return [first, inner, ...after];
@@ -89,8 +95,19 @@ export function inward(args: readonly string[]): string[] | Unread {
   return words;
 }
 
-const VERB_WORDS =
-  /\b(diagram|type|style|group|lane|column|wall|note|layer|node|edge) ([a-z][a-z-]*)\b/g;
+const NOUN_WORDS = NOUNS.join("|");
+const VERB_WORDS = new RegExp(`\\b(${NOUN_WORDS}) ([a-z][a-z-]*)\\b`, "g");
+const USAGE_VERB = new RegExp(
+  `^Usage: grafical (${NOUN_WORDS}) ([a-z-]+)(?:\\|[a-z-]+)? \\[options\\] <file>(.*)$`,
+  "gm",
+);
+const USAGE_NOUN = new RegExp(
+  `^Usage: grafical (${NOUN_WORDS}) \\[options\\] \\[command\\]$`,
+  "gm",
+);
+/** An example of a verb: `grafical node add a.grafical x`. */
+const EXAMPLE_VERB = new RegExp(`\\bgrafical (${NOUN_WORDS}) ([a-z-]+) (\\S+\\.grafical)\\b`, "g");
+const EXAMPLE_COMMAND = /\bgrafical (new|apply|try|show|diff|check|render|view) (\S+\.grafical)\b/g;
 
 /** Every verb a noun has, by its subcommand's name. */
 const known = new Map<string, Set<string>>();
@@ -109,7 +126,7 @@ export function surfaceText(text: string): string {
   return text
     .replace(/--kind\b/g, "--type")
     .replace(
-      /^Usage: grafical (diagram|type|style|group|lane|column|wall|note|layer|node|edge) ([a-z-]+) \[options\] <file>(.*)$/gm,
+      USAGE_VERB,
       (_, noun: string, verb: string, more: string) =>
         `Usage: grafical -f <file> ${noun} --${outward(noun, verb)}${more} [options]`,
     )
@@ -117,10 +134,7 @@ export function surfaceText(text: string): string {
       /^Usage: grafical (new|apply|try|show|diff|check|render|view) \[options\] <file>(.*)$/gm,
       (_, command: string, more: string) => `Usage: grafical -f <file> ${command}${more} [options]`,
     )
-    .replace(
-      /^Usage: grafical (diagram|type|style|group|lane|column|wall|note|layer|node|edge) \[options\] \[command\]$/gm,
-      "Usage: grafical -f <file> $1 --<verb> [options]",
-    )
+    .replace(USAGE_NOUN, "Usage: grafical -f <file> $1 --<verb> [options]")
     .replace(
       /^ {2}([a-z-]+)\|?[a-z-]* \[options\] <file>(.*)$/gm,
       (_, verb: string, more: string) => `  --${verb}${more}`,
@@ -129,6 +143,8 @@ export function surfaceText(text: string): string {
       /\bgrafical (new|apply|try|show|diff|check|render|view) <file>/g,
       "grafical -f <file> $1",
     )
+    .replace(EXAMPLE_VERB, "grafical -f $3 $1 $2")
+    .replace(EXAMPLE_COMMAND, "grafical -f $2 $1")
     .replace(VERB_WORDS, (whole, noun: string, verb: string) =>
       known.get(noun)?.has(verb) === true ? `${noun} --${outward(noun, verb)}` : whole,
     );

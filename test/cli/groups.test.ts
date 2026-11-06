@@ -30,7 +30,9 @@ function helpExample() {
   const lines = run("apply", "--help")
     .out.split("\n")
     .map((l) => l.slice(2));
-  const line = lines.find((l) => l.startsWith("grafical new orders")) as string;
+  const line = (
+    lines.find((l) => l.startsWith("grafical -f orders.grafical new")) as string
+  ).replace("-f orders.grafical new", "new orders.grafical.yaml");
   const batch = `${lines.filter((l) => l.startsWith("- {op: ")).join("\n")}\n`;
   return { batch, line };
 }

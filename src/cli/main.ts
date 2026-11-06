@@ -1629,7 +1629,8 @@ async function main(argv: string[]) {
     const words = inward(typed);
     if (!Array.isArray(words)) {
       const code = words.field === "verb" ? "unknown-command" : "missing-argument";
-      throw usage(code, words);
+      const facts = words.likely === undefined ? undefined : { likely: [words.likely] };
+      throw usage(code, words, facts);
     }
     const wrong = wrongCommand(program, words);
     if (wrong !== undefined) throw new UsageError(wrong);

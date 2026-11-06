@@ -15,7 +15,7 @@ export const PROGRAM_ABOUT = `grafical draws diagrams from facts: what exists an
 moves where, the steps of a process, the states of a thing. You say which row
 a box is in, what it connects to and which group it belongs to; grafical
 places, sizes and routes everything, and refuses a change that would draw
-wrong. The diagram is one YAML file, <name>.grafical.yaml, kept in git. It
+wrong. The diagram is one file, <name>.grafical, kept in git. It
 does not draw sequence diagrams, ER or class diagrams, mind maps or timelines
 on a time scale, such as Gantt charts.`;
 
@@ -59,7 +59,7 @@ How common kinds of diagram are usually drawn, if you want it: grafical guide.
 `;
 
 /** The example of `grafical apply --help`, which the tests build and check. */
-export const EXAMPLE_NEW = `grafical new orders.grafical.yaml --title "Order desk and shipping" --subtitle "Two services coupled only by the shared orders database."`;
+export const EXAMPLE_NEW = `grafical new orders.grafical --title "Order desk and shipping" --subtitle "Two services coupled only by the shared orders database."`;
 export const EXAMPLE_BATCH = `- {op: layer.add, id: row-callers, label: Callers}
 - {op: layer.add, id: row-entry, label: Entry}
 - {op: layer.add, id: row-core, label: Core}
@@ -92,7 +92,7 @@ const indent = (text: string) =>
  */
 export const PAGES: Record<string, { about?: string; after?: string }> = {
   new: {
-    about: "Create an empty diagram file. Name it <name>.grafical.yaml.",
+    about: "Create an empty diagram file. Name it <name>.grafical.",
     after: `
 Good to know:
   - The title names the system or process. The subtitle says in one
@@ -101,7 +101,7 @@ Good to know:
   - Next, write the whole draft as one batch: grafical apply --help.
 
 Example:
-  grafical new shop.grafical.yaml --title "Shop checkout" \\
+  grafical new shop.grafical --title "Shop checkout" \\
     --subtitle "How an order reaches the warehouse."
 `,
   },
@@ -169,8 +169,8 @@ Output:
 Example: two systems around a shared store
   ${EXAMPLE_NEW}
   Write batch.yaml:
-${indent(EXAMPLE_BATCH)}  grafical apply orders.grafical.yaml batch.yaml
-  grafical render orders.grafical.yaml
+${indent(EXAMPLE_BATCH)}  grafical apply orders.grafical batch.yaml
+  grafical render orders.grafical
 `,
   },
 
@@ -247,7 +247,7 @@ Good to know:
     are still tried (exit 1).
 
 Example:
-  grafical try shop.grafical.yaml move.yaml
+  grafical try shop.grafical move.yaml
   ok changed=storefront written=no
   before nodes=9 lines=10 crossings=1 bends=12 length=3140 ...
   after nodes=9 lines=10 crossings=1 bends=8 length=2380 ...
@@ -326,7 +326,7 @@ Limits:
 See also: node merge, node kind, node describe, edge add
 
 Example:
-  grafical node add shop.grafical.yaml orders-db --layer row-store --last \\
+  grafical node add shop.grafical orders-db --layer row-store --last \\
     --label "Orders DB" --kind store --sublabel Postgres --accent
 `,
   },
@@ -383,8 +383,8 @@ Notes:
     a larger size, or put the mark in the slot on the other side.
 
 Example:
-  grafical node icon d.grafical.yaml billing --slot top-left --icon "⚠️"
-  grafical node icon d.grafical.yaml billing --slot top-right --icon P0 --bg red
+  grafical node icon d.grafical billing --slot top-left --icon "⚠️"
+  grafical node icon d.grafical billing --slot top-right --icon P0 --bg red
 `,
   },
   "node align": {
@@ -455,8 +455,8 @@ Limits:
   --n is a whole number from 1 to ${STEP_NUMBER_MAX}.
 
 Example:
-  grafical edge step shop.grafical.yaml "checkout->events" --n 2
-  grafical edge step shop.grafical.yaml "checkout->events"
+  grafical edge step shop.grafical "checkout->events" --n 2
+  grafical edge step shop.grafical "checkout->events"
 `,
   },
 
@@ -481,8 +481,8 @@ Limits:
 See also: group join, group leave, group title, lane add
 
 Example:
-  grafical group add cloud.grafical.yaml vpc --label "Main network" --in region
-  grafical group join cloud.grafical.yaml vpc web api
+  grafical group add cloud.grafical vpc --label "Main network" --in region
+  grafical group join cloud.grafical vpc web api
 `,
   },
   "group title": {
@@ -494,9 +494,9 @@ line comes near. Either way the label takes its own room, and no box or line
 moves for it.`,
     after: `
 Example:
-  grafical group title booking.grafical.yaml app 0 --side bottom
-  grafical group title booking.grafical.yaml app 0.5 --side left --place outside
-  grafical group title booking.grafical.yaml app
+  grafical group title booking.grafical app 0 --side bottom
+  grafical group title booking.grafical app 0.5 --side left --place outside
+  grafical group title booking.grafical app
 `,
   },
   "group copy": {
@@ -520,7 +520,7 @@ Good to know:
 See also: group order, edge retarget, diff
 
 Example:
-  grafical group copy ha.grafical.yaml zone-a zone-b --label "Zone B" \\
+  grafical group copy ha.grafical zone-a zone-b --label "Zone B" \\
     --suffix -b --after zone-a --outside
 `,
   },
@@ -552,7 +552,7 @@ Limits:
   - A row lane holds neighbouring rows only. An edge never joins two lanes.
 
 Example:
-  grafical lane add laptop.grafical.yaml it --label IT --members order,setup
+  grafical lane add laptop.grafical it --label IT --members order,setup
 `,
   },
 
@@ -575,7 +575,7 @@ Good to know:
   - A diagram has columns or lanes that run as columns, not both.
 
 Example:
-  grafical column add shop.grafical.yaml requests --nodes web,api,cache
+  grafical column add shop.grafical requests --nodes web,api,cache
 `,
   },
 
@@ -608,7 +608,7 @@ Good to know:
     an empty side goes too.
 
 Example:
-  grafical wall add shop.grafical.yaml net --between web,mobile --and orders,users --allow gateway --label "private network"
+  grafical wall add shop.grafical net --between web,mobile --and orders,users --allow gateway --label "private network"
 `,
   },
   "note add": {
@@ -626,8 +626,8 @@ Good to know:
   - show --drawn says how each note is drawn.
 
 Example:
-  grafical note add shop.grafical.yaml --on retry --text "retries 5 times, then the DLQ"
-  grafical note add shop.grafical.yaml --on retry --text "replayed by hand" --footnote
+  grafical note add shop.grafical --on retry --text "retries 5 times, then the DLQ"
+  grafical note add shop.grafical --on retry --text "replayed by hand" --footnote
 `,
   },
   "note remove": { about: "Remove the note of a node, a group or a line." },

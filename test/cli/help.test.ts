@@ -272,3 +272,35 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
     expect(json.bent).toBeUndefined();
   });
 });
+
+describe("what the help shows is what a caller types", () => {
+  const pages = [
+    "node --add",
+    "group --label-at",
+    "label --align",
+    "gap --between",
+    "note --align",
+  ];
+
+  it("gives every verb a usage line with its file first", () => {
+    for (const page of pages) {
+      const [noun, verb] = page.split(" ");
+      const out = run(noun as string, verb as string, "--help").out;
+      expect(out, page).toContain(`Usage: grafical -f <file> ${page}`);
+    }
+  });
+
+  it("writes every example with its file first", () => {
+    for (const page of [...pages, "new", "apply", "try"]) {
+      const out = run(...(page.split(" ") as [string]), "--help").out;
+      expect(out, page).not.toMatch(/^\s+grafical \S+\.grafical/m);
+      expect(out, page).not.toMatch(/^\s+grafical [a-z]+ --\S+ \S+\.grafical/m);
+      expect(out, page).not.toMatch(/\.grafical\.yaml/);
+    }
+  });
+
+  it("names the verb a caller meant in the old form", () => {
+    const r = spawnSync("node", [MAIN, "node", "add", "--help"], { cwd: dir, encoding: "utf8" });
+    expect(r.stdout + r.stderr).toContain("likely: node --add");
+  });
+});

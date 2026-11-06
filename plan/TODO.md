@@ -30,6 +30,20 @@
 - next: the owner designs the legend in a talk of its own
 - related: [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
+### [P2][DISCUSSION] What the first report run asks of the tool
+
+- description:
+  - A Haiku session on the catalog-sync brief spent its fixes on the order of boxes in a row, and it has no way to state a row's whole order at once.
+  - It compared the `counts` lines of two writes by hand to see whether crossings fell.
+  - It read `unquoted-text` as naming the field and not the fix, while a refusal never writes the fix.
+  - `render` writes the SVG beside the PNG though it asked for neither by name.
+  - The session took 782 s on a render of 0.24 s, and where that time went is not known.
+  - Its picture has 17 crossings, and it did not use `gap`, `label` or a stated side.
+- created: 2026-11-06
+- status: HALT
+- next: go through each with the owner
+- related: [The benchmark harness](../specs/benchmark.md)
+
 ### [P2][DISCUSSION] A line that is a curve end to end
 
 - description:
