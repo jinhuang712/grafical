@@ -841,6 +841,8 @@ function noteStep(s: State, op: Extract<Op, { op: `note.${string}` }>, i: number
     }
     const x: Note = { on: op.on, text: op.text };
     if (op.footnote === true) x.footnote = true;
+    const stated = notes[at]?.labelAlign;
+    if (stated !== undefined && op.footnote !== true) x.labelAlign = stated;
     if (at >= 0) notes[at] = x;
     else notes.push(x);
     d.notes = notes;
@@ -857,9 +859,26 @@ function noteStep(s: State, op: Extract<Op, { op: `note.${string}` }>, i: number
         },
       ];
     }
-    notes.splice(at, 1);
-    if (notes.length > 0) d.notes = notes;
-    else delete d.notes;
+    const x = notes[at] as Note;
+    if (op.op === "note.align") {
+      if (x.footnote === true) {
+        return [
+          {
+            code: "bad-value",
+            index: i,
+            field: "on",
+            found: op.on,
+            facts: { allowed: ["a note drawn as a card"] },
+          },
+        ];
+      }
+      if (op.align === "left") delete x.labelAlign;
+      else x.labelAlign = op.align;
+    } else {
+      notes.splice(at, 1);
+      if (notes.length > 0) d.notes = notes;
+      else delete d.notes;
+    }
   }
   touch(s, op.on);
   return [];
@@ -2218,6 +2237,7 @@ function step(s: State, op: Op, i: number): OpError[] {
       return wallStep(s, op, i);
     case "note.add":
     case "note.remove":
+    case "note.align":
       return noteStep(s, op, i);
     case "column.add":
     case "column.join":

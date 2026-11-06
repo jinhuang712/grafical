@@ -164,6 +164,7 @@ export function writeDiagram(d: Diagram): string {
       on: x.on,
       text: x.text,
       ...(x.footnote === true ? { footnote: true } : {}),
+      ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
     }));
   }
   out.edges = d.edges.map(edgeOut);

@@ -222,6 +222,7 @@ export function writeGrafical(d: Diagram): string {
       block("note", `note-${i + 1}`, [
         ["on", ref(n.on)],
         ["text", quote(n.text)],
+        ["align", n.labelAlign],
         ["footnote", flag(n.footnote)],
       ]),
     );
@@ -519,7 +520,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   });
   out.notes = of("note").map((b) => {
     const o: Record<string, unknown> = {};
-    take(b, { on: "on", text: "text", footnote: "footnote" }, o);
+    take(b, { on: "on", text: "text", footnote: "footnote", align: "labelAlign" }, o);
     return o;
   });
   out.edges = of("edge").map((b) => {

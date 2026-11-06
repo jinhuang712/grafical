@@ -251,6 +251,8 @@ export interface Note {
    * beside its target, refused where there is no room for one (specs/decisions, "A note is what the agent states").
    */
   footnote?: true;
+  /** How a card's lines line up. Absent: left. */
+  labelAlign?: LabelAlign;
 }
 
 export interface Edge {

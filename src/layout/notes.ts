@@ -18,7 +18,7 @@ import type {
 import type { Line, Measurer } from "../text/types.ts";
 import { NOTE } from "../theme/geometry.ts";
 import type { TypeRamp } from "../theme/themes.ts";
-import { lineHeight, placeLines } from "./text.ts";
+import { alignedIn, lineHeight, placeLines } from "./text.ts";
 
 /** What a card keeps clear of, and where it and the footnotes may go. */
 export interface NoteRoom {
@@ -281,20 +281,14 @@ export function placeNotes(
           link: [at, at],
         };
       taken.push(spot.card);
+      const room = spot.card.w - 2 * NOTE.padX;
+      const inCard = alignedIn(x.labelAlign ?? "left", spot.card.x + NOTE.padX, room);
       out.set(x.on, {
         on: x.on,
         as: "callout",
         card: spot.card,
         link: { a: spot.link[0], b: spot.link[1] },
-        text: placeLines(
-          "note",
-          lines,
-          spot.card.x + NOTE.padX,
-          spot.card.y + NOTE.padY,
-          "start",
-          m,
-          T,
-        ),
+        text: placeLines("note", lines, inCard.x, spot.card.y + NOTE.padY, inCard.align, m, T),
         ...(free === undefined ? { blocked: true as const } : {}),
       });
       continue;

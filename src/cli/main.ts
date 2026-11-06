@@ -541,7 +541,9 @@ export function build(): Command {
   ).action(async (file: string, id: string, align: string) => {
     await write(file, { op: "label.align", id, align }, {});
   });
-  const note = program.command("note").description("notes on a box, line, group: add, remove");
+  const note = program
+    .command("note")
+    .description("notes on a box, line, group: add, align, remove");
   json(
     note
       .command("add")
@@ -552,6 +554,16 @@ export function build(): Command {
       .option("--footnote", "a number on it and the text at the bottom, rather than a card"),
   ).action(async (file: string, opts: Opts) => {
     await write(file, { op: "note.add", ...pick(opts, ["on", "text", "footnote"]) }, opts);
+  });
+  json(
+    note
+      .command("align")
+      .description("line up the text of a note drawn as a card")
+      .argument("<file>")
+      .argument("<on>", "the node, group or line it is about")
+      .argument("<align>", "left, center or right"),
+  ).action(async (file: string, on: string, align: string) => {
+    await write(file, { op: "note.align", on, align }, {});
   });
   json(
     note

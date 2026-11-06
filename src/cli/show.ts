@@ -114,7 +114,7 @@ export function showDiagram(d: Diagram): string {
   }
   for (const x of d.notes ?? []) {
     lines.push(
-      `note on=${x.on}${x.footnote === true ? " footnote" : ""} ${JSON.stringify(x.text)}`,
+      `note on=${x.on}${x.footnote === true ? " footnote" : ""}${x.labelAlign === undefined ? "" : ` [text ${x.labelAlign}]`} ${JSON.stringify(x.text)}`,
     );
   }
   lines.push(d.edges.length > 0 ? "edges:" : "edges: (none)");

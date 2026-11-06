@@ -109,6 +109,31 @@ describe("label.align", () => {
     expect(go(d, { op: "edge.relabel", id: "x->y" }).edges[0]?.labelAlign).toBeUndefined();
   });
 
+  it("lines up a card's lines, and refuses a footnote", () => {
+    const d = build([{ op: "note.add", on: "x", text: "one\na longer line" } as Op]);
+    const left = layout(d, m).notes?.[0];
+    const right = layout(go(d, { op: "note.align", on: "x", align: "right" }), m).notes?.[0];
+    expect(new Set(lefts(left?.text?.runs)).size).toBe(1);
+    expect(new Set(lefts(right?.text?.runs)).size).toBe(2);
+    // A card's width is rounded up, so the right edge lands under 1 px past the left form's.
+    expect(right?.card).toEqual(left?.card);
+    expect(right?.text?.bbox.w).toBeCloseTo(left?.text?.bbox.w ?? 0);
+    const foot = build([{ op: "note.add", on: "x", text: "n", footnote: true } as Op]);
+    const r = applyOps(foot, [{ op: "note.align", on: "x", align: "right" } as Op]);
+    expect("errors" in r ? r.errors[0]?.code : "written").toBe("bad-value");
+  });
+
+  it("keeps a note's alignment when its text changes", () => {
+    const d = go(
+      build([{ op: "note.add", on: "x", text: "n" } as Op]),
+      { op: "note.align", on: "x", align: "center" },
+      { op: "note.add", on: "x", text: "m" },
+    );
+    expect(d.notes?.[0]).toEqual({ on: "x", text: "m", labelAlign: "center" });
+    const back = readDiagram(writeGrafical(d));
+    expect(Array.isArray(back) ? undefined : back.notes?.[0]?.labelAlign).toBe("center");
+  });
+
   it("survives a .grafical file", () => {
     const d = go(
       build([edge as Op]),

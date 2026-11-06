@@ -99,7 +99,7 @@ Wherever the title sits, an edge within 6 px of it is the agent's defect `title-
 
 A note is a card beside its target, joined by a dotted line. With `footnote`, it is a number on the target and its text in a list at the bottom. Notes are seated last, after the badges settle, so they keep clear of everything else.
 
-A card wraps at 160 px and tries its places in a fixed order, 16 px from its target and then 32 px:
+A card's lines start left unless the agent aligns them, and a card wraps at 160 px and tries its places in a fixed order, 16 px from its target and then 32 px:
 
 - **Beside a node or a group:** first on the right and then on the left, each centred or top-aligned or bottom-aligned.
   - Then below and then above, each centred or left-aligned or right-aligned.

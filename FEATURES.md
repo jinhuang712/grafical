@@ -62,7 +62,7 @@ Features
 │   ├── ✅ F4.3: Themes and stylesheets — the whole look from one name
 │   ├── ✅ F4.4: The stylesheet file — colors, widths and type sizes
 │   ├── ⬜ F4.5: Brand fonts — a team's own typeface
-│   ├── 🚧 F4.6: Label text — breaks and alignment (a note always left, and titles of regions one line)
+│   ├── 🚧 F4.6: Label text — breaks and alignment (titles of regions one line)
 │   ├── ⬜ F4.7: Region labels — where any region's label sits
 │   └── ⬜ F4.8: Label looks — a label's background, border and color
 ├── ✅ F5: Checking — how an agent knows it came out right

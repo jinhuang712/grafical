@@ -688,6 +688,14 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (x.footnote === true) op.footnote = true;
     ops.push(op);
   }
+  for (const x of a.notes ?? []) {
+    const was = keptNotes.has(x.on)
+      ? (b.notes ?? []).find((y) => y.on === x.on)?.labelAlign
+      : undefined;
+    if (was !== x.labelAlign) {
+      ops.push({ op: "note.align", on: x.on, align: x.labelAlign ?? "left" });
+    }
+  }
   // 10. Who marks which style, then the styles that went.
   const same = (x?: string[], y?: string[]) => JSON.stringify(x ?? []) === JSON.stringify(y ?? []);
   const marks = <T extends { id: string; style?: string[] }>(

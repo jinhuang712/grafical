@@ -130,6 +130,7 @@ An agent may set where a text breaks and how its lines line up. A text the agent
 
 ```sh
 grafical -f <file> label --align <id> left|center|right
+grafical -f <file> note --align <on> left|center|right
 ```
 
 - The label of a node, an edge or a lane may hold a line break, and so may a sublabel, a note and a subtitle.
@@ -138,7 +139,8 @@ grafical -f <file> label --align <id> left|center|right
 - `label --align` takes the ID of a node, an edge, a wall or a lane.
 - In a node, left and right mean the sides of the room for its text, and its sublabel follows its label.
 - On an edge, it lines up the lines of a label of two or more lines.
-- A note has no ID and stays left aligned.
+- `note --align` names a note by what it is about, since a note has no ID of its own.
+- A note starts left aligned, and a footnote cannot be aligned.
 - A label that no longer fits is refused as before.
 
 - **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)

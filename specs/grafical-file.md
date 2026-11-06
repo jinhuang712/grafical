@@ -290,6 +290,7 @@ A label is a text on an edge or a region. A node's name is its `text`, since a n
 | `on` | a node, an edge or a group |
 | `text` | text |
 | `footnote` | `true` |
+| `align` | `left`, `center` or `right` |
 
 ### `<legend>`
 

@@ -296,7 +296,14 @@ export const diagramSchema = z.strictObject({
   columns: z.array(z.strictObject({ id: nodeId })).default([]),
   walls: z.array(wallSchema).default([]),
   notes: z
-    .array(z.strictObject({ on: z.string().min(1), text, footnote: z.boolean().optional() }))
+    .array(
+      z.strictObject({
+        on: z.string().min(1),
+        text,
+        footnote: z.boolean().optional(),
+        labelAlign: z.enum(LABEL_ALIGNS).optional(),
+      }),
+    )
     .default([]),
   edges: z.array(edgeSchema).default([]),
 });
@@ -426,6 +433,7 @@ function build(p: Parsed): Diagram {
       on: x.on,
       text: x.text,
       ...(x.footnote === true ? { footnote: true as const } : {}),
+      ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
     }));
   }
   return d;

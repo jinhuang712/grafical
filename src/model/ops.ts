@@ -524,6 +524,12 @@ export interface NoteAddOp {
   /** true: a footnote rather than a card. */
   footnote?: boolean;
 }
+/** How a card's lines line up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
+export interface NoteAlignOp {
+  op: "note.align";
+  on: string;
+  align: LabelAlign;
+}
 export interface NoteRemoveOp {
   op: "note.remove";
   on: string;
@@ -561,6 +567,7 @@ export type Op =
   | WallRemoveOp
   | WallRelabelOp
   | NoteAddOp
+  | NoteAlignOp
   | NoteRemoveOp
   | LayerAddOp
   | LayerRenameOp
@@ -990,6 +997,11 @@ export const noteAddSchema = z.strictObject({
   footnote: z.boolean().optional(),
 });
 export const noteRemoveSchema = z.strictObject({ op: z.literal("note.remove"), on: edgeId });
+export const noteAlignSchema = z.strictObject({
+  op: z.literal("note.align"),
+  on: edgeId,
+  align: z.enum(LABEL_ALIGNS),
+});
 
 /** Parses one operation. A batch item is exactly this. */
 export const opSchema = z.discriminatedUnion("op", [
@@ -1033,6 +1045,7 @@ export const opSchema = z.discriminatedUnion("op", [
   wallRelabelSchema,
   noteAddSchema,
   noteRemoveSchema,
+  noteAlignSchema,
   layerRenameSchema,
   layerMoveSchema,
   layerRemoveSchema,
@@ -1112,6 +1125,7 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "wall.relabel": wallRelabelSchema,
   "note.add": noteAddSchema,
   "note.remove": noteRemoveSchema,
+  "note.align": noteAlignSchema,
   "layer.rename": layerRenameSchema,
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,
