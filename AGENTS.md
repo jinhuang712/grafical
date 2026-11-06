@@ -105,8 +105,9 @@ CI runs `pnpm fuzz` after `pnpm test` so that the other tests report first.
 
 The parts of `pnpm bench`:
 
-- The parts that run agents cost money: `baseline` · `chain` · `smoke` · `stage1` · `judge`.
-  - `smoke` and `stage1` need `--approved`.
+- The parts that run agents cost money: `baseline` · `chain` · `report` · `smoke` · `stage1` · `judge`.
+  - `report`, `smoke` and `stage1` need `--approved`.
+- `report` has one clean session draw one picture and write its report beside it.
 - `gallery` builds the owner's blind rating page of a round.
 - `geometry` checks every picture of a round for mechanical defects.
 - `speed` times one operation and one command.
@@ -128,6 +129,8 @@ A command added to `package.json` gets a row here in the same change.
    - A passing test does not show what the picture looks like.
 3. Run the checks: `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm fuzz`.
 4. Read your own diff before reporting.
+
+A change an agent meets is tried with `pnpm bench report`, since a picture drawn by hand in the working session shows no cost and no discomfort. Its report goes to the owner with its cost and its picture.
 
 When a picture looks bad, first draw the better picture with grafical's own commands as an agent would. Use rows, order, groups, alignment and what to cut. Only what the commands cannot reach is engine work. On 2026-10-16 the owner's composition took a dispatch draft from 21 crossings to 1, where a day of router fixes had moved the saved drafts by 3.
 

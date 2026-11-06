@@ -3,6 +3,13 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSy
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import {
+  formatReport,
+  formatReportPlan,
+  planReport,
+  reportRound,
+  reportTask,
+} from "../../bench/report.ts";
 import type { StepRecord } from "../../bench/run.ts";
 import {
   ALLOWED_TOOLS,
@@ -384,5 +391,34 @@ describe("summary", () => {
     // New records already carry sessionCostUsd and are left alone.
     const fresh = { ...old("e1", 0.01, 1), sessionCostUsd: 0.5 };
     expect(normalizeChain([fresh])[0]?.costUsd).toBe(0.01);
+  });
+});
+
+describe("a report run", () => {
+  it("is one draft and one report, and takes the change script when asked", () => {
+    const task = reportTask({ brief: "scale-10" });
+    expect(task).toEqual({ id: "scale-10", brief: "scale-10.md" });
+    expect(planReport({ round: "r", model: "haiku", task, withChanges: false }).calls).toBe(2);
+    const all = planReport({ round: "r", model: "haiku", task, withChanges: true });
+    expect(all.calls).toBe(all.changes.length + 2);
+    expect(formatReportPlan(all)).toContain("calls=");
+  });
+
+  it("names a round from the clock, and never one it could reuse", () => {
+    expect(reportRound(new Date("2026-11-06T14:05:09Z"))).toBe("report-20261106-140509");
+  });
+
+  it("puts the cost above the agent's own report", () => {
+    const page = formatReport({
+      name: "r: t",
+      steps: [],
+      reflectionUsd: 0.25,
+      reflection: "## Where",
+    });
+    expect(page).toContain("$0.2500");
+    expect(page.indexOf("Cost")).toBeLessThan(page.indexOf("## Where"));
+    expect(formatReport({ name: "r", steps: [], reflectionUsd: null, reflection: "" })).toContain(
+      "(no report)",
+    );
   });
 });

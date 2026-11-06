@@ -3,6 +3,8 @@
 //   baseline --model haiku [--round <name>]   the empty task, once per model (about $0.005 on Haiku)
 //   smoke --dry-run [--round <name>]          print every command the smoke test would run
 //   smoke --approved [--round <name>]         run it. Only after the owner approved the cost.
+//   report [--brief <name> | --intent <id> | --request <text>] [--model haiku] [--changes] --dry-run | --approved
+//                                             one clean session draws one picture and writes report.md: how test pictures are made
 //   chain --arm <arm> [--model haiku] [--run 1] [--round <name>]
 //                                             one draft and its change requests, to measure a
 //                                             cell's cost before the owner approves a round.
@@ -27,6 +29,7 @@ import { buildGallery, SITE } from "./gallery.ts";
 import { checkRound } from "./geometry.ts";
 import { runJudging } from "./judge.ts";
 import { formatLines, measureLines } from "./lines.ts";
+import { formatReportPlan, planReport, reportRound, reportTask, runReport } from "./report.ts";
 import {
   chainName,
   collectReflections,
@@ -93,6 +96,26 @@ function main(argv: string[]): void {
             (missing.length > 0 ? `; no new diagram.png at ${missing.join(", ")}` : ""),
         );
       }
+      return;
+    }
+    case "report": {
+      const plan = planReport({
+        round: flag(args, "round") ?? reportRound(new Date()),
+        model: flag(args, "model") ?? "haiku",
+        task: reportTask({
+          brief: flag(args, "brief"),
+          intent: flag(args, "intent"),
+          request: flag(args, "request"),
+        }),
+        withChanges: args.includes("--changes"),
+      });
+      console.log(formatReportPlan(plan));
+      if (!args.includes("--approved")) {
+        console.log("nothing ran: --approved runs it");
+        return;
+      }
+      mkdirSync(join(RUNS, plan.round), { recursive: true });
+      console.log(`report=${runReport(plan)}`);
       return;
     }
     case "chain": {

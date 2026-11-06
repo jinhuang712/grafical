@@ -67,6 +67,10 @@ When a step resumes a session, `total_cost_usd` and `duration_api_ms` are runnin
 
 Since 2026-10-17 the harness resumes each session once more when its last step is done. This run has no tools, so nothing can change. It asks how the agent drew the diagram and what else it considered, each change it made after its first full draft and why, where the tool got in the way, and what it would draw with no limits (`bench/prompts/reflect.md`). The report goes to `<chain>/reflection/reflection.md`, beside `steps/`, so no metric counts it. The drawing steps stay word for word as before, so rounds still compare.
 
+## A report run
+
+A report run is how a test picture gets made. One clean session draws one picture, or takes the change script too, and the reflection above ends it. `pnpm bench report` writes `report.md` beside the picture, with what the session cost and did and then the agent's own report. It prints the plan and runs nothing unless it gets `--approved`.
+
 ## The owner's ratings
 
 `pnpm bench gallery` puts each round's pictures on one page under blind letters, and the owner rates them and writes notes that are read back. Since 2026-11-05 the rating is out of 25 again, because the goals rest on it. No model judges a picture: Opus judges were retired on 2026-10-18, and `pnpm bench judge` remains in the code unused.

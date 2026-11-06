@@ -70,7 +70,7 @@ export const ALLOWED_TOOLS: Record<Arm, string[]> = {
 
 /** The file each arm keeps its diagram in, whose change tells whether a change step edited it. */
 export const SOURCE_FILE: Record<Arm, string | null> = {
-  grafical: "diagram.grafical.yaml",
+  grafical: "diagram.grafical",
   raw: null,
   mermaid: "diagram.mmd",
 };

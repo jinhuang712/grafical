@@ -10,7 +10,7 @@ Each change you made after your first full draft, in order: what you saw (the pi
 
 ## Where {{TOOL}} got in the way
 
-Commands or options you looked for and did not find, refusals or records you did not understand, help that misled you, and anything you drew differently from how you wanted because {{TOOL}} did not let you.
+Commands or options you looked for and did not find, refusals or records you did not understand, help that misled you, anything that felt uncomfortable or badly designed, and anything you drew differently from how you wanted because {{TOOL}} did not let you.
 
 ## What I would draw with no limits
 
