@@ -61,7 +61,6 @@
 - description:
   - A diagram's optional type and a node's `type` share a word, and the first needs a new name.
   - A colon after an attribute's name may stay or go.
-  - A follower of a follower and a cycle of followers need a rule.
   - The attributes of `<style>` should grow to every look grafical can draw.
 - created: 2026-11-06
 - status: HALT

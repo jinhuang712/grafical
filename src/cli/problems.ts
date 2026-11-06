@@ -82,6 +82,7 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "group-across-lanes": "A group's borders lie in more than one lane, and a group lies in one.",
   "group-conflict":
     "A group's border covers every layer from its top member to its bottom one, and a node or group there would sit on both sides of it.",
+  "like-cycle": "Objects would follow each other's looks in a circle.",
   "group-cycle": "Groups would sit inside each other in a circle.",
   "group-intruder": "A node that is not a member lies inside a group's border.",
   "group-split":
@@ -241,6 +242,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "group-across-lanes": ["lane join", "lane leave"],
   "group-conflict": ["group join", "group leave", "node move"],
   "group-cycle": ["group leave"],
+  "like-cycle": ["group like", "lane like", "node like", "edge like"],
   "group-intruder": [],
   "group-split": ["group join", "node move"],
   "group-too-deep": ["group leave", "group remove"],

@@ -502,7 +502,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 **Tasks:**
 
 - ✅ Design the model and its form: The owner designed them on 2026-11-06.
-- 🟨 Build the model: grafical reads and writes the form, styles and types; `like` is not built.
+- ✅ Build the model: grafical reads and writes the form, styles, types and `like`.
 - 🟨 Move the saved files: Fixtures moved to it, and saved drafts stay in YAML, which still loads.
 - ⬜ Tune the form: Once it is built, the form is tuned against what its diffs show.
 

@@ -186,6 +186,7 @@ export const ERROR_CODES = [
   "lane-to-lane",
   "layer-not-empty",
   "layer-too-small",
+  "like-cycle",
   "mark-file-changed",
   "mark-file-not-found",
   "mark-file-outside",

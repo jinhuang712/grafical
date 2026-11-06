@@ -270,6 +270,12 @@ export interface MarkStyleOp {
   id: string;
   styles?: string[];
 }
+/** Follow another object's look (specs/decisions, "`like` follows an object's look and nothing else"). Absent `like`: let go. */
+export interface FollowOp {
+  op: "node.like" | "edge.like" | "group.like" | "lane.like";
+  id: string;
+  like?: string;
+}
 export interface LayerLookOp {
   op: "layer.look";
   id: string;
@@ -592,6 +598,7 @@ export type Op =
   | StyleAddOp
   | StyleRemoveOp
   | MarkStyleOp
+  | FollowOp
   | LayerSplitOp
   | NodeAddOp
   | NodeRenameOp
@@ -813,6 +820,16 @@ export const nodeStyleSchema = styleMark("node.style");
 export const edgeStyleSchema = styleMark("edge.style");
 export const groupStyleSchema = styleMark("group.style");
 export const laneStyleSchema = styleMark("lane.style");
+const follow = <N extends string>(name: N) =>
+  z.strictObject({
+    op: z.literal(name),
+    id: z.string().min(1),
+    like: z.string().min(1).optional(),
+  });
+export const nodeLikeSchema = follow("node.like");
+export const edgeLikeSchema = follow("edge.like");
+export const groupLikeSchema = follow("group.like");
+export const laneLikeSchema = follow("lane.like");
 export const layerLookSchema = z.strictObject({
   op: z.literal("layer.look"),
   id: nodeId,
@@ -1084,6 +1101,10 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeStyleSchema,
   groupStyleSchema,
   laneStyleSchema,
+  nodeLikeSchema,
+  edgeLikeSchema,
+  groupLikeSchema,
+  laneLikeSchema,
   layerSplitSchema,
   nodeDescribeSchema,
   nodeEmphasizeSchema,
@@ -1166,6 +1187,10 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.style": edgeStyleSchema,
   "group.style": groupStyleSchema,
   "lane.style": laneStyleSchema,
+  "node.like": nodeLikeSchema,
+  "edge.like": edgeLikeSchema,
+  "group.like": groupLikeSchema,
+  "lane.like": laneLikeSchema,
   "layer.split": layerSplitSchema,
   "node.sublabel": nodeDescribeSchema,
   "node.emphasis": nodeEmphasizeSchema,

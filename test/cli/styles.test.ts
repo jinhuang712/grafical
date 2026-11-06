@@ -22,6 +22,22 @@ const run = (...args: string[]) => {
   return { code: r.status, out: r.stdout + r.stderr };
 };
 
+describe("like", () => {
+  it("follows an edge by its own id, in a .grafical file", () => {
+    run("new", "--title", "T");
+    run("layer", "--add", "l", "--label", "L");
+    run("node", "--add", "x", "--layer", "l", "--label", "X");
+    run("node", "--add", "y", "--layer", "l", "--last", "--label", "Y");
+    run("edge", "--add", "x", "y");
+    run("edge", "--add", "y", "x");
+    expect(run("edge", "--like", "y->x", "x->y").code).toBe(0);
+    expect(readFileSync(join(dir, "a.grafical"), "utf8")).toContain("like: @x->y");
+    expect(run("show", "y->x").code).toBe(0);
+    expect(run("edge", "--like", "x->y", "y->x").out).toContain("like-cycle");
+    rmSync(join(dir, "a.grafical"));
+  });
+});
+
 describe("styles", () => {
   it("paint what marks them, and a later one wins", () => {
     expect(run("new", "--title", "T").code).toBe(0);

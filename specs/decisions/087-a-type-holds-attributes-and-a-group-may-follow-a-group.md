@@ -2,6 +2,8 @@
 
 Decided: 2026-11-06
 
+Replaced in part by specs/decisions, "`like` follows an object's look and nothing else": a follower holds no members, and `group copy` stays.
+
 ## The problem
 
 A class that held nodes and edges drew two zones from one template, and the owner saw that this is only a group. A second idea of structure was not needed.

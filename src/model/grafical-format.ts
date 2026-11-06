@@ -104,10 +104,17 @@ export function writeGrafical(d: Diagram): string {
     blocks.push(
       block("group", g.id, [
         ["in", opt(g.in)],
+        ["like", opt(g.like)],
         ["style", marks(g.style)],
       ]),
     );
-  for (const l of d.lanes ?? []) blocks.push(block("lane", l.id, [["style", marks(l.style)]]));
+  for (const l of d.lanes ?? [])
+    blocks.push(
+      block("lane", l.id, [
+        ["like", opt(l.like)],
+        ["style", marks(l.style)],
+      ]),
+    );
   for (const c of d.columns ?? []) blocks.push(block("column", c.id, []));
   for (const w of d.walls ?? []) {
     blocks.push(
@@ -166,6 +173,7 @@ export function writeGrafical(d: Diagram): string {
         ...STEP_KEYS.map((k): Attr => [k, num(n[k])]),
         ["size", n.size],
         ["emphasis", flag(n.emphasis)],
+        ["like", opt(n.like)],
         ["style", marks(n.style)],
       ]),
     );
@@ -182,6 +190,7 @@ export function writeGrafical(d: Diagram): string {
         ["both", flag(e.both)],
         ["pass", flag(e.pass)],
         ["number", num(e.step)],
+        ["like", opt(e.like)],
         ["style", marks(e.style)],
       ]),
     );
@@ -478,6 +487,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
         from: "from",
         size: "size",
         emphasis: "emphasis",
+        like: "like",
         ...Object.fromEntries(STEP_KEYS.map((k) => [k, k])),
       },
       o,
@@ -529,7 +539,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   if (placed.length > 0) out.nodes = placed.map(node);
   out.groups = of("group").map((b) => {
     const o: Record<string, unknown> = { id: b.id };
-    take(b, { in: "in" }, o);
+    take(b, { in: "in", like: "like" }, o);
     styles(b, o);
     named(b.id as string, o);
     const title = labels.get(b.id as string)?.attrs;
@@ -544,6 +554,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   });
   out.lanes = of("lane").map((b) => {
     const o: Record<string, unknown> = { id: b.id };
+    take(b, { like: "like" }, o);
     styles(b, o);
     named(b.id as string, o);
     along(b.id as string, o);
@@ -581,6 +592,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
         both: "both",
         pass: "pass",
         number: "step",
+        like: "like",
         out: "out",
         in: "in",
       },

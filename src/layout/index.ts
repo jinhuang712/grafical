@@ -16,6 +16,8 @@ import { segmentCrossesRect, segmentsOf } from "../check/geometry.ts";
 import { orderByColumns } from "../model/columns.ts";
 import { gutterMagnified } from "../model/gaps.ts";
 import { laneRun, orderByLanes } from "../model/lanes.ts";
+import { withFollowedWeights } from "../model/like.ts";
+import { everyNode } from "../model/steps.ts";
 import {
   type Diagram,
   EDGE_KINDS,
@@ -126,11 +128,23 @@ export function validateGroups(diagram: Diagram): GroupProblem[] {
   return buildGrid(placeSteps(diagram).d).groupProblems;
 }
 
+/** What an object's look is made from. */
+interface Looking {
+  id: string;
+  like?: string;
+  style?: string[];
+  type?: string;
+}
+
 /** What an object's styles set, a later one over an earlier one (specs/decisions, "A style may be as rich as it likes"). */
-function lookOf(d: Diagram, names: readonly string[] | undefined, type?: string): Look | undefined {
+function lookOf(
+  d: Diagram,
+  o: Looking | undefined,
+  among: readonly Looking[] = [],
+): Look | undefined {
   const look: Look = {};
   const chain: string[] = [];
-  for (let at = type; at !== undefined; at = d.types?.find((x) => x.id === at)?.base)
+  for (let at = o?.type; at !== undefined; at = d.types?.find((x) => x.id === at)?.base)
     chain.unshift(at);
   for (const id of chain) {
     const { fill, border, borderWidth, color } = d.types?.find((x) => x.id === id) ?? {};
@@ -141,7 +155,10 @@ function lookOf(d: Diagram, names: readonly string[] | undefined, type?: string)
       ...(color === undefined ? {} : { color }),
     });
   }
-  for (const name of names ?? []) {
+  // A followed look sits over the type and under the object's own styles (specs/decisions, "`like` follows an object's look and nothing else").
+  const followed = among.find((x) => x.id === o?.like);
+  if (followed !== undefined) Object.assign(look, lookOf(d, followed, among));
+  for (const name of o?.style ?? []) {
     const { id: _id, ...values } = d.styles?.find((x) => x.id === name) ?? { id: "" };
     Object.assign(look, values);
   }
@@ -150,10 +167,10 @@ function lookOf(d: Diagram, names: readonly string[] | undefined, type?: string)
 
 function lookPart(
   d: Diagram,
-  names: readonly string[] | undefined,
-  type?: string,
+  o: Looking | undefined,
+  among: readonly Looking[] = [],
 ): { look?: Look } {
-  const look = lookOf(d, names, type);
+  const look = lookOf(d, o, among);
   return look === undefined ? {} : { look };
 }
 
@@ -372,7 +389,8 @@ function smallMark(mk: Mark): Mark {
  * each with the agent's words or none; then each mark the diagram names, drawn like the
  * first one found: layers top to bottom, nodes in order, slots in order.
  */
-export function legendEntries(d: Diagram, P: Paint): LegendEntry[] {
+export function legendEntries(facts: Diagram, P: Paint): LegendEntry[] {
+  const d = withFollowedWeights(facts);
   const kinds = new Set(d.edges.map((e) => e.kind));
   const out: LegendEntry[] = [];
   for (const style of LINE_STYLES) {
@@ -604,7 +622,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const theme = themeOf(facts);
   const T = theme.type;
   // Nodes placed by steps sit in layers from here on (specs/decisions, "Steps from another box").
-  const sized = withSizes(placeSteps(facts).d, m);
+  const sized = withSizes(placeSteps(withFollowedWeights(facts)).d, m);
   // Column lanes keep each layer in lane order (specs/decisions, "Swimlanes run one way"); a file edited by hand may not.
   orderByLanes(sized);
   orderByColumns(sized);
@@ -613,6 +631,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const d: Diagram = { ...sized, edges: ends.edges };
   const sp = SPACING[d.density];
 
+  const followable = everyNode(d);
   const labelStyle = T["edge-label"];
   const labelMetrics = m.metrics(labelStyle);
   const labelH = labelMetrics.ascent + labelMetrics.descent;
@@ -1392,7 +1411,11 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const y0 = (layerTops[g.top] ?? 0) - heads(g) + outside(g, "top");
     const y1 = (layerTops[g.bottom] ?? 0) + layerH(g.bottom) + pads(g) - outside(g, "bottom");
     const rect: Rect = { x: centre + g.x0, y: y0, w: g.x1 - g.x0, h: y1 - y0 };
-    const groupLook = lookOf(d, d.groups?.find((x) => x.id === g.id)?.style);
+    const groupLook = lookOf(
+      d,
+      d.groups?.find((x) => x.id === g.id),
+      d.groups,
+    );
     // In its head, in its foot, a head's height outside its top or bottom side, or beside its layers.
     const mid = withText ? middleOf(g.label) : 0;
     const along = g.titleAt?.at ?? 0.5;
@@ -1478,7 +1501,11 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const lines = withText ? m.wrap(x.label, laneStyle, headW - 2 * LANE.labelInset) : [];
     sceneLanes.push({
       id: x.id,
-      ...lookPart(d, d.lanes?.find((y) => y.id === x.id)?.style),
+      ...lookPart(
+        d,
+        d.lanes?.find((y) => y.id === x.id),
+        d.lanes,
+      ),
       run: "layers",
       rect,
       head: { x: rect.x, y: y0, w: headW, h: y1 - y0 },
@@ -1499,7 +1526,11 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const laneRoom = l.x1 - l.x0 - 2 * LANE.labelInset;
     sceneLanes.push({
       id: l.id,
-      ...lookPart(d, d.lanes?.find((y) => y.id === l.id)?.style),
+      ...lookPart(
+        d,
+        d.lanes?.find((y) => y.id === l.id),
+        d.lanes,
+      ),
       run: "columns",
       rect,
       head: { x: rect.x, y: lanesTop, w: rect.w, h: headH },
@@ -1545,7 +1576,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         layer: l.id,
         kind: n.node.kind,
         emphasis: n.node.emphasis ?? false,
-        ...lookPart(d, n.node.style, n.node.type),
+        ...lookPart(d, n.node, followable),
         rect,
         ...(marks.length > 0 ? { marks } : {}),
         texts,
@@ -1684,9 +1715,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const toBox = plan?.to === undefined ? undefined : boxOf.get(plan.to.id);
     const fromBox = plan?.from === undefined ? undefined : boxOf.get(plan.from.id);
     const edge: SceneEdge = { id: e.id, from: real.from, to: real.to, kind: e.kind, points };
-    const edgeLook = lookOf(d, real.style, real.type);
+    const edgeLook = lookOf(d, real, facts.edges);
     if (edgeLook !== undefined) edge.look = edgeLook;
-    const labelLook = lookOf(d, e.labelStyle);
+    const labelLook = lookOf(
+      d,
+      e.labelStyle === undefined ? undefined : { id: e.id, style: e.labelStyle },
+    );
     if (labelLook !== undefined) edge.labelLook = labelLook;
     if (e.both === true) edge.both = true;
     const routed = planOf.get(e.id);

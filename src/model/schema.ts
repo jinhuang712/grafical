@@ -11,6 +11,7 @@ import { regionKind } from "./gaps.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
 import { ID_EDGE, ID_NODE, ID_SUFFIX, issuesToErrors, STEP_NUMBER, WEIGHT } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
+import { likeProblems } from "./like.ts";
 import { noteTargets } from "./notes.ts";
 import { checkSteps, everyNode, MAX_STEPS, STEP_KEYS } from "./steps.ts";
 import { closest } from "./suggest.ts";
@@ -165,6 +166,7 @@ const nodeSchema = z.strictObject({
   lane: nodeId.optional(),
   column: nodeId.optional(),
   type: nodeId.optional(),
+  like: nodeId.optional(),
   style: styleNames,
   marks: iconsSchema.optional(),
 });
@@ -203,6 +205,7 @@ const groupSchema = z.strictObject({
   sublabel: text.optional(),
   in: nodeId.optional(),
   titleAt: z.preprocess(savedTitle, groupTitle.optional()),
+  like: nodeId.optional(),
   style: styleNames,
 });
 
@@ -211,6 +214,7 @@ const laneSchema = z.strictObject({
   label: text,
   labelAt: z.number().min(0).max(1).optional(),
   labelAlign: z.enum(LABEL_ALIGNS).optional(),
+  like: nodeId.optional(),
   style: styleNames,
 });
 
@@ -287,6 +291,7 @@ const edgeSchema = z.strictObject({
   weight: weightValue.optional(),
   step: stepNumber.optional(),
   type: nodeId.optional(),
+  like: edgeId.optional(),
   style: styleNames,
 });
 
@@ -362,6 +367,7 @@ function buildNode(n: Parsed["layers"][number]["nodes"][number] | Parsed["nodes"
     if (Object.keys(marks).length > 0) node.marks = marks;
   }
   if (n.type !== undefined) node.type = n.type;
+  if (n.like !== undefined) node.like = n.like;
   if (n.style !== undefined) node.style = [...n.style];
   if ("from" in n) {
     node.from = n.from;
@@ -394,6 +400,7 @@ function build(p: Parsed): Diagram {
     else if (e.emphasis === true) edge.weight = "thick";
     if (e.step !== undefined) edge.step = e.step;
     if (e.type !== undefined) edge.type = e.type;
+    if (e.like !== undefined) edge.like = e.like;
     if (e.style !== undefined) edge.style = [...e.style];
     return edge;
   });
@@ -442,6 +449,7 @@ function build(p: Parsed): Diagram {
       if (g.sublabel !== undefined) group.sublabel = g.sublabel;
       if (g.in !== undefined) group.in = g.in;
       if (g.titleAt !== undefined) group.titleAt = g.titleAt;
+      if (g.like !== undefined) group.like = g.like;
       if (g.style !== undefined) group.style = [...g.style];
       return group;
     });
@@ -453,6 +461,7 @@ function build(p: Parsed): Diagram {
       label: x.label,
       ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
       ...(x.labelAt === undefined ? {} : { labelAt: x.labelAt }),
+      ...(x.like === undefined ? {} : { like: x.like }),
       ...(x.style === undefined ? {} : { style: [...x.style] }),
     }));
   }
@@ -539,6 +548,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   errors.push(...checkWalls(placed, index));
   errors.push(...checkNotes(d, index));
   errors.push(...checkGaps(d, index));
+  errors.push(...likeProblems(d, index));
   if (d.style !== undefined) {
     const problem = styleProblem(d.style);
     if (problem !== undefined) {

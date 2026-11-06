@@ -11,6 +11,7 @@ import { addedLayer, placeSteps } from "../layout/steps.ts";
 import { endKind, endLayers, endNodes } from "../model/ends.ts";
 import { groupChain } from "../model/groups.ts";
 import type { Diagram } from "../model/index.ts";
+import { withFollowedWeights } from "../model/like.ts";
 import { markName } from "../model/types.ts";
 import { record } from "../records.ts";
 import type { Point, Rect, Scene } from "../scene.ts";
@@ -415,7 +416,7 @@ function edgesPerMember(d: Diagram): { group: string; edges: string[] }[] {
     const inside = new Set(boxes);
     // Each node's first line by its direction, its end outside the group and its look.
     const by = new Map<string, Map<string, string>>();
-    for (const e of d.edges) {
+    for (const e of withFollowedWeights(d).edges) {
       for (const [box, end, way] of [
         [e.from, e.to, "out"],
         [e.to, e.from, "in"],

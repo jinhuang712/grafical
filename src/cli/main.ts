@@ -243,7 +243,7 @@ export function build(): Command {
   const group = program
     .command("group")
     .description(
-      "a border around a system: add, copy, join, leave, label, sublabel, label-at, order, style, remove",
+      "a border around a system: add, copy, join, leave, label, sublabel, label-at, order, style, like, remove",
     );
   json(
     group
@@ -370,7 +370,9 @@ export function build(): Command {
 
   const lane = program
     .command("lane")
-    .description("swimlanes, who owns what: add, join, label-at, leave, label, style, remove");
+    .description(
+      "swimlanes, who owns what: add, join, label-at, leave, label, style, like, remove",
+    );
   json(
     lane
       .command("label-at")
@@ -628,7 +630,7 @@ export function build(): Command {
   const node = program
     .command("node")
     .description(
-      "nodes: add, move, swap, align, merge, sublabel, mark, label, size, emphasis, type, style, remove",
+      "nodes: add, move, swap, align, merge, sublabel, mark, label, size, emphasis, type, style, like, remove",
     );
   json(
     withSteps(
@@ -704,7 +706,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "edges: add, ends, reverse, label, side, label-at, weight, both, pass, number, type, style, remove",
+      "edges: add, ends, reverse, label, side, label-at, weight, both, pass, number, type, style, like, remove",
     );
   json(
     edge
@@ -1378,6 +1380,20 @@ export function build(): Command {
         .argument("[styles...]"),
     ).action(async (file: string, id: string, styles: string[], opts: Opts) => {
       const raw = { op: `${noun.name()}.style`, id, ...(styles.length > 0 ? { styles } : {}) };
+      await write(file, raw, opts);
+    });
+  }
+
+  for (const noun of [node, edge, group, lane]) {
+    json(
+      noun
+        .command("like")
+        .description("follow another's look and change with it; with none, let go")
+        .argument("<file>")
+        .argument("<id>")
+        .argument("[like]", `the ${noun.name()} it follows`),
+    ).action(async (file: string, id: string, like: string | undefined, opts: Opts) => {
+      const raw = { op: `${noun.name()}.like`, id, ...(like === undefined ? {} : { like }) };
       await write(file, raw, opts);
     });
   }

@@ -192,6 +192,7 @@ A node takes its colors from the styles it marks, so that a color says something
 ```sh
 grafical -f <file> style --add <id> [--fill <color>] [--border <color>] [--border-width <n>]
 grafical -f <file> node --style <id> <styles...>
+grafical -f <file> node --like <id> [<node>]
 ```
 
 - A color is `#` and hex digits.
@@ -199,10 +200,16 @@ grafical -f <file> node --style <id> <styles...>
 - `node --style` with no styles clears them.
 - A style the diagram lacks is refused as `unknown-style`.
 - The shape stays the type's.
+- `node --like` follows another node's look and changes with it.
+  - It takes no shape and no place.
+  - A style the node marks overrides what it follows, and what it follows overrides its type.
+  - With no node, it lets go, and it lets go when the node it follows goes.
+  - A follower may be followed, and a circle is refused as `like-cycle`.
 
 - **Why:**
   - [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
   - [089. A style may be as rich as it likes](../specs/decisions/089-a-style-may-be-as-rich-as-it-likes.md)
+  - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
 
 ## F1.2: Edges
 
@@ -330,12 +337,17 @@ An edge takes its color from the styles it marks, so that a color says something
 ```sh
 grafical -f <file> style --add <id> --color <color>
 grafical -f <file> edge --style <id> <styles...>
+grafical -f <file> edge --like <id> [<edge>]
 ```
 
 - The arrowhead takes the color too.
 - A dash stays the type's.
+- `edge --like` follows another edge's look and its weight, by the same rules as `node --like`.
+  - A weight the edge states stays its own.
 
-- **Why:** [081. An edge may take a color of its own](../specs/decisions/081-an-edge-may-take-a-color-of-its-own.md)
+- **Why:**
+  - [081. An edge may take a color of its own](../specs/decisions/081-an-edge-may-take-a-color-of-its-own.md)
+  - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
 
 ## F1.3: Containers
 
@@ -516,6 +528,12 @@ A group or a lane takes its colors from the styles it marks, so that color tells
 ```sh
 grafical -f <file> group --style <id> <styles...>
 grafical -f <file> lane --style <id> <styles...>
+grafical -f <file> group --like <id> [<group>]
+grafical -f <file> lane --like <id> [<lane>]
 ```
 
-- **Why:** [083. A group or a lane may take a look of its own](../specs/decisions/083-a-group-or-a-lane-may-take-a-look-of-its-own.md)
+- `--like` follows another of its sort, by the same rules as `node --like`.
+
+- **Why:**
+  - [083. A group or a lane may take a look of its own](../specs/decisions/083-a-group-or-a-lane-may-take-a-look-of-its-own.md)
+  - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)

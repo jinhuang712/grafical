@@ -52,7 +52,6 @@ A `.grafical` file holds one diagram as objects with attributes and relations. g
 | Value | Written | Example |
 |---|---|---|
 | A reference | `@` and an ID | `@orders` |
-| A path into a follower | `@` and two IDs | `@zone-b.web` |
 | Text | in double quotes | `"Orders DB"` |
 | A color | `#` and hex digits | `#c00` |
 | A number | plain | `1.5` |
@@ -120,10 +119,12 @@ The shapes:
 ## Where a look comes from
 
 ```text
-an object  >  a style  >  a type  >  the theme
+an object  >  a style  >  like  >  a type  >  the theme
 ```
 
 The most specific wins, and `show` gives each value's source.
+
+An object with `like` takes the look of another of its sort and changes with it. It takes no members, no place and no shape. A follower may be followed, and a cycle is refused.
 
 ## Position as a relation
 
@@ -196,12 +197,11 @@ A rule a diagram sets itself, marked by what follows it. It comes later, and its
 | `like` | a group |
 | `style` | styles |
 
-A group with `like` holds what that group holds and changes with it. A node inside it is reached by a path, and a path may override one attribute of that node.
-
 ### `<lane>` and `<column>`
 
 | Attribute | Value |
 |---|---|
+| `like` | a lane, for a lane |
 | `style` | styles |
 
 ### `<wall>`
@@ -246,6 +246,7 @@ A group with `like` holds what that group holds and changes with it. A node insi
 | `size` | `s`, `m` or `l` |
 | `width` `height` `magnified` | a multiple |
 | `emphasis` | `true` |
+| `like` | a node |
 | `style` | styles |
 
 ### `<edge>`
@@ -262,6 +263,7 @@ A group with `like` holds what that group holds and changes with it. A node insi
 | `both` | `true` |
 | `pass` | `true` |
 | `number` | a whole number |
+| `like` | an edge |
 | `style` | styles |
 
 ### `<label>`
@@ -407,3 +409,4 @@ The form serves strictness, plain objects and a file that reads as what it holds
 - [087. A type holds attributes, and a group may follow a group](decisions/087-a-type-holds-attributes-and-a-group-may-follow-a-group.md)
 - [088. A type may choose its shape](decisions/088-a-type-may-choose-its-shape.md)
 - [089. A style may be as rich as it likes](decisions/089-a-style-may-be-as-rich-as-it-likes.md)
+- [092. `like` follows an object's look and nothing else](decisions/092-like-follows-an-object-s-look-and-nothing-else.md)

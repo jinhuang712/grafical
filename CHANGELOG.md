@@ -25,6 +25,7 @@ grafical has not been released; the first release will be 0.1.0.
   - `edge --label-at <id> beside` puts one label back beside its line.
   - Pictures get 0.9% shorter over the saved drafts, and a gap with a label on its line gets 16 px wider.
 - A node's label, a line's label, a note, a lane's label and a subtitle keep a line break, written as a real break or as `\n`.
+- `node --like`, `edge --like`, `group --like` and `lane --like` follow another object's look and change with it, under the object's styles and over its type.
 - `label --style <id> [<name>...]` gives a line's label a style's background, border and color.
 - `label --align <id> left|center|right` lines up the text of a node, an edge, a wall or a lane.
 - `note --align <on> left|center|right` lines up the text of a note drawn as a card.

@@ -178,6 +178,8 @@ export interface DiagramNode {
   column?: string;
   /** The type it is, when an agent defined it. `kind` then holds the kind that draws it. */
   type?: string;
+  /** The object of its own sort whose look it follows (specs/decisions, "`like` follows an object's look and nothing else"). */
+  like?: string;
   /** The styles it marks, a later one over an earlier one. */
   style?: string[];
   /** Marks in fixed slots, such as a warning at the top-left (specs/decisions, "Marks of any kind"). */
@@ -201,6 +203,8 @@ export interface Group {
   in?: string;
   /** Where its label sits. Absent: the engine seats it in the head. */
   titleAt?: GroupTitle;
+  /** The object of its own sort whose look it follows (specs/decisions, "`like` follows an object's look and nothing else"). */
+  like?: string;
   /** The styles it marks. */
   style?: string[];
 }
@@ -250,6 +254,8 @@ export interface Lane {
   labelAt?: number;
   /** Absent: left in a lane of layers and centred in a lane of columns. */
   labelAlign?: LabelAlign;
+  /** The object of its own sort whose look it follows (specs/decisions, "`like` follows an object's look and nothing else"). */
+  like?: string;
   /** The styles it marks. */
   style?: string[];
 }
@@ -309,6 +315,8 @@ export interface Edge {
   seat?: "beside";
   /** The type it is, when an agent defined it. */
   type?: string;
+  /** The object of its own sort whose look it follows (specs/decisions, "`like` follows an object's look and nothing else"). */
+  like?: string;
   /** The styles it marks. */
   style?: string[];
   /** Its number in a process, drawn as a badge on the edge (specs/decisions, "Step badges ride the line"). Absent: none. */

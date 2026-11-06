@@ -40,6 +40,7 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 - **Type:** says what a node or an edge is, and decides how it is drawn.
   - Lost name: *kind*.
 - **Style:** a named look that an object marks.
+- **Like:** one object follows the look of another of its sort.
 - **Region:** a diagram, a group, a layer, a lane or a column.
 - **Magnified:** how many times its default a size or a gap is, such as 1.5.
   - Lost names: *times*, *multiple* as a flag.

@@ -729,6 +729,22 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   marks("edge.style", b.edges, a.edges);
   marks("group.style", b.groups ?? [], a.groups ?? []);
   marks("lane.style", b.lanes ?? [], a.lanes ?? []);
+  const follows = <T extends { id: string; like?: string }>(
+    op: "node.like" | "edge.like" | "group.like" | "lane.like",
+    was: readonly T[],
+    now: readonly T[],
+  ) => {
+    // Letting go comes first, so no step passes through a circle.
+    const moved = now.filter((x) => was.find((y) => y.id === x.id)?.like !== x.like);
+    for (const x of moved) {
+      if (was.find((y) => y.id === x.id)?.like !== undefined) ops.push({ op, id: x.id });
+    }
+    for (const x of moved) if (x.like !== undefined) ops.push({ op, id: x.id, like: x.like });
+  };
+  follows("node.like", everyNode(b), everyNode(a));
+  follows("edge.like", b.edges, a.edges);
+  follows("group.like", b.groups ?? [], a.groups ?? []);
+  follows("lane.like", b.lanes ?? [], a.lanes ?? []);
   const types = <T extends { id: string; type?: string }>(
     op: "node.type" | "edge.type",
     was: readonly T[],

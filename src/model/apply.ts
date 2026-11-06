@@ -19,10 +19,12 @@ import {
 } from "./groups.ts";
 import { likelyType } from "./issues.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
+import { type Follower, likeCircle, pruneLikes } from "./like.ts";
 import { noteTargets, pruneNotes } from "./notes.ts";
 import type {
   DiagramLegendOp,
   EdgeAddOp,
+  FollowOp,
   GroupCopyOp,
   LayerAddOp,
   MarkStyleOp,
@@ -375,6 +377,29 @@ function styled(d: Diagram, op: MarkStyleOp): { style?: string[] } | undefined {
   if (op.op === "edge.style") return d.edges.find((x) => x.id === op.id);
   if (op.op === "group.style") return d.groups?.find((x) => x.id === op.id);
   return d.lanes?.find((x) => x.id === op.id);
+}
+
+/** One object takes another of its sort as the look it follows. */
+function follow(
+  s: State,
+  op: FollowOp,
+  all: readonly Follower[],
+  unknown: OpError,
+  i: number,
+): OpError[] {
+  const target = all.find((x) => x.id === op.id);
+  if (target === undefined) return [{ ...unknown, field: "id", found: op.id }];
+  if (op.like === undefined) delete target.like;
+  else {
+    if (!all.some((x) => x.id === op.like)) return [unknown];
+    const chain = likeCircle(all, op.id, op.like);
+    if (chain !== undefined) {
+      return [{ code: "like-cycle", index: i, field: "like", found: op.like, facts: { chain } }];
+    }
+    target.like = op.like;
+  }
+  touch(s, op.id);
+  return [];
 }
 
 function unknownLayer(d: Diagram, id: string, i: number, field: string): OpError {
@@ -2002,6 +2027,14 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, op.id);
       return [];
     }
+    case "node.like":
+      return follow(s, op, everyNode(d), unknownNode(d, op.like ?? op.id, i, "like"), i);
+    case "edge.like":
+      return follow(s, op, d.edges, unknownEdge(d, op.like ?? op.id, i, "like"), i);
+    case "group.like":
+      return follow(s, op, d.groups ?? [], unknownGroup(d, op.like ?? op.id, i, "like"), i);
+    case "lane.like":
+      return follow(s, op, d.lanes ?? [], unknownLane(d, op.like ?? op.id, i, "like"), i);
     case "layer.look": {
       const layer = d.layers.find((l) => l.id === op.id);
       if (!layer) return [unknownLayer(d, op.id, i, "id")];
@@ -2464,6 +2497,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
       pruneNotes(s.d, gone);
     }
   }
+  touch(s, ...pruneLikes(s.d));
   // Column lanes keep each layer in lane order (specs/decisions, "Swimlanes run one way").
   touch(s, ...orderByLanes(s.d));
   // Columns keep each layer in column order (specs/decisions, "Columns beside rows").

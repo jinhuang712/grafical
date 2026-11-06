@@ -48,6 +48,7 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
   if (n.lane !== undefined) o.lane = n.lane;
   if (n.column !== undefined) o.column = n.column;
   if (n.type !== undefined) o.type = n.type;
+  if (n.like !== undefined) o.like = n.like;
   if (n.style !== undefined) o.style = n.style;
   if (n.marks !== undefined && Object.keys(n.marks).length > 0) {
     const marks: Record<string, unknown> = {};
@@ -96,6 +97,7 @@ function edgeOut(e: Edge): Record<string, unknown> {
   if (e.weight !== undefined) o.weight = e.weight;
   if (e.step !== undefined) o.step = e.step;
   if (e.type !== undefined) o.type = e.type;
+  if (e.like !== undefined) o.like = e.like;
   if (e.style !== undefined) o.style = e.style;
   return o;
 }
@@ -137,6 +139,7 @@ export function writeDiagram(d: Diagram): string {
       if (g.sublabel !== undefined) o.sublabel = g.sublabel;
       if (g.in !== undefined) o.in = g.in;
       if (g.titleAt !== undefined) o.titleAt = { ...g.titleAt };
+      if (g.like !== undefined) o.like = g.like;
       if (g.style !== undefined) o.style = g.style;
       return o;
     });
@@ -147,6 +150,7 @@ export function writeDiagram(d: Diagram): string {
       label: x.label,
       ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
       ...(x.labelAt === undefined ? {} : { labelAt: x.labelAt }),
+      ...(x.like === undefined ? {} : { like: x.like }),
       ...(x.style === undefined ? {} : { style: x.style }),
     }));
   }
