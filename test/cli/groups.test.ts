@@ -178,6 +178,13 @@ describe("grouped diagrams", () => {
   });
 });
 
+const longVpc = {
+  ...nested,
+  groups: (nested.groups ?? []).map((g) =>
+    g.id === "vpc" ? { ...g, label: "virtual private cloud network" } : g,
+  ),
+};
+
 describe('groups inside groups on the command line (specs/decisions, "Every layered diagram type")', () => {
   it('group title and group label say where a label sits, and show prints it (specs/decisions, "The agent states where a group\'s label sits")', () => {
     const f = "titled.grafical.yaml";
@@ -190,7 +197,8 @@ describe('groups inside groups on the command line (specs/decisions, "Every laye
     const wrong = run("group", "title", f, "vpc", "middle");
     expect(wrong.code).not.toBe(0);
     expect(wrong.err + wrong.out).toContain("bad-value");
-    // A line runs out of the vpc's last row where its label would sit in the foot.
+    // A line runs out of the vpc's last row where its long label would sit in the foot.
+    writeFileSync(join(dir, f), writeDiagram(longVpc));
     const before = read(f);
     const blocked = run("group", "title", f, "vpc", "bottom");
     expect(blocked.code).not.toBe(0);
@@ -198,7 +206,7 @@ describe('groups inside groups on the command line (specs/decisions, "Every laye
       "defect: title-blocked\ndescription: A line runs where the group's title sits, and no line moves for a title.\n",
     );
     expect(blocked.out).toContain(
-      "detail:\n  owner: agent\n  group: vpc\n  edge: db->backup\n  place: bottom\n  clear: top-left, ",
+      "detail:\n  owner: agent\n  group: vpc\n  edge: db->backup\n  place: bottom\n  clear: top, ",
     );
     expect(blocked.out).toMatch(/\nnext: group --label-at, node --move, edge --remove\n$/);
     expect(read(f)).toBe(before);

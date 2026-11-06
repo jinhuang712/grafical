@@ -65,7 +65,7 @@
   - Neither try was landed.
 - created: 2026-10-30
 - status: HALT
-- next: labels on lines may settle this, so look again once they are built
+- next: look again now that labels sit on their lines
 - related: [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
 
 ### [P2][ISSUE] Arrowheads land off centre and unevenly

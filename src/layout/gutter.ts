@@ -37,6 +37,8 @@ const SLOT_LINE = 8;
 const SLOT_CROSS = 64;
 /** A line on another line weighs more than a line through a label: a free row always avoids it. */
 const LINE = 100;
+/** How far a label on a run keeps from the run's corners. */
+const ON_CLEAR = 8;
 /** Rows a run may go below every run placed so far, besides the height of two labels. */
 const SEARCH = 4;
 
@@ -64,7 +66,7 @@ export function labelBox(
   pitch: number,
 ): Box {
   const y = row * pitch;
-  const gap = ROUTE.labelGap;
+  const gap = lab.through === undefined ? ROUTE.labelGap : ROUTE.throughGap;
   const y0 = mode === "above" ? y - gap - lab.h : mode === "below" ? y + gap : y - lab.h / 2;
   return { x0, x1: x0 + lab.w, y0, y1: y0 + lab.h };
 }
@@ -95,6 +97,13 @@ interface Candidate {
   mode: VisitLabel["mode"];
   x0: number;
   score: number;
+  /** The x of the label's own line that passes through it, on its way to or from the run. */
+  through?: number;
+}
+
+/** Does this label sit on its line? A step's badge rides the line, so its label keeps beside it. */
+function rides(lab: VisitLabel): boolean {
+  return lab.badge === undefined && lab.beside !== true;
 }
 
 /**
@@ -107,8 +116,7 @@ function candidates(v: Visit, lab: VisitLabel): Candidate[] {
   if (v.hi - v.lo <= EPS) {
     // On the line, centred on it: the label's patch breaks the line, as a flow chart's
     // labels do. A step's badge rides the line, so a badge keeps its label beside.
-    const on: Candidate[] =
-      lab.badge === undefined ? [{ mode: "on", x0: v.lo - lab.w / 2, score: -1 }] : [];
+    const on: Candidate[] = rides(lab) ? [{ mode: "on", x0: v.lo - lab.w / 2, score: -1 }] : [];
     return [
       ...on,
       { mode: "beside", x0: v.lo + side, score: 0 },
@@ -122,6 +130,23 @@ function candidates(v: Visit, lab: VisitLabel): Candidate[] {
     { mode: "beside", x0: v.hi + side, score: len < lab.w ? -2 : 1000 },
     { mode: "beside", x0: v.lo - side - lab.w, score: len < lab.w ? -1 : 1001 },
   ];
+  // On the run, clear of its corners, so that the line reads through the label
+  // (specs/decisions, "A line's label sits on its line"). A run too short for the label
+  // carries it on the line where it comes in or goes out, the line passing through it.
+  if (rides(lab)) {
+    const room = (len - lab.w) / 2 - ON_CLEAR;
+    for (let d = 0; d <= room + EPS; d += 4) {
+      for (const x0 of d > 0 ? [c - lab.w / 2 + d, c - lab.w / 2 - d] : [c - lab.w / 2]) {
+        out.push({ mode: "on", x0, score: d - 1 });
+      }
+    }
+    if (room < -EPS) {
+      v.stubs.forEach((s, i) => {
+        const mode = s.top ? "above" : "below";
+        out.push({ mode, x0: s.x - lab.w / 2, score: i - 4, through: s.x });
+      });
+    }
+  }
   const touch = Math.min(16, len);
   const reach = Math.max(0, (len + lab.w) / 2 - touch);
   // A step's badge sits on the run itself, under one end of the label (specs/decisions, "Step badges ride the line").
@@ -146,6 +171,13 @@ interface Slot {
   crossed: boolean;
   pairs: [number, number][];
   cost: number;
+}
+
+function seat(lab: VisitLabel, c: Candidate): void {
+  lab.mode = c.mode;
+  lab.x0 = c.x0;
+  if (c.through === undefined) delete lab.through;
+  else lab.through = c.through;
 }
 
 function setForm(lab: VisitLabel, form: LabelForm): void {
@@ -252,10 +284,13 @@ function geometry(pitch: number) {
       bv.y0,
       g === undefined ? bv.y0 : g.y0 - (head > 0 ? head + STEP.arrowClear : 0),
     );
-    let c = top < -pitch + 2 - EPS ? 1 : 0;
+    // A line through the label leaves room for the arrowhead it may have there.
+    const margin = v.label?.through === undefined ? 2 : ROUTE.onArrow;
+    let c = top < -pitch + margin - EPS ? 1 : 0;
     for (const s of v.stubs) {
       // A label on its line lies across the line's own stubs on purpose.
-      if (v.label?.mode === "on" || !inside(s.x, bv.x0 - clr, bv.x1 + clr)) continue;
+      if (v.label?.mode === "on" || s.x === v.label?.through) continue;
+      if (!inside(s.x, bv.x0 - clr, bv.x1 + clr)) continue;
       const [y0, y1] = spanAt(s.top, rv, pitch);
       if (y0 < bv.y1 + clr && bv.y0 - clr < y1) c++;
     }
@@ -392,7 +427,9 @@ export function routeGutter(
       let crossed = sides.some((x) => inside(x, x0, x1));
       if (c.mode === "above" || c.mode === "below") {
         for (const s of v.stubs) {
-          if (s.top === (c.mode === "above") && inside(s.x, x0, x1)) crossed = true;
+          if (s.x !== c.through && s.top === (c.mode === "above") && inside(s.x, x0, x1)) {
+            crossed = true;
+          }
         }
       } else if (lab.badge !== undefined) {
         // A badge beside its text sits on the line itself, where another line near it, up
@@ -440,10 +477,7 @@ export function routeGutter(
       stranded.add(v);
       chosen = candidates(v, lab)[0];
     }
-    if (chosen !== undefined) {
-      lab.mode = chosen.mode;
-      lab.x0 = chosen.x0;
-    }
+    if (chosen !== undefined) seat(lab, chosen);
   }
 
   // An order with few crossings, within the fixed order.
@@ -492,14 +526,11 @@ export function routeGutter(
     const slots: (Candidate | undefined)[] =
       lab !== undefined && stranded.has(v)
         ? candidates(v, lab)
-        : [lab === undefined ? undefined : { mode: lab.mode, x0: lab.x0, score: 0 }];
+        : [lab === undefined ? undefined : { ...lab, score: 0 }];
     let best: { t: number; c: number; slot: Candidate | undefined } | undefined;
     for (let t = t0; t <= Math.max(t0, deepest) + search; t++) {
       for (const slot of slots) {
-        if (lab !== undefined && slot !== undefined) {
-          lab.mode = slot.mode;
-          lab.x0 = slot.x0;
-        }
+        if (lab !== undefined && slot !== undefined) seat(lab, slot);
         const bv = geo.boxOf(v, t);
         let c = bv === undefined ? 0 : geo.own(v, t, bv);
         for (const u of placed) {
@@ -512,10 +543,7 @@ export function routeGutter(
       if (best?.c === 0) break;
     }
     if (best === undefined) return;
-    if (lab !== undefined && best.slot !== undefined) {
-      lab.mode = best.slot.mode;
-      lab.x0 = best.slot.x0;
-    }
+    if (lab !== undefined && best.slot !== undefined) seat(lab, best.slot);
     v.row = best.t;
     deepest = Math.max(deepest, best.t);
     placed.push(v);

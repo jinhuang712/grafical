@@ -40,6 +40,7 @@ function edgeText(e: Edge): string {
   if (e.kind !== "call") s += ` [${e.kind}]`;
   if (e.both === true) s += " [both ends]";
   if (e.pass === true) s += " [passes bars]";
+  if (e.seat !== undefined) s += " [label beside]";
   if (e.weight !== undefined) s += ` [weight ${e.weight}]`;
   else if (e.accent === true) s += " [main]";
   if (e.step !== undefined) s += ` [step ${e.step}]`;

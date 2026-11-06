@@ -42,10 +42,10 @@ Features
 │   ├── ✅ F2.5: Steps from another node — a box some cells from another
 │   ├── 🚧 F2.6: Spacing — compact, normal or airy (region gaps not built)
 │   │   └── ⬜ F2.6.1: Region gaps — more room between two regions
-│   ├── 🚧 F2.7: How edges are drawn — grafical routes every line (line sides and labels on turning lines not built)
+│   ├── 🚧 F2.7: How edges are drawn — grafical routes every line (line sides not built, and lines do not move apart for labels)
 │   │   ├── ⬜ F2.7.1: Edge sides — the side a line leaves or enters by
 │   │   ├── ✅ F2.7.2: Edge shapes — square or round
-│   │   └── 🚧 F2.7.3: Labels on edges — a line carries its label (only on straight vertical lines)
+│   │   └── 🚧 F2.7.3: Labels on edges — a line carries its label (lines do not move apart for one)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── 🚧 F3.1: Operations — one named command per change (names still differ inside)

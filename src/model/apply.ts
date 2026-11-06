@@ -2031,6 +2031,25 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       return swapNodes(s, op, i);
     case "node.merge":
       return mergeNodes(s, op, i);
+    case "edge.seat": {
+      const e = d.edges.find((x) => x.id === op.id);
+      if (!e) return [unknownEdge(d, op.id, i, "id")];
+      if ((e.label ?? "") === "") {
+        return [
+          {
+            code: "bad-value",
+            index: i,
+            field: "id",
+            found: op.id,
+            facts: { allowed: ["an edge with a label"] },
+          },
+        ];
+      }
+      if (op.seat === "beside") e.seat = "beside";
+      else delete e.seat;
+      touch(s, e.id);
+      return [];
+    }
     case "edge.relabel":
     case "edge.kind":
     case "edge.reverse":
@@ -2041,8 +2060,10 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       const e = d.edges.find((x) => x.id === op.id);
       if (!e) return [unknownEdge(d, op.id, i, "id")];
       if (op.op === "edge.relabel") {
-        if (op.label === undefined) delete e.label;
-        else e.label = op.label;
+        if (op.label === undefined) {
+          delete e.label;
+          delete e.seat;
+        } else e.label = op.label;
       } else if (op.op === "edge.kind") {
         if (op.kind === "link" && e.both === true) return [bothOnLink(e.id, i, "kind", op.kind)];
         e.kind = op.kind;

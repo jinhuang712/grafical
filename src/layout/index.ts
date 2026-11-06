@@ -520,6 +520,33 @@ function besideRoute(
   return { at: first === undefined ? at : { ...at, ...first }, clear: false };
 }
 
+/**
+ * A label on a vertical run of its line sits at the run's middle, or as near it as `free`
+ * allows, on its way back to where the gutter seated it (specs/decisions, "A line's label
+ * sits on its line"). It keeps off the run's ends, which may carry a corner or an arrowhead.
+ */
+function centred(points: Point[], at: AssembledLabel, free: (r: Rect) => boolean): AssembledLabel {
+  const cx = at.x + at.w / 2;
+  const cy = at.y + at.h / 2;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1] as Point;
+    const b = points[i] as Point;
+    const y0 = Math.min(a.y, b.y);
+    const y1 = Math.max(a.y, b.y);
+    if (a.x !== b.x || Math.abs(a.x - cx) > 1 || cy < y0 || cy > y1) continue;
+    const lo = y0 + ROUTE.onArrow;
+    const hi = y1 - ROUTE.onArrow - at.h;
+    if (hi < lo) return at;
+    const mid = (lo + hi) / 2;
+    const way = at.y < mid ? -4 : 4;
+    for (let y = mid; way < 0 ? y > at.y : y < at.y; y += way) {
+      if (y >= lo && y <= hi && free({ ...at, y })) return { ...at, y };
+    }
+    return at;
+  }
+  return at;
+}
+
 const empty = (role: PlacedText["role"], x: number, y: number): PlacedText => ({
   role,
   runs: [],
@@ -566,6 +593,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     labelSizes.set(e.id, {
       ...size(w, labelH),
       ...(step ? { badge: headsOf(e) } : {}),
+      ...(e.seat === "beside" ? { beside: true } : {}),
       narrower: () => {
         forms ??=
           text === undefined
@@ -592,6 +620,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     d,
     (id) => labelSizes.get(id)?.w,
     (id) => labelSizes.get(id)?.h ?? labelH,
+    (id) => {
+      const s = labelSizes.get(id);
+      return s?.badge === undefined && s?.beside !== true;
+    },
   );
   // Edges that meet a column lane beside it (specs/decisions, "Swimlanes run one way"), and the node at their other end.
   const laneEnds = new Map<string, { lane: string; node: string }>();
@@ -1517,6 +1549,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const gutterNames = (gs: number[]) =>
     gs.map((g) => `${layers[g]?.id ?? "-"}/${layers[g + 1]?.id ?? "-"}`);
   const planOf = new Map(routing.plans.map((p) => [p.edge.id, p]));
+  const holds = (b: Rect, r: Rect) =>
+    r.x >= b.x && r.x + r.w <= b.x + b.w && r.y >= b.y && r.y + r.h <= b.y + b.h;
+  const inWall = (r: Rect) =>
+    [...wallTops].some(([g, y]) => r.y < y + wallsAt(g) * WALL.space && r.y + r.h > y);
   const sceneEdges: SceneEdge[] = [];
   for (const e of d.edges) {
     const a = assembled.get(e.id);
@@ -1562,6 +1598,15 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         at = moved.at;
         // No place beside what is left of the line holds it: the write is refused.
         if (!moved.clear) edge.blocked ??= gutterNames(planOf.get(e.id)?.gutters ?? []);
+      }
+      if (e.step === undefined && e.seat === undefined) {
+        // Clear of what is near as a label in a gutter is, and of a lane's border and a wall.
+        const clearHere = clearOf(e.id);
+        at = centred(points, at, (r) => {
+          const wide = { x: r.x - 2, y: r.y - 2, w: r.w + 4, h: r.h + 4 };
+          const cut = sceneLanes.some((l) => overlaps(wide, l.rect) && !holds(l.rect, wide));
+          return !cut && !inWall(wide) && clearHere(wide);
+        });
       }
       labelAt.set(e.id, at);
       let top = { x: at.x, y: at.y };

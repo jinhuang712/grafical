@@ -362,6 +362,9 @@ function toSegment(p: Pt, a: Pt, b: Pt): number {
   return Math.hypot(a.x + u * (b.x - a.x) - p.x, a.y + u * (b.y - a.y) - p.y);
 }
 
+/** How far a line of a wrapped label's text may sit from the run it rides: three lines of 16 px. */
+const ON_LINE = 20;
+
 /** The mechanical defects of a rendered SVG. */
 export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
   const { shapes, lines, texts, size } = readSvg(svg, m);
@@ -441,9 +444,10 @@ export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
       for (let k = 1; k < l.points.length; k++) {
         const p = l.points[k - 1] as Pt;
         const q = l.points[k] as Pt;
-        // A label on its own straight vertical line: the patch drawn after the line breaks it (specs/decisions, "A label sits on its straight vertical line").
-        if (l.index === t.after - 1 && p.x === q.x && Math.abs(p.x - (t.x + t.w / 2)) <= 1)
-          continue;
+        // A label on its own line: the patch drawn after the line breaks it (specs/decisions, "A line's label sits on its line").
+        const across = p.x === q.x && Math.abs(p.x - (t.x + t.w / 2)) <= 1;
+        const along = p.y === q.y && Math.abs(p.y - (t.y + t.h / 2)) <= ON_LINE;
+        if (l.index === t.after - 1 && (across || along)) continue;
         if (crosses(p, q, shrink(t, 0.5))) {
           out.push({
             code: "label-collision",

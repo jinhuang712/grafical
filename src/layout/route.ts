@@ -106,6 +106,8 @@ export interface LabelBox {
   badge?: { start: number; end: number };
   /** The label wrapped onto more lines, narrower: asked for only when it does not fit on one. */
   narrower?: () => LabelForm[];
+  /** The agent took the label off its line (specs/decisions, "A line's label sits on its line"). */
+  beside?: boolean;
 }
 
 /** One way to set a label: its box, its lines, and the width it wraps at. */
@@ -202,9 +204,13 @@ export interface Visit {
 
 export interface VisitLabel {
   edgeId: string;
-  /** above or below the run, or on or beside a straight vertical line. */
+  /** above or below the run, on it, or on or beside a straight vertical line. */
   mode: "above" | "below" | "beside" | "on";
   x0: number;
+  /** The x of the label's own line through it, when it sits above or below the run on that line. */
+  through?: number;
+  /** The agent took the label off its line. */
+  beside?: boolean;
   w: number;
   h: number;
   /** Lines the label takes, and the width it wraps at when that is more than one. */
@@ -2109,6 +2115,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
               lines: 1,
               maxWidth: Number.POSITIVE_INFINITY,
               narrower: pl.label.narrower,
+              ...(pl.label.beside === true ? { beside: true } : {}),
               ...(pl.label.badge === undefined ? {} : { badge: headsAt(pl, j, pl.label.badge) }),
             }
           : undefined;
@@ -2236,7 +2243,12 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
           ? undefined
           : {
               x: X(sl.x0),
-              y: mode === "above" ? ys - ROUTE.labelGap - sl.h : ys + ROUTE.labelGap,
+              y:
+                mode === "above"
+                  ? ys - ROUTE.labelGap - sl.h
+                  : mode === "below"
+                    ? ys + ROUTE.labelGap
+                    : ys - sl.h / 2,
               w: sl.w,
               h: sl.h,
               lines: 1,
@@ -2270,12 +2282,9 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
       cur = next;
       const lab = visit.label;
       if (lab !== undefined && pl.labelAt === j) {
+        const gap = lab.through === undefined ? ROUTE.labelGap : ROUTE.throughGap;
         const ly =
-          lab.mode === "above"
-            ? y - ROUTE.labelGap - lab.h
-            : lab.mode === "below"
-              ? y + ROUTE.labelGap
-              : y - lab.h / 2;
+          lab.mode === "above" ? y - gap - lab.h : lab.mode === "below" ? y + gap : y - lab.h / 2;
         label = {
           x: X(lab.x0),
           y: ly,

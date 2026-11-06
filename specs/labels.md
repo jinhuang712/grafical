@@ -31,13 +31,15 @@ The size of each text comes from the text measurer.
 
 ## Line labels
 
-An edge's label sits on its longest run, inside the gutter that run lies in, and keeps clear of everything else in that gutter:
+An edge's label sits on its line, inside the gutter of its longest run, and the line passes through it. An agent may take one edge's label off its line, and the label then sits beside the line. It keeps clear of everything else in that gutter:
 
-- 4 px from its own edge and 4 px from other edges.
+- 4 px from other edges, and from its own edge when it sits beside it.
 - 24 px across and 4 px up or down from another label.
 - 4 px from the sides of group nodes and of column lanes.
 
 A wrapped label's lines are centred on each other.
+
+Once the lines are drawn, a label on a vertical run moves to the run's middle, keeping 12 px from each end. Where that is not clear, it takes the nearest clear place on the way back to its seat, in 4 px steps. It moves no line. Clear means 4 px from other lines and labels, wholly inside or outside each group, band and lane, and out of a wall.
 
 ### Seats
 
@@ -45,13 +47,15 @@ Each label gets a list of candidate seats, each with a score, lower being better
 
 ```text
 straight vertical line   on the line (−1), beside it on the right (0), on the left (1)
-run as long as the label above, centred (0), then slid along in 4 px steps (+ the slide)
+run past the label       on the run, centred (−1), then slid along in 4 px steps (+ the slide)
+                         above, centred (0), then slid along in 4 px steps (+ the slide)
                          below, the same, each + 24
                          beside the run's ends (1000, 1001)
-run shorter than label   beside its right end (−2), its left end (−1), then as above
+run shorter than label   on the line into or out of the run (−4, −3), 8 px past the run's corner
+                         beside its right end (−2), its left end (−1), then as above
 ```
 
-A seat on the edge exists only where the edge passes straight through the gutter, and never for an edge with a step badge, which keeps its label beside the edge. A seat's cost is its score, plus 8 for each edge inside the seat, plus 64 for each crossing that the order of runs it fixes would force. Labels compete for the same room, so the label with the fewest open seats chooses first, each taking its cheapest open seat.
+A seat on a run keeps 8 px from the run's corners. A seat on the edge never exists for an edge with a step badge, whose label stays beside the edge, or for a label the agent took off its line. A seat's cost is its score, plus 8 for each edge inside the seat, plus 64 for each crossing that the order of runs it fixes would force. Labels compete for the same room, so the label with the fewest open seats chooses first, each taking its cheapest open seat.
 
 ### When no seat is clear
 
@@ -65,7 +69,7 @@ When all of these fail, it goes back to one line, takes the seat with the fewest
 
 ### Between neighbours
 
-An edge that runs straight across the gap between two neighbours carries its label above it. A second labelled line in the same gap takes its label below. These labels are seated with the column grid, which makes the gap wide enough for them.
+An edge that runs straight across the gap between two neighbours carries its label on it. With two labelled lines in one gap, the upper label sits above its line and the lower label below its line, since neither has room on its line. These labels are seated with the column grid, which makes the gap wide enough for them.
 
 ## Step badges
 

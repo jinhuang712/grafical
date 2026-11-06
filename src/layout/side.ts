@@ -4,9 +4,9 @@
 // leave room for the labels before anything is routed.
 //
 // A pair of neighbours holds as many unlabelled lines as fit on the smaller side.
-// With a label, it holds at most two lines: the label of the upper one sits above
-// it, the label of the lower one below it, both inside the row. The others go
-// round through the gutter below the row.
+// With a label, it holds at most two lines. A single label sits on its line. Two sit
+// above the upper line and below the lower one, inside the row. The others go round
+// through the gutter below the row.
 
 import { DEFAULT_SIZE, type Diagram } from "../model/types.ts";
 import { ROUTE } from "../theme/geometry.ts";
@@ -16,7 +16,7 @@ import { rowHeights } from "./size.ts";
 export interface SideSlot {
   /** y of the line, from the middle of the row. */
   offset: number;
-  label: "above" | "below" | undefined;
+  label: "above" | "below" | "on" | undefined;
   /** The ids of the two neighbours, left first. */
   left: string;
   right: string;
@@ -40,12 +40,14 @@ function cmp(a: string, b: string): number {
 
 /**
  * The sideways edges and their lines. `labelW` gives the one-line width of an
- * edge's label, or undefined for none; `labelH` the height of its label's box.
+ * edge's label, or undefined for none; `labelH` the height of its label's box;
+ * `rides` whether its label may sit on its line.
  */
 export function planSideways(
   d: Diagram,
   labelW: (id: string) => number | undefined,
   labelH: (id: string) => number,
+  rides: (id: string) => boolean,
 ): Map<string, SideSlot> {
   const at = new Map<string, { layer: number; order: number; h: number }>();
   // compute() has sized every node (size.ts); a box takes its row's height.
@@ -92,10 +94,10 @@ export function planSideways(
       // Two lines are 16 px apart; each label must stay inside the row.
       const below = second !== undefined && fits.includes(second) ? labelH(second) : 0;
       const two = p.h / 2 >= PITCH / 2 + ROUTE.labelGap + Math.max(labelH(first), below);
-      lines = [{ id: first, label: "above" }];
-      if (second !== undefined && two) {
-        lines.push({ id: second, label: fits.includes(second) ? "below" : undefined });
-      }
+      const both = two && second !== undefined && fits.includes(second);
+      lines = [{ id: first, label: !both && rides(first) ? "on" : "above" }];
+      if (second !== undefined && two)
+        lines.push({ id: second, label: both ? "below" : undefined });
     }
     const pitch = sidePitch(lines.length, p.h) ?? TIGHT;
     lines.forEach((line, i) => {

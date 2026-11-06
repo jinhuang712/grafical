@@ -230,8 +230,8 @@ The agent says what connects. grafical draws every edge.
   - Labelled lines and two-way lines keep their own place.
 - Where two edges cross, one hops over the other.
   - Where lines join on purpose, a dot marks the join.
-- A label sits beside its edge.
-  - When there is no room, it wraps or moves to another gap on its way.
+- A label sits on its edge and the edge passes through it, unless the agent takes it off.
+  - When there is no room on the edge, it sits beside it, wraps or moves to another gap on its way.
   - Where no gap on its way has room, no edge moves for it and the write is refused as `label-blocked` ([061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)).
   - The refusal names the edge, the edges across the label and the gaps it tried.
   - `node --size` is among the commands that can change it.
@@ -291,10 +291,10 @@ grafical -f <file> edge --label-at <id> on|beside
 ```
 
 - A label sits on its edge by default, on an edge that turns too.
-- Labels in one gutter spread out so that none sits on another.
-- A label wraps first, and then the edges move apart for it.
-- `beside` puts the label next to its edge, where no edge moves for it.
-- More room and more bends show in the counts.
+- A label on a vertical run sits at the run's middle, or the nearest clear place to it.
+- `beside` puts the label next to its edge.
+- `edge --label-at` on an edge with no label is refused as `bad-value`, and clearing a label clears its seat.
+- ⬜ Edges move apart for a label, past wrapping it.
 
 - **Why:** [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
 

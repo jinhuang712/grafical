@@ -272,6 +272,12 @@ export const ROUTE = {
   fanOut: 3,
   /** Space on each side of the label of an edge that runs sideways between neighbours. */
   sideLabelPad: 12,
+  /** Space on each side of a label that sits on such an edge, so that the line shows past it and its arrowhead. */
+  onLabelPad: 20,
+  /** Gap between a run and a label on the line that comes into it, past a rounded corner. */
+  throughGap: 8,
+  /** Room a label on a line keeps from the end of a gutter, for the line's arrowhead. */
+  onArrow: 12,
   /** A sideways edge with a wider label goes round through the gutter instead. */
   sideLabelMax: 200,
   /** Room on each side of a line that runs through an otherwise empty column of a row. */

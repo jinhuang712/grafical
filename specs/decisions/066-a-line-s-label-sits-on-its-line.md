@@ -21,4 +21,16 @@ A line's label sits on its line by default, and the line passes through it, whet
 
 ## Consequences
 
+Built on 2026-11-06, and measured with `pnpm bench diff` against the line of labels beside lines:
+
+| Corpus | Changed | Bends | Crossings | Width | Height |
+|---|---|---|---|---|---|
+| 329 saved drafts | 300 | 3,888 to 3,888 | 1,199 to 1,200 | +0.6% | −0.9% |
+| 18 fixtures | 18 | 506 to 506 | 281 to 281 | +1.0% | −1.6% |
+| 2,000 fuzz seeds | 1,785 | 146,618 to 146,639 | 166,076 to 166,236 | +0.4% | −4.0% |
+
+Over the fuzz seeds `label-blocked` fell from 50 to 0 and `title-blocked` from 15 to 1. `needless-bend` went from 343 to 345. Lines do not yet move apart for a label, so a label with no place on its line still sits beside it.
+
+The rest was written before the build.
+
 Every existing picture may change, and how much wider or more crossed they get is not measured. A line moves for text again, as a detour once did at a cost, so this is measured before it lands. A label takes more of a gutter, so pictures grow.

@@ -62,7 +62,7 @@ A node outside every group that two or more groups use, such as a store that a w
 
 Then each column gets its x: the largest of all the minimum distances that apply to it, from node widths, gaps, groups, lanes and walls. The grid is centred on a multiple of 4 px.
 
-Two neighbours in a layer keep the density's node gap between them. A gap that a labelled line crosses is as wide as the label plus 24 px. Two numbered lines between the same neighbours widen it to 60 px plus their arrowheads, so that both badges fit side by side.
+Two neighbours in a layer keep the density's node gap between them. A gap that a labelled line crosses is as wide as the label plus 40 px when the label sits on the line, and plus 24 px when it sits above or below. Two numbered lines between the same neighbours widen it to 60 px plus their arrowheads, so that both badges fit side by side.
 
 ## Alignment
 

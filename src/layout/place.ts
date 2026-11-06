@@ -413,7 +413,8 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const b = nodes.get(slot.right);
       const w = text.edgeLabelW(id);
       if (a === undefined || b === undefined || w === undefined) continue;
-      const room = Math.max(w + 2 * ROUTE.sideLabelPad, text.sideRoom?.(id) ?? 0);
+      const pad = slot.label === "on" ? ROUTE.onLabelPad : ROUTE.sideLabelPad;
+      const room = Math.max(w + 2 * pad, text.sideRoom?.(id) ?? 0);
       for (const r of rightTerms(a, b))
         for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + room + s.d);
       // Across a lane's side: the label's room lies between the side and the node past it.

@@ -248,6 +248,7 @@ const edgeSchema = z.strictObject({
   label: text.optional(),
   both: z.boolean().optional(),
   pass: z.boolean().optional(),
+  seat: z.enum(["beside"]).optional(),
   accent: z.boolean().optional(),
   weight: weightValue.optional(),
   step: stepNumber.optional(),
@@ -329,6 +330,7 @@ function build(p: Parsed): Diagram {
     if (e.label !== undefined) edge.label = e.label;
     if (e.both === true) edge.both = true;
     if (e.pass === true) edge.pass = true;
+    if (e.seat !== undefined) edge.seat = e.seat;
     if (e.accent === true) edge.accent = true;
     if (e.weight !== undefined) edge.weight = e.weight;
     if (e.step !== undefined) edge.step = e.step;

@@ -329,6 +329,12 @@ export interface NodeMergeOp {
   sublabel?: string;
   kind?: NodeKind;
 }
+export interface EdgeSeatOp {
+  op: "edge.seat";
+  id: string;
+  seat: "on" | "beside";
+}
+
 export interface EdgeRelabelOp {
   op: "edge.relabel";
   id: string;
@@ -567,6 +573,7 @@ export type Op =
   | EdgeAddOp
   | EdgeRemoveOp
   | EdgeRelabelOp
+  | EdgeSeatOp
   | EdgeKindOp
   | EdgeReverseOp
   | EdgeBothOp
@@ -830,6 +837,12 @@ export const edgeEmphasizeSchema = z.strictObject({
   edges: z.array(edgeId).min(1),
   off: z.boolean().optional(),
 });
+export const edgeSeatSchema = z.strictObject({
+  op: z.literal("edge.seat"),
+  id: z.string(),
+  seat: z.enum(["on", "beside"]),
+});
+
 export const edgeWeightSchema = z.strictObject({
   op: z.literal("edge.weight"),
   edges: z.array(edgeId).min(1),
@@ -1018,6 +1031,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgePassSchema,
   edgeEmphasizeSchema,
   edgeWeightSchema,
+  edgeSeatSchema,
   edgeStepSchema,
   edgeRetargetSchema,
 ]);
@@ -1094,6 +1108,7 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.pass": edgePassSchema,
   "edge.emphasize": edgeEmphasizeSchema,
   "edge.weight": edgeWeightSchema,
+  "edge.seat": edgeSeatSchema,
   "edge.step": edgeStepSchema,
   "edge.retarget": edgeRetargetSchema,
 };

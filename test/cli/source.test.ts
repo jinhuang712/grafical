@@ -245,7 +245,10 @@ describe("source", () => {
     it("names the line that set what the block prints, such as a title's place", () => {
       // Found by review on 2026-10-19: both lines put vpc's title where db->backup runs, and the block prints the
       // place line 2 set, so line 1 would contradict it.
-      writeFileSync(join(dir, "tp.grafical.yaml"), writeDiagram(nested));
+      const long = nested.groups?.map((g) =>
+        g.id === "vpc" ? { ...g, label: "virtual private cloud network" } : g,
+      );
+      writeFileSync(join(dir, "tp.grafical.yaml"), writeDiagram({ ...nested, groups: long ?? [] }));
       writeFileSync(
         join(dir, "tp1.yaml"),
         "- {op: group.title, id: vpc, at: bottom}\n- {op: group.title, id: vpc, at: outside-bottom}\n",

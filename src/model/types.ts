@@ -257,6 +257,8 @@ export interface Edge {
   accent?: boolean;
   /** A weight level the stylesheet names, or a width in pixels (specs/decisions, "Edge weights"). Absent: thin. */
   weight?: string | number;
+  /** Its label sits beside it, where the agent took it off the line. Absent: on the line. */
+  seat?: "beside";
   /** The type it is, when an agent defined it. */
   type?: string;
   /** The styles it marks. */

@@ -85,10 +85,10 @@ Roadmap
 │   │   ├── 🟨 Build the model
 │   │   ├── ⬜ Move the saved files
 │   │   └── ⬜ Tune the form
-│   ├── ⬜ CP2.4: Edges and labels
+│   ├── 🟨 CP2.4: Edges and labels
 │   │   ├── ⬜ Edge sides
 │   │   ├── ✅ Edge shapes
-│   │   ├── ⬜ Labels on edges
+│   │   ├── 🟨 Labels on edges
 │   │   ├── ⬜ Label text
 │   │   ├── ⬜ Region gaps
 │   │   ├── ✅ Edge looks
@@ -521,7 +521,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 
 ### CP2.4: Edges and labels
 
-**Status:** ⬜
+**Status:** 🟨 (since 2026-11-06)
 
 A strong model steers a line and draws it as a curve, and a line carries its label.
 
@@ -529,7 +529,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 
 - ⬜ Edge sides: An agent states the side a line leaves or enters by.
 - ✅ Edge shapes: A command draws lines square or round.
-- ⬜ Labels on edges: A line carries its label by default, measured over the saved drafts before it lands.
+- 🟨 Labels on edges: A line carries its label by default, and lines do not yet move apart for one.
 - ⬜ Label text: An agent sets a label's breaks and its alignment.
 - ⬜ Region gaps: The gap between two regions takes a multiple.
 - ✅ Edge looks: An edge takes a color of its own or a named look.

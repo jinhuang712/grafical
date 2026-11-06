@@ -172,12 +172,20 @@ export function writeGrafical(d: Diagram): string {
       ]),
     );
   }
-  const label = (id: string, on: string, text: string, sub?: string, place?: string) =>
+  const label = (
+    id: string,
+    on: string,
+    text: string,
+    sub?: string,
+    place?: string,
+    seat?: string,
+  ) =>
     block("label", `${id}-label`, [
       ["on", ref(on)],
       ["text", quote(text)],
       ["sublabel", opt(sub, quote)],
       ["place", place],
+      ["seat", seat],
     ]);
   for (const l of d.layers) if (l.label !== undefined) blocks.push(label(l.id, l.id, l.label));
   for (const g of d.groups ?? []) {
@@ -185,7 +193,11 @@ export function writeGrafical(d: Diagram): string {
   }
   for (const l of d.lanes ?? []) blocks.push(label(l.id, l.id, l.label));
   for (const w of d.walls ?? []) if (w.label !== undefined) blocks.push(label(w.id, w.id, w.label));
-  for (const e of d.edges) if (e.label !== undefined) blocks.push(label(e.id, e.id, e.label));
+  for (const e of d.edges) {
+    if (e.label !== undefined) {
+      blocks.push(label(e.id, e.id, e.label, undefined, undefined, e.seat));
+    }
+  }
   for (const { n } of nodes) {
     for (const slot of MARK_SLOTS) {
       const m = n.icons?.[slot];
@@ -508,6 +520,8 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     typed(b, types, o);
     styles(b, o);
     named(b.id as string, o);
+    const seat = labels.get(b.id as string)?.attrs.get("seat");
+    if (seat !== undefined) o.seat = seat;
     return o;
   });
   out.types = types.map((b) => {

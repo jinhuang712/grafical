@@ -24,38 +24,38 @@ const pixels = (png: Uint8Array): string => sha(PNG.sync.read(Buffer.from(png)).
 const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
   grouped: {
     diagram: catalogSyncGrouped,
-    svg: "8cb8695f1b760742f7e3fcc1e93c1fee7589b9a43a8e4a6177d05435aa600e27",
-    png: "97ab657a6748a4bb74ff4d67023ffdd739e4050f25f19d2a1838a4147d6bcfb6",
+    svg: "04af29755b0aaeaee852089a3cf75ed52fd3fcc8ff2f277c53257cf50e5e3204",
+    png: "88c7d95c52ed3f7c08d7daae4679f88f88ceb75d141b9f0da9710e1f6791ed95",
   },
   lanesRows: {
     diagram: lanesRows,
-    svg: "3575d2d5ab55b7c250b27768ff84c0cae4dbd8769b81d3016ee71b8cd166454a",
-    png: "34058b314e26f9bb7b0871dce6ddd5f8e9e3a1c7b1077ad51ea055810ad682d1",
+    svg: "167921e34bccf991ca838eccbfeeb13fb5034177fc91e00e61619f55a8f22f0a",
+    png: "bbd64d52b1470c37b2849d4029d06ca029b6ce8a1b08a91b6b5a1155eed7d1b3",
   },
   flowchart: {
     diagram: flowchart,
-    svg: "25878e345a2ab5c4071f97e5e197cf6671484b16b01817404608dcc62007ff49",
-    png: "ea1d373276abb4d989d68f8504aeb29098dca69ed6565f8c49ede8a0e69382d0",
+    svg: "4536346abc0b986a0f5555532b244b3c60c22c0418c6b457ee903218833005ba",
+    png: "58bb866413e58f9bde56ccde8a43da6efbe291c8b87a1af20f439c7849cbb8ab",
   },
   stateMachine: {
     diagram: stateMachine,
-    svg: "addafce7464525316d5d0b5e22e4702aa0a6bc7d18eccc9385f311bf6476aaa1",
-    png: "6c524fbe66e516a9484fe6067e5d1e17d309eb31660a623fa5208d223bbe4407",
+    svg: "3e26293dc1dfb2768c23e6ce8102f5a925b362ec3b8cde80d6998ae5510eed88",
+    png: "65c789856ec9880568ede8964dcfd1fcd0149d1d6ecc4fe806430452a842ef96",
   },
   nested: {
     diagram: nested,
-    svg: "064198cca7386c485eed63b93b351cc599b18aa27ce9ae767d69e695dc2c2aea",
-    png: "742d1902c9bc1738fc0963eb7773416c9e2e321f536c6a62622d9485f86b13d4",
+    svg: "3893b4fba09e60584876fe6b3aa30d1adda84807952398344cfecbf7a81d5942",
+    png: "63840843c3cfc2223e24324a33a8cac8fc7697c5824f9337faa4f407d71cf671",
   },
   lanesColumns: {
     diagram: lanesColumns,
-    svg: "c77686e4106160b3b0132ba799312f63eea7749ace99f4b3c5e37bff0e4d4f21",
-    png: "f3ecdf6d7b9e786f89d48749e6981ec20c0b5417b45eb2d747da9692f9edda8e",
+    svg: "b30c82367df1569fd8d88be199b3af2f29de8f094e47e6297f9114235488f112",
+    png: "a797d229fa0e7aa79eb90e717fbc370b017a8ebeaad2afba1047e4b81b9274fc",
   },
   steps: {
     diagram: steps,
-    svg: "b58d2b415686033f2d49b13d94793c4c7200d967c83e0c9e3177e7486f28c259",
-    png: "0d3a6fd972f976a70514f42aacf996c09b4b32178f0c3b0b528a529a4a25e9de",
+    svg: "6c559ee6b4631cea27fb6ec8416a8b7065ade1f938d0664107c92c71dd84d848",
+    png: "2b916121064ea3527e5915bd6ff77e298939cd40d402baa5a66133b47c8ec6af",
   },
 };
 

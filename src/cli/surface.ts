@@ -29,7 +29,7 @@ const RENAMED: Record<string, Record<string, string>> = {
   wall: { label: "relabel" },
   layer: { label: "rename" },
   node: { label: "rename", sublabel: "describe", size: "resize", mark: "icon" },
-  edge: { label: "relabel", ends: "retarget", number: "step" },
+  edge: { label: "relabel", ends: "retarget", number: "step", "label-at": "seat" },
 };
 
 /** The name a caller uses for a noun's verb. */
