@@ -93,7 +93,7 @@ const sameSteps = (x: DiagramNode, y: DiagramNode) =>
 const defaultEdgeId = (e: Edge) => `${e.from}->${e.to}`;
 
 function edgeAdd(e: Edge): Op {
-  const op: Op = { op: "edge.add", from: e.from, to: e.to, kind: e.kind };
+  const op: Op = { op: "edge.add", from: e.from, to: e.to, type: e.kind };
   if (e.id !== defaultEdgeId(e)) op.id = e.id;
   if (e.label !== undefined) op.label = e.label;
   if (e.both === true) op.both = true;
@@ -397,7 +397,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
           id: n.id,
           layer: l.id,
           label: n.label,
-          kind: n.kind,
+          type: n.kind,
           ...place,
         };
         if (n.sublabel !== undefined) op.sublabel = n.sublabel;
@@ -436,7 +436,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (from === n.from) final.add(n.id);
     else later.add(n.id);
     if (!bN.has(n.id)) {
-      const op: Op = { op: "node.add", id: n.id, label: n.label, kind: n.kind, from };
+      const op: Op = { op: "node.add", id: n.id, label: n.label, type: n.kind, from };
       if (n.sublabel !== undefined) op.sublabel = n.sublabel;
       if (n.size !== undefined) op.size = n.size;
       ops.push({ ...op, ...stepFields(n) });
@@ -472,7 +472,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
             ? { op: "node.sublabel", id }
             : { op: "node.sublabel", id, text: n.sublabel },
         );
-      if (n.kind !== was.kind) ops.push({ op: "node.kind", id, kind: n.kind });
+      if (n.kind !== was.kind) ops.push({ op: "node.type", id, type: n.kind });
       if (n.size !== was.size)
         ops.push(
           n.size === undefined ? { op: "node.size", id } : { op: "node.size", id, size: n.size },
@@ -639,7 +639,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       );
     // Both ends off before a kind turns into a link, and on only after it leaves one.
     if (e.both !== true && was.both === true) ops.push({ op: "edge.both", id: e.id, off: true });
-    if (e.kind !== was.kind) ops.push({ op: "edge.kind", id: e.id, kind: e.kind });
+    if (e.kind !== was.kind) ops.push({ op: "edge.type", id: e.id, type: e.kind });
     if (e.both === true && was.both !== true) ops.push({ op: "edge.both", id: e.id });
     if (e.out !== was.out || e.in !== was.in) {
       // A side taken away has no op of its own: both go, and what stays is stated again.

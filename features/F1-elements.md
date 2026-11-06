@@ -86,7 +86,7 @@ A node's kind says what it is and decides how it is drawn.
 - The labels of `initial` and `final` and `choice` stay in the file and are not drawn.
 
 ```sh
-grafical -f <file> node --kind <id> <kind>
+grafical -f <file> node --type <id> [<type>]
 ```
 
 A type of your own names a sort of node with its own shape and look. A change to it reaches every node of it.
@@ -248,8 +248,8 @@ An edge's kind says what it means and decides its style.
 
 **Commands:**
 
-- `grafical -f <file> edge --add <from> <to> [--id <id>] [--label <text>] [--type <kind>] [--both] [--pass]`
-- `grafical -f <file> edge --kind <id> <kind>`
+- `grafical -f <file> edge --add <from> <to> [--id <id>] [--label <text>] [--type <type>] [--both] [--pass]`
+- `grafical -f <file> edge --type <id> [<type>]`
 - `grafical -f <file> edge --label <id> [--label <text>]`
 - `grafical -f <file> edge --reverse <id>`
 - `grafical -f <file> edge --ends <id> [--from <end>] [--to <end>]`

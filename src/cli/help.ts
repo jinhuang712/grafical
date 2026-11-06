@@ -37,11 +37,11 @@ How to work:
 Ways to draw, by the story each tells:
   the way things move     rows, top to bottom (layer add); the order of a
                           row decides most crossings (node move, node swap)
-  a thing, step or state  node add --kind; node merge for several a reader
+  a thing, step or state  node add --type; node merge for several a reader
                           need not tell apart; node mark for a mark
   a box beside a box      node add --from <box> --right 1, which moves with
                           it; node align, directly above or below
-  what talks to what      edge add --kind; an end may be a group, a row or
+  what talks to what      edge add --type; an end may be a group, a row or
                           a lane, for one line to the whole
   one path, in order      edge number numbers its lines; edge weight draws
                           it thick
@@ -64,18 +64,18 @@ export const EXAMPLE_BATCH = `- {op: layer.add, id: row-callers, label: Callers}
 - {op: layer.add, id: row-entry, label: Entry}
 - {op: layer.add, id: row-core, label: Core}
 - {op: layer.add, id: row-store, label: Store}
-- {op: node.add, id: shoppers, layer: row-callers, label: Shoppers, sublabel: "web, mobile", kind: actor}
+- {op: node.add, id: shoppers, layer: row-callers, label: Shoppers, sublabel: "web, mobile", type: actor}
 - {op: node.add, id: gateway, layer: row-entry, label: API gateway, sublabel: "REST, :8080"}
 - {op: node.add, id: checkout, layer: row-core, label: checkout, sublabel: "validate, price"}
-- {op: node.add, id: events, layer: row-core, label: order topics, sublabel: 3 broker topics, kind: queue, last: true}
+- {op: node.add, id: events, layer: row-core, label: order topics, sublabel: 3 broker topics, type: queue, last: true}
 - {op: node.add, id: dispatcher, layer: row-core, label: dispatcher, sublabel: one per carrier, last: true}
-- {op: node.add, id: orders-db, layer: row-store, label: Orders DB, sublabel: "orders, parcels", kind: store, emphasis: true}
+- {op: node.add, id: orders-db, layer: row-store, label: Orders DB, sublabel: "orders, parcels", type: store, emphasis: true}
 - {op: group.add, id: order-desk, label: order-desk, nodes: [gateway, checkout]}
 - {op: group.add, id: shipping, label: shipping, nodes: [events, dispatcher]}
 - {op: edge.add, from: shoppers, to: gateway}
 - {op: edge.add, from: gateway, to: checkout}
-- {op: edge.add, from: checkout, to: events, label: publish, kind: async}
-- {op: edge.add, from: events, to: dispatcher, kind: async}
+- {op: edge.add, from: checkout, to: events, label: publish, type: async}
+- {op: edge.add, from: events, to: dispatcher, type: async}
 - {op: edge.add, from: checkout, to: orders-db}
 - {op: edge.add, from: dispatcher, to: orders-db, label: persist}
 `;
@@ -323,11 +323,11 @@ Limits:
   - Each step option takes 1 to 10. A box placed by steps takes no row,
     position, --align, column or lane.
 
-See also: node merge, node kind, node sublabel, edge add
+See also: node merge, node type, node sublabel, edge add
 
 Example:
   grafical node add shop.grafical orders-db --layer row-store --last \\
-    --label "Orders DB" --kind store --sublabel Postgres --emphasis
+    --label "Orders DB" --type store --sublabel Postgres --emphasis
 `,
   },
   "node merge": {
@@ -344,9 +344,6 @@ When to use:
     about: `Move a node to another row or position. Into another row, give the place too,
 as node add does. --from with steps takes it out of its row; --layer puts it
 back in one.`,
-  },
-  "node kind": {
-    about: "Change a node's kind (grafical node add --help lists them).",
   },
   "node emphasis": {
     about: "Emphasize a node as the thing to see first, or take the emphasis off with --off.",

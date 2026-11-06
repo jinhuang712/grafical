@@ -53,7 +53,7 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
 - `grafical -f <file> layer --move <id> --first | --last | --before <row> | --after <row>`
 - `grafical -f <file> layer --remove <id>`
 - `grafical -f <file> layer --split <id> <new-id> --label <text> [--from <node>]`
-- `grafical -f <file> node --add <id> --layer <row> --label <text> [--type <kind>] [--sublabel <text>] [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--emphasis]`
+- `grafical -f <file> node --add <id> --layer <row> --label <text> [--type <type>] [--sublabel <text>] [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--emphasis]`
 - `grafical -f <file> node --move <id> [--layer <row>] [--first | --last | --before <node> | --after <node>]`
 
 - A new layer goes to the bottom unless `--before` or `--after` places it.
@@ -160,7 +160,7 @@ A column may carry a heading above its first layer, such as a quarter.
 A node in no layer, placed some cells of the grid from another node.
 
 ```sh
-grafical -f <file> node --add <id> --from <node> [--down <n> | --up <n>] [--left <n> | --right <n>] --label <text> [--type <kind>]
+grafical -f <file> node --add <id> --from <node> [--down <n> | --up <n>] [--left <n> | --right <n>] --label <text> [--type <type>]
 grafical -f <file> node --move <id> [--from <node>] [--down <n> | --up <n>] [--left <n> | --right <n>]
 ```
 

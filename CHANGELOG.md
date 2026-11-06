@@ -12,6 +12,7 @@ grafical has not been released; the first release will be 0.1.0.
 - A verb is a flag after its noun, as in `grafical -f a.grafical edge --add a b`.
 - `apply -` reads a batch from standard input.
 - Batches and files use the names of the commands: `node.label`, `node.mark`, `edge.number`, `group.label-at`, `diagram.caption` and the rest, with `mark`, `marks`, `emphasis` and `caption` as fields.
+- `node --kind` and `edge --kind` went, since `--type` takes a built-in type or one of your own, and a batch says `type` too.
 - `edge --emphasize` went, since `edge --weight <id> --weight thick` draws the same line, and a saved edge's `accent` reads as that weight.
 - A help page writes its examples as a caller types them, with `-f` first, and a verb in the old form names the new one as `likely`.
 - `--type` takes the place of `--kind`.

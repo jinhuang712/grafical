@@ -61,7 +61,7 @@ describe('diff as operations (specs/decisions, "Git as the history")', () => {
       { op: "edge.number", id: "admin->mongo", n: 7 },
     ]);
     expect(diffDiagrams(catalogSyncGrouped, added)).toEqual([
-      { op: "edge.add", from: "admin", to: "mongo", kind: "call" },
+      { op: "edge.add", from: "admin", to: "mongo", type: "call" },
       { op: "edge.number", id: "admin->mongo", n: 7 },
     ]);
     replays(null, added);
@@ -70,7 +70,7 @@ describe('diff as operations (specs/decisions, "Git as the history")', () => {
   it("reports an added edge and a removed node with its edges", () => {
     const added = edited(catalogSyncGrouped, [{ op: "edge.add", from: "admin", to: "mongo" }]);
     expect(diffDiagrams(catalogSyncGrouped, added)).toEqual([
-      { op: "edge.add", from: "admin", to: "mongo", kind: "call" },
+      { op: "edge.add", from: "admin", to: "mongo", type: "call" },
     ]);
     const removed = edited(catalogSyncGrouped, [{ op: "node.remove", id: "geo" }]);
     expect(diffDiagrams(catalogSyncGrouped, removed)).toEqual([

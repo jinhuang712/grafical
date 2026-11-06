@@ -140,7 +140,6 @@ export interface NodeAddOp extends Position, Steps {
   id: string;
   layer?: string;
   label: string;
-  kind?: NodeKind;
   sublabel?: string;
   size?: SizeStep;
   align?: string;
@@ -173,7 +172,6 @@ export interface EdgeAddOp {
   to: string;
   id?: string;
   label?: string;
-  kind?: EdgeKind;
   /** true: an arrowhead at both ends (specs/decisions, "Lines meet any side"). */
   both?: boolean;
   /** true: the line may pass rows with no box between its ends (specs/decisions, "A row with no box as one bar"). */
@@ -296,11 +294,6 @@ export interface NodeDescribeOp {
   /** Absent: clear the sublabel. */
   text?: string;
 }
-export interface NodeKindOp {
-  op: "node.kind";
-  id: string;
-  kind: NodeKind;
-}
 export interface NodeEmphasizeOp {
   op: "node.emphasis";
   id: string;
@@ -345,7 +338,8 @@ export interface NodeMergeOp {
   id: string;
   label: string;
   sublabel?: string;
-  kind?: NodeKind;
+  /** A built-in type or one of the diagram's own. */
+  type?: string;
 }
 export interface EdgeSideOp {
   op: "edge.side";
@@ -377,11 +371,6 @@ export interface EdgeRelabelOp {
   id: string;
   /** Absent: clear the label. */
   label?: string;
-}
-export interface EdgeKindOp {
-  op: "edge.kind";
-  id: string;
-  kind: EdgeKind;
 }
 export interface EdgeReverseOp {
   op: "edge.reverse";
@@ -614,7 +603,6 @@ export type Op =
   | NodeMoveOp
   | NodeRemoveOp
   | NodeDescribeOp
-  | NodeKindOp
   | NodeEmphasizeOp
   | NodeMarkOp
   | NodeAlignOp
@@ -627,7 +615,6 @@ export type Op =
   | LabelStyleOp
   | EdgeSeatOp
   | EdgeSideOp
-  | EdgeKindOp
   | EdgeReverseOp
   | EdgeBothOp
   | EdgePassOp
@@ -717,7 +704,6 @@ export const nodeAddSchema = z.strictObject({
   id: nodeId,
   layer: nodeId.optional(),
   label: text,
-  kind: z.enum(NODE_KINDS).optional(),
   type: nodeId.optional(),
   sublabel: text.optional(),
   size: z.enum(SIZE_STEPS).optional(),
@@ -750,7 +736,6 @@ export const edgeAddSchema = z.strictObject({
   to: nodeId,
   id: edgeId.optional(),
   label: text.optional(),
-  kind: z.enum(EDGE_KINDS).optional(),
   type: nodeId.optional(),
   both: z.boolean().optional(),
   pass: z.boolean().optional(),
@@ -849,11 +834,6 @@ export const nodeDescribeSchema = z.strictObject({
   id: nodeId,
   text: text.optional(),
 });
-export const nodeKindSchema = z.strictObject({
-  op: z.literal("node.kind"),
-  id: nodeId,
-  kind: z.enum(NODE_KINDS),
-});
 export const nodeEmphasizeSchema = z.strictObject({
   op: z.literal("node.emphasis"),
   id: nodeId,
@@ -886,7 +866,7 @@ export const nodeMergeSchema = z.strictObject({
   id: nodeId,
   label: text,
   sublabel: text.optional(),
-  kind: z.enum(NODE_KINDS).optional(),
+  type: nodeId.optional(),
 });
 export const labelStyleSchema = z.strictObject({
   op: z.literal("label.style"),
@@ -902,11 +882,6 @@ export const edgeRelabelSchema = z.strictObject({
   op: z.literal("edge.label"),
   id: edgeId,
   label: text.optional(),
-});
-export const edgeKindSchema = z.strictObject({
-  op: z.literal("edge.kind"),
-  id: edgeId,
-  kind: z.enum(EDGE_KINDS),
 });
 export const edgeReverseSchema = z.strictObject({ op: z.literal("edge.reverse"), id: edgeId });
 export const edgeSideSchema = z.strictObject({
@@ -1115,7 +1090,6 @@ export const opSchema = z.discriminatedUnion("op", [
   laneStyleSchema,
   layerSplitSchema,
   nodeDescribeSchema,
-  nodeKindSchema,
   nodeEmphasizeSchema,
   nodeMarkSchema,
   nodeAlignSchema,
@@ -1124,7 +1098,6 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeRelabelSchema,
   labelAlignSchema,
   labelStyleSchema,
-  edgeKindSchema,
   edgeReverseSchema,
   edgeBothSchema,
   edgePassSchema,
@@ -1199,7 +1172,6 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "lane.style": laneStyleSchema,
   "layer.split": layerSplitSchema,
   "node.sublabel": nodeDescribeSchema,
-  "node.kind": nodeKindSchema,
   "node.emphasis": nodeEmphasizeSchema,
   "node.mark": nodeMarkSchema,
   "node.align": nodeAlignSchema,
@@ -1208,7 +1180,6 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.label": edgeRelabelSchema,
   "label.align": labelAlignSchema,
   "label.style": labelStyleSchema,
-  "edge.kind": edgeKindSchema,
   "edge.reverse": edgeReverseSchema,
   "edge.both": edgeBothSchema,
   "edge.pass": edgePassSchema,

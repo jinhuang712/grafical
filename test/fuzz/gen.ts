@@ -125,7 +125,7 @@ export function generate(seed: number, m: Measurer): Generated {
       id,
       layer,
       label: chance(0.15) ? text(2, 6) : `${pick(["svc", "db", "queue", "job", "api"])}-${i}`,
-      kind: pick(FIRST_NODE_KINDS),
+      type: pick(FIRST_NODE_KINDS),
       size: pick(SIZE_STEPS),
     };
     if (chance(0.3)) op.sublabel = chance(0.5) ? `:${7000 + i}` : text(2, 8);
@@ -184,7 +184,7 @@ export function generate(seed: number, m: Measurer): Generated {
   }
 
   function addEdge(from: string, to: string) {
-    const op: Op = { op: "edge.add", from, to, kind: pick(FIRST_EDGE_KINDS) };
+    const op: Op = { op: "edge.add", from, to, type: pick(FIRST_EDGE_KINDS) };
     if (chance(0.5)) op.label = text(2, 20);
     apply(op);
   }

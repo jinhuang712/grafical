@@ -19,7 +19,7 @@ const ops: Op[] = [
   { op: "node.add", id: "a2", layer: "core", label: "a2", last: true },
   { op: "node.add", id: "b1", layer: "core", label: "b1", last: true },
   { op: "node.add", id: "b2", layer: "core", label: "b2", last: true },
-  { op: "node.add", id: "db", layer: "store", label: "db", kind: "store" },
+  { op: "node.add", id: "db", layer: "store", label: "db", type: "store" },
   { op: "group.add", id: "write", label: "write side", nodes: ["a1", "a2"] },
   { op: "group.add", id: "read", label: "read side", nodes: ["b1", "b2"] },
   { op: "edge.add", from: "a1", to: "db", label: "persist" },

@@ -128,7 +128,7 @@ describe("grafical node mark", () => {
     for (const args of [
       ["new", fresh, "--title", "F"],
       ["layer", "add", fresh, "top", "--label", "L"],
-      ["node", "add", fresh, "q", "--layer", "top", "--label", "Q", "--kind", "decision"],
+      ["node", "add", fresh, "q", "--layer", "top", "--label", "Q", "--type", "decision"],
     ]) {
       run(...args);
     }

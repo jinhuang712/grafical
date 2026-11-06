@@ -60,7 +60,7 @@ describe('boxes placed by steps (specs/decisions, "Steps from another box")', ()
         op: "node.add",
         id: "cache",
         label: "Cache",
-        kind: "store",
+        type: "store",
         from: "api",
         down: 1,
         right: 1,

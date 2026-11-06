@@ -203,7 +203,7 @@ Three operations change which nodes a diagram has or where two of them sit.
 
 **Commands:**
 
-- `grafical -f <file> node --merge <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--type <kind>]`
+- `grafical -f <file> node --merge <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--type <type>]`
 - `grafical -f <file> node --swap <a> <b>`
 - `grafical -f <file> node --remove <id>`
 

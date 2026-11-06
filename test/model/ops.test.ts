@@ -34,32 +34,51 @@ describe("refusals that say what was meant", () => {
     expect(worded[0]?.facts?.likely).toBeUndefined();
   });
 
+  const typed = (op: object) => {
+    const start = applyOps(null, [
+      { op: "diagram.new", title: "t" },
+      { op: "layer.add", id: "l" },
+      { op: "node.add", id: "a", layer: "l", label: "A" },
+      { op: "node.add", id: "b", layer: "l", label: "B", last: true },
+    ] as Op[]);
+    if ("errors" in start) throw new Error("no start");
+    const r = applyOps(start.diagram, [op as Op]);
+    return "errors" in r ? r.errors : [];
+  };
+
   it("a value a few letters off is answered with the allowed value it most likely means", () => {
-    const e = parseOp({ op: "node.kind", id: "a", kind: "servise" }, 0) as OpError[];
-    expect(e[0]).toMatchObject({ code: "bad-value", field: "kind", found: "servise" });
+    const e = typed({ op: "node.type", id: "a", type: "servise" });
+    expect(e[0]).toMatchObject({ code: "unknown-type", field: "type", found: "servise" });
     expect(e[0]?.facts?.likely).toEqual(["service"]);
     const far = parseOp({ op: "diagram.density", density: "loose" }, 0) as OpError[];
     expect(far[0]?.facts?.likely).toBeUndefined();
   });
 
-  it("a guessed kind is answered with the kind it most likely means", () => {
-    const start = parseOp(
-      { op: "node.add", id: "s", layer: "l", label: "S", kind: "start" },
-      0,
-    ) as OpError[];
+  it("a guessed type is answered with the type it most likely means", () => {
+    const start = typed({
+      op: "node.add",
+      id: "s",
+      layer: "l",
+      label: "S",
+      type: "start",
+      last: true,
+    });
     expect(start[0]?.facts?.likely).toEqual(["terminal", "initial"]);
     expect(start[0]?.facts?.allowed).toEqual(NODE_KINDS);
-    const event = parseOp({ op: "edge.add", from: "a", to: "b", kind: "event" }, 0) as OpError[];
+    const event = typed({ op: "edge.add", from: "a", to: "b", type: "event" });
     expect(event[0]?.facts?.likely).toEqual(["async"]);
     expect(event[0]?.facts?.allowed?.[0]).toBe("call");
-    const style = parseOp({ op: "edge.add", from: "a", to: "b", kind: "dashed" }, 0) as OpError[];
+    const style = typed({ op: "edge.add", from: "a", to: "b", type: "dashed" });
     expect(style[0]?.facts?.likely).toEqual(["async"]);
-    const odd = parseOp(
-      { op: "node.add", id: "s", layer: "l", label: "S", kind: "blob" },
-      0,
-    ) as OpError[];
+    const odd = typed({
+      op: "node.add",
+      id: "s",
+      layer: "l",
+      label: "S",
+      type: "blob",
+      last: true,
+    });
     expect(odd[0]?.facts?.allowed).toEqual(NODE_KINDS);
-    expect(odd[0]?.facts?.likely).toBeUndefined();
   });
 
   it("the legend's old field name line is refused with its new name", () => {
@@ -103,7 +122,7 @@ const base: Diagram = ok(empty, [
   { op: "layer.add", id: "bottom", label: "Bottom" },
   { op: "node.add", id: "a", layer: "top", label: "A", last: true },
   { op: "node.add", id: "b", layer: "top", label: "B", last: true },
-  { op: "node.add", id: "c", layer: "bottom", label: "C", kind: "store" },
+  { op: "node.add", id: "c", layer: "bottom", label: "C", type: "store" },
 ]).diagram;
 
 const ids = (d: Diagram, layer: string) =>
@@ -156,7 +175,7 @@ describe("node.add", () => {
         id: "n",
         layer: "bottom",
         label: "N",
-        kind: "queue",
+        type: "queue",
         size: "l",
         sublabel: ":9",
         emphasis: true,
@@ -288,7 +307,7 @@ describe("edge.add and edge.remove", () => {
     const r = ok(base, [
       { op: "edge.add", from: "a", to: "c" },
       { op: "edge.add", from: "a", to: "c", label: "again" },
-      { op: "edge.add", from: "a", to: "c", kind: "async" },
+      { op: "edge.add", from: "a", to: "c", type: "async" },
     ]);
     expect(r.diagram.edges.map((e) => e.id)).toEqual(["a->c", "a->c#2", "a->c#3"]);
     expect(r.diagram.edges[2]).toMatchObject({ kind: "async" });
@@ -361,11 +380,11 @@ describe("batches", () => {
 describe("parsing operations", () => {
   it("parses a batch of items", () => {
     const r = parseOps([
-      { op: "node.add", id: "n", layer: "l", label: "N", kind: "store" },
+      { op: "node.add", id: "n", layer: "l", label: "N", type: "store" },
       { op: "edge.add", from: "a", to: "b" },
     ]);
     expect(r).toEqual([
-      { op: "node.add", id: "n", layer: "l", label: "N", kind: "store" },
+      { op: "node.add", id: "n", layer: "l", label: "N", type: "store" },
       { op: "edge.add", from: "a", to: "b" },
     ]);
   });
@@ -376,16 +395,15 @@ describe("parsing operations", () => {
   });
   it("reports bad values, missing and unknown fields with the item's index", () => {
     const r = parseOps([
-      { op: "node.add", id: "n", layer: "l", label: "N", kind: "db" },
+      { op: "diagram.density", density: "loose" },
       { op: "node.add", id: "n2", layer: "l" },
       { op: "node.remove", id: "n", extra: 1 },
     ]) as OpError[];
     expect(r.map((e) => [e.index, e.code, e.field])).toEqual([
-      [0, "bad-value", "kind"],
+      [0, "bad-value", "density"],
       [1, "missing-field", "label"],
       [2, "unknown-field", "extra"],
     ]);
-    expect(r[0]?.facts).toMatchObject({ likely: ["store"], allowed: NODE_KINDS });
   });
   it("rejects a batch that is not a list, and coordinates", () => {
     expect((parseOps({ op: "x" }) as OpError[])[0]?.code).toBe("bad-batch");

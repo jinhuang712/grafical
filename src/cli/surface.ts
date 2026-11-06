@@ -67,7 +67,7 @@ export function inward(args: readonly string[]): string[] | Unread {
     const verb = flag.slice(2);
     if (isHelp(after[0])) return [first, verb, ...after];
     if (file === undefined) return { field: "--file" };
-    return [first, verb, file, ...after.map((w) => (w === "--type" ? "--kind" : w))];
+    return [first, verb, file, ...after];
   }
   if (FILE_COMMANDS.includes(first)) {
     if (isHelp(rest[0])) return words;
@@ -106,7 +106,6 @@ export function learn(names: readonly string[]): void {
 /** Help text as a caller reads it: every command in the form it is typed. */
 export function surfaceText(text: string): string {
   return text
-    .replace(/--kind\b/g, "--type")
     .replace(
       USAGE_VERB,
       (_, noun: string, verb: string, more: string) =>

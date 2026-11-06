@@ -260,6 +260,18 @@ const EDGE_GUESS: Record<string, string> = {
   plain: "link",
 };
 
+/** What an unknown type likely meant: a guess agents make, or a built-in or own name a few letters off. */
+export function likelyType(
+  found: string,
+  kinds: readonly string[],
+  own: string[],
+  edge: boolean,
+): string[] {
+  const guess = (edge ? EDGE_GUESS : NODE_GUESS)[found.toLowerCase()];
+  if (guess !== undefined) return typeof guess === "string" ? [guess] : guess;
+  return closest(found, [...kinds, ...own], 1);
+}
+
 function guessedKind(
   raw: unknown,
   path: readonly PropertyKey[],

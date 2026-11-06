@@ -113,7 +113,7 @@ describe("grouped diagrams", () => {
     const items = ["- op: layer.add\n  id: row\n  label: Row\n"];
     for (let i = 0; i < 17; i++) {
       items.push(
-        `- op: node.add\n  id: n${i}\n  layer: row\n  label: N${i}\n  kind: queue\n  last: true\n`,
+        `- op: node.add\n  id: n${i}\n  layer: row\n  label: N${i}\n  type: queue\n  last: true\n`,
       );
     }
     writeFileSync(join(dir, "big.yaml"), items.join(""));

@@ -200,7 +200,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "bar-to-bar": ["edge remove", "edge ends"],
   "bent-line": ["layer move", "node move", "node swap"],
   "batch-unreadable": [],
-  "both-on-link": ["edge kind"],
+  "both-on-link": ["edge type"],
   "box-aside": ["node move"],
   "column-lanes": ["lane remove", "column remove"],
   "column-order": ["column join", "column leave", "node move"],

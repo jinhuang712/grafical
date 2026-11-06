@@ -39,17 +39,17 @@ const base: Op[] = [
   { op: "layer.add", id: "edge", label: "Edge" },
   { op: "layer.add", id: "services", label: "Services" },
   { op: "layer.add", id: "data", label: "Data" },
-  { op: "node.add", id: "web", layer: "clients", label: "web shop", kind: "actor", last: true },
+  { op: "node.add", id: "web", layer: "clients", label: "web shop", type: "actor", last: true },
   { op: "node.add", id: "gateway", layer: "edge", label: "gateway", last: true },
   { op: "node.add", id: "orders", layer: "services", label: "orders-api", last: true },
   { op: "node.add", id: "payments", layer: "services", label: "payments-api", last: true },
-  { op: "node.add", id: "ordersdb", layer: "data", label: "orders db", kind: "store", last: true },
-  { op: "node.add", id: "ledger", layer: "data", label: "ledger", kind: "store", last: true },
+  { op: "node.add", id: "ordersdb", layer: "data", label: "orders db", type: "store", last: true },
+  { op: "node.add", id: "ledger", layer: "data", label: "ledger", type: "store", last: true },
   { op: "edge.add", from: "web", to: "gateway" },
   { op: "edge.add", from: "gateway", to: "orders" },
   { op: "edge.add", from: "orders", to: "payments", label: "charge" },
-  { op: "edge.add", from: "orders", to: "ordersdb", kind: "data" },
-  { op: "edge.add", from: "payments", to: "ledger", kind: "data" },
+  { op: "edge.add", from: "orders", to: "ordersdb", type: "data" },
+  { op: "edge.add", from: "payments", to: "ledger", type: "data" },
 ];
 let shop: Diagram;
 beforeAll(() => {

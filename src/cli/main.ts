@@ -71,13 +71,6 @@ function pick(opts: Opts, names: string[]): Record<string, unknown> {
   return out;
 }
 
-/** An add with a type of the agent's own: `--type db` names no built-in, so it goes as `type`. */
-function ownType(raw: Record<string, unknown>, kinds: readonly string[]): Record<string, unknown> {
-  const { kind, ...rest } = raw;
-  if (kind === undefined || kinds.includes(kind as string)) return raw;
-  return { ...rest, type: kind };
-}
-
 function splitIds(s: string): string[] {
   return s
     .split(",")
@@ -635,7 +628,7 @@ export function build(): Command {
   const node = program
     .command("node")
     .description(
-      "boxes: add, move, swap, align, merge, kind, sublabel, mark, label, size, emphasis, type, style, remove",
+      "boxes: add, move, swap, align, merge, sublabel, mark, label, size, emphasis, type, style, remove",
     );
   json(
     withSteps(
@@ -646,7 +639,7 @@ export function build(): Command {
         .argument("<id>")
         .option("--layer <layer>", "the row")
         .requiredOption("--label <text>", "the name, short, as a reader would say it")
-        .option("--kind <kind>", "what the box is: see Kinds below")
+        .option("--type <type>", "what the box is: see Types below")
         .option("--sublabel <text>", "a quieter second line: technology, port, count")
         .option("--size <size>", "s, m or l; leave it out")
         .option("--first", "the first place")
@@ -657,9 +650,9 @@ export function build(): Command {
         .option("--emphasis", "mark as one of the nodes to see first"),
     ),
   ).action(async (file: string, id: string, opts: Opts) => {
-    const names = ["layer", "label", "kind", "sublabel", "size", "align", "emphasis", ...POSITION];
+    const names = ["layer", "label", "type", "sublabel", "size", "align", "emphasis", ...POSITION];
     const raw = { op: "node.add", id, ...pick(opts, names), ...stepFlags(opts) };
-    await write(file, ownType(raw, NODE_KINDS), opts);
+    await write(file, raw, opts);
   });
   json(
     node
@@ -711,7 +704,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "lines: add, ends, reverse, kind, label, side, label-at, weight, both, pass, number, type, style, remove",
+      "lines: add, ends, reverse, label, side, label-at, weight, both, pass, number, type, style, remove",
     );
   json(
     edge
@@ -722,16 +715,13 @@ export function build(): Command {
       .argument("<to>")
       .option("--id <id>", "default: <from>-><to>")
       .option("--label <text>", "what the line means; leave it out when that is obvious")
-      .option("--kind <kind>", "see Kinds below")
+      .option("--type <type>", "see Types below")
       .option("--both", "an arrowhead at both ends")
       .option("--pass", "may pass a bar, a row with no box, between its ends"),
   ).action(async (file: string, from: string, to: string, opts: Opts) => {
     await write(
       file,
-      ownType(
-        { op: "edge.add", from, to, ...pick(opts, ["id", "label", "kind", "both", "pass"]) },
-        EDGE_KINDS,
-      ),
+      { op: "edge.add", from, to, ...pick(opts, ["id", "label", "type", "both", "pass"]) },
       opts,
     );
   });
@@ -772,16 +762,6 @@ export function build(): Command {
       .argument("<seat>", "on or beside"),
   ).action(async (file: string, id: string, seat: string) => {
     await write(file, { op: "edge.label-at", id, seat }, {});
-  });
-  json(
-    edge
-      .command("kind")
-      .description("change an edge's kind")
-      .argument("<file>")
-      .argument("<id>")
-      .argument("<kind>", EDGE_KINDS.join(", ")),
-  ).action(async (file: string, id: string, kind: string, opts: Opts) => {
-    await write(file, { op: "edge.kind", id, kind }, opts);
   });
   json(
     edge
@@ -848,7 +828,7 @@ export function build(): Command {
   json(
     edge
       .command("ends")
-      .description("move one or both ends of an edge; its id, kind and label stay")
+      .description("move one or both ends of an edge; its id, type and label stay")
       .argument("<file>")
       .argument("<id>")
       .option("--from <end>", "a node, group, layer or lane")
@@ -866,16 +846,6 @@ export function build(): Command {
       .option("--text <text>"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "node.sublabel", id, ...pick(opts, ["text"]) }, opts);
-  });
-  json(
-    node
-      .command("kind")
-      .description("change a node's kind")
-      .argument("<file>")
-      .argument("<id>")
-      .argument("<kind>", NODE_KINDS.join(", ")),
-  ).action(async (file: string, id: string, kind: string, opts: Opts) => {
-    await write(file, { op: "node.kind", id, kind }, opts);
   });
   json(
     node
@@ -939,12 +909,12 @@ export function build(): Command {
       .requiredOption("--nodes <ids>", "comma-separated nodes to merge")
       .requiredOption("--label <text>", "the name, short, as a reader would say it")
       .option("--sublabel <text>")
-      .option("--kind <kind>"),
+      .option("--type <type>"),
   ).action(async (file: string, id: string, opts: Opts) => {
     const raw: Record<string, unknown> = {
       op: "node.merge",
       id,
-      ...pick(opts, ["label", "sublabel", "kind"]),
+      ...pick(opts, ["label", "sublabel", "type"]),
     };
     if (typeof opts.nodes === "string") raw.nodes = splitIds(opts.nodes);
     await write(file, raw, opts);
@@ -1384,7 +1354,9 @@ export function build(): Command {
     json(
       noun
         .command("type")
-        .description("give it a type of your own; without one, go back to its kind")
+        .description(
+          "give it a built-in type or one of your own; without one, its built-in type again",
+        )
         .argument("<file>")
         .argument("<id>")
         .argument("[type]"),

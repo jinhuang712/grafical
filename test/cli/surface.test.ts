@@ -50,7 +50,7 @@ describe("the words a caller types", () => {
   it("draw a batch from standard input", () => {
     expect(run(["-f", "a.grafical.yaml", "new", "--title", "T"]).code).toBe(0);
     const batch =
-      "- {op: layer.add, id: l, label: L}\n- {op: node.add, id: x, layer: l, label: X, kind: store}\n";
+      "- {op: layer.add, id: l, label: L}\n- {op: node.add, id: x, layer: l, label: X, type: store}\n";
     expect(run(["-f", "a.grafical.yaml", "apply", "-"], batch).code).toBe(0);
     expect(
       run([

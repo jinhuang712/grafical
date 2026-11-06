@@ -17,6 +17,7 @@ import {
   innerGroups,
   MAX_GROUP_DEPTH,
 } from "./groups.ts";
+import { likelyType } from "./issues.ts";
 import { type LaneRun, laneRun, orderByLanes } from "./lanes.ts";
 import { noteTargets, pruneNotes } from "./notes.ts";
 import type {
@@ -55,6 +56,7 @@ import {
   type DiagramNode,
   EDGE_KINDS,
   type Edge,
+  type EdgeKind,
   FORMAT_VERSION,
   type Group,
   type Layer,
@@ -64,6 +66,7 @@ import {
   type Mark,
   type MarkStyle,
   NODE_KINDS,
+  type NodeKind,
   type Note,
   SHAPE_KINDS,
   type Wall,
@@ -299,18 +302,18 @@ function unknownNode(d: Diagram, id: string, i: number, field: string): OpError 
   };
 }
 
-function unknownType(d: Diagram, id: string, i: number): OpError {
+function unknownType(d: Diagram, id: string, i: number, kinds: readonly string[] = []): OpError {
+  const own = (d.types ?? []).map((x) => x.id);
+  const likely = likelyType(id, kinds, own, kinds === EDGE_KINDS);
   return {
     code: "unknown-type",
     index: i,
     field: "type",
     found: id,
     facts: {
-      near: closest(
-        id,
-        (d.types ?? []).map((x) => x.id),
-        3,
-      ),
+      near: closest(id, own, 3),
+      ...(likely.length > 0 ? { likely } : {}),
+      ...(kinds.length > 0 ? { allowed: [...kinds, ...own] } : {}),
     },
   };
 }
@@ -323,6 +326,18 @@ function drawnKind(d: Diagram, id: string): string {
 }
 
 /** Gives an object a defined type, whose base must be a kind of that sort of object. */
+/** A type's built-in kind, when it names one. */
+function nodeKindOf(type: string | undefined): NodeKind | undefined {
+  return (NODE_KINDS as readonly (string | undefined)[]).includes(type)
+    ? (type as NodeKind)
+    : undefined;
+}
+function edgeKindOf(type: string | undefined): EdgeKind | undefined {
+  return (EDGE_KINDS as readonly (string | undefined)[]).includes(type)
+    ? (type as EdgeKind)
+    : undefined;
+}
+
 function setType(
   d: Diagram,
   o: { kind: string; type?: string } | undefined,
@@ -330,9 +345,9 @@ function setType(
   kinds: readonly string[],
   i: number,
 ): OpError[] {
-  if (!(d.types ?? []).some((x) => x.id === type)) return [unknownType(d, type, i)];
+  if (!(d.types ?? []).some((x) => x.id === type)) return [unknownType(d, type, i, kinds)];
   const kind = drawnKind(d, type);
-  if (o === undefined || !kinds.includes(kind)) return [unknownType(d, type, i)];
+  if (o === undefined || !kinds.includes(kind)) return [unknownType(d, type, i, kinds)];
   o.type = type;
   o.kind = kind;
   return [];
@@ -1121,7 +1136,11 @@ function addStepped(s: State, op: NodeAddOp, i: number): OpError[] {
     if (count >= MAX_EMPHASIS) errors.push(tooMuchEmphasis(d, i, "emphasis", "true", count + 1));
   }
   if (errors.length > 0) return errors;
-  const node: DiagramNode = { id: op.id, label: op.label, kind: op.kind ?? DEFAULT_NODE_KIND };
+  const node: DiagramNode = {
+    id: op.id,
+    label: op.label,
+    kind: nodeKindOf(op.type) ?? DEFAULT_NODE_KIND,
+  };
   if (op.size !== undefined) node.size = op.size;
   if (op.sublabel !== undefined) node.sublabel = op.sublabel;
   if (op.emphasis === true) node.emphasis = true;
@@ -1195,7 +1214,11 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
     if ("error" in slot) errors.push(slot.error);
   }
   if (errors.length > 0 || !layer) return errors;
-  const node: DiagramNode = { id: op.id, label: op.label, kind: op.kind ?? DEFAULT_NODE_KIND };
+  const node: DiagramNode = {
+    id: op.id,
+    label: op.label,
+    kind: nodeKindOf(op.type) ?? DEFAULT_NODE_KIND,
+  };
   if (op.size !== undefined) node.size = op.size;
   if (op.sublabel !== undefined) node.sublabel = op.sublabel;
   if (op.emphasis === true) node.emphasis = true;
@@ -1285,7 +1308,7 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
     id = `${op.from}->${op.to}`;
     for (let n = 2; unusedKind(d, id) !== undefined; n++) id = `${op.from}->${op.to}#${n}`;
   }
-  const kind = op.kind ?? DEFAULT_EDGE_KIND;
+  const kind = edgeKindOf(op.type) ?? DEFAULT_EDGE_KIND;
   if (op.both === true && kind === "link") errors.push(bothOnLink(id, i, "both", "true"));
   if (errors.length > 0) return errors;
   const edge: Edge = { id, from: op.from, to: op.to, kind };
@@ -1545,7 +1568,11 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
   const parts = op.nodes.map((id) => findNode(d, id)?.node as DiagramNode);
   const first = findNode(d, op.nodes[0] as string);
   if (!first) return [];
-  const node: DiagramNode = { id: op.id, label: op.label, kind: op.kind ?? first.node.kind };
+  const node: DiagramNode = {
+    id: op.id,
+    label: op.label,
+    kind: nodeKindOf(op.type) ?? first.node.kind,
+  };
   if (op.sublabel !== undefined) node.sublabel = op.sublabel;
   if (parts.some((p) => p.emphasis === true)) node.emphasis = true;
   if (first.node.group !== undefined) node.group = first.node.group;
@@ -1920,6 +1947,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
         return [];
       }
       if ((EDGE_KINDS as readonly string[]).includes(op.type)) {
+        if (op.type === "link" && e.both === true) return [bothOnLink(e.id, i, "type", op.type)];
         delete e.type;
         e.kind = op.type as typeof e.kind;
         return [];
@@ -1989,7 +2017,6 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
     case "layer.split":
       return splitLayer(s, op, i);
     case "node.sublabel":
-    case "node.kind":
     case "node.emphasis":
     case "node.align": {
       const at = findNode(d, op.id);
@@ -1998,8 +2025,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       if (op.op === "node.sublabel") {
         if (op.text === undefined) delete n.sublabel;
         else n.sublabel = op.text;
-      } else if (op.op === "node.kind") n.kind = op.kind;
-      else if (op.op === "node.emphasis") {
+      } else if (op.op === "node.emphasis") {
         if (op.off === true) delete n.emphasis;
         else if (n.emphasis !== true) {
           const count = everyNode(d).filter((x) => x.emphasis).length;
@@ -2153,7 +2179,6 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       return [];
     }
     case "edge.label":
-    case "edge.kind":
     case "edge.reverse":
     case "edge.both":
     case "edge.pass":
@@ -2168,9 +2193,6 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
           delete e.labelAlign;
           delete e.labelStyle;
         } else e.label = op.label;
-      } else if (op.op === "edge.kind") {
-        if (op.kind === "link" && e.both === true) return [bothOnLink(e.id, i, "kind", op.kind)];
-        e.kind = op.kind;
       } else if (op.op === "edge.reverse") [e.from, e.to] = [e.to, e.from];
       else if (op.op === "edge.both") {
         if (op.off === true) delete e.both;
@@ -2317,14 +2339,14 @@ function step(s: State, op: Op, i: number): OpError[] {
       return addLayer(s, op, i);
     case "node.add": {
       const errors = addNode(s, op, i);
-      if (errors.length > 0 || op.type === undefined) return errors;
+      if (errors.length > 0 || op.type === undefined || nodeKindOf(op.type)) return errors;
       return setType(d, findNode(d, op.id)?.node, op.type, NODE_KINDS, i);
     }
     case "node.move":
       return moveNode(s, op, i);
     case "edge.add": {
       const errors = addEdge(s, op, i);
-      if (errors.length > 0 || op.type === undefined) return errors;
+      if (errors.length > 0 || op.type === undefined || edgeKindOf(op.type)) return errors;
       return setType(d, d.edges.at(-1), op.type, EDGE_KINDS, i);
     }
     case "node.label": {

@@ -111,12 +111,12 @@ describe("the list of changes and the window", () => {
         id: "search",
         layer: "services",
         label: "search-api",
-        kind: "service",
+        type: "service",
         after: "bff",
       }),
     ).toBe('node add search "search-api" in services');
     expect(
-      describeOp({ op: "edge.add", from: "bff", to: "search", label: "query", kind: "call" }),
+      describeOp({ op: "edge.add", from: "bff", to: "search", label: "query", type: "call" }),
     ).toBe('edge add bff → search "query"');
     expect(describeOp({ op: "lane.join", lane: "webteam", members: ["search"] })).toBe(
       "lane join webteam search",

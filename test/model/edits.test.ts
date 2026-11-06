@@ -119,7 +119,7 @@ describe("nodes", () => {
     const d = ok(fx, [
       { op: "node.sublabel", id: "geo", text: "regions" },
       { op: "node.sublabel", id: "i18n" },
-      { op: "node.kind", id: "geo", kind: "service" },
+      { op: "node.type", id: "geo", type: "service" },
       { op: "node.emphasis", id: "mongo", off: true },
       { op: "node.emphasis", id: "geo" },
       { op: "node.align", id: "geo", to: "admin" },
@@ -169,7 +169,7 @@ describe("edges", () => {
     const d = ok(fx, [
       { op: "edge.label", id: "pipelines->mongo", label: "write" },
       { op: "edge.label", id: "service->mongo" },
-      { op: "edge.kind", id: "pipelines->geo", kind: "data" },
+      { op: "edge.type", id: "pipelines->geo", type: "data" },
       { op: "edge.reverse", id: "retry->line_topics" },
       { op: "edge.ends", id: "callers->handlers", to: "catalog-api" },
     ]);
@@ -216,14 +216,14 @@ describe("edges", () => {
     expect(scene.edges.find((e) => e.id === "pipelines->mongo")?.both).toBe(true);
     const off = ok(d, [{ op: "edge.both", id: "pipelines->mongo", off: true }]);
     expect(edge(off, "pipelines->mongo")?.both).toBeUndefined();
-    const link = ok(fx, [{ op: "edge.kind", id: "pipelines->mongo", kind: "link" }]);
+    const link = ok(fx, [{ op: "edge.type", id: "pipelines->mongo", type: "link" }]);
     expect(fail(link, [{ op: "edge.both", id: "pipelines->mongo" }])[0]?.code).toBe("both-on-link");
     expect(
-      fail(fx, [{ op: "edge.add", from: "handlers", to: "geo", kind: "link", both: true }])[0],
+      fail(fx, [{ op: "edge.add", from: "handlers", to: "geo", type: "link", both: true }])[0],
     ).toMatchObject({ code: "both-on-link", field: "both" });
-    expect(fail(d, [{ op: "edge.kind", id: "handlers->geo", kind: "link" }])[0]).toMatchObject({
+    expect(fail(d, [{ op: "edge.type", id: "handlers->geo", type: "link" }])[0]).toMatchObject({
       code: "both-on-link",
-      field: "kind",
+      field: "type",
     });
   });
 
@@ -242,7 +242,7 @@ describe("edges", () => {
     const kept = ok(d, [
       { op: "edge.label", id: "callers->handlers", label: "GET" },
       { op: "edge.reverse", id: "callers->handlers" },
-      { op: "edge.kind", id: "callers->handlers", kind: "async" },
+      { op: "edge.type", id: "callers->handlers", type: "async" },
     ]);
     expect(edge(kept, "callers->handlers")?.step).toBe(1);
     const off = ok(d, [{ op: "edge.number", id: "service->mongo" }]);
@@ -281,7 +281,7 @@ describe("dots", () => {
         id: "begin",
         layer: "topics",
         label: "begin",
-        kind: "initial",
+        type: "initial",
         size: "l",
         first: true,
       },
@@ -379,13 +379,13 @@ describe("parsing", () => {
       { op: "layer.remove", id: "a" },
       { op: "layer.split", id: "a", into: "b", label: "B" },
       { op: "node.sublabel", id: "a", text: "t" },
-      { op: "node.kind", id: "a", kind: "store" },
+      { op: "node.type", id: "a", type: "store" },
       { op: "node.emphasis", id: "a", off: true },
       { op: "node.align", id: "a", to: "b" },
       { op: "node.swap", a: "a", b: "b" },
       { op: "node.merge", nodes: ["a", "b"], id: "c", label: "C" },
       { op: "edge.label", id: "a->b", label: "x" },
-      { op: "edge.kind", id: "a->b", kind: "async" },
+      { op: "edge.type", id: "a->b", type: "async" },
       { op: "edge.both", id: "a->b", off: true },
       { op: "edge.weight", edges: ["a->b"], weight: "thick" },
       { op: "edge.reverse", id: "a->b" },

@@ -40,7 +40,7 @@ const SINGLE: string[][] = [
     "clients",
     "--label",
     "Web",
-    "--kind",
+    "--type",
     "actor",
   ],
   [
@@ -74,7 +74,7 @@ const SINGLE: string[][] = [
     "storage",
     "--label",
     "DB",
-    "--kind",
+    "--type",
     "store",
   ],
   [
@@ -86,14 +86,14 @@ const SINGLE: string[][] = [
     "storage",
     "--label",
     "MQ",
-    "--kind",
+    "--type",
     "queue",
     "--last",
   ],
   ["edge", "add", "single.grafical.yaml", "web", "api", "--label", "call"],
-  ["edge", "add", "single.grafical.yaml", "api", "db", "--kind", "data"],
-  ["edge", "add", "single.grafical.yaml", "api", "mq", "--kind", "async"],
-  ["edge", "add", "single.grafical.yaml", "mq", "worker", "--kind", "async"],
+  ["edge", "add", "single.grafical.yaml", "api", "db", "--type", "data"],
+  ["edge", "add", "single.grafical.yaml", "api", "mq", "--type", "async"],
+  ["edge", "add", "single.grafical.yaml", "mq", "worker", "--type", "async"],
 ];
 
 const BATCH = `- op: layer.add
@@ -109,7 +109,7 @@ const BATCH = `- op: layer.add
   id: web
   layer: clients
   label: Web
-  kind: actor
+  type: actor
 - op: node.add
   id: api
   layer: services
@@ -124,12 +124,12 @@ const BATCH = `- op: layer.add
   id: db
   layer: storage
   label: DB
-  kind: store
+  type: store
 - op: node.add
   id: mq
   layer: storage
   label: MQ
-  kind: queue
+  type: queue
   last: true
 - op: edge.add
   from: web
@@ -138,15 +138,15 @@ const BATCH = `- op: layer.add
 - op: edge.add
   from: api
   to: db
-  kind: data
+  type: data
 - op: edge.add
   from: api
   to: mq
-  kind: async
+  type: async
 - op: edge.add
   from: mq
   to: worker
-  kind: async
+  type: async
 `;
 
 describe("write commands", () => {
@@ -241,12 +241,13 @@ describe("write commands", () => {
   it("rejects a malformed batch item before applying anything", () => {
     writeFileSync(
       join(dir, "bad2.yaml"),
-      "- op: node.add\n  id: n\n  layer: storage\n  label: N\n  kind: db\n",
+      "- op: node.add\n  id: n\n  layer: storage\n  label: N\n  type: db\n  last: true\n",
     );
     const r = run("apply", "single.grafical.yaml", "bad2.yaml");
     expect(r.code).toBe(1);
-    expect(r.out).toContain("error: bad-value\n");
-    expect(r.out).toContain("  field: kind\n  found: db\n  likely: store\n");
+    expect(r.out).toContain("error: unknown-type\n");
+    expect(r.out).toContain("  field: type\n  found: db\n");
+    expect(r.out).toContain("  likely: store\n");
     expect(r.out).toContain("  allowed: service, store, queue, external, actor,");
   });
 

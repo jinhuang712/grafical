@@ -57,7 +57,8 @@ function changes(d: Diagram, seed: number, count: number): Op[] {
       { op: "node.add", id: `new${i}`, label: "new box", layer: pick(rows) },
       { op: "node.add", id: a, label: "new box", layer: pick(rows), last: true },
       { op: "node.align", id: a, to: b },
-      { op: "node.kind", id: a, kind: "servise" },
+      { op: "node.type", id: a, type: "servise" },
+      { op: "diagram.density", density: "loose" },
       { op: "edge.add", from: a, to: b, label: "a long label for this line" },
       { op: "edge.add", from: a, to: `${b}x` },
       { op: "group.add", id: `g${i}`, label: "group", nodes: [a, b] },
@@ -128,7 +129,13 @@ describe("the refusals of random changes", () => {
     }
     expect(wrong).toEqual([]);
     // The changes reach the codes agents meet most.
-    for (const code of ["missing-field", "bad-value", "unknown-node", "duplicate-id"])
+    for (const code of [
+      "missing-field",
+      "bad-value",
+      "unknown-node",
+      "duplicate-id",
+      "unknown-type",
+    ])
       expect([...codes], code).toContain(code);
     expect(codes.size).toBeGreaterThan(12);
   });
