@@ -261,7 +261,7 @@ export const diagramSchema = z.strictObject({
   subtitle: text.optional(),
   note: text.optional(),
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
-  lines: z.enum(["round", "smooth"]).optional(),
+  lines: z.enum(["round"]).optional(),
   sizing: z.enum(SIZINGS).optional(),
   style: text.optional(),
   types: z.array(typeSchema).default([]),

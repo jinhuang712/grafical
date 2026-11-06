@@ -30,6 +30,18 @@
 - next: the owner designs the legend in a talk of its own
 - related: [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
+### [P2][DISCUSSION] A line that is a curve end to end
+
+- description:
+  - Lines are drawn square or round today.
+  - The owner wants a third shape with no straight run.
+  - A curve through a route's points cuts corners and can meet what lies beside it.
+  - It is open what happens when it does.
+- created: 2026-11-06
+- status: HALT
+- next: the owner designs it
+- related: [059. Lines may be drawn square, round or smooth](../specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
+
 ### [P2][DISCUSSION] Small points of the .grafical file
 
 - description:

@@ -2,6 +2,8 @@
 
 Decided: 2026-11-06
 
+Changed on 2026-11-06: a slope over the same route reached 2 of 30 lines on the dispatch fixture, so `smooth` went. A third shape, a line that is a curve end to end, waits for its own design.
+
 ## The problem
 
 The owner holds that a very good picture needs curves. Curves were a value in the stylesheet that agents did not know, and they only rounded the corners of straight runs. A picture the owner drew on 2026-11-06 goes further: its sideways runs slope, and each line reads as one S.

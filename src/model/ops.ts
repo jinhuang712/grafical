@@ -220,7 +220,7 @@ export interface LayerRemoveOp {
 /** How a row is drawn, and that it is drawn though no line ends at it (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
 export interface DiagramLinesOp {
   op: "diagram.lines";
-  lines: "square" | "round" | "smooth";
+  lines: "square" | "round";
 }
 export interface TypeAddOp {
   op: "type.add";
@@ -700,7 +700,7 @@ export const edgeRemoveSchema = z.strictObject({ op: z.literal("edge.remove"), i
 export const diagramTitleSchema = z.strictObject({ op: z.literal("diagram.title"), text });
 export const diagramLinesSchema = z.strictObject({
   op: z.literal("diagram.lines"),
-  lines: z.enum(["square", "round", "smooth"]),
+  lines: z.enum(["square", "round"]),
 });
 export const diagramDensitySchema = z.strictObject({
   op: z.literal("diagram.density"),

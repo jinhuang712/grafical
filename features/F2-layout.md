@@ -12,7 +12,7 @@ F2: Layout
 │   └── F2.6.1: Region gaps — more room between two regions
 ├── F2.7: How edges are drawn — grafical routes every line
 │   ├── F2.7.1: Edge sides — the side a line leaves or enters by
-│   ├── F2.7.2: Edge shapes — square, round or smooth
+│   ├── F2.7.2: Edge shapes — square or round
 │   └── F2.7.3: Labels on edges — a line carries its label
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
@@ -274,13 +274,11 @@ grafical -f <file> edge --side <id> [--out top|bottom|left|right] [--in top|bott
 All the edges of a diagram share one shape, and the routes stay the same.
 
 ```sh
-grafical -f <file> diagram --lines square|round|smooth
+grafical -f <file> diagram --lines square|round
 ```
 
 - `square` has sharp corners, as a new diagram does.
 - `round` rounds the corners and keeps the straight runs.
-- `smooth` draws a sideways run as a slope, so that the edge reads as one S.
-- A smooth edge of three runs draws as one S where it stays clear, and as `round` where it would not.
 
 - **Why:** [059. Lines may be drawn square, round or smooth](../specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
 

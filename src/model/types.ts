@@ -330,7 +330,7 @@ export interface Diagram {
   note?: string;
   density: Density;
   /** How lines are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Lines may be drawn square, round or smooth"). */
-  lines?: "round" | "smooth";
+  lines?: "round";
   /** "fixed": a node with no size is a medium box, whatever its text. Absent: auto (specs/decisions, "Boxes sized to their text"). */
   sizing?: "fixed";
   /** A built-in theme's name, or a stylesheet's path relative to the file (specs/decisions, "Themes and stylesheets"). Absent: the default theme. */

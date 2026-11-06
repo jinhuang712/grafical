@@ -1001,7 +1001,7 @@ export function build(): Command {
       .command("lines")
       .description("how lines are drawn")
       .argument("<file>")
-      .argument("<lines>", "square, round or smooth"),
+      .argument("<lines>", "square or round"),
   ).action(async (file: string, lines: string, opts: Opts) => {
     await write(file, { op: "diagram.lines", lines }, opts);
   });

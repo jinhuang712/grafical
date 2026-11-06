@@ -146,7 +146,7 @@ The root has no ID, and a file has exactly one.
 | `library` | text, a `.grafical` file of types and styles |
 | `density` | `compact`, `normal` or `airy` |
 | `sizing` | `auto` or `fixed` |
-| `lines` | `square`, `round` or `smooth` |
+| `lines` | `square` or `round` |
 
 ### `<type>`
 

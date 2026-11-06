@@ -85,7 +85,7 @@ describe("styles", () => {
     expect(readFileSync(join(dir, "t.grafical"), "utf8")).not.toContain("@cache");
   });
 
-  it("lines may be round or smooth, and square again", () => {
+  it("lines may be round, and square again", () => {
     const g = ["-f", "dispatch.grafical.yaml"];
     copyFileSync(
       resolve(import.meta.dirname, "../fixtures/dispatch.grafical.yaml"),
@@ -100,8 +100,6 @@ describe("styles", () => {
       return readFileSync(join(dir, "l.svg"), "utf8");
     };
     const square = svg();
-    expect(go("diagram", "--lines", "smooth").code).toBe(0);
-    expect(svg()).toMatch(/d="M[^"]*C/);
     expect(go("diagram", "--lines", "round").code).toBe(0);
     expect(svg()).not.toBe(square);
     expect(go("diagram", "--lines", "square").code).toBe(0);
