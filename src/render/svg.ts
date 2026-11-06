@@ -303,6 +303,46 @@ function clearCorner(
 }
 
 /**
+ * A route of three runs as one S (specs/decisions, "Lines may be drawn square, round or smooth"): the route stays, and its
+ * middle run slopes. Undefined when the route is another form or the S would come near a box, a label or another line.
+ */
+function smoothPath(pts: Point[], room: Room, id: string): string | undefined {
+  if (pts.length !== 4) return undefined;
+  const [a, b, , d] = pts as [Point, Point, Point, Point];
+  const down = a.x === b.x;
+  const middle = down ? (a.y + d.y) / 2 : (a.x + d.x) / 2;
+  const p: Point = down ? { x: a.x, y: middle } : { x: middle, y: a.y };
+  const q: Point = down ? { x: d.x, y: middle } : { x: middle, y: d.y };
+  for (let i = 3; i < 10; i++) {
+    const t = i / 12;
+    const u = 1 - t;
+    const at = {
+      x: u * u * u * a.x + 3 * u * u * t * p.x + 3 * u * t * t * q.x + t * t * t * d.x,
+      y: u * u * u * a.y + 3 * u * u * t * p.y + 3 * u * t * t * q.y + t * t * t * d.y,
+    };
+    for (const r of room.boxes) {
+      if (
+        at.x > r.x - CURVE_CLEAR &&
+        at.x < r.x + r.w + CURVE_CLEAR &&
+        at.y > r.y - CURVE_CLEAR &&
+        at.y < r.y + r.h + CURVE_CLEAR
+      ) {
+        const own = (e: Point) =>
+          e.x >= r.x - 1 && e.x <= r.x + r.w + 1 && e.y >= r.y - 1 && e.y <= r.y + r.h + 1;
+        if (!own(a) && !own(d)) return undefined;
+      }
+    }
+    for (const l of room.lines) {
+      if (l.id === id) continue;
+      const x = Math.min(Math.max(at.x, Math.min(l.a.x, l.b.x)), Math.max(l.a.x, l.b.x));
+      const y = Math.min(Math.max(at.y, Math.min(l.a.y, l.b.y)), Math.max(l.a.y, l.b.y));
+      if (Math.hypot(at.x - x, at.y - y) < CURVE_CLEAR) return undefined;
+    }
+  }
+  return `M${num(a.x)} ${num(a.y)}C${num(p.x)} ${num(p.y)} ${num(q.x)} ${num(q.y)} ${num(d.x)} ${num(d.y)}`;
+}
+
+/**
  * A route as a path with corners rounded by a quadratic curve, hopping over
  * crossings. In the curved style a corner is as round as half of each of its two
  * stretches, halved while it would come near a box, a label or another line, and
@@ -310,6 +350,9 @@ function clearCorner(
  */
 function roundedPath(pts: Point[], P: Paint, hops: Hop[] = [], room?: Room, id = ""): string {
   const first = pts[0] as Point;
+  const flowing = P.edge.shape === "smooth" && room !== undefined && hops.length === 0;
+  const s = flowing ? smoothPath(pts, room, id) : undefined;
+  if (s !== undefined) return s;
   let d = `M${num(first.x)} ${num(first.y)}`;
   let at = first;
   for (let i = 1; i < pts.length; i++) {
@@ -327,7 +370,7 @@ function roundedPath(pts: Point[], P: Paint, hops: Hop[] = [], room?: Room, id =
       { x: p.x + ((next.x - p.x) / outLen) * r, y: p.y + ((next.y - p.y) / outLen) * r },
     ];
     let r = Math.min(P.edge.cornerRadius, inLen / 2, outLen / 2);
-    if (P.edge.shape === "curved" && room !== undefined) {
+    if (P.edge.shape !== "orthogonal" && room !== undefined) {
       let round = Math.min(inLen / 2, outLen / 2);
       while (round > r && !clearCorner(id, prev, p, next, ...ends(round), room)) round /= 2;
       if (round > r) r = round;
@@ -570,7 +613,7 @@ export function renderSvg(scene: Scene): string {
   const byId = new Map(scene.nodes.map((n) => [n.id, n]));
   const hops = hopsOf(scene.edges);
   const room: Room | undefined =
-    P.edge.shape === "curved"
+    P.edge.shape !== "orthogonal"
       ? {
           boxes: [
             ...scene.nodes.map((n) => n.rect),

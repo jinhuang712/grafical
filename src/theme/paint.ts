@@ -82,7 +82,7 @@ export interface Paint {
      * orthogonal: corners rounded by cornerRadius. curved: each corner as round as
      * its two stretches and the room around it allow; the route stays the same (specs/decisions, "Lines meet any side").
      */
-    shape: "orthogonal" | "curved";
+    shape: "orthogonal" | "curved" | "smooth";
     /** The patch behind an edge label, so the label stays readable over lines. */
     labelBackground: { fill: string; padX: number; padY: number; radius: number };
   };

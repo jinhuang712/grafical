@@ -214,7 +214,7 @@ export function build(): Command {
 
   const diagram = program
     .command("diagram")
-    .description("the whole diagram: title, subtitle, note, legend, style, density, sizing");
+    .description("the whole diagram: title, subtitle, note, legend, style, density, sizing, lines");
   json(
     diagram
       .command("style")
@@ -995,6 +995,15 @@ export function build(): Command {
       .requiredOption("--text <text>"),
   ).action(async (file: string, opts: Opts) => {
     await write(file, { op: "diagram.title", ...pick(opts, ["text"]) }, opts);
+  });
+  json(
+    diagram
+      .command("lines")
+      .description("how lines are drawn")
+      .argument("<file>")
+      .argument("<lines>", "square, round or smooth"),
+  ).action(async (file: string, lines: string, opts: Opts) => {
+    await write(file, { op: "diagram.lines", lines }, opts);
   });
   json(
     diagram

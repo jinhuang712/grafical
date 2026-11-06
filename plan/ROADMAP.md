@@ -528,7 +528,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 **Tasks:**
 
 - ⬜ Edge sides: An agent states the side a line leaves or enters by.
-- ⬜ Edge shapes: A command draws lines square, round or smooth.
+- 🟨 Edge shapes: A command draws lines square, round or smooth; few lines reach the S until labels sit on them.
 - ⬜ Labels on edges: A line carries its label by default, measured over the saved drafts before it lands.
 - ⬜ Label text: An agent sets a label's breaks and its alignment.
 - ⬜ Region gaps: The gap between two regions takes a multiple.

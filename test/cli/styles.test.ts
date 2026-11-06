@@ -1,7 +1,7 @@
 // Styles an object marks (specs/decisions, "A style may be as rich as it likes").
 
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { copyFileSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -83,5 +83,28 @@ describe("styles", () => {
     expect(go("type", "--add", "db", "--base", "store", "--fill", "#123").code).toBe(0);
     expect(go("type", "--remove", "cache").code).toBe(0);
     expect(readFileSync(join(dir, "t.grafical"), "utf8")).not.toContain("@cache");
+  });
+
+  it("lines may be round or smooth, and square again", () => {
+    const g = ["-f", "dispatch.grafical.yaml"];
+    copyFileSync(
+      resolve(import.meta.dirname, "../fixtures/dispatch.grafical.yaml"),
+      join(dir, "dispatch.grafical.yaml"),
+    );
+    const go = (...args: string[]) => {
+      const r = spawnSync("node", [MAIN, ...g, ...args], { cwd: dir, encoding: "utf8" });
+      return { code: r.status, out: r.stdout + r.stderr };
+    };
+    const svg = () => {
+      go("render", "--svg", "l.svg");
+      return readFileSync(join(dir, "l.svg"), "utf8");
+    };
+    const square = svg();
+    expect(go("diagram", "--lines", "smooth").code).toBe(0);
+    expect(svg()).toMatch(/d="M[^"]*C/);
+    expect(go("diagram", "--lines", "round").code).toBe(0);
+    expect(svg()).not.toBe(square);
+    expect(go("diagram", "--lines", "square").code).toBe(0);
+    expect(svg()).toBe(square);
   });
 });

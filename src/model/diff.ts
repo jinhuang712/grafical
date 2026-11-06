@@ -134,6 +134,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     ops.push(a.note === undefined ? { op: "diagram.note" } : { op: "diagram.note", text: a.note });
   }
   if (a.density !== b.density) ops.push({ op: "diagram.density", density: a.density });
+  if (a.lines !== b.lines) ops.push({ op: "diagram.lines", lines: a.lines ?? "square" });
   if ((a.sizing ?? "auto") !== (b.sizing ?? "auto")) {
     ops.push({ op: "diagram.sizing", mode: a.sizing ?? "auto" });
   }

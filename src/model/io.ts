@@ -104,6 +104,7 @@ export function writeDiagram(d: Diagram): string {
   if (d.subtitle !== undefined) out.subtitle = d.subtitle;
   if (d.note !== undefined) out.note = d.note;
   out.density = d.density;
+  if (d.lines !== undefined) out.lines = d.lines;
   if (d.sizing === "fixed") out.sizing = "fixed";
   if (d.style !== undefined) out.style = d.style;
   if (d.types !== undefined && d.types.length > 0) out.types = d.types;

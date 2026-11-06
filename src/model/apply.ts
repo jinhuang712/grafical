@@ -1782,6 +1782,11 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       d.title = op.text;
       touch(s, "title");
       return [];
+    case "diagram.lines":
+      if (op.lines === "square") delete d.lines;
+      else d.lines = op.lines;
+      touch(s, "lines");
+      return [];
     case "diagram.density":
       d.density = op.density;
       touch(s, "density");

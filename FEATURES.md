@@ -44,7 +44,7 @@ Features
 │   │   └── ⬜ F2.6.1: Region gaps — more room between two regions
 │   ├── 🚧 F2.7: How edges are drawn — grafical routes every line (line sides and smooth lines and labels on turning lines not built)
 │   │   ├── ⬜ F2.7.1: Edge sides — the side a line leaves or enters by
-│   │   ├── 🚧 F2.7.2: Edge shapes — square, round or smooth (round is only in the stylesheet and smooth is not built)
+│   │   ├── 🚧 F2.7.2: Edge shapes — square, round or smooth (few lines reach the S until labels sit on them)
 │   │   └── 🚧 F2.7.3: Labels on edges — a line carries its label (only on straight vertical lines)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)

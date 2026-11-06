@@ -1781,7 +1781,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (note !== undefined) scene.note = note;
   scene.legend = legend;
   scene.groups = sceneGroups;
-  if (theme !== DEFAULT_THEME) scene.paint = theme.paint;
+  if (d.lines !== undefined) {
+    const shape = d.lines === "round" ? "curved" : "smooth";
+    scene.paint = { ...theme.paint, edge: { ...theme.paint.edge, shape } };
+  } else if (theme !== DEFAULT_THEME) scene.paint = theme.paint;
   if (sceneBands.length > 0) scene.bands = sceneBands;
   if (sceneLanes.length > 0) scene.lanes = sceneLanes;
   if (sceneWalls.length > 0) scene.walls = sceneWalls;

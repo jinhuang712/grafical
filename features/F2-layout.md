@@ -280,7 +280,7 @@ grafical -f <file> diagram --lines square|round|smooth
 - `square` has sharp corners, as a new diagram does.
 - `round` rounds the corners and keeps the straight runs.
 - `smooth` draws a sideways run as a slope, so that the edge reads as one S.
-- A smooth line that would touch a node or a text is refused.
+- A smooth edge of three runs draws as one S where it stays clear, and as `round` where it would not.
 
 - **Why:** [059. Lines may be drawn square, round or smooth](../specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
 

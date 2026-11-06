@@ -261,6 +261,7 @@ export const diagramSchema = z.strictObject({
   subtitle: text.optional(),
   note: text.optional(),
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
+  lines: z.enum(["round", "smooth"]).optional(),
   sizing: z.enum(SIZINGS).optional(),
   style: text.optional(),
   types: z.array(typeSchema).default([]),
@@ -337,6 +338,7 @@ function build(p: Parsed): Diagram {
   });
   const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
   if (p.sizing === "fixed") d.sizing = "fixed";
+  if (p.lines !== undefined) d.lines = p.lines;
   if (p.style !== undefined) d.style = p.style;
   if (p.types.length > 0) {
     d.types = p.types.map(

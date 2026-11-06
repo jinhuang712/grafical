@@ -63,6 +63,7 @@ export function writeGrafical(d: Diagram): string {
       ["caption", opt(d.note, quote)],
       ["style", opt(d.style, quote)],
       ["density", d.density],
+      ["lines", d.lines],
       ["sizing", d.sizing === "fixed" ? "fixed" : undefined],
     ]),
   );
@@ -361,6 +362,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       caption: "note",
       style: "style",
       density: "density",
+      lines: "lines",
       sizing: "sizing",
     },
     out,

@@ -218,6 +218,10 @@ export interface LayerRemoveOp {
   id: string;
 }
 /** How a row is drawn, and that it is drawn though no line ends at it (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
+export interface DiagramLinesOp {
+  op: "diagram.lines";
+  lines: "square" | "round" | "smooth";
+}
 export interface TypeAddOp {
   op: "type.add";
   id: string;
@@ -540,6 +544,7 @@ export type Op =
   | LayerMoveOp
   | LayerRemoveOp
   | LayerLookOp
+  | DiagramLinesOp
   | TypeAddOp
   | TypeRemoveOp
   | SetTypeOp
@@ -693,6 +698,10 @@ export const edgeAddSchema = z.strictObject({
 });
 export const edgeRemoveSchema = z.strictObject({ op: z.literal("edge.remove"), id: edgeId });
 export const diagramTitleSchema = z.strictObject({ op: z.literal("diagram.title"), text });
+export const diagramLinesSchema = z.strictObject({
+  op: z.literal("diagram.lines"),
+  lines: z.enum(["square", "round", "smooth"]),
+});
 export const diagramDensitySchema = z.strictObject({
   op: z.literal("diagram.density"),
   density: z.enum(DENSITIES),
@@ -960,6 +969,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeRemoveSchema,
   diagramTitleSchema,
   diagramDensitySchema,
+  diagramLinesSchema,
   diagramLegendSchema,
   groupDescribeSchema,
   groupOrderSchema,
@@ -1034,6 +1044,7 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.remove": edgeRemoveSchema,
   "diagram.title": diagramTitleSchema,
   "diagram.density": diagramDensitySchema,
+  "diagram.lines": diagramLinesSchema,
   "diagram.legend": diagramLegendSchema,
   "group.describe": groupDescribeSchema,
   "group.title": groupTitleSchema,
