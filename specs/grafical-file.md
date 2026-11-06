@@ -1,6 +1,6 @@
 # The .grafical file
 
-**Status:** a draft that guides the code, and none of it is built.
+**Status:** built, and tuned once its diffs show what to change.
 
 A `.grafical` file holds one diagram as objects with attributes and relations. grafical is its only writer, and a model reads it through `show`, so the file is shaped for people in a diff and for git. It sits between pseudocode, a structural language, a script, CSS, YAML, JSON and LaTeX, and it takes no control flow, variables or macros.
 

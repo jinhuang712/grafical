@@ -44,7 +44,7 @@ A problem is an `error`, which could not be read or applied; a `defect`, which w
   - A code with several cases has a list for each, such as `label-blocked` for an edge or a wall or a note.
   - A test holds every name to a real command.
 
-The detail starts with `field` and `found`, or `owner` for a defect, and the other facts follow in one fixed order. An empty value or list prints `-`, and a fact that is absent is left out. A key for several things holds a list even of one: `likely`, `near`, `edges`, `ends`, `nodes`, `rows`, `groups`, `lanes`, `between`, `across`, `chain`, `clear`, `gutters`, `allowed`, `takes` and `chars`. Several ids under a key for one thing move to its plural, such as `node` to `nodes`.
+The detail starts with `field` and `found`, or `owner` for a defect, and the other facts follow in one fixed order. An empty value or list prints `-`, and a fact that is absent is left out. A key for several things holds a list even of one: `likely`, `near`, `edges`, `ends`, `nodes`, `layers`, `groups`, `lanes`, `between`, `across`, `chain`, `clear`, `gutters`, `allowed`, `takes` and `chars`. Several ids under a key for one thing move to its plural, such as `node` to `nodes`.
 
 No block writes the change for the agent: there is no fix, and `next` names commands without ids or values. The detail carries what the agent needs to find the change itself, such as the first and last layers a group's node covers.
 
