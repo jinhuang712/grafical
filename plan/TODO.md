@@ -55,3 +55,25 @@
 - status: HALT
 - next: labels on lines may settle this, so look again once they are built
 - related: [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
+
+### [P2][ISSUE] Arrowheads land off centre and unevenly
+
+- description:
+  - The owner sees arrowheads that are sometimes far from the middle of a node's side.
+  - Several arrowheads on one side are sometimes spread unevenly.
+  - What should happen is not settled, and the rule for ports should be read before any change.
+- created: 2026-11-06
+- status: OPEN
+- found: the owner, looking at the dispatch fixture drawn with `diagram --lines smooth`
+- next: render the fixtures and list which sides break the even spread
+
+### [P2][ISSUE] An arrowhead hidden at the far left of the dispatch fixture
+
+- description:
+  - The leftmost edge of the dispatch fixture, the dashed one from `push-provider` up to `rider-app`, has an arrowhead that a reader can barely see.
+  - It runs up the picture's edge and turns into the node's left side at the very end.
+  - The cause is not known.
+- created: 2026-11-06
+- status: OPEN
+- found: the owner, looking at the dispatch fixture drawn with `diagram --lines smooth`
+- next: render this edge with square lines to see whether `smooth` or the route hides the arrowhead
