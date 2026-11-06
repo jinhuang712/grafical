@@ -74,30 +74,18 @@ Roadmap
 │   ├── ✅ CP2.1: Fix the speed slip
 │   │   ├── ✅ No slot search
 │   │   └── ✅ The worst operation measured
-│   ├── 🟨 CP2.2: Pictures worth keeping
-│   │   ├── ✅ Labels on straight lines
-│   │   ├── ✅ Choice diamonds
-│   │   ├── ✅ Footnote numbers
-│   │   ├── ⬜ Labels in a crowded gutter
-│   │   ├── ⬜ A diamond's slanted lines
-│   │   ├── ⬜ Badges off a lane's side
-│   │   └── ⬜ Return lines off a self-loop
-│   ├── ⬜ CP2.3: Boxes
-│   │   ├── ⬜ Corner marks checked
-│   │   ├── ⬜ Marks by name
-│   │   ├── ⬜ Node looks
-│   │   └── ⬜ Size multiples
-│   ├── ⬜ CP2.4: Containers
-│   │   ├── ⬜ Column headings
-│   │   ├── ⬜ Lanes both ways
-│   │   ├── ⬜ Deeper nesting
-│   │   ├── ⬜ Bars across groups
-│   │   └── ⬜ Container looks
-│   ├── ⬜ CP2.5: Direction and views
-│   │   ├── ⬜ Flow direction
-│   │   ├── ⬜ Views of one file
-│   │   └── ⬜ Folded groups
-│   ├── ⬜ CP2.6: Lines and labels
+│   ├── 🟨 CP2.2: The command line
+│   │   ├── ✅ The file flag
+│   │   ├── ⬜ One name for each thing
+│   │   ├── ✅ Verbs as flags
+│   │   ├── ⬜ One way for each situation
+│   │   └── ✅ Batches from standard input
+│   ├── 🟨 CP2.3: The object model
+│   │   ├── ✅ Design the model and its form
+│   │   ├── 🟨 Build the model
+│   │   ├── ⬜ Move the saved files
+│   │   └── ⬜ Compare with YAML
+│   ├── ⬜ CP2.4: Lines and labels
 │   │   ├── ⬜ Edge sides
 │   │   ├── ⬜ Edge shapes
 │   │   ├── ⬜ Labels on edges
@@ -105,20 +93,32 @@ Roadmap
 │   │   ├── ⬜ Region gaps
 │   │   ├── ⬜ Edge looks
 │   │   └── ⬜ Region labels
-│   ├── 🟨 CP2.7: The command line
-│   │   ├── ✅ The file flag
-│   │   ├── ⬜ One name for each thing
-│   │   ├── ✅ Verbs as flags
-│   │   ├── ⬜ One way for each situation
-│   │   └── ✅ Batches from standard input
+│   ├── 🟨 CP2.5: Pictures worth keeping
+│   │   ├── ✅ Labels on straight lines
+│   │   ├── ✅ Choice diamonds
+│   │   ├── ✅ Footnote numbers
+│   │   ├── ⬜ Labels in a crowded gutter
+│   │   ├── ⬜ A diamond's slanted lines
+│   │   ├── ⬜ Badges off a lane's side
+│   │   └── ⬜ Return lines off a self-loop
+│   ├── ⬜ CP2.6: Boxes
+│   │   ├── ⬜ Corner marks checked
+│   │   ├── ⬜ Marks by name
+│   │   ├── ⬜ Node looks
+│   │   └── ⬜ Size multiples
+│   ├── ⬜ CP2.7: Containers
+│   │   ├── ⬜ Column headings
+│   │   ├── ⬜ Lanes both ways
+│   │   ├── ⬜ Deeper nesting
+│   │   ├── ⬜ Bars across groups
+│   │   └── ⬜ Container looks
 │   ├── ⬜ CP2.8: The legend
 │   │   ├── ⬜ Design the legend
 │   │   └── ⬜ Build the legend
-│   └── 🟨 CP2.9: The object model
-│       ├── ✅ Design the model and its form
-│       ├── 🟨 Build the model
-│       ├── ⬜ Move the saved files
-│       └── ⬜ Compare with YAML
+│   └── ⬜ CP2.9: Direction and views
+│       ├── ⬜ Flow direction
+│       ├── ⬜ Views of one file
+│       └── ⬜ Folded groups
 ├── 🟨 CP3: Experiments — every kind of diagram measured with a model
 │   ├── ⬜ CP3.1: Boxes and lines
 │   │   ├── ⬜ State machine
@@ -431,29 +431,20 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 
 What grafical can draw grows on top of [CP1: Stage 1 built](#cp1-stage-1-built). A test and a fixture accept each item, with no model run.
 
-The work runs in this order, since each step rests on the one before:
-
-1. [CP2.7: The command line](#cp27-the-command-line)
-2. [CP2.9: The object model](#cp29-the-object-model)
-3. [CP2.6: Lines and labels](#cp26-lines-and-labels)
-4. [CP2.2: Pictures worth keeping](#cp22-pictures-worth-keeping)
-5. [CP2.3: Boxes](#cp23-boxes)
-6. [CP2.4: Containers](#cp24-containers)
-7. [CP2.8: The legend](#cp28-the-legend)
-8. [CP2.5: Direction and views](#cp25-direction-and-views)
+The numbers are the order of the work, since each step rests on the one before.
 
 **Exit criteria:**
 
 - **Sub-checkpoints**
   - [CP2.1: Fix the speed slip](#cp21-fix-the-speed-slip) is met.
-  - [CP2.2: Pictures worth keeping](#cp22-pictures-worth-keeping) is met.
-  - [CP2.3: Boxes](#cp23-boxes) is met.
-  - [CP2.4: Containers](#cp24-containers) is met.
-  - [CP2.5: Direction and views](#cp25-direction-and-views) is met.
-  - [CP2.6: Lines and labels](#cp26-lines-and-labels) is met.
-  - [CP2.7: The command line](#cp27-the-command-line) is met.
+  - [CP2.2: The command line](#cp22-the-command-line) is met.
+  - [CP2.3: The object model](#cp23-the-object-model) is met.
+  - [CP2.4: Lines and labels](#cp24-lines-and-labels) is met.
+  - [CP2.5: Pictures worth keeping](#cp25-pictures-worth-keeping) is met.
+  - [CP2.6: Boxes](#cp26-boxes) is met.
+  - [CP2.7: Containers](#cp27-containers) is met.
   - [CP2.8: The legend](#cp28-the-legend) is met.
-  - [CP2.9: The object model](#cp29-the-object-model) is met.
+  - [CP2.9: Direction and views](#cp29-direction-and-views) is met.
 
 ### CP2.1: Fix the speed slip
 
@@ -471,113 +462,63 @@ Adding a box without a position took up to 189.7 ms at 50 boxes, against 50 ms.
 - **Thresholds**
   - [T2: Speed](GOALS.md#t2-speed)
 
-### CP2.2: Pictures worth keeping
+### CP2.2: The command line
 
-**Status:** 🟨 (since 2026-10-30)
+**Status:** 🟨 (since 2026-11-06)
 
-Drawing reference diagrams with grafical's own commands showed where a picture still looks wrong though no check fails. Each round's final pictures go on a review page, and the owner's notes decide what comes next.
+The command line gets one form:
 
-**Tasks:**
-
-- ✅ Labels on straight lines: A label sits on its own straight vertical line.
-- ✅ Choice diamonds: `choice` is a small diamond for a line that splits.
-- ✅ Footnote numbers: A footnote's number stays wholly inside or outside a container.
-- ⬜ Labels in a crowded gutter: An attempt did not land and waits on the owner's choice: [Labels sit close to the lines beside them in a crowded gutter](TODO.md#p2discussion-labels-sit-close-to-the-lines-beside-them-in-a-crowded-gutter).
-- ⬜ A diamond's slanted lines: A line meets a diamond only at a corner, measured with `pnpm bench diff` before it lands.
-- ⬜ Badges off a lane's side: A step's badge keeps off a lane's side, and `step-collision` counts one that touches it.
-- ⬜ Return lines off a self-loop: The lines that leave and enter a node keep clear of its self-loop.
-
-**Delivers:**
-
-- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
-- [F1.1.1: Types and shapes](../features/F1-elements.md#f111-types-and-shapes)
-- [F1.3.7: Notes](../features/F1-elements.md#f137-notes)
-
-**Exit criteria:**
-
-- **Constraints**
-  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
-
-### CP2.3: Boxes
-
-**Status:** ⬜
-
-Boxes carry marks that stay clear of lines and colors of their own.
+- Every command names its file the same way.
+- A verb is a flag.
+- Each thing has one name.
+- Each situation has one shortest way.
 
 **Tasks:**
 
-- ⬜ Corner marks checked: A corner mark is checked against nearby lines.
-- ⬜ Marks by name: A mark can be taken by name.
-- ⬜ Node looks: A box takes colors of its own or a named look.
-- ⬜ Size multiples: A node takes multiples of its width and height.
+- ✅ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
+- ⬜ One name for each thing: Every surface and the code use one name.
+- ✅ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
+- ⬜ One way for each situation: `edge --emphasize` goes, and the commands are checked for other repeats.
+- ✅ Batches from standard input: `apply` reads a batch named `-` from standard input.
 
 **Delivers:**
 
-- [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
-- [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
-- [F1.1.7: Node looks](../features/F1-elements.md#f117-node-looks)
-- [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
+- [F3.1: Operations](../features/F3-editing.md#f31-operations)
+- [F3.2: Batches](../features/F3-editing.md#f32-batches)
+- [F1.2.3: Weight](../features/F1-elements.md#f123-weight)
 
 **Exit criteria:**
 
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability)
-  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
-### CP2.4: Containers
+### CP2.3: The object model
 
-**Status:** ⬜
+**Status:** 🟨 (since 2026-11-06)
 
-Containers that cross and nest and take colors of their own, and columns that carry headings.
-
-**Tasks:**
-
-- ⬜ Column headings: A column carries a heading above its first row.
-- ⬜ Lanes both ways: Lanes that run as rows and as columns in one diagram.
-- ⬜ Deeper nesting: Groups up to five levels, with the fuzz test holding at five levels.
-- ⬜ Bars across groups: A bar crosses a group's box and overlaps no box or label.
-- ⬜ Container looks: A group or a lane takes colors of its own or a named look.
-
-**Delivers:**
-
-- [F2.4.1: Column headings](../features/F2-layout.md#f241-column-headings)
-- [F1.3.5: Lanes both ways](../features/F1-elements.md#f135-lanes-both-ways)
-- [F1.3.3: Deeper nesting](../features/F1-elements.md#f133-deeper-nesting)
-- [F1.3.8: Container looks](../features/F1-elements.md#f138-container-looks)
-- [F1.2.5: Ends at a group, a layer or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-layer-or-a-lane)
-
-**Exit criteria:**
-
-- **Constraints**
-  - [R1: Stability](GOALS.md#r1-stability)
-  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
-
-### CP2.5: Direction and views
-
-**Status:** ⬜
-
-Other ways to read one diagram, which build on the nesting of [CP2.4: Containers](#cp24-containers).
+A diagram is objects with types and styles, in a form of its own, before the first release freezes the file.
 
 **Tasks:**
 
-- ⬜ Flow direction: A diagram that reads left to right.
-- ⬜ Views of one file: Several pictures of parts of one file.
-- ⬜ Folded groups: A group drawn folded into one box in a view.
+- ✅ Design the model and its form: The owner designed them on 2026-11-06.
+- 🟨 Build the model: grafical reads and writes the form; types and styles are not built.
+- ⬜ Move the saved files: Fixtures and saved drafts move to it.
+- ⬜ Compare with YAML: Real changes are measured in both forms, and the file goes back to YAML with one element on each line if the form is no better.
 
 **Delivers:**
 
-- [F2.8: Flow direction](../features/F2-layout.md#f28-flow-direction)
-- [F10.1: Views of one file](../features/F10-many-views.md#f101-views-of-one-file)
-- [F10.2: Folded groups](../features/F10-many-views.md#f102-folded-groups)
+- [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
+- [F5.1: Show](../features/F5-checking.md#f51-show)
 
 **Exit criteria:**
 
+- **Comparisons**
+  - [C8: Small diffs](GOALS.md#c8-small-diffs)
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability)
-  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
   - [R3: Determinism](GOALS.md#r3-determinism)
 
-### CP2.6: Lines and labels
+### CP2.4: Lines and labels
 
 **Status:** ⬜
 
@@ -609,35 +550,86 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
   - [R1: Stability](GOALS.md#r1-stability)
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
-### CP2.7: The command line
+### CP2.5: Pictures worth keeping
 
-**Status:** 🟨 (since 2026-11-06)
+**Status:** 🟨 (since 2026-10-30)
 
-The command line gets one form:
-
-- Every command names its file the same way.
-- A verb is a flag.
-- Each thing has one name.
-- Each situation has one shortest way.
+Drawing reference diagrams with grafical's own commands showed where a picture still looks wrong though no check fails. Each round's final pictures go on a review page, and the owner's notes decide what comes next.
 
 **Tasks:**
 
-- ✅ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
-- ⬜ One name for each thing: Every surface and the code use one name.
-- ✅ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
-- ⬜ One way for each situation: `edge --emphasize` goes, and the commands are checked for other repeats.
-- ✅ Batches from standard input: `apply` reads a batch named `-` from standard input.
+- ✅ Labels on straight lines: A label sits on its own straight vertical line.
+- ✅ Choice diamonds: `choice` is a small diamond for a line that splits.
+- ✅ Footnote numbers: A footnote's number stays wholly inside or outside a container.
+- ⬜ Labels in a crowded gutter: An attempt did not land and waits on the owner's choice: [Labels sit close to the lines beside them in a crowded gutter](TODO.md#p2discussion-labels-sit-close-to-the-lines-beside-them-in-a-crowded-gutter).
+- ⬜ A diamond's slanted lines: A line meets a diamond only at a corner, measured with `pnpm bench diff` before it lands.
+- ⬜ Badges off a lane's side: A step's badge keeps off a lane's side, and `step-collision` counts one that touches it.
+- ⬜ Return lines off a self-loop: The lines that leave and enter a node keep clear of its self-loop.
 
 **Delivers:**
 
-- [F3.1: Operations](../features/F3-editing.md#f31-operations)
-- [F3.2: Batches](../features/F3-editing.md#f32-batches)
-- [F1.2.3: Weight](../features/F1-elements.md#f123-weight)
+- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
+- [F1.1.1: Types and shapes](../features/F1-elements.md#f111-types-and-shapes)
+- [F1.3.7: Notes](../features/F1-elements.md#f137-notes)
+
+**Exit criteria:**
+
+- **Constraints**
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
+
+### CP2.6: Boxes
+
+**Status:** ⬜
+
+Boxes carry marks that stay clear of lines and colors of their own.
+
+**Tasks:**
+
+- ⬜ Corner marks checked: A corner mark is checked against nearby lines.
+- ⬜ Marks by name: A mark can be taken by name.
+- ⬜ Node looks: A box takes colors of its own or a named look.
+- ⬜ Size multiples: A node takes multiples of its width and height.
+
+**Delivers:**
+
+- [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
+- [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
+- [F1.1.7: Node looks](../features/F1-elements.md#f117-node-looks)
+- [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
 
 **Exit criteria:**
 
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability)
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
+
+### CP2.7: Containers
+
+**Status:** ⬜
+
+Containers that cross and nest and take colors of their own, and columns that carry headings.
+
+**Tasks:**
+
+- ⬜ Column headings: A column carries a heading above its first row.
+- ⬜ Lanes both ways: Lanes that run as rows and as columns in one diagram.
+- ⬜ Deeper nesting: Groups up to five levels, with the fuzz test holding at five levels.
+- ⬜ Bars across groups: A bar crosses a group's box and overlaps no box or label.
+- ⬜ Container looks: A group or a lane takes colors of its own or a named look.
+
+**Delivers:**
+
+- [F2.4.1: Column headings](../features/F2-layout.md#f241-column-headings)
+- [F1.3.5: Lanes both ways](../features/F1-elements.md#f135-lanes-both-ways)
+- [F1.3.3: Deeper nesting](../features/F1-elements.md#f133-deeper-nesting)
+- [F1.3.8: Container looks](../features/F1-elements.md#f138-container-looks)
+- [F1.2.5: Ends at a group, a layer or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-layer-or-a-lane)
+
+**Exit criteria:**
+
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
 ### CP2.8: The legend
 
@@ -659,30 +651,29 @@ A legend is a small diagram, and it can explain what a picture's colors mean.
 - **Constraints**
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
-### CP2.9: The object model
+### CP2.9: Direction and views
 
-**Status:** 🟨 (since 2026-11-06)
+**Status:** ⬜
 
-A diagram is objects with types and styles, in a form of its own, before the first release freezes the file.
+Other ways to read one diagram, which build on the nesting of [CP2.7: Containers](#cp27-containers).
 
 **Tasks:**
 
-- ✅ Design the model and its form: The owner designed them on 2026-11-06.
-- 🟨 Build the model: grafical reads and writes the form; types and styles are not built.
-- ⬜ Move the saved files: Fixtures and saved drafts move to it.
-- ⬜ Compare with YAML: Real changes are measured in both forms, and the file goes back to YAML with one element on each line if the form is no better.
+- ⬜ Flow direction: A diagram that reads left to right.
+- ⬜ Views of one file: Several pictures of parts of one file.
+- ⬜ Folded groups: A group drawn folded into one box in a view.
 
 **Delivers:**
 
-- [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
-- [F5.1: Show](../features/F5-checking.md#f51-show)
+- [F2.8: Flow direction](../features/F2-layout.md#f28-flow-direction)
+- [F10.1: Views of one file](../features/F10-many-views.md#f101-views-of-one-file)
+- [F10.2: Folded groups](../features/F10-many-views.md#f102-folded-groups)
 
 **Exit criteria:**
 
-- **Comparisons**
-  - [C8: Small diffs](GOALS.md#c8-small-diffs)
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability)
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
   - [R3: Determinism](GOALS.md#r3-determinism)
 
 ## CP3: Experiments
