@@ -20,20 +20,20 @@ export interface Facts {
   allowed?: readonly string[];
   /** How many there are, and the limits grafical enforces. */
   count?: number;
-  /** For text: how many lines it takes. */
+  /** For text: how many edges it takes. */
   lines?: number;
   min?: number;
   max?: number;
   /** An unused id like the one given. */
   free?: string;
-  /** The row, group, node, edge, lane or wall it concerns. */
+  /** The layer, group, node, edge, lane or wall it concerns. */
   layer?: string;
   group?: string;
   node?: string;
   edge?: string;
-  /** Two lines it concerns, such as two that cross. */
+  /** Two edges it concerns, such as two that cross. */
   edges?: readonly string[];
-  /** The two ends of the line it concerns, from first. */
+  /** The two ends of the edge it concerns, from first. */
   ends?: readonly string[];
   lane?: string;
   wall?: string;
@@ -41,32 +41,32 @@ export interface Facts {
   note?: string;
   /** The lanes it lies in; none for outside every lane. */
   lanes?: readonly string[];
-  /** The nodes of that row or group. */
+  /** The nodes of that layer or group. */
   nodes?: readonly string[];
-  /** The rows a line runs through without meeting a box of them. */
+  /** The layers an edge runs through without meeting a node of them. */
   layers?: readonly string[];
-  /** The first and last rows a group's box covers, top to bottom. */
+  /** The first and last layers a group's border covers, top to bottom. */
   top?: string;
   bottom?: string;
-  /** The groups whose box a line runs through. */
+  /** The groups whose node an edge runs through. */
   groups?: readonly string[];
-  /** The members of a group that a box stands between in one row. */
+  /** The members of a group that a node stands between in one layer. */
   between?: readonly string[];
-  /** The lines that run across a text. */
+  /** The edges that run across a text. */
   across?: readonly string[];
-  /** The box that a mark covers. */
+  /** The node that a mark covers. */
   covers?: string;
-  /** Another group, whose boxes would sit on both sides of a group's box. */
+  /** Another group, whose nodes would sit on both sides of a group's border. */
   beside?: string;
-  /** How the lanes run: rows or columns. */
+  /** How the lanes run: layers or columns. */
   run?: string;
   /** Where a group's label sits, as the agent stated it. */
   place?: string;
-  /** The side a line was drawn by. */
+  /** The side an edge was drawn by. */
   drawn?: string;
-  /** The places where no line would come near that label. */
+  /** The places where no edge would come near that label. */
   clear?: readonly string[];
-  /** The gutters a line's label tried, each as the rows above and below it joined by a slash. */
+  /** The gutters an edge's label tried, each as the layers above and below it joined by a slash. */
   gutters?: readonly string[];
   /** Groups from the inside out, as they would nest. */
   chain?: readonly string[];
@@ -81,7 +81,7 @@ export interface Facts {
   shared?: number;
   /** Pixels along which two lines run close side by side. */
   over?: number;
-  /** How often a line bends, and the rows between the rows of its ends. */
+  /** How often an edge bends, and the layers between the layers of its ends. */
   bends?: number;
   skip?: number;
 }
@@ -253,9 +253,9 @@ export type UsageCode = (typeof USAGE_CODES)[number];
 
 /**
  * The codes of a warning: written, exit 0, and drawn poorly (specs/decisions, "Refusals say what happened and which
- * commands can change it", "Every write prints every warning"), in the order they print: a line with more than two
+ * commands can change it", "Every write prints every warning"), in the order they print: an edge with more than two
  * bends (specs/decisions, "A bent line is reported and never refused"), the places the counts passing, across, tight and crowded count
- * (specs/decisions, "Composition counts"), a box no line reaches, a line alike from every box of a group to one end (specs/decisions,
+ * (specs/decisions, "Composition counts"), a node no edge reaches, an edge alike from every node of a group to one end (specs/decisions,
  * "A line from every box of a group is a warning"), and two lines that cross.
  */
 export const WARNING_CODES = [
@@ -272,7 +272,7 @@ export const WARNING_CODES = [
 export type WarningCode = (typeof WARNING_CODES)[number];
 
 /**
- * Something drawn poorly, which is written: its code and what is there. It has no source: the outcome line names
+ * Something drawn poorly, which is written: its code and what is there. It has no source: the outcome edge names
  * what the write changed (specs/decisions, "Every write prints every warning").
  */
 export interface Warning {
@@ -302,7 +302,7 @@ export interface OpError {
    * only when those before it found nothing, so a diagram refused by a later check has no error of an earlier one.
    */
   stage?: number;
-  /** What caused it, as the report prints it: the command line, a batch's line, or what was in the file before. */
+  /** What caused it, as the report prints it: the command line, a batch's edge, or what was in the file before. */
   source?: string;
 }
 
@@ -328,7 +328,7 @@ export type DefectCode = (typeof DEFECT_CODES)[number];
 
 /**
  * Who can fix a defect (specs/decisions, "Defects owned by who can fix them"). The agent can shorten a label or change a
- * character. Only the engine can move a line or a box, so it must avoid the
+ * character. Only the engine can move an edge or a node, so it must avoid the
  * rest itself.
  */
 export type DefectOwner = "agent" | "engine";
@@ -337,25 +337,25 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   overflow: "agent",
   "missing-glyph": "agent",
   "mark-covers": "agent",
-  // The agent's boxes lead the line through the wall; it allows the line or moves one (specs/decisions, "Walls as space").
+  // The agent's nodes lead the edge through the wall; it allows the edge or moves one (specs/decisions, "Walls as space").
   "wall-crossed": "agent",
   "node-overlap": "engine",
   "edge-through-node": "engine",
   "label-collision": "engine",
-  // A step's badge rides its line, which only the engine places (specs/decisions, "Step badges ride the line").
+  // A step's badge rides its edge, which only the engine places (specs/decisions, "Step badges ride the line").
   "step-collision": "engine",
   "edge-overlap": "engine",
   "text-crossing": "engine",
   "group-intruder": "engine",
   "lane-stray": "engine",
-  // One x would have served both ends of the line (specs/decisions, "Who chose is punished").
+  // One x would have served both ends of the edge (specs/decisions, "Who chose is punished").
   "needless-bend": "engine",
-  // A line runs where a group's label sits, and no line moves for it: the agent states a place (specs/decisions, "A group's label moves no box and no line").
+  // An edge runs where a group's label sits, and no edge moves for it: the agent states a place (specs/decisions, "A group's label moves no box and no line").
   "title-blocked": "agent",
-  // No gutter of its path holds a line's label clear, and no line moves for it: the agent shortens
-  // or drops the text, or changes rows (specs/decisions, "A line never moves for its label").
+  // No gutter of its path holds an edge's label clear, and no edge moves for it: the agent shortens
+  // or drops the text, or changes layers (specs/decisions, "A line never moves for its label").
   "label-blocked": "agent",
-  // The router has no route by a stated side, and takes no other: the agent changes the side or the rows
+  // The router has no route by a stated side, and takes no other: the agent changes the side or the layers
   // (specs/decisions, "An agent may state the side of a line").
   "side-blocked": "agent",
 };

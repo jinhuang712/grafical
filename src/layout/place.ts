@@ -1,11 +1,11 @@
 // Placement across (specs/decisions, "Rows unseen, groups as systems", "Layout computed again on every change"): every node sits on a column of one grid
-// shared by all rows (grid.ts). Each column gets an x from the room its nodes need:
-// box widths and the gap between neighbours, group boxes and the space between a
-// box and the nodes outside it, the space between column lanes (specs/decisions, "Swimlanes run one way"), labels of
-// edges that run sideways between neighbours, and lines that pass a row through
+// shared by all layers (grid.ts). Each column gets an x from the room its nodes need:
+// node widths and the gap between neighbours, group nodes and the space between a
+// node and the nodes outside it, the space between column lanes (specs/decisions, "Swimlanes run one way"), labels of
+// edges that run sideways between neighbours, and edges that pass a layer through
 // an empty column. Columns are
 // packed from the left, as close as that room allows, and the picture is centred
-// on one centre line. Every x here is relative to that line.
+// on one centre line. Every x here is relative to that edge.
 
 import { columnRanks } from "../model/columns.ts";
 import { magnifiedBetween } from "../model/gaps.ts";
@@ -40,22 +40,22 @@ export interface PLayer {
   id: string;
   label?: string;
   nodes: PNode[];
-  /** Height of the tallest box in the layer, or of a medium box if it is empty. */
+  /** Height of the tallest node in the layer, or of a medium node if it is empty. */
   layerH: number;
 }
 
-/** A group's box across, and its label. */
+/** A group's border across, and its label. */
 export interface PGroup {
   id: string;
   label: string;
   /** The boxed group this one sits in (specs/decisions, "Every layered diagram type"). */
   parent?: string;
-  /** Member ids, its inner groups' included, row by row, in order. */
+  /** Member ids, its inner groups' included, layer by layer, in order. */
   members: string[];
   /** First and last layer of its members. */
   top: number;
   bottom: number;
-  /** Left and right side of the box. */
+  /** Left and right side of the node. */
   x0: number;
   x1: number;
   /** Left end of the label. */
@@ -77,7 +77,7 @@ export interface Placement {
   layers: PLayer[];
   nodes: Map<string, PNode>;
   groups: PGroup[];
-  /** Column lanes that hold a node, left to right. Empty when lanes run as rows. */
+  /** Column lanes that hold a node, left to right. Empty when lanes run as layers. */
   lanes: PLane[];
   /** Left end of the label of each edge that runs sideways with a label. */
   sideLabels: Map<string, number>;
@@ -162,7 +162,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       }
     }
   }
-  /** The outermost box around n that does not hold other, if any. */
+  /** The outermost node around n that does not hold other, if any. */
   const boxOf = (n: PNode, other?: PNode): string | undefined => {
     const around = other === undefined ? [] : chainOf(other);
     return chainOf(n)
@@ -174,10 +174,10 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     groupChain(d, g)
       .slice(1)
       .find((x) => membersOf.has(x));
-  /** The boxed groups directly inside a group. An empty group draws no box. */
+  /** The boxed groups directly inside a group. An empty group draws no node. */
   const innerOf = (g: string): string[] =>
     groupIds.filter((x) => membersOf.has(x) && parentOf(x) === g);
-  /** How many boxes lie between a member and the side of g's box, g's own included. */
+  /** How many nodes lie between a member and the side of g's node, g's own included. */
   const levels = (m: PNode, g: string) => chainOf(m).indexOf(g) + 1;
 
   // Column lanes (specs/decisions, "Swimlanes run one way"), and the nodes outside them, as blocks in order across.
@@ -194,10 +194,10 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       laneOrder.push(byRank.get(r) as PNode[]);
   }
   /**
-   * The column lane whose side a labelled sideways line crosses, if one does: like
-   * any line, the side never runs across the label, which sits just past it, on the
+   * The column lane whose side a labelled sideways edge crosses, if one does: like
+   * any edge, the side never runs across the label, which sits just past it, on the
    * side away from the lane. Past lanes between, that is the last side before the node
-   * the line enters, or the first after the node it leaves when that is outside every lane.
+   * the edge enters, or the first after the node it leaves when that is outside every lane.
    */
   const laneOf = (n: PNode): number | undefined => {
     const r = ranks.get(n.id);
@@ -236,26 +236,26 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   }
   const columns = Math.max(1, grid.columns);
   // A stated label place takes only its own room (specs/decisions, "The agent states where a group's label sits"): a
-  // strip inside the box beside its rows, or room past its left or right side. Where a line
-  // runs under it, the write is refused as title-blocked; no box moves for it.
+  // strip inside the node beside its layers, or room past its left or right side. Where an edge
+  // runs under it, the write is refused as title-blocked; no node moves for it.
   const titleOf = (g: string) => d.groups?.find((x) => x.id === g)?.titleAt;
-  /** The strip a label beside a group's rows takes inside its box, clear of every member. */
+  /** The strip a label beside a group's layers takes inside its node, clear of every member. */
   const strip = (g: string): { left: number; right: number } => {
     const at = titleOf(g);
     if (!atSide({ titleAt: at }) || at?.place !== "inside") return { left: 0, right: 0 };
     const w = ceil4(text.groupLabelW(g) + 2 * GROUP.labelClear + GROUP.labelInset - GROUP.pad);
     return at.side === "left" ? { left: w, right: 0 } : { left: 0, right: w };
   };
-  /** The room a label outside a group's left or right side takes past its box. */
+  /** The room a label outside a group's left or right side takes past its node. */
   const outRoom = (g: string): { left: number; right: number } => {
     const at = titleOf(g);
     if (!atSide({ titleAt: at }) || at?.place !== "outside") return { left: 0, right: 0 };
     const w = ceil4(GROUP.outsideGap + text.groupLabelW(g));
     return at.side === "left" ? { left: w, right: 0 } : { left: 0, right: w };
   };
-  /** Whether a group's label sits beside its rows rather than above or below them. */
+  /** Whether a group's label sits beside its layers rather than above or below them. */
   const besideRows = (g: string) => atSide({ titleAt: titleOf(g) });
-  // No box moves for a group's label: a line across it refuses the write (specs/decisions, "A group's label moves no box and no line").
+  // No node moves for a group's label: an edge across it refuses the write (specs/decisions, "A group's label moves no box and no line").
   const groups = solve().groups;
 
   function solve(): { groups: PGroup[] } {
@@ -272,7 +272,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         add(a.col, b.col, a.w / 2 + sp.nodeGap + b.w / 2);
       }
     }
-    // A box placed by steps (specs/decisions, "Steps from another box"): each step across keeps a medium box and a gap, so
+    // A node placed by steps (specs/decisions, "Steps from another box"): each step across keeps a medium node and a gap, so
     // that two steps never look like one.
     for (const n of nodes.values()) {
       const from = n.node.from === undefined ? undefined : nodes.get(n.node.from);
@@ -281,7 +281,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         add(c, c + 1, BOX.m.w + sp.nodeGap);
       }
     }
-    // A label above or below the rows takes the box's width; one beside them its height.
+    // A label above or below the layers takes the node's width; one beside them its height.
     const labelSpan = (g: string) =>
       besideRows(g) ? 0 : text.groupLabelW(g) + 2 * GROUP.labelInset;
     /** Whether a group, or one inside it, takes room past its members for its label. */
@@ -289,11 +289,11 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       strip(g).left + strip(g).right + outRoom(g).left + outRoom(g).right > 0 ||
       innerOf(g).some(grows);
     /**
-     * The left side of a group's box, as terms x - d from each member: a box's padding per
+     * The left side of a group's border, as terms x - d from each member: a node's padding per
      * level, and the room its label takes, and its inner groups'.
      */
     const leftEdge = (g: string): { col: number; d: number }[] => {
-      // The room its label takes, past its members and past its inner boxes alike.
+      // The room its label takes, past its members and past its inner nodes alike.
       const room = strip(g).left + outRoom(g).left;
       return [
         ...(membersOf.get(g) ?? []).map((m) => ({
@@ -306,7 +306,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       ];
     };
     /**
-     * The right side of a group's box, as terms x + d: past each member by a box's
+     * The right side of a group's border, as terms x + d: past each member by a node's
      * padding per level, and past the label of the group and of each inner group.
      */
     const rightEdge = (g: string): { col: number; d: number }[] => {
@@ -321,7 +321,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         ),
       ];
     };
-    /** Terms that give the right side of what lies left of a gap: a box, or a node. */
+    /** Terms that give the right side of what lies left of a gap: a node, or a node. */
     const rightTerms = (n: PNode, other: PNode): { col: number; d: number }[] => {
       const g = boxOf(n, other);
       return g === undefined ? [{ col: n.col, d: n.w / 2 }] : rightEdge(g);
@@ -330,11 +330,11 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const g = boxOf(n, other);
       return g === undefined ? [{ col: n.col, d: n.w / 2 }] : leftEdge(g);
     };
-    /** The space between what lies left and right of a gap: two boxes, or a box and a node. */
+    /** The space between what lies left and right of a gap: two nodes, or a node and a node. */
     const room = (x: string | undefined, y: string | undefined): number =>
       x !== undefined && y !== undefined ? GROUP.gap * magnifiedBetween(d, x, y) : GROUP.clear;
-    // Every node beside a group's members in a row keeps clear of its box, and so
-    // does every other group's box.
+    // Every node beside a group's members in a layer keeps clear of its node, and so
+    // does every other group's border.
     for (const l of layers) {
       for (let k = 1; k < l.nodes.length; k++) {
         const a = l.nodes[k - 1] as PNode;
@@ -347,7 +347,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
           for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + between + s.d);
       }
     }
-    // A group with members in several rows: a node beside it in any of its rows.
+    // A group with members in several layers: a node beside it in any of its layers.
     for (const [g, ms] of membersOf) {
       const top = Math.min(...ms.map((m) => m.layer));
       const bottom = Math.max(...ms.map((m) => m.layer));
@@ -356,7 +356,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       for (let r = top; r <= bottom; r++) {
         const list = layers[r]?.nodes ?? [];
         const at = list.map((n, k) => (chainOf(n).includes(g) ? k : -1)).filter((k) => k >= 0);
-        // A row the box spans with no member keeps its nodes beside the box, as grid.ts
+        // A layer the node spans with no member keeps its nodes beside the node, as grid.ts
         // put them: the last one left of its columns and the first one right of them.
         const left =
           at.length > 0 ? list[(at[0] as number) - 1] : list.filter((n) => n.col < lo).pop();
@@ -377,8 +377,8 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         }
       }
     }
-    // Columns: every box of a column keeps a row's gap from every box of the next, in
-    // any row, so that a column's boxes never stand over the column before.
+    // Columns: every node of a column keeps a layer's gap from every node of the next, in
+    // any layer, so that a column's nodes never stand over the column before.
     for (let k = 1; k < columnOrder.length; k++) {
       for (const a of columnOrder[k - 1] as PNode[]) {
         for (const b of columnOrder[k] as PNode[]) {
@@ -387,7 +387,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         }
       }
     }
-    // Column lanes: the content of neighbouring lanes, boxes included, keeps twice
+    // Column lanes: the content of neighbouring lanes, nodes included, keeps twice
     // a lane's padding apart, so that the side they share runs between.
     for (let k = 1; k < laneOrder.length; k++) {
       for (const a of laneOrder[k - 1] as PNode[]) {
@@ -397,7 +397,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         }
       }
     }
-    // Walls up and down (specs/decisions, "Walls as space"): what lies left of a wall in its rows, boxes included,
+    // Walls up and down (specs/decisions, "Walls as space"): what lies left of a wall in its layers, nodes included,
     // keeps the wall's space from what lies right of it.
     for (const w of d.walls ?? []) {
       const way = wallRun(d, w);
@@ -450,8 +450,8 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         }
       }
     }
-    // A node two groups share sits in the gap between their boxes: its column's
-    // centre is half a box gap past the box on each side (grid.ts puts its column
+    // A node two groups share sits in the gap between their nodes: its column's
+    // centre is half a node gap past the node on each side (grid.ts puts its column
     // between theirs), so that both reach it alike and the picture grows no wider.
     for (const id of grid.shared) {
       const n = nodes.get(id);
@@ -473,7 +473,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         }
       }
     }
-    // A line that runs straight through a row where its column is empty.
+    // An edge that runs straight through a layer where its column is empty.
     for (const [c, rows] of grid.reserved) {
       for (const r of rows) {
         const list = layers[r]?.nodes ?? [];
@@ -491,8 +491,8 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     }
 
     for (const n of nodes.values()) n.x = (xs[n.col] ?? 0) - n.w / 2;
-    // Each box: past its members by a padding per level, past its label, and past
-    // each inner box by a padding.
+    // Each node: past its members by a padding per level, past its label, and past
+    // each inner node by a padding.
     const sides = new Map<string, [number, number]>();
     const sideOf = (g: string): [number, number] => {
       const known = sides.get(g);
@@ -531,7 +531,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       };
       const at = d.groups?.find((x) => x.id === g)?.titleAt;
       // A label at a stated place sits there; one the agent did not place is seated once
-      // its lines are drawn (layout/index.ts).
+      // its edges are drawn (layout/index.ts).
       if (at !== undefined) {
         box.titleAt = at;
         box.labelX = titleX(box);
@@ -560,7 +560,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   for (const [id, end] of text.laneEnds ?? []) {
     if (text.sideways.get(id)?.label !== undefined) hug.add(end.lane);
   }
-  // A lane whose side a labelled line crosses keeps that side close, so that the label lies past it.
+  // A lane whose side a labelled edge crosses keeps that side close, so that the label lies past it.
   const close = new Set<string>();
   for (const slot of text.sideways.values()) {
     const cross = crossed(slot);
@@ -603,7 +603,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     const side = cross === undefined ? undefined : lanes.find((l) => l.id === laneIds[cross.lane]);
     if (side !== undefined && cross?.side === "x1") left = side.x1;
     if (side !== undefined && cross?.side === "x0") right = side.x0;
-    // Lanes between, which hold nodes in other rows, have sides across the line too: the
+    // Lanes between, which hold nodes in other layers, have sides across the edge too: the
     // label then sits in the widest stretch between them.
     const cuts = lanes.flatMap((l) => [l.x0, l.x1]).filter((x) => x > left && x < right);
     let at = (left + right) / 2;
@@ -634,11 +634,11 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
 export const centreX = (n: PNode): number => n.x + n.w / 2;
 
 /**
- * The sides of each column lane that holds a node: its content's extent, boxes
+ * The sides of each column lane that holds a node: its content's extent, nodes
  * included, widened by its padding; between two lanes, the middle of the space
  * between their contents, unless one of them hugs its content, because an edge
  * meets it beside it, or a lane in `close` keeps its right side close, because a
- * labelled line crosses it. Blocks of nodes outside every lane are skipped.
+ * labelled edge crosses it. Blocks of nodes outside every lane are skipped.
  */
 function laneSides(
   d: Diagram,
@@ -696,15 +696,15 @@ function laneSides(
   });
 }
 
-/** Whether a group's label sits beside its rows, inside or outside its left or right side. */
+/** Whether a group's label sits beside its layers, inside or outside its left or right side. */
 export const atSide = (g: { titleAt?: GroupTitle | undefined }): boolean =>
   g.titleAt?.side === "left" || g.titleAt?.side === "right";
 
-/** Whether a group's label sits outside this side of its box. */
+/** Whether a group's label sits outside this side of its node. */
 export const outsideOf = (g: { titleAt?: GroupTitle | undefined }, side: GroupTitle["side"]) =>
   g.titleAt?.side === side && g.titleAt.place === "outside";
 
-/** How far a group's box and a label outside its left or right side reach across. */
+/** How far a group's border and a label outside its left or right side reach across. */
 export function reach(g: PGroup): [number, number] {
   const w = GROUP.outsideGap + g.labelW;
   return [g.x0 - (outsideOf(g, "left") ? w : 0), g.x1 + (outsideOf(g, "right") ? w : 0)];

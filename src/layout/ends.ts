@@ -1,11 +1,11 @@
 // Edges that end at a container (specs/decisions, "Lines that end at containers"). The router knows only nodes, so
 // each container end is routed to a node of the container that faces the other
-// end, and the route is then cut where it meets the container's box. A group is
-// met at its top or bottom when the other end lies above or below all its rows,
-// and at its side when the two share a row: then the facing node is the member
+// end, and the route is then cut where it meets the container's node. A group is
+// met at its top or bottom when the other end lies above or below all its layers,
+// and at its side when the two share a layer: then the facing node is the member
 // beside the other end. A layer, drawn as a band, is met at its top or bottom. A layer
 // with a look is drawn as a band too, though no edge ends at it.
-// A lane (specs/decisions, "Swimlanes run one way") is met like a group: at its border across rows, or at its side.
+// A lane (specs/decisions, "Swimlanes run one way") is met like a group: at its border across layers, or at its side.
 
 import { endKind, endLayers, endNodes, isBar, meeting } from "../model/ends.ts";
 import type { Diagram, Edge } from "../model/types.ts";
@@ -16,9 +16,9 @@ export interface ContainerEnd {
   /** The group, layer or lane id. */
   id: string;
   kind: "group" | "layer" | "lane";
-  /** The row whose nodes face the other end, and may stand in for the container. */
+  /** The layer whose nodes face the other end, and may stand in for the container. */
   row: number;
-  /** Whether the other end lies across rows, or beside in a shared row. */
+  /** Whether the other end lies across layers, or beside in a shared layer. */
   across: boolean;
 }
 
@@ -37,7 +37,7 @@ function median<T>(xs: T[]): T | undefined {
   return xs[Math.floor((xs.length - 1) / 2)];
 }
 
-/** The facing row's nodes of a container, in order. */
+/** The facing layer's nodes of a container, in order. */
 function facing(d: Diagram, end: ContainerEnd): string[] {
   const inside = new Set(endNodes(d, end.id));
   return (d.layers[end.row]?.nodes ?? []).filter((n) => inside.has(n.id)).map((n) => n.id);
@@ -45,7 +45,7 @@ function facing(d: Diagram, end: ContainerEnd): string[] {
 
 /**
  * Stand-ins for every container end, before placement: the middle node of the
- * facing row, or for a side meeting the member beside the other end. Edges the
+ * facing layer, or for a side meeting the member beside the other end. Edges the
  * model refused never reach the layout, so every end here is valid (specs/decisions, "Lines that end at containers").
  */
 export function planEnds(d: Diagram): EndPlan {
@@ -93,8 +93,8 @@ export function planEnds(d: Diagram): EndPlan {
 }
 
 /**
- * After placement, each end met across rows takes the node of its facing row
- * nearest the other end, so that the line can come straight. Ties go to the
+ * After placement, each end met across layers takes the node of its facing layer
+ * nearest the other end, so that the edge can come straight. Ties go to the
  * first in order. Returns the edges for routing.
  */
 export function refineEnds(d: Diagram, plan: EndPlan, nodes: Map<string, PNode>): Edge[] {
@@ -129,8 +129,8 @@ const inside = (p: Point, r: Rect) =>
   p.x > r.x + 1e-6 && p.x < r.x + r.w - 1e-6 && p.y > r.y + 1e-6 && p.y < r.y + r.h - 1e-6;
 
 /**
- * The route cut where it first enters the box, walking from its start. The
- * route is orthogonal, so the cut is where one segment crosses the box's border.
+ * The route cut where it first enters the node, walking from its start. The
+ * route is orthogonal, so the cut is where one segment crosses the node's border.
  */
 function cutAtEntry(points: Point[], box: Rect): Point[] {
   for (let i = 1; i < points.length; i++) {
@@ -157,7 +157,7 @@ function cutAtEntry(points: Point[], box: Rect): Point[] {
   return points;
 }
 
-/** The route cut at the source's box (start) or the target's box (end). */
+/** The route cut at the source's node (start) or the target's node (end). */
 export function cutRoute(points: Point[], box: Rect, at: "start" | "end"): Point[] {
   if (at === "end") return cutAtEntry(points, box);
   return cutAtEntry([...points].reverse(), box).reverse();
@@ -186,10 +186,10 @@ function straightInto(
 }
 
 /**
- * A line that meets a band across rows was routed to the band's box nearest its other
- * end, so it may turn toward that box before it meets the band. The band spans the
- * content, so the line runs straight on into it from its earliest stretch that already
- * heads there, where that stretch is clear of every box, text and other line.
+ * An edge that meets a band across layers was routed to the band's node nearest its other
+ * end, so it may turn toward that node before it meets the band. The band spans the
+ * content, so the edge runs straight on into it from its earliest stretch that already
+ * heads there, where that stretch is clear of every node, text and other edge.
  */
 export function straightIntoBand(
   points: Point[],

@@ -1,18 +1,18 @@
 // The column grid (specs/decisions, "Rows unseen, groups as systems", "Layout computed again on every change"): every node gets a column of one grid shared
-// by all rows. Within a row, columns follow node order. The facts decide the
+// by all layers. Within a layer, columns follow node order. The facts decide the
 // columns, deterministically, in four steps:
-// 1. Order: each row's nodes come left to right, each lane that runs as a column
+// 1. Order: each layer's nodes come left to right, each lane that runs as a column
 //    takes a block of columns of its own (specs/decisions, "Swimlanes run one way"), and each group's members fill a
-//    block of columns that no other node of the group's rows enters. These are
+//    block of columns that no other node of the group's layers enters. These are
 //    "left of" constraints between nodes.
 // 2. Columns: nodes that share a column form a class. Alignment facts join
-//    classes first, then boxes placed by steps (specs/decisions, "Steps from another box"): such a box joins the class of
-//    the box it steps from at an offset, its steps across, so that a class may span
-//    columns. Then edges between rows join their two ends, best edge first,
-//    so that the edge becomes one straight vertical line. An edge that skips rows
-//    also reserves its column in the rows it passes, so that it runs through empty
+//    classes first, then nodes placed by steps (specs/decisions, "Steps from another box"): such a node joins the class of
+//    the node it steps from at an offset, its steps across, so that a class may span
+//    columns. Then edges between layers join their two ends, best edge first,
+//    so that the edge becomes one straight vertical edge. An edge that skips layers
+//    also reserves its column in the layers it passes, so that it runs through empty
 //    space (specs/decisions, "A target picture with measured rules" rule 5). A join must keep every constraint satisfiable, must not
-//    put two nodes of one row in one column, and must not widen the grid.
+//    put two nodes of one layer in one column, and must not widen the grid.
 // 3. Packing: each class takes the leftmost column its constraints allow.
 // 4. Balance: each class then moves, within its room, toward the columns of the
 //    nodes it connects to.
@@ -40,7 +40,7 @@ export interface GroupProblem {
   facts: Facts;
 }
 
-/** A box placed by steps whose cell another fact keeps (specs/decisions, "Steps from another box"). */
+/** A node placed by steps whose cell another fact keeps (specs/decisions, "Steps from another box"). */
 export interface StepProblem {
   code: "step-blocked";
   node: string;
@@ -52,7 +52,7 @@ export interface Grid {
   /** Column index of every node, from 0. */
   col: Map<string, number>;
   columns: number;
-  /** Rows each column passes empty for a straight edge that skips rows. */
+  /** Layers each column passes empty for a straight edge that skips layers. */
   reserved: Map<number, Set<number>>;
   alignProblems: AlignmentProblem[];
   groupProblems: GroupProblem[];
@@ -62,7 +62,7 @@ export interface Grid {
 }
 
 /**
- * A cell of a class: a row, and an offset from the class's column. Offsets stay well
+ * A cell of a class: a layer, and an offset from the class's column. Offsets stay well
  * inside ±4096, so the key of a cell one column right is the key plus one.
  */
 const cellKey = (r: number, o: number): number => r * 8192 + o + 4096;
@@ -80,7 +80,7 @@ function cmp(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-/** Extra columns a join may add beyond the widest row. */
+/** Extra columns a join may add beyond the widest layer. */
 const SLACK = 0;
 
 export function buildGrid(d: Diagram): Grid {
@@ -104,12 +104,12 @@ export function buildGrid(d: Diagram): Grid {
     rows.push(list);
   });
   const N = ids.length;
-  // Each node's offset from its class's column: 0 but for boxes placed by steps (specs/decisions, "Steps from another box").
+  // Each node's offset from its class's column: 0 but for nodes placed by steps (specs/decisions, "Steps from another box").
   const off: number[] = new Array<number>(N).fill(0);
   // The groups around each node, innermost first (specs/decisions, "Every layered diagram type").
   const chainOf: string[][] = Array.from({ length: N }, () => []);
   const alignOf: (string | undefined)[] = [];
-  // Boxes placed by steps, in row order: the box, the box it steps from, its steps across.
+  // Nodes placed by steps, in layer order: the node, the node it steps from, its steps across.
   const steps: { s: number; a: number; dx: number }[] = [];
   for (const l of d.layers) {
     for (const n of l.nodes) {
@@ -126,7 +126,7 @@ export function buildGrid(d: Diagram): Grid {
   /** The outermost group around a node. */
   const outerOf = (i: number): string | undefined => chainOf[i]?.[(chainOf[i]?.length ?? 0) - 1];
 
-  // The nodes each node connects to, in any row.
+  // The nodes each node connects to, in any layer.
   const links: number[][] = Array.from({ length: N }, () => []);
   for (const e of d.edges) {
     const u = index.get(e.from);
@@ -141,8 +141,8 @@ export function buildGrid(d: Diagram): Grid {
   for (const list of rows) {
     for (let k = 1; k < list.length; k++) succ[list[k - 1] as number]?.push(list[k] as number);
   }
-  // Column lanes: every node of a lane, in any row, lies left of every node of the
-  // next lane. Rows are already in lane order (layout sorts them), so no cycle forms.
+  // Column lanes: every node of a lane, in any layer, lies left of every node of the
+  // next lane. Layers are already in lane order (layout sorts them), so no cycle forms.
   if (laneRun(d) === "columns") {
     const ranks = laneRanks(d);
     const byRank = new Map<number, number[]>();
@@ -192,7 +192,7 @@ export function buildGrid(d: Diagram): Grid {
 
   const groupProblems = groupConstraints(d, rows, ids, row, chainOf, succ, reaches, cls, links);
   // Columns (specs/decisions, "Columns beside rows"): every node of a column lies left of every node of a later column, in
-  // every row. Rows are already in column order, so only another fact can contradict it:
+  // every layer. Layers are already in column order, so only another fact can contradict it:
   // the first pair that cannot hold is refused.
   const ranks = columnRanks(d);
   if (ranks.size > 0) {
@@ -227,7 +227,7 @@ export function buildGrid(d: Diagram): Grid {
       });
     }
   }
-  // Walls up and down (specs/decisions, "Walls as space"): every node left of a wall, in the rows it spans, lies left
+  // Walls up and down (specs/decisions, "Walls as space"): every node left of a wall, in the layers it spans, lies left
   // of every node right of it, so that the wall's space can run between their columns.
   for (const w of d.walls ?? []) {
     const way = wallRun(d, w);
@@ -292,8 +292,8 @@ export function buildGrid(d: Diagram): Grid {
   };
 
   /**
-   * The boxes in the way of joining b's class to a's, which tryJoin found to clash: those of b's column that would
-   * stand in a cell of a's, or else those the order of the rows puts between the two columns, by the first chain of
+   * The nodes in the way of joining b's class to a's, which tryJoin found to clash: those of b's column that would
+   * stand in a cell of a's, or else those the order of the layers puts between the two columns, by the first chain of
    * "left of" and alignment from one to the other. None for a clash of offsets or of reserved cells.
    */
   const inTheWay = (a: number, b: number): string[] => {
@@ -329,7 +329,7 @@ export function buildGrid(d: Diagram): Grid {
               path.unshift(ids[y] as string);
             return path;
           }
-          // A box reached means its whole column is reached, through its alignments.
+          // A node reached means its whole column is reached, through its alignments.
           for (let z = 0; z < N; z++) {
             if (z === x || cls[z] !== cls[x] || parent.has(z)) continue;
             parent.set(z, x);
@@ -388,8 +388,8 @@ export function buildGrid(d: Diagram): Grid {
     }
   }
 
-  // Step 2a, boxes placed by steps (specs/decisions, "Steps from another box"): each joins the class of the box it steps from,
-  // its steps across right of it, the box stepped from first. The join must hold.
+  // Step 2a, nodes placed by steps (specs/decisions, "Steps from another box"): each joins the class of the node it steps from,
+  // its steps across right of it, the node stepped from first. The join must hold.
   const stepProblems: StepProblem[] = [];
   {
     const left = new Set(steps.map((x) => x.s));
@@ -416,8 +416,8 @@ export function buildGrid(d: Diagram): Grid {
   }
 
   /**
-   * Joins box s to the class of box a, k columns right of it, or names the box in the way:
-   * one of a's class in the cell, or a neighbour of s in its row when the constraints
+   * Joins node s to the class of node a, k columns right of it, or names the node in the way:
+   * one of a's class in the cell, or a neighbour of s in its layer when the constraints
    * cannot hold. Classes that the join puts both left and right of a's class have their
    * place fixed by it: they join it, each where the constraints put it first.
    */
@@ -523,11 +523,11 @@ export function buildGrid(d: Diagram): Grid {
   }
 
   /**
-   * Keeps the column of node a's class empty in these rows, for a straight line
-   * through them. Each node of those rows takes the side its edges pull it to:
+   * Keeps the column of node a's class empty in these layers, for a straight edge
+   * through them. Each node of those layers takes the side its edges pull it to:
    * the median column of the nodes it connects to, or its own column if it has
    * none; the right side on a tie. Fails if a node of the class is in one of the
-   * rows, or the sides cannot hold.
+   * layers, or the sides cannot hold.
    */
   const reserveRows = (a: number, rs: number[], added: [number, number][]): boolean => {
     const c = cls[a] as number;
@@ -552,7 +552,7 @@ export function buildGrid(d: Diagram): Grid {
       return true;
     };
     for (const r of rs) {
-      // The row splits once: the nodes before the split go left of the column.
+      // The layer splits once: the nodes before the split go left of the column.
       // Splits are tried from the one that puts fewest nodes on the wrong side.
       const list = rows[r] ?? [];
       const packedSplit = list.filter((x) => colOf(x) < at).length;
@@ -678,7 +678,7 @@ export function buildGrid(d: Diagram): Grid {
     }
     return { u, v, score, key };
   });
-  // A node with a straight line above it (up) or below it (down).
+  // A node with a straight edge above it (up) or below it (down).
   const up = new Uint8Array(N);
   const down = new Uint8Array(N);
   const live = [...cands];
@@ -731,7 +731,7 @@ export function buildGrid(d: Diagram): Grid {
   balance(N, cls, row, off, succ, reservedOf, colOfClass, pairs, packed.columns, shared);
 
   // Columns in use, renumbered from 0. A class that spans columns, for steps, keeps the
-  // columns between its boxes, so that a step stays one column.
+  // columns between its nodes, so that a step stays one column.
   const nodeCol = (i: number) => (colOfClass.get(cls[i] as number) ?? 0) + (off[i] as number);
   const inUse = new Set<number>();
   for (let i = 0; i < N; i++) inUse.add(nodeCol(i));
@@ -768,10 +768,10 @@ export function buildGrid(d: Diagram): Grid {
 }
 
 /**
- * Group constraints: in each row of a group's rows, its members are one block,
+ * Group constraints: in each layer of a group's layers, its members are one block,
  * the nodes left of the block come before every member, and the nodes right of it
  * after every member. A group's members are its inner groups' nodes too, and the
- * outer groups come first (specs/decisions, "Every layered diagram type"). Groups that share rows, neither inside the other,
+ * outer groups come first (specs/decisions, "Every layered diagram type"). Groups that share layers, neither inside the other,
  * keep their side of each other. A group whose constraints cannot hold with the
  * ones before it is reported, and its constraints are left out.
  */
@@ -828,15 +828,15 @@ function groupConstraints(
     const r1 = Math.max(...ms.map((i) => row[i] as number));
     const mine: [number, number][] = [];
     let failed: GroupProblem | undefined;
-    // The rows the group's box covers, first and last, that a conflict names.
+    // The layers the group's border covers, first and last, that a conflict names.
     const conflict = (at: Facts) =>
       conflictOf(g, { ...at, top: d.layers[r0]?.id ?? "", bottom: d.layers[r1]?.id ?? "" });
     for (let r = r0; r <= r1 && failed === undefined; r++) {
       const list = rows[r] ?? [];
       const at = list.map((i, k) => (isIn(i, g) ? k : -1)).filter((k) => k >= 0);
       if (at.length === 0) {
-        // A row inside the group's span with no member (specs/decisions, "Rows unseen, groups as systems"): the box spans it, so each
-        // of its nodes sits wholly left or right of the box, the row keeping its order.
+        // A layer inside the group's span with no member (specs/decisions, "Rows unseen, groups as systems"): the node spans it, so each
+        // of its nodes sits wholly left or right of the node, the layer keeping its order.
         const layer = d.layers[r]?.id ?? "";
         const split = gapSplit(list, ms, g, rows, chainOf, links, reaches, cls);
         if (split === undefined) {
@@ -859,8 +859,8 @@ function groupConstraints(
       if (stranger !== undefined) {
         const layer = d.layers[r]?.id ?? "";
         const s = ids[stranger] as string;
-        // Groups nest: the facts name the innermost group whose members the box stands between, and its members
-        // nearest the box on either side.
+        // Groups nest: the facts name the innermost group whose members the node stands between, and its members
+        // nearest the node on either side.
         const at0 = list.indexOf(stranger);
         const span = (h: string): [number, number] | undefined => {
           const k = list.map((i, x) => (isIn(i, h) ? x : -1)).filter((x) => x >= 0);
@@ -901,7 +901,7 @@ function groupConstraints(
         }
       }
     }
-    // Groups that share a row keep the side they have in it.
+    // Groups that share a layer keep the side they have in it.
     for (const other of added) {
       if (failed !== undefined) break;
       if (nested(g, other.group)) continue;
@@ -934,9 +934,9 @@ function groupConstraints(
 }
 
 /**
- * Where a row with no member of a group, inside the group's span, splits around the
- * box: the first `split` nodes go left of it, the rest right. Each node leans toward the
- * side of the group where the nodes it connects to sit, in rows that hold members; a
+ * Where a layer with no member of a group, inside the group's span, splits around the
+ * node: the first `split` nodes go left of it, the rest right. Each node leans toward the
+ * side of the group where the nodes it connects to sit, in layers that hold members; a
  * split no constraint forbids that agrees with most leanings wins, and with none,
  * every node goes right. Undefined when no split can hold.
  */
@@ -982,9 +982,9 @@ function gapSplit(
 }
 
 /**
- * A node or another group that would lie left of group g's box in one row and right of it in another: the box
- * covers every row from its top member to its bottom one, which the facts name (`top`, `bottom`). The facts say
- * where: the row and the node in it, or the row whose nodes cannot all stand on one side, or the other group
+ * A node or another group that would lie left of group g's node in one layer and right of it in another: the node
+ * covers every layer from its top member to its bottom one, which the facts name (`top`, `bottom`). The facts say
+ * where: the layer and the node in it, or the layer whose nodes cannot all stand on one side, or the other group
  * (`beside`).
  */
 function conflictOf(g: string, at: Facts): GroupProblem {
@@ -1006,7 +1006,7 @@ interface Packed {
 
 /**
  * The "left of" constraints between classes, each with the least columns between the
- * two classes' columns: 1, but for a box at an offset in its class (specs/decisions, "Steps from another box").
+ * two classes' columns: 1, but for a node at an offset in its class (specs/decisions, "Steps from another box").
  */
 function classEdges(
   N: number,
@@ -1029,7 +1029,7 @@ function classEdges(
   return out;
 }
 
-/** Each class's cells, as [row, offset]: its nodes' and its reserved ones. */
+/** Each class's cells, as [layer, offset]: its nodes' and its reserved ones. */
 function classCells(
   N: number,
   cls: number[],

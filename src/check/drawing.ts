@@ -1,12 +1,12 @@
-// The drawing as discrete facts (specs/decisions, "Records over prose"): for each box its row, its place in the
-// row, its size, its lines on each side and their length; for each line the sides it
-// leaves and enters, its bends, its length against the shortest it could be, the rows
-// between its ends, the lines it crosses and the rows it passes without connecting; the
+// The drawing as discrete facts (specs/decisions, "Records over prose"): for each node its layer, its place in the
+// layer, its size, its edges on each side and their length; for each edge the sides it
+// leaves and enters, its bends, its length against the shortest it could be, the layers
+// between its ends, the edges it crosses and the layers it passes without connecting; the
 // legend's entries; and totals. The coding agent judges the drawing from them; grafical
 // judges nothing.
 
 import type { Warning } from "../errors.ts";
-import { asideBoxes, bendsOf, crossingsOf, legendEntries } from "../layout/index.ts";
+import { asideNodes, bendsOf, crossingsOf, legendEntries } from "../layout/index.ts";
 import { addedLayer, placeSteps } from "../layout/steps.ts";
 import { endKind, endLayers, endNodes } from "../model/ends.ts";
 import { groupChain } from "../model/groups.ts";
@@ -22,23 +22,23 @@ import { MAX_BENDS } from "./taste.ts";
 export type Side = "top" | "bottom" | "left" | "right";
 const SIDES: Side[] = ["top", "bottom", "left", "right"];
 
-export interface DrawnBox {
+export interface DrawnNode {
   id: string;
   layer: string;
-  /** Its place in its row, left to right, from 1, and how many boxes the row holds. */
+  /** Its place in its layer, left to right, from 1, and how many nodes the layer holds. */
   place: number;
   of: number;
   width: number;
   height: number;
-  /** Line ends at the box: a line from the box to itself counts twice. */
+  /** Edge ends at the node: an edge from the node to itself counts twice. */
   edges: number;
-  /** Lines that meet the box, by side; a side no line meets is left out. */
+  /** Edges that meet the node, by side; a side no edge meets is left out. */
   sides: Partial<Record<Side, number>>;
-  /** The length of its lines together, each counted once. */
+  /** The length of its edges together, each counted once. */
   reach: number;
 }
 
-export interface DrawnLine {
+export interface DrawnEdge {
   id: string;
   from: string;
   to: string;
@@ -46,19 +46,19 @@ export interface DrawnLine {
   enters: Side;
   bends: number;
   length: number;
-  /** The shortest any line between its two ends could be: the gap between them across and down. */
+  /** The shortest any edge between its two ends could be: the gap between them across and down. */
   direct: number;
   /** Its length over direct, to two decimals; null when the ends touch. */
   detour: number | null;
-  /** Rows between the rows of its ends: 0 for one row or two neighbouring rows. */
+  /** Layers between the layers of its ends: 0 for one layer or two neighbouring layers. */
   skip: number;
-  /** The lines it crosses, in id order. */
+  /** The edges it crosses, in id order. */
   crosses: string[];
-  /** Rows between its ends that it runs through, among their boxes, without meeting a box of. */
+  /** Layers between its ends that it runs through, among their nodes, without meeting a node of. */
   passes: string[];
-  /** The lines it leaves or arrives with through one port, drawn as one bundle there (specs/decisions, "Fan-outs of three bundle"), in id order. */
+  /** The edges it leaves or arrives with through one port, drawn as one bundle there (specs/decisions, "Fan-outs of three bundle"), in id order. */
   bundle: string[];
-  /** Its step's number, drawn on it (specs/decisions, "Step badges ride the line"); absent for a line with none. */
+  /** Its step's number, drawn on it (specs/decisions, "Step badges ride the line"); absent for an edge with none. */
   step?: number;
 }
 
@@ -70,29 +70,29 @@ export interface DrawnGroup {
 }
 
 /**
- * A line style or a line width the picture draws, or a mark the diagram names, in the legend's
+ * An edge style or an edge width the picture draws, or a mark the diagram names, in the legend's
  * order (specs/decisions, "A legend for widths and marks", "The legend says only what the agent named").
  */
 export interface DrawnLegend {
-  /** The line style of a line's sample; null for a mark. */
+  /** The edge style of an edge's sample; null for a mark. */
   style: string | null;
-  /** A line width's weight, as diagram legend names it; null for a thin line or a mark. */
+  /** An edge width's weight, as diagram legend names it; null for a thin edge or a mark. */
   weight: string | null;
-  /** A line width's sample width in pixels; null for a thin line or a mark. */
+  /** An edge width's sample width in pixels; null for a thin edge or a mark. */
   width: number | null;
-  /** A mark's name: its emoji, text or file; null for a line. */
+  /** A mark's name: its emoji, text or file; null for an edge. */
   mark: string | null;
   /** The agent's words; null for a style or width it has not named, which the legend leaves out. */
   text: string | null;
 }
 
-/** A wall (specs/decisions, "Walls as space"): which way it runs, how long and how thick it is, and the lines through it. */
+/** A wall (specs/decisions, "Walls as space"): which way it runs, how long and how thick it is, and the edges through it. */
 export interface DrawnWall {
   id: string;
   run: string;
   length: number;
   space: number;
-  /** The lines that cross it, in id order. */
+  /** The edges that cross it, in id order. */
   edges: string[];
 }
 
@@ -110,23 +110,23 @@ export interface Counts {
   /** Every point where two lines cross. */
   crossings: number;
   bends: number;
-  /** Lines with more than two bends (specs/decisions, "A bent line is reported and never refused"). */
+  /** Edges with more than two bends (specs/decisions, "A bent line is reported and never refused"). */
   bent: number;
-  /** The length of every line together. */
+  /** The length of every edge together. */
   length: number;
   width: number;
   height: number;
-  /** The row with the most boxes, the box with the most lines and the longest line; ties go to the first. */
+  /** The layer with the most nodes, the node with the most edges and the longest edge; ties go to the first. */
   fullest: { id: string; nodes: number } | null;
   busiest: { id: string; edges: number } | null;
   longest: { id: string; length: number } | null;
-  /** Lines that pass at least one row. */
+  /** Edges that pass at least one layer. */
   passing: number;
-  /** Lines that cross a group's box holding neither of their ends. */
+  /** Edges that cross a group's border holding neither of their ends. */
   across: number;
   /** Pairs of runs of two lines, not one bundle, closer than 12 px side by side for over 100 px. */
   tight: number;
-  /** Line labels with under 8 px of room on two or more sides (specs/decisions, "Composition counts"). */
+  /** Edge labels with under 8 px of room on two or more sides (specs/decisions, "Composition counts"). */
   crowded: number;
 }
 
@@ -134,19 +134,19 @@ export interface Drawing {
   counts: Counts;
   /** The places behind the three composition counts. */
   composition: Composition;
-  boxes: DrawnBox[];
-  /** One for each pair of neighbouring rows that hold boxes. */
+  boxes: DrawnNode[];
+  /** One for each pair of neighbouring layers that hold nodes. */
   gutters: Gutter[];
-  edges: DrawnLine[];
+  edges: DrawnEdge[];
   groups: DrawnGroup[];
   walls: DrawnWall[];
   notes: DrawnNote[];
   legend: DrawnLegend[];
-  /** The boxes wholly beside every box they connect to, with those boxes. */
+  /** The nodes wholly beside every node they connect to, with those nodes. */
   aside: { box: string; users: string[] }[];
 }
 
-/** The side of a box a line's end point lies on: the nearest one. */
+/** The side of a node an edge's end point lies on: the nearest one. */
 function sideOf(p: Point, r: Rect): Side {
   const gaps: Record<Side, number> = {
     top: Math.abs(p.y - r.y),
@@ -157,7 +157,7 @@ function sideOf(p: Point, r: Rect): Side {
   return SIDES.reduce((best, s) => (gaps[s] < gaps[best] ? s : best), "top" as Side);
 }
 
-/** The gap between two boxes across, plus the gap down: the shortest a line between them can be. */
+/** The gap between two nodes across, plus the gap down: the shortest an edge between them can be. */
 function gapOf(a: Rect, b: Rect): number {
   const dx = Math.max(0, Math.max(a.x, b.x) - Math.min(a.x + a.w, b.x + b.w));
   const dy = Math.max(0, Math.max(a.y, b.y) - Math.min(a.y + a.h, b.y + b.h));
@@ -165,18 +165,18 @@ function gapOf(a: Rect, b: Rect): number {
 }
 
 export function drawing(facts: Diagram, scene: Scene): Drawing {
-  // Boxes placed by steps count in the rows they are drawn in (specs/decisions, "Steps from another box").
+  // Nodes placed by steps count in the layers they are drawn in (specs/decisions, "Steps from another box").
   const d = placeSteps(facts).d;
-  /** A row's name in the output: a row the engine added is "-". */
+  /** A layer's name in the output: a layer the engine added is "-". */
   const layerName = (id: string) => (addedLayer(id) ? "-" : id);
-  // Every element a line can end at, with the box it is drawn in.
+  // Every element an edge can end at, with the node it is drawn in.
   const rects = new Map<string, Rect>();
   for (const n of scene.nodes) rects.set(n.id, n.rect);
   for (const g of scene.groups ?? []) rects.set(g.id, g.rect);
   for (const b of scene.bands ?? []) rects.set(b.id, b.rect);
   for (const l of scene.lanes ?? []) rects.set(l.id, l.rect);
 
-  // The span of each row's boxes, for the lines that pass it.
+  // The span of each layer's nodes, for the edges that pass it.
   const spans = new Map<string, { y0: number; y1: number; x0: number; x1: number }>();
   for (const n of scene.nodes) {
     const s = spans.get(n.layer);
@@ -189,7 +189,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       s.x1 = Math.max(s.x1, r.x + r.w);
     }
   }
-  // A bar holds no box: a line that runs over it passes its row.
+  // A bar holds no node: an edge that runs over it passes its layer.
   for (const b of scene.bands ?? []) {
     if (spans.has(b.id)) continue;
     const r = b.rect;
@@ -203,7 +203,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     crosses.set(b, [...(crosses.get(b) ?? []), a]);
   }
 
-  // Every line meets its box at a port of its own, except the lines of a bundle (specs/decisions, "Lines meet any side", "Fan-outs of three bundle").
+  // Every edge meets its node at a port of its own, except the lines of a bundle (specs/decisions, "Lines meet any side", "Fan-outs of three bundle").
   const bundles = new Map<string, Set<string>>();
   const ends = (e: (typeof scene.edges)[number]) => [
     `${e.from}@${e.points[0]?.x},${e.points[0]?.y}`,
@@ -228,7 +228,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     atBox.set(id, at);
   };
   const steps = new Map(d.edges.flatMap((e) => (e.step === undefined ? [] : [[e.id, e.step]])));
-  const lines: DrawnLine[] = [];
+  const lines: DrawnEdge[] = [];
   for (const e of scene.edges) {
     const first = e.points[0] as Point;
     const last = e.points[e.points.length - 1] as Point;
@@ -288,7 +288,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   for (const l of lines) {
     for (const id of new Set([l.from, l.to])) reach.set(id, (reach.get(id) ?? 0) + l.length);
   }
-  const boxes: DrawnBox[] = [];
+  const boxes: DrawnNode[] = [];
   for (const layer of d.layers) {
     const row = scene.nodes.filter((n) => n.layer === layer.id).sort((p, q) => p.rect.x - q.rect.x);
     row.forEach((n, i) => {
@@ -345,7 +345,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     });
   });
   return {
-    aside: asideBoxes(scene),
+    aside: asideNodes(scene),
     composition: comp,
     gutters,
     counts: {
@@ -353,7 +353,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       edges: scene.edges.length,
       crossings: points,
       bends: lines.reduce((s, l) => s + l.bends, 0),
-      bent: bentLines(lines).length,
+      bent: bentEdges(lines).length,
       length: lines.reduce((s, l) => s + l.length, 0),
       width: Math.round(scene.width),
       height: Math.round(scene.height),
@@ -397,23 +397,23 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   };
 }
 
-/** The lines drawn with more than two bends (specs/decisions, "A bent line is reported and never refused"), in drawing order. */
-export function bentLines(lines: DrawnLine[]): DrawnLine[] {
+/** The edges drawn with more than two bends (specs/decisions, "A bent line is reported and never refused"), in drawing order. */
+export function bentEdges(lines: DrawnEdge[]): DrawnEdge[] {
   return lines.filter((l) => l.bends > MAX_BENDS);
 }
 
 /**
- * The groups each of whose boxes, two or more, has a line to one end outside the group, or from it, the lines alike in
- * kind, label, weight and arrowheads, with those lines (specs/decisions, "A line from every box of a group is a warning").
- * A group inside another that has the same lines is left out.
+ * The groups each of whose nodes, two or more, has an edge to one end outside the group, or from it, the edges alike in
+ * kind, label, weight and arrowheads, with those edges (specs/decisions, "A line from every box of a group is a warning").
+ * A group inside another that has the same edges is left out.
  */
-function linesPerMember(d: Diagram): { group: string; edges: string[] }[] {
+function edgesPerMember(d: Diagram): { group: string; edges: string[] }[] {
   const found: { group: string; key: string; edges: string[] }[] = [];
   for (const g of d.groups ?? []) {
     const boxes = endNodes(d, g.id);
     if (boxes.length < 2) continue;
     const inside = new Set(boxes);
-    // Each box's first line by its direction, its end outside the group and its look.
+    // Each node's first line by its direction, its end outside the group and its look.
     const by = new Map<string, Map<string, string>>();
     for (const e of d.edges) {
       for (const [box, end, way] of [
@@ -443,14 +443,14 @@ function linesPerMember(d: Diagram): { group: string; edges: string[] }[] {
 
 /**
  * What the drawing draws poorly, as warnings, in the order of their codes (specs/decisions, "Every write prints every
- * warning"): the lines bent more than twice, the lines that pass rows, the lines across a group's box, the tight runs,
- * the crowded labels, the boxes no line reaches, the boxes beside all they connect to, the groups each of whose boxes has a line alike to one end, and each
- * pair of lines that cross. The first five are the places that bent, passing, across, tight and crowded count. `facts`
+ * warning"): the edges bent more than twice, the edges that pass layers, the edges across a group's border, the tight runs,
+ * the crowded labels, the nodes no edge reaches, the nodes beside all they connect to, the groups each of whose nodes has an edge alike to one end, and each
+ * pair of edges that cross. The first five are the places that bent, passing, across, tight and crowded count. `facts`
  * is the diagram drawn.
  */
 export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
   const c = dr.composition;
-  // A line to a group, a row or a lane reaches every box it holds: those boxes are connected in the picture.
+  // An edge to a group, a layer or a lane reaches every node it holds: those nodes are connected in the picture.
   const d = placeSteps(facts).d;
   const reached = new Set(
     d.edges
@@ -459,7 +459,7 @@ export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
       .flatMap((id) => endNodes(d, id)),
   );
   return [
-    ...bentLines(dr.edges).map(
+    ...bentEdges(dr.edges).map(
       (l): Warning => ({ code: "bent-edge", facts: { edge: l.id, bends: l.bends, skip: l.skip } }),
     ),
     ...dr.edges
@@ -481,7 +481,7 @@ export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
     ...dr.aside.map(
       (a): Warning => ({ code: "node-aside", facts: { node: a.box, nodes: a.users } }),
     ),
-    ...linesPerMember(d).map((x): Warning => ({ code: "edge-per-member", facts: x })),
+    ...edgesPerMember(d).map((x): Warning => ({ code: "edge-per-member", facts: x })),
     ...dr.edges.flatMap((l) =>
       l.crosses
         .filter((o) => l.id < o)
@@ -513,7 +513,7 @@ export function deltaText(d: Record<string, number>): string {
   );
 }
 
-/** The whole drawing as records: the counts, then each box, group and line, then the legend. */
+/** The whole drawing as records: the counts, then each node, group and edge, then the legend. */
 export function drawingText(dr: Drawing): string {
   const out = [countsText(dr.counts)];
   for (const b of dr.boxes) out.push(record("node", { ...b }));

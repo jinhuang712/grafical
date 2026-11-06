@@ -28,14 +28,14 @@ export const DENSITIES = ["compact", "normal", "airy"] as const;
 export type Density = (typeof DENSITIES)[number];
 
 /**
- * The line styles an edge is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"): call and data are solid, async dashed,
- * optional dotted, and a link is a plain line with no arrowhead. The legend names each.
+ * The edge styles an edge is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"): call and data are solid, async dashed,
+ * optional dotted, and a link is a plain edge with no arrowhead. The legend names each.
  */
 export const LINE_STYLES = ["solid", "dashed", "dotted", "plain"] as const;
 export type LineStyleName = (typeof LINE_STYLES)[number];
 
 /**
- * How a row is drawn once a line ends at it (specs/decisions, "A row with no box as one bar"): as a box, with a box's
+ * How a layer is drawn once an edge ends at it (specs/decisions, "A row with no box as one bar"): as a node, with a node's
  * paint and a dark label, or as a band, with the band's light fill and muted label.
  */
 export const ROW_LOOKS = ["box", "band"] as const;
@@ -43,9 +43,9 @@ export type RowLook = (typeof ROW_LOOKS)[number];
 
 /**
  * Where a group's label sits, as the agent states it (specs/decisions, "The agent states where a group's label sits"):
- * in the head or the foot, at the box's left, middle or right, or centred just outside its
- * top or bottom side, or beside its rows inside or outside its left or right side. Absent:
- * in the head, where the lines into the group's first row keep their centres.
+ * in the head or the foot, at the node's left, middle or right, or centred just outside its
+ * top or bottom side, or beside its layers inside or outside its left or right side. Absent:
+ * in the head, where the edges into the group's first layer keep their centres.
  */
 export interface DiagramTitle {
   /** From 0 to 1 across the picture: the title's own point at this fraction meets the width's. */
@@ -85,7 +85,7 @@ export type Sizing = (typeof SIZINGS)[number];
 
 /**
  * Where a mark sits on a node (specs/decisions, "Marks of any kind"): over one of its four corners, or in a column
- * inside the box, left of the text.
+ * inside the node, left of the text.
  */
 export const MARK_SLOTS = ["top-left", "top-right", "bottom-left", "bottom-right", "left"] as const;
 export type MarkSlot = (typeof MARK_SLOTS)[number];
@@ -162,9 +162,9 @@ export interface DiagramNode {
   /** Absent: centred. */
   labelAlign?: LabelAlign;
   kind: NodeKind;
-  /** Absent: the engine sizes the box to its text, unless the diagram's sizing is fixed (specs/decisions, "Boxes sized to their text"). */
+  /** Absent: the engine sizes the node to its text, unless the diagram's sizing is fixed (specs/decisions, "Boxes sized to their text"). */
   size?: SizeStep;
-  /** A second, smaller line, such as a port or a topic name. */
+  /** A second, smaller edge, such as a port or a topic name. */
   sublabel?: string;
   /** Marks one of the one or two things a reader should see first. */
   emphasis?: boolean;
@@ -182,7 +182,7 @@ export interface DiagramNode {
   style?: string[];
   /** Marks in fixed slots, such as a warning at the top-left (specs/decisions, "Marks of any kind"). */
   marks?: Partial<Record<MarkSlot, Mark>>;
-  /** The box a box in no row is placed from, by the steps below (specs/decisions, "Steps from another box"). */
+  /** The node a node in no layer is placed from, by the steps below (specs/decisions, "Steps from another box"). */
   from?: string;
   /** Steps down, up, left or right from `from`, each a cell of the column grid (specs/decisions, "Steps from another box"). */
   down?: number;
@@ -191,13 +191,13 @@ export interface DiagramNode {
   right?: number;
 }
 
-/** A system drawn as one box around its member nodes, which may sit in several rows (specs/decisions, "Rows unseen, groups as systems"). */
+/** A system drawn as one node around its member nodes, which may sit in several layers (specs/decisions, "Rows unseen, groups as systems"). */
 export interface Group {
   id: string;
   label: string;
   /** A second, quieter part of the label, such as "write side". */
   sublabel?: string;
-  /** The group this one sits inside, drawn as a box within its box (specs/decisions, "Every layered diagram type"). */
+  /** The group this one sits inside, drawn as a node within its node (specs/decisions, "Every layered diagram type"). */
   in?: string;
   /** Where its label sits. Absent: the engine seats it in the head. */
   titleAt?: GroupTitle;
@@ -209,11 +209,11 @@ export interface Layer {
   id: string;
   /** Where its label sits, from 0 to 1 along its head (specs/decisions, "A region's label sits at a fraction of a side"). */
   labelAt?: number;
-  /** Its name, drawn only when the row is drawn (specs/decisions, "A row with a look is drawn"). */
+  /** Its name, drawn only when the layer is drawn (specs/decisions, "A row with a look is drawn"). */
   label?: string;
-  /** The lane this layer lies in, when lanes run as rows (specs/decisions, "Swimlanes run one way"). */
+  /** The lane this layer lies in, when lanes run as layers (specs/decisions, "Swimlanes run one way"). */
   lane?: string;
-  /** How the row is drawn; a row with a look is drawn though no line ends at it. Absent: the row is drawn only once a line ends at it, a box with no box in it and a band with boxes (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
+  /** How the layer is drawn; a layer with a look is drawn though no edge ends at it. Absent: the layer is drawn only once an edge ends at it, a node with no node in it and a band with nodes (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
   look?: RowLook;
   /** Ordered: list order is the order within the layer. */
   nodes: DiagramNode[];
@@ -221,10 +221,10 @@ export interface Layer {
 
 /**
  * A swimlane: a labelled band that names who owns what (specs/decisions, "Swimlanes run one way"). Its members name
- * it: layers, when lanes run as rows, or nodes, when lanes run as columns. All
+ * it: layers, when lanes run as layers, or nodes, when lanes run as columns. All
  * lanes of a diagram run one way.
  */
-/** A column (specs/decisions, "Columns beside rows"): a guide that its nodes follow, left of the next column's in every row. */
+/** A column (specs/decisions, "Columns beside rows"): a guide that its nodes follow, left of the next column's in every layer. */
 export interface Column {
   id: string;
 }
@@ -239,7 +239,7 @@ export interface Gap {
   magnified: GapMagnified;
 }
 
-/** How a text's lines line up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
+/** How a text's edges edge up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
 export const LABEL_ALIGNS = ["left", "center", "right"] as const;
 export type LabelAlign = (typeof LABEL_ALIGNS)[number];
 
@@ -248,32 +248,32 @@ export interface Lane {
   label: string;
   /** Where its label sits, from 0 to 1 along its head (specs/decisions, "A region's label sits at a fraction of a side"). */
   labelAt?: number;
-  /** Absent: left in a lane of rows and centred in a lane of columns. */
+  /** Absent: left in a lane of layers and centred in a lane of columns. */
   labelAlign?: LabelAlign;
   /** The styles it marks. */
   style?: string[];
 }
 
 /**
- * A wall (specs/decisions, "Walls as space"): empty space between two sides, each a list of nodes and groups. A line
- * from one side to the other crosses it only where `allow` names the line, or a node or
+ * A wall (specs/decisions, "Walls as space"): empty space between two sides, each a list of nodes and groups. An edge
+ * from one side to the other crosses it only where `allow` names the edge, or a node or
  * group at one of its ends.
  */
 export interface Wall {
   id: string;
   between: string[];
   and: string[];
-  /** Lines, nodes and groups the wall lets through. */
+  /** Edges, nodes and groups the wall lets through. */
   allow?: string[];
-  /** Drawn as a dashed line through the wall's middle, with these words at its start. Absent: invisible. */
+  /** Drawn as a dashed edge through the wall's middle, with these words at its start. Absent: invisible. */
   label?: string;
   /** Absent: centred. */
   labelAlign?: LabelAlign;
 }
 
-/** A note (specs/decisions, "Notes as callouts or footnotes"): a short text about a node, a group or a line, drawn as a callout or a footnote. */
+/** A note (specs/decisions, "Notes as callouts or footnotes"): a short text about a node, a group or an edge, drawn as a callout or a footnote. */
 export interface Note {
-  /** The id of the node, group or line it is about. */
+  /** The id of the node, group or edge it is about. */
   on: string;
   text: string;
   /**
@@ -281,7 +281,7 @@ export interface Note {
    * beside its target, refused where there is no room for one (specs/decisions, "A note is what the agent states").
    */
   footnote?: true;
-  /** How a card's lines line up. Absent: left. */
+  /** How a card's edges edge up. Absent: left. */
   labelAlign?: LabelAlign;
 }
 
@@ -297,7 +297,7 @@ export interface Edge {
   labelAlign?: LabelAlign;
   /** true: an arrowhead at both ends. A link has none (specs/decisions, "Lines meet any side"). */
   both?: boolean;
-  /** true: the line may pass the rows with no box between its ends (specs/decisions, "A row with no box as one bar"). */
+  /** true: the edge may pass the layers with no node between its ends (specs/decisions, "A row with no box as one bar"). */
   pass?: boolean;
   /** A weight level the stylesheet names, or a width in pixels (specs/decisions, "Edge weights"). Absent: thin. */
   weight?: string | number;
@@ -305,13 +305,13 @@ export interface Edge {
   out?: EdgeSide;
   /** The side it enters by, where the agent states one. Absent: the router's. */
   in?: EdgeSide;
-  /** Its label sits beside it, where the agent took it off the line. Absent: on the line. */
+  /** Its label sits beside it, where the agent took it off the edge. Absent: on the edge. */
   seat?: "beside";
   /** The type it is, when an agent defined it. */
   type?: string;
   /** The styles it marks. */
   style?: string[];
-  /** Its number in a process, drawn as a badge on the line (specs/decisions, "Step badges ride the line"). Absent: none. */
+  /** Its number in a process, drawn as a badge on the edge (specs/decisions, "Step badges ride the line"). Absent: none. */
   step?: number;
 }
 
@@ -383,11 +383,11 @@ export interface Diagram {
   /** A footnote, such as "Not shown: …" (specs/decisions, "Curation stays with the agent"). */
   caption?: string;
   density: Density;
-  /** How lines are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Lines may be drawn square, round or smooth"). */
+  /** How edges are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Lines may be drawn square, round or smooth"). */
   lines?: "round";
   /** Where the title sits (specs/decisions, "A region's label sits at a fraction of a side"). Absent: top left. */
   titleAt?: DiagramTitle;
-  /** "fixed": a node with no size is a medium box, whatever its text. Absent: auto (specs/decisions, "Boxes sized to their text"). */
+  /** "fixed": a node with no size is a medium node, whatever its text. Absent: auto (specs/decisions, "Boxes sized to their text"). */
   sizing?: "fixed";
   /** A built-in theme's name, or a stylesheet's path relative to the file (specs/decisions, "Themes and stylesheets"). Absent: the default theme. */
   style?: string;
@@ -399,7 +399,7 @@ export interface Diagram {
   legend?: Legend;
   /** Ordered top to bottom. */
   layers: Layer[];
-  /** Boxes in no row, each placed by steps from another box, in creation order (specs/decisions, "Steps from another box"). */
+  /** Nodes in no layer, each placed by steps from another node, in creation order (specs/decisions, "Steps from another box"). */
   nodes?: DiagramNode[];
   /** The systems, in creation order. Absent or empty: no groups. Members name their group (specs/decisions, "Rows unseen, groups as systems"). */
   groups?: Group[];
@@ -411,7 +411,7 @@ export interface Diagram {
   gaps?: Gap[];
   /** Empty space between two sides, in creation order (specs/decisions, "Walls as space"). */
   walls?: Wall[];
-  /** One note at most per node, group or line, in creation order (specs/decisions, "Notes as callouts or footnotes"). */
+  /** One note at most per node, group or edge, in creation order (specs/decisions, "Notes as callouts or footnotes"). */
   notes?: Note[];
   /** Ordered: list order is creation order, and decides nothing visual. */
   edges: Edge[];

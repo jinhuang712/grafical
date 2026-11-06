@@ -1,17 +1,17 @@
 // Edge ends (specs/decisions, "Lines that end at containers"). An edge joins two nodes, or a node and a container,
-// or two containers. A container is a group, drawn as its system box, a layer,
+// or two containers. A container is a group, drawn as its system node, a layer,
 // drawn as a band across the diagram once an edge ends at it, or a lane (specs/decisions, "Swimlanes run one way").
-// The rules here are facts, decided from rows and order alone, so they are
+// The rules here are facts, decided from layers and order alone, so they are
 // operation errors:
-// - an end must exist, and a group or lane end must hold at least one node. A row
+// - an end must exist, and a group or lane end must hold at least one node. A layer
 //   with no node may be an end, drawn as a bar, when the other end holds one, and
-//   it may not lie between the first and last rows of a group. Neither may a row with
+//   it may not lie between the first and last layers of a group. Neither may a layer with
 //   no node and a look, which is drawn as a bar too;
-// - a line passes a bar between its ends only when it says it may;
+// - an edge passes a bar between its ends only when it says it may;
 // - neither end may lie inside the other, and a layer may not cross a column lane;
 // - two lanes are never the ends of one edge: neighbouring lanes share a border;
-// - an end that shares a row with a group meets the group's side, so nothing may
-//   stand between them in that row.
+// - an end that shares a layer with a group meets the group's side, so nothing may
+//   stand between them in that layer.
 
 import type { Facts, OpError } from "../errors.ts";
 import { addedLayer } from "../layout/steps.ts";
@@ -51,13 +51,13 @@ export function endNodes(d: Diagram, id: string): string[] {
   return [];
 }
 
-/** A row with no node: an edge that ends at it draws it as a bar. */
+/** A layer with no node: an edge that ends at it draws it as a bar. */
 export function isBar(d: Diagram, id: string): boolean {
   return d.layers.some((l) => l.id === id && l.nodes.length === 0);
 }
 
 /**
- * The rows drawn as bars: those with no node that an edge ends at or that have a look
+ * The layers drawn as bars: those with no node that an edge ends at or that have a look
  * (specs/decisions, "A row with no box as one bar", "A row with a look is drawn").
  */
 export function barRows(d: Diagram): Set<string> {
@@ -78,7 +78,7 @@ function barBetween(d: Diagram, bars: Set<string>, a: string, b: string): string
   return d.layers.slice(lo + 1, Math.max(lo + 1, hi)).find((l) => bars.has(l.id))?.id;
 }
 
-/** The rows an end covers, first and last. Undefined for an empty group or lane. */
+/** The layers an end covers, first and last. Undefined for an empty group or lane. */
 export function endLayers(d: Diagram, id: string): [number, number] | undefined {
   const kind = endKind(d, id);
   if (kind === "layer") {
@@ -95,10 +95,10 @@ export function endLayers(d: Diagram, id: string): [number, number] | undefined 
 }
 
 /**
- * Where an edge between ends a and b meets them: across rows (a's rows all above
- * or all below b's), or beside each other in a shared row, given as that row and
+ * Where an edge between ends a and b meets them: across layers (a's layers all above
+ * or all below b's), or beside each other in a shared layer, given as that layer and
  * the order of the two nodes that face each other in it. Undefined when the ends
- * share rows but no row has them side by side with nothing between.
+ * share layers but no layer has them side by side with nothing between.
  */
 export type Meeting = { kind: "across" } | { kind: "beside"; row: number; a: string; b: string };
 
@@ -126,7 +126,7 @@ export function meeting(d: Diagram, a: string, b: string): Meeting | undefined {
   return undefined;
 }
 
-/** The first row two ends share, and the nodes that stand between them there. */
+/** The first layer two ends share, and the nodes that stand between them there. */
 function between(d: Diagram, a: string, b: string): Facts {
   const inA = new Set(endNodes(d, a));
   const inB = new Set(endNodes(d, b));
@@ -192,7 +192,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
     const fromKind = endKind(d, e.from);
     const toKind = endKind(d, e.to);
     if (fromKind === "node" && toKind === "node") return;
-    // A bar is met straight past the other end, so the other end must hold a box.
+    // A bar is met straight past the other end, so the other end must hold a node.
     if (isBar(d, e.from) && isBar(d, e.to)) {
       errors.push({
         code: "bar-to-bar",
@@ -236,7 +236,7 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
     const a = new Set(endNodes(d, e.from));
     const b = endNodes(d, e.to);
     const shared = b.filter((n) => a.has(n));
-    // A row lane covers whole rows, as a layer does. A layer crosses every column lane.
+    // A layer lane covers whole layers, as a layer does. A layer crosses every column lane.
     const rowLike = (k: EndKind | undefined) =>
       k === "layer" || (k === "lane" && laneRun(d) === "layers");
     const crossing =
@@ -271,8 +271,8 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
       });
     }
   });
-  // A bar that no line ends at is drawn for its look, and a group's box may not stretch over it either. Rows the
-  // engine adds for boxes placed by steps are not in the file, so the field counts the file's rows only.
+  // A bar that no edge ends at is drawn for its look, and a group's border may not stretch over it either. Layers the
+  // engine adds for nodes placed by steps are not in the file, so the field counts the file's layers only.
   const ended = new Set(d.edges.flatMap((e) => [e.from, e.to]));
   d.layers
     .filter((l) => !addedLayer(l.id))
@@ -292,9 +292,9 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
 }
 
 /**
- * The group whose box stretches over a row, one with rows above it and below it, and the first and last rows its box
- * covers, from its top member's to its bottom member's: a refusal names both, so that the row is seen to lie between
- * them (specs/decisions, "Refusals say what happened and which commands can change it"). A row the engine adds for boxes
+ * The group whose node stretches over a layer, one with layers above it and below it, and the first and last layers its node
+ * covers, from its top member's to its bottom member's: a refusal names both, so that the layer is seen to lie between
+ * them (specs/decisions, "Refusals say what happened and which commands can change it"). A layer the engine adds for nodes
  * placed by steps is not in the file, and is named "-", as show --drawn names it.
  */
 function groupAcross(

@@ -1,12 +1,12 @@
-// Edges between neighbours in one row run straight sideways (specs/decisions, "Our own gap router", "A target picture with measured rules"): from one
-// node's side to the other's, at the row's middle. Which edges do, and where on the
+// Edges between neighbours in one layer run straight sideways (specs/decisions, "Our own gap router", "A target picture with measured rules"): from one
+// node's side to the other's, at the layer's middle. Which edges do, and where on the
 // side, depends only on the facts and the measured labels, so that placement can
 // leave room for the labels before anything is routed.
 //
-// A pair of neighbours holds as many unlabelled lines as fit on the smaller side.
-// With a label, it holds at most two lines. A single label sits on its line. Two sit
-// above the upper line and below the lower one, inside the row. The others go round
-// through the gutter below the row.
+// A pair of neighbours holds as many unlabelled edges as fit on the smaller side.
+// With a label, it holds at most two lines. A single label sits on its edge. Two sit
+// above the upper edge and below the lower one, inside the layer. The others go round
+// through the gutter below the layer.
 
 import { DEFAULT_SIZE, type Diagram } from "../model/types.ts";
 import { ROUTE } from "../theme/geometry.ts";
@@ -14,7 +14,7 @@ import { nodeBox } from "../theme/shapes.ts";
 import { layerHeights } from "./size.ts";
 
 export interface SideSlot {
-  /** y of the line, from the middle of the row. */
+  /** y of the edge, from the middle of the layer. */
   offset: number;
   label: "above" | "below" | "on" | undefined;
   /** The ids of the two neighbours, left first. */
@@ -22,11 +22,11 @@ export interface SideSlot {
   right: string;
 }
 
-/** Least distance between two lines on one side, and between a line and a corner. */
+/** Least distance between two lines on one side, and between an edge and a corner. */
 const PITCH = ROUTE.portPitch;
 const TIGHT = 8;
 
-/** The pitch for this many lines on a side this high, or undefined if they do not fit. */
+/** The pitch for this many edges on a side this high, or undefined if they do not fit. */
 export function sidePitch(count: number, h: number): number | undefined {
   const room = h - 2 * ROUTE.portMin;
   if ((count - 1) * PITCH <= room) return PITCH;
@@ -39,9 +39,9 @@ function cmp(a: string, b: string): number {
 }
 
 /**
- * The sideways edges and their lines. `labelW` gives the one-line width of an
- * edge's label, or undefined for none; `labelH` the height of its label's box;
- * `rides` whether its label may sit on its line.
+ * The sideways edges and their edges. `labelW` gives the one-line width of an
+ * edge's label, or undefined for none; `labelH` the height of its label's node;
+ * `rides` whether its label may sit on its edge.
  */
 export function planSideways(
   d: Diagram,
@@ -50,7 +50,7 @@ export function planSideways(
   rides: (id: string) => boolean,
 ): Map<string, SideSlot> {
   const at = new Map<string, { layer: number; order: number; h: number }>();
-  // compute() has sized every node (size.ts); a box takes its row's height.
+  // compute() has sized every node (size.ts); a node takes its layer's height.
   const heights = layerHeights(d);
   d.layers.forEach((l, layer) => {
     l.nodes.forEach((n, order) => {
@@ -93,7 +93,7 @@ export function planSideways(
     } else {
       const first = fits[0] as string;
       const second = fits[1] ?? plain[0];
-      // Two lines are 16 px apart; each label must stay inside the row.
+      // Two edges are 16 px apart; each label must stay inside the layer.
       const below = second !== undefined && fits.includes(second) ? labelH(second) : 0;
       const two = p.h / 2 >= PITCH / 2 + ROUTE.labelGap + Math.max(labelH(first), below);
       const both = two && second !== undefined && fits.includes(second);

@@ -1,45 +1,45 @@
 // One gutter channel (specs/decisions, "Our own gap router"): orders the horizontal runs inside a gutter,
-// gives each a row, and places the labels the gutter carries. It sees only the
+// gives each a layer, and places the labels the gutter carries. It sees only the
 // visits inside this gutter.
 //
-// The rows are built so that no two lines and no label touch (specs/decisions, "Defects owned by who can fix them"):
-// 1. Two lines that would run on top of each other fix an order: the one that
+// The layers are built so that no two lines and no label touch (specs/decisions, "Defects owned by who can fix them"):
+// 1. Two edges that would run on top of each other fix an order: the one that
 //    enters from the top ends above the one that enters from the bottom.
-// 2. Each label takes the best slot along its run that no line crosses from top to
-//    bottom, and that slot fixes an order too: a line that reaches it from above
+// 2. Each label takes the best slot along its run that no edge crosses from top to
+//    bottom, and that slot fixes an order too: an edge that reaches it from above
 //    ends above the label, one that reaches it from below starts below it. A label
-//    with no such slot tries again wrapped onto two or three lines.
+//    with no such slot tries again wrapped onto two or three edges.
 // 3. The runs are ordered for few crossings, within the fixed order.
-// 4. Each run, in that order, takes the first row from its earliest one where it
+// 4. Each run, in that order, takes the first layer from its earliest one where it
 //    and its label touch nothing placed so far. The gutter grows rather than
-//    squeezes (specs/decisions, "Layout computed again on every change"): the fixed order guarantees such a row further down.
+//    squeezes (specs/decisions, "Layout computed again on every change"): the fixed order guarantees such a layer further down.
 // A label with no free slot at all is returned, so that it can move to another
-// gutter of its path. When it has none left, no line moves for it: it takes the slot
+// gutter of its path. When it has none left, no edge moves for it: it takes the slot
 // that costs least, and the write is refused (specs/decisions, "A line never moves for its label").
 //
 // The runs of one fan-out or fan-in carry the same `bundle`: their stubs at one x are
 // the shared trunk, one line, and never count against each other.
 //
-// Vertical positions here are in "row px": row t lies at t * pitch. Assembly turns
+// Vertical positions here are in "row px": layer t lies at t * pitch. Assembly turns
 // them into absolute y once the gutter's height step is known.
 
 import { ROUTE, STEP } from "../theme/geometry.ts";
 import type { LabelForm, Visit, VisitLabel } from "./route.ts";
 
 const EPS = 1e-6;
-/** Two vertical lines closer than this would read as one. */
+/** Two vertical edges closer than this would read as one. */
 const NEAR = 8;
 const HARD = 1000;
 const LABEL_HIT = 4;
-/** Each line inside a label's slot costs the slot as much as this many px of sliding. */
+/** Each edge inside a label's slot costs the slot as much as this many px of sliding. */
 const SLOT_LINE = 8;
 /** Each crossing a label's slot forces, by the order it fixes, costs this many px of sliding. */
 const SLOT_CROSS = 64;
-/** A line on another line weighs more than a line through a label: a free row always avoids it. */
+/** An edge on another edge weighs more than an edge through a label: a free layer always avoids it. */
 const LINE = 100;
 /** How far a label on a run keeps from the run's corners. */
 export const ON_CLEAR = 8;
-/** Rows a run may go below every run placed so far, besides the height of two labels. */
+/** Layers a run may go below every run placed so far, besides the height of two labels. */
 const SEARCH = 4;
 
 interface Box {
@@ -57,7 +57,7 @@ function inside(x: number, a: number, b: number): boolean {
   return x > a + EPS && x < b - EPS;
 }
 
-/** The box a label takes when its run lies on row `row`. */
+/** The node a label takes when its run lies on layer `row`. */
 export function labelBox(
   lab: VisitLabel,
   mode: VisitLabel["mode"],
@@ -77,8 +77,8 @@ function onRun(v: Visit, x0: number): boolean {
 }
 
 /**
- * The square a step's badge takes when its run lies on row `row` (specs/decisions, "Step badges ride the line"): centred on the run under
- * the start of the label's text, or its end where the start is off the run; or on the line
+ * The square a step's badge takes when its run lies on layer `row` (specs/decisions, "Step badges ride the line"): centred on the run under
+ * the start of the label's text, or its end where the start is off the run; or on the edge
  * beside a label level with it.
  */
 export function badgeBox(v: Visit, lab: VisitLabel, row: number, pitch: number): Box | undefined {
@@ -97,25 +97,25 @@ interface Candidate {
   mode: VisitLabel["mode"];
   x0: number;
   score: number;
-  /** The x of the label's own line that passes through it, on its way to or from the run. */
+  /** The x of the label's own edge that passes through it, on its way to or from the run. */
   through?: number;
 }
 
-/** Does this label sit on its line? A step's badge rides the line, so its label keeps beside it. */
+/** Does this label sit on its edge? A step's badge rides the edge, so its label keeps beside it. */
 function rides(lab: VisitLabel): boolean {
   return lab.badge === undefined && lab.beside !== true;
 }
 
 /**
  * The label slots of a run, best first, from the run alone: centred above it, then
- * slid along it in 4 px steps, then the same below it. A straight vertical line
+ * slid along it in 4 px steps, then the same below it. A straight vertical edge
  * has a slot on each side.
  */
 function candidates(v: Visit, lab: VisitLabel): Candidate[] {
   const side = ROUTE.labelGap + 2;
   if (v.hi - v.lo <= EPS) {
-    // On the line, centred on it: the label's patch breaks the line, as a flow chart's
-    // labels do. A step's badge rides the line, so a badge keeps its label beside.
+    // On the edge, centred on it: the label's patch breaks the edge, as a flow chart's
+    // labels do. A step's badge rides the edge, so a badge keeps its label beside.
     const on: Candidate[] = rides(lab) ? [{ mode: "on", x0: v.lo - lab.w / 2, score: -1 }] : [];
     return [
       ...on,
@@ -130,9 +130,9 @@ function candidates(v: Visit, lab: VisitLabel): Candidate[] {
     { mode: "beside", x0: v.hi + side, score: len < lab.w ? -2 : 1000 },
     { mode: "beside", x0: v.lo - side - lab.w, score: len < lab.w ? -1 : 1001 },
   ];
-  // On the run, clear of its corners, so that the line reads through the label
+  // On the run, clear of its corners, so that the edge reads through the label
   // (specs/decisions, "A line's label sits on its line"). A run too short for the label
-  // carries it on the line where it comes in or goes out, the line passing through it.
+  // carries it on the edge where it comes in or goes out, the edge passing through it.
   if (rides(lab)) {
     const room = (len - lab.w) / 2 - ON_CLEAR;
     for (let d = 0; d <= room + EPS; d += 4) {
@@ -165,7 +165,7 @@ function candidates(v: Visit, lab: VisitLabel): Candidate[] {
   return out.sort((a, b) => a.score - b.score);
 }
 
-/** A label slot, whether a line crosses it, and the order it fixes: [above, below] pairs. */
+/** A label slot, whether an edge crosses it, and the order it fixes: [above, below] pairs. */
 interface Slot {
   c: Candidate;
   crossed: boolean;
@@ -187,14 +187,14 @@ function setForm(lab: VisitLabel, form: LabelForm): void {
   lab.maxWidth = form.maxWidth;
 }
 
-/** Vertical extent of a stub in row px: a top stub runs from the gutter's top to its row. */
+/** Vertical extent of a stub in layer px: a top stub runs from the gutter's top to its layer. */
 function spanAt(top: boolean, row: number, pitch: number): [number, number] {
   if (row < 0) return [Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY];
   const y = row * pitch;
   return top ? [Number.NEGATIVE_INFINITY, y] : [y, Number.POSITIVE_INFINITY];
 }
 
-/** Exact conflicts between lines and labels in one gutter. */
+/** Exact conflicts between edges and labels in one gutter. */
 function geometry(pitch: number) {
   const clr = ROUTE.labelClear;
   const sep = ROUTE.runSeparation;
@@ -206,7 +206,7 @@ function geometry(pitch: number) {
   };
   const badgeOf = (u: Visit, row: number): Box | undefined =>
     u.label === undefined || row < 0 ? undefined : badgeBox(u, u.label, row, pitch);
-  /** Lines of u, on row ru, that touch the box. */
+  /** Edges of u, on layer ru, that touch the node. */
   const hits = (b: Box, u: Visit, ru: number, clr = ROUTE.labelClear): number => {
     let c = 0;
     for (const s of u.stubs) {
@@ -224,7 +224,7 @@ function geometry(pitch: number) {
     p.x0 < q.x1 + space && q.x0 < p.x1 + space && p.y0 < q.y1 + clr && q.y0 < p.y1 + clr;
   const near = (p: Box, q: Box, d: number) =>
     p.x0 < q.x1 + d && q.x0 < p.x1 + d && p.y0 < q.y1 + d && q.y0 < p.y1 + d;
-  /** Conflicts between v on row rv with label box bv, and u on row ru with box bu. */
+  /** Conflicts between v on layer rv with label node bv, and u on layer ru with node bu. */
   const pair = (
     v: Visit,
     rv: number,
@@ -244,7 +244,7 @@ function geometry(pitch: number) {
         if (d >= NEAR) continue;
         // The runs of one fan-out or fan-in share their trunk's stub: one line.
         if (oneBus && d < 0.5) continue;
-        // Lines that enter from one boundary, or that need no row, are kept apart
+        // Edges that enter from one boundary, or that need no layer, are kept apart
         // across by the ports and tracks; only a true overlap counts between them.
         const opposite = s.top !== t.top && rv >= 0 && ru >= 0;
         if (!opposite && d >= 0.5) continue;
@@ -258,8 +258,8 @@ function geometry(pitch: number) {
       c += hits(bv, u, ru);
       if (bu !== undefined && clash(bv, bu)) c++;
     }
-    // A step's badge reaches across its run, past its label's box, and keeps clear of the
-    // other's lines, label and badge there (specs/decisions, "Step badges ride the line").
+    // A step's badge reaches across its run, past its label's node, and keeps clear of the
+    // other's edges, label and badge there (specs/decisions, "Step badges ride the line").
     const gv = badgeOf(v, rv);
     const gu = badgeOf(u, ru);
     if (gu !== undefined) {
@@ -275,7 +275,7 @@ function geometry(pitch: number) {
   };
   /**
    * A label or its badge that leaves the gutter's top, a badge on its arrowhead there,
-   * or a label that crosses its own line.
+   * or a label that crosses its own edge.
    */
   const own = (v: Visit, rv: number, bv: Box): number => {
     const g = badgeOf(v, rv);
@@ -284,11 +284,11 @@ function geometry(pitch: number) {
       bv.y0,
       g === undefined ? bv.y0 : g.y0 - (head > 0 ? head + STEP.arrowClear : 0),
     );
-    // A line through the label leaves room for the arrowhead it may have there.
+    // An edge through the label leaves room for the arrowhead it may have there.
     const margin = v.label?.through === undefined ? 2 : ROUTE.onArrow;
     let c = top < -pitch + margin - EPS ? 1 : 0;
     for (const s of v.stubs) {
-      // A label on its line lies across the line's own stubs on purpose.
+      // A label on its edge lies across the edge's own stubs on purpose.
       if (v.label?.mode === "on" || s.x === v.label?.through) continue;
       if (!inside(s.x, bv.x0 - clr, bv.x1 + clr)) continue;
       const [y0, y1] = spanAt(s.top, rv, pitch);
@@ -300,15 +300,15 @@ function geometry(pitch: number) {
 }
 
 export interface GutterResult {
-  /** Rows the gutter needs, labels included. */
+  /** Layers the gutter needs, labels included. */
   rows: number;
-  /** Edges whose label found no clear slot here, on any number of lines. */
+  /** Edges whose label found no clear slot here, on any number of edges. */
   stranded: string[];
 }
 
 /**
- * Orders the runs, gives each a row and places every label. `sides` holds the x of each
- * group side that runs through the gutter: like a line, no label lies across one.
+ * Orders the runs, gives each a layer and places every label. `sides` holds the x of each
+ * group side that runs through the gutter: like an edge, no label lies across one.
  */
 export function routeGutter(
   visits: Visit[],
@@ -320,7 +320,7 @@ export function routeGutter(
   const ranked = visits
     .filter((v) => v.hi - v.lo > EPS || v.label !== undefined)
     .sort((a, b) => cmp(a.id, b.id));
-  // Straight lines without a label need no row: they cross the whole gutter.
+  // Straight edges without a label need no layer: they cross the whole gutter.
   const fixed = visits.filter((v) => !ranked.includes(v));
   const n = ranked.length;
   if (n === 0) return { rows: 0, stranded: [] };
@@ -377,8 +377,8 @@ export function routeGutter(
     });
   };
 
-  // A line entering from the top that meets one entering from the bottom at the
-  // same x must end above it. Lines that meet exactly come first, then near ones,
+  // An edge entering from the top that meets one entering from the bottom at the
+  // same x must end above it. Edges that meet exactly come first, then near ones,
   // so that a cycle of near ones never stops two exact ones from being ordered.
   for (const reach of [0.5, 4, NEAR]) {
     ranked.forEach((a, i) => {
@@ -392,10 +392,10 @@ export function routeGutter(
     });
   }
 
-  // Label slots. A slot is open if no line crosses it from top to bottom; it then
+  // Label slots. A slot is open if no edge crosses it from top to bottom; it then
   // fixes who lies above and below the run. The labels with the fewest open slots
   // choose first, each its best open slot whose order fits the order fixed so far.
-  // A label with none tries again wrapped onto more lines, which is narrower.
+  // A label with none tries again wrapped onto more edges, which is narrower.
   const slotsOf = (v: Visit, lab: VisitLabel): Slot[] => {
     const i = index.get(v) ?? 0;
     const now = closure([]);
@@ -432,8 +432,8 @@ export function routeGutter(
           }
         }
       } else if (lab.badge !== undefined) {
-        // A badge beside its text sits on the line itself, where another line near it, up
-        // or down, may pass it at any row (specs/decisions, "Step badges ride the line").
+        // A badge beside its text sits on the edge itself, where another edge near it, up
+        // or down, may pass it at any layer (specs/decisions, "Step badges ride the line").
         const keep = { ...lab, mode: c.mode, x0: c.x0 };
         const g = badgeBox(v, keep, 0, 0);
         const reach = (x: number) =>
@@ -502,8 +502,8 @@ export function routeGutter(
     }
   }
 
-  // Rows, in that order: the first clear one from the earliest allowed. Below the
-  // deepest run and two of the tallest labels, every row is clear.
+  // Layers, in that order: the first clear one from the earliest allowed. Below the
+  // deepest run and two of the tallest labels, every layer is clear.
   const geo = geometry(pitch);
   const placed: Visit[] = [...fixed];
   let deepest = -1;
@@ -512,8 +512,8 @@ export function routeGutter(
   order.forEach((i, pos) => {
     const v = ranked[i];
     if (v === undefined) return;
-    // A self-loop runs two rows deeper, so that its arrowhead has room to turn back: rows
-    // count from the row's bottom, which a box reaches since every box takes its row's
+    // A self-loop runs two layers deeper, so that its arrowhead has room to turn back: layers
+    // count from the layer's bottom, which a node reaches since every node takes its layer's
     // height (specs/decisions, "Fan-outs of three bundle").
     let t0 = v.members.some((m) => m.plan.u === m.plan.v) ? 2 : 0;
     for (const k of order.slice(0, pos)) {

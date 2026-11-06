@@ -4,7 +4,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { drawing, warningsOf } from "../../src/check/drawing.ts";
 import { check } from "../../src/check/index.ts";
-import { arrangementCost, asideBoxes, layout } from "../../src/layout/index.ts";
+import { arrangementCost, asideNodes, layout } from "../../src/layout/index.ts";
 import type { Diagram, DiagramNode, Layer } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
@@ -48,7 +48,7 @@ const asides = (d: Diagram) =>
 describe('a box beside every box it connects to (specs/decisions, "A box beside its neighbours is a warning")', () => {
   it("warns and never fails the write when the agent placed it there by steps", () => {
     const aside = diagram(box("db", { kind: "store", from: "b", down: 1, right: 1 }));
-    expect(asideBoxes(layout(aside, m))).toEqual([{ box: "db", users: ["a", "b"] }]);
+    expect(asideNodes(layout(aside, m))).toEqual([{ box: "db", users: ["a", "b"] }]);
     expect(check(aside, layout(aside, m), m)).toEqual([]);
     expect(asides(aside)).toEqual([
       { code: "node-aside", facts: { node: "db", nodes: ["a", "b"] } },
@@ -67,10 +67,10 @@ describe('a box beside every box it connects to (specs/decisions, "A box beside 
     const between: Diagram = structuredClone(last);
     (between.layers[1] as Layer).nodes = [box("p"), box("db", { kind: "store" }), box("q")];
     const scene = layout(last, m);
-    expect(asideBoxes(scene).map((x) => x.box)).toEqual(["db"]);
+    expect(asideNodes(scene).map((x) => x.box)).toEqual(["db"]);
     expect(check(last, scene, m)).toEqual([]);
     expect(asides(last).map((w) => w.facts.node)).toEqual(["db"]);
-    expect(asideBoxes(layout(between, m))).toEqual([]);
+    expect(asideNodes(layout(between, m))).toEqual([]);
     const [worse] = arrangementCost(last, m);
     const [better] = arrangementCost(between, m);
     expect(worse).toBeGreaterThan(better as number);

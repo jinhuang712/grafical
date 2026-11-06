@@ -13,7 +13,7 @@ export interface NodePaint {
 
 export interface EdgePaint {
   stroke: string;
-  /** Dash pattern of a dashed or dotted line: async and optional edges (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
+  /** Dash pattern of a dashed or dotted edge: async and optional edges (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
   dash?: string;
 }
 
@@ -44,10 +44,10 @@ export interface Paint {
     nodeSublabel: string;
     edgeLabel: string;
   };
-  /** A system box behind its nodes (specs/decisions, "Rows unseen, groups as systems"). Rows are not drawn. */
+  /** A system node behind its nodes (specs/decisions, "Rows unseen, groups as systems"). Layers are not drawn. */
   group: BoxPaint;
   /**
-   * How a box inside a box is told apart (specs/decisions, "Every layered diagram type"). alternate: the fill and the
+   * How a node inside a node is told apart (specs/decisions, "Every layered diagram type"). alternate: the fill and the
    * background take turns by depth. shade: each level a shade nearer the border
    * colour, which is darker on a light theme.
    */
@@ -58,7 +58,7 @@ export interface Paint {
   lane: LanePaint;
   node: {
     radius: number;
-    /** The corner radius of a state, rounder than a box (specs/decisions, "Every layered diagram type"). */
+    /** The corner radius of a state, rounder than a node (specs/decisions, "Every layered diagram type"). */
     stateRadius: number;
     strokeWidth: number;
     kinds: Record<NodeKind, NodePaint>;
@@ -69,7 +69,7 @@ export interface Paint {
     strokeWidth: number;
     kinds: Record<EdgeKind, EdgePaint>;
     arrow: { length: number; halfWidth: number };
-    /** An edge on the main path: a thicker line and a larger arrowhead (specs/decisions, "Lines meet any side"). */
+    /** An edge on the main path: a thicker edge and a larger arrowhead (specs/decisions, "Lines meet any side"). */
     main: { strokeWidth: number; arrow: { length: number; halfWidth: number } };
     /**
      * More weight levels (specs/decisions, "Edge weights"): a name and a width. `thin` is `strokeWidth` and `thick` is
@@ -83,7 +83,7 @@ export interface Paint {
      * its two stretches and the room around it allow; the route stays the same (specs/decisions, "Lines meet any side").
      */
     shape: "orthogonal" | "curved";
-    /** The patch behind an edge label, so the label stays readable over lines. */
+    /** The patch behind an edge label, so the label stays readable over edges. */
     labelBackground: { fill: string; padX: number; padY: number; radius: number };
   };
 }
@@ -96,7 +96,7 @@ const STYLES: Record<EdgeKind, LineStyleName> = {
   optional: "dotted",
 };
 
-/** The line style an edge kind is drawn in. The kind decides it (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
+/** The edge style an edge kind is drawn in. The kind decides it (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
 export function lineStyle(kind: EdgeKind): LineStyleName {
   return STYLES[kind];
 }
@@ -106,7 +106,7 @@ export const WEIGHT_MIN = 0.5;
 export const WEIGHT_MAX = 8;
 /** A weight level's name (specs/decisions, "Edge weights"). */
 export const WEIGHT_LEVEL = /^[a-z][a-z0-9-]*$/;
-/** The longest arrowhead a heavy line grows to, unless the thick one is longer (specs/decisions, "Edge weights"). */
+/** The longest arrowhead a heavy edge grows to, unless the thick one is longer (specs/decisions, "Edge weights"). */
 const ARROW_MAX = 12;
 
 /** The width of an edge in pixels, or undefined for a level the paint lacks (specs/decisions, "Edge weights"). */
@@ -119,9 +119,9 @@ export function edgeWidth(e: { weight?: string | number }, P: Paint): number | u
 }
 
 /**
- * The width and arrowhead of a line (specs/decisions, "Edge weights"). At the thin width the arrowhead is the thin
+ * The width and arrowhead of an edge (specs/decisions, "Edge weights"). At the thin width the arrowhead is the thin
  * one and at the thick width it is the main-path one. Between and past them it grows by
- * the same step per pixel, up to a length of ARROW_MAX. A narrower line keeps the thin one.
+ * the same step per pixel, up to a length of ARROW_MAX. A narrower edge keeps the thin one.
  */
 export function lineLook(
   width: number | undefined,
@@ -142,7 +142,7 @@ export function lineLook(
   };
 }
 
-/** The kind whose paint draws a line style's sample in the legend. */
+/** The kind whose paint draws an edge style's sample in the legend. */
 export const STYLE_KIND: Record<LineStyleName, EdgeKind> = {
   solid: "call",
   dashed: "async",

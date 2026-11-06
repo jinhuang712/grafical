@@ -1,11 +1,11 @@
-// Notes (specs/decisions, "Notes as callouts or footnotes"): a short text about a node, a group or a line. The agent
+// Notes (specs/decisions, "Notes as callouts or footnotes"): a short text about a node, a group or an edge. The agent
 // states only what it is about and its words; the layout draws it as a callout
 // beside its target, or as a numbered footnote.
 
 import { everyNode } from "./steps.ts";
 import type { Diagram } from "./types.ts";
 
-/** Every id a note may be about: nodes, groups and lines. */
+/** Every id a note may be about: nodes, groups and edges. */
 export function noteTargets(d: Diagram): string[] {
   return [
     ...everyNode(d).map((n) => n.id),
@@ -14,7 +14,7 @@ export function noteTargets(d: Diagram): string[] {
   ];
 }
 
-/** After an operation removed nodes, groups or lines, their notes go too. Returns their ids. */
+/** After an operation removed nodes, groups or edges, their notes go too. Returns their ids. */
 export function pruneNotes(d: Diagram, gone: ReadonlySet<string>): string[] {
   if (gone.size === 0 || d.notes === undefined) return [];
   const left = d.notes.filter((x) => !gone.has(x.on));

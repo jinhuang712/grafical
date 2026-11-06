@@ -1,7 +1,7 @@
 // What grafical prints, as records (specs/decisions, "Records over prose"): one line each, a word that names
 // the record, then key=value fields, in the logfmt style. The fields are the JSON's,
 // under the same names, so the text and --json say the same thing in the same words. A problem
-// prints as a block of lines instead (specs/decisions, "Refusals say what happened and which commands
+// prints as a block of edges instead (specs/decisions, "Refusals say what happened and which commands
 // can change it").
 
 /** A field's value: none is "-", a list is comma separated, a count by name is "name:n". */
@@ -19,7 +19,7 @@ function text(v: Value): string {
   if (typeof v === "number" || typeof v === "boolean") return String(v);
   if (typeof v === "string") return v === "" ? "-" : quote(v, /[\s"=]/);
   if (Array.isArray(v)) return v.length === 0 ? "-" : v.map((x) => quote(x, /[\s"=,]/)).join(",");
-  // A thing and its number, such as {id: "api", lines: 3}, prints as api:3; counts by
+  // A thing and its number, such as {id: "api", edges: 3}, prints as api:3; counts by
   // name, such as {top: 1, bottom: 2}, as top:1,bottom:2.
   const o = v as { readonly [k: string]: number | string | undefined };
   if (typeof o.id === "string") {
@@ -61,7 +61,7 @@ export function oneLine(s: string): string {
 }
 
 /**
- * One problem as a block of lines (specs/decisions, "Refusals say what happened and which commands can change it"): its
+ * One problem as a block of edges (specs/decisions, "Refusals say what happened and which commands can change it"): its
  * kind and code, its code's sentence, its source, its facts one per line, and the commands that can change it.
  */
 export function block(b: {

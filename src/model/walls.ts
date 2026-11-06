@@ -1,7 +1,7 @@
 // Walls (specs/decisions, "Walls as space"): empty space between two sides, each a list of nodes and
-// groups. Which way a wall runs follows from the rows of its sides: across when one
-// side lies wholly above the other, up and down when they share rows and one side
-// sits left of the other in each. A line from one side to the other crosses only
+// groups. Which way a wall runs follows from the layers of its sides: across when one
+// side lies wholly above the other, up and down when they share layers and one side
+// sits left of the other in each. An edge from one side to the other crosses only
 // where the wall allows it: by its id, or by a node or group at one of its ends.
 
 import type { OpError } from "../errors.ts";
@@ -51,7 +51,7 @@ function layerOf(d: Diagram): Map<string, number> {
   return new Map(d.layers.flatMap((l, i) => l.nodes.map((n) => [n.id, i] as const)));
 }
 
-/** Whether a line runs from one side of a wall to the other. */
+/** Whether an edge runs from one side of a wall to the other. */
 export function joinsSides(
   d: Diagram,
   e: Edge,
@@ -64,7 +64,7 @@ export function joinsSides(
   return (on(from, a) && on(to, b)) || (on(from, b) && on(to, a));
 }
 
-/** Whether a wall lets a line through: it names the line, or an end of it, or a group an end lies in. */
+/** Whether a wall lets an edge through: it names the edge, or an end of it, or a group an end lies in. */
 export function wallAllows(d: Diagram, w: Wall, e: Edge): boolean {
   const allow = w.allow ?? [];
   if (allow.includes(e.id)) return true;
@@ -78,8 +78,8 @@ export function wallAllows(d: Diagram, w: Wall, e: Edge): boolean {
 
 /**
  * The rules for each wall: its sides name nodes and groups, and what it allows names
- * lines, nodes and groups; no node is on both sides; the sides lie above or beside
- * each other; and no line runs from one side to the other unless the wall allows it.
+ * edges, nodes and groups; no node is on both sides; the sides lie above or beside
+ * each other; and no edge runs from one side to the other unless the wall allows it.
  */
 export function checkWalls(d: Diagram, index: number): OpError[] {
   const walls = d.walls ?? [];
@@ -153,7 +153,7 @@ export function checkWalls(d: Diagram, index: number): OpError[] {
   return errors;
 }
 
-/** The nodes left and right of a wall that runs up and down, in the rows it spans, top and bottom. */
+/** The nodes left and right of a wall that runs up and down, in the layers it spans, top and bottom. */
 export interface WallSplit {
   left: string[];
   right: string[];
@@ -162,11 +162,11 @@ export interface WallSplit {
 }
 
 /**
- * How a wall up and down splits each row it spans (specs/decisions, "Walls as space"): in a row with nodes of the
- * left side, the nodes up to its last one lie left; in a row with only nodes of the
+ * How a wall up and down splits each layer it spans (specs/decisions, "Walls as space"): in a layer with nodes of the
+ * left side, the nodes up to its last one lie left; in a layer with only nodes of the
  * right side, the nodes before its first one. A node between the two sides would
- * stand in the wall, and a row with neither side has no place for it: both are
- * refused, as the row and the nodes in the way.
+ * stand in the wall, and a layer with neither side has no place for it: both are
+ * refused, as the layer and the nodes in the way.
  */
 export function wallSplit(
   d: Diagram,
@@ -195,7 +195,7 @@ export function wallSplit(
   return { left, right, top, bottom };
 }
 
-/** The first row both sides hold nodes in, with those nodes; or the nodes of a side that is empty. */
+/** The first layer both sides hold nodes in, with those nodes; or the nodes of a side that is empty. */
 function sharedRow(d: Diagram, a: string[], b: string[]): { layer?: string; nodes: string[] } {
   if (a.length === 0 || b.length === 0) return { nodes: [] };
   for (const l of d.layers) {
@@ -204,11 +204,11 @@ function sharedRow(d: Diagram, a: string[], b: string[]): { layer?: string; node
       return { layer: l.id, nodes: here };
     }
   }
-  // The sides interleave by rows: name each side's nodes.
+  // The sides interleave by layers: name each side's nodes.
   return { nodes: [...a, ...b] };
 }
 
-/** Every id a wall may name: nodes, groups and lines. */
+/** Every id a wall may name: nodes, groups and edges. */
 export function wallNames(d: Diagram): Set<string> {
   return new Set([
     ...everyNode(d).map((n) => n.id),
@@ -218,7 +218,7 @@ export function wallNames(d: Diagram): Set<string> {
 }
 
 /**
- * After an operation removed nodes, groups or lines, the walls forget them. A wall left
+ * After an operation removed nodes, groups or edges, the walls forget them. A wall left
  * with an empty side goes too. Returns the walls changed or removed.
  */
 export function pruneWalls(d: Diagram, gone: ReadonlySet<string>): string[] {

@@ -110,7 +110,7 @@ function dupError(d: Diagram, id: string, i: number): OpError | undefined {
   };
 }
 
-/** The fields that give a box its place in a row (specs/decisions, "The agent states every order"). */
+/** The fields that give a node its place in a layer (specs/decisions, "The agent states every order"). */
 const POSITION_FIELDS = ["first", "last", "before", "after"] as const;
 
 /** The style fields of a node.mark operation, in the order errors name them. */
@@ -255,7 +255,7 @@ function nodeIds(d: Diagram): string[] {
   return everyNode(d).map((n) => n.id);
 }
 
-/** Where a node is: its row, or none for a box placed by steps (specs/decisions, "Steps from another box"), and the list that holds it. */
+/** Where a node is: its layer, or none for a node placed by steps (specs/decisions, "Steps from another box"), and the list that holds it. */
 interface Found {
   layer?: Layer;
   list: DiagramNode[];
@@ -281,7 +281,7 @@ function unlist(d: Diagram, at: Found) {
   if (d.nodes !== undefined && d.nodes.length === 0) delete d.nodes;
 }
 
-/** A fact about where a box is, on a box placed by steps (specs/decisions, "Steps from another box"): it goes back to a row first. */
+/** A fact about where a node is, on a node placed by steps (specs/decisions, "Steps from another box"): it goes back to a layer first. */
 function stepped(id: string, i: number, field: string, found: string): OpError {
   return {
     code: "conflicting-position",
@@ -556,7 +556,7 @@ function unknownLane(d: Diagram, id: string, i: number, field: string): OpError 
 }
 
 /**
- * What lane members stand for: layers when lanes run as rows, nodes when they run
+ * What lane members stand for: layers when lanes run as layers, nodes when they run
  * as columns. A group stands for its layers or its nodes. While no lane has a
  * member, the first layer or node decides; groups alone mean columns (specs/decisions, "Swimlanes run one way").
  */
@@ -679,7 +679,7 @@ function laneStep(s: State, op: Extract<Op, { op: `lane.${string}` }>, i: number
 
 /**
  * wall.add, wall.allow, wall.relabel and wall.remove (specs/decisions, "Walls as space"). Ids that do not exist are refused here;
- * whether the sides lie above or beside each other, and which lines cross, is checked
+ * whether the sides lie above or beside each other, and which edges cross, is checked
  * once the whole batch is applied.
  */
 function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number): OpError[] {
@@ -752,7 +752,7 @@ function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number
 
 /**
  * column.add, column.join, column.leave and column.remove (specs/decisions, "Columns beside rows"). Members are nodes, or
- * groups that bring their nodes. Rows are put in column order once the batch is applied.
+ * groups that bring their nodes. Layers are put in column order once the batch is applied.
  */
 function columnStep(s: State, op: Extract<Op, { op: `column.${string}` }>, i: number): OpError[] {
   const d = s.d;
@@ -773,7 +773,7 @@ function columnStep(s: State, op: Extract<Op, { op: `column.${string}` }>, i: nu
       const at = findNode(d, id);
       if (at?.layer === undefined && at !== undefined) errors.push(stepped(id, i, field, id));
       else if (at) nodes.push(at.node);
-      // A group brings the nodes of its rows; a box placed by steps follows no column.
+      // A group brings the nodes of its layers; a node placed by steps follows no column.
       else if (groups.includes(id)) nodes.push(...groupNodes(d, id).filter((n) => !n.from));
       else {
         errors.push({
@@ -903,7 +903,7 @@ function noteStep(s: State, op: Extract<Op, { op: `note.${string}` }>, i: number
 function checkAlign(d: Diagram, nodeLayer: string, target: string, i: number): OpError | undefined {
   const at = findNode(d, target);
   if (!at) return unknownNode(d, target, i, "align");
-  // Whether a box placed by steps lands in the same row is known once it is placed.
+  // Whether a node placed by steps lands in the same layer is known once it is placed.
   if (at.layer?.id === nodeLayer) {
     return {
       code: "align-same-layer",
@@ -920,7 +920,7 @@ type Slot = { at: number } | { error: OpError };
 
 /**
  * Where in `list` the position puts a node. `self` is not in `list`. A position is
- * required unless the row is empty: the agent states the order, and the engine never
+ * required unless the layer is empty: the agent states the order, and the engine never
  * picks it (specs/decisions, "The agent states every order").
  */
 function resolveSlot(
@@ -1020,7 +1020,7 @@ function addLayer(s: State, op: LayerAddOp, i: number): OpError[] {
     ...(op.label === undefined ? {} : { label: op.label }),
     nodes: [],
   };
-  // A layer added inside a row lane's span joins the lane, so that the lane stays whole.
+  // A layer added inside a layer lane's span joins the lane, so that the lane stays whole.
   const above = d.layers[at - 1]?.lane;
   if (above !== undefined && above === d.layers[at]?.lane) layer.lane = above;
   d.layers.splice(at, 0, layer);
@@ -1030,15 +1030,15 @@ function addLayer(s: State, op: LayerAddOp, i: number): OpError[] {
 
 type StepSet = Partial<Record<(typeof STEP_KEYS)[number], number>>;
 
-/** Whether an operation gives steps from another box (specs/decisions, "Steps from another box"). */
+/** Whether an operation gives steps from another node (specs/decisions, "Steps from another box"). */
 function givesSteps(op: Steps): boolean {
   return op.from !== undefined || STEP_KEYS.some((k) => op[k] !== undefined);
 }
 
 /**
- * The errors of placing box `id` by steps from `from` (specs/decisions, "Steps from another box"): that box exists and does not
+ * The errors of placing node `id` by steps from `from` (specs/decisions, "Steps from another box"): that node exists and does not
  * step from `id`, through others or not; at least one step, and one way across and one
- * way down; and none of `others`, the options that would say where the box is too.
+ * way down; and none of `others`, the options that would say where the node is too.
  */
 function stepErrors(
   d: Diagram,
@@ -1093,7 +1093,7 @@ function stepErrors(
   return errors;
 }
 
-/** The options of an operation besides steps that say where a box is. */
+/** The options of an operation besides steps that say where a node is. */
 function placeOptions(op: NodeAddOp | NodeMoveOp): string[] {
   const set: string[] = [];
   if (op.layer !== undefined) set.push("layer");
@@ -1105,7 +1105,7 @@ function placeOptions(op: NodeAddOp | NodeMoveOp): string[] {
   return set;
 }
 
-/** Sets a box's steps, replacing the ones it had; without `from`, takes them off. */
+/** Sets a node's steps, replacing the ones it had; without `from`, takes them off. */
 function setSteps(node: DiagramNode, from: string | undefined, steps: StepSet) {
   if (from === undefined) delete node.from;
   else node.from = from;
@@ -1116,7 +1116,7 @@ function setSteps(node: DiagramNode, from: string | undefined, steps: StepSet) {
   }
 }
 
-/** The steps an operation gives, or a box's own when it gives none. */
+/** The steps an operation gives, or a node's own when it gives none. */
 function stepsOf(op: StepSet, own: StepSet): StepSet {
   const given = STEP_KEYS.some((k) => op[k] !== undefined) ? op : own;
   const out: StepSet = {};
@@ -1150,13 +1150,13 @@ function addStepped(s: State, op: NodeAddOp, i: number): OpError[] {
   return [];
 }
 
-/** node.move with steps: the box leaves its row, or keeps its place in the list of such boxes (specs/decisions, "Steps from another box"). */
+/** node.move with steps: the node leaves its layer, or keeps its place in the list of such nodes (specs/decisions, "Steps from another box"). */
 function moveStepped(s: State, op: NodeMoveOp, at: Found, i: number): OpError[] {
   const d = s.d;
   const from = op.from ?? at.node.from;
   const steps = stepsOf(op, at.node);
   const errors = stepErrors(d, op.id, from, steps, placeOptions(op), i);
-  // A fact that ties a box to a box in another row or to a column goes first. A box in a group shares its
+  // A fact that ties a node to a node in another layer or to a column goes first. A node in a group shares its
   // lane with the whole group, so the group around it all leaves the lane.
   const outer = groupChain(d, at.node.group).at(-1);
   for (const k of ["align", "column", "lane"] as const) {
@@ -1235,7 +1235,7 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
   if (givesSteps(op)) return moveStepped(s, op, at, i);
   const hasPos =
     op.first === true || op.last === true || op.before !== undefined || op.after !== undefined;
-  // A box placed by steps has no row to take a position in: --layer puts it back in one.
+  // A node placed by steps has no layer to take a position in: --layer puts it back in one.
   if (op.layer === undefined && (!hasPos || at.layer === undefined)) {
     return [
       {
@@ -1254,7 +1254,7 @@ function moveNode(s: State, op: NodeMoveOp, i: number): OpError[] {
   if (target.id !== at.layer?.id) {
     const own = at.node.align;
     const ownLayer = own === undefined ? undefined : findNode(d, own)?.layer?.id;
-    // An alignment holds only between rows: the one that would join the box to a box of its new row goes first.
+    // An alignment holds only between layers: the one that would join the node to a node of its new layer goes first.
     if (ownLayer === target.id) {
       errors.push({
         code: "align-same-layer",
@@ -1530,7 +1530,7 @@ function swapNodes(s: State, op: Extract<Op, { op: "node.swap" }>, i: number): O
       },
     ];
   }
-  // A box placed by steps has no place in a row to swap (specs/decisions, "Steps from another box").
+  // A node placed by steps has no place in a layer to swap (specs/decisions, "Steps from another box").
   for (const [x, field] of [
     [a, "a"],
     [b, "b"],
@@ -1561,7 +1561,7 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
     if (dup) errors.push(dup);
   }
   if (errors.length > 0) return errors;
-  // The merged node takes the first part's place in its row, so every part is in a row (specs/decisions, "Steps from another box").
+  // The merged node takes the first part's place in its layer, so every part is in a layer (specs/decisions, "Steps from another box").
   for (const id of op.nodes) {
     if (findNode(d, id)?.layer === undefined) return [stepped(id, i, "nodes", id)];
   }
@@ -1584,7 +1584,7 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
     if (at) at.list.splice(at.index, 1);
   }
   touch(s, op.id, ...op.nodes);
-  // A box placed by steps from a merged node steps from the new one.
+  // A node placed by steps from a merged node steps from the new one.
   for (const n of d.nodes ?? []) {
     if (n.from === undefined || !merged.has(n.from)) continue;
     n.from = op.id;
@@ -1647,7 +1647,7 @@ function orderGroup(s: State, op: Extract<Op, { op: "group.order" }>, i: number)
   const other = (op.before ?? op.after) as string;
   const field = op.before !== undefined ? "before" : "after";
   if (!groups.some((g) => g.id === other)) return [unknownGroup(d, other, i, field)];
-  // A group's boxes are its own and its inner groups' (specs/decisions, "Every layered diagram type"), so a group cannot
+  // A group's borders are its own and its inner groups' (specs/decisions, "Every layered diagram type"), so a group cannot
   // go beside itself or a group around or inside it.
   if (groupChain(d, op.id).includes(other) || groupChain(d, other).includes(op.id)) {
     return [{ code: "bad-reference", index: i, field, found: other, facts: { group: op.id } }];
@@ -1679,7 +1679,7 @@ function orderGroup(s: State, op: Extract<Op, { op: "group.order" }>, i: number)
   return [];
 }
 
-/** A copied line's id: its copied ends' default id when it had its ends' default, else its own id with the suffix before any `#n`. */
+/** A copied edge's id: its copied ends' default id when it had its ends' default, else its own id with the suffix before any `#n`. */
 function copiedEdgeId(e: Edge, from: string, to: string, suffix: string): string {
   const n = /#[0-9]+$/.exec(e.id)?.[0] ?? "";
   const base = e.id.slice(0, e.id.length - n.length);
@@ -1687,9 +1687,9 @@ function copiedEdgeId(e: Edge, from: string, to: string, suffix: string): string
 }
 
 /**
- * Copies a group, the groups inside it, its boxes and the lines between them, and with `outside` its lines to
- * everything else (specs/decisions, "A group copy holds its inside"). Each copied box joins its original's row, before or
- * after the other group's boxes there, as group.order puts them (specs/decisions, "The agent states every order").
+ * Copies a group, the groups inside it, its nodes and the edges between them, and with `outside` its edges to
+ * everything else (specs/decisions, "A group copy holds its inside"). Each copied node joins its original's layer, before or
+ * after the other group's borders there, as group.order puts them (specs/decisions, "The agent states every order").
  */
 function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
   const d = s.d;
@@ -1702,7 +1702,7 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
   for (const x of [...inner, ...boxes]) copyOf.set(x.id, `${x.id}${op.suffix}`);
   const mapped = (id: string) => copyOf.get(id) ?? id;
   const rows = d.layers.filter((l) => l.nodes.some((n) => copyOf.has(n.id)));
-  // The groups with a box in every row of the copy, but those it would split.
+  // The groups with a node in every layer of the copy, but those it would split.
   const sharing = groups
     .filter((x) => !inner.includes(x))
     .filter((x) => rows.every((l) => l.nodes.some((n) => inGroup(d, n, x.id))))
@@ -1724,7 +1724,7 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
   }
   const other = op[field] as string;
   if (!groups.some((x) => x.id === other)) return [unknownGroup(d, other, i, field)];
-  // An alignment or a step to a box outside the group cannot hold for the box and its copy at once.
+  // An alignment or a step to a node outside the group cannot hold for the node and its copy at once.
   const errors: OpError[] = [];
   for (const n of boxes) {
     for (const key of ["align", "from"] as const) {
@@ -1806,7 +1806,7 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
   const moved = new Set([...orderByLanes(probe), ...orderByColumns(probe)]);
   const key = laneRun(d) === "columns" ? "lane" : "column";
   const away = boxes.filter((n) => moved.has(mapped(n.id)));
-  // The box whose own lane or column moves it, or else the first one moved.
+  // The node whose own lane or column moves it, or else the first one moved.
   const original = away.find((n) => n[key] !== undefined) ?? away[0];
   if (original !== undefined) {
     return [
@@ -2367,7 +2367,7 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "node.remove": {
       const at = findNode(d, op.id);
       if (!at) return [unknownNode(d, op.id, i, "id")];
-      // A box others are placed from by steps stays while they are (specs/decisions, "Steps from another box").
+      // A node others are placed from by steps stays while they are (specs/decisions, "Steps from another box").
       const users = steppedFrom(d, op.id);
       if (users.length > 0) {
         return [
@@ -2464,9 +2464,9 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
       pruneNotes(s.d, gone);
     }
   }
-  // Column lanes keep each row in lane order (specs/decisions, "Swimlanes run one way").
+  // Column lanes keep each layer in lane order (specs/decisions, "Swimlanes run one way").
   touch(s, ...orderByLanes(s.d));
-  // Columns keep each row in column order (specs/decisions, "Columns beside rows").
+  // Columns keep each layer in column order (specs/decisions, "Columns beside rows").
   touch(s, ...orderByColumns(s.d));
   const last = Math.max(0, ops.length - 1);
   // What follows is found in the diagram the whole batch makes, by checks that run in turn: each stops the rest, and
@@ -2490,8 +2490,8 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
       2,
     );
   }
-  // A group the engine cannot box without a non-member inside is an operation error (specs/decisions, "Rows unseen, groups as systems").
-  // A row between members that holds none is boxed over, its nodes beside the box. No field of an operation is at
+  // A group the engine cannot node without a non-member inside is an operation error (specs/decisions, "Rows unseen, groups as systems").
+  // A layer between members that holds none is boxed over, its nodes beside the node. No field of an operation is at
   // fault, so the facts name what is there.
   const groupProblems = layoutModule.validateGroups(s.d);
   if (groupProblems.length > 0) {
@@ -2500,12 +2500,12 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
       3,
     );
   }
-  // A box placed by steps whose cell another fact keeps is an operation error (specs/decisions, "Steps from another box").
+  // A node placed by steps whose cell another fact keeps is an operation error (specs/decisions, "Steps from another box").
   const stepProblems = layoutModule.validateSteps(s.d);
   if (stepProblems.length > 0) {
     return whole(
       stepProblems.map((p) => {
-        // Two boxes in each other's way: the error names the one this batch moved.
+        // Two nodes in each other's way: the error names the one this batch moved.
         const other = typeof p.facts.node === "string" ? p.facts.node : undefined;
         const swap =
           p.code === "step-blocked" &&

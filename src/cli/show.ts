@@ -1,5 +1,5 @@
 // `grafical show`: a compact view of a diagram in the operations' own
-// vocabulary (DESIGNS.md, "The command line comes first, and the help is the agent's only reference"). One line per layer, then one line per edge.
+// vocabulary (DESIGNS.md, "The command line comes first, and the help is the agent's only reference"). One edge per layer, then one line per edge.
 
 import { laneNodes, laneRun } from "../model/lanes.ts";
 import { everyNode, STEP_KEYS } from "../model/steps.ts";
@@ -76,7 +76,7 @@ export function showDiagram(d: Diagram): string {
     lines.push(`layer ${l.id}${label}${lane}${look}${at}: ${nodes}`);
   }
   if (d.layers.length === 0) lines.push("(no layers)");
-  // Boxes in no row, placed by steps from another box (specs/decisions, "Steps from another box").
+  // Nodes in no layer, placed by steps from another node (specs/decisions, "Steps from another box").
   for (const n of d.nodes ?? []) lines.push(`node ${nodeText(n)}`);
   for (const g of d.groups ?? []) {
     const members = everyNode(d)

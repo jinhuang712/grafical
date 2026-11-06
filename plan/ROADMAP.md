@@ -76,7 +76,7 @@ Roadmap
 │   │   └── ✅ The worst operation measured
 │   ├── 🟨 CP2.2: The command line
 │   │   ├── ✅ The file flag
-│   │   ├── ⬜ One name for each thing
+│   │   ├── ✅ One name for each thing
 │   │   ├── ✅ Verbs as flags
 │   │   ├── ✅ One way for each situation
 │   │   └── ✅ Batches from standard input
@@ -477,7 +477,7 @@ The command line gets one form:
 **Tasks:**
 
 - ✅ The file flag: Every command takes its file from `-f`, on its own and ahead of the next round.
-- ⬜ One name for each thing: Every surface and the code use one name.
+- ✅ One name for each thing: Every surface uses one name, and the code does except where a word means something else.
 - ✅ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
 - ✅ One way for each situation: `edge --emphasize` went, and the commands were checked for other repeats.
 - ✅ Batches from standard input: `apply` reads a batch named `-` from standard input.

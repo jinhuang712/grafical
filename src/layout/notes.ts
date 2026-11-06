@@ -1,6 +1,6 @@
 // Notes (specs/decisions, "Notes as callouts or footnotes"): each note is drawn as a callout card beside what it is
 // about, or, where the agent says so, as a numbered footnote: a number on its target and
-// its text in a list at the bottom. A card keeps clear of every box, line, text and
+// its text in a list at the bottom. A card keeps clear of every node, edge, text and
 // other card, and lies wholly inside or outside each group, lane and band. Nothing
 // moves to make room for one, and a card with no room refuses the write.
 
@@ -25,7 +25,7 @@ export interface NoteRoom {
   nodes: SceneNode[];
   groups: SceneGroup[];
   edges: SceneEdge[];
-  /** Texts and other solid boxes, besides the nodes. */
+  /** Texts and other solid nodes, besides the nodes. */
   solid: Rect[];
   /** Areas a card lies wholly inside or wholly outside: groups, lanes and bands. */
   areas: Rect[];
@@ -35,7 +35,7 @@ export interface NoteRoom {
   list: { x: number; y: number; w: number };
 }
 
-/** The lines a note's text wraps to in a card. */
+/** The edges a note's text wraps to in a card. */
 export function cardLines(text: string, m: Measurer, T: TypeRamp): Line[] {
   return m.wrap(text, T.note, NOTE.wrap);
 }
@@ -45,7 +45,7 @@ const keyedWidth = (w: number) => w - 2 * NOTE.badge - NOTE.keyGap;
 
 /**
  * A footnote's words in the list: its target's name first, so that the reader finds it
- * even where no number could be drawn on it: a node's or group's label, or a line's ends.
+ * even where no number could be drawn on it: a node's or group's label, or an edge's ends.
  */
 function footnoteText(d: Diagram, on: string, text: string): string {
   const label = (id: string) =>
@@ -107,7 +107,7 @@ function meets(a: Point, b: Point, c: Point, d: Point): boolean {
 
 type Seg = [Point, Point];
 
-/** The longest part of a line, where a note on it is anchored. */
+/** The longest part of an edge, where a note on it is anchored. */
 function longest(points: Point[]): Seg {
   let best: Seg = [points[0] as Point, (points[1] ?? points[0]) as Point];
   let len = -1;
@@ -128,7 +128,7 @@ interface Spot {
   link: Seg;
 }
 
-/** Card places beside a box: right, left, below, above, each near and then farther. */
+/** Card places beside a node: right, left, below, above, each near and then farther. */
 function besideBox(r: Rect, w: number, h: number): Spot[] {
   const spots: Spot[] = [];
   const cy = r.y + r.h / 2;
@@ -178,7 +178,7 @@ function besideBox(r: Rect, w: number, h: number): Spot[] {
   return spots;
 }
 
-/** Card places beside a line's longest part, at its middle and its quarters. */
+/** Card places beside an edge's longest part, at its middle and its quarters. */
 function besideLine([a, b]: Seg, w: number, h: number): Spot[] {
   const spots: Spot[] = [];
   for (const gap of NOTE.gaps) {
@@ -244,7 +244,7 @@ export function placeNotes(
     if (taken.some((t) => overlaps(t, wide))) return false;
     if (room.areas.some((a) => overlaps(a, spot.card) && !contains(a, spot.card))) return false;
     if (segs.some(([a, b]) => hits(a, b, wide))) return false;
-    // The dotted line meets only its own target: no other box, text, card or line.
+    // The dotted edge meets only its own target: no other node, text, card or edge.
     const [p, q] = spot.link;
     if (room.nodes.some((n) => n.id !== on && hits(p, q, n.rect))) return false;
     if (room.solid.some((s) => hits(p, q, s)) || taken.some((t) => hits(p, q, t))) return false;
@@ -314,7 +314,7 @@ export function placeNotes(
     y += layerH + NOTE.keyGap;
   });
 
-  /** A footnote's number on its target: a free corner of a box, after a group's label, beside a line. */
+  /** A footnote's number on its target: a free corner of a node, after a group's label, beside an edge. */
   function markOn(on: string, n: number): SceneBadge | undefined {
     const free = (p: Point) => {
       const box = grow({ x: p.x - r, y: p.y - r, w: 2 * r, h: 2 * r }, 2);
@@ -332,7 +332,7 @@ export function placeNotes(
     const edge = edgeOf.get(on);
     let spots: Point[] = [];
     if (node !== undefined) {
-      // On a corner, its digits just outside the box, so that they read as the number's.
+      // On a corner, its digits just outside the node, so that they read as the number's.
       const { x, y: top, w, h } = node;
       const out = NOTE.badge - 2;
       spots = [
@@ -347,7 +347,7 @@ export function placeNotes(
         { x: after.x + after.w + NOTE.keyGap + r, y: group.label.bbox.y + group.label.bbox.h / 2 },
       ];
     } else if (edge !== undefined) {
-      // Beside each part of the line, longest first, at its middle and then further out.
+      // Beside each part of the edge, longest first, at its middle and then further out.
       const parts = edge.points
         .slice(1)
         .map((b, j): Seg => [edge.points[j] as Point, b])
@@ -383,7 +383,7 @@ function midpoint([a, b]: Seg): Point {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
-/** A numbered circle of radius r centred at (x, y): a footnote's number, or a line's step (specs/decisions, "Step badges ride the line"). */
+/** A numbered circle of radius r centred at (x, y): a footnote's number, or an edge's step (specs/decisions, "Step badges ride the line"). */
 export function numberBadge(
   n: number,
   x: number,

@@ -332,7 +332,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "unknown-op": [],
   "unknown-option": [],
   "unknown-wall": ["wall add"],
-  // A line or a legend names a weight its stylesheet lacks: another stylesheet, or another weight for the line, or no
+  // An edge or a legend names a weight its stylesheet lacks: another stylesheet, or another weight for the edge, or no
   // entry in the legend.
   "unknown-weight": {
     edge: ["diagram style", "edge weight"],
@@ -352,12 +352,12 @@ export function variantOf(
 ): string {
   switch (code) {
     case "bar-in-group":
-      // A bar a line ends at, or one drawn for its look alone.
+      // A bar an edge ends at, or one drawn for its look alone.
       return facts.edge === undefined ? "look" : "line";
     case "unknown-weight":
       return facts.edge !== undefined || facts.edges !== undefined ? "edge" : "legend";
     case "conflicting-position":
-      // A box moved by steps that keeps an alignment, a column or a lane can lose that, or not move by steps.
+      // A node moved by steps that keeps an alignment, a column or a lane can lose that, or not move by steps.
       if (facts.node === undefined) return "placed";
       return field?.startsWith("from,") ? field.slice("from,".length) : "stepped";
     case "duplicate-id":
@@ -390,7 +390,7 @@ export interface Block {
   kind: Kind;
   code: Code;
   description: string;
-  /** What caused it: the command line, a batch's line, or what was already in the file. */
+  /** What caused it: the command line, a batch's edge, or what was already in the file. */
   source?: string;
   /** The operation's index in its batch, from 0: in --json only. */
   op?: number;
@@ -398,7 +398,7 @@ export interface Block {
   next: readonly string[];
 }
 
-/** What each id of a diagram names, by the key its facts take: row, node, group, lane, edge, wall or column. */
+/** What each id of a diagram names, by the key its facts take: layer, node, group, lane, edge, wall or column. */
 export function kindsOf(d: Diagram): Map<string, string> {
   const out = new Map<string, string>();
   for (const l of d.layers) out.set(l.id, "layer");
@@ -473,7 +473,7 @@ export function errorBlock(e: OpError): Block {
     code: e.code,
     description: DESCRIPTIONS[e.code],
     ...(e.source !== undefined ? { source: e.source } : {}),
-    // Only an error an operation caused has the operation's index: not one already in the file, nor one whose line
+    // Only an error an operation caused has the operation's index: not one already in the file, nor one whose edge
     // cannot be known.
     ...(e.index >= 0 && e.source !== IN_FILE ? { op: e.index } : {}),
     detail: {
@@ -487,7 +487,7 @@ export function errorBlock(e: OpError): Block {
 
 /**
  * The ids a defect names, split by what each one is. The first id of a blocked text is whose text it is, and the
- * lines across it are `across`; a mark that covers a box names the box with the mark, then the box it covers; a
+ * edges across it are `across`; a mark that covers a node names the node with the mark, then the node it covers; a
  * note is named by what it is on.
  */
 function typedIds(d: Defect, kinds: ReadonlyMap<string, string>): Record<string, string[]> {
@@ -558,7 +558,7 @@ export function usageBlock(
   };
 }
 
-/** Something drawn poorly, as a warning block. It has no source: the outcome line names what the write changed. */
+/** Something drawn poorly, as a warning block. It has no source: the outcome edge names what the write changed. */
 export function warningBlock(w: Warning): Block {
   return {
     kind: "warning",

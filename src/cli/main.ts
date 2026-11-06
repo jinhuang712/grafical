@@ -78,7 +78,7 @@ function splitIds(s: string): string[] {
 
 const POSITION = ["first", "last", "before", "after"];
 
-/** The box steps start from, and the steps, as numbers where they read as one (specs/decisions, "Steps from another box"). */
+/** The node steps start from, and the steps, as numbers where they read as one (specs/decisions, "Steps from another box"). */
 function stepFlags(opts: Opts): Record<string, unknown> {
   const out = pick(opts, ["from"]);
   for (const k of STEP_KEYS) {
@@ -147,7 +147,7 @@ function renderName(file: string): string {
 
 /**
  * Gives each command its help page (specs/decisions, "One entry page, help where it is used"): the one-line description
- * stays the summary in its parent's list, and the page's paragraph, its line in a batch and its sections show on
+ * stays the summary in its parent's list, and the page's paragraph, its edge in a batch and its sections show on
  * its own help.
  */
 function attachHelp(parent: Command, ops: Map<Command, OpName>, path: string[] = []): void {

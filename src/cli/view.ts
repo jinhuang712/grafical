@@ -1,7 +1,7 @@
 // `grafical view <file>`: the diagram as it is now, in a window, redrawn within a
 // moment of every change to the file or its stylesheet, from any process
 // (specs/decisions, "A viewer that only shows"). It shows; it never edits. The parts that changed are marked
-// for a moment by boxes laid over the picture, so the SVG stays the same bytes
+// for a moment by nodes laid over the picture, so the SVG stays the same bytes
 // that `render` writes. A side panel lists each change as operations, taken from
 // `grafical diff` between the last good file and the new one (specs/decisions, "Git as the history").
 
@@ -28,7 +28,7 @@ export interface Frame {
   svg: string;
   width: number;
   height: number;
-  /** Boxes around the parts that changed since the last frame. */
+  /** Nodes around the parts that changed since the last frame. */
   changed: Rect[];
   /** Errors, defects and the counts, one per line. */
   problems: string[];
@@ -49,7 +49,7 @@ export interface ViewEvent {
 /**
  * One operation in a few words, for people: `node add search "search-api" in
  * services`, `edge add bff → search "query"`, `lane join webteam search`.
- * Places within a row are left out.
+ * Places within a layer are left out.
  */
 export function describeOp(op: Op): string {
   const o = op as unknown as Record<string, unknown>;
@@ -89,7 +89,7 @@ function bounds(points: { x: number; y: number }[], pad: number): Rect {
 }
 
 /**
- * Boxes around what an agent changed since `before`: new nodes and edges, text
+ * Nodes around what an agent changed since `before`: new nodes and edges, text
  * that changed, a node that changed size, an edge with new ends, kind or label.
  * Elements that only moved because the layout re-flowed are not marked.
  */
@@ -162,7 +162,7 @@ export async function startViewer(file: string, port = 0): Promise<Viewer> {
     const before = frame;
     const d = loadDiagram(file);
     if (isReport(d)) {
-      // The report's lines, without the blank ones between its blocks.
+      // The report's edges, without the blank ones between its blocks.
       const problems = formatReport(d)
         .split("\n")
         .filter((l) => l !== "");

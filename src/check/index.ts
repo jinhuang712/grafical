@@ -41,13 +41,13 @@ import {
 export const NODE_PADDING = 8;
 /**
  * Text must stay this far inside its node's rect, top and bottom. It is smaller
- * than the side padding because a text bbox is a line box: it already includes
+ * than the side padding because a text bbox is an edge node: it already includes
  * the fonts' ascent and descent, which reach well beyond the visible letters.
  */
 export const NODE_PADDING_Y = 4;
 /** An edge may graze a node's rect by this much, at its ports. */
 export const PORT_TOLERANCE = 4;
-/** How far a text's box may reach under a corner mark before the mark covers it (specs/decisions, "Marks of any kind"). */
+/** How far a text's node may reach under a corner mark before the mark covers it (specs/decisions, "Marks of any kind"). */
 export const MARK_TEXT_SLACK = 3;
 /** Two edges must share at least this much length to count as overlapping. */
 export const MIN_SHARED_LENGTH = 8;
@@ -79,7 +79,7 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
   }
 }
 
-/** A lane's label stays inside its header (specs/decisions, "Swimlanes run one way"). Row lane headers are narrow, so a long label can run out below. */
+/** A lane's label stays inside its header (specs/decisions, "Swimlanes run one way"). Layer lane headers are narrow, so a long label can run out below. */
 function checkLaneLabels(scene: Scene, out: Found[]): void {
   for (const x of scene.lanes ?? []) {
     if (rectInside(x.label.bbox, x.head)) continue;
@@ -112,12 +112,12 @@ function checkNodeOverlap(scene: Scene, out: Found[]): void {
 
 /**
  * A mark must not cover text or another node (specs/decisions, "Marks of any kind"). A corner mark sticks out of its
- * box, so a long label or a close neighbour can meet it.
+ * node, so a long label or a close neighbour can meet it.
  */
 function checkMarkCovers(scene: Scene, out: Found[]): void {
   for (const n of scene.nodes) {
     for (const mark of n.marks ?? []) {
-      // A text's box is taller and wider than its ink, so a few pixels of it may meet a mark.
+      // A text's node is taller and wider than its ink, so a few pixels of it may meet a mark.
       if (n.texts.some((t) => rectsOverlap(inset(t.bbox, MARK_TEXT_SLACK), mark.rect))) {
         out.push({
           code: "mark-covers",
@@ -129,7 +129,7 @@ function checkMarkCovers(scene: Scene, out: Found[]): void {
       }
       for (const other of scene.nodes) {
         if (other.id === n.id || !rectsOverlap(other.rect, mark.rect)) continue;
-        // The box with the mark first, then the box it covers.
+        // The node with the mark first, then the node it covers.
         out.push({
           code: "mark-covers",
           elements: [n.id, other.id],
@@ -205,9 +205,9 @@ function checkLabelCollision(scene: Scene, out: Found[]): void {
 export const STEP_CLEAR = 1;
 
 /**
- * A step's badge sits on its own line, clear of every box, every other line and its
+ * A step's badge sits on its own edge, clear of every node, every other edge and its
  * hops, every text, every other badge, and the borders of groups and bands, as a label
- * keeps clear of them (specs/decisions, "Step badges ride the line"). It never covers an arrowhead of its own line. A lane's
+ * keeps clear of them (specs/decisions, "Step badges ride the line"). It never covers an arrowhead of its own edge. A lane's
  * divider may run under it, as under a label.
  */
 function checkSteps(scene: Scene, out: Found[]): void {
@@ -256,7 +256,7 @@ function checkSteps(scene: Scene, out: Found[]): void {
   for (const [i, item] of (scene.legend ?? []).entries()) {
     texts.push({ id: `legend-${i}`, is: "legend", rect: item.label.bbox });
   }
-  // Lines that are not edges: a labelled wall's divider and a callout's dotted line.
+  // Edges that are not edges: a labelled wall's divider and a callout's dotted edge.
   const others: { id: string; is: string; s: Segment }[] = [];
   for (const w of scene.walls ?? []) if (w.line) others.push({ id: w.id, is: "wall", s: w.line });
   for (const x of scene.notes ?? []) {
@@ -285,11 +285,11 @@ function checkSteps(scene: Scene, out: Found[]): void {
     }
     for (const t of texts) if (toRect(c, t.rect) < near) hit(t.id, t.is);
     for (const o of others) if (toSegment(c, o.s) < near) hit(o.id, o.is);
-    // A line that ends at a group or a band meets its border there.
+    // An edge that ends at a group or a band meets its border there.
     for (const x of borders) {
       if (x.id !== e.from && x.id !== e.to && toBorder(c, x.rect) < near) hit(x.id, x.is);
     }
-    // Its own arrowheads: from the tip of each back along the line.
+    // Its own arrowheads: from the tip of each back along the edge.
     const head = lineLook(e.width, P).arrow.length;
     const heads = { start: e.both === true ? head : 0, end: hasHead(e.kind) ? head : 0 };
     if (arrowheads(e.points, heads).some((s) => toSegment(c, s) < near)) hit(e.id, "arrow");
@@ -300,7 +300,7 @@ function checkSteps(scene: Scene, out: Found[]): void {
   }
 }
 
-/** An edge may graze a text box by this much before it counts as crossing it (specs/decisions, "A target picture with measured rules" rule 8). */
+/** An edge may graze a text node by this much before it counts as crossing it (specs/decisions, "A target picture with measured rules" rule 8). */
 export const TEXT_TOLERANCE = 2;
 
 /**
@@ -320,7 +320,7 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
       targets.push({ id: e.id, is: "edge", text: e.label, owner: e.id });
     }
   }
-  // A group's label is the agent's: a line across it is title-blocked.
+  // A group's label is the agent's: an edge across it is title-blocked.
   for (const b of scene.bands ?? [])
     if (b.label) targets.push({ id: b.id, is: "layer", text: b.label });
   for (const x of scene.lanes ?? []) targets.push({ id: x.id, is: "lane", text: x.label });
@@ -357,7 +357,7 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
       }
     }
   }
-  // The border of a group, a band or a lane is a line too: no edge's label lies across it.
+  // The border of a group, a band or a lane is an edge too: no edge's label lies across it.
   for (const g of [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])]) {
     const { x, y, w, h } = g.rect;
     const sides = segmentsOf([
@@ -378,19 +378,19 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
 }
 
 /**
- * A line's label, or its step's badge, that no gutter of its path could hold clear of the
- * other lines, a wall's label that no place along its wall holds clear of the lines across
- * it, and a note's card with no place beside its target: no line moves for it, so it lies
+ * An edge's label, or its step's badge, that no gutter of its path could hold clear of the
+ * other edges, a wall's label that no place along its wall holds clear of the edges across
+ * it, and a note's card with no place beside its target: no edge moves for it, so it lies
  * across them (specs/decisions, "Unreadable is refused and costly is reported"). The agent shortens or drops the text,
- * widens a box, changes rows, or makes the note a footnote; the engine never widens a box for
- * its lines (decided by the owner on 2026-10-17). The elements name the line, the wall or the
- * note's target, then what lies across the text: lines, and for a line's label the borders of
- * groups, bands and lanes, for a wall's label or a card boxes; the facts name the gutters a
- * line's label tried.
+ * widens a node, changes layers, or makes the note a footnote; the engine never widens a node for
+ * its edges (decided by the owner on 2026-10-17). The elements name the edge, the wall or the
+ * note's target, then what lies across the text: edges, and for an edge's label the borders of
+ * groups, bands and lanes, for a wall's label or a card nodes; the facts name the gutters a
+ * edge's label tried.
  */
 function checkLabelRoom(scene: Scene, out: Found[]): void {
   const borders = [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])];
-  /** The lines other than `own` that pass through r. */
+  /** The edges other than `own` that pass through r. */
   const lines = (r: Rect, own?: string) =>
     scene.edges
       .filter((o) => o.id !== own && segmentsOf(o.points).some((s) => segmentCrossesRect(s, r)))
@@ -433,8 +433,8 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
       });
     }
   }
-  // A note's card with no place beside its target, at the first place anyway: the lines and
-  // boxes in its way there.
+  // A note's card with no place beside its target, at the first place anyway: the edges and
+  // nodes in its way there.
   for (const x of scene.notes ?? []) {
     if (x.blocked !== true || x.card === undefined) continue;
     const box = inset(x.card, -NOTE.clear);
@@ -452,7 +452,7 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
     const box = inset(b.label.bbox, -GROUP.clear);
     out.push({ code: "label-blocked", elements: [b.id, ...lines(box)], facts: { is: "layer" } });
   }
-  // A wall's label keeps its clearance from lines and boxes as the engine places it.
+  // A wall's label keeps its clearance from edges and nodes as the engine places it.
   for (const w of scene.walls ?? []) {
     if (w.blocked !== true || w.label === undefined) continue;
     const box = inset(w.label.bbox, -WALL.labelClear);
@@ -465,7 +465,7 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
   }
 }
 
-/** A node that is not a member lies inside a group's box (specs/decisions, "Rows unseen, groups as systems"). */
+/** A node that is not a member lies inside a group's border (specs/decisions, "Rows unseen, groups as systems"). */
 function checkGroupIntruder(scene: Scene, out: Found[]): void {
   for (const g of scene.groups ?? []) {
     const members = new Set(g.members);
@@ -496,7 +496,7 @@ function checkLaneStray(diagram: Diagram, scene: Scene, out: Found[]): void {
   }
 }
 
-/** A note takes at most four lines at its width (specs/decisions, "Notes as callouts or footnotes"); the agent shortens it. */
+/** A note takes at most four edges at its width (specs/decisions, "Notes as callouts or footnotes"); the agent shortens it. */
 function checkNotes(diagram: Diagram, measurer: Measurer, out: Found[]): void {
   const style = themeOf(diagram).type.note;
   for (const x of diagram.notes ?? []) {
@@ -513,7 +513,7 @@ function checkNotes(diagram: Diagram, measurer: Measurer, out: Found[]): void {
 }
 
 /**
- * No line passes through a wall's space unless the wall allows it (specs/decisions, "Walls as space"). A line
+ * No edge passes through a wall's space unless the wall allows it (specs/decisions, "Walls as space"). An edge
  * between the two sides is refused before layout; this finds the others.
  */
 function checkWalls(diagram: Diagram, scene: Scene, out: Found[]): void {
@@ -582,8 +582,8 @@ function checkEdgeOverlap(scene: Scene, out: Found[]): void {
 }
 
 /**
- * A line between boxes in neighbouring rows, from the upper one's bottom into the lower
- * one's top, that bends although each of its ports lies within the other box's side:
+ * An edge between nodes in neighbouring layers, from the upper one's bottom into the lower
+ * one's top, that bends although each of its ports lies within the other node's side:
  * one x would have served both ends (specs/decisions, "Who chose is punished"). The lines of a bundle share a port and bend
  * where they part, by design.
  */
@@ -671,7 +671,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   for (const x of diagram.notes ?? []) add(x.on, "note", x.text, true);
 }
 
-/** The lines that pass a group's label or its sublabel nearer than the engine keeps its own lines, by id. */
+/** The edges that pass a group's label or its sublabel nearer than the engine keeps its own edges, by id. */
 export function acrossTitle(scene: Scene, id: string): string[] {
   const g = scene.groups?.find((x) => x.id === id);
   if (g === undefined) return [];
@@ -684,9 +684,9 @@ export function acrossTitle(scene: Scene, id: string): string[] {
 }
 
 /**
- * A label at a place the agent stated moves no line and no box, so a line across it is the
+ * A label at a place the agent stated moves no edge and no node, so an edge across it is the
  * agent's to fix: another place, or none (specs/decisions, "The agent states where a group's label sits").
- * The facts name the places where no line would come near it.
+ * The facts name the places where no edge would come near it.
  */
 function checkTitles(
   facts: Diagram,
@@ -732,11 +732,11 @@ type Found = Omit<Defect, "owner">;
 
 /**
  * Every defect, agent-owned and engine-owned, in a deterministic order (specs/decisions, "Defects owned by who can fix them").
- * Without `places`, a blocked title does not list the places clear of lines, each of which takes a layout: for the
+ * Without `places`, a blocked title does not list the places clear of edges, each of which takes a layout: for the
  * write path, which only asks which defects a diagram has while it finds where one comes from.
  */
 export function check(facts: Diagram, scene: Scene, measurer: Measurer, places = true): Defect[] {
-  // Boxes placed by steps are checked in the rows they are drawn in (specs/decisions, "Steps from another box").
+  // Nodes placed by steps are checked in the layers they are drawn in (specs/decisions, "Steps from another box").
   const diagram = placeSteps(facts).d;
   const out: Found[] = [];
   checkOverflow(diagram, scene, out);

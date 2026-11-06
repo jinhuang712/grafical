@@ -33,6 +33,12 @@ A command that sets a field is named for the field:
 
 The picture's closing text is `diagram caption`. A step is a placement only, and a number is what an edge carries.
 
+Built on 2026-11-06. Commands, operations, fields, refusals, records and comments use these names. A word stays where it means something else:
+
+- A `row` of a gutter is a track's place in it, and a `line` of text is a line.
+- A `Box` in the layout is a rectangle a label or a group takes.
+- `diagram --lines` sets how edges are drawn, and the owner may yet name it.
+
 ## Not chosen
 
 - Row, box and line.

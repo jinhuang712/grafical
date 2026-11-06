@@ -1,32 +1,32 @@
-// Boxes placed by steps (specs/decisions, "Steps from another box"): a box in no row, placed some cells of the
-// column grid from another box, which it moves with. The agent states the steps; the
-// engine puts the box in its cell, and the boxes of the row it lands in stand aside.
+// Nodes placed by steps (specs/decisions, "Steps from another box"): a node in no layer, placed some cells of the
+// column grid from another node, which it moves with. The agent states the steps; the
+// engine puts the node in its cell, and the nodes of the layer it lands in stand aside.
 
 import type { OpError } from "../errors.ts";
 import { closest } from "./suggest.ts";
 import type { Diagram, DiagramNode } from "./types.ts";
 
-/** The most cells one step option may move a box. */
+/** The most cells one step option may move a node. */
 export const MAX_STEPS = 10;
 
 /** The step options, in the order the file writes them. */
 export const STEP_KEYS = ["down", "up", "left", "right"] as const;
 
-/** Every node: each row's, in order, then the boxes placed by steps. */
+/** Every node: each layer's, in order, then the nodes placed by steps. */
 export function everyNode(d: Diagram): DiagramNode[] {
   const rows = d.layers.flatMap((l) => l.nodes);
   return d.nodes === undefined || d.nodes.length === 0 ? rows : [...rows, ...d.nodes];
 }
 
-/** A box's steps as cells across and down: right less left, down less up. */
+/** A node's steps as cells across and down: right less left, down less up. */
 export function stepOf(n: DiagramNode): { dx: number; dy: number } {
   return { dx: (n.right ?? 0) - (n.left ?? 0), dy: (n.down ?? 0) - (n.up ?? 0) };
 }
 
 /**
- * The boxes a box's steps lead back through, nearest first: the box it steps from,
- * the box that one steps from, and on. Stops at a box in a row, an unknown id, or a
- * box seen before, so a box that steps from itself through others ends its own chain.
+ * The nodes a node's steps lead back through, nearest first: the node it steps from,
+ * the node that one steps from, and on. Stops at a node in a layer, an unknown id, or a
+ * node seen before, so a node that steps from itself through others ends its own chain.
  */
 export function stepChain(d: Diagram, id: string): string[] {
   const from = new Map((d.nodes ?? []).map((n) => [n.id, n.from]));
@@ -37,13 +37,13 @@ export function stepChain(d: Diagram, id: string): string[] {
   return out;
 }
 
-/** The boxes that step from a box. */
+/** The nodes that step from a node. */
 export function steppedFrom(d: Diagram, id: string): string[] {
   return (d.nodes ?? []).filter((n) => n.from === id).map((n) => n.id);
 }
 
 /**
- * Step rules: each box in no row steps from a node that exists, never from itself
+ * Step rules: each node in no layer steps from a node that exists, never from itself
  * through others, by at least one step, and not both ways at once.
  */
 export function checkSteps(d: Diagram, index: number): OpError[] {

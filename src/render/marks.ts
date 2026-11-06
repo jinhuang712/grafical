@@ -67,7 +67,7 @@ function readableOn(bg: string): string {
 
 /**
  * A text mark sits on a badge. Over a corner it would otherwise float, with the
- * box outline running through it. The layout sized the badge for this text size
+ * node outline running through it. The layout sized the badge for this text size
  * (markWidth), so the two must agree.
  */
 function textMark(m: DrawnMark, text: string): string {

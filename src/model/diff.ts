@@ -69,7 +69,7 @@ function keptStart(before: readonly string[], after: readonly string[]): Set<str
 
 interface Placed {
   node: DiagramNode;
-  /** The node's row; "" for a box placed by steps (specs/decisions, "Steps from another box"). */
+  /** The node's layer; "" for a node placed by steps (specs/decisions, "Steps from another box"). */
   layer: string;
 }
 
@@ -80,7 +80,7 @@ function nodesOf(d: Diagram): Map<string, Placed> {
   ]);
 }
 
-/** A box's steps as operation fields (specs/decisions, "Steps from another box"). */
+/** A node's steps as operation fields (specs/decisions, "Steps from another box"). */
 function stepFields(n: DiagramNode): Partial<Record<(typeof STEP_KEYS)[number], number>> {
   const out: Partial<Record<(typeof STEP_KEYS)[number], number>> = {};
   for (const k of STEP_KEYS) if (n[k] !== undefined) out[k] = n[k];
@@ -277,10 +277,10 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   // 2. Edges that go.
   for (const e of b.edges) if (!keptEdges.has(e.id)) ops.push({ op: "edge.remove", id: e.id });
 
-  // Boxes placed by steps (specs/decisions, "Steps from another box") keep creation order, and only the end of the list takes
-  // a box. One placed by steps before and after, from a box that stays, keeps its entry
-  // while in step; every other one waits in a row, so that no box is removed while
-  // another steps from it, and goes to the end of the list once the rows are in place.
+  // Nodes placed by steps (specs/decisions, "Steps from another box") keep creation order, and only the end of the list takes
+  // a node. One placed by steps before and after, from a node that stays, keeps its entry
+  // while in step; every other one waits in a layer, so that no node is removed while
+  // another steps from it, and goes to the end of the list once the layers are in place.
   const bSteps = (b.nodes ?? []).map((n) => n.id);
   const aSteps = a.nodes ?? [];
   const keptSteps = keptStart(
@@ -292,7 +292,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   );
   for (const id of bSteps) {
     if (keptSteps.has(id)) continue;
-    // A row no node of which sits above or below the box.
+    // A layer no node of which sits above or below the node.
     const row = b.layers.find((l) => !l.nodes.some((n) => n.align === id)) ?? b.layers[0];
     if (row !== undefined) ops.push({ op: "node.move", id, layer: row.id, last: true });
   }
@@ -324,7 +324,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     }
   }
 
-  // 4. Layers in their new order. A layer added inside a row lane joins it.
+  // 4. Layers in their new order. A layer added inside a layer lane joins it.
   const order = b.layers.map((l) => l.id);
   const laneOfLayer = new Map(
     b.layers.map((l) => [l.id, l.lane !== undefined && !reborn.has(l.lane) ? l.lane : undefined]),
@@ -367,7 +367,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
 
   for (const l of a.layers) {
     const was = b.layers.find((x) => x.id === l.id);
-    // No operation takes a row's label away, so a row that has none was made without one.
+    // No operation takes a layer's label away, so a layer that has none was made without one.
     if (was !== undefined && l.label !== undefined && was.label !== l.label) {
       ops.push({ op: "layer.label", id: l.id, label: l.label });
     }
@@ -411,10 +411,10 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     });
   }
 
-  // Boxes placed by steps, past the ones that kept their entry, in the list's order. A
-  // box steps from its own box once that box's chain of steps is final, and from the first
-  // row's first node until then; every box then takes its own, the box it steps from
-  // first, so that no box ever steps from itself.
+  // Nodes placed by steps, past the ones that kept their entry, in the list's order. A
+  // node steps from its own node once that node's chain of steps is final, and from the first
+  // layer's first node until then; every node then takes its own, the node it steps from
+  // first, so that no node ever steps from itself.
   const firstNode = a.layers.flatMap((l) => l.nodes)[0]?.id;
   const final = new Set(a.layers.flatMap((l) => l.nodes.map((n) => n.id)));
   const fixed = (n: DiagramNode) => {

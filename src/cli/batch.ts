@@ -1,4 +1,4 @@
-// Each command's line in a batch, shown on its help page (specs/decisions, "One entry page, help where it is used"). It
+// Each command's edge in a batch, shown on its help page (specs/decisions, "One entry page, help where it is used"). It
 // is built from the operation's schema, so it cannot drift from what a batch accepts: the operation's name and
 // the fields it needs. A command's arguments and options are named as its operation's fields.
 
@@ -32,7 +32,7 @@ type Json = {
 const json = (s: z.ZodType): Json =>
   z.toJSONSchema(s, { io: "input", unrepresentable: "any" }) as Json;
 
-/** The shared values, by the placeholder the line shows for them. */
+/** The shared values, by the placeholder the edge shows for them. */
 const PLACEHOLDERS = new Map<string | undefined, string>([
   [json(nodeId).pattern, "<id>"],
   [json(edgeId).pattern, "<line>"],

@@ -16,11 +16,11 @@
 // counted here; their heights and every y come later, in assembly.
 //
 // For the target look (specs/decisions, "A target picture with measured rules"): edges between neighbours run straight sideways
-// (side.ts); every line meets its node side at a port of its own, unless the side
-// has more lines than room, where unlabelled edges of one kind that leave it share
-// a trunk and those that arrive at it share a port (specs/decisions, "Lines meet any side"); a path that skips rows
-// takes one corridor, an x that is free in every row it passes; and no vertical
-// line passes a band's label or the label of a sideways edge.
+// (side.ts); every edge meets its node side at a port of its own, unless the side
+// has more edges than room, where unlabelled edges of one kind that leave it share
+// a trunk and those that arrive at it share a port (specs/decisions, "Lines meet any side"); a path that skips layers
+// takes one corridor, an x that is free in every layer it passes; and no vertical
+// edge passes a band's label or the label of a sideways edge.
 
 import type { Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
@@ -33,9 +33,9 @@ import { type SideSlot, sidePitch } from "./side.ts";
 
 /** What the router must keep clear of, from placement. */
 export interface RouteExtra {
-  /** Edges that run straight sideways between neighbours, and their lines. */
+  /** Edges that run straight sideways between neighbours, and their edges. */
   sideways: Map<string, SideSlot>;
-  /** x spans no vertical line may take where it enters a layer from above: band labels. */
+  /** x spans no vertical edge may take where it enters a layer from above: band labels. */
   forbidTop: Map<number, [number, number][]>;
   /** x spans no track may take in a gap, by `${layer}:${k}`: labels of sideways edges. */
   forbidGap: Map<string, [number, number][]>;
@@ -44,7 +44,7 @@ export interface RouteExtra {
   /** Edges routed to a stand-in for a container (specs/decisions, "Lines that end at containers"): they never share a port or trunk. */
   alone: Set<string>;
   /**
-   * The ends, by edge id, that meet a band across rows: the band spans the content, so
+   * The ends, by edge id, that meet a band across layers: the band spans the content, so
    * such an end takes a corridor as if it lay straight past the other end.
    */
   bandEnds: Map<string, { from: boolean; to: boolean }>;
@@ -53,19 +53,19 @@ export interface RouteExtra {
    * runs the whole height and would leave a side exit only a stub.
    */
   noSideExit: Set<string>;
-  /** Group boxes across, with the rows they span and the nodes inside them (specs/decisions, "Rows unseen, groups as systems", "Every layered diagram type"). */
+  /** Group nodes across, with the layers they span and the nodes inside them (specs/decisions, "Rows unseen, groups as systems", "Every layered diagram type"). */
   boxes: Box[];
   /**
-   * x spans, by row, where a line between two boxes of the row may not run through the
+   * x spans, by layer, where an edge between two nodes of the layer may not run through the
    * gutter above it: a wall across or a lane's border lies between its tracks and the
-   * row, or a wall up and down runs through it or reaches into it.
+   * layer, or a wall up and down runs through it or reaches into it.
    */
   closedAbove: Map<number, [number, number][]>;
   /** The x of each side of a column lane (specs/decisions, "Swimlanes run one way"): each runs through every gutter. */
   laneSides: number[];
 }
 
-/** A group's box, as the router keeps lines out of it. */
+/** A group's border, as the router keeps edges out of it. */
 export interface Box {
   x0: number;
   x1: number;
@@ -100,17 +100,17 @@ export interface LabelBox {
   w: number;
   h: number;
   /**
-   * A step's badge rides the line at one end of the box, which must lie over a straight
-   * part (specs/decisions, "Step badges ride the line"): how far the line's arrowheads reach, at its start and end.
+   * A step's badge rides the edge at one end of the node, which must lie over a straight
+   * part (specs/decisions, "Step badges ride the line"): how far the edge's arrowheads reach, at its start and end.
    */
   badge?: { start: number; end: number };
-  /** The label wrapped onto more lines, narrower: asked for only when it does not fit on one. */
+  /** The label wrapped onto more edges, narrower: asked for only when it does not fit on one. */
   narrower?: () => LabelForm[];
-  /** The agent took the label off its line (specs/decisions, "A line's label sits on its line"). */
+  /** The agent took the label off its edge (specs/decisions, "A line's label sits on its line"). */
   beside?: boolean;
 }
 
-/** One way to set a label: its box, its lines, and the width it wraps at. */
+/** One way to set a label: its node, its edges, and the width it wraps at. */
 export interface LabelForm {
   w: number;
   h: number;
@@ -145,7 +145,7 @@ export interface Plan {
   gaps: Gap[];
   /** Placement-only x of every waypoint: the source, each gap, the target. */
   ideal: number[];
-  /** x of a port on a top or bottom side, or the y offset from the row's middle on a left or right side. */
+  /** x of a port on a top or bottom side, or the y offset from the layer's middle on a left or right side. */
   srcPort: number;
   dstPort: number;
   gapX: number[];
@@ -156,26 +156,26 @@ export interface Plan {
   labelAt: number;
   /** The fan-out this edge leaves by: one port and one trunk. */
   bundle: Bundle | undefined;
-  /** The fan-in this edge arrives by: one port, each line joining it on its own row. */
+  /** The fan-in this edge arrives by: one port, each edge joining it on its own layer. */
   fanIn: Bundle | undefined;
   /** Where a sideways edge runs. */
   side: SideSlot | undefined;
-  /** The label of a sideways edge, in its row beside its line. */
+  /** The label of a sideways edge, in its layer beside its edge. */
   sideLabel: { x0: number; w: number; h: number } | undefined;
   /**
-   * A side exit: the line leaves its source's left or right side at the middle of
-   * the row, and turns at this x into its target. Undefined for every other edge.
+   * A side exit: the edge leaves its source's left or right side at the middle of
+   * the layer, and turns at this x into its target. Undefined for every other edge.
    */
   turn: number | undefined;
   /**
-   * A side entry (specs/decisions, "Lines meet any side"): the line leaves its source's top or bottom at this x, runs
-   * straight to the target's row, and turns into its left or right side at the
-   * middle of the row. Undefined for every other edge.
+   * A side entry (specs/decisions, "Lines meet any side"): the edge leaves its source's top or bottom at this x, runs
+   * straight to the target's layer, and turns into its left or right side at the
+   * middle of the layer. Undefined for every other edge.
    */
   turnIn: number | undefined;
   /**
-   * A stated side that faces away from the other end: the turn stands beside its own box and
-   * the gutter's run takes the line on, so no port sits at the turn.
+   * A stated side that faces away from the other end: the turn stands beside its own node and
+   * the gutter's run takes the edge on, so no port sits at the turn.
    */
   away?: true;
 }
@@ -201,7 +201,7 @@ export interface Visit {
   lo: number;
   hi: number;
   label: VisitLabel | undefined;
-  /** Row in the gutter, top first. -1 for a straight line, which needs none. */
+  /** Row in the gutter, top first. -1 for a straight edge, which needs none. */
   row: number;
   /** Runs of one fan-out or fan-in share their trunk's stub: their stubs at one x are one line. */
   bundle?: string | undefined;
@@ -209,22 +209,22 @@ export interface Visit {
 
 export interface VisitLabel {
   edgeId: string;
-  /** above or below the run, on it, or on or beside a straight vertical line. */
+  /** above or below the run, on it, or on or beside a straight vertical edge. */
   mode: "above" | "below" | "beside" | "on";
   x0: number;
-  /** The x of the label's own line through it, when it sits above or below the run on that line. */
+  /** The x of the label's own edge through it, when it sits above or below the run on that edge. */
   through?: number;
-  /** The agent took the label off its line. */
+  /** The agent took the label off its edge. */
   beside?: boolean;
   w: number;
   h: number;
-  /** Lines the label takes, and the width it wraps at when that is more than one. */
+  /** Edges the label takes, and the width it wraps at when that is more than one. */
   lines: number;
   maxWidth: number;
   narrower: (() => LabelForm[]) | undefined;
   /**
-   * A step's badge rides the line at one end of the label (specs/decisions, "Step badges ride the line"): how far the line's
-   * arrowheads reach into the gutter from its top and from its bottom, where the line meets a box.
+   * A step's badge rides the edge at one end of the label (specs/decisions, "Step badges ride the line"): how far the edge's
+   * arrowheads reach into the gutter from its top and from its bottom, where the edge meets a node.
    */
   badge?: { top: number; bottom: number };
 }
@@ -233,10 +233,10 @@ export interface Routing {
   plans: Plan[];
   /** Visits per gutter. */
   gutters: Visit[][];
-  /** Rows per gutter. */
+  /** Layers per gutter. */
   rows: number[];
   /**
-   * The edges whose label no gutter of their path could hold clear of the other lines, each
+   * The edges whose label no gutter of their path could hold clear of the other edges, each
    * with those gutters (specs/decisions, "A line never moves for its label"). The label sits in the slot
    * that costs least, and the write is refused.
    */
@@ -249,13 +249,13 @@ export interface Routing {
 const EPS = 1e-6;
 /** Least distance between two vertical tracks in one gap. */
 const TRACK_MIN = 8;
-/** Least distance between a port and a line on the far boundary of its gutter. */
+/** Least distance between a port and an edge on the far boundary of its gutter. */
 const CLEAR = 8;
 /** What a jog costs a corridor, in px of travel. */
 const JOG = 96;
 /** What a crossing costs a corridor, in px of travel. */
 const CROSS = 2 * JOG;
-/** The weight of a port or gap track that keeps its line straight. */
+/** The weight of a port or gap track that keeps its edge straight. */
 const STRAIGHT = 16;
 
 export function routeAcross(
@@ -268,7 +268,7 @@ export function routeAcross(
 ): Routing {
   const gapsByLayer = layers.map((l) => gapsOf(l, extra));
   const sorted = [...edges].sort((a, b) => cmp(a.id, b.id));
-  // The sides of each group box that runs through a gutter, from a row above it to one below,
+  // The sides of each group border that runs through a gutter, from a layer above it to one below,
   // and of every column lane.
   const sides = layers.map((_, g) => [
     ...extra.boxes.filter((b) => b.top <= g && b.bottom > g).flatMap((b) => [b.x0, b.x1]),
@@ -276,7 +276,7 @@ export function routeAcross(
   ]);
   const route = (below: ReadonlySet<string>) => {
     const plans: Plan[] = [];
-    // A line with a stated side keeps its own port.
+    // An edge with a stated side keeps its own port.
     const alone = new Set([
       ...extra.alone,
       ...sorted.filter((e) => e.out !== undefined || e.in !== undefined).map((e) => e.id),
@@ -296,10 +296,10 @@ export function routeAcross(
     centreLines(plans, extra.forbidTop, extra.boxes);
     return { plans, ...channels(plans, layers, pitch, sides) };
   };
-  // A line between two boxes of a row that takes the gutter above moves the ports of its
-  // boxes and adds a run to that gutter. It goes back below, and everything is routed
-  // again, while a line in that gutter or at one of its boxes bends for nothing, or a
-  // label in that gutter steps out of the crowd, that did not while every such line ran
+  // An edge between two nodes of a layer that takes the gutter above moves the ports of its
+  // nodes and adds a run to that gutter. It goes back below, and everything is routed
+  // again, while an edge in that gutter or at one of its nodes bends for nothing, or a
+  // label in that gutter steps out of the crowd, that did not while every such edge ran
   // below (specs/decisions, "Who chose is punished").
   const below = new Set<string>();
   let r = route(below);
@@ -354,9 +354,9 @@ export function routeAcross(
 }
 
 /**
- * The rows and labels of every gutter. A label that its gutter cannot hold clear of
- * every other line moves to the next gutter of its path. Once it has tried them all, no
- * line moves for it: it sits in the slot that costs least on its longest run, and it is
+ * The layers and labels of every gutter. A label that its gutter cannot hold clear of
+ * every other edge moves to the next gutter of its path. Once it has tried them all, no
+ * edge moves for it: it sits in the slot that costs least on its longest run, and it is
  * returned as blocked (specs/decisions, "A line never moves for its label").
  */
 function channels(
@@ -411,7 +411,7 @@ const dist = (x: number, lo: number, hi: number) => (x < lo ? lo - x : x > hi ? 
 const snap = (x: number) => Math.round(x / 4) * 4;
 
 /**
- * x brought into [lo, hi]. A line that must step sideways steps at least
+ * x brought into [lo, hi]. An edge that must step sideways steps at least
  * ROUTE.minJog, so that the step reads as meant and not as a glitch.
  */
 function step(x: number, lo: number, hi: number): number {
@@ -487,7 +487,7 @@ function makePlan(
   const v = nodes.get(edge.to);
   if (u === undefined || v === undefined) return undefined;
   const side = extra.sideways.get(edge.id);
-  // A sideways edge carries its label in its row, not in a gutter.
+  // A sideways edge carries its label in its layer, not in a gutter.
   const label = side === undefined ? labels.get(edge.id) : undefined;
   const box = labels.get(edge.id);
   const x0 = extra.sideLabelX.get(edge.id);
@@ -514,12 +514,12 @@ function makePlan(
     turn: undefined,
     turnIn: undefined,
   };
-  // A top side needs a gutter above its row, open across its box.
+  // A top side needs a gutter above its layer, open across its node.
   const topOpen = (n: PNode) =>
     n.layer > 0 &&
     !(extra.closedAbove.get(n.layer) ?? []).some(([lo, hi]) => lo < n.x + n.w && hi > n.x);
   if (u.layer === v.layer) {
-    // A line of a row out of one side and into the other passes through its row.
+    // A line of a layer out of one side and into the other passes through its layer.
     const through = edge.out !== edge.in && !sideways(edge.out) && !sideways(edge.in);
     if (side === undefined && through && edge.out !== undefined && edge.in !== undefined) {
       if (!topOpen(edge.out === "top" ? u : v)) return undefined;
@@ -557,8 +557,8 @@ function makePlan(
   const down = u.layer < v.layer;
   const gutters: number[] = [];
   const between: number[] = [];
-  // A line stated to leave away from its other end, or to enter past it, goes round its
-  // own box first or last: through the gutter on that side and through its own row.
+  // An edge stated to leave away from its other end, or to enter past it, goes round its
+  // own node first or last: through the gutter on that side and through its own layer.
   const leavesAway = down ? edge.out === "top" && topOpen(u) : edge.out === "bottom";
   const entersPast = down ? edge.in === "bottom" : edge.in === "top" && topOpen(v);
   if (leavesAway) {
@@ -594,17 +594,17 @@ function makePlan(
 }
 
 /**
- * A line between two boxes of one row runs through the gutter below the row, unless
- * fewer other lines meet the boxes between its ends on their tops than on their
- * bottoms: each of those lines crosses its run, so it then takes the gutter above. A
- * tie keeps it below. A line of the row with both ends from one of its ends to the
+ * An edge between two nodes of one layer runs through the gutter below the layer, unless
+ * fewer other edges meet the nodes between its ends on their tops than on their
+ * bottoms: each of those edges crosses its run, so it then takes the gutter above. A
+ * tie keeps it below. A line of the layer with both ends from one of its ends to the
  * other is not counted: it runs inside the run, in either gutter. Its ports keep clear
- * of the band labels at the top of the row, as every top port does, so a line with an
- * end wholly under one stays below, as does a line whose ends span a wall or a lane's
- * border in the gutter above, and a line that shares a port with others. It chooses
- * once the corridors are chosen, which count it below its row, so that where it runs
- * moves no other line's corridor. Lines choose in id order, each counting the sides the
- * lines before it chose.
+ * of the band labels at the top of the layer, as every top port does, so an edge with an
+ * end wholly under one stays below, as does an edge whose ends span a wall or a lane's
+ * border in the gutter above, and an edge that shares a port with others. It chooses
+ * once the corridors are chosen, which count it below its layer, so that where it runs
+ * moves no other edge's corridor. Edges choose in id order, each counting the sides the
+ * edges before it chose.
  */
 function chooseUturnGutters(
   plans: Plan[],
@@ -619,7 +619,7 @@ function chooseUturnGutters(
     if (pl.kind !== "uturn" || u === v || u.layer === 0) continue;
     if (want === "bottom" || (below.has(pl.edge.id) && want !== "top")) continue;
     if (pl.bundle !== undefined || pl.fanIn !== undefined) continue;
-    // A box whose top lies under a band's label has no port there.
+    // A node whose top lies under a band's label has no port there.
     const labels = forbidTop.get(u.layer) ?? [];
     const lo = (n: PNode) => n.x + portInset(n.w);
     const hi = (n: PNode) => n.x + n.w - portInset(n.w);
@@ -632,7 +632,7 @@ function chooseUturnGutters(
     let tops = 0;
     let bottoms = 0;
     for (const o of plans) {
-      // A line with both ends from one of its ends to the other runs inside its run.
+      // An edge with both ends from one of its ends to the other runs inside its run.
       if (o === pl || o.kind === "neighbour" || (span.includes(o.u) && span.includes(o.v)))
         continue;
       for (const [n, side] of [
@@ -653,15 +653,15 @@ function chooseUturnGutters(
   }
 }
 
-/** Does the line turn straight into the port at its far end? */
+/** Does the edge turn straight into the port at its far end? */
 const direct = (pl: Plan) => pl.between.length === 0 && pl.away !== true;
 
-/** Has the agent stated a side of this line? */
+/** Has the agent stated a side of this edge? */
 function stated(pl: Plan): boolean {
   return pl.edge.out !== undefined || pl.edge.in !== undefined;
 }
 
-/** Lines with a stated side choose before the others, in their own order. */
+/** Edges with a stated side choose before the others, in their own order. */
 function statedFirst(plans: Plan[]): Plan[] {
   return [...plans.filter(stated), ...plans.filter((pl) => !stated(pl))];
 }
@@ -681,9 +681,9 @@ function mayEnter(pl: Plan): boolean {
 }
 
 /**
- * A line between neighbouring rows, from the upper box's bottom into the lower box's
+ * An edge between neighbouring layers, from the upper node's bottom into the lower node's
  * top through ports of its own, that bends although each port lies within the other
- * box's side: one x would have served both (specs/decisions, "Who chose is punished").
+ * node's side: one x would have served both (specs/decisions, "Who chose is punished").
  */
 function needless(pl: Plan): boolean {
   if ((pl.kind !== "down" && pl.kind !== "up") || pl.between.length > 0) return false;
@@ -701,10 +701,10 @@ function portsOn(n: PNode): number {
 }
 
 /**
- * Every line meets its node side at a port of its own (specs/decisions, "Lines meet any side"), with two exceptions.
+ * Every edge meets its node side at a port of its own (specs/decisions, "Lines meet any side"), with two exceptions.
  * Unlabelled edges in one line style that leave one side leave as a bundle, one port
  * and one trunk that splits near their targets: three or more of them from any
- * side (specs/decisions, "Fan-outs of three bundle"), two or more from a side with more lines than slots. Of the rest, a
+ * side (specs/decisions, "Fan-outs of three bundle"), two or more from a side with more edges than slots. Of the rest, a
  * fan-in of unlabelled edges in one style into such a crowded side arrives through
  * one port.
  */
@@ -753,10 +753,10 @@ function assignBundles(plans: Plan[], alone: Set<string>): void {
 }
 
 /**
- * How many lines pl would cross if it passed its rows at x, counting only the
- * crossings that placement already makes certain (specs/decisions, "The engine picks a new box's slot"): a line straight through
- * pl's first or last gutter where pl runs along it, a line along a gutter that pl
- * passes straight through, and a sideways line across a row that pl passes.
+ * How many edges pl would cross if it passed its layers at x, counting only the
+ * crossings that placement already makes certain (specs/decisions, "The engine picks a new box's slot"): an edge straight through
+ * pl's first or last gutter where pl runs along it, an edge along a gutter that pl
+ * passes straight through, and a sideways edge across a layer that pl passes.
  */
 function certainCrossings(plans: Plan[], pl: Plan, x: number): number {
   const first = pl.gutters[0];
@@ -773,14 +773,14 @@ function certainCrossings(plans: Plan[], pl: Plan, x: number): number {
       if (pl.between.includes(o.u.layer) && inside(x, l.x + l.w, r.x)) n++;
       continue;
     }
-    // Only lines whose way through every gutter is known: placement's, or chosen.
+    // Only edges whose way through every gutter is known: placement's, or chosen.
     if (o.ideal.length !== o.gutters.length + 1) continue;
     const lo = Math.max(o.u.x, o.v.x);
     const hi = Math.min(o.u.x + o.u.w, o.v.x + o.v.w);
     o.gutters.forEach((g, j) => {
       const a = o.ideal[j] ?? 0;
       const b = o.ideal[j + 1] ?? 0;
-      // A line between neighbouring rows that overlap runs straight.
+      // An edge between neighbouring layers that overlap runs straight.
       const up =
         o.between.length === 0 && o.u !== o.v && hi > lo
           ? clamp((a + b) / 2, lo, hi)
@@ -797,14 +797,14 @@ function certainCrossings(plans: Plan[], pl: Plan, x: number): number {
   return n;
 }
 
-/** A box holds neither end of the line: the line is a stranger to it. */
+/** A node holds neither end of the edge: the edge is a stranger to it. */
 function foreign(b: Box, pl: Plan): boolean {
   return !b.members.has(pl.u.id) && !b.members.has(pl.v.id);
 }
 
 /**
- * Where a line keeps out of in a row: the margin and the border of every group box
- * that spans the row and holds neither of its ends, from a padding inside the border
+ * Where an edge keeps out of in a layer: the margin and the border of every group node
+ * that spans the layer and holds neither of its ends, from a padding inside the border
  * to a clearance outside it.
  */
 function margins(boxes: Box[], pl: Plan, layer: number): [number, number][] {
@@ -816,7 +816,7 @@ function margins(boxes: Box[], pl: Plan, layer: number): [number, number][] {
     ]);
 }
 
-/** The group boxes a line would pass through at x that hold neither of its ends. */
+/** The group nodes an edge would pass through at x that hold neither of its ends. */
 function foreignBoxes(boxes: Box[], pl: Plan, x: number): number {
   return boxes.filter(
     (b) =>
@@ -845,9 +845,9 @@ function corridors(between: number[], gapsByLayer: Gap[][]): [number, number][] 
 }
 
 /**
- * The gaps each path takes through the layers it crosses. A path that skips rows
+ * The gaps each path takes through the layers it crosses. A path that skips layers
  * takes one corridor: an x span that is free in every layer it passes, the one
- * closest to its way, so that it passes them all as one straight line (specs/decisions, "A target picture with measured rules" rule
+ * closest to its way, so that it passes them all as one straight edge (specs/decisions, "A target picture with measured rules" rule
  * 5). Only when every corridor is full does it pick a gap per layer, each the one
  * closest to its way. Edges choose in id order. The outer gaps are never full, so
  * every path finds one.
@@ -873,9 +873,9 @@ function chooseGaps(
     const used = load.get(gapKey(gap));
     return used === undefined || used.has(key) || used.size < capacity(gap);
   };
-  // The unlabelled lines that leave one node side past the same rows choose one
-  // corridor together, so that they pass those rows side by side, or as one trunk,
-  // and part near their ends. A labelled line finds its own, where its label has room.
+  // The unlabelled edges that leave one node side past the same layers choose one
+  // corridor together, so that they pass those layers side by side, or as one trunk,
+  // and part near their ends. A labelled edge finds its own, where its label has room.
   const mateKey = (pl: Plan) =>
     pl.label === undefined ? `${pl.u.id}:${pl.srcSide}|${pl.between.join(",")}` : undefined;
   const mates = new Map<string, Plan[]>();
@@ -901,7 +901,7 @@ function chooseGaps(
     // two bends at most instead of four (specs/decisions, "A target picture with measured rules" rule 2).
     const reach = (n: PNode, lo: number, hi: number) =>
       hi >= n.x + portInset(n.w) && lo <= n.x + n.w - portInset(n.w);
-    // The line goes on into the lower end's top side, past any band label there.
+    // The edge goes on into the lower end's top side, past any band label there.
     const lower = forbidTop.get(Math.max(pl.u.layer, pl.v.layer)) ?? [];
     const taken = k === undefined ? undefined : chosen.get(k);
     const spans = corridors(pl.between, gapsByLayer)
@@ -941,7 +941,7 @@ function chooseGaps(
       if (gaps.length !== pl.between.length) continue;
       for (const gap of gaps) take(pl, gap);
       if (k !== undefined) chosen.set(k, s.lo);
-      // The line runs where an end's ports can meet it straight, if one can, and
+      // The edge runs where an end's ports can meet it straight, if one can, and
       // keeps ROUTE.passClear from the nodes it passes where the corridor has room.
       const extra = ROUTE.passClear - ROUTE.gapPad;
       let clo = Number.isFinite(s.lo) ? s.lo + extra : s.lo;
@@ -1013,17 +1013,17 @@ interface Track {
   key: string;
   members: { pl: Plan; j: number }[];
   ideal: number;
-  /** Where the line comes from: its waypoint before this gap. */
+  /** Where the edge comes from: its waypoint before this gap. */
   from: number;
   parting: [number, number, number];
-  /** A track that continues the line above or below it straight weighs more. */
+  /** A track that continues the edge above or below it straight weighs more. */
   weight: number;
 }
 
 /**
- * Where a line leaves the corridor it takes through gap j: -1 to the left, 1 to
+ * Where an edge leaves the corridor it takes through gap j: -1 to the left, 1 to
  * the right, 0 on to its end; then at which waypoint, and toward which x. Of the
- * lines that share a corridor, one that leaves it to the left must run left of
+ * edges that share a corridor, one that leaves it to the left must run left of
  * those that go on, and one that leaves it sooner further out, or they cross.
  */
 function parting(pl: Plan, j: number): [number, number, number] {
@@ -1080,7 +1080,7 @@ function assignGapTracks(plans: Plan[], boxes: Box[]): void {
     const list = gaps.get(k) ?? [];
     const head = list[0];
     if (head === undefined) continue;
-    // A line that came straight down through the layer above keeps going straight
+    // An edge that came straight down through the layer above keeps going straight
     // where this gap allows it.
     const above = placed.get(head.gap.layer - 1) ?? [];
     for (const t of list) {
@@ -1101,7 +1101,7 @@ function assignGapTracks(plans: Plan[], boxes: Box[]): void {
     const want = list.map((t) => t.ideal);
     const weights = list.map((t) => t.weight);
     let { lo, hi } = first.gap;
-    // Each track keeps out of the margins of the groups its line is a stranger to.
+    // Each track keeps out of the margins of the groups its edge is a stranger to.
     const away = list.map((t) =>
       t.members[0] === undefined ? [] : margins(boxes, t.members[0].pl, first.gap.layer),
     );
@@ -1122,7 +1122,7 @@ function assignGapTracks(plans: Plan[], boxes: Box[]): void {
     };
     // No track passes a label in this gap or a band label above it.
     const free = (x: number) => !inSpans(x, first.gap.forbid);
-    // The port pitch where the gap has room, so that lines from neighbouring ports
+    // The port pitch where the gap has room, so that edges from neighbouring ports
     // pass through it straight; closer where it has less.
     let xs: number[] | undefined;
     for (const outside of [true, false]) {
@@ -1160,9 +1160,9 @@ function assignGapTracks(plans: Plan[], boxes: Box[]): void {
 // Pass 2a': side exits ------------------------------------------------------
 
 /**
- * Whether a line other than pl runs across x in gutter g, judged from where the
+ * Whether an edge other than pl runs across x in gutter g, judged from where the
  * placement puts its ends and gaps. A side exit or side entry runs down the whole
- * gutter at x, so such a line would cross it.
+ * gutter at x, so such an edge would cross it.
  */
 function runsAcross(plans: Plan[], pl: Plan, g: number, x: number): boolean {
   return plans.some((o) => {
@@ -1176,7 +1176,7 @@ function runsAcross(plans: Plan[], pl: Plan, g: number, x: number): boolean {
 }
 
 /**
- * The runs of side turns along the middle of a row, by gap (`${row}:${k}`). A gap may hold
+ * The runs of side turns along the middle of a layer, by gap (`${row}:${k}`). A gap may hold
  * several, so long as their runs keep apart: then no two run along one line, and no
  * turn's vertical part crosses another's run.
  */
@@ -1189,15 +1189,15 @@ function addRun(runs: GapRuns, gap: string, a: number, b: number): void {
 }
 
 /**
- * An edge into the next row up or down, to a node wholly on one side of its
+ * An edge into the next layer up or down, to a node wholly on one side of its
  * source, leaves from that side of the source and turns once into the target: an
  * L with one bend, where leaving from the bottom takes a Z with two. It needs the
- * source's row clear between the two: no node and no gap track, and room for the
- * turn beside the next node, and no other line may run across the gutter at the
+ * source's layer clear between the two: no node and no gap track, and room for the
+ * turn beside the next node, and no other edge may run across the gutter at the
  * turn. Fan-outs and fan-ins keep their shared port, a node side takes one side
  * exit at most, and a side with an edge to a neighbour takes none. The turn goes
  * into the target's centre where it can, past band labels. An edge that skips
- * rows leaves by a side where its corridor lies in the open beside its source, and
+ * layers leaves by a side where its corridor lies in the open beside its source, and
  * turns into the corridor.
  */
 function chooseSideExits(
@@ -1220,7 +1220,7 @@ function chooseSideExits(
     if (pl.bundle !== undefined || pl.fanIn !== undefined) continue;
     if (noSideExit.has(pl.edge.id)) continue;
     if (!mayExit(pl)) continue;
-    // A line that skips rows turns into its corridor at its first gap track; any
+    // An edge that skips layers turns into its corridor at its first gap track; any
     // other turns above or below its target.
     const corridor = pl.between.length > 0 ? pl.gapX[0] : undefined;
     if (pl.between.length > 0 && corridor === undefined) continue;
@@ -1247,8 +1247,8 @@ function chooseSideExits(
     const hi = left ? u.x - pad : next === undefined ? Number.POSITIVE_INFINITY : next.x - pad;
     let x: number;
     if (corridor !== undefined) {
-      // The corridor's track must lie in the open beside the source, and a line that
-      // goes up passes the labels at the top of the source's row.
+      // The corridor's track must lie in the open beside the source, and an edge that
+      // goes up passes the labels at the top of the source's layer.
       if (corridor < lo - EPS || corridor > hi + EPS) continue;
       if (pl.kind === "up" && inSpans(corridor, forbidTop.get(u.layer) ?? [])) continue;
       x = corridor;
@@ -1259,12 +1259,12 @@ function chooseSideExits(
       const plo = Math.max(lo, v.x + portInset(v.w));
       const phi = Math.min(hi, v.x + v.w - portInset(v.w));
       if (phi < plo) continue;
-      // The vertical part passes the band labels above the lower of the two rows.
+      // The vertical part passes the band labels above the lower of the two layers.
       const spans = forbidTop.get(Math.max(u.layer, v.layer)) ?? [];
       x = nearestFree(centreX(v), plo, phi, spans);
       if (x < plo - EPS || x > phi + EPS || inSpans(x, spans)) continue;
     }
-    // No line runs up or down through the source's row between it and the turn.
+    // No edge runs up or down through the source's layer between it and the turn.
     const gk = left ? k : k + 1;
     const edge = left ? u.x : u.x + u.w;
     if (!runFits(gapRuns, `${u.layer}:${gk}`, Math.min(x, edge), Math.max(x, edge))) continue;
@@ -1287,17 +1287,17 @@ function chooseSideExits(
 }
 
 /**
- * Side entries (specs/decisions, "Lines meet any side"), for lines that could not leave by a side: a line between
- * neighbouring rows whose target lies wholly left or right of its source runs
+ * Side entries (specs/decisions, "Lines meet any side"), for edges that could not leave by a side: an edge between
+ * neighbouring layers whose target lies wholly left or right of its source runs
  * straight out of the source's top or bottom, beside the target, and turns into the
- * target's facing side at the middle of its row: one bend, where a route through the
- * gutter takes two. The target's side must hold no side exit or line to a neighbour;
+ * target's facing side at the middle of its layer: one bend, where a route through the
+ * gutter takes two. The target's side must hold no side exit or edge to a neighbour;
  * several entries share it, each at its own height (assemble), as many as fit at the
  * side's pitch. The vertical part must run in the open beside the target, clear of
- * its neighbour, of every line through that gap and of every other line's run across
- * the gutter, and a line that would have joined a fan-in leaves it. The turn starts below the source's centre, or moves
+ * its neighbour, of every edge through that gap and of every other edge's run across
+ * the gutter, and an edge that would have joined a fan-in leaves it. The turn starts below the source's centre, or moves
  * toward the target until it keeps clear of the other turns. An edge that skips
- * rows enters by a side where its corridor lies in the open beside its target, and
+ * layers enters by a side where its corridor lies in the open beside its target, and
  * turns out of the corridor.
  */
 function chooseSideEntries(
@@ -1345,7 +1345,7 @@ function chooseSideEntries(
     plans.filter((o) => (o.u === n && o.srcSide === side) || (o.v === n && o.dstSide === side))
       .length;
   const pad = ROUTE.corridorPad;
-  // A line's run across the gutter can stop another's turn until that line enters by a
+  // An edge's run across the gutter can stop another's turn until that edge enters by a
   // side too, so the pass repeats while it adds an entry.
   for (let added = true; added; ) {
     added = false;
@@ -1354,11 +1354,11 @@ function chooseSideEntries(
       if (pl.turnIn !== undefined || !mayEnter(pl)) continue;
       if (pl.kind !== "down" && pl.kind !== "up") continue;
       if (pl.bundle !== undefined) continue;
-      // A line between neighbouring rows turns once: by a side exit or a side entry.
+      // An edge between neighbouring layers turns once: by a side exit or a side entry.
       if (pl.between.length === 0 && pl.turn !== undefined) continue;
-      // Only between two nodes: a container end is cut at the container's box (specs/decisions, "Lines that end at containers").
+      // Only between two nodes: a container end is cut at the container's node (specs/decisions, "Lines that end at containers").
       if (pl.edge.from !== u.id || pl.edge.to !== v.id || noSideExit.has(pl.edge.id)) continue;
-      // A line that skips rows turns out of its corridor at its last gap track.
+      // An edge that skips layers turns out of its corridor at its last gap track.
       const corridor = pl.between.length > 0 ? pl.gapX[pl.gapX.length - 1] : undefined;
       if (pl.between.length > 0 && corridor === undefined) continue;
       let left = corridor !== undefined ? corridor > v.x + v.w : u.x >= v.x + v.w;
@@ -1384,7 +1384,7 @@ function chooseSideEntries(
       const lo =
         side === "right" ? v.x + v.w + pad : next === undefined ? -Infinity : next.x + next.w + pad;
       const hi = side === "right" ? (next === undefined ? Infinity : next.x - pad) : v.x - pad;
-      // No line runs up or down through the target's row between it and the turn.
+      // No edge runs up or down through the target's layer between it and the turn.
       const gk = side === "right" ? k + 1 : k;
       const edge = side === "right" ? v.x + v.w : v.x;
       const fits = (x: number) => {
@@ -1400,8 +1400,8 @@ function chooseSideEntries(
       };
       let x: number;
       if (corridor !== undefined) {
-        // The corridor's track must lie in the open beside the target, and a line that
-        // comes down passes the labels at the top of the target's row.
+        // The corridor's track must lie in the open beside the target, and an edge that
+        // comes down passes the labels at the top of the target's layer.
         if (corridor < lo - EPS || corridor > hi + EPS) continue;
         if (pl.kind === "down" && inSpans(corridor, forbidTop.get(v.layer) ?? [])) continue;
         x = corridor;
@@ -1412,8 +1412,8 @@ function chooseSideEntries(
         const plo = Math.max(lo, u.x + portInset(u.w));
         const phi = Math.min(hi, u.x + u.w - portInset(u.w));
         if (phi < plo) continue;
-        // A port on the source's top keeps clear of band labels there, and the line into
-        // a lower row passes the band labels above it.
+        // A port on the source's top keeps clear of band labels there, and the edge into
+        // a lower layer passes the band labels above it.
         const spans = forbidTop.get(pl.kind === "up" ? u.layer : v.layer) ?? [];
         // A turn beside another turn's run in the gap, or by another turn's port on the
         // source's side, moves toward its target until it keeps clear of both.
@@ -1465,8 +1465,8 @@ function chooseSideEntries(
 function placePorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): void {
   for (;;) {
     assignPorts(plans, forbidTop);
-    // Between neighbouring rows, the far end's port must sit at the turn; a line that
-    // skips rows turns at its corridor, which no port moves.
+    // Between neighbouring layers, the far end's port must sit at the turn; an edge that
+    // skips layers turns at its corridor, which no port moves.
     const off = plans.filter(
       (pl) => pl.turn !== undefined && direct(pl) && Math.abs(pl.dstPort - pl.turn) > EPS,
     );
@@ -1486,11 +1486,11 @@ function placePorts(plans: Plan[], forbidTop: Map<number, [number, number][]>): 
 }
 
 /**
- * A line between neighbouring rows whose lower port was pushed off its upper port, by
- * the ports that must sit before it on the lower box's top side or by a band label
- * there, takes its upper port along when the upper box's side has room: one x then
- * serves both ends, and the line runs straight (specs/decisions, "Who chose is punished"). Only where every other run of
- * the gutter that goes across that x had to cross the line where it bent, so that no crossing comes of it.
+ * An edge between neighbouring layers whose lower port was pushed off its upper port, by
+ * the ports that must sit before it on the lower node's top side or by a band label
+ * there, takes its upper port along when the upper node's side has room: one x then
+ * serves both ends, and the edge runs straight (specs/decisions, "Who chose is punished"). Only where every other run of
+ * the gutter that goes across that x had to cross the edge where it bent, so that no crossing comes of it.
  */
 function straightenPorts(plans: Plan[]): void {
   for (const pl of plans) {
@@ -1505,8 +1505,8 @@ function straightenPorts(plans: Plan[]): void {
     const was = pl.kind === "down" ? pl.srcPort : pl.dstPort;
     const inset = ROUTE.portMin / 2 + 2;
     if (x < upper.x + inset - EPS || x > upper.x + upper.w - inset + EPS) continue;
-    // A run must cross a line through its gutter when its two ends lie on either side of
-    // the line: of x on both boundaries once the line runs straight, of the upper port on
+    // A run must cross an edge through its gutter when its two ends lie on either side of
+    // the edge: of x on both boundaries once the edge runs straight, of the upper port on
     // the top boundary while it bends.
     const apart = (a: number, b: number) => (a < -EPS && b > EPS) || (a > EPS && b < -EPS);
     const crossesOnlyStraight = (other: Plan) =>
@@ -1519,7 +1519,7 @@ function straightenPorts(plans: Plan[]): void {
     const blocked = plans.some((other) => {
       if (other === pl || !other.gutters.includes(g)) return false;
       if (crossesOnlyStraight(other)) return true;
-      // The upper box's other bottom ports keep their pitch.
+      // The upper node's other bottom ports keep their pitch.
       const ports = [
         ...(other.u === upper && other.srcSide === "bottom" ? [other.srcPort] : []),
         ...(other.v === upper && other.dstSide === "bottom" ? [other.dstPort] : []),
@@ -1542,16 +1542,16 @@ function runsIn(pl: Plan, g: number): [number, number][] {
 }
 
 /**
- * A line that runs straight between two boxes that share a centre, pushed aside by the
- * ports beside it or by the lines it shares a corridor with, moves back to meet them at
- * their centres where nothing bends for it. The lines from the same side of its source
+ * An edge that runs straight between two nodes that share a centre, pushed aside by the
+ * ports beside it or by the edges it shares a corridor with, moves back to meet them at
+ * their centres where nothing bends for it. The edges from the same side of its source
  * that share its corridor and stand in its way move with it, port and tracks alike, each
  * still leaving its source straight and turning off where it did. Every other port on
  * the sides they leave and enter stays the port pitch away and off band labels, every
  * other track of a gap they pass stays as far as it was, up to the port pitch, and as
- * far from the boxes they pass, no line comes within 8 px of where they run, and every
+ * far from the nodes they pass, no edge comes within 8 px of where they run, and every
  * run that crosses where they run crossed them where they were, so that no crossing
- * comes of it. A line that another joins to the same two boxes stays, as does one with
+ * comes of it. An edge that another joins to the same two nodes stays, as does one with
  * a self-loop on a side it meets: its run and label sit under that side.
  */
 function centreLines(
@@ -1576,7 +1576,7 @@ function centreLines(
     if (x === undefined || Math.abs(pl.dstPort - x) > EPS) continue;
     if (Math.abs(c - centreX(pl.v)) > EPS || Math.abs(c - x) < EPS) continue;
     const d = c - x;
-    // The lines that share its corridor from the same side of its source and stand in
+    // The edges that share its corridor from the same side of its source and stand in
     // its way, nearest first: each part from the corridor before their end.
     const movers = [pl];
     const mates = (pl.gaps.length === 0 ? [] : plans)
@@ -1642,7 +1642,7 @@ function centreLines(
             return false;
           const stubs = o.gutters.flatMap((h, j) => (h === g ? stubsOf(o, j) : []));
           if (stubs.some((s) => Math.abs(s.x - to) < CLEAR - EPS)) return false;
-          // A line that turns off in this gutter keeps its run past the same lines.
+          // An edge that turns off in this gutter keeps its run past the same edges.
           const turns = m !== pl && g === m.gutters[m.gutters.length - 1];
           return (
             !turns ||
@@ -1669,11 +1669,11 @@ interface End {
   side: Side;
   /** Where the port would like to be: toward the edge's next waypoint. */
   desired: number;
-  /** Where the line's run in this gutter ends: at the other port, a gap track or a turn. */
+  /** Where the edge's run in this gutter ends: at the other port, a gap track or a turn. */
   far: number;
   /** The run ends on the boundary this port is on: a u-turn or a self-loop. */
   back: boolean;
-  /** How much moving this port would cost: a port that keeps a line straight weighs more. */
+  /** How much moving this port would cost: a port that keeps an edge straight weighs more. */
   weight: number;
   key: string;
 }
@@ -1694,7 +1694,7 @@ function around(e: End): [number, number] {
   return [1, centreX(n)];
 }
 
-/** A line on a gutter boundary that a port on the far boundary keeps clear of. */
+/** An edge on a gutter boundary that a port on the far boundary keeps clear of. */
 interface Mark {
   x: number;
   plan: Plan;
@@ -1721,10 +1721,10 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
   };
   const within = (n: PNode, x: number) =>
     clamp(x, n.x + portInset(n.w), n.x + n.w - portInset(n.w));
-  /** A port that leans toward x, at most a quarter of the box from its centre. */
+  /** A port that leans toward x, at most a quarter of the node from its centre. */
   const toward = (n: PNode, x: number) =>
     snap(centreX(n) + clamp(x - centreX(n), -n.w / 4, n.w / 4));
-  /** Lines between boxes whose facing sides overlap, which can run straight down. */
+  /** Edges between nodes whose facing sides overlap, which can run straight down. */
   const straight = new Set<Plan>();
   for (const pl of plans) {
     const { u, v } = pl;
@@ -1770,7 +1770,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     let dt: number;
     let ws = 1;
     let wt = 1;
-    // Where the run from each end ends: the other end, unless the line passes gaps.
+    // Where the run from each end ends: the other end, unless the edge passes gaps.
     let fs: number | undefined;
     let ft: number | undefined;
     if (u === v) {
@@ -1803,14 +1803,14 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
         ws = STRAIGHT;
         wt = STRAIGHT;
       } else {
-        // A branch of a fan-out ends at its node's centre, and a line into a
-        // fan-in starts at its node's centre; other lines lean toward each other.
+        // A branch of a fan-out ends at its node's centre, and an edge into a
+        // fan-in starts at its node's centre; other edges lean toward each other.
         ds = pl.fanIn !== undefined ? snap(centreX(u)) : toward(u, centreX(v));
         dt = pl.bundle !== undefined ? snap(centreX(v)) : toward(v, centreX(u));
       }
     }
     const back = pl.kind === "uturn";
-    // A line that skips rows and turns by a side leaves or arrives at the side's middle.
+    // An edge that skips layers and turns by a side leaves or arrives at the side's middle.
     if (pl.turn !== undefined) pl.srcPort = 0;
     else {
       push({
@@ -1841,7 +1841,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     }
   }
 
-  // Lines on each gutter boundary that do not come from a port: gap tracks.
+  // Edges on each gutter boundary that do not come from a port: gap tracks.
   // above[g] lies on the top boundary of gutter g, below[g] on its bottom one.
   const above = new Map<number, Mark[]>();
   const below = new Map<number, Mark[]>();
@@ -1862,7 +1862,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
       if (pl.kind === "down") mark(above, pl.u.layer, { x: pl.turn, plan: pl });
       else mark(below, pl.u.layer - 1, { x: pl.turn, plan: pl });
     }
-    // A side entry's line crosses the boundary of its gutter on the target's side.
+    // A side entry's edge crosses the boundary of its gutter on the target's side.
     if (pl.turnIn !== undefined) {
       if (pl.kind === "down") mark(below, pl.v.layer - 1, { x: pl.turnIn, plan: pl });
       else mark(above, pl.v.layer, { x: pl.turnIn, plan: pl });
@@ -1880,7 +1880,7 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     const first = sides.get(k)?.[0];
     if (first === undefined) continue;
     const n = first.node;
-    // A line that can run straight down meets the port its upper box took: bottom sides
+    // An edge that can run straight down meets the port its upper node took: bottom sides
     // are placed first, and theirs can be pushed off the middle by their neighbours.
     const lo = n.x + ROUTE.portMin / 2 + 2;
     const hi = n.x + n.w - ROUTE.portMin / 2 - 2;
@@ -1906,8 +1906,8 @@ function assignPorts(plans: Plan[], forbidTop: Map<number, [number, number][]>):
     for (const id of [...bundles.keys()].sort(cmp)) {
       const entry = bundles.get(id);
       if (entry === undefined || entry.ends[0] === undefined) continue;
-      // A member that can run straight keeps its line straight: the trunk is
-      // that line, and the others branch off it. Otherwise the port sits at the
+      // A member that can run straight keeps its edge straight: the trunk is
+      // that edge, and the others branch off it. Otherwise the port sits at the
       // members' median.
       const straight = entry.ends
         .filter((e) => e.weight > 1)
@@ -2001,10 +2001,10 @@ function spreadOf(n: PNode, count: number): number {
 
 /**
  * Ports along one side, in order. They spread evenly over the side first, up to
- * SPREAD_MAX apart, so that its lines never read as one bundle (specs/decisions, "Lines meet any side"); then the
- * preferred pitch and corner inset; when those would bend a line that could run
- * straight, the ports that do not keep a line straight may come closer to the
- * corner, and then closer to each other. A port keeps clear of the lines on the
+ * SPREAD_MAX apart, so that its edges never read as one bundle (specs/decisions, "Lines meet any side"); then the
+ * preferred pitch and corner inset; when those would bend an edge that could run
+ * straight, the ports that do not keep an edge straight may come closer to the
+ * corner, and then closer to each other. A port keeps clear of the edges on the
  * far boundary of its gutter.
  */
 function portPositions(
@@ -2133,7 +2133,7 @@ function stubsOf(pl: Plan, j: number): [Stub, Stub] {
   return [entry, exit];
 }
 
-/** The arrowheads a line has in its j-th gutter, at the gutter's top and bottom: where it leaves or meets a box there. */
+/** The arrowheads an edge has in its j-th gutter, at the gutter's top and bottom: where it leaves or meets a node there. */
 function headsAt(
   pl: Plan,
   j: number,
@@ -2228,7 +2228,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
         label,
         row: -1,
       };
-      // The lines of a fan-in meet at its port, each on its own row.
+      // The lines of a fan-in meet at its port, each on its own layer.
       if (pl.fanIn !== undefined && j === last) visit.bundle = pl.fanIn.id;
       list.push(visit);
       pl.visits[j] = visit;
@@ -2238,18 +2238,18 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
 
 // Pass 3: assembly ----------------------------------------------------------
 
-/** Everything vertical, decided after the rows are known. Absolute px. */
+/** Everything vertical, decided after the layers are known. Absolute px. */
 export interface Vertical {
   /** Absolute x of the centre line. */
   centre: number;
   top(n: PNode): number;
-  /** The middle of a layer's row, for edges between neighbours. */
+  /** The middle of a layer's layer, for edges between neighbours. */
   layerMid(layer: number): number;
   trackY(gutter: number, row: number): number;
 }
 
 export interface AssembledLabel extends Rect {
-  /** Lines the label takes; more than one wraps it at maxWidth. */
+  /** Edges the label takes; more than one wraps it at maxWidth. */
   lines: number;
   maxWidth: number;
 }
@@ -2262,8 +2262,8 @@ export interface AssembledEdge {
 export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> {
   const out = new Map<string, AssembledEdge>();
   const X = (x: number) => geo.centre + x;
-  // Side entries into one side (chooseSideEntries): the lines from above enter its upper
-  // part, the nearer the higher, and the lines from below its lower part, the nearer the
+  // Side entries into one side (chooseSideEntries): the edges from above enter its upper
+  // part, the nearer the higher, and the edges from below its lower part, the nearer the
   // lower, so that none crosses another's way in.
   const entryAt = new Map<Plan, number>();
   const bySide = new Map<string, Plan[]>();
@@ -2324,7 +2324,7 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
     const pts: Point[] = [];
     let cur = pl.srcPort;
     if (pl.turn !== undefined) {
-      // A side exit: out of the side at the row's middle, then along the row to the turn.
+      // A side exit: out of the side at the layer's middle, then along the layer to the turn.
       const my = geo.layerMid(u.layer) + pl.srcPort;
       pts.push({ x: X(pl.srcSide === "left" ? u.x : u.x + u.w), y: my }, { x: X(pl.turn), y: my });
       cur = pl.turn;
@@ -2360,7 +2360,7 @@ export function assemble(r: Routing, geo: Vertical): Map<string, AssembledEdge> 
       }
     });
     if (pl.turnIn !== undefined) {
-      // A side entry: on beside the target to the row's middle, then into its side.
+      // A side entry: on beside the target to the layer's middle, then into its side.
       const my = geo.layerMid(v.layer) + pl.dstPort + (entryAt.get(pl) ?? 0);
       pts.push(
         { x: X(pl.turnIn), y: my },

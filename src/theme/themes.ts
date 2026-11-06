@@ -85,7 +85,7 @@ const DARK: Paint = {
   },
 };
 
-/** Grey on white, with stronger lines: for printing and for documents without colour. */
+/** Grey on white, with stronger edges: for printing and for documents without colour. */
 const PRINT: Paint = {
   background: "#ffffff",
   text: {

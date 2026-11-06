@@ -1,9 +1,9 @@
 // Swimlanes (specs/decisions, "Swimlanes run one way"). A lane's members name it: layers, when lanes run as
-// rows, or nodes, when lanes run as columns. The way lanes run follows from which
-// members name them, so a diagram cannot hold both. Row lanes span neighbouring
+// layers, or nodes, when lanes run as columns. The way lanes run follows from which
+// members name them, so a diagram cannot hold both. Layer lanes span neighbouring
 // layers. Column lanes go left to right in list order and span the whole height;
 // a node outside every lane sits right of them, or left when it comes first in
-// its row, before the row's lane nodes. The engine keeps every row in that order.
+// its layer, before the layer's lane nodes. The engine keeps every layer in that order.
 
 import type { OpError } from "../errors.ts";
 import { inGroup } from "./groups.ts";
@@ -30,7 +30,7 @@ export function laneNodes(d: Diagram, id: string): string[] {
 
 /**
  * Each node's place across, for column lanes: the index of its lane, -1 for a
- * node outside every lane that comes first in its row, and the number of lanes
+ * node outside every lane that comes first in its layer, and the number of lanes
  * for any other node outside every lane.
  */
 export function laneRanks(d: Diagram): Map<string, number> {
@@ -47,8 +47,8 @@ export function laneRanks(d: Diagram): Map<string, number> {
 }
 
 /**
- * Puts each row's nodes in lane order, keeping the order within a lane. Returns
- * the ids of the nodes that moved. Rows lanes change no order.
+ * Puts each layer's nodes in lane order, keeping the order within a lane. Returns
+ * the ids of the nodes that moved. Layers lanes change no order.
  */
 export function orderByLanes(d: Diagram): string[] {
   if (laneRun(d) !== "columns") return [];
@@ -67,7 +67,7 @@ export function orderByLanes(d: Diagram): string[] {
   return moved;
 }
 
-/** Lane rules: members name an existing lane, one way per diagram, row lanes touch, groups stay in one lane. */
+/** Lane rules: members name an existing lane, one way per diagram, layer lanes touch, groups stay in one lane. */
 export function checkLanes(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
   const ids = (d.lanes ?? []).map((x) => x.id);
@@ -130,7 +130,7 @@ function groupsAcross(d: Diagram, index: number): OpError[] {
   const rows = laneRun(d) === "layers";
   (d.groups ?? []).forEach((g, i) => {
     const lanes = new Set<string>();
-    // The first box, top to bottom, in another lane than the group's first box, and that lane.
+    // The first node, top to bottom, in another lane than the group's first node, and that lane.
     let apart: { node: string; lane: string } | undefined;
     for (const l of d.layers) {
       for (const n of l.nodes) {

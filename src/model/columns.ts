@@ -1,6 +1,6 @@
-// Columns (specs/decisions, "Columns beside rows"): a guide that boxes follow beside their rows. Every box of
-// a column lies left of every box of the next, in every row; a box in no column keeps
-// its place beside the box left of it. Nothing is drawn.
+// Columns (specs/decisions, "Columns beside rows"): a guide that nodes follow beside their layers. Every node of
+// a column lies left of every node of the next, in every layer; a node in no column keeps
+// its place beside the node left of it. Nothing is drawn.
 
 import type { OpError } from "../errors.ts";
 import { laneRun } from "./lanes.ts";
@@ -13,9 +13,9 @@ export function columnRanks(d: Diagram): Map<string, number> {
 }
 
 /**
- * A row's nodes in column order: each column's in turn, and a node in no column right
+ * A layer's nodes in column order: each column's in turn, and a node in no column right
  * after the node left of it, or first when nothing is left of it. Within that, the
- * row's own order.
+ * layer's own order.
  */
 export function inColumnOrder(
   nodes: readonly DiagramNode[],
@@ -32,7 +32,7 @@ export function inColumnOrder(
     .map((x) => x.n);
 }
 
-/** Whether a row's nodes with a column come in column order. */
+/** Whether a layer's nodes with a column come in column order. */
 export function columnOrdered(nodes: readonly DiagramNode[], ranks: Map<string, number>): boolean {
   let last = -1;
   for (const n of nodes) {
@@ -44,7 +44,7 @@ export function columnOrdered(nodes: readonly DiagramNode[], ranks: Map<string, 
   return true;
 }
 
-/** Puts each row in column order. Returns the ids of the nodes that moved. */
+/** Puts each layer in column order. Returns the ids of the nodes that moved. */
 export function orderByColumns(d: Diagram): string[] {
   if ((d.columns ?? []).length === 0) return [];
   const ranks = columnRanks(d);

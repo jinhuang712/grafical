@@ -1,8 +1,8 @@
-// Boxes placed by steps (specs/decisions, "Steps from another box"), put in rows for layout. A box's row is the row
-// of the box it steps from, its steps down; past the first or last row it lands in a
-// row the engine adds there. In that row it goes where its column falls among the
-// column grid the other boxes take before it arrives: a box in its cell stands aside,
-// away from the box it steps from. The grid (grid.ts) then holds it in its cell.
+// Nodes placed by steps (specs/decisions, "Steps from another box"), put in layers for layout. A node's layer is the layer
+// of the node it steps from, its steps down; past the first or last layer it lands in a
+// layer the engine adds there. In that layer it goes where its column falls among the
+// column grid the other nodes take before it arrives: a node in its cell stands aside,
+// away from the node it steps from. The grid (grid.ts) then holds it in its cell.
 
 import type { Facts } from "../errors.ts";
 import { stepOf } from "../model/steps.ts";
@@ -10,14 +10,14 @@ import type { Diagram, DiagramNode, Layer } from "../model/types.ts";
 import { buildGrid, type StepProblem } from "./grid.ts";
 
 /**
- * Whether a row is one the engine adds for boxes placed past the first or last row. Its
+ * Whether a layer is one the engine adds for nodes placed past the first or last layer. Its
  * id is "-" and a number, which no id in a file can be; output names it "-".
  */
 export function addedLayer(id: string): boolean {
   return id.startsWith("-");
 }
 
-/** A box placed by steps that cannot be placed at all: its anchor is unknown, or it steps from itself. */
+/** A node placed by steps that cannot be placed at all: its anchor is unknown, or it steps from itself. */
 export interface StepPlaceProblem {
   code: "unknown-node" | "step-cycle";
   node: string;
@@ -26,8 +26,8 @@ export interface StepPlaceProblem {
 }
 
 /**
- * The diagram with every box placed by steps in a row, and no `nodes`; the same diagram
- * when it has none. A box that cannot be placed goes into a row added at the bottom.
+ * The diagram with every node placed by steps in a layer, and no `nodes`; the same diagram
+ * when it has none. A node that cannot be placed goes into a layer added at the bottom.
  */
 export function placeSteps(d: Diagram): { d: Diagram; problems: StepPlaceProblem[] } {
   const free = d.nodes ?? [];
@@ -43,7 +43,7 @@ export function placeSteps(d: Diagram): { d: Diagram; problems: StepPlaceProblem
       colOf.set(n.id, grid.col.get(n.id) ?? 0);
     }
   });
-  // The box stepped from first.
+  // The node stepped from first.
   const placed: { n: DiagramNode; r: number; c: number; dx: number }[] = [];
   const left = new Set(free.map((n) => n.id));
   for (let grew = true; grew; ) {
@@ -93,7 +93,7 @@ export function placeSteps(d: Diagram): { d: Diagram; problems: StepPlaceProblem
   return { d: { ...base, layers }, problems };
 }
 
-/** Every box placed by steps that cannot be placed, or whose cell another fact keeps (specs/decisions, "Steps from another box"). */
+/** Every node placed by steps that cannot be placed, or whose cell another fact keeps (specs/decisions, "Steps from another box"). */
 export function validateSteps(d: Diagram): (StepPlaceProblem | StepProblem)[] {
   if ((d.nodes ?? []).length === 0) return [];
   const placed = placeSteps(d);

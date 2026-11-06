@@ -121,7 +121,7 @@ export interface LayerAddOp {
   before?: string;
   after?: string;
 }
-/** Steps from another box, for a box in no row (specs/decisions, "Steps from another box"). */
+/** Steps from another node, for a node in no layer (specs/decisions, "Steps from another box"). */
 export interface Steps {
   from?: string;
   down?: number;
@@ -129,7 +129,7 @@ export interface Steps {
   left?: number;
   right?: number;
 }
-/** A node goes in a row (`layer`), or in no row, by steps from another box (`from`). */
+/** A node goes in a layer (`layer`), or in no layer, by steps from another node (`from`). */
 export interface NodeAddOp extends Position, Steps {
   op: "node.add";
   type?: string;
@@ -170,7 +170,7 @@ export interface EdgeAddOp {
   label?: string;
   /** true: an arrowhead at both ends (specs/decisions, "Lines meet any side"). */
   both?: boolean;
-  /** true: the line may pass rows with no box between its ends (specs/decisions, "A row with no box as one bar"). */
+  /** true: the edge may pass layers with no node between its ends (specs/decisions, "A row with no box as one bar"). */
   pass?: boolean;
 }
 export interface EdgeRemoveOp {
@@ -187,12 +187,12 @@ export interface DiagramDensityOp {
   density: Density;
 }
 /**
- * The legend's words for one line style, line width or mark. Absent text: no entry
+ * The legend's words for one line style, edge width or mark. Absent text: no entry
  * (specs/decisions, "A legend for widths and marks", "The legend says only what the agent named").
  */
 export interface DiagramLegendOp {
   op: "diagram.legend";
-  /** How the lines look. Named line until 2026-10-13 (specs/decisions, "The help as the reference"). */
+  /** How the edges look. Named edge until 2026-10-13 (specs/decisions, "The help as the reference"). */
   style?: LineStyleName;
   /** A weight level other than thin, or a width in pixels (specs/decisions, "Edge weights"). */
   weight?: string | number;
@@ -217,14 +217,14 @@ export interface LayerRemoveOp {
   op: "layer.remove";
   id: string;
 }
-/** How a row is drawn, and that it is drawn though no line ends at it (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
+/** How a layer is drawn, and that it is drawn though no edge ends at it (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
 /** Where the title sits. Absent `at`: top left. */
 export interface DiagramLabelAtOp {
   op: "diagram.label-at";
   at?: number;
   side?: "top" | "bottom";
 }
-/** Where a row's or a lane's label sits along its head. Absent `at`: where the engine seats it. */
+/** Where a layer's or a lane's label sits along its head. Absent `at`: where the engine seats it. */
 export interface HeadLabelAtOp {
   op: "layer.label-at" | "lane.label-at";
   id: string;
@@ -273,7 +273,7 @@ export interface MarkStyleOp {
 export interface LayerLookOp {
   op: "layer.look";
   id: string;
-  /** Absent: the row is drawn only once a line ends at it, and its look follows the row, a box with no box in it and a band with boxes. */
+  /** Absent: the layer is drawn only once an edge ends at it, and its look follows the layer, a node with no node in it and a band with nodes. */
   look?: RowLook;
 }
 /** Moves a layer's nodes from `from` on (or its second half) into a new layer below it (specs/decisions, "Curation stays with the agent"). */
@@ -350,8 +350,8 @@ export interface EdgeSeatOp {
   seat: "on" | "beside";
 }
 
-/** How a text's lines line up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
-/** What a line's label looks like (specs/decisions, "A label may mark a style"). Absent `styles`: clear them. */
+/** How a text's edges edge up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
+/** What an edge's label looks like (specs/decisions, "A label may mark a style"). Absent `styles`: clear them. */
 export interface LabelStyleOp {
   op: "label.style";
   id: string;
@@ -379,11 +379,11 @@ export interface EdgeWeightOp {
   /** Absent: thin again. */
   weight?: string | number;
 }
-/** Lets an edge pass the rows with no box between its ends, or no longer (specs/decisions, "A row with no box as one bar"). */
+/** Lets an edge pass the layers with no node between its ends, or no longer (specs/decisions, "A row with no box as one bar"). */
 export interface EdgePassOp {
   op: "edge.pass";
   id: string;
-  /** true: the line may no longer pass them. */
+  /** true: the edge may no longer pass them. */
   off?: boolean;
 }
 /** Draws an arrowhead at both ends of an edge, or at one end again (specs/decisions, "Lines meet any side"). */
@@ -423,7 +423,7 @@ export interface GroupTitleOp {
   side?: GroupTitle["side"];
   place?: GroupTitle["place"];
 }
-/** Puts a group's boxes, its inner groups' too, before or after another group's, in every layer they share. */
+/** Puts a group's borders, its inner groups' too, before or after another group's, in every layer they share. */
 export interface GroupOrderOp {
   op: "group.order";
   id: string;
@@ -431,8 +431,8 @@ export interface GroupOrderOp {
   after?: string;
 }
 /**
- * A copy of a group, its inner groups, its boxes and the lines between them, each id with the suffix; each
- * copied box in its original's row, before or after another group (specs/decisions, "A group copy holds its inside").
+ * A copy of a group, its inner groups, its nodes and the edges between them, each id with the suffix; each
+ * copied node in its original's layer, before or after another group (specs/decisions, "A group copy holds its inside").
  */
 export interface GroupCopyOp {
   op: "group.copy";
@@ -443,10 +443,10 @@ export interface GroupCopyOp {
   suffix: string;
   before?: string;
   after?: string;
-  /** true: lines between the group and what is outside it are copied too. */
+  /** true: edges between the group and what is outside it are copied too. */
   outside?: boolean;
 }
-/** Members are layers (lanes then run as rows), nodes (as columns) or groups (specs/decisions, "Swimlanes run one way"). */
+/** Members are layers (lanes then run as layers), nodes (as columns) or groups (specs/decisions, "Swimlanes run one way"). */
 export interface LaneAddOp {
   op: "lane.add";
   id: string;
@@ -492,7 +492,7 @@ export interface ColumnRemoveOp {
   op: "column.remove";
   id: string;
 }
-/** Sides are nodes and groups; allow names lines, nodes and groups (specs/decisions, "Walls as space"). */
+/** Sides are nodes and groups; allow names edges, nodes and groups (specs/decisions, "Walls as space"). */
 export interface WallAddOp {
   op: "wall.add";
   id: string;
@@ -517,7 +517,7 @@ export interface WallRelabelOp {
   id: string;
   label?: string;
 }
-/** A note on a node, group or line; adding one where there is one replaces it (specs/decisions, "Notes as callouts or footnotes"). */
+/** A note on a node, group or edge; adding one where there is one replaces it (specs/decisions, "Notes as callouts or footnotes"). */
 export interface NoteAddOp {
   op: "note.add";
   on: string;
@@ -532,7 +532,7 @@ export interface GapBetweenOp {
   b: string;
   magnified?: GapMagnified;
 }
-/** How a card's lines line up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
+/** How a card's edges edge up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
 export interface NoteAlignOp {
   op: "note.align";
   on: string;
@@ -982,7 +982,7 @@ export const columnLeaveSchema = z.strictObject({
   members: nodeList,
 });
 export const columnRemoveSchema = z.strictObject({ op: z.literal("column.remove"), id: nodeId });
-/** What a wall lets through: a line's id, or a node's or a group's. */
+/** What a wall lets through: an edge's id, or a node's or a group's. */
 const passList = z.array(z.string().min(1)).min(1);
 export const wallAddSchema = z.strictObject({
   op: z.literal("wall.add"),
@@ -1104,7 +1104,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeRetargetSchema,
 ]);
 
-/** Each operation's schema, by name. Each command's line in a batch is built from them (specs/decisions, "One entry page, help where it is used"). */
+/** Each operation's schema, by name. Each command's edge in a batch is built from them (specs/decisions, "One entry page, help where it is used"). */
 export const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.new": diagramNewSchema,
   "diagram.sizing": diagramSizingSchema,

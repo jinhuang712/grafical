@@ -1,12 +1,12 @@
 // What caused a problem (specs/decisions, "Refusals say what happened and which commands can change it"): the command line
-// as typed, an operation of a batch by the line it starts on and as it was written, or what was already in the file.
+// as typed, an operation of a batch by the edge it starts on and as it was written, or what was already in the file.
 
 import { isMap, isSeq, type Node, parseDocument } from "yaml";
 
 /** The source of a problem the file had before the command. */
 export const IN_FILE = "already in the file";
 
-/** An operation of a batch file: the line it starts on, from 1, and its text as written, on one line. */
+/** An operation of a batch file: the edge it starts on, from 1, and its text as written, on one line. */
 export interface Item {
   line: number;
   text: string;
@@ -28,14 +28,14 @@ export function commandLine(args: readonly string[]): string {
   return ["grafical", ...args.map(word)].join(" ");
 }
 
-/** The source of the operation at `index`: its batch's line, or the command line. */
+/** The source of the operation at `index`: its batch's edge, or the command line. */
 export function itemSource(origin: Origin, index: number): string {
   const item = origin.batch?.items[index];
   if (origin.batch === undefined || item === undefined) return origin.command;
   return `${origin.batch.file} line ${item.line}: ${item.text}`;
 }
 
-/** The source of a problem of a batch whose line cannot be known: the batch file, with no line, or the command line. */
+/** The source of a problem of a batch whose edge cannot be known: the batch file, with no edge, or the command line. */
 export function unlined(origin: Origin): string {
   return origin.batch?.file ?? origin.command;
 }
@@ -57,8 +57,8 @@ function written(n: unknown, text: string): string {
 }
 
 /**
- * Each operation of a batch's text, by the line its dash is on: none when the text is not a YAML list. A dash may
- * stand alone, or before a comment, with the operation's first field on a line below it.
+ * Each operation of a batch's text, by the edge its dash is on: none when the text is not a YAML list. A dash may
+ * stand alone, or before a comment, with the operation's first field on an edge below it.
  */
 export function batchItems(text: string): Item[] {
   const doc = parseDocument(text);
@@ -68,7 +68,7 @@ export function batchItems(text: string): Item[] {
   return list.items.map((x) => {
     const at = (x as { range?: [number, number, number] } | null)?.range?.[0] ?? 0;
     let line = text.slice(0, at).split("\n").length;
-    // The item's own line holds its dash, unless only blank and comment lines lie between it and a dash above.
+    // The item's own edge holds its dash, unless only blank and comment edges lie between it and a dash above.
     if (!/^\s*-/.test(text.slice(text.lastIndexOf("\n", at - 1) + 1, at))) {
       for (let k = line - 2; k >= 0; k--) {
         const t = (lines[k] ?? "").trim();

@@ -13,7 +13,7 @@ export function regionKind(d: Diagram, id: string): RegionKind | undefined {
   return undefined;
 }
 
-/** The first and last row a group's boxes sit in. A group of boxes placed by steps has none. */
+/** The first and last layer a group's borders sit in. A group of nodes placed by steps has none. */
 function rowsOf(d: Diagram, id: string): [number, number] | undefined {
   const members = new Set(groupNodes(d, id));
   const rows = d.layers.flatMap((l, i) => (l.nodes.some((n) => members.has(n)) ? [i] : []));
@@ -22,14 +22,14 @@ function rowsOf(d: Diagram, id: string): [number, number] | undefined {
   return first === undefined || last === undefined ? undefined : [first, last];
 }
 
-/** Whether one group's box ends in the row above the other's first. */
+/** Whether one group's border ends in the layer above the other's first. */
 function stacked(d: Diagram, a: string, b: string): boolean {
   const x = rowsOf(d, a);
   const y = rowsOf(d, b);
   return x !== undefined && y !== undefined && (x[1] + 1 === y[0] || y[1] + 1 === x[0]);
 }
 
-/** Whether a box of one group stands next to a box of the other in a row. */
+/** Whether a node of one group stands next to a node of the other in a layer. */
 function beside(d: Diagram, a: string, b: string): boolean {
   return d.layers.some((l) =>
     l.nodes.some((n, k) => {
@@ -56,7 +56,7 @@ export function magnifiedBetween(d: Diagram, a: string, b: string): number {
   return gap === undefined ? 1 : gap.magnified;
 }
 
-/** How much the gutter below row `i` is magnified, by its two rows or by two groups stacked across it. */
+/** How much the gutter below layer `i` is magnified, by its two layers or by two groups stacked across it. */
 export function gutterMagnified(d: Diagram, i: number): number {
   let out = 1;
   for (const g of d.gaps ?? []) {

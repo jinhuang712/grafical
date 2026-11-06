@@ -172,7 +172,7 @@ const nodeSchema = z.strictObject({
 /** A whole number of steps (specs/decisions, "Steps from another box"). */
 export const steps = z.number().int().min(1).max(MAX_STEPS);
 
-/** A box in no row, placed by steps from another box (specs/decisions, "Steps from another box"). It has no row, alignment, column or lane. */
+/** A node in no layer, placed by steps from another node (specs/decisions, "Steps from another box"). It has no layer, alignment, column or lane. */
 const stepNodeSchema = nodeSchema.omit({ align: true, lane: true, column: true }).extend({
   from: nodeId,
   down: steps.optional(),
@@ -214,7 +214,7 @@ const laneSchema = z.strictObject({
   style: styleNames,
 });
 
-/** Empty space between two sides (specs/decisions, "Walls as space"): nodes and groups; it lets through lines, nodes and groups. */
+/** Empty space between two sides (specs/decisions, "Walls as space"): nodes and groups; it lets through edges, nodes and groups. */
 const wallSchema = z.strictObject({
   id: nodeId,
   between: z.array(nodeId).min(1),
@@ -263,7 +263,7 @@ export const weightValue = z.union([
   z.number().min(WEIGHT_MIN, { message: WEIGHT }).max(WEIGHT_MAX, { message: WEIGHT }),
 ]);
 
-/** A line's step number (specs/decisions, "Step badges ride the line"): a whole number from 1 to STEP_NUMBER_MAX. */
+/** An edge's step number (specs/decisions, "Step badges ride the line"): a whole number from 1 to STEP_NUMBER_MAX. */
 export const stepNumber = z
   .number()
   .int({ message: STEP_NUMBER })
@@ -513,7 +513,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
     claim(n.id, `nodes[${ni}].id`, "node");
     nodeIds.push(n.id);
   });
-  // Rules that depend on rows see each box placed by steps in its row (specs/decisions, "Steps from another box").
+  // Rules that depend on layers see each node placed by steps in its layer (specs/decisions, "Steps from another box").
   const placed = placeSteps(d).d;
   const layerOf = new Map(placed.layers.flatMap((l) => l.nodes.map((n) => [n.id, l.id] as const)));
   (d.groups ?? []).forEach((g, gi) => {
@@ -653,7 +653,7 @@ function checkGaps(d: Diagram, index: number): OpError[] {
   );
 }
 
-/** Note rules (specs/decisions, "Notes as callouts or footnotes"): a note is about a node, a group or a line that exists, one note each. */
+/** Note rules (specs/decisions, "Notes as callouts or footnotes"): a note is about a node, a group or an edge that exists, one note each. */
 function checkNotes(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
   const targets = noteTargets(d);

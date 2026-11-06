@@ -18,7 +18,7 @@ interface Seg {
   hi: number;
 }
 
-/** Proper crossings between segments of different routes: each pair of lines that cross. */
+/** Proper crossings between segments of different routes: each pair of edges that cross. */
 export function routeStats(routes: Point[][]): RouteStats {
   const hs: Seg[] = [];
   const vs: Seg[] = [];

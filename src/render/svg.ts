@@ -1,8 +1,8 @@
 // The SVG writer (DESIGNS.md, "The same file gives the same picture on any machine", specs/decisions, "Our own SVG writer"). Fixed element and attribute order, no
 // timestamps, numbers with at most 2 decimals. Pure: no Node APIs.
 //
-// Draw order: background, groups, edges and their labels, the dots where lines
-// merge, nodes and their texts, title, subtitle, legend, footnote. Layer rows are
+// Draw order: background, groups, edges and their labels, the dots where edges
+// merge, nodes and their texts, title, subtitle, legend, footnote. Layer layers are
 // not drawn (specs/decisions, "Rows unseen, groups as systems").
 // Nodes come after edges so that ports look clean.
 
@@ -93,7 +93,7 @@ function nodeShape(n: SceneNode, P: Paint): string[] {
       `<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="${num(sw)}"${dashAttr(kind.dash)}/>`,
     ];
   }
-  // An actor and a terminal are pills; a state is rounder than a box (specs/decisions, "Every layered diagram type").
+  // An actor and a terminal are pills; a state is rounder than a node (specs/decisions, "Every layered diagram type").
   const pill = n.kind === "actor" || n.kind === "terminal";
   const rx = pill ? n.rect.h / 2 : n.kind === "state" ? p.stateRadius : p.radius;
   return [
@@ -102,10 +102,10 @@ function nodeShape(n: SceneNode, P: Paint): string[] {
 }
 
 /**
- * A store is a cylinder inside its box: straight sides, an elliptical lid seen
+ * A store is a cylinder inside its node: straight sides, an elliptical lid seen
  * from a little above, and the curved front of its bottom. The lid's back edge
- * touches the box top and the bottom's front edge the box bottom, so lines meet
- * the shape where they meet the box at its middle.
+ * touches the node top and the bottom's front edge the node bottom, so edges meet
+ * the shape where they meet the node at its middle.
  */
 function cylinder(r: Rect, fill: string, stroke: string, sw: number): string[] {
   const ry = FRAME.storeLid;
@@ -168,18 +168,18 @@ function simplify(points: Point[]): Point[] {
   return out;
 }
 
-/** Radius of the hop a line makes over another where the two cross (specs/decisions, "Lines meet any side"). */
+/** Radius of the hop an edge makes over another where the two cross (specs/decisions, "Lines meet any side"). */
 const HOP = 4;
 
-/** The x where one horizontal stretch of a line, at y, crosses another line's vertical stretch. */
+/** The x where one horizontal stretch of an edge, at y, crosses another edge's vertical stretch. */
 interface Hop {
   y: number;
   xs: number[];
 }
 
 /**
- * Where each line's horizontal stretches cross another line's vertical one (specs/decisions, "Lines meet any side").
- * The horizontal line hops there, so that a crossing never reads as a join.
+ * Where each edge's horizontal stretches cross another edge's vertical one (specs/decisions, "Lines meet any side").
+ * The horizontal edge hops there, so that a crossing never reads as a join.
  */
 function hopsOf(edges: SceneEdge[]): Map<string, Hop[]> {
   const across: { id: string; y: number; lo: number; hi: number }[] = [];
@@ -238,13 +238,13 @@ function straight(from: Point, to: Point, hops: Hop[]): string {
   return d + end;
 }
 
-/** What a curved corner keeps clear of: boxes and labels, and every line. */
+/** What a curved corner keeps clear of: nodes and labels, and every edge. */
 interface Room {
   boxes: Rect[];
   lines: { id: string; a: Point; b: Point }[];
 }
 
-/** Least distance a curved corner keeps from a box, a label or another line (specs/decisions, "Lines meet any side"). */
+/** Least distance a curved corner keeps from a node, a label or another edge (specs/decisions, "Lines meet any side"). */
 const CURVE_CLEAR = 4;
 
 /** Whether the stretch a-b runs along the stretch c-d for some length. */
@@ -265,8 +265,8 @@ function sameStretch(a: Point, b: Point, c: Point, d: Point): boolean {
 }
 
 /**
- * Whether the corner at p, rounded from a to b, keeps clear of every box, label and
- * line, except the lines that run along its own two stretches, such as a trunk's.
+ * Whether the corner at p, rounded from a to b, keeps clear of every node, label and
+ * edge, except the edges that run along its own two stretches, such as a trunk's.
  */
 function clearCorner(
   id: string,
@@ -305,7 +305,7 @@ function clearCorner(
 /**
  * A route as a path with corners rounded by a quadratic curve, hopping over
  * crossings. In the curved style a corner is as round as half of each of its two
- * stretches, halved while it would come near a box, a label or another line, and
+ * stretches, halved while it would come near a node, a label or another edge, and
  * never less round than the orthogonal style (specs/decisions, "Lines meet any side").
  */
 function roundedPath(pts: Point[], P: Paint, hops: Hop[] = [], room?: Room, id = ""): string {
@@ -371,7 +371,7 @@ function alongRoute(pts: Point[], s: Point, t: Point): boolean {
 }
 
 /**
- * Where a line leaves another it ran along, or joins one: a merge on purpose,
+ * Where an edge leaves another it ran along, or joins one: a merge on purpose,
  * such as the branch of a trunk, which a dot marks (specs/decisions, "Lines meet any side").
  */
 function joinsOf(edges: SceneEdge[]): { at: Point; edge: SceneEdge }[] {
@@ -392,12 +392,12 @@ function joinsOf(edges: SceneEdge[]): { at: Point; edge: SceneEdge }[] {
   return [...out.values()];
 }
 
-/** Moves a route's end from its box's side onto the drawn outline (specs/decisions, "Every layered diagram type"). */
+/** Moves a route's end from its node's side onto the drawn outline (specs/decisions, "Every layered diagram type"). */
 function ontoOutline(end: Point, next: Point, n: SceneNode | undefined): Point {
   return n === undefined ? end : meetOutline(n.kind, n.rect, end, next);
 }
 
-/** The line stops at the arrowhead's base, if its kind has one (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
+/** The edge stops at the arrowhead's base, if its kind has one (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
 function edgeShapes(
   e: SceneEdge,
   nodes: Map<string, SceneNode>,
@@ -470,7 +470,7 @@ function mix(from: string, to: string, share: number): string {
 }
 
 /**
- * A box inside a box is told apart by its fill (specs/decisions, "Every layered diagram type"): the group fill and the
+ * A node inside a node is told apart by its fill (specs/decisions, "Every layered diagram type"): the group fill and the
  * background take turns by depth, or each level is a third of the way nearer the
  * border colour.
  */
@@ -531,7 +531,7 @@ export function renderSvg(scene: Scene): string {
     );
   }
   const bp = P.band;
-  // A row in a box's look takes a service box's paint and a node's label colour (specs/decisions, "A row with no box as one bar").
+  // A layer in a node's look takes a service node's paint and a node's label colour (specs/decisions, "A row with no box as one bar").
   for (const b of scene.bands ?? []) {
     const box = b.box === true ? P.node.kinds.service : undefined;
     out.push(
@@ -542,7 +542,7 @@ export function renderSvg(scene: Scene): string {
     );
   }
   for (const g of groups) out.push(...groupShapes(g, P));
-  // A wall is space (specs/decisions, "Walls as space"); a labelled one draws a dashed line over the groups, under the lines.
+  // A wall is space (specs/decisions, "Walls as space"); a labelled one draws a dashed edge over the groups, under the edges.
   for (const wl of scene.walls ?? []) {
     if (wl.line !== undefined) {
       const { a, b } = wl.line;
@@ -583,8 +583,8 @@ export function renderSvg(scene: Scene): string {
           }),
         }
       : undefined;
-  // What lies behind a point, for a label's patch and a badge's fill: the innermost box it
-  // sits in, as boxes come outer first, or the page.
+  // What lies behind a point, for a label's patch and a badge's fill: the innermost node it
+  // sits in, as nodes come outer first, or the page.
   const behindAt = (cx: number, cy: number): string => {
     const inGroup = groups.findLast(
       (g) =>
@@ -631,8 +631,8 @@ export function renderSvg(scene: Scene): string {
     }
   }
 
-  // Steps (specs/decisions, "Step badges ride the line"): a ring in the line's colour, centred on the line, that hides
-  // the line inside it, and the number in the labels' colour.
+  // Steps (specs/decisions, "Step badges ride the line"): a ring in the edge's colour, centred on the edge, that hides
+  // the edge inside it, and the number in the labels' colour.
   for (const e of scene.edges) {
     if (e.step === undefined) continue;
     const b = e.step;
@@ -657,8 +657,8 @@ export function renderSvg(scene: Scene): string {
     for (const m of n.marks ?? []) out.push(...markShape(m));
   }
 
-  // Notes (specs/decisions, "Notes as callouts or footnotes"): a card and its dotted line, or a footnote's numbers; over the nodes,
-  // so that a number on a box's corner shows.
+  // Notes (specs/decisions, "Notes as callouts or footnotes"): a card and its dotted edge, or a footnote's numbers; over the nodes,
+  // so that a number on a node's corner shows.
   const muted = P.text.groupLabelMuted;
   const circle = (b: SceneBadge) => [
     `<circle cx="${num(b.x)}" cy="${num(b.y)}" r="${num(b.r)}" fill="${muted}"/>`,

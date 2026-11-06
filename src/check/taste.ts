@@ -4,7 +4,7 @@
 import type { SceneEdge } from "../scene.ts";
 import { EPS, type Segment, segmentsOf } from "./geometry.ts";
 
-/** A line with more bends is a warning (specs/decisions, "A bent line is reported and never refused"). */
+/** An edge with more bends is a warning (specs/decisions, "A bent line is reported and never refused"). */
 export const MAX_BENDS = 2;
 
 const isH = (s: Segment): boolean => Math.abs(s.a.y - s.b.y) < EPS;

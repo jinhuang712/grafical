@@ -210,7 +210,7 @@ interface Planned {
 
 /**
  * The facts that name what a problem is about, which its block prints: two problems are the same only when these
- * are, so that the line a source names never contradicts the detail.
+ * are, so that the edge a source names never contradicts the detail.
  */
 const ABOUT: readonly (keyof Facts)[] = [
   "is",
@@ -258,14 +258,14 @@ export function defectKey(d: Defect): string {
 
 /**
  * How much a refused write may lay out to find where its problems come from, so that it stays within GOALS.md,
- * "Speed": LAID_OUT boxes and lines in all, across the prefixes it tries, at the size of the larger of the file's
- * diagram and the one the batch would make, and MOST_PREFIXES prefixes at most, 1 at least. A problem whose line is not
- * found within them has the batch file as its source, with no line: never a line that is not known.
+ * "Speed": LAID_OUT nodes and edges in all, across the prefixes it tries, at the size of the larger of the file's
+ * diagram and the one the batch would make, and MOST_PREFIXES prefixes at most, 1 at least. A problem whose edge is not
+ * found within them has the batch file as its source, with no edge: never an edge that is not known.
  */
 const LAID_OUT = 400;
 const MOST_PREFIXES = 12;
 
-/** How many prefixes a refused write tries: as many as LAID_OUT boxes and lines allow at the diagram's size. */
+/** How many prefixes a refused write tries: as many as LAID_OUT nodes and edges allow at the diagram's size. */
 function prefixes(...ds: (Diagram | null)[]): number {
   const size = Math.max(
     1,
@@ -274,7 +274,7 @@ function prefixes(...ds: (Diagram | null)[]): number {
   return Math.min(MOST_PREFIXES, Math.max(1, Math.floor(LAID_OUT / size)));
 }
 
-/** The check of a whole diagram that finds a line weight its stylesheet lacks: after those of applyOps. */
+/** The check of a whole diagram that finds an edge weight its stylesheet lacks: after those of applyOps. */
 const WEIGHTS = 5;
 
 /**
@@ -286,11 +286,11 @@ type Seen = "present" | "absent" | "unknown";
 /**
  * Where a problem of the diagram a batch makes comes from (specs/decisions, "Refusals say what happened and which commands
  * can change it"): the number of operations after which it is not there, while it is there after each one more, up to
- * the whole batch; 0 when the diagram before the batch has it and every prefix too; undefined when no line can be
+ * the whole batch; 0 when the diagram before the batch has it and every prefix too; undefined when no edge can be
  * known. It runs only on a refused write, so a write that succeeds costs nothing more. grafical applies the batch less
- * its last operation, then less its last two, and so on, back towards the file, and the problem's line is the one
+ * its last operation, then less its last two, and so on, back towards the file, and the problem's edge is the one
  * after the last prefix without it. A prefix refused for another problem cannot tell, unless a later check refused it
- * after the one that finds this problem passed; else the scan stops there with no line, as it does after `most`
+ * after the one that finds this problem passed; else the scan stops there with no edge, as it does after `most`
  * prefixes. Each prefix is applied, and laid out, once for all the problems.
  */
 function locate(
@@ -346,7 +346,7 @@ function locate(
     return found.has(key) ? "present" : "absent";
   };
   const firstAt = (key: string, defect: boolean, stage?: number): number | undefined => {
-    // Back from the batch less its last operation: the problem's line is the one after the last prefix without it.
+    // Back from the batch less its last operation: the problem's edge is the one after the last prefix without it.
     for (let k = n - 1; k >= 0; k--) {
       // The empty diagram before a new file costs nothing to ask.
       if (n - k > most && !(k === 0 && base === null)) return undefined;
@@ -421,7 +421,7 @@ export function attempt(
         ? result.errors
         : weights.map((e) => ({ ...e, whole: true as const, stage: WEIGHTS }));
     const found = locate(base, ops, m, prefixes(base));
-    // An error of the whole diagram is the operation's after which it first appears. One whose line cannot be known is
+    // An error of the whole diagram is the operation's after which it first appears. One whose edge cannot be known is
     // no operation's: it has no index.
     return failure(
       errors.map((e) => {
@@ -455,8 +455,8 @@ export function attempt(
 }
 
 /**
- * A batch file's operations and where each is in it, from its text, or the refusal to read them: a line the YAML
- * cannot read is its own source, and an operation that is not one is its line's.
+ * A batch file's operations and where each is in it, from its text, or the refusal to read them: an edge the YAML
+ * cannot read is its own source, and an operation that is not one is its edge's.
  */
 export function batchOps(
   batch: string,

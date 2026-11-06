@@ -24,7 +24,7 @@ export function readDiagram(text: string): Diagram | OpError[] {
   return validateDiagram(doc.toJS());
 }
 
-/** A YAML syntax error: the line and column it is at, from 1, and the text of that line. */
+/** A YAML syntax error: the edge and column it is at, from 1, and the text of that edge. */
 export function yamlError(text: string, err: unknown): OpError {
   const at = (err as { linePos?: { line: number; col: number }[] } | null)?.linePos?.[0];
   const line = at?.line ?? 1;

@@ -1,6 +1,6 @@
-// Node shapes (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Every layered diagram type"). Every node is laid out as a box, and its kind
-// decides the outline drawn inside that box: how much room its text has, where
-// the text block sits, and where a line that ends at the box's side meets the
+// Node shapes (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Every layered diagram type"). Every node is laid out as a node, and its kind
+// decides the outline drawn inside that node: how much room its text has, where
+// the text block sits, and where an edge that ends at the node's side meets the
 // outline. Layout, the checker and the renderer all ask here, so they agree.
 
 import type { NodeKind, SizeStep } from "../model/types.ts";
@@ -12,13 +12,13 @@ export function isDot(kind: NodeKind): boolean {
   return kind === "initial" || kind === "final" || kind === "choice";
 }
 
-/** How far from a box's corners its ports keep. A box narrower than two insets, a dot, has its ports at its centre. */
+/** How far from a node's corners its ports keep. A node narrower than two insets, a dot, has its ports at its centre. */
 export function portInset(w: number): number {
   return Math.min(ROUTE.portInset, w / 2);
 }
 
 /**
- * How far from a box's corners its ports may reach, for what must keep clear of
+ * How far from a node's corners its ports may reach, for what must keep clear of
  * them, such as a group's label. A dot's several ports on one side spread over all
  * of it, so the whole side counts.
  */
@@ -26,7 +26,7 @@ export function portReach(w: number): number {
   return w < 2 * ROUTE.portInset ? 0 : ROUTE.portInset;
 }
 
-/** The box a node of this kind and size step is laid out in. A dot ignores the step. */
+/** The node a node of this kind and size step is laid out in. A dot ignores the step. */
 export function nodeBox(kind: NodeKind, step: SizeStep): { w: number; h: number } {
   if (kind === "choice") return { w: CHOICE, h: CHOICE };
   if (isDot(kind)) return { w: DOT, h: DOT };
@@ -36,7 +36,7 @@ export function nodeBox(kind: NodeKind, step: SizeStep): { w: number; h: number 
 /**
  * The widest a line of a node's text may be, for a text block `blockH` tall. In a
  * diamond, a padded block of width tw and height th fits when tw/w + th/h <= 1,
- * so a taller block leaves narrower lines.
+ * so a taller block leaves narrower edges.
  */
 export function lineRoom(kind: NodeKind, w: number, h: number, blockH: number): number {
   if (kind === "decision") {
@@ -45,11 +45,11 @@ export function lineRoom(kind: NodeKind, w: number, h: number, blockH: number): 
   return w - 2 * FRAME.textPad;
 }
 
-/** Does the text box `t` lie inside the room a node of this kind has for text (specs/decisions, "Defects owned by who can fix them")? */
+/** Does the text node `t` lie inside the room a node of this kind has for text (specs/decisions, "Defects owned by who can fix them")? */
 export function textInside(kind: NodeKind, r: Rect, t: Rect): boolean {
   const e = 1e-6;
   if (kind === "decision") {
-    // The corner of the box farthest from the middle, padded, stays inside the diamond.
+    // The corner of the node farthest from the middle, padded, stays inside the diamond.
     const cx = r.x + r.w / 2;
     const cy = r.y + r.h / 2;
     const dx = Math.max(Math.abs(t.x - cx), Math.abs(t.x + t.w - cx)) + FRAME.textPad;
@@ -74,8 +74,8 @@ export function textTop(kind: NodeKind, r: Rect, blockH: number): number {
 }
 
 /**
- * How far below the box top (or above the box bottom) a store's outline lies at
- * x: the lid and the bottom are half-ellipses, so the outline leaves the box edge
+ * How far below the node top (or above the node bottom) a store's outline lies at
+ * x: the lid and the bottom are half-ellipses, so the outline leaves the node edge
  * away from the middle. 0 for every other kind.
  */
 function storeInset(r: Rect, x: number): number {
@@ -85,7 +85,7 @@ function storeInset(r: Rect, x: number): number {
   return ry - ry * Math.sqrt(1 - d * d);
 }
 
-/** Where a line along the box's side meets a diamond's slanted outline. */
+/** Where an edge along the node's side meets a diamond's slanted outline. */
 function diamondMeet(r: Rect, end: Point, next: Point): Point {
   const cx = r.x + r.w / 2;
   const cy = r.y + r.h / 2;
@@ -101,7 +101,7 @@ function diamondMeet(r: Rect, end: Point, next: Point): Point {
   return end;
 }
 
-/** Where a line along the box's side meets a dot's round outline. */
+/** Where an edge along the node's side meets a dot's round outline. */
 function circleMeet(r: Rect, end: Point, next: Point): Point {
   const rad = r.w / 2;
   const cx = r.x + rad;
@@ -120,8 +120,8 @@ function circleMeet(r: Rect, end: Point, next: Point): Point {
 }
 
 /**
- * Where a line meets the drawn outline, when its route ends at `end` on the box's
- * side and its next point is `next`. A box's outline is the box; a store's
+ * Where an edge meets the drawn outline, when its route ends at `end` on the node's
+ * side and its next point is `next`. A node's outline is the node; a store's
  * curved top and bottom lie a little inside it, and a diamond's sides slant in.
  */
 export function meetOutline(kind: NodeKind, r: Rect, end: Point, next: Point): Point {

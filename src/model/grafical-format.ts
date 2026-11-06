@@ -1,4 +1,4 @@
-// The .grafical file (specs/grafical-file.md): objects as blocks with one attribute on each line. It holds the same
+// The .grafical file (specs/grafical-file.md): objects as blocks with one attribute on each edge. It holds the same
 // facts as the model, so reading builds the plain object that validateDiagram checks, and nothing is half read.
 
 import type { OpError } from "../errors.ts";
@@ -18,7 +18,7 @@ const ref = (id: string) => `@${id}`;
 
 type Attr = [string, string | string[] | undefined];
 
-/** A block: its sort, its ID and its attributes, in the order given. A list takes one item on each line. */
+/** A block: its sort, its ID and its attributes, in the order given. A list takes one item on each edge. */
 function block(sort: string, id: string | undefined, attrs: Attr[]): string {
   const out = [`<${sort}>${id === undefined ? "" : ` ${id}`} {`];
   for (const [key, value] of attrs) {
@@ -277,7 +277,7 @@ interface Block {
   attrs: Map<string, string | string[]>;
 }
 
-/** A line the form cannot read, as the refusal of a file. */
+/** An edge the form cannot read, as the refusal of a file. */
 function bad(text: string, line: number): OpError {
   return {
     code: "bad-yaml",

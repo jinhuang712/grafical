@@ -1,8 +1,8 @@
-// Box sizes (specs/decisions, "Boxes sized to their text"). A node with no size takes a medium box, or a large
-// one when its text does not fit the medium box. A diagram whose sizing is fixed
-// gives every such node a medium box, as before specs/decisions, "Boxes sized to their text". The fit test is the checker's
+// Node sizes (specs/decisions, "Boxes sized to their text"). A node with no size takes a medium node, or a large
+// one when its text does not fit the medium node. A diagram whose sizing is fixed
+// gives every such node a medium node, as before specs/decisions, "Boxes sized to their text". The fit test is the checker's
 // overflow rule (specs/decisions, "Defects owned by who can fix them"), so a node the engine sizes overflows only when its text
-// does not fit the large box either.
+// does not fit the large node either.
 
 import { isEmoji } from "../model/schema.ts";
 import {
@@ -50,9 +50,9 @@ export function leftInset(node: DiagramNode, m: Measurer): number {
 
 /**
  * Where a node's marks go (specs/decisions, "Marks of any kind"). A corner mark is centred on its corner, on the height
- * of the mark: half of it lies outside the box on each axis, so a large mark covers the
+ * of the mark: half of it lies outside the node on each axis, so a large mark covers the
  * corner as a small one does. A wide badge grows inward along the edge. The left mark is
- * inside the box, centred in its column. A diamond and a dot have corner marks only.
+ * inside the node, centred in its column. A diamond and a dot have corner marks only.
  */
 export function markRects(node: DiagramNode, r: Rect, m: Measurer): SceneMark[] {
   const out: SceneMark[] = [];
@@ -96,8 +96,8 @@ export function nodeLines(
     room,
   });
   if (kind !== "decision") return wrap(lineRoom(kind, w, h, 0) - inset);
-  // A diamond's lines narrow as its text block grows, so wrap again until the block
-  // the lines were wrapped for holds them.
+  // A diamond's edges narrow as its text block grows, so wrap again until the block
+  // the edges were wrapped for holds them.
   const lh = lineHeight("node-label", m, T);
   const subLh = lineHeight("node-sublabel", m, T);
   let blockH = lh;
@@ -111,7 +111,7 @@ export function nodeLines(
   return out;
 }
 
-/** Does the node's text fit a box of this step, by the checker's rule? */
+/** Does the node's text fit a node of this step, by the checker's rule? */
 export function fits(
   node: DiagramNode,
   step: SizeStep,
@@ -184,8 +184,8 @@ export function sizeOf(node: DiagramNode, d: Diagram, m: Measurer): SizeStep {
 }
 
 /**
- * Each node's box height in its row: every box of a row takes the height of the row's
- * tallest box, so that their tops line up. Dots and diamonds keep their own shapes.
+ * Each node's node height in its layer: every node of a layer takes the height of the layer's
+ * tallest node, so that their tops edge up. Dots and diamonds keep their own shapes.
  * The nodes must be sized (withSizes).
  */
 export function layerHeights(d: Diagram): Map<string, number> {

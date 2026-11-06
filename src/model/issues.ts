@@ -226,7 +226,7 @@ function nearValue(found: unknown, values: string[]): Facts {
     : {};
 }
 
-/** Kinds agents guess, and the kind each most likely means, for boxes and for lines. */
+/** Kinds agents guess, and the kind each most likely means, for nodes and for edges. */
 const NODE_GUESS: Record<string, string[]> = {
   // A flowchart's Start and End are terminals; a state machine's are initial and final.
   start: ["terminal", "initial"],
@@ -290,7 +290,7 @@ function guessedKind(
 const RENAMED: Record<string, string> = { "diagram.legend.line": "style" };
 
 /**
- * A legend's style given as an edge kind, or with its wording: the legend names how lines
+ * A legend's style given as an edge kind, or with its wording: the legend names how edges
  * look, so say which look the kind is drawn in, or where the wording goes.
  */
 function legendStyle(found: unknown, values: string[]): Facts {

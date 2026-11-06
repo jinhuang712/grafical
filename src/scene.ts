@@ -44,12 +44,12 @@ export interface PlacedRun {
 export interface PlacedText {
   role: TextRole;
   runs: PlacedRun[];
-  /** The line boxes' union: what the checker tests for overflow and collisions. */
+  /** The edge nodes' union: what the checker tests for overflow and collisions. */
   bbox: Rect;
 }
 
 /**
- * A layer's row. Rows are not drawn (specs/decisions, "Rows unseen, groups as systems"): the band and label stay in the scene
+ * A layer's layer. Layers are not drawn (specs/decisions, "Rows unseen, groups as systems"): the band and label stay in the scene
  * for the checker and for debugging, and the renderer skips them.
  */
 export interface SceneLayer {
@@ -58,7 +58,7 @@ export interface SceneLayer {
   label: PlacedText;
 }
 
-/** A system box around its member nodes (specs/decisions, "Rows unseen, groups as systems"). */
+/** A system node around its member nodes (specs/decisions, "Rows unseen, groups as systems"). */
 export interface SceneGroup {
   id: string;
   rect: Rect;
@@ -69,7 +69,7 @@ export interface SceneGroup {
   members: string[];
   /** The label's second, quieter part, such as "write side", after the label. */
   sublabel?: PlacedText;
-  /** How many boxes it sits in, itself counted, when it sits in another (specs/decisions, "Every layered diagram type"). Absent: 1. */
+  /** How many nodes it sits in, itself counted, when it sits in another (specs/decisions, "Every layered diagram type"). Absent: 1. */
   depth?: number;
 }
 
@@ -78,13 +78,13 @@ export interface SceneBand {
   /** The layer's id. */
   id: string;
   rect: Rect;
-  /** Absent for a row with no label (specs/decisions, "A row with a look is drawn"). */
+  /** Absent for a layer with no label (specs/decisions, "A row with a look is drawn"). */
   label?: PlacedText;
-  /** A row with no box, drawn as one bar that lines meet and may pass (specs/decisions, "A row with no box as one bar"). */
+  /** A layer with no node, drawn as one bar that edges meet and may pass (specs/decisions, "A row with no box as one bar"). */
   bar?: true;
-  /** Drawn with a box's paint and a dark label, not the band's (specs/decisions, "A row with no box as one bar"). */
+  /** Drawn with a node's paint and a dark label, not the band's (specs/decisions, "A row with no box as one bar"). */
   box?: true;
-  /** true: a line runs through the place the agent stated for the bar's label, and the write is refused. */
+  /** true: an edge runs through the place the agent stated for the bar's label, and the write is refused. */
   blocked?: true;
 }
 
@@ -93,7 +93,7 @@ export interface SceneLane {
   id: string;
   /** What its styles set. */
   look?: Look;
-  /** Rows: the header is on the left. Columns: on top. */
+  /** Layers: the header is on the left. Columns: on top. */
   run: "layers" | "columns";
   rect: Rect;
   head: Rect;
@@ -102,7 +102,7 @@ export interface SceneLane {
 
 /**
  * A wall (specs/decisions, "Walls as space"): the empty space it keeps between its sides, as long as the sides
- * need. A labelled wall draws a dashed line through the middle, the label above it.
+ * need. A labelled wall draws a dashed edge through the middle, the label above it.
  */
 export interface SceneWall {
   id: string;
@@ -112,7 +112,7 @@ export interface SceneWall {
   line?: { a: Point; b: Point; gaps?: [number, number][] };
   label?: PlacedText;
   /**
-   * true: no place along the wall keeps its label clear of the lines across it, so the label lies
+   * true: no place along the wall keeps its label clear of the edges across it, so the label lies
    * across one, and the write is refused (specs/decisions, "A wall's label stays along its wall").
    */
   blocked?: true;
@@ -120,7 +120,7 @@ export interface SceneWall {
 
 /**
  * A small numbered circle: a footnote's number on its target, or before its text (specs/decisions, "Notes as callouts or footnotes"); or a
- * line's step, on the line (specs/decisions, "Step badges ride the line").
+ * edge's step, on the edge (specs/decisions, "Step badges ride the line").
  */
 export interface SceneBadge {
   x: number;
@@ -131,7 +131,7 @@ export interface SceneBadge {
 
 /**
  * A note (specs/decisions, "Notes as callouts or footnotes"), as grafical drew it: a callout card beside its target, joined to it
- * by a dotted line; or a footnote, a number on the target and its text in the list
+ * by a dotted edge; or a footnote, a number on the target and its text in the list
  * at the bottom.
  */
 export interface SceneNote {
@@ -152,13 +152,13 @@ export interface SceneNote {
   blocked?: true;
 }
 
-/** One line style, line width or mark in the legend, with its sample (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "A legend for widths and marks"). */
+/** One edge style, edge width or mark in the legend, with its sample (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "A legend for widths and marks"). */
 export interface SceneLegendItem {
-  /** The line style the sample is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type"). A mark's entry has none. */
+  /** The edge style the sample is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type"). A mark's entry has none. */
   style?: LineStyleName;
-  /** The sample's width in pixels when it is not the thin one: a line width's entry (specs/decisions, "Edge weights", "A legend for widths and marks"). */
+  /** The sample's width in pixels when it is not the thin one: an edge width's entry (specs/decisions, "Edge weights", "A legend for widths and marks"). */
   width?: number;
-  /** Where the sample sits, left to right, at the label's middle height. A line is drawn along it. */
+  /** Where the sample sits, left to right, at the label's middle height. An edge is drawn along it. */
   sample: { x1: number; x2: number; y: number };
   /** A mark's entry: the mark, at the small size, in this rect (specs/decisions, "A legend for widths and marks"). */
   mark?: { mark: Mark; rect: Rect };
@@ -201,16 +201,16 @@ export interface SceneEdge {
   labelLook?: Look;
   /** true: a second arrowhead at the first point (specs/decisions, "Lines meet any side"). */
   both?: boolean;
-  /** The line width in pixels when it is not the thin one: a heavier edge (specs/decisions, "Lines meet any side", "Edge weights"). */
+  /** The edge width in pixels when it is not the thin one: a heavier edge (specs/decisions, "Lines meet any side", "Edge weights"). */
   width?: number;
-  /** Its step's number in a ring centred on the line (specs/decisions, "Step badges ride the line"). */
+  /** Its step's number in a ring centred on the edge (specs/decisions, "Step badges ride the line"). */
   step?: SceneBadge;
-  /** The stated side the line could not take, and the side it took (specs/decisions, "An agent may state the side of a line"). */
+  /** The stated side the edge could not take, and the side it took (specs/decisions, "An agent may state the side of a line"). */
   unmet?: { end: "out" | "in"; stated: string; drawn: string }[];
   /**
    * The gutters its label, or its step's badge, tried when none could hold it clear of the other
-   * lines, each as the rows above and below it joined by a slash. No line moves for it, so it lies
-   * across another line, and the write is refused (specs/decisions, "A line never moves for its label").
+   * edges, each as the layers above and below it joined by a slash. No edge moves for it, so it lies
+   * across another edge, and the write is refused (specs/decisions, "A line never moves for its label").
    */
   blocked?: string[];
 }
@@ -225,17 +225,17 @@ export interface Scene {
   subtitle?: PlacedText;
   /** The footnote at the bottom (specs/decisions, "Curation stays with the agent"). */
   note?: PlacedText;
-  /** The line styles the diagram uses, top right (DESIGNS.md, "Looks are free, while shape and dash follow the type"). Empty when it has no edges. */
+  /** The edge styles the diagram uses, top right (DESIGNS.md, "Looks are free, while shape and dash follow the type"). Empty when it has no edges. */
   legend?: SceneLegendItem[];
   layers: SceneLayer[];
-  /** System boxes, drawn behind nodes and edges (specs/decisions, "Rows unseen, groups as systems"). */
+  /** System nodes, drawn behind nodes and edges (specs/decisions, "Rows unseen, groups as systems"). */
   groups?: SceneGroup[];
   /** Layers an edge ends at, drawn behind the groups. Absent when there are none. */
   bands?: SceneBand[];
   lanes?: SceneLane[];
-  /** Walls (specs/decisions, "Walls as space"), drawn over the groups and under the lines. Absent when there are none. */
+  /** Walls (specs/decisions, "Walls as space"), drawn over the groups and under the edges. Absent when there are none. */
   walls?: SceneWall[];
-  /** Notes (specs/decisions, "Notes as callouts or footnotes"), drawn over everything but the lines' arrowheads. Absent when there are none. */
+  /** Notes (specs/decisions, "Notes as callouts or footnotes"), drawn over everything but the edges' arrowheads. Absent when there are none. */
   notes?: SceneNote[];
   nodes: SceneNode[];
   edges: SceneEdge[];

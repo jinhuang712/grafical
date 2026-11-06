@@ -1,10 +1,10 @@
-// How the lines sit against each other and against the boxes, as three separate counts (specs/decisions, "Composition
+// How the edges sit against each other and against the nodes, as three separate counts (specs/decisions, "Composition
 // counts"). Each is a count of places, never a score: grafical adds nothing up and judges nothing.
 
 import type { Point, Rect, Scene, SceneEdge } from "../scene.ts";
 import { EPS, type Segment, segmentCrossesRect, segmentsOf } from "./geometry.ts";
 
-/** Two runs of different lines closer than this, for longer than TIGHT_OVER, are tight: a track is 12 px. */
+/** Two runs of different edges closer than this, for longer than TIGHT_OVER, are tight: a track is 12 px. */
 export const TRACK = 12;
 const TIGHT_OVER = 100;
 /** A label with less room than this on two or more sides is crowded. */
@@ -21,10 +21,10 @@ export interface Tight {
 }
 
 export interface Composition {
-  /** The lines that cross the box of a group that holds neither of their ends, in id order, with those groups. */
+  /** The edges that cross the node of a group that holds neither of their ends, in id order, with those groups. */
   across: { id: string; groups: string[] }[];
   tight: Tight[];
-  /** The lines whose label is crowded, with the label's box. */
+  /** The edges whose label is crowded, with the label's node. */
   crowded: { id: string; rect: Rect }[];
 }
 
@@ -41,7 +41,7 @@ function edgesOf(r: Rect): Segment[] {
   return p.map((a, i) => ({ a, b: p[(i + 1) % 4] as { x: number; y: number } }));
 }
 
-/** The lines that cross a group's box without either end in it, in id order, each with those groups. */
+/** The edges that cross a group's border without either end in it, in id order, each with those groups. */
 function acrossOf(scene: Scene): Composition["across"] {
   const rects = new Map<string, Rect>();
   for (const n of scene.nodes) rects.set(n.id, n.rect);
@@ -71,7 +71,7 @@ function acrossOf(scene: Scene): Composition["across"] {
   return out.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
-/** Runs of two different lines, not of one bundle, that lie side by side closer than a track for more than 100 px. */
+/** Runs of two different edges, not of one bundle, that lie side by side closer than a track for more than 100 px. */
 function tightOf(edges: SceneEdge[], sameBundle: (a: string, b: string) => boolean): Tight[] {
   const runs = edges.flatMap((e) => segmentsOf(e.points).map((s) => ({ id: e.id, s })));
   const out: Tight[] = [];
@@ -99,7 +99,7 @@ function tightOf(edges: SceneEdge[], sameBundle: (a: string, b: string) => boole
   return out;
 }
 
-/** The room on each side of a label: the distance to the nearest facing line, box, group or band border, or label. */
+/** The room on each side of a label: the distance to the nearest facing edge, node, group or band border, or label. */
 function roomsOf(label: Rect, own: string, scene: Scene): number[] {
   const obstacles: Segment[] = [];
   for (const n of scene.nodes) obstacles.push(...edgesOf(n.rect));
@@ -146,7 +146,7 @@ function roomsOf(label: Rect, own: string, scene: Scene): number[] {
 export interface Gutter {
   above: string;
   below: string;
-  /** Lines that run in the gutter, even only through it. */
+  /** Edges that run in the gutter, even only through it. */
   edges: number;
   crossings: number;
   tight: number;
@@ -154,9 +154,9 @@ export interface Gutter {
 }
 
 /**
- * What lies between two neighbouring rows, from the bottom of the boxes above to the top of the boxes below
- * (specs/decisions, "Composition counts"): the lines with a run in it, the crossings, the tight pairs and the crowded
- * labels. A line's run that only passes through counts.
+ * What lies between two neighbouring layers, from the bottom of the nodes above to the top of the nodes below
+ * (specs/decisions, "Composition counts"): the edges with a run in it, the crossings, the tight pairs and the crowded
+ * labels. An edge's run that only passes through counts.
  */
 export function gutterOf(
   [y0, y1]: [number, number],
