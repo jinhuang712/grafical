@@ -61,7 +61,7 @@ Where drawing would hide something a reader needs, the write is refused as a def
   - The search for a problem's source leaves `clear` out, since it lays out many prefixes of a batch.
   - Its `next` is `group --label-at`, `node --move` and `edge --remove`.
 
-Where drawing only costs, the picture is drawn and every write reports it. An edge with more than two bends is the one such case today: it is a `bent-line` warning and counts in `bent`.
+Where drawing only costs, the picture is drawn and every write reports it. An edge with more than two bends is the one such case today: it is a `bent-edge` warning and counts in `bent`.
 
 No refusal writes the change for the agent. A block names the commands that can act, never a command line with values.
 
@@ -71,19 +71,19 @@ A warning names something the picture draws poorly. Every write prints every war
 
 | Code | `next` |
 |---|---|
-| `bent-line` | `layer --move` · `node --move` · `node --swap` |
-| `passing-row` | `layer --move` · `node --move` · `node --swap` |
-| `line-across-group` | `group --order` · `node --move` · `node --swap` |
-| `tight-lines` | `layer --move` · `node --move` · `node --swap` |
+| `bent-edge` | `layer --move` · `node --move` · `node --swap` |
+| `passing-layer` | `layer --move` · `node --move` · `node --swap` |
+| `edge-across-group` | `group --order` · `node --move` · `node --swap` |
+| `tight-edges` | `layer --move` · `node --move` · `node --swap` |
 | `crowded-label` | `node --move` · `node --swap` · `edge --label` |
-| `lonely-box` | `node --remove` · `edge --add` |
-| `box-aside` | `node --move` |
-| `line-per-member` | `edge --add` · `edge --remove` |
+| `lonely-node` | `node --remove` · `edge --add` |
+| `node-aside` | `node --move` |
+| `edge-per-member` | `edge --add` · `edge --remove` |
 | `crossing` | `group --order` · `layer --move` · `node --move` · `node --swap` |
 
-An edge that ends at a group, a layer or a lane reaches every node in it, so none of those nodes is a `lonely-box`.
+An edge that ends at a group, a layer or a lane reaches every node in it, so none of those nodes is a `lonely-node`.
 
-`line-per-member` names a group of two or more nodes, the nodes of its inner groups included, in which every node has an edge to one end outside the group, or from it. The edges must agree in direction, outer end, kind, label, weight and arrowheads, so that one edge to the group would say the same. `edges` holds the first such line of each node, in the group's order. A group inside one that has the same lines is left out, so only the outer group is named.
+`edge-per-member` names a group of two or more nodes, the nodes of its inner groups included, in which every node has an edge to one end outside the group, or from it. The edges must agree in direction, outer end, kind, label, weight and arrowheads, so that one edge to the group would say the same. `edges` holds the first such line of each node, in the group's order. A group inside one that has the same lines is left out, so only the outer group is named.
 
 ## Counts
 
@@ -117,4 +117,4 @@ The agent compares gutters to see which order of layers costs. The record gives 
 
 ## Rules that are no longer reported
 
-The checker's folder still holds a measure of the eight rules of decision [012: A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md): a canvas at most 1024 px wide, at most one crossing per ten lines, at least half the edges straight, no edge over two bends, at most 40% of edges labelled, at most three line styles, at most 16 nodes, and no corridor through a node. No command calls it. Only its limit of two bends is used, for `bent` and `bent-line`.
+The checker's folder still holds a measure of the eight rules of decision [012: A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md): a canvas at most 1024 px wide, at most one crossing per ten lines, at least half the edges straight, no edge over two bends, at most 40% of edges labelled, at most three line styles, at most 16 nodes, and no corridor through a node. No command calls it. Only its limit of two bends is used, for `bent` and `bent-edge`.

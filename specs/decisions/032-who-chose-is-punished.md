@@ -28,7 +28,7 @@ Asked for by the owner on 2026-10-14, on the public brief's draft with steps: "w
     - 8 drafts have such a box instead of 11.
   - In the one of the 8 looked at, moving the box between its two users adds a crossing or two that its rows make certain.
   - Where the agent placed the box by steps, the agent chose its cell ("Steps from another box").
-  - So it is the agent defect `box-aside`, which fails the write and names the boxes it connects to.
+  - So it is the agent defect `node-aside`, which fails the write and names the boxes it connects to.
 - **The staircase** of a busy box's lines is not punished yet.
   - On the public brief's draft it comes from the boxes that sit under the busy box's own column in a row its lines must pass, so that its lines step around them; the owner proposed spreading the boxes apart so that the lines have room.
   - Not yet decided.

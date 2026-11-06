@@ -36,7 +36,7 @@ Decided by the owner on 2026-10-19. A diagram has no type by default and is draw
     - A git history by branch: 8 commits and 9 lines.
     - Two things were missing.
     - A column has no heading, so the quarters were boxes in a row of their own.
-    - Each was warned as a `lonely-box`.
+    - Each was warned as a `lonely-node`.
     - No box spans two periods.
     - The entry page says grafical draws no timelines, which holds only for a time scale.
   - Concentric layers, as nested groups.

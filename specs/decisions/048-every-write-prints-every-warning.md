@@ -10,11 +10,11 @@ Decided by the owner on 2026-10-18, the same day as "Refusals say what happened 
 
 ## The choice
 
-- **A warning for each place the counts count**, each its own block: `bent-line` and `passing-row` and `line-across-group` and `tight-lines` and `crowded-label` and `lonely-box` and `crossing`.
+- **A warning for each place the counts count**, each its own block: `bent-edge` and `passing-layer` and `edge-across-group` and `tight-edges` and `crowded-label` and `lonely-node` and `crossing`.
   - The counts line stays as it was, and `next` names the commands that rearrange the picture.
-  - Decided by the owner later the same day: a box reached through its group or row or lane is connected in the picture, so it is no `lonely-box`.
+  - Decided by the owner later the same day: a box reached through its group or row or lane is connected in the picture, so it is no `lonely-node`.
   - Of the 16 boxes with no line of their own in the 329 saved drafts, 8 were reached that way and are no longer warned of.
-  - Changed on 2026-10-19 by "A line from every box of a group is a warning": `line-per-member` is an eighth and prints after `lonely-box`.
+  - Changed on 2026-10-19 by "A line from every box of a group is a warning": `edge-per-member` is an eighth and prints after `lonely-node`.
 - **All of them, every time.** Every write prints every warning the diagram has and not only those the command caused.
   - Every change lays the whole diagram out again ("Layout computed again on every change"), so the set can differ after any change.
 - **No source.** Decided by the owner later the same day: a warning has no `source:`, in text or in `--json`; errors and defects keep theirs.

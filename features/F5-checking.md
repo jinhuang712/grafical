@@ -5,15 +5,15 @@ F5: Checking
 ├── F5.1: Show — the diagram as facts
 ├── F5.2: Counts — facts about how the picture is drawn
 ├── F5.3: Warnings — what the picture draws poorly
-│   ├── F5.3.1: Bent edges — `bent-line`
-│   ├── F5.3.2: Edges passing a layer — `passing-row`
-│   ├── F5.3.3: Edges across a group — `line-across-group`
-│   ├── F5.3.4: Tight edges — `tight-lines`
+│   ├── F5.3.1: Bent edges — `bent-edge`
+│   ├── F5.3.2: Edges passing a layer — `passing-layer`
+│   ├── F5.3.3: Edges across a group — `edge-across-group`
+│   ├── F5.3.4: Tight edges — `tight-edges`
 │   ├── F5.3.5: Crowded labels — `crowded-label`
-│   ├── F5.3.6: Lonely nodes — `lonely-box`
-│   ├── F5.3.7: An edge per member — `line-per-member`
+│   ├── F5.3.6: Lonely nodes — `lonely-node`
+│   ├── F5.3.7: An edge per member — `edge-per-member`
 │   ├── F5.3.8: Crossings — `crossing`
-│   └── F5.3.9: Nodes aside — `box-aside`
+│   └── F5.3.9: Nodes aside — `node-aside`
 ├── F5.4: Check — defects, warnings and counts on demand
 └── F5.5: Checks of an agent's own — rules a diagram sets itself
 ```
@@ -95,7 +95,7 @@ A warning has no source: the outcome line names what the write changed, and a wa
 ```text
 ok changed=sync->geo
 
-warning: bent-line
+warning: bent-edge
 description: A line bends more than twice, mostly because it skips rows.
 detail:
   edge: sync->geo
@@ -116,25 +116,25 @@ next: layer move, node move, node swap
 
 ### F5.3.1: Bent edges
 
-`bent-line` names an edge with more than two bends.
+`bent-edge` names an edge with more than two bends.
 
 - Detail: `edge` and `bends` and `skip` (the layers between its ends' layers).
 
 ### F5.3.2: Edges passing a layer
 
-`passing-row` names an edge that passes among the nodes of layers between its ends and meets none of them.
+`passing-layer` names an edge that passes among the nodes of layers between its ends and meets none of them.
 
 - Detail: `edge`, `rows`.
 
 ### F5.3.3: Edges across a group
 
-`line-across-group` names an edge through the node of a group holding neither of its ends.
+`edge-across-group` names an edge through the node of a group holding neither of its ends.
 
 - Detail: `edge`, `groups`.
 
 ### F5.3.4: Tight edges
 
-`tight-lines` names runs of two edges under 12 px apart for over 100 px.
+`tight-edges` names runs of two edges under 12 px apart for over 100 px.
 
 - Detail: `edges`, `over` (the pixels they share).
 
@@ -146,14 +146,14 @@ next: layer move, node move, node swap
 
 ### F5.3.6: Lonely nodes
 
-`lonely-box` names a node no edge reaches.
+`lonely-node` names a node no edge reaches.
 
 - It has no line of its own and none to its group, layer or lane.
 - Detail: `node`.
 
 ### F5.3.7: An edge per member
 
-`line-per-member` names a group of two or more where every node has an edge to one end outside it, or from it.
+`edge-per-member` names a group of two or more where every node has an edge to one end outside it, or from it.
 
 - The edges are alike in kind and label and weight and arrowheads.
 - A group inside one with the same lines is left out.
@@ -167,7 +167,7 @@ next: layer move, node move, node swap
 
 ### F5.3.9: Nodes aside
 
-`box-aside` names a node wholly beside every node it connects to, so that its edges reach across.
+`node-aside` names a node wholly beside every node it connects to, so that its edges reach across.
 
 - It holds for a node placed in a layer or by steps.
 - Detail: `node` and `nodes`.

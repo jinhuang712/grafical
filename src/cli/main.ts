@@ -93,7 +93,7 @@ function stepFlags(opts: Opts): Record<string, unknown> {
 /** The step options of node add and node move (specs/decisions, "Steps from another box"). */
 function withSteps(c: Command): Command {
   return c
-    .option("--from <node>", "in no row: placed by steps from this box, and moves with it")
+    .option("--from <node>", "in no layer: placed by steps from this node, and moves with it")
     .option("--down <n>", "steps down from --from, 1 to 10")
     .option("--up <n>", "steps up")
     .option("--left <n>", "steps left")
@@ -245,7 +245,7 @@ export function build(): Command {
   const group = program
     .command("group")
     .description(
-      "a box per system: add, copy, join, leave, label, sublabel, label-at, order, style, remove",
+      "a border around a system: add, copy, join, leave, label, sublabel, label-at, order, style, remove",
     );
   json(
     group
@@ -389,7 +389,9 @@ export function build(): Command {
   json(
     lane
       .command("add")
-      .description("add a lane, optionally with members: layers (rows), nodes (columns) or groups")
+      .description(
+        "add a lane, optionally with members: layers (layers), nodes (columns) or groups",
+      )
       .argument("<file>")
       .argument("<id>")
       .requiredOption("--label <text>", "the name, short, as a reader would say it")
@@ -497,7 +499,7 @@ export function build(): Command {
       .argument("<id>")
       .requiredOption("--between <ids>", "one side: nodes and groups, comma-separated")
       .requiredOption("--and <ids>", "the other side")
-      .option("--allow <ids>", "lines, or nodes and groups whose lines, may cross")
+      .option("--allow <ids>", "edges, or nodes and groups whose edges, may cross")
       .option("--label <text>", "draw a dashed divider through it with these words"),
   ).action(async (file: string, id: string, opts: Opts) => {
     const raw: Record<string, unknown> = { op: "wall.add", id, ...pick(opts, ["label"]) };
@@ -510,10 +512,10 @@ export function build(): Command {
   json(
     wall
       .command("allow")
-      .description("let lines through a wall: by id, or every line of a node or group")
+      .description("let edges through a wall: by id, or every line of a node or group")
       .argument("<file>")
       .argument("<id>")
-      .argument("<allow...>", "lines, or nodes and groups whose lines, may cross")
+      .argument("<allow...>", "edges, or nodes and groups whose edges, may cross")
       .option("--off", "stop letting them through"),
   ).action(async (file: string, id: string, pass: string[], opts: Opts) => {
     await write(
@@ -558,7 +560,7 @@ export function build(): Command {
   json(
     label
       .command("style")
-      .description("mark styles on a line's label; with none, clear them")
+      .description("mark styles on an edge's label; with none, clear them")
       .argument("<file>")
       .argument("<id>")
       .argument("[styles...]"),
@@ -577,13 +579,13 @@ export function build(): Command {
   });
   const note = program
     .command("note")
-    .description("notes on a box, line, group: add, align, remove");
+    .description("notes on a node, edge, group: add, align, remove");
   json(
     note
       .command("add")
-      .description("add a note to a node, group or line, or replace the one it has")
+      .description("add a note to a node, group or edge, or replace the one it has")
       .argument("<file>")
-      .requiredOption("--on <id>", "the node, group or line it is about")
+      .requiredOption("--on <id>", "the node, group or edge it is about")
       .requiredOption("--text <text>", "a sentence or two")
       .option("--footnote", "a number on it and the text at the bottom, rather than a card"),
   ).action(async (file: string, opts: Opts) => {
@@ -594,7 +596,7 @@ export function build(): Command {
       .command("align")
       .description("line up the text of a note drawn as a card")
       .argument("<file>")
-      .argument("<on>", "the node, group or line it is about")
+      .argument("<on>", "the node, group or edge it is about")
       .argument("<align>", "left, center or right"),
   ).action(async (file: string, on: string, align: string) => {
     await write(file, { op: "note.align", on, align }, {});
@@ -604,14 +606,14 @@ export function build(): Command {
       .command("remove")
       .description("remove a note")
       .argument("<file>")
-      .requiredOption("--on <id>", "the node, group or line it is about"),
+      .requiredOption("--on <id>", "the node, group or edge it is about"),
   ).action(async (file: string, opts: Opts) => {
     await write(file, { op: "note.remove", ...pick(opts, ["on"]) }, opts);
   });
 
   const layer = program
     .command("layer")
-    .description("rows: add, label-at, move, split, label, look, remove");
+    .description("layers: add, label-at, move, split, label, look, remove");
   json(
     layer
       .command("add")
@@ -619,8 +621,8 @@ export function build(): Command {
       .argument("<file>")
       .argument("<id>")
       .option("--label <text>", "the name, short, as a reader would say it")
-      .option("--before <layer>", "just above this row")
-      .option("--after <layer>", "just below this row"),
+      .option("--before <layer>", "just above this layer")
+      .option("--after <layer>", "just below this layer"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "layer.add", id, ...pick(opts, ["label", "before", "after"]) }, opts);
   });
@@ -628,24 +630,24 @@ export function build(): Command {
   const node = program
     .command("node")
     .description(
-      "boxes: add, move, swap, align, merge, sublabel, mark, label, size, emphasis, type, style, remove",
+      "nodes: add, move, swap, align, merge, sublabel, mark, label, size, emphasis, type, style, remove",
     );
   json(
     withSteps(
       node
         .command("add")
-        .description("add a node to a layer, or by steps from another box")
+        .description("add a node to a layer, or by steps from another node")
         .argument("<file>")
         .argument("<id>")
-        .option("--layer <layer>", "the row")
+        .option("--layer <layer>", "the layer")
         .requiredOption("--label <text>", "the name, short, as a reader would say it")
-        .option("--type <type>", "what the box is: see Types below")
-        .option("--sublabel <text>", "a quieter second line: technology, port, count")
+        .option("--type <type>", "what the node is: see Types below")
+        .option("--sublabel <text>", "a quieter second edge: technology, port, count")
         .option("--size <size>", "s, m or l; leave it out")
         .option("--first", "the first place")
         .option("--last", "the last place")
-        .option("--before <node>", "just before this node in the row")
-        .option("--after <node>", "just after this node in the row")
+        .option("--before <node>", "just before this node in the layer")
+        .option("--after <node>", "just after this node in the layer")
         .option("--align <node>", "sit directly above or below a node in another layer")
         .option("--emphasis", "mark as one of the nodes to see first"),
     ),
@@ -667,7 +669,7 @@ export function build(): Command {
   json(
     node
       .command("size")
-      .description("set a node's box size; without --size, grafical sizes it to its text")
+      .description("set a node's node size; without --size, grafical sizes it to its text")
       .argument("<file>")
       .argument("<id>")
       .option("--size <size>", "s, m or l"),
@@ -678,14 +680,14 @@ export function build(): Command {
     withSteps(
       node
         .command("move")
-        .description("move a node to another layer or position, or by steps from another box")
+        .description("move a node to another layer or position, or by steps from another node")
         .argument("<file>")
         .argument("<id>")
-        .option("--layer <layer>", "the row to move it to")
+        .option("--layer <layer>", "the layer to move it to")
         .option("--first", "the first place")
         .option("--last", "the last place")
-        .option("--before <node>", "just before this node in the row")
-        .option("--after <node>", "just after this node in the row"),
+        .option("--before <node>", "just before this node in the layer")
+        .option("--after <node>", "just after this node in the layer"),
     ),
   ).action(async (file: string, id: string, opts: Opts) => {
     const op = { op: "node.move", id, ...pick(opts, ["layer", ...POSITION]), ...stepFlags(opts) };
@@ -704,7 +706,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "lines: add, ends, reverse, label, side, label-at, weight, both, pass, number, type, style, remove",
+      "edges: add, ends, reverse, label, side, label-at, weight, both, pass, number, type, style, remove",
     );
   json(
     edge
@@ -714,10 +716,10 @@ export function build(): Command {
       .argument("<from>")
       .argument("<to>")
       .option("--id <id>", "default: <from>-><to>")
-      .option("--label <text>", "what the line means; leave it out when that is obvious")
+      .option("--label <text>", "what the edge means; leave it out when that is obvious")
       .option("--type <type>", "see Types below")
       .option("--both", "an arrowhead at both ends")
-      .option("--pass", "may pass a bar, a row with no box, between its ends"),
+      .option("--pass", "may pass a bar, a layer with no node, between its ends"),
   ).action(async (file: string, from: string, to: string, opts: Opts) => {
     await write(
       file,
@@ -736,7 +738,7 @@ export function build(): Command {
       .description("set an edge's label; without --label, clear it")
       .argument("<file>")
       .argument("<id>")
-      .option("--label <text>", "what the line means; leave it out when that is obvious"),
+      .option("--label <text>", "what the edge means; leave it out when that is obvious"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.label", id, ...pick(opts, ["label"]) }, opts);
   });
@@ -756,7 +758,7 @@ export function build(): Command {
   json(
     edge
       .command("label-at")
-      .description("sit an edge's label on its line, as it does by default, or beside it")
+      .description("sit an edge's label on its edge, as it does by default, or beside it")
       .argument("<file>")
       .argument("<id>")
       .argument("<seat>", "on or beside"),
@@ -796,7 +798,7 @@ export function build(): Command {
   json(
     edge
       .command("pass")
-      .description("let a line pass the bars between its ends, or no longer with --off")
+      .description("let an edge pass the bars between its ends, or no longer with --off")
       .argument("<file>")
       .argument("<id>")
       .option("--off", "undo it"),
@@ -933,7 +935,7 @@ export function build(): Command {
   json(
     layer
       .command("look")
-      .description("draw a row as a box or a band, even when no line ends at it")
+      .description("draw a layer as a node or a band, even when no edge ends at it")
       .argument("<file>")
       .argument("<id>")
       .argument("[look]", "box or band"),
@@ -961,8 +963,8 @@ export function build(): Command {
       .argument("<id>")
       .option("--first", "the first place")
       .option("--last", "the last place")
-      .option("--before <layer>", "just above this row")
-      .option("--after <layer>", "just below this row"),
+      .option("--before <layer>", "just above this layer")
+      .option("--after <layer>", "just below this layer"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "layer.move", id, ...pick(opts, POSITION) }, opts);
   });
@@ -1023,7 +1025,7 @@ export function build(): Command {
     group
       .command("order")
       .description(
-        "put a group's boxes, its inner groups' too, before or after another group's, in every shared layer",
+        "put a group's borders, its inner groups' too, before or after another group's, in every shared layer",
       )
       .argument("<file>")
       .argument("<id>")
@@ -1035,15 +1037,15 @@ export function build(): Command {
   json(
     group
       .command("copy")
-      .description("copy a group with its inner groups, boxes and the lines between them")
+      .description("copy a group with its inner groups, nodes and the edges between them")
       .argument("<file>")
       .argument("<id>")
       .argument("<into>", "the copy's id")
       .requiredOption("--label <text>", "the copy's label")
       .requiredOption("--suffix <suffix>", "added to every other id the copy makes")
-      .option("--before <group>", "just before this group, in every row of the copy")
-      .option("--after <group>", "just after this group, in every row of the copy")
-      .option("--outside", "copy the lines to boxes outside the group too"),
+      .option("--before <group>", "just before this group, in every layer of the copy")
+      .option("--after <group>", "just after this group, in every layer of the copy")
+      .option("--outside", "copy the edges to nodes outside the group too"),
   ).action(async (file: string, id: string, into: string, opts: Opts) => {
     const raw: Record<string, unknown> = {
       op: "group.copy",
@@ -1081,7 +1083,7 @@ export function build(): Command {
   json(
     diagram
       .command("lines")
-      .description("how lines are drawn")
+      .description("how edges are drawn")
       .argument("<file>")
       .argument("<lines>", "square or round"),
   ).action(async (file: string, lines: string, opts: Opts) => {
@@ -1100,13 +1102,13 @@ export function build(): Command {
     diagram
       .command("legend")
       .description(
-        "name a line style, line width or mark in the legend; without --text, take its entry away",
+        "name an edge style, edge width or mark in the legend; without --text, take its entry away",
       )
       .argument("<file>")
-      .argument("[style]", "how the lines look: solid, dashed, dotted or plain")
+      .argument("[style]", "how the edges look: solid, dashed, dotted or plain")
       .option(
         "--weight <weight>",
-        "a line width instead: thick, heavy, a stylesheet's level, or pixels",
+        "an edge width instead: thick, heavy, a stylesheet's level, or pixels",
       )
       .option("--mark <mark>", "a mark instead: its emoji, text or file, as node mark set it")
       .option("--text <text>"),
@@ -1169,7 +1171,7 @@ export function build(): Command {
       .description("print a compact view of a diagram, or one object and what refers to it")
       .argument("<file>")
       .argument("[id]", "an object: its facts and what refers to it")
-      .option("--drawn", "how it is drawn: each box, line and group, as facts and counts"),
+      .option("--drawn", "how it is drawn: each node, edge and group, as facts and counts"),
   ).action(async (file: string, id: string | undefined, opts: Opts) => {
     const d = loadDiagram(file);
     if (isReport(d)) {

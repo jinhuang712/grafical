@@ -306,7 +306,7 @@ describe("defect split from grafical check --all", () => {
       problems: [
         { kind: "defect", code: "edge-overlap", detail: { owner: "engine" } },
         { kind: "defect", code: "overflow", detail: { owner: "agent" } },
-        { kind: "warning", code: "bent-line", detail: { edge: "a->b" } },
+        { kind: "warning", code: "bent-edge", detail: { edge: "a->b" } },
       ],
     });
     expect(parseCheckAll(blocks)).toEqual({ engineDefects: 1, agentDefects: 1 });

@@ -70,7 +70,7 @@ describe("grouped diagrams", () => {
     run("node", "add", f, "c", "--layer", "r3", "--label", "C");
     // The boxes have no lines: each write prints those warnings after its outcome.
     expect(run("group", "add", f, "g", "--label", "G", "--nodes", "a,b").out).toMatch(
-      /^ok changed=g,a,b\n\nwarning: lonely-box\n/,
+      /^ok changed=g,a,b\n\nwarning: lonely-node\n/,
     );
     expect(run("group", "join", f, "g", "c").code).toBe(0);
     // Leaving the middle row: the box still spans it (specs/decisions, "Rows unseen, groups as systems").
@@ -121,7 +121,7 @@ describe("grouped diagrams", () => {
     expect(w.code).toBe(0);
     expect(w.out).toMatch(/^counts nodes=17 lines=0 crossings=0 bends=0 .*fullest=row:17 /m);
     // No warning of too many boxes: only the facts, each box with no lines.
-    expect(w.out.match(/^warning: .*$/gm)).toEqual(Array(17).fill("warning: lonely-box"));
+    expect(w.out.match(/^warning: .*$/gm)).toEqual(Array(17).fill("warning: lonely-node"));
     expect(w.out).not.toMatch(/hint|too many/);
     const c = run("check", f, "--json");
     expect(c.code).toBe(0);
@@ -154,7 +154,7 @@ describe("grouped diagrams", () => {
         "failed changed=-",
         "",
         "error: missing-field",
-        "description: The operation lacks a field it needs, such as a box's place in a row that has boxes.",
+        "description: The operation lacks a field it needs, such as a node's place in a layer that has nodes.",
         'source: grafical -f copy.grafical.yaml group --copy zone zone-b --label "Zone B" --suffix -b',
         "detail:",
         "  field: place",
@@ -205,7 +205,7 @@ describe('groups inside groups on the command line (specs/decisions, "Every laye
     const blocked = run("group", "label-at", f, "vpc", "0.5", "--side", "bottom");
     expect(blocked.code).not.toBe(0);
     expect(blocked.out).toContain(
-      "defect: title-blocked\ndescription: A line runs where the group's title sits, and no line moves for a title.\n",
+      "defect: title-blocked\ndescription: An edge runs where the group's title sits, and no edge moves for a title.\n",
     );
     expect(blocked.out).toContain(
       "detail:\n  owner: agent\n  group: vpc\n  edge: db->backup\n  place: 0.5 bottom inside\n  clear: 0.5 top inside, ",

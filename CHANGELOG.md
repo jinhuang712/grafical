@@ -12,6 +12,7 @@ grafical has not been released; the first release will be 0.1.0.
 - A verb is a flag after its noun, as in `grafical -f a.grafical edge --add a b`.
 - `apply -` reads a batch from standard input.
 - Batches and files use the names of the commands: `node.label`, `node.mark`, `edge.number`, `group.label-at`, `diagram.caption` and the rest, with `mark`, `marks`, `emphasis` and `caption` as fields.
+- Help and refusals say node, layer and edge throughout, and the codes follow: `lonely-node`, `bent-edge`, `node-aside`, `passing-layer`, `edge-across-group`, `edge-per-member` and `tight-edges`.
 - `node --kind` and `edge --kind` went, since `--type` takes a built-in type or one of your own, and a batch says `type` too.
 - `edge --emphasize` went, since `edge --weight <id> --weight thick` draws the same line, and a saved edge's `accent` reads as that weight.
 - A help page writes its examples as a caller types them, with `-f` first, and a verb in the old form names the new one as `likely`.
@@ -38,7 +39,7 @@ grafical has not been released; the first release will be 0.1.0.
 ### Boxes and rows
 
 - A band in a lane whose label reads the same draws the name once, in the lane.
-- A box beside every box it connects to is now the warning `box-aside`, however it was placed.
+- A box beside every box it connects to is now the warning `node-aside`, however it was placed.
   - It was refused when the box was placed by steps, and passed in silence in a row.
 - The new kind of box `choice` is a small diamond with no text where a line splits into several.
   - The question goes on the line into it and each answer on a line out.
@@ -181,7 +182,7 @@ grafical has not been released; the first release will be 0.1.0.
 
 ### Refusals and warnings
 
-- The new warning `line-per-member` names a group each of whose boxes has a line to the same end or from it.
+- The new warning `edge-per-member` names a group each of whose boxes has a line to the same end or from it.
   - The lines are alike in kind and label and weight and arrowheads.
   - The warning names them.
   - `edge add` can draw one line to the group instead.
@@ -215,12 +216,12 @@ grafical has not been released; the first release will be 0.1.0.
   - It cannot tell when a prefix is refused for another problem or the prefixes are spent.
 - Every write prints every warning the diagram has as a block, and so do `check` and `render`.
   - Single commands print them too.
-  - `bent-line`: a line with more than two bends.
-  - `passing-row`: a line through rows it does not connect.
-  - `line-across-group`: a line through a group holding neither end, with the groups.
-  - `tight-lines`: two lines under 12 px apart for over 100 px.
+  - `bent-edge`: a line with more than two bends.
+  - `passing-layer`: a line through rows it does not connect.
+  - `edge-across-group`: a line through a group holding neither end, with the groups.
+  - `tight-edges`: two lines under 12 px apart for over 100 px.
   - `crowded-label`: a label with under 8 px of room on two sides.
-  - `lonely-box`: a box no line reaches.
+  - `lonely-node`: a box no line reaches.
     - Neither its own line nor one to its group, row or lane reaches it.
   - `crossing`: a pair of lines that cross.
   - A warning has no source: the outcome line names what the write changed.
@@ -245,7 +246,7 @@ grafical has not been released; the first release will be 0.1.0.
   - An example is a group split around a box in one row.
   - Before, it printed `ok` with its warnings and counts for such a file.
 - The counts gain `bent=`: the lines drawn with more than two bends.
-  - Each is also a `bent-line` warning.
+  - Each is also a `bent-edge` warning.
   - Nothing is refused for it: it tells the agent which line its rows send round, which before only `check --all` measured.
 - `show --drawn` prints a `gutter` record for each pair of neighbouring rows.
   - It counts the lines and crossings and tight pairs and crowded labels between them.

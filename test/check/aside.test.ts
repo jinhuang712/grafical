@@ -43,7 +43,7 @@ function diagram(store: DiagramNode, low: DiagramNode[] = []): Diagram {
 }
 
 const asides = (d: Diagram) =>
-  warningsOf(drawing(d, layout(d, m)), d).filter((w) => w.code === "box-aside");
+  warningsOf(drawing(d, layout(d, m)), d).filter((w) => w.code === "node-aside");
 
 describe('a box beside every box it connects to (specs/decisions, "A box beside its neighbours is a warning")', () => {
   it("warns and never fails the write when the agent placed it there by steps", () => {
@@ -51,7 +51,7 @@ describe('a box beside every box it connects to (specs/decisions, "A box beside 
     expect(asideBoxes(layout(aside, m))).toEqual([{ box: "db", users: ["a", "b"] }]);
     expect(check(aside, layout(aside, m), m)).toEqual([]);
     expect(asides(aside)).toEqual([
-      { code: "box-aside", facts: { node: "db", nodes: ["a", "b"] } },
+      { code: "node-aside", facts: { node: "db", nodes: ["a", "b"] } },
     ]);
     const under = diagram(box("db", { kind: "store", from: "a", down: 1 }));
     expect(asides(under)).toEqual([]);

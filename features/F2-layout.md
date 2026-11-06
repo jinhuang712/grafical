@@ -174,7 +174,7 @@ grafical -f <file> node --move <id> [--from <node>] [--down <n> | --up <n>] [--l
   - Steps combined with a layer or a position or an alignment or a column or a lane are refused as `conflicting-position`.
 - `node --move --layer` puts the node back in a layer.
   - `node --move` with steps and no `--from` keeps the node it steps from, and with `--from` alone keeps the steps.
-- A node wholly beside every node it connects to is a warning, `box-aside`.
+- A node wholly beside every node it connects to is a warning, `node-aside`.
   - The warning names those nodes.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)

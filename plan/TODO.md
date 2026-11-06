@@ -23,7 +23,7 @@
   - It is open what goes in it and how each sample is drawn.
   - `diagram legend` explains line styles and widths and marks but not a node's fill.
   - A key of small nodes such as "Works" and "Bug" and "Fixed" is drawn as a group of plain nodes.
-  - Every one of them gets `lonely-box`, six warnings for a picture that is right.
+  - Every one of them gets `lonely-node`, six warnings for a picture that is right.
 - created: 2026-10-30
 - updated: 2026-11-06
 - status: HALT

@@ -73,14 +73,14 @@ edges:
 
 /** The facts each warning gives, by its code. */
 const KEYS: Record<WarningCode, string[]> = {
-  "bent-line": ["edge", "bends", "skip"],
-  "passing-row": ["edge", "rows"],
-  "line-across-group": ["edge", "groups"],
-  "tight-lines": ["edges", "over"],
+  "bent-edge": ["edge", "bends", "skip"],
+  "passing-layer": ["edge", "rows"],
+  "edge-across-group": ["edge", "groups"],
+  "tight-edges": ["edges", "over"],
   "crowded-label": ["edge"],
-  "lonely-box": ["node"],
-  "box-aside": ["node", "nodes"],
-  "line-per-member": ["group", "edges"],
+  "lonely-node": ["node"],
+  "node-aside": ["node", "nodes"],
+  "edge-per-member": ["group", "edges"],
   crossing: ["edges"],
 };
 
@@ -100,14 +100,14 @@ describe('warnings (specs/decisions, "Every write prints every warning")', () =>
       const dr = drawing(d, layout(d, m));
       const w = warningsOf(dr, d);
       const of = (code: WarningCode) => w.filter((x) => x.code === code);
-      expect(of("bent-line").length, d.title).toBe(dr.counts.bent);
-      expect(of("passing-row").length, d.title).toBe(dr.counts.passing);
-      expect(of("line-across-group").length, d.title).toBe(dr.counts.across);
-      expect(of("tight-lines").length, d.title).toBe(dr.counts.tight);
+      expect(of("bent-edge").length, d.title).toBe(dr.counts.bent);
+      expect(of("passing-layer").length, d.title).toBe(dr.counts.passing);
+      expect(of("edge-across-group").length, d.title).toBe(dr.counts.across);
+      expect(of("tight-edges").length, d.title).toBe(dr.counts.tight);
       expect(of("crowded-label").length, d.title).toBe(dr.counts.crowded);
       // A box with no lines of its own, unless a line reaches it through its group, row or lane.
       const bare = dr.boxes.filter((b) => b.lines === 0).map((b) => b.id);
-      for (const x of of("lonely-box")) expect(bare, d.title).toContain(x.facts.node);
+      for (const x of of("lonely-node")) expect(bare, d.title).toContain(x.facts.node);
       // One warning per pair of lines that cross, however often they cross.
       const pairs = dr.lines.reduce((s, l) => s + l.crosses.length, 0) / 2;
       expect(of("crossing").length, d.title).toBe(pairs);
@@ -116,12 +116,12 @@ describe('warnings (specs/decisions, "Every write prints every warning")', () =>
       for (const x of w) {
         seen.add(x.code);
         expect(Object.keys(x.facts), `${d.title} ${x.code}`).toEqual(KEYS[x.code]);
-        if (x.code === "line-across-group") {
+        if (x.code === "edge-across-group") {
           expect(x.facts.groups?.length).toBeGreaterThan(0);
           for (const g of x.facts.groups ?? []) expect(groups).toContain(g);
         }
-        if (x.code === "tight-lines") expect(x.facts.over).toBeGreaterThan(100);
-        if (x.code === "crossing" || x.code === "tight-lines") {
+        if (x.code === "tight-edges") expect(x.facts.over).toBeGreaterThan(100);
+        if (x.code === "crossing" || x.code === "tight-edges") {
           const [a, b] = x.facts.edges ?? [];
           expect(a !== undefined && b !== undefined && a < b, `${x.code} ${a} ${b}`).toBe(true);
         }
@@ -134,7 +134,7 @@ describe('warnings (specs/decisions, "Every write prints every warning")', () =>
 
   it("name a box with no lines", () => {
     const w = warningsOf(drawing(alone, layout(alone, m)), alone);
-    expect(w).toEqual([{ code: "lonely-box", facts: { node: "c" } }]);
+    expect(w).toEqual([{ code: "lonely-node", facts: { node: "c" } }]);
   });
 
   it("leave out a box a line reaches through its group, its row or its lane", () => {
@@ -158,13 +158,13 @@ edges:
   - {id: a->ops, from: a, to: ops}
 `);
     if (Array.isArray(d)) throw new Error(JSON.stringify(d));
-    const w = warningsOf(drawing(d, layout(d, m)), d).filter((x) => x.code === "lonely-box");
-    expect(w).toEqual([{ code: "lonely-box", facts: { node: "f" } }]);
+    const w = warningsOf(drawing(d, layout(d, m)), d).filter((x) => x.code === "lonely-node");
+    expect(w).toEqual([{ code: "lonely-node", facts: { node: "f" } }]);
     // Without the lines to the group, the row and the lane, each of those boxes stands alone.
     const bare = { ...d, edges: [] };
     expect(
       warningsOf(drawing(bare, layout(bare, m)), bare)
-        .filter((x) => x.code === "lonely-box")
+        .filter((x) => x.code === "lonely-node")
         .map((x) => x.facts.node),
     ).toEqual(["a", "b", "c", "d", "e", "f"]);
   });
@@ -172,27 +172,27 @@ edges:
   it("name a group each of whose boxes has a line alike to one end, or from it", () => {
     if (Array.isArray(members)) throw new Error(JSON.stringify(members));
     const w = warningsOf(drawing(members, layout(members, m)), members).filter(
-      (x) => x.code === "line-per-member",
+      (x) => x.code === "edge-per-member",
     );
     // Context's boxes each call the hub, but Z in the group around it does not; the hub's lines into Tools differ
     // in label; each box of Events sends the hub both an event and a call, which are two lines alike apart.
     expect(w).toEqual([
-      { code: "line-per-member", facts: { group: "ctx", edges: ["a->hub", "b->hub", "c->hub"] } },
-      { code: "line-per-member", facts: { group: "ev", edges: ["r->hub", "s->hub"] } },
-      { code: "line-per-member", facts: { group: "ev", edges: ["r->hub#2", "s->hub#2"] } },
+      { code: "edge-per-member", facts: { group: "ctx", edges: ["a->hub", "b->hub", "c->hub"] } },
+      { code: "edge-per-member", facts: { group: "ev", edges: ["r->hub", "s->hub"] } },
+      { code: "edge-per-member", facts: { group: "ev", edges: ["r->hub#2", "s->hub#2"] } },
     ]);
     // Once Z calls the hub too, the group around Context has the same lines, and only it is named.
     const all = { ...members, edges: [...members.edges, e("z", "hub", "call")] };
     expect(
       warningsOf(drawing(all, layout(all, m)), all)
-        .filter((x) => x.code === "line-per-member")
+        .filter((x) => x.code === "edge-per-member")
         .map((x) => x.facts.group),
     ).toEqual(["outer", "ev", "ev"]);
   });
 
   it("name the groups a line runs through that hold neither of its ends", () => {
     const d = fixture("dispatch");
-    const w = warningsOf(drawing(d, layout(d, m)), d).filter((x) => x.code === "line-across-group");
+    const w = warningsOf(drawing(d, layout(d, m)), d).filter((x) => x.code === "edge-across-group");
     expect(w.map((x) => `${x.facts.edge} ${x.facts.groups?.join(",")}`)).toEqual([
       "events->notify-svc booking",
       "events->payments-api matching",

@@ -143,5 +143,5 @@ An edge from a node to itself loops through the gutter below the node. Its two e
 - [019. Lines meet any side](decisions/019-lines-meet-any-side.md)
 - [023. Fan-outs of three bundle](decisions/023-fan-outs-of-three-bundle.md)
 - [090. A bundle splits at one knot](decisions/090-a-bundle-splits-at-one-knot.md)
-- [060. A bent line is reported and never refused](decisions/060-a-bent-line-is-reported-and-never-refused.md)
+- [060. A bent line is reported and never refused](decisions/060-a-bent-edge-is-reported-and-never-refused.md)
 - [061. A line never moves for its label](decisions/061-a-line-never-moves-for-its-label.md)

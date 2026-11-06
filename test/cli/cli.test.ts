@@ -190,9 +190,9 @@ describe("write commands", () => {
         problems: [
           {
             kind: "warning",
-            code: "lonely-box",
+            code: "lonely-node",
             description:
-              "No line reaches a box: none of its own, and none to its group, row or lane.",
+              "No edge reaches a node: none of its own, and none to its group, layer or lane.",
             detail: { node: "cache" },
             next: ["node --remove", "edge --add"],
           },
@@ -208,7 +208,7 @@ describe("write commands", () => {
     const r = run("node", "add", "single.grafical.yaml", "x", "--layer", "servces", "--label", "X");
     expect(r.code).toBe(1);
     expect(r.out).toMatch(
-      /^failed changed=-\n\nerror: unknown-layer\ndescription: No row has the id\.\n/,
+      /^failed changed=-\n\nerror: unknown-layer\ndescription: No layer has the id\.\n/,
     );
     expect(r.out).toContain(
       "detail:\n  field: layer\n  found: servces\n  near: services, storage, clients\n",
@@ -231,7 +231,7 @@ describe("write commands", () => {
     expect(j.problems[0]).toMatchObject({
       kind: "error",
       code: "unknown-node",
-      description: "No box has the id.",
+      description: "No node has the id.",
       detail: { op: 1, field: "to", found: "nope" },
       next: ["node --add"],
     });
@@ -326,8 +326,8 @@ describe("write commands", () => {
       [
         "ok changed=q,p->q,p->q#2",
         "",
-        "warning: lonely-box",
-        "description: No line reaches a box: none of its own, and none to its group, row or lane.",
+        "warning: lonely-node",
+        "description: No edge reaches a node: none of its own, and none to its group, layer or lane.",
         "detail:",
         "  node: p",
         "next: node --remove, edge --add",

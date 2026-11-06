@@ -460,28 +460,28 @@ export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
   );
   return [
     ...bentLines(dr.lines).map(
-      (l): Warning => ({ code: "bent-line", facts: { edge: l.id, bends: l.bends, skip: l.skip } }),
+      (l): Warning => ({ code: "bent-edge", facts: { edge: l.id, bends: l.bends, skip: l.skip } }),
     ),
     ...dr.lines
       .filter((l) => l.passes.length > 0)
-      .map((l): Warning => ({ code: "passing-row", facts: { edge: l.id, rows: l.passes } })),
+      .map((l): Warning => ({ code: "passing-layer", facts: { edge: l.id, rows: l.passes } })),
     ...c.across.map(
-      (a): Warning => ({ code: "line-across-group", facts: { edge: a.id, groups: a.groups } }),
+      (a): Warning => ({ code: "edge-across-group", facts: { edge: a.id, groups: a.groups } }),
     ),
     ...c.tight.map(
       (t): Warning => ({
-        code: "tight-lines",
+        code: "tight-edges",
         facts: { edges: [t.a, t.b], over: Math.round(t.hi - t.lo) },
       }),
     ),
     ...c.crowded.map((x): Warning => ({ code: "crowded-label", facts: { edge: x.id } })),
     ...dr.boxes
       .filter((b) => b.lines === 0 && !reached.has(b.id))
-      .map((b): Warning => ({ code: "lonely-box", facts: { node: b.id } })),
+      .map((b): Warning => ({ code: "lonely-node", facts: { node: b.id } })),
     ...dr.aside.map(
-      (a): Warning => ({ code: "box-aside", facts: { node: a.box, nodes: a.users } }),
+      (a): Warning => ({ code: "node-aside", facts: { node: a.box, nodes: a.users } }),
     ),
-    ...linesPerMember(d).map((x): Warning => ({ code: "line-per-member", facts: x })),
+    ...linesPerMember(d).map((x): Warning => ({ code: "edge-per-member", facts: x })),
     ...dr.lines.flatMap((l) =>
       l.crosses
         .filter((o) => l.id < o)

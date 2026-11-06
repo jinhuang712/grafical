@@ -259,14 +259,14 @@ export type UsageCode = (typeof USAGE_CODES)[number];
  * "A line from every box of a group is a warning"), and two lines that cross.
  */
 export const WARNING_CODES = [
-  "bent-line",
-  "passing-row",
-  "line-across-group",
-  "tight-lines",
+  "bent-edge",
+  "passing-layer",
+  "edge-across-group",
+  "tight-edges",
   "crowded-label",
-  "lonely-box",
-  "box-aside",
-  "line-per-member",
+  "lonely-node",
+  "node-aside",
+  "edge-per-member",
   "crossing",
 ] as const;
 export type WarningCode = (typeof WARNING_CODES)[number];

@@ -12,8 +12,8 @@ import { MARK_COLORS, MARK_SHAPES, MARK_SIZES, STEP_NUMBER_MAX } from "../model/
 
 /** What grafical is: the top of `grafical --help`. */
 export const PROGRAM_ABOUT = `grafical draws diagrams from facts: what exists and who talks to whom, what
-moves where, the steps of a process, the states of a thing. You say which row
-a box is in, what it connects to and which group it belongs to; grafical
+moves where, the steps of a process, the states of a thing. You say which layer
+a node is in, what it connects to and which group it belongs to; grafical
 places, sizes and routes everything, and refuses a change that would draw
 wrong. The diagram is one file, <name>.grafical, kept in git. It
 does not draw sequence diagrams, ER or class diagrams, mind maps or timelines
@@ -25,7 +25,7 @@ How to work:
   1. grafical new <file> --title <text> --subtitle <text>
   2. Write the whole draft as one batch file, then
      grafical apply <file> batch.yaml. apply --help has a full example, and
-     each command's --help shows its line in a batch.
+     each command's --help shows its edge in a batch.
   3. grafical render <file> and look at the PNG, or read
      grafical show <file> --drawn.
   4. Improve one change at a time. grafical try <file> a.yaml b.yaml prints
@@ -35,24 +35,24 @@ How to work:
   the file by hand.
 
 Ways to draw, by the story each tells:
-  the way things move     rows, top to bottom (layer add); the order of a
-                          row decides most crossings (node move, node swap)
+  the way things move     layers, top to bottom (layer add); the order of a
+                          layer decides most crossings (node move, swap)
   a thing, step or state  node add --type; node merge for several a reader
                           need not tell apart; node mark for a mark
-  a box beside a box      node add --from <box> --right 1, which moves with
+  a node beside a node      node add --from <node> --right 1, which moves with
                           it; node align, directly above or below
-  what talks to what      edge add --type; an end may be a group, a row or
+  what talks to what      edge add --type; an end may be a group, a layer or
                           a lane, for one line to the whole
-  one path, in order      edge number numbers its lines; edge weight draws
+  one path, in order      edge number numbers its edges; edge weight draws
                           it thick
-  what every request      a row with no boxes that lines end at, drawn as
+  what every request      a layer with no nodes that edges end at, drawn as
   passes                  one bar: a gateway or a bus
   one system or team      group add, nested with --in; group label-at places
                           its label; group copy makes a second zone
   who does what           lane add
   two sides               column add; wall add keeps two parts apart, and
                           with --label draws a divider
-  what the boxes cannot   note add, a card or a footnote; diagram legend;
+  what the nodes cannot   note add, a card or a footnote; diagram legend;
   say                     the subtitle; a footnote (new --note)
 
 How common kinds of diagram are usually drawn, if you want it: grafical guide.
@@ -108,21 +108,21 @@ Example:
 
   apply: {
     about: `Apply a YAML list of operations, all or nothing. This is the way to draft:
-one batch with every row, node, group and edge.`,
+one batch with every layer, node, group and edge.`,
     after: `
 Batch file:
   A YAML list. Each item is {op: <noun>.<verb>, ...} with the command's
   arguments and options as fields, in camelCase. Operations apply in order; if
-  one fails, none apply, and the refusal's source gives its line in the file.
-  Every command works in a batch: its --help shows its line, such as
+  one fails, none apply, and the refusal's source gives its edge in the file.
+  Every command works in a batch: its --help shows its edge, such as
   grafical node add --help.
 
 Good to know:
-  - Add rows first, then nodes, then groups and lanes, then edges.
+  - Add layers first, then nodes, then groups and lanes, then edges.
   - Quote text that holds a comma, a colon or a #: sublabel: "iOS, Android".
-  - from with down, up, left or right: a box in no row, cells from a box.
+  - from with down, up, left or right: a node in no layer, cells from a node.
   - An id is lowercase letters, digits, ".", "_" or "-", and unique across
-    rows, nodes, groups, lanes and edges: a node cannot share its row's id.
+    layers, nodes, groups, lanes and edges: a node cannot share its layer's id.
 
 Output:
   ok changed=<ids> when the change is written, or failed changed=- when it
@@ -130,7 +130,7 @@ Output:
   line before each; then, on apply, the counts:
     <kind>: <code>
     description: <what happened, one sentence per code>
-    source: <the command, its batch line, its batch file, or "already in
+    source: <the command, its batch edge, its batch file, or "already in
             the file">
     detail:
       <key>: <value>
@@ -138,32 +138,32 @@ Output:
   A detail key named for one thing (node, edge) holds one value; one named
   for several (nodes, edges, ends) holds a list, even of one, in --json too.
   kind is error (nothing could be applied), defect (it would draw wrong) or
-  warning (written, drawn poorly). A warning has no source line: the
-  outcome line names what changed. Every write, check and render prints
+  warning (written, drawn poorly). A warning has no source edge: the
+  outcome edge names what changed. Every write, check and render prints
   every warning the diagram has:
-    bent-line          a line of over 2 bends: edge, bends, skip (the rows
-                       between its ends' rows)
-    passing-row        a line through rows it does not connect: edge, rows
-    line-across-group  a line through a group holding neither of its ends:
+    bent-edge          a line of over 2 bends: edge, bends, skip (the layers
+                       between its ends' layers)
+    passing-layer      an edge through layers it does not connect: edge, layers
+    edge-across-group  an edge through a group holding neither of its ends:
                        edge, groups
-    tight-lines        two lines under 12 px apart for over 100 px: edges,
+    tight-edges        two lines under 12 px apart for over 100 px: edges,
                        over (the pixels they share)
-    crowded-label      a label under 8 px from a line, box, border or label
+    crowded-label      a label under 8 px from an edge, node, border or label
                        on two sides: edge
-    lonely-box         a box no line reaches, neither its own nor one to its
-                       group, row or lane: node
-    box-aside          a box beside every box it connects to: node, nodes
-    line-per-member    every box of a group has a line alike to one end, or
+    lonely-node         a node no edge reaches, neither its own nor one to its
+                       group, layer or lane: node
+    node-aside          a node beside every node it connects to: node, nodes
+    edge-per-member    every node of a group has an edge alike to one end, or
                        from it: group, edges
     crossing           two lines that cross: edges
   counts nodes= lines= crossings= bends= bent= length= width= height=
          fullest= busiest= longest= passing= across= tight= crowded=
-    crossings counts the points where lines cross; length is every line's
-    length together, in pixels. fullest: the row with most nodes,
-    <row>:<nodes>; busiest: the box with most lines, <box>:<lines>;
-    longest: <line>:<length>; bent, passing, across, tight and crowded
+    crossings counts the points where edges cross; length is every edge's
+    length together, in pixels. fullest: the layer with most nodes,
+    <layer>:<nodes>; busiest: the node with most edges, <node>:<edges>;
+    longest: <edge>:<length>; bent, passing, across, tight and crowded
     count the warnings of their kind. grafical show <file> --drawn prints a
-    record per box and line.
+    record per node and edge.
   Exit codes: 0 done, 1 refused, 2 a usage error.
 
 Example: two systems around a shared store
@@ -185,35 +185,35 @@ Good to know:
   },
 
   show: {
-    about: `Print a compact view of the diagram: rows, nodes in order, groups, lanes and
+    about: `Print a compact view of the diagram: layers, nodes in order, groups, lanes and
 edges, in the words of the operations. Read it instead of the file.`,
     after: `
 Good to know:
   - --drawn prints how it is drawn, one record per line, as key=value:
       counts ...                    as apply prints them
-      box id= row= place= of= width= height= lines= sides= reach=
+      node id= layer= place= of= width= height= lines= sides= reach=
       group id= members= width= height=
-      line id= from= to= leaves= enters= bends= length= direct= detour=
+      edge id= from= to= leaves= enters= bends= length= direct= detour=
            skip= crosses= passes= bundle=
       gutter above= below= lines= crossings= tight= crowded=
-      wall id= run= length= space= lines=   lines: the lines through it
+      wall id= run= length= space= lines=   edges: the edges through it
       note on= as= number= lines=   as: callout or footnote
       legend style= weight= width= mark= text=   each style and width the
            picture draws, and each named mark; text=- has no entry
-    place counts from 1 at the row's left, and of is how many boxes the
-    row holds. sides counts a box's lines by side, as top:1,bottom:2, and
-    reach is their length together. direct is the shortest a line between
+    place counts from 1 at the layer's left, and of is how many nodes the
+    layer holds. sides counts a node's edges by side, as top:1,bottom:2, and
+    reach is their length together. direct is the shortest an edge between
     its two ends could be, and detour its length over direct. skip counts
-    the rows between its ends' rows. passes names the rows it runs
-    through without meeting a box of. gutter is the space between two
-    neighbouring rows that hold boxes: the lines with a run in it, and the
+    the layers between its ends' layers. passes names the layers it runs
+    through without meeting a node of. gutter is the space between two
+    neighbouring layers that hold nodes: the edges with a run in it, and the
     crossings, tight pairs and crowded labels in it, counted as apply's
     counts are. Sizes and lengths are in pixels; - means none. Judge the
     drawing from them, and change what you decide to change.
-  - bundle names the lines a line leaves or arrives with as one: three or
-    more lines of one style and width from one side of a box, or two on a
-    side too crowded for a port each. A labelled line is never bundled, so
-    a label keeps a line on its own.
+  - bundle names the edges an edge leaves or arrives with as one: three or
+    more lines of one style and width from one side of a node, or two on a
+    side too crowded for a port each. A labelled edge is never bundled, so
+    a label keeps an edge on its own.
 `,
   },
 
@@ -240,10 +240,10 @@ Give several batches to compare them: one before, then each batch's records
 keyed batch=<file>.`,
     after: `
 Good to know:
-  - Use it to compare arrangements you are weighing: a row moved, two nodes
-    swapped, a node slid along its row. You decide which to keep, then apply it.
+  - Use it to compare arrangements you are weighing: a layer moved, two nodes
+    swapped, a node slid along its layer. Decide which to keep, then apply it.
   - A batch it would refuse is refused as apply would refuse it; with several,
-    its outcome line carries batch=<file>, its blocks follow, and the others
+    its outcome edge carries batch=<file>, its blocks follow, and the others
     are still tried (exit 1).
 
 Example:
@@ -259,14 +259,14 @@ Example:
     about: "Add a row. A new row goes to the bottom unless --before or --after places it.",
     after: `
 Good to know:
-  - Rows run top to bottom the way a request or a process moves.
-  - A row is not drawn: it only places its boxes. It is drawn when a line
-    ends at it or layer look gives it a look: around its boxes as a band,
-    or, with no boxes, as one bar that lines meet straight past their other
+  - Layers run top to bottom the way a request or a process moves.
+  - A layer is not drawn: it only places its nodes. It is drawn when an edge
+    ends at it or layer look gives it a look: around its nodes as a band,
+    or, with no nodes, as one bar that edges meet straight past their other
     ends, such as a gateway or a bus.
-  - --label names a row by what it holds ("Entry", "Stores"). The name shows
-    only when the row is drawn; a row drawn with no name shows none.
-  - Rows and boxes share one set of ids: give rows ids like row-users.
+  - --label names a layer by what it holds ("Entry", "Stores"). The name shows
+    only when the layer is drawn; a layer drawn with no name shows none.
+  - Layers and nodes share one set of ids: give layers ids like row-users.
 
 See also: layer move, layer split, node add
 `,
@@ -275,15 +275,15 @@ See also: layer move, layer split, node add
     about: "Move the second half of a row, or the nodes from --from on, into a new row below.",
     after: `
 When to use:
-  - A row holds more boxes than read well side by side; the counts give
-    the row with most nodes (fullest) and the picture's width.
-  - Or merge boxes a reader need not tell apart (node merge).
+  - A layer holds more nodes than read well side by side; the counts give
+    the layer with most nodes (fullest) and the picture's width.
+  - Or merge nodes a reader need not tell apart (node merge).
 `,
   },
   "node add": {
-    about: `Add a box to a row, at the place you give: --first, --last, --before or --after.
-Only the first box of an empty row needs none. Or add it in no row, some steps
-from another box: --from with --down, --up, --left or --right.`,
+    about: `Add a node to a layer, at the place you give: --first, --last, --before or --after.
+Only the first node of an empty layer needs none. Or add it in no layer, some steps
+from another node: --from with --down, --up, --left or --right.`,
     after: `
 Kinds:
   service    something that runs: an app, an API, a job, a step (default)
@@ -296,22 +296,22 @@ Kinds:
   state      a state of one thing, named by what the thing is ("Paid")
   initial    the start dot of a states diagram; its label is not drawn
   final      the end ring of a states diagram; its label is not drawn
-  choice     a small diamond where a line splits; its label is not drawn,
-             the question goes on the line into it
+  choice     a small diamond where an edge splits; its label is not drawn,
+             the question goes on the edge into it
 
 Good to know:
-  - Leave --size out: grafical sizes the box to its text. Shorten a long
-    label rather than reaching for a large box.
-  - The order of a row decides most crossings. Compare two orders with
+  - Leave --size out: grafical sizes the node to its text. Shorten a long
+    label rather than reaching for a large node.
+  - The order of a layer decides most crossings. Compare two orders with
     grafical try and keep the one with fewer.
-  - A step is one cell of grafical's grid: a row down or up, a column left
-    or right. A box placed by steps moves with the box it steps from, and
-    the boxes of the row it lands in stand aside. Past the first or last
-    row, grafical adds a row. You choose the steps; grafical keeps them.
+  - A step is one cell of grafical's grid: a layer down or up, a column left
+    or right. A node placed by steps moves with the node it steps from, and
+    the nodes of the layer it lands in stand aside. Past the first or last
+    layer, grafical adds a layer. You choose the steps; grafical keeps them.
 
 Common mistakes:
-  - Giving a node its row's id: rows and boxes share one set of ids, so
-    rows take ids like row-users.
+  - Giving a node its layer's id: layers and nodes share one set of ids, so
+    layers take ids like row-users.
   - Start and End of a process as initial and final: their labels vanish.
     Use terminal.
   - In a batch file, a sublabel with a comma unquoted.
@@ -319,8 +319,8 @@ Common mistakes:
 Limits:
   - At most ${MAX_EMPHASIS} nodes carry --emphasis.
   - A sublabel holds one line, about 30 characters, and a label must fit
-    the large box; longer text is refused (overflow).
-  - Each step option takes 1 to 10. A box placed by steps takes no row,
+    the large node; longer text is refused (overflow).
+  - Each step option takes 1 to 10. A node placed by steps takes no layer,
     position, --align, column or lane.
 
 See also: node merge, node type, node sublabel, edge add
@@ -334,15 +334,15 @@ Example:
     about: "Replace several nodes with one new node that keeps all of their edges.",
     after: `
 When to use:
-  - Several boxes a reader need not tell apart: six topics become one node
+  - Several nodes a reader need not tell apart: six topics become one node
     "upstream topics" with sublabel "6 broker topics".
-  - Only for nodes with the same connections: a merged box claims every
+  - Only for nodes with the same connections: a merged node claims every
     line of every part, so it can draw a call that does not exist.
 `,
   },
   "node move": {
-    about: `Move a node to another row or position. Into another row, give the place too,
-as node add does. --from with steps takes it out of its row; --layer puts it
+    about: `Move a node to another layer or position. Into another layer, give the place too,
+as node add does. --from with steps takes it out of its layer; --layer puts it
 back in one.`,
   },
   "node emphasis": {
@@ -358,8 +358,8 @@ emoji, up to 6 characters of text, or an SVG or PNG file next to the diagram.
 Without --mark, the slot is cleared.`,
     after: `
 Slots (one mark each):
-  top-left, top-right, bottom-left, bottom-right   over a corner of the box
-  left                                             inside the box, before text
+  top-left, top-right, bottom-left, bottom-right   over a corner of the node
+  left                                             inside the node, before text
 
 Notes:
   - grafical sizes and places the mark; it takes no size or position.
@@ -389,8 +389,8 @@ Example:
   },
 
   "edge add": {
-    about: `Draw a line from one thing to another. from and to may be a node, a group
-(one line to the whole system), a row or a lane.`,
+    about: `Draw an edge from one thing to another. from and to may be a node, a group
+(one line to the whole system), a layer or a lane.`,
     after: `
 Kinds:
   call       a request (default), solid
@@ -400,12 +400,12 @@ Kinds:
   link       related, with no direction: no arrowhead
 
 Good to know:
-  - Lines between neighbouring rows stay straight; a line that skips rows
+  - Edges between neighbouring layers stay straight; an edge that skips layers
     has to go around.
-  - One line to a group replaces a line to each of its parts.
-  - A line that passes a bar, a row with no boxes that lines end at or
+  - One edge to a group replaces an edge to each of its parts.
+  - An edge that passes a bar, a layer with no nodes that edges end at or
     that has a look, is refused (bar-crossed) unless --pass says it may,
-    since a reader takes a line over a gateway for a line through it.
+    since a reader takes an edge over a gateway for an edge through it.
   - The id is <from>-><to> unless --id names it; a second one gets #2.
 
 See also: edge weight, diagram legend
@@ -429,15 +429,15 @@ Good to know:
     after: `
 When to use:
   A story of one request or one process that the reader follows in order:
-  number its lines in the order they happen. Lines outside that story stay
+  number its edges in the order they happen. Edges outside that story stay
   unnumbered.
 
 Good to know:
-  - grafical draws the number in a small ring on the line, under the start
+  - grafical draws the number in a small ring on the edge, under the start
     of its label. It never numbers, renumbers or checks the order for you.
-  - Lines may share a number, for steps that happen at the same time.
-  - A numbered line keeps its own way out of a box, as a labelled one does.
-  - A number with no room on the line's way is refused as label-blocked,
+  - Edges may share a number, for steps that happen at the same time.
+  - A numbered edge keeps its own way out of a node, as a labelled one does.
+  - A number with no room on the edge's way is refused as label-blocked,
     as a label is.
   - edge add takes no number: in a batch, add the edges, then
     {op: edge.number, id: <edge>, n: <number>} for each.
@@ -452,8 +452,8 @@ Example:
   },
 
   "group add": {
-    about: `Draw one box around the parts of one system, service or team. Its members may
-sit in several rows; the box spans them all.`,
+    about: `Draw one node around the parts of one system, service or team. Its members may
+sit in several layers; the node spans them all.`,
     after: `
 When to use:
   - Around the parts one team owns or one service deploys together.
@@ -466,8 +466,8 @@ Common mistakes:
 
 Limits:
   - A node is in one group at most. Groups nest at most ${MAX_GROUP_DEPTH} deep.
-  - A box covers every row from its top member to its bottom one; other
-    nodes in those rows sit beside it.
+  - A node covers every layer from its top member to its bottom one; other
+    nodes in those layers sit beside it.
 
 See also: group join, group leave, group label-at, lane add
 
@@ -481,7 +481,7 @@ Example:
 (top by default), and inside (by default) or outside the group. At 0.7 the
 label's own 70% point meets the side's 70% point, so it never runs past the side.
 Without a fraction, the engine seats it at the top, at the leftmost spot no
-line comes near. Either way the label takes its own room, and no box or line
+edge comes near. Either way the label takes its own room, and no node or edge
 moves for it.`,
     after: `
 Example:
@@ -492,20 +492,20 @@ Example:
   },
   "group copy": {
     about: `Copy a group: a second zone, region or shard in one operation. The copy holds
-its inner groups, its boxes and the lines between them, every id with --suffix,
+its inner groups, its nodes and the edges between them, every id with --suffix,
 and sits in the group the original sits in.`,
     after: `
 Place:
-  Each copied box sits in its original's row, --before or --after a group
-  with a box in every row of the copy, as group order puts it. The group
+  Each copied node sits in its original's layer, --before or --after a group
+  with a node in every layer of the copy, as group order puts it. The group
   itself always has one: --after <id>.
 
 Good to know:
-  - Copied boxes keep their labels, kinds, sizes, marks, lanes and columns.
+  - Copied nodes keep their labels, kinds, sizes, marks, lanes and columns.
     Rename the ones that differ, such as a standby.
-  - Lines to boxes outside the group are copied only with --outside:
+  - Edges to nodes outside the group are copied only with --outside:
     lb->web gives lb->web-b.
-  - A line's id <from>-><to> becomes its copy's ends: web-b->db-b.
+  - An edge's id <from>-><to> becomes its copy's ends: web-b->db-b.
   - Notes and walls are not copied.
 
 See also: group order, edge ends, diff
@@ -521,15 +521,15 @@ Example:
   },
 
   "lane add": {
-    about: `Add a swimlane: a labelled band that says who owns what. Its members are rows
-(the lanes run as rows) or nodes (the lanes run as columns), one way per diagram.`,
+    about: `Add a swimlane: a labelled band that says who owns what. Its members are layers
+(the lanes run as layers) or nodes (the lanes run as columns), one way per diagram.`,
     after: `
 When to use:
   - Only when who does what is part of the story: teams, people or systems
     that each do their part of a process.
   - Columns suit a process that runs top to bottom: each step is a node in
-    its owner's lane, and rows keep the order of the steps.
-  - Rows suit an architecture whose tiers each belong to someone.
+    its owner's lane, and layers keep the order of the steps.
+  - Layers suit an architecture whose tiers each belong to someone.
 
 Good to know:
   - Column lanes run left to right in the order they were added.
@@ -537,10 +537,10 @@ Good to know:
 
 Common mistakes:
   - members written as a, b instead of a list: members: [a, b].
-  - Adding lanes before their nodes or rows exist.
+  - Adding lanes before their nodes or layers exist.
 
 Limits:
-  - A row lane holds neighbouring rows only. An edge never joins two lanes.
+  - A layer lane holds neighbouring layers only. An edge never joins two lanes.
 
 Example:
   grafical lane add laptop.grafical it --label IT --members order,setup
@@ -548,20 +548,20 @@ Example:
   },
 
   "column add": {
-    about: `Add a column: a guide that boxes follow beside their rows. Every box of a column
-sits left of every box of the next column, in every row. Nothing is drawn.`,
+    about: `Add a column: a guide that nodes follow beside their layers. Every node of a column
+sits left of every node of the next column, in every layer. Nothing is drawn.`,
     after: `
 When to use:
   - When a diagram has sides: requests on the left and processing on the
     right, one team's services and another's, reads and writes.
-  - Leave a box shared by two sides, such as their database, out of every
+  - Leave a node shared by two sides, such as their database, out of every
     column: it keeps its place, and a new one lands near what it connects to.
 
 Good to know:
   - Columns go left to right in the order they are added, or --before and
     --after another column.
-  - grafical keeps every row in column order; a box in no column stays
-    beside the box left of it.
+  - grafical keeps every layer in column order; a node in no column stays
+    beside the node left of it.
   - A group as a member brings its nodes.
   - A diagram has columns or lanes that run as columns, not both.
 
@@ -579,23 +579,23 @@ When to use:
     network, two tenants, what a team owns and what it calls.
   - With --label it draws a dashed divider through the space, the label at
     its start. Without one it is only space.
-  - A label with no place along the wall clear of the lines across it is
+  - A label with no place along the wall clear of the edges across it is
     refused (label-blocked): shorten or drop it with wall label.
 
 Crossing:
-  - A line from one side to the other is refused (wall-crossed) unless the
-    wall allows it: --allow names the line, or a node or group at one of
+  - An edge from one side to the other is refused (wall-crossed) unless the
+    wall allows it: --allow names the edge, or a node or group at one of
     its ends, such as a gateway. grafical wall allow lets more through.
-  - Any other line whose route passes through the wall is a defect with the
-    same code: allow it, or move a box so that its line goes round.
+  - Any other edge whose route passes through the wall is a defect with the
+    same code: allow it, or move a node so that its edge goes round.
 
 Good to know:
   - It runs across when one side lies wholly above the other, and up and
-    down when the sides share rows, one side left of the other in each. It
+    down when the sides share layers, one side left of the other in each. It
     is as long as the two sides need, not the whole picture.
-  - Up and down, each row it spans needs a node of a side, and no other
+  - Up and down, each layer it spans needs a node of a side, and no other
     node between the sides: that node would stand in the wall (wall-sides).
-  - A node, group or line that is removed leaves the wall; a wall left with
+  - A node, group or edge that is removed leaves the wall; a wall left with
     an empty side goes too.
 
 Example:
@@ -603,16 +603,16 @@ Example:
 `,
   },
   "note add": {
-    about: `Add a note to a node, a group or a line: a sentence or two a reader needs and
-no box should hold. A node, group or line has one note; adding another replaces it.`,
+    about: `Add a note to a node, a group or an edge: a sentence or two a reader needs and
+no node should hold. A node, group or edge has one note; adding another replaces it.`,
     after: `
 How it is drawn:
-  - A card beside what it is about, joined to it by a short dotted line.
+  - A card beside what it is about, joined to it by a short dotted edge.
   - With --footnote, a small number on it, and the text in a numbered list
     at the bottom of the picture.
 
 Good to know:
-  - Keep it short: more than four lines at 160 px is an overflow.
+  - Keep it short: more than four edges at 160 px is an overflow.
   - A note goes when what it is about is removed.
   - show --drawn says how each note is drawn.
 
@@ -624,16 +624,16 @@ Example:
   "note remove": { about: "Remove the note of a node, a group or a line." },
 
   "layer look": {
-    about: `Draw a row, as a box or as a band, even when no line ends at it. Without a
-look, a row is drawn only when a line ends at it: with no boxes as a box, with
-boxes as a band. Without box or band, the look is taken away.`,
+    about: `Draw a layer, as a node or as a band, even when no edge ends at it. Without a
+look, a layer is drawn only when an edge ends at it: with no nodes as a node, with
+nodes as a band. Without box or band, the look is taken away.`,
     after: `
 Good to know:
-  - A drawn row shows its name, when it has one: in the head of a band,
-    above its boxes, or in the bar of a row with no boxes.
-  - A row with no boxes and a look is one bar, such as a gateway or a bus.
-    A line that passes it is refused (bar-crossed) unless edge pass lets it.
-  - In a batch the look is a field: {op: layer.look, id: <id>, look: box}.
+  - A drawn layer shows its name, when it has one: in the head of a band,
+    above its nodes, or in the bar of a layer with no nodes.
+  - A layer with no nodes and a look is one bar, such as a gateway or a bus.
+    An edge that passes it is refused (bar-crossed) unless edge pass lets it.
+  - In a batch the look is a field: {op: layer.look, id: <id>, look: node}.
 `,
   },
   "edge pass": {
@@ -651,14 +651,14 @@ Good to know:
       "Name what a line style, a line width or a mark means in the legend; without --text, take its entry away.",
     after: `
 The legend says only what you name. A diagram that names nothing has no
-legend. show --drawn prints a legend record for each line style and width
+legend. show --drawn prints a legend record for each edge style and width
 the picture draws, with text=- for those you have not named.
 
-Line widths:
+Edge widths:
   Name a width with --weight in place of the style: thick, heavy, a
   stylesheet's level, or the pixels an edge weight gives, as the legend
-  record's weight says. Each named width has its own entry. Thin lines are
-  what the line styles' entries say.
+  record's weight says. Each named width has its own entry. Thin edges are
+  what the edge styles' entries say.
 
 Marks:
   Name a mark with --mark in place of the style: its emoji, its text or its

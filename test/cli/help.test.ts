@@ -244,8 +244,8 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
     // source: the outcome line names what a write changed (specs/decisions, "Refusals say what happened and which commands
     // can change it").
     const bent = [
-      "warning: bent-line",
-      "description: A line bends more than twice, mostly because it skips rows.",
+      "warning: bent-edge",
+      "description: An edge bends more than twice, mostly because it skips layers.",
       "detail:",
       "  edge: api->photos",
       "  bends: 4",
@@ -264,7 +264,7 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
     const json = JSON.parse(run("check", photos(), "--json").out);
     expect(json.counts.lines).toBe(edgeLooks.edges.length);
     expect(json.problems).toMatchObject([
-      { kind: "warning", code: "bent-line", detail: { edge: "api->photos", bends: 4, skip: 1 } },
+      { kind: "warning", code: "bent-edge", detail: { edge: "api->photos", bends: 4, skip: 1 } },
     ]);
     expect(json.problems[0].source).toBeUndefined();
     expect(json.hints).toBeUndefined();

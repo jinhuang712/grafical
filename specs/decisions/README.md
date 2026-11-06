@@ -63,7 +63,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [057. A box may take a look of its own](057-a-box-may-take-a-look-of-its-own.md) (2026-11-06)
 - [058. An agent may state the side of a line](058-an-agent-may-state-the-side-of-a-line.md) (2026-11-06)
 - [059. Lines may be drawn square, round or smooth](059-lines-may-be-drawn-square-round-or-smooth.md) (2026-11-06)
-- [060. A bent line is reported and never refused](060-a-bent-line-is-reported-and-never-refused.md) (2026-10-16)
+- [060. A bent line is reported and never refused](060-a-bent-edge-is-reported-and-never-refused.md) (2026-10-16)
 - [061. A line never moves for its label](061-a-line-never-moves-for-its-label.md) (2026-10-17)
 - [062. A group's label moves no box and no line](062-a-group-s-label-moves-no-box-and-no-line.md) (2026-10-17)
 - [063. A wall's label stays along its wall](063-a-wall-s-label-stays-along-its-wall.md) (2026-10-17)

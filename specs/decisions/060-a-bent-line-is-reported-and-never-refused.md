@@ -36,4 +36,4 @@ A line with more than two bends only costs a reader: the picture stays correct. 
 
 ## Consequences
 
-Changed on 2026-10-18 by "Refusals say what happened and which commands can change it" and "Every write prints every warning": a line with more than two bends is a `warning: bent-line` block, no longer a `bent line=` record.
+Changed on 2026-10-18 by "Refusals say what happened and which commands can change it" and "Every write prints every warning": a line with more than two bends is a `warning: bent-edge` block, no longer a `bent line=` record.

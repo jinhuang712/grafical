@@ -14,35 +14,35 @@ export const GUIDES: Record<string, Guide> = {
     about: "services, stores and the systems they make up",
     text: `Architecture: services, stores and the systems they make up
 
-Boxes are things: kind service for what runs, store for where data rests,
+Nodes are things: kind service for what runs, store for where data rests,
 queue for a topic or stream, external for what you do not own, actor for a
-person or a caller. Lines are calls, reads and writes.
+person or a caller. Edges are calls, reads and writes.
 
-- Rows follow a request top to bottom: who calls, the way in, the inside,
+- Layers follow a request top to bottom: who calls, the way in, the inside,
   shared stores, outside services.
-- Box each system as a group, the groups side by side, each with its entry
+- Node each system as a group, the groups side by side, each with its entry
   above its stores. Callers and outside services stay out of groups.
-- What every request passes, a gateway or a bus, can be a row with no
-  boxes that lines end at, drawn as one bar.
-- Put a store below or between the parts that share it, and boxes that
+- What every request passes, a gateway or a bus, can be a layer with no
+  nodes that edges end at, drawn as one bar.
+- Put a store below or between the parts that share it, and nodes that
   talk next to each other.
-- Draw a queue as a box only when it is the story; otherwise draw its
-  events as lines between the services, kind async.
-- Label only the lines whose meaning is not obvious ("publish", "persist",
+- Draw a queue as a node only when it is the story; otherwise draw its
+  events as edges between the services, kind async.
+- Label only the edges whose meaning is not obvious ("publish", "persist",
   "failed"); leave plain calls and reads unlabelled.
 - Emphasize the main request path, if there is one.
-- Name a box by its role ("orders API") and put the product in the
+- Name a node by its role ("orders API") and put the product in the
   sublabel ("Postgres").`,
   },
   c4: {
     about: "a system's containers, its users and the systems around it",
     text: `C4: a system's containers, its users and the systems around it
 
-- People are kind actor, other systems kind external, and each box's
+- People are kind actor, other systems kind external, and each node's
   technology goes in its sublabel.
 - One group around the system's containers, sublabel "software system".
   People and other systems stay out of it.
-- Label every line with what its source does ("reads from", "sends e-mail
+- Label every edge with what its source does ("reads from", "sends e-mail
   using").
 - Legend: solid "uses".
 - Otherwise as an architecture diagram: grafical guide architecture.`,
@@ -64,7 +64,7 @@ person or a caller. Lines are calls, reads and writes.
     text: `Dependency graph: what depends on what
 
 - What depends on top, what it needs below.
-- No labels: every line means "depends on".
+- No labels: every edge means "depends on".
 - Kind optional for a dependency that degrades gracefully.
 - Legend: solid "depends on", dotted "optional".`,
   },
@@ -72,9 +72,9 @@ person or a caller. Lines are calls, reads and writes.
     about: "sources, processes and stores, and the data between them",
     text: `Data flow: sources, processes and stores, and the data between them
 
-- Boxes are sources and sinks (often actor or external), processes
+- Nodes are sources and sinks (often actor or external), processes
   (service) and stores (store).
-- Every line is kind data, labelled with the data ("card details").
+- Every edge is kind data, labelled with the data ("card details").
 - Legend: solid "data".`,
   },
   "event-flow": {
@@ -82,7 +82,7 @@ person or a caller. Lines are calls, reads and writes.
     text: `Event flow: producers, topics and consumers
 
 - Producers, a queue per topic, consumers, in that order top to bottom.
-- Lines in and out of a topic are kind async; the producer's line names
+- Edges in and out of a topic are kind async; the producer's edge names
   the event.
 - Emphasize the path of the event the diagram is about.
 - Legend: dashed "event".`,
@@ -91,12 +91,12 @@ person or a caller. Lines are calls, reads and writes.
     about: "steps and decisions, in order",
     text: `Flowchart: steps and decisions, in order
 
-- A row per step, top to bottom.
+- A layer per step, top to bottom.
 - Start and End are kind terminal; a question is kind decision, kept short
   ("Within 30 days?"). Not initial and final: they draw no label.
 - Label each answer out of a decision ("yes", "no"), and nothing else.
 - A long question that splits into many answers: kind choice, a small diamond
-  with no text, and the question as the label of the line into it.
+  with no text, and the question as the label of the edge into it.
 - Groups only where the steps fall into clear phases.
 - Legend: solid "next step".`,
   },
@@ -105,7 +105,7 @@ person or a caller. Lines are calls, reads and writes.
     text: `Swimlane: a process, by who does each step
 
 - A lane per team, person or system that does its part. With nodes as
-  members the lanes run as columns, and rows keep the order of the steps.
+  members the lanes run as columns, and layers keep the order of the steps.
 - Each step is a node in its owner's lane.
 - Lanes only when who does what is the story; otherwise a flowchart.
 - Otherwise as a flowchart: grafical guide flowchart.`,
@@ -126,34 +126,34 @@ person or a caller. Lines are calls, reads and writes.
     text: `Composition: a good diagram, and what to change when one looks wrong
 
 A good diagram:
-- One story. When boxes stop serving it, merge what a reader need not tell
+- One story. When nodes stop serving it, merge what a reader need not tell
   apart, cut side paths (admin, auth), or make it two diagrams.
-- Boxes that talk sit next to each other. Connect neighbouring rows where
+- Nodes that talk sit next to each other. Connect neighbouring layers where
   you can.
-- Merge only what has the same connections: a merged box claims every line
+- Merge only what has the same connections: a merged node claims every edge
   of every part.
-- A group says that its boxes are one system: not around a single box.
-- Emphasize a small part of the lines, or nothing stands out: thick lines
+- A group says that its nodes are one system: not around a single node.
+- Emphasize a small part of the edges, or nothing stands out: thick edges
   stand out only against thin ones.
-- Draw each flow to its end, or leave it out: a retry topic needs its line
+- Draw each flow to its end, or leave it out: a retry topic needs its edge
   back.
 - Keep labels short; detail (port, technology, count) goes in the
   sublabel, one line of about 30 characters, or a note.
-- Accent what the story is about. Name in the legend what each line style,
+- Accent what the story is about. Name in the legend what each edge style,
   width and mark means. Say what you left out in a note that starts "Not
   shown:".
 
 When the picture looks wrong, change the composition first, and compare
 the choices with grafical try:
-- Lines cross: another order of a row, or another row for a box.
-- A line runs through a group it has nothing to do with (across): one of
-  its ends in another row, or the group's boxes together.
-- A row too wide (fullest, width): split it, merge what a reader need not
+- Edges cross: another order of a layer, or another layer for a node.
+- An edge runs through a group it has nothing to do with (across): one of
+  its ends in another layer, or the group's borders together.
+- A layer too wide (fullest, width): split it, merge what a reader need not
   tell apart, or cut a side path.
-- A line bends round boxes (bent): the boxes it joins in neighbouring rows,
+- An edge bends round nodes (bent): the nodes it joins in neighbouring layers,
   or the store between the parts that use it.
-- Lines too close (tight) or labels crowded (crowded): fewer labels, or the
-  boxes they join nearer each other.`,
+- Edges too close (tight) or labels crowded (crowded): fewer labels, or the
+  nodes they join nearer each other.`,
   },
 };
 
@@ -192,7 +192,7 @@ export function guideList(): string {
 best practice to borrow from, not rules: grafical refuses only what would draw
 wrong, and draws what you state.
 
-A box stands for a thing, a step or a state; a line for a call, something
+A node stands for a thing, a step or a state; an edge for a call, something
 that moves, "then", or a change of state. The answers place a diagram:
 
 ${groups.join("\n")}

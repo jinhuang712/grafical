@@ -69,15 +69,15 @@ Features
 │   ├── ✅ F5.1: Show — the diagram as facts
 │   ├── ✅ F5.2: Counts — facts about how the picture is drawn
 │   ├── ✅ F5.3: Warnings — what the picture draws poorly
-│   │   ├── ✅ F5.3.1: Bent edges — `bent-line`
-│   │   ├── ✅ F5.3.2: Edges passing a layer — `passing-row`
-│   │   ├── ✅ F5.3.3: Edges across a group — `line-across-group`
-│   │   ├── ✅ F5.3.4: Tight edges — `tight-lines`
+│   │   ├── ✅ F5.3.1: Bent edges — `bent-edge`
+│   │   ├── ✅ F5.3.2: Edges passing a layer — `passing-layer`
+│   │   ├── ✅ F5.3.3: Edges across a group — `edge-across-group`
+│   │   ├── ✅ F5.3.4: Tight edges — `tight-edges`
 │   │   ├── ✅ F5.3.5: Crowded labels — `crowded-label`
-│   │   ├── ✅ F5.3.6: Lonely nodes — `lonely-box`
-│   │   ├── ✅ F5.3.7: An edge per member — `line-per-member`
+│   │   ├── ✅ F5.3.6: Lonely nodes — `lonely-node`
+│   │   ├── ✅ F5.3.7: An edge per member — `edge-per-member`
 │   │   ├── ✅ F5.3.8: Crossings — `crossing`
-│   │   └── ✅ F5.3.9: Nodes aside — `box-aside`
+│   │   └── ✅ F5.3.9: Nodes aside — `node-aside`
 │   ├── ✅ F5.4: Check — defects, warnings and counts on demand
 │   └── ⬜ F5.5: Checks of an agent's own — rules a diagram sets itself
 ├── ✅ F6: Output — what a diagram leaves behind
