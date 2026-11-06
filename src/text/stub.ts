@@ -20,19 +20,20 @@ export function createStubMeasurer(): Measurer {
   return {
     measure: line,
     wrap(text, style, maxWidth) {
-      const words = text.split(" ");
       const lines: string[] = [];
-      let current = "";
-      for (const word of words) {
-        const next = current ? `${current} ${word}` : word;
-        if (current && line(next, style).width > maxWidth) {
-          lines.push(current);
-          current = word;
-        } else {
-          current = next;
+      for (const para of text.split("\n")) {
+        let current = "";
+        for (const word of para.split(" ")) {
+          const next = current ? `${current} ${word}` : word;
+          if (current && line(next, style).width > maxWidth) {
+            lines.push(current);
+            current = word;
+          } else {
+            current = next;
+          }
         }
+        if (current) lines.push(current);
       }
-      if (current) lines.push(current);
       return lines.map((l) => line(l, style));
     },
     metrics(style): TextMetrics {

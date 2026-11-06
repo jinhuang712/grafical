@@ -588,10 +588,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         : text === undefined
           ? { w: 2 * STEP.r, h: STEP.r - ROUTE.labelGap }
           : { w: w + STEP.r, h: h + STEP.lift };
-    const w = text === undefined ? 0 : m.measure(text, labelStyle).width;
+    // A stated break holds on every form (specs/decisions, "An agent sets a label's breaks and its alignment").
+    const stated = text === undefined ? [] : m.wrap(text, labelStyle, Number.POSITIVE_INFINITY);
+    const w = Math.max(0, ...stated.map((l) => l.width));
+    const h = labelH + Math.max(0, stated.length - 1) * labelMetrics.lineHeight;
     let forms: LabelForm[] | undefined;
     labelSizes.set(e.id, {
-      ...size(w, labelH),
+      ...size(w, h),
       ...(step ? { badge: headsOf(e) } : {}),
       ...(e.seat === "beside" ? { beside: true } : {}),
       narrower: () => {
@@ -1586,7 +1589,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       // The text takes the slot, or stands off the step's badge in it (specs/decisions, "Step badges ride the line").
       const ink = labelMetrics.ascent + labelMetrics.descent;
       const lines =
-        text !== undefined && a.label.lines > 1 ? m.wrap(text, labelStyle, a.label.maxWidth) : [];
+        text !== undefined && (a.label.lines > 1 || text.includes("\n"))
+          ? m.wrap(text, labelStyle, a.label.maxWidth)
+          : [];
       const th = lines.length > 1 ? (lines.length - 1) * labelMetrics.lineHeight + ink : ink;
       const tw = e.step === undefined ? a.label.w : text === undefined ? 0 : a.label.w - STEP.r;
       const head = lineLook(width, theme.paint).arrow.length;

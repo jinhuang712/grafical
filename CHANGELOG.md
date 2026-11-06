@@ -17,6 +17,7 @@ grafical has not been released; the first release will be 0.1.0.
 - A line's label now sits on the line, which passes through it, and at the middle of a vertical run.
   - `edge --label-at <id> beside` puts one label back beside its line.
   - Pictures get 0.9% shorter over the saved drafts, and a gap with a label on its line gets 16 px wider.
+- A node's label, a line's label, a note, a lane's label and a subtitle keep a line break, written as a real break or as `\n`.
 - `edge --side <id> --out <side> --in <side>` states the side a line leaves or enters by, and one with no route is refused as `side-blocked`.
 - A bundle with branches to both sides splits at one knot, where it took two.
 - `type --add` defines a sort of node or edge with its own shape and look, and `--type` names it.

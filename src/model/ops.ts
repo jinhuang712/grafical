@@ -1169,7 +1169,13 @@ export function parseOp(raw: unknown, index: number): Op | OpError[] {
   }
   const parsed = (SCHEMAS[name as OpName] as z.ZodType).safeParse(raw);
   if (!parsed.success) return issuesToErrors(parsed.error.issues, raw, index, true);
-  return compact(parsed.data as Record<string, unknown>) as unknown as Op;
+  const op = compact(parsed.data as Record<string, unknown>);
+  // A shell's "a\\nb" stays two characters, and a label holds no backslash-n by intent.
+  for (const k of ["label", "sublabel", "text"]) {
+    const v = op[k];
+    if (typeof v === "string") op[k] = v.replaceAll("\\n", "\n");
+  }
+  return op as unknown as Op;
 }
 
 /** Parses a batch: a list of operations. Reports every malformed item. */

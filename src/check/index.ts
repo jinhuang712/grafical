@@ -619,9 +619,10 @@ function checkNeedlessBend(scene: Scene, out: Found[]): void {
 }
 
 function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
-  const add = (id: string, field: string, text: string | undefined) => {
+  // A text that wraps keeps a stated break (specs/decisions, "An agent sets a label's breaks and its alignment").
+  const add = (id: string, field: string, text: string | undefined, wraps = false) => {
     if (!text) return;
-    const missing = m.missingGlyphs(text);
+    const missing = m.missingGlyphs(wraps ? text.replaceAll("\n", "") : text);
     if (missing.length === 0) return;
     out.push({
       code: "missing-glyph",
@@ -632,13 +633,13 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
     });
   };
   add("title", "title", diagram.title);
-  add("subtitle", "subtitle", diagram.subtitle);
-  add("note", "note", diagram.note);
+  add("subtitle", "subtitle", diagram.subtitle, true);
+  add("note", "note", diagram.note, true);
   for (const g of diagram.groups ?? []) {
     add(g.id, "label", g.label);
     add(g.id, "sublabel", g.sublabel);
   }
-  for (const x of diagram.lanes ?? []) add(x.id, "label", x.label);
+  for (const x of diagram.lanes ?? []) add(x.id, "label", x.label, true);
   for (const line of LINE_STYLES) add(`legend-${line}`, "text", diagram.legend?.[line]);
   for (const [w, text] of Object.entries(diagram.legend?.weights ?? {})) {
     add(`legend-${w}`, "text", text);
@@ -649,8 +650,8 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   for (const layer of diagram.layers) {
     if (!addedRow(layer.id)) add(layer.id, "label", layer.label);
     for (const n of layer.nodes) {
-      add(n.id, "label", n.label);
-      add(n.id, "sublabel", n.sublabel);
+      add(n.id, "label", n.label, true);
+      add(n.id, "sublabel", n.sublabel, true);
       for (const slot of MARK_SLOTS) {
         const mark = n.icons?.[slot];
         // An emoji is drawn as a picture, so only plain text needs the fonts.
@@ -659,10 +660,10 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
       }
     }
   }
-  for (const e of diagram.edges) add(e.id, "label", e.label);
+  for (const e of diagram.edges) add(e.id, "label", e.label, true);
   // A wall's label (specs/decisions, "Walls as space") and a note (specs/decisions, "Notes as callouts or footnotes") are drawn too.
   for (const w of diagram.walls ?? []) add(w.id, "label", w.label);
-  for (const x of diagram.notes ?? []) add(x.on, "note", x.text);
+  for (const x of diagram.notes ?? []) add(x.on, "note", x.text, true);
 }
 
 /** The lines that pass a group's label or its sublabel nearer than the engine keeps its own lines, by id. */
