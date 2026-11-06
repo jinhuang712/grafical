@@ -134,6 +134,15 @@ export function writeGrafical(d: Diagram): string {
       ]),
     );
   }
+  (d.gaps ?? []).forEach((g, i) => {
+    blocks.push(
+      block("gap", `gap-${i + 1}`, [
+        ["between", ref(g.between[0])],
+        ["and", ref(g.between[1])],
+        ["magnified", String(g.magnified)],
+      ]),
+    );
+  });
   const nodes = [
     ...d.layers.flatMap((l) => l.nodes.map((n) => ({ n, layer: l.id as string | undefined }))),
     ...(d.nodes ?? []).map((n) => ({ n, layer: undefined })),
@@ -363,6 +372,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     "column",
     "wall",
     "order",
+    "gap",
     "node",
     "edge",
     "label",
@@ -518,6 +528,10 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     named(b.id as string, o);
     return o;
   });
+  out.gaps = of("gap").map((b) => ({
+    between: [value(b.attrs.get("between") as string), value(b.attrs.get("and") as string)],
+    magnified: value(b.attrs.get("magnified") as string),
+  }));
   out.notes = of("note").map((b) => {
     const o: Record<string, unknown> = {};
     take(b, { on: "on", text: "text", footnote: "footnote", align: "labelAlign" }, o);

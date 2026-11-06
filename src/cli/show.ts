@@ -112,6 +112,9 @@ export function showDiagram(d: Diagram): string {
       `wall ${w.id}${label}${way === undefined ? "" : ` (${way})`}: between=${w.between.join(",")} and=${w.and.join(",")}${allow}`,
     );
   }
+  for (const g of d.gaps ?? []) {
+    lines.push(`gap ${g.between.join(" ")} magnified=${g.magnified}`);
+  }
   for (const x of d.notes ?? []) {
     lines.push(
       `note on=${x.on}${x.footnote === true ? " footnote" : ""}${x.labelAlign === undefined ? "" : ` [text ${x.labelAlign}]`} ${JSON.stringify(x.text)}`,

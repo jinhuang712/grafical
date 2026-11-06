@@ -131,7 +131,7 @@ grafical -f <file> diagram --sizing auto|fixed
   - Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a node without a size is always medium, and text that does not fit is refused.
 - A node may take a multiple of its width, its height or both, such as 1.5.
-  - `grafical -f <file> node --size <id> [--width <n>] [--height <n>] [--times <n>]`
+  - `grafical -f <file> node --size <id> [--width <n>] [--height <n>] [--magnified <n>]`
   - A taller node makes its layer taller.
   - A dot or a `choice` keeps its size and refuses a multiple.
   - Why: [080. A node takes multiples of its width and height](../specs/decisions/080-a-node-takes-multiples-of-its-width-and-height.md)

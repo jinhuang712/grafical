@@ -10,6 +10,7 @@ A `.grafical` file holds one diagram as objects with attributes and relations. g
   <layer> <group> <lane>
   <column> <wall>              the regions
   <order>                      the order inside a region
+  <gap>                        a wider gap between two regions
   <node> <edge>                the parts and what connects them
   <label> <mark> <note>        what sits on them
   <legend>                     the key
@@ -217,7 +218,13 @@ A group with `like` holds what that group holds and changes with it. A node insi
 | `axis` | `across` or `down` |
 | `items` | references, one on each line |
 
-A `gap` line between two items gives the multiple of the gap between them.
+### `<gap>`
+
+| Attribute | Value |
+|---|---|
+| `between` | a layer, a group or a column |
+| `and` | its neighbour of one kind |
+| `magnified` | `1.25`, `1.5` or `2` |
 
 ### `<node>`
 
@@ -235,7 +242,7 @@ A `gap` line between two items gives the multiple of the gap between them.
 | `from` | a node |
 | `up` `down` `left` `right` | a whole number of steps |
 | `size` | `s`, `m` or `l` |
-| `width` `height` `times` | a multiple |
+| `width` `height` `magnified` | a multiple |
 | `emphasis` | `true` |
 | `style` | styles |
 
@@ -329,7 +336,6 @@ The legend is a small diagram, and its attributes are open.
   axis: down
   items:
     @app
-    gap: 1.5
     @data
 }
 

@@ -530,6 +530,22 @@ export function build(): Command {
     await write(file, { op: "wall.remove", id }, opts);
   });
 
+  const gap = program.command("gap").description("more room between two regions: between");
+  json(
+    gap
+      .command("between")
+      .description("magnify the gap between two neighbouring layers, groups or columns")
+      .argument("<file>")
+      .argument("<a>")
+      .argument("<b>")
+      .option(
+        "--magnified <n>",
+        "1.25, 1.5 or 2; left out, the gap goes back to its default",
+        Number,
+      ),
+  ).action(async (file: string, a: string, b: string, opts: Opts) => {
+    await write(file, { op: "gap.between", a, b, ...pick(opts, ["magnified"]) }, opts);
+  });
   const label = program.command("label").description("how a text's lines line up: align");
   json(
     label

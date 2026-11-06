@@ -15,6 +15,7 @@ import {
   type Diagram,
   type DiagramNode,
   type Edge,
+  type Gap,
   type Group,
   type LabelAlign,
   type Lane,
@@ -695,6 +696,16 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (was !== x.labelAlign) {
       ops.push({ op: "note.align", on: x.on, align: x.labelAlign ?? "left" });
     }
+  }
+  const gapKey = (g: Gap) => [...g.between].sort().join(" ");
+  const wasGaps = new Map((b.gaps ?? []).map((g) => [gapKey(g), g]));
+  const nowGaps = new Map((a.gaps ?? []).map((g) => [gapKey(g), g]));
+  for (const [k, g] of wasGaps) {
+    if (!nowGaps.has(k)) ops.push({ op: "gap.between", a: g.between[0], b: g.between[1] });
+  }
+  for (const [k, g] of nowGaps) {
+    if (wasGaps.get(k)?.magnified === g.magnified) continue;
+    ops.push({ op: "gap.between", a: g.between[0], b: g.between[1], magnified: g.magnified });
   }
   // 10. Who marks which style, then the styles that went.
   const same = (x?: string[], y?: string[]) => JSON.stringify(x ?? []) === JSON.stringify(y ?? []);

@@ -220,6 +220,7 @@ export const ERROR_CODES = [
   "unknown-style",
   "unknown-type",
   "unknown-node",
+  "not-neighbours",
   "unknown-note",
   "unknown-op",
   "unknown-wall",

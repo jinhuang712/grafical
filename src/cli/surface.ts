@@ -14,6 +14,7 @@ export const NOUNS = [
   "wall",
   "note",
   "label",
+  "gap",
   "layer",
   "node",
   "edge",

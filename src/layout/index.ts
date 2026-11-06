@@ -14,6 +14,7 @@
 
 import { segmentCrossesRect, segmentsOf } from "../check/geometry.ts";
 import { orderByColumns } from "../model/columns.ts";
+import { gutterMagnified } from "../model/gaps.ts";
 import { laneRun, orderByLanes } from "../model/lanes.ts";
 import {
   type Diagram,
@@ -1189,17 +1190,20 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       padsAt(i) + (bandHead(i) ? BAND.pad : 0) + (rows > 0 && storeRow(i) ? ROUTE.storeRoom : 0);
     const walls = wallsAt(i);
     // A gutter with no runs keeps its least height only when no wall gives it room.
-    const tracks =
-      rows === 0
-        ? last || walls > 0
-          ? 0
-          : (sp.gutterSteps[0] ?? 48)
-        : gutterHeight(rows, sp) + (storeRow(i + 1) ? ROUTE.storeRoom : 0);
+    const times = gutterMagnified(d, i);
+    const tracks = ceil4(
+      times *
+        (rows === 0
+          ? last || walls > 0
+            ? 0
+            : (sp.gutterSteps[0] ?? 48)
+          : gutterHeight(rows, sp) + (storeRow(i + 1) ? ROUTE.storeRoom : 0)),
+    );
     gutterTops.push(y);
     endPads.push(pad);
     if (!last && laneAt(i) !== laneAt(i + 1)) {
       // The border runs below the gutter's tracks and walls; heads below it take their full room.
-      y += pad + (rows === 0 && walls === 0 ? LANE.pad : tracks);
+      y += pad + (rows === 0 && walls === 0 ? ceil4(times * LANE.pad) : tracks);
       wallTops.set(i, y);
       y += walls * WALL.space;
       borders.set(i, y);

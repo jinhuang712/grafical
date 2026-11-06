@@ -23,6 +23,8 @@ import {
   EDGE_SIDES,
   type EdgeKind,
   type EdgeSide,
+  GAP_MAGNIFICATIONS,
+  type GapMagnified,
   GROUP_TITLES,
   type GroupTitle,
   LABEL_ALIGNS,
@@ -524,6 +526,13 @@ export interface NoteAddOp {
   /** true: a footnote rather than a card. */
   footnote?: boolean;
 }
+/** A wider gap between two neighbouring regions. Absent `magnified`: back to the default. */
+export interface GapBetweenOp {
+  op: "gap.between";
+  a: string;
+  b: string;
+  magnified?: GapMagnified;
+}
 /** How a card's lines line up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
 export interface NoteAlignOp {
   op: "note.align";
@@ -568,6 +577,7 @@ export type Op =
   | WallRelabelOp
   | NoteAddOp
   | NoteAlignOp
+  | GapBetweenOp
   | NoteRemoveOp
   | LayerAddOp
   | LayerRenameOp
@@ -997,6 +1007,12 @@ export const noteAddSchema = z.strictObject({
   footnote: z.boolean().optional(),
 });
 export const noteRemoveSchema = z.strictObject({ op: z.literal("note.remove"), on: edgeId });
+export const gapBetweenSchema = z.strictObject({
+  op: z.literal("gap.between"),
+  a: nodeId,
+  b: nodeId,
+  magnified: z.literal(GAP_MAGNIFICATIONS).optional(),
+});
 export const noteAlignSchema = z.strictObject({
   op: z.literal("note.align"),
   on: edgeId,
@@ -1046,6 +1062,7 @@ export const opSchema = z.discriminatedUnion("op", [
   noteAddSchema,
   noteRemoveSchema,
   noteAlignSchema,
+  gapBetweenSchema,
   layerRenameSchema,
   layerMoveSchema,
   layerRemoveSchema,
@@ -1126,6 +1143,7 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "note.add": noteAddSchema,
   "note.remove": noteRemoveSchema,
   "note.align": noteAlignSchema,
+  "gap.between": gapBetweenSchema,
   "layer.rename": layerRenameSchema,
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,

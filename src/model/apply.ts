@@ -8,6 +8,7 @@ import { edgeWidth } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES, themeOf } from "../theme/themes.ts";
 import { orderByColumns } from "./columns.ts";
 import { endIds, endKind } from "./ends.ts";
+import { neighbours, pruneGaps } from "./gaps.ts";
 import {
   groupChain,
   groupHeight,
@@ -2235,6 +2236,29 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "wall.remove":
     case "wall.relabel":
       return wallStep(s, op, i);
+    case "gap.between": {
+      if (!neighbours(d, op.a, op.b)) {
+        return [
+          {
+            code: "not-neighbours",
+            index: i,
+            field: "b",
+            found: op.b,
+            facts: { between: [op.a, op.b] },
+          },
+        ];
+      }
+      const gaps = (d.gaps ?? []).filter(
+        (g) => !(g.between.includes(op.a) && g.between.includes(op.b)),
+      );
+      if (op.magnified !== undefined) {
+        gaps.push({ between: [op.a, op.b], magnified: op.magnified });
+      }
+      if (gaps.length > 0) d.gaps = gaps;
+      else delete d.gaps;
+      touch(s, op.a, op.b);
+      return [];
+    }
     case "note.add":
     case "note.remove":
     case "note.align":
@@ -2363,6 +2387,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
     const before = named ? wallNames(s.d) : undefined;
     const errors = step(s, op, i);
     if (errors.length > 0) return { errors };
+    pruneGaps(s.d);
     // The walls forget what the operation removed (specs/decisions, "Walls as space"), and notes go with their targets (specs/decisions, "Notes as callouts or footnotes").
     if (before !== undefined) {
       const now = wallNames(s.d);

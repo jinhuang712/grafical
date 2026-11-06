@@ -150,6 +150,9 @@ export function writeDiagram(d: Diagram): string {
   if (d.columns !== undefined && d.columns.length > 0) {
     out.columns = d.columns.map((x) => ({ id: x.id }));
   }
+  if (d.gaps !== undefined && d.gaps.length > 0) {
+    out.gaps = d.gaps.map((x) => ({ between: x.between, magnified: x.magnified }));
+  }
   if (d.walls !== undefined && d.walls.length > 0) {
     out.walls = d.walls.map((x) => {
       const o: Record<string, unknown> = { id: x.id, between: x.between, and: x.and };

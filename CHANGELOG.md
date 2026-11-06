@@ -20,6 +20,7 @@ grafical has not been released; the first release will be 0.1.0.
 - A node's label, a line's label, a note, a lane's label and a subtitle keep a line break, written as a real break or as `\n`.
 - `label --align <id> left|center|right` lines up the text of a node, an edge, a wall or a lane.
 - `note --align <on> left|center|right` lines up the text of a note drawn as a card.
+- `gap --between <a> <b> --magnified <n>` widens the gap between two neighbouring layers, groups or columns.
 - `edge --side <id> --out <side> --in <side>` states the side a line leaves or enters by, and one with no route is refused as `side-blocked`.
 - A bundle with branches to both sides splits at one knot, where it took two.
 - `type --add` defines a sort of node or edge with its own shape and look, and `--type` names it.

@@ -211,6 +211,16 @@ export interface Column {
   id: string;
 }
 
+/** How much a gap may be magnified (specs/decisions, "The gap between two regions takes a multiple"). */
+export const GAP_MAGNIFICATIONS = [1.25, 1.5, 2] as const;
+export type GapMagnified = (typeof GAP_MAGNIFICATIONS)[number];
+
+/** A wider gap between two neighbouring regions of one kind: layers, groups or columns. */
+export interface Gap {
+  between: [string, string];
+  magnified: GapMagnified;
+}
+
 /** How a text's lines line up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
 export const LABEL_ALIGNS = ["left", "center", "right"] as const;
 export type LabelAlign = (typeof LABEL_ALIGNS)[number];
@@ -375,6 +385,8 @@ export interface Diagram {
   lanes?: Lane[];
   /** Columns, left to right (specs/decisions, "Columns beside rows"). */
   columns?: Column[];
+  /** Gaps the agent magnified. */
+  gaps?: Gap[];
   /** Empty space between two sides, in creation order (specs/decisions, "Walls as space"). */
   walls?: Wall[];
   /** One note at most per node, group or line, in creation order (specs/decisions, "Notes as callouts or footnotes"). */

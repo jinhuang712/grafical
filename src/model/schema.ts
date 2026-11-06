@@ -7,6 +7,7 @@ import { WEIGHT_LEVEL, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
 import { checkColumns } from "./columns.ts";
 import { checkEnds } from "./ends.ts";
+import { regionKind } from "./gaps.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
 import { ID_EDGE, ID_NODE, ID_SUFFIX, issuesToErrors, STEP_NUMBER, WEIGHT } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
@@ -24,6 +25,7 @@ import {
   EDGE_SIDES,
   type Edge,
   FORMAT_VERSION,
+  GAP_MAGNIFICATIONS,
   GROUP_TITLES,
   type Group,
   LABEL_ALIGNS,
@@ -294,6 +296,14 @@ export const diagramSchema = z.strictObject({
   groups: z.array(groupSchema).default([]),
   lanes: z.array(laneSchema).default([]),
   columns: z.array(z.strictObject({ id: nodeId })).default([]),
+  gaps: z
+    .array(
+      z.strictObject({
+        between: z.tuple([nodeId, nodeId]),
+        magnified: z.literal(GAP_MAGNIFICATIONS),
+      }),
+    )
+    .default([]),
   walls: z.array(wallSchema).default([]),
   notes: z
     .array(
@@ -419,6 +429,9 @@ function build(p: Parsed): Diagram {
     }));
   }
   if (p.columns.length > 0) d.columns = p.columns.map((x) => ({ id: x.id }));
+  if (p.gaps.length > 0) {
+    d.gaps = p.gaps.map((x) => ({ between: [...x.between], magnified: x.magnified }));
+  }
   if (p.walls.length > 0) {
     d.walls = p.walls.map((x) => {
       const wall: Wall = { id: x.id, between: [...x.between], and: [...x.and] };
@@ -497,6 +510,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   errors.push(...checkColumns(d, index));
   errors.push(...checkWalls(placed, index));
   errors.push(...checkNotes(d, index));
+  errors.push(...checkGaps(d, index));
   if (d.style !== undefined) {
     const problem = styleProblem(d.style);
     if (problem !== undefined) {
@@ -567,6 +581,21 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
     });
   }
   return errors;
+}
+
+/** A gap names two regions that exist (specs/decisions, "The gap between two regions takes a multiple"). */
+function checkGaps(d: Diagram, index: number): OpError[] {
+  return (d.gaps ?? []).flatMap((g, i) =>
+    g.between
+      .filter((id) => regionKind(d, id) === undefined)
+      .map((id) => ({
+        code: "not-neighbours" as const,
+        index,
+        field: `gaps[${i}].between`,
+        found: id,
+        facts: { between: g.between },
+      })),
+  );
 }
 
 /** Note rules (specs/decisions, "Notes as callouts or footnotes"): a note is about a node, a group or a line that exists, one note each. */

@@ -152,6 +152,12 @@ An edge's label counts as a track. A gutter takes the smallest of its density's 
 
 Density changes nothing else.
 
+An agent may magnify the gap between two neighbouring regions by 1.25, 1.5 or 2, and the result rounds up to 4 px.
+
+- Two layers magnify the gutter between them, tracks and all.
+- Two groups stacked magnify the gutter between their rows, and two side by side the space between their boxes.
+- Two columns magnify the node gap between them.
+
 The canvas is as wide as the widest of its nodes, groups, bands, lanes, side labels and routes, plus its margins. It is never narrower than its title with the legend, its subtitle or its note. Both sides are rounded up to multiples of 8 px across and 4 px down.
 
 ## What stays when the diagram changes

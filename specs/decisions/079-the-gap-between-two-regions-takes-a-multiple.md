@@ -23,4 +23,10 @@ Density stays the default for the whole picture. The gap between two neighbourin
 
 ## Consequences
 
-The range of a multiple, and whether it may fall below 1, is chosen when it is built. Positions are on a 4 px grid, so a multiple rounds to it.
+Positions are on a 4 px grid, so a multiple rounds to it.
+
+Built on 2026-11-06:
+
+- A multiple is 1.25, 1.5 or 2, and none falls below 1.
+- The owner named the flag `--magnified`, the name of every multiple in grafical.
+- The file holds a gap in a `<gap>` block, since groups and columns have no `<order>` of their own to hold a `gap` line.

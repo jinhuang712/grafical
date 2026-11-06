@@ -8,6 +8,7 @@
 // on one centre line. Every x here is relative to that line.
 
 import { columnRanks } from "../model/columns.ts";
+import { magnifiedBetween } from "../model/gaps.ts";
 import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
 import { DEFAULT_SIZE, type Diagram, type DiagramNode, type GroupTitle } from "../model/types.ts";
@@ -329,6 +330,9 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const g = boxOf(n, other);
       return g === undefined ? [{ col: n.col, d: n.w / 2 }] : leftEdge(g);
     };
+    /** The space between what lies left and right of a gap: two boxes, or a box and a node. */
+    const room = (x: string | undefined, y: string | undefined): number =>
+      x !== undefined && y !== undefined ? GROUP.gap * magnifiedBetween(d, x, y) : GROUP.clear;
     // Every node beside a group's members in a row keeps clear of its box, and so
     // does every other group's box.
     for (const l of layers) {
@@ -338,7 +342,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         const ga = boxOf(a, b);
         const gb = boxOf(b, a);
         if (ga === undefined && gb === undefined) continue;
-        const between = ga !== undefined && gb !== undefined ? GROUP.gap : GROUP.clear;
+        const between = room(ga, gb);
         for (const r of rightTerms(a, b))
           for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + between + s.d);
       }
@@ -360,13 +364,13 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
           at.length > 0 ? list[(at[at.length - 1] as number) + 1] : list.find((n) => n.col > hi);
         const anyMember = ms[0] as PNode;
         if (left !== undefined) {
-          const between = boxOf(left, anyMember) !== undefined ? GROUP.gap : GROUP.clear;
+          const between = room(boxOf(left, anyMember), g);
           for (const r2 of rightTerms(left, anyMember)) {
             for (const t of leftEdge(g)) add(r2.col, t.col, r2.d + between + t.d);
           }
         }
         if (right !== undefined) {
-          const between = boxOf(right, anyMember) !== undefined ? GROUP.gap : GROUP.clear;
+          const between = room(g, boxOf(right, anyMember));
           for (const t of rightEdge(g)) {
             for (const s of leftTerms(right, anyMember)) add(t.col, s.col, t.d + between + s.d);
           }
@@ -377,8 +381,10 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     // any row, so that a column's boxes never stand over the column before.
     for (let k = 1; k < columnOrder.length; k++) {
       for (const a of columnOrder[k - 1] as PNode[]) {
-        for (const b of columnOrder[k] as PNode[])
-          add(a.col, b.col, a.w / 2 + sp.nodeGap + b.w / 2);
+        for (const b of columnOrder[k] as PNode[]) {
+          const times = magnifiedBetween(d, a.node.column as string, b.node.column as string);
+          add(a.col, b.col, a.w / 2 + sp.nodeGap * times + b.w / 2);
+        }
       }
     }
     // Column lanes: the content of neighbouring lanes, boxes included, keeps twice

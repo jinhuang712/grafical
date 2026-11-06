@@ -41,6 +41,8 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
   - Lost name: *kind*.
 - **Style:** a named look that an object marks.
 - **Region:** a diagram, a group, a layer, a lane or a column.
+- **Magnified:** how many times its default a size or a gap is, such as 1.5.
+  - Lost names: *times*, *multiple* as a flag.
 - **Knot:** the point where a bundle splits.
 - **Mark:** a small image on a node: an emoji or a short text or a file.
   - At most five, one in each slot.

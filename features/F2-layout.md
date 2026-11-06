@@ -206,16 +206,18 @@ grafical -f <file> diagram --density compact|normal|airy
 
 ### F2.6.1: Region gaps
 
-The gap between two neighbouring regions may take a multiple of its default. A region is a layer, a group or a column, and both must be of one kind.
+The gap between two neighbouring regions may be magnified, by a multiple of its default. A region is a layer, a group or a column, and both must be of one kind.
 
 ```sh
-grafical gap <file> <a> <b> [--times <n>]
+grafical -f <file> gap --between <a> <b> [--magnified <n>]
 ```
 
 - A multiple may be 1.25, 1.5 or 2.
 - It follows the density, so a multiple of a compact gap stays narrower than one of an airy gap.
-- Without `--times`, the gap goes back to its default.
-- Two regions that are not neighbours are refused.
+- Without `--magnified`, the gap goes back to its default.
+- Two regions that are not neighbours of one kind are refused as `not-neighbours`.
+- Two groups are neighbours when a box of one stands next to a box of the other in a row, or when one ends in the row above the other's first.
+- A gap whose regions stop being neighbours stays stated and does nothing, and a gap goes when its region goes.
 
 - **Why:** [079. The gap between two regions takes a multiple](../specs/decisions/079-the-gap-between-two-regions-takes-a-multiple.md)
 
