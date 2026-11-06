@@ -42,7 +42,7 @@ function svgProblem(svg: string): string | undefined {
 }
 
 function problem(code: ErrorCode, index: number, found: string): OpError {
-  return { code, index, field: "icon", found };
+  return { code, index, field: "mark", found };
 }
 
 /** The SHA-256 of a file, in hex. */
@@ -112,13 +112,13 @@ export function loadMarks(file: string, d: Diagram, setting: Set<string> = new S
   const errors: OpError[] = [];
   for (const node of everyNode(d)) {
     for (const slot of MARK_SLOTS) {
-      const mark = node.icons?.[slot];
+      const mark = node.marks?.[slot];
       if (mark === undefined) continue;
       // A mark that an operation sets or clears is read again by that operation, so it
       // may be the one that fixes a changed or missing file.
       if (setting.has(markSlotKey(node.id, slot))) continue;
       const { error } = prepare(folder, mark, 0);
-      if (error !== undefined) errors.push({ ...error, field: `${node.id}.icons.${slot}` });
+      if (error !== undefined) errors.push({ ...error, field: `${node.id}.marks.${slot}` });
     }
   }
   return errors;
@@ -132,7 +132,7 @@ export function markSlotKey(node: string, slot: MarkSlot): string {
 /** The slots the operations set or clear. */
 export function settingSlots(ops: Op[]): Set<string> {
   const out = new Set<string>();
-  for (const op of ops) if (op.op === "node.icon") out.add(markSlotKey(op.id, op.slot));
+  for (const op of ops) if (op.op === "node.mark") out.add(markSlotKey(op.id, op.slot));
   return out;
 }
 
@@ -144,8 +144,8 @@ export function bindMarkOps(file: string, ops: Op[]): { ops: Op[]; errors: OpErr
   const folder = dirname(file);
   const errors: OpError[] = [];
   const bound = ops.map((op, i) => {
-    if (op.op !== "node.icon" || op.icon === undefined) return op;
-    const { sha256, error } = prepare(folder, op.icon, i);
+    if (op.op !== "node.mark" || op.mark === undefined) return op;
+    const { sha256, error } = prepare(folder, op.mark, i);
     if (error !== undefined) {
       errors.push(error);
       return op;

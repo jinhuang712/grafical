@@ -11,6 +11,7 @@ grafical has not been released; the first release will be 0.1.0.
 - A command names its file with `-f` or `--file`, ahead of the command.
 - A verb is a flag after its noun, as in `grafical -f a.grafical edge --add a b`.
 - `apply -` reads a batch from standard input.
+- Batches and files use the names of the commands: `node.label`, `node.mark`, `edge.number`, `group.label-at`, `diagram.caption` and the rest, with `mark`, `marks`, `emphasis` and `caption` as fields.
 - `edge --emphasize` went, since `edge --weight <id> --weight thick` draws the same line, and a saved edge's `accent` reads as that weight.
 - A help page writes its examples as a caller types them, with `-f` first, and a verb in the old form names the new one as `likely`.
 - `--type` takes the place of `--kind`.
@@ -71,7 +72,7 @@ grafical has not been released; the first release will be 0.1.0.
 - A line between neighbouring rows whose lower end was pushed aside now also runs straight past a line in the gap that it crossed anyway: before, any line across the gap at its lower end kept it bent twice.
 - `edge step <file> <id> --n <number>` numbers a line from 1 to 99 as a step of a process.
   - grafical draws the number in a small ring on the line, under the start of its label.
-  - Without `--n` the number is cleared; in a batch it is `edge.step`.
+  - Without `--n` the number is cleared; in a batch it is `edge.number`.
   - `show` prints `[step <n>]` after the line, and `show --drawn` adds `step=<n>` to its record.
   - A numbered line keeps its own port.
   - Its label's text stands a little further from the line, so a picture with numbers grows a little taller.
@@ -123,7 +124,7 @@ grafical has not been released; the first release will be 0.1.0.
   - The refusal names the line and the lanes whose border lies across its label.
   - Before, the label was drawn across the border.
   - A numbered line cut at a lane no longer has its label's text pushed past its place by the number's ring, across a lane's side or another line.
-- `wall relabel <file> <id> [--label <text>]` changes the words on a wall's divider, or drops them without `--label` so that the wall is space alone; in a batch it is `wall.relabel`.
+- `wall relabel <file> <id> [--label <text>]` changes the words on a wall's divider, or drops them without `--label` so that the wall is space alone; in a batch it is `wall.label`.
   - Until now a wall's label could change only by removing the wall and adding it again.
 - `group title <file> <group> <place>` (or `group label`) says where a group's label sits.
   - It takes one of these places:
@@ -131,7 +132,7 @@ grafical has not been released; the first release will be 0.1.0.
     - `bottom-left`, `bottom` or `bottom-right` in a foot below its last row.
     - `left` or `right` beside its rows inside the box.
     - `outside-top` or `outside-bottom` or `outside-left` or `outside-right`, centred just outside the box.
-  - The file holds it as the group's `titleAt` and a batch as `group.title`.
+  - The file holds it as the group's `titleAt` and a batch as `group.label-at`.
   - `show` prints `title=<place>`.
   - The label sits exactly there and takes only its own room; no box or line moves for it.
   - A line that would run across it refuses the write as `title-blocked`.

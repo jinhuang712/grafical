@@ -26,7 +26,7 @@ import type {
   LayerAddOp,
   MarkStyleOp,
   NodeAddOp,
-  NodeIconOp,
+  NodeMarkOp,
   NodeMoveOp,
   Op,
   Position,
@@ -39,7 +39,7 @@ import {
   isMarkFile,
   legendWeightProblem,
   MARK_TEXT_MAX,
-  MAX_ACCENTS,
+  MAX_EMPHASIS,
   markColor,
   markNameTooLong,
 } from "./schema.ts";
@@ -110,15 +110,15 @@ function dupError(d: Diagram, id: string, i: number): OpError | undefined {
 /** The fields that give a box its place in a row (specs/decisions, "The agent states every order"). */
 const POSITION_FIELDS = ["first", "last", "before", "after"] as const;
 
-/** The style fields of a node.icon operation, in the order errors name them. */
+/** The style fields of a node.mark operation, in the order errors name them. */
 const MARK_STYLE_FIELDS = ["bg", "fg", "border", "shape"] as const;
 
 /**
- * The mark a node.icon operation sets, or its errors (specs/decisions, "Marks of any kind"). A style that holds its default
+ * The mark a node.mark operation sets, or its errors (specs/decisions, "Marks of any kind"). A style that holds its default
  * is left out, so the file shows only what was chosen. A picture, that is an emoji or a
  * file, takes a size and nothing else: it has its own colors and outline.
  */
-function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
+function buildMark(op: NodeMarkOp, mark: string, i: number): Mark | OpError[] {
   const bad = (
     code: ErrorCode,
     field: string,
@@ -126,13 +126,13 @@ function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
     facts?: OpError["facts"],
   ): OpError[] => [{ code, index: i, field, found, ...(facts === undefined ? {} : { facts }) }];
   const size = op.size === undefined || op.size === DEFAULT_MARK_SIZE ? undefined : op.size;
-  const picture = op.sha256 !== undefined || isEmoji(icon);
-  if (op.sha256 === undefined && isMarkFile(icon)) {
+  const picture = op.sha256 !== undefined || isEmoji(mark);
+  if (op.sha256 === undefined && isMarkFile(mark)) {
     // The command line reads the file and fills in its hash before the operation gets here.
-    return bad("mark-file-unread", "icon", icon);
+    return bad("mark-file-unread", "mark", mark);
   }
-  if (op.sha256 === undefined && graphemes(icon).length > MARK_TEXT_MAX) {
-    return bad("mark-too-long", "icon", icon, { max: MARK_TEXT_MAX });
+  if (op.sha256 === undefined && graphemes(mark).length > MARK_TEXT_MAX) {
+    return bad("mark-too-long", "mark", mark, { max: MARK_TEXT_MAX });
   }
   if (picture) {
     for (const f of MARK_STYLE_FIELDS) {
@@ -142,9 +142,9 @@ function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
       }
     }
     if (op.sha256 !== undefined) {
-      return { file: icon, sha256: op.sha256, ...(size === undefined ? {} : { size }) };
+      return { file: mark, sha256: op.sha256, ...(size === undefined ? {} : { size }) };
     }
-    return size === undefined ? icon : { text: icon, size };
+    return size === undefined ? mark : { text: mark, size };
   }
   const style: MarkStyle = {};
   for (const f of ["bg", "fg", "border"] as const) {
@@ -158,7 +158,7 @@ function buildMark(op: NodeIconOp, icon: string, i: number): Mark | OpError[] {
   }
   if (op.shape !== undefined && op.shape !== DEFAULT_MARK_SHAPE) style.shape = op.shape;
   if (size !== undefined) style.size = size;
-  return Object.keys(style).length === 0 ? icon : { text: icon, ...style };
+  return Object.keys(style).length === 0 ? mark : { text: mark, ...style };
 }
 
 /** The fields of a legend operation that name its entry; it names exactly one (specs/decisions, "A legend for widths and marks"). */
@@ -504,7 +504,7 @@ function groupStep(s: State, op: Extract<Op, { op: `group.${string}` }>, i: numb
       if (wrong) return [wrong];
       setParent(s, id, g.id);
     }
-  } else if (op.op === "group.rename") {
+  } else if (op.op === "group.label") {
     g.label = op.label;
     touch(s, g.id);
   } else {
@@ -644,7 +644,7 @@ function laneStep(s: State, op: Extract<Op, { op: `lane.${string}` }>, i: number
     const t = laneTargets(d, op.members, i, lane.id);
     if (Array.isArray(t)) return t;
     setLane(s, t, lane.id);
-  } else if (op.op === "lane.rename") {
+  } else if (op.op === "lane.label") {
     lane.label = op.label;
     touch(s, lane.id);
   } else {
@@ -724,7 +724,7 @@ function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number
     const errors = unknown(op.allow, "allow", names);
     if (errors.length > 0) return errors;
     wall.allow = unique([...(wall.allow ?? []), ...op.allow]);
-  } else if (op.op === "wall.relabel") {
+  } else if (op.op === "wall.label") {
     if (op.label === undefined) {
       delete wall.label;
       delete wall.labelAlign;
@@ -1116,15 +1116,15 @@ function addStepped(s: State, op: NodeAddOp, i: number): OpError[] {
   if (dup) errors.push(dup);
   const steps = stepsOf(op, {});
   errors.push(...stepErrors(d, op.id, op.from, steps, placeOptions(op), i));
-  if (op.accent === true) {
-    const count = everyNode(d).filter((x) => x.accent).length;
-    if (count >= MAX_ACCENTS) errors.push(tooManyAccents(d, i, "accent", "true", count + 1));
+  if (op.emphasis === true) {
+    const count = everyNode(d).filter((x) => x.emphasis).length;
+    if (count >= MAX_EMPHASIS) errors.push(tooMuchEmphasis(d, i, "emphasis", "true", count + 1));
   }
   if (errors.length > 0) return errors;
   const node: DiagramNode = { id: op.id, label: op.label, kind: op.kind ?? DEFAULT_NODE_KIND };
   if (op.size !== undefined) node.size = op.size;
   if (op.sublabel !== undefined) node.sublabel = op.sublabel;
-  if (op.accent === true) node.accent = true;
+  if (op.emphasis === true) node.emphasis = true;
   setSteps(node, op.from, steps);
   d.nodes = [...(d.nodes ?? []), node];
   touch(s, op.id);
@@ -1185,9 +1185,9 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
     const e = checkAlign(d, layer.id, op.align, i);
     if (e) errors.push(e);
   }
-  if (op.accent === true) {
-    const count = everyNode(d).filter((x) => x.accent).length;
-    if (count >= MAX_ACCENTS) errors.push(tooManyAccents(d, i, "accent", "true", count + 1));
+  if (op.emphasis === true) {
+    const count = everyNode(d).filter((x) => x.emphasis).length;
+    if (count >= MAX_EMPHASIS) errors.push(tooMuchEmphasis(d, i, "emphasis", "true", count + 1));
   }
   let slot: Slot = { at: 0 };
   if (layer) {
@@ -1198,7 +1198,7 @@ function addNode(s: State, op: NodeAddOp, i: number): OpError[] {
   const node: DiagramNode = { id: op.id, label: op.label, kind: op.kind ?? DEFAULT_NODE_KIND };
   if (op.size !== undefined) node.size = op.size;
   if (op.sublabel !== undefined) node.sublabel = op.sublabel;
-  if (op.accent === true) node.accent = true;
+  if (op.emphasis === true) node.emphasis = true;
   if (op.align !== undefined) node.align = op.align;
   if ("at" in slot) layer.nodes.splice(slot.at, 0, node);
   touch(s, op.id);
@@ -1313,26 +1313,26 @@ function bothOnLink(id: string, i: number, field: string, found: string): OpErro
   return { code: "both-on-link", index: i, field, found, facts: { edge: id, kind: "link" } };
 }
 
-/** One accent more than grafical allows: the accented nodes, and the limit. */
-function tooManyAccents(
+/** One emphasis more than grafical allows: the emphasized nodes, and the limit. */
+function tooMuchEmphasis(
   d: Diagram,
   i: number,
   field: string,
   found: string,
   count: number,
 ): OpError {
-  const accented = everyNode(d)
-    .filter((x) => x.accent)
+  const emphasized = everyNode(d)
+    .filter((x) => x.emphasis)
     .map((x) => x.id);
   return {
-    code: "too-many-accents",
+    code: "too-much-emphasis",
     index: i,
     field,
     found,
     facts: {
       count,
-      max: MAX_ACCENTS,
-      nodes: accented,
+      max: MAX_EMPHASIS,
+      nodes: emphasized,
     },
   };
 }
@@ -1547,7 +1547,7 @@ function mergeNodes(s: State, op: Extract<Op, { op: "node.merge" }>, i: number):
   if (!first) return [];
   const node: DiagramNode = { id: op.id, label: op.label, kind: op.kind ?? first.node.kind };
   if (op.sublabel !== undefined) node.sublabel = op.sublabel;
-  if (parts.some((p) => p.accent === true)) node.accent = true;
+  if (parts.some((p) => p.emphasis === true)) node.emphasis = true;
   if (first.node.group !== undefined) node.group = first.node.group;
   if (first.node.lane !== undefined) node.lane = first.node.lane;
   first.list[first.index] = node;
@@ -1856,7 +1856,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, "style");
       return [];
     }
-    case "layer.rename": {
+    case "layer.label": {
       const layer = d.layers.find((l) => l.id === op.id);
       if (!layer) return [unknownLayer(d, op.id, i, "id")];
       layer.label = op.label;
@@ -1988,23 +1988,23 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       return removeLayer(s, op, i);
     case "layer.split":
       return splitLayer(s, op, i);
-    case "node.describe":
+    case "node.sublabel":
     case "node.kind":
-    case "node.emphasize":
+    case "node.emphasis":
     case "node.align": {
       const at = findNode(d, op.id);
       if (!at) return [unknownNode(d, op.id, i, "id")];
       const n = at.node;
-      if (op.op === "node.describe") {
+      if (op.op === "node.sublabel") {
         if (op.text === undefined) delete n.sublabel;
         else n.sublabel = op.text;
       } else if (op.op === "node.kind") n.kind = op.kind;
-      else if (op.op === "node.emphasize") {
-        if (op.off === true) delete n.accent;
-        else if (n.accent !== true) {
-          const count = everyNode(d).filter((x) => x.accent).length;
-          if (count >= MAX_ACCENTS) return [tooManyAccents(d, i, "id", op.id, count + 1)];
-          n.accent = true;
+      else if (op.op === "node.emphasis") {
+        if (op.off === true) delete n.emphasis;
+        else if (n.emphasis !== true) {
+          const count = everyNode(d).filter((x) => x.emphasis).length;
+          if (count >= MAX_EMPHASIS) return [tooMuchEmphasis(d, i, "id", op.id, count + 1)];
+          n.emphasis = true;
         }
       } else if (op.to === undefined) delete n.align;
       else if (at.layer === undefined) return [stepped(op.id, i, "to", op.to)];
@@ -2016,12 +2016,12 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, op.id);
       return [];
     }
-    case "node.icon": {
+    case "node.mark": {
       const at = findNode(d, op.id);
       if (!at) return [unknownNode(d, op.id, i, "id")];
       const n = at.node;
       if (
-        op.icon !== undefined &&
+        op.mark !== undefined &&
         op.slot === "left" &&
         (n.kind === "decision" || n.kind === "initial" || n.kind === "final" || n.kind === "choice")
       ) {
@@ -2035,14 +2035,14 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
           },
         ];
       }
-      if (op.icon === undefined) {
-        if (n.icons !== undefined) delete n.icons[op.slot];
+      if (op.mark === undefined) {
+        if (n.marks !== undefined) delete n.marks[op.slot];
       } else {
-        const mark = buildMark(op, op.icon, i);
+        const mark = buildMark(op, op.mark, i);
         if (Array.isArray(mark)) return mark;
-        n.icons = { ...n.icons, [op.slot]: mark };
+        n.marks = { ...n.marks, [op.slot]: mark };
       }
-      if (n.icons !== undefined && Object.keys(n.icons).length === 0) delete n.icons;
+      if (n.marks !== undefined && Object.keys(n.marks).length === 0) delete n.marks;
       touch(s, op.id);
       return [];
     }
@@ -2133,7 +2133,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, op.id);
       return [];
     }
-    case "edge.seat": {
+    case "edge.label-at": {
       const e = d.edges.find((x) => x.id === op.id);
       if (!e) return [unknownEdge(d, op.id, i, "id")];
       if ((e.label ?? "") === "") {
@@ -2152,16 +2152,16 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, e.id);
       return [];
     }
-    case "edge.relabel":
+    case "edge.label":
     case "edge.kind":
     case "edge.reverse":
     case "edge.both":
     case "edge.pass":
-    case "edge.step":
-    case "edge.retarget": {
+    case "edge.number":
+    case "edge.ends": {
       const e = d.edges.find((x) => x.id === op.id);
       if (!e) return [unknownEdge(d, op.id, i, "id")];
-      if (op.op === "edge.relabel") {
+      if (op.op === "edge.label") {
         if (op.label === undefined) {
           delete e.label;
           delete e.seat;
@@ -2179,7 +2179,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       } else if (op.op === "edge.pass") {
         if (op.off === true) delete e.pass;
         else e.pass = true;
-      } else if (op.op === "edge.step") {
+      } else if (op.op === "edge.number") {
         if (op.n === undefined) delete e.step;
         else e.step = op.n;
       } else {
@@ -2212,7 +2212,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, op.id);
       return [];
     }
-    case "group.describe": {
+    case "group.sublabel": {
       const g = (d.groups ?? []).find((x) => x.id === op.id);
       if (!g) return [unknownGroup(d, op.id, i, "id")];
       if (op.text === undefined) delete g.sublabel;
@@ -2220,7 +2220,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, op.id);
       return [];
     }
-    case "group.title": {
+    case "group.label-at": {
       const g = (d.groups ?? []).find((x) => x.id === op.id);
       if (!g) return [unknownGroup(d, op.id, i, "id")];
       if (op.at === undefined) delete g.titleAt;
@@ -2252,8 +2252,8 @@ function step(s: State, op: Op, i: number): OpError[] {
         },
       ];
     case "diagram.subtitle":
-    case "diagram.note": {
-      const field = op.op === "diagram.subtitle" ? "subtitle" : "note";
+    case "diagram.caption": {
+      const field = op.op === "diagram.subtitle" ? "subtitle" : "caption";
       if (op.text === undefined) delete d[field];
       else d[field] = op.text;
       touch(s, field);
@@ -2267,19 +2267,19 @@ function step(s: State, op: Op, i: number): OpError[] {
     case "group.add":
     case "group.join":
     case "group.leave":
-    case "group.rename":
+    case "group.label":
     case "group.remove":
       return groupStep(s, op, i);
     case "lane.add":
     case "lane.join":
     case "lane.leave":
-    case "lane.rename":
+    case "lane.label":
     case "lane.remove":
       return laneStep(s, op, i);
     case "wall.add":
     case "wall.allow":
     case "wall.remove":
-    case "wall.relabel":
+    case "wall.label":
       return wallStep(s, op, i);
     case "gap.between": {
       if (!neighbours(d, op.a, op.b)) {
@@ -2327,14 +2327,14 @@ function step(s: State, op: Op, i: number): OpError[] {
       if (errors.length > 0 || op.type === undefined) return errors;
       return setType(d, d.edges.at(-1), op.type, EDGE_KINDS, i);
     }
-    case "node.rename": {
+    case "node.label": {
       const at = findNode(d, op.id);
       if (!at) return [unknownNode(d, op.id, i, "id")];
       at.node.label = op.label;
       touch(s, op.id);
       return [];
     }
-    case "node.resize": {
+    case "node.size": {
       const at = findNode(d, op.id);
       if (!at) return [unknownNode(d, op.id, i, "id")];
       if (op.size === undefined) delete at.node.size;
@@ -2398,7 +2398,7 @@ function newDiagram(op: Extract<Op, { op: "diagram.new" }>): Diagram {
   if (op.sizing === "fixed") d.sizing = "fixed";
   if (op.style !== undefined) d.style = op.style;
   if (op.subtitle !== undefined) d.subtitle = op.subtitle;
-  if (op.note !== undefined) d.note = op.note;
+  if (op.caption !== undefined) d.caption = op.caption;
   return d;
 }
 

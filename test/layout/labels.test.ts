@@ -70,7 +70,7 @@ edges:
       check(d, s, m).map((x) => [x.code, x.owner, ...x.elements, x.facts.is, x.facts.gutters]),
     ).toEqual([["label-blocked", "agent", "a->b#4", "a->b#5", "edge", ["top/bottom"]]]);
     // The engine never widens a box for its lines; the agent does (decided by the owner on
-    // 2026-10-17), and the refusal names node resize among the commands that can change it.
+    // 2026-10-17), and the refusal names node size among the commands that can change it.
     const [blocked] = check(d, s, m);
     if (blocked === undefined) throw new Error("no refusal");
     expect(defectBlock(blocked, kindsOf(d)).next).toContain("node --size");
@@ -107,7 +107,7 @@ edges:
 `) as Diagram;
     const found = check(d, layout(d, m), m);
     // The block names the line, the lanes across its label and the gaps it tried, and the commands that can change
-    // it, edge relabel among them (specs/decisions, "Refusals say what happened and which commands can change it").
+    // it, edge label among them (specs/decisions, "Refusals say what happened and which commands can change it").
     expect(found.map((x) => defectBlock(x, kindsOf(d)))).toEqual([
       {
         kind: "defect",
@@ -123,7 +123,7 @@ edges:
         next: ["layer --move", "node --size", "node --move", "edge --label", "edge --number"],
       },
     ]);
-    const r = applyOps(d, [{ op: "edge.relabel", id: "shop->b" }]);
+    const r = applyOps(d, [{ op: "edge.label", id: "shop->b" }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     expect(check(r.diagram, layout(r.diagram, m), m)).toEqual([]);
   });
@@ -143,6 +143,6 @@ edges:
     expect(found.map((x) => defectBlock(x, kindsOf(r.diagram)).next)).toEqual([
       ["layer --move", "node --size", "node --move", "edge --label", "edge --number"],
     ]);
-    expect(checked([add, { op: "edge.relabel", id: "n4->n2" }])).toEqual([]);
+    expect(checked([add, { op: "edge.label", id: "n4->n2" }])).toEqual([]);
   });
 });

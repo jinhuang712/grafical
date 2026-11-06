@@ -25,7 +25,7 @@ const box = (id: string, layer: string, x: number, y: number): SceneNode => ({
   id,
   layer,
   kind: "service",
-  accent: false,
+  emphasis: false,
   rect: { x, y, w: 160, h: 48 },
   texts: [],
 });

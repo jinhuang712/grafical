@@ -142,9 +142,9 @@ describe('the legend names line widths (specs/decisions, "A legend for widths an
 
 /** A warning on two nodes of the work row, and a red P0 badge on the relay above them. */
 const marked = ok(fx, [
-  { op: "node.icon", id: "pipelines", slot: "top-left", icon: "⚠️" },
-  { op: "node.icon", id: "service", slot: "top-left", icon: "⚠️" },
-  { op: "node.icon", id: "relay", slot: "top-right", icon: "P0", bg: "red" },
+  { op: "node.mark", id: "pipelines", slot: "top-left", mark: "⚠️" },
+  { op: "node.mark", id: "service", slot: "top-left", mark: "⚠️" },
+  { op: "node.mark", id: "relay", slot: "top-right", mark: "P0", bg: "red" },
 ]);
 const markEntries = (d: Diagram) => (layout(d, m).legend ?? []).filter((x) => x.mark !== undefined);
 
@@ -186,8 +186,8 @@ describe('the legend names marks (specs/decisions, "A legend for widths and mark
       field: "mark",
       facts: { max: 6 },
     });
-    expect(ok(fx, [{ op: "diagram.legend", mark: "icons/lock.svg", text: "x" }]).legend).toEqual({
-      marks: { "icons/lock.svg": "x" },
+    expect(ok(fx, [{ op: "diagram.legend", mark: "marks/lock.svg", text: "x" }]).legend).toEqual({
+      marks: { "marks/lock.svg": "x" },
     });
   });
 });

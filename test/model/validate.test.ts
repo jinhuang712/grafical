@@ -77,9 +77,9 @@ describe("file validation", () => {
     expect(errorsOf(text)[0]).toMatchObject({ code: "unknown-node", found: "zzz" });
   });
 
-  it("rejects more than two accents", () => {
-    const n = (id: string) => `      - id: ${id}\n        label: ${id}\n        accent: true\n`;
-    expect(errorsOf(layers(n("a1") + n("a2") + n("a3")))[0]?.code).toBe("too-many-accents");
+  it("rejects more than two emphases", () => {
+    const n = (id: string) => `      - id: ${id}\n        label: ${id}\n        emphasis: true\n`;
+    expect(errorsOf(layers(n("a1") + n("a2") + n("a3")))[0]?.code).toBe("too-much-emphasis");
   });
 
   it("rejects unknown fields and suggests the nearest", () => {

@@ -66,8 +66,8 @@ describe("source", () => {
     expect(commandLine(["node", "add", "d.grafical.yaml", "x", "--label", "order desk"])).toBe(
       'grafical node add d.grafical.yaml x --label "order desk"',
     );
-    expect(commandLine(["edge", "step", "d.grafical.yaml", "a->b", "--n", "2"])).toBe(
-      'grafical edge step d.grafical.yaml "a->b" --n 2',
+    expect(commandLine(["edge", "number", "d.grafical.yaml", "a->b", "--n", "2"])).toBe(
+      'grafical edge number d.grafical.yaml "a->b" --n 2',
     );
     const f = fresh("one.grafical.yaml");
     const r = run("node", "add", f, "cache", "--layer", "row-b", "--label", "cache");
@@ -159,7 +159,7 @@ describe("source", () => {
       join(dir, "long.yaml"),
       [
         "- {op: node.add, id: x, layer: row-a, label: x, last: true}",
-        `- {op: node.rename, id: x, label: ${LONG}}`,
+        `- {op: node.label, id: x, label: ${LONG}}`,
         "- {op: node.add, id: y, layer: row-a, label: y, last: true}",
         "",
       ].join("\n"),
@@ -167,15 +167,15 @@ describe("source", () => {
     const r = run("apply", f, "long.yaml");
     expect(r.out).toContain("defect: overflow\n");
     expect(new Set(sources(r.out))).toEqual(
-      new Set([`long.yaml line 2: {op: node.rename, id: x, label: ${LONG}}`]),
+      new Set([`long.yaml line 2: {op: node.label, id: x, label: ${LONG}}`]),
     );
     // A defect the last line makes is found too.
     writeFileSync(
       join(dir, "last.yaml"),
-      `- {op: node.add, id: x, layer: row-a, label: x, last: true}\n- {op: node.rename, id: x, label: ${LONG}}\n`,
+      `- {op: node.add, id: x, layer: row-a, label: x, last: true}\n- {op: node.label, id: x, label: ${LONG}}\n`,
     );
     expect(new Set(sources(run("apply", f, "last.yaml").out))).toEqual(
-      new Set([`last.yaml line 2: {op: node.rename, id: x, label: ${LONG}}`]),
+      new Set([`last.yaml line 2: {op: node.label, id: x, label: ${LONG}}`]),
     );
   });
 
@@ -251,13 +251,13 @@ describe("source", () => {
       writeFileSync(join(dir, "tp.grafical.yaml"), writeDiagram({ ...nested, groups: long ?? [] }));
       writeFileSync(
         join(dir, "tp1.yaml"),
-        "- {op: group.title, id: vpc, at: 0.5, side: bottom}\n- {op: group.title, id: vpc, at: 0.5, side: bottom, place: outside}\n",
+        "- {op: group.label-at, id: vpc, at: 0.5, side: bottom}\n- {op: group.label-at, id: vpc, at: 0.5, side: bottom, place: outside}\n",
       );
       const r = run("apply", "tp.grafical.yaml", "tp1.yaml");
       expect(r.out).toMatch(/^defect: title-blocked$/m);
       expect(r.out).toMatch(/^ {2}place: 0.5 bottom outside$/m);
       expect(sources(r.out)).toEqual([
-        "tp1.yaml line 2: {op: group.title, id: vpc, at: 0.5, side: bottom, place: outside}",
+        "tp1.yaml line 2: {op: group.label-at, id: vpc, at: 0.5, side: bottom, place: outside}",
       ]);
     });
 
@@ -332,7 +332,7 @@ describe("source", () => {
     const f = fresh("sty.grafical.yaml");
     writeFileSync(
       join(dir, "sty.yaml"),
-      "- {op: node.rename, id: web, label: Web}\n- {op: node.rename, id: api, label: API}\n- {op: diagram.style, style: missing.grafical-style.yaml}\n",
+      "- {op: node.label, id: web, label: Web}\n- {op: node.label, id: api, label: API}\n- {op: diagram.style, style: missing.grafical-style.yaml}\n",
     );
     const sty = JSON.parse(run("apply", f, "sty.yaml", "--json").out);
     expect(sty.problems).toMatchObject([
@@ -383,7 +383,7 @@ describe("source", () => {
     const f = fresh("split.grafical.yaml", split);
     writeFileSync(
       join(dir, "two.yaml"),
-      "- {op: node.rename, id: web, label: Web}\n- {op: diagram.title, text: T}\n",
+      "- {op: node.label, id: web, label: Web}\n- {op: diagram.title, text: T}\n",
     );
     const r = JSON.parse(run("apply", f, "two.yaml", "--json").out);
     expect(r.problems).toMatchObject([
@@ -403,7 +403,7 @@ describe("source", () => {
     // An operation's own error keeps its index.
     writeFileSync(
       join(dir, "own.yaml"),
-      "- {op: node.rename, id: web, label: Web}\n- {op: node.rename, id: nope, label: X}\n",
+      "- {op: node.label, id: web, label: Web}\n- {op: node.label, id: nope, label: X}\n",
     );
     const own = JSON.parse(run("apply", fresh("own.grafical.yaml"), "own.yaml", "--json").out);
     expect(own.problems[0].detail.op).toBe(1);

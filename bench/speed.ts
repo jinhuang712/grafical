@@ -27,7 +27,7 @@ function operations(d: Diagram): Record<string, Op[]> {
   const nodes = d.layers.flatMap((l) => l.nodes.map((n) => n.id));
   const layer = d.layers[1]?.id ?? d.layers[0]?.id ?? "";
   return {
-    rename: [{ op: "node.rename", id: nodes[3] ?? "", label: "renamed node" }],
+    rename: [{ op: "node.label", id: nodes[3] ?? "", label: "renamed node" }],
     "add, placed": [{ op: "node.add", id: "zz", layer, label: "new node", last: true }],
     "add, with a line": [
       { op: "node.add", id: "zz", layer, label: "new node", last: true },

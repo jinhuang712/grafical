@@ -67,9 +67,9 @@ function dashAttr(dash: string | undefined): string {
 function nodeShape(n: SceneNode, P: Paint): string[] {
   const p = P.node;
   const kind: { fill: string; stroke: string; dash?: string } = p.kinds[n.kind];
-  const stroke = n.look?.border ?? (n.accent ? p.accent.stroke : kind.stroke);
-  const fill = n.look?.fill ?? (n.accent ? p.accent.fill : kind.fill);
-  const sw = n.look?.borderWidth ?? (n.accent ? p.accent.strokeWidth : p.strokeWidth);
+  const stroke = n.look?.border ?? (n.emphasis ? p.emphasis.stroke : kind.stroke);
+  const fill = n.look?.fill ?? (n.emphasis ? p.emphasis.fill : kind.fill);
+  const sw = n.look?.borderWidth ?? (n.emphasis ? p.emphasis.strokeWidth : p.strokeWidth);
   if (n.kind === "store") return cylinder(n.rect, fill, stroke, sw);
   if (n.kind === "initial" || n.kind === "final") {
     // A start is a filled dot; an end is a ring around a smaller dot.

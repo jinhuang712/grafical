@@ -25,7 +25,7 @@ function node(id: string, x: number, y: number, label = id, w = 120, h = 48): Sc
     id,
     layer: "l",
     kind: "service",
-    accent: false,
+    emphasis: false,
     rect,
     texts: [text("node-label", label, x + 12, y + 12)],
   };
@@ -358,14 +358,14 @@ describe("missing-glyph", () => {
     const s = scene([node("a", 40, 40)]);
     const d = diagramOf(s);
     d.subtitle = "☃ subtitle";
-    d.note = "Not shown: ☃";
+    d.caption = "Not shown: ☃";
     d.groups = [{ id: "g", label: "☃ system" }];
     const found = check(d, s, withGlyphs);
-    expect(found.map((f) => f.elements[0])).toEqual(["g", "note", "subtitle"]);
+    expect(found.map((f) => f.elements[0])).toEqual(["caption", "g", "subtitle"]);
     const kinds = kindsOf(d);
     expect(found.map((f) => defectBlock(f, kinds).next)).toEqual([
-      ["group --label", "group --sublabel"],
       ["diagram --caption"],
+      ["group --label", "group --sublabel"],
       ["diagram --subtitle"],
     ]);
   });

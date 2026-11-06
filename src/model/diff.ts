@@ -108,7 +108,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (after.sizing === "fixed") created.sizing = "fixed";
     if (after.style !== undefined) created.style = after.style;
     if (after.subtitle !== undefined) created.subtitle = after.subtitle;
-    if (after.note !== undefined) created.note = after.note;
+    if (after.caption !== undefined) created.caption = after.caption;
     const empty: Diagram = { ...after, layers: [], edges: [] };
     delete empty.nodes;
     delete empty.groups;
@@ -132,8 +132,12 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
         : { op: "diagram.subtitle", text: a.subtitle },
     );
   }
-  if (a.note !== b.note) {
-    ops.push(a.note === undefined ? { op: "diagram.note" } : { op: "diagram.note", text: a.note });
+  if (a.caption !== b.caption) {
+    ops.push(
+      a.caption === undefined
+        ? { op: "diagram.caption" }
+        : { op: "diagram.caption", text: a.caption },
+    );
   }
   if (a.density !== b.density) ops.push({ op: "diagram.density", density: a.density });
   if (a.lines !== b.lines) ops.push({ op: "diagram.lines", lines: a.lines ?? "square" });
@@ -365,7 +369,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     const was = b.layers.find((x) => x.id === l.id);
     // No operation takes a row's label away, so a row that has none was made without one.
     if (was !== undefined && l.label !== undefined && was.label !== l.label) {
-      ops.push({ op: "layer.rename", id: l.id, label: l.label });
+      ops.push({ op: "layer.label", id: l.id, label: l.label });
     }
     if (l.look !== was?.look) {
       ops.push(
@@ -461,44 +465,42 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   for (const [id, { node: n }] of aN) {
     const was = bN.get(id)?.node;
     if (was !== undefined) {
-      if (n.label !== was.label) ops.push({ op: "node.rename", id, label: n.label });
+      if (n.label !== was.label) ops.push({ op: "node.label", id, label: n.label });
       if (n.sublabel !== was.sublabel)
         ops.push(
           n.sublabel === undefined
-            ? { op: "node.describe", id }
-            : { op: "node.describe", id, text: n.sublabel },
+            ? { op: "node.sublabel", id }
+            : { op: "node.sublabel", id, text: n.sublabel },
         );
       if (n.kind !== was.kind) ops.push({ op: "node.kind", id, kind: n.kind });
       if (n.size !== was.size)
         ops.push(
-          n.size === undefined
-            ? { op: "node.resize", id }
-            : { op: "node.resize", id, size: n.size },
+          n.size === undefined ? { op: "node.size", id } : { op: "node.size", id, size: n.size },
         );
-      if (was.accent === true && n.accent !== true)
-        ops.push({ op: "node.emphasize", id, off: true });
+      if (was.emphasis === true && n.emphasis !== true)
+        ops.push({ op: "node.emphasis", id, off: true });
     }
     for (const slot of MARK_SLOTS) {
-      const now = n.icons?.[slot];
-      const before = was?.icons?.[slot];
+      const now = n.marks?.[slot];
+      const before = was?.marks?.[slot];
       if (JSON.stringify(now) === JSON.stringify(before)) continue;
-      if (now === undefined) ops.push({ op: "node.icon", id, slot });
-      else if (typeof now === "string") ops.push({ op: "node.icon", id, slot, icon: now });
+      if (now === undefined) ops.push({ op: "node.mark", id, slot });
+      else if (typeof now === "string") ops.push({ op: "node.mark", id, slot, mark: now });
       else if ("file" in now) {
         ops.push({
-          op: "node.icon",
+          op: "node.mark",
           id,
           slot,
-          icon: now.file,
+          mark: now.file,
           sha256: now.sha256,
           ...(now.size === undefined ? {} : { size: now.size }),
         });
       } else {
         const { text, ...style } = now;
-        ops.push({ op: "node.icon", id, slot, icon: text, ...style });
+        ops.push({ op: "node.mark", id, slot, mark: text, ...style });
       }
     }
-    if (n.accent === true && was?.accent !== true) ons.push({ op: "node.emphasize", id });
+    if (n.emphasis === true && was?.emphasis !== true) ons.push({ op: "node.emphasis", id });
     const now =
       was?.align !== undefined && !cleared.has(id) && aN.has(was.align) ? was.align : undefined;
     if (n.align !== now) {
@@ -517,27 +519,27 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       const op: Op = { op: "group.add", id: g.id, label: g.label };
       if (g.sublabel !== undefined) op.sublabel = g.sublabel;
       ops.push(op);
-      if (g.titleAt !== undefined) ops.push({ op: "group.title", id: g.id, ...g.titleAt });
+      if (g.titleAt !== undefined) ops.push({ op: "group.label-at", id: g.id, ...g.titleAt });
       continue;
     }
-    if (g.label !== was.label) ops.push({ op: "group.rename", id: g.id, label: g.label });
+    if (g.label !== was.label) ops.push({ op: "group.label", id: g.id, label: g.label });
     if (g.sublabel !== was.sublabel)
       ops.push(
         g.sublabel === undefined
-          ? { op: "group.describe", id: g.id }
-          : { op: "group.describe", id: g.id, text: g.sublabel },
+          ? { op: "group.sublabel", id: g.id }
+          : { op: "group.sublabel", id: g.id, text: g.sublabel },
       );
     if (JSON.stringify(g.titleAt) !== JSON.stringify(was.titleAt))
       ops.push(
         g.titleAt === undefined
-          ? { op: "group.title", id: g.id }
-          : { op: "group.title", id: g.id, ...g.titleAt },
+          ? { op: "group.label-at", id: g.id }
+          : { op: "group.label-at", id: g.id, ...g.titleAt },
       );
   }
   for (const x of aLanes) {
     const was = keptLanes.has(x.id) ? bLanes.get(x.id) : undefined;
     if (was === undefined) ops.push({ op: "lane.add", id: x.id, label: x.label });
-    else if (x.label !== was.label) ops.push({ op: "lane.rename", id: x.id, label: x.label });
+    else if (x.label !== was.label) ops.push({ op: "lane.label", id: x.id, label: x.label });
   }
   const groupNow = (id: string) => {
     const g = bN.get(id)?.node.group;
@@ -620,11 +622,11 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     }
     if (was === undefined) {
       ops.push(edgeAdd(e));
-      if (e.step !== undefined) ops.push({ op: "edge.step", id: e.id, n: e.step });
+      if (e.step !== undefined) ops.push({ op: "edge.number", id: e.id, n: e.step });
       continue;
     }
     if (e.from !== was.from || e.to !== was.to) {
-      const op: Op = { op: "edge.retarget", id: e.id };
+      const op: Op = { op: "edge.ends", id: e.id };
       if (e.from !== was.from) op.from = e.from;
       if (e.to !== was.to) op.to = e.to;
       ops.push(op);
@@ -632,8 +634,8 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (e.label !== was.label)
       ops.push(
         e.label === undefined
-          ? { op: "edge.relabel", id: e.id }
-          : { op: "edge.relabel", id: e.id, label: e.label },
+          ? { op: "edge.label", id: e.id }
+          : { op: "edge.label", id: e.id, label: e.label },
       );
     // Both ends off before a kind turns into a link, and on only after it leaves one.
     if (e.both !== true && was.both === true) ops.push({ op: "edge.both", id: e.id, off: true });
@@ -657,7 +659,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       }
     }
     if (e.seat !== was.seat) {
-      ops.push({ op: "edge.seat", id: e.id, seat: e.seat ?? "on" });
+      ops.push({ op: "edge.label-at", id: e.id, seat: e.seat ?? "on" });
     }
     if (e.pass !== was.pass) {
       ops.push(
@@ -667,8 +669,8 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (e.step !== was.step)
       ops.push(
         e.step === undefined
-          ? { op: "edge.step", id: e.id }
-          : { op: "edge.step", id: e.id, n: e.step },
+          ? { op: "edge.number", id: e.id }
+          : { op: "edge.number", id: e.id, n: e.step },
       );
   }
   if (weightOff.length > 0) ops.push({ op: "edge.weight", edges: weightOff });
@@ -793,7 +795,7 @@ function said(words: string | undefined): { text: string } | object {
   return words === undefined ? {} : { text: words };
 }
 
-/** How an edge is weighted: a weight wins over the old accent, and thin is no weight (specs/decisions, "Edge weights"). */
+/** How an edge is weighted: a weight wins over the old emphasis, and thin is no weight (specs/decisions, "Edge weights"). */
 function weightLook(e: Edge | undefined): string {
   if (e === undefined) return "thin";
   if (e.weight !== undefined) return e.weight === "thin" ? "thin" : `w:${e.weight}`;

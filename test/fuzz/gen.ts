@@ -116,7 +116,7 @@ export function generate(seed: number, m: Measurer): Generated {
   const nodeCount = int(5, 50);
   const ids: string[] = [];
   const layerOf = new Map<string, string>();
-  let accents = 0;
+  let emphases = 0;
   for (let i = 0; i < nodeCount; i++) {
     const id = `n${i}`;
     const layer = `l${int(0, layerCount - 1)}`;
@@ -129,9 +129,9 @@ export function generate(seed: number, m: Measurer): Generated {
       size: pick(SIZE_STEPS),
     };
     if (chance(0.3)) op.sublabel = chance(0.5) ? `:${7000 + i}` : text(2, 8);
-    if (accents < 2 && chance(0.05)) {
-      op.accent = true;
-      accents++;
+    if (emphases < 2 && chance(0.05)) {
+      op.emphasis = true;
+      emphases++;
     }
     const inLayer = ids.filter((x) => layerOf.get(x) === layer);
     const where = r();
@@ -209,7 +209,7 @@ export function generate(seed: number, m: Measurer): Generated {
 
   addGroups(d, r, text);
   if (chance(0.3)) d.subtitle = text(10, 70);
-  if (chance(0.3)) d.note = `Not shown: ${text(5, 60)}`;
+  if (chance(0.3)) d.caption = `Not shown: ${text(5, 60)}`;
   // Drawn last, so that every seed's diagram is the same as before up to here.
   addContainerEdges(d, r, text);
   addLanes(d, r, text);

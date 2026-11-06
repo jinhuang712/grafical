@@ -63,7 +63,7 @@ export interface DiagramNewOp {
   sizing?: Sizing;
   style?: string;
   subtitle?: string;
-  note?: string;
+  caption?: string;
 }
 /** The theme or stylesheet the diagram takes its look from (specs/decisions, "Themes and stylesheets"). Absent: the default theme. */
 export interface DiagramStyleOp {
@@ -81,7 +81,7 @@ export interface DiagramSubtitleOp {
   text?: string;
 }
 export interface DiagramNoteOp {
-  op: "diagram.note";
+  op: "diagram.caption";
   /** Absent: clear the note. */
   text?: string;
 }
@@ -108,7 +108,7 @@ export interface GroupLeaveOp {
   up?: boolean;
 }
 export interface GroupRenameOp {
-  op: "group.rename";
+  op: "group.label";
   id: string;
   label: string;
 }
@@ -144,15 +144,15 @@ export interface NodeAddOp extends Position, Steps {
   sublabel?: string;
   size?: SizeStep;
   align?: string;
-  accent?: boolean;
+  emphasis?: boolean;
 }
 export interface NodeRenameOp {
-  op: "node.rename";
+  op: "node.label";
   id: string;
   label: string;
 }
 export interface NodeResizeOp {
-  op: "node.resize";
+  op: "node.size";
   id: string;
   /** Absent: the engine sizes the node again (specs/decisions, "Boxes sized to their text"). */
   size?: SizeStep;
@@ -207,7 +207,7 @@ export interface DiagramLegendOp {
   text?: string;
 }
 export interface LayerRenameOp {
-  op: "layer.rename";
+  op: "layer.label";
   id: string;
   label: string;
 }
@@ -291,7 +291,7 @@ export interface LayerSplitOp {
   from?: string;
 }
 export interface NodeDescribeOp {
-  op: "node.describe";
+  op: "node.sublabel";
   id: string;
   /** Absent: clear the sublabel. */
   text?: string;
@@ -302,18 +302,18 @@ export interface NodeKindOp {
   kind: NodeKind;
 }
 export interface NodeEmphasizeOp {
-  op: "node.emphasize";
+  op: "node.emphasis";
   id: string;
-  /** true: turn the accent off. */
+  /** true: turn the emphasis off. */
   off?: boolean;
 }
-export interface NodeIconOp {
-  op: "node.icon";
+export interface NodeMarkOp {
+  op: "node.mark";
   id: string;
   slot: MarkSlot;
   /** An emoji or a short text, or the path of an SVG or PNG file. Absent: clear the slot. */
-  icon?: string;
-  /** The file's SHA-256, filled in by the command line when icon is a file (specs/decisions, "Marks of any kind"). */
+  mark?: string;
+  /** The file's SHA-256, filled in by the command line when mark is a file (specs/decisions, "Marks of any kind"). */
   sha256?: string;
   /** The background of a text mark: a name in MARK_COLORS, or `#rrggbb`. */
   bg?: string;
@@ -355,7 +355,7 @@ export interface EdgeSideOp {
   in?: EdgeSide;
 }
 export interface EdgeSeatOp {
-  op: "edge.seat";
+  op: "edge.label-at";
   id: string;
   seat: "on" | "beside";
 }
@@ -373,7 +373,7 @@ export interface LabelAlignOp {
   align: LabelAlign;
 }
 export interface EdgeRelabelOp {
-  op: "edge.relabel";
+  op: "edge.label";
   id: string;
   /** Absent: clear the label. */
   label?: string;
@@ -410,27 +410,27 @@ export interface EdgeBothOp {
 }
 /** Numbers an edge as a step of a process, or clears its number (specs/decisions, "Step badges ride the line"). */
 export interface EdgeStepOp {
-  op: "edge.step";
+  op: "edge.number";
   id: string;
   /** Absent: no number. */
   n?: number;
 }
 /** Moves one or both ends of an edge; its id, kind and label stay. */
 export interface EdgeRetargetOp {
-  op: "edge.retarget";
+  op: "edge.ends";
   id: string;
   from?: string;
   to?: string;
 }
 export interface GroupDescribeOp {
-  op: "group.describe";
+  op: "group.sublabel";
   id: string;
   /** Absent: clear the group's second, quieter label. */
   text?: string;
 }
 /** Where a group's label sits (specs/decisions, "The agent states where a group's label sits"). */
 export interface GroupTitleOp {
-  op: "group.title";
+  op: "group.label-at";
   id: string;
   /** Absent: the engine seats the label in the head. */
   /** Absent: the engine seats the label in the head. */
@@ -478,7 +478,7 @@ export interface LaneLeaveOp {
   members: string[];
 }
 export interface LaneRenameOp {
-  op: "lane.rename";
+  op: "lane.label";
   id: string;
   label: string;
 }
@@ -528,7 +528,7 @@ export interface WallRemoveOp {
 }
 /** A wall's label: the words on its divider. Absent: no label, and the wall is space alone (specs/decisions, "Walls as space"). */
 export interface WallRelabelOp {
-  op: "wall.relabel";
+  op: "wall.label";
   id: string;
   label?: string;
 }
@@ -616,7 +616,7 @@ export type Op =
   | NodeDescribeOp
   | NodeKindOp
   | NodeEmphasizeOp
-  | NodeIconOp
+  | NodeMarkOp
   | NodeAlignOp
   | NodeSwapOp
   | NodeMergeOp
@@ -651,7 +651,7 @@ export const diagramNewSchema = z.strictObject({
   sizing: z.enum(SIZINGS).optional(),
   style: text.optional(),
   subtitle: text.optional(),
-  note: text.optional(),
+  caption: text.optional(),
 });
 export const diagramStyleSchema = z.strictObject({
   op: z.literal("diagram.style"),
@@ -666,7 +666,7 @@ export const diagramSubtitleSchema = z.strictObject({
   text: text.optional(),
 });
 export const diagramNoteSchema = z.strictObject({
-  op: z.literal("diagram.note"),
+  op: z.literal("diagram.caption"),
   text: text.optional(),
 });
 const nodeList = z.array(nodeId).min(1);
@@ -689,7 +689,7 @@ export const groupLeaveSchema = z.strictObject({
   up: z.boolean().optional(),
 });
 export const groupRenameSchema = z.strictObject({
-  op: z.literal("group.rename"),
+  op: z.literal("group.label"),
   id: nodeId,
   label: text,
 });
@@ -722,17 +722,17 @@ export const nodeAddSchema = z.strictObject({
   sublabel: text.optional(),
   size: z.enum(SIZE_STEPS).optional(),
   align: nodeId.optional(),
-  accent: z.boolean().optional(),
+  emphasis: z.boolean().optional(),
   ...position,
   ...stepFields,
 });
 export const nodeRenameSchema = z.strictObject({
-  op: z.literal("node.rename"),
+  op: z.literal("node.label"),
   id: nodeId,
   label: text,
 });
 export const nodeResizeSchema = z.strictObject({
-  op: z.literal("node.resize"),
+  op: z.literal("node.size"),
   id: nodeId,
   size: z.enum(SIZE_STEPS).optional(),
 });
@@ -788,7 +788,7 @@ export const diagramLegendSchema = z.strictObject({
   text: text.optional(),
 });
 export const layerRenameSchema = z.strictObject({
-  op: z.literal("layer.rename"),
+  op: z.literal("layer.label"),
   id: nodeId,
   label: text,
 });
@@ -845,7 +845,7 @@ export const layerSplitSchema = z.strictObject({
   from: nodeId.optional(),
 });
 export const nodeDescribeSchema = z.strictObject({
-  op: z.literal("node.describe"),
+  op: z.literal("node.sublabel"),
   id: nodeId,
   text: text.optional(),
 });
@@ -855,15 +855,15 @@ export const nodeKindSchema = z.strictObject({
   kind: z.enum(NODE_KINDS),
 });
 export const nodeEmphasizeSchema = z.strictObject({
-  op: z.literal("node.emphasize"),
+  op: z.literal("node.emphasis"),
   id: nodeId,
   off: z.boolean().optional(),
 });
-export const nodeIconSchema = z.strictObject({
-  op: z.literal("node.icon"),
+export const nodeMarkSchema = z.strictObject({
+  op: z.literal("node.mark"),
   id: nodeId,
   slot: z.enum(MARK_SLOTS),
-  icon: text.optional(),
+  mark: text.optional(),
   sha256: z
     .string()
     .regex(/^[0-9a-f]{64}$/)
@@ -899,7 +899,7 @@ export const labelAlignSchema = z.strictObject({
   align: z.enum(LABEL_ALIGNS),
 });
 export const edgeRelabelSchema = z.strictObject({
-  op: z.literal("edge.relabel"),
+  op: z.literal("edge.label"),
   id: edgeId,
   label: text.optional(),
 });
@@ -917,7 +917,7 @@ export const edgeSideSchema = z.strictObject({
 });
 
 export const edgeSeatSchema = z.strictObject({
-  op: z.literal("edge.seat"),
+  op: z.literal("edge.label-at"),
   id: z.string(),
   seat: z.enum(["on", "beside"]),
 });
@@ -938,23 +938,23 @@ export const edgePassSchema = z.strictObject({
   off: z.boolean().optional(),
 });
 export const edgeStepSchema = z.strictObject({
-  op: z.literal("edge.step"),
+  op: z.literal("edge.number"),
   id: edgeId,
   n: stepNumber.optional(),
 });
 export const edgeRetargetSchema = z.strictObject({
-  op: z.literal("edge.retarget"),
+  op: z.literal("edge.ends"),
   id: edgeId,
   from: nodeId.optional(),
   to: nodeId.optional(),
 });
 export const groupDescribeSchema = z.strictObject({
-  op: z.literal("group.describe"),
+  op: z.literal("group.sublabel"),
   id: nodeId,
   text: text.optional(),
 });
 export const groupTitleSchema = z.strictObject({
-  op: z.literal("group.title"),
+  op: z.literal("group.label-at"),
   id: nodeId,
   at: z.number().min(0).max(1).optional(),
   side: z.enum(EDGE_SIDES).optional(),
@@ -989,7 +989,7 @@ export const laneJoinSchema = z.strictObject({
 });
 export const laneLeaveSchema = z.strictObject({ op: z.literal("lane.leave"), members: nodeList });
 export const laneRenameSchema = z.strictObject({
-  op: z.literal("lane.rename"),
+  op: z.literal("lane.label"),
   id: nodeId,
   label: text,
 });
@@ -1029,7 +1029,7 @@ export const wallAllowSchema = z.strictObject({
 });
 export const wallRemoveSchema = z.strictObject({ op: z.literal("wall.remove"), id: nodeId });
 export const wallRelabelSchema = z.strictObject({
-  op: z.literal("wall.relabel"),
+  op: z.literal("wall.label"),
   id: nodeId,
   label: text.optional(),
 });
@@ -1117,7 +1117,7 @@ export const opSchema = z.discriminatedUnion("op", [
   nodeDescribeSchema,
   nodeKindSchema,
   nodeEmphasizeSchema,
-  nodeIconSchema,
+  nodeMarkSchema,
   nodeAlignSchema,
   nodeSwapSchema,
   nodeMergeSchema,
@@ -1141,16 +1141,16 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.sizing": diagramSizingSchema,
   "diagram.style": diagramStyleSchema,
   "diagram.subtitle": diagramSubtitleSchema,
-  "diagram.note": diagramNoteSchema,
+  "diagram.caption": diagramNoteSchema,
   "group.add": groupAddSchema,
   "group.join": groupJoinSchema,
   "group.leave": groupLeaveSchema,
-  "group.rename": groupRenameSchema,
+  "group.label": groupRenameSchema,
   "group.remove": groupRemoveSchema,
   "layer.add": layerAddSchema,
   "node.add": nodeAddSchema,
-  "node.rename": nodeRenameSchema,
-  "node.resize": nodeResizeSchema,
+  "node.label": nodeRenameSchema,
+  "node.size": nodeResizeSchema,
   "node.move": nodeMoveSchema,
   "node.remove": nodeRemoveSchema,
   "edge.add": edgeAddSchema,
@@ -1162,14 +1162,14 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.density": diagramDensitySchema,
   "diagram.lines": diagramLinesSchema,
   "diagram.legend": diagramLegendSchema,
-  "group.describe": groupDescribeSchema,
-  "group.title": groupTitleSchema,
+  "group.sublabel": groupDescribeSchema,
+  "group.label-at": groupTitleSchema,
   "group.order": groupOrderSchema,
   "group.copy": groupCopySchema,
   "lane.add": laneAddSchema,
   "lane.join": laneJoinSchema,
   "lane.leave": laneLeaveSchema,
-  "lane.rename": laneRenameSchema,
+  "lane.label": laneRenameSchema,
   "lane.remove": laneRemoveSchema,
   "column.add": columnAddSchema,
   "column.join": columnJoinSchema,
@@ -1178,12 +1178,12 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "wall.add": wallAddSchema,
   "wall.allow": wallAllowSchema,
   "wall.remove": wallRemoveSchema,
-  "wall.relabel": wallRelabelSchema,
+  "wall.label": wallRelabelSchema,
   "note.add": noteAddSchema,
   "note.remove": noteRemoveSchema,
   "note.align": noteAlignSchema,
   "gap.between": gapBetweenSchema,
-  "layer.rename": layerRenameSchema,
+  "layer.label": layerRenameSchema,
   "layer.move": layerMoveSchema,
   "layer.remove": layerRemoveSchema,
   "layer.look": layerLookSchema,
@@ -1198,14 +1198,14 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "group.style": groupStyleSchema,
   "lane.style": laneStyleSchema,
   "layer.split": layerSplitSchema,
-  "node.describe": nodeDescribeSchema,
+  "node.sublabel": nodeDescribeSchema,
   "node.kind": nodeKindSchema,
-  "node.emphasize": nodeEmphasizeSchema,
-  "node.icon": nodeIconSchema,
+  "node.emphasis": nodeEmphasizeSchema,
+  "node.mark": nodeMarkSchema,
   "node.align": nodeAlignSchema,
   "node.swap": nodeSwapSchema,
   "node.merge": nodeMergeSchema,
-  "edge.relabel": edgeRelabelSchema,
+  "edge.label": edgeRelabelSchema,
   "label.align": labelAlignSchema,
   "label.style": labelStyleSchema,
   "edge.kind": edgeKindSchema,
@@ -1213,10 +1213,10 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.both": edgeBothSchema,
   "edge.pass": edgePassSchema,
   "edge.weight": edgeWeightSchema,
-  "edge.seat": edgeSeatSchema,
+  "edge.label-at": edgeSeatSchema,
   "edge.side": edgeSideSchema,
-  "edge.step": edgeStepSchema,
-  "edge.retarget": edgeRetargetSchema,
+  "edge.number": edgeStepSchema,
+  "edge.ends": edgeRetargetSchema,
 };
 
 export const OP_NAMES = Object.keys(SCHEMAS) as OpName[];

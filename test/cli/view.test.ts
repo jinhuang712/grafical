@@ -22,7 +22,7 @@ import { tiny } from "../fixtures/tiny.ts";
 vi.setConfig({ testTimeout: 30_000 });
 
 /** Where the writes of these tests come from: a command line. */
-const here: Origin = { command: "grafical node rename d.grafical.yaml api --label orders-svc" };
+const here: Origin = { command: "grafical node label d.grafical.yaml api --label orders-svc" };
 
 let m: Measurer;
 let dir: string;
@@ -48,7 +48,7 @@ describe("changedParts", () => {
   });
 
   it("marks a renamed node and nothing else", () => {
-    const after = layout(edited(tiny, { op: "node.rename", id: "api", label: "orders-svc" }), m);
+    const after = layout(edited(tiny, { op: "node.label", id: "api", label: "orders-svc" }), m);
     const api = after.nodes.find((n) => n.id === "api");
     expect(changedParts(layout(tiny, m), after)).toEqual([api?.rect]);
   });
@@ -122,8 +122,8 @@ describe("the list of changes and the window", () => {
       "lane join webteam search",
     );
     expect(describeOp({ op: "diagram.style", style: "dark" })).toBe("diagram style dark");
-    expect(describeOp({ op: "node.emphasize", id: "payments", off: true })).toBe(
-      "node emphasize payments off",
+    expect(describeOp({ op: "node.emphasis", id: "payments", off: true })).toBe(
+      "node emphasis payments off",
     );
   });
 
@@ -157,14 +157,14 @@ describe("startViewer", () => {
 
       // An edit by another process, the way an agent makes it.
       expect(
-        (await runWrite(file, [{ op: "node.rename", id: "api", label: "orders-svc" }], here)).ok,
+        (await runWrite(file, [{ op: "node.label", id: "api", label: "orders-svc" }], here)).ok,
       ).toBe(true);
       const renamed = await stream.next();
       expect(renamed.svg).toContain("orders-svc");
       expect(renamed.changed).toHaveLength(1);
       expect(renamed.event).toMatchObject({
         kind: "change",
-        lines: ['node rename api "orders-svc"'],
+        lines: ['node label api "orders-svc"'],
       });
 
       // A broken file keeps the last good picture and says why.

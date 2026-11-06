@@ -4,7 +4,7 @@
 grafical: 1
 title: catalog-sync and catalog-api
 subtitle: Two Go services, coupled only by the shared MongoDB.
-note: "Not shown: the full-load trigger (unknown), production database names, whether production runs a separate relay pod (unknown), and the full list of catalog-api callers."
+caption: "Not shown: the full-load trigger (unknown), production database names, whether production runs a separate relay pod (unknown), and the full list of catalog-api callers."
 density: normal
 legend:
   dashed: async, via a topic
@@ -93,7 +93,7 @@ layers:
         label: MongoDB
         kind: store
         sublabel: catalog, inventory, DLQ
-        accent: true
+        emphasis: true
 groups:
   - id: grp-sync
     label: catalog-sync

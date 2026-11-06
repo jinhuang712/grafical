@@ -17,7 +17,7 @@ import { wallRun } from "../model/walls.ts";
 function nodeText(n: DiagramNode): string {
   let s = `${n.id} ${JSON.stringify(n.label)} ${n.kind}`;
   if (n.size !== undefined) s += ` size=${n.size}`;
-  if (n.accent === true) s += " accent";
+  if (n.emphasis === true) s += " emphasis";
   if (n.align !== undefined) s += ` align=${n.align}`;
   if (n.group !== undefined) s += ` group=${n.group}`;
   if (n.lane !== undefined) s += ` lane=${n.lane}`;
@@ -27,10 +27,10 @@ function nodeText(n: DiagramNode): string {
   if (n.from !== undefined) s += ` from=${n.from}`;
   for (const k of STEP_KEYS) if (n[k] !== undefined) s += ` ${k}=${n[k]}`;
   for (const slot of MARK_SLOTS) {
-    const m = n.icons?.[slot];
+    const m = n.marks?.[slot];
     if (m === undefined) continue;
-    s += ` icon.${slot}=${JSON.stringify(markText(m) ?? (m as { file: string }).file)}`;
-    for (const [k, v] of Object.entries(markStyle(m))) s += ` icon.${slot}.${k}=${v}`;
+    s += ` mark.${slot}=${JSON.stringify(markText(m) ?? (m as { file: string }).file)}`;
+    for (const [k, v] of Object.entries(markStyle(m))) s += ` mark.${slot}.${k}=${v}`;
   }
   return s;
 }
@@ -56,7 +56,7 @@ export function showDiagram(d: Diagram): string {
   const sizing = d.sizing === "fixed" ? " sizing=fixed" : "";
   const lines = [`diagram ${JSON.stringify(d.title)} density=${d.density}${sizing}`];
   if (d.subtitle !== undefined) lines.push(`subtitle ${JSON.stringify(d.subtitle)}`);
-  if (d.note !== undefined) lines.push(`note ${JSON.stringify(d.note)}`);
+  if (d.caption !== undefined) lines.push(`caption ${JSON.stringify(d.caption)}`);
   for (const line of LINE_STYLES) {
     const text = d.legend?.[line];
     if (text !== undefined) lines.push(`legend ${line} ${JSON.stringify(text)}`);

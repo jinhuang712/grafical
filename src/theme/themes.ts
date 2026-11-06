@@ -65,7 +65,7 @@ const DARK: Paint = {
       final: { fill: "#1c2128", stroke: "#adbac7" },
       choice: { fill: "#262d36", stroke: "#636e7b" },
     },
-    accent: { fill: "#132a4f", stroke: "#4c8dff", strokeWidth: 1.5 },
+    emphasis: { fill: "#132a4f", stroke: "#4c8dff", strokeWidth: 1.5 },
   },
   edge: {
     strokeWidth: 1.25,
@@ -121,7 +121,7 @@ const PRINT: Paint = {
       final: { fill: "#ffffff", stroke: "#111111" },
       choice: { fill: "#e6e6e6", stroke: "#333333" },
     },
-    accent: { fill: "#e6e6e6", stroke: "#111111", strokeWidth: 2 },
+    emphasis: { fill: "#e6e6e6", stroke: "#111111", strokeWidth: 2 },
   },
   edge: {
     strokeWidth: 1.25,

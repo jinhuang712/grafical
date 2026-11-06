@@ -62,8 +62,8 @@ export interface Paint {
     stateRadius: number;
     strokeWidth: number;
     kinds: Record<NodeKind, NodePaint>;
-    /** The single accent colour: a border and a very light fill, on one or two nodes. */
-    accent: { fill: string; stroke: string; strokeWidth: number };
+    /** The single emphasis colour: a border and a very light fill, on one or two nodes. */
+    emphasis: { fill: string; stroke: string; strokeWidth: number };
   };
   edge: {
     strokeWidth: number;
@@ -190,7 +190,7 @@ export const PAINT: Paint = {
       final: { fill: "#ffffff", stroke: "#4b525c" },
       choice: { fill: "#e9edf2", stroke: "#9aa4b1" },
     },
-    accent: { fill: "#eef3fd", stroke: "#2f5fc4", strokeWidth: 1.5 },
+    emphasis: { fill: "#eef3fd", stroke: "#2f5fc4", strokeWidth: 1.5 },
   },
   edge: {
     strokeWidth: 1.25,

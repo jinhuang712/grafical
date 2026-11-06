@@ -122,7 +122,7 @@ function checkMarkCovers(scene: Scene, out: Found[]): void {
         out.push({
           code: "mark-covers",
           elements: [n.id],
-          field: "icon",
+          field: "mark",
           found: mark.slot,
           facts: { is: "label" },
         });
@@ -133,7 +133,7 @@ function checkMarkCovers(scene: Scene, out: Found[]): void {
         out.push({
           code: "mark-covers",
           elements: [n.id, other.id],
-          field: "icon",
+          field: "mark",
           found: mark.slot,
           facts: { is: "node" },
         });
@@ -639,7 +639,7 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
   };
   add("title", "title", diagram.title);
   add("subtitle", "subtitle", diagram.subtitle, true);
-  add("note", "note", diagram.note, true);
+  add("caption", "caption", diagram.caption, true);
   for (const g of diagram.groups ?? []) {
     add(g.id, "label", g.label);
     add(g.id, "sublabel", g.sublabel);
@@ -658,10 +658,10 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
       add(n.id, "label", n.label, true);
       add(n.id, "sublabel", n.sublabel, true);
       for (const slot of MARK_SLOTS) {
-        const mark = n.icons?.[slot];
+        const mark = n.marks?.[slot];
         // An emoji is drawn as a picture, so only plain text needs the fonts.
         const text = mark === undefined ? undefined : markText(mark);
-        if (text !== undefined && !isEmoji(text)) add(n.id, "icon", text);
+        if (text !== undefined && !isEmoji(text)) add(n.id, "mark", text);
       }
     }
   }

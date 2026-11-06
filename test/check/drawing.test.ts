@@ -78,7 +78,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       id,
       layer,
       kind: "service" as const,
-      accent: false,
+      emphasis: false,
       rect: { x, y, w: 100, h: 50 },
       texts: [],
     });
@@ -119,7 +119,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       id,
       layer,
       kind: "service" as const,
-      accent: false,
+      emphasis: false,
       rect: { x, y, w: 100, h: 50 },
       texts: [],
     });

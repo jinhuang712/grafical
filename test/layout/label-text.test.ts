@@ -71,7 +71,7 @@ describe("label.align", () => {
   const lefts = (runs: { x: number }[] = []) => runs.map((r) => r.x);
 
   it("lines up a node's label and sublabel at one side of the box", () => {
-    const d = build([{ op: "node.describe", id: "y", text: "keeps" } as Op]);
+    const d = build([{ op: "node.sublabel", id: "y", text: "keeps" } as Op]);
     const plain = layout(d, m).nodes[1];
     const left = layout(go(d, { op: "label.align", id: "y", align: "left" }), m).nodes[1];
     const right = layout(go(d, { op: "label.align", id: "y", align: "right" }), m).nodes[1];
@@ -106,7 +106,7 @@ describe("label.align", () => {
 
   it("goes with the label when the label goes", () => {
     const d = go(build([edge as Op]), { op: "label.align", id: "x->y", align: "right" });
-    expect(go(d, { op: "edge.relabel", id: "x->y" }).edges[0]?.labelAlign).toBeUndefined();
+    expect(go(d, { op: "edge.label", id: "x->y" }).edges[0]?.labelAlign).toBeUndefined();
   });
 
   it("lines up a card's lines, and refuses a footnote", () => {
@@ -171,7 +171,7 @@ describe("label.style", () => {
   it("clears with none, with its label and with its style", () => {
     const d = go(styled, { op: "label.style", id: "x->y", styles: ["hot"] });
     expect(go(d, { op: "label.style", id: "x->y" })).toEqual(styled);
-    expect(go(d, { op: "edge.relabel", id: "x->y" }).edges[0]?.labelStyle).toBeUndefined();
+    expect(go(d, { op: "edge.label", id: "x->y" }).edges[0]?.labelStyle).toBeUndefined();
     expect(go(d, { op: "style.remove", id: "hot" }).edges[0]?.labelStyle).toBeUndefined();
   });
 

@@ -210,7 +210,7 @@ export const ERROR_CODES = [
   "step-cycle",
   "style-not-found",
   "title-blocked",
-  "too-many-accents",
+  "too-much-emphasis",
   "unknown-column",
   "unknown-edge",
   "unknown-field",

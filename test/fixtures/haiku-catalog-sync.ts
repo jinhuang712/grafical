@@ -59,7 +59,7 @@ export const haikuCatalogSync: Op[] = [
     layer: "services",
     label: "catalog-api",
     sublabel: "gRPC 7190, HTTP 8080",
-    accent: true,
+    emphasis: true,
   },
   { op: "node.add", id: "k-goods", layer: "kafka", label: "catalog_goods_v1", kind: "queue" },
   { op: "node.add", id: "k-tickets", layer: "kafka", label: "catalog_tickets_v1", kind: "queue" },

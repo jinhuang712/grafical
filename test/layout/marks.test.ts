@@ -16,12 +16,12 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-function marked(id: string, icons: NonNullable<DiagramNode["icons"]>): Diagram {
+function marked(id: string, marks: NonNullable<DiagramNode["marks"]>): Diagram {
   return {
     ...tiny,
     layers: tiny.layers.map((l) => ({
       ...l,
-      nodes: l.nodes.map((n) => (n.id === id ? { ...n, icons } : n)),
+      nodes: l.nodes.map((n) => (n.id === id ? { ...n, marks } : n)),
     })),
   };
 }
@@ -206,7 +206,7 @@ describe("marks in the checker", () => {
               label: "MongoDB catalog",
               kind: "store",
               sublabel: "goods_*, DLQ, retry",
-              icons: { "top-left": "⚠️", "top-right": "P0" },
+              marks: { "top-left": "⚠️", "top-right": "P0" },
             },
           ],
         },
@@ -226,7 +226,7 @@ describe("marks in the checker", () => {
     const [defect] = check(d, scene, m).filter((x) => x.code === "mark-covers");
     if (defect === undefined) throw new Error("no defect");
     expect(defectBlock(defect, kindsOf(d))).toMatchObject({
-      detail: { owner: "agent", field: "icon", found: "top-left", is: "label", node: "api" },
+      detail: { owner: "agent", field: "mark", found: "top-left", is: "label", node: "api" },
       next: ["node --size", "node --mark"],
     });
   });
@@ -234,6 +234,6 @@ describe("marks in the checker", () => {
   it("reports a plain-text mark the bundled fonts cannot draw", () => {
     const d = marked("api", { "top-left": "ก" });
     const defects = check(d, layout(d, m), m);
-    expect(defects).toMatchObject([{ code: "missing-glyph", elements: ["api"], field: "icon" }]);
+    expect(defects).toMatchObject([{ code: "missing-glyph", elements: ["api"], field: "mark" }]);
   });
 });

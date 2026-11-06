@@ -17,7 +17,7 @@ layers:
         label: Kafka
         kind: queue
         size: l
-        accent: true
+        emphasis: true
   - id: store
     label: Store
     nodes:
@@ -59,7 +59,7 @@ describe("readDiagram and writeDiagram", () => {
     expect(d.layers[0]?.nodes[0]).toEqual({ id: "n", label: "N", kind: "service" });
     const out = writeDiagram(d);
     expect(out).not.toContain("size");
-    expect(out).not.toContain("accent");
+    expect(out).not.toContain("emphasis");
     expect(out).not.toContain("align");
   });
 

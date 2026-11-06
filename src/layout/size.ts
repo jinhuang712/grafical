@@ -43,7 +43,7 @@ export function markHeight(mark: Mark): number {
 
 /** The width a node's text gives up for its left mark (specs/decisions, "Marks of any kind"). A diamond and a dot have no left slot. */
 export function leftInset(node: DiagramNode, m: Measurer): number {
-  const mark = node.icons?.left;
+  const mark = node.marks?.left;
   if (mark === undefined || node.kind === "decision" || isDot(node.kind)) return 0;
   return markWidth(mark, m) + MARK.leftGap;
 }
@@ -57,7 +57,7 @@ export function leftInset(node: DiagramNode, m: Measurer): number {
 export function markRects(node: DiagramNode, r: Rect, m: Measurer): SceneMark[] {
   const out: SceneMark[] = [];
   for (const slot of MARK_SLOTS) {
-    const mark = node.icons?.[slot];
+    const mark = node.marks?.[slot];
     if (mark === undefined) continue;
     const w = markWidth(mark, m);
     const h = markHeight(mark);

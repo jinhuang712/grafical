@@ -167,7 +167,7 @@ export interface DiagramNode {
   /** A second, smaller line, such as a port or a topic name. */
   sublabel?: string;
   /** Marks one of the one or two things a reader should see first. */
-  accent?: boolean;
+  emphasis?: boolean;
   /** The id of a node in another layer that this node sits directly above or below. */
   align?: string;
   /** The id of the group (system) this node belongs to (specs/decisions, "Rows unseen, groups as systems"). */
@@ -181,7 +181,7 @@ export interface DiagramNode {
   /** The styles it marks, a later one over an earlier one. */
   style?: string[];
   /** Marks in fixed slots, such as a warning at the top-left (specs/decisions, "Marks of any kind"). */
-  icons?: Partial<Record<MarkSlot, Mark>>;
+  marks?: Partial<Record<MarkSlot, Mark>>;
   /** The box a box in no row is placed from, by the steps below (specs/decisions, "Steps from another box"). */
   from?: string;
   /** Steps down, up, left or right from `from`, each a cell of the column grid (specs/decisions, "Steps from another box"). */
@@ -381,7 +381,7 @@ export interface Diagram {
   /** One sentence under the title (specs/decisions, "Curation stays with the agent"). */
   subtitle?: string;
   /** A footnote, such as "Not shown: …" (specs/decisions, "Curation stays with the agent"). */
-  note?: string;
+  caption?: string;
   density: Density;
   /** How lines are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Lines may be drawn square, round or smooth"). */
   lines?: "round";

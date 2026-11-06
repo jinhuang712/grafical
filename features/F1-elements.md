@@ -141,12 +141,12 @@ grafical -f <file> diagram --sizing auto|fixed
 A node can carry up to five marks, such as `⚠️` on a node that matters, or `P0` on a badge.
 
 ```sh
-grafical -f <file> node --mark <id> --slot <slot> [--icon <mark>] [--bg <color>] [--fg <color>] [--border <color>] [--shape <shape>] [--size s|m|l]
+grafical -f <file> node --mark <id> --slot <slot> [--mark <mark>] [--bg <color>] [--fg <color>] [--border <color>] [--shape <shape>] [--size s|m|l]
 ```
 
 - A node has five slots of one mark each: `top-left` and `top-right` and `bottom-left` and `bottom-right` and `left`.
   - A diamond and a dot have corner slots only.
-  - Without `--icon`, the slot is cleared.
+  - Without `--mark`, the slot is cleared.
 - A mark is an emoji or a text of up to 6 characters or an SVG or PNG file inside the diagram's folder.
 - A text mark sits on a badge.
   - `--bg` and `--fg` and `--border` take a color as `#rrggbb` or by name: `red` or `amber` or `green` or `blue` or `purple` or `gray` or `dark`.
@@ -170,7 +170,7 @@ A corner mark is not yet checked against the edges that leave the node near its 
 A mark taken by name from one mark set that grafical bundles, so that an agent need not find a file for every node.
 
 ```sh
-grafical -f <file> node --mark <id> --slot <slot> --icon <set>:<name>
+grafical -f <file> node --mark <id> --slot <slot> --mark <set>:<name>
 ```
 
 - The set is a permissively licensed one, such as Lucide (ISC) or Tabler (MIT).
@@ -298,7 +298,7 @@ grafical -f <file> edge --number <id> [--n <number>]
   - grafical never numbers or renumbers: lines may share a number and numbers may skip.
   - `show` adds `[step <n>]` to the edge, and `show --drawn` adds `step=<n>` to its record.
 - Without `--n`, the step is cleared.
-  - In a batch: `{op: edge.step, id: <line>, n: <number>}`.
+  - In a batch: `{op: edge.number, id: <line>, n: <number>}`.
 - A numbered line keeps its own port as a labelled one does.
   - It never joins a bundle.
 

@@ -1,7 +1,7 @@
 grafical: 1
 title: dispatch
 subtitle: How a trip request reaches a driver and is paid, across the booking, matching and payments systems.
-note: "Not shown: ops console admin paths, auth token flow details, retries."
+caption: "Not shown: ops console admin paths, auth token flow details, retries."
 density: normal
 layers:
   - id: callers

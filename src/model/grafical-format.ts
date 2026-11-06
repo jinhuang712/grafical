@@ -61,7 +61,7 @@ export function writeGrafical(d: Diagram): string {
       ["format", String(d.grafical)],
       ["title", quote(d.title)],
       ["subtitle", opt(d.subtitle, quote)],
-      ["caption", opt(d.note, quote)],
+      ["caption", opt(d.caption, quote)],
       ["style", opt(d.style, quote)],
       ["density", d.density],
       ["lines", d.lines],
@@ -165,7 +165,7 @@ export function writeGrafical(d: Diagram): string {
         ["from", opt(n.from)],
         ...STEP_KEYS.map((k): Attr => [k, num(n[k])]),
         ["size", n.size],
-        ["emphasis", flag(n.accent)],
+        ["emphasis", flag(n.emphasis)],
         ["style", marks(n.style)],
       ]),
     );
@@ -235,7 +235,7 @@ export function writeGrafical(d: Diagram): string {
   }
   for (const { n } of nodes) {
     for (const slot of MARK_SLOTS) {
-      const m = n.icons?.[slot];
+      const m = n.marks?.[slot];
       if (m === undefined) continue;
       blocks.push(
         block("mark", `${n.id}-${slot}`, [["on", ref(n.id)], ["slot", slot], ...markAttrs(m)]),
@@ -411,7 +411,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       format: "grafical",
       title: "title",
       subtitle: "subtitle",
-      caption: "note",
+      caption: "caption",
       style: "style",
       density: "density",
       lines: "lines",
@@ -439,7 +439,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     const at = labels.get(id)?.attrs.get("at");
     if (at !== undefined) o.labelAt = Number(at);
   };
-  const marks = new Map<string, Record<string, unknown>>();
+  const marksOn = new Map<string, Record<string, unknown>>();
   for (const b of of("mark")) {
     const on = value(b.attrs.get("on") as string) as string;
     const slot = b.attrs.get("slot") as string;
@@ -459,9 +459,9 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       o,
     );
     const keys = Object.keys(o);
-    const icons = marks.get(on) ?? {};
-    icons[slot] = keys.length === 1 && keys[0] === "text" ? o.text : o;
-    marks.set(on, icons);
+    const onNode = marksOn.get(on) ?? {};
+    onNode[slot] = keys.length === 1 && keys[0] === "text" ? o.text : o;
+    marksOn.set(on, onNode);
   }
   const node = (b: Block) => {
     const o: Record<string, unknown> = { id: b.id };
@@ -477,15 +477,15 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
         align: "align",
         from: "from",
         size: "size",
-        emphasis: "accent",
+        emphasis: "emphasis",
         ...Object.fromEntries(STEP_KEYS.map((k) => [k, k])),
       },
       o,
     );
     typed(b, types, o);
     styles(b, o);
-    const icons = marks.get(b.id as string);
-    if (icons !== undefined) o.icons = icons;
+    const onNode = marksOn.get(b.id as string);
+    if (onNode !== undefined) o.marks = onNode;
     return o;
   };
   const nodes = of("node");

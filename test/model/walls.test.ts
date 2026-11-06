@@ -84,16 +84,16 @@ describe('walls (specs/decisions, "Walls as space")', () => {
 
   it("change or drop their label with wall.relabel, and diff replays it", () => {
     const d = ok(fx, [net]).diagram;
-    const renamed = ok(d, [{ op: "wall.relabel", id: "net", label: "inside" }]);
+    const renamed = ok(d, [{ op: "wall.label", id: "net", label: "inside" }]);
     expect(renamed.changed).toEqual(["net"]);
     expect(renamed.diagram.walls?.[0]?.label).toBe("inside");
     // Without a label the wall is space alone, as one added without one.
-    const bare = ok(d, [{ op: "wall.relabel", id: "net" }]).diagram;
+    const bare = ok(d, [{ op: "wall.label", id: "net" }]).diagram;
     expect(bare.walls?.[0]).not.toHaveProperty("label");
     const { label: _label, ...plain } = net as Extract<Op, { op: "wall.add" }>;
     expect(writeDiagram(bare)).toBe(writeDiagram(ok(fx, [plain]).diagram));
     expect(writeDiagram(ok(d, diffDiagrams(d, bare)).diagram)).toBe(writeDiagram(bare));
-    expect(fail(d, [{ op: "wall.relabel", id: "nte" }])[0]).toMatchObject({
+    expect(fail(d, [{ op: "wall.label", id: "nte" }])[0]).toMatchObject({
       code: "unknown-wall",
       facts: { near: ["net"] },
     });

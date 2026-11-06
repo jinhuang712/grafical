@@ -42,13 +42,13 @@ describe("file format", () => {
   it("round-trips subtitle, note, groups and node group in a fixed key order", () => {
     const d = ok(base, [
       { op: "diagram.subtitle", text: "One sentence." },
-      { op: "diagram.note", text: "Not shown: x." },
+      { op: "diagram.caption", text: "Not shown: x." },
       { op: "group.add", id: "g", label: "G", nodes: ["a", "b"] },
     ]).diagram;
     const text = writeDiagram(d);
     expect(text.indexOf("subtitle:")).toBeGreaterThan(text.indexOf("title:"));
-    expect(text.indexOf("note:")).toBeGreaterThan(text.indexOf("subtitle:"));
-    expect(text.indexOf("note:")).toBeLessThan(text.indexOf("density:"));
+    expect(text.indexOf("caption:")).toBeGreaterThan(text.indexOf("subtitle:"));
+    expect(text.indexOf("caption:")).toBeLessThan(text.indexOf("density:"));
     expect(text.indexOf("groups:")).toBeGreaterThan(text.indexOf("layers:"));
     expect(text.indexOf("groups:")).toBeLessThan(text.indexOf("edges:"));
     expect(text).toMatch(/- id: a\n {8}label: A\n {8}kind: service\n {8}group: g\n/);
@@ -59,7 +59,7 @@ describe("file format", () => {
 
   it("omits absent fields, so an old file stays byte-identical", () => {
     const text = writeDiagram(base);
-    expect(text).not.toMatch(/subtitle|note|groups|group:/);
+    expect(text).not.toMatch(/subtitle|caption|groups|group:/);
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
   });
 
@@ -159,14 +159,14 @@ describe("group operations", () => {
 
   it("group.rename and group.remove keep the members", () => {
     const d1 = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a", "b"] }]).diagram;
-    const d2 = ok(d1, [{ op: "group.rename", id: "g", label: "New" }]).diagram;
+    const d2 = ok(d1, [{ op: "group.label", id: "g", label: "New" }]).diagram;
     expect(d2.groups?.[0]?.label).toBe("New");
     const d3 = ok(d2, [{ op: "group.remove", id: "g" }]);
     expect(d3.diagram.groups).toBeUndefined();
     expect(groupOf(d3.diagram, "a")).toBeUndefined();
     expect(d3.changed).toEqual(["g", "a", "b"]);
     expect(fail(d1, [{ op: "group.remove", id: "zz" }])[0]?.code).toBe("unknown-group");
-    expect(fail(d1, [{ op: "group.rename", id: "zz", label: "x" }])[0]?.code).toBe("unknown-group");
+    expect(fail(d1, [{ op: "group.label", id: "zz", label: "x" }])[0]?.code).toBe("unknown-group");
   });
 
   it("a group's box spans a row it has no member in, and that row's nodes sit beside it (specs/decisions, \"Rows unseen, groups as systems\")", async () => {
@@ -343,16 +343,16 @@ describe("diagram.subtitle and diagram.note", () => {
   it("set, replace and clear", () => {
     const d1 = ok(base, [{ op: "diagram.subtitle", text: "Hello." }]).diagram;
     expect(d1.subtitle).toBe("Hello.");
-    const d2 = ok(d1, [{ op: "diagram.note", text: "Not shown: x." }]).diagram;
-    expect(d2.note).toBe("Not shown: x.");
-    const d3 = ok(d2, [{ op: "diagram.subtitle" }, { op: "diagram.note" }]).diagram;
+    const d2 = ok(d1, [{ op: "diagram.caption", text: "Not shown: x." }]).diagram;
+    expect(d2.caption).toBe("Not shown: x.");
+    const d3 = ok(d2, [{ op: "diagram.subtitle" }, { op: "diagram.caption" }]).diagram;
     expect(d3.subtitle).toBeUndefined();
-    expect(d3.note).toBeUndefined();
+    expect(d3.caption).toBeUndefined();
     expect(writeDiagram(d3)).toBe(writeDiagram(base));
   });
 
   it("diagram.new takes them", () => {
-    const d = ok(null, [{ op: "diagram.new", title: "T", subtitle: "S", note: "N" }]).diagram;
-    expect(d).toMatchObject({ subtitle: "S", note: "N" });
+    const d = ok(null, [{ op: "diagram.new", title: "T", subtitle: "S", caption: "N" }]).diagram;
+    expect(d).toMatchObject({ subtitle: "S", caption: "N" });
   });
 });

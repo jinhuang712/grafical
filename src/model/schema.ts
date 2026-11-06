@@ -50,7 +50,7 @@ import {
 } from "./types.ts";
 import { checkWalls } from "./walls.ts";
 
-export const MAX_ACCENTS = 2;
+export const MAX_EMPHASIS = 2;
 
 const ID_RE = /^[a-z0-9][a-z0-9._-]*$/;
 const EDGE_ID_RE = /^[a-z0-9][a-z0-9._-]*(->[a-z0-9][a-z0-9._-]*)?(#[0-9]+)?$/;
@@ -159,14 +159,14 @@ const nodeSchema = z.strictObject({
   sublabel: text.optional(),
   labelAlign: z.enum(LABEL_ALIGNS).optional(),
   size: z.enum(SIZE_STEPS).optional(),
-  accent: z.boolean().optional(),
+  emphasis: z.boolean().optional(),
   align: nodeId.optional(),
   group: nodeId.optional(),
   lane: nodeId.optional(),
   column: nodeId.optional(),
   type: nodeId.optional(),
   style: styleNames,
-  icons: iconsSchema.optional(),
+  marks: iconsSchema.optional(),
 });
 
 /** A whole number of steps (specs/decisions, "Steps from another box"). */
@@ -283,7 +283,7 @@ const edgeSchema = z.strictObject({
   seat: z.enum(["beside"]).optional(),
   out: z.enum(EDGE_SIDES).optional(),
   in: z.enum(EDGE_SIDES).optional(),
-  accent: z.boolean().optional(),
+  emphasis: z.boolean().optional(),
   weight: weightValue.optional(),
   step: stepNumber.optional(),
   type: nodeId.optional(),
@@ -294,7 +294,7 @@ export const diagramSchema = z.strictObject({
   grafical: z.number().int().min(1),
   title: text,
   subtitle: text.optional(),
-  note: text.optional(),
+  caption: text.optional(),
   density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
   lines: z.enum(["round"]).optional(),
   titleAt: z
@@ -348,18 +348,18 @@ function buildNode(n: Parsed["layers"][number]["nodes"][number] | Parsed["nodes"
   if (n.sublabel !== undefined) node.sublabel = n.sublabel;
   if (n.labelAlign !== undefined) node.labelAlign = n.labelAlign;
   if (n.size !== undefined) node.size = n.size;
-  if (n.accent === true) node.accent = true;
+  if (n.emphasis === true) node.emphasis = true;
   if ("align" in n && n.align !== undefined) node.align = n.align;
   if (n.group !== undefined) node.group = n.group;
   if ("lane" in n && n.lane !== undefined) node.lane = n.lane;
   if ("column" in n && n.column !== undefined) node.column = n.column;
-  if (n.icons !== undefined) {
-    const icons: NonNullable<DiagramNode["icons"]> = {};
+  if (n.marks !== undefined) {
+    const marks: NonNullable<DiagramNode["marks"]> = {};
     for (const slot of MARK_SLOTS) {
-      const m = n.icons[slot];
-      if (m !== undefined) icons[slot] = compactMark(m);
+      const m = n.marks[slot];
+      if (m !== undefined) marks[slot] = compactMark(m);
     }
-    if (Object.keys(icons).length > 0) node.icons = icons;
+    if (Object.keys(marks).length > 0) node.marks = marks;
   }
   if (n.type !== undefined) node.type = n.type;
   if (n.style !== undefined) node.style = [...n.style];
@@ -391,7 +391,7 @@ function build(p: Parsed): Diagram {
     if (e.in !== undefined) edge.in = e.in;
     // A saved run's emphasis on an edge is the thick level (specs/decisions, "One shortest way for each situation").
     if (e.weight !== undefined) edge.weight = e.weight;
-    else if (e.accent === true) edge.weight = "thick";
+    else if (e.emphasis === true) edge.weight = "thick";
     if (e.step !== undefined) edge.step = e.step;
     if (e.type !== undefined) edge.type = e.type;
     if (e.style !== undefined) edge.style = [...e.style];
@@ -435,7 +435,7 @@ function build(p: Parsed): Diagram {
     if (Object.keys(legend).length > 0) d.legend = legend;
   }
   if (p.subtitle !== undefined) d.subtitle = p.subtitle;
-  if (p.note !== undefined) d.note = p.note;
+  if (p.caption !== undefined) d.caption = p.caption;
   if (p.groups.length > 0) {
     d.groups = p.groups.map((g) => {
       const group: Group = { id: g.id, label: g.label };
@@ -482,7 +482,7 @@ function build(p: Parsed): Diagram {
 
 /**
  * The rules a schema cannot state: unique ids across layers, nodes and edges,
- * edges that point at nodes, alignments across layers, and at most two accents.
+ * edges that point at nodes, alignments across layers, and at most two emphases.
  * `index` is the operation index to put on each error.
  */
 export function checkIntegrity(d: Diagram, index = 0): OpError[] {
@@ -567,10 +567,10 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       facts: { max: MARK_TEXT_MAX },
     });
   }
-  let accents = (d.nodes ?? []).filter((n) => n.accent).length;
+  let emphases = (d.nodes ?? []).filter((n) => n.emphasis).length;
   d.layers.forEach((l, li) => {
     l.nodes.forEach((n, ni) => {
-      if (n.accent) accents++;
+      if (n.emphasis) emphases++;
       if (n.align === undefined) return;
       const field = `layers[${li}].nodes[${ni}].align`;
       const other = layerOf.get(n.align);
@@ -593,22 +593,49 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
       }
     });
   });
-  if (accents > MAX_ACCENTS) {
+  if (emphases > MAX_EMPHASIS) {
     errors.push({
-      code: "too-many-accents",
+      code: "too-much-emphasis",
       index,
-      field: "accent",
+      field: "emphasis",
       found: "true",
       facts: {
-        count: accents,
-        max: MAX_ACCENTS,
+        count: emphases,
+        max: MAX_EMPHASIS,
         nodes: everyNode(d)
-          .filter((n) => n.accent)
+          .filter((n) => n.emphasis)
           .map((n) => n.id),
       },
     });
   }
   return errors;
+}
+
+/** A run saved before the names settled says `accent` and `icons`: only bench/runs still does. */
+function savedNames(v: unknown): unknown {
+  if (typeof v !== "object" || v === null) return v;
+  const { accent, icons, ...rest } = v as Record<string, unknown>;
+  return {
+    ...rest,
+    ...(accent === undefined ? {} : { emphasis: accent }),
+    ...(icons === undefined ? {} : { marks: icons }),
+  };
+}
+
+function savedDiagram(raw: unknown): unknown {
+  if (typeof raw !== "object" || raw === null) return raw;
+  const d = raw as Record<string, unknown>;
+  const list = (v: unknown) => (Array.isArray(v) ? v.map(savedNames) : v);
+  const layers = !Array.isArray(d.layers)
+    ? d.layers
+    : d.layers.map((l: unknown) =>
+        typeof l === "object" && l !== null
+          ? { ...l, nodes: list((l as { nodes?: unknown }).nodes) }
+          : l,
+      );
+  const { note, ...rest } = d;
+  const caption = note === undefined ? {} : { caption: note };
+  return { ...rest, ...caption, layers, nodes: list(d.nodes), edges: list(d.edges) };
 }
 
 /** A gap names two regions that exist (specs/decisions, "The gap between two regions takes a multiple"). */
@@ -737,7 +764,7 @@ export function validateDiagram(raw: unknown): Diagram | OpError[] {
       },
     ];
   }
-  const parsed = diagramSchema.safeParse(raw);
+  const parsed = diagramSchema.safeParse(savedDiagram(raw));
   if (!parsed.success) return issuesToErrors(parsed.error.issues, raw, 0);
   const diagram = build(parsed.data);
   const errors = checkIntegrity(diagram);

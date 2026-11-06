@@ -397,7 +397,7 @@ export function legendEntries(d: Diagram, P: Paint): LegendEntry[] {
   const seen = new Set<string>();
   for (const n of d.layers.flatMap((l) => l.nodes)) {
     for (const slot of MARK_SLOTS) {
-      const mk = n.icons?.[slot];
+      const mk = n.marks?.[slot];
       if (mk === undefined) continue;
       const name = markName(mk);
       const text = d.legend?.marks?.[name];
@@ -1124,7 +1124,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       ? m.wrap(d.subtitle, T.subtitle, textW)
       : [];
   const noteLines =
-    withText && d.note !== undefined && d.note !== "" ? m.wrap(d.note, T.note, textW) : [];
+    withText && d.caption !== undefined && d.caption !== "" ? m.wrap(d.caption, T.note, textW) : [];
   const widest = (lines: { width: number }[]) => Math.max(0, ...lines.map((l) => l.width));
   const width = ceil8(
     Math.max(
@@ -1544,7 +1544,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         id: n.id,
         layer: l.id,
         kind: n.node.kind,
-        accent: n.node.accent ?? false,
+        emphasis: n.node.emphasis ?? false,
         ...lookPart(d, n.node.style, n.node.type),
         rect,
         ...(marks.length > 0 ? { marks } : {}),

@@ -32,7 +32,7 @@ describe("the words a caller types", () => {
       "--weight",
       "2",
     ]);
-    expect(inward(["--file", "a", "node", "--label", "x"])).toEqual(["node", "rename", "a", "x"]);
+    expect(inward(["--file", "a", "node", "--label", "x"])).toEqual(["node", "label", "a", "x"]);
     expect(inward(["-f", "a", "show", "--drawn"])).toEqual(["show", "a", "--drawn"]);
   });
 
@@ -43,7 +43,7 @@ describe("the words a caller types", () => {
 
   it("name a verb as it is typed", () => {
     expect(surfaceName("node move")).toBe("node --move");
-    expect(surfaceName("edge retarget")).toBe("edge --ends");
+    expect(surfaceName("edge ends")).toBe("edge --ends");
     expect(surfaceName("apply")).toBe("apply");
   });
 

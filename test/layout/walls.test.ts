@@ -103,7 +103,7 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
       },
     ]);
     // Dropping the label is a change grafical accepts, and the wall stays as space.
-    const bare = ok(d, [{ op: "wall.relabel", id: "net" }]);
+    const bare = ok(d, [{ op: "wall.label", id: "net" }]);
     expect(check(bare, layout(bare, m), m)).toEqual([]);
   });
 

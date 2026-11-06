@@ -43,22 +43,22 @@ function run(...args: string[]) {
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 const read = (f: string) => readFileSync(join(dir, f), "utf8");
-const icon = (slot: string, value?: string) =>
+const mark = (slot: string, value?: string) =>
   run(
     "node",
-    "icon",
+    "mark",
     "d.grafical.yaml",
     "billing",
     "--slot",
     slot,
-    ...(value ? ["--icon", value] : []),
+    ...(value ? ["--mark", value] : []),
   );
 
-describe("grafical node icon", () => {
+describe("grafical node mark", () => {
   it("puts an emoji in a corner and draws it as an image, not as text", () => {
-    expect(icon("top-left", "⚠️").code).toBe(0);
+    expect(mark("top-left", "⚠️").code).toBe(0);
     expect(read("d.grafical.yaml")).toContain("top-left: ⚠️");
-    expect(run("show", "d.grafical.yaml").out).toContain('icon.top-left="⚠️"');
+    expect(run("show", "d.grafical.yaml").out).toContain('mark.top-left="⚠️"');
     expect(run("render", "d.grafical.yaml", "--svg", "o.svg").code).toBe(0);
     const svg = read("o.svg");
     expect(svg).toContain("<image ");
@@ -67,8 +67,8 @@ describe("grafical node icon", () => {
   });
 
   it("binds an SVG file with its hash, and a PNG file too", () => {
-    expect(icon("top-right", "warn.svg").code).toBe(0);
-    expect(icon("bottom-left", "dot.png").code).toBe(0);
+    expect(mark("top-right", "warn.svg").code).toBe(0);
+    expect(mark("bottom-left", "dot.png").code).toBe(0);
     const file = read("d.grafical.yaml");
     expect(file).toMatch(/file: warn\.svg\n\s+sha256: [0-9a-f]{64}/);
     expect(file).toMatch(/file: dot\.png\n\s+sha256: [0-9a-f]{64}/);
@@ -92,8 +92,8 @@ describe("grafical node icon", () => {
     expect(r.out).toContain("error: mark-file-changed\n");
     expect(r.out).toContain("warn.svg");
     // Another slot's command does not get past it, but setting this slot again accepts the file.
-    expect(icon("top-left", "!").code).toBe(1);
-    expect(icon("top-right", "warn.svg").code).toBe(0);
+    expect(mark("top-left", "!").code).toBe(1);
+    expect(mark("top-right", "warn.svg").code).toBe(0);
     expect(run("show", "d.grafical.yaml").code).toBe(0);
   });
 
@@ -114,13 +114,13 @@ describe("grafical node icon", () => {
     ]) {
       run(...args);
     }
-    const put = (v: string) => run("node", "icon", fresh, "n", "--slot", "top-left", "--icon", v);
+    const put = (v: string) => run("node", "mark", fresh, "n", "--slot", "top-left", "--mark", v);
     expect(put("nope.svg").out).toContain("error: mark-file-not-found\n");
     expect(put("bad.svg").out).toContain("error: mark-file-unsafe\n");
     expect(put("ext.svg").out).toContain("error: mark-file-unsafe\n");
     expect(put("../warn.svg").out).toContain("error: mark-file-outside\n");
     expect(put("/etc/x.svg").out).toContain("error: mark-file-outside\n");
-    expect(read(fresh)).not.toContain("icons");
+    expect(read(fresh)).not.toContain("marks");
   });
 
   it("refuses a text over 6 characters, and the left slot on a diamond", () => {
@@ -133,9 +133,9 @@ describe("grafical node icon", () => {
       run(...args);
     }
     expect(
-      run("node", "icon", fresh, "q", "--slot", "top-left", "--icon", "TOOLONG").out,
+      run("node", "mark", fresh, "q", "--slot", "top-left", "--mark", "TOOLONG").out,
     ).toContain("error: mark-too-long\n");
-    expect(run("node", "icon", fresh, "q", "--slot", "left", "--icon", "!").out).toContain(
+    expect(run("node", "mark", fresh, "q", "--slot", "left", "--mark", "!").out).toContain(
       "allowed: top-left, top-right, bottom-left, bottom-right\n",
     );
   });
@@ -150,12 +150,12 @@ describe("grafical node icon", () => {
       run(...args);
     }
     expect(
-      run("node", "icon", f, "n", "--slot", "top-left", "--icon", "P0", "--bg", "red").code,
+      run("node", "mark", f, "n", "--slot", "top-left", "--mark", "P0", "--bg", "red").code,
     ).toBe(0);
     expect(
-      run("node", "icon", f, "n", "--slot", "top-right", "--icon", "NEW", "--bg", "#f5c542").code,
+      run("node", "mark", f, "n", "--slot", "top-right", "--mark", "NEW", "--bg", "#f5c542").code,
     ).toBe(0);
-    expect(run("show", f).out).toContain("icon.top-left.bg=#d1242f");
+    expect(run("show", f).out).toContain("mark.top-left.bg=#d1242f");
     run("render", f, "--svg", "g.svg");
     const svg = read("g.svg");
     expect(svg).toMatch(/rx="4" fill="#d1242f"/);
@@ -164,10 +164,10 @@ describe("grafical node icon", () => {
     expect(svg).toMatch(/fill="#ffffff"[^>]*>P0</);
     expect(svg).toMatch(/fill="#1f2328"[^>]*>NEW</);
     expect(
-      run("node", "icon", f, "n", "--slot", "left", "--icon", "⚠️", "--bg", "red").out,
+      run("node", "mark", f, "n", "--slot", "left", "--mark", "⚠️", "--bg", "red").out,
     ).toContain("error: mark-style-on-picture\n");
     expect(
-      run("node", "icon", f, "n", "--slot", "left", "--icon", "P1", "--bg", "pink").out,
+      run("node", "mark", f, "n", "--slot", "left", "--mark", "P1", "--bg", "pink").out,
     ).toContain("allowed: red, amber, green, blue, purple, gray, dark, #rrggbb\n");
   });
 
@@ -181,7 +181,7 @@ describe("grafical node icon", () => {
       run(...args);
     }
     const put = (slot: string, ...rest: string[]) =>
-      run("node", "icon", f, "n", "--slot", slot, "--icon", ...rest);
+      run("node", "mark", f, "n", "--slot", slot, "--mark", ...rest);
     expect(
       put("top-left", "P0", "--bg", "#fff3bf", "--border", "#bf8700", "--shape", "pill").code,
     ).toBe(0);
@@ -197,25 +197,25 @@ describe("grafical node icon", () => {
     expect(svg).toMatch(/fill="#ffd43b"[^>]*>NEW</);
     // No --fg: dark text on the pale badge.
     expect(svg).toMatch(/fill="#1f2328"[^>]*>P0</);
-    expect(run("show", f).out).toContain("icon.top-left.border=#bf8700");
-    expect(run("show", f).out).toContain("icon.top-right.size=l");
+    expect(run("show", f).out).toContain("mark.top-left.border=#bf8700");
+    expect(run("show", f).out).toContain("mark.top-right.size=l");
   });
 
   it("refuses a style on an emoji, and a shape that does not exist", () => {
     const f = "h.grafical.yaml";
     expect(
-      run("node", "icon", f, "n", "--slot", "left", "--icon", "⚠️", "--fg", "red").out,
+      run("node", "mark", f, "n", "--slot", "left", "--mark", "⚠️", "--fg", "red").out,
     ).toContain("error: mark-style-on-picture\n");
     expect(
-      run("node", "icon", f, "n", "--slot", "left", "--icon", "P0", "--shape", "star").out,
+      run("node", "mark", f, "n", "--slot", "left", "--mark", "P0", "--shape", "star").out,
     ).toContain("allowed: square, rounded, pill\n");
     expect(
-      run("node", "icon", f, "n", "--slot", "left", "--icon", "P0", "--size", "xl").out,
+      run("node", "mark", f, "n", "--slot", "left", "--mark", "P0", "--size", "xl").out,
     ).toContain("allowed: s, m, l\n");
   });
 
-  it("clears a slot without --icon", () => {
-    expect(icon("top-left").code).toBe(0);
+  it("clears a slot without --mark", () => {
+    expect(mark("top-left").code).toBe(0);
     expect(read("d.grafical.yaml")).not.toContain("top-left");
   });
 });

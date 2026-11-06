@@ -61,7 +61,7 @@ describe("grouped diagrams", () => {
 
   it("group and diagram commands change the file, and report errors", () => {
     const f = "g.grafical.yaml";
-    run("new", f, "--title", "G", "--subtitle", "S", "--note", "N");
+    run("new", f, "--title", "G", "--subtitle", "S", "--caption", "N");
     run("layer", "add", f, "r1", "--label", "R1");
     run("layer", "add", f, "r2", "--label", "R2");
     run("layer", "add", f, "r3", "--label", "R3");
@@ -77,15 +77,15 @@ describe("grouped diagrams", () => {
     expect(run("group", "leave", f, "b").code).toBe(0);
     expect(run("group", "join", f, "g", "b").code).toBe(0);
     expect(run("group", "join", f, "zz", "a").out).toContain("unknown-group");
-    expect(run("group", "rename", f, "g", "--label", "Renamed").code).toBe(0);
+    expect(run("group", "label", f, "g", "--label", "Renamed").code).toBe(0);
     expect(run("group", "remove", f, "g").out).toMatch(/^ok changed=g,a,b,c\n/);
     expect(read(f)).not.toContain("group");
     expect(run("diagram", "subtitle", f).code).toBe(0);
-    expect(run("diagram", "note", f, "--text", "Not shown: y.").code).toBe(0);
+    expect(run("diagram", "caption", f, "--text", "Not shown: y.").code).toBe(0);
     const t = read(f);
     expect(t).not.toContain("subtitle");
-    expect(t).toContain('note: "Not shown: y."');
-    expect(run("diagram", "note", f).code).toBe(0);
+    expect(t).toContain('caption: "Not shown: y."');
+    expect(run("diagram", "caption", f).code).toBe(0);
     expect(read(f)).not.toContain("note");
   });
 
@@ -95,7 +95,7 @@ describe("grouped diagrams", () => {
       run("lane", "add", f, "desk", "--label", "Desk team", "--members", "order-desk").code,
     ).toBe(0);
     expect(read(f)).toMatch(/lanes:\n {2}- id: desk\n {4}label: Desk team\n/);
-    expect(run("lane", "rename", f, "desk", "--label", "Order desk team").code).toBe(0);
+    expect(run("lane", "label", f, "desk", "--label", "Order desk team").code).toBe(0);
     expect(run("show", f).out).toContain(
       'lane desk "Order desk team" (columns): gateway, checkout',
     );
@@ -188,21 +188,21 @@ const longVpc = {
 };
 
 describe('groups inside groups on the command line (specs/decisions, "Every layered diagram type")', () => {
-  it('group title and group label say where a label sits, and show prints it (specs/decisions, "The agent states where a group\'s label sits")', () => {
+  it('group label-at and group label say where a label sits, and show prints it (specs/decisions, "The agent states where a group\'s label sits")', () => {
     const f = "titled.grafical.yaml";
     writeFileSync(join(dir, f), writeDiagram(nested));
-    expect(run("group", "title", f, "vpc", "1").code).toBe(0);
+    expect(run("group", "label-at", f, "vpc", "1").code).toBe(0);
     expect(read(f)).toContain("side: top");
     expect(run("show", f).out).toContain("title=1,top,inside");
-    expect(run("group", "title", f, "vpc").code).toBe(0);
+    expect(run("group", "label-at", f, "vpc").code).toBe(0);
     expect(read(f)).not.toContain("titleAt");
-    const wrong = run("group", "title", f, "vpc", "middle");
+    const wrong = run("group", "label-at", f, "vpc", "middle");
     expect(wrong.code).not.toBe(0);
     expect(wrong.err + wrong.out).toContain("bad-type");
     // A line runs out of the vpc's last row where its long label would sit in the foot.
     writeFileSync(join(dir, f), writeDiagram(longVpc));
     const before = read(f);
-    const blocked = run("group", "title", f, "vpc", "0.5", "--side", "bottom");
+    const blocked = run("group", "label-at", f, "vpc", "0.5", "--side", "bottom");
     expect(blocked.code).not.toBe(0);
     expect(blocked.out).toContain(
       "defect: title-blocked\ndescription: A line runs where the group's title sits, and no line moves for a title.\n",

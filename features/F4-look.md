@@ -23,7 +23,7 @@ The title names the picture, and two more texts tell a reader what they see.
 
 - `grafical -f <file> diagram --title --text <text>`
 - `grafical -f <file> diagram --subtitle [--text <text>]`
-- `grafical -f <file> diagram --note [--text <text>]`
+- `grafical -f <file> diagram --caption [--text <text>]`
 
 - The subtitle is one sentence under the title.
 - The footnote says what the diagram leaves out, such as "Not shown: Redis name cache".

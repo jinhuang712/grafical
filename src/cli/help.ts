@@ -7,7 +7,7 @@
 // to read. Numbers are only the limits grafical enforces.
 
 import { MAX_GROUP_DEPTH } from "../model/groups.ts";
-import { MAX_ACCENTS } from "../model/schema.ts";
+import { MAX_EMPHASIS } from "../model/schema.ts";
 import { MARK_COLORS, MARK_SHAPES, MARK_SIZES, STEP_NUMBER_MAX } from "../model/types.ts";
 
 /** What grafical is: the top of `grafical --help`. */
@@ -38,16 +38,16 @@ Ways to draw, by the story each tells:
   the way things move     rows, top to bottom (layer add); the order of a
                           row decides most crossings (node move, node swap)
   a thing, step or state  node add --kind; node merge for several a reader
-                          need not tell apart; node icon for a mark
+                          need not tell apart; node mark for a mark
   a box beside a box      node add --from <box> --right 1, which moves with
                           it; node align, directly above or below
   what talks to what      edge add --kind; an end may be a group, a row or
                           a lane, for one line to the whole
-  one path, in order      edge step numbers its lines; edge weight draws
+  one path, in order      edge number numbers its lines; edge weight draws
                           it thick
   what every request      a row with no boxes that lines end at, drawn as
   passes                  one bar: a gateway or a bus
-  one system or team      group add, nested with --in; group title places
+  one system or team      group add, nested with --in; group label-at places
                           its label; group copy makes a second zone
   who does what           lane add
   two sides               column add; wall add keeps two parts apart, and
@@ -69,7 +69,7 @@ export const EXAMPLE_BATCH = `- {op: layer.add, id: row-callers, label: Callers}
 - {op: node.add, id: checkout, layer: row-core, label: checkout, sublabel: "validate, price"}
 - {op: node.add, id: events, layer: row-core, label: order topics, sublabel: 3 broker topics, kind: queue, last: true}
 - {op: node.add, id: dispatcher, layer: row-core, label: dispatcher, sublabel: one per carrier, last: true}
-- {op: node.add, id: orders-db, layer: row-store, label: Orders DB, sublabel: "orders, parcels", kind: store, accent: true}
+- {op: node.add, id: orders-db, layer: row-store, label: Orders DB, sublabel: "orders, parcels", kind: store, emphasis: true}
 - {op: group.add, id: order-desk, label: order-desk, nodes: [gateway, checkout]}
 - {op: group.add, id: shipping, label: shipping, nodes: [events, dispatcher]}
 - {op: edge.add, from: shoppers, to: gateway}
@@ -317,17 +317,17 @@ Common mistakes:
   - In a batch file, a sublabel with a comma unquoted.
 
 Limits:
-  - At most ${MAX_ACCENTS} nodes carry --accent.
+  - At most ${MAX_EMPHASIS} nodes carry --emphasis.
   - A sublabel holds one line, about 30 characters, and a label must fit
     the large box; longer text is refused (overflow).
   - Each step option takes 1 to 10. A box placed by steps takes no row,
     position, --align, column or lane.
 
-See also: node merge, node kind, node describe, edge add
+See also: node merge, node kind, node sublabel, edge add
 
 Example:
   grafical node add shop.grafical orders-db --layer row-store --last \\
-    --label "Orders DB" --kind store --sublabel Postgres --accent
+    --label "Orders DB" --kind store --sublabel Postgres --emphasis
 `,
   },
   "node merge": {
@@ -348,17 +348,17 @@ back in one.`,
   "node kind": {
     about: "Change a node's kind (grafical node add --help lists them).",
   },
-  "node emphasize": {
-    about: "Accent a node as the thing to see first, or take the accent off with --off.",
+  "node emphasis": {
+    about: "Emphasize a node as the thing to see first, or take the emphasis off with --off.",
     after: `
 Limits:
-  - At most ${MAX_ACCENTS} nodes carry an accent.
+  - At most ${MAX_EMPHASIS} nodes carry emphasis.
 `,
   },
-  "node icon": {
+  "node mark": {
     about: `Put a mark on a node, such as a warning at its top-left. The mark is an
 emoji, up to 6 characters of text, or an SVG or PNG file next to the diagram.
-Without --icon, the slot is cleared.`,
+Without --mark, the slot is cleared.`,
     after: `
 Slots (one mark each):
   top-left, top-right, bottom-left, bottom-right   over a corner of the box
@@ -383,8 +383,8 @@ Notes:
     a larger size, or put the mark in the slot on the other side.
 
 Example:
-  grafical node icon d.grafical billing --slot top-left --icon "⚠️"
-  grafical node icon d.grafical billing --slot top-right --icon P0 --bg red
+  grafical node mark d.grafical billing --slot top-left --mark "⚠️"
+  grafical node mark d.grafical billing --slot top-right --mark P0 --bg red
 `,
   },
   "node align": {
@@ -427,7 +427,7 @@ Good to know:
 `,
   },
 
-  "edge step": {
+  "edge number": {
     about: "Number an edge as a step of a process; without --n, clear its number.",
     after: `
 When to use:
@@ -443,14 +443,14 @@ Good to know:
   - A number with no room on the line's way is refused as label-blocked,
     as a label is.
   - edge add takes no number: in a batch, add the edges, then
-    {op: edge.step, id: <edge>, n: <number>} for each.
+    {op: edge.number, id: <edge>, n: <number>} for each.
 
 Limits:
   --n is a whole number from 1 to ${STEP_NUMBER_MAX}.
 
 Example:
-  grafical edge step shop.grafical "checkout->events" --n 2
-  grafical edge step shop.grafical "checkout->events"
+  grafical edge number shop.grafical "checkout->events" --n 2
+  grafical edge number shop.grafical "checkout->events"
 `,
   },
 
@@ -472,14 +472,14 @@ Limits:
   - A box covers every row from its top member to its bottom one; other
     nodes in those rows sit beside it.
 
-See also: group join, group leave, group title, lane add
+See also: group join, group leave, group label-at, lane add
 
 Example:
   grafical group add cloud.grafical vpc --label "Main network" --in region
   grafical group join cloud.grafical vpc web api
 `,
   },
-  "group title": {
+  "group label-at": {
     about: `Say where a group's label sits: a fraction from 0 to 1 along a side, the side
 (top by default), and inside (by default) or outside the group. At 0.7 the
 label's own 70% point meets the side's 70% point, so it never runs past the side.
@@ -488,9 +488,9 @@ line comes near. Either way the label takes its own room, and no box or line
 moves for it.`,
     after: `
 Example:
-  grafical group title booking.grafical app 0 --side bottom
-  grafical group title booking.grafical app 0.5 --side left --place outside
-  grafical group title booking.grafical app
+  grafical group label-at booking.grafical app 0 --side bottom
+  grafical group label-at booking.grafical app 0.5 --side left --place outside
+  grafical group label-at booking.grafical app
 `,
   },
   "group copy": {
@@ -511,7 +511,7 @@ Good to know:
   - A line's id <from>-><to> becomes its copy's ends: web-b->db-b.
   - Notes and walls are not copied.
 
-See also: group order, edge retarget, diff
+See also: group order, edge ends, diff
 
 Example:
   grafical group copy ha.grafical zone-a zone-b --label "Zone B" \\
@@ -583,7 +583,7 @@ When to use:
   - With --label it draws a dashed divider through the space, the label at
     its start. Without one it is only space.
   - A label with no place along the wall clear of the lines across it is
-    refused (label-blocked): shorten or drop it with wall relabel.
+    refused (label-blocked): shorten or drop it with wall label.
 
 Crossing:
   - A line from one side to the other is refused (wall-crossed) unless the
@@ -665,7 +665,7 @@ Line widths:
 
 Marks:
   Name a mark with --mark in place of the style: its emoji, its text or its
-  file, as node icon set it. Marks with the same name share one entry.
+  file, as node mark set it. Marks with the same name share one entry.
 `,
   },
   "diagram style": {

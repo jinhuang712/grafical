@@ -177,7 +177,7 @@ export interface SceneNode {
   id: string;
   layer: string;
   kind: NodeKind;
-  accent: boolean;
+  emphasis: boolean;
   /** What its styles set. Absent: its kind's look. */
   look?: Look;
   rect: Rect;

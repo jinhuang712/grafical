@@ -13,7 +13,7 @@ export const tiny: Diagram = {
       id: "services",
       label: "Services",
       nodes: [
-        n("api", "orders-api", "service", "m", { sublabel: ":8080", accent: true }),
+        n("api", "orders-api", "service", "m", { sublabel: ":8080", emphasis: true }),
         n("worker", "orders-worker", "service", "m"),
       ],
     },

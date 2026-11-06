@@ -1,7 +1,7 @@
 grafical: 1
 title: grocer architecture
 subtitle: Customer, warehouse and courier apps call APIs that share Kafka events and per-service stores.
-note: "Not shown: team ownership, retries, the warehouse network and internal auth between services."
+caption: "Not shown: team ownership, retries, the warehouse network and internal auth between services."
 density: normal
 layers:
   - id: row-callers

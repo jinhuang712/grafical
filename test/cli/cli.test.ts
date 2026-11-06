@@ -52,7 +52,7 @@ const SINGLE: string[][] = [
     "services",
     "--label",
     "API",
-    "--accent",
+    "--emphasis",
   ],
   [
     "node",
@@ -114,7 +114,7 @@ const BATCH = `- op: layer.add
   id: api
   layer: services
   label: API
-  accent: true
+  emphasis: true
 - op: node.add
   id: worker
   layer: services
@@ -335,24 +335,24 @@ describe("write commands", () => {
     );
   });
 
-  it('edge step numbers a line, show prints it, and no --n clears it (specs/decisions, "Step badges ride the line")', () => {
+  it('edge number numbers a line, show prints it, and no --n clears it (specs/decisions, "Step badges ride the line")', () => {
     run("new", "s.grafical.yaml", "--title", "S");
     run("layer", "add", "s.grafical.yaml", "a", "--label", "A");
     run("layer", "add", "s.grafical.yaml", "b", "--label", "B");
     run("node", "add", "s.grafical.yaml", "p", "--layer", "a", "--label", "P");
     run("node", "add", "s.grafical.yaml", "q", "--layer", "b", "--label", "Q");
     run("edge", "add", "s.grafical.yaml", "p", "q", "--label", "read");
-    expect(run("edge", "step", "s.grafical.yaml", "p->q", "--n", "3").out).toBe(
+    expect(run("edge", "number", "s.grafical.yaml", "p->q", "--n", "3").out).toBe(
       "ok changed=p->q\n",
     );
     expect(read("s.grafical.yaml")).toContain("step: 3");
     expect(run("show", "s.grafical.yaml").out).toContain("p->q [step 3] read");
     expect(run("show", "s.grafical.yaml", "--drawn").out).toMatch(/^line id=p->q .* step=3$/m);
-    const bad = run("edge", "step", "s.grafical.yaml", "p->q", "--n", "0");
+    const bad = run("edge", "number", "s.grafical.yaml", "p->q", "--n", "0");
     expect(bad.code).toBe(1);
     expect(bad.out).toContain("error: bad-value\n");
     expect(bad.out).toContain("detail:\n  field: n\n  found: 0\n  min: 1\n  max: 99\n");
-    expect(run("edge", "step", "s.grafical.yaml", "p->q").out).toBe("ok changed=p->q\n");
+    expect(run("edge", "number", "s.grafical.yaml", "p->q").out).toBe("ok changed=p->q\n");
     expect(read("s.grafical.yaml")).not.toContain("step:");
     expect(run("show", "s.grafical.yaml", "--drawn").out).not.toContain("step=");
   });
@@ -366,7 +366,7 @@ describe("read commands", () => {
       [
         'diagram "Tiny" density=normal',
         'layer clients "Clients": web "Web" actor',
-        'layer services "Services": api "API" service accent | worker "Worker" service',
+        'layer services "Services": api "API" service emphasis | worker "Worker" service',
         'layer storage "Storage": db "DB" store | mq "MQ" queue',
         "edges:",
         "web->api call",
@@ -415,7 +415,7 @@ describe("read commands", () => {
 
   it('try reports the counts before and after a batch, and writes nothing (specs/decisions, "Records over prose")', () => {
     const before = readFileSync(join(dir, "single.grafical.yaml"), "utf8");
-    writeFileSync(join(dir, "try.yaml"), "- {op: node.rename, id: api, label: API service}\n");
+    writeFileSync(join(dir, "try.yaml"), "- {op: node.label, id: api, label: API service}\n");
     const r = run("try", "single.grafical.yaml", "try.yaml");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(
@@ -425,7 +425,7 @@ describe("read commands", () => {
     const json = JSON.parse(run("try", "single.grafical.yaml", "try.yaml", "--json").out);
     expect(json.after.nodes).toBe(json.before.nodes);
     expect(json.delta.length).toBe(json.after.length - json.before.length);
-    writeFileSync(join(dir, "try-bad.yaml"), "- {op: node.rename, id: nope, label: X}\n");
+    writeFileSync(join(dir, "try-bad.yaml"), "- {op: node.label, id: nope, label: X}\n");
     const bad = run("try", "single.grafical.yaml", "try-bad.yaml");
     expect(bad.code).toBe(1);
     expect(bad.out).toContain("unknown-node");
@@ -433,9 +433,9 @@ describe("read commands", () => {
 
   it("try with several batches prints one before and each batch's records keyed by its file", () => {
     const before = readFileSync(join(dir, "single.grafical.yaml"), "utf8");
-    writeFileSync(join(dir, "t1.yaml"), "- {op: node.rename, id: api, label: One}\n");
-    writeFileSync(join(dir, "t2.yaml"), "- {op: node.rename, id: api, label: Two}\n");
-    writeFileSync(join(dir, "t3.yaml"), "- {op: node.rename, id: nope, label: X}\n");
+    writeFileSync(join(dir, "t1.yaml"), "- {op: node.label, id: api, label: One}\n");
+    writeFileSync(join(dir, "t2.yaml"), "- {op: node.label, id: api, label: Two}\n");
+    writeFileSync(join(dir, "t3.yaml"), "- {op: node.label, id: nope, label: X}\n");
     const r = run("try", "single.grafical.yaml", "t1.yaml", "t3.yaml", "t2.yaml");
     expect(r.code).toBe(1);
     const lines = r.out.trimEnd().split("\n");

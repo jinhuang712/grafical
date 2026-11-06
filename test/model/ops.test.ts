@@ -149,7 +149,7 @@ describe("node.add", () => {
     ]);
     expect(ids(r.diagram, "top")).toEqual(["f", "a", "g", "h", "b"]);
   });
-  it("stores kind, size, sublabel, accent and align", () => {
+  it("stores kind, size, sublabel, emphasis and align", () => {
     const r = ok(base, [
       {
         op: "node.add",
@@ -159,7 +159,7 @@ describe("node.add", () => {
         kind: "queue",
         size: "l",
         sublabel: ":9",
-        accent: true,
+        emphasis: true,
         align: "a",
         first: true,
       },
@@ -170,7 +170,7 @@ describe("node.add", () => {
       kind: "queue",
       size: "l",
       sublabel: ":9",
-      accent: true,
+      emphasis: true,
       align: "a",
     });
   });
@@ -203,26 +203,26 @@ describe("node.add", () => {
       fail(base, [{ op: "node.add", id: "n", layer: "top", label: "X", before: "zz" }])[0]?.code,
     ).toBe("unknown-node");
   });
-  it("allows at most two accents", () => {
+  it("allows at most two emphases", () => {
     const acc = (id: string): Op => ({
       op: "node.add",
       id,
       layer: "top",
       label: id,
-      accent: true,
+      emphasis: true,
       last: true,
     });
     const e = fail(base, [acc("x1"), acc("x2"), acc("x3")]);
-    expect(e[0]).toMatchObject({ code: "too-many-accents", index: 2 });
+    expect(e[0]).toMatchObject({ code: "too-much-emphasis", index: 2 });
   });
 });
 
 describe("node.rename, node.move, node.remove", () => {
   it("renames the label and keeps the id", () => {
-    const r = ok(base, [{ op: "node.rename", id: "a", label: "Alpha" }]);
+    const r = ok(base, [{ op: "node.label", id: "a", label: "Alpha" }]);
     expect(r.diagram.layers[0]?.nodes[0]).toMatchObject({ id: "a", label: "Alpha" });
     expect(r.changed).toEqual(["a"]);
-    expect(fail(base, [{ op: "node.rename", id: "q", label: "Q" }])[0]?.code).toBe("unknown-node");
+    expect(fail(base, [{ op: "node.label", id: "q", label: "Q" }])[0]?.code).toBe("unknown-node");
   });
   it("moves within a layer and across layers", () => {
     const r = ok(base, [
@@ -325,7 +325,7 @@ describe("batches", () => {
     const r = applyOps(base, [
       { op: "node.add", id: "n", layer: "top", label: "N", last: true },
       { op: "edge.add", from: "n", to: "c" },
-      { op: "node.rename", id: "ghost", label: "G" },
+      { op: "node.label", id: "ghost", label: "G" },
       { op: "node.add", id: "z", layer: "top", label: "Z", last: true },
     ]);
     expect(r).toHaveProperty("errors");
@@ -342,9 +342,9 @@ describe("batches", () => {
   });
   it("lists changed ids once, in order", () => {
     const r = ok(base, [
-      { op: "node.rename", id: "a", label: "A1" },
-      { op: "node.rename", id: "b", label: "B1" },
-      { op: "node.rename", id: "a", label: "A2" },
+      { op: "node.label", id: "a", label: "A1" },
+      { op: "node.label", id: "b", label: "B1" },
+      { op: "node.label", id: "a", label: "A2" },
     ]);
     expect(r.changed).toEqual(["a", "b"]);
   });

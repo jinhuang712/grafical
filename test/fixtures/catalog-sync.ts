@@ -42,7 +42,7 @@ export const catalogSync: Diagram = {
       label: "Entry points",
       nodes: [
         n("admin", "admin HTTP", "service", "m", { sublabel: "sync :7102" }),
-        n("relay", "catalog-relay", "service", "m", { sublabel: "tier 1, :7101", accent: true }),
+        n("relay", "catalog-relay", "service", "m", { sublabel: "tier 1, :7101", emphasis: true }),
         n("grpc", "CatalogApiService", "service", "m", {
           sublabel: "gRPC :7190",
           align: "promotions",
@@ -72,7 +72,7 @@ export const catalogSync: Diagram = {
         n("tickets_pipe", "tickets pipeline", "service", "m", { sublabel: "line 20" }),
         n("api_service", "catalog-api service", "service", "l", {
           sublabel: "assembly",
-          accent: true,
+          emphasis: true,
         }),
       ],
     },

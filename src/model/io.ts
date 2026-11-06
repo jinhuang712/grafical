@@ -42,31 +42,31 @@ function nodeOut(n: DiagramNode): Record<string, unknown> {
   if (n.sublabel !== undefined) o.sublabel = n.sublabel;
   if (n.labelAlign !== undefined) o.labelAlign = n.labelAlign;
   if (n.size !== undefined) o.size = n.size;
-  if (n.accent === true) o.accent = true;
+  if (n.emphasis === true) o.emphasis = true;
   if (n.align !== undefined) o.align = n.align;
   if (n.group !== undefined) o.group = n.group;
   if (n.lane !== undefined) o.lane = n.lane;
   if (n.column !== undefined) o.column = n.column;
   if (n.type !== undefined) o.type = n.type;
   if (n.style !== undefined) o.style = n.style;
-  if (n.icons !== undefined && Object.keys(n.icons).length > 0) {
-    const icons: Record<string, unknown> = {};
+  if (n.marks !== undefined && Object.keys(n.marks).length > 0) {
+    const marks: Record<string, unknown> = {};
     for (const slot of MARK_SLOTS) {
-      const m = n.icons[slot];
+      const m = n.marks[slot];
       if (m === undefined) continue;
-      if (typeof m === "string") icons[slot] = m;
+      if (typeof m === "string") marks[slot] = m;
       else if ("file" in m) {
-        icons[slot] = { file: m.file, sha256: m.sha256, ...(m.size ? { size: m.size } : {}) };
+        marks[slot] = { file: m.file, sha256: m.sha256, ...(m.size ? { size: m.size } : {}) };
       } else {
         // Keys sorted, so the same facts give the same bytes (DESIGNS.md, "The same file gives the same picture on any machine").
         const o: Record<string, string> = {};
         for (const k of ["bg", "border", "fg", "shape", "size", "text"] as const) {
           if (m[k] !== undefined) o[k] = m[k];
         }
-        icons[slot] = o;
+        marks[slot] = o;
       }
     }
-    o.icons = icons;
+    o.marks = marks;
   }
   if (n.from !== undefined) o.from = n.from;
   for (const k of STEP_KEYS) if (n[k] !== undefined) o[k] = n[k];
@@ -108,7 +108,7 @@ export function fileBytes(d: Diagram, path: string): string {
 export function writeDiagram(d: Diagram): string {
   const out: Record<string, unknown> = { grafical: d.grafical, title: d.title };
   if (d.subtitle !== undefined) out.subtitle = d.subtitle;
-  if (d.note !== undefined) out.note = d.note;
+  if (d.caption !== undefined) out.caption = d.caption;
   out.density = d.density;
   if (d.lines !== undefined) out.lines = d.lines;
   if (d.titleAt !== undefined) out.titleAt = { ...d.titleAt };

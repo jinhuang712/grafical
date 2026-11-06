@@ -66,14 +66,14 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
     expect(writeDiagram(thin)).toBe(writeDiagram(fx));
   });
 
-  it("an old accent reads as the thick level", () => {
+  it("an old emphasis reads as the thick level", () => {
     const text = writeDiagram(fx).replace(
       /(from: pipelines\n\s+to: mongo\n)/,
-      "$1    accent: true\n",
+      "$1    emphasis: true\n",
     );
     const d = readDiagram(text) as Diagram;
     expect(edge(d, EDGE)?.weight).toBe("thick");
-    expect(edge(d, EDGE)).not.toHaveProperty("accent");
+    expect(edge(d, EDGE)).not.toHaveProperty("emphasis");
   });
 
   it("refuses an unknown level, a width out of range and an unknown edge", () => {

@@ -67,11 +67,11 @@ function changes(d: Diagram, seed: number, count: number): Op[] {
       { op: "column.add", id: `c${i}`, nodes: [a] },
       ...(groups.length > 0
         ? [
-            { op: "group.title", id: pick(groups), at: pick(PLACES) },
+            { op: "group.label-at", id: pick(groups), at: pick(PLACES) },
             { op: "group.join", group: pick(groups), nodes: [a] },
           ]
         : []),
-      ...(edges.length > 0 ? [{ op: "edge.step", id: pick(edges), n: 1 }] : []),
+      ...(edges.length > 0 ? [{ op: "edge.number", id: pick(edges), n: 1 }] : []),
     ];
     out.push(pick(all) as unknown as Op);
   }

@@ -69,28 +69,28 @@ describe("labels on lines", () => {
   });
 
   it("sits beside the line when the agent takes it off, and comes back", () => {
-    const off = build([...turning, { op: "edge.seat", id: "x->z", seat: "beside" } as Op]);
+    const off = build([...turning, { op: "edge.label-at", id: "x->z", seat: "beside" } as Op]);
     expect(off.edges[0]?.seat).toBe("beside");
     const e = layout(off, m).edges[0];
     const y = e?.points.slice(1).find((p, i) => p.y === e?.points[i]?.y)?.y ?? 0;
     const box = e?.label?.bbox;
     expect((box?.y ?? 0) + (box?.h ?? 0)).toBeLessThanOrEqual(y);
-    const r = applyOps(off, [{ op: "edge.seat", id: "x->z", seat: "on" } as Op]);
+    const r = applyOps(off, [{ op: "edge.label-at", id: "x->z", seat: "on" } as Op]);
     expect("errors" in r ? "refused" : r.diagram.edges[0]?.seat).toBeUndefined();
   });
 
   it("refuses a seat on a line with no label, and clearing a label clears its seat", () => {
-    const d = build([...turning, { op: "edge.seat", id: "x->z", seat: "beside" } as Op]);
-    const r = applyOps(d, [{ op: "edge.relabel", id: "x->z" } as Op]);
+    const d = build([...turning, { op: "edge.label-at", id: "x->z", seat: "beside" } as Op]);
+    const r = applyOps(d, [{ op: "edge.label", id: "x->z" } as Op]);
     expect("errors" in r ? "refused" : r.diagram.edges[0]?.seat).toBeUndefined();
     const again = applyOps("errors" in r ? d : r.diagram, [
-      { op: "edge.seat", id: "x->z", seat: "beside" } as Op,
+      { op: "edge.label-at", id: "x->z", seat: "beside" } as Op,
     ]);
     expect("errors" in again).toBe(true);
   });
 
   it("keeps the seat in the file", () => {
-    const d = build([...turning, { op: "edge.seat", id: "x->z", seat: "beside" } as Op]);
+    const d = build([...turning, { op: "edge.label-at", id: "x->z", seat: "beside" } as Op]);
     const text = writeGrafical(d);
     expect(text).toMatch(/seat:? beside/);
     const back = readDiagram(text);

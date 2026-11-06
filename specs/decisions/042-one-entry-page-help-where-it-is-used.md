@@ -8,7 +8,7 @@ Decided: 2026-10-17
 
 ## The problem
 
-Decided by the owner on 2026-10-17. The owner asked whether agents draw rows and groups because the help suggests nothing else ("only these commands? then I'll draw it like this"), and forbade putting all the help and the guides in one place. The help read before a draft had 60 characters left of its budget (11,940 of 12,000), and `apply --help` listed 15 of the 60 batch operations, so the reflect round's first agent found `group.title`'s field only from a refusal. A first restructure the same day, a map with guides and references, was withdrawn before it was committed (Rejected, below): the owner found it flat, and asked how an agent reads help and why a refusal's code should need looking up.
+Decided by the owner on 2026-10-17. The owner asked whether agents draw rows and groups because the help suggests nothing else ("only these commands? then I'll draw it like this"), and forbade putting all the help and the guides in one place. The help read before a draft had 60 characters left of its budget (11,940 of 12,000), and `apply --help` listed 15 of the 60 batch operations, so the reflect round's first agent found `group.label-at`'s field only from a refusal. A first restructure the same day, a map with guides and references, was withdrawn before it was committed (Rejected, below): the owner found it flat, and asked how an agent reads help and why a refusal's code should need looking up.
 
 ## The choice
 

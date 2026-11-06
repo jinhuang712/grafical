@@ -431,7 +431,7 @@ describe("regenerations", () => {
         .regenerations,
     ).toBe(1);
     expect(
-      computeMetrics([bash("grafical node rename d.yaml a --label B")], {
+      computeMetrics([bash("grafical node label d.yaml a --label B")], {
         arm: "grafical",
         kind: "change",
       }).regenerations,

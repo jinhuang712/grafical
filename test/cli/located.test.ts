@@ -121,8 +121,8 @@ describe("the batch line a refused write names", () => {
     // The label is too long after line 1, fits after line 2, and is too long again after line 3.
     const nm1 = [
       `- {op: node.add, id: big, label: ${LONG}, layer: row-callers, last: true, size: s}`,
-      "- {op: node.rename, id: big, label: Short}",
-      `- {op: node.rename, id: big, label: ${LONG}}`,
+      "- {op: node.label, id: big, label: Short}",
+      `- {op: node.label, id: big, label: ${LONG}}`,
     ];
     const r1 = refuse(grocer, nm1);
     expect(r1.report.defects.map((d) => d.source)).toEqual([
@@ -179,8 +179,8 @@ describe("the batch line a refused write names", () => {
     const nm2 = [
       `- {op: node.add, id: big, label: ${LONG}, layer: row-callers, last: true, size: s}`,
       "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
-      "- {op: node.rename, id: big, label: Short}",
-      `- {op: node.rename, id: big, label: ${LONG}}`,
+      "- {op: node.label, id: big, label: Short}",
+      `- {op: node.label, id: big, label: ${LONG}}`,
       "- {op: group.join, group: g, nodes: [picker-app]}",
     ];
     expect(refuse(grocer, nm2).report.defects.map((d) => d.source)).toEqual([BATCH]);
@@ -257,7 +257,7 @@ describe("the batch line a refused write names", () => {
           );
         } else if (x < 0.35 && added.length > 0) {
           batch.push(
-            `- {op: node.rename, id: ${pick(added)}, label: ${r() < 0.5 ? LONG : "Short"}}`,
+            `- {op: node.label, id: ${pick(added)}, label: ${r() < 0.5 ? LONG : "Short"}}`,
           );
         } else if (x < 0.45) {
           groups.push(`g${i}`);

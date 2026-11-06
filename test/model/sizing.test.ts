@@ -56,15 +56,15 @@ describe('auto size (specs/decisions, "Boxes sized to their text")', () => {
   it("stores no size for an auto node, so a rename can shrink it again", () => {
     const d = one(LONG);
     expect(writeDiagram(d)).not.toContain("size:");
-    const short = ok(d, [{ op: "node.rename", id: "a", label: "API" }]);
+    const short = ok(d, [{ op: "node.label", id: "a", label: "API" }]);
     expect(width(short)).toBe(BOX.m.w);
   });
 
   it("node.resize sets a size, and without one hands it back to the engine", () => {
-    const d = ok(one(LONG), [{ op: "node.resize", id: "a", size: "s" }]);
+    const d = ok(one(LONG), [{ op: "node.size", id: "a", size: "s" }]);
     expect(d.layers[0]?.nodes[0]?.size).toBe("s");
     expect(writeDiagram(d)).toContain("size: s");
-    const back = ok(d, [{ op: "node.resize", id: "a" }]);
+    const back = ok(d, [{ op: "node.size", id: "a" }]);
     expect(back.layers[0]?.nodes[0]?.size).toBeUndefined();
     expect(width(back)).toBe(BOX.l.w);
   });

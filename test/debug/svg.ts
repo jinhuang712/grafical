@@ -49,8 +49,8 @@ export function debugSvg(s: Scene, opts: DebugOptions = {}): string {
   }
   for (const n of s.nodes) {
     const st = NODE[n.kind] ?? { fill: "#fff", stroke: "#999" };
-    const stroke = n.accent ? "#2f6fde" : st.stroke;
-    const fill = n.accent ? "#eef4ff" : st.fill;
+    const stroke = n.emphasis ? "#2f6fde" : st.stroke;
+    const fill = n.emphasis ? "#eef4ff" : st.fill;
     out.push(
       `<rect x="${r2(n.rect.x + 0.5)}" y="${r2(n.rect.y + 0.5)}" width="${r2(n.rect.w - 1)}" height="${r2(n.rect.h - 1)}" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="1"${st.dash ? ` stroke-dasharray="${st.dash}"` : ""}/>`,
     );

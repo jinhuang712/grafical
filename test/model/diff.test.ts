@@ -36,13 +36,13 @@ describe('diff as operations (specs/decisions, "Git as the history")', () => {
 
   it("names exactly the operation that made a small change", () => {
     const cases: Op[] = [
-      { op: "node.rename", id: "relay", label: "catalog relay" },
+      { op: "node.label", id: "relay", label: "catalog relay" },
       { op: "node.move", id: "admin", after: "relay" },
-      { op: "edge.relabel", id: "relay->line_topics", label: "per line" },
-      { op: "group.rename", id: "catalog-api", label: "read side" },
-      { op: "layer.rename", id: "deps", label: "Dependencies" },
+      { op: "edge.label", id: "relay->line_topics", label: "per line" },
+      { op: "group.label", id: "catalog-api", label: "read side" },
+      { op: "layer.label", id: "deps", label: "Dependencies" },
       { op: "diagram.title", text: "Catalog" },
-      { op: "edge.step", id: "relay->line_topics", n: 2 },
+      { op: "edge.number", id: "relay->line_topics", n: 2 },
     ];
     for (const op of cases) {
       expect(diffDiagrams(catalogSyncGrouped, edited(catalogSyncGrouped, [op]))).toEqual([op]);
@@ -51,18 +51,18 @@ describe('diff as operations (specs/decisions, "Git as the history")', () => {
 
   it('reports a step cleared, and an added edge with its step (specs/decisions, "Step badges ride the line")', () => {
     const numbered = edited(catalogSyncGrouped, [
-      { op: "edge.step", id: "relay->line_topics", n: 2 },
+      { op: "edge.number", id: "relay->line_topics", n: 2 },
     ]);
     expect(diffDiagrams(numbered, catalogSyncGrouped)).toEqual([
-      { op: "edge.step", id: "relay->line_topics" },
+      { op: "edge.number", id: "relay->line_topics" },
     ]);
     const added = edited(catalogSyncGrouped, [
       { op: "edge.add", from: "admin", to: "mongo" },
-      { op: "edge.step", id: "admin->mongo", n: 7 },
+      { op: "edge.number", id: "admin->mongo", n: 7 },
     ]);
     expect(diffDiagrams(catalogSyncGrouped, added)).toEqual([
       { op: "edge.add", from: "admin", to: "mongo", kind: "call" },
-      { op: "edge.step", id: "admin->mongo", n: 7 },
+      { op: "edge.number", id: "admin->mongo", n: 7 },
     ]);
     replays(null, added);
   });

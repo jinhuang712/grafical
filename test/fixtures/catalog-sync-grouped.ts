@@ -12,7 +12,7 @@ export const catalogSyncGrouped: Diagram = {
   grafical: 1,
   title: "catalog-sync and catalog-api",
   subtitle: "Two Go services coupled only by the shared MongoDB catalog database.",
-  note: "Not shown: the retry runner and its DLQ, full-load jobs, Redis and auth-svc.",
+  caption: "Not shown: the retry runner and its DLQ, full-load jobs, Redis and auth-svc.",
   density: "normal",
   layers: [
     {
@@ -56,7 +56,7 @@ export const catalogSyncGrouped: Diagram = {
         }),
         n("mongo", "MongoDB catalog", "store", "m", {
           sublabel: "goods_*, ticket_*",
-          accent: true,
+          emphasis: true,
         }),
         n("service", "service, repo", "service", "m", {
           sublabel: "assemble, Find only",

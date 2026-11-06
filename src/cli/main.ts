@@ -206,16 +206,16 @@ export function build(): Command {
         "a theme (default, dark, print) or a <name>.grafical-style.yaml beside the file",
       )
       .option("--subtitle <text>", "one sentence under the title")
-      .option("--note <text>", "a footnote"),
+      .option("--caption <text>", "what the picture leaves out, at its foot"),
   ).action(async (file: string, opts: Opts) => {
-    const names = ["title", "density", "sizing", "style", "subtitle", "note"];
+    const names = ["title", "density", "sizing", "style", "subtitle", "caption"];
     await write(file, { op: "diagram.new", ...pick(opts, names) }, opts, true);
   });
 
   const diagram = program
     .command("diagram")
     .description(
-      "the whole diagram: title, label-at, subtitle, note, legend, style, density, sizing, lines",
+      "the whole diagram: title, label-at, subtitle, caption, legend, style, density, sizing, lines",
     );
   json(
     diagram
@@ -237,7 +237,7 @@ export function build(): Command {
   ).action(async (file: string, mode: string, opts: Opts) => {
     await write(file, { op: "diagram.sizing", mode }, opts);
   });
-  for (const field of ["subtitle", "note"] as const) {
+  for (const field of ["subtitle", "caption"] as const) {
     json(
       diagram
         .command(field)
@@ -252,7 +252,7 @@ export function build(): Command {
   const group = program
     .command("group")
     .description(
-      "a box per system: add, copy, join, leave, rename, describe, title, order, style, remove",
+      "a box per system: add, copy, join, leave, label, sublabel, label-at, order, style, remove",
     );
   json(
     group
@@ -299,13 +299,13 @@ export function build(): Command {
   });
   json(
     group
-      .command("rename")
+      .command("label")
       .description("change a group's label")
       .argument("<file>")
       .argument("<id>")
       .requiredOption("--label <text>", "the name, short, as a reader would say it"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "group.rename", id, ...pick(opts, ["label"]) }, opts);
+    await write(file, { op: "group.label", id, ...pick(opts, ["label"]) }, opts);
   });
   json(
     group
@@ -379,7 +379,7 @@ export function build(): Command {
 
   const lane = program
     .command("lane")
-    .description("swimlanes, who owns what: add, join, label-at, leave, rename, style, remove");
+    .description("swimlanes, who owns what: add, join, label-at, leave, label, style, remove");
   json(
     lane
       .command("label-at")
@@ -427,13 +427,13 @@ export function build(): Command {
   });
   json(
     lane
-      .command("rename")
+      .command("label")
       .description("change a lane's label")
       .argument("<file>")
       .argument("<id>")
       .requiredOption("--label <text>", "the name, short, as a reader would say it"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "lane.rename", id, ...pick(opts, ["label"]) }, opts);
+    await write(file, { op: "lane.label", id, ...pick(opts, ["label"]) }, opts);
   });
   json(
     lane
@@ -495,7 +495,7 @@ export function build(): Command {
 
   const wall = program
     .command("wall")
-    .description("walls between parts: add, allow, relabel, remove");
+    .description("walls between parts: add, allow, label, remove");
   json(
     wall
       .command("add")
@@ -531,13 +531,13 @@ export function build(): Command {
   });
   json(
     wall
-      .command("relabel")
+      .command("label")
       .description("set the words on a wall's divider; without --label, it is space alone")
       .argument("<file>")
       .argument("<id>")
       .option("--label <text>", "draw a dashed divider through it with these words"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "wall.relabel", id, ...pick(opts, ["label"]) }, opts);
+    await write(file, { op: "wall.label", id, ...pick(opts, ["label"]) }, opts);
   });
   json(
     wall.command("remove").description("remove a wall").argument("<file>").argument("<id>"),
@@ -618,7 +618,7 @@ export function build(): Command {
 
   const layer = program
     .command("layer")
-    .description("rows: add, label-at, move, split, rename, look, remove");
+    .description("rows: add, label-at, move, split, label, look, remove");
   json(
     layer
       .command("add")
@@ -635,7 +635,7 @@ export function build(): Command {
   const node = program
     .command("node")
     .description(
-      "boxes: add, move, swap, align, merge, kind, describe, icon, rename, resize, emphasize, type, style, remove",
+      "boxes: add, move, swap, align, merge, kind, sublabel, mark, label, size, emphasis, type, style, remove",
     );
   json(
     withSteps(
@@ -654,32 +654,32 @@ export function build(): Command {
         .option("--before <node>", "just before this node in the row")
         .option("--after <node>", "just after this node in the row")
         .option("--align <node>", "sit directly above or below a node in another layer")
-        .option("--accent", "mark as one of the nodes to see first"),
+        .option("--emphasis", "mark as one of the nodes to see first"),
     ),
   ).action(async (file: string, id: string, opts: Opts) => {
-    const names = ["layer", "label", "kind", "sublabel", "size", "align", "accent", ...POSITION];
+    const names = ["layer", "label", "kind", "sublabel", "size", "align", "emphasis", ...POSITION];
     const raw = { op: "node.add", id, ...pick(opts, names), ...stepFlags(opts) };
     await write(file, ownType(raw, NODE_KINDS), opts);
   });
   json(
     node
-      .command("rename")
+      .command("label")
       .description("change a node's label")
       .argument("<file>")
       .argument("<id>")
       .requiredOption("--label <text>", "the name, short, as a reader would say it"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "node.rename", id, ...pick(opts, ["label"]) }, opts);
+    await write(file, { op: "node.label", id, ...pick(opts, ["label"]) }, opts);
   });
   json(
     node
-      .command("resize")
+      .command("size")
       .description("set a node's box size; without --size, grafical sizes it to its text")
       .argument("<file>")
       .argument("<id>")
       .option("--size <size>", "s, m or l"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "node.resize", id, ...pick(opts, ["size"]) }, opts);
+    await write(file, { op: "node.size", id, ...pick(opts, ["size"]) }, opts);
   });
   json(
     withSteps(
@@ -711,7 +711,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "lines: add, retarget, reverse, kind, relabel, side, seat, weight, both, pass, step, type, style, remove",
+      "lines: add, ends, reverse, kind, label, side, label-at, weight, both, pass, number, type, style, remove",
     );
   json(
     edge
@@ -742,13 +742,13 @@ export function build(): Command {
   });
   json(
     edge
-      .command("relabel")
+      .command("label")
       .description("set an edge's label; without --label, clear it")
       .argument("<file>")
       .argument("<id>")
       .option("--label <text>", "what the line means; leave it out when that is obvious"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "edge.relabel", id, ...pick(opts, ["label"]) }, opts);
+    await write(file, { op: "edge.label", id, ...pick(opts, ["label"]) }, opts);
   });
   json(
     edge
@@ -765,13 +765,13 @@ export function build(): Command {
   });
   json(
     edge
-      .command("seat")
+      .command("label-at")
       .description("sit an edge's label on its line, as it does by default, or beside it")
       .argument("<file>")
       .argument("<id>")
       .argument("<seat>", "on or beside"),
   ).action(async (file: string, id: string, seat: string) => {
-    await write(file, { op: "edge.seat", id, seat }, {});
+    await write(file, { op: "edge.label-at", id, seat }, {});
   });
   json(
     edge
@@ -825,7 +825,7 @@ export function build(): Command {
   });
   json(
     edge
-      .command("step")
+      .command("number")
       .description("number an edge as a step of a process; without --n, clear it")
       .argument("<file>")
       .argument("<id>")
@@ -834,7 +834,7 @@ export function build(): Command {
     const n = opts.n;
     // A number is a number in the file, as in edge weight; anything else is refused.
     const step = typeof n === "string" && /^[0-9.]+$/.test(n) ? Number(n) : n;
-    await write(file, { op: "edge.step", id, ...(step === undefined ? {} : { n: step }) }, opts);
+    await write(file, { op: "edge.number", id, ...(step === undefined ? {} : { n: step }) }, opts);
   });
   json(
     edge
@@ -847,25 +847,25 @@ export function build(): Command {
   });
   json(
     edge
-      .command("retarget")
+      .command("ends")
       .description("move one or both ends of an edge; its id, kind and label stay")
       .argument("<file>")
       .argument("<id>")
       .option("--from <end>", "a node, group, layer or lane")
       .option("--to <end>", "a node, group, layer or lane"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "edge.retarget", id, ...pick(opts, ["from", "to"]) }, opts);
+    await write(file, { op: "edge.ends", id, ...pick(opts, ["from", "to"]) }, opts);
   });
 
   json(
     node
-      .command("describe")
+      .command("sublabel")
       .description("set a node's sublabel; without --text, clear it")
       .argument("<file>")
       .argument("<id>")
       .option("--text <text>"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "node.describe", id, ...pick(opts, ["text"]) }, opts);
+    await write(file, { op: "node.sublabel", id, ...pick(opts, ["text"]) }, opts);
   });
   json(
     node
@@ -879,23 +879,23 @@ export function build(): Command {
   });
   json(
     node
-      .command("emphasize")
-      .description("turn a node's accent on, or off with --off")
+      .command("emphasis")
+      .description("turn a node's emphasis on, or off with --off")
       .argument("<file>")
       .argument("<id>")
       .option("--off", "undo it"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "node.emphasize", id, ...pick(opts, ["off"]) }, opts);
+    await write(file, { op: "node.emphasis", id, ...pick(opts, ["off"]) }, opts);
   });
   json(
     node
-      .command("icon")
+      .command("mark")
       .description("put a mark on a node: an emoji, a short text, or an SVG or PNG file")
       .argument("<file>")
       .argument("<id>")
       .requiredOption("--slot <slot>", MARK_SLOTS.join(", "))
       .option(
-        "--icon <mark>",
+        "--mark <mark>",
         "an emoji, up to 6 characters, or a file next to the diagram; leave it out to clear",
       )
       .option(
@@ -907,8 +907,8 @@ export function build(): Command {
       .option("--shape <shape>", `a text mark's badge: ${MARK_SHAPES.join(", ")}`)
       .option("--size <size>", `any mark's size: ${MARK_SIZES.join(", ")}`),
   ).action(async (file: string, id: string, opts: Opts) => {
-    const names = ["slot", "icon", "bg", "fg", "border", "shape", "size"];
-    await write(file, { op: "node.icon", id, ...pick(opts, names) }, opts);
+    const names = ["slot", "mark", "bg", "fg", "border", "shape", "size"];
+    await write(file, { op: "node.mark", id, ...pick(opts, names) }, opts);
   });
   json(
     node
@@ -952,13 +952,13 @@ export function build(): Command {
 
   json(
     layer
-      .command("rename")
+      .command("label")
       .description("change a layer's label")
       .argument("<file>")
       .argument("<id>")
       .requiredOption("--label <text>", "the name, short, as a reader would say it"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "layer.rename", id, ...pick(opts, ["label"]) }, opts);
+    await write(file, { op: "layer.label", id, ...pick(opts, ["label"]) }, opts);
   });
   json(
     layer
@@ -1020,17 +1020,17 @@ export function build(): Command {
 
   json(
     group
-      .command("describe")
+      .command("sublabel")
       .description("set a group's second, quieter label; without --text, clear it")
       .argument("<file>")
       .argument("<id>")
       .option("--text <text>"),
   ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "group.describe", id, ...pick(opts, ["text"]) }, opts);
+    await write(file, { op: "group.sublabel", id, ...pick(opts, ["text"]) }, opts);
   });
   json(
     group
-      .command("title")
+      .command("label-at")
       .description(
         "say where a group's label sits; without a fraction, the engine seats it at the top",
       )
@@ -1047,7 +1047,7 @@ export function build(): Command {
             at: Number.isNaN(Number(at)) ? at : Number(at),
             ...pick(opts, ["side", "place"]),
           };
-    await write(file, { op: "group.title", id, ...where }, opts);
+    await write(file, { op: "group.label-at", id, ...where }, opts);
   });
   json(
     group
@@ -1138,7 +1138,7 @@ export function build(): Command {
         "--weight <weight>",
         "a line width instead: thick, heavy, a stylesheet's level, or pixels",
       )
-      .option("--mark <mark>", "a mark instead: its emoji, text or file, as node icon set it")
+      .option("--mark <mark>", "a mark instead: its emoji, text or file, as node mark set it")
       .option("--text <text>"),
   ).action(async (file: string, style: string | undefined, opts: Opts) => {
     const w = opts.weight;

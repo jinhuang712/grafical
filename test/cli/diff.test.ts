@@ -44,13 +44,13 @@ describe('grafical diff (specs/decisions, "Git as the history")', () => {
     git("commit", "-q", "-m", "first");
     expect(run("diff", f).out).toBe("[] # no changes\n");
 
-    run("node", "rename", f, "a", "--label", "Alpha");
+    run("node", "label", f, "a", "--label", "Alpha");
     run("node", "add", f, "b", "--layer", "row", "--label", "B", "--last");
     const d = run("diff", f);
     expect(d.code).toBe(0);
     expect(d.out).toBe(
       "- { op: node.add, id: b, layer: row, label: B, kind: service, after: a }\n" +
-        "- { op: node.rename, id: a, label: Alpha }\n",
+        "- { op: node.label, id: a, label: Alpha }\n",
     );
     const json = JSON.parse(run("diff", f, "HEAD", "--json").out);
     expect(json.ok).toBe(true);

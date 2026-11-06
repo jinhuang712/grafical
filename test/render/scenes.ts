@@ -16,13 +16,13 @@ function node(
   kind: SceneNode["kind"],
   rect: Rect,
   label: PlacedText,
-  accent = false,
+  emphasis = false,
   sub?: PlacedText,
 ): SceneNode {
-  return { id, layer: "l", kind, accent, rect, texts: sub ? [label, sub] : [label] };
+  return { id, layer: "l", kind, emphasis, rect, texts: sub ? [label, sub] : [label] };
 }
 
-/** Mixed Chinese and Latin runs, every node and edge kind, one accent, edge labels. */
+/** Mixed Chinese and Latin runs, every node and edge kind, one emphasis, edge labels. */
 export function mixedScene(): Scene {
   const title = placed(
     "title",
@@ -213,7 +213,7 @@ type N = [
   lx: number,
   sub: string,
   sx: number,
-  accent?: boolean,
+  emphasis?: boolean,
 ];
 
 /** The target look (bench/targets/catalog-sync-grouped): groups, subtitle, legend, footnote. Fictional names. */
@@ -247,11 +247,11 @@ export function groupedScene(): Scene {
     ["geo", "external", 56, 552, 136, "geo-svc", 98.5, "region tree", 96.2],
     ["pg", "store", 224, 552, 136, "Postgres replicas", 232.4, "goods, tickets", 255.61],
   ];
-  const nodes: SceneNode[] = rows.map(([id, kind, x, y, w, label, lx, sub, sx, accent]) => ({
+  const nodes: SceneNode[] = rows.map(([id, kind, x, y, w, label, lx, sub, sx, emphasis]) => ({
     id,
     layer: "l",
     kind,
-    accent: accent === true,
+    emphasis: emphasis === true,
     rect: { x, y, w, h: 56 },
     texts: [
       t("node-label", label, lx, y + 26, 13, true, 90),

@@ -23,28 +23,11 @@ export const NOUNS = [
 /** The commands of a file with no noun. */
 const FILE_COMMANDS = ["new", "apply", "try", "show", "diff", "check", "render", "view"];
 
-/** A verb's name where it differs from the subcommand's, by noun. */
-const RENAMED: Record<string, Record<string, string>> = {
-  diagram: { caption: "note" },
-  group: { label: "rename", sublabel: "describe", "label-at": "title" },
-  lane: { label: "rename" },
-  wall: { label: "relabel" },
-  layer: { label: "rename" },
-  node: { label: "rename", sublabel: "describe", size: "resize", mark: "icon" },
-  edge: { label: "relabel", ends: "retarget", number: "step", "label-at": "seat" },
-};
-
-/** The name a caller uses for a noun's verb. */
-function outward(noun: string, verb: string): string {
-  const pair = Object.entries(RENAMED[noun] ?? {}).find(([, inner]) => inner === verb);
-  return pair?.[0] ?? verb;
-}
-
 /** A command's name as a caller writes it: `node move` is `node --move`, and one word stays one word. */
 export function surfaceName(name: string): string {
   const [noun, verb] = name.split(" ");
   return noun !== undefined && verb !== undefined && NOUNS.includes(noun)
-    ? `${noun} --${outward(noun, verb)}`
+    ? `${noun} --${verb}`
     : name;
 }
 
@@ -82,10 +65,9 @@ export function inward(args: readonly string[]): string[] | Unread {
       return { field: "verb", found: flag, ...(meant === undefined ? {} : { likely: meant }) };
     }
     const verb = flag.slice(2);
-    const inner = RENAMED[first]?.[verb] ?? verb;
-    if (isHelp(after[0])) return [first, inner, ...after];
+    if (isHelp(after[0])) return [first, verb, ...after];
     if (file === undefined) return { field: "--file" };
-    return [first, inner, file, ...after.map((w) => (w === "--type" ? "--kind" : w))];
+    return [first, verb, file, ...after.map((w) => (w === "--type" ? "--kind" : w))];
   }
   if (FILE_COMMANDS.includes(first)) {
     if (isHelp(rest[0])) return words;
@@ -128,7 +110,7 @@ export function surfaceText(text: string): string {
     .replace(
       USAGE_VERB,
       (_, noun: string, verb: string, more: string) =>
-        `Usage: grafical -f <file> ${noun} --${outward(noun, verb)}${more} [options]`,
+        `Usage: grafical -f <file> ${noun} --${verb}${more} [options]`,
     )
     .replace(
       /^Usage: grafical (new|apply|try|show|diff|check|render|view) \[options\] <file>(.*)$/gm,
@@ -147,6 +129,6 @@ export function surfaceText(text: string): string {
     .replace(EXAMPLE_VERB, "grafical -f $3 $1 $2")
     .replace(EXAMPLE_COMMAND, "grafical -f $2 $1")
     .replace(VERB_WORDS, (whole, noun: string, verb: string) =>
-      known.get(noun)?.has(verb) === true ? `${noun} --${outward(noun, verb)}` : whole,
+      known.get(noun)?.has(verb) === true ? `${noun} --${verb}` : whole,
     );
 }

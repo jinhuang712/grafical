@@ -108,7 +108,7 @@ export function changedParts(before: Scene | undefined, after: Scene): Rect[] {
       resized ||
       reworded ||
       was.kind !== n.kind ||
-      was.accent !== n.accent
+      was.emphasis !== n.emphasis
     ) {
       out.push(n.rect);
     }

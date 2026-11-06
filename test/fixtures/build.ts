@@ -14,11 +14,11 @@ export function n(
   label: string,
   kind: NodeKind,
   size: SizeStep,
-  extra: { sublabel?: string; accent?: boolean; align?: string; group?: string } = {},
+  extra: { sublabel?: string; emphasis?: boolean; align?: string; group?: string } = {},
 ): DiagramNode {
   const node: DiagramNode = { id, label, kind, size };
   if (extra.sublabel !== undefined) node.sublabel = extra.sublabel;
-  if (extra.accent !== undefined) node.accent = extra.accent;
+  if (extra.emphasis !== undefined) node.emphasis = extra.emphasis;
   if (extra.align !== undefined) node.align = extra.align;
   if (extra.group !== undefined) node.group = extra.group;
   return node;
