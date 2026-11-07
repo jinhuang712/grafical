@@ -1,6 +1,6 @@
 # Philosophy
 
-Words run in an edge, one after another. Relationships do not: a system has parts that call, feed, contain and depend on each other all at once. A diagram puts those relationships on a plane, where the eye takes them in with one scan. That is why a good diagram explains a system faster than any paragraph, and why a bad one explains nothing.
+Words run in a line, one after another. Relationships do not: a system has parts that call, feed, contain and depend on each other all at once. A diagram puts those relationships on a plane, where the eye takes them in with one scan. That is why a good diagram explains a system faster than any paragraph, and why a bad one explains nothing.
 
 > … sentential representations, in which the data structure is indexed by position in a list, with each element "adjacent" only to the next element in the list, and diagrammatic representations, in which information is indexed by location in a plane, many elements may share the same location, and each element may be "adjacent" to any number of other elements.
 >
