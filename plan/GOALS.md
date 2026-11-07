@@ -24,7 +24,7 @@ Goals
 ├── Benchmarks
 │   ├── ✅ B1: Iteration — a change request done right, fast and cheap
 │   ├── ⬜ B2: Scale — a clear picture at 50 nodes
-│   └── ❌ B4: Verifiability — few looks at the picture
+│   └── ❌ B4: Verifiability — an agent looks at its picture before it stops
 ├── Comparisons
 │   ├── ✅ C1: Model gap — Opus against Haiku
 │   ├── ❌ C2: Time — less than the same model drawing directly
@@ -317,7 +317,7 @@ kill = a defect at 25 nodes
 
 #### B4: Verifiability
 
-The agent knows it is done from grafical's text output, with at most 1 look at the picture per first draft and none per change. Only taste needs the owner, and every other check is mechanical.
+The agent knows it is done from grafical's text output and its own check against the list in `grafical guide composition`, with at least 1 look at the picture per first draft and per change.
 
 **Want:** Fix one thing without losing the rest.
 
@@ -334,11 +334,11 @@ The agent knows it is done from grafical's text output, with at most 1 look at t
 ```
 looks per draft  = image reads in a first-draft run
 looks per change = image reads in a change step, averaged over the steps
-target           = looks per draft <= 1, looks per change = 0
-kill = the agent must look at the picture after each step
+target           = looks per draft >= 1, looks per change >= 1
+kill = an agent stops with no look at its picture
 ```
 
-**Last score:** ❌ not met on 2026-10-18 (round `p1g`), closer: drafts looked once, and changes 0 to 0.3 times per step on average.
+**Last score:** ❌ not met on the numbers of 2026-10-18 (round `p1g`), against the target changed on 2026-11-08: drafts looked once, and changes 0 to 0.3 times per step on average.
 
 ### Comparisons
 

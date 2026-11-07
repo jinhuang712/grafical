@@ -89,9 +89,9 @@ Features
 │   ├── ✅ F6.2: Render — SVG and PNG, the same everywhere
 │   ├── ✅ F6.3: Live viewer — a window that redraws as the agent draws
 │   └── ✅ F6.4: Diff — a change as operations
-├── ✅ F7: Help — how an agent learns grafical
+├── 🚧 F7: Help — how an agent learns grafical (the check before stopping not built)
 │   ├── ✅ F7.1: Help — the agent's whole reference
-│   └── ✅ F7.2: Guides — how common diagrams are usually drawn
+│   └── 🚧 F7.2: Guides — how common diagrams are usually drawn (the check before stopping not built)
 ├── ⬜ F8: Diagram types — diagrams with a layout of their own
 │   ├── ⬜ F8.1: Sequence diagrams — messages in time order
 │   ├── ⬜ F8.2: Gantt charts — tasks over time

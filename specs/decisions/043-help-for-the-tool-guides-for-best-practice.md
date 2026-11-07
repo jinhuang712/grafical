@@ -4,6 +4,8 @@ Decided: 2026-10-17
 
 Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": the help no longer says what a refusal means.
 
+Replaced in part by specs/decisions, "An agent checks its own picture against a list": the help tells an agent to check against one guide.
+
 ## The problem
 
 Decided by the owner on 2026-10-17, the same day as "One entry page, help where it is used". The help says how to use grafical. How a kind of diagram is usually drawn is best practice, kept apart for an agent that wants it. The owner's reasons: an agent that wants to draw straight away may, and a refusal corrects it where it goes wrong; guidance pressed on every agent before it draws makes every diagram alike, where a drawing should keep its freedom; and if grafical is easy to use, an agent draws well without being taught.

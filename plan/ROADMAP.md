@@ -80,7 +80,8 @@ Roadmap
 │   │   ├── ✅ Verbs as flags
 │   │   ├── ✅ One way for each situation
 │   │   ├── ✅ Batches from standard input
-│   │   └── 🟨 Move and plug
+│   │   ├── 🟨 Move and plug
+│   │   └── ⬜ A check before stopping
 │   ├── 🟨 CP2.3: The object model
 │   │   ├── ✅ Design the model and its form
 │   │   ├── ✅ Build the model
@@ -492,6 +493,7 @@ The command line gets one form:
 - ✅ One way for each situation: `edge --emphasize` went, and the commands were checked for other repeats.
 - ✅ Batches from standard input: `apply` reads a batch named `-` from standard input.
 - 🟨 Move and plug: `plug` replaces `edge --ends`, and `move` is not built.
+- ⬜ A check before stopping: `grafical guide composition` holds the list, and the entry page points to it as the last step.
 
 **Delivers:**
 
@@ -499,6 +501,7 @@ The command line gets one form:
 - [F3.2: Batches](../features/F3-editing.md#f32-batches)
 - [F1.2.3: Weight](../features/F1-elements.md#f123-weight)
 - [F3.8: Move and plug](../features/F3-editing.md#f38-move-and-plug)
+- [F7.2: Guides](../features/F7-help.md#f72-guides)
 
 **Exit criteria:**
 

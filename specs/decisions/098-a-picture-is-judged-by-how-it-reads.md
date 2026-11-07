@@ -2,6 +2,8 @@
 
 Decided: 2026-11-08
 
+Extended on 2026-11-08 by specs/decisions, "An agent checks its own picture against a list": the owner's eye judges grafical, and an agent judges its own picture.
+
 ## The problem
 
 The goals rated a whole picture only by the owner's score, and counts stood in for it during the work. On 2026-11-07 a `pyramid` render had no crossings and the owner called it ugly, while `ladder` came clean by moving nodes and with no change to the router. Nothing said what a good picture is, so a rule for lines could not explain either result.

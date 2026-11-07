@@ -127,12 +127,14 @@ When grafical refuses a write, it says what went wrong, what caused it and which
 
 ## 8. Answers are data a script can read
 
-grafical answers in fixed keys and values, never in sentences of advice. The one sentence it prints is the fixed description of a problem's code. Cost: grafical never says what looks wrong, so the agent judges the picture from the counts.
+grafical answers in fixed keys and values, never in sentences of advice. The one sentence it prints is the fixed description of a problem's code. Cost: grafical never says what looks wrong, so the agent judges the picture itself, from the records and by looking.
 
 **Ask:** Could a script read this answer without parsing English?
 
 - **Stance:** [How does an agent learn grafical?](PHILOSOPHY.md#how-does-an-agent-learn-grafical)
-- **Decisions:** [022. Records over prose](specs/decisions/022-records-over-prose.md)
+- **Decisions:**
+  - [022. Records over prose](specs/decisions/022-records-over-prose.md)
+  - [099. An agent checks its own picture against a list](specs/decisions/099-an-agent-checks-its-own-picture-against-a-list.md)
 - **How it works:** [How grafical answers](specs/answers.md)
 
 ## 9. The same file gives the same picture on any machine
@@ -223,13 +225,14 @@ In one situation an agent has one shortest way to do a thing. Stating a fact whi
 
 ## 15. A picture is judged by how it reads
 
-A reader sees the structure of a picture before following any edge, so a design serves that reading first. What the picture implies must be what the facts say, the shape must show at once, the places must say most of it and like things must look alike. Placing is the agent's and routing is the engine's, so a bad picture may be either's to fix. A count may show a fault and never shows a picture good, since a picture with no crossings can still read badly. Cost: no script can pass a picture, so each judgement takes the owner's eye, and a change that improves every count may still be thrown out.
+A reader sees the structure of a picture before following any edge, so a design serves that reading first. What the picture implies must be what the facts say, the shape must show at once, the places must say most of it and like things must look alike. Placing is the agent's and routing is the engine's, so a bad picture may be either's to fix. A count may show a fault and never shows a picture good, since a picture with no crossings can still read badly. The owner's eye judges grafical, and an agent judges its own picture against the same points. Cost: no script can pass a picture, so judging grafical takes the owner's look, and a change that improves every count may still be thrown out.
 
 **Ask:** Can a reader see the structure before following an edge, and does the picture imply only what the facts say?
 
 - **Stance:** [How does a reader see a diagram?](PHILOSOPHY.md#how-does-a-reader-see-a-diagram)
 - **Decisions:**
   - [098. A picture is judged by how it reads](specs/decisions/098-a-picture-is-judged-by-how-it-reads.md)
+  - [099. An agent checks its own picture against a list](specs/decisions/099-an-agent-checks-its-own-picture-against-a-list.md)
   - [097. The router draws clean lines and the agent makes their room](specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
   - [095. A good route is one the eye can follow](specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
   - [065. Unreadable is refused and costly is reported](specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)

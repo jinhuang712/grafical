@@ -102,6 +102,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [096. An edge is steered by facts and never by coordinates](096-an-edge-is-steered-by-facts-and-never-by-coordinates.md) (2026-11-07)
 - [097. The router draws clean lines and the agent makes their room](097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md) (2026-11-07)
 - [098. A picture is judged by how it reads](098-a-picture-is-judged-by-how-it-reads.md) (2026-11-08)
+- [099. An agent checks its own picture against a list](099-an-agent-checks-its-own-picture-against-a-list.md) (2026-11-08)
 
 ## Former IDs
 
