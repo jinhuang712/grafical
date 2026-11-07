@@ -2,49 +2,9 @@
 
 The reader of grafical's answers is an agent, and often a script around it. So everything grafical prints about a diagram is a record a script can read: an outcome, a block for each problem, and facts and counts. The only sentences are each code's fixed description, and the help, which is documentation. The answer says what happened and which commands can change it, and leaves the change to the agent. The command line builds every answer, from the records the other parts return. It lives in `src/cli/`.
 
-## A command's answer
+## What it prints
 
-A command prints in this order:
-
-```text
-ok changed=<ids>          or  ok  (nothing changed)  or  failed changed=-
-<records the command adds, such as render's  wrote file=<f>>
-
-<kind>: <code>            one block per problem, a blank line before each
-description: <the code's one sentence>
-source: <what caused it>
-detail:
-  <key>: <value>
-next: <command names>
-
-counts nodes=... edges=... ...   apply, check and render only
-```
-
-A usage error, such as an unknown option or command, prints the same outcome and block on standard error, or on standard output with `--json`. The exit code is 0 when the command succeeds, with or without warnings, 1 when a write is refused or a file cannot be read, and 2 for a usage error. Engine-owned defects exit 1 under `check --all` only.
-
-With `--json` the same answer is one object: `{ok, changed, problems, counts}`, each problem as `{kind, code, description, source, detail, next}`. A usage error gives the same object, without counts. `render` adds `files`, `show` gives `{ok, diagram}`, `show --drawn` gives `{ok, drawing}`, `diff` gives `{ok, ops}`, and `try` gives its before, after and delta.
-
-## Records
-
-A record is one line: a word that names it, then `key=value` fields in the logfmt style. A record with no fields is its name alone, such as `ok`. A value that holds a space, a quote or `=` is quoted as JSON. A list is comma separated, `-` stands for none, and a count by name is `name:n`. The record's keys are the JSON's fields under the same names, so the text and `--json` say the same thing.
-
-`show --drawn` prints `counts`, then one record for each `node`, `group`, `wall`, `note`, `edge`, `gutter` and `legend` entry. An `edge` record gives `id`, `from`, `to`, `leaves`, `enters`, `bends`, `length`, `direct`, `detour`, `skip`, `crosses`, `passes`, `bundle`, and `step` when the edge has one. Plain `show` prints the diagram in the words of the operations, not as records. What each count and each gutter measures is the checker's.
-
-## A problem's block
-
-A problem is an `error`, which could not be read or applied; a `defect`, which would draw wrong; or a `warning`, which is drawn poorly. Each block has the same edges:
-
-- `<kind>: <code>`, where the code names the kind of problem.
-- `description:` the code's one fixed sentence, which says what happened and never what to do.
-  - The sentences live in one table in `src/cli/problems.ts`, and a test holds each code to one sentence of at most 140 characters.
-  - A code that is both an error and a defect has one sentence.
-- `source:` what caused it, which a warning never has.
-- `detail:` the facts one per line, or `detail: -` when there are none.
-- `next:` the names of the commands that can change it in the order the help lists them, or `-`.
-  - A code with several cases has a list for each, such as `label-blocked` for an edge or a wall or a note.
-  - A test holds every name to a real command.
-
-The detail starts with `field` and `found`, or `owner` for a defect, and the other facts follow in one fixed order. An empty value or list prints `-`, and a fact that is absent is left out. A key for several things holds a list even of one: `likely`, `near`, `edges`, `ends`, `nodes`, `layers`, `groups`, `lanes`, `between`, `across`, `chain`, `clear`, `gutters`, `allowed`, `takes` and `chars`. Several ids under a key for one thing move to its plural, such as `node` to `nodes`.
+Every command builds its answer from the same parts: the outcome, a block per problem, then the records the command adds. The descriptions live in one table in `src/cli/problems.ts`, and a test holds each code to one sentence of at most 140 characters. A code that is both an error and a defect has one sentence. A code with several cases has a list of commands for each, such as `label-blocked` for an edge or a wall or a note, and a test holds every name to a real command.
 
 No block writes the change for the agent: there is no fix, and `next` names commands without ids or values. The detail carries what the agent needs to find the change itself, such as the first and last layers a group's frame covers.
 

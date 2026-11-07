@@ -1,6 +1,6 @@
 # Features
 
-What grafical does, from the side of the agent that draws and the person who asks. Why each one works the way it does is in [DESIGNS.md](DESIGNS.md) and in the decisions in [specs/decisions](specs/decisions/README.md). `grafical --help` and each command's `--help` hold the full syntax.
+What grafical does, from the side of the agent that draws and the person who asks. Why each one works the way it does is in [DESIGNS.md](DESIGNS.md) and in the decisions in [specs/decisions](specs/decisions/README.md). [CLI.md](CLI.md) holds every command and flag.
 
 ✅ built · 🚧 built, with a gap named beside it · ❔ claimed and not yet run · ⬜ planned
 

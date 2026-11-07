@@ -19,11 +19,7 @@ The words and the look of the picture as a whole: its title, its legend, and its
 
 The title names the picture, and two more texts tell a reader what they see.
 
-**Commands:**
-
-- `grafical -f <file> diagram --title --text <text>`
-- `grafical -f <file> diagram --subtitle [--text <text>]`
-- `grafical -f <file> diagram --caption [--text <text>]`
+- **Commands:** [`diagram`](../CLI.md#diagram)
 
 - The subtitle is one sentence under the title.
 - The footnote says what the diagram leaves out, such as "Not shown: Redis name cache".
@@ -40,9 +36,7 @@ The title names the picture, and two more texts tell a reader what they see.
 
 A key in the top right that says, in the agent's words, what the picture's styles, widths and marks mean.
 
-```sh
-grafical -f <file> diagram --legend solid|dashed|dotted|plain|--weight <weight>|--mark <mark> [--text <text>]
-```
+- **Commands:** [`diagram`](../CLI.md#diagram)
 
 - An edge style or an edge width other than `thin` or a mark has an entry only when the diagram names it.
   - A diagram that names nothing draws no legend.
@@ -74,9 +68,7 @@ A legend is a small diagram of its own, and a picture may have one or none. Its 
 
 A diagram takes its whole look from a built-in theme or from a stylesheet file it names.
 
-```sh
-grafical -f <file> diagram --style [<style>]
-```
+- **Commands:** [`diagram`](../CLI.md#diagram)
 
 - The built-in themes are `default`, `dark` (light edges on a dark ground) and `print` (greys with stronger edges).
 - A stylesheet `<name>.grafical-style.yaml` starts from a theme and overrides any of its values.
@@ -128,10 +120,9 @@ A team's own typeface in the picture.
 
 An agent may set where a text breaks and how its lines line up. A text the agent leaves alone wraps where grafical wraps it and keeps the alignment of its kind.
 
-```sh
-grafical -f <file> label --align <id> left|center|right
-grafical -f <file> note --align <on> left|center|right
-```
+- **Commands:**
+  - [`label`](../CLI.md#label)
+  - [`note`](../CLI.md#note)
 
 - The label of a node, an edge or a lane may hold a line break, and so may a sublabel, a note and a subtitle.
 - A break is a real line break or `\n`, and grafical keeps it.
@@ -155,12 +146,11 @@ grafical -f <file> note --align <on> left|center|right
 
 A diagram, a group, a layer, a lane and a column are all regions, and each places its label the same way.
 
-```sh
-grafical -f <file> group --label-at <id> <fraction> [--side top|bottom|left|right] [--place inside|outside]
-grafical -f <file> diagram --label-at <fraction> [--side top|bottom]
-grafical -f <file> layer --label-at <id> <fraction>
-grafical -f <file> lane --label-at <id> <fraction>
-```
+- **Commands:**
+  - [`group`](../CLI.md#group)
+  - [`diagram`](../CLI.md#diagram)
+  - [`layer`](../CLI.md#layer)
+  - [`lane`](../CLI.md#lane)
 
 - A fraction runs from 0 to 1 along the side: 0 at its start, 0.5 at its middle and 1 at its end.
 - The label's own point at that fraction meets the side's, so it never runs past the side.
@@ -185,9 +175,7 @@ grafical -f <file> lane --label-at <id> <fraction>
 
 A label may mark styles, as any object does.
 
-```sh
-grafical -f <file> label --style <id> [--style <name>]...
-```
+- **Commands:** [`label`](../CLI.md#label)
 
 - `--style` takes the ID of an edge with a label, and names styles as other objects do.
 - A node, a group and a lane take the style of the object itself, and only an edge's label has a patch of its own.

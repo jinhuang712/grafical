@@ -12,10 +12,7 @@ How an agent learns grafical from the command line alone: help for the tool and 
 
 How to use grafical: the agent's whole reference for the tool.
 
-```sh
-grafical --help
-grafical <command> --help
-```
+- **Commands:** [Global flags](../CLI.md#global-flags)
 
 The entry page and one page per command hold everything an agent needs to use grafical.
 
@@ -47,10 +44,7 @@ The entry page and one page per command hold everything an agent needs to use gr
 
 How common kinds of diagram are usually drawn: best practice, for an agent that wants it.
 
-```sh
-grafical guide
-grafical guide <name>
-```
+- **Commands:** [`guide`](../CLI.md#guide)
 
 `grafical guide` lists the guides by what a diagram is about:
 

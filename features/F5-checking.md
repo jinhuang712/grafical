@@ -24,9 +24,7 @@ How an agent knows a diagram came out right. It reads the diagram as facts, coun
 
 The agent's view of a diagram, in place of reading the file.
 
-```sh
-grafical -f <file> show [<id>] [--drawn]
-```
+- **Commands:** [`show`](../CLI.md#show)
 
 - `show` prints the diagram in the same words as the operations.
   - It lists the layers and the nodes in order and the groups and the lanes and the edges and the walls and the notes and the marks.
@@ -176,11 +174,9 @@ next: layer --move, node --move, node --swap
 
 ## F5.4: Check
 
-`check` reports the defects the agent can fix, every warning, and the counts. `--all` adds the defects only the engine can avoid, which are engine bugs. A file that every write would refuse gets those errors and nothing else, with exit code 1.
+`check` reports the defects the agent can fix, every warning, and the counts. `--all` adds the defects only the engine can avoid, which are engine bugs. A file that every write would refuse gets those errors and nothing else.
 
-```sh
-grafical -f <file> check [--all]
-```
+- **Commands:** [`check`](../CLI.md#check)
 
 - **Design:** [6. Every write is checked, and each defect has an owner](../DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
 - **How it works:** [The checker](../specs/checks.md)

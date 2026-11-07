@@ -11,9 +11,10 @@ A window that is new or was compacted first reads the `what-we-build` skill's SK
 3. [DESIGNS.md](DESIGNS.md)
 4. [plan/GOALS.md](plan/GOALS.md)
 5. [FEATURES.md](FEATURES.md)
-6. [plan/ROADMAP.md](plan/ROADMAP.md)
-7. [GLOSSARY.md](GLOSSARY.md)
-8. [specs/ARCHITECTURE.md](specs/ARCHITECTURE.md)
+6. [CLI.md](CLI.md)
+7. [plan/ROADMAP.md](plan/ROADMAP.md)
+8. [GLOSSARY.md](GLOSSARY.md)
+9. [specs/ARCHITECTURE.md](specs/ARCHITECTURE.md)
 
 Then it scans `plan/TODO.md`.
 
@@ -75,6 +76,7 @@ What just happened?
 │   ├── ROADMAP ·········· its progress
 │   ├── specs/ ··········· how the part works now
 │   ├── ARCHITECTURE ····· how the parts fit now
+│   ├── CLI ·············· how it is called now
 │   └── README, INSTALL ·· how it is used now
 ├── A fork was closed ······· decisions/
 ├── Something stayed open ··· TODO

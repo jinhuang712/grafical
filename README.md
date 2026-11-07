@@ -92,6 +92,7 @@ agent ──command or batch──> command line ──records──> agent
 - [PHILOSOPHY.md](PHILOSOPHY.md): the questions grafical takes a stance on.
 - [DESIGNS.md](DESIGNS.md): what every design change must meet.
 - [FEATURES.md](FEATURES.md): what it does and will and won't do.
+- [CLI.md](CLI.md): every command, what it prints and how it fails.
 - [plan/GOALS.md](plan/GOALS.md): the checks that say whether it works.
 - [plan/ROADMAP.md](plan/ROADMAP.md): what is done and what comes next.
 - [plan/TODO.md](plan/TODO.md): the open items with no checkpoint yet.

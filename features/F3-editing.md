@@ -27,16 +27,15 @@ Every failure leaves the file as it was and says what happened, in the block des
   - A YAML syntax error gives its line.
   - A missing stylesheet fails every command that reads the diagram ([F4.4: The stylesheet file](F4-look.md#f44-the-stylesheet-file)).
   - A file written by a newer grafical is refused rather than guessed at ([F6.1: The diagram file](F6-output.md#f61-the-diagram-file)).
-- **A command line is wrong:** a usage error prints a block and exits 2, and a command that does not exist is refused with the one it most likely means ([F7.1: Help](F7-help.md#f71-help)).
+- **A command line is wrong:** a usage error prints a block, and a command that does not exist is refused with the one it most likely means ([F7.1: Help](F7-help.md#f71-help)).
 
 ## F3.1: Operations
 
 Every change to a diagram is one named operation, run as a command. The diagram file is `<name>.grafical` by convention.
 
-```sh
-grafical -f arch.grafical new --title "Order flow"
-grafical -f arch.grafical node --add api --layer app --label "Order API" --type service
-```
+- **Commands:**
+  - [`new`](../CLI.md#new)
+  - [`node`](../CLI.md#node)
 
 - On the command line an operation is `grafical -f <file> <noun> --<verb> …`.
   - Every other value is a flag, such as `--label`.
@@ -45,10 +44,6 @@ grafical -f arch.grafical node --add api --layer app --label "Order API" --type 
   - A block says what the write is refused for, or what the picture draws poorly ([F3.5: Refusals](#f35-refusals) and [F5.3: Warnings](F5-checking.md#f53-warnings)).
   - A refused write changes nothing.
 - Every command takes `--json`, which prints the same report as JSON.
-- Exit codes:
-  - 0 for success.
-  - 1 for a refused operation or a defect.
-  - 2 for a usage error.
 - The parser refuses an unknown option, a missing argument and an unknown command.
   - Its refusals print `failed changed=-` and a block on standard error, such as `error: unknown-option` with `found: --bogus`.
   - With `--json` they print the same object as any refusal on standard output.
@@ -72,9 +67,7 @@ grafical -f arch.grafical node --add api --layer app --label "Order API" --type 
 
 Many operations at once, all or nothing.
 
-```sh
-grafical -f arch.grafical apply batch.yaml
-```
+- **Commands:** [`apply`](../CLI.md#apply)
 
 A batch file is a YAML list. Each item has `op: <noun>.<verb>` and the same fields as the command's flags, in camelCase:
 
@@ -97,9 +90,7 @@ grafical checks each operation in order, and writes only when every one is valid
 
 See what a batch would do before making it.
 
-```sh
-grafical -f arch.grafical try batch.yaml
-```
+- **Commands:** [`try`](../CLI.md#try)
 
 `try` applies the batch without writing it, and prints the drawing's counts before and after it, and a `delta` record of the change in each. The agent decides what to try, and grafical measures.
 
@@ -109,7 +100,6 @@ grafical -f arch.grafical try batch.yaml
 - Each batch then prints `ok` and `after` and `delta` records that carry `batch=<file>`.
 - A batch that would be refused prints `failed batch=<file> changed=-` and its blocks.
   - The other batches are still tried.
-  - The exit code is 1.
 - With `--json` it prints `{ok, before, batches: [{batch, ok, changed, after, delta}]}`.
 - A single batch prints without the `batch` key.
 
@@ -203,11 +193,7 @@ next: type --add
 
 Three operations change which nodes a diagram has or where two of them sit.
 
-**Commands:**
-
-- `grafical -f <file> node --merge <new-id> --nodes a,b,c --label <text> [--sublabel <text>] [--type <type>]`
-- `grafical -f <file> node --swap <a> <b>`
-- `grafical -f <file> node --remove <id>`
+- **Commands:** [`node`](../CLI.md#node)
 
 - `merge` replaces nodes with one new node where the first one was.
   - It keeps each of their edges once and drops the edges between them.
@@ -241,10 +227,9 @@ One operation for a common edit or a common shape, such as "put a cache between 
 
 Two verbs stand above the nouns and take IDs. `move` changes where things sit, and `plug` changes what an edge connects.
 
-```sh
-grafical -f <file> move <id...> [--layer <layer>] [--first | --last | --before <id> | --after <id>]
-grafical -f <file> plug <id> [--from <end>] [--to <end>]
-```
+- **Commands:**
+  - [`move`](../CLI.md#move)
+  - [`plug`](../CLI.md#plug)
 
 - `move` takes nodes, layers and groups, and later lanes and columns.
   - Several objects keep their order among themselves.

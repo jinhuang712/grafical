@@ -85,16 +85,13 @@ A node's kind says what it is and decides how it is drawn.
 - An edge meets a diamond only at a corner, and edges that come to one side join before it.
 - The labels of `initial` and `final` and `choice` stay in the file and are not drawn.
 
-```sh
-grafical -f <file> node --type <id> [<type>]
-```
+- **Commands:** [`node`](../CLI.md#node)
 
 A type of your own names a sort of node with its own shape and look. A change to it reaches every node of it.
 
-```sh
-grafical -f <file> type --add <id> --base <type> [--shape <shape>] [--fill <color>] [--border <color>]
-grafical -f <file> node --type <id> <type>
-```
+- **Commands:**
+  - [`type`](../CLI.md#type)
+  - [`node`](../CLI.md#node)
 
 - **Why:**
   - [087. A type holds attributes, and a group may follow a group](../specs/decisions/087-a-type-holds-attributes-and-a-group-may-follow-a-group.md)
@@ -104,10 +101,7 @@ grafical -f <file> node --type <id> <type>
 
 A node has a label, and optionally a quieter sublabel, such as a port or a topic.
 
-```sh
-grafical -f <file> node --label <id> --label <text>
-grafical -f <file> node --sublabel <id> [--text <text>]
-```
+- **Commands:** [`node`](../CLI.md#node)
 
 - Labels wrap at spaces and hyphens and underscores and slashes.
   - Chinese text also wraps between characters.
@@ -119,10 +113,9 @@ grafical -f <file> node --sublabel <id> [--text <text>]
 
 A node is sized to its text, unless the agent gives it a size step.
 
-```sh
-grafical -f <file> node --size <id> [--size s|m|l]
-grafical -f <file> diagram --sizing auto|fixed
-```
+- **Commands:**
+  - [`node`](../CLI.md#node)
+  - [`diagram`](../CLI.md#diagram)
 
 - A node without a size is medium, or large when its text does not fit the medium node.
   - A rename that shortens the label shrinks it again.
@@ -131,7 +124,6 @@ grafical -f <file> diagram --sizing auto|fixed
   - Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a node without a size is always medium, and text that does not fit is refused.
 - A node may take a multiple of its width, its height or both, such as 1.5.
-  - `grafical -f <file> node --size <id> [--width <n>] [--height <n>] [--magnified <n>]`
   - A taller node makes its layer taller.
   - A dot or a `choice` keeps its size and refuses a multiple.
   - Why: [080. A node takes multiples of its width and height](../specs/decisions/080-a-node-takes-multiples-of-its-width-and-height.md)
@@ -140,9 +132,7 @@ grafical -f <file> diagram --sizing auto|fixed
 
 A node can carry up to five marks, such as `⚠️` on a node that matters, or `P0` on a badge.
 
-```sh
-grafical -f <file> node --mark <id> --slot <slot> [--mark <mark>] [--bg <color>] [--fg <color>] [--border <color>] [--shape <shape>] [--size s|m|l]
-```
+- **Commands:** [`node`](../CLI.md#node)
 
 - A node has five slots of one mark each: `top-left` and `top-right` and `bottom-left` and `bottom-right` and `left`.
   - A diamond and a dot have corner slots only.
@@ -169,9 +159,7 @@ A corner mark is not yet checked against the edges that leave the node near its 
 
 A mark taken by name from one mark set that grafical bundles, so that an agent need not find a file for every node.
 
-```sh
-grafical -f <file> node --mark <id> --slot <slot> --mark <set>:<name>
-```
+- **Commands:** [`node`](../CLI.md#node)
 
 - The set is a permissively licensed one, such as Lucide (ISC) or Tabler (MIT).
   - A cloud vendor's own marks stay files the agent brings.
@@ -181,19 +169,15 @@ grafical -f <file> node --mark <id> --slot <slot> --mark <set>:<name>
 
 At most two nodes stand out, as what a reader should see first.
 
-```sh
-grafical -f <file> node --emphasis <id> [--off]
-```
+- **Commands:** [`node`](../CLI.md#node)
 
 ### F1.1.7: Node looks
 
 A node takes its colors from the styles it marks, so that a color says something without changing the shape.
 
-```sh
-grafical -f <file> style --add <id> [--fill <color>] [--border <color>] [--border-width <n>]
-grafical -f <file> node --style <id> <styles...>
-grafical -f <file> node --like <id> [<node>]
-```
+- **Commands:**
+  - [`style`](../CLI.md#style)
+  - [`node`](../CLI.md#node)
 
 - A color is `#` and hex digits.
 - A node may mark several styles, and a later one overrides an earlier one.
@@ -253,14 +237,9 @@ An edge's kind says what it means and decides its style.
 | `optional` | dotted, with an arrowhead | a call that happens only sometimes |
 | `link` | plain, with no arrowhead | related, with no direction |
 
-**Commands:**
-
-- `grafical -f <file> edge --add <from> <to> [--id <id>] [--label <text>] [--type <type>] [--both] [--pass]`
-- `grafical -f <file> edge --type <id> [<type>]`
-- `grafical -f <file> edge --label <id> [--label <text>]`
-- `grafical -f <file> edge --reverse <id>`
-- `grafical -f <file> plug <id> [--from <end>] [--to <end>]`
-- `grafical -f <file> edge --remove <id>`
+- **Commands:**
+  - [`edge`](../CLI.md#edge)
+  - [`plug`](../CLI.md#plug)
 
 - `edge --label` without `--label` clears the label.
 - `plug` moves one or both ends and keeps the edge's ID, type and label.
@@ -269,9 +248,7 @@ An edge's kind says what it means and decides its style.
 
 An edge can carry an arrowhead at each end, for a call that answers.
 
-```sh
-grafical -f <file> edge --both <id> [--off]
-```
+- **Commands:** [`edge`](../CLI.md#edge)
 
 A `link` takes no arrowheads, so `both` on a link is refused as `both-on-link`.
 
@@ -279,9 +256,7 @@ A `link` takes no arrowheads, so `both` on a link is refused as `both-on-link`.
 
 Some edges are thicker than others, to say they matter more.
 
-```sh
-grafical -f <file> edge --weight <id...> [--weight <level|pixels>]
-```
+- **Commands:** [`edge`](../CLI.md#edge)
 
 - A weight is a level or a width from 0.5 to 8 px.
   - The levels are `thin`, `thick` and `heavy`.
@@ -295,9 +270,7 @@ grafical -f <file> edge --weight <id...> [--weight <level|pixels>]
 
 A number on an edge, so that a reader can follow a request or a process in order.
 
-```sh
-grafical -f <file> edge --number <id> [--n <number>]
-```
+- **Commands:** [`edge`](../CLI.md#edge)
 
 - The agent states each number, a whole number from 1 to 99.
   - grafical draws it as a small ring on the edge, under the start of its label.
@@ -333,11 +306,9 @@ One arrow can point at a whole system instead of each of its parts.
 
 An edge takes its color from the styles it marks, so that a color says something about one path.
 
-```sh
-grafical -f <file> style --add <id> --color <color>
-grafical -f <file> edge --style <id> <styles...>
-grafical -f <file> edge --like <id> [<edge>]
-```
+- **Commands:**
+  - [`style`](../CLI.md#style)
+  - [`edge`](../CLI.md#edge)
 
 - The arrowhead takes the color too.
 - A dash stays the type's.
@@ -388,16 +359,7 @@ Nodes are gathered into systems, lanes and parts that edges keep apart. A group 
 
 A group is a system, drawn as one frame around its members, which may sit in several layers.
 
-**Commands:**
-
-- `grafical -f <file> group --add <id> --label <text> [--sublabel <text>] [--nodes a,b,c] [--in <group>]`
-- `grafical -f <file> group --join <group> <node or group...>`
-- `grafical -f <file> group --leave <node or group...> [--up]`
-- `grafical -f <file> group --label <id> --label <text>`
-- `grafical -f <file> group --sublabel <id> [--text <text>]`
-- `grafical -f <file> group --label-at <id> [<fraction>] [--side top|bottom|left|right] [--place inside|outside]`
-- `grafical -f <file> group --order <id> --before <group> | --after <group>`
-- `grafical -f <file> group --remove <id> [--out]`
+- **Commands:** [`group`](../CLI.md#group)
 
 - A group's frame spans every layer from its top member to its bottom one.
   - The other nodes of those layers sit beside the frame, and nothing else lies inside it.
@@ -428,9 +390,7 @@ A group is a system, drawn as one frame around its members, which may sit in sev
 
 A second zone, region or shard in one operation.
 
-```sh
-grafical -f <file> group --copy <id> <into> --label <text> --suffix <suffix> --before <group> | --after <group> [--outside]
-```
+- **Commands:** [`group`](../CLI.md#group)
 
 - The copy holds the group's inner groups, its nodes and the edges between them.
   - It sits in the group the original sits in.
@@ -454,13 +414,7 @@ Groups nest up to five levels instead of three, as a cloud's account, region, ne
 
 A lane is a labelled band that says who owns what. A diagram's lanes all run one way, as layers or as columns.
 
-**Commands:**
-
-- `grafical -f <file> lane --add <id> --label <text> [--members a,b]`
-- `grafical -f <file> lane --join <lane> <member...>`
-- `grafical -f <file> lane --leave <member...>`
-- `grafical -f <file> lane --label <id> --label <text>`
-- `grafical -f <file> lane --remove <id>`
+- **Commands:** [`lane`](../CLI.md#lane)
 
 - Layers as members make lanes that run as layers, with the label on the left.
   - Nodes as members make lanes that run as columns, with the label on top.
@@ -480,12 +434,7 @@ Lanes that run as layers and lanes that run as columns in one diagram, as a grid
 
 Empty space between two parts of a picture, which edges cross only where the wall allows.
 
-**Commands:**
-
-- `grafical -f <file> wall --add <id> --between a,b --and c,d [--allow e,f] [--label <text>]`
-- `grafical -f <file> wall --allow <id> <allow...> [--off]`
-- `grafical -f <file> wall --label <id> [--label <text>]`
-- `grafical -f <file> wall --remove <id>`
+- **Commands:** [`wall`](../CLI.md#wall)
 
 - Each side is a list of nodes and groups.
   - When one side lies above the other, the wall runs across.
@@ -506,10 +455,7 @@ Empty space between two parts of a picture, which edges cross only where the wal
 
 A short text attached to a node, an edge or a group, to keep detail out of extra nodes.
 
-```sh
-grafical -f <file> note --add --on <id> --text <text> [--footnote]
-grafical -f <file> note --remove --on <id>
-```
+- **Commands:** [`note`](../CLI.md#note)
 
 - A note is a card beside its target, joined by a dotted line.
   - With `--footnote` it is a small number on the target, with the text in a numbered list at the bottom.
@@ -524,12 +470,9 @@ grafical -f <file> note --remove --on <id>
 
 A group or a lane takes its colors from the styles it marks, so that color tells one system from another.
 
-```sh
-grafical -f <file> group --style <id> <styles...>
-grafical -f <file> lane --style <id> <styles...>
-grafical -f <file> group --like <id> [<group>]
-grafical -f <file> lane --like <id> [<lane>]
-```
+- **Commands:**
+  - [`group`](../CLI.md#group)
+  - [`lane`](../CLI.md#lane)
 
 - `--like` follows another of its sort, by the same rules as `node --like`.
 

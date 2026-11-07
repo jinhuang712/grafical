@@ -47,16 +47,9 @@ The agent never places a node. grafical works out every node's place and size fr
 
 A node sits in a layer, in an order. A layer only places, and is not drawn unless it has a look or an edge ends at it.
 
-**Commands:**
-
-- `grafical -f <file> layer --add <id> [--label <text>] [--before <layer> | --after <layer>]`
-- `grafical -f <file> layer --label <id> --label <text>`
-- `grafical -f <file> layer --look <id> [box|band]`
-- `grafical -f <file> layer --move <id> --first | --last | --before <layer> | --after <layer>`
-- `grafical -f <file> layer --remove <id>`
-- `grafical -f <file> layer --split <id> <new-id> --label <text> [--from <node>]`
-- `grafical -f <file> node --add <id> --layer <layer> --label <text> [--type <type>] [--sublabel <text>] [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--emphasis]`
-- `grafical -f <file> node --move <id> [--layer <layer>] [--first | --last | --before <node> | --after <node>]`
+- **Commands:**
+  - [`layer`](../CLI.md#layer)
+  - [`node`](../CLI.md#node)
 
 - A new layer goes to the bottom unless `--before` or `--after` places it.
 - A node added to a layer or moved into another layer says where it goes: `--first` or `--last` or `--before` or `--after`.
@@ -100,9 +93,7 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
 
 A node sits directly above or below a node in another layer.
 
-```sh
-grafical -f <file> node --align <id> [--to <node>]
-```
+- **Commands:** [`node`](../CLI.md#node)
 
 - It joins its target's column to sit there.
 - An alignment that cannot hold with the order of either layer is refused as `alignment-conflict`.
@@ -120,12 +111,7 @@ grafical -f <file> node --align <id> [--to <node>]
 
 A second placement fact beside layers. Nothing is drawn: a column is a guide.
 
-**Commands:**
-
-- `grafical -f <file> column --add <id> [--nodes a,b] [--before <column> | --after <column>]`
-- `grafical -f <file> column --join <column> <member...>`
-- `grafical -f <file> column --leave <member...>`
-- `grafical -f <file> column --remove <id>`
+- **Commands:** [`column`](../CLI.md#column)
 
 - Every node of a column sits left of every node of the next column in all layers.
   - At least a layer's gap lies between them.
@@ -150,9 +136,6 @@ A second placement fact beside layers. Nothing is drawn: a column is a guide.
 ### F2.4.1: Column headings
 
 A column may carry a heading above its first layer, such as a quarter.
-
-- `grafical -f <file> column --add <id> --label <text>`
-- `grafical -f <file> column --label <id> [--label <text>]`
 - An edge that comes near a heading refuses the write.
 
 - **Why:** [056. A column may carry a heading](../specs/decisions/056-a-column-may-carry-a-heading.md)
@@ -161,10 +144,7 @@ A column may carry a heading above its first layer, such as a quarter.
 
 A node in no layer, placed some cells of the grid from another node.
 
-```sh
-grafical -f <file> node --add <id> --from <node> [--down <n> | --up <n>] [--left <n> | --right <n>] --label <text> [--type <type>]
-grafical -f <file> node --move <id> [--from <node>] [--down <n> | --up <n>] [--left <n> | --right <n>]
-```
+- **Commands:** [`node`](../CLI.md#node)
 
 - Each step is a whole number from 1 to 10, and at least one is given.
   - A step is one cell of the grid: a layer down or up, a column left or right.
@@ -205,9 +185,7 @@ A node snaps to its cell, unless an agent takes it off with a fraction of a cell
 
 A diagram's spacing is compact, normal or airy, and it changes nothing else.
 
-```sh
-grafical -f <file> diagram --density compact|normal|airy
-```
+- **Commands:** [`diagram`](../CLI.md#diagram)
 
 - **Design:** [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
 - **How it works:** [Placement: layers down the page](../specs/placement.md#layers-down-the-page)
@@ -221,9 +199,7 @@ grafical -f <file> diagram --density compact|normal|airy
 
 The gap between two neighbouring regions may be magnified, by a multiple of its default. A region is a layer, a group or a column, and both must be of one kind.
 
-```sh
-grafical -f <file> gap --between <a> <b> [--magnified <n>]
-```
+- **Commands:** [`gap`](../CLI.md#gap)
 
 - A multiple may be 1.25, 1.5 or 2.
 - It follows the density, so a multiple of a compact gap stays narrower than one of an airy gap.
@@ -287,9 +263,7 @@ The agent says what connects. grafical draws every edge.
 
 An agent may state the side an edge leaves by or enters by. A side left unstated stays grafical's.
 
-```sh
-grafical -f <file> edge --side <id> [--out top|bottom|left|right] [--in top|bottom|left|right]
-```
+- **Commands:** [`edge`](../CLI.md#edge)
 
 - A side the command does not name stays as it was.
 - Without `--out` or `--in`, the edge's sides are grafical's again.
@@ -304,9 +278,7 @@ grafical -f <file> edge --side <id> [--out top|bottom|left|right] [--in top|bott
 
 All the edges of a diagram share one shape, and the routes stay the same.
 
-```sh
-grafical -f <file> diagram --lines square|round
-```
+- **Commands:** [`diagram`](../CLI.md#diagram)
 
 - `square` has sharp corners, as a new diagram does.
 - `round` rounds the corners and keeps the straight runs.
@@ -317,9 +289,7 @@ grafical -f <file> diagram --lines square|round
 
 An edge carries its label, and the edge passes through it. An agent may take one label off its edge.
 
-```sh
-grafical -f <file> edge --label-at <id> on|beside
-```
+- **Commands:** [`edge`](../CLI.md#edge)
 
 - A label sits on its edge by default, on an edge that turns too.
 - A label on a vertical run sits at the run's middle, or the nearest clear place to it.
@@ -333,14 +303,7 @@ grafical -f <file> edge --label-at <id> on|beside
 
 An agent steers an edge with facts and never with a coordinate. Every step here is stated on one edge, and the engine still routes the edge.
 
-```sh
-grafical -f <file> edge --via <id> [<object>] [--side left|right]
-grafical -f <file> edge --straight <id> [--off]
-grafical -f <file> edge --main <id> [--off]
-grafical -f <file> edge --with <id> [<edge>]
-grafical -f <file> edge --bend <id> [--at 0.25|0.5|0.75]
-grafical -f <file> edge --stretch <id> [--magnified 1.25|1.5|2]
-```
+- **Commands:** [`edge`](../CLI.md#edge)
 
 | Flag | What it states | Refused as |
 |---|---|---|
