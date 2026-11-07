@@ -13,7 +13,8 @@ Goals
 ├── Objectives
 │   ├── ❌ O1: The MVP bar — cheaper · faster · no strong model needed · copies a picture and beats it
 │   ├── ⬜ O4: Copy a picture, better — an agent redraws someone's picture and it looks better
-│   └── ⬜ O5: Routes the eye can follow — 13 checks read from the picture itself
+│   ├── ⬜ O5: Routes the eye can follow — 13 checks read from the picture itself
+│   └── ⬜ O6: A picture reads at a glance — 12 points the owner reads from the picture
 ├── Measures
 │   ├── ⬜ M1: Enough to say — what an agent wanted to state and no operation could
 │   ├── M2: Cache hit rate — 90.2% of input read from the cache on 2026-10-18
@@ -85,7 +86,7 @@ Given a picture someone else drew, an agent redraws it with grafical, shows the 
 
 #### O5: Routes the eye can follow
 
-A route is judged by looking at the picture against every check below, and counts only support what the eye finds. A picture with no crossings can still fail, as a `pyramid` render did on 2026-11-07. The checks are in the order the owner set on 2026-11-07, so an earlier one wins where two pull against each other.
+O5 holds the lines of a picture, and [O6: A picture reads at a glance](#o6-a-picture-reads-at-a-glance) holds the whole of it. A route is judged by looking at the picture against every check below, and counts only support what the eye finds. A picture with no crossings can still fail, as a `pyramid` render did on 2026-11-07. The checks are in the order the owner set on 2026-11-07, so an earlier one wins where two pull against each other.
 
 | # | Tier | Check | Read by | From |
 |---|---|---|---|---|
@@ -93,7 +94,7 @@ A route is judged by looking at the picture against every check below, and count
 | 2 | must | No line the picture implies and the facts lack | open | proposed |
 | 3 | must | An end run of at least 16 px, 24 px at ease | not built | the owner's rule |
 | 4 | shape | The eye follows a line end to end | the owner | standard 1 |
-| 5 | shape | No step | the owner | the owner's rule |
+| 5 | shape | No jog | the owner | the owner's rule |
 | 6 | shape | A pair of lines level at both ends | not built | the owner's rule |
 | 7 | shape | One form for lines of one sort | the owner | the owner's rule |
 | 8 | shape | A simple shape | the bend count and the owner | standard 3 |
@@ -115,6 +116,37 @@ The standards are in `specs/decisions, "A good route is one the eye can follow"`
 **Acceptance:** the owner looks at every case in `bench/routes/` and finds each check met or names why it cannot be.
 
 **Status:** ⬜ not run. On 2026-11-07 the owner looked at `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid` only. The open points are in [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
+
+#### O6: A picture reads at a glance
+
+A good picture shows its structure before a reader follows any line, and everything it implies is true. The owner reads the twelve points below from the picture, and no count stands in for that.
+
+| # | Group | Point | Owed by | Good | Bad |
+|---|---|---|---|---|---|
+| 1 | reads true | It says only the facts | both | a fork from one start | a bar that reads as `B→C` on `pair-both-ways` |
+| 2 | reads true | Text stays with what it names | engine | a label against its line | a label that could name two lines |
+| 3 | reads fast | The structure shows at once | both | the hand drawing of `pyramid` | the `pyramid` render of 2026-11-07 |
+| 4 | reads fast | It has one way to read | agent | the main flow down the page | lines with no direction |
+| 5 | reads fast | What matters stands out | both | the main path seen first | every line of one weight |
+| 6 | placed well | Places say most of it | agent | `ladder` in one column | two lines swapping sides in a gap |
+| 7 | placed well | Related things sit close | agent | a system's nodes together | long lines between close ideas |
+| 8 | placed well | It keeps symmetry and alignment | both | `pyramid` even left and right | one side entered by a top and the other by a side |
+| 9 | placed well | Space stays even | both | neither too wide nor crowded | 1208 px wide around empty cells |
+| 10 | drawn evenly | Like things look alike | engine | one fork at each node | sides that differ with no meaning |
+| 11 | drawn evenly | Lines have room | both | an end run of 24 px | an end run of 8 px |
+| 12 | cut | It holds what the reader needs | agent | details left out on purpose | every fact drawn |
+
+**Want:** A picture that is complete and clear at once.
+
+**Checks:**
+
+- [F2: Layout](../features/F2-layout.md)
+- [F4: Look](../features/F4-look.md)
+- [15. A picture is judged by how it reads](../DESIGNS.md#15-a-picture-is-judged-by-how-it-reads)
+
+**Acceptance:** the owner looks at the first drafts of a round and at every case in `bench/routes/`, and finds each point met or names why it cannot be.
+
+**Status:** ⬜ not run. Five points came from four cases on 2026-11-07, and the owner accepted seven more proposed on 2026-11-08. Whether two of them fit the stance on taste is open in [A good picture and taste](TODO.md#p1discussion-a-good-picture-and-taste).
 
 ### Measures
 

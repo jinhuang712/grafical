@@ -65,6 +65,7 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 - **Run:** one straight horizontal or vertical piece of an edge.
   - Lost names: *stretch* and *segment* and *part*.
 - **Track:** one of the rows of a gutter or one of the columns of a gap that a run takes.
+- **Jog:** a sideways shift in the middle of a long run of a line.
 - **Corridor:** a column of the grid empty in every layer an edge passes, which the edge runs down.
 - **Port:** the place where an edge meets a side of a node.
 - **Bundle:** lines of one style and weight that leave one side of a node through one port and split near their targets.

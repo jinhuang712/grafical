@@ -100,6 +100,8 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [094. `move` and `plug` stand above the nouns](094-move-and-plug-stand-above-the-nouns.md) (2026-11-07)
 - [095. A good route is one the eye can follow](095-a-good-route-is-one-the-eye-can-follow.md) (2026-11-07)
 - [096. An edge is steered by facts and never by coordinates](096-an-edge-is-steered-by-facts-and-never-by-coordinates.md) (2026-11-07)
+- [097. The router draws clean lines and the agent makes their room](097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md) (2026-11-07)
+- [098. A picture is judged by how it reads](098-a-picture-is-judged-by-how-it-reads.md) (2026-11-08)
 
 ## Former IDs
 

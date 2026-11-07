@@ -2,7 +2,7 @@
 
 An agent's operations go in, a checked diagram file and a picture come out, and facts and counts go back. This is the shape between: the commitments every design change must meet. Why grafical sees diagrams this way is in [PHILOSOPHY.md](PHILOSOPHY.md). How its parts fit is in [ARCHITECTURE.md](specs/ARCHITECTURE.md).
 
-grafical is designed around 14 guidelines:
+grafical is designed around 15 guidelines:
 
 1. **Operations are the only way a diagram changes:** every change is a named and checked operation
 2. **Places are facts, never coordinates:** a place is a layer or an order or a column and never a position
@@ -18,6 +18,7 @@ grafical is designed around 14 guidelines:
 12. **The command line comes first, and the help is the agent's only reference:** an agent learns and uses grafical from its commands alone
 13. **Every search the engine runs has a cap:** no step searches without a bound
 14. **One shortest way for each situation:** a form that only repeats another is removed
+15. **A picture is judged by how it reads:** a reader sees the structure first, and a count never proves a picture good
 
 ## 1. Operations are the only way a diagram changes
 
@@ -94,6 +95,7 @@ Edges run orthogonally through the gaps between layers and nodes. The engine pic
   - [059. Lines may be drawn square, round or smooth](specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
   - [095. A good route is one the eye can follow](specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
   - [096. An edge is steered by facts and never by coordinates](specs/decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
+  - [097. The router draws clean lines and the agent makes their room](specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
 - **How it works:**
   - [Routing](specs/routing.md)
   - [Text placement](specs/labels.md)
@@ -218,5 +220,21 @@ In one situation an agent has one shortest way to do a thing. Stating a fact whi
   - [070. One shortest way for each situation](specs/decisions/070-one-shortest-way-for-each-situation.md)
   - [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
 - **How it works:** [Architecture](specs/ARCHITECTURE.md)
+
+## 15. A picture is judged by how it reads
+
+A reader sees the structure of a picture before following any line, so a design serves that reading first. What the picture implies must be what the facts say, the shape must show at once, the places must say most of it and like things must look alike. Placing is the agent's and routing is the engine's, so a bad picture may be either's to fix. A count may show a fault and never shows a picture good, since a picture with no crossings can still read badly. Cost: no script can pass a picture, so each judgement takes the owner's eye, and a change that improves every count may still be thrown out.
+
+**Ask:** Can a reader see the structure before following a line, and does the picture imply only what the facts say?
+
+- **Stance:** [How does a reader see a diagram?](PHILOSOPHY.md#how-does-a-reader-see-a-diagram)
+- **Decisions:**
+  - [098. A picture is judged by how it reads](specs/decisions/098-a-picture-is-judged-by-how-it-reads.md)
+  - [097. The router draws clean lines and the agent makes their room](specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
+  - [095. A good route is one the eye can follow](specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
+  - [065. Unreadable is refused and costly is reported](specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
+- **How it works:**
+  - [Placement](specs/placement.md)
+  - [Routing](specs/routing.md)
 
 Every other decision, such as how a layer without a node is drawn, is in [specs/decisions](specs/decisions/README.md).
