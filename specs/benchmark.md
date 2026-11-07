@@ -86,3 +86,7 @@ Older results use names that are gone. E1 is a first draft, E2 the change script
 ## Decisions
 
 - [053. Success rests on cost, time, model gap and copying](decisions/053-success-rests-on-cost-time-model-gap-and-copying.md)
+
+## The routing cases
+
+`bench/routes/` holds the pictures that test the router, and `cases.yaml` says what each tests, which standard of a good route it tests and, where known, the fewest crossings its facts allow. `pnpm bench routes` lays them out and compares crossings, bends, length, the worst detour and defects with `baseline.yaml`, at no cost. `--write` saves a new baseline, and `--render <dir>` writes each picture so that the owner can look. Counts do not cover every standard, so a change to the router goes to the owner with its pictures. Each case is small enough to judge one thing, so whole pictures stay out and wait for an end-to-end round. A shape the owner finds bad becomes a case, and cases are only added.

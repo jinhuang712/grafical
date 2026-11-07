@@ -1,0 +1,90 @@
+<diagram> {
+  format: 1
+  title: "fan-out"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @b
+    @c
+    @d
+    @e
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r1
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r1
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r1
+}
+
+<node> e {
+  type: @service
+  text: "E"
+  layer: @r1
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> a->c {
+  from: @a
+  to: @c
+  type: @call
+}
+
+<edge> a->d {
+  from: @a
+  to: @d
+  type: @call
+}
+
+<edge> a->e {
+  from: @a
+  to: @e
+  type: @call
+}

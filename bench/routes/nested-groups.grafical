@@ -1,0 +1,150 @@
+<diagram> {
+  format: 1
+  title: "nested-groups"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<layer> r2 {
+}
+
+<layer> r3 {
+}
+
+<group> g1 {
+}
+
+<group> g2 {
+  in: @g1
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+    @r2
+    @r3
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @b
+    @c
+}
+
+<order> r2-order {
+  of: @r2
+  axis: across
+  items:
+    @d
+    @e
+}
+
+<order> r3-order {
+  of: @r3
+  axis: across
+  items:
+    @f
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r1
+  group: @g2
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r1
+  group: @g1
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r2
+  group: @g2
+}
+
+<node> e {
+  type: @service
+  text: "E"
+  layer: @r2
+  group: @g1
+}
+
+<node> f {
+  type: @service
+  text: "F"
+  layer: @r3
+}
+
+<edge> a->c {
+  from: @a
+  to: @c
+  type: @call
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> b->d {
+  from: @b
+  to: @d
+  type: @call
+}
+
+<edge> c->e {
+  from: @c
+  to: @e
+  type: @call
+}
+
+<edge> e->f {
+  from: @e
+  to: @f
+  type: @call
+}
+
+<edge> d->f {
+  from: @d
+  to: @f
+  type: @call
+}
+
+<label> g1-label {
+  on: @g1
+  text: "Outer"
+}
+
+<label> g2-label {
+  on: @g2
+  text: "Inner"
+}

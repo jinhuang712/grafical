@@ -1,0 +1,109 @@
+<diagram> {
+  format: 1
+  title: "crowded-gutter"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+    @b
+    @c
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @x
+    @y
+    @z
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r0
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r0
+}
+
+<node> x {
+  type: @service
+  text: "X"
+  layer: @r1
+}
+
+<node> y {
+  type: @service
+  text: "Y"
+  layer: @r1
+}
+
+<node> z {
+  type: @service
+  text: "Z"
+  layer: @r1
+}
+
+<edge> a->y {
+  from: @a
+  to: @y
+  type: @call
+}
+
+<edge> a->z {
+  from: @a
+  to: @z
+  type: @call
+}
+
+<edge> b->x {
+  from: @b
+  to: @x
+  type: @call
+}
+
+<edge> b->z {
+  from: @b
+  to: @z
+  type: @call
+}
+
+<edge> c->x {
+  from: @c
+  to: @x
+  type: @call
+}
+
+<edge> c->y {
+  from: @c
+  to: @y
+  type: @call
+}

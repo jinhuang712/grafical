@@ -1,0 +1,113 @@
+<diagram> {
+  format: 1
+  title: "long-reach"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<layer> r2 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+    @r2
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @b
+    @c
+    @d
+}
+
+<order> r2-order {
+  of: @r2
+  axis: across
+  items:
+    @e
+    @f
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r1
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r1
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r1
+}
+
+<node> e {
+  type: @service
+  text: "E"
+  layer: @r2
+}
+
+<node> f {
+  type: @service
+  text: "F"
+  layer: @r2
+}
+
+<edge> a->f {
+  from: @a
+  to: @f
+  type: @call
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> b->e {
+  from: @b
+  to: @e
+  type: @call
+}
+
+<edge> c->f {
+  from: @c
+  to: @f
+  type: @call
+}
+
+<edge> d->f {
+  from: @d
+  to: @f
+  type: @call
+}

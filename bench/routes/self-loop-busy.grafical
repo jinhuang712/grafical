@@ -1,0 +1,89 @@
+<diagram> {
+  format: 1
+  title: "self-loop-busy"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+    @b
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @c
+    @d
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r0
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r1
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r1
+}
+
+<edge> a->a {
+  from: @a
+  to: @a
+  type: @call
+}
+
+<edge> a->c {
+  from: @a
+  to: @c
+  type: @call
+}
+
+<edge> a->d {
+  from: @a
+  to: @d
+  type: @call
+}
+
+<edge> b->a {
+  from: @b
+  to: @a
+  type: @call
+}
+
+<edge> c->a {
+  from: @c
+  to: @a
+  type: @call
+}

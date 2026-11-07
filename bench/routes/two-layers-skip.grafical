@@ -1,0 +1,143 @@
+<diagram> {
+  format: 1
+  title: "two-layers-skip"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<layer> r2 {
+}
+
+<layer> r3 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+    @r2
+    @r3
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+    @b
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @c
+    @d
+}
+
+<order> r2-order {
+  of: @r2
+  axis: across
+  items:
+    @e
+    @f
+}
+
+<order> r3-order {
+  of: @r3
+  axis: across
+  items:
+    @g
+    @h
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r0
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r1
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r1
+}
+
+<node> e {
+  type: @service
+  text: "E"
+  layer: @r2
+}
+
+<node> f {
+  type: @service
+  text: "F"
+  layer: @r2
+}
+
+<node> g {
+  type: @service
+  text: "G"
+  layer: @r3
+}
+
+<node> h {
+  type: @service
+  text: "H"
+  layer: @r3
+}
+
+<edge> a->h {
+  from: @a
+  to: @h
+  type: @call
+}
+
+<edge> b->g {
+  from: @b
+  to: @g
+  type: @call
+}
+
+<edge> a->c {
+  from: @a
+  to: @c
+  type: @call
+}
+
+<edge> c->e {
+  from: @c
+  to: @e
+  type: @call
+}
+
+<edge> e->g {
+  from: @e
+  to: @g
+  type: @call
+}
+
+<edge> d->f {
+  from: @d
+  to: @f
+  type: @call
+}

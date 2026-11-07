@@ -110,6 +110,7 @@ The parts of `pnpm bench`:
 - `report` has one clean session draw one picture and write its report beside it.
 - `gallery` builds the owner's blind rating page of a round.
 - `geometry` checks every picture of a round for mechanical defects.
+- `routes` lays out every routing case in `bench/routes/` and compares it with its saved baseline.
 - `speed` times one operation and one command.
 - `lines` measures a round's lines and how often the agent ran `grafical try`.
 - `reflections` prints the report each agent writes after its chain.

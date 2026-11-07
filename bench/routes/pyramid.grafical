@@ -1,0 +1,193 @@
+<diagram> {
+  format: 1
+  title: "pyramid"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<layer> r2 {
+}
+
+<layer> r3 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+    @r2
+    @r3
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @b
+    @c
+}
+
+<order> r2-order {
+  of: @r2
+  axis: across
+  items:
+    @d
+    @e
+    @f
+}
+
+<order> r3-order {
+  of: @r3
+  axis: across
+  items:
+    @g
+    @h
+    @i
+    @j
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r1
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r1
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r2
+}
+
+<node> e {
+  type: @service
+  text: "E"
+  layer: @r2
+}
+
+<node> f {
+  type: @service
+  text: "F"
+  layer: @r2
+}
+
+<node> g {
+  type: @service
+  text: "G"
+  layer: @r3
+}
+
+<node> h {
+  type: @service
+  text: "H"
+  layer: @r3
+}
+
+<node> i {
+  type: @service
+  text: "I"
+  layer: @r3
+}
+
+<node> j {
+  type: @service
+  text: "J"
+  layer: @r3
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> a->c {
+  from: @a
+  to: @c
+  type: @call
+}
+
+<edge> b->d {
+  from: @b
+  to: @d
+  type: @call
+}
+
+<edge> b->e {
+  from: @b
+  to: @e
+  type: @call
+}
+
+<edge> c->e {
+  from: @c
+  to: @e
+  type: @call
+}
+
+<edge> c->f {
+  from: @c
+  to: @f
+  type: @call
+}
+
+<edge> d->g {
+  from: @d
+  to: @g
+  type: @call
+}
+
+<edge> d->h {
+  from: @d
+  to: @h
+  type: @call
+}
+
+<edge> e->h {
+  from: @e
+  to: @h
+  type: @call
+}
+
+<edge> e->i {
+  from: @e
+  to: @i
+  type: @call
+}
+
+<edge> f->i {
+  from: @f
+  to: @i
+  type: @call
+}
+
+<edge> f->j {
+  from: @f
+  to: @j
+  type: @call
+}

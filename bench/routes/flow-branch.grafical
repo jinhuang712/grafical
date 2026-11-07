@@ -1,0 +1,122 @@
+<diagram> {
+  format: 1
+  title: "flow-branch"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<layer> r2 {
+}
+
+<layer> r3 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+    @r2
+    @r3
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @b
+}
+
+<order> r2-order {
+  of: @r2
+  axis: across
+  items:
+    @c
+    @d
+}
+
+<order> r3-order {
+  of: @r3
+  axis: across
+  items:
+    @e
+}
+
+<node> a {
+  type: @terminal
+  text: "Start"
+  layer: @r0
+}
+
+<node> b {
+  type: @decision
+  text: "Check"
+  layer: @r1
+}
+
+<node> c {
+  type: @service
+  text: "Yes"
+  layer: @r2
+}
+
+<node> d {
+  type: @service
+  text: "No"
+  layer: @r2
+}
+
+<node> e {
+  type: @terminal
+  text: "End"
+  layer: @r3
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> b->c {
+  from: @b
+  to: @c
+  type: @call
+}
+
+<edge> b->d {
+  from: @b
+  to: @d
+  type: @call
+}
+
+<edge> c->e {
+  from: @c
+  to: @e
+  type: @call
+}
+
+<edge> d->e {
+  from: @d
+  to: @e
+  type: @call
+}
+
+<edge> d->b {
+  from: @d
+  to: @b
+  type: @call
+}

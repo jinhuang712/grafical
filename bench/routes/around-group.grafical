@@ -1,0 +1,97 @@
+<diagram> {
+  format: 1
+  title: "around-group"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<layer> r2 {
+}
+
+<group> g {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+    @r2
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @b
+    @c
+}
+
+<order> r2-order {
+  of: @r2
+  axis: across
+  items:
+    @d
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r1
+  group: @g
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r1
+  group: @g
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r2
+}
+
+<edge> a->d {
+  from: @a
+  to: @d
+  type: @call
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> b->c {
+  from: @b
+  to: @c
+  type: @call
+}
+
+<label> g-label {
+  on: @g
+  text: "System"
+}

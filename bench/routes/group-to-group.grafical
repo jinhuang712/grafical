@@ -1,0 +1,103 @@
+<diagram> {
+  format: 1
+  title: "group-to-group"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<group> g1 {
+}
+
+<group> g2 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+    @b
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @c
+    @d
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+  group: @g1
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r0
+  group: @g1
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r1
+  group: @g2
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r1
+  group: @g2
+}
+
+<edge> a->c {
+  from: @a
+  to: @c
+  type: @call
+}
+
+<edge> a->d {
+  from: @a
+  to: @d
+  type: @call
+}
+
+<edge> b->c {
+  from: @b
+  to: @c
+  type: @call
+}
+
+<edge> b->d {
+  from: @b
+  to: @d
+  type: @call
+}
+
+<label> g1-label {
+  on: @g1
+  text: "Front"
+}
+
+<label> g2-label {
+  on: @g2
+  text: "Back"
+}

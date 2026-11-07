@@ -1,0 +1,71 @@
+<diagram> {
+  format: 1
+  title: "swapped-pair"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+    @b
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @c
+    @d
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r0
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r1
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r1
+}
+
+<edge> a->d {
+  from: @a
+  to: @d
+  type: @call
+}
+
+<edge> b->c {
+  from: @b
+  to: @c
+  type: @call
+}

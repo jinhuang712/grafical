@@ -1,0 +1,32 @@
+# The routing cases: `pnpm bench routes` lays each out and compares it with baseline.yaml.
+# standard: the standard it tests, from specs/decisions, "A good route is one the eye can follow".
+# floor: the fewest crossings the facts allow, where that is known.
+- {name: same-layer-pair, standard: 2, tests: "two lines along a layer crowd one gutter past open room above"}
+- {name: swapped-pair, standard: 4, floor: 1, tests: "one crossing that cannot go, and how clean it is"}
+- {name: crowded-gutter, standard: 5, floor: 7, tests: "six lines in one gutter that the eye must still follow"}
+- {name: long-reach, standard: 2, tests: "a line past a layer to a far node"}
+- {name: return-line, standard: 7, tests: "a line back up stands aside from the main flow"}
+- {name: around-group, standard: 2, tests: "a line past a group it does not end in"}
+- {name: fan-out, standard: 5, tests: "one node to four"}
+- {name: fan-in, standard: 5, tests: "four nodes to one"}
+- {name: fan-out-labelled, standard: 1, tests: "a fan-out whose lines each carry a label"}
+- {name: full-layer-skip, standard: 1, tests: "a line through a layer with no empty column"}
+- {name: two-layers-skip, standard: 1, tests: "lines that skip two layers side by side"}
+- {name: long-return, standard: 7, tests: "two return lines of different reach"}
+- {name: pair-both-ways, standard: 5, tests: "lines both ways between pairs"}
+- {name: two-parallel, standard: 5, tests: "two lines between one pair"}
+- {name: self-loop-busy, standard: 1, tests: "a self-loop on a node with other lines"}
+- {name: neighbour-row, standard: 2, tests: "lines along one layer of neighbours and past them"}
+- {name: labels-in-gutter, standard: 5, tests: "labelled lines side by side in one gutter"}
+- {name: group-to-group, standard: 5, tests: "every member of one group to every member of another"}
+- {name: edge-to-group, standard: 6, tests: "lines that end at a group"}
+- {name: through-group, standard: 2, tests: "a line that should pass a group and not cross it"}
+- {name: nested-groups, standard: 1, tests: "lines in and out of nested groups"}
+- {name: flow-branch, standard: 7, tests: "a decision with a loop back"}
+- {name: star, standard: 5, tests: "a hub with lines on both sides"}
+- {name: ladder, standard: 1, tests: "rungs and diagonals over three layers"}
+- {name: snake, standard: 1, tests: "a flow that turns back at each row's end"}
+- {name: dropdown, standard: 5, tests: "children hang off one spine into their left sides, as an ASCII tree does"}
+- {name: waterfall, standard: 3, tests: "a staircase down to the right"}
+- {name: tree, standard: 5, tests: "a binary tree over three layers"}
+- {name: pyramid, standard: 5, tests: "each layer one wider, with shared children"}

@@ -1,0 +1,79 @@
+<diagram> {
+  format: 1
+  title: "neighbour-row"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+    @b
+    @c
+    @d
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r0
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r0
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r0
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> b->c {
+  from: @b
+  to: @c
+  type: @call
+}
+
+<edge> c->d {
+  from: @c
+  to: @d
+  type: @call
+}
+
+<edge> a->d {
+  from: @a
+  to: @d
+  type: @call
+}
+
+<edge> b->d {
+  from: @b
+  to: @d
+  type: @call
+}

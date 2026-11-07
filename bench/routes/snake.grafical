@@ -1,0 +1,152 @@
+<diagram> {
+  format: 1
+  title: "snake"
+  density: normal
+}
+
+<layer> r0 {
+}
+
+<layer> r1 {
+}
+
+<layer> r2 {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @r0
+    @r1
+    @r2
+}
+
+<order> r0-order {
+  of: @r0
+  axis: across
+  items:
+    @a
+    @b
+    @c
+}
+
+<order> r1-order {
+  of: @r1
+  axis: across
+  items:
+    @f
+    @e
+    @d
+}
+
+<order> r2-order {
+  of: @r2
+  axis: across
+  items:
+    @g
+    @h
+    @i
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @r0
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @r0
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @r0
+}
+
+<node> f {
+  type: @service
+  text: "F"
+  layer: @r1
+}
+
+<node> e {
+  type: @service
+  text: "E"
+  layer: @r1
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @r1
+}
+
+<node> g {
+  type: @service
+  text: "G"
+  layer: @r2
+}
+
+<node> h {
+  type: @service
+  text: "H"
+  layer: @r2
+}
+
+<node> i {
+  type: @service
+  text: "I"
+  layer: @r2
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> b->c {
+  from: @b
+  to: @c
+  type: @call
+}
+
+<edge> c->d {
+  from: @c
+  to: @d
+  type: @call
+}
+
+<edge> d->e {
+  from: @d
+  to: @e
+  type: @call
+}
+
+<edge> e->f {
+  from: @e
+  to: @f
+  type: @call
+}
+
+<edge> f->g {
+  from: @f
+  to: @g
+  type: @call
+}
+
+<edge> g->h {
+  from: @g
+  to: @h
+  type: @call
+}
+
+<edge> h->i {
+  from: @h
+  to: @i
+  type: @call
+}

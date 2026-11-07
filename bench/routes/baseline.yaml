@@ -1,0 +1,174 @@
+same-layer-pair:
+  crossings: 3
+  bends: 4
+  length: 680
+  detour: 1.17
+  defects: 0
+swapped-pair:
+  crossings: 1
+  bends: 4
+  length: 280
+  detour: 1
+  defects: 0
+crowded-gutter:
+  crossings: 7
+  bends: 12
+  length: 1448
+  detour: 1
+  defects: 0
+long-reach:
+  crossings: 0
+  bends: 3
+  length: 512
+  detour: 1
+  defects: 0
+return-line:
+  crossings: 0
+  bends: 2
+  length: 320
+  detour: 1.25
+  defects: 0
+around-group:
+  crossings: 0
+  bends: 2
+  length: 392
+  detour: 1.31
+  defects: 0
+fan-out:
+  crossings: 0
+  bends: 6
+  length: 832
+  detour: 1
+  defects: 0
+fan-in:
+  crossings: 0
+  bends: 3
+  length: 712
+  detour: 1
+  defects: 0
+fan-out-labelled:
+  crossings: 0
+  bends: 2
+  length: 376
+  detour: 1
+  defects: 0
+full-layer-skip:
+  crossings: 0
+  bends: 7
+  length: 1060
+  detour: 1.43
+  defects: 0
+two-layers-skip:
+  crossings: 1
+  bends: 8
+  length: 752
+  detour: 1
+  defects: 0
+long-return:
+  crossings: 0
+  bends: 4
+  length: 832
+  detour: 1.25
+  defects: 0
+pair-both-ways:
+  crossings: 0
+  bends: 2
+  length: 280
+  detour: 1
+  defects: 0
+two-parallel:
+  crossings: 0
+  bends: 0
+  length: 80
+  detour: 1
+  defects: 0
+self-loop-busy:
+  crossings: 0
+  bends: 4
+  length: 392
+  detour: 4.6
+  defects: 0
+neighbour-row:
+  crossings: 0
+  bends: 4
+  length: 848
+  detour: 1.11
+  defects: 0
+labels-in-gutter:
+  crossings: 0
+  bends: 3
+  length: 360
+  detour: 1
+  defects: 0
+group-to-group:
+  crossings: 1
+  bends: 4
+  length: 588
+  detour: 1
+  defects: 0
+edge-to-group:
+  crossings: 0
+  bends: 0
+  length: 112
+  detour: 1
+  defects: 0
+through-group:
+  crossings: 1
+  bends: 9
+  length: 716
+  detour: 1.24
+  defects: 0
+nested-groups:
+  crossings: 0
+  bends: 2
+  length: 720
+  detour: 1
+  defects: 0
+flow-branch:
+  crossings: 0
+  bends: 4
+  length: 556
+  detour: 1
+  defects: 0
+star:
+  crossings: 0
+  bends: 6
+  length: 832
+  detour: 1
+  defects: 0
+ladder:
+  crossings: 2
+  bends: 8
+  length: 612
+  detour: 1
+  defects: 0
+snake:
+  crossings: 0
+  bends: 0
+  length: 272
+  detour: 1
+  defects: 0
+dropdown:
+  crossings: 0
+  bends: 6
+  length: 808
+  detour: 1
+  defects: 0
+waterfall:
+  crossings: 0
+  bends: 4
+  length: 672
+  detour: 1
+  defects: 0
+tree:
+  crossings: 0
+  bends: 3
+  length: 792
+  detour: 1
+  defects: 0
+pyramid:
+  crossings: 0
+  bends: 9
+  length: 1584
+  detour: 1
+  defects: 0
