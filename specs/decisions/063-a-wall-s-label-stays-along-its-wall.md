@@ -2,8 +2,6 @@
 
 Decided: 2026-10-17
 
-Split on 2026-11-06 from specs/decisions, "The dirty work has edges".
-
 ## The problem
 
 A wall's label with no room moved left of everything in a second layout or past the wall's ends, away from its wall.

@@ -2,8 +2,6 @@
 
 Decided: 2026-10-16
 
-Replaced in part by specs/decisions, "Every write prints every warning": each counted place is also a warning.
-
 ## The problem
 
 Decided on 2026-10-16 from a request that agents see how a picture is composed, not only how many lines cross. `crossings` and `bends` miss pictures that are wrong in ways an agent can fix by choosing rows differently: a line that runs over a system it has nothing to do with, two lines drawn almost on top of each other, a label with no air. The counts go on the `counts` record that `apply`, `try`, `check` and `show --drawn` print.
@@ -32,4 +30,4 @@ Decided on 2026-10-16 from a request that agents see how a picture is composed, 
 
 ## Consequences
 
-Changed on 2026-10-18 by "Every write prints every warning": each place `passing`, `across`, `tight` and `crowded` count is also a warning block, on every write.
+Each place `passing`, `across`, `tight` and `crowded` count is also a warning, on every write.

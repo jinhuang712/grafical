@@ -2,23 +2,17 @@
 
 Decided: 2026-10-12
 
-- Replaced in part by specs/decisions, "Edge weights": a line takes its own width.
-- Replaced in part by specs/decisions, "An agent may state the side of a line": an agent may state a side.
-- Replaced in part by specs/decisions, "Lines may be drawn square, round or smooth": the shape leaves the stylesheet.
-- Replaced in part by specs/decisions, "An edge may take a color of its own": a line takes a color.
-
 ## The problem
 
 Decided by the owner on 2026-10-12. In the stage 1 round every comment on grafical's pictures named the lines, and the owner's view was that the agent lacked the means to make a picture clear, not only that the router drew lines badly.
 
 ## The choice
 
-Lines may meet a box on any side, and the router, not the agent, chooses the side and the slot. Each step below was built on its own, measured, and kept because it helped.
+Lines may meet a box on any side, and the router chooses the slot and every side the agent left unstated. Each step below was built on its own, measured, and kept because it helped.
 
 - **Kinds**, 2026-10-12: two kinds were added for a line with no direction and for a call that happens only sometimes.
   - The agent can say what a line means where the old kinds forced a wrong one.
 - **Per edge**, 2026-10-12: arrowheads at both ends and emphasis for the main path.
-  - Emphasis is a weight from a short list and never a colour, so no operation colours one element.
   - A main path stands out only against thin lines.
 - **Curves**, 2026-10-12: a stylesheet may draw corners curved while the routes stay the same orthogonal routes and a curve never enters a box.
 - **Side entry**, 2026-10-12: a line between neighbouring rows may turn once into its target's side instead of bending twice through the gutter.
@@ -70,11 +64,8 @@ Lines may meet a box on any side, and the router, not the agent, chooses the sid
 
 ## Not chosen
 
-- The agent choosing the side a line leaves by.
-  - Spreading lines tidily is the kind of choice a weak model gets wrong.
-- Free styles per edge, such as a colour or a dash pattern.
+- A dash pattern per edge.
   - The reader would have to decode each one.
-  - Since 2026-10-13 an edge's width is the exception ("Edge weights").
 - Curves drawn freely, outside the routed channels.
   - They could cross boxes and text, and the router could no longer keep lines apart.
 

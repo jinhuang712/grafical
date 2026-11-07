@@ -1,8 +1,6 @@
-# 059. Lines may be drawn square, round or smooth
+# 059. Lines may be drawn square or round
 
 Decided: 2026-11-06
-
-Changed on 2026-11-06: a slope over the same route reached 2 of 30 lines on the dispatch fixture, so `smooth` went. A third shape, a line that is a curve end to end, waits for its own design.
 
 ## The problem
 
@@ -10,7 +8,7 @@ The owner holds that a very good picture needs curves. Curves were a value in th
 
 ## The choice
 
-A diagram's lines are drawn square, round or smooth, chosen by a command. Round is the old curved corner. Smooth keeps the route and draws the sideways run as a slope. The shape moves from the stylesheet into the diagram file, since no agent found it there.
+A diagram's lines are drawn square or round, chosen by a command. Round is the old curved corner. The shape moves from the stylesheet into the diagram file, since no agent found it there.
 
 ## Not chosen
 
@@ -24,4 +22,4 @@ A diagram's lines are drawn square, round or smooth, chosen by a command. Round 
 
 ## Consequences
 
-A smooth line cuts corners, so the checks must follow the curve and not the route. A small jog of a route can draw as a kink. Whether smooth lines keep clear of every box and text is not measured.
+A slope over the same route reached 2 of 30 lines on the dispatch fixture, so a smooth shape went. A line that is a curve end to end waits for its own design.

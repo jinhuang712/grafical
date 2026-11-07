@@ -2,10 +2,6 @@
 
 Decided: 2026-10-18
 
-Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": `likely` is a value.
-
-Replaced in part by specs/decisions, "A command's verb is a flag": `likely` gives `node --add`.
-
 ## The problem
 
 Decided by the owner on 2026-10-18, after one Haiku run (a subagent with grafical on its path, not a benchmark round) drew a refund flowchart. 32 of its 37 grafical calls read help. 11 printed the entry page in place of the page asked for, and 12 printed the page asked for but exited 2:
@@ -26,11 +22,9 @@ So:
     - Two names in one word, such as `"node add"` or `node.add`.
     - `help` before or inside a group, such as `grafical node help add`.
     - A misspelling near one name such as `nodee`, with at most a third of its letters wrong or one.
-  - `likely` is the word meant ("Refusals say what happened and which commands can change it"): `--help` for `help`, the command's name for the rest.
+  - `likely` is the word meant: `--help` for `help`, the command's name for the rest, such as `node --add`.
   - A word near no command has no `likely`, with `--help` or without.
   - The record replaces the page commander would print.
-
-Since "Refusals say what happened and which commands can change it", the refusal is a block and `likely` is a value: `found: help` and `likely: --help`.
 
 ## Not chosen
 
@@ -41,4 +35,4 @@ Since "Refusals say what happened and which commands can change it", the refusal
 
 ## Consequences
 
-Changed the same day by "Refusals say what happened and which commands can change it": `likely` is the word meant, as a value, not a command line. `grafical help apply` gives `found: help` and `likely: --help`, and `grafical node.add --help` gives `likely: node add`.
+The refusal is a block, and `likely` is a value, not a command line: `grafical help apply` gives `found: help` and `likely: --help`.

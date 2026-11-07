@@ -153,7 +153,7 @@
 - created: 2026-11-06
 - status: HALT
 - next: the owner designs it
-- related: [059. Lines may be drawn square, round or smooth](../specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
+- related: [059. Lines may be drawn square or round](../specs/decisions/059-lines-may-be-drawn-square-or-round.md)
 
 ### [P2][DISCUSSION] Small points of the .grafical file
 

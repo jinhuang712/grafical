@@ -2,8 +2,6 @@
 
 Decided: 2026-10-17
 
-Split on 2026-11-06 from specs/decisions, "The dirty work has edges".
-
 ## The problem
 
 A card with no room became a footnote the agent never asked for: 61% of the notes over 2,000 fuzz seeds.

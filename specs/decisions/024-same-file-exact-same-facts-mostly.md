@@ -19,7 +19,6 @@ Decided on 2026-10-13 by the owner, asked whether two agents that state the same
   - Every edit could then move boxes the agent did not touch, against the stability "Layout computed again on every change" promises.
 - Canonical placement within one batch, with later edits kept stable.
   - It was the recommendation, but "mostly" asks for no new rule.
-  - A batch already places its boxes together, knowing all of their lines ("The engine picks a new box's slot").
 
 ## Consequences
 

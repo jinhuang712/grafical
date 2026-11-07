@@ -2,8 +2,6 @@
 
 Decided: 2026-10-16
 
-Replaced in part by specs/decisions, "A bar may cross a group": a bar no longer has to stay out of a group.
-
 ## The problem
 
 Decided by the owner on 2026-10-16. Redrawing the dispatch diagram, the owner said "gateway becomes a horizontal long layer". A line could already end at a row, drawn as a band across the content ("Lines that end at containers"), but a row with no box was refused as `empty-container`. So a gateway or a message bus had to keep a box inside its band, and the picture said "gateway" twice: once as the band and once as the box.
@@ -32,8 +30,6 @@ Now a row with no box may be a line end when the line's other end holds a box, a
   - A box is a service box's paint with a dark label: the bar is the gateway or the bus itself, not a container.
   - On 2026-10-16 the owner asked for both to be chosen through the command line, since looks are the agent's.
 - **What cannot hold is refused.** A line between two rows with no box is refused as `bar-to-bar`: neither end says where the line goes across.
-  - A row with no box between the first and last rows of a group is refused as `bar-in-group`.
-  - The group's box would stretch over it and the bar would cut it in two ("Rows unseen, groups as systems").
 - **Tested.** The fuzz test puts a bar in three seeds of ten; over 500 seeds, 89 diagrams have a bar.
   - None of the 306 saved drafts and none of the 15 fixtures changed, since a line to a row with no box was refused until now.
   - While it was built the fuzz test found two ways a line from a bar crossed a group's label, both fixed.

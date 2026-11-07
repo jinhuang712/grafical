@@ -2,10 +2,6 @@
 
 Decided: 2026-10-11
 
-Replaced in part by specs/decisions, "Success rests on cost, time, model gap and copying": no judge scores the target picture.
-
-Replaced in part by specs/decisions, "The target picture's rules are not reported": `check --all` does not report them.
-
 ## The problem
 
 On 2026-10-11 the owner judged the engine's first real output "cluttered, messy, lines are all over the place". An Opus designer then hand-drew three uncluttered versions of the public brief, using only what an engine could compute. Two blind Opus judges scored them against the engine's and a raw model's drafts, out of 60:
@@ -22,7 +18,7 @@ On 2026-10-11 the owner judged the engine's first real output "cluttered, messy,
 
 Both judges picked the grouped version. The compact one hid the messaging and retry mechanics that engineers want. The target is `bench/targets/catalog-sync-grouped.png`, with its SVG beside it. The engine must produce pictures like it from facts alone.
 
-The rules that make it uncluttered. The checker measures each one. A broken rule is reported by `grafical check --all`, and it does not block a write; since 2026-10-16 every write reports a line that breaks rule 2 ("A bent line is reported and never refused"):
+The rules that make it uncluttered stay as a record of the target. No code measures them, and only the limit of two bends is used ("The target picture's rules are not reported"):
 1. **Size:** the canvas is at most 1024 px wide, so that text shows at full size in a document.
 2. **Grid:** every node centre sits on the column grid ("Layout computed again on every change").
    - At least half the edges are one straight segment, and no edge has more than 2 bends.
@@ -53,4 +49,4 @@ The rules that make it uncluttered. The checker measures each one. A broken rule
 
 ## Consequences
 
-Every round judges the target picture as an anchor. A broken rule is reported by `check --all` and never refuses a write, except a line bent for no reason, which every write reports since 2026-10-16.
+The target stays as a record of what the look was built toward.

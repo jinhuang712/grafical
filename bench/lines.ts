@@ -1,5 +1,5 @@
 // A round's lines, measured, not judged: for each chain's final diagram its route cost
-// (specs/decisions, "The engine picks a new box's slot"), and how often the agent measured a change with `grafical try` (specs/decisions, "Records over prose").
+// (specs/decisions, "Who chose is punished"), and how often the agent measured a change with `grafical try` (specs/decisions, "Records over prose").
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -12,7 +12,7 @@ export interface LineMeasure {
   chain: string;
   task: string;
   nodes: number;
-  /** Crossings plus lines with more than two bends, then crossings and bends (specs/decisions, "The engine picks a new box's slot"). */
+  /** Crossings plus lines with more than two bends, then crossings and bends (specs/decisions, "Who chose is punished"). */
   problems: number;
   crossings: number;
   bends: number;

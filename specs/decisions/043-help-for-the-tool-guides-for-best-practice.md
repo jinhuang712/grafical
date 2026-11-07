@@ -2,10 +2,6 @@
 
 Decided: 2026-10-17
 
-Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": the help no longer says what a refusal means.
-
-Replaced in part by specs/decisions, "An agent checks its own picture against a list": the help tells an agent to check against one guide.
-
 ## The problem
 
 Decided by the owner on 2026-10-17, the same day as "One entry page, help where it is used". The help says how to use grafical. How a kind of diagram is usually drawn is best practice, kept apart for an agent that wants it. The owner's reasons: an agent that wants to draw straight away may, and a refusal corrects it where it goes wrong; guidance pressed on every agent before it draws makes every diagram alike, where a drawing should keep its freedom; and if grafical is easy to use, an agent draws well without being taught.
@@ -16,7 +12,7 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
   - How to work, and every way to draw by the story it tells.
   - Each command's options and its line in a batch.
   - The facts of what it draws, such as that kinds initial and final draw no label.
-  - Its limits, and what a refusal of it means.
+  - Its limits.
   - It does not say how a kind of diagram is drawn.
 - **The guides** (`grafical guide` and `grafical guide <name>`):
   - One per common kind of diagram: architecture and C4 and infrastructure and dependency and data flow and event flow and flowchart and swimlane and state machine.
@@ -31,20 +27,15 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
     - What depends on top in a dependency graph.
   - `grafical guide cloud` and a few other names find the guide for their kind.
   - The guides live in `src/cli/guides.ts`.
-- **Nothing says to read a guide.** The entry page names `grafical guide` once, as there if wanted.
-  - No command page names it, and a test holds both.
+- **One step points to a guide.** The entry page names `grafical guide` once, as there if wanted, and its last step points to `grafical guide composition` ("An agent checks its own picture against a list").
+  - No command page names it, and a test holds that.
 
 ## Not chosen
 
 - The guides in the help, as the entry page and the command pages held them in the morning.
   - Every agent reads them before it draws and draws alike.
-- No mention of the guides at all: an agent could not know they exist.
 - Rules every diagram of a kind must follow, as a type setting would make them: grafical refuses only what would draw wrong.
 
 ## Consequences
-
-Changed on 2026-10-18 by "Refusals say what happened and which commands can change it": the help no longer says what a refusal means; the refusal's block does.
-
-It reverses, in part, "The help as the reference", which rejected keeping `grafical guide` beside the help because an agent never told about it never reads it. Here that is the point.
 
 Risk, to measure in the next paid round: the 2026-10-12 round measured the help without type guides (`bench/results/p1d-guides.md`). Haiku drew a flowchart's Start and End as state-machine dots, whose labels are not drawn, left C4 and data-flow lines unlabelled, and was refused 16% of its calls against 3%. The traps that are the tool's own stay in the help (`node add --help` says initial and final draw no label, and to use terminal for Start and End); the conventions are now the agent's to take or leave. The harness counts guide reads and refused commands since 2026-11-05.

@@ -2,10 +2,6 @@
 
 Decided: 2026-10-16
 
-Split on 2026-11-06 from specs/decisions, "The dirty work has edges".
-
-Replaced in part by specs/decisions, "Every write prints every warning": a bent line is a warning block.
-
 ## The problem
 
 A line with more than two bends only costs a reader: the picture stays correct. Until then only `check --all` said so, and the agent never heard.
@@ -18,14 +14,11 @@ A line with more than two bends only costs a reader: the picture stays correct. 
   - Every one of the 242 joins two boxes that are not in neighbouring rows.
 - **Lines with more than two bends** are reported on every write and by `check` and `render`.
   - Single commands report them too.
-  - Each gets a `bent line= bends= skip=` record, and the counts get `bent=`.
+  - Each gets a `bent-edge` warning, and the counts get `bent=`.
   - Not refused.
   - Rule 2 of "A target picture with measured rules" said it already, but only `check --all` reported it.
   - The agent never heard.
   - Built on 2026-10-16.
-  - To make room in the help read before a draft, `apply --help` lost two passages:
-    - The line "Where lines go is grafical's job, never yours", which the rows an agent chooses now contradict.
-    - A clause about the engine placing boxes, gone since "The agent states every order".
 
 ## Not chosen
 
@@ -36,4 +29,4 @@ A line with more than two bends only costs a reader: the picture stays correct. 
 
 ## Consequences
 
-Changed on 2026-10-18 by "Refusals say what happened and which commands can change it" and "Every write prints every warning": a line with more than two bends is a `warning: bent-edge` block, no longer a `bent line=` record.
+A line with more than two bends is a warning, and the write goes through.

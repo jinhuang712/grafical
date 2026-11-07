@@ -2,8 +2,6 @@
 
 Decided: 2026-10-16
 
-Replaced in part by specs/decisions, "A region's label sits at a fraction of a side": the named places go.
-
 ## The problem
 
 Decided by the owner on 2026-10-16. In a booking C4 diagram the label "Booking app software system" sat in the head between the lines into the web app and the mobile app, where placement had made room for it ("Rows unseen, groups as systems"), and the owner found it in a weird spot. Asked where a group's label should go, the owner chose to let the agent say it through the command line: eight places inside the box, its four corners and the middle of each side, and four outside it, above, below, left and right.
@@ -14,20 +12,12 @@ Decided by the owner on 2026-10-16. In a booking C4 diagram the label "Booking a
   - Until 2026-10-17 it seated the label where the lines into the first row kept their boxes' centres, and moved two of those boxes apart when no seat did; the owner first chose to keep that.
   - Under "A group's label moves no box and no line" nothing moves for it.
   - A label with no clear seat refuses the write as `title-blocked`, as a stated one does.
-- **Stated and exactly there, and nothing moves for it.** `group title <group> <place>` (alias `group label`) sets the group's `titleAt` and the label sits exactly at that place.
+- **Stated and exactly there, and nothing moves for it.** `group --label-at` states the place and the label sits exactly there.
   - The engine adds only the label's own room, and moves no box and no line for it.
   - A line that comes near it refuses the write as `title-blocked`, an agent defect ("Defects owned by who can fix them").
-  - The owner chose this on 2026-10-16 as one rule for all twelve places, after seeing them drawn as first built.
+  - The owner chose this on 2026-10-16 after seeing the places drawn.
     - The engine had moved boxes apart and sides out so that no line ran across a stated label.
     - That left empty space in the box: about 168 px for the centred label of the booking diagram and 88 px for a corner.
-- **Twelve places:**
-  - Three in the head.
-  - Three in a foot.
-  - Two centred just outside the top or bottom.
-  - Two in a strip beside the rows.
-  - Two just outside the sides.
-  - The owner chose `outside-top` and `outside-bottom` centred on 2026-10-16, as `top` is inside.
-  - A label outside one side reaches out on that side only, so the picture centres on what it holds as with row lanes.
 - **Built** on 2026-10-16 in four steps from the head and the foot to outside above and below and then beside the rows.
   - The same day the widening gave way to the refusal.
   - The fuzz test found one fault while this was built, since fixed: a group around one with a label outside let a box in.

@@ -2,9 +2,6 @@
 
 Decided: 2026-10-12
 
-- Replaced in part by specs/decisions, "The help as the reference": the guides' lessons moved into the help.
-- Replaced in part by specs/decisions, "An optional type sets the diagram's space": a type sets the space.
-
 ## The problem
 
 Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and infrastructure, event flow, flowcharts, state machines, swimlane processes, dependency graphs, data flow and deployment.
@@ -27,9 +24,6 @@ Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and
   - The fuzz test nests groups in about a quarter of its diagrams.
   - It found that a line into a row under stacked heads crossed a label.
   - Labels were then seated outer first, and an inner label left the lines room past the outer ones.
-  - Since 2026-10-17 a label is seated after the lines are drawn ("A group's label moves no box and no line").
-- **Teaching.** At first `grafical guide <type>` taught each type.
-  - Reversed the same day by "The help as the reference": the guides' lessons moved into the help.
 
 ## Not chosen
 
@@ -37,9 +31,6 @@ For stage 1:
 
 - Sequence diagrams or entity-relationship and class diagrams or mind maps or timelines.
   - Each needs a layout family of its own, and the core diagram has not yet met the MVP bar.
-- A setting for the diagram's type.
-  - The kinds already say what is drawn.
-  - Reversed in part on 2026-10-19 by "An optional type sets the diagram's space": a type sets the space, which no kind says.
 
 ## Consequences
 

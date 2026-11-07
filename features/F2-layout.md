@@ -283,7 +283,7 @@ All the edges of a diagram share one shape, and the routes stay the same.
 - `square` has sharp corners, as a new diagram does.
 - `round` rounds the corners and keeps the straight runs.
 
-- **Why:** [059. Lines may be drawn square, round or smooth](../specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
+- **Why:** [059. Lines may be drawn square or round](../specs/decisions/059-lines-may-be-drawn-square-or-round.md)
 
 ### F2.7.3: Labels on edges
 

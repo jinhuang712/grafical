@@ -2,15 +2,13 @@
 
 Decided: 2026-11-08
 
-Extended on 2026-11-08 by specs/decisions, "An agent checks its own picture against a list": the owner's eye judges grafical, and an agent judges its own picture.
-
 ## The problem
 
 The goals rated a whole picture only by the owner's score, and counts stood in for it during the work. On 2026-11-07 a `pyramid` render had no crossings and the owner called it ugly, while `ladder` came clean by moving nodes and with no change to the router. Nothing said what a good picture is, so a rule for lines could not explain either result.
 
 ## The choice
 
-A picture is judged by how a reader reads it, on twelve points, and the owner's eye reads them. The points cover the truth of what it says, how fast it reads, how it is placed, how evenly it is drawn and what it leaves out. Counts can show a fault and never show a picture good.
+A picture is judged by how a reader reads it, on twelve points. The owner's eye reads them to judge grafical, and an agent reads them for its own picture ("An agent checks its own picture against a list"). The points cover the truth of what it says, how fast it reads, how it is placed, how evenly it is drawn and what it leaves out. Counts can show a fault and never show a picture good.
 
 The points bind the engine and the agent alike, since placement is the agent's and routing is the engine's.
 

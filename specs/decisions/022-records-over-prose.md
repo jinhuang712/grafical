@@ -2,9 +2,6 @@
 
 Decided: 2026-10-13
 
-- Replaced in part by specs/decisions, "Refusals say what happened and which commands can change it": a refusal is a block.
-- Replaced in part by specs/decisions, "Every write prints every warning": warnings came back.
-
 ## The problem
 
 Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in prose: warnings that a diagram has too many nodes "for one story", hints that pick moves by grafical's own idea of better, refusals that explain in sentences. Understanding a diagram is the coding agent's job; grafical gives it the facts to do it.
@@ -19,11 +16,9 @@ Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in pr
   - It replaces hints, which chose the moves themselves.
   - On 2026-10-12 the engine searched for rearrangements and printed the best as commands.
   - For a day `diagram improve` ran them.
-- **Warnings become counts** with no threshold and no advice:
+- **Counts** carry no threshold and no advice:
   - The number of nodes and the picture's width.
   - The nodes in a row and the lines passing a row.
-- **Refusals stay terse:** a code that says what is wrong and a fixed set of facts about what is there, with no sentences.
-  - Since 2026-10-13 they are records too.
 - **The help is documentation, not output about a diagram:** its principles and examples stay.
 - **The form is records**, added on 2026-10-13 after the owner turned down phrases such as "most lines at a box 10 (sync)".
   - Each record is one line: a word that names it, then `key=value` fields in the logfmt style.
@@ -55,4 +50,4 @@ Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in pr
 
 ## Consequences
 
-Changed on 2026-10-18 by "Refusals say what happened and which commands can change it": a refusal, a defect and a warning are blocks with a fixed sentence per code, the source and the commands that can change them; the rest of the output stays records.
+Counts, `show --drawn` and `try` are records. A refusal, a defect and a warning are blocks with one fixed sentence per code.

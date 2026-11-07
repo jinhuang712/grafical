@@ -416,7 +416,7 @@ The form serves strictness, plain objects and a file that reads as what it holds
 
 - [085. A diagram is objects with attributes and relations](decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)
 - [086. The file is blocks of attributes, and a reference carries @](decisions/086-the-file-is-blocks-of-attributes-and-a-reference-carries.md)
-- [087. A type holds attributes, and a group may follow a group](decisions/087-a-type-holds-attributes-and-a-group-may-follow-a-group.md)
+- [087. A type holds attributes](decisions/087-a-type-holds-attributes.md)
 - [088. A type may choose its shape](decisions/088-a-type-may-choose-its-shape.md)
 - [089. A style may be as rich as it likes](decisions/089-a-style-may-be-as-rich-as-it-likes.md)
 - [092. `like` follows an object's look and nothing else](decisions/092-like-follows-an-object-s-look-and-nothing-else.md)

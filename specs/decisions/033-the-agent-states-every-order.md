@@ -4,7 +4,7 @@ Decided: 2026-10-15
 
 ## The problem
 
-Decided by the owner on 2026-10-15: the engine does not choose for the agent. Until then the engine made one choice of structure: the order of a row, for a box added or moved into it without a position ("The engine picks a new box's slot"), and for the rows `layer tidy` and `diagram tidy` reordered. Both are gone.
+Decided by the owner on 2026-10-15: the engine does not choose for the agent. Until then the engine made one choice of structure: the order of a row, for a box added or moved into it without a position, and for the rows `layer tidy` and `diagram tidy` reordered. Both are gone.
 
 ## The choice
 

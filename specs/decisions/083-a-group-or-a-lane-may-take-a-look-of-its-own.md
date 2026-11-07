@@ -2,15 +2,13 @@
 
 Decided: 2026-11-06
 
-Replaced in part by specs/decisions, "A style may be as rich as it likes": a group or a lane takes its colors from the styles it marks.
-
 ## The problem
 
 Every group drew alike and every lane drew alike, so color could not tell one system from a third party's.
 
 ## The choice
 
-A group or a lane takes a fill and a border set on it, or the name of a look in the stylesheet, as a node does ("A box may take a look of its own").
+A group or a lane takes its fill and border from the styles it marks, as a node does ("A box may take a look of its own").
 
 ## Not chosen
 

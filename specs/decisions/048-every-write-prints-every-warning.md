@@ -2,8 +2,6 @@
 
 Decided: 2026-10-18
 
-Replaced in part by specs/decisions, "A line from every box of a group is a warning": an eighth warning joined.
-
 ## The problem
 
 Decided by the owner on 2026-10-18, the same day as "Refusals say what happened and which commands can change it", which had kept one warning, a line with more than two bends. The composition counts ("Composition counts") told an agent how many lines pass rows or cross groups, but not which, unless it read `show --drawn`.
@@ -14,7 +12,7 @@ Decided by the owner on 2026-10-18, the same day as "Refusals say what happened 
   - The counts line stays as it was, and `next` names the commands that rearrange the picture.
   - Decided by the owner later the same day: a box reached through its group or row or lane is connected in the picture, so it is no `lonely-node`.
   - Of the 16 boxes with no line of their own in the 329 saved drafts, 8 were reached that way and are no longer warned of.
-  - Changed on 2026-10-19 by "A line from every box of a group is a warning": `edge-per-member` is an eighth and prints after `lonely-node`.
+  - `edge-per-member` prints after `lonely-node` ("A line from every box of a group is a warning").
 - **All of them, every time.** Every write prints every warning the diagram has and not only those the command caused.
   - Every change lays the whole diagram out again ("Layout computed again on every change"), so the set can differ after any change.
 - **No source.** Decided by the owner later the same day: a warning has no `source:`, in text or in `--json`; errors and defects keep theirs.

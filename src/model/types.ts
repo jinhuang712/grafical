@@ -375,7 +375,7 @@ export const SHAPE_KINDS = {
 } as const;
 export type Shape = keyof typeof SHAPE_KINDS;
 
-/** A sort of node or edge an agent defines (specs/decisions, "A type holds attributes, and a group may follow a group"). */
+/** A sort of node or edge an agent defines (specs/decisions, "A type holds attributes"). */
 export interface TypeDef {
   id: string;
   /** A built-in kind or another type. */
@@ -415,7 +415,7 @@ export interface Diagram {
   /** A footnote, such as "Not shown: …" (specs/decisions, "Curation stays with the agent"). */
   caption?: string;
   density: Density;
-  /** How edges are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Lines may be drawn square, round or smooth"). */
+  /** How edges are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Lines may be drawn square or round"). */
   lines?: "round";
   /** Where the title sits (specs/decisions, "A region's label sits at a fraction of a side"). Absent: top left. */
   titleAt?: DiagramTitle;

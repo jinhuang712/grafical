@@ -2,17 +2,13 @@
 
 Decided: 2026-11-05
 
-Replaced in part by specs/decisions, "A weak model draws well and a stronger one superbly": a strong model copies the pictures.
-
-Replaced in part by specs/decisions, "The MVP bar is a checkpoint's exit criteria": the bar leaves the goals.
-
 ## The problem
 
 Twenty goals stood side by side, and a release waited on all of them. Some could no longer be scored, since the judges ended on 2026-10-18. Others measured a cause of a result and not the result. The owner put success in plain words: lower cost, more speed, no need for a strong model and better pictures.
 
 ## The choice
 
-- **The MVP bar rests on four goals:** cost and time below the same model drawing directly, a small gap between Haiku and Opus and a picture copied and beaten.
+- **The MVP bar rests on four goals, the exit criteria of its checkpoint:** cost and time below the same model drawing directly, a small gap between Haiku and Opus and a picture copied and beaten.
 - **Better pictures are watched and have no line:** each round is held against the round before, by the owner's blind rating.
 - **The constraints must always hold:** stability, mechanical defects and determinism.
 - **Every other goal is recorded to find causes:** it holds no release.

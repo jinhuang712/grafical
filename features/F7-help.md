@@ -60,7 +60,7 @@ How common kinds of diagram are usually drawn: best practice, for an agent that 
 - `grafical guide <name>` prints one guide.
   - `cloud` and `deployment` and `process` and `states` find theirs too.
 - A name that is no guide is refused as `unknown-guide` with the likely ones.
-- The entry page names `grafical guide` once, and nothing tells an agent to read a guide.
+- The entry page names `grafical guide` once, and no command page names it.
 - ⬜ Composition lists the checks of a route and the points of a good picture, written for an agent.
 - ⬜ The last step of the entry page's way of working tells an agent to look at the picture and check it against composition before it stops.
 

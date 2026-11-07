@@ -2,15 +2,13 @@
 
 Decided: 2026-11-06
 
-Replaced in part by specs/decisions, "`move` and `plug` stand above the nouns": those two verbs need no noun.
-
 ## The problem
 
 A command ran three levels deep, as in `grafical edge look <file> <id> --color <color>`. The owner found that too many levels.
 
 ## The choice
 
-A command is a noun and flags: `grafical -f <file> edge --look <id> --color <color>`. A verb is a flag that takes the ID, and the other flags are its values. A call holds one verb.
+A command is a noun and flags: `grafical -f <file> edge --look <id> --color <color>`. A verb is a flag that takes the ID, and the other flags are its values. A call holds one verb. Only `move` and `plug` stand above the nouns.
 
 ## Not chosen
 

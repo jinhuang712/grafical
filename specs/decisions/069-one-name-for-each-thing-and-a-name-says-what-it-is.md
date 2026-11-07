@@ -2,8 +2,6 @@
 
 Decided: 2026-11-06
 
-Replaced in part by specs/decisions, "`move` and `plug` stand above the nouns": `edge ends` became `plug`.
-
 ## The problem
 
 The help mixed two names for one thing: row and layer, box and node, line and edge, mark and icon. An agent read one word and typed the other. One word also meant two things, such as step and footnote and dot.
@@ -30,7 +28,6 @@ A command that sets a field is named for the field:
 - `node mark`
 - `edge label`
 - `edge number`
-- `edge ends`
 - `group label-at`
 
 The picture's closing text is `diagram caption`. A step is a placement only, and a number is what an edge carries.

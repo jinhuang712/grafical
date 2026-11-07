@@ -2,10 +2,6 @@
 
 Decided: 2026-10-11
 
-- Replaced in part by specs/decisions, "Marks of any kind": a mark takes its own colors.
-- Replaced in part by specs/decisions, "Edge weights": a line takes its own width.
-- Replaced in part by specs/decisions, "A box may take a look of its own": a box takes its own colors.
-
 ## The problem
 
 A look must be shared by many diagrams and changed in one place, without a diagram setting colors box by box.
@@ -18,9 +14,6 @@ Layout reads the same values, so a theme with larger type changes the layout as 
 
 ## Not chosen
 
-- Colors or styles on one node or edge.
-  - A model would have to choose them, and the look would drift.
-  - Reversed in part: a mark takes its own colors ("Marks of any kind") and a line its own width ("Edge weights"), and on 2026-10-14 the owner settled that looks may take any value.
 - A stylesheet found by folder, without the diagram naming it.
   - The diagram file would no longer say what decides its picture.
 - CSS.

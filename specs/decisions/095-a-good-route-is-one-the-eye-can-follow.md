@@ -2,15 +2,13 @@
 
 Decided: 2026-11-07
 
-Order changed on 2026-11-07 by specs/decisions, "The router draws clean lines and the agent makes their room": no detour now ranks below a simple shape and few crossings. The standards keep their numbers.
-
 ## The problem
 
 The router is judged by counts of bends and crossings, and a picture can score well on them and still read badly. The owner holds that the router is not smart, and any work on it needs to know what a better route is.
 
 ## The choice
 
-A good route is one a reader's eye follows from end to end with no effort. Counts are a means to that. Seven standards say what such a route is, the first mattering most:
+A good route is one a reader's eye follows from end to end with no effort. Counts are a means to that. Seven standards say what such a route is. The first matters most, and no detour ranks below a simple shape and few crossings:
 
 1. **It can be followed:** the eye goes from one end to the other and does not lose the line.
 2. **It takes no detour:** its length suits how far apart its ends are.

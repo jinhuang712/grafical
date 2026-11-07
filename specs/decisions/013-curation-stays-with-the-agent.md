@@ -2,9 +2,6 @@
 
 Decided: 2026-10-11
 
-- Replaced in part by specs/decisions, "Records over prose": grafical prints counts and not warnings.
-- Replaced in part by specs/decisions, "Every write prints every warning": warnings came back on every write.
-
 ## The problem
 
 A good diagram leaves things out, and only the agent knows what can go.
@@ -12,10 +9,7 @@ A good diagram leaves things out, and only the agent knows what can go.
 ## The choice
 
 A good diagram leaves things out, and only the agent can decide what. grafical helps in three ways:
-- **Budget.** `grafical check` warns when a diagram has more than 16 nodes, and suggests merging nodes that share a group and all their edges.
-  - The warning does not block.
-  - Reversed on 2026-10-13 by "Records over prose": grafical prints counts, not warnings.
-  - The number of nodes is one of them.
+- **Counts.** grafical reports how many nodes a diagram has and warns on what draws poorly, and it never asks for a merge.
 - **Coaching.** The help tells agents to merge what a reader does not need apart, such as several topics into one node.
   - It also tells them to keep a diagram to one story.
   - The help is `grafical --help` ("The help as the reference"), and at first it was `grafical guide`.

@@ -14,14 +14,12 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> new --title <text>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--title <text>` | the title | required |
-| `--subtitle <text>` | one sentence under the title | none |
-| `--caption <text>` | what the picture leaves out | none |
-| `--density <density>` | `compact` · `normal` · `airy` | `normal` |
-| `--sizing <sizing>` | `auto` · `fixed` | `auto` |
-| `--style <style>` | a theme or a stylesheet | `default` |
+- `--title <text>`: the title, and it is required.
+- `--subtitle <text>`: one sentence under the title.
+- `--caption <text>`: what the picture leaves out.
+- `--density <density>`: `compact` · `normal` · `airy` (`normal` by default).
+- `--sizing <sizing>`: `auto` · `fixed` (`auto` by default).
+- `--style <style>`: a theme or a stylesheet (`default` by default).
 
 **Called by:** both
 
@@ -37,15 +35,13 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> layer --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add <id>` with `--label` · `--before` · `--after` | add a layer | at the bottom |
-| `--label <id>` with `--label` | change its label | required |
-| `--look <id> [box\|band]` | draw it | clears the look |
-| `--label-at <id> [at]` | where its label sits along its head | the engine's |
-| `--move <id>` with `--first` · `--last` · `--before` · `--after` | move it | required |
-| `--split <id> <into>` with `--label` · `--from` | move part of it into a new layer | the second half |
-| `--remove <id>` | remove an empty layer | none |
+- `--add <id>` with `--label` · `--before` · `--after`: add a layer (at the bottom by default).
+- `--label <id>` with `--label`: change its label, and it is required.
+- `--look <id> [box|band]`: draw it (clears the look by default).
+- `--label-at <id> [at]`: where its label sits along its head (the engine's by default).
+- `--move <id>` with `--first` · `--last` · `--before` · `--after`: move it, and it is required.
+- `--split <id> <into>` with `--label` · `--from`: move part of it into a new layer (the second half by default).
+- `--remove <id>`: remove an empty layer.
 
 **Called by:** both
 
@@ -61,23 +57,21 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> node --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add <id>` with `--layer` · `--label` · `--type` · `--sublabel` · `--size` · `--first` · `--last` · `--before` · `--after` · `--align` · `--emphasis` | add a node to a layer | `service` |
-| `--add <id>` with `--from` · `--down` · `--up` · `--left` · `--right` | add a node by steps from another | none |
-| `--move <id>` with `--layer` · `--first` · `--last` · `--before` · `--after` · `--from` · `--down` · `--up` · `--left` · `--right` | move a node | none |
-| `--label <id>` with `--label` | change its label | required |
-| `--sublabel <id>` with `--text` | set its sublabel | clears it |
-| `--size <id>` with `--size` | `s` · `m` · `l` | sized to its text |
-| `--emphasis <id>` with `--off` | make it stand out | on |
-| `--mark <id>` with `--slot` · `--mark` · `--bg` · `--fg` · `--border` · `--shape` · `--size` | put a mark in a slot | clears the slot |
-| `--align <id>` with `--to` | sit above or below a node | clears it |
-| `--swap <a> <b>` | trade places | none |
-| `--merge <id>` with `--nodes` · `--label` · `--sublabel` · `--type` | replace nodes with one | none |
-| `--type <id> [type]` | give it a type | its built-in type |
-| `--style <id> [styles...]` | mark styles | clears them |
-| `--like <id> [like]` | follow another's look | lets go |
-| `--remove <id>` | remove it and its edges | none |
+- `--add <id>` with `--layer` · `--label` · `--type` · `--sublabel` · `--size` · `--first` · `--last` · `--before` · `--after` · `--align` · `--emphasis`: add a node to a layer (`service` by default).
+- `--add <id>` with `--from` · `--down` · `--up` · `--left` · `--right`: add a node by steps from another.
+- `--move <id>` with `--layer` · `--first` · `--last` · `--before` · `--after` · `--from` · `--down` · `--up` · `--left` · `--right`: move a node.
+- `--label <id>` with `--label`: change its label, and it is required.
+- `--sublabel <id>` with `--text`: set its sublabel (clears it by default).
+- `--size <id>` with `--size`: `s` · `m` · `l` (sized to its text by default).
+- `--emphasis <id>` with `--off`: make it stand out (on by default).
+- `--mark <id>` with `--slot` · `--mark` · `--bg` · `--fg` · `--border` · `--shape` · `--size`: put a mark in a slot (clears the slot by default).
+- `--align <id>` with `--to`: sit above or below a node (clears it by default).
+- `--swap <a> <b>`: trade places.
+- `--merge <id>` with `--nodes` · `--label` · `--sublabel` · `--type`: replace nodes with one.
+- `--type <id> [type]`: give it a type (its built-in type by default).
+- `--style <id> [styles...]`: mark styles (clears them by default).
+- `--like <id> [like]`: follow another's look (lets go by default).
+- `--remove <id>`: remove it and its edges.
 
 **Status of its planned flags:** ⬜ `--size` with `--width` · `--height` · `--magnified`, and ⬜ `--mark` with a `<set>:<name>` value.
 
@@ -95,27 +89,25 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> edge --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add <from> <to>` with `--id` · `--label` · `--type` · `--both` · `--pass` | connect two ends | ID `<from>-><to>` |
-| `--label <id>` with `--label` | set its label | clears it |
-| `--label-at <id> <seat>` | `on` · `beside` | `on` |
-| `--side <id>` with `--out` · `--in` | the side it leaves or enters by | the engine's |
-| `--weight <edges...>` with `--weight` | a level or a width | `thin` |
-| `--both <id>` with `--off` | arrowheads at both ends | on |
-| `--via <id> [object]` with `--side` | what it passes | the engine's |
-| `--straight <id>` with `--off` | no bend | on |
-| `--main <id>` with `--off` | the main flow | on |
-| `--with <id> [with]` | share a trunk | its own way |
-| `--bend <id>` with `--at` | where its longest inner run sits | the engine's |
-| `--stretch <id>` with `--magnified` | how far a detour reaches | the engine's |
-| `--pass <id>` with `--off` | pass the bars between its ends | on |
-| `--number <id>` with `--n` | a step number | clears it |
-| `--reverse <id>` | swap its direction | none |
-| `--type <id> [type]` | give it a type | its built-in type |
-| `--style <id> [styles...]` | mark styles | clears them |
-| `--like <id> [like]` | follow another's look | lets go |
-| `--remove <id>` | remove it | none |
+- `--add <from> <to>` with `--id` · `--label` · `--type` · `--both` · `--pass`: connect two ends (ID `<from>-><to>` by default).
+- `--label <id>` with `--label`: set its label (clears it by default).
+- `--label-at <id> <seat>`: `on` · `beside` (`on` by default).
+- `--side <id>` with `--out` · `--in`: the side it leaves or enters by (the engine's by default).
+- `--weight <edges...>` with `--weight`: a level or a width (`thin` by default).
+- `--both <id>` with `--off`: arrowheads at both ends (on by default).
+- `--via <id> [object]` with `--side`: what it passes (the engine's by default).
+- `--straight <id>` with `--off`: no bend (on by default).
+- `--main <id>` with `--off`: the main flow (on by default).
+- `--with <id> [with]`: share a trunk (its own way by default).
+- `--bend <id>` with `--at`: where its longest inner run sits (the engine's by default).
+- `--stretch <id>` with `--magnified`: how far a detour reaches (the engine's by default).
+- `--pass <id>` with `--off`: pass the bars between its ends (on by default).
+- `--number <id>` with `--n`: a step number (clears it by default).
+- `--reverse <id>`: swap its direction.
+- `--type <id> [type]`: give it a type (its built-in type by default).
+- `--style <id> [styles...]`: mark styles (clears them by default).
+- `--like <id> [like]`: follow another's look (lets go by default).
+- `--remove <id>`: remove it.
 
 **Called by:** both
 
@@ -131,10 +123,8 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> plug <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--from <end>` | a new start | stays |
-| `--to <end>` | a new end | stays |
+- `--from <end>`: a new start (stays by default).
+- `--to <end>`: a new end (stays by default).
 
 **Called by:** both
 
@@ -150,10 +140,8 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> move <id...>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--layer <layer>` | the layer | stays |
-| `--first` · `--last` · `--before <id>` · `--after <id>` | the place | required |
+- `--layer <layer>`: the layer (stays by default).
+- `--first` · `--last` · `--before <id>` · `--after <id>`: the place, and it is required.
 
 **Called by:** both
 
@@ -169,19 +157,17 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> group --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add <id>` with `--label` · `--sublabel` · `--nodes` · `--in` | add a group | none |
-| `--join <group> <nodes...>` | put members in | none |
-| `--leave <nodes...>` with `--up` | take members out | every group |
-| `--label <id>` with `--label` | change its label | required |
-| `--sublabel <id>` with `--text` | set its sublabel | clears it |
-| `--label-at <id> [at]` with `--side` · `--place` | where its label sits | the engine's |
-| `--order <id>` with `--before` · `--after` | place it beside a group | required |
-| `--copy <id> <into>` with `--label` · `--suffix` · `--before` · `--after` · `--outside` | copy it | none |
-| `--style <id> [styles...]` | mark styles | clears them |
-| `--like <id> [like]` | follow another's look | lets go |
-| `--remove <id>` with `--out` | remove it and keep its members | into the group around it |
+- `--add <id>` with `--label` · `--sublabel` · `--nodes` · `--in`: add a group.
+- `--join <group> <nodes...>`: put members in.
+- `--leave <nodes...>` with `--up`: take members out (every group by default).
+- `--label <id>` with `--label`: change its label, and it is required.
+- `--sublabel <id>` with `--text`: set its sublabel (clears it by default).
+- `--label-at <id> [at]` with `--side` · `--place`: where its label sits (the engine's by default).
+- `--order <id>` with `--before` · `--after`: place it beside a group, and it is required.
+- `--copy <id> <into>` with `--label` · `--suffix` · `--before` · `--after` · `--outside`: copy it.
+- `--style <id> [styles...]`: mark styles (clears them by default).
+- `--like <id> [like]`: follow another's look (lets go by default).
+- `--remove <id>` with `--out`: remove it and keep its members (into the group around it by default).
 
 **Called by:** both
 
@@ -197,16 +183,14 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> lane --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add <id>` with `--label` · `--members` | add a lane | none |
-| `--join <lane> <members...>` | put members in | none |
-| `--leave <members...>` | take members out | none |
-| `--label <id>` with `--label` | change its label | required |
-| `--label-at <id> [at]` | where its label sits along its head | the engine's |
-| `--style <id> [styles...]` | mark styles | clears them |
-| `--like <id> [like]` | follow another's look | lets go |
-| `--remove <id>` | remove it and keep its members | none |
+- `--add <id>` with `--label` · `--members`: add a lane.
+- `--join <lane> <members...>`: put members in.
+- `--leave <members...>`: take members out.
+- `--label <id>` with `--label`: change its label, and it is required.
+- `--label-at <id> [at]`: where its label sits along its head (the engine's by default).
+- `--style <id> [styles...]`: mark styles (clears them by default).
+- `--like <id> [like]`: follow another's look (lets go by default).
+- `--remove <id>`: remove it and keep its members.
 
 **Called by:** both
 
@@ -222,12 +206,10 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> column --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add <id>` with `--nodes` · `--before` · `--after` | add a column | last |
-| `--join <column> <members...>` | put members in | none |
-| `--leave <members...>` | take members out | none |
-| `--remove <id>` | remove it and keep its nodes | none |
+- `--add <id>` with `--nodes` · `--before` · `--after`: add a column (last by default).
+- `--join <column> <members...>`: put members in.
+- `--leave <members...>`: take members out.
+- `--remove <id>`: remove it and keep its nodes.
 
 **Status of its planned flags:** ⬜ `--add` with `--label`, and ⬜ `--label <id>` with `--label`.
 
@@ -245,12 +227,10 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> wall --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add <id>` with `--between` · `--and` · `--allow` · `--label` | add a wall | none |
-| `--allow <id> <allow...>` with `--off` | let edges through | on |
-| `--label <id>` with `--label` | set the words on its divider | space alone |
-| `--remove <id>` | remove it | none |
+- `--add <id>` with `--between` · `--and` · `--allow` · `--label`: add a wall.
+- `--allow <id> <allow...>` with `--off`: let edges through (on by default).
+- `--label <id>` with `--label`: set the words on its divider (space alone by default).
+- `--remove <id>`: remove it.
 
 **Called by:** both
 
@@ -266,11 +246,9 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> note --<verb>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add` with `--on` · `--text` · `--footnote` | add a note | a card |
-| `--align <on> <align>` | `left` · `center` · `right` | `left` |
-| `--remove` with `--on` | remove a note | none |
+- `--add` with `--on` · `--text` · `--footnote`: add a note (a card by default).
+- `--align <on> <align>`: `left` · `center` · `right` (`left` by default).
+- `--remove` with `--on`: remove a note.
 
 **Called by:** both
 
@@ -286,10 +264,8 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> label --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--style <id> [styles...]` | mark styles on an edge's label | clears them |
-| `--align <id> <align>` | `left` · `center` · `right` | `center` |
+- `--style <id> [styles...]`: mark styles on an edge's label (clears them by default).
+- `--align <id> <align>`: `left` · `center` · `right` (`center` by default).
 
 **Called by:** both
 
@@ -305,9 +281,7 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> gap --between <a> <b>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--magnified <n>` | `1.25` · `1.5` · `2` | back to the default gap |
+- `--magnified <n>`: `1.25` · `1.5` · `2` (back to the default gap by default).
 
 **Called by:** both
 
@@ -323,10 +297,8 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> type --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add <id>` with `--base` · `--shape` · `--fill` · `--border` · `--border-width` · `--color` | define or change a type | none |
-| `--remove <id>` | remove it | none |
+- `--add <id>` with `--base` · `--shape` · `--fill` · `--border` · `--border-width` · `--color`: define or change a type.
+- `--remove <id>`: remove it.
 
 **Called by:** both
 
@@ -342,10 +314,8 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> style --<verb> <id>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--add <id>` with `--fill` · `--border` · `--border-width` · `--color` | name or change a look | none |
-| `--remove <id>` | remove it and every mark of it | none |
+- `--add <id>` with `--fill` · `--border` · `--border-width` · `--color`: name or change a look.
+- `--remove <id>`: remove it and every mark of it.
 
 **Called by:** both
 
@@ -361,17 +331,15 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 `grafical -f <file> diagram --<verb>`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--title` with `--text` | change the title | required |
-| `--subtitle` with `--text` | set the subtitle | clears it |
-| `--caption` with `--text` | set the caption | clears it |
-| `--label-at [at]` with `--side` | where the title sits | the engine's |
-| `--density <density>` | `compact` · `normal` · `airy` | `normal` |
-| `--sizing <mode>` | `auto` · `fixed` | `auto` |
-| `--style [style]` | a theme or a stylesheet | `default` |
-| `--lines <lines>` | `square` · `round` | `square` |
-| `--legend [style]` with `--weight` · `--mark` · `--text` | name a style, a width or a mark | takes the entry away |
+- `--title` with `--text`: change the title, and it is required.
+- `--subtitle` with `--text`: set the subtitle (clears it by default).
+- `--caption` with `--text`: set the caption (clears it by default).
+- `--label-at [at]` with `--side`: where the title sits (the engine's by default).
+- `--density <density>`: `compact` · `normal` · `airy` (`normal` by default).
+- `--sizing <mode>`: `auto` · `fixed` (`auto` by default).
+- `--style [style]`: a theme or a stylesheet (`default` by default).
+- `--lines <lines>`: `square` · `round` (`square` by default).
+- `--legend [style]` with `--weight` · `--mark` · `--text`: name a style, a width or a mark (takes the entry away by default).
 
 **Called by:** both
 
@@ -417,9 +385,7 @@ A batch named `-` comes from standard input.
 
 `grafical -f <file> show [id]`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--drawn` | how the picture is drawn | the facts |
+- `--drawn`: how the picture is drawn (the facts by default).
 
 **Called by:** both
 
@@ -435,9 +401,7 @@ A batch named `-` comes from standard input.
 
 `grafical -f <file> check`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--all` | add the defects the engine owns | off |
+- `--all`: add the defects the engine owns (off by default).
 
 **Called by:** both
 
@@ -453,11 +417,9 @@ A batch named `-` comes from standard input.
 
 `grafical -f <file> render`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--svg [out]` | write only the SVG | beside the file |
-| `--png [out]` | write only the PNG | beside the file |
-| `--scale <n>` | PNG scale from 1 to 4 | 2 |
+- `--svg [out]`: write only the SVG (beside the file by default).
+- `--png [out]`: write only the PNG (beside the file by default).
+- `--scale <n>`: PNG scale from 1 to 4 (2 by default).
 
 **Called by:** both
 
@@ -489,10 +451,8 @@ The revision is `HEAD` by default.
 
 `grafical -f <file> view`
 
-| Flag | Means | Default |
-|---|---|---|
-| `--port <n>` | the local port | a free one |
-| `--no-open` | print the address and open no window | opens a window |
+- `--port <n>`: the local port (a free one by default).
+- `--no-open`: print the address and open no window (opens a window by default).
 
 **Called by:** a person
 
@@ -518,21 +478,17 @@ The revision is `HEAD` by default.
 
 ## Global flags
 
-| Flag | Means | Default |
-|---|---|---|
-| `-f` · `--file <file>` | the diagram file, ahead of the command | required |
-| `--json` | print the answer as one JSON object | off |
-| `-h` · `--help` | print the page of a command | off |
+- `-f` · `--file <file>`: the diagram file, ahead of the command, and it is required.
+- `--json`: print the answer as one JSON object (off by default).
+- `-h` · `--help`: print the page of a command (off by default).
 
 `--json` is on every command but `view` and `guide`.
 
 ## Exit codes
 
-| Code | Means |
-|---|---|
-| 0 | it succeeded, with warnings or without |
-| 1 | a write was refused or a file could not be read |
-| 2 | a usage error |
+- 0: it succeeded, with warnings or without.
+- 1: a write was refused or a file could not be read.
+- 2: a usage error.
 
 Engine-owned defects exit 1 under `check --all` only.
 

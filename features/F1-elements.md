@@ -94,7 +94,7 @@ A type of your own names a sort of node with its own shape and look. A change to
   - [`node`](../CLI.md#node)
 
 - **Why:**
-  - [087. A type holds attributes, and a group may follow a group](../specs/decisions/087-a-type-holds-attributes-and-a-group-may-follow-a-group.md)
+  - [087. A type holds attributes](../specs/decisions/087-a-type-holds-attributes.md)
   - [088. A type may choose its shape](../specs/decisions/088-a-type-may-choose-its-shape.md)
 
 ### F1.1.2: Labels and sublabels

@@ -59,7 +59,6 @@ The engine never adds, drops, merges or reorders what the agent stated, and neve
   - [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)
   - [032. Who chose is punished](specs/decisions/032-who-chose-is-punished.md)
   - [013. Curation stays with the agent](specs/decisions/013-curation-stays-with-the-agent.md)
-  - [011. The engine picks a new box's slot](specs/decisions/011-the-engine-picks-a-new-box-s-slot.md)
 - **How it works:**
   - [Placement](specs/placement.md)
   - [The model](specs/model.md)
@@ -92,7 +91,7 @@ Edges run orthogonally through the gaps between layers and nodes. The engine pic
   - [090. A bundle splits at one knot](specs/decisions/090-a-bundle-splits-at-one-knot.md)
   - [065. Unreadable is refused and costly is reported](specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
   - [058. An agent may state the side of a line](specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
-  - [059. Lines may be drawn square, round or smooth](specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
+  - [059. Lines may be drawn square or round](specs/decisions/059-lines-may-be-drawn-square-or-round.md)
   - [095. A good route is one the eye can follow](specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
   - [096. An edge is steered by facts and never by coordinates](specs/decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
   - [097. The router draws clean lines and the agent makes their room](specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
@@ -204,7 +203,6 @@ Every write lays out, routes and checks the whole diagram again ([4. A change ke
 
 - **Stance:** [Why are good diagrams rare?](PHILOSOPHY.md#why-are-good-diagrams-rare)
 - **Decisions:**
-  - [011. The engine picks a new box's slot](specs/decisions/011-the-engine-picks-a-new-box-s-slot.md)
   - [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)
   - [047. Refusals say what happened and which commands can change it](specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md)
 - **How it works:**

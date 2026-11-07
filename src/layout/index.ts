@@ -232,14 +232,14 @@ function routeCost(scene: Scene): number[] {
   return [s.crossings + over + asideNodes(scene).length, s.crossings, s.bends, s.length];
 }
 
-/** A diagram's route cost (see routeCost), laid out without text: for comparing arrangements (specs/decisions, "The engine picks a new box's slot", "Records over prose"). */
+/** A diagram's route cost (see routeCost), laid out without text: for comparing arrangements (specs/decisions, "Who chose is punished", "Records over prose"). */
 export function arrangementCost(diagram: Diagram, m: Measurer): number[] {
   return routeCost(compute(diagram, m, false).scene);
 }
 
 /** What makes a diagram's edges hard to read (specs/decisions, "A target picture with measured rules" rules 2 and 3): pairs that cross, and edges over two bends. */
 export interface LineTrouble {
-  /** Every point where two routes cross, as the route cost counts them (specs/decisions, "The engine picks a new box's slot"). */
+  /** Every point where two routes cross, as the route cost counts them (specs/decisions, "Who chose is punished"). */
   points: number;
   /** Pairs of edge ids whose routes cross, each pair once, in id order. */
   crossings: [string, string][];

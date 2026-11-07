@@ -14,7 +14,6 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [008. Defects owned by who can fix them](008-defects-owned-by-who-can-fix-them.md) (2026-10-11)
 - [009. Git as the history](009-git-as-the-history.md) (2026-10-11)
 - [010. TypeScript on Node](010-typescript-on-node.md) (2026-10-11)
-- [011. The engine picks a new box's slot](011-the-engine-picks-a-new-box-s-slot.md) (2026-10-11)
 - [012. A target picture with measured rules](012-a-target-picture-with-measured-rules.md) (2026-10-11)
 - [013. Curation stays with the agent](013-curation-stays-with-the-agent.md) (2026-10-11)
 - [014. Boxes sized to their text](014-boxes-sized-to-their-text.md) (2026-10-11)
@@ -44,7 +43,6 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [038. A row with no box as one bar](038-a-row-with-no-box-as-one-bar.md) (2026-10-16)
 - [039. Step badges ride the line](039-step-badges-ride-the-line.md) (2026-10-16)
 - [040. The agent states where a group's label sits](040-the-agent-states-where-a-group-s-label-sits.md) (2026-10-16)
-- [041. The dirty work has edges](041-the-dirty-work-has-edges.md) (2026-10-16)
 - [042. One entry page, help where it is used](042-one-entry-page-help-where-it-is-used.md) (2026-10-17)
 - [043. Help for the tool, guides for best practice](043-help-for-the-tool-guides-for-best-practice.md) (2026-10-17)
 - [044. One way to a page, and a wrong command names the right one](044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md) (2026-10-18)
@@ -62,7 +60,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [056. A column may carry a heading](056-a-column-may-carry-a-heading.md) (2026-11-05)
 - [057. A box may take a look of its own](057-a-box-may-take-a-look-of-its-own.md) (2026-11-06)
 - [058. An agent may state the side of a line](058-an-agent-may-state-the-side-of-a-line.md) (2026-11-06)
-- [059. Lines may be drawn square, round or smooth](059-lines-may-be-drawn-square-round-or-smooth.md) (2026-11-06)
+- [059. Lines may be drawn square or round](059-lines-may-be-drawn-square-or-round.md) (2026-11-06)
 - [060. A bent line is reported and never refused](060-a-bent-line-is-reported-and-never-refused.md) (2026-10-16)
 - [061. A line never moves for its label](061-a-line-never-moves-for-its-label.md) (2026-10-17)
 - [062. A group's label moves no box and no line](062-a-group-s-label-moves-no-box-and-no-line.md) (2026-10-17)
@@ -90,7 +88,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [084. A region's label sits at a fraction of a side](084-a-region-s-label-sits-at-a-fraction-of-a-side.md) (2026-11-06)
 - [085. A diagram is objects with attributes and relations](085-a-diagram-is-objects-with-attributes-and-relations.md) (2026-11-06)
 - [086. The file is blocks of attributes, and a reference carries @](086-the-file-is-blocks-of-attributes-and-a-reference-carries.md) (2026-11-06)
-- [087. A type holds attributes, and a group may follow a group](087-a-type-holds-attributes-and-a-group-may-follow-a-group.md) (2026-11-06)
+- [087. A type holds attributes](087-a-type-holds-attributes.md) (2026-11-06)
 - [088. A type may choose its shape](088-a-type-may-choose-its-shape.md) (2026-11-06)
 - [089. A style may be as rich as it likes](089-a-style-may-be-as-rich-as-it-likes.md) (2026-11-06)
 - [090. A bundle splits at one knot](090-a-bundle-splits-at-one-knot.md) (2026-11-06)
@@ -104,6 +102,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [098. A picture is judged by how it reads](098-a-picture-is-judged-by-how-it-reads.md) (2026-11-08)
 - [099. An agent checks its own picture against a list](099-an-agent-checks-its-own-picture-against-a-list.md) (2026-11-08)
 - [100. The MVP bar is a checkpoint's exit criteria](100-the-mvp-bar-is-a-checkpoint-s-exit-criteria.md) (2026-11-08)
+- [101. The CLI document lists flags in bullets](101-the-cli-document-lists-flags-in-bullets.md) (2026-11-08)
 
 ## Former IDs
 
@@ -134,7 +133,7 @@ Until 2026-10-15 each decision had a number. Commit messages and the dated resul
 | D21 | AGENTS.md, "Change discipline" |
 | D22 | DESIGNS.md, "What grafical cannot fully read, it refuses" |
 | D23 | AGENTS.md, "Change discipline" |
-| D24 | "The engine picks a new box's slot" |
+| D24 | "The agent states every order" |
 | D25 | "A target picture with measured rules" |
 | D26 | "Curation stays with the agent" |
 | D27 | "Boxes sized to their text" |

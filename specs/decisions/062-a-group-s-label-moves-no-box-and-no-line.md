@@ -2,8 +2,6 @@
 
 Decided: 2026-10-17
 
-Split on 2026-11-06 from specs/decisions, "The dirty work has edges".
-
 ## The problem
 
 The engine widened a group's box so that no line ran under a title, and the owner found the empty space it left.

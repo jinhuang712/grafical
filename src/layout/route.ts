@@ -756,7 +756,7 @@ function assignBundles(plans: Plan[], alone: Set<string>): void {
 
 /**
  * How many edges pl would cross if it passed its layers at x, counting only the
- * crossings that placement already makes certain (specs/decisions, "The engine picks a new box's slot"): an edge straight through
+ * crossings that placement already makes certain (specs/decisions, "Who chose is punished"): an edge straight through
  * pl's first or last gutter where pl runs along it, an edge along a gutter that pl
  * passes straight through, and a sideways edge across a layer that pl passes.
  */

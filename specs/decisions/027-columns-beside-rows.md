@@ -2,8 +2,6 @@
 
 Decided: 2026-10-13
 
-Replaced in part by specs/decisions, "Columns hold across rows": the order holds across all rows.
-
 ## The problem
 
 Asked for by the owner on 2026-10-13 ("not just layers, we shall involve another thing called columns") and approved the same day in the phase 1e list: "Columns, optional … build it after bundled fan-outs", "as long as they help and have gains". A prototype that day, in a scratch copy of the engine, gave photo sharing 5 bends instead of 6 and a picture 744 px wide instead of 840, and the private reference draft 0 crossings instead of 1 and 23 bends instead of 27. The public brief, already in column order, did not change. The step was then left out of a question about what to build next, by mistake, and the owner asked for it again on 2026-10-14.
@@ -22,4 +20,4 @@ A column is a guide, and nothing is drawn. Every box of a column lies left of ev
 
 ## Consequences
 
-Made exact on 2026-10-15 by the owner: the order holds across all rows, not only within each one ("Columns hold across rows").
+The order holds across all rows ("Columns hold across rows").
