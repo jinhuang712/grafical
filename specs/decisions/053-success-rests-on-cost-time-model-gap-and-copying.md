@@ -9,7 +9,7 @@ Twenty goals stood side by side, and a release waited on all of them. Some could
 ## The choice
 
 - **The MVP bar rests on four goals, the exit criteria of its checkpoint:** cost and time below the same model drawing directly, a small gap between Haiku and Opus and a picture copied and beaten.
-- **Better pictures are watched and have no line:** each round is held against the round before, by the owner's blind rating.
+- **Better pictures are watched:** each round is held against the round before, by the owner's blind rating.
 - **The constraints must always hold:** stability, mechanical defects and determinism.
 - **Every other goal is recorded to find causes:** it holds no release.
 - **Three goals are dropped:**

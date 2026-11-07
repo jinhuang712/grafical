@@ -35,11 +35,10 @@
 - description:
   - [PHILOSOPHY.md](../PHILOSOPHY.md) holds that no score settles a picture for everyone and that grafical does not supply the taste.
   - Twelve points now say what a good picture is, and symmetry and even space lean toward taste.
-  - No checkpoint runs O5: Routes the eye can follow or O6: A picture reads at a glance yet.
   - Whether a small model can see these faults is not measured.
 - created: 2026-11-08
 - status: HALT
-- next: the owner says whether the stance changes and when the two goals run
+- next: the owner says whether the stance changes
 - related: [098. A picture is judged by how it reads](../specs/decisions/098-a-picture-is-judged-by-how-it-reads.md)
 
 ### [P1][DISCUSSION] The router is not smart enough

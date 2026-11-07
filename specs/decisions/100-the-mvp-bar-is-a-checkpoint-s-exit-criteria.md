@@ -8,15 +8,15 @@ The MVP bar stood in the goals as an objective, though it measured nothing of it
 
 ## The choice
 
-The MVP bar is what a checkpoint must meet, so it lives in the exit criteria of "CP3.6: The MVP bar" in the roadmap. The goals hold only single checks. Whether a goal holds the release is said by the group it sits in there.
+The MVP bar is what a checkpoint must meet, so it lives in the exit criteria of "CP3.6: The MVP bar" in the roadmap. The goals hold only single checks. Whether a goal holds the release is said by the group it sits in there. The two goals on how a picture reads join the bar, since a cheap and fast picture that reads badly should not pass.
 
 ## Not chosen
 
 - Keeping the bar as a goal.
   - A bundle of other goals checks nothing, and which goals a checkpoint runs is the roadmap's.
-- Adding the two goals on how a picture reads to the bar as a goal.
-  - It would grow the bundle and keep the second home.
+- Leaving the two goals on how a picture reads outside the release.
+  - A picture could be cheap and ugly and still pass.
 
 ## Consequences
 
-The bar's four goals and its conditions do not change, and only the owner changes them. The goal O1 goes, and its number is not reused.
+Only the owner changes the bar. The owner must look at the pictures before a release. The goal O1 goes, and its number is not reused.
