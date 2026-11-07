@@ -36,7 +36,7 @@ Goals
     ├── ✅ R1: Stability — no fact changes that no operation named
     ├── ✅ R2: Mechanical defects — no overflow, overlap, line through a box or label collision
     ├── ✅ R3: Determinism — the same pixels on macOS and Linux
-    └── ⬜ R4: A sound file — strict, one spelling, and any text
+    └── ❌ R4: A sound file — strict, one spelling, and any text
 ```
 
 ## Goals
@@ -524,4 +524,4 @@ The `.grafical` file does what a plain data file cannot promise:
 
 **How:** `test/model/grafical-format.test.ts`, over the fixtures and 200 random diagrams.
 
-**Status:** ⬜ not measured.
+**Status:** ❌ not met on 2026-11-07. A file with an unknown attribute on a node was read and not refused. By hand, a reference to nothing was refused, an ID of `node` was read, and a file written twice gave the same bytes. The test does not yet hold those three: [An unknown attribute in a .grafical file is read](TODO.md#p1issue-an-unknown-attribute-in-a-grafical-file-is-read).

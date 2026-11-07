@@ -15,7 +15,7 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
   - Lost names: *row*, and *slot* for a place in a layer, which now names only a mark's place.
 - **Node:** an element of the picture with a kind, a label and an optional sublabel.
   - Lost name: *box*, since a node need not be a box.
-- **Line:** a connection between two ends.
+- **Edge:** a connection between two ends.
   - Each end is a node or a group or a layer or a lane.
   - Lost names: *line*, *connection*.
 - **Group:** a system drawn as one frame around its members.
@@ -35,7 +35,7 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 - **Choice:** a small diamond with no text, where an edge splits into several.
   - Not the same as `decision`, a diamond with text inside.
 
-## What a box or a line carries
+## What a node or an edge carries
 
 - **Type:** says what a node or an edge is, and decides how it is drawn.
   - Lost name: *kind*.
@@ -90,6 +90,7 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 
 ## The benchmarks
 
+- **Routing case:** a small diagram in `bench/routes/` that tests one standard of a good route.
 - **Brief:** a description of a system that an agent draws from.
   - A public brief is fictional, and a private brief describes a real system.
 - **Arm:** what an agent draws with in a benchmark, such as grafical or nothing.

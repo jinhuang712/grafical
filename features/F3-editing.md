@@ -8,7 +8,8 @@ F3: Editing
 ├── F3.4: IDs — the caller names every element
 ├── F3.5: Refusals — a wrong operation is refused with facts
 ├── F3.6: Merging and swapping — merge, swap and remove boxes
-└── F3.7: More combinations of operations — one operation for a common edit
+├── F3.7: More combinations of operations — one operation for a common edit
+└── F3.8: Move and plug — one verb to move things and one to change connections
 ```
 
 An agent changes a diagram only through named operations, and grafical checks each one before it writes anything. The agent sends one command or a batch, can try a change before making it, and names every element itself. When something is wrong, the write is refused, the file stays as it was, and the refusal says what happened and which commands can change it.
@@ -234,3 +235,21 @@ One operation for a common edit or a common shape, such as "put a cache between 
 **Stories:**
 
 - An agent makes a common edit in one operation, to spend fewer steps.
+
+## F3.8: Move and plug
+
+Two verbs stand above the nouns and take IDs. `move` changes where things sit, and `plug` changes what an edge connects.
+
+```sh
+grafical -f <file> move <id...> [--layer <layer>] [--first | --last | --before <id> | --after <id>]
+grafical -f <file> plug <id> [--from <end>] [--to <end>]
+```
+
+- `move` takes nodes, layers and groups, and later lanes and columns.
+  - Several objects keep their order among themselves.
+  - One that cannot move refuses them all.
+  - An option that does not fit an object is refused.
+- `move` replaces `node --move`, `layer --move` and `group --order`.
+- `plug` replaces `edge --ends`, and other objects may take it later.
+
+- **Why:** [094. `move` and `plug` stand above the nouns](../specs/decisions/094-move-and-plug-stand-above-the-nouns.md)

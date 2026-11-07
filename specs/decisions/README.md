@@ -96,6 +96,9 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [090. A bundle splits at one knot](090-a-bundle-splits-at-one-knot.md) (2026-11-06)
 - [091. A label may mark a style](091-a-label-may-mark-a-style.md) (2026-11-06)
 - [092. `like` follows an object's look and nothing else](092-like-follows-an-object-s-look-and-nothing-else.md) (2026-11-06)
+- [093. A node may sit off its cell by a fraction](093-a-node-may-sit-off-its-cell-by-a-fraction.md) (2026-11-07)
+- [094. `move` and `plug` stand above the nouns](094-move-and-plug-stand-above-the-nouns.md) (2026-11-07)
+- [095. A good route is one the eye can follow](095-a-good-route-is-one-the-eye-can-follow.md) (2026-11-07)
 
 ## Former IDs
 

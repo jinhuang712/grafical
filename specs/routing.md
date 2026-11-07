@@ -145,3 +145,4 @@ An edge from a node to itself loops through the gutter below the node. Its two e
 - [090. A bundle splits at one knot](decisions/090-a-bundle-splits-at-one-knot.md)
 - [060. A bent line is reported and never refused](decisions/060-a-bent-edge-is-reported-and-never-refused.md)
 - [061. A line never moves for its label](decisions/061-a-line-never-moves-for-its-label.md)
+- [095. A good route is one the eye can follow](decisions/095-a-good-route-is-one-the-eye-can-follow.md)

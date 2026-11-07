@@ -8,6 +8,7 @@ F2: Layout
 ├── F2.4: Columns — a second placement fact beside rows
 │   └── F2.4.1: Column headings — a label above a column
 ├── F2.5: Steps from another node — a box some cells from another
+│   └── F2.5.1: Offsets — a node a fraction of a cell off the grid
 ├── F2.6: Spacing — compact, normal or airy
 │   └── F2.6.1: Region gaps — more room between two regions
 ├── F2.7: How edges are drawn — grafical routes every line
@@ -186,6 +187,18 @@ grafical -f <file> node --move <id> [--from <node>] [--down <n> | --up <n>] [--l
 **Stories:**
 
 - An agent places a node some steps from another, to draw a staircase or a side path.
+
+### F2.5.1: Offsets
+
+A node snaps to its cell, unless an agent takes it off with a fraction of a cell. Across, down or both make a diagonal.
+
+- The fraction is 0.25, 0.5 or 0.75.
+- The offset is measured from the grid and never from a node.
+- An offset that overlaps anything refuses the write.
+- No other node moves for it.
+- It waits for the router, which lays its tracks with no idea that a node sits in a gutter: [The router is not smart enough](../plan/TODO.md#p1discussion-the-router-is-not-smart-enough).
+
+- **Why:** [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md)
 
 ## F2.6: Spacing
 

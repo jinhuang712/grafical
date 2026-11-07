@@ -79,7 +79,8 @@ Roadmap
 │   │   ├── ✅ One name for each thing
 │   │   ├── ✅ Verbs as flags
 │   │   ├── ✅ One way for each situation
-│   │   └── ✅ Batches from standard input
+│   │   ├── ✅ Batches from standard input
+│   │   └── ⬜ Move and plug
 │   ├── 🟨 CP2.3: The object model
 │   │   ├── ✅ Design the model and its form
 │   │   ├── 🟨 Build the model
@@ -101,12 +102,14 @@ Roadmap
 │   │   ├── ⬜ Labels in a crowded gutter
 │   │   ├── ⬜ A diamond's slanted lines
 │   │   ├── ⬜ Badges off a lane's side
-│   │   └── ⬜ Return lines off a self-loop
+│   │   ├── ⬜ Return lines off a self-loop
+│   │   └── ✅ Routing cases
 │   ├── ⬜ CP2.6: Nodes
 │   │   ├── ⬜ Corner marks checked
 │   │   ├── ⬜ Marks by name
 │   │   ├── ✅ Node looks
-│   │   └── ⬜ Size multiples
+│   │   ├── ⬜ Size multiples
+│   │   └── ⬜ Offsets
 │   ├── ⬜ CP2.7: Containers
 │   │   ├── ⬜ Column headings
 │   │   ├── ⬜ Lanes both ways
@@ -481,12 +484,14 @@ The command line gets one form:
 - ✅ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
 - ✅ One way for each situation: `edge --emphasize` went, and the commands were checked for other repeats.
 - ✅ Batches from standard input: `apply` reads a batch named `-` from standard input.
+- ⬜ Move and plug: `move` and `plug` stand above the nouns and replace four commands.
 
 **Delivers:**
 
 - [F3.1: Operations](../features/F3-editing.md#f31-operations)
 - [F3.2: Batches](../features/F3-editing.md#f32-batches)
 - [F1.2.3: Weight](../features/F1-elements.md#f123-weight)
+- [F3.8: Move and plug](../features/F3-editing.md#f38-move-and-plug)
 
 **Exit criteria:**
 
@@ -569,6 +574,7 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 - ⬜ A diamond's slanted lines: A line meets a diamond only at a corner, measured with `pnpm bench diff` before it lands.
 - ⬜ Badges off a lane's side: A step's badge keeps off a lane's side, and `step-collision` counts one that touches it.
 - ⬜ Return lines off a self-loop: The lines that leave and enter a node keep clear of its self-loop.
+- ✅ Routing cases: `pnpm bench routes` compares 29 small cases with a saved baseline.
 
 **Delivers:**
 
@@ -593,6 +599,7 @@ Nodes carry marks that stay clear of edges and colors of their own.
 - ⬜ Marks by name: A mark can be taken by name.
 - ✅ Node looks: A box takes colors of its own or a named look.
 - ⬜ Size multiples: A node takes multiples of its width and height.
+- ⬜ Offsets: A node sits a fraction of a cell off the grid, once the router allows it: [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
 
 **Delivers:**
 
@@ -600,6 +607,7 @@ Nodes carry marks that stay clear of edges and colors of their own.
 - [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
 - [F1.1.7: Node looks](../features/F1-elements.md#f117-node-looks)
 - [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
+- [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
 
 **Exit criteria:**
 

@@ -39,10 +39,113 @@
   - `render` writes the SVG beside the PNG though it asked for neither by name.
   - The session took 782 s on a render of 0.24 s, and where that time went is not known.
   - Its picture has 17 crossings, and it did not use `gap`, `label` or a stated side.
+  - A second run followed `diagram.grafical`, and it wrote `last: true` on every node.
+  - It did not see layer labels in its picture, since a layer is not drawn.
+  - It met `render`'s default names as a surprise.
+  - `passing-layer` named the problem and gave it no move to make.
+  - It could not see the trade between width and crossings, though `try` shows it.
+  - The numbers of both runs are in [the report runs](../bench/results/report-2026-11-06.md).
 - created: 2026-11-06
 - status: HALT
 - next: go through each with the owner
+- updated: 2026-11-07
 - related: [The benchmark harness](../specs/benchmark.md)
+
+### [P1][ISSUE] An unknown attribute in a .grafical file is read
+
+- description:
+  - A node block with `colour: red` was read and the attribute dropped, where [R4: A sound file](GOALS.md#r4-a-sound-file) asks for a refusal.
+  - A reference to nothing, an ID of `node` and a stable rewrite held by hand and have no test.
+- created: 2026-11-07
+- status: OPEN
+- found: checking R4 by hand while the documents were brought up to date
+- next: refuse an attribute a block's sort does not list, and test all four
+
+### [P1][DISCUSSION] The router is not smart enough
+
+- description:
+  - The owner holds that how edges are routed today is neither advanced nor smart.
+  - Three ways are open: a search over the open space · a pass that rips up the worst lines · more rules.
+  - A search is the only one of the three that lets a node sit in a gutter, and it risks speed, stability and about 3000 lines of rewrite.
+  - 29 cases in `bench/routes/` measure any of them, and small cases show lines tangled in one gutter more than paths that fail.
+  - A spike of [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md) on 2026-11-07 drew offsets across with no defect, and offsets down ran lines through nodes.
+- created: 2026-11-07
+- status: HALT
+- next: the owner rates the cases, then picks a way
+- blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
+- related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
+
+### [P1][DISCUSSION] What goal records the routing cases
+
+- description:
+  - The cases have a baseline and no goal, and three of the seven standards have no number.
+  - A measure would hold their counts and the owner's rating, and it would pass or fail nothing.
+- created: 2026-11-07
+- status: HALT
+- next: the owner says whether to add it
+- related: [Goals](GOALS.md)
+
+### [P2][DISCUSSION] A tree drawn with one spine
+
+- description:
+  - The owner wants the `dropdown` case drawn as an ASCII tree: one spine, with each child entered from its left.
+  - `--in left` to the first child is refused as `side-blocked`, and a line with a stated side joins no bundle, so the spine splits in two.
+- created: 2026-11-07
+- status: HALT
+- next: the owner picks how an agent asks for it
+
+### [P2][DISCUSSION] A parent that sits off the middle of its children
+
+- description:
+  - The `tree` and `pyramid` cases draw well by their counts and read wrong, since the grid packs nodes to the left.
+  - This is placement and not routing, so the cases may need a class of their own and a number of their own.
+  - An offset moves one node at a time, which is much work for a whole pyramid.
+- created: 2026-11-07
+- status: HALT
+- next: the owner says whether cases split into routing and placement
+
+### [P2][DISCUSSION] Seven line labels sit off their lines
+
+- description:
+  - 7 of the 54 labels of the fixtures stay off their lines.
+  - [F2.7.3: Labels on edges](../features/F2-layout.md#f273-labels-on-edges) still lists lines that move apart for a label.
+  - Classifying the seven costs nothing and comes before any change to the router.
+- created: 2026-11-07
+- status: HALT
+- next: the owner says whether to classify them first
+
+### [P2][TASK] The documents still say box, row and line in prose
+
+- description:
+  - Help and refusals say node, layer and edge, and the specs and features still mix in the old words.
+  - `specs/routing.md`, `features/F2-layout.md` and `features/F1-elements.md` hold the most.
+  - A decision's title stays as it was, since citations name it.
+- created: 2026-11-07
+- status: OPEN
+- next: rename them with the words of the glossary
+
+### [P2][DISCUSSION] The file's `library` against the code's stylesheet
+
+- description:
+  - [The .grafical file](../specs/grafical-file.md) says `theme` and `library`, and the code reads `style` and a `.grafical-style.yaml` file.
+  - The glossary already gives *stylesheet* as a lost name.
+- created: 2026-11-07
+- status: HALT
+- next: the owner says which one holds
+
+### [P2][DISCUSSION] An HTML export, and an SVG a model can tune afterwards
+
+- description:
+  - The owner wants an HTML export.
+  - The owner wants an exported SVG that a model may tune pixel by pixel, and grafical stops at the export.
+  - `render --svg` writes an SVG with no ID on any element and no group, so a model cannot tell one path from another.
+  - Its text names the font `Inter`, so another machine may draw it differently.
+  - A tuned SVG is lost at the next `render`, since the file stores no position.
+  - The philosophy says "Nobody places anything by the pixel", and only the owner can say how this sits with it.
+- created: 2026-11-07
+- status: HALT
+- next: settle after the placement talk
+- related: [The .grafical file](../specs/grafical-file.md)
 
 ### [P2][DISCUSSION] A line that is a curve end to end
 

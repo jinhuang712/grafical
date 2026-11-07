@@ -2,7 +2,7 @@
 
 ```
 F6: Output
-├── F6.1: The diagram file — one YAML file of facts
+├── F6.1: The diagram file — one file of facts
 │   └── F6.1.1: The object model — objects, types and styles in a file of their own form
 ├── F6.2: Render — SVG and PNG, the same everywhere
 ├── F6.3: Live viewer — a window that redraws as the agent draws
@@ -13,7 +13,7 @@ What a diagram leaves behind: one file in git, the pictures drawn from it, a win
 
 ## F6.1: The diagram file
 
-One YAML file, `<name>.grafical`, holds the whole diagram as facts: layers and nodes in order and groups and lanes and columns and walls and notes and lines. The picture on the front page of the README is drawn from [docs/images/pipeline.grafical](../docs/images/pipeline.grafical).
+One file, `<name>.grafical`, holds the whole diagram as facts: layers and nodes in order and groups and lanes and columns and walls and notes and lines. The picture on the front page of the README is drawn from [docs/images/pipeline.grafical.yaml](../docs/images/pipeline.grafical.yaml).
 
 - grafical writes it in a fixed key order, so the same facts give the same bytes and a change reads as a small diff in git.
 - It holds no coordinate.
@@ -33,7 +33,7 @@ One YAML file, `<name>.grafical`, holds the whole diagram as facts: layers and n
 
 **Stories:**
 
-- An engineer keeps one YAML file in git, to review and reproduce the picture.
+- An engineer keeps one file in git, to review and reproduce the picture.
 
 ### F6.1.1: The object model
 

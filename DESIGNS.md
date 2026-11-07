@@ -44,6 +44,7 @@ A node's place is its layer, its order in the layer, its group, its column, an a
   - [027. Columns beside rows](specs/decisions/027-columns-beside-rows.md)
   - [031. Steps from another box](specs/decisions/031-steps-from-another-box.md)
   - [079. The gap between two regions takes a multiple](specs/decisions/079-the-gap-between-two-regions-takes-a-multiple.md)
+  - [093. A node may sit off its cell by a fraction](specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md)
 - **How it works:** [Placement](specs/placement.md)
 
 ## 3. The engine never chooses for the agent
@@ -91,6 +92,7 @@ Edges run orthogonally through the gaps between layers and nodes. The engine pic
   - [065. Unreadable is refused and costly is reported](specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
   - [058. An agent may state the side of a line](specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
   - [059. Lines may be drawn square, round or smooth](specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
+  - [095. A good route is one the eye can follow](specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 - **How it works:**
   - [Routing](specs/routing.md)
   - [Text placement](specs/labels.md)
@@ -157,7 +159,7 @@ A file of a newer format, a field the schema does not know, a mark file that cha
 
 ## 11. Looks are free, while shape and dash follow the type
 
-Any object may take any color, a mark may be any emoji, text or file, and an edge may take any width from 0.5 to 8 px. A look comes from the object, then the styles it marks, then its type, then the theme. A node's shape and an edge's dash come from its type, so that a reader can trust them. Cost: two diagrams can look different, the legend has to say what a color, a width or a mark means, and a look a team shares lives in a second file.
+Any object may take any color, a mark may be any emoji, text or file, and an edge may take any width from 0.5 to 8 px. A look comes from the object, then the styles it marks, then the object it follows with `like`, then its type, then the theme. A node's shape and an edge's dash come from its type, so that a reader can trust them. Cost: two diagrams can look different, the legend has to say what a color, a width or a mark means, and a look a team shares lives in a second file.
 
 **Ask:** Is this a look the agent may choose freely, or a place that must stay a fact?
 
@@ -169,6 +171,7 @@ Any object may take any color, a mark may be any emoji, text or file, and an edg
   - [028. A legend for widths and marks](specs/decisions/028-a-legend-for-widths-and-marks.md)
   - [034. The legend says only what the agent named](specs/decisions/034-the-legend-says-only-what-the-agent-named.md)
   - [091. A label may mark a style](specs/decisions/091-a-label-may-mark-a-style.md)
+  - [092. `like` follows an object's look and nothing else](specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
 - **How it works:**
   - [The theme](specs/theme.md)
   - [The renderer](specs/rendering.md)

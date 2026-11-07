@@ -17,10 +17,10 @@ Features
 │   │   ├── ⬜ F1.1.5: Marks by name — a mark from one bundled icon set
 │   │   ├── ✅ F1.1.6: Emphasis — at most two boxes stand out
 │   │   └── ✅ F1.1.7: Node looks — colors from the styles a node marks
-│   ├── 🚧 F1.2: Edges — what connects to what (a second way to draw a line thick and bars across groups not built)
+│   ├── 🚧 F1.2: Edges — what connects to what (bars across groups not built)
 │   │   ├── ✅ F1.2.1: Types — a line's kind sets its style
 │   │   ├── ✅ F1.2.2: Arrowheads at both ends — two-way lines
-│   │   ├── 🚧 F1.2.3: Weight — thicker lines for what matters more (`edge --emphasize` not yet removed)
+│   │   ├── ✅ F1.2.3: Weight — thicker lines for what matters more
 │   │   ├── ✅ F1.2.4: Numbered steps — a number on a line
 │   │   ├── 🚧 F1.2.5: Ends at a group, a layer or a lane — one arrow to a whole system (a bar cannot yet cross a group)
 │   │   └── ✅ F1.2.6: Edge looks — a color from the styles an edge marks
@@ -33,13 +33,14 @@ Features
 │       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
 │       ├── ✅ F1.3.7: Notes — a short text on a box, a line or a group
 │       └── ✅ F1.3.8: Container looks — colors from the styles a group or a lane marks
-├── 🚧 F2: Layout — where everything goes (labels on turning lines and flow direction not built)
+├── 🚧 F2: Layout — where everything goes (lines moving apart for labels and flow direction not built)
 │   ├── ✅ F2.1: Placing every node — grafical gives every box its place
 │   ├── ✅ F2.2: Layers and order — a box's row and its place in it
 │   ├── ✅ F2.3: Alignment — one box above or below another
 │   ├── 🚧 F2.4: Columns — a second placement fact beside rows (headings not built)
 │   │   └── ⬜ F2.4.1: Column headings — a label above a column
 │   ├── ✅ F2.5: Steps from another node — a box some cells from another
+│   │   └── ⬜ F2.5.1: Offsets — a node a fraction of a cell off the grid
 │   ├── ✅ F2.6: Spacing — compact, normal or airy
 │   │   └── ✅ F2.6.1: Region gaps — more room between two regions
 │   ├── 🚧 F2.7: How edges are drawn — grafical routes every line (lines do not move apart for labels, and no line leaves away from its other end)
@@ -48,14 +49,15 @@ Features
 │   │   └── 🚧 F2.7.3: Labels on edges — a line carries its label (lines do not move apart for one)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
-│   ├── 🚧 F3.1: Operations — one named command per change (names still differ inside)
+│   ├── ✅ F3.1: Operations — one named command per change
 │   ├── ✅ F3.2: Batches — many operations, all or nothing
 │   ├── ✅ F3.3: Trying a change — see counts before writing
 │   ├── ✅ F3.4: IDs — the caller names every element
 │   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts
 │   ├── ✅ F3.6: Merging and swapping — merge, swap and remove boxes
-│   └── ⬜ F3.7: More combinations of operations — one operation for a common edit
-├── 🚧 F4: Look — how the picture looks (the legend as a small diagram and brand fonts and region labels not built)
+│   ├── ⬜ F3.7: More combinations of operations — one operation for a common edit
+│   └── ⬜ F3.8: Move and plug — one verb to move things and one to change connections
+├── 🚧 F4: Look — how the picture looks (the legend as a small diagram and brand fonts not built)
 │   ├── ✅ F4.1: Title, subtitle and footnote — the words around the picture
 │   ├── 🚧 F4.2: Legend — a key for styles, widths and marks (the legend as a small diagram not built)
 │   │   └── ⬜ F4.2.1: A legend as a small diagram — entries, their layout and their samples
@@ -81,8 +83,8 @@ Features
 │   ├── ✅ F5.4: Check — defects, warnings and counts on demand
 │   └── ⬜ F5.5: Checks of an agent's own — rules a diagram sets itself
 ├── ✅ F6: Output — what a diagram leaves behind
-│   ├── 🚧 F6.1: The diagram file — one YAML file of facts (the object model not built)
-│   │   └── ⬜ F6.1.1: The object model — objects, types and styles in a file of their own form
+│   ├── ✅ F6.1: The diagram file — one file of facts
+│   │   └── ✅ F6.1.1: The object model — objects, types and styles in a file of their own form
 │   ├── ✅ F6.2: Render — SVG and PNG, the same everywhere
 │   ├── ✅ F6.3: Live viewer — a window that redraws as the agent draws
 │   └── ✅ F6.4: Diff — a change as operations
