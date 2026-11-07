@@ -171,15 +171,15 @@ describe("edges", () => {
       { op: "edge.label", id: "service->mongo" },
       { op: "edge.type", id: "pipelines->geo", type: "data" },
       { op: "edge.reverse", id: "retry->line_topics" },
-      { op: "edge.ends", id: "callers->handlers", to: "catalog-api" },
+      { op: "plug", id: "callers->handlers", to: "catalog-api" },
     ]);
     expect(edge(d, "pipelines->mongo")?.label).toBe("write");
     expect(edge(d, "service->mongo")?.label).toBeUndefined();
     expect(edge(d, "pipelines->geo")?.kind).toBe("data");
     expect(edge(d, "retry->line_topics")).toMatchObject({ from: "line_topics", to: "retry" });
     expect(edge(d, "callers->handlers")).toMatchObject({ from: "callers", to: "catalog-api" });
-    expect(fail(fx, [{ op: "edge.ends", id: "callers->handlers" }])[0]?.code).toBe("missing-field");
-    expect(fail(fx, [{ op: "edge.ends", id: "callers->handlers", to: "nope" }])[0]).toMatchObject({
+    expect(fail(fx, [{ op: "plug", id: "callers->handlers" }])[0]?.code).toBe("missing-field");
+    expect(fail(fx, [{ op: "plug", id: "callers->handlers", to: "nope" }])[0]).toMatchObject({
       code: "unknown-node",
       field: "to",
     });
@@ -389,7 +389,7 @@ describe("parsing", () => {
       { op: "edge.both", id: "a->b", off: true },
       { op: "edge.weight", edges: ["a->b"], weight: "thick" },
       { op: "edge.reverse", id: "a->b" },
-      { op: "edge.ends", id: "a->b", to: "c" },
+      { op: "plug", id: "a->b", to: "c" },
       { op: "group.sublabel", id: "g", text: "t" },
       { op: "group.order", id: "g", after: "h" },
       {

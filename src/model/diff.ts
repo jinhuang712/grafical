@@ -626,7 +626,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       continue;
     }
     if (e.from !== was.from || e.to !== was.to) {
-      const op: Op = { op: "edge.ends", id: e.id };
+      const op: Op = { op: "plug", id: e.id };
       if (e.from !== was.from) op.from = e.from;
       if (e.to !== was.to) op.to = e.to;
       ops.push(op);

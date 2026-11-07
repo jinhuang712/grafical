@@ -12,6 +12,7 @@ export function opCommands(program: Command): Map<OpName, Command> {
   const out = new Map<OpName, Command>();
   for (const c of program.commands) {
     if (c.name() === "new") out.set("diagram.new", c);
+    if (c.name() === "plug") out.set("plug", c);
     for (const s of c.commands) {
       const name = `${c.name()}.${s.name()}`;
       if ((OP_NAMES as string[]).includes(name)) out.set(name as OpName, s);

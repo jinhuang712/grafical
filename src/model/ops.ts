@@ -408,7 +408,7 @@ export interface EdgeStepOp {
 }
 /** Moves one or both ends of an edge; its id, kind and label stay. */
 export interface EdgeRetargetOp {
-  op: "edge.ends";
+  op: "plug";
   id: string;
   from?: string;
   to?: string;
@@ -931,7 +931,7 @@ export const edgeStepSchema = z.strictObject({
   n: stepNumber.optional(),
 });
 export const edgeRetargetSchema = z.strictObject({
-  op: z.literal("edge.ends"),
+  op: z.literal("plug"),
   id: edgeId,
   from: nodeId.optional(),
   to: nodeId.optional(),
@@ -1208,7 +1208,7 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.label-at": edgeSeatSchema,
   "edge.side": edgeSideSchema,
   "edge.number": edgeStepSchema,
-  "edge.ends": edgeRetargetSchema,
+  plug: edgeRetargetSchema,
 };
 
 export const OP_NAMES = Object.keys(SCHEMAS) as OpName[];

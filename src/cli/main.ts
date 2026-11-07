@@ -706,7 +706,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "edges: add, ends, reverse, label, side, label-at, weight, both, pass, number, type, style, like, remove",
+      "edges: add, reverse, label, side, label-at, weight, both, pass, number, type, style, like, remove",
     );
   json(
     edge
@@ -827,18 +827,6 @@ export function build(): Command {
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.reverse", id }, opts);
   });
-  json(
-    edge
-      .command("ends")
-      .description("move one or both ends of an edge; its id, type and label stay")
-      .argument("<file>")
-      .argument("<id>")
-      .option("--from <end>", "a node, group, layer or lane")
-      .option("--to <end>", "a node, group, layer or lane"),
-  ).action(async (file: string, id: string, opts: Opts) => {
-    await write(file, { op: "edge.ends", id, ...pick(opts, ["from", "to"]) }, opts);
-  });
-
   json(
     node
       .command("sublabel")
@@ -1397,6 +1385,18 @@ export function build(): Command {
       await write(file, raw, opts);
     });
   }
+
+  json(
+    program
+      .command("plug")
+      .description("plug an edge into other ends; its id, type and label stay")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--from <end>", "a node, group, layer or lane")
+      .option("--to <end>", "a node, group, layer or lane"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "plug", id, ...pick(opts, ["from", "to"]) }, opts);
+  });
 
   attachHelp(program, new Map([...opCommands(program)].map(([op, c]) => [c, op])));
   // A command's page is <command> --help, the one way to it: commander's own help command would be a second, which

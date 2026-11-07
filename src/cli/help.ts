@@ -508,7 +508,7 @@ Good to know:
   - An edge's id <from>-><to> becomes its copy's ends: web-b->db-b.
   - Notes and walls are not copied.
 
-See also: group order, edge ends, diff
+See also: group order, plug, diff
 
 Example:
   grafical group copy ha.grafical zone-a zone-b --label "Zone B" \\

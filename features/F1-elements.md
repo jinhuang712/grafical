@@ -259,11 +259,11 @@ An edge's kind says what it means and decides its style.
 - `grafical -f <file> edge --type <id> [<type>]`
 - `grafical -f <file> edge --label <id> [--label <text>]`
 - `grafical -f <file> edge --reverse <id>`
-- `grafical -f <file> edge --ends <id> [--from <end>] [--to <end>]`
+- `grafical -f <file> plug <id> [--from <end>] [--to <end>]`
 - `grafical -f <file> edge --remove <id>`
 
-- `relabel` without `--label` clears the label.
-  - `retarget` moves one or both ends and keeps the edge's ID, kind and label.
+- `edge --label` without `--label` clears the label.
+- `plug` moves one or both ends and keeps the edge's ID, type and label.
 
 ### F1.2.2: Arrowheads at both ends
 

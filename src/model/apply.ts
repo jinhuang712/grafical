@@ -2216,7 +2216,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
     case "edge.both":
     case "edge.pass":
     case "edge.number":
-    case "edge.ends": {
+    case "plug": {
       const e = d.edges.find((x) => x.id === op.id);
       if (!e) return [unknownEdge(d, op.id, i, "id")];
       if (op.op === "edge.label") {

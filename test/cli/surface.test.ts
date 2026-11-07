@@ -43,7 +43,7 @@ describe("the words a caller types", () => {
 
   it("name a verb as it is typed", () => {
     expect(surfaceName("node move")).toBe("node --move");
-    expect(surfaceName("edge ends")).toBe("edge --ends");
+    expect(surfaceName("edge reverse")).toBe("edge --reverse");
     expect(surfaceName("apply")).toBe("apply");
   });
 

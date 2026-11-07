@@ -2,7 +2,7 @@
 
 import { NOUNS, surfaceName } from "../../src/cli/surface.ts";
 
-const FILE_COMMANDS = ["new", "apply", "try", "show", "diff", "check", "render", "view"];
+const FILE_COMMANDS = ["new", "plug", "apply", "try", "show", "diff", "check", "render", "view"];
 
 /** `node add a.yaml x` as `-f a.yaml node --add x`. */
 export function typed(args: readonly string[]): string[] {
