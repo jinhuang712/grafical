@@ -9,15 +9,15 @@ Placement solves the two directions separately. Across, every node takes a colum
 The two are solved at different times. A gutter's height depends on how many edges run through it, which routing decides, and routing needs every node's x first. So placement works in three turns, with routing between them:
 
 ```text
-facts ──> boxes placed by steps join their rows ──> sizes ──> each row in lane, then column order
+facts ──> nodes placed by steps join their layers ──> sizes ──> each layer in lane, then column order
                                                                 │
-              routing: stand-ins for container ends, lines straight between neighbours
+              routing: stand-ins for container ends, edges straight between neighbours
                                                                 │
-          the column grid ──> the x of every box, group, lane and wall, and the canvas's width
+          the column grid ──> the x of every node, group, lane and wall, and the canvas's width
                                                                 │
-              routing: every line, and the rows of tracks each gutter holds
+              routing: every edge, and the rows of tracks each gutter holds
                                                                 │
-          the y of every row, head and gutter ──> the canvas's height
+          the y of every layer, head and gutter ──> the canvas's height
 ```
 
 Every step reads only the facts and the theme, so the same file gives the same places on every machine.
@@ -38,9 +38,9 @@ A dot is 24 px across and a `choice` diamond 28 px, whatever the step. Every pla
 A layer is an ordered list, and nothing more: it says which node comes before which. The grid turns those orders into columns that hold across all layers.
 
 ```text
-row 0     [ A ]   [ B ]
-            │       │            the line A→C joins A and C into column 0,
-row 1     [ C ]   [ D ]   [ E ]  B→D joins B and D into column 1,
+layer 0   [ A ]   [ B ]
+            │       │            the edge A→C joins A and C into column 0,
+layer 1   [ C ]   [ D ]   [ E ]  B→D joins B and D into column 1,
                                  and E takes a column of its own
 column      0       1       2
 ```
@@ -49,10 +49,10 @@ The grid is built in four steps:
 
 1. **Constraints.** Each node must lie left of the next in its layer.
    - Lanes and groups and column facts and walls and nodes shared by groups add more constraints of the same kind.
-2. **Joins.** Nodes in different layers are joined into one column best first: alignments → steps → lines.
+2. **Joins.** Nodes in different layers are joined into one column best first: alignments → steps → edges.
    - An edge's join scores 10 when it spans one layer and `max(1, 6 − span)` when it spans more.
    - It scores 4 more when the node has no other partner and 2 more for the median of its partners.
-   - It scores 3 more for each end that continues a straight line.
+   - It scores 3 more for each end that continues a straight edge.
    - A join that would widen the grid is not made.
    - An edge that skips layers also keeps its column free in the layers it passes, so that it can run down it.
 3. **Packing.** Each column takes the leftmost place its constraints allow.
@@ -62,7 +62,7 @@ A node outside every group that two or more groups use, such as a store that a w
 
 Then each column gets its x: the largest of all the minimum distances that apply to it, from node widths, gaps, groups, lanes and walls. The grid is centred on a multiple of 4 px.
 
-Two neighbours in a layer keep the density's node gap between them. A gap that a labelled line crosses is as wide as the label plus 40 px when the label sits on the line, and plus 24 px when it sits above or below. Two numbered lines between the same neighbours widen it to 60 px plus their arrowheads, so that both badges fit side by side.
+Two neighbours in a layer keep the density's node gap between them. A gap that a labelled edge crosses is as wide as the label plus 40 px when the label sits on the edge, and plus 24 px when it sits above or below. Two numbered edges between the same neighbours widen it to 60 px plus their arrowheads, so that both badges fit side by side.
 
 ## Alignment
 
@@ -84,9 +84,9 @@ A diagram's lanes all run one way. Layers as members make lanes that run as laye
 - **Lanes as layers** share one header column on the left: the widest label up to 112 px, plus 24 px.
   - Each lane has 16 px of padding at the top and bottom, and its border runs below the gutter's tracks and walls.
 
-A lane's side keeps lines 8 px off on either side.
+A lane's side keeps edges 8 px off on either side.
 
-## Steps from another box
+## Steps from another node
 
 A node placed by steps has no layer of its own. It lands in the cell its steps name from its anchor: its anchor's layer plus the steps down, and its anchor's column plus the steps across. So it moves with its anchor, which may itself be placed by steps.
 
@@ -101,9 +101,9 @@ A node placed by steps has no layer of its own. It lands in the cell its steps n
 
 ## Groups
 
-A group is drawn as one node around its members. Its node spans every layer from its top member to its bottom one, and in each of those layers its members fill a block of neighbouring columns with no other node inside. The other nodes of those layers sit beside it. A layer inside the span that holds no member is split to the left and right of the node.
+A group is drawn as one frame around its members. Its frame spans every layer from its top member to its bottom one, and in each of those layers its members fill a block of neighbouring columns with no other node inside. The other nodes of those layers sit beside it. A layer inside the span that holds no member is split to the left and right of the frame.
 
-A group has 24 px of padding on its sides and bottom, and 24 px more for each level of nesting, up to three levels. A node outside a group keeps at least 16 px from its node, and two group nodes keep 24 px apart. Inner group nodes alternate their fill with depth, the even ones on the canvas's color, unless a stylesheet sets `paint.nesting: shade`.
+A group has 24 px of padding on its sides and bottom, and 24 px more for each level of nesting, up to three levels. A node outside a group keeps at least 16 px from its frame, and two group frames keep 24 px apart. Inner group frames alternate their fill with depth, the even ones on the canvas's color, unless a stylesheet sets `paint.nesting: shade`.
 
 A group's title takes room by the place the agent states for it, and the engine adds room only for the title itself:
 
@@ -111,11 +111,11 @@ A group's title takes room by the place the agent states for it, and the engine 
 |---|---|
 | `top`, `inside`, or no place | a head of 40 px above the first layer |
 | `bottom`, `inside` | a foot of 40 px below the last layer; the top keeps only its 24 px padding |
-| `top` or `bottom`, `outside` | 40 px outside the node |
+| `top` or `bottom`, `outside` | 40 px outside the frame |
 | `left` or `right`, `inside` | a strip inside, as wide as the label plus 4 px |
 | `left` or `right`, `outside` | room past that side only |
 
-A head may lie partly over the tracks of the gutter above when no edge comes near it. A title outside one side reaches out on that side only, so the picture moves off its centre line rather than mirroring the room on the other side.
+A head may lie partly over the tracks of the gutter above when no edge comes near it. A title outside one side reaches out on that side only, so the picture moves off its centre edge rather than mirroring the room on the other side.
 
 ## Bands, bars and walls
 
@@ -128,15 +128,15 @@ A layer is not drawn, unless an edge ends at it or it has a look. Then it is dra
 
 A wall is space between its two sides. A wall across adds 48 px below the upper side's lowest layer, after that gutter's tracks. A wall up and down keeps its two sides apart in the wall's layers and takes `max(48, label width + 16)` px across. No edge runs through a wall's space in its layers, and the wall reaches 16 px past its outermost nodes.
 
-## Rows down the page
+## Layers down the page
 
-Once routing has said how many layers of tracks each gutter holds, every layer's y is added up from the top. A taller gutter or head moves every layer below it down:
+Once routing has said how many rows of tracks each gutter holds, every layer's y is added up from the top. A taller gutter or head moves every layer below it down:
 
 ```text
 title and subtitle, then 28 px
-for each row:
+for each layer:
   lane tops, group heads and band heads that start here
-  the row itself
+  the layer itself
   end padding of groups, lanes and bands that end here
   the gutter below, then any wall across
 bottom margin
@@ -155,7 +155,7 @@ Density changes nothing else.
 An agent may magnify the gap between two neighbouring regions by 1.25, 1.5 or 2, and the result rounds up to 4 px.
 
 - Two layers magnify the gutter between them, tracks and all.
-- Two groups stacked magnify the gutter between their rows, and two side by side the space between their boxes.
+- Two groups stacked magnify the gutter between their layers, and two side by side the space between their nodes.
 - Two columns magnify the node gap between them.
 
 The canvas is as wide as the widest of its nodes, groups, bands, lanes, side labels and routes, plus its margins. It is never narrower than its title with the legend, its subtitle or its note. Both sides are rounded up to multiples of 8 px across and 4 px down.
@@ -174,3 +174,5 @@ The stability tests in `test/layout/stability.ts` apply single operations and as
 - [027. Columns beside rows](decisions/027-columns-beside-rows.md)
 - [031. Steps from another box](decisions/031-steps-from-another-box.md)
 - [035. Columns hold across rows](decisions/035-columns-hold-across-rows.md)
+- [072. A change keeps the structure and positions may shift](decisions/072-a-change-keeps-the-structure-and-positions-may-shift.md)
+- [079. The gap between two regions takes a multiple](decisions/079-the-gap-between-two-regions-takes-a-multiple.md)

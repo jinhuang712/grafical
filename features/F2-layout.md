@@ -2,20 +2,20 @@
 
 ```
 F2: Layout
-├── F2.1: Placing every node — grafical gives every box its place
-├── F2.2: Layers and order — a box's row and its place in it
-├── F2.3: Alignment — one box above or below another
-├── F2.4: Columns — a second placement fact beside rows
+├── F2.1: Placing every node — grafical gives every node its place
+├── F2.2: Layers and order — a node's layer and its place in it
+├── F2.3: Alignment — one node above or below another
+├── F2.4: Columns — a second placement fact beside layers
 │   └── F2.4.1: Column headings — a label above a column
-├── F2.5: Steps from another node — a box some cells from another
+├── F2.5: Steps from another node — a node some cells from another
 │   └── F2.5.1: Offsets — a node a fraction of a cell off the grid
 ├── F2.6: Spacing — compact, normal or airy
 │   └── F2.6.1: Region gaps — more room between two regions
-├── F2.7: How edges are drawn — grafical routes every line
-│   ├── F2.7.1: Edge sides — the side a line leaves or enters by
+├── F2.7: How edges are drawn — grafical routes every edge
+│   ├── F2.7.1: Edge sides — the side an edge leaves or enters by
 │   ├── F2.7.2: Edge shapes — square or round
-│   ├── F2.7.3: Labels on edges — a line carries its label
-│   └── F2.7.4: Steering an edge — where a line passes and turns, as facts
+│   ├── F2.7.3: Labels on edges — an edge carries its label
+│   └── F2.7.4: Steering an edge — where an edge passes and turns, as facts
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
 
@@ -49,14 +49,14 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
 
 **Commands:**
 
-- `grafical -f <file> layer --add <id> [--label <text>] [--before <row> | --after <row>]`
+- `grafical -f <file> layer --add <id> [--label <text>] [--before <layer> | --after <layer>]`
 - `grafical -f <file> layer --label <id> --label <text>`
 - `grafical -f <file> layer --look <id> [box|band]`
-- `grafical -f <file> layer --move <id> --first | --last | --before <row> | --after <row>`
+- `grafical -f <file> layer --move <id> --first | --last | --before <layer> | --after <layer>`
 - `grafical -f <file> layer --remove <id>`
 - `grafical -f <file> layer --split <id> <new-id> --label <text> [--from <node>]`
-- `grafical -f <file> node --add <id> --layer <row> --label <text> [--type <type>] [--sublabel <text>] [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--emphasis]`
-- `grafical -f <file> node --move <id> [--layer <row>] [--first | --last | --before <node> | --after <node>]`
+- `grafical -f <file> node --add <id> --layer <layer> --label <text> [--type <type>] [--sublabel <text>] [--size s|m|l] [--first | --last | --before <node> | --after <node>] [--align <node>] [--emphasis]`
+- `grafical -f <file> node --move <id> [--layer <layer>] [--first | --last | --before <node> | --after <node>]`
 
 - A new layer goes to the bottom unless `--before` or `--after` places it.
 - A node added to a layer or moved into another layer says where it goes: `--first` or `--last` or `--before` or `--after`.
@@ -73,7 +73,7 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
   - `box` draws it with a node's paint and a dark label.
   - `band` draws it with the band's light fill and grey label.
   - Without a look, a layer is drawn only when an edge ends at it.
-  - Then a layer with no node is drawn as a node and a layer with nodes as a band.
+  - Then a layer with no node is drawn as a bar and a layer with nodes as a band.
   - A layer with no node and a look is a bar and is checked as one ([045. A row with a look is drawn](../specs/decisions/045-a-row-with-a-look-is-drawn.md)).
   - An edge that passes it needs `--pass` (`bar-crossed`).
   - It may not lie between the first and last layers of a group (`bar-in-group`).
@@ -180,7 +180,7 @@ grafical -f <file> node --move <id> [--from <node>] [--down <n> | --up <n>] [--l
   - The warning names those nodes.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
-- **How it works:** [Placement: steps from another box](../specs/placement.md#steps-from-another-box)
+- **How it works:** [Placement: steps from another node](../specs/placement.md#steps-from-another-node)
 - **Why:**
   - [031. Steps from another box](../specs/decisions/031-steps-from-another-box.md)
   - [032. Who chose is punished](../specs/decisions/032-who-chose-is-punished.md)
@@ -210,13 +210,12 @@ grafical -f <file> diagram --density compact|normal|airy
 ```
 
 - **Design:** [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
-- **How it works:** [Placement: rows down the page](../specs/placement.md#rows-down-the-page)
+- **How it works:** [Placement: layers down the page](../specs/placement.md#layers-down-the-page)
 - **Why:** [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md)
 
 **Stories:**
 
 - An agent picks a density, to trade size for air.
-- An agent opens the gap between two layers, to settle one crowded place.
 
 ### F2.6.1: Region gaps
 
@@ -230,10 +229,14 @@ grafical -f <file> gap --between <a> <b> [--magnified <n>]
 - It follows the density, so a multiple of a compact gap stays narrower than one of an airy gap.
 - Without `--magnified`, the gap goes back to its default.
 - Two regions that are not neighbours of one kind are refused as `not-neighbours`.
-- Two groups are neighbours when a box of one stands next to a box of the other in a row, or when one ends in the row above the other's first.
+- Two groups are neighbours when a node of one stands next to a node of the other in a layer, or when one ends in the layer above the other's first.
 - A gap whose regions stop being neighbours stays stated and does nothing, and a gap goes when its region goes.
 
 - **Why:** [079. The gap between two regions takes a multiple](../specs/decisions/079-the-gap-between-two-regions-takes-a-multiple.md)
+
+**Stories:**
+
+- An agent opens the gap between two layers, to settle one crowded place.
 
 ## F2.7: How edges are drawn
 
@@ -242,10 +245,10 @@ The agent says what connects. grafical draws every edge.
 - An edge is made of horizontal and vertical runs through the gaps between layers and nodes, never through a node or across text.
 - An edge may leave or enter a node on any side.
   - Each edge has its own place on a side, spread evenly.
-- Three or more unlabelled lines of one style that leave one side of a node leave as one edge and split near their targets, with a dot at each split.
-  - Labelled lines and two-way lines keep their own place.
+- Three or more unlabelled edges of one style that leave one side of a node leave as one edge and split near their targets, with a dot at each split.
+  - Labelled edges and two-way edges keep their own place.
 - Where two edges cross, one hops over the other.
-  - Where lines join on purpose, a dot marks the join.
+  - Where edges join on purpose, a dot marks the join.
 - A label sits on its edge and the edge passes through it, unless the agent takes it off.
   - When there is no room on the edge, it sits beside it, wraps or moves to another gap on its way.
   - Where no gap on its way has room, no edge moves for it and the write is refused as `label-blocked` ([061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)).
@@ -255,21 +258,30 @@ The agent says what connects. grafical draws every edge.
   - A step's number is refused the same way.
 - A stylesheet may draw the corners curved, with `paint.edge.shape: curved`.
   - The routes stay the same.
+- ⬜ An edge may leave one side and enter another across layers, such as out of the right of a node and into the left of another.
+- ⬜ The run at each end of an edge is at least 16 px, and 24 px at ease.
+- ⬜ Two edges that swap sides in one gap leave level, enter level and take no jog.
+- ⬜ Edges of one sort take one form in a picture.
+- ⬜ Where places leave a pair no clean route, one edge goes round the outside, and the write reports that the agent may move a node.
+- grafical never widens a column gap for an edge: the agent does it with `gap --between`.
 
 - **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
 - **How it works:**
   - [Routing](../specs/routing.md#the-steps)
-  - [Text placement: line labels](../specs/labels.md#line-labels)
+  - [Text placement: edge labels](../specs/labels.md#edge-labels)
 - **Why:**
   - [005. Our own gap router](../specs/decisions/005-our-own-gap-router.md)
   - [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
   - [023. Fan-outs of three bundle](../specs/decisions/023-fan-outs-of-three-bundle.md)
   - [061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)
   - [051. A label sits on its straight vertical line](../specs/decisions/051-a-label-sits-on-its-straight-vertical-line.md)
+  - [065. Unreadable is refused and costly is reported](../specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
+  - [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
+  - [097. The router draws clean lines and the agent makes their room](../specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
 
 **Stories:**
 
-- An agent states what connects, to get lines that avoid nodes and text without drawing any.
+- An agent states what connects, to get edges that avoid nodes and text without drawing any.
 
 ### F2.7.1: Edge sides
 
@@ -283,7 +295,7 @@ grafical -f <file> edge --side <id> [--out top|bottom|left|right] [--in top|bott
 - Without `--out` or `--in`, the edge's sides are grafical's again.
 - Where the edge cannot go by the stated side, the write is refused as `side-blocked`.
   - It gives the stated side and the side it would have drawn.
-- A side that faces away from the other end takes the line round its own box.
+- A side that faces away from the other end takes the edge round its own node.
 - A stated side can cost more bends or crossings, and the counts show them.
 
 - **Why:** [058. An agent may state the side of a line](../specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
@@ -319,7 +331,7 @@ grafical -f <file> edge --label-at <id> on|beside
 
 ### F2.7.4: Steering an edge
 
-An agent steers a line with facts and never with a coordinate. Every step here is stated on one edge, and the engine still routes the line.
+An agent steers an edge with facts and never with a coordinate. Every step here is stated on one edge, and the engine still routes the edge.
 
 ```sh
 grafical -f <file> edge --via <id> [<object>] [--side left|right]
@@ -332,8 +344,8 @@ grafical -f <file> edge --stretch <id> [--magnified 1.25|1.5|2]
 
 | Flag | What it states | Refused as |
 |---|---|---|
-| `--via` | the node or group a line passes and on which side | `via-blocked` |
-| `--straight` | a line with no bend | `not-straight` |
+| `--via` | the node or group an edge passes and on which side | `via-blocked` |
+| `--straight` | an edge with no bend | `not-straight` |
 | `--main` | the main flow, whose ends take one column first | none |
 | `--with` | one trunk with an edge that shares an end | `no-trunk` |
 | `--bend` | where between its neighbours the longest inner run sits | `bend-blocked` |
@@ -341,20 +353,20 @@ grafical -f <file> edge --stretch <id> [--magnified 1.25|1.5|2]
 
 - A value goes back to the engine with the same flag and no value.
 - `--with` draws a tree with one spine: each child leaves the trunk square into its own side.
-  - A side the agent stated holds, and with none the line takes the first side that reaches the trunk.
+  - A side the agent stated holds, and with none the edge takes the first side that reaches the trunk.
 - `--bend` needs an inner run whose neighbours lie on either side of it, and `--stretch` one whose neighbours lie on the same side.
-- A line with a label or a step's number takes neither `--with`, `--bend` nor `--stretch`, since the text would stay behind.
-- A step that meets a node or a label or comes within 12 px along another line refuses the write.
+- An edge with a label or a step's number takes neither `--with`, `--bend` nor `--stretch`, since the text would stay behind.
+- A step that meets a node or a label or comes within 12 px along another edge refuses the write.
 - `--stretch` stops at the canvas, so a detour past it is refused.
 - `--main` and `--straight` change only which nodes share a column, so a node may shift sideways.
 
 - **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
-- **How it works:** [Routing: facts that steer a line](../specs/routing.md#facts-that-steer-a-line)
+- **How it works:** [Routing: facts that steer an edge](../specs/routing.md#facts-that-steer-an-edge)
 - **Why:** [096. An edge is steered by facts and never by coordinates](../specs/decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
 
 **Stories:**
 
-- A strong model states where a line passes, to tune a picture without a coordinate.
+- A strong model states where an edge passes, to tune a picture without a coordinate.
 
 ## F2.8: Flow direction
 

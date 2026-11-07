@@ -34,6 +34,7 @@ Then it scans `plan/TODO.md`.
 
 ## While you work
 
+- [YES]   follow these rules strictly unless the owner rejects one.
 - [YES]   read every document you work on yourself and in full.
 - [YES]   scan the open items, the roadmap and the goals to see where things stand.
 - [NO]    give a document to a subagent to read or write.
@@ -42,15 +43,20 @@ Then it scans `plan/TODO.md`.
 - [WHEN]  you are about to change a part: read its spec in `specs/` first.
 - [WHEN]  a decision is cited or its area changes: read it in `specs/decisions/`.
 - [WHEN]  the work needs the code: a subagent may read the code.
+- [WHEN]  you change a fact or a rule: search the documents for what it now contradicts.
+- [WHEN]  the owner says something a document contradicts: say so before you act.
+- [WHEN]  you find a contradiction: tell the owner and pick no side.
 - [WHEN]  you make a choice that closes a fork: write its decision at once.
 - [WHEN]  something cannot be done now: add it to the open items at once.
 - [WHEN]  the documents and the code disagree: tell the owner and let the owner decide.
 - [WHEN]  other developers build on the project: say it may need a wiki and let the owner pick its form.
 - [WHEN]  a change is done: update the changelog and the feature's status in the same change.
+- [WHEN]  a change lands: before you report, fix what it left behind in the documents and the open items.
 - [WHEN]  an open item is done: delete it in the same change.
 - [WHEN]  you change something: check only what you touched against the rules.
 - [WHEN]  the work at hand is done and nothing is next: go through the open items with the owner.
 - [WHEN]  a checkpoint ends or a release is near: check the goals.
+- [WHEN]  a checkpoint ends: run the `what-we-build` skill's start pass if it is installed.
 - [WHEN]  something in this tree happens: update the documents it names in the same change.
 - [WHEN]  the owner stops you: stop at once.
 - [WHEN]  the owner stops you: stop every agent you started and every agent those started.
@@ -71,7 +77,7 @@ What just happened?
 │   ├── ARCHITECTURE ····· how the parts fit now
 │   └── README, INSTALL ·· how it is used now
 ├── A fork was closed ······· decisions/
-├── A question stayed open ·· TODO
+├── Something stayed open ··· TODO
 ├── A todo was done ········· delete it from TODO
 ├── A number moved ·········· GOALS
 ├── A commitment changed ···· DESIGNS

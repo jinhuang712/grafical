@@ -9,12 +9,12 @@ built-in theme (default, dark or print)
   stylesheet ── checked, then deep-merged ──> the diagram's look
         │                                       ├── type sizes ──> layout
         │                                       └── paint ──────> renderer
-fixed sizes and box outlines ──> layout, checker, renderer
+fixed sizes and node outlines ──> layout, checker, renderer
 ```
 
 ## Themes and stylesheets
 
-A theme holds the colors of each node kind, of groups, bands, lines and text, the edge widths, the corner radii, and the type size and weight of each text role. The built-in themes are `default`, `dark` and `print`.
+A theme holds the colors of each node kind, of groups, bands, edges and text, the edge widths, the corner radii, and the type size and weight of each text role. The built-in themes are `default`, `dark` and `print`.
 
 A stylesheet names a `base` theme, `default` when left out, and overrides any of its values. The override is a deep merge: maps merge key by key, and any other value replaces the theme's. The stylesheet is checked strictly before it merges, and an unknown key or a wrong value is refused as `bad-stylesheet`.
 
@@ -26,13 +26,13 @@ The sizes of nodes by size step, the spacing of each density and the distances t
 
 A node's kind decides the outline drawn inside its node: how much room its text has, where the text sits, and where an edge that ends at its side meets the outline. A dot or a small diamond has one size, and its label is not drawn.
 
-## Line weights
+## Edge weights
 
-An edge's weight is a level or a width from 0.5 to 8 px. `thin` is the theme's line width, `thick` is its main-path width, and any other level is a key of `paint.edge.weights`, which a stylesheet may add to. A stylesheet cannot name a level `thin` or `thick`. A level the stylesheet lacks is refused as `unknown-weight`, once the stylesheet is loaded.
+An edge's weight is a level or a width from 0.5 to 8 px. `thin` is the theme's edge width, `thick` is its main-path width, and any other level is a key of `paint.edge.weights`, which a stylesheet may add to. A stylesheet cannot name a level `thin` or `thick`. A level the stylesheet lacks is refused as `unknown-weight`, once the stylesheet is loaded.
 
-The arrowhead grows with the width, from the thin line's size to the main path's. An edge thinner than thin keeps the thin arrowhead.
+The arrowhead grows with the width, from the thin edge's size to the main path's. An edge thinner than thin keeps the thin arrowhead.
 
-`accent: true` on an edge means `weight: thick`. When an edge has both, `weight` wins. The operations keep only one: setting the accent clears the weight, and setting a weight clears the accent.
+A saved run may still say `accent`, and the loader reads it as `emphasis`. No operation writes it.
 
 ## Decisions
 

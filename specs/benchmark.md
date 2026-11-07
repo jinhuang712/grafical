@@ -55,9 +55,9 @@ Each step records the metrics below, the transcript, the final diagram file and 
 | Regenerations | changes answered by redrawing everything | the transcript · the operation log |
 | Unnamed fact changes | facts changed that no operation named | `grafical diff` |
 | Operation errors | refused ÷ all operations · retries | grafical's JSON output |
-| Mechanical defects | overflow · overlap · lines through nodes · label collisions · shared segments | `pnpm bench geometry` |
+| Mechanical defects | overflow · overlap · edges through nodes · label collisions · shared segments | `pnpm bench geometry` |
 
-The geometry check reads the rendered SVG and does not use grafical's checker. It reads shapes only, and it treats lines of one style that leave or reach one point as a bus or a fan-in.
+The geometry check reads the rendered SVG and does not use grafical's checker. It reads shapes only, and it treats edges of one style that leave or reach one point as a bus or a fan-in.
 
 Every headless run carries Claude Code's own system prompt, so each round starts with one empty run per model and reports results both as measured and minus that baseline. An empty run on Haiku with `--safe-mode` took 4,265 cache writes, 13,129 cache reads, $0.0010 and 2.1 s on 2026-10-11.
 
@@ -83,10 +83,10 @@ A report run is how a test picture gets made. One clean session draws one pictur
 
 Older results use names that are gone. E1 is a first draft, E2 the change script, E3 the loose prompts, E4 the scale briefs and E5 a run of grafical with one design decision changed. Until 2026-10-15 the checks had numbers. Benchmark 1 is "The picture turned in" and "Time", 2 "Iteration", 3 "Token use", 4 "Stability", 5 "Model gap", 6 "Operation errors", 7 "Mechanical defects", 8 "Scale", 9 "Faithfulness", 10 "Intent", 11 "Determinism" and "Speed", 12 "Cost", 13 "Cache hit rate" and 14 "Verifiability". Goal 1 is "The MVP bar".
 
-## Decisions
-
-- [053. Success rests on cost, time, model gap and copying](decisions/053-success-rests-on-cost-time-model-gap-and-copying.md)
-
 ## The routing cases
 
 `bench/routes/` holds the pictures that test the router, and `cases.yaml` says what each tests, which standard of a good route it tests and, where known, the fewest crossings its facts allow. `pnpm bench routes` lays them out and compares crossings, bends, length, the worst detour and defects with `baseline.yaml`, at no cost. `--write` saves a new baseline, and `--render <dir>` writes each picture so that the owner can look. Counts do not cover every standard, so a change to the router goes to the owner with its pictures. Each case is small enough to judge one thing, so whole pictures stay out and wait for an end-to-end round. A shape the owner finds bad becomes a case, and cases are only added.
+
+## Decisions
+
+- [053. Success rests on cost, time, model gap and copying](decisions/053-success-rests-on-cost-time-model-gap-and-copying.md)

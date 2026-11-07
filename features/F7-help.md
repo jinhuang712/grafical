@@ -29,7 +29,7 @@ The entry page and one page per command hold everything an agent needs to use gr
 - `--help` is the one way to a page, and there is no `grafical help <command>`.
 - A command grafical does not have is refused with the word it most likely means.
   - `grafical help apply` gives `error: unknown-command` with `found: help` and `likely: --help`.
-  - `grafical node.add --help` gives `found: node.add` and `likely: node add`.
+  - `grafical node.add --help` gives `found: node.add` and `likely: node --add`.
 
 - **Stance:** [How does an agent learn grafical?](../PHILOSOPHY.md#how-does-an-agent-learn-grafical)
 - **Design:** [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)

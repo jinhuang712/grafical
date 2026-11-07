@@ -13,7 +13,7 @@ What a diagram leaves behind: one file in git, the pictures drawn from it, a win
 
 ## F6.1: The diagram file
 
-One file, `<name>.grafical`, holds the whole diagram as facts: layers and nodes in order and groups and lanes and columns and walls and notes and lines. The picture on the front page of the README is drawn from [docs/images/pipeline.grafical.yaml](../docs/images/pipeline.grafical.yaml).
+One file, `<name>.grafical`, holds the whole diagram as facts: layers and nodes in order and groups and lanes and columns and walls and notes and edges. The picture on the front page of the README is drawn from [docs/images/pipeline.grafical.yaml](../docs/images/pipeline.grafical.yaml).
 
 - grafical writes it in a fixed key order, so the same facts give the same bytes and a change reads as a small diff in git.
 - It holds no coordinate.

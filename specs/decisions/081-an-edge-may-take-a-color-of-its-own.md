@@ -2,6 +2,8 @@
 
 Decided: 2026-11-06
 
+Replaced in part by specs/decisions, "A style may be as rich as it likes": an edge takes its color from the styles it marks.
+
 ## The problem
 
 An edge's color came from the theme, so a failure path could only be drawn thicker. A node had just gained colors of its own ("A box may take a look of its own").

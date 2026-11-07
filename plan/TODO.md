@@ -21,7 +21,7 @@
   - A picture may have one or none.
   - Its entries may run across, down or in a grid.
   - It is open what goes in it and how each sample is drawn.
-  - `diagram legend` explains line styles and widths and marks but not a node's fill.
+  - `diagram legend` explains edge styles and widths and marks but not a node's fill.
   - A key of small nodes such as "Works" and "Bug" and "Fixed" is drawn as a group of plain nodes.
   - Every one of them gets `lonely-node`, six warnings for a picture that is right.
 - created: 2026-10-30
@@ -30,11 +30,52 @@
 - next: the owner designs the legend in a talk of its own
 - related: [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
 
+### [P1][DISCUSSION] A good picture and taste
+
+- description:
+  - [PHILOSOPHY.md](../PHILOSOPHY.md) holds that no score settles a picture for everyone and that grafical does not supply the taste.
+  - Twelve points now say what a good picture is, and symmetry and even space lean toward taste.
+  - No checkpoint runs O5: Routes the eye can follow or O6: A picture reads at a glance yet.
+  - [15. A picture is judged by how it reads](../DESIGNS.md#15-a-picture-is-judged-by-how-it-reads) says each judgement takes the owner's eye, and no owner sits beside an agent in real use.
+  - [8. Answers are data a script can read](../DESIGNS.md#8-answers-are-data-a-script-can-read) says the agent judges the picture from the counts, and 15 says a count never shows a picture good.
+  - [B4: Verifiability](GOALS.md#b4-verifiability) says only taste needs the owner and every other check is mechanical.
+  - [Goals](GOALS.md) opens with O1: The MVP bar alone deciding success, and O5 has a `must` tier and an acceptance test.
+- created: 2026-11-08
+- status: HALT
+- next: the owner says whether the stance changes, who judges in real use and when the two goals run
+- related: [098. A picture is judged by how it reads](../specs/decisions/098-a-picture-is-judged-by-how-it-reads.md)
+
+### [P1][DISCUSSION] The router is not smart enough
+
+- description:
+  - The owner holds that how edges are routed today is neither advanced nor smart.
+  - Three ways are open: a search over the open space · a pass that rips up the worst edges · more rules.
+  - A search is the only one of the three that lets a node sit in a gutter, and it risks speed, stability and about 3000 lines of rewrite.
+  - 29 cases in `bench/routes/` measure any of them, and small cases show edges tangled in one gutter more than paths that fail.
+  - The search trial stopped on 2026-11-07, and the owner settles the open points before another run.
+  - Open: edges may share a run only if every start-to-end pair the run implies is a real edge, and whether false edges count as a hard number.
+  - Open: what the engine does in a narrow gap where another route still reads.
+  - Open: the least end run of a main edge, where 20 px was proposed.
+  - Open: labels, stability and the six edge facts on a search.
+  - Open: whether the hand drawings in [plan/evidence](evidence/worst-four-cases.png) become the target pictures.
+  - The six edge facts were tried on 18 of the 29 cases, and 11 are untried.
+  - `ladder` came clean in one column with no change to the router, so it is a placement case.
+  - Trying the six edge facts on the cases, `via` and `with` cleaned up what they could reach, and a stated top in the first layer and a side `via` on a tight layer were refused by how the router is built.
+  - A spike of [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md) on 2026-11-07 drew offsets across with no defect, and offsets down ran edges through nodes.
+- created: 2026-11-07
+- updated: 2026-11-08
+- status: HALT
+- next: read the code to see whether this router can reach one form across a picture, then the owner picks a way
+- branch: wt-search-spike holds the stopped trial
+- evidence: [two-layers-skip by a way round](evidence/two-layers-skip-outside.png) · [two-layers-skip with jogs](evidence/two-layers-skip-jogs.png) · [end runs](evidence/end-runs.png) · [ladder](evidence/ladder-options.png) · [a false edge](evidence/false-line.png)
+- blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
+- related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
+
 ### [P2][DISCUSSION] What the first report run asks of the tool
 
 - description:
-  - A Haiku session on the catalog-sync brief spent its fixes on the order of boxes in a row, and it has no way to state a row's whole order at once.
-  - It compared the `counts` lines of two writes by hand to see whether crossings fell.
+  - A Haiku session on the catalog-sync brief spent its fixes on the order of nodes in a layer, and it has no way to state a layer's whole order at once.
+  - It compared the `counts` edges of two writes by hand to see whether crossings fell.
   - It read `unquoted-text` as naming the field and not the fix, while a refusal never writes the fix.
   - `render` writes the SVG beside the PNG though it asked for neither by name.
   - The session took 782 s on a render of 0.24 s, and where that time went is not known.
@@ -50,37 +91,6 @@
 - next: go through each with the owner
 - updated: 2026-11-07
 - related: [The benchmark harness](../specs/benchmark.md)
-
-### [P1][DISCUSSION] A good picture and taste
-
-- description:
-  - [PHILOSOPHY.md](../PHILOSOPHY.md) holds that no score settles a picture for everyone and that grafical does not supply the taste.
-  - Twelve points now say what a good picture is, and symmetry and even space lean toward taste.
-  - No checkpoint runs O5: Routes the eye can follow or O6: A picture reads at a glance yet.
-- created: 2026-11-08
-- status: HALT
-- next: the owner says whether the stance changes and when the two goals run
-- related: [098. A picture is judged by how it reads](../specs/decisions/098-a-picture-is-judged-by-how-it-reads.md)
-
-### [P1][DISCUSSION] The router is not smart enough
-
-- description:
-  - The owner holds that how edges are routed today is neither advanced nor smart.
-  - Three ways are open: a search over the open space · a pass that rips up the worst lines · more rules.
-  - A search is the only one of the three that lets a node sit in a gutter, and it risks speed, stability and about 3000 lines of rewrite.
-  - 29 cases in `bench/routes/` measure any of them, and small cases show lines tangled in one gutter more than paths that fail.
-  - The search trial stopped on 2026-11-07, and the owner settles the open points before another run.
-  - Open: lines may share a run only if every start-to-end pair the run implies is a real edge, and whether false lines count as a hard number.
-  - Open: what the engine does in a narrow gap where another route still reads.
-  - Open: the least end run of a main line, where 20 px was proposed.
-  - Open: labels, stability, the six edge facts on a search, and `ladder` against the new rules.
-  - Trying the six edge facts on the cases, `via` and `with` cleaned up what they could reach, and a stated top in the first layer and a side `via` on a tight layer were refused by how the router is built.
-  - A spike of [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md) on 2026-11-07 drew offsets across with no defect, and offsets down ran lines through nodes.
-- created: 2026-11-07
-- status: HALT
-- next: the owner rates the cases, then picks a way
-- blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
-- related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 
 ### [P2][ISSUE] `--main` can make a picture worse
 
@@ -103,25 +113,15 @@
 - status: HALT
 - next: the owner says whether cases split into routing and placement
 
-### [P2][DISCUSSION] Seven line labels sit off their lines
+### [P2][DISCUSSION] Seven edge labels sit off their edges
 
 - description:
-  - 7 of the 54 labels of the fixtures stay off their lines.
-  - [F2.7.3: Labels on edges](../features/F2-layout.md#f273-labels-on-edges) still lists lines that move apart for a label.
+  - 7 of the 54 labels of the fixtures stay off their edges.
+  - [F2.7.3: Labels on edges](../features/F2-layout.md#f273-labels-on-edges) still lists edges that move apart for a label.
   - Classifying the seven costs nothing and comes before any change to the router.
 - created: 2026-11-07
 - status: HALT
 - next: the owner says whether to classify them first
-
-### [P2][TASK] The documents still say box, row and line in prose
-
-- description:
-  - Help and refusals say node, layer and edge, and the specs and features still mix in the old words.
-  - `specs/routing.md`, `features/F2-layout.md` and `features/F1-elements.md` hold the most.
-  - A decision's title stays as it was, since citations name it.
-- created: 2026-11-07
-- status: OPEN
-- next: rename them with the words of the glossary
 
 ### [P2][DISCUSSION] The file's `library` against the code's stylesheet
 
@@ -146,10 +146,10 @@
 - next: settle after the placement talk
 - related: [The .grafical file](../specs/grafical-file.md)
 
-### [P2][DISCUSSION] A line that is a curve end to end
+### [P2][DISCUSSION] An edge that is a curve end to end
 
 - description:
-  - Lines are drawn square or round today.
+  - Edges are drawn square or round today.
   - The owner wants a third shape with no straight run.
   - A curve through a route's points cuts corners and can meet what lies beside it.
   - It is open what happens when it does.
@@ -169,25 +169,25 @@
 - next: settle each one when the file is built
 - related: [The .grafical file](../specs/grafical-file.md)
 
-### [P2][DISCUSSION] Labels sit close to the lines beside them in a crowded gutter
+### [P2][DISCUSSION] Labels sit close to the edges beside them in a crowded gutter
 
 - description:
-  - Four labelled lines out of one box run side by side in one gutter with each label 4 px from the next line.
+  - Four labelled edges out of one node run side by side in one gutter with each label 4 px from the next line.
   - The picture reads crowded though no warning fires.
   - Asking for 8 px everywhere made 421 of 500 fuzz diagrams 5.5% taller and the dispatch fixture 2 crossings worse.
   - Asking for 8 px only where a label finds room left the dispatch fixture 4 crossings worse.
-  - An empty row between the two rows only lengthened the lines.
+  - An empty layer between the two layers only lengthened the edges.
   - Neither try was landed.
 - created: 2026-10-30
 - status: HALT
-- next: look again now that labels sit on their lines
+- next: look again now that labels sit on their edges
 - related: [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
 
 ### [P2][ISSUE] A label takes most of a short run
 
 - description:
   - The `resync` label of the catalog-sync-grouped fixture sits on a run little longer than itself.
-  - The line shows only two short pieces past the label, and the owner finds it less natural than the others.
+  - The edge shows only two short pieces past the label, and the owner finds it less natural than the others.
   - A seat on a run keeps 8 px from each corner today.
 - created: 2026-11-06
 - status: OPEN
@@ -215,4 +215,23 @@
 - created: 2026-11-06
 - status: OPEN
 - found: the owner, looking at the dispatch fixture drawn with `diagram --lines smooth`
-- next: render this edge with square lines to see whether `smooth` or the route hides the arrowhead
+- next: render this edge with square edges to see whether the route hides the arrowhead, since `smooth` went on 2026-11-06
+
+### [P2][ISSUE] `edge --ends` names no way out
+
+- description:
+  - `plug` replaced `edge --ends`, and `grafical edge --ends x` is refused as `unknown-command` with `found: ends` and no `likely`.
+  - It should name `plug`, as other wrong commands name the right one.
+- created: 2026-11-08
+- status: OPEN
+- found: the document pass of 2026-11-08
+- next: add the word to the words a wrong command is read against
+
+### [P2][TASK] The changelog still names commands that went before any release
+
+- description:
+  - *Unreleased* in [CHANGELOG.md](../CHANGELOG.md) keeps forms such as `edge step` and `group title`, which no user ever met.
+  - It should read as what 0.1.0 holds.
+- created: 2026-11-08
+- status: HALT
+- next: rewrite it when the first release is cut

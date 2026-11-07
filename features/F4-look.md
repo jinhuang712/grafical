@@ -30,7 +30,7 @@ The title names the picture, and two more texts tell a reader what they see.
 - Without `--text` the subtitle or the footnote is cleared.
 
 - **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
-- **How it works:** [Placement: rows down the page](../specs/placement.md#rows-down-the-page)
+- **How it works:** [Placement: layers down the page](../specs/placement.md#layers-down-the-page)
 
 **Stories:**
 
@@ -78,7 +78,7 @@ A diagram takes its whole look from a built-in theme or from a stylesheet file i
 grafical -f <file> diagram --style [<style>]
 ```
 
-- The built-in themes are `default`, `dark` (light lines on a dark ground) and `print` (greys with stronger lines).
+- The built-in themes are `default`, `dark` (light edges on a dark ground) and `print` (greys with stronger edges).
 - A stylesheet `<name>.grafical-style.yaml` starts from a theme and overrides any of its values.
   - Changing it changes every diagram that names it.
 - Without a style, the default theme applies.
@@ -93,7 +93,7 @@ grafical -f <file> diagram --style [<style>]
 
 ## F4.4: The stylesheet file
 
-A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and overrides any of its colors, line widths, corner radii and type sizes.
+A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and overrides any of its colors, edge widths, corner radii and type sizes.
 
 - Every value not given comes from the theme it starts from.
 - Larger type changes the layout, and text that no longer fits is refused as `overflow`.
@@ -135,7 +135,7 @@ grafical -f <file> note --align <on> left|center|right
 
 - The label of a node, an edge or a lane may hold a line break, and so may a sublabel, a note and a subtitle.
 - A break is a real line break or `\n`, and grafical keeps it.
-- A diagram's title and the label of a group, a row or a wall are one line, and a break in one is refused as `missing-glyph`.
+- A diagram's title and the label of a group, a layer or a wall are one line, and a break in one is refused as `missing-glyph`.
 - `label --align` takes the ID of a node, an edge, a wall or a lane.
 - In a node, left and right mean the sides of the room for its text, and its sublabel follows its label.
 - On an edge, it lines up the lines of a label of two or more lines.
@@ -170,8 +170,8 @@ grafical -f <file> lane --label-at <id> <fraction>
 - The side is `top` and the place `inside` unless the agent states them.
 - A title stops short of the legend, and at `bottom` it sits below the footnote.
 - A layer's and a lane's label run along their head, so they take a fraction and no side.
-- A bar's label with a line through its place is refused as `label-blocked`.
-- A column has no label until [F2.4.1: Column headings](F2-layout.md).
+- A bar's label with an edge through its place is refused as `label-blocked`.
+- A column has no label until [F2.4.1: Column headings](F2-layout.md#f241-column-headings).
 - Without a fraction, the engine seats a label as it did.
 
 - **Why:** [084. A region's label sits at a fraction of a side](../specs/decisions/084-a-region-s-label-sits-at-a-fraction-of-a-side.md)
@@ -190,7 +190,7 @@ grafical -f <file> label --style <id> [--style <name>]...
 ```
 
 - `--style` takes the ID of an edge with a label, and names styles as other objects do.
-- A node, a group and a lane take the style of the object itself, and only a line's label has a patch of its own.
+- A node, a group and a lane take the style of the object itself, and only an edge's label has a patch of its own.
 - The label's patch takes the style's `fill` and `border`.
 - The label's text takes the style's `color`.
 - Without `--style`, the label marks no style and its patch takes the color behind it.
@@ -200,4 +200,4 @@ grafical -f <file> label --style <id> [--style <name>]...
 
 **Stories:**
 
-- An agent gives a label a background, to make one line's meaning stand out.
+- An agent gives a label a background, to make one edge's meaning stand out.

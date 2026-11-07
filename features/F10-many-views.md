@@ -3,7 +3,7 @@
 ```
 F10: Many views
 ├── F10.1: Views of one file — several pictures of parts of one file
-├── F10.2: Folded groups — a group drawn as one box
+├── F10.2: Folded groups — a group drawn as one node
 └── F10.3: One catalog of systems — one list many diagrams share
 ```
 

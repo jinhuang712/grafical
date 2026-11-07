@@ -35,7 +35,7 @@ The defects the engine owns:
 - `step-collision`: a badge that touches anything.
 - `text-crossing`: an edge across text.
 - `edge-overlap`: two edges that share a run of 8 px or more, so a reader cannot tell them apart.
-  - Two unlabelled lines that leave one node in one style are a bundle, and never an overlap.
+  - Two unlabelled edges that leave one node in one style are a bundle, and never an overlap.
   - Nor is an overlap whose ends lie within 4 px of a node the two edges share.
 - `lane-stray`: a node outside its lane.
 - `needless-bend`: an edge between neighbouring layers that bends although one straight run would join it.
@@ -48,7 +48,7 @@ Where drawing would hide something a reader needs, the write is refused as a def
 
 - An edge's label or a step's badge that no gutter on its way holds clear of the other edges is `label-blocked`.
   - The refusal names the edge, and the edges across the label as `across`.
-  - It also names the borders the label crosses and the gutters it tried, each `<row above>/<row below>`.
+  - It also names the borders the label crosses and the gutters it tried, each `<layer above>/<layer below>`.
   - Its `next` is `layer --move` and `node --size` and `node --move` and `edge --label` and `edge --number`.
 - A wall's label with no clear place along its wall is `label-blocked` with `is: wall`.
   - It names the wall and the edges and nodes in the way.
@@ -67,7 +67,7 @@ No refusal writes the change for the agent. A block names the commands that can 
 
 ## Warnings
 
-A warning names something the picture draws poorly. Every write prints every warning the diagram has, not only those the command caused, and so do `check` and `render`, since every write lays the whole diagram out again. A warning never refuses anything. It has no source, because the outcome line already names what the write changed. Each prints as its own block, in this order:
+A warning names something the picture draws poorly. Every write prints every warning the diagram has, not only those the command caused, and so do `check` and `render`, since every write lays the whole diagram out again. A warning never refuses anything. It has no source, because the outcome edge already names what the write changed. Each prints as its own block, in this order:
 
 | Code | `next` |
 |---|---|
@@ -83,20 +83,20 @@ A warning names something the picture draws poorly. Every write prints every war
 
 An edge that ends at a group, a layer or a lane reaches every node in it, so none of those nodes is a `lonely-node`.
 
-`edge-per-member` names a group of two or more nodes, the nodes of its inner groups included, in which every node has an edge to one end outside the group, or from it. The edges must agree in direction, outer end, kind, label, weight and arrowheads, so that one edge to the group would say the same. `edges` holds the first such line of each node, in the group's order. A group inside one that has the same lines is left out, so only the outer group is named.
+`edge-per-member` names a group of two or more nodes, the nodes of its inner groups included, in which every node has an edge to one end outside the group, or from it. The edges must agree in direction, outer end, kind, label, weight and arrowheads, so that one edge to the group would say the same. `edges` holds the first such edge of each node, in the group's order. A group inside one that has the same edges is left out, so only the outer group is named.
 
 ## Counts
 
-The counts record is one line of facts with no threshold, so that the agent can compare two arrangements by numbers. Its keys, in order: `nodes`, `lines`, `crossings`, `bends`, `bent`, `length`, `width`, `height`, `fullest`, `busiest`, `longest`, `passing`, `across`, `tight` and `crowded`. The last five count the places the first five warnings name:
+The counts record is one line of facts with no threshold, so that the agent can compare two arrangements by numbers. Its keys, in order: `nodes`, `edges`, `crossings`, `bends`, `bent`, `length`, `width`, `height`, `fullest`, `busiest`, `longest`, `passing`, `across`, `tight` and `crowded`. The last five count the places the first five warnings name:
 
 - `bent`: the edges with more than two bends.
 - `passing`: the edges with a vertical run in a layer strictly between their ends' layers, within that layer's height and between its outermost nodes.
   - A layer with no node counts as a layer here.
-- `across`: the edges with a run through the node of a group that holds neither end.
-  - A group holds an end that is the group or a member, or that lies inside its node.
+- `across`: the edges with a run through the frame of a group that holds neither end.
+  - A group holds an end that is the group or a member, or that lies inside its frame.
   - An edge counts once, however many groups it crosses.
-- `tight`: the pairs of runs of two different lines under 12 px apart that share more than 100 px.
-  - Lines that share a port are one bundle and never a pair.
+- `tight`: the pairs of runs of two different edges under 12 px apart that share more than 100 px.
+  - Edges that share a port are one bundle and never a pair.
   - A pair is a place: two edges tight in two places count twice.
 - `crowded`: the labels with under 8 px of room on two or more of their four sides.
   - Room is measured to the sides of nodes and groups and bands and to other edges and labels.
@@ -106,9 +106,9 @@ The counts record is one line of facts with no threshold, so that the agent can 
 
 ## Gutters
 
-The counts say how much, and the gutters say where. `show --drawn` prints a `gutter` record for each pair of neighbouring layers: `gutter above=<row> below=<row> lines= crossings= tight= crowded=`. A layer with no node, drawn as a bar, has a gutter too. The gutter is the band from the lowest bottom of the upper layer's nodes to the highest top of the lower layer's, across the whole picture.
+The counts say how much, and the gutters say where. `show --drawn` prints a `gutter` record for each pair of neighbouring layers: `gutter above=<layer> below=<layer> edges= crossings= tight= crowded=`. A layer with no node, drawn as a bar, has a gutter too. The gutter is the band from the lowest bottom of the upper layer's nodes to the highest top of the lower layer's, across the whole picture.
 
-- `lines` counts the edges with any run in the band, including those that only pass through.
+- `edges` counts the edges with any run in the band, including those that only pass through.
 - `crossings` counts the crossing points inside the band.
 - `tight` counts a vertical pair in every gutter it overlaps, and a horizontal pair in the gutter at its height.
 - `crowded` counts a label whose centre lies inside the band.
@@ -117,4 +117,4 @@ The agent compares gutters to see which order of layers costs. The record gives 
 
 ## Rules that are no longer reported
 
-The checker's folder still holds a measure of the eight rules of decision [012: A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md): a canvas at most 1024 px wide, at most one crossing per ten lines, at least half the edges straight, no edge over two bends, at most 40% of edges labelled, at most three line styles, at most 16 nodes, and no corridor through a node. No command calls it. Only its limit of two bends is used, for `bent` and `bent-edge`.
+Decision [012. A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md) holds the eight rules as a record: a canvas at most 1024 px wide, at most one crossing per ten edges, at least half the edges straight, no edge over two bends, at most 40% of edges labelled, at most three edge styles, at most 16 nodes, and no corridor through a node. No code measures them any more. Only the limit of two bends is used, for `bent` and `bent-edge`.

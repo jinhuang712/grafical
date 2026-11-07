@@ -20,7 +20,7 @@ Behind every edge label the writer puts a patch that reaches 3 px past the text 
 
 `@resvg/resvg-js` draws the SVG into a PNG at the scale asked for. It is given only the four bundled font files, with `Inter` as the default family, and system fonts turned off. No browser takes part.
 
-## How lines are drawn
+## How edges are drawn
 
 The writer adds the marks of a route as it draws it, so the routes, the checks and the counts never see them:
 

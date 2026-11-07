@@ -8,46 +8,46 @@ What grafical does, from the side of the agent that draws and the person who ask
 
 ```
 Features
-├── 🚧 F1: Elements — what a diagram is made of (gaps in boxes and containers)
+├── 🚧 F1: Elements — what a diagram is made of (gaps in nodes and containers)
 │   ├── 🚧 F1.1: Nodes — the parts of the system (diamond corners and corner marks not checked and size multiples and marks by name not built)
-│   │   ├── 🚧 F1.1.1: Types and shapes — a box's kind sets its shape (a line may still meet a diamond's slanted edge)
+│   │   ├── 🚧 F1.1.1: Types and shapes — a node's kind sets its shape (an edge may still meet a diamond's slanted edge)
 │   │   ├── ✅ F1.1.2: Labels and sublabels — a label and a quieter sublabel
 │   │   ├── 🚧 F1.1.3: Sizes — sized to the text, or by a step (multiples not built)
-│   │   ├── 🚧 F1.1.4: Marks — up to five small marks on a box (a corner mark is not checked against nearby lines)
+│   │   ├── 🚧 F1.1.4: Marks — up to five small marks on a node (a corner mark is not checked against nearby edges)
 │   │   ├── ⬜ F1.1.5: Marks by name — a mark from one bundled icon set
-│   │   ├── ✅ F1.1.6: Emphasis — at most two boxes stand out
+│   │   ├── ✅ F1.1.6: Emphasis — at most two nodes stand out
 │   │   └── ✅ F1.1.7: Node looks — colors from the styles a node marks
 │   ├── 🚧 F1.2: Edges — what connects to what (bars across groups not built)
-│   │   ├── ✅ F1.2.1: Types — a line's kind sets its style
-│   │   ├── ✅ F1.2.2: Arrowheads at both ends — two-way lines
-│   │   ├── ✅ F1.2.3: Weight — thicker lines for what matters more
-│   │   ├── ✅ F1.2.4: Numbered steps — a number on a line
+│   │   ├── ✅ F1.2.1: Types — an edge's kind sets its style
+│   │   ├── ✅ F1.2.2: Arrowheads at both ends — two-way edges
+│   │   ├── ✅ F1.2.3: Weight — thicker edges for what matters more
+│   │   ├── ✅ F1.2.4: Numbered steps — a number on an edge
 │   │   ├── 🚧 F1.2.5: Ends at a group, a layer or a lane — one arrow to a whole system (a bar cannot yet cross a group)
 │   │   └── ✅ F1.2.6: Edge looks — a color from the styles an edge marks
-│   └── 🚧 F1.3: Containers — what gathers boxes (deeper nesting and lanes both ways not built)
+│   └── 🚧 F1.3: Containers — what gathers nodes (deeper nesting and lanes both ways not built)
 │       ├── ✅ F1.3.1: Groups — a system drawn as one frame
 │       ├── ✅ F1.3.2: Copying a group — a second zone in one operation
 │       ├── ⬜ F1.3.3: Deeper nesting — up to five levels
 │       ├── ✅ F1.3.4: Lanes — bands that say who owns what
 │       ├── ⬜ F1.3.5: Lanes both ways — a grid of lanes and phases
-│       ├── ✅ F1.3.6: Walls — space that lines cross only where allowed
-│       ├── ✅ F1.3.7: Notes — a short text on a box, a line or a group
+│       ├── ✅ F1.3.6: Walls — space that edges cross only where allowed
+│       ├── ✅ F1.3.7: Notes — a short text on a node, an edge or a group
 │       └── ✅ F1.3.8: Container looks — colors from the styles a group or a lane marks
-├── 🚧 F2: Layout — where everything goes (lines moving apart for labels and flow direction not built)
-│   ├── ✅ F2.1: Placing every node — grafical gives every box its place
-│   ├── ✅ F2.2: Layers and order — a box's row and its place in it
-│   ├── ✅ F2.3: Alignment — one box above or below another
-│   ├── 🚧 F2.4: Columns — a second placement fact beside rows (headings not built)
+├── 🚧 F2: Layout — where everything goes (edges moving apart for labels, clean edges and flow direction not built)
+│   ├── ✅ F2.1: Placing every node — grafical gives every node its place
+│   ├── ✅ F2.2: Layers and order — a node's layer and its place in it
+│   ├── ✅ F2.3: Alignment — one node above or below another
+│   ├── 🚧 F2.4: Columns — a second placement fact beside layers (headings not built)
 │   │   └── ⬜ F2.4.1: Column headings — a label above a column
-│   ├── ✅ F2.5: Steps from another node — a box some cells from another
+│   ├── ✅ F2.5: Steps from another node — a node some cells from another
 │   │   └── ⬜ F2.5.1: Offsets — a node a fraction of a cell off the grid
 │   ├── ✅ F2.6: Spacing — compact, normal or airy
 │   │   └── ✅ F2.6.1: Region gaps — more room between two regions
-│   ├── 🚧 F2.7: How edges are drawn — grafical routes every line (lines do not move apart for labels, and no line leaves away from its other end)
-│   │   ├── ✅ F2.7.1: Edge sides — the side a line leaves or enters by
+│   ├── 🚧 F2.7: How edges are drawn — grafical routes every edge (edges do not move apart for labels, and the rules for clean edges are not built)
+│   │   ├── ✅ F2.7.1: Edge sides — the side an edge leaves or enters by
 │   │   ├── ✅ F2.7.2: Edge shapes — square or round
-│   │   ├── 🚧 F2.7.3: Labels on edges — a line carries its label (lines do not move apart for one)
-│   │   └── 🚧 F2.7.4: Steering an edge — where a line passes and turns, as facts (a detour cannot grow the canvas)
+│   │   ├── 🚧 F2.7.3: Labels on edges — an edge carries its label (edges do not move apart for one)
+│   │   └── 🚧 F2.7.4: Steering an edge — where an edge passes and turns, as facts (a detour cannot grow the canvas)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── ✅ F3.1: Operations — one named command per change
@@ -55,7 +55,7 @@ Features
 │   ├── ✅ F3.3: Trying a change — see counts before writing
 │   ├── ✅ F3.4: IDs — the caller names every element
 │   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts
-│   ├── ✅ F3.6: Merging and swapping — merge, swap and remove boxes
+│   ├── ✅ F3.6: Merging and swapping — merge, swap and remove nodes
 │   ├── ⬜ F3.7: More combinations of operations — one operation for a common edit
 │   └── 🚧 F3.8: Move and plug — one verb to move things and one to change connections (`move` not built)
 ├── 🚧 F4: Look — how the picture looks (the legend as a small diagram and brand fonts not built)
@@ -67,7 +67,7 @@ Features
 │   ├── ⬜ F4.5: Brand fonts — a team's own typeface
 │   ├── 🚧 F4.6: Label text — breaks and alignment (titles of regions one line)
 │   ├── 🚧 F4.7: Region labels — where any region's label sits (a column has no label)
-│   └── 🚧 F4.8: Label looks — a label's background, border and color (a line's label only)
+│   └── 🚧 F4.8: Label looks — a label's background, border and color (an edge's label only)
 ├── ✅ F5: Checking — how an agent knows it came out right
 │   ├── ✅ F5.1: Show — the diagram as facts
 │   ├── ✅ F5.2: Counts — facts about how the picture is drawn
@@ -106,7 +106,7 @@ Features
 │   └── ⬜ F9.4: Someone else's picture — redraw a picture that has no source
 ├── ⬜ F10: Many views — several pictures of one system
 │   ├── ⬜ F10.1: Views of one file — several pictures of parts of one file
-│   ├── ⬜ F10.2: Folded groups — a group drawn as one box
+│   ├── ⬜ F10.2: Folded groups — a group drawn as one node
 │   └── ⬜ F10.3: One catalog of systems — one list many diagrams share
 └── ⬜ F11: Getting grafical — how grafical reaches an agent
     ├── ⬜ F11.1: The npm package — install with one command

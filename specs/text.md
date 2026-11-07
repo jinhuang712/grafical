@@ -16,21 +16,21 @@ Each character is measured in Inter when Inter has a glyph for it, and in Noto S
 
 ## Measuring
 
-`harfbuzzjs` shapes each run of one font and adds up the advances to give its width. An edge's height is the larger ascent plus descent of the two fonts, rounded up to a multiple of 4 px. Measurements are cached, so the same text in the same face is shaped once. A process keeps one measurer, because `harfbuzzjs` frees no font it loaded.
+`harfbuzzjs` shapes each run of one font and adds up the advances to give its width. A line of text is as high as the larger ascent plus descent of the two fonts, rounded up to a multiple of 4 px. Measurements are cached, so the same text in the same face is shaped once. A process keeps one measurer, because `harfbuzzjs` frees no font it loaded.
 
 ## Wrapping
 
 A label wraps greedily at the last break point that fits, and a piece with no break point stays whole even when it is too wide. A line break in the text always starts a new line.
 
-- A break may follow a space or a tab, and the space is trimmed from the end of the edge.
-- A break may follow `-` or `_` or `/` when letters or digits stand on both sides, and the character stays at the end of the edge.
+- A break may follow a space or a tab, and the space is trimmed from the end of the line.
+- A break may follow `-` or `_` or `/` when letters or digits stand on both sides, and the character stays at the end of the line.
 - A break may come before or after any Han or kana or Hangul or CJK punctuation or fullwidth character.
-- Closing punctuation never starts an edge, and opening brackets never end one.
-- Two of `…`, `—` or `‥` in a layer are never split.
+- Closing punctuation never starts a line, and opening brackets never end one.
+- Two of `…`, `—` or `‥` in a row are never split.
 
-## Fitting text in a box
+## Fitting text in a node
 
-Text fits its node when its edge node stays 8 px from the node's sides and 4 px from its top and bottom. The edge node runs from the fonts' full ascent to their full descent, not round the ink of the glyphs. A diamond is tested against its diamond with the same margins. A label may take at most 2 lines and a sublabel 1.
+Text fits its node when the box of each line stays 8 px from the node's sides and 4 px from its top and bottom. That box runs from the fonts' full ascent to their full descent, not round the ink of the glyphs. A diamond is tested against its diamond with the same margins. A label may take at most 2 lines and a sublabel 1.
 
 A mark in a node's `left` slot takes a column of its width plus 8 px out of the text's room. The node keeps its size, but the narrower room can move a node with no size step from medium to large.
 

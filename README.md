@@ -7,7 +7,7 @@
 [![CI](https://github.com/jinhuang712/grafical/actions/workflows/ci.yml/badge.svg)](https://github.com/jinhuang712/grafical/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-An agent states what a diagram says, one operation at a time: this node is in that layer, connected to that one, colored like this. grafical decides where everything goes and lays the picture out again after every change. **The agent never places a node or bends an edge**, so only what it named changes and the picture always looks finished.
+An agent states what a diagram says, one operation at a time: this node is in that layer, connected to that one, colored like this. grafical decides where everything goes and lays the picture out again after every change. **The agent never gives a coordinate**, so only what it named changes and the picture always looks finished.
 
 grafical drew the picture above itself, from [docs/images/pipeline.grafical.yaml](docs/images/pipeline.grafical.yaml).
 
@@ -19,7 +19,7 @@ grafical drew the picture above itself, from [docs/images/pipeline.grafical.yaml
 - ⚙️ **The engine does the dirty work:** it sizes and places and spaces every node.
   - It routes every edge and checks every write for defects.
   - A mistake is refused at once, with the facts to fix it.
-- 🎨 **Looks are free, places are facts:** an agent may pick any color or line width.
+- 🎨 **Looks are free, places are facts:** an agent may pick any color or edge width.
   - It states a node's place as a layer or a column or steps from another node, never as a coordinate.
 - 📁 **A file in git:** the diagram is one `.grafical` file.
   - The same file gives the same SVG and PNG on any machine.

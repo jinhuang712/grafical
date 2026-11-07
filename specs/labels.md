@@ -19,34 +19,34 @@ the least bad place, and the write is refused ───────> label-block
 Texts are seated in the order the layout reaches them, so each keeps clear of what came before it:
 
 ```text
-with the column grid    the labels of lines between neighbours, in the gaps made for them
-before the lines        each band's label, which the lines keep clear of
-while routing           the labels of lines in gutters, as each gutter is filled
+with the column grid    the labels of edges between neighbours, in the gaps made for them
+before the edges        each band's label, which the edges keep clear of
+while routing           the labels of edges in gutters, as each gutter is filled
 after routing           bar labels and the legend
-once rows have their y  lane labels, group titles, labels of routes cut at a container,
+once layers have their y  lane labels, group titles, labels of routes cut at a container,
                         wall labels, step badges, then notes
 ```
 
 The size of each text comes from the text measurer.
 
-## Line labels
+## Edge labels
 
-An edge's label sits on its line, inside the gutter of its longest run, and the line passes through it. An agent may take one edge's label off its line, and the label then sits beside the line. It keeps clear of everything else in that gutter:
+An edge's label sits on its edge, inside the gutter of its longest run, and the edge passes through it. An agent may take one edge's label off its edge, and the label then sits beside the edge. It keeps clear of everything else in that gutter:
 
 - 4 px from other edges, and from its own edge when it sits beside it.
 - 24 px across and 4 px up or down from another label.
-- 4 px from the sides of group nodes and of column lanes.
+- 4 px from the sides of group frames and of column lanes.
 
 A label's patch takes the color behind it unless the label marks a style, whose `fill`, `border` and `color` it then takes. A wrapped label's lines are centred on each other unless the agent aligns them. A break the agent states holds on every form, and the engine may still wrap each stated line.
 
-Once the lines are drawn, a label the gutter seated off its line goes onto its line where room shows, longest run first and nearest the run's middle first, unless the picture has step badges, which look for their places later. A gutter counts every line in its height, though a run may leave the label's own height clear. A label on a vertical run then moves to the run's middle, keeping 12 px from each end. Where that is not clear, it takes the nearest clear place on the way back to its seat, in 4 px steps. It moves no line. Clear means 4 px from other lines and labels, wholly inside or outside each group, band and lane, and out of a wall.
+Once the edges are drawn, a label the gutter seated off its edge goes onto its edge where room shows, longest run first and nearest the run's middle first, unless the picture has step badges, which look for their places later. A gutter counts every edge in its height, though a run may leave the label's own height clear. A label on a vertical run then moves to the run's middle, keeping 12 px from each end. Where that is not clear, it takes the nearest clear place on the way back to its seat, in 4 px steps. It moves no edge. Clear means 4 px from other edges and labels, wholly inside or outside each group, band and lane, and out of a wall.
 
 ### Seats
 
 Each label gets a list of candidate seats, each with a score, lower being better:
 
 ```text
-straight vertical line   on the line (−1), beside it on the right (0), on the left (1)
+straight vertical edge   on the edge (−1), beside it on the right (0), on the left (1)
 run past the label       on the run, centred (−1), then slid along in 4 px steps (+ the slide)
                          above, centred (0), then slid along in 4 px steps (+ the slide)
                          below, the same, each + 24
@@ -55,7 +55,7 @@ run shorter than label   on the line into or out of the run (−4, −3), 8 px p
                          beside its right end (−2), its left end (−1), then as above
 ```
 
-A seat on a run keeps 8 px from the run's corners. A seat on the edge never exists for an edge with a step badge, whose label stays beside the edge, or for a label the agent took off its line. A seat's cost is its score, plus 8 for each edge inside the seat, plus 64 for each crossing that the order of runs it fixes would force. Labels compete for the same room, so the label with the fewest open seats chooses first, each taking its cheapest open seat.
+A seat on a run keeps 8 px from the run's corners. A seat on the edge never exists for an edge with a step badge, whose label stays beside the edge, or for a label the agent took off its edge. A seat's cost is its score, plus 8 for each edge inside the seat, plus 64 for each crossing that the order of runs it fixes would force. Labels compete for the same room, so the label with the fewest open seats chooses first, each taking its cheapest open seat.
 
 ### When no seat is clear
 
@@ -69,17 +69,17 @@ When all of these fail, it goes back to one line, takes the seat with the fewest
 
 ### Between neighbours
 
-An edge that runs straight across the gap between two neighbours carries its label on it. With two labelled lines in one gap, the upper label sits above its line and the lower label below its line, since neither has room on its line. These labels are seated with the column grid, which makes the gap wide enough for them.
+An edge that runs straight across the gap between two neighbours carries its label on it. With two labelled edges in one gap, the upper label sits above its edge and the lower label below its edge, since neither has room on its edge. These labels are seated with the column grid, which makes the gap wide enough for them.
 
 ## Step badges
 
-A numbered line's badge is a ring 18 px across, centred on the run under the start of the label's text, or under its end when the start is off the run. The badge widens the label's seat by 9 px and deepens it by 7 px, so the text stands 7 px further off the edge. Beside a vertical line, the badge sits on the edge level with the text, which stands 13 px away. A numbered line with no label gets a seat 18 by 5 px.
+A numbered edge's badge is a ring 18 px across, centred on the run under the start of the label's text, or under its end when the start is off the run. The badge widens the label's seat by 9 px and deepens it by 7 px, so the text stands 7 px further off the edge. Beside a vertical edge, the badge sits on the edge level with the text, which stands 13 px away. A numbered edge with no label gets a seat 18 by 5 px.
 
 Once every label has its seat, a badge that still touches something slides along its own edge, in 2 px steps, to the nearest place with 2 px of room. It keeps clear of nodes, text, walls, labels, other badges, other edges, its own arrowheads, and every border except those of its own ends. Two badges that leave each other no place try their first 40 places together. A badge that still touches something is the engine's defect `step-collision`.
 
 ## Group titles
 
-A group's title sits where the agent states, in room placement has already made for it. No node or line moves for it.
+A group's title sits where the agent states, in room placement has already made for it. No node or edge moves for it.
 
 | Side and place | Where the label sits |
 |---|---|
@@ -108,16 +108,16 @@ A card's lines start left unless the agent aligns them, and a card wraps at 160 
 - **Beside an edge:** at the middle, a quarter and three quarters of its longest run.
   - Below or above a horizontal run, and right or left of a vertical one.
 
-A card keeps 8 px from nodes, text, other cards, walls, lane heads, the legend, the title and the subtitle, and 10 px from a badge. No edge may touch it. It lies wholly inside or wholly outside each group, lane and band, and within the margins, from 14 px below the title down to the bottom of the content. Its dotted line must not meet another node, text, card or line. A card with no place takes its first place anyway, and the write is refused as `label-blocked` with `is: note`. A note on a band or a lane always has no place.
+A card keeps 8 px from nodes, text, other cards, walls, lane heads, the legend, the title and the subtitle, and 10 px from a badge. No edge may touch it. It lies wholly inside or wholly outside each group, lane and band, and within the margins, from 14 px below the title down to the bottom of the content. Its dotted line must not meet another node, text, card or edge. A card with no place takes its first place anyway, and the write is refused as `label-blocked` with `is: note`. A note on a band or a lane always has no place.
 
-A footnote's number is a filled circle 16 px across. On a node it sits 6 px out from a corner, trying top right, top left, bottom right and bottom left. On a group it follows the title, and on an edge it sits beside the edge's runs. Footnotes are numbered from the top of the picture down, then from left to right. A footnote with no free place for its number has none, and its edge in the list starts with its target's name.
+A footnote's number is a filled circle 16 px across. On a node it sits 6 px out from a corner, trying top right, top left, bottom right and bottom left. On a group it follows the title, and on an edge it sits beside the edge's runs. Footnotes are numbered from the top of the picture down, then from left to right. A footnote with no free place for its number has none, and its line in the list starts with its target's name.
 
 ## Wall labels
 
 A wall's label is the only text on its dashed divider, and the divider breaks 4 px around it.
 
 - **A wall across:** the label sits 4 px above the divider, anywhere from 16 px in at the start to 16 px in at the end.
-  - It takes the first place that no vertical line comes within 8 px of.
+  - It takes the first place that no vertical edge comes within 8 px of.
 - **A wall up and down:** the label wraps at 96 px and is centred on the divider.
   - It tries places from the top down in 4 px steps and needs 8 px of room from nodes, text and every edge.
 
@@ -129,8 +129,8 @@ A label with no such place stays at the wall's start or its top, and the write i
   - A band in a lane whose label reads the same draws none.
   - It takes the first stretch of the layer with no node below it that is the label's width plus 32 px.
   - With no such stretch it sits left of the content, 16 px from the band's side.
-  - It is the one label that moves lines: vertical lines keep 6 px from it.
-- **A bar's label** sits in the bar at its left, once the edges are routed, or at the agent's fraction, where a line through it is refused as `label-blocked`.
+  - It is the one label that moves edges: vertical edges keep 6 px from it.
+- **A bar's label** sits in the bar at its left, once the edges are routed, or at the agent's fraction, where an edge through it is refused as `label-blocked`.
   - It takes the first stretch 16 px clear of the edges that end at the bar and of the edges that pass it.
   - With no such stretch it sits left of the content and of every edge through the bar.
   - The bar then reaches it.

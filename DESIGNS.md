@@ -8,7 +8,7 @@ grafical is designed around 15 guidelines:
 2. **Places are facts, never coordinates:** a place is a layer or an order or a column and never a position
 3. **The engine never chooses for the agent:** every structural choice is the agent's
 4. **A change keeps every fact it does not name:** the layout is computed again and positions may shift
-5. **The engine routes every edge, in plain forms:** lines run through the gaps in a few plain forms
+5. **The engine routes every edge, in plain forms:** edges run through the gaps in a few plain forms
 6. **Every write is checked, and each defect has an owner:** a defect fails the write when the agent can fix it
 7. **A refusal gives the facts, and the agent writes the fix:** grafical states what went wrong and never writes the fix
 8. **Answers are data a script can read:** every answer is keys and values
@@ -34,7 +34,7 @@ Every change is a named operation, such as `node.add`, applied to a diagram file
 
 ## 2. Places are facts, never coordinates
 
-A node's place is its layer, its order in the layer, its group, its column, an alignment, or a number of steps from another node. How far apart things sit is the engine's, and an agent may ask for a multiple of it between two regions. Cost: an agent cannot nudge one node, and every new need for placement becomes a new fact.
+A node's place is its layer, its order in the layer, its group, its column, an alignment, a number of steps from another node, or a fraction of a cell off its cell. How far apart things sit is the engine's, and an agent may ask for a multiple of it between two regions. Cost: an agent moves one node only by a stated fraction of the grid, and every new need for placement becomes a new fact.
 
 **Ask:** Does this ask the agent for a position, a size in pixels or a bend point?
 
@@ -79,7 +79,7 @@ The layout is computed again from the facts after every write, and positions are
 
 ## 5. The engine routes every edge, in plain forms
 
-Edges run orthogonally through the gaps between layers and nodes. The engine picks each edge's ports, tracks and bundles, and no operation can name a coordinate. A side, a passage, a fraction of the way and a multiple of a detour are the engine's unless the agent states them. It draws each thing in a few plain forms: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs. Cost: an agent steers an ugly line only by facts, and each new way to steer it binds the router.
+Edges run orthogonally through the gaps between layers and nodes. The engine picks each edge's ports, tracks and bundles, and no operation can name a coordinate. A side, a passage, a fraction of the way and a multiple of a detour are the engine's unless the agent states them. It draws each thing in a few plain forms: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs. Cost: an agent steers an ugly edge only by facts, and each new way to steer it binds the router.
 
 **Ask:** Does this hand the agent a coordinate, or draw a crooked form to make the facts fit?
 
@@ -223,9 +223,9 @@ In one situation an agent has one shortest way to do a thing. Stating a fact whi
 
 ## 15. A picture is judged by how it reads
 
-A reader sees the structure of a picture before following any line, so a design serves that reading first. What the picture implies must be what the facts say, the shape must show at once, the places must say most of it and like things must look alike. Placing is the agent's and routing is the engine's, so a bad picture may be either's to fix. A count may show a fault and never shows a picture good, since a picture with no crossings can still read badly. Cost: no script can pass a picture, so each judgement takes the owner's eye, and a change that improves every count may still be thrown out.
+A reader sees the structure of a picture before following any edge, so a design serves that reading first. What the picture implies must be what the facts say, the shape must show at once, the places must say most of it and like things must look alike. Placing is the agent's and routing is the engine's, so a bad picture may be either's to fix. A count may show a fault and never shows a picture good, since a picture with no crossings can still read badly. Cost: no script can pass a picture, so each judgement takes the owner's eye, and a change that improves every count may still be thrown out.
 
-**Ask:** Can a reader see the structure before following a line, and does the picture imply only what the facts say?
+**Ask:** Can a reader see the structure before following an edge, and does the picture imply only what the facts say?
 
 - **Stance:** [How does a reader see a diagram?](PHILOSOPHY.md#how-does-a-reader-see-a-diagram)
 - **Decisions:**

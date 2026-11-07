@@ -22,7 +22,7 @@ How an agent knows a diagram came out right. It reads the diagram as facts, coun
 
 ## F5.1: Show
 
-The agent's view of a diagram, in place of reading the YAML.
+The agent's view of a diagram, in place of reading the file.
 
 ```sh
 grafical -f <file> show [<id>] [--drawn]
@@ -31,10 +31,10 @@ grafical -f <file> show [<id>] [--drawn]
 - `show` prints the diagram in the same words as the operations.
   - It lists the layers and the nodes in order and the groups and the lanes and the edges and the walls and the notes and the marks.
 - `show --drawn` prints how the picture is drawn, as records with no advice:
-  - Each node's layer and place and size and lines by side.
-  - Each edge's sides and bends and length and shortest length and layers skipped and lines crossed and layers passed.
+  - Each node's layer and place and size and edges by side.
+  - Each edge's sides and bends and length and shortest length and layers skipped and edges crossed and layers passed.
   - Each wall's length and the edges through it.
-  - One `gutter` record for each pair of neighbouring layers: `gutter above=<row> below=<row> lines=<n> crossings=<n> tight=<n> crowded=<n>`.
+  - One `gutter` record for each pair of neighbouring layers: `gutter above=<layer> below=<layer> edges=<n> crossings=<n> tight=<n> crowded=<n>`.
     - It counts the edges with a run between the two layers and the crossings and tight pairs and crowded labels there.
     - It shows the agent which choice of layers costs.
   - How each note is drawn.
@@ -50,14 +50,14 @@ grafical -f <file> show [<id>] [--drawn]
 
 **Stories:**
 
-- An agent reads the diagram as facts, to see what it drew without reading the YAML.
+- An agent reads the diagram as facts, to see what it drew without reading the file.
 
 ## F5.2: Counts
 
 After `apply`, `check` and `render`, grafical prints the drawing's counts as one record:
 
 ```text
-counts nodes=3 lines=2 crossings=0 bends=1 bent=0 length=224 width=368 height=280 fullest=data:2 busiest=api:2 longest=api->cache:176 passing=0 across=0 tight=0 crowded=0
+counts nodes=3 edges=2 crossings=0 bends=1 bent=0 length=224 width=368 height=280 fullest=data:2 busiest=api:2 longest=api->cache:176 passing=0 across=0 tight=0 crowded=0
 ```
 
 They are facts, with no threshold and no advice: what they mean is the agent's to judge.
@@ -66,7 +66,7 @@ Five counts say how the picture is drawn, and each place they count is also a wa
 
 - `bent` counts the edges drawn with more than two bends.
 - `passing` counts the edges that run through a layer they do not connect.
-- `across` counts the edges that cross the node of a group holding neither of their ends.
+- `across` counts the edges that cross the frame of a group holding neither of their ends.
 - `tight` counts the pairs of runs of two edges closer than 12 px for more than 100 px.
   - Two runs of one bundle are left out.
 - `crowded` counts the edge labels with less than 8 px of room on two or more sides.
@@ -90,18 +90,18 @@ Every write prints a warning block for each thing the picture draws poorly, and 
 - The warnings come before the counts.
 - All of them print every time, since every change lays the whole diagram out again.
 
-A warning has no source: the outcome line names what the write changed, and a warning names the ids it is about ([048. Every write prints every warning](../specs/decisions/048-every-write-prints-every-warning.md)):
+A warning has no source: the outcome edge names what the write changed, and a warning names the ids it is about ([048. Every write prints every warning](../specs/decisions/048-every-write-prints-every-warning.md)):
 
 ```text
 ok changed=sync->geo
 
 warning: bent-edge
-description: A line bends more than twice, mostly because it skips rows.
+description: An edge bends more than twice, mostly because it skips layers.
 detail:
   edge: sync->geo
   bends: 3
   skip: 1
-next: layer move, node move, node swap
+next: layer --move, node --move, node --swap
 ```
 
 - **Design:** [6. Every write is checked, and each defect has an owner](../DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
@@ -124,11 +124,11 @@ next: layer move, node move, node swap
 
 `passing-layer` names an edge that passes among the nodes of layers between its ends and meets none of them.
 
-- Detail: `edge`, `rows`.
+- Detail: `edge`, `layers`.
 
 ### F5.3.3: Edges across a group
 
-`edge-across-group` names an edge through the node of a group holding neither of its ends.
+`edge-across-group` names an edge through the frame of a group holding neither of its ends.
 
 - Detail: `edge`, `groups`.
 
@@ -148,7 +148,7 @@ next: layer move, node move, node swap
 
 `lonely-node` names a node no edge reaches.
 
-- It has no line of its own and none to its group, layer or lane.
+- It has no edge of its own and none to its group, layer or lane.
 - Detail: `node`.
 
 ### F5.3.7: An edge per member
@@ -156,7 +156,7 @@ next: layer move, node move, node swap
 `edge-per-member` names a group of two or more where every node has an edge to one end outside it, or from it.
 
 - The edges are alike in kind and label and weight and arrowheads.
-- A group inside one with the same lines is left out.
+- A group inside one with the same edges is left out.
 - Detail: `group`, `edges` ([050. A line from every box of a group is a warning](../specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)).
 
 ### F5.3.8: Crossings

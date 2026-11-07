@@ -23,7 +23,7 @@ Goals
 │   └── M5: Routing cases — 16 crossings and 125 bends over 29 cases on 2026-11-07
 ├── Benchmarks
 │   ├── ✅ B1: Iteration — a change request done right, fast and cheap
-│   ├── ⬜ B2: Scale — a clear picture at 50 boxes
+│   ├── ⬜ B2: Scale — a clear picture at 50 nodes
 │   └── ❌ B4: Verifiability — few looks at the picture
 ├── Comparisons
 │   ├── ✅ C1: Model gap — Opus against Haiku
@@ -37,7 +37,7 @@ Goals
 │   └── ✅ T2: Speed — 50 ms an operation, 400 ms a command
 └── Constraints
     ├── ✅ R1: Stability — no fact changes that no operation named
-    ├── ✅ R2: Mechanical defects — no overflow, overlap, line through a box or label collision
+    ├── ✅ R2: Mechanical defects — no overflow, overlap, edge through a node or label collision
     ├── ✅ R3: Determinism — the same pixels on macOS and Linux
     └── ✅ R4: A sound file — strict, one spelling, and any text
 ```
@@ -86,22 +86,22 @@ Given a picture someone else drew, an agent redraws it with grafical, shows the 
 
 #### O5: Routes the eye can follow
 
-O5 holds the lines of a picture, and [O6: A picture reads at a glance](#o6-a-picture-reads-at-a-glance) holds the whole of it. A route is judged by looking at the picture against every check below, and counts only support what the eye finds. A picture with no crossings can still fail, as a `pyramid` render did on 2026-11-07. The checks are in the order the owner set on 2026-11-07, so an earlier one wins where two pull against each other.
+O5 holds the edges of a picture, and [O6: A picture reads at a glance](#o6-a-picture-reads-at-a-glance) holds the whole of it. A route is judged by looking at the picture against every check below, and counts only support what the eye finds. A picture with no crossings can still fail, as a `pyramid` render did on 2026-11-07. The checks are in the order the owner set on 2026-11-07, so an earlier one wins where two pull against each other.
 
 | # | Tier | Check | Read by | From |
 |---|---|---|---|---|
 | 1 | must | No mechanical defect | the geometry check | [R2: Mechanical defects](#r2-mechanical-defects) |
-| 2 | must | No line the picture implies and the facts lack | open | proposed |
+| 2 | must | No edge the picture implies and the facts lack | open | proposed |
 | 3 | must | An end run of at least 16 px, 24 px at ease | not built | the owner's rule |
-| 4 | shape | The eye follows a line end to end | the owner | standard 1 |
+| 4 | shape | The eye follows an edge end to end | the owner | standard 1 |
 | 5 | shape | No jog | the owner | the owner's rule |
-| 6 | shape | A pair of lines level at both ends | not built | the owner's rule |
-| 7 | shape | One form for lines of one sort | the owner | the owner's rule |
+| 6 | shape | A pair of edges level at both ends | not built | the owner's rule |
+| 7 | shape | One form for edges of one sort | the owner | the owner's rule |
 | 8 | shape | A simple shape | the bend count and the owner | standard 3 |
 | 9 | better | Few and clean crossings | the crossing count and the owner | standard 4 |
 | 10 | better | No detour | the detour count | standard 2 |
-| 11 | better | A rhythm of parallel lines | the owner | standard 5 |
-| 12 | better | Lines land well | the owner | standard 6 |
+| 11 | better | A rhythm of parallel edges | the owner | standard 5 |
+| 12 | better | Edges land well | the owner | standard 6 |
 | 13 | better | What matters stands out | the owner | standard 7 |
 
 The standards are in `specs/decisions, "A good route is one the eye can follow"`, and the owner's rules are in `specs/decisions, "The router draws clean lines and the agent makes their room"`.
@@ -119,22 +119,24 @@ The standards are in `specs/decisions, "A good route is one the eye can follow"`
 
 #### O6: A picture reads at a glance
 
-A good picture shows its structure before a reader follows any line, and everything it implies is true. The owner reads the twelve points below from the picture, and no count stands in for that.
+A good picture shows its structure before a reader follows any edge, and everything it implies is true. The owner reads the twelve points below from the picture, and no count stands in for that.
 
 | # | Group | Point | Owed by | Good | Bad |
 |---|---|---|---|---|---|
 | 1 | reads true | It says only the facts | both | a fork from one start | a bar that reads as `B→C` on `pair-both-ways` |
-| 2 | reads true | Text stays with what it names | engine | a label against its line | a label that could name two lines |
+| 2 | reads true | Text stays with what it names | engine | a label against its edge | a label that could name two lines |
 | 3 | reads fast | The structure shows at once | both | the hand drawing of `pyramid` | the `pyramid` render of 2026-11-07 |
-| 4 | reads fast | It has one way to read | agent | the main flow down the page | lines with no direction |
-| 5 | reads fast | What matters stands out | both | the main path seen first | every line of one weight |
-| 6 | placed well | Places say most of it | agent | `ladder` in one column | two lines swapping sides in a gap |
-| 7 | placed well | Related things sit close | agent | a system's nodes together | long lines between close ideas |
+| 4 | reads fast | It has one way to read | agent | the main flow down the page | edges with no direction |
+| 5 | reads fast | What matters stands out | both | the main path seen first | every edge of one weight |
+| 6 | placed well | Places say most of it | agent | `ladder` in one column | two edges swapping sides in a gap |
+| 7 | placed well | Related things sit close | agent | a system's nodes together | long edges between close ideas |
 | 8 | placed well | It keeps symmetry and alignment | both | `pyramid` even left and right | one side entered by a top and the other by a side |
 | 9 | placed well | Space stays even | both | neither too wide nor crowded | 1208 px wide around empty cells |
 | 10 | drawn evenly | Like things look alike | engine | one fork at each node | sides that differ with no meaning |
-| 11 | drawn evenly | Lines have room | both | an end run of 24 px | an end run of 8 px |
+| 11 | drawn evenly | Edges have room | both | an end run of 24 px | an end run of 8 px |
 | 12 | cut | It holds what the reader needs | agent | details left out on purpose | every fact drawn |
+
+The good and the bad picture of `pyramid` are [the hand drawing](evidence/pyramid-hand-drawing.png) and [the render](evidence/pyramid-render-2026-11-07.png).
 
 **Want:** A picture that is complete and clear at once.
 
@@ -242,7 +244,7 @@ M4 = mean changed lines, and mean changed characters, per change step
 
 #### M5: Routing cases
 
-What the router does on small cases that each test one standard of a good route. It finds causes and decides nothing, and three of the seven standards have no number, so the owner's eye reads those.
+What the router does on small cases that each test one standard of a good route. It finds causes and decides nothing, and four of the seven standards have no number, so the owner's eye reads those.
 
 **Want:** A picture that is complete and clear at once.
 
@@ -306,9 +308,9 @@ A picture of 50 nodes has no defect and a clarity of at least 3 of 5.
 **Formula:**
 
 ```
-B2 = owner's clarity rating (1 to 5) of a picture of 50 boxes, with defects counted by the geometry check
+B2 = owner's clarity rating (1 to 5) of a picture of 50 nodes, with defects counted by the geometry check
 target = no defect, clarity >= 3
-kill = a defect at 25 boxes
+kill = a defect at 25 nodes
 ```
 
 **Last score:** ⬜ not shown at 50 nodes. On 2026-10-12 all 9 drafts had no defect, and the 50-component drafts scored a clarity of 5, 5 and 4. But Haiku merged that brief into 15 to 19 nodes, so no picture of 50 nodes was judged. On 2026-10-18 one draft drew 51 nodes, with 174 crossings and an engine-owned defect; its clarity was not rated.
@@ -559,7 +561,7 @@ No fact changes that no operation named: a layer, an order, a group, a lane or a
 
 #### R2: Mechanical defects
 
-No overflow, overlap, line through a node or label collision.
+No overflow, overlap, edge through a node or label collision.
 
 **Want:** A picture that is complete and clear at once.
 

@@ -30,13 +30,13 @@ command line   prints the outcome, a block per problem, and the counts
 The three parts of the layout take turns, because each needs what the one before it decided:
 
 ```text
-placement   boxes placed by steps, sizes, the order of each row
-routing     stand-ins for container ends, and which lines cross between neighbours
-placement   the column grid and the x of every box, with room for those lines and their labels
-text        each band's label, which the lines keep clear of
-routing     every line through the gutters, seating each gutter's labels as it goes
+placement   nodes placed by steps, sizes, the order of each layer
+routing     stand-ins for container ends, and which edges cross between neighbours
+placement   the column grid and the x of every node, with room for those edges and their labels
+text        each band's label, which the edges keep clear of
+routing     every edge through the gutters, seating each gutter's labels as it goes
 text        bar labels and the legend
-placement   the y of every row from the tracks each gutter holds, and the canvas's height
+placement   the y of every layer from the tracks each gutter holds, and the canvas's height
 text        lane labels, group titles, wall labels, step badges and notes
 ```
 
@@ -50,7 +50,7 @@ Folder: `src/cli/`.
 
 ## The model
 
-Defines the diagram: layers, nodes, lines, groups, lanes, columns, walls, notes and marks. Turns an operation into a change of the facts, validates every file it loads, and compares two files as operations. How it works is in [the model](model.md), and how the file is laid out in [the .grafical file](grafical-file.md).
+Defines the diagram: layers, nodes, edges, groups, lanes, columns, walls, notes and marks. Turns an operation into a change of the facts, validates every file it loads, and compares two files as operations. How it works is in [the model](model.md), and how the file is laid out in [the .grafical file](grafical-file.md).
 
 Folder: `src/model/`.
 

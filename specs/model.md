@@ -8,13 +8,13 @@ Every write takes the same path, and a single command is a batch of one operatio
 
 ```text
 command or batch file
-  │  parse: each item becomes an operation, or is refused with its line
+  │  parse: each item becomes an operation, or is refused with its edge
   ▼
 load the file ── refused if YAML, schema, marks, stylesheet or weights fail
   ▼
 apply the operations, in order, to a copy ── the first error stops the batch
   ▼
-put each row in lane order, then in column order
+put each layer in lane order, then in column order
   ▼
 check the whole diagram, in turn: integrity → alignments → groups → steps
   ▼
@@ -25,7 +25,7 @@ write the file: a temporary file, then a rename
 
 Loading reads the YAML with unique keys and validates it against the schema. It then reads the files of the marks, the stylesheet the diagram names and the weight levels that stylesheet knows. A file that fails any of these is refused as a whole, with `already in the file` as its source, so that grafical never draws from a file it read only in part. A file that cannot be found or read is refused with the command as its source.
 
-The operations work on a copy of the loaded diagram, so a refused write leaves nothing changed. Each operation runs against the diagram the operations before it made, and either returns errors or changes the copy. After each one, walls forget the nodes, groups and lines it removed, a wall left with an empty side goes, and notes go with their targets. When every operation has run, each layer is put in lane order and then in column order. That waits until the end because lanes and columns are facts that several operations of one batch may change.
+The operations work on a copy of the loaded diagram, so a refused write leaves nothing changed. Each operation runs against the diagram the operations before it made, and either returns errors or changes the copy. After each one, walls forget the nodes, groups and edges it removed, a wall left with an empty side goes, and notes go with their targets. When every operation has run, each layer is put in lane order and then in column order. That waits until the end because lanes and columns are facts that several operations of one batch may change.
 
 ## Checks of the whole diagram
 
@@ -44,7 +44,7 @@ On the write path a fifth check follows them: every weight an edge names is a le
 
 The new diagram then goes to the layout and the checker. A defect the agent owns refuses the write. Otherwise the file is written to a temporary file beside it and renamed over it, so that a reader never sees half a file. `grafical try` takes the same path without the last step.
 
-## The order of a row
+## The order of a layer
 
 Every order in the file is one the agent stated, so the model never has to guess where a node goes. A node added to a layer, or moved into another layer, needs a place: `first`, `last`, `before` a node or `after` a node. The first node of an empty layer needs none, since it has only one place.
 
@@ -79,15 +79,15 @@ The operations come in an order in which each one is valid when it runs:
 
 ```text
 diagram settings
-→ lines that go, then boxes, groups and lanes that go
-→ rows, then boxes, in their new places
-→ rows that go, now empty
-→ the boxes' own facts
+→ edges that go, then nodes, groups and lanes that go
+→ layers, then nodes, in their new places
+→ layers that go, now empty
+→ the nodes' own facts
 → groups and lanes, and who is in them
-→ lines that come
+→ edges that come
 ```
 
-An alignment that a move would break is cleared before the move and set again after it. The order of layers, and of the nodes in a layer, is compared as the longest sequence the two share, so that only the nodes that truly moved get a move. Groups, lanes and lines keep the order they were made in, and an operation can only add one at the end. So the ones a new order puts out of step are removed and added again, and only the longest start that keeps its order stays.
+An alignment that a move would break is cleared before the move and set again after it. The order of layers, and of the nodes in a layer, is compared as the longest sequence the two share, so that only the nodes that truly moved get a move. Groups, lanes and edges keep the order they were made in, and an operation can only add one at the end. So the ones a new order puts out of step are removed and added again, and only the longest start that keeps its order stays.
 
 ## Decisions
 

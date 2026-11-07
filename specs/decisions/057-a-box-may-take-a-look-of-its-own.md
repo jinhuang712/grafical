@@ -2,6 +2,8 @@
 
 Decided: 2026-11-06
 
+Replaced in part by specs/decisions, "A style may be as rich as it likes": a box takes its colors from the styles it marks.
+
 ## The problem
 
 A box's colors came with its kind, and the kind also sets its shape. On 2026-10-30 a "fixed" box had to be a cylinder and a "bug" box a dashed box only for their colors.

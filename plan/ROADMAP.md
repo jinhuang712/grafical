@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current checkpoint:** [CP2: Richer pictures](#cp2-richer-pictures). First grafical draws, then it gains styles and features, then every kind of diagram runs as an experiment, and then it is released.
+**Current checkpoint:** [CP2: Richer pictures](#cp2-richer-pictures). First grafical draws, then it gains styles and features, then every kind of diagram runs as an experiment, and then it is released. The work now is how edges are routed, which waits on [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
 
 ## Summary
 
@@ -83,7 +83,7 @@ Roadmap
 │   │   └── 🟨 Move and plug
 │   ├── 🟨 CP2.3: The object model
 │   │   ├── ✅ Design the model and its form
-│   │   ├── 🟨 Build the model
+│   │   ├── ✅ Build the model
 │   │   ├── 🟨 Move the saved files
 │   │   └── ⬜ Tune the form
 │   ├── 🟨 CP2.4: Edges and labels
@@ -102,21 +102,22 @@ Roadmap
 │   │   ├── ✅ `--bend`
 │   │   └── ✅ `--stretch`
 │   ├── 🟨 CP2.5: Pictures worth keeping
-│   │   ├── ✅ Labels on straight lines
+│   │   ├── ✅ Labels on straight edges
 │   │   ├── ✅ Choice diamonds
 │   │   ├── ✅ Footnote numbers
 │   │   ├── ⬜ Labels in a crowded gutter
-│   │   ├── ⬜ A diamond's slanted lines
+│   │   ├── ⬜ A diamond's slanted edges
 │   │   ├── ⬜ Badges off a lane's side
-│   │   ├── ⬜ Return lines off a self-loop
-│   │   └── ✅ Routing cases
-│   ├── ⬜ CP2.6: Nodes
+│   │   ├── ⬜ Return edges off a self-loop
+│   │   ├── ✅ Routing cases
+│   │   └── ⬜ Clean edges
+│   ├── 🟨 CP2.6: Nodes
 │   │   ├── ⬜ Corner marks checked
 │   │   ├── ⬜ Marks by name
 │   │   ├── ✅ Node looks
 │   │   ├── ⬜ Size multiples
 │   │   └── ⬜ Offsets
-│   ├── ⬜ CP2.7: Containers
+│   ├── 🟨 CP2.7: Containers
 │   │   ├── ⬜ Column headings
 │   │   ├── ⬜ Lanes both ways
 │   │   ├── ⬜ Deeper nesting
@@ -143,9 +144,9 @@ Roadmap
 │   │   ├── ⬜ C4
 │   │   └── ⬜ Infrastructure
 │   ├── ⬜ CP3.4: Size
-│   │   ├── ⬜ 10 boxes
-│   │   ├── ⬜ 25 boxes
-│   │   └── ⬜ A true 50-box picture
+│   │   ├── ⬜ 10 nodes
+│   │   ├── ⬜ 25 nodes
+│   │   └── ⬜ A true 50-node picture
 │   ├── 🟨 CP3.5: Errors and cost
 │   │   ├── ✅ Fewer blocked labels
 │   │   ├── ⬜ Measure the rate in a round
@@ -203,7 +204,7 @@ Everything an agent needs to draw with grafical alone: the operations, the layou
   - [CP1.4: The owner's additions](#cp14-the-owners-additions) is met.
   - [CP1.5: The vocabulary and stability](#cp15-the-vocabulary-and-stability) is met.
   - [CP1.6: The stage 1 round](#cp16-the-stage-1-round) is met.
-  - [CP1.7: Clearer lines and more diagram types](#cp17-clearer-lines-and-more-diagram-types) is met.
+  - [CP1.7: Clearer edges and more diagram types](#cp17-clearer-edges-and-more-diagram-types) is met.
   - [CP1.8: Discrete output and freer placement](#cp18-discrete-output-and-freer-placement) is met.
   - [CP1.9: Refusals that name the way out](#cp19-refusals-that-name-the-way-out) is met.
 
@@ -225,7 +226,7 @@ Spikes chose our own gap router, `harfbuzzjs`, the 8,105-character Chinese font 
 **Exit criteria:**
 
 - **Constraints**
-  - [R3: Determinism](GOALS.md#r3-determinism)
+  - [R3: Determinism](GOALS.md#r3-determinism): ✅ 2026-10-11, the same file gave the same pixels on macOS and Linux.
 
 ### CP1.2: The loop
 
@@ -255,15 +256,15 @@ The smallest path from operations to a picture: an agent built the public brief 
 
 **Status:** ✅ (2026-10-11)
 
-The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, against 22 for the first engine: rows not drawn, groups as systems, one column grid and measured rules (`bench/results/phase1b.md`, `bench/results/phase1b2.md`, `bench/results/phase1b3.md`).
+The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, against 22 for the first engine: layers not drawn, groups as systems, one column grid and measured rules (`bench/results/phase1b.md`, `bench/results/phase1b2.md`, `bench/results/phase1b3.md`).
 
 **Tasks:**
 
-- ✅ Rows not drawn: A row places boxes and draws nothing.
+- ✅ Layers not drawn: A layer places nodes and draws nothing.
 - ✅ Groups as systems: A group is drawn as one system.
-- ✅ One column grid: Every box sits on one column grid.
+- ✅ One column grid: Every node sits on one column grid.
 - ✅ Measured rules: The look is held by measured rules.
-- ✅ Lines on the new engine: The rebuilt engine routes every line.
+- ✅ Edges on the new engine: The rebuilt engine routes every edge.
 
 **Delivers:**
 
@@ -281,11 +282,11 @@ The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, a
 
 **Status:** ✅ (2026-10-11 and 2026-10-12)
 
-Lines that end at containers, swimlanes, themes and stylesheets, and the live viewer.
+Edges that end at containers, swimlanes, themes and stylesheets, and the live viewer.
 
 **Tasks:**
 
-- ✅ Lines that end at containers: A line ends at a container.
+- ✅ Edges that end at containers: An edge ends at a container.
 - ✅ Swimlanes: Bands say who owns what.
 - ✅ Themes and stylesheets: One name sets the whole look.
 - ✅ The live viewer: A window redraws on every change.
@@ -327,33 +328,33 @@ The full operation set, `apply`, `show`, `diff` and the help, with the stability
 **Exit criteria:**
 
 - **Constraints**
-  - [R1: Stability](GOALS.md#r1-stability)
+  - [R1: Stability](GOALS.md#r1-stability): ✅ 2026-10-12, 0 unnamed changes in 169 single operations.
 
 ### CP1.6: The stage 1 round
 
 **Status:** ✅ (2026-10-12)
 
-The first full benchmark round, and its rerun after the line work (`bench/results/stage1.md`). The MVP bar was not met.
+The first full benchmark round, and its rerun after the edge work (`bench/results/stage1.md`). The MVP bar was not met.
 
 **Tasks:**
 
 - ✅ The first round: The first full benchmark round ran.
-- ✅ The rerun: The round ran again after the line work.
+- ✅ The rerun: The round ran again after the edge work.
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 
-### CP1.7: Clearer lines and more diagram types
+### CP1.7: Clearer edges and more diagram types
 
 **Status:** ✅ (2026-10-12)
 
-New line kinds, lines that meet a box on any side, hops and dots, the flowchart and state machine kinds, nested groups, and the help in place of `grafical guide`.
+New line kinds, edges that meet a node on any side, hops and dots, the flowchart and state machine kinds, nested groups, and the help in place of `grafical guide`.
 
 **Tasks:**
 
-- ✅ New line kinds: Lines gained new kinds.
-- ✅ Lines on any side: A line meets a box on any side.
-- ✅ Hops and dots: Crossing lines hop and joins take dots.
-- ✅ Flowchart and state machine kinds: Boxes gained the kinds of these diagrams.
+- ✅ New line kinds: Edges gained new kinds.
+- ✅ Edges on any side: An edge meets a node on any side.
+- ✅ Hops and dots: Crossing edges hop and joins take dots.
+- ✅ Flowchart and state machine kinds: Nodes gained the kinds of these diagrams.
 - ✅ Nested groups: A group sits inside a group.
 - ✅ Help in place of `grafical guide`: The help took over from `grafical guide`.
 
@@ -371,21 +372,21 @@ New line kinds, lines that meet a box on any side, hops and dots, the flowchart 
 
 **Status:** ✅ (2026-10-13 and 2026-10-14)
 
-Records in place of prose, `try`, bundled fan-outs, equal heights in a row, room around stores, columns, steps from another box, walls, notes, marks, edge weights and the richer legend.
+Records in place of prose, `try`, bundled fan-outs, equal heights in a layer, room around stores, columns, steps from another node, walls, notes, marks, edge weights and the richer legend.
 
 **Tasks:**
 
 - ✅ Records: Records replace prose in every reply.
 - ✅ `try`: A change can be tried before it is written.
 - ✅ Bundled fan-outs: A fan-out leaves as one bundle.
-- ✅ Equal heights in a row: Boxes of a row share one height.
+- ✅ Equal heights in a layer: Nodes of a layer share one height.
 - ✅ Room around stores: Stores keep room around them.
 - ✅ Columns: Columns are a placement fact.
-- ✅ Steps from another box: A box sits some cells from another.
-- ✅ Walls: Lines cross a wall only where allowed.
-- ✅ Notes: A short text sits on a box, a line or a group.
-- ✅ Marks: A box carries small marks.
-- ✅ Edge weights: A line can be thicker.
+- ✅ Steps from another node: A node sits some cells from another.
+- ✅ Walls: Edges cross a wall only where allowed.
+- ✅ Notes: A short text sits on a node, an edge or a group.
+- ✅ Marks: A node carries small marks.
+- ✅ Edge weights: An edge can be thicker.
 - ✅ The richer legend: The legend covers styles, widths and marks.
 
 **Delivers:**
@@ -408,7 +409,7 @@ Records in place of prose, `try`, bundled fan-outs, equal heights in a row, room
 
 **Status:** ✅ (2026-10-15 to 2026-10-19)
 
-The agent states every order and the engine no longer picks a slot. Each refusal, defect and warning prints as a block that says what happened, what caused it and which commands can change it; every write prints every warning; one entry page of help, and a wrong command names the right one; a row's label is optional and a row with a look is drawn; a group can be copied; a line can carry a step's number; a bar's name keeps clear of the lines.
+The agent states every order and the engine no longer picks a slot. Each refusal, defect and warning prints as a block that says what happened, what caused it and which commands can change it; every write prints every warning; one entry page of help, and a wrong command names the right one; a layer's label is optional and a layer with a look is drawn; a group can be copied; an edge can carry a step's number; a bar's name keeps clear of the edges.
 
 **Tasks:**
 
@@ -417,10 +418,10 @@ The agent states every order and the engine no longer picks a slot. Each refusal
 - ✅ Every warning on every write: Every write prints every warning.
 - ✅ One entry page of help: One page opens the help.
 - ✅ A wrong command names the right one: A wrong command prints the right one.
-- ✅ Optional row labels: A row needs no label and a row with a look is drawn.
+- ✅ Optional layer labels: A layer needs no label and a layer with a look is drawn.
 - ✅ Copying a group: A group can be copied.
-- ✅ Step numbers: A line can carry a step number.
-- ✅ Bar names clear of lines: A bar keeps its name clear of the lines.
+- ✅ Step numbers: An edge can carry a step number.
+- ✅ Bar names clear of edges: A bar keeps its name clear of the edges.
 
 **Delivers:**
 
@@ -460,7 +461,7 @@ The numbers are the order of the work, since each step rests on the one before.
 
 **Status:** ✅ (2026-10-15)
 
-Adding a box without a position took up to 189.7 ms at 50 boxes, against 50 ms.
+Adding a box without a position took up to 189.7 ms at 50 nodes, against 50 ms.
 
 **Tasks:**
 
@@ -470,7 +471,7 @@ Adding a box without a position took up to 189.7 ms at 50 boxes, against 50 ms.
 **Exit criteria:**
 
 - **Thresholds**
-  - [T2: Speed](GOALS.md#t2-speed)
+  - [T2: Speed](GOALS.md#t2-speed): ✅ 2026-10-15, the worst operation took 18.6 ms.
 
 ### CP2.2: The command line
 
@@ -535,23 +536,23 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 
 **Status:** 🟨 (since 2026-11-06)
 
-A strong model steers a line and draws it as a curve, and a line carries its label.
+A strong model steers an edge and draws it as a curve, and an edge carries its label.
 
 **Tasks:**
 
-- ✅ Edge sides: An agent states the side a line leaves or enters by, any side of either end.
-- ✅ Edge shapes: A command draws lines square or round.
-- 🟨 Labels on edges: A line carries its label by default, and lines do not yet move apart for one.
+- ✅ Edge sides: An agent states the side an edge leaves or enters by, any side of either end.
+- ✅ Edge shapes: A command draws edges square or round.
+- 🟨 Labels on edges: An edge carries its label by default, and edges do not yet move apart for one.
 - 🟨 Label text: An agent sets the breaks and alignment of a node's, an edge's, a wall's and a lane's label and of a note, and the titles of regions stay one line.
 - ✅ Region gaps: The gap between two neighbouring regions may be magnified.
 - ✅ Edge looks: An edge takes a color of its own or a named look.
 - ✅ Region labels: A diagram's, a group's, a layer's and a lane's label sits at a fraction, and a column's waits for Column headings.
-- ✅ Label looks: A line's label marks a style for its background, border and color.
-- ✅ `--straight`: A line with no bend is stated, and a line that cannot run straight is refused.
-- ✅ `--main`: The main flow takes its straight run first, and other lines give way.
-- ✅ `--with`: A line joins another's trunk, which draws a tree with one spine.
-- ✅ `--via`: A line passes a stated object on a stated side.
-- ✅ `--bend`: A line turns at a stated fraction of its longest run.
+- ✅ Label looks: An edge's label marks a style for its background, border and color.
+- ✅ `--straight`: An edge with no bend is stated, and an edge that cannot run straight is refused.
+- ✅ `--main`: The main flow takes its straight run first, and other edges give way.
+- ✅ `--with`: An edge joins another's trunk, which draws a tree with one spine.
+- ✅ `--via`: An edge passes a stated object on a stated side.
+- ✅ `--bend`: An edge turns at a stated fraction of its longest run.
 - ✅ `--stretch`: A detour reaches a stated multiple of its default.
 
 **Delivers:**
@@ -580,14 +581,15 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 
 **Tasks:**
 
-- ✅ Labels on straight lines: A label sits on its own straight vertical line.
-- ✅ Choice diamonds: `choice` is a small diamond for a line that splits.
+- ✅ Labels on straight edges: A label sits on its own straight vertical edge.
+- ✅ Choice diamonds: `choice` is a small diamond for an edge that splits.
 - ✅ Footnote numbers: A footnote's number stays wholly inside or outside a container.
-- ⬜ Labels in a crowded gutter: An attempt did not land and waits on the owner's choice: [Labels sit close to the lines beside them in a crowded gutter](TODO.md#p2discussion-labels-sit-close-to-the-lines-beside-them-in-a-crowded-gutter).
-- ⬜ A diamond's slanted lines: A line meets a diamond only at a corner, measured with `pnpm bench diff` before it lands.
+- ⬜ Labels in a crowded gutter: An attempt did not land and waits on the owner's choice: [Labels sit close to the edges beside them in a crowded gutter](TODO.md#p2discussion-labels-sit-close-to-the-edges-beside-them-in-a-crowded-gutter).
+- ⬜ A diamond's slanted edges: An edge meets a diamond only at a corner, measured with `pnpm bench diff` before it lands.
 - ⬜ Badges off a lane's side: A step's badge keeps off a lane's side, and `step-collision` counts one that touches it.
-- ⬜ Return lines off a self-loop: The lines that leave and enter a node keep clear of its self-loop.
+- ⬜ Return edges off a self-loop: The edges that leave and enter a node keep clear of its self-loop.
 - ✅ Routing cases: `pnpm bench routes` compares 29 small cases with a saved baseline.
+- ⬜ Clean edges: Edges meet the rules set on 2026-11-07, once a way is picked: [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
 
 **Delivers:**
 
@@ -602,15 +604,15 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 
 ### CP2.6: Nodes
 
-**Status:** ⬜
+**Status:** 🟨
 
 Nodes carry marks that stay clear of edges and colors of their own.
 
 **Tasks:**
 
-- ⬜ Corner marks checked: A corner mark is checked against nearby lines.
+- ⬜ Corner marks checked: A corner mark is checked against nearby edges.
 - ⬜ Marks by name: A mark can be taken by name.
-- ✅ Node looks: A box takes colors of its own or a named look.
+- ✅ Node looks: A node takes colors of its own or a named look.
 - ⬜ Size multiples: A node takes multiples of its width and height.
 - ⬜ Offsets: A node sits a fraction of a cell off the grid, once the router allows it: [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
 
@@ -630,16 +632,16 @@ Nodes carry marks that stay clear of edges and colors of their own.
 
 ### CP2.7: Containers
 
-**Status:** ⬜
+**Status:** 🟨
 
 Containers that cross and nest and take colors of their own, and columns that carry headings.
 
 **Tasks:**
 
-- ⬜ Column headings: A column carries a heading above its first row.
-- ⬜ Lanes both ways: Lanes that run as rows and as columns in one diagram.
+- ⬜ Column headings: A column carries a heading above its first layer.
+- ⬜ Lanes both ways: Lanes that run as layers and as columns in one diagram.
 - ⬜ Deeper nesting: Groups up to five levels, with the fuzz test holding at five levels.
-- ⬜ Bars across groups: A bar crosses a group's box and overlaps no box or label.
+- ⬜ Bars across groups: A bar crosses a group's node and overlaps no node or label.
 - ✅ Container looks: A group or a lane takes colors of its own or a named look.
 
 **Delivers:**
@@ -686,7 +688,7 @@ Other ways to read one diagram, which build on the nesting of [CP2.7: Containers
 
 - ⬜ Flow direction: A diagram that reads left to right.
 - ⬜ Views of one file: Several pictures of parts of one file.
-- ⬜ Folded groups: A group drawn folded into one box in a view.
+- ⬜ Folded groups: A group drawn folded into one node in a view.
 
 **Delivers:**
 
@@ -772,13 +774,13 @@ Diagrams that follow a request or a message across systems.
 
 **Status:** ⬜
 
-A picture of about 50 boxes that a reader can follow.
+A picture of about 50 nodes that a reader can follow.
 
 **Tasks:**
 
-- ⬜ 10 boxes: The 10-component brief in a round.
-- ⬜ 25 boxes: The 25-component brief in a round.
-- ⬜ A true 50-box picture: Haiku draws the 50-component brief without merging it down.
+- ⬜ 10 nodes: The 10-component brief in a round.
+- ⬜ 25 nodes: The 25-component brief in a round.
+- ⬜ A true 50-node picture: Haiku draws the 50-component brief without merging it down.
 
 **Exit criteria:**
 
@@ -793,7 +795,7 @@ The refusals of the private reference brief were mostly `title-blocked`. Haiku s
 
 **Tasks:**
 
-- ✅ Fewer blocked labels: Labels sit on straight vertical lines, and over 2,000 fuzz seeds `label-blocked` fell from 62 to 0 and `title-blocked` from 4 to 1.
+- ✅ Fewer blocked labels: Labels sit on straight vertical edges, and over 2,000 fuzz seeds `label-blocked` fell from 62 to 0 and `title-blocked` from 4 to 1.
 - ⬜ Measure the rate in a round: Only a round shows whether Haiku's refused calls fall below 5%.
 - ⬜ Find where Haiku's tokens go: Split a first draft's fresh tokens by what spent them.
 - ⬜ Cut the cost of a first draft: Spend less on what that split shows.

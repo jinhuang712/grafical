@@ -1,6 +1,6 @@
 # The .grafical file
 
-**Status:** built, except for `<check>`, `library`, and the attributes of a node's size, and tuned once its diffs show what to change.
+**Status:** built, except for `<check>`, `library`, the attributes of a node's size, a type's `weight`, `both` and `sublabel`, a style's `weight`, a layer's `style` and an edge's `color`, and tuned once its diffs show what to change.
 
 A `.grafical` file holds one diagram as objects with attributes and relations. grafical is its only writer, and a model reads it through `show`, so the file is shaped for people in a diff and for git. It sits between pseudocode, a structural language, a script, CSS, YAML, JSON and LaTeX, and it takes no control flow, variables or macros.
 
@@ -22,7 +22,7 @@ A `.grafical` file holds one diagram as objects with attributes and relations. g
 |---|---|
 | Easy to search | `show` with an ID gives an object and what refers to it |
 | Easy to parse | a line at a time |
-| Local changes | one change touches few lines |
+| Local changes | one change touches few edges |
 | A good diff | a reader sees what changed |
 | Rich facts | it holds attributes, looks and relations |
 | One spelling | one set of facts gives one set of bytes |
@@ -160,6 +160,7 @@ The root has no ID, and a file has exactly one.
 | `shape` | a shape, for a node type |
 | `fill` | a color |
 | `border` | a color |
+| `border-width` | a number |
 | `color` | a color |
 | `weight` | a level or a number |
 | `both` | `true`, for arrowheads at both ends |
@@ -294,11 +295,14 @@ A label is a text on an edge or a region. A node's name is its `text`, since a n
 |---|---|
 | `on` | a node |
 | `slot` | a corner or `left` |
-| `emoji` | text |
-| `text` | text |
 | `file` | text |
 | `hash` | text |
-| `color` | a color |
+| `bg` | a color |
+| `border` | a color |
+| `fg` | a color |
+| `shape` | `square`, `rounded` or `pill` |
+| `size` | `s`, `m` or `l` |
+| `text` | text |
 
 ### `<note>`
 

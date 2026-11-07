@@ -64,6 +64,8 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 - **Gap:** the space between two neighbouring nodes of one layer.
 - **Run:** one straight horizontal or vertical piece of an edge.
   - Lost names: *stretch* and *segment* and *part*.
+- **End run:** the run at either end of an edge, from its node to its first bend.
+  - It is at least 16 px, and 24 px at ease.
 - **Track:** one of the rows of a gutter or one of the columns of a gap that a run takes.
 - **Jog:** a sideways shift in the middle of a long run of a line.
 - **Corridor:** a column of the grid empty in every layer an edge passes, which the edge runs down.

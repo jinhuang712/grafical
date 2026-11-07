@@ -3,32 +3,32 @@
 ```
 F1: Elements
 ├── F1.1: Nodes — the parts of the system
-│   ├── F1.1.1: Types and shapes — a box's kind sets its shape
+│   ├── F1.1.1: Types and shapes — a node's kind sets its shape
 │   ├── F1.1.2: Labels and sublabels — a label and a quieter sublabel
 │   ├── F1.1.3: Sizes — sized to the text, or by a step
-│   ├── F1.1.4: Marks — up to five small marks on a box
+│   ├── F1.1.4: Marks — up to five small marks on a node
 │   ├── F1.1.5: Marks by name — a mark from one bundled icon set
-│   ├── F1.1.6: Emphasis — at most two boxes stand out
+│   ├── F1.1.6: Emphasis — at most two nodes stand out
 │   └── F1.1.7: Node looks — colors from the styles a node marks
 ├── F1.2: Edges — what connects to what
-│   ├── F1.2.1: Types — a line's kind sets its style
-│   ├── F1.2.2: Arrowheads at both ends — two-way lines
-│   ├── F1.2.3: Weight — thicker lines for what matters more
-│   ├── F1.2.4: Numbered steps — a number on a line
+│   ├── F1.2.1: Types — an edge's kind sets its style
+│   ├── F1.2.2: Arrowheads at both ends — two-way edges
+│   ├── F1.2.3: Weight — thicker edges for what matters more
+│   ├── F1.2.4: Numbered steps — a number on an edge
 │   ├── F1.2.5: Ends at a group, a layer or a lane — one arrow to a whole system
 │   └── F1.2.6: Edge looks — a color from the styles an edge marks
-└── F1.3: Containers — what gathers boxes
+└── F1.3: Containers — what gathers nodes
     ├── F1.3.1: Groups — a system drawn as one frame
     ├── F1.3.2: Copying a group — a second zone in one operation
     ├── F1.3.3: Deeper nesting — up to five levels
     ├── F1.3.4: Lanes — bands that say who owns what
     ├── F1.3.5: Lanes both ways — a grid of lanes and phases
-    ├── F1.3.6: Walls — space that lines cross only where allowed
-    ├── F1.3.7: Notes — a short text on a box, a line or a group
+    ├── F1.3.6: Walls — space that edges cross only where allowed
+    ├── F1.3.7: Notes — a short text on a node, an edge or a group
     └── F1.3.8: Container looks — colors from the styles a group or a lane marks
 ```
 
-What a diagram is made of. A node is a part of the system, an edge says that two things connect and how, and a container gathers nodes into systems, lanes and parts that lines keep apart. The agent says what each one is, and grafical gives it its shape.
+What a diagram is made of. A node is a part of the system, an edge says that two things connect and how, and a container gathers nodes into systems, lanes and parts that edges keep apart. The agent says what each one is, and grafical gives it its shape.
 
 ## F1.1: Nodes
 
@@ -59,7 +59,7 @@ A node is a part of the system: a service, a store, a queue, a person or a step.
 - An agent names a node and adds a port or a topic, to say more without another node.
 - An agent leaves sizes to grafical or picks a step, to keep text inside its node.
 - An agent marks a node that matters, to draw the reader's eye to it.
-- An agent names an mark, to avoid finding a file for every node.
+- An agent names a mark, to avoid finding a file for every node.
 - An agent picks the one or two nodes to read first, to give the picture a start.
 - An agent colors a node by what it means, to show a status and keep its shape.
 
@@ -69,12 +69,12 @@ A node's kind says what it is and decides how it is drawn.
 
 | Kind | Drawn as |
 |---|---|
-| `service` | a node |
+| `service` | a box |
 | `store` | a cylinder |
-| `queue` | a node in its own tint |
-| `external` | a node with a dashed border |
+| `queue` | a box in its own tint |
+| `external` | a box with a dashed border |
 | `actor` | a pill |
-| `state` | a node with rounder corners |
+| `state` | a box with rounder corners |
 | `terminal` | a tinted pill, a flowchart's start or end |
 | `decision` | a diamond, its text in the middle |
 | `initial` · `final` | a filled dot · a ringed dot |
@@ -82,7 +82,7 @@ A node's kind says what it is and decides how it is drawn.
 
 - `initial` and `final` are a state machine's start and end.
 - `choice` is where an edge splits into several, and the question goes on the edge into it.
-- An edge meets a diamond only at a corner, and lines that come to one side join before it.
+- An edge meets a diamond only at a corner, and edges that come to one side join before it.
 - The labels of `initial` and `final` and `choice` stay in the file and are not drawn.
 
 ```sh
@@ -111,9 +111,9 @@ grafical -f <file> node --sublabel <id> [--text <text>]
 
 - Labels wrap at spaces and hyphens and underscores and slashes.
   - Chinese text also wraps between characters.
-- A label that still does not fit its node is refused as `overflow`, with the edges it takes and the most it may.
+- A label that still does not fit its node is refused as `overflow`, with the lines of text it takes and the most it may.
 - A character the bundled fonts cannot draw is refused as `missing-glyph`.
-- `describe` without `--text` clears the sublabel.
+- `node --sublabel` without `--text` clears the sublabel.
 
 ### F1.1.3: Sizes
 
@@ -126,7 +126,7 @@ grafical -f <file> diagram --sizing auto|fixed
 
 - A node without a size is medium, or large when its text does not fit the medium node.
   - A rename that shortens the label shrinks it again.
-- `resize` without `--size` returns the node to that.
+- `node --size` without `--size` returns the node to that.
 - Every node in a layer is drawn as tall as the layer's tallest, so their tops line up.
   - Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a node without a size is always medium, and text that does not fit is refused.
@@ -182,7 +182,7 @@ grafical -f <file> node --mark <id> --slot <slot> --mark <set>:<name>
 At most two nodes stand out, as what a reader should see first.
 
 ```sh
-grafical -f <file> node --emphasize <id> [--off]
+grafical -f <file> node --emphasis <id> [--off]
 ```
 
 ### F1.1.7: Node looks
@@ -220,10 +220,10 @@ An edge says that two things connect and how. The agent states its ends, its kin
   - [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
   - [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:**
-  - [The renderer: how lines are drawn](../specs/rendering.md#how-lines-are-drawn)
-  - [The theme: line weights](../specs/theme.md#line-weights)
+  - [The renderer: how edges are drawn](../specs/rendering.md#how-edges-are-drawn)
+  - [The theme: edge weights](../specs/theme.md#edge-weights)
   - [Text placement: step badges](../specs/labels.md#step-badges)
-  - [Routing: lines that end at a container](../specs/routing.md#lines-that-end-at-a-container)
+  - [Routing: edges that end at a container](../specs/routing.md#edges-that-end-at-a-container)
   - [Placement: bands, bars and walls](../specs/placement.md#bands-bars-and-walls)
 - **Why:**
   - [015. Lines that end at containers](../specs/decisions/015-lines-that-end-at-containers.md)
@@ -287,7 +287,6 @@ grafical -f <file> edge --weight <id...> [--weight <level|pixels>]
   - The levels are `thin`, `thick` and `heavy`.
   - The built-in themes draw the levels 1.25, 2.5 and 4 px wide.
 - Without `--weight`, the edge is thin again.
-- `emphasize` makes an edge `thick`, the main path.
 - A stylesheet may retune the levels and add more, such as `critical`.
   - A level the stylesheet lacks is refused as `unknown-weight`, with the allowed names.
 - The arrowhead grows with the width.
@@ -302,11 +301,11 @@ grafical -f <file> edge --number <id> [--n <number>]
 
 - The agent states each number, a whole number from 1 to 99.
   - grafical draws it as a small ring on the edge, under the start of its label.
-  - grafical never numbers or renumbers: lines may share a number and numbers may skip.
+  - grafical never numbers or renumbers: edges may share a number and numbers may skip.
   - `show` adds `[step <n>]` to the edge, and `show --drawn` adds `step=<n>` to its record.
 - Without `--n`, the step is cleared.
   - In a batch: `{op: edge.number, id: <line>, n: <number>}`.
-- A numbered line keeps its own port as a labelled one does.
+- A numbered edge keeps its own port as a labelled one does.
   - It never joins a bundle.
 
 ### F1.2.5: Ends at a group, a layer or a lane
@@ -320,7 +319,7 @@ One arrow can point at a whole system instead of each of its parts.
 - A layer with no node may be an end too, when the other end holds a node: a gateway or a message bus that every request passes.
   - It is drawn as one 40 px bar across the content with its label at the left ([038. A row with no box as one bar](../specs/decisions/038-a-row-with-no-box-as-one-bar.md)).
   - Each edge meets it straight past its other end.
-- An edge that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge --add --pass`, or `edge --pass <file> <id> [--off]` for an edge already drawn.
+- An edge that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge --add --pass`, or `edge --pass <id> [--off]` for an edge already drawn.
   - It then names the bar in `passes`.
   - A layer with no node and a look is a bar too, though no edge ends at it ([F2.2: Layers and order](F2-layout.md#f22-layers-and-order)).
 - An end may not lie inside the other (`edge-inside`).
@@ -351,7 +350,7 @@ grafical -f <file> edge --like <id> [<edge>]
 
 ## F1.3: Containers
 
-Nodes are gathered into systems, lanes and parts that lines keep apart. A group draws a frame around a system, a lane says who owns what, a wall keeps two parts apart and a note holds detail beside its target.
+Nodes are gathered into systems, lanes and parts that edges keep apart. A group draws a frame around a system, a lane says who owns what, a wall keeps two parts apart and a note holds detail beside its target.
 
 - **Design:**
   - [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
@@ -382,12 +381,12 @@ Nodes are gathered into systems, lanes and parts that lines keep apart. A group 
 - An agent nests groups five deep, to draw a cloud's account down to its subnet.
 - An agent sets lanes, to show who owns which step.
 - An agent crosses lanes with phases, to show who does what and when.
-- An agent sets a wall between two parts, to keep them apart and let only named lines cross.
+- An agent sets a wall between two parts, to keep them apart and let only named edges cross.
 - An agent attaches a note, to keep detail out of extra nodes.
 
 ### F1.3.1: Groups
 
-A group is a system, drawn as one node around its members, which may sit in several layers.
+A group is a system, drawn as one frame around its members, which may sit in several layers.
 
 **Commands:**
 
@@ -400,8 +399,8 @@ A group is a system, drawn as one node around its members, which may sit in seve
 - `grafical -f <file> group --order <id> --before <group> | --after <group>`
 - `grafical -f <file> group --remove <id> [--out]`
 
-- A group's node spans every layer from its top member to its bottom one.
-  - The other nodes of those layers sit beside it, and nothing else lies inside it.
+- A group's frame spans every layer from its top member to its bottom one.
+  - The other nodes of those layers sit beside the frame, and nothing else lies inside it.
 - Groups nest, up to three levels (`group-too-deep`).
   - A group inside itself is refused as `group-cycle`.
 - `join` moves a node out of its previous group, and also moves a whole group into another.
@@ -421,8 +420,8 @@ A group is a system, drawn as one node around its members, which may sit in seve
   - The nodes of its inner groups move with it.
   - A group ordered beside itself or beside a group around or inside it is refused as `bad-reference`.
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group.
-  - Lines that end at the group go with it.
-- A node inside a node takes the canvas's fill, so the fills alternate by depth.
+  - Edges that end at the group go with it.
+- A group inside a group takes the canvas's fill, so the fills alternate by depth.
   - A stylesheet may set `paint.nesting: shade` instead.
 
 ### F1.3.2: Copying a group
@@ -479,7 +478,7 @@ Lanes that run as layers and lanes that run as columns in one diagram, as a grid
 
 ### F1.3.6: Walls
 
-Empty space between two parts of a picture, which lines cross only where the wall allows.
+Empty space between two parts of a picture, which edges cross only where the wall allows.
 
 **Commands:**
 
@@ -515,11 +514,11 @@ grafical -f <file> note --remove --on <id>
 - A note is a card beside its target, joined by a dotted line.
   - With `--footnote` it is a small number on the target, with the text in a numbered list at the bottom.
   - The file holds a footnote as `footnote: true`.
-  - A card with no place beside its target clear of every node, line and text is refused as `label-blocked` ([064. A note is what the agent states](../specs/decisions/064-a-note-is-what-the-agent-states.md)).
+  - A card with no place beside its target clear of every node, edge and text is refused as `label-blocked` ([064. A note is what the agent states](../specs/decisions/064-a-note-is-what-the-agent-states.md)).
   - The agent then shortens it or makes it a footnote.
 - A target has one note, and adding another replaces it.
   - A note goes with its target.
-- A note that takes more than four edges is an `overflow`.
+- A note of more than four lines of text is an `overflow`.
 
 ### F1.3.8: Container looks
 

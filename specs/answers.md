@@ -17,7 +17,7 @@ detail:
   <key>: <value>
 next: <command names>
 
-counts nodes=... lines=... ...   apply, check and render only
+counts nodes=... edges=... ...   apply, check and render only
 ```
 
 A usage error, such as an unknown option or command, prints the same outcome and block on standard error, or on standard output with `--json`. The exit code is 0 when the command succeeds, with or without warnings, 1 when a write is refused or a file cannot be read, and 2 for a usage error. Engine-owned defects exit 1 under `check --all` only.
@@ -28,11 +28,11 @@ With `--json` the same answer is one object: `{ok, changed, problems, counts}`, 
 
 A record is one line: a word that names it, then `key=value` fields in the logfmt style. A record with no fields is its name alone, such as `ok`. A value that holds a space, a quote or `=` is quoted as JSON. A list is comma separated, `-` stands for none, and a count by name is `name:n`. The record's keys are the JSON's fields under the same names, so the text and `--json` say the same thing.
 
-`show --drawn` prints `counts`, then one record for each `box`, `group`, `wall`, `note`, `line`, `gutter` and `legend` entry. A `line` record gives `id`, `from`, `to`, `leaves`, `enters`, `bends`, `length`, `direct`, `detour`, `skip`, `crosses`, `passes`, `bundle`, and `step` when the edge has one. Plain `show` prints the diagram in the words of the operations, not as records. What each count and each gutter measures is the checker's.
+`show --drawn` prints `counts`, then one record for each `node`, `group`, `wall`, `note`, `edge`, `gutter` and `legend` entry. An `edge` record gives `id`, `from`, `to`, `leaves`, `enters`, `bends`, `length`, `direct`, `detour`, `skip`, `crosses`, `passes`, `bundle`, and `step` when the edge has one. Plain `show` prints the diagram in the words of the operations, not as records. What each count and each gutter measures is the checker's.
 
 ## A problem's block
 
-A problem is an `error`, which could not be read or applied; a `defect`, which would draw wrong; or a `warning`, which is drawn poorly. Each block has the same lines:
+A problem is an `error`, which could not be read or applied; a `defect`, which would draw wrong; or a `warning`, which is drawn poorly. Each block has the same edges:
 
 - `<kind>: <code>`, where the code names the kind of problem.
 - `description:` the code's one fixed sentence, which says what happened and never what to do.
@@ -46,33 +46,33 @@ A problem is an `error`, which could not be read or applied; a `defect`, which w
 
 The detail starts with `field` and `found`, or `owner` for a defect, and the other facts follow in one fixed order. An empty value or list prints `-`, and a fact that is absent is left out. A key for several things holds a list even of one: `likely`, `near`, `edges`, `ends`, `nodes`, `layers`, `groups`, `lanes`, `between`, `across`, `chain`, `clear`, `gutters`, `allowed`, `takes` and `chars`. Several ids under a key for one thing move to its plural, such as `node` to `nodes`.
 
-No block writes the change for the agent: there is no fix, and `next` names commands without ids or values. The detail carries what the agent needs to find the change itself, such as the first and last layers a group's node covers.
+No block writes the change for the agent: there is no fix, and `next` names commands without ids or values. The detail carries what the agent needs to find the change itself, such as the first and last layers a group's frame covers.
 
-A word grafical does not know is answered with the word it most likely means, as a value. `grafical help apply` gives `found: help` and `likely: --help`. `grafical "node add" --help` and `grafical node.add --help` give `likely: node add`, and `grafical nodee add --help` gives `found: nodee` and `likely: node`. A word is near a name when at most a third of its letters differ, or one.
+A word grafical does not know is answered with the word it most likely means, as a value. `grafical help apply` gives `found: help` and `likely: --help`. `grafical "node add" --help` and `grafical node.add --help` give `likely: node --add`, and `grafical nodee add --help` gives `found: nodee` and `likely: node`. A word is near a name when at most a third of its letters differ, or one.
 
 ## Where a problem comes from
 
 The source takes one of four forms:
 
 - The command line as typed for a single command, quoted as a shell would need it.
-- `<batch file> line <n>: <the operation as written>` for an operation of a batch, with `<n>` the edge it starts on from 1.
-  - A YAML error gives the text of its edge instead.
+- `<batch file> line <n>: <the operation as written>` for an operation of a batch, with `<n>` the line it starts on from 1.
+  - A YAML error gives the text of its line instead.
 - `already in the file` for a problem the file had before the command.
-- The batch file alone where the edge cannot be known, or the command line when there is no batch.
+- The batch file alone where the line cannot be known, or the command line when there is no batch.
 
 With `--json`, a problem that an operation caused carries the operation's index as `detail.op`.
 
-An error of one operation knows its operation. Some problems are found only in the diagram the whole batch makes: an error of the whole diagram, which the model's checks find once every operation has run, and a defect the agent owns. For those, a refused write or a refused `try` looks for the operation that caused the problem. It tries ever shorter prefixes of the batch, back towards the file, each prefix once for all the problems. A problem's line is the one after the longest prefix that does not have it, and when every prefix has it, the source is `already in the file`.
+An error of one operation knows its operation. Some problems are found only in the diagram the whole batch makes: an error of the whole diagram, which the model's checks find once every operation has run, and a defect the agent owns. For those, a refused write or a refused `try` looks for the operation that caused the problem. It tries ever shorter prefixes of the batch, back towards the file, each prefix once for all the problems. A problem's edge is the one after the longest prefix that does not have it, and when every prefix has it, the source is `already in the file`.
 
 ```text
 batch  op1 op2 op3 op4 op5
-                       ▲ problem first appears with op4 → source: line of op4
+                       ▲ problem first appears with op4 → source: edge of op4
 prefixes tried:  1..4  1..3  1..2  1  (none)
 ```
 
 A prefix that is refused for another problem cannot tell whether this one is there: a whole diagram's checks stop at the first that fails, and a refused diagram is not laid out. So the scan stops there, and the source is the batch file alone. There is one exception for errors: the checks of the whole diagram run in turn, so a prefix refused by a later check than the one that finds the problem passed that one, and is without the problem.
 
-The scan may lay out at most 400 nodes and lines in all. It counts each prefix at the size of the file's diagram for an error, and at the larger of the file's and the batch's for a defect. So it tries `min(12, max(1, floor(400 / size)))` prefixes: 3 for a diagram of 113 nodes and lines, 10 for 37. A new file's empty prefix costs nothing. A write that succeeds runs no scan.
+The scan may lay out at most 400 nodes and edges in all. It counts each prefix at the size of the file's diagram for an error, and at the larger of the file's and the batch's for a defect. So it tries `min(12, max(1, floor(400 / size)))` prefixes: 3 for a diagram of 113 nodes and edges, 10 for 37. A new file's empty prefix costs nothing. A write that succeeds runs no scan.
 
 ## Trying a change
 

@@ -2,6 +2,8 @@
 
 Decided: 2026-11-06
 
+Replaced in part by specs/decisions, "`move` and `plug` stand above the nouns": `edge ends` became `plug`.
+
 ## The problem
 
 The help mixed two names for one thing: row and layer, box and node, line and edge, mark and icon. An agent read one word and typed the other. One word also meant two things, such as step and footnote and dot.
