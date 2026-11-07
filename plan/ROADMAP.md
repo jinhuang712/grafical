@@ -94,7 +94,8 @@ Roadmap
 │   │   ├── ✅ Region gaps
 │   │   ├── ✅ Edge looks
 │   │   ├── ✅ Region labels
-│   │   └── ✅ Label looks
+│   │   ├── ✅ Label looks
+│   │   └── ⬜ Steering an edge
 │   ├── 🟨 CP2.5: Pictures worth keeping
 │   │   ├── ✅ Labels on straight lines
 │   │   ├── ✅ Choice diamonds
@@ -541,6 +542,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - ✅ Edge looks: An edge takes a color of its own or a named look.
 - ✅ Region labels: A diagram's, a group's, a layer's and a lane's label sits at a fraction, and a column's waits for Column headings.
 - ✅ Label looks: A line's label marks a style for its background, border and color.
+- ⬜ Steering an edge: An agent states where a line passes and turns, once the router allows it: [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
 
 **Delivers:**
 
@@ -552,6 +554,7 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - [F1.2.6: Edge looks](../features/F1-elements.md#f126-edge-looks)
 - [F4.7: Region labels](../features/F4-look.md#f47-region-labels)
 - [F4.8: Label looks](../features/F4-look.md#f48-label-looks)
+- [F2.7.4: Steering an edge](../features/F2-layout.md#f274-steering-an-edge)
 
 **Exit criteria:**
 

@@ -14,7 +14,8 @@ F2: Layout
 ├── F2.7: How edges are drawn — grafical routes every line
 │   ├── F2.7.1: Edge sides — the side a line leaves or enters by
 │   ├── F2.7.2: Edge shapes — square or round
-│   └── F2.7.3: Labels on edges — a line carries its label
+│   ├── F2.7.3: Labels on edges — a line carries its label
+│   └── F2.7.4: Steering an edge — where a line passes and turns, as facts
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
 
@@ -315,6 +316,21 @@ grafical -f <file> edge --label-at <id> on|beside
 - ⬜ Edges move apart for a label, past wrapping it.
 
 - **Why:** [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
+
+### F2.7.4: Steering an edge
+
+An agent steers a line with facts and never with a coordinate. Each fact binds the router, and one that cannot hold refuses the write.
+
+```sh
+grafical -f <file> edge --via <id> <object> --left | --right
+grafical -f <file> edge --straight <id>
+grafical -f <file> edge --main <id>
+grafical -f <file> edge --with <id> <edge>
+grafical -f <file> edge --bend <id> --at 0.25|0.5|0.75
+grafical -f <file> edge --stretch <id> --magnified <n>
+```
+
+- **Why:** [096. An edge is steered by facts and never by coordinates](../specs/decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
 
 ## F2.8: Flow direction
 

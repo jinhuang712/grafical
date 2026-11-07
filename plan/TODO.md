@@ -62,7 +62,7 @@
 - created: 2026-11-07
 - status: HALT
 - next: the owner rates the cases, then picks a way
-- blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
+- blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets) · [F2.7.4: Steering an edge](../features/F2-layout.md#f274-steering-an-edge)
 - related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 
 ### [P1][DISCUSSION] What goal records the routing cases

@@ -78,9 +78,9 @@ The layout is computed again from the facts after every write, and positions are
 
 ## 5. The engine routes every edge, in plain forms
 
-Edges run orthogonally through the gaps between layers and nodes. The engine picks each edge's ports, tracks and bundles, and no operation can. A side is the engine's unless the agent states it. It draws each thing in a few plain forms: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs. Cost: an agent cannot bend one ugly line directly, only state its sides and change the facts around it.
+Edges run orthogonally through the gaps between layers and nodes. The engine picks each edge's ports, tracks and bundles, and no operation can name a coordinate. A side, a passage, a fraction of the way and a multiple of a detour are the engine's unless the agent states them. It draws each thing in a few plain forms: where the facts leave none, the write is refused if the picture would hide something, and reported if it only costs. Cost: an agent steers an ugly line only by facts, and each new way to steer it binds the router.
 
-**Ask:** Does this hand the agent a port or a bend, or draw a crooked form to make the facts fit?
+**Ask:** Does this hand the agent a coordinate, or draw a crooked form to make the facts fit?
 
 - **Stance:** [Who owns what?](PHILOSOPHY.md#who-owns-what)
 - **Decisions:**
@@ -93,6 +93,7 @@ Edges run orthogonally through the gaps between layers and nodes. The engine pic
   - [058. An agent may state the side of a line](specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
   - [059. Lines may be drawn square, round or smooth](specs/decisions/059-lines-may-be-drawn-square-round-or-smooth.md)
   - [095. A good route is one the eye can follow](specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
+  - [096. An edge is steered by facts and never by coordinates](specs/decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
 - **How it works:**
   - [Routing](specs/routing.md)
   - [Text placement](specs/labels.md)
