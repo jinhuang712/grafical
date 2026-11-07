@@ -51,16 +51,6 @@
 - updated: 2026-11-07
 - related: [The benchmark harness](../specs/benchmark.md)
 
-### [P1][ISSUE] An unknown attribute in a .grafical file is read
-
-- description:
-  - A node block with `colour: red` was read and the attribute dropped, where [R4: A sound file](GOALS.md#r4-a-sound-file) asks for a refusal.
-  - A reference to nothing, an ID of `node` and a stable rewrite held by hand and have no test.
-- created: 2026-11-07
-- status: OPEN
-- found: checking R4 by hand while the documents were brought up to date
-- next: refuse an attribute a block's sort does not list, and test all four
-
 ### [P1][DISCUSSION] The router is not smart enough
 
 - description:

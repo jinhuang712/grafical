@@ -51,7 +51,46 @@ describe("the .grafical file", () => {
     );
   });
 
-  it("refuses what it cannot read, and a reference to nothing", () => {
+  const FILE = [
+    '<diagram> {\n  format: 1\n  title: "T"\n}\n\n<layer> a {\n}\n\n',
+    "<order> layers {\n  of: @diagram\n  items:\n    @a\n}\n\n",
+    "<order> a-order {\n  of: @a\n  items:\n    @node\n}\n\n",
+    '<node> node {\n  type: @service\n  text: "X"\n  layer: @a\n}\n',
+  ].join("");
+
+  it("takes any word as an ID, and one set of facts gives one set of bytes", () => {
+    const d = readDiagram(FILE);
+    if (Array.isArray(d)) throw new Error(JSON.stringify(d));
+    expect(d.layers[0]?.nodes[0]?.id).toBe("node");
+    roundTrip(d);
+  });
+
+  it("refuses an unknown attribute, on any sort", () => {
+    expect(parseGrafical(FILE.replace('text: "X"\n', 'text: "X"\n  colour: red\n'))).toMatchObject([
+      { code: "unknown-field", field: "node", found: "colour" },
+    ]);
+    expect(
+      Array.isArray(parseGrafical(FILE.replace("<layer> a {\n", "<layer> a {\n  fill: #fff\n"))),
+    ).toBe(true);
+  });
+
+  it("refuses an attribute written twice, and a second diagram", () => {
+    expect(
+      Array.isArray(parseGrafical(FILE.replace('text: "X"\n', 'text: "X"\n  text: "Y"\n'))),
+    ).toBe(true);
+    expect(Array.isArray(parseGrafical(`${FILE}\n<diagram> {\n  title: "U"\n}\n`))).toBe(true);
+  });
+
+  it("refuses a reference to nothing", () => {
+    const stray = (x: string) => readDiagram(FILE + x);
+    expect(readDiagram(FILE.replace("layer: @a\n", "layer: @a\n  group: @nope\n"))).toMatchObject([
+      { code: "unknown-group" },
+    ]);
+    expect(Array.isArray(stray('\n<label> l {\n  on: @nope\n  text: "L"\n}\n'))).toBe(true);
+    expect(Array.isArray(stray("\n<mark> m {\n  on: @nope\n  slot: left\n}\n"))).toBe(true);
+  });
+
+  it("refuses what it cannot read", () => {
     expect(Array.isArray(parseGrafical("<diagram> {\n  title\n}\n"))).toBe(true);
     expect(Array.isArray(parseGrafical("<diagram> {\n"))).toBe(true);
     expect(Array.isArray(parseGrafical("<diagram> {\n}\n\n<thing> x {\n}\n"))).toBe(true);

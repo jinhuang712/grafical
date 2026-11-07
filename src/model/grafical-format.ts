@@ -284,7 +284,43 @@ interface Block {
   id: string | undefined;
   line: number;
   attrs: Map<string, string | string[]>;
+  /** The line each attribute sits on. */
+  at: Map<string, number>;
 }
+
+/** The attributes each sort may hold: anything else is refused (DESIGNS.md, "What grafical cannot fully read, it refuses"). */
+const ATTRS: Record<string, readonly string[]> = {
+  diagram: ["format", "title", "subtitle", "caption", "style", "density", "lines"].concat([
+    "title-at",
+    "title-side",
+    "sizing",
+  ]),
+  type: ["base", "shape", "fill", "border", "border-width", "color"],
+  style: ["fill", "border", "border-width", "color"],
+  layer: ["lane", "look"],
+  group: ["in", "like", "style"],
+  lane: ["like", "style"],
+  column: [],
+  wall: ["between", "and", "allow"],
+  order: ["of", "axis", "items"],
+  gap: ["between", "and", "magnified"],
+  node: [
+    "type",
+    "text",
+    "sublabel",
+    "text-align",
+    "layer",
+    "group",
+    "lane",
+    "column",
+    "align",
+  ].concat(["from", ...STEP_KEYS, "size", "emphasis", "like", "style"]),
+  edge: ["from", "to", "type", "out", "in", "weight", "both", "pass", "number", "like", "style"],
+  label: ["on", "text", "sublabel", "at", "side", "place", "seat", "align", "style"],
+  mark: ["on", "slot", "file", "hash", "bg", "border", "fg", "shape", "size", "text"],
+  note: ["on", "text", "align", "footnote"],
+  legend: [...LINE_STYLES, "weights", "marks"],
+};
 
 /** An edge the form cannot read, as the refusal of a file. */
 function bad(text: string, line: number): OpError {
@@ -307,7 +343,7 @@ function parseBlocks(text: string): Block[] | OpError {
     if (at === undefined) {
       const m = /^<([a-z]+)>(?: (\S+))? \{$/.exec(line);
       if (m === null) return bad(text, i + 1);
-      at = { sort: m[1] as string, id: m[2], line: i + 1, attrs: new Map() };
+      at = { sort: m[1] as string, id: m[2], line: i + 1, attrs: new Map(), at: new Map() };
       list = undefined;
       continue;
     }
@@ -321,7 +357,8 @@ function parseBlocks(text: string): Block[] | OpError {
       continue;
     }
     const m = /^ {2}([a-zA-Z-]+):(?: (.*))?$/.exec(line);
-    if (m === null) return bad(text, i + 1);
+    if (m === null || at.attrs.has(m[1] as string)) return bad(text, i + 1);
+    at.at.set(m[1] as string, i + 1);
     if (m[2] === undefined) {
       list = [];
       at.attrs.set(m[1] as string, list);
@@ -407,6 +444,20 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   ];
   const stray = blocks.find((b) => !known.includes(b.sort));
   if (stray !== undefined) return [bad(text, stray.line)];
+  for (const b of blocks) {
+    for (const [name, line] of b.at) {
+      if (ATTRS[b.sort]?.includes(name)) continue;
+      return [{ code: "unknown-field", index: 0, field: b.sort, found: name, facts: { line } }];
+    }
+  }
+  const second = of("diagram")[1];
+  if (second !== undefined) return [bad(text, second.line)];
+  // A label or a mark that names nothing would be dropped (DESIGNS.md, "What grafical cannot fully read, it refuses").
+  const everyId = new Set(blocks.map((b) => b.id));
+  for (const b of [...of("label"), ...of("mark")]) {
+    const on = b.attrs.get("on");
+    if (typeof on !== "string" || !everyId.has(value(on) as string)) return [bad(text, b.line)];
+  }
   const types = of("type");
   const root = of("diagram")[0];
   if (root === undefined) return [bad(text, 1)];

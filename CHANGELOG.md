@@ -36,6 +36,7 @@ grafical has not been released; the first release will be 0.1.0.
 - A bundle with branches to both sides splits at one knot, where it took two.
 - `type --add` defines a sort of node or edge with its own shape and look, and `--type` names it.
 - `style --add` names a look, and a node, an edge, a group or a lane marks it with `--style`.
+- A `.grafical` file with an unknown attribute, an attribute written twice, a second `<diagram>` or a label or a mark on nothing is refused.
 - A file named `.grafical` is written in the new form of blocks, and a YAML file still reads and writes as YAML.
 
 ### Boxes and rows
