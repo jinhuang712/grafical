@@ -12,7 +12,8 @@ A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of t
 Goals
 ├── Objectives
 │   ├── ❌ O1: The MVP bar — cheaper · faster · no strong model needed · copies a picture and beats it
-│   └── ⬜ O4: Copy a picture, better — an agent redraws someone's picture and it looks better
+│   ├── ⬜ O4: Copy a picture, better — an agent redraws someone's picture and it looks better
+│   └── ⬜ O5: Routes the eye can follow — 13 checks read from the picture itself
 ├── Measures
 │   ├── ⬜ M1: Enough to say — what an agent wanted to state and no operation could
 │   ├── M2: Cache hit rate — 90.2% of input read from the cache on 2026-10-18
@@ -81,6 +82,39 @@ Given a picture someone else drew, an agent redraws it with grafical, shows the 
 **Acceptance:** on a fixed set of reference pictures, Opus redraws each one with the same content, and the owner rates the redrawing above the original. The time each takes is recorded with no limit. The pictures stay outside the repository and only scores are committed, since their licenses are not known.
 
 **Status:** ⬜ not run.
+
+#### O5: Routes the eye can follow
+
+A route is judged by looking at the picture against every check below, and counts only support what the eye finds. A picture with no crossings can still fail, as a `pyramid` render did on 2026-11-07. The checks are in the order the owner set on 2026-11-07, so an earlier one wins where two pull against each other.
+
+| # | Tier | Check | Read by | From |
+|---|---|---|---|---|
+| 1 | must | No mechanical defect | the geometry check | [R2: Mechanical defects](#r2-mechanical-defects) |
+| 2 | must | No line the picture implies and the facts lack | open | proposed |
+| 3 | must | An end run of at least 16 px, 24 px at ease | not built | the owner's rule |
+| 4 | shape | The eye follows a line end to end | the owner | standard 1 |
+| 5 | shape | No step | the owner | the owner's rule |
+| 6 | shape | A pair of lines level at both ends | not built | the owner's rule |
+| 7 | shape | One form for lines of one sort | the owner | the owner's rule |
+| 8 | shape | A simple shape | the bend count and the owner | standard 3 |
+| 9 | better | Few and clean crossings | the crossing count and the owner | standard 4 |
+| 10 | better | No detour | the detour count | standard 2 |
+| 11 | better | A rhythm of parallel lines | the owner | standard 5 |
+| 12 | better | Lines land well | the owner | standard 6 |
+| 13 | better | What matters stands out | the owner | standard 7 |
+
+The standards are in `specs/decisions, "A good route is one the eye can follow"`, and the owner's rules are in `specs/decisions, "The router draws clean lines and the agent makes their room"`.
+
+**Want:** A picture that is complete and clear at once.
+
+**Checks:**
+
+- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
+- [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
+
+**Acceptance:** the owner looks at every case in `bench/routes/` and finds each check met or names why it cannot be.
+
+**Status:** ⬜ not run. On 2026-11-07 the owner looked at `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid` only. The open points are in [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
 
 ### Measures
 

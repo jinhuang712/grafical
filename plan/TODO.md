@@ -58,6 +58,11 @@
   - Three ways are open: a search over the open space · a pass that rips up the worst lines · more rules.
   - A search is the only one of the three that lets a node sit in a gutter, and it risks speed, stability and about 3000 lines of rewrite.
   - 29 cases in `bench/routes/` measure any of them, and small cases show lines tangled in one gutter more than paths that fail.
+  - The search trial stopped on 2026-11-07, and the owner settles the open points before another run.
+  - Open: lines may share a run only if every start-to-end pair the run implies is a real edge, and whether false lines count as a hard number.
+  - Open: what the engine does in a narrow gap where another route still reads.
+  - Open: the least end run of a main line, where 20 px was proposed.
+  - Open: labels, stability, the six edge facts on a search, and `ladder` against the new rules.
   - Trying the six edge facts on the cases, `via` and `with` cleaned up what they could reach, and a stated top in the first layer and a side `via` on a tight layer were refused by how the router is built.
   - A spike of [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md) on 2026-11-07 drew offsets across with no defect, and offsets down ran lines through nodes.
 - created: 2026-11-07

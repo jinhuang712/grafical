@@ -4,6 +4,8 @@ Decided: 2026-10-16
 
 Split on 2026-11-06 from specs/decisions, "The dirty work has edges".
 
+Extended on 2026-11-07 by specs/decisions, "The router draws clean lines and the agent makes their room": a line that goes round the outside may take three bends.
+
 ## The problem
 
 Decided by the owner on 2026-10-16. The engine had been widening a group's box so that no line ran under a stated title ("The agent states where a group's label sits"), and the owner found the empty space it left. Looking for the cause, the owner named the rule behind it: the engine must not do needless work beyond its edges just to get a picture drawn. Until then an engine-owned defect was the engine's to avoid whatever the agent stated ("Defects owned by who can fix them"), and that duty had no edge: every hard case grew a fallback that drew a crooked form and told the agent nothing.
