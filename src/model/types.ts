@@ -321,6 +321,18 @@ export interface Edge {
   style?: string[];
   /** Its number in a process, drawn as a badge on the edge (specs/decisions, "Step badges ride the line"). Absent: none. */
   step?: number;
+  /** The object it passes and on which side (specs/decisions, "An edge is steered by facts and never by coordinates"). */
+  via?: EdgeVia;
+  /** true: a line with no bend, or the write is refused. */
+  straight?: boolean;
+  /** true: the main flow, which takes its column first. */
+  main?: boolean;
+  /** The edge whose trunk it runs along, which shares one of its ends. */
+  with?: string;
+  /** Where between its neighbours its longest inner run sits. */
+  bendAt?: EdgeBend;
+  /** How many times its default a detour reaches. */
+  stretch?: EdgeStretch;
 }
 
 /** The highest step number: two digits fit the badge (specs/decisions, "Step badges ride the line"). */
@@ -374,6 +386,18 @@ export interface TypeDef {
   borderWidth?: number;
   color?: string;
 }
+
+/** The sides an edge may pass an object by. */
+export const VIA_SIDES = ["left", "right"] as const;
+export type ViaSide = (typeof VIA_SIDES)[number];
+export interface EdgeVia {
+  object: string;
+  side: ViaSide;
+}
+export const EDGE_BENDS = [0.25, 0.5, 0.75] as const;
+export type EdgeBend = (typeof EDGE_BENDS)[number];
+export const EDGE_STRETCHES = [1.25, 1.5, 2] as const;
+export type EdgeStretch = (typeof EDGE_STRETCHES)[number];
 
 /** A side of a node that an edge leaves or enters by. */
 export const EDGE_SIDES = ["top", "bottom", "left", "right"] as const;

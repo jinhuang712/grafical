@@ -2,6 +2,7 @@
 // The layout produces it, the checker inspects it, the renderer draws it.
 // Coordinates are px, origin top left, y down.
 
+import type { SteerCode } from "./layout/steer.ts";
 import type { EdgeKind, LineStyleName, Look, Mark, MarkSlot, NodeKind } from "./model/types.ts";
 import type { FontFace } from "./text/types.ts";
 import type { Paint } from "./theme/paint.ts";
@@ -207,6 +208,8 @@ export interface SceneEdge {
   step?: SceneBadge;
   /** The stated side the edge could not take, and the side it took (specs/decisions, "An agent may state the side of a line"). */
   unmet?: { end: "out" | "in"; stated: string; drawn: string }[];
+  /** The facts stated to steer it that could not hold (specs/decisions, "An edge is steered by facts and never by coordinates"). */
+  refused?: SteerCode[];
   /**
    * The gutters its label, or its step's badge, tried when none could hold it clear of the other
    * edges, each as the layers above and below it joined by a slash. No edge moves for it, so it lies

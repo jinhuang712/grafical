@@ -13,6 +13,7 @@ import { ID_EDGE, ID_NODE, ID_SUFFIX, issuesToErrors, STEP_NUMBER, WEIGHT } from
 import { checkLanes } from "./lanes.ts";
 import { likeProblems } from "./like.ts";
 import { noteTargets } from "./notes.ts";
+import { steerProblems } from "./steer.ts";
 import { checkSteps, everyNode, MAX_STEPS, STEP_KEYS } from "./steps.ts";
 import { closest } from "./suggest.ts";
 import {
@@ -22,8 +23,10 @@ import {
   DENSITIES,
   type Diagram,
   type DiagramNode,
+  EDGE_BENDS,
   EDGE_KINDS,
   EDGE_SIDES,
+  EDGE_STRETCHES,
   type Edge,
   FORMAT_VERSION,
   GAP_MAGNIFICATIONS,
@@ -47,6 +50,7 @@ import {
   STEP_NUMBER_MAX,
   type Style,
   type TypeDef,
+  VIA_SIDES,
   type Wall,
 } from "./types.ts";
 import { checkWalls } from "./walls.ts";
@@ -290,6 +294,12 @@ const edgeSchema = z.strictObject({
   emphasis: z.boolean().optional(),
   weight: weightValue.optional(),
   step: stepNumber.optional(),
+  via: z.strictObject({ object: nodeId, side: z.enum(VIA_SIDES) }).optional(),
+  straight: z.boolean().optional(),
+  main: z.boolean().optional(),
+  with: edgeId.optional(),
+  bendAt: z.literal(EDGE_BENDS).optional(),
+  stretch: z.literal(EDGE_STRETCHES).optional(),
   type: nodeId.optional(),
   like: edgeId.optional(),
   style: styleNames,
@@ -399,6 +409,12 @@ function build(p: Parsed): Diagram {
     if (e.weight !== undefined) edge.weight = e.weight;
     else if (e.emphasis === true) edge.weight = "thick";
     if (e.step !== undefined) edge.step = e.step;
+    if (e.via !== undefined) edge.via = { ...e.via };
+    if (e.straight === true) edge.straight = true;
+    if (e.main === true) edge.main = true;
+    if (e.with !== undefined) edge.with = e.with;
+    if (e.bendAt !== undefined) edge.bendAt = e.bendAt;
+    if (e.stretch !== undefined) edge.stretch = e.stretch;
     if (e.type !== undefined) edge.type = e.type;
     if (e.like !== undefined) edge.like = e.like;
     if (e.style !== undefined) edge.style = [...e.style];
@@ -549,6 +565,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   errors.push(...checkNotes(d, index));
   errors.push(...checkGaps(d, index));
   errors.push(...likeProblems(d, index));
+  errors.push(...steerProblems(d, index));
   if (d.style !== undefined) {
     const problem = styleProblem(d.style);
     if (problem !== undefined) {

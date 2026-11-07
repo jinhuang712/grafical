@@ -47,7 +47,7 @@ Features
 │   │   ├── ✅ F2.7.1: Edge sides — the side a line leaves or enters by
 │   │   ├── ✅ F2.7.2: Edge shapes — square or round
 │   │   ├── 🚧 F2.7.3: Labels on edges — a line carries its label (lines do not move apart for one)
-│   │   └── ⬜ F2.7.4: Steering an edge — where a line passes and turns, as facts
+│   │   └── 🚧 F2.7.4: Steering an edge — where a line passes and turns, as facts (a detour cannot grow the canvas)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── ✅ F3.1: Operations — one named command per change

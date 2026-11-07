@@ -433,6 +433,10 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
       });
     }
   }
+  // A fact stated to steer a line that could not hold (specs/decisions, "An edge is steered by facts and never by coordinates").
+  for (const e of scene.edges) {
+    for (const code of e.refused ?? []) out.push({ code, elements: [e.id], facts: {} });
+  }
   // A note's card with no place beside its target, at the first place anyway: the edges and
   // nodes in its way there.
   for (const x of scene.notes ?? []) {

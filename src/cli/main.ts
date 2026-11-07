@@ -706,7 +706,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "edges: add, reverse, label, side, label-at, weight, both, pass, number, type, style, like, remove",
+      "edges: add, reverse, label, side, label-at, weight, both, pass, number, via, straight, main, with, bend, stretch, type, style, like, remove",
     );
   json(
     edge
@@ -794,6 +794,69 @@ export function build(): Command {
       .option("--off", "undo it"),
   ).action(async (file: string, id: string, opts: Opts) => {
     await write(file, { op: "edge.both", id, ...pick(opts, ["off"]) }, opts);
+  });
+  json(
+    edge
+      .command("via")
+      .description("say which object a line passes and on which side; without one, the engine's")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("[object]", "a node or a group")
+      .option("--side <side>", "left or right"),
+  ).action(async (file: string, id: string, object: string | undefined, opts: Opts) => {
+    const raw = { op: "edge.via", id, ...(object === undefined ? {} : { object }) };
+    await write(file, { ...raw, ...pick(opts, ["side"]) }, opts);
+  });
+  for (const [verb, about] of [
+    ["straight", "ask for a line with no bend, or the engine's way with --off"],
+    ["main", "mark the main flow, which takes its column first, or undo it with --off"],
+  ] as const) {
+    json(
+      edge
+        .command(verb)
+        .description(about)
+        .argument("<file>")
+        .argument("<id>")
+        .option("--off", "undo it"),
+    ).action(async (file: string, id: string, opts: Opts) => {
+      await write(file, { op: `edge.${verb}`, id, ...pick(opts, ["off"]) }, opts);
+    });
+  }
+  json(
+    edge
+      .command("with")
+      .description("run a line along the trunk of an edge that shares an end; with none, its own")
+      .argument("<file>")
+      .argument("<id>")
+      .argument("[with]", "the edge whose trunk it runs along"),
+  ).action(async (file: string, id: string, trunk: string | undefined, opts: Opts) => {
+    await write(
+      file,
+      { op: "edge.with", id, ...(trunk === undefined ? {} : { with: trunk }) },
+      opts,
+    );
+  });
+  json(
+    edge
+      .command("bend")
+      .description("say where a line's longest inner run sits; without --at, the engine's")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--at <at>", "0.25, 0.5 or 0.75 of the way between its neighbours"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const at = opts.at === undefined ? {} : { at: Number(opts.at) };
+    await write(file, { op: "edge.bend", id, ...at }, opts);
+  });
+  json(
+    edge
+      .command("stretch")
+      .description("say how far a detour reaches; without --magnified, the engine's")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--magnified <n>", "1.25, 1.5 or 2"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    const n = opts.magnified === undefined ? {} : { magnified: Number(opts.magnified) };
+    await write(file, { op: "edge.stretch", id, ...n }, opts);
   });
   json(
     edge

@@ -24,6 +24,11 @@ import { noteTargets, pruneNotes } from "./notes.ts";
 import type {
   DiagramLegendOp,
   EdgeAddOp,
+  EdgeBendOp,
+  EdgeStraightOp,
+  EdgeStretchOp,
+  EdgeViaOp,
+  EdgeWithOp,
   FollowOp,
   GroupCopyOp,
   LayerAddOp,
@@ -46,6 +51,7 @@ import {
   markColor,
   markNameTooLong,
 } from "./schema.ts";
+import { passable, pruneSteer } from "./steer.ts";
 import { everyNode, STEP_KEYS, stepChain, steppedFrom } from "./steps.ts";
 import { closest } from "./suggest.ts";
 import {
@@ -400,6 +406,29 @@ function follow(
   }
   touch(s, op.id);
   return [];
+}
+
+type SteerOp = EdgeViaOp | EdgeStraightOp | EdgeWithOp | EdgeBendOp | EdgeStretchOp;
+
+/** Sets what one edge states to steer its line, or gives it back to the engine. */
+function steer(e: Edge, op: SteerOp): void {
+  if (op.op === "edge.via") {
+    if (op.object === undefined || op.side === undefined) delete e.via;
+    else e.via = { object: op.object, side: op.side };
+  } else if (op.op === "edge.straight" || op.op === "edge.main") {
+    const field = op.op === "edge.main" ? "main" : "straight";
+    if (op.off === true) delete e[field];
+    else e[field] = true;
+  } else if (op.op === "edge.with") {
+    if (op.with === undefined) delete e.with;
+    else e.with = op.with;
+  } else if (op.op === "edge.bend") {
+    if (op.at === undefined) delete e.bendAt;
+    else e.bendAt = op.at;
+  } else if (op.op === "edge.stretch") {
+    if (op.magnified === undefined) delete e.stretch;
+    else e.stretch = op.magnified;
+  }
 }
 
 function unknownLayer(d: Diagram, id: string, i: number, field: string): OpError {
@@ -2211,6 +2240,24 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
       touch(s, e.id);
       return [];
     }
+    case "edge.via":
+    case "edge.straight":
+    case "edge.main":
+    case "edge.with":
+    case "edge.bend":
+    case "edge.stretch": {
+      const e = d.edges.find((x) => x.id === op.id);
+      if (!e) return [unknownEdge(d, op.id, i, "id")];
+      if (op.op === "edge.via" && op.object !== undefined && !passable(d, op.object)) {
+        return [unknownNode(d, op.object, i, "object")];
+      }
+      if (op.op === "edge.with" && op.with !== undefined) {
+        if (!d.edges.some((x) => x.id === op.with)) return [unknownEdge(d, op.with, i, "with")];
+      }
+      steer(e, op);
+      touch(s, op.id);
+      return [];
+    }
     case "edge.label":
     case "edge.reverse":
     case "edge.both":
@@ -2497,7 +2544,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
       pruneNotes(s.d, gone);
     }
   }
-  touch(s, ...pruneLikes(s.d));
+  touch(s, ...pruneLikes(s.d), ...pruneSteer(s.d));
   // Column lanes keep each layer in lane order (specs/decisions, "Swimlanes run one way").
   touch(s, ...orderByLanes(s.d));
   // Columns keep each layer in column order (specs/decisions, "Columns beside rows").

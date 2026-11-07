@@ -661,6 +661,25 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (e.seat !== was.seat) {
       ops.push({ op: "edge.label-at", id: e.id, seat: e.seat ?? "on" });
     }
+    if (JSON.stringify(e.via) !== JSON.stringify(was.via)) {
+      ops.push({ op: "edge.via", id: e.id, ...(e.via ?? {}) });
+    }
+    if (e.straight !== was.straight) {
+      ops.push({ op: "edge.straight", id: e.id, ...(e.straight === true ? {} : { off: true }) });
+    }
+    if (e.main !== was.main) {
+      ops.push({ op: "edge.main", id: e.id, ...(e.main === true ? {} : { off: true }) });
+    }
+    if (e.with !== was.with) {
+      ops.push({ op: "edge.with", id: e.id, ...(e.with === undefined ? {} : { with: e.with }) });
+    }
+    if (e.bendAt !== was.bendAt) {
+      ops.push({ op: "edge.bend", id: e.id, ...(e.bendAt === undefined ? {} : { at: e.bendAt }) });
+    }
+    if (e.stretch !== was.stretch) {
+      const magnified = e.stretch;
+      ops.push({ op: "edge.stretch", id: e.id, ...(magnified === undefined ? {} : { magnified }) });
+    }
     if (e.pass !== was.pass) {
       ops.push(
         e.pass === true ? { op: "edge.pass", id: e.id } : { op: "edge.pass", id: e.id, off: true },

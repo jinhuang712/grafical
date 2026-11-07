@@ -81,6 +81,7 @@ import {
 import { planSideways } from "./side.ts";
 import { leftInset, markRects, markWidth, nodeLines, withSizes } from "./size.ts";
 import { routeStats } from "./stats.ts";
+import { steerEdges } from "./steer.ts";
 import { placeSteps } from "./steps.ts";
 import { alignedIn, lineBox, lineHeight, placeLine, placeLines } from "./text.ts";
 
@@ -967,6 +968,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     ),
     closedAbove,
     boxes: placement.groups.map((g) => ({
+      id: g.id,
       x0: g.x0,
       x1: g.x1,
       top: g.top,
@@ -1802,6 +1804,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // Walls (specs/decisions, "Walls as space"): each as long as the nodes of its sides. A labelled one draws a dashed
   // edge through its middle, and its label above the edge at the first place along
   // it that no crossing edge comes near.
+  const nodeRects = new Map(sceneNodes.map((n) => [n.id, n.rect]));
+  steerEdges({
+    edges: sceneEdges,
+    facts: factsById,
+    nodes: nodeRects,
+    objects: new Map([...nodeRects, ...sceneGroups.map((g) => [g.id, g.rect] as const)]),
+  });
   const sceneWalls: SceneWall[] = [];
   const boxRects = new Map<string, Rect>([
     ...sceneNodes.map((n) => [n.id, n.rect] as const),
@@ -2052,6 +2061,7 @@ function roundScene(s: Scene): Scene {
       if (e.step !== undefined) out.step = roundBadge(e.step);
       if (e.blocked !== undefined) out.blocked = e.blocked;
       if (e.unmet !== undefined) out.unmet = e.unmet;
+      if (e.refused !== undefined) out.refused = e.refused;
       return out;
     }),
   };

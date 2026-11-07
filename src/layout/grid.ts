@@ -76,6 +76,9 @@ interface Cand {
   key: string;
 }
 
+/** What a stated line adds to a join's score, past any score it could earn. */
+const FIRST = 1000;
+
 function cmp(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
@@ -662,6 +665,12 @@ export function buildGrid(d: Diagram): Grid {
       else if (!list.includes(b)) list.push(b);
     }
   }
+  // A line stated straight or main takes its column before any other (specs/decisions, "An edge is steered by facts and never by coordinates").
+  const first = new Set(
+    d.edges
+      .filter((e) => e.straight === true || e.main === true)
+      .flatMap((e) => [`${e.from}|${e.to}`, `${e.to}|${e.from}`]),
+  );
   const joinable = pairs.filter(({ u, v }) => shared[u] === 0 && shared[v] === 0);
   const cands: Cand[] = joinable.map(({ u, v, key }) => {
     const span = Math.abs((row[u] as number) - (row[v] as number));
@@ -676,6 +685,7 @@ export function buildGrid(d: Diagram): Grid {
       if (list.length === 1) score += 4;
       if (list[Math.floor((list.length - 1) / 2)] === b) score += 2;
     }
+    if (first.has(`${ids[u]}|${ids[v]}`)) score += FIRST;
     return { u, v, score, key };
   });
   // A node with a straight edge above it (up) or below it (down).

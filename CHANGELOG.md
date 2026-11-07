@@ -18,6 +18,7 @@ grafical has not been released; the first release will be 0.1.0.
 - `edge --emphasize` went, since `edge --weight <id> --weight thick` draws the same line, and a saved edge's `accent` reads as that weight.
 - A help page writes its examples as a caller types them, with `-f` first, and a verb in the old form names the new one as `likely`.
 - `--type` takes the place of `--kind`.
+- `edge --via`, `--straight`, `--main`, `--with`, `--bend` and `--stretch` steer a line with facts, and one that cannot hold refuses the write.
 - `plug <id> --from <end> --to <end>` plugs an edge into other ends, in place of `edge --ends`.
 - `show <id>` gives one object and what refers to it.
 - `diagram --lines square|round` sets how lines are drawn.

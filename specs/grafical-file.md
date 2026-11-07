@@ -1,6 +1,6 @@
 # The .grafical file
 
-**Status:** built, except for `<check>`, `library`, the attributes of a node's size and those that steer an edge, and tuned once its diffs show what to change.
+**Status:** built, except for `<check>`, `library`, and the attributes of a node's size, and tuned once its diffs show what to change.
 
 A `.grafical` file holds one diagram as objects with attributes and relations. grafical is its only writer, and a model reads it through `show`, so the file is shaped for people in a diff and for git. It sits between pseudocode, a structural language, a script, CSS, YAML, JSON and LaTeX, and it takes no control flow, variables or macros.
 
@@ -263,7 +263,7 @@ A rule a diagram sets itself, marked by what follows it. It comes later, and its
 | `both` | `true` |
 | `pass` | `true` |
 | `number` | a whole number |
-| `via` | an object, and `left` or `right` |
+| `via` | a node or a group, then `left` or `right` |
 | `straight` | `true` |
 | `main` | `true` |
 | `with` | an edge |

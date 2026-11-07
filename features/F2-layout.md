@@ -322,28 +322,31 @@ grafical -f <file> edge --label-at <id> on|beside
 An agent steers a line with facts and never with a coordinate. Every step here is stated on one edge, and the engine still routes the line.
 
 ```sh
-grafical -f <file> edge --via <id> <object> --left | --right
+grafical -f <file> edge --via <id> [<object>] [--side left|right]
 grafical -f <file> edge --straight <id> [--off]
 grafical -f <file> edge --main <id> [--off]
-grafical -f <file> edge --with <id> <edge>
-grafical -f <file> edge --bend <id> --at 0.25|0.5|0.75
-grafical -f <file> edge --stretch <id> --magnified 1.25|1.5|2
+grafical -f <file> edge --with <id> [<edge>]
+grafical -f <file> edge --bend <id> [--at 0.25|0.5|0.75]
+grafical -f <file> edge --stretch <id> [--magnified 1.25|1.5|2]
 ```
 
 | Flag | What it states | Refused as |
 |---|---|---|
-| `--via` | the object a line passes and on which side | `via-blocked` |
+| `--via` | the node or group a line passes and on which side | `via-blocked` |
 | `--straight` | a line with no bend | `not-straight` |
-| `--main` | the main flow, which other lines give way to | none |
-| `--with` | one trunk with another edge | `no-trunk` |
-| `--bend` | where along its longest run a line turns | `bend-blocked` |
+| `--main` | the main flow, whose ends take one column first | none |
+| `--with` | one trunk with an edge that shares an end | `no-trunk` |
+| `--bend` | where between its neighbours the longest inner run sits | `bend-blocked` |
 | `--stretch` | how far a detour reaches | `stretch-blocked` |
 
 - A value goes back to the engine with the same flag and no value.
-- A stated side joins a trunk with `--with`, which is how a tree with one spine is drawn.
-- A step that overlaps a node or a label refuses the write, as an offset does.
-- `--main` never moves a node.
-- `--bend` applies to a line of one longest run, and a line with two runs of one length takes the first.
+- `--with` draws a tree with one spine: each child leaves the trunk square into its own side.
+  - A side the agent stated holds, and with none the line takes the first side that reaches the trunk.
+- `--bend` needs an inner run whose neighbours lie on either side of it, and `--stretch` one whose neighbours lie on the same side.
+- A line with a label or a step's number takes neither `--with`, `--bend` nor `--stretch`, since the text would stay behind.
+- A step that meets a node or a label or comes within 12 px along another line refuses the write.
+- `--stretch` stops at the canvas, so a detour past it is refused.
+- `--main` and `--straight` change only which nodes share a column, so a node may shift sideways.
 
 - **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
 - **How it works:** [Routing: facts that steer a line](../specs/routing.md#facts-that-steer-a-line)

@@ -67,6 +67,8 @@ export interface RouteExtra {
 
 /** A group's border, as the router keeps edges out of it. */
 export interface Box {
+  /** The group's ID. */
+  id: string;
   x0: number;
   x1: number;
   top: number;
@@ -286,7 +288,7 @@ export function routeAcross(
       if (pl !== undefined) plans.push(pl);
     }
     assignBundles(plans, alone);
-    chooseGaps(plans, gapsByLayer, extra.forbidTop, extra.boxes, extra.bandEnds);
+    chooseGaps(plans, nodes, gapsByLayer, extra.forbidTop, extra.boxes, extra.bandEnds);
     assignGapTracks(plans, extra.boxes);
     chooseUturnGutters(plans, layers, extra.forbidTop, extra.closedAbove, below);
     chooseSideExits(plans, layers, extra.forbidTop, extra.noSideExit);
@@ -817,6 +819,14 @@ function margins(boxes: Box[], pl: Plan, layer: number): [number, number][] {
 }
 
 /** The group nodes an edge would pass through at x that hold neither of its ends. */
+/** The x span of a node or a group, by its ID. */
+function spanOf(id: string, nodes: Map<string, PNode>, boxes: Box[]): [number, number] | undefined {
+  const n = nodes.get(id);
+  if (n !== undefined) return [n.x, n.x + n.w];
+  const b = boxes.find((x) => x.id === id);
+  return b === undefined ? undefined : [b.x0, b.x1];
+}
+
 function foreignBoxes(boxes: Box[], pl: Plan, x: number): number {
   return boxes.filter(
     (b) =>
@@ -854,6 +864,7 @@ function corridors(between: number[], gapsByLayer: Gap[][]): [number, number][] 
  */
 function chooseGaps(
   plans: Plan[],
+  nodes: Map<string, PNode>,
   gapsByLayer: Gap[][],
   forbidTop: Map<number, [number, number][]>,
   boxes: Box[],
@@ -904,7 +915,18 @@ function chooseGaps(
     // The edge goes on into the lower end's top side, past any band label there.
     const lower = forbidTop.get(Math.max(pl.u.layer, pl.v.layer)) ?? [];
     const taken = k === undefined ? undefined : chosen.get(k);
+    // A line stated to pass an object takes a corridor on that side of it.
+    const via = pl.edge.via;
+    const beyond = via === undefined ? undefined : spanOf(via.object, nodes, boxes);
+    const onSide = ([lo, hi]: [number, number]): [number, number] =>
+      via === undefined || beyond === undefined
+        ? [lo, hi]
+        : via.side === "left"
+          ? [lo, Math.min(hi, beyond[0])]
+          : [Math.max(lo, beyond[1]), hi];
     const spans = corridors(pl.between, gapsByLayer)
+      .map(onSide)
+      .filter(([lo, hi]) => hi > lo)
       .flatMap(([lo, hi]) => freeParts(lo, hi, lower))
       .map(([lo, hi]) => ({
         lo,

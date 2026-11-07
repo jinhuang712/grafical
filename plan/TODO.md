@@ -62,17 +62,8 @@
 - created: 2026-11-07
 - status: HALT
 - next: the owner rates the cases, then picks a way
-- blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets) · [F2.7.4: Steering an edge](../features/F2-layout.md#f274-steering-an-edge)
+- blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
 - related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
-
-### [P2][DISCUSSION] A tree drawn with one spine
-
-- description:
-  - The owner wants the `dropdown` case drawn as an ASCII tree: one spine, with each child entered from its left.
-  - `--in left` to the first child is refused as `side-blocked`, and a line with a stated side joins no bundle, so the spine splits in two.
-- created: 2026-11-07
-- status: OPEN
-- next: `edge --with` draws it, and the neighbouring layer needs a route into a left side
 
 ### [P2][DISCUSSION] A parent that sits off the middle of its children
 

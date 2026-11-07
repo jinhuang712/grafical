@@ -19,8 +19,12 @@ import { closest } from "./suggest.ts";
 import {
   DENSITIES,
   type Density,
+  EDGE_BENDS,
   EDGE_SIDES,
+  EDGE_STRETCHES,
+  type EdgeBend,
   type EdgeSide,
+  type EdgeStretch,
   GAP_MAGNIFICATIONS,
   type GapMagnified,
   type GroupTitle,
@@ -42,6 +46,8 @@ import {
   SIZINGS,
   type SizeStep,
   type Sizing,
+  VIA_SIDES,
+  type ViaSide,
 } from "./types.ts";
 
 /** Where a node goes in its layer. At most one field is set. */
@@ -399,6 +405,34 @@ export interface EdgeBothOp {
   /** true: one arrowhead again. */
   off?: boolean;
 }
+/** The facts that steer an edge (specs/decisions, "An edge is steered by facts and never by coordinates"). Absent value: the engine's again. */
+export interface EdgeViaOp {
+  op: "edge.via";
+  id: string;
+  object?: string;
+  side?: ViaSide;
+}
+export interface EdgeStraightOp {
+  op: "edge.straight" | "edge.main";
+  id: string;
+  /** true: the engine's again. */
+  off?: boolean;
+}
+export interface EdgeWithOp {
+  op: "edge.with";
+  id: string;
+  with?: string;
+}
+export interface EdgeBendOp {
+  op: "edge.bend";
+  id: string;
+  at?: EdgeBend;
+}
+export interface EdgeStretchOp {
+  op: "edge.stretch";
+  id: string;
+  magnified?: EdgeStretch;
+}
 /** Numbers an edge as a step of a process, or clears its number (specs/decisions, "Step badges ride the line"). */
 export interface EdgeStepOp {
   op: "edge.number";
@@ -620,6 +654,11 @@ export type Op =
   | EdgeSideOp
   | EdgeReverseOp
   | EdgeBothOp
+  | EdgeViaOp
+  | EdgeStraightOp
+  | EdgeWithOp
+  | EdgeBendOp
+  | EdgeStretchOp
   | EdgePassOp
   | EdgeWeightOp
   | EdgeStepOp
@@ -920,6 +959,37 @@ export const edgeBothSchema = z.strictObject({
   id: edgeId,
   off: z.boolean().optional(),
 });
+export const edgeViaSchema = z.strictObject({
+  op: z.literal("edge.via"),
+  id: edgeId,
+  object: nodeId.optional(),
+  side: z.enum(VIA_SIDES).optional(),
+});
+export const edgeStraightSchema = z.strictObject({
+  op: z.literal("edge.straight"),
+  id: edgeId,
+  off: z.boolean().optional(),
+});
+export const edgeMainSchema = z.strictObject({
+  op: z.literal("edge.main"),
+  id: edgeId,
+  off: z.boolean().optional(),
+});
+export const edgeWithSchema = z.strictObject({
+  op: z.literal("edge.with"),
+  id: edgeId,
+  with: edgeId.optional(),
+});
+export const edgeBendSchema = z.strictObject({
+  op: z.literal("edge.bend"),
+  id: edgeId,
+  at: z.literal(EDGE_BENDS).optional(),
+});
+export const edgeStretchSchema = z.strictObject({
+  op: z.literal("edge.stretch"),
+  id: edgeId,
+  magnified: z.literal(EDGE_STRETCHES).optional(),
+});
 export const edgePassSchema = z.strictObject({
   op: z.literal("edge.pass"),
   id: edgeId,
@@ -1117,6 +1187,12 @@ export const opSchema = z.discriminatedUnion("op", [
   labelStyleSchema,
   edgeReverseSchema,
   edgeBothSchema,
+  edgeViaSchema,
+  edgeStraightSchema,
+  edgeMainSchema,
+  edgeWithSchema,
+  edgeBendSchema,
+  edgeStretchSchema,
   edgePassSchema,
   edgeWeightSchema,
   edgeSeatSchema,
@@ -1203,6 +1279,12 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "label.style": labelStyleSchema,
   "edge.reverse": edgeReverseSchema,
   "edge.both": edgeBothSchema,
+  "edge.via": edgeViaSchema,
+  "edge.straight": edgeStraightSchema,
+  "edge.main": edgeMainSchema,
+  "edge.with": edgeWithSchema,
+  "edge.bend": edgeBendSchema,
+  "edge.stretch": edgeStretchSchema,
   "edge.pass": edgePassSchema,
   "edge.weight": edgeWeightSchema,
   "edge.label-at": edgeSeatSchema,

@@ -190,6 +190,12 @@ export function writeGrafical(d: Diagram): string {
         ["both", flag(e.both)],
         ["pass", flag(e.pass)],
         ["number", num(e.step)],
+        ["via", e.via === undefined ? undefined : `${ref(e.via.object)} ${e.via.side}`],
+        ["straight", flag(e.straight)],
+        ["main", flag(e.main)],
+        ["with", opt(e.with)],
+        ["bend-at", num(e.bendAt)],
+        ["stretch", num(e.stretch)],
         ["like", opt(e.like)],
         ["style", marks(e.style)],
       ]),
@@ -315,7 +321,16 @@ const ATTRS: Record<string, readonly string[]> = {
     "column",
     "align",
   ].concat(["from", ...STEP_KEYS, "size", "emphasis", "like", "style"]),
-  edge: ["from", "to", "type", "out", "in", "weight", "both", "pass", "number", "like", "style"],
+  edge: ["from", "to", "type", "out", "in", "weight", "both", "pass", "number"].concat([
+    "via",
+    "straight",
+    "main",
+    "with",
+    "bend-at",
+    "stretch",
+    "like",
+    "style",
+  ]),
   label: ["on", "text", "sublabel", "at", "side", "place", "seat", "align", "style"],
   mark: ["on", "slot", "file", "hash", "bg", "border", "fg", "shape", "size", "text"],
   note: ["on", "text", "align", "footnote"],
@@ -643,12 +658,22 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
         both: "both",
         pass: "pass",
         number: "step",
+        straight: "straight",
+        main: "main",
+        with: "with",
+        "bend-at": "bendAt",
+        stretch: "stretch",
         like: "like",
         out: "out",
         in: "in",
       },
       o,
     );
+    const via = b.attrs.get("via");
+    if (typeof via === "string") {
+      const [object, side] = via.split(" ");
+      o.via = { object: value(object as string), side };
+    }
     typed(b, types, o);
     styles(b, o);
     named(b.id as string, o);

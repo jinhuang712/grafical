@@ -90,6 +90,11 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "group-too-deep": "Groups would nest deeper than grafical draws.",
   invalid: "A field holds a value that is not valid there.",
   "invalid-argument": "An option holds a value that it does not take.",
+  "via-blocked": "An edge does not pass the stated object on the stated side.",
+  "not-straight": "An edge stated straight has a bend.",
+  "no-trunk": "An edge cannot run along the trunk it names.",
+  "bend-blocked": "A line has no inner run to slide, or the slide meets something.",
+  "stretch-blocked": "A line has no detour to reach further, or the reach meets something.",
   "side-blocked":
     "No route leaves or enters by the stated side, and no edge takes another side unasked.",
   "label-blocked":
@@ -249,6 +254,11 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   invalid: [],
   "invalid-argument": [],
   "side-blocked": ["layer move", "node move", "edge side"],
+  "via-blocked": ["node move", "edge via"],
+  "not-straight": ["node move", "node align", "edge straight"],
+  "no-trunk": ["node move", "edge with"],
+  "bend-blocked": ["node move", "edge bend"],
+  "stretch-blocked": ["node move", "edge stretch"],
   "label-blocked": {
     edge: ["layer move", "node size", "node move", "edge label", "edge number"],
     note: ["note add", "note remove", "node move"],

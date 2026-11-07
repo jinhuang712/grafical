@@ -221,6 +221,7 @@ export const ERROR_CODES = [
   "unknown-style",
   "unknown-type",
   "unknown-node",
+  "no-trunk",
   "not-neighbours",
   "unknown-note",
   "unknown-op",
@@ -324,6 +325,11 @@ export const DEFECT_CODES = [
   "title-blocked",
   "label-blocked",
   "side-blocked",
+  "via-blocked",
+  "not-straight",
+  "no-trunk",
+  "bend-blocked",
+  "stretch-blocked",
 ] as const;
 export type DefectCode = (typeof DEFECT_CODES)[number];
 
@@ -359,6 +365,11 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   // The router has no route by a stated side, and takes no other: the agent changes the side or the layers
   // (specs/decisions, "An agent may state the side of a line").
   "side-blocked": "agent",
+  "via-blocked": "agent",
+  "not-straight": "agent",
+  "no-trunk": "agent",
+  "bend-blocked": "agent",
+  "stretch-blocked": "agent",
 };
 
 /**

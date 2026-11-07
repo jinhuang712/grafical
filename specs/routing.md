@@ -134,18 +134,17 @@ The model has already refused an edge between a wall's two sides that the wall d
 
 ## Facts that steer a line
 
-An agent may steer a line with facts, and the router treats each as a rule it must meet or refuse. None of these is built.
+An agent may steer a line with facts, and each must hold or the write is refused. Two reach the steps above, and the rest are met once every line is drawn:
 
-| Fact | What the router must do | Refused when |
-|---|---|---|
-| `straight` | draw the line with no bend | its ends share no x or y clear of every node |
-| `main` | route the line before the others, so they give way | never |
-| `with` | run the line along the other edge's trunk, in a bundle | the two share no end or side |
-| `via` | keep the line on the stated side of the object | no route has that side |
-| `bend-at` | put the turn at that fraction of the longest run | the turn overlaps a node, a label or a track |
-| `stretch` | take a detour that multiple of its default reach | the detour overlaps a node or a label |
+| Fact | When | What happens | Refused when |
+|---|---|---|---|
+| `straight`, `main` | the column grid | the two ends' join scores 1000 more, so it comes first | `straight`: the drawn line has a bend |
+| `via` | corridors | a corridor is cut to the stated side of the object | the line, wherever it lies level with the object, is on the other side |
+| `with` | after routing | the line follows the trunk to the first run that reaches its end square, and leaves it there | no run reaches, or the way is not clear |
+| `bend-at` | after routing | the longest inner run slides between its neighbours, to the fraction | none has neighbours on either side, or the way is not clear |
+| `stretch` | after routing | the longest detour reaches that multiple past its neighbours | none has neighbours on one side, or the way is not clear |
 
-These facts come before the steps above, since each fixes something a later step would otherwise choose. A line with a stated side keeps its own port, unless `with` joins it to a trunk.
+A way is clear when it meets no node but its ends and no label, stays 8 px inside the canvas, and runs at least 12 px from any line along it, its trunk and what shares the trunk aside. Nothing after routing moves a node or another line, or grows the canvas. A line with a stated side keeps its own port unless `with` joins it to a trunk, and then it leaves `side-blocked` behind, since the router's route is replaced.
 
 ## Self-loops
 

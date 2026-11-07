@@ -30,4 +30,4 @@ A step that overlaps anything refuses the write, as an offset does.
 
 ## Consequences
 
-The engine still routes every line, and these facts bind it. Each is a constraint on the router, so they weigh toward a router that searches. None is built, and which run a `--bend` names on a line of several runs is open.
+The engine still routes every line, and these facts bind it. Each is a constraint on the router, so they weigh toward a router that searches. Built on 2026-11-07 on the router as it is: `--bend` takes the longest inner run, and a detour cannot grow the canvas.
