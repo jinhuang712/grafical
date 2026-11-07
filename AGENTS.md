@@ -51,8 +51,32 @@ Then it scans `plan/TODO.md`.
 - [WHEN]  you change something: check only what you touched against the rules.
 - [WHEN]  the work at hand is done and nothing is next: go through the open items with the owner.
 - [WHEN]  a checkpoint ends or a release is near: check the goals.
+- [WHEN]  something in this tree happens: update the documents it names in the same change.
 - [WHEN]  the owner stops you: stop at once.
 - [WHEN]  the owner stops you: stop every agent you started and every agent those started.
+
+Each event names the documents it touches. Update only the ones it affects.
+
+```
+What just happened?
+├── A requirement was agreed
+│   ├── FEATURES ········· what it does
+│   ├── ROADMAP ·········· when it comes
+│   └── GOALS ············ the effect it must have
+├── A change was done
+│   ├── CHANGELOG ········ what shipped
+│   ├── FEATURES ········· its status
+│   ├── ROADMAP ·········· its progress
+│   ├── specs/ ··········· how the part works now
+│   ├── ARCHITECTURE ····· how the parts fit now
+│   └── README, INSTALL ·· how it is used now
+├── A fork was closed ······· decisions/
+├── A question stayed open ·· TODO
+├── A todo was done ········· delete it from TODO
+├── A number moved ·········· GOALS
+├── A commitment changed ···· DESIGNS
+└── A new term appeared ····· GLOSSARY
+```
 
 ## Rules for the documents
 
