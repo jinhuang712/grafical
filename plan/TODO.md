@@ -58,12 +58,24 @@
   - Three ways are open: a search over the open space · a pass that rips up the worst lines · more rules.
   - A search is the only one of the three that lets a node sit in a gutter, and it risks speed, stability and about 3000 lines of rewrite.
   - 29 cases in `bench/routes/` measure any of them, and small cases show lines tangled in one gutter more than paths that fail.
+  - Trying the six edge facts on the cases, `via` and `with` cleaned up what they could reach, and a stated top in the first layer and a side `via` on a tight layer were refused by how the router is built.
   - A spike of [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md) on 2026-11-07 drew offsets across with no defect, and offsets down ran lines through nodes.
 - created: 2026-11-07
 - status: HALT
 - next: the owner rates the cases, then picks a way
 - blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
 - related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
+
+### [P2][ISSUE] `--main` can make a picture worse
+
+- description:
+  - On the `pyramid` case two `--main` edges moved A to the far right, and the picture read worse with the same crossings.
+  - On `tree` and `ladder` it changed nothing.
+  - It only raises a join's score, so the whole grid can solve differently.
+- created: 2026-11-07
+- status: OPEN
+- found: trying the facts on the routing cases
+- next: decide what `--main` should do past taking a column
 
 ### [P2][DISCUSSION] A parent that sits off the middle of its children
 
