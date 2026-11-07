@@ -17,7 +17,8 @@ Goals
 │   ├── ⬜ M1: Enough to say — what an agent wanted to state and no operation could
 │   ├── M2: Cache hit rate — 90.2% of input read from the cache on 2026-10-18
 │   ├── M3: Better every round — the owner's blind rating, 24 of 25 on 2026-10-12
-│   └── M4: Diff size — 17.3 changed lines and 231 characters a change step on 2026-11-06
+│   ├── M4: Diff size — 17.3 changed lines and 231 characters a change step on 2026-11-06
+│   └── M5: Routing cases — 16 crossings and 125 bends over 29 cases on 2026-11-07
 ├── Benchmarks
 │   ├── ✅ B1: Iteration — a change request done right, fast and cheap
 │   ├── ⬜ B2: Scale — a clear picture at 50 boxes
@@ -172,6 +173,28 @@ M4 = mean changed lines, and mean changed characters, per change step
 | `.grafical` | 17.3 | 231 | 417 |
 | YAML with one element on each line | 2.9 | 217 | 57 |
 | YAML as it is | 8.7 | 173 | 180 |
+
+#### M5: Routing cases
+
+What the router does on small cases that each test one standard of a good route. It finds causes and decides nothing, and three of the seven standards have no number, so the owner's eye reads those.
+
+**Want:** A picture that is complete and clear at once.
+
+**Checks:**
+
+- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
+- [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
+
+**How:** `pnpm bench routes`, over the cases in `bench/routes/`, with the pictures for the owner.
+
+**Formula:**
+
+```
+M5 = total crossings and total bends over the cases
+     with the cases better and worse than the saved baseline
+```
+
+**Last value:** 16 crossings and 125 bends over 29 cases on 2026-11-07, 0 defects.
 
 ### Benchmarks
 

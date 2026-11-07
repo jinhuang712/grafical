@@ -80,7 +80,7 @@ Roadmap
 │   │   ├── ✅ Verbs as flags
 │   │   ├── ✅ One way for each situation
 │   │   ├── ✅ Batches from standard input
-│   │   └── ⬜ Move and plug
+│   │   └── 🟨 Move and plug
 │   ├── 🟨 CP2.3: The object model
 │   │   ├── ✅ Design the model and its form
 │   │   ├── 🟨 Build the model
@@ -95,7 +95,12 @@ Roadmap
 │   │   ├── ✅ Edge looks
 │   │   ├── ✅ Region labels
 │   │   ├── ✅ Label looks
-│   │   └── ⬜ Steering an edge
+│   │   ├── ⬜ `--straight`
+│   │   ├── ⬜ `--main`
+│   │   ├── ⬜ `--with`
+│   │   ├── ⬜ `--via`
+│   │   ├── ⬜ `--bend`
+│   │   └── ⬜ `--stretch`
 │   ├── 🟨 CP2.5: Pictures worth keeping
 │   │   ├── ✅ Labels on straight lines
 │   │   ├── ✅ Choice diamonds
@@ -485,7 +490,7 @@ The command line gets one form:
 - ✅ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
 - ✅ One way for each situation: `edge --emphasize` went, and the commands were checked for other repeats.
 - ✅ Batches from standard input: `apply` reads a batch named `-` from standard input.
-- ⬜ Move and plug: `move` and `plug` stand above the nouns and replace four commands.
+- 🟨 Move and plug: `plug` replaces `edge --ends`, and `move` is not built.
 
 **Delivers:**
 
@@ -542,7 +547,12 @@ A strong model steers a line and draws it as a curve, and a line carries its lab
 - ✅ Edge looks: An edge takes a color of its own or a named look.
 - ✅ Region labels: A diagram's, a group's, a layer's and a lane's label sits at a fraction, and a column's waits for Column headings.
 - ✅ Label looks: A line's label marks a style for its background, border and color.
-- ⬜ Steering an edge: An agent states where a line passes and turns, once the router allows it: [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
+- ⬜ `--straight`: A line with no bend is stated, and a line that cannot run straight is refused.
+- ⬜ `--main`: The main flow takes its straight run first, and other lines give way.
+- ⬜ `--with`: A line joins another's trunk, which draws a tree with one spine.
+- ⬜ `--via`: A line passes a stated object on a stated side.
+- ⬜ `--bend`: A line turns at a stated fraction of its longest run.
+- ⬜ `--stretch`: A detour reaches a stated multiple of its default.
 
 **Delivers:**
 

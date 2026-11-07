@@ -319,18 +319,39 @@ grafical -f <file> edge --label-at <id> on|beside
 
 ### F2.7.4: Steering an edge
 
-An agent steers a line with facts and never with a coordinate. Each fact binds the router, and one that cannot hold refuses the write.
+An agent steers a line with facts and never with a coordinate. Every step here is stated on one edge, and the engine still routes the line.
 
 ```sh
 grafical -f <file> edge --via <id> <object> --left | --right
-grafical -f <file> edge --straight <id>
-grafical -f <file> edge --main <id>
+grafical -f <file> edge --straight <id> [--off]
+grafical -f <file> edge --main <id> [--off]
 grafical -f <file> edge --with <id> <edge>
 grafical -f <file> edge --bend <id> --at 0.25|0.5|0.75
-grafical -f <file> edge --stretch <id> --magnified <n>
+grafical -f <file> edge --stretch <id> --magnified 1.25|1.5|2
 ```
 
+| Flag | What it states | Refused as |
+|---|---|---|
+| `--via` | the object a line passes and on which side | `via-blocked` |
+| `--straight` | a line with no bend | `not-straight` |
+| `--main` | the main flow, which other lines give way to | none |
+| `--with` | one trunk with another edge | `no-trunk` |
+| `--bend` | where along its longest run a line turns | `bend-blocked` |
+| `--stretch` | how far a detour reaches | `stretch-blocked` |
+
+- A value goes back to the engine with the same flag and no value.
+- A stated side joins a trunk with `--with`, which is how a tree with one spine is drawn.
+- A step that overlaps a node or a label refuses the write, as an offset does.
+- `--main` never moves a node.
+- `--bend` applies to a line of one longest run, and a line with two runs of one length takes the first.
+
+- **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
+- **How it works:** [Routing: facts that steer a line](../specs/routing.md#facts-that-steer-a-line)
 - **Why:** [096. An edge is steered by facts and never by coordinates](../specs/decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
+
+**Stories:**
+
+- A strong model states where a line passes, to tune a picture without a coordinate.
 
 ## F2.8: Flow direction
 

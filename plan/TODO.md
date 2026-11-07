@@ -65,24 +65,14 @@
 - blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets) · [F2.7.4: Steering an edge](../features/F2-layout.md#f274-steering-an-edge)
 - related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 
-### [P1][DISCUSSION] What goal records the routing cases
-
-- description:
-  - The cases have a baseline and no goal, and three of the seven standards have no number.
-  - A measure would hold their counts and the owner's rating, and it would pass or fail nothing.
-- created: 2026-11-07
-- status: HALT
-- next: the owner says whether to add it
-- related: [Goals](GOALS.md)
-
 ### [P2][DISCUSSION] A tree drawn with one spine
 
 - description:
   - The owner wants the `dropdown` case drawn as an ASCII tree: one spine, with each child entered from its left.
   - `--in left` to the first child is refused as `side-blocked`, and a line with a stated side joins no bundle, so the spine splits in two.
 - created: 2026-11-07
-- status: HALT
-- next: the owner picks how an agent asks for it
+- status: OPEN
+- next: `edge --with` draws it, and the neighbouring layer needs a route into a left side
 
 ### [P2][DISCUSSION] A parent that sits off the middle of its children
 

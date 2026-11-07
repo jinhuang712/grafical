@@ -1,6 +1,6 @@
 # The .grafical file
 
-**Status:** built, except for `<check>`, `library` and the attributes of a node's size, and tuned once its diffs show what to change.
+**Status:** built, except for `<check>`, `library`, the attributes of a node's size and those that steer an edge, and tuned once its diffs show what to change.
 
 A `.grafical` file holds one diagram as objects with attributes and relations. grafical is its only writer, and a model reads it through `show`, so the file is shaped for people in a diff and for git. It sits between pseudocode, a structural language, a script, CSS, YAML, JSON and LaTeX, and it takes no control flow, variables or macros.
 
@@ -263,6 +263,12 @@ A rule a diagram sets itself, marked by what follows it. It comes later, and its
 | `both` | `true` |
 | `pass` | `true` |
 | `number` | a whole number |
+| `via` | an object, and `left` or `right` |
+| `straight` | `true` |
+| `main` | `true` |
+| `with` | an edge |
+| `bend-at` | `0.25`, `0.5` or `0.75` |
+| `stretch` | `1.25`, `1.5` or `2` |
 | `like` | an edge |
 | `style` | styles |
 
@@ -410,3 +416,4 @@ The form serves strictness, plain objects and a file that reads as what it holds
 - [088. A type may choose its shape](decisions/088-a-type-may-choose-its-shape.md)
 - [089. A style may be as rich as it likes](decisions/089-a-style-may-be-as-rich-as-it-likes.md)
 - [092. `like` follows an object's look and nothing else](decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
+- [096. An edge is steered by facts and never by coordinates](decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)

@@ -57,7 +57,7 @@ Features
 │   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts
 │   ├── ✅ F3.6: Merging and swapping — merge, swap and remove boxes
 │   ├── ⬜ F3.7: More combinations of operations — one operation for a common edit
-│   └── ⬜ F3.8: Move and plug — one verb to move things and one to change connections
+│   └── 🚧 F3.8: Move and plug — one verb to move things and one to change connections (`move` not built)
 ├── 🚧 F4: Look — how the picture looks (the legend as a small diagram and brand fonts not built)
 │   ├── ✅ F4.1: Title, subtitle and footnote — the words around the picture
 │   ├── 🚧 F4.2: Legend — a key for styles, widths and marks (the legend as a small diagram not built)

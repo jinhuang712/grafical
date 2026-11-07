@@ -132,6 +132,21 @@ An edge that passes a bar without ending at it is refused as `bar-crossed`, unle
 
 The model has already refused an edge between a wall's two sides that the wall does not allow. The router keeps every edge out of a wall that runs up and down: out of its gaps, its corridors and its top ports in the wall's layers, and out of the gutter above it. A wall across is only space, so no edge is routed round it, and one that crosses it is the defect `wall-crossed`.
 
+## Facts that steer a line
+
+An agent may steer a line with facts, and the router treats each as a rule it must meet or refuse. None of these is built.
+
+| Fact | What the router must do | Refused when |
+|---|---|---|
+| `straight` | draw the line with no bend | its ends share no x or y clear of every node |
+| `main` | route the line before the others, so they give way | never |
+| `with` | run the line along the other edge's trunk, in a bundle | the two share no end or side |
+| `via` | keep the line on the stated side of the object | no route has that side |
+| `bend-at` | put the turn at that fraction of the longest run | the turn overlaps a node, a label or a track |
+| `stretch` | take a detour that multiple of its default reach | the detour overlaps a node or a label |
+
+These facts come before the steps above, since each fixes something a later step would otherwise choose. A line with a stated side keeps its own port, unless `with` joins it to a trunk.
+
 ## Self-loops
 
 An edge from a node to itself loops through the gutter below the node. Its two ends sit about 48 px apart, either side of the node's centre, though the ports may move them. The loop runs at the gutter's third layer of tracks.
@@ -146,3 +161,4 @@ An edge from a node to itself loops through the gutter below the node. Its two e
 - [060. A bent line is reported and never refused](decisions/060-a-bent-edge-is-reported-and-never-refused.md)
 - [061. A line never moves for its label](decisions/061-a-line-never-moves-for-its-label.md)
 - [095. A good route is one the eye can follow](decisions/095-a-good-route-is-one-the-eye-can-follow.md)
+- [096. An edge is steered by facts and never by coordinates](decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
