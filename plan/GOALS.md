@@ -1,8 +1,8 @@
 # Goals
 
-Each goal is a check with a number or a test, listed by its kind with the want of the proposal that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. `specs/benchmark.md` defines each metric and how a round runs. The targets are first estimates, except the MVP bar: a recorded decision may change any other target, and only the owner changes the MVP bar.
+Each goal is a check with a number or a test, listed by its kind with the want of the proposal that it serves. The benchmark harness measures most of them in rounds of agent runs, and CI measures the rest on every push. `specs/benchmark.md` defines each metric and how a round runs. The targets are first estimates, and a recorded decision may change any of them.
 
-[O1: The MVP bar](#o1-the-mvp-bar) alone says whether grafical succeeds. The constraints must always hold. Every other goal is recorded to find causes and decides nothing.
+The constraints must always hold. A goal is a check and decides nothing by itself: a checkpoint's exit criteria say which goals must pass.
 
 A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of the measurement. Code and documents cite a goal by its name, such as `[T2: Speed](#t2-speed)`.
 
@@ -11,7 +11,6 @@ A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of t
 ```
 Goals
 ├── Objectives
-│   ├── ❌ O1: The MVP bar — cheaper · faster · no strong model needed · copies a picture and beats it
 │   ├── ⬜ O4: Copy a picture, better — an agent redraws someone's picture and it looks better
 │   ├── ⬜ O5: Routes the eye can follow — 13 checks read from the picture itself
 │   └── ⬜ O6: A picture reads at a glance — 12 points the owner reads from the picture
@@ -45,28 +44,6 @@ Goals
 ## Goals
 
 ### Objectives
-
-#### O1: The MVP bar
-
-Set by the owner on 2026-10-13 and changed on 2026-11-05. An agent uses only the command line and its help, draws with zero mechanical defects and meets the targets of four goals, with Haiku holding the floor and a strong model reaching for the top:
-
-- [C5: Cost](#c5-cost)
-- [C2: Time](#c2-time)
-- [C1: Model gap](#c1-model-gap)
-- [O4: Copy a picture, better](#o4-copy-a-picture-better)
-
-[M3: Better every round](#m3-better-every-round) is the fifth thing the owner watches, and it has no edge to pass.
-
-**Want:** every want of the proposal, as the headline.
-
-**Checks:**
-
-- [F3: Editing](../features/F3-editing.md)
-- [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
-
-**Acceptance:** those four goals are met in one round that includes the private reference brief, every constraint holds, and the round has no engine-owned defect.
-
-**Status:** ❌ not met on 2026-10-18. In round `p1g` [C2: Time](#c2-time) and [C5: Cost](#c5-cost) were not met, and one draft had an engine-owned defect (`bench/results/p1g-stage1.md`). [O4: Copy a picture, better](#o4-copy-a-picture-better) has not run.
 
 #### O4: Copy a picture, better
 

@@ -37,7 +37,6 @@
   - Twelve points now say what a good picture is, and symmetry and even space lean toward taste.
   - No checkpoint runs O5: Routes the eye can follow or O6: A picture reads at a glance yet.
   - Whether a small model can see these faults is not measured.
-  - [Goals](GOALS.md) opens with O1: The MVP bar alone deciding success, and O5 has a `must` tier and an acceptance test.
 - created: 2026-11-08
 - status: HALT
 - next: the owner says whether the stance changes and when the two goals run

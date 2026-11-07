@@ -4,6 +4,8 @@ Decided: 2026-11-05
 
 Replaced in part by specs/decisions, "A weak model draws well and a stronger one superbly": a strong model copies the pictures.
 
+Replaced in part by specs/decisions, "The MVP bar is a checkpoint's exit criteria": the bar leaves the goals.
+
 ## The problem
 
 Twenty goals stood side by side, and a release waited on all of them. Some could no longer be scored, since the judges ended on 2026-10-18. Others measured a cause of a result and not the result. The owner put success in plain words: lower cost, more speed, no need for a strong model and better pictures.

@@ -1,6 +1,6 @@
 # Architecture facts: catalog-sync and catalog-api
 
-This brief describes a fictional system. It has the same shape and size as the private reference brief used for the MVP bar in [GOALS.md](../../plan/GOALS.md), so results on the two are comparable. Items marked "unknown" or "inferred" are deliberately left open, as they would be in a real brief.
+This brief describes a fictional system. It has the same shape and size as the private reference brief used for the MVP bar in [ROADMAP.md](../../plan/ROADMAP.md), so results on the two are comparable. Items marked "unknown" or "inferred" are deliberately left open, as they would be in a real brief.
 
 Both services are Go services owned by the Catalog team.
 

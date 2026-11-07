@@ -822,6 +822,8 @@ The refusals of the private reference brief were mostly `title-blocked`. Haiku s
 
 **Status:** 🟨
 
+The MVP bar says whether grafical succeeds. The owner set it on 2026-10-13, changed it on 2026-11-05 and alone changes it. An agent uses only the command line and its help and draws with zero mechanical defects. The goals below pass in one round that includes the private reference brief, with Haiku holding the floor and a strong model reaching for the top, and the round has no engine-owned defect. It was not met on 2026-10-18: in round `p1g` [C2: Time](GOALS.md#c2-time) and [C5: Cost](GOALS.md#c5-cost) were not met and one draft had an engine-owned defect.
+
 A round with the owner's approval of its cost first. The owner's budget for stage 1 is $20, mostly on Haiku. Opus runs only for the baselines, the gap between models and the copied pictures, and both get the same prompt, word for word. The private reference brief's runs stay on the owner's machine, and only numbers are committed.
 
 **Tasks:**
@@ -840,19 +842,26 @@ A round with the owner's approval of its cost first. The owner's budget for stag
 **Exit criteria:**
 
 - **Objectives**
-  - [O1: The MVP bar](GOALS.md#o1-the-mvp-bar)
   - [O4: Copy a picture, better](GOALS.md#o4-copy-a-picture-better)
 - **Comparisons**
   - [C1: Model gap](GOALS.md#c1-model-gap)
+  - [C2: Time](GOALS.md#c2-time)
+  - [C5: Cost](GOALS.md#c5-cost)
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
+  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
+  - [R3: Determinism](GOALS.md#r3-determinism)
+  - [R4: A sound file](GOALS.md#r4-a-sound-file)
 - **Do not hold the release**
   - [C4: Context added](GOALS.md#c4-context-added)
   - [C7: Beats the strongest model alone](GOALS.md#c7-beats-the-strongest-model-alone)
+  - [M3: Better every round](GOALS.md#m3-better-every-round)
 
 ## CP4: Release 0.1.0
 
 **Status:** ⬜
 
-Publish `grafical` on npm once [O1: The MVP bar](GOALS.md#o1-the-mvp-bar) is met. A recorded decision may recalibrate any target except the MVP bar.
+Publish `grafical` on npm once [CP3.6: The MVP bar](#cp36-the-mvp-bar) is met. A recorded decision may recalibrate any target, and only the owner changes what the MVP bar holds.
 
 **Exit criteria:**
 

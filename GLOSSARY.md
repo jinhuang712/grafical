@@ -102,7 +102,7 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 - **Round:** a set of chains run and reported together.
 - **Fresh tokens:** uncached input plus cache writes plus output.
 - **Stage 1:** everything an agent needs to draw with grafical alone.
-- **MVP bar:** the one goal that says whether grafical succeeds.
+- **MVP bar:** what the checkpoint that says whether grafical succeeds must meet.
 
 ## What grafical answers
 

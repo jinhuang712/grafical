@@ -96,7 +96,7 @@ What just happened?
   - A decision cites only other decisions.
 - A status mark sits on a `Status:` line and never in a heading.
 - Only the owner changes the philosophy.
-- Only the owner changes the MVP bar.
+- Only the owner changes the MVP bar, which is the exit criteria of its checkpoint.
 - A change that conflicts with the philosophy stops until the owner decides.
 - A choice that affects scope, the file format or what a user sees goes to the owner with its options.
 
