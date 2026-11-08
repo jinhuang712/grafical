@@ -195,7 +195,7 @@ M3 = mean owner rating of Haiku's first drafts of the public brief (of 25), per 
 
 #### M4: Diff size
 
-How much a change touches in the `.grafical` file. It is watched while the form is tuned, and a smaller number is no aim in itself, since the file also serves strictness and plain objects.
+How much a change touches in the `.grafical` file. It is measured in every round, and a smaller number is no aim in itself, since the file also serves strictness and plain objects.
 
 **Want:** Keep the diagram beside the code.
 
