@@ -90,9 +90,9 @@ The standards are in `specs/decisions, "A good route is one the eye can follow"`
 - [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
 - [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
 
-**Acceptance:** the owner looks at every case in `bench/routes/` and finds each check met or names why it cannot be.
+**Acceptance:** the owner looks at the first drafts of a round, where the agent placed the nodes, and finds each check met or names why it cannot be.
 
-**Status:** ⬜ not run. On 2026-11-07 the owner looked at `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid` only. The open points are in [Clean edges for the places given](TODO.md#p1task-clean-edges-for-the-places-given).
+**Status:** ⬜ not run. On 2026-11-07 the owner looked at `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid` only. The open points are in [What clean edges still leave open](TODO.md#p1discussion-what-clean-edges-still-leave-open).
 
 #### O6: A picture reads at a glance
 
@@ -123,7 +123,7 @@ The good and the bad picture of `pyramid` are [the hand drawing](evidence/pyrami
 - [F4: Look](../features/F4-look.md)
 - [15. A picture is judged by how it reads](../DESIGNS.md#15-a-picture-is-judged-by-how-it-reads)
 
-**Acceptance:** the owner looks at the first drafts of a round and at every case in `bench/routes/`, and finds each point met or names why it cannot be.
+**Acceptance:** the owner looks at the first drafts of a round and finds each point met or names why it cannot be.
 
 **Status:** ⬜ not run. Five points came from four cases on 2026-11-07, and the owner accepted seven more proposed on 2026-11-08. Whether two of them fit the stance on taste is open in [A good picture and taste](TODO.md#p1discussion-a-good-picture-and-taste).
 

@@ -39,10 +39,8 @@ A trial of a search router on the routing cases cut crossings, and its pictures 
 
 Two edges that swap sides in one gap cannot have level ends with no jog, since their runs would overlap at one end. Such a pair has to go round or be placed apart. Moving nodes was the cleanest answer drawn for `two-layers-skip`, so the case tests placement as much as routing.
 
-A gap of 32 px holds one edge and no more, 44 px holds two, and the compact gap of 24 px holds none. The router's 8 px from a node to a track falls short of this, so edges in gaps will move in existing pictures.
+A gap of 32 px holds one edge and no more, 44 px holds two, and the compact gap of 24 px holds none, so edges in gaps move in existing pictures.
 
 The outside route takes three bends, one past the plain forms of "Unreadable is refused and costly is reported".
 
-One form for edges of one sort, such as out of the bottom and into the top, is the agent's to reach, as "102. Routing trouble that placement can fix is the agent's" says. On `pyramid` the owner found a real render with no crossings ugly, because its edges mixed sides, and took a hand drawing with one form, a fork from each bottom and nodes half a cell apart. That drawing waits for offsets, as "A node may sit off its cell by a fraction" says.
-
-These rules come from hand drawings of `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid`. None is built, and `gap` has not been tried on these gaps.
+These rules come from hand drawings of `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid`.

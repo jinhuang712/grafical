@@ -106,7 +106,6 @@ A node has a label, and optionally a quieter sublabel, such as a port or a topic
   - Chinese text also wraps between characters.
 - A label that still does not fit its node is refused as `overflow`, with the lines of text it takes and the most it may.
 - A character the bundled fonts cannot draw is refused as `missing-glyph`.
-- `node --sublabel` without `--text` clears the sublabel.
 
 ### F1.1.3: Sizes
 
@@ -118,7 +117,6 @@ A node is sized to its text, unless the agent gives it a size step.
 
 - A node without a size is medium, or large when its text does not fit the medium node.
   - A rename that shortens the label shrinks it again.
-- `node --size` without `--size` returns the node to that.
 - Every node in a layer is drawn as tall as the layer's tallest, so their tops line up.
   - Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a node without a size is always medium, and text that does not fit is refused.
@@ -142,7 +140,6 @@ A node can carry up to five marks, such as `⚠️` on a node that matters, or `
 
 - A node has five slots of one mark each: `top-left` and `top-right` and `bottom-left` and `bottom-right` and `left`.
   - A diamond and a dot have corner slots only.
-  - Without `--mark`, the slot is cleared.
 - A mark is an emoji or a text of up to 6 characters or an SVG or PNG file inside the diagram's folder.
 - A text mark sits on a badge.
   - `--bg` and `--fg` and `--border` take a color as `#rrggbb` or by name: `red` or `amber` or `green` or `blue` or `purple` or `gray` or `dark`.
@@ -247,7 +244,6 @@ An edge's type says what it means and decides its style.
   - [`edge`](../CLI.md#edge)
   - [`plug`](../CLI.md#plug)
 
-- `edge --label` without `--label` clears the label.
 - `plug` moves one or both ends and keeps the edge's ID, type and label.
 
 ### F1.2.2: Arrowheads at both ends
@@ -267,7 +263,6 @@ Some edges are thicker than others, to say they matter more.
 - A weight is a level or a width from 0.5 to 8 px.
   - The levels are `thin`, `thick` and `heavy`.
   - The built-in themes draw the levels 1.25, 2.5 and 4 px wide.
-- Without `--weight`, the edge is thin again.
 - A stylesheet may retune the levels and add more, such as `critical`.
   - A level the stylesheet lacks is refused as `unknown-weight`, with the allowed names.
 - The arrowhead grows with the width.
@@ -282,8 +277,6 @@ A number on an edge, so that a reader can follow a request or a process in order
   - grafical draws it as a small ring on the edge, under the start of its label.
   - grafical never numbers or renumbers: edges may share a number and numbers may skip.
   - `show` adds `[step <n>]` to the edge, and `show --drawn` adds `step=<n>` to its record.
-- Without `--n`, the step is cleared.
-  - In a batch: `{op: edge.number, id: <line>, n: <number>}`.
 - A numbered edge keeps its own port as a labelled one does.
   - It never joins a bundle.
 
@@ -450,7 +443,6 @@ Empty space between two parts of a picture, which edges cross only where the wal
   - With a label, it draws a dashed divider through its middle.
   - The label sits along it at the first place no edge comes near.
   - Where none is, the write is refused as `label-blocked` ([063. A wall's label stays along its wall](../specs/decisions/063-a-wall-s-label-stays-along-its-wall.md)).
-  - `wall --label` changes the label, or drops it without `--label`.
 - A node or group that is removed leaves the wall's sides, and a wall left with an empty side goes.
 
 ### F1.3.7: Notes

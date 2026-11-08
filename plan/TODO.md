@@ -44,37 +44,29 @@
 ### [P1][DISCUSSION] Rearranging a picture is cheap
 
 - description:
-  - [102. Routing trouble that placement can fix is the agent's](../specs/decisions/102-routing-trouble-that-placement-can-fix-is-the-agent-s.md) makes placement the agent's way to fix a route.
-  - The 29 cases in `bench/routes/` are gone through one at a time, and the owner says whether each picture is right.
-  - `same-layer-pair` is a placement case, and the owner's picture puts C first with `node --move c --first`, with 0 crossings and 0 bends.
-  - `ladder` came clean in one column with no change to the router, so it is a placement case.
+  - Placement alone took `same-layer-pair` · `swapped-pair` · `crowded-gutter` · `ladder` to no crossing, with no change to the router.
   - A Haiku session spent its fixes on the order of a layer and could not state the whole order at once, as [What the first report run asks of the tool](#p2discussion-what-the-first-report-run-asks-of-the-tool) says.
   - Open: what a move needs so that it costs one command and shows its effect before the write.
-  - Open: how the engine names the edges that cross.
   - Open: whether the hand drawings in [plan/evidence](evidence/worst-four-cases.png) become the target pictures.
 - created: 2026-11-08
+- updated: 2026-11-08
 - status: OPEN
-- next: go through the routing cases with the owner from `swapped-pair`
+- next: settle what a move needs, starting with a layer's whole order in one command
 - evidence: [ladder](evidence/ladder-options.png) · [two-layers-skip by a way round](evidence/two-layers-skip-outside.png)
 - related: [033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)
 
-### [P1][TASK] Clean edges for the places given
+### [P1][DISCUSSION] What clean edges still leave open
 
 - description:
-  - [102. Routing trouble that placement can fix is the agent's](../specs/decisions/102-routing-trouble-that-placement-can-fix-is-the-agent-s.md) leaves the engine to draw clean edges where the agent put the nodes.
-  - The rules are those of [097. The router draws clean edges and the agent makes their room](../specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md).
-  - A read of the code on 2026-11-08 found that each rule can be reached by extending this router.
-  - An edge has run at least 16 px from a node to a gutter's first track since 2026-11-08.
-  - Left to build: the end run beside a gap · the level swap of two edges in one gap · a side to a side across layers · a way round the outside.
+  - Placement widens a gap for an edge through an empty column, where [097. The router draws clean edges and the agent makes their room](../specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md) says the router never widens a gap.
   - A stated top in the first layer and a side `via` on a tight layer are refused by how the router is built.
-  - Placement widens a gap for an edge through an empty column, where 097 says the router never widens a gap.
   - Open: edges may share a run only if every start-to-end pair the run implies is a real edge, and whether false edges count as a hard number.
   - Open: what the engine does in a narrow gap where another route still reads.
   - Open: the least end run of a main edge, where 20 px was proposed.
 - created: 2026-11-07
 - updated: 2026-11-08
-- status: OPEN
-- next: build the end run beside a gap, checked against the end runs drawing
+- status: HALT
+- next: the owner settles each point as the clean edges are built
 - evidence: [end runs](evidence/end-runs.png) · [two-layers-skip with jogs](evidence/two-layers-skip-jogs.png) · [a false edge](evidence/false-line.png)
 - related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 
@@ -133,7 +125,7 @@
   - An offset moves one node at a time, which is much work for a whole pyramid.
 - created: 2026-11-07
 - status: HALT
-- next: settle it as a placement case while going through the routing cases
+- next: settle it with the rearranging work
 
 ### [P2][DISCUSSION] Seven edge labels sit off their edges
 

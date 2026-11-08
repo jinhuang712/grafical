@@ -98,7 +98,6 @@ A node sits directly above or below a node in another layer.
 
 - It joins its target's column to sit there.
 - An alignment that cannot hold with the order of either layer is refused as `alignment-conflict`.
-- Without `--to` the alignment is cleared.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 - **How it works:** [Placement: alignment](../specs/placement.md#alignment)
@@ -207,7 +206,6 @@ The gap between two neighbouring regions may be magnified, by a multiple of its 
 
 - A multiple may be 1.25, 1.5 or 2.
 - It follows the density, so a multiple of a compact gap stays narrower than one of an airy gap.
-- Without `--magnified`, the gap goes back to its default.
 - Two regions that are not neighbours of one kind are refused as `not-neighbours`.
 - Two groups are neighbours when a node of one stands next to a node of the other in a layer, or when one ends in the layer above the other's first.
 - A gap whose regions stop being neighbours stays stated and does nothing, and a gap goes when its region goes.
@@ -264,7 +262,6 @@ An agent may state the side an edge leaves by or enters by. A side left unstated
 - **Commands:** [`edge`](../CLI.md#edge)
 
 - A side the command does not name stays as it was.
-- Without `--out` or `--in`, the edge's sides are grafical's again.
 - Where the edge cannot go by the stated side, the write is refused as `side-blocked`.
   - It gives the stated side and the side it would have drawn.
 - A side that faces away from the other end takes the edge round its own node.
