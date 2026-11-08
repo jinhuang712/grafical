@@ -37,6 +37,7 @@ Then it scans `plan/TODO.md`.
 
 - [YES]   follow these rules strictly unless the owner rejects one.
 - [YES]   read every document you work on yourself and in full.
+- [YES]   delete what is out of date at once, in documents and code alike, since git keeps the history.
 - [YES]   scan the open items, the roadmap and the goals to see where things stand.
 - [NO]    give a document to a subagent to read or write.
 - [NO]    check the goals for a small change.
