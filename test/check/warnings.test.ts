@@ -106,7 +106,7 @@ describe('warnings (specs/decisions, "Every write prints every warning")', () =>
       expect(of("tight-edges").length, d.title).toBe(dr.counts.tight);
       expect(of("crowded-label").length, d.title).toBe(dr.counts.crowded);
       // A box with no lines of its own, unless a line reaches it through its group, row or lane.
-      const bare = dr.boxes.filter((b) => b.edges === 0).map((b) => b.id);
+      const bare = dr.nodes.filter((b) => b.edges === 0).map((b) => b.id);
       for (const x of of("lonely-node")) expect(bare, d.title).toContain(x.facts.node);
       // One warning per pair of lines that cross, however often they cross.
       const pairs = dr.edges.reduce((s, l) => s + l.crosses.length, 0) / 2;

@@ -19,7 +19,7 @@ import type {
 } from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
 import { FRAME } from "../theme/geometry.ts";
-import { hasHead, lineLook, PAINT, type Paint, STYLE_KIND } from "../theme/paint.ts";
+import { hasHead, PAINT, type Paint, STYLE_KIND, strokeLook } from "../theme/paint.ts";
 import { meetOutline } from "../theme/shapes.ts";
 import { markShape } from "./marks.ts";
 
@@ -241,7 +241,7 @@ function straight(from: Point, to: Point, hops: Hop[]): string {
 /** What a curved corner keeps clear of: nodes and labels, and every edge. */
 interface Room {
   boxes: Rect[];
-  lines: { id: string; a: Point; b: Point }[];
+  edges: { id: string; a: Point; b: Point }[];
 }
 
 /** Least distance a curved corner keeps from a node, a label or another edge (specs/decisions, "Edges meet any side"). */
@@ -292,7 +292,7 @@ function clearCorner(
       )
         return false;
     }
-    for (const l of room.lines) {
+    for (const l of room.edges) {
       if (l.id === id || sameStretch(l.a, l.b, prev, p) || sameStretch(l.a, l.b, p, next)) continue;
       const x = Math.min(Math.max(q.x, Math.min(l.a.x, l.b.x)), Math.max(l.a.x, l.b.x));
       const y = Math.min(Math.max(q.y, Math.min(l.a.y, l.b.y)), Math.max(l.a.y, l.b.y));
@@ -408,7 +408,7 @@ function edgeShapes(
   const paint = P.edge;
   const base: { stroke: string; dash?: string } = paint.kinds[e.kind];
   const kind = e.look?.color === undefined ? base : { ...base, stroke: e.look.color };
-  const look = lineLook(e.width, P);
+  const look = strokeLook(e.width, P);
   const pts = simplify(e.points);
   if (pts.length < 2) return [];
   pts[0] = ontoOutline(pts[0] as Point, pts[1] as Point, nodes.get(e.from));
@@ -444,7 +444,7 @@ function legendShapes(scene: Scene, P: Paint): string[] {
     }
     const style = item.style ?? "solid";
     const { x1, x2, y } = item.sample;
-    const look = lineLook(item.width, P);
+    const look = strokeLook(item.width, P);
     const head = hasHead(STYLE_KIND[style])
       ? arrowHead({ x: x2, y }, { x: x1, y }, stroke, look.arrow)
       : undefined;
@@ -577,7 +577,7 @@ export function renderSvg(scene: Scene): string {
             ...scene.edges.flatMap((e) => (e.label ? [e.label.bbox] : [])),
             ...scene.edges.flatMap((e) => (e.step ? [badgeRect(e.step)] : [])),
           ],
-          lines: scene.edges.flatMap((e) => {
+          edges: scene.edges.flatMap((e) => {
             const pts = simplify(e.points);
             return pts.slice(1).map((b, i) => ({ id: e.id, a: pts[i] as Point, b }));
           }),
@@ -643,7 +643,7 @@ export function renderSvg(scene: Scene): string {
   }
 
   for (const j of joinsOf(scene.edges)) {
-    const r = lineLook(j.edge.width, P).strokeWidth + 1.5;
+    const r = strokeLook(j.edge.width, P).strokeWidth + 1.5;
     out.push(
       `<circle cx="${num(j.at.x)}" cy="${num(j.at.y)}" r="${num(r)}" fill="${P.edge.kinds[j.edge.kind].stroke}"/>`,
     );

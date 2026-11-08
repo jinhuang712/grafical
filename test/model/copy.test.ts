@@ -29,7 +29,7 @@ const order = (d: Diagram, layer: string) =>
   d.layers.find((l) => l.id === layer)?.nodes.map((n) => n.id);
 const node = (d: Diagram, id: string) =>
   [...d.layers.flatMap((l) => l.nodes), ...(d.nodes ?? [])].find((n) => n.id === id);
-const lines = (d: Diagram) => d.edges.map((e) => `${e.id} ${e.from}>${e.to} ${e.kind}`);
+const edgeList = (d: Diagram) => d.edges.map((e) => `${e.id} ${e.from}>${e.to} ${e.kind}`);
 
 // A region with one zone: a web server in the zone, and a worker and its store in a subnet inside it.
 const zone = ok(null, [
@@ -93,7 +93,7 @@ describe("group copy", () => {
     // An alignment inside the group points to the copy.
     expect(node(d, "db-b")).toMatchObject({ kind: "store", group: "subnet-b", align: "worker-b" });
     // Lines to boxes outside the group stay with the original.
-    expect(lines(d).slice(zone.edges.length)).toEqual([
+    expect(edgeList(d).slice(zone.edges.length)).toEqual([
       "jobs-b web-b>worker-b async",
       "worker-b->db-b worker-b>db-b call",
       "worker-b->db-b#2 worker-b>db-b data",
@@ -114,7 +114,7 @@ describe("group copy", () => {
 
   it("copies the lines to everything outside the group only with outside", () => {
     const d = ok(zone, [copy({ outside: true })]);
-    expect(lines(d).slice(zone.edges.length)).toEqual([
+    expect(edgeList(d).slice(zone.edges.length)).toEqual([
       "lb->web-b lb>web-b call",
       "jobs-b web-b>worker-b async",
       "worker-b->db-b worker-b>db-b call",
@@ -123,7 +123,7 @@ describe("group copy", () => {
     ]);
     // A line to the group itself goes to the copy.
     const toGroup = ok(zone, [{ op: "edge.add", from: "lb", to: "zone" }, copy({ outside: true })]);
-    expect(lines(toGroup)).toContain("lb->zone-b lb>zone-b call");
+    expect(edgeList(toGroup)).toContain("lb->zone-b lb>zone-b call");
   });
 
   it("steps a box placed by steps from the copy of the box it steps from", () => {

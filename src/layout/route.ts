@@ -25,7 +25,7 @@
 import type { Edge } from "../model/types.ts";
 import type { Point, Rect } from "../scene.ts";
 import { GROUP, ROUTE } from "../theme/geometry.ts";
-import { lineStyle } from "../theme/paint.ts";
+import { edgeStyle } from "../theme/paint.ts";
 import { portInset } from "../theme/shapes.ts";
 import { routeGutter } from "./gutter.ts";
 import { centreX, type PLayer, type PNode } from "./place.ts";
@@ -295,7 +295,7 @@ export function routeAcross(
     chooseSideEntries(plans, layers, extra.forbidTop, extra.noSideExit);
     placePorts(plans, extra.forbidTop);
     straightenPorts(plans);
-    centreLines(plans, extra.forbidTop, extra.boxes);
+    centreEdges(plans, extra.forbidTop, extra.boxes);
     return { plans, ...channels(plans, layers, pitch, sides) };
   };
   // An edge between two nodes of a layer that takes the gutter above moves the ports of its
@@ -627,9 +627,9 @@ function chooseUturnGutters(
     const hi = (n: PNode) => n.x + n.w - portInset(n.w);
     const open = (n: PNode) => !inSpans(nearestFree(centreX(n), lo(n), hi(n), labels), labels);
     if (!open(u) || !open(v)) continue;
-    const row = layers[u.layer]?.nodes ?? [];
-    const [a, b] = row.indexOf(u) < row.indexOf(v) ? [u, v] : [v, u];
-    const span = row.slice(row.indexOf(a), row.indexOf(b) + 1);
+    const layerNodes = layers[u.layer]?.nodes ?? [];
+    const [a, b] = layerNodes.indexOf(u) < layerNodes.indexOf(v) ? [u, v] : [v, u];
+    const span = layerNodes.slice(layerNodes.indexOf(a), layerNodes.indexOf(b) + 1);
     const inner = new Set(span.slice(1, -1));
     let tops = 0;
     let bottoms = 0;
@@ -737,7 +737,7 @@ function assignBundles(plans: Plan[], alone: Set<string>): void {
   // A two-way edge has an arrowhead at its start, so it never shares a trunk from there, and
   // a main-path edge shares one only with main-path edges, which are as thick (specs/decisions, "Edges meet any side").
   // Edges of one weight share a trunk (specs/decisions, "Edge weights").
-  const look = (pl: Plan) => `${lineStyle(pl.edge.kind)}:${pl.edge.weight ?? ""}`;
+  const look = (pl: Plan) => `${edgeStyle(pl.edge.kind)}:${pl.edge.weight ?? ""}`;
   for (const bundle of collect(
     (pl) => `${pl.u.id}:${pl.srcSide}:${look(pl)}`,
     (pl) => pl.edge.both === true,
@@ -1258,9 +1258,9 @@ function chooseSideExits(
     const side: Side = left ? "left" : "right";
     if (taken.has(`${u.id}:${side}`)) continue;
     if (pl.edge.out !== undefined && pl.edge.out !== side) continue;
-    const row = layers[u.layer]?.nodes ?? [];
-    const k = row.indexOf(u);
-    const next = row[left ? k - 1 : k + 1];
+    const layerNodes = layers[u.layer]?.nodes ?? [];
+    const k = layerNodes.indexOf(u);
+    const next = layerNodes[left ? k - 1 : k + 1];
     const lo = left
       ? next === undefined
         ? Number.NEGATIVE_INFINITY
@@ -1335,8 +1335,8 @@ function chooseSideEntries(
   const entering = new Map<string, Plan[]>();
   const entryRuns = new Map<string, { side: string; lo: number; hi: number }[]>();
   const gapOf = (n: PNode, side: Side) => {
-    const row = layers[n.layer]?.nodes ?? [];
-    const k = row.indexOf(n);
+    const layerNodes = layers[n.layer]?.nodes ?? [];
+    const k = layerNodes.indexOf(n);
     return `${n.layer}:${side === "left" ? k : k + 1}`;
   };
   for (const pl of plans) {
@@ -1400,9 +1400,9 @@ function chooseSideEntries(
       const already = entering.get(sideKey) ?? [];
       if (already.length > 0 && sidePitch(already.length + 1, v.h) === undefined) continue;
       const gap = gapOf(v, side);
-      const row = layers[v.layer]?.nodes ?? [];
-      const k = row.indexOf(v);
-      const next = row[side === "right" ? k + 1 : k - 1];
+      const layerNodes = layers[v.layer]?.nodes ?? [];
+      const k = layerNodes.indexOf(v);
+      const next = layerNodes[side === "right" ? k + 1 : k - 1];
       const lo =
         side === "right" ? v.x + v.w + pad : next === undefined ? -Infinity : next.x + next.w + pad;
       const hi = side === "right" ? (next === undefined ? Infinity : next.x - pad) : v.x - pad;
@@ -1576,7 +1576,7 @@ function runsIn(pl: Plan, g: number): [number, number][] {
  * comes of it. An edge that another joins to the same two nodes stays, as does one with
  * a self-loop on a side it meets: its run and label sit under that side.
  */
-function centreLines(
+function centreEdges(
   plans: Plan[],
   forbidTop: Map<number, [number, number][]>,
   boxes: Box[],

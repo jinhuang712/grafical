@@ -13,7 +13,7 @@ import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { flowchart } from "../fixtures/flowchart.ts";
-import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
+import { lanesColumns, lanesLayers } from "../fixtures/lanes.ts";
 import { nested } from "../fixtures/nested.ts";
 import { stateMachine } from "../fixtures/state-machine.ts";
 import { steps } from "../fixtures/steps.ts";
@@ -28,7 +28,7 @@ const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
     png: "cb3d00892554e306de6aeb64aaa5ff328739ed6fa5a48d2758326982f72dc715",
   },
   lanesRows: {
-    diagram: lanesRows,
+    diagram: lanesLayers,
     svg: "167921e34bccf991ca838eccbfeeb13fb5034177fc91e00e61619f55a8f22f0a",
     png: "bbd64d52b1470c37b2849d4029d06ca029b6ce8a1b08a91b6b5a1155eed7d1b3",
   },

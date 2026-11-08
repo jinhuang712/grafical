@@ -21,7 +21,7 @@ const label: PlacedText = {
   runs: [],
   bbox: { x: 0, y: 0, w: 0, h: 0 },
 };
-const box = (id: string, layer: string, x: number, y: number): SceneNode => ({
+const makeNode = (id: string, layer: string, x: number, y: number): SceneNode => ({
   id,
   layer,
   kind: "service",
@@ -29,7 +29,7 @@ const box = (id: string, layer: string, x: number, y: number): SceneNode => ({
   rect: { x, y, w: 160, h: 48 },
   texts: [],
 });
-const line = (id: string, from: string, to: string, pts: [number, number][]): SceneEdge => ({
+const makeEdge = (id: string, from: string, to: string, pts: [number, number][]): SceneEdge => ({
   id,
   from,
   to,
@@ -44,7 +44,7 @@ const scene = (edges: SceneEdge[]): Scene => ({
     { id: "top", band: { x: 0, y: 40, w: 400, h: 48 }, label },
     { id: "low", band: { x: 0, y: 200, w: 400, h: 48 }, label },
   ],
-  nodes: [box("a", "top", 40, 40), box("b", "low", 60, 200)],
+  nodes: [makeNode("a", "top", 40, 40), makeNode("b", "low", 60, 200)],
   edges,
 });
 const diagram: Diagram = {
@@ -60,7 +60,7 @@ const diagram: Diagram = {
 
 describe('lines bent for no reason (specs/decisions, "Who chose is punished")', () => {
   it("are an engine defect when one x would have served both ends", () => {
-    const bent = line("a->b", "a", "b", [
+    const bent = makeEdge("a->b", "a", "b", [
       [150, 88],
       [150, 140],
       [130, 140],
@@ -70,13 +70,13 @@ describe('lines bent for no reason (specs/decisions, "Who chose is punished")', 
     expect(found.map((d) => [d.code, d.owner, d.elements])).toEqual([
       ["needless-bend", "engine", ["a->b"]],
     ]);
-    const straight = line("a->b", "a", "b", [
+    const straight = makeEdge("a->b", "a", "b", [
       [140, 88],
       [140, 200],
     ]);
     expect(check(diagram, scene([straight]), createStubMeasurer())).toEqual([]);
     // A port outside the other box's side cannot meet it straight: no defect.
-    const wide = line("a->b", "a", "b", [
+    const wide = makeEdge("a->b", "a", "b", [
       [52, 88],
       [52, 140],
       [80, 140],

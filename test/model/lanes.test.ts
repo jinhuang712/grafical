@@ -81,10 +81,10 @@ describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
   });
 
   it("refuses lanes that run both ways", () => {
-    const { diagram: rows } = ok(shop, [
+    const { diagram: byLayers } = ok(shop, [
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge"] },
     ]);
-    const e1 = fail(rows, [{ op: "lane.join", lane: "platform", members: ["orders"] }]);
+    const e1 = fail(byLayers, [{ op: "lane.join", lane: "platform", members: ["orders"] }]);
     // The node's row is what the lane could take instead.
     expect(e1[0]).toMatchObject({ code: "lane-mixed", facts: { is: "node", layer: "services" } });
     const { diagram: cols } = ok(shop, [

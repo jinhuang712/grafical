@@ -1751,15 +1751,15 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
   const g = groups.find((x) => x.id === op.id);
   if (!g) return [unknownGroup(d, op.id, i, "id")];
   const inner = groups.filter((x) => x.id !== g.id && groupChain(d, x.id).includes(g.id));
-  const boxes = groupNodes(d, g.id);
+  const groupMembers = groupNodes(d, g.id);
   const copyOf = new Map<string, string>([[g.id, op.into]]);
-  for (const x of [...inner, ...boxes]) copyOf.set(x.id, `${x.id}${op.suffix}`);
+  for (const x of [...inner, ...groupMembers]) copyOf.set(x.id, `${x.id}${op.suffix}`);
   const mapped = (id: string) => copyOf.get(id) ?? id;
-  const rows = d.layers.filter((l) => l.nodes.some((n) => copyOf.has(n.id)));
+  const hosts = d.layers.filter((l) => l.nodes.some((n) => copyOf.has(n.id)));
   // The groups with a node in every layer of the copy, but those it would split.
   const sharing = groups
     .filter((x) => !inner.includes(x))
-    .filter((x) => rows.every((l) => l.nodes.some((n) => inGroup(d, n, x.id))))
+    .filter((x) => hosts.every((l) => l.nodes.some((n) => inGroup(d, n, x.id))))
     .map((x) => x.id);
   const set = (["before", "after"] as const).filter((k) => op[k] !== undefined);
   if (set.length > 1) return [conflicting(i, set)];
@@ -1780,7 +1780,7 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
   if (!groups.some((x) => x.id === other)) return [unknownGroup(d, other, i, field)];
   // An alignment or a step to a node outside the group cannot hold for the node and its copy at once.
   const errors: OpError[] = [];
-  for (const n of boxes) {
+  for (const n of groupMembers) {
     for (const key of ["align", "from"] as const) {
       const to = n[key];
       if (to === undefined || copyOf.has(to)) continue;
@@ -1795,15 +1795,19 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
   }
   if (errors.length > 0) return errors;
   const inside = (end: string) => copyOf.has(end);
-  const lines = d.edges.filter((e) =>
+  const copiedEdges = d.edges.filter((e) =>
     op.outside === true ? inside(e.from) || inside(e.to) : inside(e.from) && inside(e.to),
   );
-  const copies: Edge[] = lines.map((e) => {
+  const copies: Edge[] = copiedEdges.map((e) => {
     const from = mapped(e.from);
     const to = mapped(e.to);
     return { ...structuredClone(e), id: copiedEdgeId(e, from, to, op.suffix), from, to };
   });
-  const made = [op.into, ...inner.map((x) => mapped(x.id)), ...boxes.map((n) => mapped(n.id))];
+  const made = [
+    op.into,
+    ...inner.map((x) => mapped(x.id)),
+    ...groupMembers.map((n) => mapped(n.id)),
+  ];
   const seen = new Set<string>();
   for (const [k, id] of [...made, ...copies.map((e) => e.id)].entries()) {
     const kind = unusedKind(d, id);
@@ -1821,7 +1825,7 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
     });
   }
   if (errors.length > 0) return errors;
-  const unshared = rows.find((l) => !l.nodes.some((n) => inGroup(d, n, other)));
+  const unshared = hosts.find((l) => !l.nodes.some((n) => inGroup(d, n, other)));
   if (unshared !== undefined) {
     return [
       {
@@ -1841,7 +1845,7 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
     if (n.from !== undefined) c.from = mapped(n.from);
     return c;
   };
-  for (const l of rows) {
+  for (const l of hosts) {
     const theirs = (n: DiagramNode) => inGroup(d, n, other);
     const at = field === "before" ? l.nodes.findIndex(theirs) : l.nodes.findLastIndex(theirs) + 1;
     l.nodes.splice(at, 0, ...l.nodes.filter((n) => copyOf.has(n.id)).map(copyNode));
@@ -1859,7 +1863,7 @@ function copyGroup(s: State, op: GroupCopyOp, i: number): OpError[] {
   const probe = structuredClone(d);
   const moved = new Set([...orderByLanes(probe), ...orderByColumns(probe)]);
   const key = laneRun(d) === "columns" ? "lane" : "column";
-  const away = boxes.filter((n) => moved.has(mapped(n.id)));
+  const away = groupMembers.filter((n) => moved.has(mapped(n.id)));
   // The node whose own lane or column moves it, or else the first one moved.
   const original = away.find((n) => n[key] !== undefined) ?? away[0];
   if (original !== undefined) {

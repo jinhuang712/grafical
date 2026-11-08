@@ -311,10 +311,10 @@ describe("groups", () => {
   });
 
   // A network with two zones, each a subnet per row holding one box: a zone has no box of its own.
-  const rows = ["public", "app", "data"];
+  const layerIds = ["public", "app", "data"];
   const zone = (z: string): Op[] => [
     { op: "group.add", id: `az-${z}`, label: `Zone ${z}`, in: "vpc" },
-    ...rows.flatMap((r): Op[] => [
+    ...layerIds.flatMap((r): Op[] => [
       { op: "node.add", id: `${r}-${z}`, layer: r, label: `${r} ${z}`, last: true },
       {
         op: "group.add",
@@ -327,7 +327,7 @@ describe("groups", () => {
   ];
   const zones = ok(null, [
     { op: "diagram.new", title: "Zones" },
-    ...rows.map((r): Op => ({ op: "layer.add", id: r, label: r })),
+    ...layerIds.map((r): Op => ({ op: "layer.add", id: r, label: r })),
     { op: "group.add", id: "vpc", label: "VPC" },
     ...zone("a"),
     ...zone("b"),
@@ -335,7 +335,7 @@ describe("groups", () => {
 
   it("order moves the boxes of a group's inner groups too", () => {
     const { diagram: d, changed } = run(zones, [{ op: "group.order", id: "az-b", before: "az-a" }]);
-    expect(rows.map((r) => order(d, r))).toEqual(rows.map((r) => [`${r}-b`, `${r}-a`]));
+    expect(layerIds.map((r) => order(d, r))).toEqual(layerIds.map((r) => [`${r}-b`, `${r}-a`]));
     expect(changed).toEqual(["public-b", "app-b", "data-b"]);
   });
 

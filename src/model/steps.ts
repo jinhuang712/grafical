@@ -14,8 +14,8 @@ export const STEP_KEYS = ["down", "up", "left", "right"] as const;
 
 /** Every node: each layer's, in order, then the nodes placed by steps. */
 export function everyNode(d: Diagram): DiagramNode[] {
-  const rows = d.layers.flatMap((l) => l.nodes);
-  return d.nodes === undefined || d.nodes.length === 0 ? rows : [...rows, ...d.nodes];
+  const allNodes = d.layers.flatMap((l) => l.nodes);
+  return d.nodes === undefined || d.nodes.length === 0 ? allNodes : [...allNodes, ...d.nodes];
 }
 
 /** A node's steps as cells across and down: right less left, down less up. */

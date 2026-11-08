@@ -54,15 +54,15 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
   it("names each box's row, place and lines by side, and each line's sides and crossings", () => {
     const dr = drawing(crossed, layout(crossed, m));
     expect(dr.counts).toMatchObject({ nodes: 4, edges: 2, crossings: 1, busiest: { edges: 1 } });
-    expect(dr.boxes.map((b) => `${b.id} ${b.layer} ${b.place}/${b.of}`)).toEqual([
+    expect(dr.nodes.map((b) => `${b.id} ${b.layer} ${b.place}/${b.of}`)).toEqual([
       "a1 top 1/2",
       "a2 top 2/2",
       "b1 bottom 1/2",
       "b2 bottom 2/2",
     ]);
-    expect(dr.boxes.find((b) => b.id === "a1")?.sides).toEqual({ bottom: 1 });
-    const line = dr.edges.find((l) => l.id === "a1->b2");
-    expect(line).toMatchObject({
+    expect(dr.nodes.find((b) => b.id === "a1")?.sides).toEqual({ bottom: 1 });
+    const drawnEdge = dr.edges.find((l) => l.id === "a1->b2");
+    expect(drawnEdge).toMatchObject({
       leaves: "bottom",
       enters: "top",
       crosses: ["a2->b1"],
@@ -74,7 +74,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     const dr = drawing(skipping, layout(skipping, m));
     expect(dr.counts.busiest).toEqual({ id: "a", edges: 3 });
     // A drawn picture where a->z runs down through the middle row, between m1 and m2.
-    const box = (id: string, layer: string, x: number, y: number) => ({
+    const placed = (id: string, layer: string, x: number, y: number) => ({
       id,
       layer,
       kind: "service" as const,
@@ -85,10 +85,10 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     const scene = {
       ...layout(skipping, m),
       nodes: [
-        box("a", "top", 100, 0),
-        box("m1", "mid", 0, 100),
-        box("m2", "mid", 200, 100),
-        box("z", "low", 100, 200),
+        placed("a", "top", 100, 0),
+        placed("m1", "mid", 0, 100),
+        placed("m2", "mid", 200, 100),
+        placed("z", "low", 100, 200),
       ],
       edges: [
         {
@@ -103,8 +103,8 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
         },
       ],
     };
-    const line = drawing(skipping, scene).edges[0];
-    expect(line).toMatchObject({
+    const drawnEdge = drawing(skipping, scene).edges[0];
+    expect(drawnEdge).toMatchObject({
       leaves: "bottom",
       enters: "top",
       bends: 0,
@@ -115,7 +115,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
   });
 
   it("gives each line its length against the shortest it could be, and the rows it skips", () => {
-    const box = (id: string, layer: string, x: number, y: number) => ({
+    const placed = (id: string, layer: string, x: number, y: number) => ({
       id,
       layer,
       kind: "service" as const,
@@ -127,10 +127,10 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     const scene = {
       ...layout(skipping, m),
       nodes: [
-        box("a", "top", 100, 0),
-        box("m1", "mid", 0, 100),
-        box("m2", "mid", 200, 100),
-        box("z", "low", 150, 200),
+        placed("a", "top", 100, 0),
+        placed("m1", "mid", 0, 100),
+        placed("m2", "mid", 200, 100),
+        placed("z", "low", 150, 200),
       ],
       edges: [
         {
@@ -150,8 +150,8 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     const dr = drawing(skipping, scene);
     // 120 across, 200 down, 70 back; the boxes are 150 apart down and overlap across.
     expect(dr.edges[0]).toMatchObject({ length: 390, direct: 150, detour: 2.6, skip: 1 });
-    expect(dr.boxes.find((b) => b.id === "a")).toMatchObject({ edges: 1, reach: 390 });
-    expect(dr.boxes.find((b) => b.id === "m1")).toMatchObject({ edges: 0, reach: 0 });
+    expect(dr.nodes.find((b) => b.id === "a")).toMatchObject({ edges: 1, reach: 390 });
+    expect(dr.nodes.find((b) => b.id === "m1")).toMatchObject({ edges: 0, reach: 0 });
     expect(dr.counts).toMatchObject({ length: 390, longest: { id: "a->z", length: 390 } });
   });
 
@@ -170,15 +170,15 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       ],
       edges: [e("a", "b1", "call"), e("a", "b2", "call"), e("a", "b3", "call", label)],
     });
-    const lines = (d: Diagram) =>
+    const bundles = (d: Diagram) =>
       Object.fromEntries(drawing(d, layout(d, m)).edges.map((l) => [l.id, l.bundle]));
-    expect(lines(fan())).toEqual({
+    expect(bundles(fan())).toEqual({
       "a->b1": ["a->b2", "a->b3"],
       "a->b2": ["a->b1", "a->b3"],
       "a->b3": ["a->b1", "a->b2"],
     });
     // A labelled line leaves on its own, and two lines alone on a roomy side do not bundle.
-    expect(lines(fan("reads"))).toEqual({ "a->b1": [], "a->b2": [], "a->b3": [] });
+    expect(bundles(fan("reads"))).toEqual({ "a->b1": [], "a->b2": [], "a->b3": [] });
     expect(drawingText(drawing(crossed, layout(crossed, m)))).toContain("passes=- bundle=-");
   });
 
@@ -200,7 +200,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     expect(lines[0]).toMatch(
       /^counts nodes=4 edges=2 crossings=1 bends=\d+ bent=\d+ length=\d+ width=\d+ height=\d+ /,
     );
-    const a1 = drawing(crossed, layout(crossed, m)).boxes[0];
+    const a1 = drawing(crossed, layout(crossed, m)).nodes[0];
     expect(lines).toContain(
       `node id=a1 layer=top place=1 of=2 width=${a1?.width} height=56 edges=1 sides=bottom:1 reach=${a1?.reach}`,
     );

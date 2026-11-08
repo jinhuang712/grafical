@@ -60,7 +60,7 @@ export function isBar(d: Diagram, id: string): boolean {
  * The layers drawn as bars: those with no node that an edge ends at or that have a look
  * (specs/decisions, "A layer with no node as one bar", "A layer with a look is drawn").
  */
-export function barRows(d: Diagram): Set<string> {
+export function barLayers(d: Diagram): Set<string> {
   const ends = new Set(d.edges.flatMap((e) => [e.from, e.to]));
   return new Set(
     d.layers
@@ -86,12 +86,12 @@ export function endLayers(d: Diagram, id: string): [number, number] | undefined 
     return r < 0 ? undefined : [r, r];
   }
   const inside = new Set(endNodes(d, id));
-  const rows: number[] = [];
+  const spanned: number[] = [];
   d.layers.forEach((l, r) => {
-    if (l.nodes.some((n) => inside.has(n.id))) rows.push(r);
+    if (l.nodes.some((n) => inside.has(n.id))) spanned.push(r);
   });
-  if (rows.length === 0) return undefined;
-  return [rows[0] as number, rows[rows.length - 1] as number];
+  if (spanned.length === 0) return undefined;
+  return [spanned[0] as number, spanned[spanned.length - 1] as number];
 }
 
 /**
@@ -100,7 +100,7 @@ export function endLayers(d: Diagram, id: string): [number, number] | undefined 
  * the order of the two nodes that face each other in it. Undefined when the ends
  * share layers but no layer has them side by side with nothing between.
  */
-export type Meeting = { kind: "across" } | { kind: "beside"; row: number; a: string; b: string };
+export type Meeting = { kind: "across" } | { kind: "beside"; layer: number; a: string; b: string };
 
 export function meeting(d: Diagram, a: string, b: string): Meeting | undefined {
   const ra = endLayers(d, a);
@@ -121,7 +121,7 @@ export function meeting(d: Diagram, a: string, b: string): Meeting | undefined {
     if (rr - l !== 1) continue;
     const na = nodes[aLeft ? l : rr]?.id as string;
     const nb = nodes[aLeft ? rr : l]?.id as string;
-    return { kind: "beside", row: r, a: na, b: nb };
+    return { kind: "beside", layer: r, a: na, b: nb };
   }
   return undefined;
 }
@@ -151,7 +151,7 @@ function between(d: Diagram, a: string, b: string): Facts {
 export function checkEnds(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
   const ids = endIds(d);
-  const bars = barRows(d);
+  const bars = barLayers(d);
   d.edges.forEach((e, ei) => {
     let known = true;
     for (const end of ["from", "to"] as const) {
@@ -237,21 +237,21 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
     const b = endNodes(d, e.to);
     const shared = b.filter((n) => a.has(n));
     // A layer lane covers whole layers, as a layer does. A layer crosses every column lane.
-    const rowLike = (k: EndKind | undefined) =>
+    const layerLike = (k: EndKind | undefined) =>
       k === "layer" || (k === "lane" && laneRun(d) === "layers");
     const crossing =
       (fromKind === "layer" || toKind === "layer") &&
       (fromKind === "lane" || toKind === "lane") &&
       laneRun(d) === "columns";
-    const layerAndRows =
+    const layersMeet =
       crossing ||
-      ((rowLike(fromKind) || rowLike(toKind)) &&
+      ((layerLike(fromKind) || layerLike(toKind)) &&
         (() => {
           const ra = endLayers(d, e.from) as [number, number];
           const rb = endLayers(d, e.to) as [number, number];
           return !(ra[1] < rb[0] || rb[1] < ra[0]);
         })());
-    if (shared.length > 0 || layerAndRows) {
+    if (shared.length > 0 || layersMeet) {
       errors.push({
         code: "edge-inside",
         index,
@@ -299,17 +299,17 @@ export function checkEnds(d: Diagram, index: number): OpError[] {
  */
 function groupAcross(
   d: Diagram,
-  row: string,
+  layerId: string,
 ): { group: string; top: string; bottom: string } | undefined {
-  const r = d.layers.findIndex((l) => l.id === row);
+  const r = d.layers.findIndex((l) => l.id === layerId);
   const name = (k: number) => {
     const id = d.layers[k]?.id ?? "";
     return addedLayer(id) ? "-" : id;
   };
   for (const g of d.groups ?? []) {
-    const rows = endLayers(d, g.id);
-    if (rows !== undefined && rows[0] < r && r < rows[1])
-      return { group: g.id, top: name(rows[0]), bottom: name(rows[1]) };
+    const span = endLayers(d, g.id);
+    if (span !== undefined && span[0] < r && r < span[1])
+      return { group: g.id, top: name(span[0]), bottom: name(span[1]) };
   }
   return undefined;
 }

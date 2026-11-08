@@ -236,8 +236,8 @@ describe("the batch line a refused write names", () => {
   });
 
   it("is, on random batches, the oracle's line or none", () => {
-    const rows = grocer.layers.map((l) => l.id);
-    const boxes = grocer.layers.flatMap((l) => l.nodes.map((n) => n.id));
+    const layerIds = grocer.layers.map((l) => l.id);
+    const nodeIds = grocer.layers.flatMap((l) => l.nodes.map((n) => n.id));
     let lines = 0;
     let none = 0;
     for (let seed = 1; seed <= Number(process.env.LOCATED_SEEDS ?? 40); seed++) {
@@ -249,11 +249,11 @@ describe("the batch line a refused write names", () => {
       const batch: string[] = [];
       for (let i = 0; i < 6; i++) {
         const x = r();
-        const all = [...boxes, ...added];
+        const all = [...nodeIds, ...added];
         if (x < 0.2) {
           added.push(`n${i}`);
           batch.push(
-            `- {op: node.add, id: n${i}, label: ${r() < 0.5 ? LONG : `n${i}`}, layer: ${pick(rows)}, last: true, size: s}`,
+            `- {op: node.add, id: n${i}, label: ${r() < 0.5 ? LONG : `n${i}`}, layer: ${pick(layerIds)}, last: true, size: s}`,
           );
         } else if (x < 0.35 && added.length > 0) {
           batch.push(
@@ -268,7 +268,7 @@ describe("the batch line a refused write names", () => {
           batch.push(`- {op: group.leave, nodes: [${pick(all)}]}`);
         } else if (x < 0.7) {
           bars.push(`w${i}`);
-          batch.push(`- {op: layer.add, id: w${i}, label: Bus, after: ${pick(rows)}}`);
+          batch.push(`- {op: layer.add, id: w${i}, label: Bus, after: ${pick(layerIds)}}`);
         } else if (x < 0.8 && bars.length > 0) {
           batch.push(`- {op: layer.look, id: ${pick(bars)}${r() < 0.5 ? ", look: box" : ""}}`);
         } else if (x < 0.9) {

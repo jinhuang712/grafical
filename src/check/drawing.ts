@@ -135,7 +135,7 @@ export interface Drawing {
   counts: Counts;
   /** The places behind the three composition counts. */
   composition: Composition;
-  boxes: DrawnNode[];
+  nodes: DrawnNode[];
   /** One for each pair of neighbouring layers that hold nodes. */
   gutters: Gutter[];
   edges: DrawnEdge[];
@@ -144,7 +144,7 @@ export interface Drawing {
   notes: DrawnNote[];
   legend: DrawnLegend[];
   /** The nodes wholly beside every node they connect to, with those nodes. */
-  aside: { box: string; users: string[] }[];
+  aside: { node: string; users: string[] }[];
 }
 
 /** The side of a node an edge's end point lies on: the nearest one. */
@@ -222,14 +222,14 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     }
   }
 
-  const atBox = new Map<string, Partial<Record<Side, number>>>();
+  const atNode = new Map<string, Partial<Record<Side, number>>>();
   const meet = (id: string, side: Side) => {
-    const at = atBox.get(id) ?? {};
+    const at = atNode.get(id) ?? {};
     at[side] = (at[side] ?? 0) + 1;
-    atBox.set(id, at);
+    atNode.set(id, at);
   };
   const steps = new Map(d.edges.flatMap((e) => (e.step === undefined ? [] : [[e.id, e.step]])));
-  const lines: DrawnEdge[] = [];
+  const drawnEdges: DrawnEdge[] = [];
   for (const e of scene.edges) {
     const first = e.points[0] as Point;
     const last = e.points[e.points.length - 1] as Point;
@@ -267,7 +267,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     const direct =
       fromRect === undefined || toRect === undefined ? 0 : Math.round(gapOf(fromRect, toRect));
     const step = steps.get(e.id);
-    lines.push({
+    drawnEdges.push({
       id: e.id,
       from: e.from,
       to: e.to,
@@ -286,21 +286,23 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   }
 
   const reach = new Map<string, number>();
-  for (const l of lines) {
+  for (const l of drawnEdges) {
     for (const id of new Set([l.from, l.to])) reach.set(id, (reach.get(id) ?? 0) + l.length);
   }
-  const boxes: DrawnNode[] = [];
+  const drawnNodes: DrawnNode[] = [];
   for (const layer of d.layers) {
-    const row = scene.nodes.filter((n) => n.layer === layer.id).sort((p, q) => p.rect.x - q.rect.x);
-    row.forEach((n, i) => {
-      const at = atBox.get(n.id) ?? {};
+    const inLayer = scene.nodes
+      .filter((n) => n.layer === layer.id)
+      .sort((p, q) => p.rect.x - q.rect.x);
+    inLayer.forEach((n, i) => {
+      const at = atNode.get(n.id) ?? {};
       const sides: Partial<Record<Side, number>> = {};
       for (const s of SIDES) if (at[s] !== undefined) sides[s] = at[s];
-      boxes.push({
+      drawnNodes.push({
         id: n.id,
         layer: layerName(layer.id),
         place: i + 1,
-        of: row.length,
+        of: inLayer.length,
         width: Math.round(n.rect.w),
         height: Math.round(n.rect.h),
         edges: Object.values(sides).reduce((s, x) => s + (x ?? 0), 0),
@@ -323,12 +325,12 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       fullest = { id: layerName(layer.id), nodes: layer.nodes.length };
   }
   let busiest: Counts["busiest"] = null;
-  for (const box of boxes) {
-    if (box.edges > 0 && (busiest === null || box.edges > busiest.edges))
-      busiest = { id: box.id, edges: box.edges };
+  for (const entry of drawnNodes) {
+    if (entry.edges > 0 && (busiest === null || entry.edges > busiest.edges))
+      busiest = { id: entry.id, edges: entry.edges };
   }
   let longest: Counts["longest"] = null;
-  for (const l of lines) {
+  for (const l of drawnEdges) {
     if (longest === null || l.length > longest.length) longest = { id: l.id, length: l.length };
   }
   const comp = composition(scene, (a, b) => bundles.get(a)?.has(b) === true);
@@ -353,21 +355,21 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
       nodes: scene.nodes.length,
       edges: scene.edges.length,
       crossings: points,
-      bends: lines.reduce((s, l) => s + l.bends, 0),
-      bent: bentEdges(lines).length,
-      length: lines.reduce((s, l) => s + l.length, 0),
+      bends: drawnEdges.reduce((s, l) => s + l.bends, 0),
+      bent: bentEdges(drawnEdges).length,
+      length: drawnEdges.reduce((s, l) => s + l.length, 0),
       width: Math.round(scene.width),
       height: Math.round(scene.height),
       fullest,
       busiest,
       longest,
-      passing: lines.filter((l) => l.passes.length > 0).length,
+      passing: drawnEdges.filter((l) => l.passes.length > 0).length,
       across: comp.across.length,
       tight: comp.tight.length,
       crowded: comp.crowded.length,
     },
-    boxes,
-    edges: lines,
+    nodes: drawnNodes,
+    edges: drawnEdges,
     groups,
     walls: (scene.walls ?? []).map((w) => {
       const across = w.run === "across";
@@ -399,8 +401,8 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
 }
 
 /** The edges drawn with more than two bends (specs/decisions, "A bent edge is reported and never refused"), in drawing order. */
-export function bentEdges(lines: DrawnEdge[]): DrawnEdge[] {
-  return lines.filter((l) => l.bends > MAX_BENDS);
+export function bentEdges(drawnAll: DrawnEdge[]): DrawnEdge[] {
+  return drawnAll.filter((l) => l.bends > MAX_BENDS);
 }
 
 /**
@@ -411,27 +413,27 @@ export function bentEdges(lines: DrawnEdge[]): DrawnEdge[] {
 function edgesPerMember(d: Diagram): { group: string; edges: string[] }[] {
   const found: { group: string; key: string; edges: string[] }[] = [];
   for (const g of d.groups ?? []) {
-    const boxes = endNodes(d, g.id);
-    if (boxes.length < 2) continue;
-    const inside = new Set(boxes);
+    const endIds = endNodes(d, g.id);
+    if (endIds.length < 2) continue;
+    const inside = new Set(endIds);
     // Each node's first line by its direction, its end outside the group and its look.
     const by = new Map<string, Map<string, string>>();
     for (const e of withFollowedWeights(d).edges) {
-      for (const [box, end, way] of [
+      for (const [inner, end, way] of [
         [e.from, e.to, "out"],
         [e.to, e.from, "in"],
       ] as const) {
-        if (!inside.has(box) || endNodes(d, end).some((n) => inside.has(n))) continue;
+        if (!inside.has(inner) || endNodes(d, end).some((n) => inside.has(n))) continue;
         const look = [e.kind, e.label ?? "", e.weight ?? "thin", e.both === true];
         const key = JSON.stringify([way, end, ...look]);
-        const lines = by.get(key) ?? new Map<string, string>();
-        if (!lines.has(box)) lines.set(box, e.id);
-        by.set(key, lines);
+        const firsts = by.get(key) ?? new Map<string, string>();
+        if (!firsts.has(inner)) firsts.set(inner, e.id);
+        by.set(key, firsts);
       }
     }
-    for (const [key, lines] of by) {
-      if (lines.size === boxes.length)
-        found.push({ group: g.id, key, edges: boxes.map((b) => lines.get(b) ?? "") });
+    for (const [key, firsts] of by) {
+      if (firsts.size === endIds.length)
+        found.push({ group: g.id, key, edges: endIds.map((b) => firsts.get(b) ?? "") });
     }
   }
   return found
@@ -476,11 +478,11 @@ export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
       }),
     ),
     ...c.crowded.map((x): Warning => ({ code: "crowded-label", facts: { edge: x.id } })),
-    ...dr.boxes
+    ...dr.nodes
       .filter((b) => b.edges === 0 && !reached.has(b.id))
       .map((b): Warning => ({ code: "lonely-node", facts: { node: b.id } })),
     ...dr.aside.map(
-      (a): Warning => ({ code: "node-aside", facts: { node: a.box, nodes: a.users } }),
+      (a): Warning => ({ code: "node-aside", facts: { node: a.node, nodes: a.users } }),
     ),
     ...edgesPerMember(d).map((x): Warning => ({ code: "edge-per-member", facts: x })),
     ...dr.edges.flatMap((l) =>
@@ -517,7 +519,7 @@ export function deltaText(d: Record<string, number>): string {
 /** The whole drawing as records: the counts, then each node, group and edge, then the legend. */
 export function drawingText(dr: Drawing): string {
   const out = [countsText(dr.counts)];
-  for (const b of dr.boxes) out.push(record("node", { ...b }));
+  for (const b of dr.nodes) out.push(record("node", { ...b }));
   for (const g of dr.groups) out.push(record("group", { ...g }));
   for (const w of dr.walls) out.push(record("wall", { ...w }));
   for (const x of dr.notes) out.push(record("note", { ...x }));

@@ -65,7 +65,7 @@ describe('boxes inside boxes (specs/decisions, "Every layered diagram type")', (
 
 describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
   /** Plain lines, which carry no arrowhead, alone on the tiny scene's canvas. */
-  const lines = (edges: SceneEdge[]): string => renderSvg({ ...tinyScene(), nodes: [], edges });
+  const drawEdges = (edges: SceneEdge[]): string => renderSvg({ ...tinyScene(), nodes: [], edges });
   const edge = (id: string, points: Point[]): SceneEdge => ({
     id,
     from: "x",
@@ -75,7 +75,7 @@ describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
   });
 
   it("hops the horizontal line over the vertical one where two lines cross", () => {
-    const svg = lines([
+    const svg = drawEdges([
       edge("across", [
         { x: 20, y: 60 },
         { x: 180, y: 60 },
@@ -91,7 +91,7 @@ describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
   });
 
   it("gives crossings closer than a hop one wider hop", () => {
-    const svg = lines([
+    const svg = drawEdges([
       edge("across", [
         { x: 180, y: 60 },
         { x: 20, y: 60 },
@@ -121,14 +121,14 @@ describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
       'd="M20 20L20 40Q20 60 40 60L155 60Q180 60 180 85L180 110"',
     );
     // A box inside the first corner leaves it the orthogonal style's radius.
-    const box = { ...tinyScene().nodes[0], rect: { x: 26, y: 44, w: 10, h: 10 } } as SceneNode;
-    expect(renderSvg({ ...tinyScene(), nodes: [box], edges: [zed], paint: curved })).toContain(
+    const dotNode = { ...tinyScene().nodes[0], rect: { x: 26, y: 44, w: 10, h: 10 } } as SceneNode;
+    expect(renderSvg({ ...tinyScene(), nodes: [dotNode], edges: [zed], paint: curved })).toContain(
       'd="M20 20L20 54Q20 60 26 60L155 60',
     );
   });
 
   it("marks with a dot where a branch leaves the line it ran along, and nowhere else", () => {
-    const svg = lines([
+    const svg = drawEdges([
       edge("long", [
         { x: 20, y: 30 },
         { x: 20, y: 60 },

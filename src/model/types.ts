@@ -31,15 +31,15 @@ export type Density = (typeof DENSITIES)[number];
  * The edge styles an edge is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side"): call and data are solid, async dashed,
  * optional dotted, and a link is a plain edge with no arrowhead. The legend names each.
  */
-export const LINE_STYLES = ["solid", "dashed", "dotted", "plain"] as const;
-export type LineStyleName = (typeof LINE_STYLES)[number];
+export const EDGE_STYLES = ["solid", "dashed", "dotted", "plain"] as const;
+export type EdgeStyleName = (typeof EDGE_STYLES)[number];
 
 /**
  * How a layer is drawn once an edge ends at it (specs/decisions, "A layer with no node as one bar"): as a node, with a node's
  * paint and a dark label, or as a band, with the band's light fill and muted label.
  */
-export const ROW_LOOKS = ["box", "band"] as const;
-export type RowLook = (typeof ROW_LOOKS)[number];
+export const LAYER_LOOKS = ["box", "band"] as const;
+export type LayerLook = (typeof LAYER_LOOKS)[number];
 
 /**
  * Where a group's label sits, as the agent states it (specs/decisions, "The agent states where a group's label sits"):
@@ -218,7 +218,7 @@ export interface Layer {
   /** The lane this layer lies in, when lanes run as layers (specs/decisions, "Lanes run one way"). */
   lane?: string;
   /** How the layer is drawn; a layer with a look is drawn though no edge ends at it. Absent: the layer is drawn only once an edge ends at it, a node with no node in it and a band with nodes (specs/decisions, "A layer with no node as one bar", "A layer with a look is drawn"). */
-  look?: RowLook;
+  look?: LayerLook;
   /** Ordered: list order is the order within the layer. */
   nodes: DiagramNode[];
 }
@@ -343,7 +343,7 @@ export const STEP_NUMBER_MAX = 99;
  * a width in pixels, by its number written as a string; and per mark, by its name.
  * What is not named has no entry (specs/decisions, "The legend says only what the agent named").
  */
-export type Legend = Partial<Record<LineStyleName, string>> & {
+export type Legend = Partial<Record<EdgeStyleName, string>> & {
   weights?: Record<string, string>;
   marks?: Record<string, string>;
 };

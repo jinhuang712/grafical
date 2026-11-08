@@ -142,8 +142,8 @@ describe('walls (specs/decisions, "Walls as space")', () => {
     expect(gone.diagram.walls).toBeUndefined();
     expect(gone.changed).toContain("net");
     // A removed line leaves what the wall allows.
-    const lines = ok(fx, [{ ...net, allow: ["upstream->relay", "handlers"] } as Op]).diagram;
-    const cut = ok(lines, [{ op: "edge.remove", id: "upstream->relay" }]).diagram;
+    const allowed = ok(fx, [{ ...net, allow: ["upstream->relay", "handlers"] } as Op]).diagram;
+    const cut = ok(allowed, [{ op: "edge.remove", id: "upstream->relay" }]).diagram;
     expect(cut.walls?.[0]?.allow).toEqual(["handlers"]);
   });
 

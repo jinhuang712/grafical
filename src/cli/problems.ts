@@ -201,7 +201,7 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "bad-yaml": [],
   "bar-crossed": ["layer move", "node move", "edge remove", "edge pass"],
   "bar-in-group": {
-    line: ["group leave", "layer move", "node move", "edge remove"],
+    edge: ["group leave", "layer move", "node move", "edge remove"],
     look: ["group leave", "layer look", "layer move", "node move"],
   },
   "bar-to-bar": ["edge remove", "plug"],
@@ -365,7 +365,7 @@ export function variantOf(
   switch (code) {
     case "bar-in-group":
       // A bar an edge ends at, or one drawn for its look alone.
-      return facts.edge === undefined ? "look" : "line";
+      return facts.edge === undefined ? "look" : "edge";
     case "unknown-weight":
       return facts.edge !== undefined || facts.edges !== undefined ? "edge" : "legend";
     case "conflicting-position":

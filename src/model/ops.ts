@@ -22,25 +22,25 @@ import {
   EDGE_BENDS,
   EDGE_SIDES,
   EDGE_STRETCHES,
+  EDGE_STYLES,
   type EdgeBend,
   type EdgeSide,
   type EdgeStretch,
+  type EdgeStyleName,
   GAP_MAGNIFICATIONS,
   type GapMagnified,
   type GroupTitle,
   LABEL_ALIGNS,
   LABEL_PLACES,
+  LAYER_LOOKS,
   type LabelAlign,
-  LINE_STYLES,
-  type LineStyleName,
+  type LayerLook,
   MARK_SHAPES,
   MARK_SIZES,
   MARK_SLOTS,
   type MarkShape,
   type MarkSize,
   type MarkSlot,
-  ROW_LOOKS,
-  type RowLook,
   type Shape,
   SIZE_STEPS,
   SIZINGS,
@@ -199,7 +199,7 @@ export interface DiagramDensityOp {
 export interface DiagramLegendOp {
   op: "diagram.legend";
   /** How the edges look. Named edge until 2026-10-13 (specs/decisions, "The help as the reference"). */
-  style?: LineStyleName;
+  style?: EdgeStyleName;
   /** A weight level other than thin, or a width in pixels (specs/decisions, "Edge weights"). */
   weight?: string | number;
   /** A mark's emoji, text or file name (specs/decisions, "Marks of any kind"). */
@@ -286,7 +286,7 @@ export interface LayerLookOp {
   op: "layer.look";
   id: string;
   /** Absent: the layer is drawn only once an edge ends at it, and its look follows the layer, a node with no node in it and a band with nodes. */
-  look?: RowLook;
+  look?: LayerLook;
 }
 /** Moves a layer's nodes from `from` on (or its second half) into a new layer below it (specs/decisions, "Curation stays with the agent"). */
 export interface LayerSplitOp {
@@ -809,7 +809,7 @@ export const diagramDensitySchema = z.strictObject({
 });
 export const diagramLegendSchema = z.strictObject({
   op: z.literal("diagram.legend"),
-  style: z.enum(LINE_STYLES).optional(),
+  style: z.enum(EDGE_STYLES).optional(),
   weight: weightValue.optional(),
   mark: text.optional(),
   text: text.optional(),
@@ -872,7 +872,7 @@ export const laneLikeSchema = follow("lane.like");
 export const layerLookSchema = z.strictObject({
   op: z.literal("layer.look"),
   id: nodeId,
-  look: z.enum(ROW_LOOKS).optional(),
+  look: z.enum(LAYER_LOOKS).optional(),
 });
 export const layerSplitSchema = z.strictObject({
   op: z.literal("layer.split"),

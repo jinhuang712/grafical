@@ -224,7 +224,7 @@ export function generate(seed: number, m: Measurer): Generated {
   // A stream of its own, so that a seed with no bar is the same diagram as before bars.
   addBars(d, rng(seed ^ 0x5bd1e995));
   // A stream of its own, so that a seed with no look is the same diagram as before looks drew rows.
-  addRowLooks(d, rng(seed ^ 0x9e3779b9));
+  addLayerLooks(d, rng(seed ^ 0x9e3779b9));
   addStepNumbers(d, r);
   fitLabels(d, m);
   const titles = JSON.stringify(d.groups ?? []);
@@ -361,7 +361,7 @@ function addBars(d: Diagram, r: () => number): void {
  * rows, or above or below them all, with no line to it: every line that passes it says it may, and one that a check
  * refuses, such as inside a group's rows, is dropped.
  */
-function addRowLooks(d: Diagram, r: () => number): void {
+function addLayerLooks(d: Diagram, r: () => number): void {
   const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
   const look = () => (r() < 0.5 ? "band" : "box");
   const ended = new Set(d.edges.flatMap((e) => [e.from, e.to]));
@@ -369,8 +369,8 @@ function addRowLooks(d: Diagram, r: () => number): void {
     (l) => l.nodes.length > 0 && l.look === undefined && !ended.has(l.id),
   );
   if (r() < 0.2 && plain.length > 0) {
-    const row = plain[int(0, plain.length - 1)];
-    if (row !== undefined) row.look = look();
+    const chosenLayer = plain[int(0, plain.length - 1)];
+    if (chosenLayer !== undefined) chosenLayer.look = look();
   }
   if (r() >= 0.1 || laneRun(d) === "columns" || d.layers.some((l) => l.id === "shown")) return;
   const trial: Diagram = structuredClone(d);
@@ -426,20 +426,20 @@ function addSteps(d: Diagram, r: () => number): void {
   if (r() < 0.7) return;
   const tries = int(1, 3);
   for (let t = 0; t < tries; t++) {
-    const rowNodes = d.layers.flatMap((l) => l.nodes);
-    const free = rowNodes.filter(
+    const allNodes = d.layers.flatMap((l) => l.nodes);
+    const free = allNodes.filter(
       (x) => x.align === undefined && x.column === undefined && x.lane === undefined,
     );
     if (free.length < 2) return;
-    const box = free[int(0, free.length - 1)] as DiagramNode;
-    const anchors = [...rowNodes, ...(d.nodes ?? [])].filter((x) => x.id !== box.id);
+    const freeNode = free[int(0, free.length - 1)] as DiagramNode;
+    const anchors = [...allNodes, ...(d.nodes ?? [])].filter((x) => x.id !== freeNode.id);
     const from = anchors[int(0, anchors.length - 1)] as DiagramNode;
     let dx = int(-2, 2);
     const dy = int(-2, 2);
     if (dx === 0 && dy === 0) dx = 1;
     const trial: Diagram = structuredClone(d);
-    for (const l of trial.layers) l.nodes = l.nodes.filter((x) => x.id !== box.id);
-    const moved: DiagramNode = { ...structuredClone(box), from: from.id };
+    for (const l of trial.layers) l.nodes = l.nodes.filter((x) => x.id !== freeNode.id);
+    const moved: DiagramNode = { ...structuredClone(freeNode), from: from.id };
     if (dx > 0) moved.right = dx;
     if (dx < 0) moved.left = -dx;
     if (dy > 0) moved.down = dy;
@@ -555,11 +555,11 @@ function addSideWalls(
   const int = (lo: number, hi: number) => lo + Math.floor(r() * (hi - lo + 1));
   if (r() < 0.7 || d.layers.length === 0) return;
   const top = int(0, d.layers.length - 1);
-  const rows = d.layers.slice(top, top + int(1, 2));
-  if (rows.some((l) => l.nodes.length < 2)) return;
+  const span = d.layers.slice(top, top + int(1, 2));
+  if (span.some((l) => l.nodes.length < 2)) return;
   const between: string[] = [];
   const and: string[] = [];
-  for (const l of rows) {
+  for (const l of span) {
     const cut = int(1, l.nodes.length - 1);
     between.push(l.nodes[cut - 1]?.id ?? "");
     and.push(l.nodes[cut]?.id ?? "");
@@ -715,9 +715,9 @@ function addLanes(d: Diagram, r: () => number, text: (lo: number, hi: number) =>
     }
     // A group across two lanes takes the lane of its first layer for all its layers.
     for (const g of trial.groups ?? []) {
-      const rows = trial.layers.filter((l) => l.nodes.some((n) => n.group === g.id));
-      const lane = rows[0]?.lane;
-      for (const l of rows) {
+      const held = trial.layers.filter((l) => l.nodes.some((n) => n.group === g.id));
+      const lane = held[0]?.lane;
+      for (const l of held) {
         if (lane === undefined) delete l.lane;
         else l.lane = lane;
       }

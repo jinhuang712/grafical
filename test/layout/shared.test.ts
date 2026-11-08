@@ -32,10 +32,10 @@ describe('a node that two groups use (specs/decisions, "Layout computed again on
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     const d: Diagram = r.diagram;
     const scene = layout(d, m);
-    const box = (id: string) => scene.groups?.find((g) => g.id === id)?.rect;
+    const frame = (id: string) => scene.groups?.find((g) => g.id === id)?.rect;
     const db = scene.nodes.find((n) => n.id === "db")?.rect;
-    const left = box("write");
-    const right = box("read");
+    const left = frame("write");
+    const right = frame("read");
     if (db === undefined || left === undefined || right === undefined) throw new Error("missing");
     const mid = db.x + db.w / 2;
     expect(mid).toBeGreaterThan(left.x + left.w);

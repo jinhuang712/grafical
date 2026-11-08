@@ -15,7 +15,7 @@ import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { dense } from "../fixtures/dense.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 import { flowchart } from "../fixtures/flowchart.ts";
-import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
+import { lanesColumns, lanesLayers } from "../fixtures/lanes.ts";
 import { nested } from "../fixtures/nested.ts";
 import { stateMachine } from "../fixtures/state-machine.ts";
 import { steps } from "../fixtures/steps.ts";
@@ -38,7 +38,7 @@ const FIXTURES = {
   edgeLooks,
   flowchart,
   lanesColumns,
-  lanesRows,
+  lanesRows: lanesLayers,
   nested,
   stateMachine,
 };
@@ -75,15 +75,15 @@ describe('step badges (specs/decisions, "Step badges ride the edge")', () => {
     const scene = layout(steps, m);
     const a = scene.edges.find((e) => e.id === "gateway->checkout") as SceneEdge;
     const b = scene.edges.find((e) => e.id === "checkout->payments") as SceneEdge;
-    const box = scene.nodes.find((n) => n.id === "checkout");
-    if (a.step === undefined || b.label === undefined || box === undefined)
+    const checkoutNode = scene.nodes.find((n) => n.id === "checkout");
+    if (a.step === undefined || b.label === undefined || checkoutNode === undefined)
       throw new Error("fixture");
     const at = (x: number, y: number) => ({ ...(a.step as SceneBadge), x, y });
     const p = b.points[0] as { x: number; y: number };
     const q = b.points[1] as { x: number; y: number };
     const cases: [string, SceneBadge][] = [
       ["edge", at((p.x + q.x) / 2, p.y)],
-      ["node", at(box.rect.x + box.rect.w / 2, box.rect.y + 4)],
+      ["node", at(checkoutNode.rect.x + checkoutNode.rect.w / 2, checkoutNode.rect.y + 4)],
       ["label", at(b.label.bbox.x + 2, b.label.bbox.y + 2)],
     ];
     for (const [is, badge] of cases) {

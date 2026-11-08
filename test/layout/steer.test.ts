@@ -13,7 +13,7 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-const rows = (...layers: string[][]) =>
+const layered = (...layers: string[][]) =>
   layers.flatMap((ns, i) => [
     { op: "layer.add", id: `r${i}` },
     ...ns.map((n, k) => ({
@@ -66,7 +66,7 @@ describe("--with", () => {
   });
 
   it("refuses a trunk with no end in common, or a circle", () => {
-    const base = [...rows(["a", "b"], ["c", "d"])];
+    const base = [...layered(["a", "b"], ["c", "d"])];
     const r = (...ops: object[]) => {
       const out = applyOps(
         build(
@@ -92,7 +92,7 @@ describe("--with", () => {
 describe("--straight and --main", () => {
   it("refuses a line that has a bend", () => {
     const d = build(
-      ...rows(["a", "b"], ["c", "d"]),
+      ...layered(["a", "b"], ["c", "d"]),
       { op: "edge.add", from: "a", to: "d" },
       { op: "edge.add", from: "b", to: "c" },
       { op: "edge.add", from: "a", to: "c" },
@@ -103,7 +103,7 @@ describe("--straight and --main", () => {
 
   it("gives the stated line its column first", () => {
     const ops = [
-      ...rows(["a"], ["b", "c", "d"]),
+      ...layered(["a"], ["b", "c", "d"]),
       { op: "edge.add", from: "a", to: "b" },
       { op: "edge.add", from: "a", to: "c" },
       { op: "edge.add", from: "a", to: "d" },
@@ -118,7 +118,7 @@ describe("--straight and --main", () => {
 
 describe("--via", () => {
   const ops = [
-    ...rows(["a"], ["b", "c"], ["d", "e"]),
+    ...layered(["a"], ["b", "c"], ["d", "e"]),
     { op: "group.add", id: "g", label: "G", nodes: ["b", "c"] },
     { op: "edge.add", from: "a", to: "e" },
   ];
@@ -139,7 +139,7 @@ describe("--via", () => {
 
   it("refuses an object no line comes level with", () => {
     const d = build(
-      ...rows(["a", "b"], ["c"], ["z"]),
+      ...layered(["a", "b"], ["c"], ["z"]),
       { op: "edge.add", from: "a", to: "c" },
       { op: "edge.via", id: "a->c", object: "z", side: "left" },
     );
@@ -158,14 +158,14 @@ describe("--via", () => {
 
 describe("--bend and --stretch", () => {
   it("slides a line's inner run, and refuses a line with none", () => {
-    const ops = [...rows(["a", "x"], ["y", "b"]), { op: "edge.add", from: "a", to: "b" }];
+    const ops = [...layered(["a", "x"], ["y", "b"]), { op: "edge.add", from: "a", to: "b" }];
     const plain = edge(build(...ops), "a->b").points;
     const d = build(...ops, { op: "edge.bend", id: "a->b", at: 0.75 });
     const was = plain[1]?.y as number;
     expect(defects(d)).toEqual([]);
     expect(edge(d, "a->b").points[1]?.y).not.toBe(was);
     const line = build(
-      ...rows(["a"], ["b"]),
+      ...layered(["a"], ["b"]),
       { op: "edge.add", from: "a", to: "b" },
       { op: "edge.bend", id: "a->b", at: 0.5 },
     );
@@ -174,7 +174,7 @@ describe("--bend and --stretch", () => {
 
   it("reaches a detour further, and refuses a line with none", () => {
     const ops = [
-      ...rows(["a"], ["b"], ["c"]),
+      ...layered(["a"], ["b"], ["c"]),
       { op: "edge.add", from: "a", to: "b" },
       { op: "edge.add", from: "b", to: "c" },
       { op: "edge.add", from: "c", to: "a" },
@@ -191,7 +191,7 @@ describe("--bend and --stretch", () => {
 describe("the file", () => {
   it("reads back every fact", () => {
     const d = build(
-      ...rows(["a", "b"], ["c", "d"]),
+      ...layered(["a", "b"], ["c", "d"]),
       { op: "edge.add", from: "a", to: "c" },
       { op: "edge.add", from: "a", to: "d" },
       { op: "edge.via", id: "a->d", object: "b", side: "left" },

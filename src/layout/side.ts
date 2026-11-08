@@ -83,13 +83,13 @@ export function planSideways(
     const labelled = p.ids.filter((id) => (labelW(id) ?? 0) > 0);
     const fits = labelled.filter((id) => (labelW(id) ?? 0) <= ROUTE.sideLabelMax);
     const plain = p.ids.filter((id) => !labelled.includes(id));
-    let lines: { id: string; label: SideSlot["label"] }[];
+    let sideEdges: { id: string; label: SideSlot["label"] }[];
     if (labelled.length === 0) {
       let count = plain.length;
       while (count > 0 && sidePitch(count, p.h) === undefined) count--;
-      lines = plain.slice(0, count).map((id) => ({ id, label: undefined }));
+      sideEdges = plain.slice(0, count).map((id) => ({ id, label: undefined }));
     } else if (fits.length === 0) {
-      lines = plain.slice(0, 1).map((id) => ({ id, label: undefined }));
+      sideEdges = plain.slice(0, 1).map((id) => ({ id, label: undefined }));
     } else {
       const first = fits[0] as string;
       const second = fits[1] ?? plain[0];
@@ -97,15 +97,15 @@ export function planSideways(
       const below = second !== undefined && fits.includes(second) ? labelH(second) : 0;
       const two = p.h / 2 >= PITCH / 2 + ROUTE.labelGap + Math.max(labelH(first), below);
       const both = two && second !== undefined && fits.includes(second);
-      lines = [{ id: first, label: !both && rides(first) ? "on" : "above" }];
+      sideEdges = [{ id: first, label: !both && rides(first) ? "on" : "above" }];
       if (second !== undefined && two)
-        lines.push({ id: second, label: both ? "below" : undefined });
+        sideEdges.push({ id: second, label: both ? "below" : undefined });
     }
-    const pitch = sidePitch(lines.length, p.h) ?? TIGHT;
-    lines.forEach((line, i) => {
-      out.set(line.id, {
-        offset: Math.round(((i - (lines.length - 1) / 2) * pitch) / 4) * 4,
-        label: line.label,
+    const pitch = sidePitch(sideEdges.length, p.h) ?? TIGHT;
+    sideEdges.forEach((slot, i) => {
+      out.set(slot.id, {
+        offset: Math.round(((i - (sideEdges.length - 1) / 2) * pitch) / 4) * 4,
+        label: slot.label,
         left: p.left,
         right: p.right,
       });

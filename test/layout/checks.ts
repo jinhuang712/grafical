@@ -2,7 +2,7 @@
 // another module's job; these only keep the layout honest.
 
 import type { Point, Rect, Scene, SceneEdge } from "../../src/scene.ts";
-import { lineStyle } from "../../src/theme/paint.ts";
+import { edgeStyle } from "../../src/theme/paint.ts";
 
 export interface Seg {
   a: Point;
@@ -45,14 +45,14 @@ export function segmentHitsRect(s: Seg, r: Rect): boolean {
 
 /** Edges that share a source node and a line style may run together as a bundle (specs/decisions, "Our own gap router"). */
 export function sameBundle(a: SceneEdge, b: SceneEdge): boolean {
-  return a.from === b.from && lineStyle(a.kind) === lineStyle(b.kind);
+  return a.from === b.from && edgeStyle(a.kind) === edgeStyle(b.kind);
 }
 
 /** Unlabelled edges in one line style into one node may arrive through one port (specs/decisions, "A target picture with measured rules" rule 4). */
 export function sameFanIn(a: SceneEdge, b: SceneEdge): boolean {
   return (
     a.to === b.to &&
-    lineStyle(a.kind) === lineStyle(b.kind) &&
+    edgeStyle(a.kind) === edgeStyle(b.kind) &&
     a.label === undefined &&
     b.label === undefined
   );

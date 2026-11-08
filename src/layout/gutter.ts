@@ -32,11 +32,11 @@ const NEAR = 8;
 const HARD = 1000;
 const LABEL_HIT = 4;
 /** Each edge inside a label's slot costs the slot as much as this many px of sliding. */
-const SLOT_LINE = 8;
+const SLOT_EDGE = 8;
 /** Each crossing a label's slot forces, by the order it fixes, costs this many px of sliding. */
 const SLOT_CROSS = 64;
 /** An edge on another edge weighs more than an edge through a label: a free layer always avoids it. */
-const LINE = 100;
+const ON_EDGE = 100;
 /** How far a label on a run keeps from the run's corners. */
 export const ON_CLEAR = 8;
 /** Layers a run may go below every run placed so far, besides the height of two labels. */
@@ -235,7 +235,7 @@ function geometry(pitch: number) {
   ): number => {
     let c = 0;
     if (rv >= 0 && rv === ru && v.hi - v.lo > EPS && u.hi - u.lo > EPS) {
-      if (v.lo - sep < u.hi && u.lo < v.hi + sep) c += LINE;
+      if (v.lo - sep < u.hi && u.lo < v.hi + sep) c += ON_EDGE;
     }
     const oneBus = v.bundle !== undefined && v.bundle === u.bundle;
     for (const s of v.stubs) {
@@ -250,7 +250,7 @@ function geometry(pitch: number) {
         if (!opposite && d >= 0.5) continue;
         const [p0, p1] = spanAt(s.top, rv, pitch);
         const [q0, q1] = spanAt(t.top, ru, pitch);
-        if (Math.min(p1, q1) - Math.max(p0, q0) > EPS) c += LINE;
+        if (Math.min(p1, q1) - Math.max(p0, q0) > EPS) c += ON_EDGE;
       }
     }
     if (bu !== undefined) c += hits(bu, v, rv);
@@ -450,7 +450,7 @@ export function routeGutter(
         else if (k !== undefined && b) pairs.push([i, k]);
       }
       const forced = crossed || pairs.length === 0 ? 0 : forcedOf(pairs);
-      return { c, crossed, pairs, cost: c.score + SLOT_LINE * pairs.length + SLOT_CROSS * forced };
+      return { c, crossed, pairs, cost: c.score + SLOT_EDGE * pairs.length + SLOT_CROSS * forced };
     });
   };
   const openSlots = (v: Visit, lab: VisitLabel) =>

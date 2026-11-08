@@ -2,7 +2,7 @@
 // The SVG writer reads roles from a scene's paint and never holds a hex code itself.
 // PAINT is the default theme's paint; themes.ts holds the others.
 
-import type { EdgeKind, LineStyleName, NodeKind } from "../model/types.ts";
+import type { EdgeKind, EdgeStyleName, NodeKind } from "../model/types.ts";
 
 export interface NodePaint {
   fill: string;
@@ -88,7 +88,7 @@ export interface Paint {
   };
 }
 
-const STYLES: Record<EdgeKind, LineStyleName> = {
+const STYLES: Record<EdgeKind, EdgeStyleName> = {
   call: "solid",
   async: "dashed",
   data: "solid",
@@ -97,7 +97,7 @@ const STYLES: Record<EdgeKind, LineStyleName> = {
 };
 
 /** The edge style an edge kind is drawn in. The kind decides it (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side"). */
-export function lineStyle(kind: EdgeKind): LineStyleName {
+export function edgeStyle(kind: EdgeKind): EdgeStyleName {
   return STYLES[kind];
 }
 
@@ -123,7 +123,7 @@ export function edgeWidth(e: { weight?: string | number }, P: Paint): number | u
  * one and at the thick width it is the main-path one. Between and past them it grows by
  * the same step per pixel, up to a length of ARROW_MAX. A narrower edge keeps the thin one.
  */
-export function lineLook(
+export function strokeLook(
   width: number | undefined,
   P: Paint,
 ): { strokeWidth: number; arrow: { length: number; halfWidth: number } } {
@@ -143,7 +143,7 @@ export function lineLook(
 }
 
 /** The kind whose paint draws an edge style's sample in the legend. */
-export const STYLE_KIND: Record<LineStyleName, EdgeKind> = {
+export const STYLE_KIND: Record<EdgeStyleName, EdgeKind> = {
   solid: "call",
   dashed: "async",
   dotted: "optional",

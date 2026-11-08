@@ -3,7 +3,7 @@
 // Coordinates are px, origin top left, y down.
 
 import type { SteerCode } from "./layout/steer.ts";
-import type { EdgeKind, LineStyleName, Look, Mark, MarkSlot, NodeKind } from "./model/types.ts";
+import type { EdgeKind, EdgeStyleName, Look, Mark, MarkSlot, NodeKind } from "./model/types.ts";
 import type { FontFace } from "./text/types.ts";
 import type { Paint } from "./theme/paint.ts";
 
@@ -156,7 +156,7 @@ export interface SceneNote {
 /** One edge style, edge width or mark in the legend, with its sample (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "A legend for widths and marks"). */
 export interface SceneLegendItem {
   /** The edge style the sample is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type"). A mark's entry has none. */
-  style?: LineStyleName;
+  style?: EdgeStyleName;
   /** The sample's width in pixels when it is not the thin one: an edge width's entry (specs/decisions, "Edge weights", "A legend for widths and marks"). */
   width?: number;
   /** Where the sample sits, left to right, at the label's middle height. An edge is drawn along it. */

@@ -13,7 +13,7 @@ import {
 import { renderSvg } from "../../src/render/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
-import { edgeWidth, lineLook, PAINT } from "../../src/theme/paint.ts";
+import { edgeWidth, PAINT, strokeLook } from "../../src/theme/paint.ts";
 import {
   parseStylesheet,
   provideStylesheet,
@@ -123,15 +123,15 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
   });
 
   it("a heavier line grows its arrowhead by the same step, up to a limit", () => {
-    const thin = lineLook(undefined, PAINT);
-    const thick = lineLook(PAINT.edge.main.strokeWidth, PAINT);
-    const heavy = lineLook(4, PAINT);
-    const huge = lineLook(8, PAINT);
+    const thin = strokeLook(undefined, PAINT);
+    const thick = strokeLook(PAINT.edge.main.strokeWidth, PAINT);
+    const heavy = strokeLook(4, PAINT);
+    const huge = strokeLook(8, PAINT);
     expect(thin.arrow).toEqual(PAINT.edge.arrow);
     expect(thick.arrow).toEqual(PAINT.edge.main.arrow);
     expect(heavy.arrow.length).toBeGreaterThan(thick.arrow.length);
     expect(huge.arrow.length).toBe(12);
-    expect(lineLook(0.5, PAINT)).toEqual({ strokeWidth: 0.5, arrow: PAINT.edge.arrow });
+    expect(strokeLook(0.5, PAINT)).toEqual({ strokeWidth: 0.5, arrow: PAINT.edge.arrow });
   });
 
   it("is drawn with that stroke width", () => {

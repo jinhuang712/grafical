@@ -6,8 +6,8 @@ import { everyNode, STEP_KEYS } from "../model/steps.ts";
 import {
   type Diagram,
   type DiagramNode,
+  EDGE_STYLES,
   type Edge,
-  LINE_STYLES,
   MARK_SLOTS,
   markStyle,
   markText,
@@ -57,9 +57,9 @@ export function showDiagram(d: Diagram): string {
   const lines = [`diagram ${JSON.stringify(d.title)} density=${d.density}${sizing}`];
   if (d.subtitle !== undefined) lines.push(`subtitle ${JSON.stringify(d.subtitle)}`);
   if (d.caption !== undefined) lines.push(`caption ${JSON.stringify(d.caption)}`);
-  for (const line of LINE_STYLES) {
-    const text = d.legend?.[line];
-    if (text !== undefined) lines.push(`legend ${line} ${JSON.stringify(text)}`);
+  for (const styleName of EDGE_STYLES) {
+    const text = d.legend?.[styleName];
+    if (text !== undefined) lines.push(`legend ${styleName} ${JSON.stringify(text)}`);
   }
   for (const [w, text] of Object.entries(d.legend?.weights ?? {})) {
     lines.push(`legend weight ${w} ${JSON.stringify(text)}`);

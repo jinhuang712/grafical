@@ -28,15 +28,16 @@ function build(ops: Op[]): Diagram {
 }
 
 const side = (id: string, sides: object): Op => ({ op: "edge.side", id, ...sides }) as Op;
-const row = [node("x", "b"), node("y", "b", { after: "x" }), node("t", "a")];
-const line = { op: "edge.add", from: "x", to: "y" } as Op;
+const layerOps = [node("x", "b"), node("y", "b", { after: "x" }), node("t", "a")];
+const edgeOp = { op: "edge.add", from: "x", to: "y" } as Op;
 
 describe("stated sides", () => {
   it("takes a line between neighbours round below or above", () => {
-    const by = (s: object) => layout(build([...row, line, side("x->y", s)]), m).edges[0]?.points;
+    const by = (s: object) =>
+      layout(build([...layerOps, edgeOp, side("x->y", s)]), m).edges[0]?.points;
     const low = by({ out: "bottom", in: "bottom" }) ?? [];
     const high = by({ out: "top", in: "top" }) ?? [];
-    const straight = layout(build([...row, line]), m).edges[0]?.points ?? [];
+    const straight = layout(build([...layerOps, edgeOp]), m).edges[0]?.points ?? [];
     expect(low.length).toBeGreaterThan(straight.length);
     expect(Math.max(...low.map((p) => p.y))).toBeGreaterThan(Math.max(...straight.map((p) => p.y)));
     expect(Math.min(...high.map((p) => p.y))).toBeLessThan(Math.min(...straight.map((p) => p.y)));
@@ -71,8 +72,8 @@ describe("stated sides", () => {
       const blocked = check(d, s, m).filter((p) => p.code === "side-blocked");
       expect(blocked, JSON.stringify(sides)).toEqual([]);
       const e = s.edges.find((x) => x.id === "x->y");
-      const box = (id: string) => s.nodes.find((n) => n.id === id)?.rect;
-      return { points: e?.points ?? [], x: box("x"), y: box("y") };
+      const rect = (id: string) => s.nodes.find((n) => n.id === id)?.rect;
+      return { points: e?.points ?? [], x: rect("x"), y: rect("y") };
     };
 
     it("leaves by the top of a line going down, round its own box", () => {
@@ -99,13 +100,13 @@ describe("stated sides", () => {
     });
 
     it("passes through its row from one side of a neighbour to the other", () => {
-      const d = build([...row, line, side("x->y", { out: "top", in: "bottom" })]);
+      const d = build([...layerOps, edgeOp, side("x->y", { out: "top", in: "bottom" })]);
       const s = layout(d, m);
       expect(check(d, s, m).filter((p) => p.code === "side-blocked")).toEqual([]);
       const ys = s.edges[0]?.points.map((p) => p.y) ?? [];
-      const box = s.nodes.find((n) => n.id === "x")?.rect;
-      expect(Math.min(...ys)).toBeLessThan(box?.y ?? 0);
-      expect(Math.max(...ys)).toBeGreaterThan((box?.y ?? 0) + (box?.h ?? 0));
+      const rect = s.nodes.find((n) => n.id === "x")?.rect;
+      expect(Math.min(...ys)).toBeLessThan(rect?.y ?? 0);
+      expect(Math.max(...ys)).toBeGreaterThan((rect?.y ?? 0) + (rect?.h ?? 0));
     });
   });
 
@@ -122,7 +123,12 @@ describe("stated sides", () => {
   });
 
   it("keeps a side the change does not name, and with neither gives both back", () => {
-    let d = build([...row, line, side("x->y", { out: "bottom" }), side("x->y", { in: "bottom" })]);
+    let d = build([
+      ...layerOps,
+      edgeOp,
+      side("x->y", { out: "bottom" }),
+      side("x->y", { in: "bottom" }),
+    ]);
     expect(d.edges[0]).toMatchObject({ out: "bottom", in: "bottom" });
     const r = applyOps(d, [side("x->y", {})]);
     if ("errors" in r) throw new Error("refused");
@@ -132,7 +138,7 @@ describe("stated sides", () => {
   });
 
   it("keeps the sides in the file", () => {
-    const d = build([...row, line, side("x->y", { out: "bottom", in: "bottom" })]);
+    const d = build([...layerOps, edgeOp, side("x->y", { out: "bottom", in: "bottom" })]);
     const back = readDiagram(writeGrafical(d));
     expect(Array.isArray(back) ? undefined : back.edges[0]).toMatchObject({
       out: "bottom",

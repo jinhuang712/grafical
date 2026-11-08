@@ -10,7 +10,7 @@ function node(id: string, label: string, kind: NodeKind, lane?: string): Diagram
   return lane === undefined ? { id, label, kind } : { id, label, kind, lane };
 }
 
-export const lanesRows: Diagram = {
+export const lanesLayers: Diagram = {
   grafical: 1,
   title: "Checkout, by owner",
   density: "normal",

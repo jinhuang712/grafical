@@ -185,10 +185,10 @@ describe("source", () => {
     const grocer = () =>
       readFileSync(join(import.meta.dirname, "../fixtures/grocer.grafical"), "utf8");
     const WORD = "Antidisestablishmentarianism";
-    const big = (id: string, row: string) =>
-      `- {op: node.add, id: ${id}, label: "${WORD} ${WORD} ${WORD} ${WORD}", layer: ${row}, last: true, size: s}`;
-    const node = (id: string, row: string) =>
-      `- {op: node.add, id: ${id}, label: ${id}, layer: ${row}, last: true}`;
+    const big = (id: string, layerId: string) =>
+      `- {op: node.add, id: ${id}, label: "${WORD} ${WORD} ${WORD} ${WORD}", layer: ${layerId}, last: true, size: s}`;
+    const node = (id: string, layerId: string) =>
+      `- {op: node.add, id: ${id}, label: ${id}, layer: ${layerId}, last: true}`;
 
     it("names the batch file when a prefix after the last one without the problem is refused for another", () => {
       writeFileSync(join(dir, "g7.grafical.yaml"), grocer());
@@ -263,9 +263,11 @@ describe("source", () => {
 
     it("gives each of many defects its line, or the batch file once the prefixes to try are spent", () => {
       writeFileSync(join(dir, "gm.grafical.yaml"), grocer());
-      const rows = ["row-callers", "row-edge", "row-api", "row-svc"];
+      const layerIds = ["row-callers", "row-edge", "row-api", "row-svc"];
       const lines = Array.from({ length: 40 }, (_, i) =>
-        i % 4 === 3 ? big(`n${i}`, rows[i % 4] as string) : node(`n${i}`, rows[i % 4] as string),
+        i % 4 === 3
+          ? big(`n${i}`, layerIds[i % 4] as string)
+          : node(`n${i}`, layerIds[i % 4] as string),
       );
       writeFileSync(join(dir, "many.yaml"), `${lines.join("\n")}\n`);
       const found = sources(run("apply", "gm.grafical.yaml", "many.yaml").out);

@@ -14,18 +14,18 @@ export function regionKind(d: Diagram, id: string): RegionKind | undefined {
 }
 
 /** The first and last layer a group's borders sit in. A group of nodes placed by steps has none. */
-function rowsOf(d: Diagram, id: string): [number, number] | undefined {
+function layersOf(d: Diagram, id: string): [number, number] | undefined {
   const members = new Set(groupNodes(d, id));
-  const rows = d.layers.flatMap((l, i) => (l.nodes.some((n) => members.has(n)) ? [i] : []));
-  const first = rows[0];
-  const last = rows[rows.length - 1];
+  const spanned = d.layers.flatMap((l, i) => (l.nodes.some((n) => members.has(n)) ? [i] : []));
+  const first = spanned[0];
+  const last = spanned[spanned.length - 1];
   return first === undefined || last === undefined ? undefined : [first, last];
 }
 
 /** Whether one group's border ends in the layer above the other's first. */
 function stacked(d: Diagram, a: string, b: string): boolean {
-  const x = rowsOf(d, a);
-  const y = rowsOf(d, b);
+  const x = layersOf(d, a);
+  const y = layersOf(d, b);
   return x !== undefined && y !== undefined && (x[1] + 1 === y[0] || y[1] + 1 === x[0]);
 }
 
@@ -67,7 +67,7 @@ export function gutterMagnified(d: Diagram, i: number): number {
         ? [a, b].includes(d.layers[i]?.id ?? "") && [a, b].includes(d.layers[i + 1]?.id ?? "")
         : kind === "group" &&
           stacked(d, a, b) &&
-          Math.max(rowsOf(d, a)?.[0] ?? 0, rowsOf(d, b)?.[0] ?? 0) === i + 1;
+          Math.max(layersOf(d, a)?.[0] ?? 0, layersOf(d, b)?.[0] ?? 0) === i + 1;
     if (here) out = Math.max(out, g.magnified);
   }
   return out;

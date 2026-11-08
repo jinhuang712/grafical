@@ -14,7 +14,7 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-const box = (id: string, extra: Partial<DiagramNode> = {}): DiagramNode => ({
+const makeNode = (id: string, extra: Partial<DiagramNode> = {}): DiagramNode => ({
   id,
   label: id,
   kind: "service",
@@ -29,7 +29,7 @@ function diagram(store: DiagramNode, low: DiagramNode[] = []): Diagram {
     title: "T",
     density: "normal",
     layers: [
-      { id: "top", label: "Top", nodes: [box("a"), box("b")] },
+      { id: "top", label: "Top", nodes: [makeNode("a"), makeNode("b")] },
       { id: "low", label: "Low", nodes: low },
     ],
     edges: [
@@ -47,27 +47,31 @@ const asides = (d: Diagram) =>
 
 describe('a box beside every box it connects to (specs/decisions, "A node beside its neighbours is a warning")', () => {
   it("warns and never fails the write when the agent placed it there by steps", () => {
-    const aside = diagram(box("db", { kind: "store", from: "b", down: 1, right: 1 }));
-    expect(asideNodes(layout(aside, m))).toEqual([{ box: "db", users: ["a", "b"] }]);
+    const aside = diagram(makeNode("db", { kind: "store", from: "b", down: 1, right: 1 }));
+    expect(asideNodes(layout(aside, m))).toEqual([{ node: "db", users: ["a", "b"] }]);
     expect(check(aside, layout(aside, m), m)).toEqual([]);
     expect(asides(aside)).toEqual([
       { code: "node-aside", facts: { node: "db", nodes: ["a", "b"] } },
     ]);
-    const under = diagram(box("db", { kind: "store", from: "a", down: 1 }));
+    const under = diagram(makeNode("db", { kind: "store", from: "a", down: 1 }));
     expect(asides(under)).toEqual([]);
   });
 
   it("warns the same in a row, and counts like a crossing", () => {
     // db last in a row where p and q sit under a and b: right of both of its users.
-    const last = diagram(box("db", { kind: "store" }), [box("p"), box("q")]);
+    const last = diagram(makeNode("db", { kind: "store" }), [makeNode("p"), makeNode("q")]);
     last.edges.push(
       { id: "a->p", from: "a", to: "p", kind: "call" },
       { id: "b->q", from: "b", to: "q", kind: "call" },
     );
     const between: Diagram = structuredClone(last);
-    (between.layers[1] as Layer).nodes = [box("p"), box("db", { kind: "store" }), box("q")];
+    (between.layers[1] as Layer).nodes = [
+      makeNode("p"),
+      makeNode("db", { kind: "store" }),
+      makeNode("q"),
+    ];
     const scene = layout(last, m);
-    expect(asideNodes(scene).map((x) => x.box)).toEqual(["db"]);
+    expect(asideNodes(scene).map((x) => x.node)).toEqual(["db"]);
     expect(check(last, scene, m)).toEqual([]);
     expect(asides(last).map((w) => w.facts.node)).toEqual(["db"]);
     expect(asideNodes(layout(between, m))).toEqual([]);

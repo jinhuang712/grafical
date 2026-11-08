@@ -2,7 +2,7 @@
 
 import type { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
-import { lineStyle, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
+import { edgeStyle, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { closest, editDistance } from "./suggest.ts";
 import { EDGE_KINDS, type EdgeKind, STEP_NUMBER_MAX } from "./types.ts";
 
@@ -279,9 +279,9 @@ function guessedKind(
   values: string[],
 ): Facts {
   const op = getPath(raw, ["op"]);
-  const lines = (typeof op === "string" && op.startsWith("edge.")) || path.includes("edges");
+  const onEdge = (typeof op === "string" && op.startsWith("edge.")) || path.includes("edges");
   const key = typeof found === "string" ? found.toLowerCase() : undefined;
-  const guess = key === undefined ? undefined : lines ? EDGE_GUESS[key] : NODE_GUESS[key];
+  const guess = key === undefined ? undefined : onEdge ? EDGE_GUESS[key] : NODE_GUESS[key];
   if (guess === undefined) return { allowed: values };
   return { allowed: values, likely: typeof guess === "string" ? [guess] : guess };
 }
@@ -295,7 +295,7 @@ const RENAMED: Record<string, string> = { "diagram.legend.line": "style" };
  */
 function legendStyle(found: unknown, values: string[]): Facts {
   if (typeof found === "string" && (EDGE_KINDS as readonly string[]).includes(found)) {
-    return { allowed: values, likely: [lineStyle(found as EdgeKind)] };
+    return { allowed: values, likely: [edgeStyle(found as EdgeKind)] };
   }
   return { allowed: values };
 }

@@ -10,7 +10,7 @@ import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { dense } from "../fixtures/dense.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 import { flowchart } from "../fixtures/flowchart.ts";
-import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
+import { lanesColumns, lanesLayers } from "../fixtures/lanes.ts";
 import { stateMachine } from "../fixtures/state-machine.ts";
 import { tiny } from "../fixtures/tiny.ts";
 import { generate } from "../fuzz/gen.ts";
@@ -83,7 +83,7 @@ describe('the separate geometry check (GOALS.md, "Mechanical defects")', () => {
       ["catalog-sync", catalogSync],
       ["catalog-sync-grouped", catalogSyncGrouped],
       ["dense", dense],
-      ["lanes-rows", lanesRows],
+      ["lanes-rows", lanesLayers],
       ["lanes-columns", lanesColumns],
       ["dark", { ...catalogSyncGrouped, style: "dark" }],
       ["edge-looks", edgeLooks],

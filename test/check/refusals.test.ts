@@ -40,7 +40,7 @@ function changes(d: Diagram, seed: number, count: number): Op[] {
   const r = rng(seed);
   const pick = <T>(xs: readonly T[]): T => xs[Math.floor(r() * xs.length)] as T;
   const nodes = d.layers.flatMap((l) => l.nodes.map((n) => n.id));
-  const rows = d.layers.map((l) => l.id);
+  const layerIds = d.layers.map((l) => l.id);
   const groups = (d.groups ?? []).map((g) => g.id);
   const edges = d.edges.map((e) => e.id);
   const dir = () => pick(["down", "up", "left", "right"]);
@@ -50,12 +50,12 @@ function changes(d: Diagram, seed: number, count: number): Op[] {
     const b = pick(nodes.filter((x) => x !== a));
     const all = [
       { op: "node.swap", a, b },
-      { op: "node.move", id: a, layer: pick(rows), before: b },
-      { op: "node.move", id: a, layer: pick(rows) },
+      { op: "node.move", id: a, layer: pick(layerIds), before: b },
+      { op: "node.move", id: a, layer: pick(layerIds) },
       { op: "node.move", id: a, from: b, [dir()]: 1 },
       { op: "node.add", id: `new${i}`, label: "new box", from: a, [dir()]: 1 },
-      { op: "node.add", id: `new${i}`, label: "new box", layer: pick(rows) },
-      { op: "node.add", id: a, label: "new box", layer: pick(rows), last: true },
+      { op: "node.add", id: `new${i}`, label: "new box", layer: pick(layerIds) },
+      { op: "node.add", id: a, label: "new box", layer: pick(layerIds), last: true },
       { op: "node.align", id: a, to: b },
       { op: "node.type", id: a, type: "servise" },
       { op: "diagram.density", density: "loose" },
@@ -64,7 +64,7 @@ function changes(d: Diagram, seed: number, count: number): Op[] {
       { op: "group.add", id: `g${i}`, label: "group", nodes: [a, b] },
       { op: "note.add", on: a, text: "a note that says something a reader needs to know here" },
       { op: "wall.add", id: `w${i}`, between: [a], and: [b], label: "boundary" },
-      { op: "layer.remove", id: pick(rows) },
+      { op: "layer.remove", id: pick(layerIds) },
       { op: "column.add", id: `c${i}`, nodes: [a] },
       ...(groups.length > 0
         ? [

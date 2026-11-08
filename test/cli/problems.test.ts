@@ -39,7 +39,7 @@ describe("problems", () => {
   it("a bar in a group's rows names the commands that change the rows, the group or the box", () => {
     // Round p1g: two agents could not tell from the record why a bar there was refused. A bar a line ends at can lose
     // the line; one drawn for its look alone, the look.
-    const bar = { row: "mid", group: "sys", top: "core", bottom: "stores" };
+    const bar = { layer: "mid", group: "sys", top: "core", bottom: "stores" };
     expect(nextOf("bar-in-group", { ...bar, edge: "rider->mid" })).toEqual([
       "group --leave",
       "layer --move",

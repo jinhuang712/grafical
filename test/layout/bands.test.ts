@@ -113,8 +113,8 @@ edges:
 
   it("names the bar among the rows a line that may pass it passes", () => {
     const d = bar();
-    const line = drawing(d, layout(d, m)).edges.find((l) => l.id === "driver->matcher");
-    expect(line?.passes).toEqual(["gateway"]);
+    const edge = drawing(d, layout(d, m)).edges.find((l) => l.id === "driver->matcher");
+    expect(edge?.passes).toEqual(["gateway"]);
   });
 
   // Found on 2026-10-19, redrawing a microservices diagram: the bar's name took the first stretch no line
@@ -155,7 +155,7 @@ edges:
 });
 
 describe('a row with a look (specs/decisions, "A layer with a look is drawn")', () => {
-  const rows = (core = "", bundle = "") =>
+  const layered = (core = "", bundle = "") =>
     readDiagram(`grafical: 1
 title: looks
 density: normal
@@ -171,8 +171,8 @@ edges:
 `) as Diagram;
 
   it("is drawn though no line ends at it, with its label; a row with none is not", () => {
-    expect(layout(rows(), m).bands).toBeUndefined();
-    const d = rows(", look: band", ", look: box");
+    expect(layout(layered(), m).bands).toBeUndefined();
+    const d = layered(", look: band", ", look: box");
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
     expect(s.bands?.map((b) => b.id)).toEqual(["core", "bundle"]);
@@ -193,12 +193,12 @@ edges:
     expect(bundle).toMatchObject({ bar: true, box: true });
     expect(bundle.rect.h).toBe(40);
     expect(bundle.label?.runs.map((r) => r.text).join("")).toBe("Event bundle");
-    const line = drawing(d, s).edges.find((l) => l.id === "booking->trips");
-    expect(line?.passes).toEqual(["bundle"]);
+    const edge = drawing(d, s).edges.find((l) => l.id === "booking->trips");
+    expect(edge?.passes).toEqual(["bundle"]);
   });
 
   it("draws no name for a drawn row without a label, and the file keeps it so", () => {
-    const d0 = rows(", look: band", ", look: box");
+    const d0 = layered(", look: band", ", look: box");
     const r = applyOps(d0, [
       { op: "layer.add", id: "spare", after: "bundle" },
       { op: "layer.look", id: "spare", look: "band" },

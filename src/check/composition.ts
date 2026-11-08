@@ -165,11 +165,11 @@ export function gutterOf(
   crossings: Point[],
 ): Omit<Gutter, "above" | "below"> {
   const inside = (lo: number, hi: number) => hi > y0 + EPS && lo < y1 - EPS;
-  const lines = scene.edges.filter((e) =>
+  const edgeCount = scene.edges.filter((e) =>
     segmentsOf(e.points).some((s) => inside(Math.min(s.a.y, s.b.y), Math.max(s.a.y, s.b.y))),
   ).length;
   return {
-    edges: lines,
+    edges: edgeCount,
     crossings: crossings.filter((p) => p.y > y0 + EPS && p.y < y1 - EPS).length,
     tight: comp.tight.filter((t) => (t.vertical ? inside(t.lo, t.hi) : inside(t.at, t.at))).length,
     crowded: comp.crowded.filter(

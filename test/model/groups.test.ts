@@ -173,13 +173,13 @@ describe("group operations", () => {
     const d = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a", "c"] }]).diagram;
     const real = await createMeasurer();
     const s = layout(d, real);
-    const box = s.groups?.find((x) => x.id === "g")?.rect;
+    const frame = s.groups?.find((x) => x.id === "g")?.rect;
     const b = s.nodes.find((n) => n.id === "b")?.rect;
-    if (box === undefined || b === undefined) throw new Error("missing box");
+    if (frame === undefined || b === undefined) throw new Error("missing box");
     // b's row lies within the box's height, and b outside its width.
-    expect(b.y).toBeGreaterThan(box.y);
-    expect(b.y + b.h).toBeLessThan(box.y + box.h);
-    expect(b.x >= box.x + box.w || b.x + b.w <= box.x).toBe(true);
+    expect(b.y).toBeGreaterThan(frame.y);
+    expect(b.y + b.h).toBeLessThan(frame.y + frame.h);
+    expect(b.x >= frame.x + frame.w || b.x + b.w <= frame.x).toBe(true);
     expect(check(d, s, real)).toEqual([]);
     // A member may leave the middle row too.
     const d2 = ok(d, [{ op: "group.join", group: "g", nodes: ["b"] }]).diagram;
@@ -187,13 +187,13 @@ describe("group operations", () => {
   });
 
   it('group-split: a non-member between members in one row is refused by the layout (specs/decisions, "Layers unseen, groups as systems")', () => {
-    const row = ok(empty, [
+    const withLayer = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
       { op: "node.add", id: "x", layer: "r", label: "X", last: true },
       { op: "node.add", id: "y", layer: "r", label: "Y", last: true },
       { op: "node.add", id: "z", layer: "r", label: "Z", last: true },
     ]).diagram;
-    const e = fail(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "z"] }]);
+    const e = fail(withLayer, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "z"] }]);
     // No field of the operation is at fault: the facts say which box stands between which members.
     expect(e[0]).toEqual({
       code: "group-split",
@@ -205,13 +205,13 @@ describe("group operations", () => {
       stage: 3,
     });
     // Joining the node in between, or grouping neighbours, is fine.
-    ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y", "z"] }]);
-    ok(row, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y"] }]);
+    ok(withLayer, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y", "z"] }]);
+    ok(withLayer, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y"] }]);
   });
 
   it("group-split: a box placed by steps between members is named, and may join or take a row", () => {
     // c hangs right of y; swapping x and y puts c between the group's members.
-    const row = ok(empty, [
+    const withLayer = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
       { op: "node.add", id: "x", layer: "r", label: "X", last: true },
       { op: "node.add", id: "y", layer: "r", label: "Y", last: true },
@@ -220,19 +220,19 @@ describe("group operations", () => {
       { op: "group.add", id: "g", label: "G", nodes: ["x", "y"] },
     ]).diagram;
     const swap: Op = { op: "node.swap", a: "x", b: "y" };
-    const e = fail(row, [swap]);
+    const e = fail(withLayer, [swap]);
     expect(e[0]).toMatchObject({
       code: "group-split",
       facts: { node: "c", layer: "r", group: "g", between: ["y", "x"] },
     });
     // Joining the group, or taking a place in the row beside it, after the swap, is a change grafical accepts.
-    ok(row, [swap, { op: "group.join", group: "g", nodes: ["c"] }]);
-    ok(row, [swap, { op: "node.move", id: "c", layer: "r", before: "y" }]);
-    ok(row, [swap, { op: "node.move", id: "c", layer: "r", after: "x" }]);
+    ok(withLayer, [swap, { op: "group.join", group: "g", nodes: ["c"] }]);
+    ok(withLayer, [swap, { op: "node.move", id: "c", layer: "r", before: "y" }]);
+    ok(withLayer, [swap, { op: "node.move", id: "c", layer: "r", after: "x" }]);
   });
 
   it("group-split in nested groups names the innermost group around the box", () => {
-    const row = ok(empty, [
+    const withLayer = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
       { op: "node.add", id: "a", layer: "r", label: "A", last: true },
       { op: "node.add", id: "b", layer: "r", label: "B", last: true },
@@ -247,15 +247,15 @@ describe("group operations", () => {
       nodes: ["b", "d"],
       in: "outer",
     };
-    const e = fail(row, [inner]);
+    const e = fail(withLayer, [inner]);
     // Joining the outer group alone, or a place between a and b, would leave x inside the inner one.
     expect(e[0]).toMatchObject({
       code: "group-split",
       facts: { node: "x", layer: "r", group: "inner", between: ["b", "d"] },
     });
-    ok(row, [inner, { op: "group.join", group: "inner", nodes: ["x"] }]);
-    ok(row, [inner, { op: "node.move", id: "x", layer: "r", before: "a" }]);
-    ok(row, [inner, { op: "node.move", id: "x", layer: "r", after: "d" }]);
+    ok(withLayer, [inner, { op: "group.join", group: "inner", nodes: ["x"] }]);
+    ok(withLayer, [inner, { op: "node.move", id: "x", layer: "r", before: "a" }]);
+    ok(withLayer, [inner, { op: "node.move", id: "x", layer: "r", after: "d" }]);
   });
 
   it("node.remove keeps the group, even empty", () => {

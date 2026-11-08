@@ -89,11 +89,11 @@ describe('edge ends at a container (specs/decisions, "Edges that end at containe
   it("stops the line at the group's box, and draws an ended layer as a band", () => {
     const d = ok(catalogSyncGrouped, [...toGroup, ...toLayer]);
     const scene = layout(d, m);
-    const box = scene.groups?.find((g) => g.id === "catalog-api")?.rect;
+    const frame = scene.groups?.find((g) => g.id === "catalog-api")?.rect;
     const edge = scene.edges.find((e) => e.id === "callers->catalog-api");
     const tip = edge?.points[edge.points.length - 1];
     expect(edge?.to).toBe("catalog-api");
-    expect(tip?.y).toBe(box?.y);
+    expect(tip?.y).toBe(frame?.y);
     const band = scene.bands?.find((b) => b.id === "deps");
     expect(band?.label?.runs.map((r) => r.text).join("")).toBe("Stores and dependencies");
     const layerEdge = scene.edges.find((e) => e.id === "pipelines->deps");

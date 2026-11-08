@@ -5,8 +5,8 @@ import type { OpError } from "../errors.ts";
 import { STEP_KEYS } from "./steps.ts";
 import {
   type Diagram,
+  EDGE_STYLES,
   type GroupTitle,
-  LINE_STYLES,
   MARK_SLOTS,
   type Mark,
   SHAPE_KINDS,
@@ -276,7 +276,7 @@ export function writeGrafical(d: Diagram): string {
     const marks = sorted(d.legend.marks);
     blocks.push(
       block("legend", undefined, [
-        ...LINE_STYLES.map((s): Attr => [s, opt(d.legend?.[s], quote)]),
+        ...EDGE_STYLES.map((s): Attr => [s, opt(d.legend?.[s], quote)]),
         ["weights", weights.length > 0 ? weights : undefined],
         ["marks", marks.length > 0 ? marks : undefined],
       ]),
@@ -334,7 +334,7 @@ const ATTRS: Record<string, readonly string[]> = {
   label: ["on", "text", "sublabel", "at", "side", "place", "seat", "align", "style"],
   mark: ["on", "slot", "file", "hash", "bg", "border", "fg", "shape", "size", "text"],
   note: ["on", "text", "align", "footnote"],
-  legend: [...LINE_STYLES, "weights", "marks"],
+  legend: [...EDGE_STYLES, "weights", "marks"],
 };
 
 /** An edge the form cannot read, as the refusal of a file. */
@@ -707,7 +707,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   const legend = of("legend")[0];
   if (legend !== undefined) {
     const o: Record<string, unknown> = {};
-    take(legend, Object.fromEntries(LINE_STYLES.map((s) => [s, s])), o);
+    take(legend, Object.fromEntries(EDGE_STYLES.map((s) => [s, s])), o);
     for (const key of ["weights", "marks"]) {
       const lines = legend.attrs.get(key);
       if (!Array.isArray(lines)) continue;

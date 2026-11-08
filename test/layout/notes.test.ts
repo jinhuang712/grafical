@@ -40,9 +40,9 @@ describe('notes in the picture (specs/decisions, "Notes as callouts or footnotes
     const x = scene.notes?.[0];
     if (x?.card === undefined || x.link === undefined) throw new Error("no callout");
     expect(x.as).toBe("callout");
-    const box = scene.groups?.find((g) => g.id === "catalog-api")?.rect as Rect;
+    const frame = scene.groups?.find((g) => g.id === "catalog-api")?.rect as Rect;
     // The line runs from the card's side to the group's.
-    expect([x.link.a.x, x.link.b.x].sort()).toEqual([x.card.x + x.card.w, box.x].sort());
+    expect([x.link.a.x, x.link.b.x].sort()).toEqual([x.card.x + x.card.w, frame.x].sort());
     for (const n of scene.nodes) expect(overlaps(n.rect, x.card)).toBe(false);
     expect(check(d, scene, m)).toEqual([]);
   });
@@ -59,14 +59,14 @@ describe('notes in the picture (specs/decisions, "Notes as callouts or footnotes
     expect(byOn.get("service->mongo")?.number).toBe(2);
     expect(retry.number).toBe(1);
     // The number sits on a corner of the box, and the list below the content.
-    const box = scene.nodes.find((n) => n.id === "retry")?.rect as Rect;
+    const rect = scene.nodes.find((n) => n.id === "retry")?.rect as Rect;
     // Its digits just outside the box.
     const out = NOTE.badge - 2;
     const corners = [
-      [box.x + box.w + out, box.y],
-      [box.x - out, box.y],
-      [box.x + box.w + out, box.y + box.h],
-      [box.x - out, box.y + box.h],
+      [rect.x + rect.w + out, rect.y],
+      [rect.x - out, rect.y],
+      [rect.x + rect.w + out, rect.y + rect.h],
+      [rect.x - out, rect.y + rect.h],
     ];
     expect(corners).toContainEqual([retry.mark.x, retry.mark.y]);
     const lowest = Math.max(...scene.nodes.map((n) => n.rect.y + n.rect.h));

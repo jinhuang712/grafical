@@ -98,18 +98,18 @@ export function checkLanes(d: Diagram, index: number): OpError[] {
     });
     return errors;
   }
-  if (layer !== undefined) errors.push(...rowGaps(d, index));
+  if (layer !== undefined) errors.push(...layerGaps(d, index));
   errors.push(...groupsAcross(d, index));
   return errors;
 }
 
-function rowGaps(d: Diagram, index: number): OpError[] {
+function layerGaps(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
   (d.lanes ?? []).forEach((lane, i) => {
-    const rows = d.layers.flatMap((l, r) => (l.lane === lane.id ? [r] : []));
-    if (rows.length === 0) return;
-    const lo = rows[0] as number;
-    const hi = rows[rows.length - 1] as number;
+    const laneLayers = d.layers.flatMap((l, r) => (l.lane === lane.id ? [r] : []));
+    if (laneLayers.length === 0) return;
+    const lo = laneLayers[0] as number;
+    const hi = laneLayers[laneLayers.length - 1] as number;
     const gaps = d.layers.slice(lo, hi + 1).filter((l) => l.lane !== lane.id);
     if (gaps.length === 0) return;
     const gap = gaps[0] as Layer;
@@ -127,7 +127,7 @@ function rowGaps(d: Diagram, index: number): OpError[] {
 /** A group lies inside one lane, or outside every lane. */
 function groupsAcross(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];
-  const rows = laneRun(d) === "layers";
+  const byLayers = laneRun(d) === "layers";
   (d.groups ?? []).forEach((g, i) => {
     const lanes = new Set<string>();
     // The first node, top to bottom, in another lane than the group's first node, and that lane.
@@ -135,7 +135,7 @@ function groupsAcross(d: Diagram, index: number): OpError[] {
     for (const l of d.layers) {
       for (const n of l.nodes) {
         if (!inGroup(d, n, g.id)) continue;
-        const lane = (rows ? l.lane : n.lane) ?? "";
+        const lane = (byLayers ? l.lane : n.lane) ?? "";
         if (lanes.size > 0 && !lanes.has(lane)) apart ??= { node: n.id, lane };
         lanes.add(lane);
       }

@@ -23,7 +23,8 @@ function fail(d: Diagram, ops: Op[]): OpError[] {
   if (!("errors" in r)) throw new Error("expected errors");
   return r.errors;
 }
-const row = (d: Diagram, id: string) => d.layers.find((l) => l.id === id)?.nodes.map((x) => x.id);
+const layerOf = (d: Diagram, id: string) =>
+  d.layers.find((l) => l.id === id)?.nodes.map((x) => x.id);
 
 /** Two rows: web, api and a worker on top; a cache, the db and a queue below. */
 const base: Diagram = {
@@ -81,8 +82,8 @@ describe('columns (specs/decisions, "Columns beside layers")', () => {
       { op: "column.add", id: "left", nodes: ["worker", "queue"] },
       { op: "column.add", id: "right", nodes: ["web", "cache"] },
     ]).diagram;
-    expect(row(d, "top")).toEqual(["worker", "web", "api"]);
-    expect(row(d, "low")).toEqual(["queue", "cache", "db"]);
+    expect(layerOf(d, "top")).toEqual(["worker", "web", "api"]);
+    expect(layerOf(d, "low")).toEqual(["queue", "cache", "db"]);
   });
 
   it("go where they are put, and refuse an unknown column or a taken id", () => {
@@ -109,7 +110,7 @@ describe('columns (specs/decisions, "Columns beside layers")', () => {
     const gone = ok(d, [{ op: "column.remove", id: "jobs" }]).diagram;
     expect(gone.columns).toBeUndefined();
     expect(gone.layers.flatMap((l) => l.nodes).some((x) => x.column !== undefined)).toBe(false);
-    expect(row(gone, "top")).toEqual(row(d, "top"));
+    expect(layerOf(gone, "top")).toEqual(layerOf(d, "top"));
   });
 
   it("refuse an order another fact contradicts, and lanes that run as columns", () => {

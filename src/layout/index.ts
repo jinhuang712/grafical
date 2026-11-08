@@ -21,9 +21,9 @@ import { everyNode } from "../model/steps.ts";
 import {
   type Diagram,
   EDGE_KINDS,
+  EDGE_STYLES,
+  type EdgeStyleName,
   type LabelAlign,
-  LINE_STYLES,
-  type LineStyleName,
   type Look,
   MARK_SLOTS,
   type Mark,
@@ -60,7 +60,7 @@ import {
   STEP,
   WALL,
 } from "../theme/geometry.ts";
-import { edgeWidth, hasHead, lineLook, lineStyle, type Paint } from "../theme/paint.ts";
+import { edgeStyle, edgeWidth, hasHead, type Paint, strokeLook } from "../theme/paint.ts";
 import { isDot, textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
 import type { AlignmentProblem } from "./align.ts";
@@ -180,7 +180,7 @@ function lookPart(
  * reach across (specs/decisions, "Who chose is punished"): a node with edges to two or more nodes whose centres lie at least
  * its own width apart, left of the leftmost centre or right of the rightmost.
  */
-export function asideNodes(scene: Scene): { box: string; users: string[] }[] {
+export function asideNodes(scene: Scene): { node: string; users: string[] }[] {
   const nodes = new Map(scene.nodes.map((n) => [n.id, n]));
   const users = new Map<string, Set<string>>();
   const link = (a: string, b: string) => {
@@ -191,7 +191,7 @@ export function asideNodes(scene: Scene): { box: string; users: string[] }[] {
     link(e.from, e.to);
     link(e.to, e.from);
   }
-  const out: { box: string; users: string[] }[] = [];
+  const out: { node: string; users: string[] }[] = [];
   for (const n of scene.nodes) {
     const us = [...(users.get(n.id) ?? [])].sort(cmpIds);
     if (us.length < 2) continue;
@@ -202,7 +202,7 @@ export function asideNodes(scene: Scene): { box: string; users: string[] }[] {
     const lo = Math.min(...cs);
     const hi = Math.max(...cs);
     if (hi - lo < n.rect.w) continue;
-    if (n.rect.x > hi || n.rect.x + n.rect.w < lo) out.push({ box: n.id, users: us });
+    if (n.rect.x > hi || n.rect.x + n.rect.w < lo) out.push({ node: n.id, users: us });
   }
   return out;
 }
@@ -238,7 +238,7 @@ export function arrangementCost(diagram: Diagram, m: Measurer): number[] {
 }
 
 /** What makes a diagram's edges hard to read (specs/decisions, "A target picture with measured rules" rules 2 and 3): pairs that cross, and edges over two bends. */
-export interface LineTrouble {
+export interface EdgeTrouble {
   /** Every point where two routes cross, as the route cost counts them (specs/decisions, "Who chose is punished"). */
   points: number;
   /** Pairs of edge ids whose routes cross, each pair once, in id order. */
@@ -302,7 +302,7 @@ export function bendsOf(points: Point[]): number {
 }
 
 /** The pairs of edges that cross, and the edges that bend more than twice (specs/decisions, "Records over prose"). */
-export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
+export function edgeTrouble(diagram: Diagram, m: Measurer): EdgeTrouble {
   const { scene } = compute(diagram, m, false);
   const { points, pairs } = crossingsOf(scene.edges);
   const bent = scene.edges
@@ -314,7 +314,7 @@ export function lineTrouble(diagram: Diagram, m: Measurer): LineTrouble {
 
 /** The edges whose routes cross another route, or bend more than twice (specs/decisions, "A target picture with measured rules" rules 2 and 3). */
 export function troubledEdges(diagram: Diagram, m: Measurer): Set<string> {
-  const t = lineTrouble(diagram, m);
+  const t = edgeTrouble(diagram, m);
   return new Set([...t.crossings.flat(), ...t.bent.map((b) => b.edge)]);
 }
 
@@ -368,7 +368,7 @@ export function gutterHeight(rows: number, sp: Spacing): number {
 /** A legend entry, or a style or width the picture draws with no entry (specs/decisions, "The legend says only what the agent named"). */
 export interface LegendEntry {
   /** An edge's entry: the style of its sample. */
-  style?: LineStyleName;
+  style?: EdgeStyleName;
   /** The agent's words; none for a style or width it has not named, which the legend leaves out. */
   text?: string;
   /** An edge width's entry: the weight as the legend names it, and its sample's width (specs/decisions, "A legend for widths and marks"). */
@@ -394,8 +394,8 @@ export function legendEntries(facts: Diagram, P: Paint): LegendEntry[] {
   const d = withFollowedWeights(facts);
   const kinds = new Set(d.edges.map((e) => e.kind));
   const out: LegendEntry[] = [];
-  for (const style of LINE_STYLES) {
-    if (!EDGE_KINDS.some((k) => kinds.has(k) && lineStyle(k) === style)) continue;
+  for (const style of EDGE_STYLES) {
+    if (!EDGE_KINDS.some((k) => kinds.has(k) && edgeStyle(k) === style)) continue;
     const text = d.legend?.[style];
     out.push(text === undefined ? { style } : { style, text });
   }
@@ -574,7 +574,7 @@ function centred(points: Point[], at: AssembledLabel, free: (r: Rect) => boolean
  * counts every edge in its height, though a run may leave the label's own height clear. Longest
  * run first, nearest the run's middle first (specs/decisions, "An edge's label sits on its edge").
  */
-function ontoLine(points: Point[], at: AssembledLabel, free: (r: Rect) => boolean): AssembledLabel {
+function ontoEdge(points: Point[], at: AssembledLabel, free: (r: Rect) => boolean): AssembledLabel {
   const runs = points.slice(1).flatMap((b, i) => {
     const a = points[i] as Point;
     return a.x === b.x || a.y === b.y
@@ -639,7 +639,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const labelSizes = new Map<string, LabelBox>();
   // How far an edge's arrowheads reach, at its start and its end.
   const headsOf = (e: Diagram["edges"][number]) => {
-    const head = lineLook(edgeWidth(e, theme.paint), theme.paint).arrow.length;
+    const head = strokeLook(edgeWidth(e, theme.paint), theme.paint).arrow.length;
     return { start: e.both === true ? head : 0, end: hasHead(e.kind) ? head : 0 };
   };
   for (const e of d.edges) {
@@ -892,11 +892,11 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       forbidTop.set(r, [...(forbidTop.get(r) ?? []), [b.x0, b.x1]]);
     }
   }
-  for (const [row, b] of bandLayers) {
+  for (const [li, b] of bandLayers) {
     if (b.label === undefined || b.bar) continue;
-    const list = forbidTop.get(row) ?? [];
+    const list = forbidTop.get(li) ?? [];
     list.push([b.labelX - GROUP.labelClear, b.labelX + b.labelW + GROUP.labelClear]);
-    forbidTop.set(row, list);
+    forbidTop.set(li, list);
   }
   // A column lane's sides run the whole height: no edge runs along one.
   const run = laneRun(d);
@@ -921,8 +921,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // across there lies between the gutter's tracks and the layer, a wall up and down runs
   // through it or reaches into it, and a lane's border runs below its tracks.
   const closedAbove = new Map<number, [number, number][]>();
-  const close = (row: number, span: [number, number]) =>
-    closedAbove.set(row, [...(closedAbove.get(row) ?? []), span]);
+  const close = (li: number, span: [number, number]) =>
+    closedAbove.set(li, [...(closedAbove.get(li) ?? []), span]);
   for (const { wall, gutter } of acrossWalls) {
     const xs = [...wall.between, ...wall.and].flatMap((id) => {
       const n = nodes.get(id);
@@ -997,9 +997,9 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     for (const pl of routing.plans) {
       // As assembled: an edge runs down through each layer between its ends at its gap's x.
       let x = pl.turn ?? pl.srcPort;
-      pl.between.forEach((row, j) => {
+      pl.between.forEach((li, j) => {
         x = pl.gapX[j] ?? x;
-        if (row === i) taken.push([x, x]);
+        if (li === i) taken.push([x, x]);
       });
     }
     taken.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
@@ -1069,13 +1069,15 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const layerLanes: { id: string; label: string; first: number; last: number }[] = [];
   if (run === "layers") {
     for (const lane of d.lanes ?? []) {
-      const rows = layers.filter((l) => d.layers[l.index]?.lane === lane.id).map((l) => l.index);
-      if (rows.length === 0) continue;
+      const laneLayers = layers
+        .filter((l) => d.layers[l.index]?.lane === lane.id)
+        .map((l) => l.index);
+      if (laneLayers.length === 0) continue;
       layerLanes.push({
         id: lane.id,
         label: lane.label,
-        first: rows[0] as number,
-        last: rows[rows.length - 1] as number,
+        first: laneLayers[0] as number,
+        last: laneLayers[laneLayers.length - 1] as number,
       });
     }
   }
@@ -1642,7 +1644,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   }
   // An edge that meets a band across layers runs straight into it where it can: clear of
   // every node and text, of the router's label slots, and of every other edge.
-  const lineClear = (id: string) => (a: Point, b: Point) => {
+  const edgeClear = (id: string) => (a: Point, b: Point) => {
     const pad = (r: Rect, p: number) => ({
       x: r.x - p,
       y: r.y - p,
@@ -1688,7 +1690,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       [plan.from, "start"],
     ] as const) {
       const band = end?.kind === "layer" && end.across ? boxOf.get(end.id) : undefined;
-      if (band !== undefined) points = straightIntoBand(points, band, at, lineClear(e.id));
+      if (band !== undefined) points = straightIntoBand(points, band, at, edgeClear(e.id));
     }
     routes.set(e.id, points);
   }
@@ -1749,7 +1751,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
           : [];
       const th = lines.length > 1 ? (lines.length - 1) * labelMetrics.lineHeight + ink : ink;
       const tw = e.step === undefined ? a.label.w : text === undefined ? 0 : a.label.w - STEP.r;
-      const head = lineLook(width, theme.paint).arrow.length;
+      const head = strokeLook(width, theme.paint).arrow.length;
       const heads = { start: e.both === true ? head : 0, end: hasHead(e.kind) ? head : 0 };
       const stepIn = (slot: Rect) =>
         stepPlace(points, slot, { w: tw, h: th }, heads, insideOf(e.id));
@@ -1780,7 +1782,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         // Step badges look for their places once every label has its seat, so a picture
         // with steps keeps the seats the gutters left them room around.
         const numbered = d.edges.some((x) => x.step !== undefined);
-        at = centred(points, numbered ? at : ontoLine(points, at, open), open);
+        at = centred(points, numbered ? at : ontoEdge(points, at, open), open);
       }
       labelAt.set(e.id, at);
       let top = { x: at.x, y: at.y };
@@ -1953,7 +1955,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         ...sceneBands.map((b) => ({ id: b.id, rect: b.rect })),
       ],
       heads: (e) => {
-        const head = lineLook(e.width, theme.paint).arrow.length;
+        const head = strokeLook(e.width, theme.paint).arrow.length;
         return { start: e.both === true ? head : 0, end: hasHead(e.kind) ? head : 0 };
       },
       inside: (e) => insideOf(e.id),

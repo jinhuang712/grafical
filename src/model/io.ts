@@ -8,9 +8,9 @@ import { STEP_KEYS } from "./steps.ts";
 import {
   type Diagram,
   type DiagramNode,
+  EDGE_STYLES,
   type Edge,
   type Layer,
-  LINE_STYLES,
   MARK_SLOTS,
 } from "./types.ts";
 
@@ -126,9 +126,9 @@ export function writeDiagram(d: Diagram): string {
   if (d.styles !== undefined && d.styles.length > 0) out.styles = d.styles;
   if (d.legend !== undefined && Object.keys(d.legend).length > 0) {
     const legend: Record<string, unknown> = {};
-    for (const line of LINE_STYLES) {
-      const text = d.legend[line];
-      if (text !== undefined) legend[line] = text;
+    for (const styleName of EDGE_STYLES) {
+      const text = d.legend[styleName];
+      if (text !== undefined) legend[styleName] = text;
     }
     // Sorted, so the same words give the same file whatever order they were set in.
     for (const key of ["weights", "marks"] as const) {

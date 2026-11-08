@@ -117,7 +117,7 @@ describe("a diagram's title at a fraction", () => {
 });
 
 describe("a row's and a lane's label along its head", () => {
-  const rows = (labelAt?: number) =>
+  const layered = (labelAt?: number) =>
     readDiagram(`grafical: 1
 title: Rows
 density: normal
@@ -133,27 +133,27 @@ edges:
   const lane = (d: Diagram) => layout(d, m).lanes?.find((x) => x.id === "l")?.label.bbox;
 
   it("moves a row's label along its head", () => {
-    const start = ok(rows(), [{ op: "layer.label-at", id: "a", at: 0 } as Op]);
-    const end = ok(rows(), [{ op: "layer.label-at", id: "a", at: 1 } as Op]);
+    const start = ok(layered(), [{ op: "layer.label-at", id: "a", at: 0 } as Op]);
+    const end = ok(layered(), [{ op: "layer.label-at", id: "a", at: 1 } as Op]);
     expect(band(end)?.x).toBeGreaterThan(band(start)?.x ?? 0);
   });
 
   it("moves a row lane's label down its head", () => {
-    const end = ok(rows(), [{ op: "lane.label-at", id: "l", at: 1 } as Op]);
-    expect(lane(end)?.y).toBeGreaterThan(lane(rows())?.y ?? 0);
-    expect(ok(end, [{ op: "lane.label-at", id: "l" } as Op])).toEqual(rows());
+    const end = ok(layered(), [{ op: "lane.label-at", id: "l", at: 1 } as Op]);
+    expect(lane(end)?.y).toBeGreaterThan(lane(layered())?.y ?? 0);
+    expect(ok(end, [{ op: "lane.label-at", id: "l" } as Op])).toEqual(layered());
   });
 
   it("refuses a row with no label", () => {
-    const d = ok(rows(), [{ op: "layer.add", id: "c" } as Op]);
+    const d = ok(layered(), [{ op: "layer.add", id: "c" } as Op]);
     expect(fail(d, [{ op: "layer.label-at", id: "c", at: 0 } as Op])[0]?.code).toBe("bad-value");
   });
 
   it("survives a .grafical file and diffs as its operation", () => {
-    const d = rows(0.5);
+    const d = layered(0.5);
     const back = readDiagram(writeGrafical(d));
     expect(back).toEqual(d);
-    expect(diffDiagrams(rows(), d)).toEqual([
+    expect(diffDiagrams(layered(), d)).toEqual([
       { op: "layer.label-at", id: "a", at: 0.5 },
       { op: "lane.label-at", id: "l", at: 0.5 },
     ]);
@@ -217,7 +217,7 @@ edges:
 `) as Diagram;
 
   // Lines run into the group's one row from both sides.
-  const oneRow = readDiagram(`grafical: 1
+  const oneLayer = readDiagram(`grafical: 1
 title: One row
 density: normal
 layers:
@@ -278,14 +278,14 @@ edges:
     for (const [d0, id] of [
       [booking, "app"],
       [below, "app"],
-      [oneRow, "svc"],
+      [oneLayer, "svc"],
     ] as const) {
       const at = (place: string) => layout(ok(d0, [{ op: "group.label-at", id, ...P[place] }]), m);
       const across = (place: string) => {
         const s = at(place);
         return {
-          lines: s.edges.map((e) => e.points.map((p) => p.x)),
-          boxes: s.nodes.map((n) => n.rect.x),
+          edges: s.edges.map((e) => e.points.map((p) => p.x)),
+          nodes: s.nodes.map((n) => n.rect.x),
           group: s.groups?.map((g) => [g.rect.x, g.rect.w]),
         };
       };
@@ -302,19 +302,19 @@ edges:
   });
 
   it("refuses a place a line crosses, and names the places clear of every line", () => {
-    for (const [d0, id, at, line] of [
+    for (const [d0, id, at, edge] of [
       [booking, "app", "top", "traveller->mobile"],
       [booking, "app", "top-left", "traveller->web"],
       [below, "app", "bottom-right", "db->audit"],
-      [oneRow, "svc", "left", "gw->api"],
-      [oneRow, "svc", "outside-right", "db->pay"],
+      [oneLayer, "svc", "left", "gw->api"],
+      [oneLayer, "svc", "outside-right", "db->pay"],
     ] as const) {
       const d = ok(d0, [{ op: "group.label-at", id, ...P[at] }]);
       const found = check(d, layout(d, m), m).filter((x) => x.owner === "agent");
       expect(
         found.map((x) => [x.code, x.elements, x.facts.place]),
         at,
-      ).toEqual([["title-blocked", [id, line], words(at)]]);
+      ).toEqual([["title-blocked", [id, edge], words(at)]]);
       const clear = found[0]?.facts.clear ?? [];
       expect(clear.length, at).toBeGreaterThan(0);
       for (const place of NAMES) {
@@ -331,8 +331,8 @@ edges:
       [below, "app", "bottom-left"],
       [below, "app", "left"],
       [below, "app", "outside-right"],
-      [oneRow, "svc", "top"],
-      [oneRow, "svc", "outside-bottom"],
+      [oneLayer, "svc", "top"],
+      [oneLayer, "svc", "outside-bottom"],
     ] as const) {
       const d = ok(d0, [{ op: "group.label-at", id, ...P[at] }]);
       expect(check(d, layout(d, m), m), at).toEqual([]);

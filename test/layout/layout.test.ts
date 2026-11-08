@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { check as checker } from "../../src/check/index.ts";
 import {
+  edgeTrouble,
   layout,
   layoutFramed,
-  lineTrouble,
   routeStats,
   validateAlignments,
   validateGroups,
@@ -131,7 +131,7 @@ describe('groups inside groups (specs/decisions, "Every layered diagram type")',
   beforeAll(async () => {
     scene = layout(nested, await createMeasurer());
   });
-  const box = (id: string) => scene.groups?.find((g) => g.id === id);
+  const frame = (id: string) => scene.groups?.find((g) => g.id === id);
 
   it("draws each inner box inside its outer one, a padding clear of each side", () => {
     for (const [inner, outer] of [
@@ -139,8 +139,8 @@ describe('groups inside groups (specs/decisions, "Every layered diagram type")',
       ["public", "vpc"],
       ["private", "vpc"],
     ] as const) {
-      const a = box(inner)?.rect as Rect;
-      const b = box(outer)?.rect as Rect;
+      const a = frame(inner)?.rect as Rect;
+      const b = frame(outer)?.rect as Rect;
       expect(a.x - b.x).toBeGreaterThanOrEqual(24);
       expect(b.x + b.w - (a.x + a.w)).toBeGreaterThanOrEqual(24);
       expect(a.y - b.y).toBeGreaterThanOrEqual(40);
@@ -161,11 +161,11 @@ describe('groups inside groups (specs/decisions, "Every layered diagram type")',
     };
     const drawn = layout(empty, await createMeasurer());
     expect(drawn.groups?.map((g) => g.id)).toEqual(["region", "vpc", "public", "private"]);
-    expect(drawn.groups?.[0]?.rect).toEqual(box("region")?.rect);
+    expect(drawn.groups?.[0]?.rect).toEqual(frame("region")?.rect);
   });
 
   it("counts an inner group's nodes as the outer one's, and lets no other node in", () => {
-    expect(box("region")?.members).toEqual([
+    expect(frame("region")?.members).toEqual([
       "lb",
       "servers",
       "api",
@@ -205,19 +205,19 @@ describe("lines past a group they do not belong to", () => {
       edges: [e("a", "b", "call"), e("b", "store", "data"), e("callers", "db", "call")],
     };
     const scene = layout(d, await createMeasurer());
-    const box = scene.groups?.[0]?.rect as Rect;
-    const line = scene.edges.find((x) => x.id === "callers->db")?.points ?? [];
-    const down = line.flatMap((p, i) => {
-      const q = line[i + 1];
+    const frame = scene.groups?.[0]?.rect as Rect;
+    const routePts = scene.edges.find((x) => x.id === "callers->db")?.points ?? [];
+    const down = routePts.flatMap((p, i) => {
+      const q = routePts[i + 1];
       return q !== undefined &&
         p.x === q.x &&
-        Math.min(p.y, q.y) < box.y + box.h &&
-        Math.max(p.y, q.y) > box.y
+        Math.min(p.y, q.y) < frame.y + frame.h &&
+        Math.max(p.y, q.y) > frame.y
         ? [p.x]
         : [];
     });
     expect(down.length).toBeGreaterThan(0);
-    for (const x of down) expect(x < box.x - 4 || x > box.x + box.w + 4).toBe(true);
+    for (const x of down) expect(x < frame.x - 4 || x > frame.x + frame.w + 4).toBe(true);
   });
 });
 
@@ -282,7 +282,7 @@ describe('the target look (specs/decisions, "A target picture with measured rule
   });
 
   it('bundles a fan-out of three or more unlabelled lines into one port and trunk (specs/decisions, "Fan-outs of three bundle")', () => {
-    const crossings = lineTrouble(catalogSyncGrouped, m).crossings;
+    const crossings = edgeTrouble(catalogSyncGrouped, m).crossings;
     for (const from of ["pipelines", "service"]) {
       const out = scene.edges.filter(
         (x) => x.from === from && x.label === undefined && x.kind === "call",
@@ -714,11 +714,11 @@ describe("alignment", () => {
 });
 
 describe("groups", () => {
-  const two = (rows: DiagramNode[][]): Diagram => ({
+  const two = (layerList: DiagramNode[][]): Diagram => ({
     grafical: 1,
     title: "G",
     density: "normal",
-    layers: rows.map((nodes, i) => ({ id: `l${i}`, label: `L${i}`, nodes })),
+    layers: layerList.map((nodes, i) => ({ id: `l${i}`, label: `L${i}`, nodes })),
     groups: [
       { id: "g", label: "system g" },
       { id: "h", label: "system h" },

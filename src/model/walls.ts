@@ -28,9 +28,9 @@ export function wallRun(d: Diagram, w: Wall): WallRun | undefined {
   const a = sideNodes(d, w.between);
   const b = sideNodes(d, w.and);
   if (a.length === 0 || b.length === 0) return undefined;
-  const row = layerOf(d);
-  const rows = (ns: string[]) => ns.map((n) => row.get(n) ?? 0);
-  const [ra, rb] = [rows(a), rows(b)];
+  const layerAt = layerOf(d);
+  const layersOf = (ns: string[]) => ns.map((n) => layerAt.get(n) ?? 0);
+  const [ra, rb] = [layersOf(a), layersOf(b)];
   if (Math.max(...ra) < Math.min(...rb)) return { run: "across", first: a, second: b };
   if (Math.max(...rb) < Math.min(...ra)) return { run: "across", first: b, second: a };
   let left: boolean | undefined;
@@ -125,7 +125,7 @@ export function checkWalls(d: Diagram, index: number): OpError[] {
       both.length > 0
         ? { nodes: both }
         : run === undefined
-          ? sharedRow(d, a, b)
+          ? sharedLayer(d, a, b)
           : split !== undefined && "layer" in split
             ? split
             : undefined;
@@ -172,10 +172,10 @@ export function wallSplit(
   d: Diagram,
   run: Extract<WallRun, { run: "beside" }>,
 ): WallSplit | { layer: string; nodes: string[] } {
-  const row = layerOf(d);
-  const rows = [...run.first, ...run.second].map((n) => row.get(n) ?? 0);
-  const top = Math.min(...rows);
-  const bottom = Math.max(...rows);
+  const layerAt = layerOf(d);
+  const layerIdx = [...run.first, ...run.second].map((n) => layerAt.get(n) ?? 0);
+  const top = Math.min(...layerIdx);
+  const bottom = Math.max(...layerIdx);
   const left: string[] = [];
   const right: string[] = [];
   for (let r = top; r <= bottom; r++) {
@@ -196,7 +196,7 @@ export function wallSplit(
 }
 
 /** The first layer both sides hold nodes in, with those nodes; or the nodes of a side that is empty. */
-function sharedRow(d: Diagram, a: string[], b: string[]): { layer?: string; nodes: string[] } {
+function sharedLayer(d: Diagram, a: string[], b: string[]): { layer?: string; nodes: string[] } {
   if (a.length === 0 || b.length === 0) return { nodes: [] };
   for (const l of d.layers) {
     const here = l.nodes.filter((n) => a.includes(n.id) || b.includes(n.id)).map((n) => n.id);

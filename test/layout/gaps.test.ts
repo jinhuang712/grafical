@@ -18,7 +18,7 @@ const go = (d: Diagram | null, ...ops: object[]) => {
   return r.diagram;
 };
 
-const rows = go(
+const layered = go(
   null,
   { op: "diagram.new", title: "t" },
   { op: "layer.add", id: "a" },
@@ -36,17 +36,17 @@ const left = (d: Diagram, id: string) => layout(d, m).nodes.find((n) => n.id ===
 
 describe("gap.between", () => {
   it("widens the gutter between two neighbouring layers and no other", () => {
-    const d = go(rows, { op: "gap.between", a: "a", b: "b", magnified: 2 });
-    const was = top(rows, "y") - top(rows, "x");
+    const d = go(layered, { op: "gap.between", a: "a", b: "b", magnified: 2 });
+    const was = top(layered, "y") - top(layered, "x");
     expect(top(d, "y") - top(d, "x")).toBeGreaterThan(was);
-    expect(top(d, "z") - top(d, "y")).toBe(top(rows, "z") - top(rows, "y"));
+    expect(top(d, "z") - top(d, "y")).toBe(top(layered, "z") - top(layered, "y"));
   });
 
   it("takes either order and goes back with no multiple", () => {
-    const d = go(rows, { op: "gap.between", a: "a", b: "b", magnified: 2 });
+    const d = go(layered, { op: "gap.between", a: "a", b: "b", magnified: 2 });
     const same = go(d, { op: "gap.between", a: "b", b: "a", magnified: 1.5 });
     expect(same.gaps).toHaveLength(1);
-    expect(go(d, { op: "gap.between", a: "b", b: "a" })).toEqual(rows);
+    expect(go(d, { op: "gap.between", a: "b", b: "a" })).toEqual(layered);
   });
 
   it("refuses regions that are not neighbours of one kind", () => {
@@ -56,7 +56,7 @@ describe("gap.between", () => {
       ["a", "x"],
       ["a", "nope"],
     ]) {
-      const r = applyOps(rows, [{ op: "gap.between", a, b, magnified: 2 } as Op]);
+      const r = applyOps(layered, [{ op: "gap.between", a, b, magnified: 2 } as Op]);
       expect("errors" in r ? r.errors[0]?.code : "written").toBe("not-neighbours");
     }
   });
@@ -67,7 +67,7 @@ describe("gap.between", () => {
   });
 
   it("goes when its layer goes", () => {
-    const d = go(rows, { op: "gap.between", a: "b", b: "c", magnified: 2 });
+    const d = go(layered, { op: "gap.between", a: "b", b: "c", magnified: 2 });
     expect(
       go(d, { op: "node.remove", id: "z" }, { op: "layer.remove", id: "c" }).gaps,
     ).toBeUndefined();
@@ -75,7 +75,7 @@ describe("gap.between", () => {
 
   it("widens the gap between two columns", () => {
     const base = go(
-      rows,
+      layered,
       { op: "column.add", id: "p" },
       { op: "column.add", id: "q" },
       { op: "column.join", column: "p", members: ["x"] },
@@ -87,7 +87,7 @@ describe("gap.between", () => {
 
   it("widens the gap between two groups, side by side and stacked", () => {
     const base = go(
-      rows,
+      layered,
       { op: "group.add", id: "g", label: "g", nodes: ["x"] },
       { op: "group.add", id: "h", label: "h", nodes: ["w"] },
       { op: "group.add", id: "j", label: "j", nodes: ["y"] },
@@ -101,7 +101,7 @@ describe("gap.between", () => {
   });
 
   it("survives a .grafical file", () => {
-    const d = go(rows, { op: "gap.between", a: "a", b: "b", magnified: 1.25 });
+    const d = go(layered, { op: "gap.between", a: "a", b: "b", magnified: 1.25 });
     const back = readDiagram(writeGrafical(d));
     expect(Array.isArray(back) ? undefined : back.gaps).toEqual(d.gaps);
   });

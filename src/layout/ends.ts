@@ -17,7 +17,7 @@ export interface ContainerEnd {
   id: string;
   kind: "group" | "layer" | "lane";
   /** The layer whose nodes face the other end, and may stand in for the container. */
-  row: number;
+  layer: number;
   /** Whether the other end lies across layers, or beside in a shared layer. */
   across: boolean;
 }
@@ -40,7 +40,7 @@ function median<T>(xs: T[]): T | undefined {
 /** The facing layer's nodes of a container, in order. */
 function facing(d: Diagram, end: ContainerEnd): string[] {
   const inside = new Set(endNodes(d, end.id));
-  return (d.layers[end.row]?.nodes ?? []).filter((n) => inside.has(n.id)).map((n) => n.id);
+  return (d.layers[end.layer]?.nodes ?? []).filter((n) => inside.has(n.id)).map((n) => n.id);
 }
 
 /**
@@ -72,11 +72,11 @@ export function planEnds(d: Diagram): EndPlan {
       const other = side === "from" ? rt : rf;
       let end: ContainerEnd;
       if (meet.kind === "beside") {
-        end = { id, kind, row: meet.row, across: false };
+        end = { id, kind, layer: meet.layer, across: false };
         out[side] = side === "from" ? meet.a : meet.b;
       } else {
         const below = own[0] > other[1];
-        end = { id, kind, row: below ? own[0] : own[1], across: true };
+        end = { id, kind, layer: below ? own[0] : own[1], across: true };
         out[side] = median(facing(d, end)) ?? id;
       }
       plan[side] = end;

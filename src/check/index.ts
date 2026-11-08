@@ -8,9 +8,9 @@ import { addedLayer, placeSteps } from "../layout/steps.ts";
 import { laneNodes } from "../model/lanes.ts";
 import {
   type Diagram,
+  EDGE_STYLES,
   GROUP_TITLES,
   type GroupTitle,
-  LINE_STYLES,
   MARK_SLOTS,
   markText,
 } from "../model/types.ts";
@@ -19,7 +19,7 @@ import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneBadge, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { GROUP, NOTE, ROUTE, WALL } from "../theme/geometry.ts";
-import { hasHead, lineLook, lineStyle, PAINT } from "../theme/paint.ts";
+import { edgeStyle, hasHead, PAINT, strokeLook } from "../theme/paint.ts";
 import { textInside } from "../theme/shapes.ts";
 import { themeOf } from "../theme/themes.ts";
 import {
@@ -290,7 +290,7 @@ function checkSteps(scene: Scene, out: Found[]): void {
       if (x.id !== e.from && x.id !== e.to && toBorder(c, x.rect) < near) hit(x.id, x.is);
     }
     // Its own arrowheads: from the tip of each back along the edge.
-    const head = lineLook(e.width, P).arrow.length;
+    const head = strokeLook(e.width, P).arrow.length;
     const heads = { start: e.both === true ? head : 0, end: hasHead(e.kind) ? head : 0 };
     if (arrowheads(e.points, heads).some((s) => toSegment(c, s) < near)) hit(e.id, "arrow");
     for (const [key, is] of found) {
@@ -391,7 +391,7 @@ function checkTextCrossing(scene: Scene, out: Found[]): void {
 function checkLabelRoom(scene: Scene, out: Found[]): void {
   const borders = [...(scene.groups ?? []), ...(scene.bands ?? []), ...(scene.lanes ?? [])];
   /** The edges other than `own` that pass through r. */
-  const lines = (r: Rect, own?: string) =>
+  const edgesThrough = (r: Rect, own?: string) =>
     scene.edges
       .filter((o) => o.id !== own && segmentsOf(o.points).some((s) => segmentCrossesRect(s, r)))
       .map((o) => o.id);
@@ -404,7 +404,7 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
     const across: string[] = [];
     if (rect !== undefined) {
       const box = inset(rect, TEXT_TOLERANCE);
-      across.push(...lines(box, e.id));
+      across.push(...edgesThrough(box, e.id));
       for (const g of borders) {
         const { x, y, w, h } = g.rect;
         const sides = segmentsOf([
@@ -442,28 +442,32 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
   for (const x of scene.notes ?? []) {
     if (x.blocked !== true || x.card === undefined) continue;
     const box = inset(x.card, -NOTE.clear);
-    const boxes = scene.nodes
+    const nodesIn = scene.nodes
       .filter((n) => n.id !== x.on && rectsOverlap(n.rect, box))
       .map((n) => n.id);
     out.push({
       code: "label-blocked",
-      elements: [x.on, ...lines(box, x.on), ...boxes],
+      elements: [x.on, ...edgesThrough(box, x.on), ...nodesIn],
       facts: { is: "note" },
     });
   }
   for (const b of scene.bands ?? []) {
     if (b.blocked !== true || b.label === undefined) continue;
     const box = inset(b.label.bbox, -GROUP.clear);
-    out.push({ code: "label-blocked", elements: [b.id, ...lines(box)], facts: { is: "layer" } });
+    out.push({
+      code: "label-blocked",
+      elements: [b.id, ...edgesThrough(box)],
+      facts: { is: "layer" },
+    });
   }
   // A wall's label keeps its clearance from edges and nodes as the engine places it.
   for (const w of scene.walls ?? []) {
     if (w.blocked !== true || w.label === undefined) continue;
     const box = inset(w.label.bbox, -WALL.labelClear);
-    const boxes = scene.nodes.filter((n) => rectsOverlap(n.rect, box)).map((n) => n.id);
+    const nodesIn = scene.nodes.filter((n) => rectsOverlap(n.rect, box)).map((n) => n.id);
     out.push({
       code: "label-blocked",
-      elements: [w.id, ...lines(box), ...boxes],
+      elements: [w.id, ...edgesThrough(box), ...nodesIn],
       facts: { is: "wall" },
     });
   }
@@ -548,7 +552,7 @@ function sharedEndpoints(a: SceneEdge, b: SceneEdge): string[] {
  * a reader loses nothing, since they carry no label and look the same.
  */
 function isBus(a: SceneEdge, b: SceneEdge): boolean {
-  return a.from === b.from && lineStyle(a.kind) === lineStyle(b.kind) && !a.label && !b.label;
+  return a.from === b.from && edgeStyle(a.kind) === edgeStyle(b.kind) && !a.label && !b.label;
 }
 
 function checkEdgeOverlap(scene: Scene, out: Found[]): void {
@@ -592,7 +596,7 @@ function checkEdgeOverlap(scene: Scene, out: Found[]): void {
  * where they part, by design.
  */
 function checkNeedlessBend(scene: Scene, out: Found[]): void {
-  const row = new Map(scene.layers.map((l, i) => [l.id, i]));
+  const layerAt = new Map(scene.layers.map((l, i) => [l.id, i]));
   const nodes = new Map(scene.nodes.map((n) => [n.id, n]));
   const key = (id: string, p: { x: number; y: number }) => `${id}@${p.x},${p.y}`;
   const shared = new Map<string, number>();
@@ -612,8 +616,8 @@ function checkNeedlessBend(scene: Scene, out: Found[]): void {
     const p = e.points[0];
     const q = e.points.at(-1);
     if (a === undefined || b === undefined || p === undefined || q === undefined) continue;
-    const ra = row.get(a.layer);
-    const rb = row.get(b.layer);
+    const ra = layerAt.get(a.layer);
+    const rb = layerAt.get(b.layer);
     if (ra === undefined || rb === undefined || Math.abs(ra - rb) !== 1) continue;
     if ((shared.get(key(e.from, p)) ?? 0) > 1 || (shared.get(key(e.to, q)) ?? 0) > 1) continue;
     const [up, upPort, low, lowPort] = ra < rb ? [a, p, b, q] : [b, q, a, p];
@@ -649,7 +653,8 @@ function checkMissingGlyphs(diagram: Diagram, m: Measurer, out: Found[]): void {
     add(g.id, "sublabel", g.sublabel);
   }
   for (const x of diagram.lanes ?? []) add(x.id, "label", x.label, true);
-  for (const line of LINE_STYLES) add(`legend-${line}`, "text", diagram.legend?.[line]);
+  for (const styleName of EDGE_STYLES)
+    add(`legend-${styleName}`, "text", diagram.legend?.[styleName]);
   for (const [w, text] of Object.entries(diagram.legend?.weights ?? {})) {
     add(`legend-${w}`, "text", text);
   }
@@ -701,8 +706,8 @@ function checkTitles(
 ): void {
   for (const group of facts.groups ?? []) {
     const place = group.titleAt;
-    const lines = acrossTitle(scene, group.id);
-    if (lines.length === 0) continue;
+    const acrossEdges = acrossTitle(scene, group.id);
+    if (acrossEdges.length === 0) continue;
     const words = (p: GroupTitle) => `${p.at} ${p.side} ${p.place}`;
     const at = (p: GroupTitle): Diagram => ({
       ...facts,
@@ -718,7 +723,7 @@ function checkTitles(
       : undefined;
     out.push({
       code: "title-blocked",
-      elements: [group.id, ...lines],
+      elements: [group.id, ...acrossEdges],
       facts: {
         ...(place === undefined ? {} : { place: words(place) }),
         ...(clear === undefined ? {} : { clear }),

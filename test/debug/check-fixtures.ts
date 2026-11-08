@@ -14,7 +14,7 @@ import { catalogSyncGrouped } from "../fixtures/catalog-sync-grouped.ts";
 import { dense } from "../fixtures/dense.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 import { flowchart } from "../fixtures/flowchart.ts";
-import { lanesColumns, lanesRows } from "../fixtures/lanes.ts";
+import { lanesColumns, lanesLayers } from "../fixtures/lanes.ts";
 import { nested } from "../fixtures/nested.ts";
 import { stateMachine } from "../fixtures/state-machine.ts";
 import { steps } from "../fixtures/steps.ts";
@@ -30,7 +30,7 @@ for (const [name, d] of [
   ["catalog-sync-grouped", catalogSyncGrouped],
   ["catalog-sync", catalogSync],
   ["dense", dense],
-  ["lanes-rows", lanesRows],
+  ["lanes-rows", lanesLayers],
   ["lanes-columns", lanesColumns],
   ["edge-looks", edgeLooks],
   ["flowchart", flowchart],

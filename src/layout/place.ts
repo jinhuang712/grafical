@@ -163,7 +163,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     }
   }
   /** The outermost node around n that does not hold other, if any. */
-  const boxOf = (n: PNode, other?: PNode): string | undefined => {
+  const outerOf = (n: PNode, other?: PNode): string | undefined => {
     const around = other === undefined ? [] : chainOf(other);
     return chainOf(n)
       .filter((g) => !around.includes(g))
@@ -254,7 +254,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     return at.side === "left" ? { left: w, right: 0 } : { left: 0, right: w };
   };
   /** Whether a group's label sits beside its layers rather than above or below them. */
-  const besideRows = (g: string) => atSide({ titleAt: titleOf(g) });
+  const besideLayers = (g: string) => atSide({ titleAt: titleOf(g) });
   // No node moves for a group's label: an edge across it refuses the write (specs/decisions, "A group's label moves no node and no edge").
   const groups = solve().groups;
 
@@ -283,7 +283,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     }
     // A label above or below the layers takes the node's width; one beside them its height.
     const labelSpan = (g: string) =>
-      besideRows(g) ? 0 : text.groupLabelW(g) + 2 * GROUP.labelInset;
+      besideLayers(g) ? 0 : text.groupLabelW(g) + 2 * GROUP.labelInset;
     /** Whether a group, or one inside it, takes room past its members for its label. */
     const grows = (g: string): boolean =>
       strip(g).left + strip(g).right + outRoom(g).left + outRoom(g).right > 0 ||
@@ -323,11 +323,11 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     };
     /** Terms that give the right side of what lies left of a gap: a node, or a node. */
     const rightTerms = (n: PNode, other: PNode): { col: number; d: number }[] => {
-      const g = boxOf(n, other);
+      const g = outerOf(n, other);
       return g === undefined ? [{ col: n.col, d: n.w / 2 }] : rightEdge(g);
     };
     const leftTerms = (n: PNode, other: PNode): { col: number; d: number }[] => {
-      const g = boxOf(n, other);
+      const g = outerOf(n, other);
       return g === undefined ? [{ col: n.col, d: n.w / 2 }] : leftEdge(g);
     };
     /** The space between what lies left and right of a gap: two nodes, or a node and a node. */
@@ -339,8 +339,8 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       for (let k = 1; k < l.nodes.length; k++) {
         const a = l.nodes[k - 1] as PNode;
         const b = l.nodes[k] as PNode;
-        const ga = boxOf(a, b);
-        const gb = boxOf(b, a);
+        const ga = outerOf(a, b);
+        const gb = outerOf(b, a);
         if (ga === undefined && gb === undefined) continue;
         const between = room(ga, gb);
         for (const r of rightTerms(a, b))
@@ -364,13 +364,13 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
           at.length > 0 ? list[(at[at.length - 1] as number) + 1] : list.find((n) => n.col > hi);
         const anyMember = ms[0] as PNode;
         if (left !== undefined) {
-          const between = room(boxOf(left, anyMember), g);
+          const between = room(outerOf(left, anyMember), g);
           for (const r2 of rightTerms(left, anyMember)) {
             for (const t of leftEdge(g)) add(r2.col, t.col, r2.d + between + t.d);
           }
         }
         if (right !== undefined) {
-          const between = room(g, boxOf(right, anyMember));
+          const between = room(g, outerOf(right, anyMember));
           for (const t of rightEdge(g)) {
             for (const s of leftTerms(right, anyMember)) add(t.col, s.col, t.d + between + s.d);
           }
@@ -460,7 +460,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       for (const e of d.edges) {
         const other = e.from === id ? e.to : e.to === id ? e.from : undefined;
         const o = other === undefined ? undefined : nodes.get(other);
-        const g = o === undefined ? undefined : boxOf(o);
+        const g = o === undefined ? undefined : outerOf(o);
         if (g !== undefined) users.add(g);
       }
       for (const g of users) {
@@ -518,7 +518,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const ms = membersOf.get(g);
       if (ms === undefined) continue;
       const [x0, x1] = sideOf(g);
-      const box: PGroup = {
+      const frame: PGroup = {
         id: g,
         label: d.groups?.find((x) => x.id === g)?.label ?? g,
         members: ms.map((m) => m.id),
@@ -533,12 +533,12 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       // A label at a stated place sits there; one the agent did not place is seated once
       // its edges are drawn (layout/index.ts).
       if (at !== undefined) {
-        box.titleAt = at;
-        box.labelX = titleX(box);
+        frame.titleAt = at;
+        frame.labelX = titleX(frame);
       }
       const parent = parentOf(g);
-      if (parent !== undefined) box.parent = parent;
-      groups.push(box);
+      if (parent !== undefined) frame.parent = parent;
+      groups.push(frame);
     }
     return { groups };
   }
@@ -591,8 +591,8 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     const b = nodes.get(slot.right);
     const w = text.edgeLabelW(id);
     if (a === undefined || b === undefined || w === undefined) continue;
-    const ga = boxOf(a, b);
-    const gb = boxOf(b, a);
+    const ga = outerOf(a, b);
+    const gb = outerOf(b, a);
     let left = ga !== undefined ? (byId.get(ga)?.x1 ?? a.x + a.w) : a.x + a.w;
     let right = gb !== undefined ? (byId.get(gb)?.x0 ?? b.x) : b.x;
     // Between a node and a lane it meets, the label sits between the node and the lane's side.
@@ -649,7 +649,7 @@ function laneSides(
   close: Set<string>,
 ): PLane[] {
   const lanes = d.lanes ?? [];
-  const boxOf = new Map(
+  const frameOf = new Map(
     groups
       .filter((g) => g.parent === undefined)
       .flatMap((g) => g.members.map((m) => [m, g] as const)),
@@ -658,7 +658,7 @@ function laneSides(
     let lo = Number.POSITIVE_INFINITY;
     let hi = Number.NEGATIVE_INFINITY;
     for (const n of ns) {
-      const g = boxOf.get(n.id);
+      const g = frameOf.get(n.id);
       const [x0, x1] = g === undefined ? [n.x, n.x + n.w] : reach(g);
       lo = Math.min(lo, x0);
       hi = Math.max(hi, x1);

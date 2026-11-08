@@ -26,7 +26,7 @@ import { catalogSyncGrouped } from "../test/fixtures/catalog-sync-grouped.ts";
 import { dense } from "../test/fixtures/dense.ts";
 import { edgeLooks } from "../test/fixtures/edge-looks.ts";
 import { flowchart } from "../test/fixtures/flowchart.ts";
-import { lanesColumns, lanesRows } from "../test/fixtures/lanes.ts";
+import { lanesColumns, lanesLayers } from "../test/fixtures/lanes.ts";
 import { nested } from "../test/fixtures/nested.ts";
 import { stateMachine } from "../test/fixtures/state-machine.ts";
 import { steps } from "../test/fixtures/steps.ts";
@@ -239,7 +239,7 @@ async function corpusItems(
       ["catalog-sync-grouped", catalogSyncGrouped],
       ["catalog-sync", catalogSync],
       ["dense", dense],
-      ["lanes-rows", lanesRows],
+      ["lanes-rows", lanesLayers],
       ["lanes-columns", lanesColumns],
       ["edge-looks", edgeLooks],
       ["flowchart", flowchart],

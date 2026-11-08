@@ -27,6 +27,7 @@ import {
   EDGE_KINDS,
   EDGE_SIDES,
   EDGE_STRETCHES,
+  EDGE_STYLES,
   type Edge,
   FORMAT_VERSION,
   GAP_MAGNIFICATIONS,
@@ -34,15 +35,14 @@ import {
   type GroupTitle,
   LABEL_ALIGNS,
   LABEL_PLACES,
+  LAYER_LOOKS,
   type Layer,
-  LINE_STYLES,
   MARK_COLORS,
   MARK_SHAPES,
   MARK_SIZES,
   MARK_SLOTS,
   type Mark,
   NODE_KINDS,
-  ROW_LOOKS,
   SHAPE_KINDS,
   type Shape,
   SIZE_STEPS,
@@ -237,7 +237,7 @@ const layerSchema = z.strictObject({
   label: text.optional(),
   labelAt: z.number().min(0).max(1).optional(),
   lane: nodeId.optional(),
-  look: z.enum(ROW_LOOKS).optional(),
+  look: z.enum(LAYER_LOOKS).optional(),
   nodes: z.array(nodeSchema).default([]),
 });
 
@@ -443,9 +443,9 @@ function build(p: Parsed): Diagram {
   }
   if (p.legend !== undefined) {
     const legend: NonNullable<Diagram["legend"]> = {};
-    for (const line of LINE_STYLES) {
-      const text = p.legend[line];
-      if (typeof text === "string") legend[line] = text;
+    for (const styleName of EDGE_STYLES) {
+      const text = p.legend[styleName];
+      if (typeof text === "string") legend[styleName] = text;
     }
     // YAML may write a width as 2.50 or "2.50"; the legend names it as the edge's number does.
     const weights = Object.entries(p.legend.weights ?? {}).flatMap(([k, v]) =>

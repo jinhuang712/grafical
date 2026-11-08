@@ -14,12 +14,12 @@ import { everyNode, STEP_KEYS } from "./steps.ts";
 import {
   type Diagram,
   type DiagramNode,
+  EDGE_STYLES,
   type Edge,
   type Gap,
   type Group,
   type LabelAlign,
   type Lane,
-  LINE_STYLES,
   MARK_SLOTS,
   type Wall,
 } from "./types.ts";
@@ -152,9 +152,10 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
       a.style === undefined ? { op: "diagram.style" } : { op: "diagram.style", style: a.style },
     );
   }
-  for (const line of LINE_STYLES) {
-    const words = a.legend?.[line];
-    if (words !== b.legend?.[line]) ops.push({ op: "diagram.legend", style: line, ...said(words) });
+  for (const styleName of EDGE_STYLES) {
+    const words = a.legend?.[styleName];
+    if (words !== b.legend?.[styleName])
+      ops.push({ op: "diagram.legend", style: styleName, ...said(words) });
   }
   const aw = a.legend?.weights ?? {};
   const bw = b.legend?.weights ?? {};
