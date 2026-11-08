@@ -44,12 +44,12 @@ Features
 │   │   └── ⬜ F2.5.1: Offsets — a node a fraction of a cell off the grid
 │   ├── ✅ F2.6: Spacing — compact, normal or airy
 │   │   └── ✅ F2.6.1: Region gaps — more room between two regions
-│   ├── 🚧 F2.7: How edges are drawn — grafical routes every edge (edges do not move apart for labels, and the rules for clean edges are not built)
+│   ├── 🚧 F2.7: How edges are drawn — grafical routes every edge (edges do not move apart for labels, and most rules for clean edges are not built)
 │   │   ├── ✅ F2.7.1: Edge sides — the side an edge leaves or enters by
 │   │   ├── ✅ F2.7.2: Edge shapes — square or round
 │   │   ├── 🚧 F2.7.3: Labels on edges — an edge carries its label (edges do not move apart for one)
 │   │   ├── 🚧 F2.7.4: Steering an edge — where an edge passes and turns, as facts (a detour cannot grow the canvas)
-│   │   └── ⬜ F2.7.5: Clean edges — the rules set on 2026-11-07
+│   │   └── 🚧 F2.7.5: Clean edges — the rules set on 2026-11-07 (only the end run in a gutter is built)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── ✅ F3.1: Operations — one named command per change

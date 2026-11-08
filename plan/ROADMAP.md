@@ -111,7 +111,7 @@ Roadmap
 │   │   ├── ⬜ Badges off a lane's side
 │   │   ├── ⬜ Return edges off a self-loop
 │   │   ├── ✅ Routing cases
-│   │   └── ⬜ Clean edges
+│   │   └── 🟨 Clean edges
 │   ├── 🟨 CP2.6: Nodes
 │   │   ├── ⬜ Corner marks checked
 │   │   ├── ⬜ Marks by name
@@ -592,7 +592,9 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 - ⬜ Badges off a lane's side: A step's badge keeps off a lane's side, and `step-collision` counts one that touches it.
 - ⬜ Return edges off a self-loop: The edges that leave and enter a node keep clear of its self-loop.
 - ✅ Routing cases: `pnpm bench routes` compares 29 small cases with a saved baseline.
-- ⬜ Clean edges: Edges meet the rules set on 2026-11-07, built on the router as it is: [Clean edges for the places given](TODO.md#p1task-clean-edges-for-the-places-given).
+- 🟨 Clean edges: Edges meet the rules set on 2026-11-07, built on the router as it is: [Clean edges for the places given](TODO.md#p1task-clean-edges-for-the-places-given).
+  - ✅ An edge runs at least 16 px from a node to the first track of a gutter (2026-11-08).
+  - ⬜ The end run beside a gap · the level swap · a side to a side across layers · a way round the outside.
 
 **Delivers:**
 

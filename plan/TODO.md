@@ -64,7 +64,8 @@
   - [102. Routing trouble that placement can fix is the agent's](../specs/decisions/102-routing-trouble-that-placement-can-fix-is-the-agent-s.md) leaves the engine to draw clean edges where the agent put the nodes.
   - The rules are those of [097. The router draws clean edges and the agent makes their room](../specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md).
   - A read of the code on 2026-11-08 found that each rule can be reached by extending this router.
-  - Left to build: the end runs · the level swap of two edges in one gap · a side to a side across layers · a way round the outside.
+  - An edge has run at least 16 px from a node to a gutter's first track since 2026-11-08.
+  - Left to build: the end run beside a gap · the level swap of two edges in one gap · a side to a side across layers · a way round the outside.
   - A stated top in the first layer and a side `via` on a tight layer are refused by how the router is built.
   - Placement widens a gap for an edge through an empty column, where 097 says the router never widens a gap.
   - Open: edges may share a run only if every start-to-end pair the run implies is a real edge, and whether false edges count as a hard number.
@@ -73,7 +74,7 @@
 - created: 2026-11-07
 - updated: 2026-11-08
 - status: OPEN
-- next: build the end runs, checked against the end runs drawing
+- next: build the end run beside a gap, checked against the end runs drawing
 - evidence: [end runs](evidence/end-runs.png) · [two-layers-skip with jogs](evidence/two-layers-skip-jogs.png) · [a false edge](evidence/false-line.png)
 - related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 

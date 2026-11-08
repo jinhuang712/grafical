@@ -75,6 +75,9 @@ grafical has not been released; the first release will be 0.1.0.
 
 ### Lines
 
+- An edge runs at least 16 px from a node before it turns in a gutter, where it ran 12 px.
+  - Bends and crossings stay the same over the saved drafts, and pictures get 1.0% taller.
+  - An arrowhead that a label hid now shows.
 - A line between neighbouring rows whose lower end was pushed aside now also runs straight past a line in the gap that it crossed anyway: before, any line across the gap at its lower end kept it bent twice.
 - `edge step <file> <id> --n <number>` numbers a line from 1 to 99 as a step of a process.
   - grafical draws the number in a small ring on the line, under the start of its label.

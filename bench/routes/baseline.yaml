@@ -1,13 +1,13 @@
 same-layer-pair:
   crossings: 3
   bends: 4
-  length: 680
-  detour: 1.17
+  length: 728
+  detour: 1.2
   defects: 0
 swapped-pair:
   crossings: 1
   bends: 4
-  length: 280
+  length: 312
   detour: 1
   defects: 0
 crowded-gutter:
@@ -61,7 +61,7 @@ full-layer-skip:
 two-layers-skip:
   crossings: 1
   bends: 8
-  length: 752
+  length: 800
   detour: 1
   defects: 0
 long-return:
@@ -85,14 +85,14 @@ two-parallel:
 self-loop-busy:
   crossings: 0
   bends: 4
-  length: 392
-  detour: 4.6
+  length: 400
+  detour: 5
   defects: 0
 neighbour-row:
   crossings: 0
   bends: 4
-  length: 848
-  detour: 1.11
+  length: 864
+  detour: 1.14
   defects: 0
 labels-in-gutter:
   crossings: 0
@@ -103,7 +103,7 @@ labels-in-gutter:
 group-to-group:
   crossings: 1
   bends: 4
-  length: 588
+  length: 652
   detour: 1
   defects: 0
 edge-to-group:
@@ -115,8 +115,8 @@ edge-to-group:
 through-group:
   crossings: 1
   bends: 9
-  length: 716
-  detour: 1.24
+  length: 764
+  detour: 1.22
   defects: 0
 nested-groups:
   crossings: 0
@@ -139,7 +139,7 @@ star:
 ladder:
   crossings: 2
   bends: 8
-  length: 612
+  length: 740
   detour: 1
   defects: 0
 snake:

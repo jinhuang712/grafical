@@ -118,7 +118,7 @@ Spreading the ports pushes edges off their nodes' centres. After ports and track
 
 ## Gutters
 
-A gutter holds rows of tracks, one track pitch apart, which the density sets. The router orders the horizontal runs of each gutter for the fewest crossings and gives each the first free row of tracks. It seats each edge's label beside its run at the same time, since a label takes room as a track does. An edge from above ends above an edge from below at the same x, so that the two do not cross there. A gutter next to a layer that holds a store keeps 8 px more room on that side when it has runs.
+A gutter holds rows of tracks, one track pitch apart, which the density sets. Its first track lies 16 px below the layer above and its last 16 px above the layer below, so that an edge runs at least 16 px from a node before it turns. The router orders the horizontal runs of each gutter for the fewest crossings and gives each the first free row of tracks. It seats each edge's label beside its run at the same time, since a label takes room as a track does. An edge from above ends above an edge from below at the same x, so that the two do not cross there. A gutter next to a layer that holds a store keeps 8 px more room on that side when it has runs.
 
 Placement turns the number of rows a gutter holds into its height. Each track's y is then fixed, and the routes become points.
 
@@ -154,7 +154,7 @@ An edge from a node to itself loops through the gutter below the node. Its two e
 
 The owner set rules for clean edges on 2026-11-07, and the router does not meet them yet:
 
-- It keeps 8 px from a node to a track, where an end run should be at least 16 px and 24 px at ease.
+- It keeps 8 px from a node to a track in the gap beside it, where an end run should be at least 16 px and 24 px at ease.
 - It never leaves one side and enters another across layers.
 - Two edges that swap sides in one gap take a jog.
 - It has no way round the outside for a pair with no clean route.

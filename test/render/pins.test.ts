@@ -24,13 +24,13 @@ const pixels = (png: Uint8Array): string => sha(PNG.sync.read(Buffer.from(png)).
 const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
   grouped: {
     diagram: catalogSyncGrouped,
-    svg: "3008f7aa87af3554ceb31cacb3d76ac27f57377f1283be731d156554be018415",
-    png: "cb3d00892554e306de6aeb64aaa5ff328739ed6fa5a48d2758326982f72dc715",
+    svg: "60c78bb93cf341f44364df953c71de93699cabb1e07c026f53c530537cbd9a80",
+    png: "202505c50246f1134f39db43a096d298a40ce439c0cfe84d6428c7f9f77a5ad5",
   },
   lanesRows: {
     diagram: lanesLayers,
-    svg: "167921e34bccf991ca838eccbfeeb13fb5034177fc91e00e61619f55a8f22f0a",
-    png: "bbd64d52b1470c37b2849d4029d06ca029b6ce8a1b08a91b6b5a1155eed7d1b3",
+    svg: "c1114353f7299c58e1711c27404a58c8bb1adeb7667935db9b26f7791cf220f3",
+    png: "fcc3174fbfa7c9f869ee3a0de6d0a636e0c06e4810cbe56941a2ee8acb18e890",
   },
   flowchart: {
     diagram: flowchart,
@@ -44,18 +44,18 @@ const PINS: Record<string, { diagram: Diagram; svg: string; png: string }> = {
   },
   nested: {
     diagram: nested,
-    svg: "3893b4fba09e60584876fe6b3aa30d1adda84807952398344cfecbf7a81d5942",
-    png: "63840843c3cfc2223e24324a33a8cac8fc7697c5824f9337faa4f407d71cf671",
+    svg: "1736a84d79a10a32afe31be9868303d38bc54edf47cbcdd1a33ecf0ea52237b7",
+    png: "3bedd4a08581bc07d689a8adba21c78df4c3b1c7e22e9d87ffcfeec93adf6cd0",
   },
   lanesColumns: {
     diagram: lanesColumns,
-    svg: "b30c82367df1569fd8d88be199b3af2f29de8f094e47e6297f9114235488f112",
-    png: "a797d229fa0e7aa79eb90e717fbc370b017a8ebeaad2afba1047e4b81b9274fc",
+    svg: "3c4291f9a239a20fddb48121e4ca64ea457e022a55ee207d0c38f0faf7969b66",
+    png: "3820f704f44cf53e2d2ac9a51b91476ebeb1f8c2c83a1e236f2a0d4a3d1404cc",
   },
   steps: {
     diagram: steps,
-    svg: "6c559ee6b4631cea27fb6ec8416a8b7065ade1f938d0664107c92c71dd84d848",
-    png: "2b916121064ea3527e5915bd6ff77e298939cd40d402baa5a66133b47c8ec6af",
+    svg: "09258f9b924db8af8dd29c67f1bc96242208150544aa38aa56ae8fa9bd7b3768",
+    png: "f9fdbabe7804115dc13320b78ec1a3bb68d498b42b1fe991303d7577df822327",
   },
 };
 

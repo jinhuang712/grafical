@@ -250,6 +250,8 @@ export const ROUTE = {
   portInset: 16,
   /** Least distance from a node to a vertical track in the gap beside it. */
   gapPad: 8,
+  /** Least run of an edge from a node to the first track of a gutter (specs/decisions, "The router draws clean edges and the agent makes their room"). */
+  endRun: 16,
   /** Distance an edge keeps from the nodes of a layer it passes, where its corridor has room. */
   passClear: 24,
   /** Distance between neighbouring vertical tracks in a gap. */

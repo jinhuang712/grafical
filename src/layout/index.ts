@@ -353,9 +353,14 @@ function narrower(text: string, width: number, m: Measurer, T: TypeRamp): LabelF
   return out;
 }
 
-/** The smallest gutter step that holds this many layers, growing past the last step by its last increment. */
+/** How far a gutter's first track lies below its top, and its last track above its bottom. */
+function trackLead(sp: Spacing): number {
+  return Math.max(ROUTE.endRun, sp.trackPitch);
+}
+
+/** The smallest gutter step that holds this many tracks, growing past the last step by its last increment. */
 export function gutterHeight(rows: number, sp: Spacing): number {
-  const need = (rows + 1) * sp.trackPitch;
+  const need = (rows - 1) * sp.trackPitch + 2 * trackLead(sp);
   for (const h of sp.gutterSteps) if (h >= need) return h;
   const last = sp.gutterSteps[sp.gutterSteps.length - 1] ?? need;
   const prev = sp.gutterSteps[sp.gutterSteps.length - 2] ?? 0;
@@ -1358,7 +1363,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     layerMid: (layer) => (layerTops[layer] ?? 0) + layerH(layer) / 2,
     // Layers sit on fixed slots from the top of the gutter's tracks, so that a layer
     // keeps its place when layers are added below it.
-    trackY: (g, row) => (gutterTops[g] ?? 0) + (endPads[g] ?? 0) + (row + 1) * sp.trackPitch,
+    trackY: (g, row) =>
+      (gutterTops[g] ?? 0) + (endPads[g] ?? 0) + trackLead(sp) + row * sp.trackPitch,
   });
 
   const layerLabelStyle = T["layer-label"];
