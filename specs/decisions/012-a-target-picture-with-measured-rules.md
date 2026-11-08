@@ -6,8 +6,6 @@ Decided: 2026-10-11
 
 On 2026-10-11 the owner judged the engine's first real output "cluttered, messy, lines are all over the place". An Opus designer then hand-drew three uncluttered versions of the public brief, using only what an engine could compute. Two blind Opus judges scored them against the engine's and a raw model's drafts, out of 60:
 
-## The choice
-
 | Picture | Score |
 |---|---|
 | Grouped systems (the target) | 57 |
@@ -15,6 +13,8 @@ On 2026-10-11 the owner judged the engine's first real output "cluttered, messy,
 | Layered, curated | 50 |
 | The engine, phase 1 | 22 |
 | A raw model | 17 |
+
+## The choice
 
 Both judges picked the grouped version. The compact one hid the messaging and retry mechanics that engineers want. The target is `bench/targets/catalog-sync-grouped.png`, with its SVG beside it. The engine must produce pictures like it from facts alone.
 

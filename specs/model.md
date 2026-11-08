@@ -8,9 +8,9 @@ Every write takes the same path, and a single command is a batch of one operatio
 
 ```text
 command or batch file
-  │  parse: each item becomes an operation, or is refused with its edge
+  │  parse: each item becomes an operation, or is refused with its line
   ▼
-load the file ── refused if YAML, schema, marks, stylesheet or weights fail
+load the file ── refused if its form, schema, marks, stylesheet or weights fail
   ▼
 apply the operations, in order, to a copy ── the first error stops the batch
   ▼
@@ -23,7 +23,7 @@ lay out and check the picture ── a defect the agent owns refuses the write
 write the file: a temporary file, then a rename
 ```
 
-Loading reads the YAML with unique keys and validates it against the schema. It then reads the files of the marks, the stylesheet the diagram names and the weight levels that stylesheet knows. A file that fails any of these is refused as a whole, with `already in the file` as its source, so that grafical never draws from a file it read only in part. A file that cannot be found or read is refused with the command as its source.
+Loading reads a `.grafical` file in its own form and any other file as YAML with unique keys, and validates it against the schema. It then reads the files of the marks, the stylesheet the diagram names and the weight levels that stylesheet knows. A file that fails any of these is refused as a whole, with `already in the file` as its source, so that grafical never draws from a file it read only in part. A file that cannot be found or read is refused with the command as its source.
 
 The operations work on a copy of the loaded diagram, so a refused write leaves nothing changed. Each operation runs against the diagram the operations before it made, and either returns errors or changes the copy. After each one, walls forget the nodes, groups and edges it removed, a wall left with an empty side goes, and notes go with their targets. When every operation has run, each layer is put in lane order and then in column order. That waits until the end because lanes and columns are facts that several operations of one batch may change.
 

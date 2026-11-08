@@ -39,7 +39,6 @@ Every change to a diagram is one named operation, run as a command. The diagram 
 
 - On the command line an operation is `grafical -f <file> <noun> --<verb> …`.
   - Every other value is a flag, such as `--label`.
-- `grafical new` takes the title and optionally `--subtitle` and `--caption` and `--density` and `--sizing` and `--style`.
 - Every write reports the IDs it changed, then one block for each problem.
   - A block says what the write is refused for, or what the picture draws poorly ([F3.5: Refusals](#f35-refusals) and [F5.3: Warnings](F5-checking.md#f53-warnings)).
   - A refused write changes nothing.
@@ -162,7 +161,7 @@ next: type --add
   - `already in the file`, for a problem the file had before the command.
 - A warning has no source.
 - A defect found after layout names the batch line that caused it, and so does an error of the whole diagram.
-  - grafical finds that edge by trying ever shorter prefixes of the batch, back towards the file.
+  - grafical finds that line by trying ever shorter prefixes of the batch, back towards the file.
   - The line it names is the one after the last prefix without the problem.
 - Where that cannot be known, the source is the batch file alone.
   - A prefix refused for another problem cannot tell.
@@ -231,7 +230,7 @@ Two verbs stand above the nouns and take IDs. `move` changes where things sit, a
   - [`move`](../CLI.md#move)
   - [`plug`](../CLI.md#plug)
 
-- `move` takes nodes, layers and groups, and later lanes and columns.
+- `move` takes nodes · layers · groups, and later lanes and columns.
   - Several objects keep their order among themselves.
   - One that cannot move refuses them all.
   - An option that does not fit an object is refused.

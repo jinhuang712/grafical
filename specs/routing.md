@@ -12,12 +12,12 @@ Routing works in two turns around placement. Before the nodes have their x, it d
  3. corridors   an edge that skips layers picks an empty column, or a gap in each layer
  4. gutters     an edge along a layer picks the gutter above or below it
  5. sides       an edge may leave or enter a node's side instead of its top or bottom
- 6. ports       each line gets its own place on every side it meets
+ 6. ports       each edge gets its own place on every side it meets
  7. centres     an edge that can run straight moves back to its nodes' centre
  8. tracks      each gutter stacks its runs into rows of tracks, and seats the labels
 ```
 
-Each step works on what the steps before it fixed, and no later step undoes one. When an edge was sent above its layer, the whole run is made a second time with every such edge below, to compare the two. Once placement has given the layers their y, the tracks become heights, the routes become points, and each route to a container is cut at its edge. An edge from a node in the top layer to a node two layers down passes most of them:
+Each step works on what the steps before it fixed, and no later step undoes one. When an edge was sent above its layer, the whole run is made a second time with every such edge below, to compare the two. Once placement has given the layers their y, the tracks become heights, the routes become points, and each route to a container is cut at its border. An edge from a node in the top layer to a node two layers down passes most of them:
 
 ```text
 layer 0   [ A ]
@@ -37,18 +37,18 @@ An edge between two layers goes down or up. Between neighbouring layers it runs 
 An edge between two nodes of one layer runs along the layer instead. When the two nodes are neighbours, it crosses straight through the gap between them. A gap is only as tall as its layer, so it holds few edges:
 
 - With no labels, as many edges as fit share the gap 12 px clear of the nodes' corners.
-- With labels, the first line whose label is at most 200 px wide takes the gap.
-  - A second edge joins it when the layer is tall enough: the next such labelled edge, or else the first line with no label.
-- When no label is that narrow, the first line with no label takes the gap.
+- With labels, the first edge whose label is at most 200 px wide takes the gap.
+  - A second edge joins it when the layer is tall enough: the next such labelled edge, or else the first edge with no label.
+- When no label is that narrow, the first edge with no label takes the gap.
 
 Every other edge between the two nodes, and every edge between nodes of one layer that are not neighbours, runs through the gutter above or below the layer.
 
 ## Fan-outs and fan-ins
 
-A node with many edges on one side would need a port for each, and the edges would crowd its edge. So edges that leave one side in the same style and weight become a bundle: one port and one trunk, which splits near its targets.
+A node with many edges on one side would need a port for each, and the edges would crowd that side. So edges that leave one side in the same style and weight become a bundle: one port and one trunk, which splits near its targets.
 
 - Three or more such edges always bundle.
-  - Two bundle only when the side has more lines than ports 16 px apart.
+  - Two bundle only when the side has more edges than ports 16 px apart.
 - An edge that carries something of its own never joins a bundle.
   - That is a labelled edge or a numbered edge or a two-way edge or a self-loop or an edge to a container.
 - Two or more unlabelled edges of one style into one crowded side of a target share one port as a fan-in.
@@ -62,7 +62,7 @@ An edge that skips layers runs down a corridor: a column of the grid that is emp
 
 ```text
 cost = distance from the source  (+ 96 if outside the source's port range)
-     + for each line sharing it: distance to its target (+ 96 if outside its range)
+     + for each edge sharing it: distance to its target (+ 96 if outside its range)
      + 192 × (crossings placement makes certain + groups that hold neither end)
 ```
 
@@ -124,7 +124,7 @@ Placement turns the number of rows a gutter holds into its height. Each track's 
 
 ## Edges that end at a container
 
-The router knows only nodes. An edge to a group, a layer or a lane is routed to a stand-in: the member of the container that faces the other end. For a bar, the stand-in is a short piece of the bar beside the other end, and stand-ins that lie close together become one. After routing, the route is cut where it meets the container's node or band, so the edge ends at the container's edge. An edge into a band runs straight on into it past its other end. An edge to a container gets a port of its own and never joins a bundle or a fan-in.
+The router knows only nodes. An edge to a group, a layer or a lane is routed to a stand-in: the member of the container that faces the other end. For a bar, the stand-in is a short piece of the bar beside the other end, and stand-ins that lie close together become one. After routing, the route is cut where it meets the container's frame or band, so the edge ends at the container's border. An edge into a band runs straight on into it past its other end. An edge to a container gets a port of its own and never joins a bundle or a fan-in.
 
 An edge that passes a bar without ending at it is refused as `bar-crossed`, unless the agent said it may. One that may runs straight through the bar, since in the bar's layer only the stand-ins count as nodes.
 
@@ -155,7 +155,7 @@ An edge from a node to itself loops through the gutter below the node. Its two e
 The owner set rules for clean edges on 2026-11-07, and the router does not meet them yet:
 
 - It keeps 8 px from a node to a track, where an end run should be at least 16 px and 24 px at ease.
-- It routes each line on its own, so it cannot keep one form for edges of one sort across a picture.
+- It routes each edge on its own, so it cannot keep one form for edges of one sort across a picture.
 - It has no way round the outside for a pair with no clean route.
 
 ## Decisions

@@ -3,15 +3,16 @@
 ```
 F1: Elements
 ├── F1.1: Nodes — the parts of the system
-│   ├── F1.1.1: Types and shapes — a node's kind sets its shape
+│   ├── F1.1.1: Types and shapes — a node's type sets its shape
 │   ├── F1.1.2: Labels and sublabels — a label and a quieter sublabel
 │   ├── F1.1.3: Sizes — sized to the text, or by a step
+│   │   └── F1.1.3.1: Size multiples — a multiple of a node's width or height
 │   ├── F1.1.4: Marks — up to five small marks on a node
-│   ├── F1.1.5: Marks by name — a mark from one bundled icon set
+│   ├── F1.1.5: Marks by name — a mark from one bundled mark set
 │   ├── F1.1.6: Emphasis — at most two nodes stand out
 │   └── F1.1.7: Node looks — colors from the styles a node marks
 ├── F1.2: Edges — what connects to what
-│   ├── F1.2.1: Types — an edge's kind sets its style
+│   ├── F1.2.1: Types — an edge's type sets its style
 │   ├── F1.2.2: Arrowheads at both ends — two-way edges
 │   ├── F1.2.3: Weight — thicker edges for what matters more
 │   ├── F1.2.4: Numbered steps — a number on an edge
@@ -32,7 +33,7 @@ What a diagram is made of. A node is a part of the system, an edge says that two
 
 ## F1.1: Nodes
 
-A node is a part of the system: a service, a store, a queue, a person or a step. The agent says what kind it is and what it is called, and grafical gives it its shape and its size. The agent can mark a node or make it stand out.
+A node is a part of the system: a service, a store, a queue, a person or a step. The agent says what type it is and what it is called, and grafical gives it its shape and its size. The agent can mark a node or make it stand out.
 
 - **Design:**
   - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
@@ -65,9 +66,9 @@ A node is a part of the system: a service, a store, a queue, a person or a step.
 
 ### F1.1.1: Types and shapes
 
-A node's kind says what it is and decides how it is drawn.
+A node's type says what it is and decides how it is drawn.
 
-| Kind | Drawn as |
+| Type | Drawn as |
 |---|---|
 | `service` | a box |
 | `store` | a cylinder |
@@ -84,8 +85,6 @@ A node's kind says what it is and decides how it is drawn.
 - `choice` is where an edge splits into several, and the question goes on the edge into it.
 - An edge meets a diamond only at a corner, and edges that come to one side join before it.
 - The labels of `initial` and `final` and `choice` stay in the file and are not drawn.
-
-- **Commands:** [`node`](../CLI.md#node)
 
 A type of your own names a sort of node with its own shape and look. A change to it reaches every node of it.
 
@@ -123,10 +122,17 @@ A node is sized to its text, unless the agent gives it a size step.
 - Every node in a layer is drawn as tall as the layer's tallest, so their tops line up.
   - Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a node without a size is always medium, and text that does not fit is refused.
-- A node may take a multiple of its width, its height or both, such as 1.5.
-  - A taller node makes its layer taller.
-  - A dot or a `choice` keeps its size and refuses a multiple.
-  - Why: [080. A node takes multiples of its width and height](../specs/decisions/080-a-node-takes-multiples-of-its-width-and-height.md)
+
+#### F1.1.3.1: Size multiples
+
+A node may take a multiple of its width, its height or both, such as 1.5.
+
+- **Commands:** [`node`](../CLI.md#node)
+
+- A taller node makes its layer taller.
+- A dot or a `choice` keeps its size and refuses a multiple.
+
+- **Why:** [080. A node takes multiples of its width and height](../specs/decisions/080-a-node-takes-multiples-of-its-width-and-height.md)
 
 ### F1.1.4: Marks
 
@@ -187,7 +193,7 @@ A node takes its colors from the styles it marks, so that a color says something
 - `node --like` follows another node's look and changes with it.
   - It takes no shape and no place.
   - A style the node marks overrides what it follows, and what it follows overrides its type.
-  - With no node, it lets go, and it lets go when the node it follows goes.
+  - With no node it lets go, and it lets go when the node it follows goes.
   - A follower may be followed, and a circle is refused as `like-cycle`.
 
 - **Why:**
@@ -197,7 +203,7 @@ A node takes its colors from the styles it marks, so that a color says something
 
 ## F1.2: Edges
 
-An edge says that two things connect and how. The agent states its ends, its kind, its label, its weight and its step number. An end may be a whole group, layer or lane instead of one node.
+An edge says that two things connect and how. The agent states its ends, its type, its label, its weight and its step number. An end may be a whole group, layer or lane instead of one node.
 
 - **Design:**
   - [3. The engine never chooses for the agent](../DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
@@ -227,9 +233,9 @@ An edge says that two things connect and how. The agent states its ends, its kin
 
 ### F1.2.1: Types
 
-An edge's kind says what it means and decides its style.
+An edge's type says what it means and decides its style.
 
-| Kind | Drawn as | Means |
+| Type | Drawn as | Means |
 |---|---|---|
 | `call` | solid, with an arrowhead | a call |
 | `data` | solid, with an arrowhead | a data read |
@@ -367,13 +373,9 @@ A group is a system, drawn as one frame around its members, which may sit in sev
   - A group inside itself is refused as `group-cycle`.
 - `join` moves a node out of its previous group, and also moves a whole group into another.
   - `leave` takes members out of every group, or with `--up` one level out.
-- `group --label-at` says where the group's label sits.
-  - It takes one of these places:
-    - In its head: at the left, the middle or the right.
-    - In a foot below its last layer: at the left, the middle or the right.
-      - A foot takes the head's room, and the head keeps only its padding.
-    - Just outside its top or bottom side, centred.
-    - Beside its layers at the middle height, inside or outside its left or right side.
+- `group --label-at` says where the group's label sits, as [F4.7: Region labels](F4-look.md#f47-region-labels) says.
+  - A label inside the bottom side sits in a foot below the last layer.
+  - The foot takes the head's room, and the head keeps only its padding.
   - It sits exactly there and takes only its own room: no node and no edge moves for it.
   - An edge that comes near it refuses the write as `title-blocked`, naming the edges and the places where none would.
   - Without a place the engine seats the label at the leftmost spot of the head that no edge comes near.
@@ -398,7 +400,7 @@ A second zone, region or shard in one operation.
   - An edge id `<from>-><to>` follows its copied ends.
 - `--outside` also copies the edges between the group and everything outside it, their inside end moved to the copy.
 - Each copied node sits in its original's layer.
-  - It keeps its original's label and kind and size and marks and lane and column.
+  - It keeps its original's label and type and size and marks and lane and column.
   - `--before` or `--after` puts the copy before or after a group in every layer of the copy as `group --order` does ([033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)).
   - A group with no node in one of those layers is refused as `no-shared-layer`.
 - An alignment or steps to a node outside the group are refused as `copy-conflict` ([037. A group copy holds its inside](../specs/decisions/037-a-group-copy-holds-its-inside.md)).

@@ -20,13 +20,13 @@ Roadmap
 │   │   ├── ✅ First render
 │   │   └── ✅ The public brief
 │   ├── ✅ CP1.3: The target look — the engine rebuilt toward a target
-│   │   ├── ✅ Rows not drawn
+│   │   ├── ✅ Layers not drawn
 │   │   ├── ✅ Groups as systems
 │   │   ├── ✅ One column grid
 │   │   ├── ✅ Measured rules
-│   │   └── ✅ Lines on the new engine
+│   │   └── ✅ Edges on the new engine
 │   ├── ✅ CP1.4: The owner's additions — containers, lanes, themes and the viewer
-│   │   ├── ✅ Lines that end at containers
+│   │   ├── ✅ Edges that end at containers
 │   │   ├── ✅ Swimlanes
 │   │   ├── ✅ Themes and stylesheets
 │   │   └── ✅ The live viewer
@@ -40,21 +40,21 @@ Roadmap
 │   ├── ✅ CP1.6: The stage 1 round — the first full benchmark round
 │   │   ├── ✅ The first round
 │   │   └── ✅ The rerun
-│   ├── ✅ CP1.7: Clearer lines and more diagram types — line kinds and diagram types
-│   │   ├── ✅ New line kinds
-│   │   ├── ✅ Lines on any side
+│   ├── ✅ CP1.7: Clearer edges and more diagram types — edge types and diagram types
+│   │   ├── ✅ New edge types
+│   │   ├── ✅ Edges on any side
 │   │   ├── ✅ Hops and dots
-│   │   ├── ✅ Flowchart and state machine kinds
+│   │   ├── ✅ Flowchart and state machine types
 │   │   ├── ✅ Nested groups
 │   │   └── ✅ Help in place of `grafical guide`
 │   ├── ✅ CP1.8: Discrete output and freer placement — records, columns, steps, walls and notes
 │   │   ├── ✅ Records
 │   │   ├── ✅ `try`
 │   │   ├── ✅ Bundled fan-outs
-│   │   ├── ✅ Equal heights in a row
+│   │   ├── ✅ Equal heights in a layer
 │   │   ├── ✅ Room around stores
 │   │   ├── ✅ Columns
-│   │   ├── ✅ Steps from another box
+│   │   ├── ✅ Steps from another node
 │   │   ├── ✅ Walls
 │   │   ├── ✅ Notes
 │   │   ├── ✅ Marks
@@ -66,10 +66,10 @@ Roadmap
 │       ├── ✅ Every warning on every write
 │       ├── ✅ One entry page of help
 │       ├── ✅ A wrong command names the right one
-│       ├── ✅ Optional row labels
+│       ├── ✅ Optional layer labels
 │       ├── ✅ Copying a group
 │       ├── ✅ Step numbers
-│       └── ✅ Bar names clear of lines
+│       └── ✅ Bar names clear of edges
 ├── 🟨 CP2: Richer pictures — the styles and features that sit on top of drawing
 │   ├── ✅ CP2.1: Fix the speed slip
 │   │   ├── ✅ No slot search
@@ -348,14 +348,14 @@ The first full benchmark round, and its rerun after the edge work (`bench/result
 
 **Status:** ✅ (2026-10-12)
 
-New line kinds, edges that meet a node on any side, hops and dots, the flowchart and state machine kinds, nested groups, and the help in place of `grafical guide`.
+New edge types, edges that meet a node on any side, hops and dots, the flowchart and state machine types, nested groups, and the help in place of `grafical guide`.
 
 **Tasks:**
 
-- ✅ New line kinds: Edges gained new kinds.
+- ✅ New edge types: Edges gained new types.
 - ✅ Edges on any side: An edge meets a node on any side.
 - ✅ Hops and dots: Crossing edges hop and joins take dots.
-- ✅ Flowchart and state machine kinds: Nodes gained the kinds of these diagrams.
+- ✅ Flowchart and state machine types: Nodes gained the types of these diagrams.
 - ✅ Nested groups: A group sits inside a group.
 - ✅ Help in place of `grafical guide`: The help took over from `grafical guide`.
 
@@ -462,7 +462,7 @@ The numbers are the order of the work, since each step rests on the one before.
 
 **Status:** ✅ (2026-10-15)
 
-Adding a box without a position took up to 189.7 ms at 50 nodes, against 50 ms.
+Adding a node without a position took up to 189.7 ms at 50 nodes, against 50 ms.
 
 **Tasks:**
 
@@ -501,7 +501,7 @@ The command line gets one form:
 - [F3.2: Batches](../features/F3-editing.md#f32-batches)
 - [F1.2.3: Weight](../features/F1-elements.md#f123-weight)
 - [F3.8: Move and plug](../features/F3-editing.md#f38-move-and-plug)
-- [F7.2: Guides](../features/F7-help.md#f72-guides)
+- [F7.2.1: A check before stopping](../features/F7-help.md#f721-a-check-before-stopping)
 
 **Exit criteria:**
 
@@ -517,8 +517,8 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 **Tasks:**
 
 - ✅ Design the model and its form: The owner designed them on 2026-11-06.
-- ✅ Build the model: grafical reads and writes the form, styles, types and `like`.
-- 🟨 Move the saved files: Fixtures moved to it, and saved drafts stay in YAML, which still loads.
+- ✅ Build the model: grafical reads and writes the form · styles · types · `like`.
+- 🟨 Move the saved files: Fixtures moved to it, and saved drafts stay in YAML and still load.
 - ⬜ Tune the form: Once it is built, the form is tuned against what its diffs show.
 
 **Delivers:**
@@ -539,17 +539,17 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 
 **Status:** 🟨 (since 2026-11-06)
 
-A strong model steers an edge and draws it as a curve, and an edge carries its label.
+A strong model steers an edge and draws it round, and an edge carries its label.
 
 **Tasks:**
 
 - ✅ Edge sides: An agent states the side an edge leaves or enters by, any side of either end.
 - ✅ Edge shapes: A command draws edges square or round.
 - 🟨 Labels on edges: An edge carries its label by default, and edges do not yet move apart for one.
-- 🟨 Label text: An agent sets the breaks and alignment of a node's, an edge's, a wall's and a lane's label and of a note, and the titles of regions stay one line.
+- 🟨 Label text: An agent sets the breaks and alignment of the label of a node · an edge · a wall · a lane · a note, and the titles of regions stay one line.
 - ✅ Region gaps: The gap between two neighbouring regions may be magnified.
 - ✅ Edge looks: An edge takes a color of its own or a named look.
-- ✅ Region labels: A diagram's, a group's, a layer's and a lane's label sits at a fraction, and a column's waits for Column headings.
+- ✅ Region labels: The label of a diagram · a group · a layer · a lane sits at a fraction, and a column's waits for Column headings.
 - ✅ Label looks: An edge's label marks a style for its background, border and color.
 - ✅ `--straight`: An edge with no bend is stated, and an edge that cannot run straight is refused.
 - ✅ `--main`: The main flow takes its straight run first, and other edges give way.
@@ -596,7 +596,7 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 
 **Delivers:**
 
-- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
+- [F2.7.5: Clean edges](../features/F2-layout.md#f275-clean-edges)
 - [F1.1.1: Types and shapes](../features/F1-elements.md#f111-types-and-shapes)
 - [F1.3.7: Notes](../features/F1-elements.md#f137-notes)
 
@@ -624,7 +624,7 @@ Nodes carry marks that stay clear of edges and colors of their own.
 - [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
 - [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
 - [F1.1.7: Node looks](../features/F1-elements.md#f117-node-looks)
-- [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
+- [F1.1.3.1: Size multiples](../features/F1-elements.md#f1131-size-multiples)
 - [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
 
 **Exit criteria:**

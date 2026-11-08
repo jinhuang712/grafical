@@ -101,7 +101,7 @@ A good picture shows its structure before a reader follows any edge, and everyth
 | # | Group | Point | Owed by | Good | Bad |
 |---|---|---|---|---|---|
 | 1 | reads true | It says only the facts | both | a fork from one start | a bar that reads as `B→C` on `pair-both-ways` |
-| 2 | reads true | Text stays with what it names | engine | a label against its edge | a label that could name two lines |
+| 2 | reads true | Text stays with what it names | engine | a label against its edge | a label that could name two edges |
 | 3 | reads fast | The structure shows at once | both | the hand drawing of `pyramid` | the `pyramid` render of 2026-11-07 |
 | 4 | reads fast | It has one way to read | agent | the main flow down the page | edges with no direction |
 | 5 | reads fast | What matters stands out | both | the main path seen first | every edge of one weight |

@@ -4,6 +4,7 @@
 F7: Help
 ├── F7.1: Help — the agent's whole reference
 └── F7.2: Guides — how common diagrams are usually drawn
+    └── F7.2.1: A check before stopping — look at the picture and check it against a list
 ```
 
 How an agent learns grafical from the command line alone: help for the tool and guides for common kinds of diagram.
@@ -61,16 +62,27 @@ How common kinds of diagram are usually drawn: best practice, for an agent that 
   - `cloud` and `deployment` and `process` and `states` find theirs too.
 - A name that is no guide is refused as `unknown-guide` with the likely ones.
 - The entry page names `grafical guide` once, and no command page names it.
-- ⬜ Composition lists the checks of a route and the points of a good picture, written for an agent.
-- ⬜ The last step of the entry page's way of working tells an agent to look at the picture and check it against composition before it stops.
 
 - **Design:** [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 - **How it works:** [How grafical answers](../specs/answers.md)
 - **Why:**
   - [043. Help for the tool, guides for best practice](../specs/decisions/043-help-for-the-tool-guides-for-best-practice.md)
-  - [099. An agent checks its own picture against a list](../specs/decisions/099-an-agent-checks-its-own-picture-against-a-list.md)
 
 **Stories:**
 
 - An agent reads a guide, to draw a kind of diagram the usual way.
+
+### F7.2.1: A check before stopping
+
+An agent looks at its picture and checks it against a list before it stops.
+
+- **Commands:** [`guide`](../CLI.md#guide)
+
+- Composition lists the checks of a route and the points of a good picture, written for an agent.
+- The last step of the entry page's way of working tells an agent to look at the picture and check it against composition before it stops.
+
+- **Why:** [099. An agent checks its own picture against a list](../specs/decisions/099-an-agent-checks-its-own-picture-against-a-list.md)
+
+**Stories:**
+
 - An agent checks its picture against a list before it stops, to catch more than one fault.

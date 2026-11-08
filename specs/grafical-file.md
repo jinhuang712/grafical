@@ -73,7 +73,7 @@ order  node  edge  label  mark  note  legend
 A type says what a sort of thing looks like, and an object says which one it is and where it sits.
 
 - A type may inherit from another with `base`.
-- A built-in kind is a type, such as `@service` or `@call`.
+- A built-in type is named as any other, such as `@service` or `@call`.
 - A change to a type changes every object of that type.
 - An object may override what its type holds, except its shape.
 

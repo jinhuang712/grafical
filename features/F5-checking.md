@@ -88,7 +88,7 @@ Every write prints a warning block for each thing the picture draws poorly, and 
 - The warnings come before the counts.
 - All of them print every time, since every change lays the whole diagram out again.
 
-A warning has no source: the outcome edge names what the write changed, and a warning names the ids it is about ([048. Every write prints every warning](../specs/decisions/048-every-write-prints-every-warning.md)):
+A warning has no source: the outcome line names what the write changed, and a warning names the ids it is about ([048. Every write prints every warning](../specs/decisions/048-every-write-prints-every-warning.md)):
 
 ```text
 ok changed=sync->geo
@@ -153,7 +153,7 @@ next: layer --move, node --move, node --swap
 
 `edge-per-member` names a group of two or more where every node has an edge to one end outside it, or from it.
 
-- The edges are alike in kind and label and weight and arrowheads.
+- The edges are alike in type and label and weight and arrowheads.
 - A group inside one with the same edges is left out.
 - Detail: `group`, `edges` ([050. A line from every box of a group is a warning](../specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)).
 

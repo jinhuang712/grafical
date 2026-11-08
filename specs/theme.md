@@ -14,7 +14,7 @@ fixed sizes and node outlines ──> layout, checker, renderer
 
 ## Themes and stylesheets
 
-A theme holds the colors of each node kind, of groups, bands, edges and text, the edge widths, the corner radii, and the type size and weight of each text role. The built-in themes are `default`, `dark` and `print`.
+A theme holds the colors of each node type, of groups, bands, edges and text, the edge widths, the corner radii, and the type size and weight of each text role. The built-in themes are `default`, `dark` and `print`.
 
 A stylesheet names a `base` theme, `default` when left out, and overrides any of its values. The override is a deep merge: maps merge key by key, and any other value replaces the theme's. The stylesheet is checked strictly before it merges, and an unknown key or a wrong value is refused as `bad-stylesheet`.
 
@@ -24,7 +24,7 @@ The layout reads its type sizes from the merged theme, so a stylesheet with larg
 
 The sizes of nodes by size step, the spacing of each density and the distances the router keeps are constants of the theme, and no stylesheet changes them. The node sizes and the spacing are multiples of 4 px, and the widths of plain nodes, decision diamonds and dots multiples of 8, so that their centres and sides stay on the 4 px grid.
 
-A node's kind decides the outline drawn inside its node: how much room its text has, where the text sits, and where an edge that ends at its side meets the outline. A dot or a small diamond has one size, and its label is not drawn.
+A node's type decides the outline drawn inside its node: how much room its text has, where the text sits, and where an edge that ends at its side meets the outline. A dot or a small diamond has one size, and its label is not drawn.
 
 ## Edge weights
 

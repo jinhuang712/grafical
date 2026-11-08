@@ -12,8 +12,8 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 
 - **Layer:** a region of nodes with an order.
   - A layer is not drawn unless it has a look or an edge ends at it.
-  - Lost names: *row*, and *slot* for a place in a layer, which now names only a mark's place.
-- **Node:** an element of the picture with a kind, a label and an optional sublabel.
+  - Lost names: *row* · *slot*, which now names only a mark's place.
+- **Node:** an element of the picture with a type, a label and an optional sublabel.
   - Lost name: *box*, since a node need not be a box.
 - **Edge:** a connection between two ends.
   - Each end is a node or a group or a layer or a lane.
@@ -26,7 +26,7 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 - **Column:** a second placement fact beside layers.
   - Nothing is drawn for it.
 - **Wall:** empty space between two parts of the picture.
-  - Lines cross it only where it allows.
+  - Edges cross it only where it allows.
 - **Note:** a short text attached to a node, an edge or a group.
   - It is drawn as a card or as a footnote.
 - **Bar:** a layer with no node that an edge ends at.
@@ -41,7 +41,7 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
   - Lost name: *kind*.
 - **Style:** a named look that an object marks.
 - **Like:** one object follows the look of another of its sort.
-- **Region:** a diagram, a group, a layer, a lane or a column.
+- **Region:** a diagram · a group · a layer · a lane · a column.
 - **Magnified:** how many times its default a size or a gap is, such as 1.5.
   - Lost names: *times*, *multiple* as a flag.
 - **Knot:** the point where a bundle splits.
@@ -56,23 +56,23 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 - **Legend:** the key in the top right.
   - It says only what the agent named.
 
-## How lines are drawn
+## How edges are drawn
 
 Checked against `src/layout/` and `src/render/` on 2026-11-04.
 
-- **Gutter:** the space between two neighbouring layers, where lines run across.
+- **Gutter:** the space between two neighbouring layers, where edges run across.
 - **Gap:** the space between two neighbouring nodes of one layer.
 - **Run:** one straight horizontal or vertical piece of an edge.
   - Lost names: *stretch* and *segment* and *part*.
 - **End run:** the run at either end of an edge, from its node to its first bend.
   - It is at least 16 px, and 24 px at ease.
 - **Track:** one of the rows of a gutter or one of the columns of a gap that a run takes.
-- **Jog:** a sideways shift in the middle of a long run of a line.
+- **Jog:** a sideways shift in the middle of a long run of an edge.
 - **Corridor:** a column of the grid empty in every layer an edge passes, which the edge runs down.
 - **Port:** the place where an edge meets a side of a node.
-- **Bundle:** lines of one style and weight that leave one side of a node through one port and split near their targets.
+- **Bundle:** edges of one style and weight that leave one side of a node through one port and split near their targets.
   - Lost name: *bus*.
-- **Fan-in:** lines that enter one crowded side of a node through one port.
+- **Fan-in:** edges that enter one crowded side of a node through one port.
 - **Stand-in:** the node that an edge to a group, a layer or a lane is routed to before it is cut at the container.
 - **Hop:** the small arc where one edge passes over another.
 - **Seat:** a place a text outside a node may take, such as an edge's label or a group's title.

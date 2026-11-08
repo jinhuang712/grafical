@@ -164,7 +164,7 @@ The canvas is as wide as the widest of its nodes, groups, bands, lanes, side lab
 
 No code limits what may move: every write places the whole diagram again from its facts. What stays is the facts. An operation changes only the facts it names, so every other node keeps its layer, its order, its group, its lane and its alignment, and so its place relative to its neighbours.
 
-The stability tests in `test/layout/stability.ts` apply single operations and assert exactly that. They also check that each node is drawn in its layer, in its order and inside exactly its groups' nodes. How far nodes move sideways and which routes change is measured and reported, not limited.
+The stability tests in `test/layout/stability.ts` apply single operations and assert exactly that. They also check that each node is drawn in its layer, in its order and inside exactly its groups' frames. How far nodes move sideways and which routes change is measured and reported, not limited.
 
 ## Decisions
 

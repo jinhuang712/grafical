@@ -36,7 +36,7 @@ The writer adds the marks of a route as it draws it, so the routes, the checks a
 
 ## Styles
 
-What an object's styles set goes over what its kind sets: a fill and a border on a node, a group or a lane, and a color on an edge and its arrowhead.
+What an object's styles set goes over what its type sets: a fill and a border on a node, a group or a lane, and a color on an edge and its arrowhead.
 
 ## Marks
 

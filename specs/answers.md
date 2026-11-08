@@ -22,11 +22,11 @@ The source takes one of four forms:
 
 With `--json`, a problem that an operation caused carries the operation's index as `detail.op`.
 
-An error of one operation knows its operation. Some problems are found only in the diagram the whole batch makes: an error of the whole diagram, which the model's checks find once every operation has run, and a defect the agent owns. For those, a refused write or a refused `try` looks for the operation that caused the problem. It tries ever shorter prefixes of the batch, back towards the file, each prefix once for all the problems. A problem's edge is the one after the longest prefix that does not have it, and when every prefix has it, the source is `already in the file`.
+An error of one operation knows its operation. Some problems are found only in the diagram the whole batch makes: an error of the whole diagram, which the model's checks find once every operation has run, and a defect the agent owns. For those, a refused write or a refused `try` looks for the operation that caused the problem. It tries ever shorter prefixes of the batch, back towards the file, each prefix once for all the problems. A problem's line is the one after the longest prefix that does not have it, and when every prefix has it, the source is `already in the file`.
 
 ```text
 batch  op1 op2 op3 op4 op5
-                       ▲ problem first appears with op4 → source: edge of op4
+                       ▲ problem first appears with op4 → source: line of op4
 prefixes tried:  1..4  1..3  1..2  1  (none)
 ```
 

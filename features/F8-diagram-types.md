@@ -64,7 +64,7 @@ Sets drawn overlapping, to show what they share.
 
 ## F8.6: Entity-relationship and class diagrams
 
-Tables or classes and how they relate. These may be a type or a kind of node.
+Tables or classes and how they relate. These may be a diagram type or a node type.
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 

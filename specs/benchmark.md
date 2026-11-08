@@ -55,7 +55,7 @@ Each step records the metrics below, the transcript, the final diagram file and 
 | Regenerations | changes answered by redrawing everything | the transcript · the operation log |
 | Unnamed fact changes | facts changed that no operation named | `grafical diff` |
 | Operation errors | refused ÷ all operations · retries | grafical's JSON output |
-| Mechanical defects | overflow · overlap · edges through nodes · label collisions · shared segments | `pnpm bench geometry` |
+| Mechanical defects | overflow · overlap · edges through nodes · label collisions · shared runs | `pnpm bench geometry` |
 
 The geometry check reads the rendered SVG and does not use grafical's checker. It reads shapes only, and it treats edges of one style that leave or reach one point as a bus or a fan-in.
 

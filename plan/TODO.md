@@ -21,7 +21,7 @@
   - A picture may have one or none.
   - Its entries may run across, down or in a grid.
   - It is open what goes in it and how each sample is drawn.
-  - `diagram legend` explains edge styles and widths and marks but not a node's fill.
+  - `diagram --legend` explains edge styles and widths and marks but not a node's fill.
   - A key of small nodes such as "Works" and "Bug" and "Fixed" is drawn as a group of plain nodes.
   - Every one of them gets `lonely-node`, six warnings for a picture that is right.
 - created: 2026-10-30
@@ -46,7 +46,8 @@
 - description:
   - The owner holds that how edges are routed today is neither advanced nor smart.
   - Three ways are open: a search over the open space · a pass that rips up the worst edges · more rules.
-  - A search is the only one of the three that lets a node sit in a gutter, and it risks speed, stability and about 3000 lines of rewrite.
+  - A search is the only one of the three that lets a node sit in a gutter.
+  - A search risks speed · stability · about 3000 lines of rewrite.
   - 29 cases in `bench/routes/` measure any of them, and small cases show edges tangled in one gutter more than paths that fail.
   - The search trial stopped on 2026-11-07, and the owner settles the open points before another run.
   - Open: edges may share a run only if every start-to-end pair the run implies is a real edge, and whether false edges count as a hard number.
@@ -56,7 +57,8 @@
   - Open: whether the hand drawings in [plan/evidence](evidence/worst-four-cases.png) become the target pictures.
   - The six edge facts were tried on 18 of the 29 cases, and 11 are untried.
   - `ladder` came clean in one column with no change to the router, so it is a placement case.
-  - Trying the six edge facts on the cases, `via` and `with` cleaned up what they could reach, and a stated top in the first layer and a side `via` on a tight layer were refused by how the router is built.
+  - On the cases `via` and `with` cleaned up what they could reach.
+  - A stated top in the first layer and a side `via` on a tight layer were refused by how the router is built.
   - A spike of [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md) on 2026-11-07 drew offsets across with no defect, and offsets down ran edges through nodes.
 - created: 2026-11-07
 - updated: 2026-11-08
@@ -75,7 +77,8 @@
   - It read `unquoted-text` as naming the field and not the fix, while a refusal never writes the fix.
   - `render` writes the SVG beside the PNG though it asked for neither by name.
   - The session took 782 s on a render of 0.24 s, and where that time went is not known.
-  - Its picture has 17 crossings, and it did not use `gap`, `label` or a stated side.
+  - Its picture has 17 crossings.
+  - It did not use `gap` · `label` · a stated side.
   - A second run followed `diagram.grafical`, and it wrote `last: true` on every node.
   - It did not see layer labels in its picture, since a layer is not drawn.
   - It met `render`'s default names as a surprise.
@@ -154,6 +157,30 @@
 - next: the owner designs it
 - related: [059. Lines may be drawn square or round](../specs/decisions/059-lines-may-be-drawn-square-or-round.md)
 
+### [P2][DISCUSSION] The decisions keep the old words
+
+- description:
+  - [069. One name for each thing, and a name says what it is](../specs/decisions/069-one-name-for-each-thing-and-a-name-says-what-it-is.md) says every document changes its words once.
+  - The decisions still say box 301 times · row 235 times · line 550 times.
+  - 22 of their titles hold one of the three.
+  - They also name commands that went, such as `edge retarget` and `layer tidy`.
+  - The titles are cited by name in the code and the documents, so a new title changes every citation.
+- created: 2026-11-08
+- status: HALT
+- next: the owner says whether a decision keeps the words of its day
+- found: the document pass of 2026-11-08
+
+### [P2][DISCUSSION] Two ways to draw round edges
+
+- description:
+  - [059. Lines may be drawn square or round](../specs/decisions/059-lines-may-be-drawn-square-or-round.md) says the shape moved from the stylesheet into the diagram file.
+  - The code still reads `paint.edge.shape: curved` from a stylesheet beside `diagram --lines round`, and [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn) lists it.
+  - [14. One shortest way for each situation](../DESIGNS.md#14-one-shortest-way-for-each-situation) holds against two ways.
+- created: 2026-11-08
+- status: HALT
+- next: the owner says whether the stylesheet's value goes
+- found: the document pass of 2026-11-08
+
 ### [P2][DISCUSSION] Small points of the .grafical file
 
 - description:
@@ -168,7 +195,7 @@
 ### [P2][DISCUSSION] Labels sit close to the edges beside them in a crowded gutter
 
 - description:
-  - Four labelled edges out of one node run side by side in one gutter with each label 4 px from the next line.
+  - Four labelled edges out of one node run side by side in one gutter with each label 4 px from the next edge.
   - The picture reads crowded though no warning fires.
   - Asking for 8 px everywhere made 421 of 500 fuzz diagrams 5.5% taller and the dispatch fixture 2 crossings worse.
   - Asking for 8 px only where a label finds room left the dispatch fixture 4 crossings worse.
@@ -205,7 +232,7 @@
 ### [P2][ISSUE] An arrowhead hidden at the far left of the dispatch fixture
 
 - description:
-  - The leftmost edge of the dispatch fixture, the dashed one from `push-provider` up to `rider-app`, has an arrowhead that a reader can barely see.
+  - The dashed edge from `push-provider` up to `rider-app` is the leftmost of the dispatch fixture, and a reader can barely see its arrowhead.
   - It runs up the picture's edge and turns into the node's left side at the very end.
   - The cause is not known.
 - created: 2026-11-06

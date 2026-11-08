@@ -67,7 +67,7 @@ No refusal writes the change for the agent. A block names the commands that can 
 
 ## Warnings
 
-A warning names something the picture draws poorly. Every write prints every warning the diagram has, not only those the command caused, and so do `check` and `render`, since every write lays the whole diagram out again. A warning never refuses anything. It has no source, because the outcome edge already names what the write changed. Each prints as its own block, in this order:
+A warning names something the picture draws poorly. Every write prints every warning the diagram has, not only those the command caused, and so do `check` and `render`, since every write lays the whole diagram out again. A warning never refuses anything. It has no source, because the outcome line already names what the write changed. Each prints as its own block, in this order:
 
 | Code | `next` |
 |---|---|
@@ -83,7 +83,7 @@ A warning names something the picture draws poorly. Every write prints every war
 
 An edge that ends at a group, a layer or a lane reaches every node in it, so none of those nodes is a `lonely-node`.
 
-`edge-per-member` names a group of two or more nodes, the nodes of its inner groups included, in which every node has an edge to one end outside the group, or from it. The edges must agree in direction, outer end, kind, label, weight and arrowheads, so that one edge to the group would say the same. `edges` holds the first such edge of each node, in the group's order. A group inside one that has the same edges is left out, so only the outer group is named.
+`edge-per-member` names a group of two or more nodes, the nodes of its inner groups included, in which every node has an edge to one end outside the group, or from it. The edges must agree in direction, outer end, type, label, weight and arrowheads, so that one edge to the group would say the same. `edges` holds the first such edge of each node, in the group's order. A group inside one that has the same edges is left out, so only the outer group is named.
 
 ## Counts
 

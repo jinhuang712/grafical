@@ -51,7 +51,7 @@ run past the label       on the run, centred (−1), then slid along in 4 px ste
                          above, centred (0), then slid along in 4 px steps (+ the slide)
                          below, the same, each + 24
                          beside the run's ends (1000, 1001)
-run shorter than label   on the line into or out of the run (−4, −3), 8 px past the run's corner
+run shorter than label   on the run before or after it (−4, −3), 8 px past the run's corner
                          beside its right end (−2), its left end (−1), then as above
 ```
 
@@ -85,7 +85,7 @@ A group's title sits where the agent states, in room placement has already made 
 |---|---|
 | `top`, `inside` | in the head, 12 px down, from 16 px in at one end to 16 px in at the other |
 | `bottom`, `inside` | in a foot below the last layer, across the same span |
-| `top` or `bottom`, `outside` | just outside the node, across its full width |
+| `top` or `bottom`, `outside` | just outside the frame, across its full width |
 | `left` or `right`, `inside` | in a strip inside, 16 px in, from the top of the side to its bottom |
 | `left` or `right`, `outside` | 12 px past the side, from the top of the side to its bottom |
 
@@ -140,7 +140,7 @@ A label with no such place stays at the wall's start or its top, and the write i
 
 ## The legend
 
-The legend is a key in the top right, its first line level with the middle of the title and its right edge at the margin. It holds an entry only for what the agent named: an edge style, a weight other than `thin`, or a mark, with marks of the same name sharing one entry. Each entry is a 28 px sample, 8 px of space and its words, with 24 px between entries.
+The legend is a key in the top right, its first line level with the middle of the title and its right side at the margin. It holds an entry only for what the agent named: an edge style, a weight other than `thin`, or a mark, with marks of the same name sharing one entry. Each entry is a 28 px sample, 8 px of space and its words, with 24 px between entries.
 
 The legend wraps onto more lines when it is wider than its room: the larger of its widest entry and the picture's width, at least 480 px, less the title and 48 px. The picture widens to hold the title, 48 px and the legend. A subtitle drops below a wrapped legend.
 

@@ -15,7 +15,8 @@ F2: Layout
 │   ├── F2.7.1: Edge sides — the side an edge leaves or enters by
 │   ├── F2.7.2: Edge shapes — square or round
 │   ├── F2.7.3: Labels on edges — an edge carries its label
-│   └── F2.7.4: Steering an edge — where an edge passes and turns, as facts
+│   ├── F2.7.4: Steering an edge — where an edge passes and turns, as facts
+│   └── F2.7.5: Clean edges — the rules set on 2026-11-07
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
 
@@ -136,6 +137,9 @@ A second placement fact beside layers. Nothing is drawn: a column is a guide.
 ### F2.4.1: Column headings
 
 A column may carry a heading above its first layer, such as a quarter.
+
+- **Commands:** [`column`](../CLI.md#column)
+
 - An edge that comes near a heading refuses the write.
 
 - **Why:** [056. A column may carry a heading](../specs/decisions/056-a-column-may-carry-a-heading.md)
@@ -226,7 +230,7 @@ The agent says what connects. grafical draws every edge.
 - Where two edges cross, one hops over the other.
   - Where edges join on purpose, a dot marks the join.
 - A label sits on its edge and the edge passes through it, unless the agent takes it off.
-  - When there is no room on the edge, it sits beside it, wraps or moves to another gap on its way.
+  - With no room on the edge it has three ways: it sits beside the edge · it wraps · it moves to another gap on its way.
   - Where no gap on its way has room, no edge moves for it and the write is refused as `label-blocked` ([061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)).
   - The refusal names the edge, the edges across the label and the gaps it tried.
   - `node --size` is among the commands that can change it.
@@ -234,11 +238,6 @@ The agent says what connects. grafical draws every edge.
   - A step's number is refused the same way.
 - A stylesheet may draw the corners curved, with `paint.edge.shape: curved`.
   - The routes stay the same.
-- ⬜ An edge may leave one side and enter another across layers, such as out of the right of a node and into the left of another.
-- ⬜ The run at each end of an edge is at least 16 px, and 24 px at ease.
-- ⬜ Two edges that swap sides in one gap leave level, enter level and take no jog.
-- ⬜ Edges of one sort take one form in a picture.
-- ⬜ Where places leave a pair no clean route, one edge goes round the outside, and the write reports that the agent may move a node.
 - grafical never widens a column gap for an edge: the agent does it with `gap --between`.
 
 - **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
@@ -253,7 +252,6 @@ The agent says what connects. grafical draws every edge.
   - [051. A label sits on its straight vertical line](../specs/decisions/051-a-label-sits-on-its-straight-vertical-line.md)
   - [065. Unreadable is refused and costly is reported](../specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
   - [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
-  - [097. The router draws clean lines and the agent makes their room](../specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
 
 **Stories:**
 
@@ -295,7 +293,7 @@ An edge carries its label, and the edge passes through it. An agent may take one
 - A label on a vertical run sits at the run's middle, or the nearest clear place to it.
 - `beside` puts the label next to its edge.
 - `edge --label-at` on an edge with no label is refused as `bad-value`, and clearing a label clears its seat.
-- ⬜ Edges move apart for a label, past wrapping it.
+- Edges do not yet move apart for a label, past wrapping it.
 
 - **Why:** [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
 
@@ -318,7 +316,7 @@ An agent steers an edge with facts and never with a coordinate. Every step here 
 - `--with` draws a tree with one spine: each child leaves the trunk square into its own side.
   - A side the agent stated holds, and with none the edge takes the first side that reaches the trunk.
 - `--bend` needs an inner run whose neighbours lie on either side of it, and `--stretch` one whose neighbours lie on the same side.
-- An edge with a label or a step's number takes neither `--with`, `--bend` nor `--stretch`, since the text would stay behind.
+- An edge with a label or a step's number takes none of `--with` · `--bend` · `--stretch`, since the text would stay behind.
 - A step that meets a node or a label or comes within 12 px along another edge refuses the write.
 - `--stretch` stops at the canvas, so a detour past it is refused.
 - `--main` and `--straight` change only which nodes share a column, so a node may shift sideways.
@@ -330,6 +328,19 @@ An agent steers an edge with facts and never with a coordinate. Every step here 
 **Stories:**
 
 - A strong model states where an edge passes, to tune a picture without a coordinate.
+
+### F2.7.5: Clean edges
+
+Edges meet the rules the owner set on 2026-11-07, so that the eye can follow them.
+
+- An edge may leave one side and enter another across layers, such as out of the right of a node and into the left of another.
+- The run at each end of an edge is at least 16 px, and 24 px at ease.
+- Two edges that swap sides in one gap leave level, enter level and take no jog.
+- Edges of one sort take one form in a picture.
+- Where places leave a pair no clean route, one edge goes round the outside.
+  - The write reports that the agent may move a node.
+
+- **Why:** [097. The router draws clean lines and the agent makes their room](../specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
 
 ## F2.8: Flow direction
 

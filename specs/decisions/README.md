@@ -1,6 +1,6 @@
 # Decisions
 
-The forks grafical took: what was chosen, what was not, and why. One decision is one file, numbered in the order it was made. Code and documents cite a decision by its title, such as `specs/decisions, "Our own gap router"`, and `test/docs/citations.test.ts` checks that the title exists. The commitments the whole design must meet are in [DESIGNS.md](../../DESIGNS.md).
+The forks grafical took: what was chosen, what was not, and why. One decision is one file, numbered in the order it was made. Code and documents cite a decision by its title, such as `specs/decisions, "Our own gap router"`, and `test/docs/citations.test.ts` checks that the title exists. The commitments the whole design must meet are in `DESIGNS.md`.
 
 ## The decisions
 

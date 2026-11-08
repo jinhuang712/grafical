@@ -14,7 +14,7 @@ grafical is designed around 15 guidelines:
 8. **Answers are data a script can read:** every answer is keys and values
 9. **The same file gives the same picture on any machine:** nothing depends on the host
 10. **What grafical cannot fully read, it refuses:** a file is read whole or refused
-11. **Looks are free, while shape and dash follow the type:** colors and widths take any value while the kind sets the shape
+11. **Looks are free, while shape and dash follow the type:** colors and widths take any value while the type sets the shape
 12. **The command line comes first, and the help is the agent's only reference:** an agent learns and uses grafical from its commands alone
 13. **Every search the engine runs has a cap:** no step searches without a bound
 14. **One shortest way for each situation:** a form that only repeats another is removed

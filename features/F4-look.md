@@ -124,11 +124,12 @@ An agent may set where a text breaks and how its lines line up. A text the agent
   - [`label`](../CLI.md#label)
   - [`note`](../CLI.md#note)
 
-- The label of a node, an edge or a lane may hold a line break, and so may a sublabel, a note and a subtitle.
+- These may hold a line break: the label of a node · an edge · a lane · a sublabel · a note · a subtitle.
 - A break is a real line break or `\n`, and grafical keeps it.
-- A diagram's title and the label of a group, a layer or a wall are one line, and a break in one is refused as `missing-glyph`.
-- `label --align` takes the ID of a node, an edge, a wall or a lane.
-- In a node, left and right mean the sides of the room for its text, and its sublabel follows its label.
+- These are one line: a diagram's title · the label of a group · a layer · a wall.
+  - A break in one is refused as `missing-glyph`.
+- `label --align` takes the ID of one of these: a node · an edge · a wall · a lane.
+- In a node left and right mean the sides of the room for its text, and its sublabel follows its label.
 - On an edge, it lines up the lines of a label of two or more lines.
 - `note --align` names a note by what it is about, since a note has no ID of its own.
 - A note starts left aligned, and a footnote cannot be aligned.
@@ -178,7 +179,7 @@ A label may mark styles, as any object does.
 - **Commands:** [`label`](../CLI.md#label)
 
 - `--style` takes the ID of an edge with a label, and names styles as other objects do.
-- A node, a group and a lane take the style of the object itself, and only an edge's label has a patch of its own.
+- Only an edge's label has a patch of its own, and any other label takes the style of its object.
 - The label's patch takes the style's `fill` and `border`.
 - The label's text takes the style's `color`.
 - Without `--style`, the label marks no style and its patch takes the color behind it.

@@ -80,7 +80,7 @@ Folder: `src/text/`.
 
 ## The theme
 
-Holds the built-in themes, merges a stylesheet into them, and holds the fixed sizes and the outline of each kind of node. How it works is in [the theme](theme.md).
+Holds the built-in themes, merges a stylesheet into them, and holds the fixed sizes and the outline of each type of node. How it works is in [the theme](theme.md).
 
 Folder: `src/theme/`.
 
