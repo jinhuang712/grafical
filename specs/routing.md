@@ -144,7 +144,7 @@ An agent may steer an edge with facts, and each must hold or the write is refuse
 | `bend-at` | after routing | the longest inner run slides between its neighbours, to the fraction | none has neighbours on either side, or the way is not clear |
 | `stretch` | after routing | the longest detour reaches that multiple past its neighbours | none has neighbours on one side, or the way is not clear |
 
-A way is clear when it meets no node but its ends and no label, stays 8 px inside the canvas, and runs at least 12 px from any edge along it, its trunk and what shares the trunk aside. Nothing after routing moves a node or another edge, or grows the canvas. An edge with a stated side keeps its own port unless `with` joins it to a trunk, and then it leaves `side-blocked` behind, since the router's route is replaced.
+A way is clear when it meets no node but its ends and no label, stays 8 px inside the canvas, and runs at least 12 px from any edge along it, its trunk and what shares the trunk aside. Nothing after routing moves a node or another edge. An edge with a stated side keeps its own port unless `with` joins it to a trunk, and then it leaves `side-blocked` behind, since the router's route is replaced.
 
 ## Self-loops
 
@@ -158,6 +158,7 @@ The owner set rules for clean edges on 2026-11-07, and the router does not meet 
 - It never leaves one side and enters another across layers.
 - Two edges that swap sides in one gap take a jog.
 - It has no way round the outside for a pair with no clean route.
+- A step after routing never grows the canvas, so a detour past it is refused.
 
 ## Decisions
 
@@ -172,3 +173,4 @@ The owner set rules for clean edges on 2026-11-07, and the router does not meet 
 - [096. An edge is steered by facts and never by coordinates](decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
 - [097. The router draws clean edges and the agent makes their room](decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md)
 - [102. Routing trouble that placement can fix is the agent's](decisions/102-routing-trouble-that-placement-can-fix-is-the-agent-s.md)
+- [103. The canvas grows with what it holds](decisions/103-the-canvas-grows-with-what-it-holds.md)

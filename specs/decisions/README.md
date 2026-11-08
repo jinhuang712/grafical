@@ -104,6 +104,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [100. The MVP bar is a checkpoint's exit criteria](100-the-mvp-bar-is-a-checkpoint-s-exit-criteria.md) (2026-11-08)
 - [101. The CLI document lists flags in bullets](101-the-cli-document-lists-flags-in-bullets.md) (2026-11-08)
 - [102. Routing trouble that placement can fix is the agent's](102-routing-trouble-that-placement-can-fix-is-the-agent-s.md) (2026-11-08)
+- [103. The canvas grows with what it holds](103-the-canvas-grows-with-what-it-holds.md) (2026-11-09)
 
 ## Former IDs
 

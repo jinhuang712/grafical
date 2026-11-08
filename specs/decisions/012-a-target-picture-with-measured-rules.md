@@ -19,24 +19,23 @@ On 2026-10-11 the owner judged the engine's first real output "cluttered, messy,
 Both judges picked the grouped version. The compact one hid the messaging and retry mechanics that engineers want. The target is `bench/targets/catalog-sync-grouped.png`, with its SVG beside it. The engine must produce pictures like it from facts alone.
 
 The rules that make it uncluttered stay as a record of the target. No code measures them, and only the limit of two bends is used ("The target picture's rules are not reported"):
-1. **Size:** the canvas is at most 1024 px wide, so that text shows at full size in a document.
-2. **Grid:** every node centre sits on the column grid ("Layout computed again on every change").
+1. **Grid:** every node centre sits on the column grid ("Layout computed again on every change").
    - At least half the edges are one straight run, and no edge has more than 2 bends.
-3. **Crossings:** at most 1 per 10 edges.
-4. **Bundling:** each edge meets its node side at a port of its own ("Edges meet any side").
+2. **Crossings:** at most 1 per 10 edges.
+3. **Bundling:** each edge meets its node side at a port of its own ("Edges meet any side").
    - A side with more edges than room merges them.
      - 2 or more unlabelled edges of one type that leave it share one trunk.
      - Those that arrive at it share one port.
      - No junction of the trunk looks like a crossing.
-5. **Corridors:** an edge that skips layers runs only in a column that is empty in every layer it passes.
+4. **Corridors:** an edge that skips layers runs only in a column that is empty in every layer it passes.
    - Of those columns it takes the one whose route crosses fewest of the edges that placement already fixes ("Edges meet any side").
      - Each crossing weighs as two jogs of travel.
      - Between equals it takes the shortest.
    - A corridor through a group frame that holds neither end of the edge pays as much as a crossing, and the edge keeps out of such a frame's margin and border.
-6. **Styles:** at most three edge styles and one emphasis.
+5. **Styles:** at most three edge styles and one emphasis.
    - It was two until "Edges meet any side" added the dotted and plain edges on 2026-10-12.
-7. **Edge labels:** at most 40% of edges carry one.
-8. **Clear text:** no edge crosses any text: node, edge or group label.
+6. **Edge labels:** at most 40% of edges carry one.
+7. **Clear text:** no edge crosses any text: node, edge or group label.
    - This one is an engine-owned defect ("Defects owned by who can fix them").
    - Across a group's label it is the agent's ("The agent states where a group's label sits").
 

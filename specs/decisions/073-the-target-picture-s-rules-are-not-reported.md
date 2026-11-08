@@ -12,8 +12,8 @@ The measurement goes, and the limit of two bends stays with the warning on bent 
 
 ## Not chosen
 
-- Reporting all eight rules.
-  - A limit such as 1024 px wide reads as a score of the picture, and readers differ.
+- Reporting all the rules.
+  - A limit such as at most 40% of edges labelled reads as a score of the picture, and readers differ.
 
 ## Consequences
 

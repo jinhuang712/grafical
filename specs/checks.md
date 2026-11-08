@@ -117,4 +117,4 @@ The agent compares gutters to see which order of layers costs. The record gives 
 
 ## Rules that are no longer reported
 
-Decision [012. A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md) holds the eight rules as a record: a canvas at most 1024 px wide, at most one crossing per ten edges, at least half the edges straight, no edge over two bends, at most 40% of edges labelled, at most three edge styles, at most 16 nodes, and no corridor through a node. No code measures them any more. Only the limit of two bends is used, for `bent` and `bent-edge`.
+Decision [012. A target picture with measured rules](decisions/012-a-target-picture-with-measured-rules.md) holds the seven rules as a record: at most one crossing per ten edges, at least half the edges straight, no edge over two bends, at most 40% of edges labelled, at most three edge styles, at most 16 nodes, and no corridor through a node. No code measures them any more. Only the limit of two bends is used, for `bent` and `bent-edge`.
