@@ -40,7 +40,9 @@ One file, `<name>.grafical`, holds the whole diagram as facts: layers and nodes 
 A diagram becomes objects with attributes and relations, with types an agent can define and styles that objects mark. The file takes a form of its own, and a change still reads well in a diff.
 
 - **How it works:** [The .grafical file](../specs/grafical-file.md)
-- **Why:** [085. A diagram is objects with attributes and relations](../specs/decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)
+- **Why:**
+  - [085. A diagram is objects with attributes and relations](../specs/decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)
+  - [104. Shared looks live in a library of types and styles](../specs/decisions/104-shared-looks-live-in-a-library-of-types-and-styles.md)
 
 ## F6.2: Render
 

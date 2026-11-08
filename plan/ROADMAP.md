@@ -52,6 +52,7 @@ Roadmap
 │   └── 🟨 CP1.7: The file form — objects with types and styles
 │       ├── ✅ Design the model and its form
 │       ├── ✅ Build the model
+│       ├── ⬜ One library
 │       └── ⬜ Tune the form
 ├── 🟨 CP2: Drawing more — what a picture can hold
 │   ├── ✅ CP2.1: Containers — groups · lanes · walls · notes
@@ -364,6 +365,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 
 - ✅ Design the model and its form: The owner designed them on 2026-11-06.
 - ✅ Build the model: grafical reads and writes the form · styles · types · `like`.
+- ⬜ One library: A `.grafical` file of types and styles holds the looks a diagram shares, and the stylesheet goes.
 - ⬜ Tune the form: Once it is built, the form is tuned against what its diffs show.
 
 **Delivers:**

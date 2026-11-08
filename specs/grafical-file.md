@@ -421,3 +421,4 @@ The form serves strictness, plain objects and a file that reads as what it holds
 - [089. A style may be as rich as it likes](decisions/089-a-style-may-be-as-rich-as-it-likes.md)
 - [092. `like` follows an object's look and nothing else](decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
 - [096. An edge is steered by facts and never by coordinates](decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
+- [104. Shared looks live in a library of types and styles](decisions/104-shared-looks-live-in-a-library-of-types-and-styles.md)

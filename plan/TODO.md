@@ -137,15 +137,6 @@
 - status: HALT
 - next: the owner says whether to classify them first
 
-### [P2][DISCUSSION] The file's `library` against the code's stylesheet
-
-- description:
-  - [The .grafical file](../specs/grafical-file.md) says `theme` and `library`, and the code reads `style` and a `.grafical-style.yaml` file.
-  - The glossary already gives *stylesheet* as a lost name.
-- created: 2026-11-07
-- status: HALT
-- next: the owner says which one holds
-
 ### [P2][DISCUSSION] An HTML export, and an SVG a model can tune afterwards
 
 - description:
