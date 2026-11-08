@@ -4,7 +4,7 @@ Decided: 2026-11-06
 
 ## The problem
 
-A node's shape came with its kind, so an agent that wanted one look had to take a shape it did not mean.
+A node's shape came with its type, so an agent that wanted one look had to take a shape it did not mean.
 
 ## The choice
 

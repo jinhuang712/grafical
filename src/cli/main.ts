@@ -78,7 +78,7 @@ function splitIds(s: string): string[] {
 
 const POSITION = ["first", "last", "before", "after"];
 
-/** The node steps start from, and the steps, as numbers where they read as one (specs/decisions, "Steps from another box"). */
+/** The node steps start from, and the steps, as numbers where they read as one (specs/decisions, "Steps from another node"). */
 function stepFlags(opts: Opts): Record<string, unknown> {
   const out = pick(opts, ["from"]);
   for (const k of STEP_KEYS) {
@@ -88,7 +88,7 @@ function stepFlags(opts: Opts): Record<string, unknown> {
   return out;
 }
 
-/** The step options of node add and node move (specs/decisions, "Steps from another box"). */
+/** The step options of node add and node move (specs/decisions, "Steps from another node"). */
 function withSteps(c: Command): Command {
   return c
     .option("--from <node>", "in no layer: placed by steps from this node, and moves with it")

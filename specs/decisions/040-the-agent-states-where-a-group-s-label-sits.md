@@ -4,23 +4,23 @@ Decided: 2026-10-16
 
 ## The problem
 
-Decided by the owner on 2026-10-16. In a booking C4 diagram the label "Booking app software system" sat in the head between the lines into the web app and the mobile app, where placement had made room for it ("Rows unseen, groups as systems"), and the owner found it in a weird spot. Asked where a group's label should go, the owner chose to let the agent say it through the command line: eight places inside the box, its four corners and the middle of each side, and four outside it, above, below, left and right.
+Decided by the owner on 2026-10-16. In a booking C4 diagram the label "Booking app software system" sat in the head between the edges into the web app and the mobile app, where placement had made room for it ("Layers unseen, groups as systems"), and the owner found it in a weird spot. Asked where a group's label should go, the owner chose to let the agent say it through the command line: eight places inside the frame, its four corners and the middle of each side, and four outside it, above, below, left and right.
 
 ## The choice
 
-- **Unstated and seated where no line comes.** Once the lines are drawn, an unplaced label sits in the head where no line comes near.
-  - Until 2026-10-17 it seated the label where the lines into the first row kept their boxes' centres, and moved two of those boxes apart when no seat did; the owner first chose to keep that.
-  - Under "A group's label moves no box and no line" nothing moves for it.
+- **Unstated and seated where no edge comes.** Once the edges are drawn, an unplaced label sits in the head where no edge comes near.
+  - Until 2026-10-17 it seated the label where the edges into the first layer kept their nodes' centres, and moved two of those nodes apart when no seat did; the owner first chose to keep that.
+  - Under "A group's label moves no node and no edge" nothing moves for it.
   - A label with no clear seat refuses the write as `title-blocked`, as a stated one does.
 - **Stated and exactly there, and nothing moves for it.** `group --label-at` states the place and the label sits exactly there.
-  - The engine adds only the label's own room, and moves no box and no line for it.
-  - A line that comes near it refuses the write as `title-blocked`, an agent defect ("Defects owned by who can fix them").
+  - The engine adds only the label's own room, and moves no node and no edge for it.
+  - An edge that comes near it refuses the write as `title-blocked`, an agent defect ("Defects owned by who can fix them").
   - The owner chose this on 2026-10-16 after seeing the places drawn.
-    - The engine had moved boxes apart and sides out so that no line ran across a stated label.
-    - That left empty space in the box: about 168 px for the centred label of the booking diagram and 88 px for a corner.
-- **Built** on 2026-10-16 in four steps from the head and the foot to outside above and below and then beside the rows.
+    - The engine had moved nodes apart and sides out so that no edge ran across a stated label.
+    - That left empty space in the frame: about 168 px for the centred label of the booking diagram and 88 px for a corner.
+- **Built** on 2026-10-16 in four steps from the head and the foot to outside above and below and then beside the layers.
   - The same day the widening gave way to the refusal.
-  - The fuzz test found one fault while this was built, since fixed: a group around one with a label outside let a box in.
+  - The fuzz test found one fault while this was built, since fixed: a group around one with a label outside let a node in.
 
 ## Not chosen
 
@@ -30,13 +30,13 @@ Decided by the owner on 2026-10-16. In a booking C4 diagram the label "Booking a
   - The owner chose a place per group, stated by the agent.
 - Four corners only, or four corners inside and outside.
   - Shown to the owner on 2026-10-16; the owner chose the eight places inside and the four outside.
-- Moving boxes apart and sides out so that no line runs across a stated label, built first.
-  - Every line kept its box's centre, but the box took empty space the agent never asked for.
-- Sliding a stated label along its side to the nearest stretch no line crosses.
+- Moving nodes apart and sides out so that no edge runs across a stated label, built first.
+  - Every edge kept its node's centre, but the frame took empty space the agent never asked for.
+- Sliding a stated label along its side to the nearest stretch no edge crosses.
   - The label would no longer be where the agent said.
-- Moving the lines off their boxes' centres around a stated label, or bending them around it.
-  - The label would move the agent's lines; offered on 2026-10-16 and not chosen.
+- Moving the edges off their nodes' centres around a stated label, or bending them around it.
+  - The label would move the agent's edges; offered on 2026-10-16 and not chosen.
 
 ## Consequences
 
-The label never wraps, so a long one makes a wide strip, and a line that comes near it refuses the write as `title-blocked`.
+The label never wraps, so a long one makes a wide strip, and an edge that comes near it refuses the write as `title-blocked`.

@@ -3,7 +3,7 @@
 //
 // Draw order: background, groups, edges and their labels, the dots where edges
 // merge, nodes and their texts, title, subtitle, legend, footnote. Layer layers are
-// not drawn (specs/decisions, "Rows unseen, groups as systems").
+// not drawn (specs/decisions, "Layers unseen, groups as systems").
 // Nodes come after edges so that ports look clean.
 
 import { badgeRect } from "../layout/badges.ts";
@@ -168,7 +168,7 @@ function simplify(points: Point[]): Point[] {
   return out;
 }
 
-/** Radius of the hop an edge makes over another where the two cross (specs/decisions, "Lines meet any side"). */
+/** Radius of the hop an edge makes over another where the two cross (specs/decisions, "Edges meet any side"). */
 const HOP = 4;
 
 /** The x where one horizontal stretch of an edge, at y, crosses another edge's vertical stretch. */
@@ -178,7 +178,7 @@ interface Hop {
 }
 
 /**
- * Where each edge's horizontal stretches cross another edge's vertical one (specs/decisions, "Lines meet any side").
+ * Where each edge's horizontal stretches cross another edge's vertical one (specs/decisions, "Edges meet any side").
  * The horizontal edge hops there, so that a crossing never reads as a join.
  */
 function hopsOf(edges: SceneEdge[]): Map<string, Hop[]> {
@@ -244,7 +244,7 @@ interface Room {
   lines: { id: string; a: Point; b: Point }[];
 }
 
-/** Least distance a curved corner keeps from a node, a label or another edge (specs/decisions, "Lines meet any side"). */
+/** Least distance a curved corner keeps from a node, a label or another edge (specs/decisions, "Edges meet any side"). */
 const CURVE_CLEAR = 4;
 
 /** Whether the stretch a-b runs along the stretch c-d for some length. */
@@ -306,7 +306,7 @@ function clearCorner(
  * A route as a path with corners rounded by a quadratic curve, hopping over
  * crossings. In the curved style a corner is as round as half of each of its two
  * stretches, halved while it would come near a node, a label or another edge, and
- * never less round than the orthogonal style (specs/decisions, "Lines meet any side").
+ * never less round than the orthogonal style (specs/decisions, "Edges meet any side").
  */
 function roundedPath(pts: Point[], P: Paint, hops: Hop[] = [], room?: Room, id = ""): string {
   const first = pts[0] as Point;
@@ -372,7 +372,7 @@ function alongRoute(pts: Point[], s: Point, t: Point): boolean {
 
 /**
  * Where an edge leaves another it ran along, or joins one: a merge on purpose,
- * such as the branch of a trunk, which a dot marks (specs/decisions, "Lines meet any side").
+ * such as the branch of a trunk, which a dot marks (specs/decisions, "Edges meet any side").
  */
 function joinsOf(edges: SceneEdge[]): { at: Point; edge: SceneEdge }[] {
   const routes = edges.map((e) => ({ e, pts: simplify(e.points) }));
@@ -397,7 +397,7 @@ function ontoOutline(end: Point, next: Point, n: SceneNode | undefined): Point {
   return n === undefined ? end : meetOutline(n.kind, n.rect, end, next);
 }
 
-/** The edge stops at the arrowhead's base, if its kind has one (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
+/** The edge stops at the arrowhead's base, if its kind has one (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side"). */
 function edgeShapes(
   e: SceneEdge,
   nodes: Map<string, SceneNode>,
@@ -419,7 +419,7 @@ function edgeShapes(
     ? arrowHead(tip, pts[pts.length - 2] as Point, kind.stroke, look.arrow)
     : undefined;
   if (head) pts[pts.length - 1] = head.base;
-  // A two-way edge gets a second head at its start (specs/decisions, "Lines meet any side").
+  // A two-way edge gets a second head at its start (specs/decisions, "Edges meet any side").
   const tail =
     e.both === true && hasHead(e.kind)
       ? arrowHead(pts[0] as Point, pts[1] as Point, kind.stroke, look.arrow)
@@ -520,7 +520,7 @@ export function renderSvg(scene: Scene): string {
     `<rect width="${w}" height="${h}" fill="${P.background}"/>`,
   );
 
-  // Lanes lie behind everything else (specs/decisions, "Swimlanes run one way"); lanes side by side share a border.
+  // Lanes lie behind everything else (specs/decisions, "Lanes run one way"); lanes side by side share a border.
   const lp = P.lane;
   const lane = `stroke="${lp.stroke}" stroke-width="${num(lp.strokeWidth)}"`;
   for (const x of lanes) {
@@ -531,7 +531,7 @@ export function renderSvg(scene: Scene): string {
     );
   }
   const bp = P.band;
-  // A layer in a node's look takes a service node's paint and a node's label colour (specs/decisions, "A row with no box as one bar").
+  // A layer in a node's look takes a service node's paint and a node's label colour (specs/decisions, "A layer with no node as one bar").
   for (const b of scene.bands ?? []) {
     const box = b.box === true ? P.node.kinds.service : undefined;
     out.push(
@@ -631,7 +631,7 @@ export function renderSvg(scene: Scene): string {
     }
   }
 
-  // Steps (specs/decisions, "Step badges ride the line"): a ring in the edge's colour, centred on the edge, that hides
+  // Steps (specs/decisions, "Step badges ride the edge"): a ring in the edge's colour, centred on the edge, that hides
   // the edge inside it, and the number in the labels' colour.
   for (const e of scene.edges) {
     if (e.step === undefined) continue;

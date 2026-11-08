@@ -1,4 +1,4 @@
-// A line carries its label (specs/decisions, "A line's label sits on its line").
+// A line carries its label (specs/decisions, "An edge's label sits on its edge").
 
 import { readFileSync } from "node:fs";
 import { beforeAll, describe, expect, it } from "vitest";

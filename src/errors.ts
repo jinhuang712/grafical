@@ -256,9 +256,9 @@ export type UsageCode = (typeof USAGE_CODES)[number];
 /**
  * The codes of a warning: written, exit 0, and drawn poorly (specs/decisions, "Refusals say what happened and which
  * commands can change it", "Every write prints every warning"), in the order they print: an edge with more than two
- * bends (specs/decisions, "A bent line is reported and never refused"), the places the counts passing, across, tight and crowded count
+ * bends (specs/decisions, "A bent edge is reported and never refused"), the places the counts passing, across, tight and crowded count
  * (specs/decisions, "Composition counts"), a node no edge reaches, an edge alike from every node of a group to one end (specs/decisions,
- * "A line from every box of a group is a warning"), and two lines that cross.
+ * "An edge from every node of a group is a warning"), and two lines that cross.
  */
 export const WARNING_CODES = [
   "bent-edge",
@@ -349,7 +349,7 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "node-overlap": "engine",
   "edge-through-node": "engine",
   "label-collision": "engine",
-  // A step's badge rides its edge, which only the engine places (specs/decisions, "Step badges ride the line").
+  // A step's badge rides its edge, which only the engine places (specs/decisions, "Step badges ride the edge").
   "step-collision": "engine",
   "edge-overlap": "engine",
   "text-crossing": "engine",
@@ -357,13 +357,13 @@ export const DEFECT_OWNER: Record<DefectCode, DefectOwner> = {
   "lane-stray": "engine",
   // One x would have served both ends of the edge (specs/decisions, "Who chose is punished").
   "needless-bend": "engine",
-  // An edge runs where a group's label sits, and no edge moves for it: the agent states a place (specs/decisions, "A group's label moves no box and no line").
+  // An edge runs where a group's label sits, and no edge moves for it: the agent states a place (specs/decisions, "A group's label moves no node and no edge").
   "title-blocked": "agent",
   // No gutter of its path holds an edge's label clear, and no edge moves for it: the agent shortens
-  // or drops the text, or changes layers (specs/decisions, "A line never moves for its label").
+  // or drops the text, or changes layers (specs/decisions, "An edge never moves for its label").
   "label-blocked": "agent",
   // The router has no route by a stated side, and takes no other: the agent changes the side or the layers
-  // (specs/decisions, "An agent may state the side of a line").
+  // (specs/decisions, "An agent may state the side of an edge").
   "side-blocked": "agent",
   "via-blocked": "agent",
   "not-straight": "agent",

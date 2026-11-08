@@ -63,7 +63,7 @@ type:
     expect(at("type.title.weight")?.found).toBe("700");
   });
 
-  it('take curved or orthogonal lines, and nothing else (specs/decisions, "Lines meet any side")', () => {
+  it('take curved or orthogonal lines, and nothing else (specs/decisions, "Edges meet any side")', () => {
     const sheet = (shape: string) =>
       parseStylesheet(
         `grafical-style: 1\npaint:\n  edge: { shape: ${shape} }\n`,

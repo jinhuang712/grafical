@@ -4,7 +4,7 @@ Decided: 2026-10-14
 
 ## The problem
 
-Decided by the owner on 2026-10-14. When the reference picture was redrawn with grafical alone, thick lines were used to mean "writes to a store". The legend could only call them "main path", so the emphasis was dropped. Asked whether an agent should name it, the owner answered "yes, the legend needs more flexibility", and chose, of three options, a legend that names everything in the picture that carries meaning. Built the same day.
+Decided by the owner on 2026-10-14. When the reference picture was redrawn with grafical alone, thick edges were used to mean "writes to a store". The legend could only call them "main path", so the emphasis was dropped. Asked whether an agent should name it, the owner answered "yes, the legend needs more flexibility", and chose, of three options, a legend that names everything in the picture that carries meaning. Built the same day.
 
 ## The choice
 
@@ -14,7 +14,7 @@ The caller gives words only. Which entries exist follows what is drawn, and wher
 
 - Free entries, which the agent writes in its own order.
   - It is the most flexible, but the legend could then list what is not drawn and leave out what is.
-- Lines and widths only.
+- Edges and widths only.
   - Marks would stay unexplained, and a mark's meaning is what a reader cannot guess.
 - A legend the caller places, at the bottom or the left.
   - Placement is the engine's.

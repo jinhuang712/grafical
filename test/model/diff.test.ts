@@ -49,7 +49,7 @@ describe('diff as operations (specs/decisions, "Git as the history")', () => {
     }
   });
 
-  it('reports a step cleared, and an added edge with its step (specs/decisions, "Step badges ride the line")', () => {
+  it('reports a step cleared, and an added edge with its step (specs/decisions, "Step badges ride the edge")', () => {
     const numbered = edited(catalogSyncGrouped, [
       { op: "edge.number", id: "relay->line_topics", n: 2 },
     ]);

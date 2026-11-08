@@ -106,7 +106,7 @@ next: layer --move, node --move, node --swap
 - **How it works:** [The checker](../specs/checks.md)
 - **Why:**
   - [048. Every write prints every warning](../specs/decisions/048-every-write-prints-every-warning.md)
-  - [050. A line from every box of a group is a warning](../specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)
+  - [050. An edge from every node of a group is a warning](../specs/decisions/050-an-edge-from-every-node-of-a-group-is-a-warning.md)
 
 **Stories:**
 
@@ -155,7 +155,7 @@ next: layer --move, node --move, node --swap
 
 - The edges are alike in type and label and weight and arrowheads.
 - A group inside one with the same edges is left out.
-- Detail: `group`, `edges` ([050. A line from every box of a group is a warning](../specs/decisions/050-a-line-from-every-box-of-a-group-is-a-warning.md)).
+- Detail: `group`, `edges` ([050. An edge from every node of a group is a warning](../specs/decisions/050-an-edge-from-every-node-of-a-group-is-a-warning.md)).
 
 ### F5.3.8: Crossings
 
@@ -170,7 +170,7 @@ next: layer --move, node --move, node --swap
 - It holds for a node placed in a layer or by steps.
 - Detail: `node` and `nodes`.
 
-- **Why:** [075. A box beside its neighbours is a warning](../specs/decisions/075-a-box-beside-its-neighbours-is-a-warning.md)
+- **Why:** [075. A node beside its neighbours is a warning](../specs/decisions/075-a-node-beside-its-neighbours-is-a-warning.md)
 
 ## F5.4: Check
 

@@ -1,4 +1,4 @@
-// An agent may state the side of a line (specs/decisions, "An agent may state the side of a line").
+// An agent may state the side of a line (specs/decisions, "An agent may state the side of an edge").
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";

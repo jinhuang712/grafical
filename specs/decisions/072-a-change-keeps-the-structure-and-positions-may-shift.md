@@ -4,13 +4,13 @@ Decided: 2026-11-06
 
 ## The problem
 
-The guideline promised that only a fixed list of things may follow a change. The column grid is solved again after every change, so about half of all single operations moved boxes sideways in rows they did not touch, and the tests never held that list.
+The guideline promised that only a fixed list of things may follow a change. The column grid is solved again after every change, so about half of all single operations moved nodes sideways in layers they did not touch, and the tests never held that list.
 
 ## The choice
 
 A change keeps every fact it does not name:
 
-- a row
+- a layer
 - an order
 - a group
 - a lane
@@ -25,4 +25,4 @@ Positions may shift. A reader learns a diagram's structure and not its pixels, a
 
 ## Consequences
 
-A box can shift sideways after a change elsewhere, and the agent is not told. The stability tests measure that movement and do not limit it.
+A node can shift sideways after a change elsewhere, and the agent is not told. The stability tests measure that movement and do not limit it.

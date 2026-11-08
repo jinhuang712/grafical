@@ -4,11 +4,11 @@ Decided: 2026-11-06
 
 ## The problem
 
-An edge's color came from the theme, so a failure path could only be drawn thicker. A node had just gained colors of its own ("A box may take a look of its own").
+An edge's color came from the theme, so a failure path could only be drawn thicker. A node had just gained colors of its own ("A node may take a look of its own").
 
 ## The choice
 
-An edge takes its color from the styles it marks, as a node does. A dash still follows the kind, since it says what the edge means.
+An edge takes its color from the styles it marks, as a node does. A dash still follows the type, since it says what the edge means.
 
 ## Not chosen
 

@@ -1,4 +1,4 @@
-// Every line look (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"): calls and data reads solid, messages dashed, an
+// Every line look (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side"): calls and data reads solid, messages dashed, an
 // optional read dotted, a two-way read and write, and a link with no arrowhead
 // between two related stores. The upload path is the main path.
 

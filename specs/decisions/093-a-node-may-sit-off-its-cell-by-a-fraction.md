@@ -27,6 +27,6 @@ A picture keeps its grid, and every node snaps to its cell unless the agent stat
 
 ## Consequences
 
-The router runs lines through the gaps between nodes, so an offset changes the gaps it finds. A spike on 2026-11-07 held across and failed down, where lines ran through nodes in a gutter. It is not built, and it waits for the talk on routing.
+The router runs edges through the gaps between nodes, so an offset changes the gaps it finds. A spike on 2026-11-07 held across and failed down, where edges ran through nodes in a gutter. It is not built, and it waits for the talk on routing.
 
 In a full layer a node has only the gap beside it, so a large offset there is refused until the agent makes room, with `gap --between` or by leaving a cell empty.

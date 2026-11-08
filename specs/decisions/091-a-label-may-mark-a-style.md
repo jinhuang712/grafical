@@ -4,7 +4,7 @@ Decided: 2026-11-06
 
 ## The problem
 
-A label on a line breaks the line with a patch, and the patch always takes the color behind it, so an agent cannot make a label stand out. The owner holds that a label may have a background color.
+A label on an edge breaks the edge with a patch, and the patch always takes the color behind it, so an agent cannot make a label stand out. The owner holds that a label may have a background color.
 
 ## The choice
 
@@ -19,6 +19,6 @@ A `<label>` may mark styles as any object does. Its patch takes the style's `fil
 
 ## Consequences
 
-Built on 2026-11-06 for a line's label, the one label with a patch of its own, as `label --style`.
+Built on 2026-11-06 for an edge's label, the one label with a patch of its own, as `label --style`.
 
-A label with a fill reads as a small tag, which may also suit a short run where a line shows little past its label. That is not tried yet. A label beside its line gains a patch that shows, so its clearance may need a look when it is built.
+A label with a fill reads as a small tag, which may also suit a short run where an edge shows little past its label. That is not tried yet. A label beside its edge gains a patch that shows, so its clearance may need a look when it is built.

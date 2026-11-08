@@ -161,12 +161,12 @@ The owner set rules for clean edges on 2026-11-07, and the router does not meet 
 ## Decisions
 
 - [005. Our own gap router](decisions/005-our-own-gap-router.md)
-- [015. Lines that end at containers](decisions/015-lines-that-end-at-containers.md)
-- [019. Lines meet any side](decisions/019-lines-meet-any-side.md)
+- [015. Edges that end at containers](decisions/015-edges-that-end-at-containers.md)
+- [019. Edges meet any side](decisions/019-edges-meet-any-side.md)
 - [023. Fan-outs of three bundle](decisions/023-fan-outs-of-three-bundle.md)
 - [090. A bundle splits at one knot](decisions/090-a-bundle-splits-at-one-knot.md)
-- [060. A bent line is reported and never refused](decisions/060-a-bent-line-is-reported-and-never-refused.md)
-- [061. A line never moves for its label](decisions/061-a-line-never-moves-for-its-label.md)
+- [060. A bent edge is reported and never refused](decisions/060-a-bent-edge-is-reported-and-never-refused.md)
+- [061. An edge never moves for its label](decisions/061-an-edge-never-moves-for-its-label.md)
 - [095. A good route is one the eye can follow](decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 - [096. An edge is steered by facts and never by coordinates](decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
-- [097. The router draws clean lines and the agent makes their room](decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
+- [097. The router draws clean edges and the agent makes their room](decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md)

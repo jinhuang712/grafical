@@ -14,7 +14,7 @@ A label may hold a line break, which the engine keeps. Any label may be aligned 
 
 - A command for each kind of element.
   - IDs are unique in a diagram, so one command reaches them all.
-- A place in pixels inside a box.
+- A place in pixels inside a node.
   - An alignment is a look, and a position is not ("Facts over coordinates").
 
 ## Consequences
@@ -23,7 +23,7 @@ A stated break can make a label taller than the engine would, and a label that n
 
 Built on 2026-11-06, with less than the choice says:
 
-- A title and the label of a group, a row or a wall stay one line, since their room is made for one line.
+- A title and the label of a group, a layer or a wall stay one line, since their room is made for one line.
 - `label --align` reaches a node, an edge, a wall and a lane, and a region's label waits for "A region's label sits at a fraction of a side".
 - A note has no ID, so the owner chose a second command, `note --align`, which names a note by what it is about.
 - A lane keeps a stated `center`, since its default depends on how it runs.

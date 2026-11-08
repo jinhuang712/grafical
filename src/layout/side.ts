@@ -68,7 +68,7 @@ export function planSideways(
     const v = at.get(e.to);
     if (u === undefined || v === undefined || e.from === e.to || u.layer !== v.layer) continue;
     if (Math.abs(u.order - v.order) !== 1) continue;
-    // A stated top or bottom goes round through a gutter (specs/decisions, "An agent may state the side of a line").
+    // A stated top or bottom goes round through a gutter (specs/decisions, "An agent may state the side of an edge").
     if ([e.out, e.in].some((s) => s === "top" || s === "bottom")) continue;
     const [left, right] = u.order < v.order ? [e.from, e.to] : [e.to, e.from];
     const key = `${left}\u0000${right}`;

@@ -1,4 +1,4 @@
-// Columns in the picture (specs/decisions, "Columns beside rows"): every box of a column left of every box of
+// Columns in the picture (specs/decisions, "Columns beside layers"): every box of a column left of every box of
 // the next, in every row, with nothing drawn.
 
 import { beforeAll, describe, expect, it } from "vitest";
@@ -16,7 +16,7 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-describe('columns in the picture (specs/decisions, "Columns beside rows")', () => {
+describe('columns in the picture (specs/decisions, "Columns beside layers")', () => {
   it("photo sharing: requests left, processing right, narrower and with a bend less", () => {
     const r = applyOps(edgeLooks, [
       { op: "column.add", id: "requests", nodes: ["web", "api", "cache"] },
@@ -40,7 +40,7 @@ describe('columns in the picture (specs/decisions, "Columns beside rows")', () =
     expect(scene.walls).toBeUndefined();
   });
 
-  it('hold across rows that share no box (specs/decisions, "Columns hold across rows")', () => {
+  it('hold across rows that share no box (specs/decisions, "Columns hold across layers")', () => {
     const d: Diagram = {
       grafical: 1,
       title: "T",

@@ -1,4 +1,4 @@
-// The gap between two regions takes a multiple (specs/decisions, "The gap between two regions takes a multiple").
+// The gap between two regions takes a multiple (specs/decisions, "The gap between two regions may be magnified").
 // The diagram holds which two regions and by how much, and the layout widens that gap wherever they still neighbour.
 
 import { groupNodes, inGroup } from "./groups.ts";

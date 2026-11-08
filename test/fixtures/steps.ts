@@ -1,4 +1,4 @@
-// Numbered steps (specs/decisions, "Step badges ride the line"): one checkout request followed in order. Badges on labelled and
+// Numbered steps (specs/decisions, "Step badges ride the edge"): one checkout request followed in order. Badges on labelled and
 // unlabelled lines, on lines up and down, on two lines between neighbours, on a
 // two-way line and on a line to a whole group, and one line left unnumbered.
 

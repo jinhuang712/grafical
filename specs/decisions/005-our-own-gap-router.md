@@ -4,11 +4,11 @@ Decided: 2026-10-11
 
 ## The problem
 
-Lines must stay clear of boxes and text, and a change must move only the lines it touches. The routers on offer either lay everything out again or have licenses an MIT project cannot take.
+Edges must stay clear of nodes and text, and a change must move only the edges it touches. The routers on offer either lay everything out again or have licenses an MIT project cannot take.
 
 ## The choice
 
-Edges run as horizontal and vertical segments. They travel through the gutters between layers and the gaps between neighbouring nodes, never through a node. A label sits on or beside a segment of its own route, clear of nodes, other labels and other edges.
+Edges run as horizontal and vertical runs. They travel through the gutters between layers and the gaps between neighbouring nodes, never through a node. A label sits on or beside a run of its own route, clear of nodes, other labels and other edges.
 
 grafical uses its own gap router. It works in three passes:
 1. **Path:** each edge's path through the gutters and gaps depends only on the placement and the edge itself.
@@ -29,7 +29,7 @@ The phase 0 router spike compared it with `libavoid-js` on the public brief (30 
 | Unrelated edges drawn on top of each other | 0 | 3 |
 | Crossings on the public brief | 68 | 40 |
 
-What phase 1 added to the router: fewer crossings, from 68 to 15 on the public brief, mostly from node order; buses; side exits; room before squeezing; labels by rule; and the edge cases of self-loops, several lines between one pair, lines within a row and lines that skip rows.
+What phase 1 added to the router: fewer crossings, from 68 to 15 on the public brief, mostly from node order; bundles; side exits; room before squeezing; labels by rule; and the edge cases of self-loops, several edges between one pair, edges within a layer and edges that skip layers.
 
 The fuzz test lays out 100 random diagrams with fixed seeds in CI, 500 until 2026-10-19, and more on request. None has an engine-owned defect ("Defects owned by who can fix them"). Before the phase 1 robustness work, 48% had one. 35,000 seeds in all passed, which is evidence, not a proof.
 
@@ -48,4 +48,4 @@ The fuzz test lays out 100 random diagrams with fixed seeds in CI, 500 until 202
 
 ## Consequences
 
-grafical owns its router and maintains it. A change spreads to another channel only through the lines that use both.
+grafical owns its router and maintains it. A change spreads to another channel only through the edges that use both.

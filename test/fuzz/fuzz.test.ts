@@ -58,7 +58,7 @@ describe("fuzz", () => {
       );
       expect(found).toEqual([]);
     },
-    // Each seed lays out again to move a title a line runs across (specs/decisions, "A group's label moves no box and no line").
+    // Each seed lays out again to move a title a line runs across (specs/decisions, "A group's label moves no node and no edge").
     Math.max(60_000, seeds * 200),
   );
 

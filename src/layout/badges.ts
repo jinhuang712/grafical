@@ -1,4 +1,4 @@
-// Step badges (specs/decisions, "Step badges ride the line"): an edge's number sits in a small ring centred on the edge,
+// Step badges (specs/decisions, "Step badges ride the edge"): an edge's number sits in a small ring centred on the edge,
 // under the start of its label's text, which stands off the edge past it. The router
 // gives the slot room for both, as it does for any label, and keeps the badge's end of
 // the slot over a straight part of the edge. A badge that the slot still leaves

@@ -47,12 +47,12 @@ A node is a part of the system: a service, a store, a queue, a person or a step.
   - [The theme](../specs/theme.md)
 - **Why:**
   - [006. Bundled fonts](../specs/decisions/006-bundled-fonts.md)
-  - [014. Boxes sized to their text](../specs/decisions/014-boxes-sized-to-their-text.md)
+  - [014. Nodes sized to their text](../specs/decisions/014-nodes-sized-to-their-text.md)
   - [020. Every layered diagram type](../specs/decisions/020-every-layered-diagram-type.md)
   - [025. Marks of any kind](../specs/decisions/025-marks-of-any-kind.md)
   - [052. A choice is a small diamond](../specs/decisions/052-a-choice-is-a-small-diamond.md)
-  - [077. A line meets a diamond at a corner](../specs/decisions/077-a-line-meets-a-diamond-at-a-corner.md)
-  - [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
+  - [077. An edge meets a diamond at a corner](../specs/decisions/077-an-edge-meets-a-diamond-at-a-corner.md)
+  - [057. A node may take a look of its own](../specs/decisions/057-a-node-may-take-a-look-of-its-own.md)
 
 **Stories:**
 
@@ -132,7 +132,7 @@ A node may take a multiple of its width, its height or both, such as 1.5.
 - A taller node makes its layer taller.
 - A dot or a `choice` keeps its size and refuses a multiple.
 
-- **Why:** [080. A node takes multiples of its width and height](../specs/decisions/080-a-node-takes-multiples-of-its-width-and-height.md)
+- **Why:** [080. A node's width and height may be magnified](../specs/decisions/080-a-node-s-width-and-height-may-be-magnified.md)
 
 ### F1.1.4: Marks
 
@@ -197,7 +197,7 @@ A node takes its colors from the styles it marks, so that a color says something
   - A follower may be followed, and a circle is refused as `like-cycle`.
 
 - **Why:**
-  - [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
+  - [057. A node may take a look of its own](../specs/decisions/057-a-node-may-take-a-look-of-its-own.md)
   - [089. A style may be as rich as it likes](../specs/decisions/089-a-style-may-be-as-rich-as-it-likes.md)
   - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
 
@@ -216,12 +216,12 @@ An edge says that two things connect and how. The agent states its ends, its typ
   - [Routing: edges that end at a container](../specs/routing.md#edges-that-end-at-a-container)
   - [Placement: bands, bars and walls](../specs/placement.md#bands-bars-and-walls)
 - **Why:**
-  - [015. Lines that end at containers](../specs/decisions/015-lines-that-end-at-containers.md)
-  - [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
+  - [015. Edges that end at containers](../specs/decisions/015-edges-that-end-at-containers.md)
+  - [019. Edges meet any side](../specs/decisions/019-edges-meet-any-side.md)
   - [026. Edge weights](../specs/decisions/026-edge-weights.md)
-  - [038. A row with no box as one bar](../specs/decisions/038-a-row-with-no-box-as-one-bar.md)
+  - [038. A layer with no node as one bar](../specs/decisions/038-a-layer-with-no-node-as-one-bar.md)
   - [078. A bar may cross a group](../specs/decisions/078-a-bar-may-cross-a-group.md)
-  - [039. Step badges ride the line](../specs/decisions/039-step-badges-ride-the-line.md)
+  - [039. Step badges ride the edge](../specs/decisions/039-step-badges-ride-the-edge.md)
 
 **Stories:**
 
@@ -296,7 +296,7 @@ One arrow can point at a whole system instead of each of its parts.
   - A band in a lane of the same name draws the name once.
   - An edge meets the band straight past its other end where nothing is in the way.
 - A layer with no node may be an end too, when the other end holds a node: a gateway or a message bus that every request passes.
-  - It is drawn as one 40 px bar across the content with its label at the left ([038. A row with no box as one bar](../specs/decisions/038-a-row-with-no-box-as-one-bar.md)).
+  - It is drawn as one 40 px bar across the content with its label at the left ([038. A layer with no node as one bar](../specs/decisions/038-a-layer-with-no-node-as-one-bar.md)).
   - Each edge meets it straight past its other end.
 - An edge that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge --add --pass`, or `edge --pass <id> [--off]` for an edge already drawn.
   - It then names the bar in `passes`.
@@ -344,8 +344,8 @@ Nodes are gathered into systems, lanes and parts that edges keep apart. A group 
   - [Text placement: wall labels](../specs/labels.md#wall-labels)
   - [Text placement: notes](../specs/labels.md#notes)
 - **Why:**
-  - [003. Rows unseen, groups as systems](../specs/decisions/003-rows-unseen-groups-as-systems.md)
-  - [018. Swimlanes run one way](../specs/decisions/018-swimlanes-run-one-way.md)
+  - [003. Layers unseen, groups as systems](../specs/decisions/003-layers-unseen-groups-as-systems.md)
+  - [018. Lanes run one way](../specs/decisions/018-lanes-run-one-way.md)
   - [029. Walls as space](../specs/decisions/029-walls-as-space.md)
   - [030. Notes as callouts or footnotes](../specs/decisions/030-notes-as-callouts-or-footnotes.md)
   - [037. A group copy holds its inside](../specs/decisions/037-a-group-copy-holds-its-inside.md)

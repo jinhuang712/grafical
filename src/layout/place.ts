@@ -1,7 +1,7 @@
-// Placement across (specs/decisions, "Rows unseen, groups as systems", "Layout computed again on every change"): every node sits on a column of one grid
+// Placement across (specs/decisions, "Layers unseen, groups as systems", "Layout computed again on every change"): every node sits on a column of one grid
 // shared by all layers (grid.ts). Each column gets an x from the room its nodes need:
 // node widths and the gap between neighbours, group nodes and the space between a
-// node and the nodes outside it, the space between column lanes (specs/decisions, "Swimlanes run one way"), labels of
+// node and the nodes outside it, the space between column lanes (specs/decisions, "Lanes run one way"), labels of
 // edges that run sideways between neighbours, and edges that pass a layer through
 // an empty column. Columns are
 // packed from the left, as close as that room allows, and the picture is centred
@@ -90,7 +90,7 @@ export interface PlaceText {
   sideways: Map<string, SideSlot>;
   /** One-line width of an edge's label, or undefined for none. */
   edgeLabelW: (id: string) => number | undefined;
-  /** The least room between its neighbours a sideways edge needs past its label's, such as for step badges (specs/decisions, "Step badges ride the line"). */
+  /** The least room between its neighbours a sideways edge needs past its label's, such as for step badges (specs/decisions, "Step badges ride the edge"). */
   sideRoom?: (id: string) => number;
   /** Width of a group's label. */
   groupLabelW: (id: string) => number;
@@ -180,7 +180,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   /** How many nodes lie between a member and the side of g's node, g's own included. */
   const levels = (m: PNode, g: string) => chainOf(m).indexOf(g) + 1;
 
-  // Column lanes (specs/decisions, "Swimlanes run one way"), and the nodes outside them, as blocks in order across.
+  // Column lanes (specs/decisions, "Lanes run one way"), and the nodes outside them, as blocks in order across.
   const ranks = laneRun(d) === "columns" ? laneRanks(d) : new Map<string, number>();
   const laneIds = (d.lanes ?? []).map((x) => x.id);
   const laneOrder: PNode[][] = [];
@@ -222,7 +222,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   };
   const laneBlock = (lane: number): PNode[] =>
     laneOrder.find((ns) => ranks.get((ns[0] as PNode).id) === lane) ?? [];
-  // Columns (specs/decisions, "Columns hold across rows"): the nodes of each column that holds one, left to right.
+  // Columns (specs/decisions, "Columns hold across layers"): the nodes of each column that holds one, left to right.
   const columnRank = columnRanks(d);
   const columnOrder: PNode[][] = [];
   {
@@ -255,7 +255,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   };
   /** Whether a group's label sits beside its layers rather than above or below them. */
   const besideRows = (g: string) => atSide({ titleAt: titleOf(g) });
-  // No node moves for a group's label: an edge across it refuses the write (specs/decisions, "A group's label moves no box and no line").
+  // No node moves for a group's label: an edge across it refuses the write (specs/decisions, "A group's label moves no node and no edge").
   const groups = solve().groups;
 
   function solve(): { groups: PGroup[] } {
@@ -272,7 +272,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
         add(a.col, b.col, a.w / 2 + sp.nodeGap + b.w / 2);
       }
     }
-    // A node placed by steps (specs/decisions, "Steps from another box"): each step across keeps a medium node and a gap, so
+    // A node placed by steps (specs/decisions, "Steps from another node"): each step across keeps a medium node and a gap, so
     // that two steps never look like one.
     for (const n of nodes.values()) {
       const from = n.node.from === undefined ? undefined : nodes.get(n.node.from);

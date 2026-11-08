@@ -15,7 +15,7 @@
 //    squeezes (specs/decisions, "Layout computed again on every change"): the fixed order guarantees such a layer further down.
 // A label with no free slot at all is returned, so that it can move to another
 // gutter of its path. When it has none left, no edge moves for it: it takes the slot
-// that costs least, and the write is refused (specs/decisions, "A line never moves for its label").
+// that costs least, and the write is refused (specs/decisions, "An edge never moves for its label").
 //
 // The runs of one fan-out or fan-in carry the same `bundle`: their stubs at one x are
 // the shared trunk, one line, and never count against each other.
@@ -77,7 +77,7 @@ function onRun(v: Visit, x0: number): boolean {
 }
 
 /**
- * The square a step's badge takes when its run lies on layer `row` (specs/decisions, "Step badges ride the line"): centred on the run under
+ * The square a step's badge takes when its run lies on layer `row` (specs/decisions, "Step badges ride the edge"): centred on the run under
  * the start of the label's text, or its end where the start is off the run; or on the edge
  * beside a label level with it.
  */
@@ -131,7 +131,7 @@ function candidates(v: Visit, lab: VisitLabel): Candidate[] {
     { mode: "beside", x0: v.lo - side - lab.w, score: len < lab.w ? -1 : 1001 },
   ];
   // On the run, clear of its corners, so that the edge reads through the label
-  // (specs/decisions, "A line's label sits on its line"). A run too short for the label
+  // (specs/decisions, "An edge's label sits on its edge"). A run too short for the label
   // carries it on the edge where it comes in or goes out, the edge passing through it.
   if (rides(lab)) {
     const room = (len - lab.w) / 2 - ON_CLEAR;
@@ -149,7 +149,7 @@ function candidates(v: Visit, lab: VisitLabel): Candidate[] {
   }
   const touch = Math.min(16, len);
   const reach = Math.max(0, (len + lab.w) / 2 - touch);
-  // A step's badge sits on the run itself, under one end of the label (specs/decisions, "Step badges ride the line").
+  // A step's badge sits on the run itself, under one end of the label (specs/decisions, "Step badges ride the edge").
   const fits = (x0: number) =>
     lab.badge === undefined || onRun(v, x0) || onRun(v, x0 + lab.w - 2 * STEP.r);
   for (const [mode, penalty] of [
@@ -259,7 +259,7 @@ function geometry(pitch: number) {
       if (bu !== undefined && clash(bv, bu)) c++;
     }
     // A step's badge reaches across its run, past its label's node, and keeps clear of the
-    // other's edges, label and badge there (specs/decisions, "Step badges ride the line").
+    // other's edges, label and badge there (specs/decisions, "Step badges ride the edge").
     const gv = badgeOf(v, rv);
     const gu = badgeOf(u, ru);
     if (gu !== undefined) {
@@ -433,7 +433,7 @@ export function routeGutter(
         }
       } else if (lab.badge !== undefined) {
         // A badge beside its text sits on the edge itself, where another edge near it, up
-        // or down, may pass it at any layer (specs/decisions, "Step badges ride the line").
+        // or down, may pass it at any layer (specs/decisions, "Step badges ride the edge").
         const keep = { ...lab, mode: c.mode, x0: c.x0 };
         const g = badgeBox(v, keep, 0, 0);
         const reach = (x: number) =>

@@ -15,7 +15,7 @@ Decided on 2026-10-12 by the owner. In a real setup an agent knows only that a `
   - Thresholds live in warnings, which react to the diagram at hand ("Curation stays with the agent").
 - **What the type guides taught moved into it.** Measured the same day (`bench/results/p1d-guides.md`): without the type guides Haiku still knew its diagram types, but not grafical's spelling of them.
   - It drew a flowchart's Start and End as state-machine dots, whose labels are not drawn.
-  - It left C4 and data-flow lines unlabelled.
+  - It left C4 and data-flow edges unlabelled.
   - It was refused 16% of its calls against 3%.
 - **Clear names.** A name an agent misreads is fixed at the name.
   - Fifteen drafts of the help round gave the legend an edge kind as `line: async`.

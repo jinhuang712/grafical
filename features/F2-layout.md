@@ -59,7 +59,7 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
 - A layer's label is optional.
   - It is drawn only with the layer: in a band's head, or in a bar.
   - A drawn layer with no label draws no name.
-  - A band without one has no head ([046. A row's label is optional](../specs/decisions/046-a-row-s-label-is-optional.md)).
+  - A band without one has no head ([046. A layer's label is optional](../specs/decisions/046-a-layer-s-label-is-optional.md)).
 - `layer --split` moves the second half of a layer into a new layer below it.
   - With `--from <node>` it moves the nodes from that node on.
 - A layer can be removed only when it is empty, and the edges that end at it go with it.
@@ -68,7 +68,7 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
   - `band` draws it with the band's light fill and grey label.
   - Without a look, a layer is drawn only when an edge ends at it.
   - Then a layer with no node is drawn as a bar and a layer with nodes as a band.
-  - A layer with no node and a look is a bar and is checked as one ([045. A row with a look is drawn](../specs/decisions/045-a-row-with-a-look-is-drawn.md)).
+  - A layer with no node and a look is a bar and is checked as one ([045. A layer with a look is drawn](../specs/decisions/045-a-layer-with-a-look-is-drawn.md)).
   - An edge that passes it needs `--pass` (`bar-crossed`).
   - It may not lie between the first and last layers of a group (`bar-in-group`).
   - Taking the look away with `layer --look` clears `bar-in-group`.
@@ -81,10 +81,10 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
   - [The model](../specs/model.md)
   - [Placement: the column grid](../specs/placement.md#the-column-grid)
 - **Why:**
-  - [003. Rows unseen, groups as systems](../specs/decisions/003-rows-unseen-groups-as-systems.md)
+  - [003. Layers unseen, groups as systems](../specs/decisions/003-layers-unseen-groups-as-systems.md)
   - [033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)
-  - [045. A row with a look is drawn](../specs/decisions/045-a-row-with-a-look-is-drawn.md)
-  - [046. A row's label is optional](../specs/decisions/046-a-row-s-label-is-optional.md)
+  - [045. A layer with a look is drawn](../specs/decisions/045-a-layer-with-a-look-is-drawn.md)
+  - [046. A layer's label is optional](../specs/decisions/046-a-layer-s-label-is-optional.md)
 
 **Stories:**
 
@@ -126,8 +126,8 @@ A second placement fact beside layers. Nothing is drawn: a column is a guide.
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 - **How it works:** [Placement: columns](../specs/placement.md#columns)
 - **Why:**
-  - [027. Columns beside rows](../specs/decisions/027-columns-beside-rows.md)
-  - [035. Columns hold across rows](../specs/decisions/035-columns-hold-across-rows.md)
+  - [027. Columns beside layers](../specs/decisions/027-columns-beside-layers.md)
+  - [035. Columns hold across layers](../specs/decisions/035-columns-hold-across-layers.md)
   - [056. A column may carry a heading](../specs/decisions/056-a-column-may-carry-a-heading.md)
 
 **Stories:**
@@ -166,7 +166,7 @@ A node in no layer, placed some cells of the grid from another node.
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 - **How it works:** [Placement: steps from another node](../specs/placement.md#steps-from-another-node)
 - **Why:**
-  - [031. Steps from another box](../specs/decisions/031-steps-from-another-box.md)
+  - [031. Steps from another node](../specs/decisions/031-steps-from-another-node.md)
   - [032. Who chose is punished](../specs/decisions/032-who-chose-is-punished.md)
 
 **Stories:**
@@ -212,7 +212,7 @@ The gap between two neighbouring regions may be magnified, by a multiple of its 
 - Two groups are neighbours when a node of one stands next to a node of the other in a layer, or when one ends in the layer above the other's first.
 - A gap whose regions stop being neighbours stays stated and does nothing, and a gap goes when its region goes.
 
-- **Why:** [079. The gap between two regions takes a multiple](../specs/decisions/079-the-gap-between-two-regions-takes-a-multiple.md)
+- **Why:** [079. The gap between two regions may be magnified](../specs/decisions/079-the-gap-between-two-regions-may-be-magnified.md)
 
 **Stories:**
 
@@ -231,7 +231,7 @@ The agent says what connects. grafical draws every edge.
   - Where edges join on purpose, a dot marks the join.
 - A label sits on its edge and the edge passes through it, unless the agent takes it off.
   - With no room on the edge it has three ways: it sits beside the edge · it wraps · it moves to another gap on its way.
-  - Where no gap on its way has room, no edge moves for it and the write is refused as `label-blocked` ([061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)).
+  - Where no gap on its way has room, no edge moves for it and the write is refused as `label-blocked` ([061. An edge never moves for its label](../specs/decisions/061-an-edge-never-moves-for-its-label.md)).
   - The refusal names the edge, the edges across the label and the gaps it tried.
   - `node --size` is among the commands that can change it.
   - grafical never widens a node for its edges.
@@ -246,10 +246,10 @@ The agent says what connects. grafical draws every edge.
   - [Text placement: edge labels](../specs/labels.md#edge-labels)
 - **Why:**
   - [005. Our own gap router](../specs/decisions/005-our-own-gap-router.md)
-  - [019. Lines meet any side](../specs/decisions/019-lines-meet-any-side.md)
+  - [019. Edges meet any side](../specs/decisions/019-edges-meet-any-side.md)
   - [023. Fan-outs of three bundle](../specs/decisions/023-fan-outs-of-three-bundle.md)
-  - [061. A line never moves for its label](../specs/decisions/061-a-line-never-moves-for-its-label.md)
-  - [051. A label sits on its straight vertical line](../specs/decisions/051-a-label-sits-on-its-straight-vertical-line.md)
+  - [061. An edge never moves for its label](../specs/decisions/061-an-edge-never-moves-for-its-label.md)
+  - [051. A label sits on its straight vertical edge](../specs/decisions/051-a-label-sits-on-its-straight-vertical-edge.md)
   - [065. Unreadable is refused and costly is reported](../specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
   - [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 
@@ -270,7 +270,7 @@ An agent may state the side an edge leaves by or enters by. A side left unstated
 - A side that faces away from the other end takes the edge round its own node.
 - A stated side can cost more bends or crossings, and the counts show them.
 
-- **Why:** [058. An agent may state the side of a line](../specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
+- **Why:** [058. An agent may state the side of an edge](../specs/decisions/058-an-agent-may-state-the-side-of-an-edge.md)
 
 ### F2.7.2: Edge shapes
 
@@ -281,7 +281,7 @@ All the edges of a diagram share one shape, and the routes stay the same.
 - `square` has sharp corners, as a new diagram does.
 - `round` rounds the corners and keeps the straight runs.
 
-- **Why:** [059. Lines may be drawn square or round](../specs/decisions/059-lines-may-be-drawn-square-or-round.md)
+- **Why:** [059. Edges may be drawn square or round](../specs/decisions/059-edges-may-be-drawn-square-or-round.md)
 
 ### F2.7.3: Labels on edges
 
@@ -295,7 +295,7 @@ An edge carries its label, and the edge passes through it. An agent may take one
 - `edge --label-at` on an edge with no label is refused as `bad-value`, and clearing a label clears its seat.
 - Edges do not yet move apart for a label, past wrapping it.
 
-- **Why:** [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
+- **Why:** [066. An edge's label sits on its edge](../specs/decisions/066-an-edge-s-label-sits-on-its-edge.md)
 
 ### F2.7.4: Steering an edge
 
@@ -340,7 +340,7 @@ Edges meet the rules the owner set on 2026-11-07, so that the eye can follow the
 - Where places leave a pair no clean route, one edge goes round the outside.
   - The write reports that the agent may move a node.
 
-- **Why:** [097. The router draws clean lines and the agent makes their room](../specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
+- **Why:** [097. The router draws clean edges and the agent makes their room](../specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md)
 
 ## F2.8: Flow direction
 

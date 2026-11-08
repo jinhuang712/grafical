@@ -13,7 +13,7 @@ export interface NodePaint {
 
 export interface EdgePaint {
   stroke: string;
-  /** Dash pattern of a dashed or dotted edge: async and optional edges (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
+  /** Dash pattern of a dashed or dotted edge: async and optional edges (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side"). */
   dash?: string;
 }
 
@@ -44,7 +44,7 @@ export interface Paint {
     nodeSublabel: string;
     edgeLabel: string;
   };
-  /** A system node behind its nodes (specs/decisions, "Rows unseen, groups as systems"). Layers are not drawn. */
+  /** A system node behind its nodes (specs/decisions, "Layers unseen, groups as systems"). Layers are not drawn. */
   group: BoxPaint;
   /**
    * How a node inside a node is told apart (specs/decisions, "Every layered diagram type"). alternate: the fill and the
@@ -52,9 +52,9 @@ export interface Paint {
    * colour, which is darker on a light theme.
    */
   nesting: "alternate" | "shade";
-  /** A layer an edge ends at, drawn behind its groups: lighter than a group (specs/decisions, "Lines that end at containers"). */
+  /** A layer an edge ends at, drawn behind its groups: lighter than a group (specs/decisions, "Edges that end at containers"). */
   band: BoxPaint;
-  /** A swimlane, drawn behind everything else (specs/decisions, "Swimlanes run one way"). Lanes side by side share a border. */
+  /** A swimlane, drawn behind everything else (specs/decisions, "Lanes run one way"). Lanes side by side share a border. */
   lane: LanePaint;
   node: {
     radius: number;
@@ -69,7 +69,7 @@ export interface Paint {
     strokeWidth: number;
     kinds: Record<EdgeKind, EdgePaint>;
     arrow: { length: number; halfWidth: number };
-    /** An edge on the main path: a thicker edge and a larger arrowhead (specs/decisions, "Lines meet any side"). */
+    /** An edge on the main path: a thicker edge and a larger arrowhead (specs/decisions, "Edges meet any side"). */
     main: { strokeWidth: number; arrow: { length: number; halfWidth: number } };
     /**
      * More weight levels (specs/decisions, "Edge weights"): a name and a width. `thin` is `strokeWidth` and `thick` is
@@ -80,7 +80,7 @@ export interface Paint {
     cornerRadius: number;
     /**
      * orthogonal: corners rounded by cornerRadius. curved: each corner as round as
-     * its two stretches and the room around it allow; the route stays the same (specs/decisions, "Lines meet any side").
+     * its two stretches and the room around it allow; the route stays the same (specs/decisions, "Edges meet any side").
      */
     shape: "orthogonal" | "curved";
     /** The patch behind an edge label, so the label stays readable over edges. */
@@ -96,7 +96,7 @@ const STYLES: Record<EdgeKind, LineStyleName> = {
   optional: "dotted",
 };
 
-/** The edge style an edge kind is drawn in. The kind decides it (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"). */
+/** The edge style an edge kind is drawn in. The kind decides it (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side"). */
 export function lineStyle(kind: EdgeKind): LineStyleName {
   return STYLES[kind];
 }
@@ -150,7 +150,7 @@ export const STYLE_KIND: Record<LineStyleName, EdgeKind> = {
   plain: "link",
 };
 
-/** A link says two things are related, with no direction, so it has no arrowhead (specs/decisions, "Lines meet any side"). */
+/** A link says two things are related, with no direction, so it has no arrowhead (specs/decisions, "Edges meet any side"). */
 export function hasHead(kind: EdgeKind): boolean {
   return kind !== "link";
 }

@@ -1,12 +1,12 @@
-// The column grid (specs/decisions, "Rows unseen, groups as systems", "Layout computed again on every change"): every node gets a column of one grid shared
+// The column grid (specs/decisions, "Layers unseen, groups as systems", "Layout computed again on every change"): every node gets a column of one grid shared
 // by all layers. Within a layer, columns follow node order. The facts decide the
 // columns, deterministically, in four steps:
 // 1. Order: each layer's nodes come left to right, each lane that runs as a column
-//    takes a block of columns of its own (specs/decisions, "Swimlanes run one way"), and each group's members fill a
+//    takes a block of columns of its own (specs/decisions, "Lanes run one way"), and each group's members fill a
 //    block of columns that no other node of the group's layers enters. These are
 //    "left of" constraints between nodes.
 // 2. Columns: nodes that share a column form a class. Alignment facts join
-//    classes first, then nodes placed by steps (specs/decisions, "Steps from another box"): such a node joins the class of
+//    classes first, then nodes placed by steps (specs/decisions, "Steps from another node"): such a node joins the class of
 //    the node it steps from at an offset, its steps across, so that a class may span
 //    columns. Then edges between layers join their two ends, best edge first,
 //    so that the edge becomes one straight vertical edge. An edge that skips layers
@@ -30,7 +30,7 @@ import type { AlignmentProblem } from "./align.ts";
 
 export type GroupCode = "group-split" | "group-conflict" | "wall-sides" | "column-order";
 
-/** A group whose members cannot be boxed together (specs/decisions, "Rows unseen, groups as systems"). */
+/** A group whose members cannot be boxed together (specs/decisions, "Layers unseen, groups as systems"). */
 export interface GroupProblem {
   code: GroupCode;
   group: string;
@@ -40,7 +40,7 @@ export interface GroupProblem {
   facts: Facts;
 }
 
-/** A node placed by steps whose cell another fact keeps (specs/decisions, "Steps from another box"). */
+/** A node placed by steps whose cell another fact keeps (specs/decisions, "Steps from another node"). */
 export interface StepProblem {
   code: "step-blocked";
   node: string;
@@ -107,7 +107,7 @@ export function buildGrid(d: Diagram): Grid {
     rows.push(list);
   });
   const N = ids.length;
-  // Each node's offset from its class's column: 0 but for nodes placed by steps (specs/decisions, "Steps from another box").
+  // Each node's offset from its class's column: 0 but for nodes placed by steps (specs/decisions, "Steps from another node").
   const off: number[] = new Array<number>(N).fill(0);
   // The groups around each node, innermost first (specs/decisions, "Every layered diagram type").
   const chainOf: string[][] = Array.from({ length: N }, () => []);
@@ -194,7 +194,7 @@ export function buildGrid(d: Diagram): Grid {
   };
 
   const groupProblems = groupConstraints(d, rows, ids, row, chainOf, succ, reaches, cls, links);
-  // Columns (specs/decisions, "Columns beside rows"): every node of a column lies left of every node of a later column, in
+  // Columns (specs/decisions, "Columns beside layers"): every node of a column lies left of every node of a later column, in
   // every layer. Layers are already in column order, so only another fact can contradict it:
   // the first pair that cannot hold is refused.
   const ranks = columnRanks(d);
@@ -391,7 +391,7 @@ export function buildGrid(d: Diagram): Grid {
     }
   }
 
-  // Step 2a, nodes placed by steps (specs/decisions, "Steps from another box"): each joins the class of the node it steps from,
+  // Step 2a, nodes placed by steps (specs/decisions, "Steps from another node"): each joins the class of the node it steps from,
   // its steps across right of it, the node stepped from first. The join must hold.
   const stepProblems: StepProblem[] = [];
   {
@@ -845,7 +845,7 @@ function groupConstraints(
       const list = rows[r] ?? [];
       const at = list.map((i, k) => (isIn(i, g) ? k : -1)).filter((k) => k >= 0);
       if (at.length === 0) {
-        // A layer inside the group's span with no member (specs/decisions, "Rows unseen, groups as systems"): the node spans it, so each
+        // A layer inside the group's span with no member (specs/decisions, "Layers unseen, groups as systems"): the node spans it, so each
         // of its nodes sits wholly left or right of the node, the layer keeping its order.
         const layer = d.layers[r]?.id ?? "";
         const split = gapSplit(list, ms, g, rows, chainOf, links, reaches, cls);
@@ -1016,7 +1016,7 @@ interface Packed {
 
 /**
  * The "left of" constraints between classes, each with the least columns between the
- * two classes' columns: 1, but for a node at an offset in its class (specs/decisions, "Steps from another box").
+ * two classes' columns: 1, but for a node at an offset in its class (specs/decisions, "Steps from another node").
  */
 function classEdges(
   N: number,

@@ -1,11 +1,11 @@
-// Edges that end at a container (specs/decisions, "Lines that end at containers"). The router knows only nodes, so
+// Edges that end at a container (specs/decisions, "Edges that end at containers"). The router knows only nodes, so
 // each container end is routed to a node of the container that faces the other
 // end, and the route is then cut where it meets the container's node. A group is
 // met at its top or bottom when the other end lies above or below all its layers,
 // and at its side when the two share a layer: then the facing node is the member
 // beside the other end. A layer, drawn as a band, is met at its top or bottom. A layer
 // with a look is drawn as a band too, though no edge ends at it.
-// A lane (specs/decisions, "Swimlanes run one way") is met like a group: at its border across layers, or at its side.
+// A lane (specs/decisions, "Lanes run one way") is met like a group: at its border across layers, or at its side.
 
 import { endKind, endLayers, endNodes, isBar, meeting } from "../model/ends.ts";
 import type { Diagram, Edge } from "../model/types.ts";
@@ -27,7 +27,7 @@ export interface EndPlan {
   edges: Edge[];
   /** Container ends by edge id. */
   ends: Map<string, { from?: ContainerEnd; to?: ContainerEnd }>;
-  /** The layers drawn as bands: those an edge ends at, and those with a look (specs/decisions, "A row with a look is drawn"). */
+  /** The layers drawn as bands: those an edge ends at, and those with a look (specs/decisions, "A layer with a look is drawn"). */
   bands: Set<string>;
   /** The bands with no node: each is drawn as one bar, and its ends stand in until placement. */
   bars: Set<string>;
@@ -46,7 +46,7 @@ function facing(d: Diagram, end: ContainerEnd): string[] {
 /**
  * Stand-ins for every container end, before placement: the middle node of the
  * facing layer, or for a side meeting the member beside the other end. Edges the
- * model refused never reach the layout, so every end here is valid (specs/decisions, "Lines that end at containers").
+ * model refused never reach the layout, so every end here is valid (specs/decisions, "Edges that end at containers").
  */
 export function planEnds(d: Diagram): EndPlan {
   const ends = new Map<string, { from?: ContainerEnd; to?: ContainerEnd }>();

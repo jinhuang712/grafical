@@ -8,8 +8,8 @@ Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in pr
 
 ## The choice
 
-- **What the diagram is:** `show` as now, with rows and nodes in order and groups and lanes and edges.
-- **How it is drawn:** a discrete report of each box, each line and the totals.
+- **What the diagram is:** `show` as now, with layers and nodes in order and groups and lanes and edges.
+- **How it is drawn:** a discrete report of each node, each edge and the totals.
   - The agent judges the drawing from it without opening the picture.
 - **What a change would do:** `grafical try` measures a batch without writing it.
   - The agent decides what to try; grafical measures.
@@ -18,23 +18,23 @@ Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in pr
   - For a day `diagram improve` ran them.
 - **Counts** carry no threshold and no advice:
   - The number of nodes and the picture's width.
-  - The nodes in a row and the lines passing a row.
+  - The nodes in a layer and the edges passing a layer.
 - **The help is documentation, not output about a diagram:** its principles and examples stay.
 - **The form is records**, added on 2026-10-13 after the owner turned down phrases such as "most lines at a box 10 (sync)".
   - Each record is one line: a word that names it, then `key=value` fields in the logfmt style.
   - An example is `line id=a->b from=a to=b leaves=bottom enters=top bends=2 length=372 crosses=- passes=-`.
   - The fields are the JSON's, under the same names.
-- **How long the lines are**, added the same day.
-  - The owner had found a box with one line put in the top row while its partner sat four rows down.
-  - The line ran 964 px round the right edge, and nothing in the output said so.
-  - Each line now gives its length, the shortest it could be and the rows it skips.
-  - Each box and the totals give the length of their lines together.
-  - On that draft: `length=964 direct=480 detour=2.01 skip=3`, and `grafical try` with the box moved down to its partner's row prints `delta ... bends=-4 length=-1380`.
-- **Which lines are bundled**, added on 2026-10-14 after dogfooding.
-  - An agent saw three lines leave a box as one trunk and could not tell from the output which lines those were.
-  - It could not tell either that a label would keep a line on its own.
-  - Each line now names the lines it leaves or arrives with through one port ("Fan-outs of three bundle").
-  - It is read from the picture: lines whose ends meet one box at one point.
+- **How long the edges are**, added the same day.
+  - The owner had found a node with one edge put in the top layer while its partner sat four layers down.
+  - The edge ran 964 px round the right edge, and nothing in the output said so.
+  - Each edge now gives its length, the shortest it could be and the layers it skips.
+  - Each node and the totals give the length of their edges together.
+  - On that draft: `length=964 direct=480 detour=2.01 skip=3`, and `grafical try` with the node moved down to its partner's layer prints `delta ... bends=-4 length=-1380`.
+- **Which edges are bundled**, added on 2026-10-14 after dogfooding.
+  - An agent saw three edges leave a node as one trunk and could not tell from the output which edges those were.
+  - It could not tell either that a label would keep an edge on its own.
+  - Each edge now names the edges it leaves or arrives with through one port ("Fan-outs of three bundle").
+  - It is read from the picture: edges whose ends meet one node at one point.
 
 ## Not chosen
 

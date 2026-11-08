@@ -18,7 +18,7 @@
 // For the target look (specs/decisions, "A target picture with measured rules"): edges between neighbours run straight sideways
 // (side.ts); every edge meets its node side at a port of its own, unless the side
 // has more edges than room, where unlabelled edges of one kind that leave it share
-// a trunk and those that arrive at it share a port (specs/decisions, "Lines meet any side"); a path that skips layers
+// a trunk and those that arrive at it share a port (specs/decisions, "Edges meet any side"); a path that skips layers
 // takes one corridor, an x that is free in every layer it passes; and no vertical
 // edge passes a band's label or the label of a sideways edge.
 
@@ -41,7 +41,7 @@ export interface RouteExtra {
   forbidGap: Map<string, [number, number][]>;
   /** Left end of the label of each sideways edge that has one. */
   sideLabelX: Map<string, number>;
-  /** Edges routed to a stand-in for a container (specs/decisions, "Lines that end at containers"): they never share a port or trunk. */
+  /** Edges routed to a stand-in for a container (specs/decisions, "Edges that end at containers"): they never share a port or trunk. */
   alone: Set<string>;
   /**
    * The ends, by edge id, that meet a band across layers: the band spans the content, so
@@ -49,11 +49,11 @@ export interface RouteExtra {
    */
   bandEnds: Map<string, { from: boolean; to: boolean }>;
   /**
-   * Edges that never leave by a side: those to a column lane (specs/decisions, "Swimlanes run one way"), whose border
+   * Edges that never leave by a side: those to a column lane (specs/decisions, "Lanes run one way"), whose border
    * runs the whole height and would leave a side exit only a stub.
    */
   noSideExit: Set<string>;
-  /** Group nodes across, with the layers they span and the nodes inside them (specs/decisions, "Rows unseen, groups as systems", "Every layered diagram type"). */
+  /** Group nodes across, with the layers they span and the nodes inside them (specs/decisions, "Layers unseen, groups as systems", "Every layered diagram type"). */
   boxes: Box[];
   /**
    * x spans, by layer, where an edge between two nodes of the layer may not run through the
@@ -61,7 +61,7 @@ export interface RouteExtra {
    * layer, or a wall up and down runs through it or reaches into it.
    */
   closedAbove: Map<number, [number, number][]>;
-  /** The x of each side of a column lane (specs/decisions, "Swimlanes run one way"): each runs through every gutter. */
+  /** The x of each side of a column lane (specs/decisions, "Lanes run one way"): each runs through every gutter. */
   laneSides: number[];
 }
 
@@ -103,12 +103,12 @@ export interface LabelBox {
   h: number;
   /**
    * A step's badge rides the edge at one end of the node, which must lie over a straight
-   * part (specs/decisions, "Step badges ride the line"): how far the edge's arrowheads reach, at its start and end.
+   * part (specs/decisions, "Step badges ride the edge"): how far the edge's arrowheads reach, at its start and end.
    */
   badge?: { start: number; end: number };
   /** The label wrapped onto more edges, narrower: asked for only when it does not fit on one. */
   narrower?: () => LabelForm[];
-  /** The agent took the label off its edge (specs/decisions, "A line's label sits on its line"). */
+  /** The agent took the label off its edge (specs/decisions, "An edge's label sits on its edge"). */
   beside?: boolean;
 }
 
@@ -170,7 +170,7 @@ export interface Plan {
    */
   turn: number | undefined;
   /**
-   * A side entry (specs/decisions, "Lines meet any side"): the edge leaves its source's top or bottom at this x, runs
+   * A side entry (specs/decisions, "Edges meet any side"): the edge leaves its source's top or bottom at this x, runs
    * straight to the target's layer, and turns into its left or right side at the
    * middle of the layer. Undefined for every other edge.
    */
@@ -225,7 +225,7 @@ export interface VisitLabel {
   maxWidth: number;
   narrower: (() => LabelForm[]) | undefined;
   /**
-   * A step's badge rides the edge at one end of the label (specs/decisions, "Step badges ride the line"): how far the edge's
+   * A step's badge rides the edge at one end of the label (specs/decisions, "Step badges ride the edge"): how far the edge's
    * arrowheads reach into the gutter from its top and from its bottom, where the edge meets a node.
    */
   badge?: { top: number; bottom: number };
@@ -239,7 +239,7 @@ export interface Routing {
   rows: number[];
   /**
    * The edges whose label no gutter of their path could hold clear of the other edges, each
-   * with those gutters (specs/decisions, "A line never moves for its label"). The label sits in the slot
+   * with those gutters (specs/decisions, "An edge never moves for its label"). The label sits in the slot
    * that costs least, and the write is refused.
    */
   blocked: Map<string, number[]>;
@@ -359,7 +359,7 @@ export function routeAcross(
  * The layers and labels of every gutter. A label that its gutter cannot hold clear of
  * every other edge moves to the next gutter of its path. Once it has tried them all, no
  * edge moves for it: it sits in the slot that costs least on its longest run, and it is
- * returned as blocked (specs/decisions, "A line never moves for its label").
+ * returned as blocked (specs/decisions, "An edge never moves for its label").
  */
 function channels(
   plans: Plan[],
@@ -703,7 +703,7 @@ function portsOn(n: PNode): number {
 }
 
 /**
- * Every edge meets its node side at a port of its own (specs/decisions, "Lines meet any side"), with two exceptions.
+ * Every edge meets its node side at a port of its own (specs/decisions, "Edges meet any side"), with two exceptions.
  * Unlabelled edges in one line style that leave one side leave as a bundle, one port
  * and one trunk that splits near their targets: three or more of them from any
  * side (specs/decisions, "Fan-outs of three bundle"), two or more from a side with more edges than slots. Of the rest, a
@@ -735,7 +735,7 @@ function assignBundles(plans: Plan[], alone: Set<string>): void {
       .filter((b) => b.members.length >= ROUTE.bundleMin);
   };
   // A two-way edge has an arrowhead at its start, so it never shares a trunk from there, and
-  // a main-path edge shares one only with main-path edges, which are as thick (specs/decisions, "Lines meet any side").
+  // a main-path edge shares one only with main-path edges, which are as thick (specs/decisions, "Edges meet any side").
   // Edges of one weight share a trunk (specs/decisions, "Edge weights").
   const look = (pl: Plan) => `${lineStyle(pl.edge.kind)}:${pl.edge.weight ?? ""}`;
   for (const bundle of collect(
@@ -901,7 +901,7 @@ function chooseGaps(
   for (const pl of plans) {
     if (pl.between.length === 0) continue;
     // A band spans the content, so an end that meets one lies straight past the other
-    // end, and every corridor reaches it (specs/decisions, "Lines that end at containers").
+    // end, and every corridor reaches it (specs/decisions, "Edges that end at containers").
     const band = bandEnds.get(pl.edge.id);
     const toBand = (m: Plan) => bandEnds.get(m.edge.id)?.to === true;
     const xs = band?.from === true && band.to !== true ? centreX(pl.v) : centreX(pl.u);
@@ -1309,7 +1309,7 @@ function chooseSideExits(
 }
 
 /**
- * Side entries (specs/decisions, "Lines meet any side"), for edges that could not leave by a side: an edge between
+ * Side entries (specs/decisions, "Edges meet any side"), for edges that could not leave by a side: an edge between
  * neighbouring layers whose target lies wholly left or right of its source runs
  * straight out of the source's top or bottom, beside the target, and turns into the
  * target's facing side at the middle of its layer: one bend, where a route through the
@@ -1378,7 +1378,7 @@ function chooseSideEntries(
       if (pl.bundle !== undefined) continue;
       // An edge between neighbouring layers turns once: by a side exit or a side entry.
       if (pl.between.length === 0 && pl.turn !== undefined) continue;
-      // Only between two nodes: a container end is cut at the container's node (specs/decisions, "Lines that end at containers").
+      // Only between two nodes: a container end is cut at the container's node (specs/decisions, "Edges that end at containers").
       if (pl.edge.from !== u.id || pl.edge.to !== v.id || noSideExit.has(pl.edge.id)) continue;
       // An edge that skips layers turns out of its corridor at its last gap track.
       const corridor = pl.between.length > 0 ? pl.gapX[pl.gapX.length - 1] : undefined;
@@ -1705,7 +1705,7 @@ interface End {
  * starts at the node's left corner: out along the node's own boundary to the left,
  * across the far boundary from left to right, and back along the node's boundary
  * from the right. Ports in this order, left to right, give runs that need not
- * cross (specs/decisions, "Lines meet any side").
+ * cross (specs/decisions, "Edges meet any side").
  */
 function around(e: End): [number, number] {
   const n = e.node;
@@ -2013,7 +2013,7 @@ const PORT_TIERS: { pitch: number; inset: number; clear: number }[] = [
   { pitch: 4, inset: 4, clear: CLEAR / 2 },
 ];
 
-/** The widest pitch the ports of one side spread to (specs/decisions, "Lines meet any side"). */
+/** The widest pitch the ports of one side spread to (specs/decisions, "Edges meet any side"). */
 const SPREAD_MAX = 48;
 
 /** The pitch that `count` ports spread to over a side of n. */
@@ -2023,7 +2023,7 @@ function spreadOf(n: PNode, count: number): number {
 
 /**
  * Ports along one side, in order. They spread evenly over the side first, up to
- * SPREAD_MAX apart, so that its edges never read as one bundle (specs/decisions, "Lines meet any side"); then the
+ * SPREAD_MAX apart, so that its edges never read as one bundle (specs/decisions, "Edges meet any side"); then the
  * preferred pitch and corner inset; when those would bend an edge that could run
  * straight, the ports that do not keep an edge straight may come closer to the
  * corner, and then closer to each other. A port keeps clear of the edges on the

@@ -1,4 +1,4 @@
-// Columns (specs/decisions, "Columns beside rows"): a guide that nodes follow beside their layers. Every node of
+// Columns (specs/decisions, "Columns beside layers"): a guide that nodes follow beside their layers. Every node of
 // a column lies left of every node of the next, in every layer; a node in no column keeps
 // its place beside the node left of it. Nothing is drawn.
 

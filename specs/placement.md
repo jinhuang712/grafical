@@ -169,10 +169,10 @@ The stability tests in `test/layout/stability.ts` apply single operations and as
 ## Decisions
 
 - [002. Facts over coordinates](decisions/002-facts-over-coordinates.md)
-- [003. Rows unseen, groups as systems](decisions/003-rows-unseen-groups-as-systems.md)
+- [003. Layers unseen, groups as systems](decisions/003-layers-unseen-groups-as-systems.md)
 - [004. Layout computed again on every change](decisions/004-layout-computed-again-on-every-change.md)
-- [027. Columns beside rows](decisions/027-columns-beside-rows.md)
-- [031. Steps from another box](decisions/031-steps-from-another-box.md)
-- [035. Columns hold across rows](decisions/035-columns-hold-across-rows.md)
+- [027. Columns beside layers](decisions/027-columns-beside-layers.md)
+- [031. Steps from another node](decisions/031-steps-from-another-node.md)
+- [035. Columns hold across layers](decisions/035-columns-hold-across-layers.md)
 - [072. A change keeps the structure and positions may shift](decisions/072-a-change-keeps-the-structure-and-positions-may-shift.md)
-- [079. The gap between two regions takes a multiple](decisions/079-the-gap-between-two-regions-takes-a-multiple.md)
+- [079. The gap between two regions may be magnified](decisions/079-the-gap-between-two-regions-may-be-magnified.md)

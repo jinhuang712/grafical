@@ -175,10 +175,10 @@ const nodeSchema = z.strictObject({
   marks: iconsSchema.optional(),
 });
 
-/** A whole number of steps (specs/decisions, "Steps from another box"). */
+/** A whole number of steps (specs/decisions, "Steps from another node"). */
 export const steps = z.number().int().min(1).max(MAX_STEPS);
 
-/** A node in no layer, placed by steps from another node (specs/decisions, "Steps from another box"). It has no layer, alignment, column or lane. */
+/** A node in no layer, placed by steps from another node (specs/decisions, "Steps from another node"). It has no layer, alignment, column or lane. */
 const stepNodeSchema = nodeSchema.omit({ align: true, lane: true, column: true }).extend({
   from: nodeId,
   down: steps.optional(),
@@ -271,7 +271,7 @@ export const weightValue = z.union([
   z.number().min(WEIGHT_MIN, { message: WEIGHT }).max(WEIGHT_MAX, { message: WEIGHT }),
 ]);
 
-/** An edge's step number (specs/decisions, "Step badges ride the line"): a whole number from 1 to STEP_NUMBER_MAX. */
+/** An edge's step number (specs/decisions, "Step badges ride the edge"): a whole number from 1 to STEP_NUMBER_MAX. */
 export const stepNumber = z
   .number()
   .int({ message: STEP_NUMBER })
@@ -538,7 +538,7 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
     claim(n.id, `nodes[${ni}].id`, "node");
     nodeIds.push(n.id);
   });
-  // Rules that depend on layers see each node placed by steps in its layer (specs/decisions, "Steps from another box").
+  // Rules that depend on layers see each node placed by steps in its layer (specs/decisions, "Steps from another node").
   const placed = placeSteps(d).d;
   const layerOf = new Map(placed.layers.flatMap((l) => l.nodes.map((n) => [n.id, l.id] as const)));
   (d.groups ?? []).forEach((g, gi) => {
@@ -665,7 +665,7 @@ function savedDiagram(raw: unknown): unknown {
   return { ...rest, ...caption, layers, nodes: list(d.nodes), edges: list(d.edges) };
 }
 
-/** A gap names two regions that exist (specs/decisions, "The gap between two regions takes a multiple"). */
+/** A gap names two regions that exist (specs/decisions, "The gap between two regions may be magnified"). */
 function checkGaps(d: Diagram, index: number): OpError[] {
   return (d.gaps ?? []).flatMap((g, i) =>
     g.between
@@ -710,7 +710,7 @@ function checkNotes(d: Diagram, index: number): OpError[] {
 
 /**
  * Group rules: members and inner groups name an existing group, and groups sit
- * inside each other at most three deep, with no group inside itself (specs/decisions, "Rows unseen, groups as systems", "Every layered diagram type").
+ * inside each other at most three deep, with no group inside itself (specs/decisions, "Layers unseen, groups as systems", "Every layered diagram type").
  */
 function checkGroups(d: Diagram, index: number): OpError[] {
   const errors: OpError[] = [];

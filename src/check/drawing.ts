@@ -59,7 +59,7 @@ export interface DrawnEdge {
   passes: string[];
   /** The edges it leaves or arrives with through one port, drawn as one bundle there (specs/decisions, "Fan-outs of three bundle"), in id order. */
   bundle: string[];
-  /** Its step's number, drawn on it (specs/decisions, "Step badges ride the line"); absent for an edge with none. */
+  /** Its step's number, drawn on it (specs/decisions, "Step badges ride the edge"); absent for an edge with none. */
   step?: number;
 }
 
@@ -111,7 +111,7 @@ export interface Counts {
   /** Every point where two lines cross. */
   crossings: number;
   bends: number;
-  /** Edges with more than two bends (specs/decisions, "A bent line is reported and never refused"). */
+  /** Edges with more than two bends (specs/decisions, "A bent edge is reported and never refused"). */
   bent: number;
   /** The length of every edge together. */
   length: number;
@@ -166,7 +166,7 @@ function gapOf(a: Rect, b: Rect): number {
 }
 
 export function drawing(facts: Diagram, scene: Scene): Drawing {
-  // Nodes placed by steps count in the layers they are drawn in (specs/decisions, "Steps from another box").
+  // Nodes placed by steps count in the layers they are drawn in (specs/decisions, "Steps from another node").
   const d = placeSteps(facts).d;
   /** A layer's name in the output: a layer the engine added is "-". */
   const layerName = (id: string) => (addedLayer(id) ? "-" : id);
@@ -204,7 +204,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     crosses.set(b, [...(crosses.get(b) ?? []), a]);
   }
 
-  // Every edge meets its node at a port of its own, except the lines of a bundle (specs/decisions, "Lines meet any side", "Fan-outs of three bundle").
+  // Every edge meets its node at a port of its own, except the lines of a bundle (specs/decisions, "Edges meet any side", "Fan-outs of three bundle").
   const bundles = new Map<string, Set<string>>();
   const ends = (e: (typeof scene.edges)[number]) => [
     `${e.from}@${e.points[0]?.x},${e.points[0]?.y}`,
@@ -398,14 +398,14 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
   };
 }
 
-/** The edges drawn with more than two bends (specs/decisions, "A bent line is reported and never refused"), in drawing order. */
+/** The edges drawn with more than two bends (specs/decisions, "A bent edge is reported and never refused"), in drawing order. */
 export function bentEdges(lines: DrawnEdge[]): DrawnEdge[] {
   return lines.filter((l) => l.bends > MAX_BENDS);
 }
 
 /**
  * The groups each of whose nodes, two or more, has an edge to one end outside the group, or from it, the edges alike in
- * kind, label, weight and arrowheads, with those edges (specs/decisions, "A line from every box of a group is a warning").
+ * kind, label, weight and arrowheads, with those edges (specs/decisions, "An edge from every node of a group is a warning").
  * A group inside another that has the same edges is left out.
  */
 function edgesPerMember(d: Diagram): { group: string; edges: string[] }[] {

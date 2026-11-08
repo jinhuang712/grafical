@@ -12,7 +12,7 @@
 // - a line is an open path with a stroke, unless it lies inside one box, like the
 //   lid of a store's cylinder;
 // - a box marked class="bar" is one a line may run across, as grafical marks a
-//   bar that a line may pass (specs/decisions, "A row with no box as one bar"); it is a box for every other test;
+//   bar that a line may pass (specs/decisions, "A layer with no node as one bar"); it is a box for every other test;
 // - a ring, an outlined circle that holds a text, whose centre a line runs through,
 //   or turns at, rides that line, like a step's number: that line neither passes
 //   through it nor crosses its text.
@@ -444,7 +444,7 @@ export function checkSvg(svg: string, m: Measurer): GeometryDefect[] {
       for (let k = 1; k < l.points.length; k++) {
         const p = l.points[k - 1] as Pt;
         const q = l.points[k] as Pt;
-        // A label on its own line: the patch drawn after the line breaks it (specs/decisions, "A line's label sits on its line").
+        // A label on its own line: the patch drawn after the line breaks it (specs/decisions, "An edge's label sits on its edge").
         const across = p.x === q.x && Math.abs(p.x - (t.x + t.w / 2)) <= 1;
         const along = p.y === q.y && Math.abs(p.y - (t.y + t.h / 2)) <= ON_LINE;
         if (l.index === t.after - 1 && (across || along)) continue;

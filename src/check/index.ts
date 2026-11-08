@@ -79,7 +79,7 @@ function checkOverflow(diagram: Diagram, scene: Scene, out: Found[]): void {
   }
 }
 
-/** A lane's label stays inside its header (specs/decisions, "Swimlanes run one way"). Layer lane headers are narrow, so a long label can run out below. */
+/** A lane's label stays inside its header (specs/decisions, "Lanes run one way"). Layer lane headers are narrow, so a long label can run out below. */
 function checkLaneLabels(scene: Scene, out: Found[]): void {
   for (const x of scene.lanes ?? []) {
     if (rectInside(x.label.bbox, x.head)) continue;
@@ -201,13 +201,13 @@ function checkLabelCollision(scene: Scene, out: Found[]): void {
   }
 }
 
-/** How near a step's badge may come to anything else before it touches it (specs/decisions, "Step badges ride the line"). */
+/** How near a step's badge may come to anything else before it touches it (specs/decisions, "Step badges ride the edge"). */
 export const STEP_CLEAR = 1;
 
 /**
  * A step's badge sits on its own edge, clear of every node, every other edge and its
  * hops, every text, every other badge, and the borders of groups and bands, as a label
- * keeps clear of them (specs/decisions, "Step badges ride the line"). It never covers an arrowhead of its own edge. A lane's
+ * keeps clear of them (specs/decisions, "Step badges ride the edge"). It never covers an arrowhead of its own edge. A lane's
  * divider may run under it, as under a label.
  */
 function checkSteps(scene: Scene, out: Found[]): void {
@@ -469,7 +469,7 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
   }
 }
 
-/** A node that is not a member lies inside a group's border (specs/decisions, "Rows unseen, groups as systems"). */
+/** A node that is not a member lies inside a group's border (specs/decisions, "Layers unseen, groups as systems"). */
 function checkGroupIntruder(scene: Scene, out: Found[]): void {
   for (const g of scene.groups ?? []) {
     const members = new Set(g.members);
@@ -484,7 +484,7 @@ function checkGroupIntruder(scene: Scene, out: Found[]): void {
   }
 }
 
-/** Every node of a lane lies inside it, and no other node does (specs/decisions, "Swimlanes run one way"). */
+/** Every node of a lane lies inside it, and no other node does (specs/decisions, "Lanes run one way"). */
 function checkLaneStray(diagram: Diagram, scene: Scene, out: Found[]): void {
   for (const x of scene.lanes ?? []) {
     const members = new Set(laneNodes(diagram, x.id));
@@ -740,7 +740,7 @@ type Found = Omit<Defect, "owner">;
  * write path, which only asks which defects a diagram has while it finds where one comes from.
  */
 export function check(facts: Diagram, scene: Scene, measurer: Measurer, places = true): Defect[] {
-  // Nodes placed by steps are checked in the layers they are drawn in (specs/decisions, "Steps from another box").
+  // Nodes placed by steps are checked in the layers they are drawn in (specs/decisions, "Steps from another node").
   const diagram = placeSteps(facts).d;
   const out: Found[] = [];
   checkOverflow(diagram, scene, out);

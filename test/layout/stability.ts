@@ -7,7 +7,7 @@
 //   nodes left to right in that order;
 // - it keeps its group, and the picture draws it inside that group's box and the
 //   boxes around it (specs/decisions, "Every layered diagram type"), and in no other;
-// - it keeps its lane and its alignment (specs/decisions, "Swimlanes run one way", "Layout computed again on every change").
+// - it keeps its lane and its alignment (specs/decisions, "Lanes run one way", "Layout computed again on every change").
 // Movement is measured, not limited: how many nodes and routes moved, relative to
 // the centre line.
 

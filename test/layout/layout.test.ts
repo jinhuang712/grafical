@@ -294,7 +294,7 @@ describe('the target look (specs/decisions, "A target picture with measured rule
     }
   });
 
-  it('gives each line a port of its own when two leave a side with room (specs/decisions, "Lines meet any side")', () => {
+  it('gives each line a port of its own when two leave a side with room (specs/decisions, "Edges meet any side")', () => {
     const two: Diagram = {
       grafical: 1,
       title: "Two",
@@ -410,7 +410,7 @@ describe("edge cases", () => {
     });
   }
 
-  it('draws a self-loop wide and deep enough to read as a loop (specs/decisions, "Lines meet any side")', () => {
+  it('draws a self-loop wide and deep enough to read as a loop (specs/decisions, "Edges meet any side")', () => {
     const loop = layout(edgeCases, m).edges.find((x) => x.from === x.to);
     const [a, b, c, d] = loop?.points ?? [];
     expect(loop?.points).toHaveLength(4);
@@ -514,7 +514,7 @@ describe('stability (specs/decisions, "Layout computed again on every change")',
       expect(out).toEqual([]);
     });
 
-    // specs/decisions, "A row with a look is drawn": the look draws that row and moves no box across, nor anything above it.
+    // specs/decisions, "A layer with a look is drawn": the look draws that row and moves no box across, nor anything above it.
     it(`${name}: give each layer a look, which draws only that row`, () => {
       const before = layoutFramed(d, m);
       const across = (f: typeof before) =>

@@ -1,4 +1,4 @@
-// Columns (specs/decisions, "Columns beside rows"): a guide that boxes follow beside their rows.
+// Columns (specs/decisions, "Columns beside layers"): a guide that boxes follow beside their rows.
 
 import { describe, expect, it } from "vitest";
 import { showDiagram } from "../../src/cli/show.ts";
@@ -58,7 +58,7 @@ const base: Diagram = {
   ],
 };
 
-describe('columns (specs/decisions, "Columns beside rows")', () => {
+describe('columns (specs/decisions, "Columns beside layers")', () => {
   it("are kept in the file, read back, and shown", () => {
     const r = ok(base, [
       { op: "column.add", id: "requests", nodes: ["web", "api", "cache"] },

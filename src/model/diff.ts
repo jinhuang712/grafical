@@ -69,7 +69,7 @@ function keptStart(before: readonly string[], after: readonly string[]): Set<str
 
 interface Placed {
   node: DiagramNode;
-  /** The node's layer; "" for a node placed by steps (specs/decisions, "Steps from another box"). */
+  /** The node's layer; "" for a node placed by steps (specs/decisions, "Steps from another node"). */
   layer: string;
 }
 
@@ -80,7 +80,7 @@ function nodesOf(d: Diagram): Map<string, Placed> {
   ]);
 }
 
-/** A node's steps as operation fields (specs/decisions, "Steps from another box"). */
+/** A node's steps as operation fields (specs/decisions, "Steps from another node"). */
 function stepFields(n: DiagramNode): Partial<Record<(typeof STEP_KEYS)[number], number>> {
   const out: Partial<Record<(typeof STEP_KEYS)[number], number>> = {};
   for (const k of STEP_KEYS) if (n[k] !== undefined) out[k] = n[k];
@@ -191,7 +191,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   );
   const goneGroups = [...bGroups.keys()].filter((g) => !keptGroups.has(g));
   const goneLanes = [...bLanes.keys()].filter((x) => !keptLanes.has(x));
-  // Columns (specs/decisions, "Columns beside rows") keep their order the same way: those out of step go and come back.
+  // Columns (specs/decisions, "Columns beside layers") keep their order the same way: those out of step go and come back.
   const aColumns = (a.columns ?? []).map((c) => c.id);
   const keptColumns = keptStart(
     (b.columns ?? []).map((c) => c.id),
@@ -277,7 +277,7 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
   // 2. Edges that go.
   for (const e of b.edges) if (!keptEdges.has(e.id)) ops.push({ op: "edge.remove", id: e.id });
 
-  // Nodes placed by steps (specs/decisions, "Steps from another box") keep creation order, and only the end of the list takes
+  // Nodes placed by steps (specs/decisions, "Steps from another node") keep creation order, and only the end of the list takes
   // a node. One placed by steps before and after, from a node that stays, keeps its entry
   // while in step; every other one waits in a layer, so that no node is removed while
   // another steps from it, and goes to the end of the list once the layers are in place.

@@ -1,4 +1,4 @@
-// Side turns (specs/decisions, "Lines meet any side"): a line that leaves or enters a box by its side turns once.
+// Side turns (specs/decisions, "Edges meet any side"): a line that leaves or enters a box by its side turns once.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

@@ -76,7 +76,7 @@ export function showDiagram(d: Diagram): string {
     lines.push(`layer ${l.id}${label}${lane}${look}${at}: ${nodes}`);
   }
   if (d.layers.length === 0) lines.push("(no layers)");
-  // Nodes in no layer, placed by steps from another node (specs/decisions, "Steps from another box").
+  // Nodes in no layer, placed by steps from another node (specs/decisions, "Steps from another node").
   for (const n of d.nodes ?? []) lines.push(`node ${nodeText(n)}`);
   for (const g of d.groups ?? []) {
     const members = everyNode(d)

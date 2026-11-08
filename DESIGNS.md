@@ -41,10 +41,10 @@ A node's place is its layer, its order in the layer, its group, its column, an a
 - **Stance:** [What may the agent set?](PHILOSOPHY.md#what-may-the-agent-set)
 - **Decisions:**
   - [002. Facts over coordinates](specs/decisions/002-facts-over-coordinates.md)
-  - [003. Rows unseen, groups as systems](specs/decisions/003-rows-unseen-groups-as-systems.md)
-  - [027. Columns beside rows](specs/decisions/027-columns-beside-rows.md)
-  - [031. Steps from another box](specs/decisions/031-steps-from-another-box.md)
-  - [079. The gap between two regions takes a multiple](specs/decisions/079-the-gap-between-two-regions-takes-a-multiple.md)
+  - [003. Layers unseen, groups as systems](specs/decisions/003-layers-unseen-groups-as-systems.md)
+  - [027. Columns beside layers](specs/decisions/027-columns-beside-layers.md)
+  - [031. Steps from another node](specs/decisions/031-steps-from-another-node.md)
+  - [079. The gap between two regions may be magnified](specs/decisions/079-the-gap-between-two-regions-may-be-magnified.md)
   - [093. A node may sit off its cell by a fraction](specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md)
 - **How it works:** [Placement](specs/placement.md)
 
@@ -85,16 +85,16 @@ Edges run orthogonally through the gaps between layers and nodes. The engine pic
 - **Stance:** [Who owns what?](PHILOSOPHY.md#who-owns-what)
 - **Decisions:**
   - [005. Our own gap router](specs/decisions/005-our-own-gap-router.md)
-  - [019. Lines meet any side](specs/decisions/019-lines-meet-any-side.md)
-  - [015. Lines that end at containers](specs/decisions/015-lines-that-end-at-containers.md)
+  - [019. Edges meet any side](specs/decisions/019-edges-meet-any-side.md)
+  - [015. Edges that end at containers](specs/decisions/015-edges-that-end-at-containers.md)
   - [023. Fan-outs of three bundle](specs/decisions/023-fan-outs-of-three-bundle.md)
   - [090. A bundle splits at one knot](specs/decisions/090-a-bundle-splits-at-one-knot.md)
   - [065. Unreadable is refused and costly is reported](specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
-  - [058. An agent may state the side of a line](specs/decisions/058-an-agent-may-state-the-side-of-a-line.md)
-  - [059. Lines may be drawn square or round](specs/decisions/059-lines-may-be-drawn-square-or-round.md)
+  - [058. An agent may state the side of an edge](specs/decisions/058-an-agent-may-state-the-side-of-an-edge.md)
+  - [059. Edges may be drawn square or round](specs/decisions/059-edges-may-be-drawn-square-or-round.md)
   - [095. A good route is one the eye can follow](specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
   - [096. An edge is steered by facts and never by coordinates](specs/decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
-  - [097. The router draws clean lines and the agent makes their room](specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
+  - [097. The router draws clean edges and the agent makes their room](specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md)
 - **How it works:**
   - [Routing](specs/routing.md)
   - [Text placement](specs/labels.md)
@@ -231,7 +231,7 @@ A reader sees the structure of a picture before following any edge, so a design 
 - **Decisions:**
   - [098. A picture is judged by how it reads](specs/decisions/098-a-picture-is-judged-by-how-it-reads.md)
   - [099. An agent checks its own picture against a list](specs/decisions/099-an-agent-checks-its-own-picture-against-a-list.md)
-  - [097. The router draws clean lines and the agent makes their room](specs/decisions/097-the-router-draws-clean-lines-and-the-agent-makes-their-room.md)
+  - [097. The router draws clean edges and the agent makes their room](specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md)
   - [095. A good route is one the eye can follow](specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
   - [065. Unreadable is refused and costly is reported](specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
 - **How it works:**

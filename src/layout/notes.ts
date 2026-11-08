@@ -383,7 +383,7 @@ function midpoint([a, b]: Seg): Point {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }
 
-/** A numbered circle of radius r centred at (x, y): a footnote's number, or an edge's step (specs/decisions, "Step badges ride the line"). */
+/** A numbered circle of radius r centred at (x, y): a footnote's number, or an edge's step (specs/decisions, "Step badges ride the edge"). */
 export function numberBadge(
   n: number,
   x: number,

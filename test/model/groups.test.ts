@@ -169,7 +169,7 @@ describe("group operations", () => {
     expect(fail(d1, [{ op: "group.label", id: "zz", label: "x" }])[0]?.code).toBe("unknown-group");
   });
 
-  it("a group's box spans a row it has no member in, and that row's nodes sit beside it (specs/decisions, \"Rows unseen, groups as systems\")", async () => {
+  it("a group's box spans a row it has no member in, and that row's nodes sit beside it (specs/decisions, \"Layers unseen, groups as systems\")", async () => {
     const d = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a", "c"] }]).diagram;
     const real = await createMeasurer();
     const s = layout(d, real);
@@ -186,7 +186,7 @@ describe("group operations", () => {
     expect(groupOf(ok(d2, [{ op: "group.leave", nodes: ["b"] }]).diagram, "b")).toBeUndefined();
   });
 
-  it('group-split: a non-member between members in one row is refused by the layout (specs/decisions, "Rows unseen, groups as systems")', () => {
+  it('group-split: a non-member between members in one row is refused by the layout (specs/decisions, "Layers unseen, groups as systems")', () => {
     const row = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
       { op: "node.add", id: "x", layer: "r", label: "X", last: true },

@@ -147,12 +147,12 @@ The legend wraps onto more lines when it is wider than its room: the larger of i
 ## Decisions
 
 - [030. Notes as callouts or footnotes](decisions/030-notes-as-callouts-or-footnotes.md)
-- [039. Step badges ride the line](decisions/039-step-badges-ride-the-line.md)
+- [039. Step badges ride the edge](decisions/039-step-badges-ride-the-edge.md)
 - [040. The agent states where a group's label sits](decisions/040-the-agent-states-where-a-group-s-label-sits.md)
-- [061. A line never moves for its label](decisions/061-a-line-never-moves-for-its-label.md)
-- [062. A group's label moves no box and no line](decisions/062-a-group-s-label-moves-no-box-and-no-line.md)
+- [061. An edge never moves for its label](decisions/061-an-edge-never-moves-for-its-label.md)
+- [062. A group's label moves no node and no edge](decisions/062-a-group-s-label-moves-no-node-and-no-edge.md)
 - [063. A wall's label stays along its wall](decisions/063-a-wall-s-label-stays-along-its-wall.md)
 - [064. A note is what the agent states](decisions/064-a-note-is-what-the-agent-states.md)
 - [065. Unreadable is refused and costly is reported](decisions/065-unreadable-is-refused-and-costly-is-reported.md)
-- [051. A label sits on its straight vertical line](decisions/051-a-label-sits-on-its-straight-vertical-line.md)
+- [051. A label sits on its straight vertical edge](decisions/051-a-label-sits-on-its-straight-vertical-edge.md)
 - [076. A band in a lane of its name draws no label](decisions/076-a-band-in-a-lane-of-its-name-draws-no-label.md)

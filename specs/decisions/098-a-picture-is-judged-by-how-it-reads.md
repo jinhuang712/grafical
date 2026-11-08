@@ -4,7 +4,7 @@ Decided: 2026-11-08
 
 ## The problem
 
-The goals rated a whole picture only by the owner's score, and counts stood in for it during the work. On 2026-11-07 a `pyramid` render had no crossings and the owner called it ugly, while `ladder` came clean by moving nodes and with no change to the router. Nothing said what a good picture is, so a rule for lines could not explain either result.
+The goals rated a whole picture only by the owner's score, and counts stood in for it during the work. On 2026-11-07 a `pyramid` render had no crossings and the owner called it ugly, while `ladder` came clean by moving nodes and with no change to the router. Nothing said what a good picture is, so a rule for edges could not explain either result.
 
 ## The choice
 
@@ -18,7 +18,7 @@ The points bind the engine and the agent alike, since placement is the agent's a
   - Each time counts were trusted on 2026-11-07 the owner's eye found them wrong.
 - One overall score.
   - A score says that a picture is worse and not why.
-- Rules for lines alone.
+- Rules for edges alone.
   - `ladder` and `pyramid` were decided by where the nodes sit.
 - The twelve points as guidelines of their own.
   - A guideline is never traded, and points such as even space and symmetry pull against each other.

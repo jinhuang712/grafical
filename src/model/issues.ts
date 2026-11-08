@@ -12,7 +12,7 @@ export const ID_EDGE = "ID_EDGE";
 export const ID_SUFFIX = "ID_SUFFIX";
 /** An edge weight that is neither a level name nor a width within the limits (specs/decisions, "Edge weights"). */
 export const WEIGHT = "WEIGHT";
-/** A step number that is not a whole number within the limits (specs/decisions, "Step badges ride the line"). */
+/** A step number that is not a whole number within the limits (specs/decisions, "Step badges ride the edge"). */
 export const STEP_NUMBER = "STEP_NUMBER";
 
 /** The characters an id may hold; an edge's id may also hold -> and #<n>. */

@@ -1,6 +1,6 @@
-// Edge ends (specs/decisions, "Lines that end at containers"). An edge joins two nodes, or a node and a container,
+// Edge ends (specs/decisions, "Edges that end at containers"). An edge joins two nodes, or a node and a container,
 // or two containers. A container is a group, drawn as its system node, a layer,
-// drawn as a band across the diagram once an edge ends at it, or a lane (specs/decisions, "Swimlanes run one way").
+// drawn as a band across the diagram once an edge ends at it, or a lane (specs/decisions, "Lanes run one way").
 // The rules here are facts, decided from layers and order alone, so they are
 // operation errors:
 // - an end must exist, and a group or lane end must hold at least one node. A layer
@@ -58,7 +58,7 @@ export function isBar(d: Diagram, id: string): boolean {
 
 /**
  * The layers drawn as bars: those with no node that an edge ends at or that have a look
- * (specs/decisions, "A row with no box as one bar", "A row with a look is drawn").
+ * (specs/decisions, "A layer with no node as one bar", "A layer with a look is drawn").
  */
 export function barRows(d: Diagram): Set<string> {
   const ends = new Set(d.edges.flatMap((e) => [e.from, e.to]));

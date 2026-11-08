@@ -1,4 +1,4 @@
-// The gap between two regions takes a multiple (specs/decisions, "The gap between two regions takes a multiple").
+// The gap between two regions takes a multiple (specs/decisions, "The gap between two regions may be magnified").
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { layout } from "../../src/layout/index.ts";

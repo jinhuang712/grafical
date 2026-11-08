@@ -50,7 +50,7 @@ export interface PlacedText {
 }
 
 /**
- * A layer's layer. Layers are not drawn (specs/decisions, "Rows unseen, groups as systems"): the band and label stay in the scene
+ * A layer's layer. Layers are not drawn (specs/decisions, "Layers unseen, groups as systems"): the band and label stay in the scene
  * for the checker and for debugging, and the renderer skips them.
  */
 export interface SceneLayer {
@@ -59,7 +59,7 @@ export interface SceneLayer {
   label: PlacedText;
 }
 
-/** A system node around its member nodes (specs/decisions, "Rows unseen, groups as systems"). */
+/** A system node around its member nodes (specs/decisions, "Layers unseen, groups as systems"). */
 export interface SceneGroup {
   id: string;
   rect: Rect;
@@ -74,22 +74,22 @@ export interface SceneGroup {
   depth?: number;
 }
 
-/** A layer drawn as a band across the content, because an edge ends at it (specs/decisions, "Lines that end at containers"). */
+/** A layer drawn as a band across the content, because an edge ends at it (specs/decisions, "Edges that end at containers"). */
 export interface SceneBand {
   /** The layer's id. */
   id: string;
   rect: Rect;
-  /** Absent for a layer with no label (specs/decisions, "A row with a look is drawn"). */
+  /** Absent for a layer with no label (specs/decisions, "A layer with a look is drawn"). */
   label?: PlacedText;
-  /** A layer with no node, drawn as one bar that edges meet and may pass (specs/decisions, "A row with no box as one bar"). */
+  /** A layer with no node, drawn as one bar that edges meet and may pass (specs/decisions, "A layer with no node as one bar"). */
   bar?: true;
-  /** Drawn with a node's paint and a dark label, not the band's (specs/decisions, "A row with no box as one bar"). */
+  /** Drawn with a node's paint and a dark label, not the band's (specs/decisions, "A layer with no node as one bar"). */
   box?: true;
   /** true: an edge runs through the place the agent stated for the bar's label, and the write is refused. */
   blocked?: true;
 }
 
-/** A swimlane (specs/decisions, "Swimlanes run one way"): its whole area, the header that holds its label, and the label. */
+/** A swimlane (specs/decisions, "Lanes run one way"): its whole area, the header that holds its label, and the label. */
 export interface SceneLane {
   id: string;
   /** What its styles set. */
@@ -121,7 +121,7 @@ export interface SceneWall {
 
 /**
  * A small numbered circle: a footnote's number on its target, or before its text (specs/decisions, "Notes as callouts or footnotes"); or a
- * edge's step, on the edge (specs/decisions, "Step badges ride the line").
+ * edge's step, on the edge (specs/decisions, "Step badges ride the edge").
  */
 export interface SceneBadge {
   x: number;
@@ -200,20 +200,20 @@ export interface SceneEdge {
   label?: PlacedText;
   /** What the styles its label marks set. Absent: a patch the color behind it, and the labels' color. */
   labelLook?: Look;
-  /** true: a second arrowhead at the first point (specs/decisions, "Lines meet any side"). */
+  /** true: a second arrowhead at the first point (specs/decisions, "Edges meet any side"). */
   both?: boolean;
-  /** The edge width in pixels when it is not the thin one: a heavier edge (specs/decisions, "Lines meet any side", "Edge weights"). */
+  /** The edge width in pixels when it is not the thin one: a heavier edge (specs/decisions, "Edges meet any side", "Edge weights"). */
   width?: number;
-  /** Its step's number in a ring centred on the edge (specs/decisions, "Step badges ride the line"). */
+  /** Its step's number in a ring centred on the edge (specs/decisions, "Step badges ride the edge"). */
   step?: SceneBadge;
-  /** The stated side the edge could not take, and the side it took (specs/decisions, "An agent may state the side of a line"). */
+  /** The stated side the edge could not take, and the side it took (specs/decisions, "An agent may state the side of an edge"). */
   unmet?: { end: "out" | "in"; stated: string; drawn: string }[];
   /** The facts stated to steer it that could not hold (specs/decisions, "An edge is steered by facts and never by coordinates"). */
   refused?: SteerCode[];
   /**
    * The gutters its label, or its step's badge, tried when none could hold it clear of the other
    * edges, each as the layers above and below it joined by a slash. No edge moves for it, so it lies
-   * across another edge, and the write is refused (specs/decisions, "A line never moves for its label").
+   * across another edge, and the write is refused (specs/decisions, "An edge never moves for its label").
    */
   blocked?: string[];
 }
@@ -231,7 +231,7 @@ export interface Scene {
   /** The edge styles the diagram uses, top right (DESIGNS.md, "Looks are free, while shape and dash follow the type"). Empty when it has no edges. */
   legend?: SceneLegendItem[];
   layers: SceneLayer[];
-  /** System nodes, drawn behind nodes and edges (specs/decisions, "Rows unseen, groups as systems"). */
+  /** System nodes, drawn behind nodes and edges (specs/decisions, "Layers unseen, groups as systems"). */
   groups?: SceneGroup[];
   /** Layers an edge ends at, drawn behind the groups. Absent when there are none. */
   bands?: SceneBand[];

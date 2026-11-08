@@ -72,7 +72,7 @@ export interface DiagramStyleOp {
   op: "diagram.style";
   style?: string;
 }
-/** How nodes with no size are sized (specs/decisions, "Boxes sized to their text"). */
+/** How nodes with no size are sized (specs/decisions, "Nodes sized to their text"). */
 export interface DiagramSizingOp {
   op: "diagram.sizing";
   mode: Sizing;
@@ -127,7 +127,7 @@ export interface LayerAddOp {
   before?: string;
   after?: string;
 }
-/** Steps from another node, for a node in no layer (specs/decisions, "Steps from another box"). */
+/** Steps from another node, for a node in no layer (specs/decisions, "Steps from another node"). */
 export interface Steps {
   from?: string;
   down?: number;
@@ -155,7 +155,7 @@ export interface NodeRenameOp {
 export interface NodeResizeOp {
   op: "node.size";
   id: string;
-  /** Absent: the engine sizes the node again (specs/decisions, "Boxes sized to their text"). */
+  /** Absent: the engine sizes the node again (specs/decisions, "Nodes sized to their text"). */
   size?: SizeStep;
 }
 export interface NodeMoveOp extends Position, Steps {
@@ -174,9 +174,9 @@ export interface EdgeAddOp {
   to: string;
   id?: string;
   label?: string;
-  /** true: an arrowhead at both ends (specs/decisions, "Lines meet any side"). */
+  /** true: an arrowhead at both ends (specs/decisions, "Edges meet any side"). */
   both?: boolean;
-  /** true: the edge may pass layers with no node between its ends (specs/decisions, "A row with no box as one bar"). */
+  /** true: the edge may pass layers with no node between its ends (specs/decisions, "A layer with no node as one bar"). */
   pass?: boolean;
 }
 export interface EdgeRemoveOp {
@@ -223,7 +223,7 @@ export interface LayerRemoveOp {
   op: "layer.remove";
   id: string;
 }
-/** How a layer is drawn, and that it is drawn though no edge ends at it (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
+/** How a layer is drawn, and that it is drawn though no edge ends at it (specs/decisions, "A layer with no node as one bar", "A layer with a look is drawn"). */
 /** Where the title sits. Absent `at`: top left. */
 export interface DiagramLabelAtOp {
   op: "diagram.label-at";
@@ -391,14 +391,14 @@ export interface EdgeWeightOp {
   /** Absent: thin again. */
   weight?: string | number;
 }
-/** Lets an edge pass the layers with no node between its ends, or no longer (specs/decisions, "A row with no box as one bar"). */
+/** Lets an edge pass the layers with no node between its ends, or no longer (specs/decisions, "A layer with no node as one bar"). */
 export interface EdgePassOp {
   op: "edge.pass";
   id: string;
   /** true: the edge may no longer pass them. */
   off?: boolean;
 }
-/** Draws an arrowhead at both ends of an edge, or at one end again (specs/decisions, "Lines meet any side"). */
+/** Draws an arrowhead at both ends of an edge, or at one end again (specs/decisions, "Edges meet any side"). */
 export interface EdgeBothOp {
   op: "edge.both";
   id: string;
@@ -433,7 +433,7 @@ export interface EdgeStretchOp {
   id: string;
   magnified?: EdgeStretch;
 }
-/** Numbers an edge as a step of a process, or clears its number (specs/decisions, "Step badges ride the line"). */
+/** Numbers an edge as a step of a process, or clears its number (specs/decisions, "Step badges ride the edge"). */
 export interface EdgeStepOp {
   op: "edge.number";
   id: string;
@@ -486,7 +486,7 @@ export interface GroupCopyOp {
   /** true: edges between the group and what is outside it are copied too. */
   outside?: boolean;
 }
-/** Members are layers (lanes then run as layers), nodes (as columns) or groups (specs/decisions, "Swimlanes run one way"). */
+/** Members are layers (lanes then run as layers), nodes (as columns) or groups (specs/decisions, "Lanes run one way"). */
 export interface LaneAddOp {
   op: "lane.add";
   id: string;
@@ -511,7 +511,7 @@ export interface LaneRemoveOp {
   op: "lane.remove";
   id: string;
 }
-/** Members are nodes, or groups that bring their nodes (specs/decisions, "Columns beside rows"). */
+/** Members are nodes, or groups that bring their nodes (specs/decisions, "Columns beside layers"). */
 export interface ColumnAddOp {
   op: "column.add";
   id: string;

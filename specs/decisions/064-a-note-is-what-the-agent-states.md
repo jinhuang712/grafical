@@ -16,7 +16,7 @@ A card with no room became a footnote the agent never asked for: 61% of the note
     - A note without it is a card.
   - A card with no clear place beside its target takes its first place anyway.
   - The write is refused as `label-blocked` with `is=note`.
-  - The refusal names the target, then the lines and boxes in the card's way.
+  - The refusal names the target, then the edges and nodes in the card's way.
   - The second layout pass is gone, and so with the walls' every second pass: a diagram is laid out once.
   - No saved draft and no fixture has a note.
   - Over 2,000 fuzz seeds the engine had made 1,201 of 1,967 notes footnotes by itself: 61%.

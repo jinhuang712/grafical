@@ -73,7 +73,7 @@ describe("grouped diagrams", () => {
       /^ok changed=g,a,b\n\nwarning: lonely-node\n/,
     );
     expect(run("group", "join", f, "g", "c").code).toBe(0);
-    // Leaving the middle row: the box still spans it (specs/decisions, "Rows unseen, groups as systems").
+    // Leaving the middle row: the box still spans it (specs/decisions, "Layers unseen, groups as systems").
     expect(run("group", "leave", f, "b").code).toBe(0);
     expect(run("group", "join", f, "g", "b").code).toBe(0);
     expect(run("group", "join", f, "zz", "a").out).toContain("unknown-group");

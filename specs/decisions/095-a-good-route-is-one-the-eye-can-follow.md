@@ -10,13 +10,13 @@ The router is judged by counts of bends and crossings, and a picture can score w
 
 A good route is one a reader's eye follows from end to end with no effort. Counts are a means to that. Seven standards say what such a route is. The first matters most, and no detour ranks below a simple shape and few crossings:
 
-1. **It can be followed:** the eye goes from one end to the other and does not lose the line.
+1. **It can be followed:** the eye goes from one end to the other and does not lose the edge.
 2. **It takes no detour:** its length suits how far apart its ends are.
-3. **Its shape is simple:** a straight line beats one bend, and one bend beats two.
-4. **Its crossings are few and clean:** a crossing is square, and lines do not crowd through one.
-5. **It keeps a rhythm:** lines going one way run parallel and evenly spaced, clear of nodes and of each other.
-6. **It lands well:** an arrowhead meets the middle of a side, or lines meet a side evenly.
-7. **It shows what matters:** the main flow runs straight, and return lines and lesser lines stand back.
+3. **Its shape is simple:** a straight edge beats one bend, and one bend beats two.
+4. **Its crossings are few and clean:** a crossing is square, and edges do not crowd through one.
+5. **It keeps a rhythm:** edges going one way run parallel and evenly spaced, clear of nodes and of each other.
+6. **It lands well:** an arrowhead meets the middle of a side, or edges meet a side evenly.
+7. **It shows what matters:** the main flow runs straight, and return edges and lesser edges stand back.
 
 ## Not chosen
 

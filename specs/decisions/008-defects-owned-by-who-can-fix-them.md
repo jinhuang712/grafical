@@ -10,7 +10,7 @@ Some defects only the agent can fix and others only the engine can avoid. A writ
 
 After each operation or batch, grafical lays out the diagram and checks it. Each defect has an owner: whoever can fix it.
 
-- **The agent owns** a defect that a fact it stated caused, such as text too long for its box.
+- **The agent owns** a defect that a fact it stated caused, such as text too long for its node.
   - The write fails and changes nothing.
   - The refusal names what is at fault and the commands that can change it.
 - **The engine owns** a defect where a plain form was there and it drew wrong ("Unreadable is refused and costly is reported").

@@ -41,7 +41,7 @@ const toLayer: Op[] = [
   { op: "edge.add", from: "pipelines", to: "deps", label: "calls" },
 ];
 
-describe('edge ends at a container (specs/decisions, "Lines that end at containers")', () => {
+describe('edge ends at a container (specs/decisions, "Edges that end at containers")', () => {
   it("accepts a group or a layer as an end", () => {
     const d = ok(catalogSyncGrouped, [...toGroup, ...toLayer]);
     expect(d.edges.map((e) => e.id)).toContain("callers->catalog-api");
@@ -102,7 +102,7 @@ describe('edge ends at a container (specs/decisions, "Lines that end at containe
   });
 });
 
-describe('a row with no box as one bar (specs/decisions, "A row with no box as one bar")', () => {
+describe('a row with no box as one bar (specs/decisions, "A layer with no node as one bar")', () => {
   const base = readDiagram(`grafical: 1
 title: bar
 density: normal
@@ -199,7 +199,7 @@ groups:
     expect(diffDiagrams(a, b)).toEqual([{ op: "layer.look", id: "gateway", look: "band" }]);
   });
 
-  // specs/decisions, "A row with a look is drawn".
+  // specs/decisions, "A layer with a look is drawn".
   it("checks a row with no box and a look as a bar, though no line ends at it", () => {
     const passing = ok(base, [{ op: "edge.add", from: "driver", to: "payments" }]);
     const crossed = fail(passing, [{ op: "layer.look", id: "gateway", look: "box" }]);

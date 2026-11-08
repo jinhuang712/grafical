@@ -1,6 +1,6 @@
-// Node sizes (specs/decisions, "Boxes sized to their text"). A node with no size takes a medium node, or a large
+// Node sizes (specs/decisions, "Nodes sized to their text"). A node with no size takes a medium node, or a large
 // one when its text does not fit the medium node. A diagram whose sizing is fixed
-// gives every such node a medium node, as before specs/decisions, "Boxes sized to their text". The fit test is the checker's
+// gives every such node a medium node, as before specs/decisions, "Nodes sized to their text". The fit test is the checker's
 // overflow rule (specs/decisions, "Defects owned by who can fix them"), so a node the engine sizes overflows only when its text
 // does not fit the large node either.
 

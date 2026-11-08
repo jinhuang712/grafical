@@ -81,7 +81,7 @@ O5 holds the edges of a picture, and [O6: A picture reads at a glance](#o6-a-pic
 | 12 | better | Edges land well | the owner | standard 6 |
 | 13 | better | What matters stands out | the owner | standard 7 |
 
-The standards are in `specs/decisions, "A good route is one the eye can follow"`, and the owner's rules are in `specs/decisions, "The router draws clean lines and the agent makes their room"`.
+The standards are in `specs/decisions, "A good route is one the eye can follow"`, and the owner's rules are in `specs/decisions, "The router draws clean edges and the agent makes their room"`.
 
 **Want:** A picture that is complete and clear at once.
 

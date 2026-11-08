@@ -63,7 +63,7 @@ describe('boxes inside boxes (specs/decisions, "Every layered diagram type")', (
   });
 });
 
-describe('crossings and joins (specs/decisions, "Lines meet any side")', () => {
+describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
   /** Plain lines, which carry no arrowhead, alone on the tiny scene's canvas. */
   const lines = (edges: SceneEdge[]): string => renderSvg({ ...tinyScene(), nodes: [], edges });
   const edge = (id: string, points: Point[]): SceneEdge => ({
@@ -108,7 +108,7 @@ describe('crossings and joins (specs/decisions, "Lines meet any side")', () => {
     expect(svg).toContain('d="M180 60L108 60A8 4 0 0 0 92 60L20 60"');
   });
 
-  it('rounds a corner as far as its stretches allow in the curved style (specs/decisions, "Lines meet any side")', () => {
+  it('rounds a corner as far as its stretches allow in the curved style (specs/decisions, "Edges meet any side")', () => {
     const curved = { ...PAINT, edge: { ...PAINT.edge, shape: "curved" as const } };
     const zed = edge("z", [
       { x: 20, y: 20 },
@@ -248,7 +248,7 @@ describe("the target look", () => {
     expect(out.match(/<path d="M236 248[^>]*>/)?.[0]).not.toContain("dasharray");
   });
 
-  it('draws an optional edge dotted, and a link with no arrowhead (specs/decisions, "Lines meet any side")', () => {
+  it('draws an optional edge dotted, and a link with no arrowhead (specs/decisions, "Edges meet any side")', () => {
     const s = mixedScene();
     const data = s.edges.find((e) => e.kind === "data");
     expect(data).toBeDefined();

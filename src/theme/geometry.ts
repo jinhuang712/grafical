@@ -131,7 +131,7 @@ export const FRAME = {
   storeLid: 7,
 };
 
-/** A layer drawn as a band, because an edge ends at it (specs/decisions, "Lines that end at containers"). */
+/** A layer drawn as a band, because an edge ends at it (specs/decisions, "Edges that end at containers"). */
 export const BAND = {
   /** Space between the band's sides and the content's left and right edges. */
   padX: 16,
@@ -145,7 +145,7 @@ export const BAND = {
   labelInset: 16,
 };
 
-/** A layer with no node that an edge ends at, drawn as one bar (specs/decisions, "Lines that end at containers"). */
+/** A layer with no node that an edge ends at, drawn as one bar (specs/decisions, "Edges that end at containers"). */
 export const BAR = {
   /** Height of the bar: one line of its label, with room above and below it. */
   h: 40,
@@ -169,7 +169,7 @@ export const WALL = {
   labelWrap: 96,
 };
 
-/** An edge's step badge (specs/decisions, "Step badges ride the line"). */
+/** An edge's step badge (specs/decisions, "Step badges ride the edge"). */
 export const STEP = {
   /** Radius of the badge: two digits fit inside its ring. */
   r: 9,
@@ -202,7 +202,7 @@ export const NOTE = {
   keyGap: 6,
 };
 
-/** Swimlanes (specs/decisions, "Swimlanes run one way"). */
+/** Swimlanes (specs/decisions, "Lanes run one way"). */
 export const LANE = {
   /** Space between a lane's side and the content in it, across. */
   padX: 20,
@@ -218,7 +218,7 @@ export const LANE = {
   lineClear: 8,
 };
 
-/** System nodes (specs/decisions, "Rows unseen, groups as systems"). */
+/** System nodes (specs/decisions, "Layers unseen, groups as systems"). */
 export const GROUP = {
   /** Space between a group's border and its members, left, right and below. */
   pad: 24,

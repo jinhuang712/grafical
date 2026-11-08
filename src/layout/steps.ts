@@ -1,4 +1,4 @@
-// Nodes placed by steps (specs/decisions, "Steps from another box"), put in layers for layout. A node's layer is the layer
+// Nodes placed by steps (specs/decisions, "Steps from another node"), put in layers for layout. A node's layer is the layer
 // of the node it steps from, its steps down; past the first or last layer it lands in a
 // layer the engine adds there. In that layer it goes where its column falls among the
 // column grid the other nodes take before it arrives: a node in its cell stands aside,
@@ -93,7 +93,7 @@ export function placeSteps(d: Diagram): { d: Diagram; problems: StepPlaceProblem
   return { d: { ...base, layers }, problems };
 }
 
-/** Every node placed by steps that cannot be placed, or whose cell another fact keeps (specs/decisions, "Steps from another box"). */
+/** Every node placed by steps that cannot be placed, or whose cell another fact keeps (specs/decisions, "Steps from another node"). */
 export function validateSteps(d: Diagram): (StepPlaceProblem | StepProblem)[] {
   if ((d.nodes ?? []).length === 0) return [];
   const placed = placeSteps(d);

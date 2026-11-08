@@ -336,7 +336,7 @@ describe("write commands", () => {
     );
   });
 
-  it('edge number numbers a line, show prints it, and no --n clears it (specs/decisions, "Step badges ride the line")', () => {
+  it('edge number numbers a line, show prints it, and no --n clears it (specs/decisions, "Step badges ride the edge")', () => {
     run("new", "s.grafical.yaml", "--title", "S");
     run("layer", "add", "s.grafical.yaml", "a", "--label", "A");
     run("layer", "add", "s.grafical.yaml", "b", "--label", "B");

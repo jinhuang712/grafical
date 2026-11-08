@@ -1,4 +1,4 @@
-# 079. The gap between two regions takes a multiple
+# 079. The gap between two regions may be magnified
 
 Decided: 2026-11-06
 

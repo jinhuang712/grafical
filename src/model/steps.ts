@@ -1,4 +1,4 @@
-// Nodes placed by steps (specs/decisions, "Steps from another box"): a node in no layer, placed some cells of the
+// Nodes placed by steps (specs/decisions, "Steps from another node"): a node in no layer, placed some cells of the
 // column grid from another node, which it moves with. The agent states the steps; the
 // engine puts the node in its cell, and the nodes of the layer it lands in stand aside.
 

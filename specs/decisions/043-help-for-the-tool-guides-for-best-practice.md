@@ -11,18 +11,18 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
 - **The help** (`grafical --help` and each command's `--help`) holds:
   - How to work, and every way to draw by the story it tells.
   - Each command's options and its line in a batch.
-  - The facts of what it draws, such as that kinds initial and final draw no label.
+  - The facts of what it draws, such as that types initial and final draw no label.
   - Its limits.
   - It does not say how a kind of diagram is drawn.
 - **The guides** (`grafical guide` and `grafical guide <name>`):
-  - One per common kind of diagram: architecture and C4 and infrastructure and dependency and data flow and event flow and flowchart and swimlane and state machine.
+  - One per common kind of diagram: architecture and C4 and infrastructure and dependency and data flow and event flow and flowchart and lane process and state machine.
   - Composition, for any kind: what makes a diagram good and what to change when a picture looks wrong.
   - They took these from the help:
     - The entry page's kinds of diagram and "A good diagram".
     - The command pages' sections by kind of diagram, and `try`'s "What to try".
-    - The advice on naming boxes and on how much to emphasize.
+    - The advice on naming nodes and on how much to emphasize.
   - They also took three rules the morning's restructure had lost:
-    - A row per step in a flowchart.
+    - A layer per step in a flowchart.
     - People as actor and other systems as external in C4.
     - What depends on top in a dependency graph.
   - `grafical guide cloud` and a few other names find the guide for their kind.
@@ -38,4 +38,4 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
 
 ## Consequences
 
-Risk, to measure in the next paid round: the 2026-10-12 round measured the help without type guides (`bench/results/p1d-guides.md`). Haiku drew a flowchart's Start and End as state-machine dots, whose labels are not drawn, left C4 and data-flow lines unlabelled, and was refused 16% of its calls against 3%. The traps that are the tool's own stay in the help (`node add --help` says initial and final draw no label, and to use terminal for Start and End); the conventions are now the agent's to take or leave. The harness counts guide reads and refused commands since 2026-11-05.
+Risk, to measure in the next paid round: the 2026-10-12 round measured the help without type guides (`bench/results/p1d-guides.md`). Haiku drew a flowchart's Start and End as state-machine dots, whose labels are not drawn, left C4 and data-flow edges unlabelled, and was refused 16% of its calls against 3%. The traps that are the tool's own stay in the help (`node add --help` says initial and final draw no label, and to use terminal for Start and End); the conventions are now the agent's to take or leave. The harness counts guide reads and refused commands since 2026-11-05.

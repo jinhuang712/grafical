@@ -8,7 +8,7 @@ The rules of the target picture were to be reported by `grafical check --all`. T
 
 ## The choice
 
-The measurement goes, and the limit of two bends stays with the warning on bent lines. The rules stay as a record of what the target picture was.
+The measurement goes, and the limit of two bends stays with the warning on bent edges. The rules stay as a record of what the target picture was.
 
 ## Not chosen
 
@@ -17,4 +17,4 @@ The measurement goes, and the limit of two bends stays with the warning on bent 
 
 ## Consequences
 
-An agent hears of bent lines, crossings and crowded text from the warnings, and of nothing else these rules measured.
+An agent hears of bent edges, crossings and crowded text from the warnings, and of nothing else these rules measured.

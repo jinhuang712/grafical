@@ -20,4 +20,4 @@ The file holds the current state only, and git keeps the history. `grafical diff
 
 ## Consequences
 
-As built, 2026-10-12: a small edit comes back as exactly the operation that made it. A group, lane or line whose order changed comes back removed and added again, since an operation can only add one at the end. A test replays the differences between 120 pairs of random diagrams, both ways, file for file.
+As built, 2026-10-12: a small edit comes back as exactly the operation that made it. A group, lane or edge whose order changed comes back removed and added again, since an operation can only add one at the end. A test replays the differences between 120 pairs of random diagrams, both ways, file for file.

@@ -207,7 +207,7 @@ function partial(example: unknown, path: string[]): z.ZodType {
   const entries = Object.entries(example as Record<string, unknown>);
   const shape: Record<string, z.ZodType> = {};
   for (const [k, v] of entries) shape[k] = partial(v, [...path, k]).optional();
-  // Any node kind may take a dashed border; only async and optional edges have a dash pattern (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side").
+  // Any node kind may take a dashed border; only async and optional edges have a dash pattern (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side").
   if (path.length === 3 && path[0] === "node" && path[1] === "kinds") shape.dash = DASH.optional();
   return z.strictObject(shape);
 }

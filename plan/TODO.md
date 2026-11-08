@@ -28,7 +28,7 @@
 - updated: 2026-11-06
 - status: HALT
 - next: the owner designs the legend in a talk of its own
-- related: [057. A box may take a look of its own](../specs/decisions/057-a-box-may-take-a-look-of-its-own.md)
+- related: [057. A node may take a look of its own](../specs/decisions/057-a-node-may-take-a-look-of-its-own.md)
 
 ### [P1][DISCUSSION] A good picture and taste
 
@@ -155,25 +155,23 @@
 - created: 2026-11-06
 - status: HALT
 - next: the owner designs it
-- related: [059. Lines may be drawn square or round](../specs/decisions/059-lines-may-be-drawn-square-or-round.md)
+- related: [059. Edges may be drawn square or round](../specs/decisions/059-edges-may-be-drawn-square-or-round.md)
 
-### [P2][DISCUSSION] The decisions keep the old words
+### [P2][DISCUSSION] The decisions name commands that went
 
 - description:
-  - [069. One name for each thing, and a name says what it is](../specs/decisions/069-one-name-for-each-thing-and-a-name-says-what-it-is.md) says every document changes its words once.
-  - The decisions still say box 301 times · row 235 times · line 550 times.
-  - 22 of their titles hold one of the three.
-  - They also name commands that went, such as `edge retarget` and `layer tidy`.
-  - The titles are cited by name in the code and the documents, so a new title changes every citation.
+  - The decisions took the words of [069. One name for each thing, and a name says what it is](../specs/decisions/069-one-name-for-each-thing-and-a-name-says-what-it-is.md) on 2026-11-08.
+  - Their commands kept the form of their day, such as `edge retarget` and `layer tidy` and `node add`.
+  - Some of those commands have no form today.
 - created: 2026-11-08
 - status: HALT
-- next: the owner says whether a decision keeps the words of its day
+- next: the owner says whether a decision keeps the commands of its day
 - found: the document pass of 2026-11-08
 
 ### [P2][DISCUSSION] Two ways to draw round edges
 
 - description:
-  - [059. Lines may be drawn square or round](../specs/decisions/059-lines-may-be-drawn-square-or-round.md) says the shape moved from the stylesheet into the diagram file.
+  - [059. Edges may be drawn square or round](../specs/decisions/059-edges-may-be-drawn-square-or-round.md) says the shape moved from the stylesheet into the diagram file.
   - The code still reads `paint.edge.shape: curved` from a stylesheet beside `diagram --lines round`, and [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn) lists it.
   - [14. One shortest way for each situation](../DESIGNS.md#14-one-shortest-way-for-each-situation) holds against two ways.
 - created: 2026-11-08
@@ -204,7 +202,7 @@
 - created: 2026-10-30
 - status: HALT
 - next: look again now that labels sit on their edges
-- related: [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
+- related: [066. An edge's label sits on its edge](../specs/decisions/066-an-edge-s-label-sits-on-its-edge.md)
 
 ### [P2][ISSUE] A label takes most of a short run
 
@@ -216,7 +214,7 @@
 - status: OPEN
 - found: the owner, looking at the catalog-sync-grouped fixture
 - next: try a larger clearance, and try a label with a fill once labels mark styles
-- related: [066. A line's label sits on its line](../specs/decisions/066-a-line-s-label-sits-on-its-line.md)
+- related: [066. An edge's label sits on its edge](../specs/decisions/066-an-edge-s-label-sits-on-its-edge.md)
 
 ### [P2][ISSUE] Arrowheads land off centre and unevenly
 

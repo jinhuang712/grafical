@@ -21,22 +21,22 @@ Both judges picked the grouped version. The compact one hid the messaging and re
 The rules that make it uncluttered stay as a record of the target. No code measures them, and only the limit of two bends is used ("The target picture's rules are not reported"):
 1. **Size:** the canvas is at most 1024 px wide, so that text shows at full size in a document.
 2. **Grid:** every node centre sits on the column grid ("Layout computed again on every change").
-   - At least half the edges are one straight segment, and no edge has more than 2 bends.
+   - At least half the edges are one straight run, and no edge has more than 2 bends.
 3. **Crossings:** at most 1 per 10 edges.
-4. **Bundling:** each line meets its node side at a port of its own ("Lines meet any side").
-   - A side with more lines than room merges them.
-     - 2 or more unlabelled edges of one kind that leave it share one trunk.
+4. **Bundling:** each edge meets its node side at a port of its own ("Edges meet any side").
+   - A side with more edges than room merges them.
+     - 2 or more unlabelled edges of one type that leave it share one trunk.
      - Those that arrive at it share one port.
      - No junction of the trunk looks like a crossing.
-5. **Corridors:** an edge that skips rows runs only in a column that is empty in every row it passes.
-   - Of those columns it takes the one whose route crosses fewest of the lines that placement already fixes ("Lines meet any side").
+5. **Corridors:** an edge that skips layers runs only in a column that is empty in every layer it passes.
+   - Of those columns it takes the one whose route crosses fewest of the edges that placement already fixes ("Edges meet any side").
      - Each crossing weighs as two jogs of travel.
      - Between equals it takes the shortest.
-   - A corridor through a group box that holds neither end of the line pays as much as a crossing, and the line keeps out of such a box's margin and border.
-6. **Styles:** at most three line styles and one accent.
-   - It was two until "Lines meet any side" added the dotted and plain lines on 2026-10-12.
+   - A corridor through a group frame that holds neither end of the edge pays as much as a crossing, and the edge keeps out of such a frame's margin and border.
+6. **Styles:** at most three edge styles and one emphasis.
+   - It was two until "Edges meet any side" added the dotted and plain edges on 2026-10-12.
 7. **Edge labels:** at most 40% of edges carry one.
-8. **Clear text:** no line crosses any text: node, edge or group label.
+8. **Clear text:** no edge crosses any text: node, edge or group label.
    - This one is an engine-owned defect ("Defects owned by who can fix them").
    - Across a group's label it is the agent's ("The agent states where a group's label sits").
 
@@ -45,7 +45,7 @@ The rules that make it uncluttered stay as a record of the target. No code measu
 - Tuning against defect counts alone.
   - The phase 1 engine had zero defects on 5,000 random diagrams and still scored 22 of 60.
 - The compact overview as the target.
-  - It is as clean, but it folds each system into one box.
+  - It is as clean, but it folds each system into one node.
 
 ## Consequences
 

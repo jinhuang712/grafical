@@ -1,4 +1,4 @@
-// The diagram model: the facts a diagram file holds (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Facts over coordinates", "Rows unseen, groups as systems").
+// The diagram model: the facts a diagram file holds (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Facts over coordinates", "Layers unseen, groups as systems").
 // Positions are never part of the model. The engine computes them (specs/decisions, "Layout computed again on every change").
 
 export const FORMAT_VERSION = 1;
@@ -28,14 +28,14 @@ export const DENSITIES = ["compact", "normal", "airy"] as const;
 export type Density = (typeof DENSITIES)[number];
 
 /**
- * The edge styles an edge is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Lines meet any side"): call and data are solid, async dashed,
+ * The edge styles an edge is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side"): call and data are solid, async dashed,
  * optional dotted, and a link is a plain edge with no arrowhead. The legend names each.
  */
 export const LINE_STYLES = ["solid", "dashed", "dotted", "plain"] as const;
 export type LineStyleName = (typeof LINE_STYLES)[number];
 
 /**
- * How a layer is drawn once an edge ends at it (specs/decisions, "A row with no box as one bar"): as a node, with a node's
+ * How a layer is drawn once an edge ends at it (specs/decisions, "A layer with no node as one bar"): as a node, with a node's
  * paint and a dark label, or as a band, with the band's light fill and muted label.
  */
 export const ROW_LOOKS = ["box", "band"] as const;
@@ -79,7 +79,7 @@ export const GROUP_TITLES: readonly GroupTitle[] = [
   { at: 0.5, side: "right", place: "outside" },
 ];
 
-/** How the engine sizes a node that has no size (specs/decisions, "Boxes sized to their text"). */
+/** How the engine sizes a node that has no size (specs/decisions, "Nodes sized to their text"). */
 export const SIZINGS = ["auto", "fixed"] as const;
 export type Sizing = (typeof SIZINGS)[number];
 
@@ -162,7 +162,7 @@ export interface DiagramNode {
   /** Absent: centred. */
   labelAlign?: LabelAlign;
   kind: NodeKind;
-  /** Absent: the engine sizes the node to its text, unless the diagram's sizing is fixed (specs/decisions, "Boxes sized to their text"). */
+  /** Absent: the engine sizes the node to its text, unless the diagram's sizing is fixed (specs/decisions, "Nodes sized to their text"). */
   size?: SizeStep;
   /** A second, smaller edge, such as a port or a topic name. */
   sublabel?: string;
@@ -170,11 +170,11 @@ export interface DiagramNode {
   emphasis?: boolean;
   /** The id of a node in another layer that this node sits directly above or below. */
   align?: string;
-  /** The id of the group (system) this node belongs to (specs/decisions, "Rows unseen, groups as systems"). */
+  /** The id of the group (system) this node belongs to (specs/decisions, "Layers unseen, groups as systems"). */
   group?: string;
-  /** The lane this node lies in, when lanes run as columns (specs/decisions, "Swimlanes run one way"). */
+  /** The lane this node lies in, when lanes run as columns (specs/decisions, "Lanes run one way"). */
   lane?: string;
-  /** The column this node follows (specs/decisions, "Columns beside rows"). */
+  /** The column this node follows (specs/decisions, "Columns beside layers"). */
   column?: string;
   /** The type it is, when an agent defined it. `kind` then holds the kind that draws it. */
   type?: string;
@@ -184,16 +184,16 @@ export interface DiagramNode {
   style?: string[];
   /** Marks in fixed slots, such as a warning at the top-left (specs/decisions, "Marks of any kind"). */
   marks?: Partial<Record<MarkSlot, Mark>>;
-  /** The node a node in no layer is placed from, by the steps below (specs/decisions, "Steps from another box"). */
+  /** The node a node in no layer is placed from, by the steps below (specs/decisions, "Steps from another node"). */
   from?: string;
-  /** Steps down, up, left or right from `from`, each a cell of the column grid (specs/decisions, "Steps from another box"). */
+  /** Steps down, up, left or right from `from`, each a cell of the column grid (specs/decisions, "Steps from another node"). */
   down?: number;
   up?: number;
   left?: number;
   right?: number;
 }
 
-/** A system drawn as one node around its member nodes, which may sit in several layers (specs/decisions, "Rows unseen, groups as systems"). */
+/** A system drawn as one node around its member nodes, which may sit in several layers (specs/decisions, "Layers unseen, groups as systems"). */
 export interface Group {
   id: string;
   label: string;
@@ -213,27 +213,27 @@ export interface Layer {
   id: string;
   /** Where its label sits, from 0 to 1 along its head (specs/decisions, "A region's label sits at a fraction of a side"). */
   labelAt?: number;
-  /** Its name, drawn only when the layer is drawn (specs/decisions, "A row with a look is drawn"). */
+  /** Its name, drawn only when the layer is drawn (specs/decisions, "A layer with a look is drawn"). */
   label?: string;
-  /** The lane this layer lies in, when lanes run as layers (specs/decisions, "Swimlanes run one way"). */
+  /** The lane this layer lies in, when lanes run as layers (specs/decisions, "Lanes run one way"). */
   lane?: string;
-  /** How the layer is drawn; a layer with a look is drawn though no edge ends at it. Absent: the layer is drawn only once an edge ends at it, a node with no node in it and a band with nodes (specs/decisions, "A row with no box as one bar", "A row with a look is drawn"). */
+  /** How the layer is drawn; a layer with a look is drawn though no edge ends at it. Absent: the layer is drawn only once an edge ends at it, a node with no node in it and a band with nodes (specs/decisions, "A layer with no node as one bar", "A layer with a look is drawn"). */
   look?: RowLook;
   /** Ordered: list order is the order within the layer. */
   nodes: DiagramNode[];
 }
 
 /**
- * A swimlane: a labelled band that names who owns what (specs/decisions, "Swimlanes run one way"). Its members name
+ * A swimlane: a labelled band that names who owns what (specs/decisions, "Lanes run one way"). Its members name
  * it: layers, when lanes run as layers, or nodes, when lanes run as columns. All
  * lanes of a diagram run one way.
  */
-/** A column (specs/decisions, "Columns beside rows"): a guide that its nodes follow, left of the next column's in every layer. */
+/** A column (specs/decisions, "Columns beside layers"): a guide that its nodes follow, left of the next column's in every layer. */
 export interface Column {
   id: string;
 }
 
-/** How much a gap may be magnified (specs/decisions, "The gap between two regions takes a multiple"). */
+/** How much a gap may be magnified (specs/decisions, "The gap between two regions may be magnified"). */
 export const GAP_MAGNIFICATIONS = [1.25, 1.5, 2] as const;
 export type GapMagnified = (typeof GAP_MAGNIFICATIONS)[number];
 
@@ -301,9 +301,9 @@ export interface Edge {
   labelStyle?: string[];
   /** Absent: centred. */
   labelAlign?: LabelAlign;
-  /** true: an arrowhead at both ends. A link has none (specs/decisions, "Lines meet any side"). */
+  /** true: an arrowhead at both ends. A link has none (specs/decisions, "Edges meet any side"). */
   both?: boolean;
-  /** true: the edge may pass the layers with no node between its ends (specs/decisions, "A row with no box as one bar"). */
+  /** true: the edge may pass the layers with no node between its ends (specs/decisions, "A layer with no node as one bar"). */
   pass?: boolean;
   /** A weight level the stylesheet names, or a width in pixels (specs/decisions, "Edge weights"). Absent: thin. */
   weight?: string | number;
@@ -319,7 +319,7 @@ export interface Edge {
   like?: string;
   /** The styles it marks. */
   style?: string[];
-  /** Its number in a process, drawn as a badge on the edge (specs/decisions, "Step badges ride the line"). Absent: none. */
+  /** Its number in a process, drawn as a badge on the edge (specs/decisions, "Step badges ride the edge"). Absent: none. */
   step?: number;
   /** The object it passes and on which side (specs/decisions, "An edge is steered by facts and never by coordinates"). */
   via?: EdgeVia;
@@ -335,7 +335,7 @@ export interface Edge {
   stretch?: EdgeStretch;
 }
 
-/** The highest step number: two digits fit the badge (specs/decisions, "Step badges ride the line"). */
+/** The highest step number: two digits fit the badge (specs/decisions, "Step badges ride the edge"). */
 export const STEP_NUMBER_MAX = 99;
 
 /**
@@ -415,11 +415,11 @@ export interface Diagram {
   /** A footnote, such as "Not shown: …" (specs/decisions, "Curation stays with the agent"). */
   caption?: string;
   density: Density;
-  /** How edges are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Lines may be drawn square or round"). */
+  /** How edges are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Edges may be drawn square or round"). */
   lines?: "round";
   /** Where the title sits (specs/decisions, "A region's label sits at a fraction of a side"). Absent: top left. */
   titleAt?: DiagramTitle;
-  /** "fixed": a node with no size is a medium node, whatever its text. Absent: auto (specs/decisions, "Boxes sized to their text"). */
+  /** "fixed": a node with no size is a medium node, whatever its text. Absent: auto (specs/decisions, "Nodes sized to their text"). */
   sizing?: "fixed";
   /** A built-in theme's name, or a stylesheet's path relative to the file (specs/decisions, "Themes and stylesheets"). Absent: the default theme. */
   style?: string;
@@ -431,13 +431,13 @@ export interface Diagram {
   legend?: Legend;
   /** Ordered top to bottom. */
   layers: Layer[];
-  /** Nodes in no layer, each placed by steps from another node, in creation order (specs/decisions, "Steps from another box"). */
+  /** Nodes in no layer, each placed by steps from another node, in creation order (specs/decisions, "Steps from another node"). */
   nodes?: DiagramNode[];
-  /** The systems, in creation order. Absent or empty: no groups. Members name their group (specs/decisions, "Rows unseen, groups as systems"). */
+  /** The systems, in creation order. Absent or empty: no groups. Members name their group (specs/decisions, "Layers unseen, groups as systems"). */
   groups?: Group[];
-  /** The swimlanes. Lanes that run as columns go left to right in this order (specs/decisions, "Swimlanes run one way"). */
+  /** The swimlanes. Lanes that run as columns go left to right in this order (specs/decisions, "Lanes run one way"). */
   lanes?: Lane[];
-  /** Columns, left to right (specs/decisions, "Columns beside rows"). */
+  /** Columns, left to right (specs/decisions, "Columns beside layers"). */
   columns?: Column[];
   /** Gaps the agent magnified. */
   gaps?: Gap[];

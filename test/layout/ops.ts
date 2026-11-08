@@ -71,7 +71,7 @@ export function removeEdge(d: Diagram, id: string): Applied {
   };
 }
 
-/** Gives a row a look, which draws it (specs/decisions, "A row with a look is drawn"). It names no node and no edge. */
+/** Gives a row a look, which draws it (specs/decisions, "A layer with a look is drawn"). It names no node and no edge. */
 export function lookLayer(d: Diagram, id: string, look: RowLook): Applied {
   return {
     diagram: { ...d, layers: d.layers.map((l) => (l.id === id ? { ...l, look } : l)) },
@@ -79,7 +79,7 @@ export function lookLayer(d: Diagram, id: string, look: RowLook): Applied {
   };
 }
 
-/** Numbers one edge as a step (specs/decisions, "Step badges ride the line"). */
+/** Numbers one edge as a step (specs/decisions, "Step badges ride the edge"). */
 export function numberEdge(d: Diagram, id: string, n: number): Applied {
   return {
     diagram: { ...d, edges: d.edges.map((e) => (e.id === id ? { ...e, step: n } : e)) },

@@ -1,4 +1,4 @@
-// Layout entry point (specs/decisions, "Rows unseen, groups as systems", "Layout computed again on every change", "Our own gap router", "A target picture with measured rules"). The whole diagram is laid
+// Layout entry point (specs/decisions, "Layers unseen, groups as systems", "Layout computed again on every change", "Our own gap router", "A target picture with measured rules"). The whole diagram is laid
 // out again from its facts on every call, in a fixed order:
 // 1. across: every node on a column of one grid shared by all layers, columns chosen
 //    so that edges run straight, then spaced for nodes, groups and labels
@@ -7,9 +7,9 @@
 // 3. down: the title, subtitle and legend, then layers and gutters top to bottom,
 //    each gutter taking the smallest height step its rows fit in, plus the room
 //    group nodes need below their last layer and above their first, and the room
-//    of lane headers and borders (specs/decisions, "Swimlanes run one way");
+//    of lane headers and borders (specs/decisions, "Lanes run one way");
 // 4. assembly of routes, labels, group nodes, text and the footnote.
-// Layers are not drawn (specs/decisions, "Rows unseen, groups as systems"): their bands and labels stay in the scene for the
+// Layers are not drawn (specs/decisions, "Layers unseen, groups as systems"): their bands and labels stay in the scene for the
 // checker and for debugging.
 
 import { segmentCrossesRect, segmentsOf } from "../check/geometry.ts";
@@ -120,7 +120,7 @@ export function validateAlignments(diagram: Diagram): AlignmentProblem[] {
 }
 
 /**
- * Groups that cannot be drawn as one node (specs/decisions, "Rows unseen, groups as systems"): a group whose members are split
+ * Groups that cannot be drawn as one node (specs/decisions, "Layers unseen, groups as systems"): a group whose members are split
  * by another node in a layer, and a group that another group or node would have
  * to lie both left and right of. The command line turns each into an operation
  * error.
@@ -460,7 +460,7 @@ function segmentHits(a: Point, b: Point, r: Rect): boolean {
 
 /**
  * A label stays where the router put it while it still lies beside its edge, clear. A
- * route cut at a container (specs/decisions, "Lines that end at containers") can lose the part the label sat on, or leave
+ * route cut at a container (specs/decisions, "Edges that end at containers") can lose the part the label sat on, or leave
  * the label across the container's border: the label then moves beside a part
  * that remains, the longest first, above or below it, or right or left of it,
  * at its middle or one of its ends, stepping away from it while other edges
@@ -468,7 +468,7 @@ function segmentHits(a: Point, b: Point, r: Rect): boolean {
  * the text in a place, which a step's badge may push out of it (specs/decisions, "Step
  * badges ride the edge"): the text too must be clear. Failing every place, no edge
  * moves for the label: it takes the first place `free` accepts across the border,
- * or else the first place, and is not clear (specs/decisions, "A line never moves for its label").
+ * or else the first place, and is not clear (specs/decisions, "An edge never moves for its label").
  */
 function besideRoute(
   points: Point[],
@@ -572,7 +572,7 @@ function centred(points: Point[], at: AssembledLabel, free: (r: Rect) => boolean
 /**
  * A label the gutter seated off its edge goes onto its edge where `free` finds room: the gutter
  * counts every edge in its height, though a run may leave the label's own height clear. Longest
- * run first, nearest the run's middle first (specs/decisions, "A line's label sits on its line").
+ * run first, nearest the run's middle first (specs/decisions, "An edge's label sits on its edge").
  */
 function ontoLine(points: Point[], at: AssembledLabel, free: (r: Rect) => boolean): AssembledLabel {
   const runs = points.slice(1).flatMap((b, i) => {
@@ -622,12 +622,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // The diagram's theme decides the type sizes here and the paint in the scene (specs/decisions, "Themes and stylesheets").
   const theme = themeOf(facts);
   const T = theme.type;
-  // Nodes placed by steps sit in layers from here on (specs/decisions, "Steps from another box").
+  // Nodes placed by steps sit in layers from here on (specs/decisions, "Steps from another node").
   const sized = withSizes(placeSteps(withFollowedWeights(facts)).d, m);
-  // Column lanes keep each layer in lane order (specs/decisions, "Swimlanes run one way"); a file edited by hand may not.
+  // Column lanes keep each layer in lane order (specs/decisions, "Lanes run one way"); a file edited by hand may not.
   orderByLanes(sized);
   orderByColumns(sized);
-  // Container ends route to a stand-in node and are cut at the container (specs/decisions, "Lines that end at containers").
+  // Container ends route to a stand-in node and are cut at the container (specs/decisions, "Edges that end at containers").
   const ends = planEnds(sized);
   const d: Diagram = { ...sized, edges: ends.edges };
   const sp = SPACING[d.density];
@@ -646,7 +646,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const text = e.label === "" ? undefined : e.label;
     if (text === undefined && e.step === undefined) continue;
     // A step's badge rides the edge under one end of its label's text, and the text stands
-    // off it (specs/decisions, "Step badges ride the line"): the router finds room for both.
+    // off it (specs/decisions, "Step badges ride the edge"): the router finds room for both.
     const step = e.step !== undefined;
     const size = (w: number, h: number) =>
       !step
@@ -694,7 +694,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       return s?.badge === undefined && s?.beside !== true;
     },
   );
-  // Edges that meet a column lane beside it (specs/decisions, "Swimlanes run one way"), and the node at their other end.
+  // Edges that meet a column lane beside it (specs/decisions, "Lanes run one way"), and the node at their other end.
   const laneEnds = new Map<string, { lane: string; node: string }>();
   if (laneRun(d) === "columns") {
     for (const e of d.edges) {
@@ -721,7 +721,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       ceil4(Math.max(0, ...(wallLines.get(id) ?? []).map((l) => l.width)) + 2 * WALL.labelClear),
     );
   // Two numbered edges between the same neighbours need room for both badges side by
-  // side, each clear of its edge's arrowheads (specs/decisions, "Step badges ride the line").
+  // side, each clear of its edge's arrowheads (specs/decisions, "Step badges ride the edge").
   const numbered = new Map<string, number>();
   const factOf = new Map(d.edges.map((e) => [e.id, e]));
   for (const [id, slot] of sideways) {
@@ -768,7 +768,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     return [{ wall: w, x0, x1, top: split.top, bottom: split.bottom }];
   });
   const refined = refineEnds(sized, ends, nodes);
-  // Bars (specs/decisions, "A row with no box as one bar"): a layer with no node that an edge ends at, or that has a look,
+  // Bars (specs/decisions, "A layer with no node as one bar"): a layer with no node that an edge ends at, or that has a look,
   // is one bar high, and each edge meets it straight past its other end. The router knows only nodes, so a
   // narrow stand-in sits in the bar there, shared by edges whose other ends lie close.
   const barStands = new Map<number, PNode[]>();
@@ -814,7 +814,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const routeNodes = new Map(nodes);
   for (const stands of barStands.values()) for (const n of stands) routeNodes.set(n.id, n);
 
-  // Bands (specs/decisions, "Lines that end at containers", "A row with a look is drawn"): the layers an edge ends at or
+  // Bands (specs/decisions, "Edges that end at containers", "A layer with a look is drawn"): the layers an edge ends at or
   // that have a look, drawn across the content. Each band's label sits in its head above the layer, at the content's
   // left edge.
   let contentLeft = Number.POSITIVE_INFINITY;
@@ -846,7 +846,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const laneId = d.layers.find((x) => x.id === l.id)?.lane;
     const inLane = d.lanes?.find((x) => x.id === laneId)?.label === l.label;
     const label = inLane ? undefined : l.label;
-    // A layer with no label draws no name (specs/decisions, "A row with a look is drawn"), and its band has no head.
+    // A layer with no label draws no name (specs/decisions, "A layer with a look is drawn"), and its band has no head.
     if (label === undefined) {
       const labelX = contentLeft - BAND.padX + BAND.labelInset;
       bandLayers.set(i, { id: l.id, labelX, labelW: 0, bar: stands !== undefined });
@@ -884,7 +884,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // Where no vertical edge may pass: a band's label, above its layer, and the label of an
   // edge that runs sideways, in the gap it crosses. A group's label moves no edge: an edge
   // across it refuses the write; nor does a bar's, seated once the edges are routed
-  // (specs/decisions, "A group's label moves no box and no line").
+  // (specs/decisions, "A group's label moves no node and no edge").
   const forbidTop = new Map<number, [number, number][]>();
   // No edge runs down through a wall up and down, in the layers it spans (specs/decisions, "Walls as space").
   for (const b of besideWalls) {
@@ -990,7 +990,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // A bar's label sits in it, at its left, in the first stretch that no edge meets: 16 px clear of
   // the stand-ins of the edges that end at it, and of each edge that passes it, where the router ran
   // it. Failing that, left of the content and of those edges, and the bar reaches it. No edge moves
-  // for it (specs/decisions, "A row with no box as one bar", "Unreadable is refused and costly is reported").
+  // for it (specs/decisions, "A layer with no node as one bar", "Unreadable is refused and costly is reported").
   for (const [i, b] of bandLayers) {
     if (!b.bar || b.label === undefined) continue;
     const taken: [number, number][] = (barStands.get(i) ?? []).map((s) => [s.x, s.x + s.w]);
@@ -1062,7 +1062,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (Number.isFinite(routing.minX)) see(routing.minX - 16);
   if (Number.isFinite(routing.maxX)) see(routing.maxX + 16);
 
-  // Lanes (specs/decisions, "Swimlanes run one way"). Layer lanes share one header column, left of everything the layers
+  // Lanes (specs/decisions, "Lanes run one way"). Layer lanes share one header column, left of everything the layers
   // hold, edges included. Column lanes have a header on top, as wide as the lane.
   const laneStyle = T["lane-label"];
   const laneLh = lineHeight("lane-label", m, T);
@@ -1387,7 +1387,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
    * Where a label the agent did not place starts: the leftmost seat in its group's head, every
    * 4 px and the rightmost exactly, that no edge and no edge's label comes nearer than the
    * engine keeps its edges. No edge or node moves for it: where no seat is clear, it sits at
-   * the left, and the write is refused as title-blocked (specs/decisions, "A group's label moves no box and no line").
+   * the left, and the write is refused as title-blocked (specs/decisions, "A group's label moves no node and no edge").
    */
   const seat = (g: (typeof groups)[number], ly: number): number => {
     const first = centre + g.x0 + GROUP.labelInset;
@@ -1693,7 +1693,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     routes.set(e.id, points);
   }
 
-  // Which ends of an edge meet a group, a layer or a lane it ends at (specs/decisions, "Step badges ride the line").
+  // Which ends of an edge meet a group, a layer or a lane it ends at (specs/decisions, "Step badges ride the edge").
   const insideOf = (id: string) => {
     const plan = ends.ends.get(id);
     return { start: plan?.from !== undefined, end: plan?.to !== undefined };
@@ -1741,7 +1741,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (width !== undefined && width !== theme.paint.edge.strokeWidth) edge.width = width;
     const text = e.label === "" ? undefined : e.label;
     if (a.label !== undefined && (text !== undefined || e.step !== undefined) && withText) {
-      // The text takes the slot, or stands off the step's badge in it (specs/decisions, "Step badges ride the line").
+      // The text takes the slot, or stands off the step's badge in it (specs/decisions, "Step badges ride the edge").
       const ink = labelMetrics.ascent + labelMetrics.descent;
       const lines =
         text !== undefined && (a.label.lines > 1 || text.includes("\n"))
@@ -1939,7 +1939,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (gaps.length > 0) wl.line.gaps = gaps;
   }
 
-  // A badge its label's slot left touching something slides along its edge (specs/decisions, "Step badges ride the line").
+  // A badge its label's slot left touching something slides along its edge (specs/decisions, "Step badges ride the edge").
   if (withText) {
     settleBadges(sceneEdges, {
       solid: [

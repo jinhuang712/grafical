@@ -104,7 +104,7 @@ export function defects(s: Scene): Defects {
   });
 
   // Labels: clear of nodes, other text, other edges, and their own line. Rows
-  // are not drawn (specs/decisions, "Rows unseen, groups as systems"), so their labels do not count.
+  // are not drawn (specs/decisions, "Layers unseen, groups as systems"), so their labels do not count.
   const texts = [
     { id: "title", box: s.title.bbox },
     ...(s.groups ?? []).map((g) => ({ id: `group ${g.id}`, box: g.label.bbox })),
@@ -257,7 +257,7 @@ export function mechanical(d: Defects): string[] {
  */
 export function textCrossings(s: Scene): string[] {
   // A group's label and a line's label no gutter could hold are the agent's: title-blocked and
-  // label-blocked (specs/decisions, "A line never moves for its label").
+  // label-blocked (specs/decisions, "An edge never moves for its label").
   const texts: { id: string; box: Rect; owner?: string }[] = [
     { id: "title", box: s.title.bbox },
     ...s.nodes.flatMap((n) => n.texts.map((t, i) => ({ id: `node ${n.id}#${i}`, box: t.bbox }))),
@@ -282,7 +282,7 @@ export function textCrossings(s: Scene): string[] {
   return out;
 }
 
-/** Nodes inside a group's box that are not its members (specs/decisions, "Rows unseen, groups as systems", "Defects owned by who can fix them"). */
+/** Nodes inside a group's box that are not its members (specs/decisions, "Layers unseen, groups as systems", "Defects owned by who can fix them"). */
 export function groupIntruders(s: Scene): string[] {
   const out: string[] = [];
   for (const g of s.groups ?? []) {
