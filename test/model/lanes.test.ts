@@ -32,7 +32,7 @@ const overlaps = (a: Rect, b: Rect) =>
 const rect = (s: Scene, id: string) => s.nodes.find((n) => n.id === id)?.rect as Rect;
 const lane = (s: Scene, id: string) => s.lanes?.find((x) => x.id === id);
 
-/** Four rows: web, gateway, two services, two stores. */
+/** Four layers: web, gateway, two services, two stores. */
 const base: Op[] = [
   { op: "diagram.new", title: "Shop" },
   { op: "layer.add", id: "clients", label: "Clients" },
@@ -57,7 +57,7 @@ beforeAll(() => {
 });
 
 describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
-  it("runs as rows when layers join, and the file keeps it", () => {
+  it("runs as layers when layers join, and the file keeps it", () => {
     const { diagram: d } = ok(shop, [
       { op: "lane.add", id: "customer", label: "Customer", members: ["clients"] },
       { op: "lane.add", id: "platform", label: "Platform team", members: ["edge", "services"] },
@@ -68,12 +68,12 @@ describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
     expect(showDiagram(d)).toContain('lane platform "Platform team" (layers): edge, services');
   });
 
-  it("runs as columns when nodes join, and keeps each row in lane order", () => {
+  it("runs as columns when nodes join, and keeps each layer in lane order", () => {
     const { diagram: d, changed } = ok(shop, [
       { op: "lane.add", id: "pay", label: "Payments team", members: ["payments", "ledger"] },
       { op: "lane.add", id: "ord", label: "Orders team", members: ["orders", "ordersdb"] },
     ]);
-    // Lanes go left to right in list order: payments now comes first in its rows.
+    // Lanes go left to right in list order: payments now comes first in its layers.
     expect(d.layers[2]?.nodes.map((n) => n.id)).toEqual(["payments", "orders"]);
     expect(d.layers[3]?.nodes.map((n) => n.id)).toEqual(["ledger", "ordersdb"]);
     expect(changed).toEqual(expect.arrayContaining(["payments", "ledger"]));
@@ -85,7 +85,7 @@ describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge"] },
     ]);
     const e1 = fail(byLayers, [{ op: "lane.join", lane: "platform", members: ["orders"] }]);
-    // The node's row is what the lane could take instead.
+    // The node's layer is what the lane could take instead.
     expect(e1[0]).toMatchObject({ code: "lane-mixed", facts: { is: "node", layer: "services" } });
     const { diagram: cols } = ok(shop, [
       { op: "lane.add", id: "ord", label: "Orders", members: ["orders"] },
@@ -94,7 +94,7 @@ describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
     expect(e2[0]).toMatchObject({ code: "lane-mixed" });
   });
 
-  it("refuses a row lane with a gap, and joins a layer added inside one", () => {
+  it("refuses a layer lane with a gap, and joins a layer added inside one", () => {
     const gap = fail(shop, [
       { op: "lane.add", id: "platform", label: "Platform", members: ["edge", "data"] },
     ]);
@@ -115,7 +115,7 @@ describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
       { op: "lane.add", id: "a", label: "A", members: ["orders"] },
       { op: "lane.add", id: "b", label: "B", members: ["payments"] },
     ]);
-    // It names the group's first box in another lane than its first box's, and that lane.
+    // It names the group's first node in another lane than its first node's, and that lane.
     expect(split.find((e) => e.code === "group-across-lanes")?.facts).toEqual({
       node: "payments",
       lane: "b",
@@ -162,7 +162,7 @@ describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
 });
 
 describe('lanes in the picture (specs/decisions, "Lanes run one way")', () => {
-  it("draws row lanes as bands with a header on the left, around their rows only", () => {
+  it("draws layer lanes as bands with a header on the left, around their layers only", () => {
     const { diagram: d } = ok(shop, [
       { op: "lane.add", id: "customer", label: "Customer", members: ["clients"] },
       { op: "lane.add", id: "platform", label: "Platform team", members: ["edge", "services"] },
@@ -176,7 +176,7 @@ describe('lanes in the picture (specs/decisions, "Lanes run one way")', () => {
     for (const id of ["gateway", "orders", "payments"]) {
       expect(inside(rect(s, id), platform?.rect as Rect)).toBe(true);
     }
-    // The data row lies in no lane.
+    // The data layer lies in no lane.
     expect(overlaps(rect(s, "ledger"), platform?.rect as Rect)).toBe(false);
     // The two lanes meet at one border, and the header is left of every node.
     const c = customer?.rect as Rect;

@@ -44,14 +44,14 @@ describe('node shapes (specs/decisions, "Every layered diagram type")', () => {
     expect(portInset(136)).toBe(portReach(136));
   });
 
-  it("moves a line's end onto a dot's round outline", () => {
+  it("moves an edge's end onto a dot's round outline", () => {
     const dot = { x: 0, y: 0, w: 24, h: 24 };
     expect(meetOutline("final", dot, { x: 12, y: 0 }, { x: 12, y: -30 })).toEqual({ x: 12, y: 0 });
     const off = meetOutline("final", dot, { x: 4, y: 0 }, { x: 4, y: -30 });
     expect(off.y).toBeCloseTo(12 - Math.sqrt(144 - 64), 6);
   });
 
-  it("moves a line's end from the box onto the diamond's slanted side", () => {
+  it("moves an edge's end from the box onto the diamond's slanted side", () => {
     // Straight down into the top tip: the box and the diamond meet there.
     expect(meetOutline("decision", r, { x: 92, y: 0 }, { x: 92, y: -40 })).toEqual({ x: 92, y: 0 });
     // Halfway out from the middle, the outline is a quarter of the height in.

@@ -16,7 +16,7 @@ function tinyWith(legend: Diagram["legend"]): Diagram {
   return d;
 }
 
-/** Short words for both line styles the tiny diagram draws. */
+/** Short words for both edge styles the tiny diagram draws. */
 const short: Diagram["legend"] = { solid: "call", dashed: "event" };
 
 /** The legend's lines, top to bottom, each as the items on it. */

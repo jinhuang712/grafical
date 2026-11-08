@@ -116,7 +116,7 @@ describe("a diagram's title at a fraction", () => {
   });
 });
 
-describe("a row's and a lane's label along its head", () => {
+describe("a layer's and a lane's label along its head", () => {
   const layered = (labelAt?: number) =>
     readDiagram(`grafical: 1
 title: Rows
@@ -132,19 +132,19 @@ edges:
   const band = (d: Diagram) => layout(d, m).bands?.find((b) => b.id === "a")?.label?.bbox;
   const lane = (d: Diagram) => layout(d, m).lanes?.find((x) => x.id === "l")?.label.bbox;
 
-  it("moves a row's label along its head", () => {
+  it("moves a layer's label along its head", () => {
     const start = ok(layered(), [{ op: "layer.label-at", id: "a", at: 0 } as Op]);
     const end = ok(layered(), [{ op: "layer.label-at", id: "a", at: 1 } as Op]);
     expect(band(end)?.x).toBeGreaterThan(band(start)?.x ?? 0);
   });
 
-  it("moves a row lane's label down its head", () => {
+  it("moves a layer lane's label down its head", () => {
     const end = ok(layered(), [{ op: "lane.label-at", id: "l", at: 1 } as Op]);
     expect(lane(end)?.y).toBeGreaterThan(lane(layered())?.y ?? 0);
     expect(ok(end, [{ op: "lane.label-at", id: "l" } as Op])).toEqual(layered());
   });
 
-  it("refuses a row with no label", () => {
+  it("refuses a layer with no label", () => {
     const d = ok(layered(), [{ op: "layer.add", id: "c" } as Op]);
     expect(fail(d, [{ op: "layer.label-at", id: "c", at: 0 } as Op])[0]?.code).toBe("bad-value");
   });
@@ -191,7 +191,7 @@ describe("a group's stated label place", () => {
     expect(diffDiagrams(booking, a)).toEqual([{ op: "group.label-at", id: "app", ...P.top }]);
   });
 
-  // Lines leave the last row by the bottom, through the foot the label sits in.
+  // Edges leave the last layer by the bottom, through the foot the label sits in.
   const below = readDiagram(`grafical: 1
 title: Booking
 density: normal
@@ -216,7 +216,7 @@ edges:
   - {id: db->audit, from: db, to: audit}
 `) as Diagram;
 
-  // Lines run into the group's one row from both sides.
+  // Edges run into the group's one layer from both sides.
   const oneLayer = readDiagram(`grafical: 1
 title: One row
 density: normal
@@ -269,12 +269,12 @@ edges:
       } else {
         expect(t.y + t.h / 2).toBeCloseTo(r.y + r.h / 2, 0);
       }
-      // Without a head, the box's top is a padding away from the first row.
+      // Without a head, the frame's top is a padding away from the first layer.
       if (!at.startsWith("top")) expect(web.y - r.y).toBe(24);
     });
   }
 
-  it("moves no line and no box for its place: only its own room is added", () => {
+  it("moves no edge and no node for its place: only its own room is added", () => {
     for (const [d0, id] of [
       [booking, "app"],
       [below, "app"],
@@ -301,7 +301,7 @@ edges:
     }
   });
 
-  it("refuses a place a line crosses, and names the places clear of every line", () => {
+  it("refuses a place an edge crosses, and names the places clear of every edge", () => {
     for (const [d0, id, at, edge] of [
       [booking, "app", "top", "traveller->mobile"],
       [booking, "app", "top-left", "traveller->web"],
@@ -325,7 +325,7 @@ edges:
     }
   });
 
-  it("is clear where no line comes near it, with no engine defect", () => {
+  it("is clear where no edge comes near it, with no engine defect", () => {
     for (const [d0, id, at] of [
       [booking, "app", "bottom"],
       [below, "app", "bottom-left"],

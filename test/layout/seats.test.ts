@@ -1,4 +1,4 @@
-// A group's label sits in its head where the lines into its first row keep their centres.
+// A group's label sits in its head where the edges into its first layer keep their centres.
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
@@ -14,9 +14,9 @@ beforeAll(async () => {
 
 describe("group label seats", () => {
   // Found by the owner on 2026-10-16 in a booking C4 diagram: the label "Booking app
-  // software system" was wider than the room between the lines into the group's first
-  // row, so the traveller's line into the web app was pushed to the box's left edge.
-  it("make room between two lines rather than push a line off centre", () => {
+  // software system" was wider than the room between the edges into the group's first
+  // layer, so the traveller's edge into the web app was pushed to the frame's left edge.
+  it("make room between two edges rather than push an edge off centre", () => {
     const d = readDiagram(`grafical: 1
 title: seats
 density: normal

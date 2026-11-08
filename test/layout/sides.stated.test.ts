@@ -1,4 +1,4 @@
-// An agent may state the side of a line (specs/decisions, "An agent may state the side of an edge").
+// An agent may state the side of an edge (specs/decisions, "An agent may state the side of an edge").
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
@@ -32,7 +32,7 @@ const layerOps = [node("x", "b"), node("y", "b", { after: "x" }), node("t", "a")
 const edgeOp = { op: "edge.add", from: "x", to: "y" } as Op;
 
 describe("stated sides", () => {
-  it("takes a line between neighbours round below or above", () => {
+  it("takes an edge between neighbours round below or above", () => {
     const by = (s: object) =>
       layout(build([...layerOps, edgeOp, side("x->y", s)]), m).edges[0]?.points;
     const low = by({ out: "bottom", in: "bottom" }) ?? [];
@@ -76,13 +76,13 @@ describe("stated sides", () => {
       return { points: e?.points ?? [], x: rect("x"), y: rect("y") };
     };
 
-    it("leaves by the top of a line going down, round its own box", () => {
+    it("leaves by the top of an edge going down, round its own node", () => {
       const { points, x } = drawn({ out: "top" });
       expect(points[0]?.y).toBe(x?.y);
       expect(points[1]?.y).toBeLessThan(x?.y ?? 0);
     });
 
-    it("enters by the bottom of a line coming down, past its own box", () => {
+    it("enters by the bottom of an edge coming down, past its own node", () => {
       const { points, y } = drawn({ in: "bottom" });
       const last = points[points.length - 1];
       expect(last?.y).toBe((y?.y ?? 0) + (y?.h ?? 0));
@@ -99,7 +99,7 @@ describe("stated sides", () => {
       }
     });
 
-    it("passes through its row from one side of a neighbour to the other", () => {
+    it("passes through its layer from one side of a neighbour to the other", () => {
       const d = build([...layerOps, edgeOp, side("x->y", { out: "top", in: "bottom" })]);
       const s = layout(d, m);
       expect(check(d, s, m).filter((p) => p.code === "side-blocked")).toEqual([]);

@@ -24,7 +24,7 @@ export interface BoxPaint {
   radius: number;
 }
 
-/** A swimlane: its area, its border, and its header's fill. */
+/** A lane: its area, its border, and its header's fill. */
 export interface LanePaint extends BoxPaint {
   headFill: string;
 }
@@ -54,7 +54,7 @@ export interface Paint {
   nesting: "alternate" | "shade";
   /** A layer an edge ends at, drawn behind its groups: lighter than a group (specs/decisions, "Edges that end at containers"). */
   band: BoxPaint;
-  /** A swimlane, drawn behind everything else (specs/decisions, "Lanes run one way"). Lanes side by side share a border. */
+  /** A lane, drawn behind everything else (specs/decisions, "Lanes run one way"). Lanes side by side share a border. */
   lane: LanePaint;
   node: {
     radius: number;

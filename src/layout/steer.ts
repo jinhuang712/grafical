@@ -1,6 +1,6 @@
-// The facts an edge states about its line, met once the lines are drawn (specs/decisions, "An edge is steered by
-// facts and never by coordinates"). A fact that cannot hold leaves the line as it was and names itself, which refuses
-// the write. Nothing here moves a node or another line.
+// The facts an edge states about its edge, met once the edges are drawn (specs/decisions, "An edge is steered by
+// facts and never by coordinates"). A fact that cannot hold leaves the edge as it was and names itself, which refuses
+// the write. Nothing here moves a node or another edge.
 
 import type { Edge, EdgeBend } from "../model/types.ts";
 import type { Point, Rect, SceneEdge } from "../scene.ts";
@@ -17,7 +17,7 @@ interface World {
   edges: SceneEdge[];
   facts: Map<string, Edge>;
   nodes: Map<string, Rect>;
-  /** Nodes and groups by id, for what a line passes. */
+  /** Nodes and groups by id, for what an edge passes. */
   objects: Map<string, Rect>;
 }
 
@@ -46,7 +46,7 @@ function overlaps(a: Point, b: Point, c: Point, d: Point): boolean {
   return hi - lo > EPS;
 }
 
-/** A line clear of every node but its ends, every other line but its kin, every label, and the canvas's edge. */
+/** An edge clear of every node but its ends, every other edge but its kin, every label, and the canvas's edge. */
 function clear(w: World, e: SceneEdge, points: Point[], kin: ReadonlySet<string>): boolean {
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1] as Point;
@@ -69,7 +69,7 @@ function clear(w: World, e: SceneEdge, points: Point[], kin: ReadonlySet<string>
   return true;
 }
 
-/** Where a line meets its node: the middle of the side it comes in by. */
+/** Where an edge meets its node: the middle of the side it comes in by. */
 function entry(line: Point[], r: Rect, stated: string | undefined): { p: Point; across: boolean } {
   const end = line.at(-1) as Point;
   const side =
@@ -87,7 +87,7 @@ function entry(line: Point[], r: Rect, stated: string | undefined): { p: Point; 
   return { p: { x: r.x + r.w / 2, y: r.y + r.h }, across: false };
 }
 
-/** A line along a trunk to its own end: the trunk as far as one straight run reaches that end. */
+/** An edge along a trunk to its own end: the trunk as far as one straight run reaches that end. */
 function alongTrunk(
   w: World,
   e: SceneEdge,
@@ -126,12 +126,12 @@ function alongTrunk(
   return undefined;
 }
 
-/** The trunk's line and this line, both read from the end they share. */
+/** The trunk's edge and this edge, both read from the end they share. */
 function plugIn(w: World, e: SceneEdge, fact: Edge, trunk: SceneEdge): Point[] | undefined {
   const kin = new Set([trunk.id]);
   for (const o of w.edges) if (w.facts.get(o.id)?.with === trunk.id) kin.add(o.id);
   if (e.label !== undefined || e.step !== undefined) return undefined;
-  // With no side stated, the side the line came in by, or the first that reaches the trunk.
+  // With no side stated, the side the edge came in by, or the first that reaches the trunk.
   const tries = (stated: string | undefined) =>
     stated !== undefined ? [stated] : [undefined, "left", "right", "top", "bottom"];
   if (e.from === trunk.from) {
@@ -205,7 +205,7 @@ function stretched(w: World, e: SceneEdge, magnified: number): Point[] | undefin
   return clear(w, e, line, new Set()) ? line : undefined;
 }
 
-/** Whether a line passes an object on a side: wherever it lies level with the object. */
+/** Whether an edge passes an object on a side: wherever it lies level with the object. */
 function passes(points: Point[], r: Rect, side: "left" | "right"): boolean {
   let level = false;
   for (let i = 1; i < points.length; i++) {

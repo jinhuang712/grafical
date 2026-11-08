@@ -20,7 +20,7 @@ const { createMeasurer } = await load("src/text/index.ts");
 const m = await createMeasurer();
 if (svgDir) mkdirSync(svgDir, { recursive: true });
 
-/** Corners over all edges: a run of horizontal or vertical segments counts once (src/check/taste.ts does the same). */
+/** Corners over all edges: a run of horizontal or vertical runs counts once (src/check/taste.ts does the same). */
 function bendsOf(edges: { points: { x: number; y: number }[] }[]): number {
   let n = 0;
   for (const e of edges) {

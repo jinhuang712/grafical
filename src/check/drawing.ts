@@ -108,7 +108,7 @@ export interface DrawnNote {
 export interface Counts {
   nodes: number;
   edges: number;
-  /** Every point where two lines cross. */
+  /** Every point where two edges cross. */
   crossings: number;
   bends: number;
   /** Edges with more than two bends (specs/decisions, "A bent edge is reported and never refused"). */
@@ -125,7 +125,7 @@ export interface Counts {
   passing: number;
   /** Edges that cross a group's border holding neither of their ends. */
   across: number;
-  /** Pairs of runs of two lines, not one bundle, closer than 12 px side by side for over 100 px. */
+  /** Pairs of runs of two edges, not one bundle, closer than 12 px side by side for over 100 px. */
   tight: number;
   /** Edge labels with under 8 px of room on two or more sides (specs/decisions, "Composition counts"). */
   crowded: number;
@@ -204,7 +204,7 @@ export function drawing(facts: Diagram, scene: Scene): Drawing {
     crosses.set(b, [...(crosses.get(b) ?? []), a]);
   }
 
-  // Every edge meets its node at a port of its own, except the lines of a bundle (specs/decisions, "Edges meet any side", "Fan-outs of three bundle").
+  // Every edge meets its node at a port of its own, except the edges of a bundle (specs/decisions, "Edges meet any side", "Fan-outs of three bundle").
   const bundles = new Map<string, Set<string>>();
   const ends = (e: (typeof scene.edges)[number]) => [
     `${e.from}@${e.points[0]?.x},${e.points[0]?.y}`,
@@ -416,7 +416,7 @@ function edgesPerMember(d: Diagram): { group: string; edges: string[] }[] {
     const endIds = endNodes(d, g.id);
     if (endIds.length < 2) continue;
     const inside = new Set(endIds);
-    // Each node's first line by its direction, its end outside the group and its look.
+    // Each node's first edge by its direction, its end outside the group and its look.
     const by = new Map<string, Map<string, string>>();
     for (const e of withFollowedWeights(d).edges) {
       for (const [inner, end, way] of [

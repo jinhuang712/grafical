@@ -169,24 +169,24 @@ describe("group operations", () => {
     expect(fail(d1, [{ op: "group.label", id: "zz", label: "x" }])[0]?.code).toBe("unknown-group");
   });
 
-  it("a group's box spans a row it has no member in, and that row's nodes sit beside it (specs/decisions, \"Layers unseen, groups as systems\")", async () => {
+  it("a group's frame spans a layer it has no member in, and that layer's nodes sit beside it (specs/decisions, \"Layers unseen, groups as systems\")", async () => {
     const d = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a", "c"] }]).diagram;
     const real = await createMeasurer();
     const s = layout(d, real);
     const frame = s.groups?.find((x) => x.id === "g")?.rect;
     const b = s.nodes.find((n) => n.id === "b")?.rect;
     if (frame === undefined || b === undefined) throw new Error("missing box");
-    // b's row lies within the box's height, and b outside its width.
+    // b's layer lies within the frame's height, and b outside its width.
     expect(b.y).toBeGreaterThan(frame.y);
     expect(b.y + b.h).toBeLessThan(frame.y + frame.h);
     expect(b.x >= frame.x + frame.w || b.x + b.w <= frame.x).toBe(true);
     expect(check(d, s, real)).toEqual([]);
-    // A member may leave the middle row too.
+    // A member may leave the middle layer too.
     const d2 = ok(d, [{ op: "group.join", group: "g", nodes: ["b"] }]).diagram;
     expect(groupOf(ok(d2, [{ op: "group.leave", nodes: ["b"] }]).diagram, "b")).toBeUndefined();
   });
 
-  it('group-split: a non-member between members in one row is refused by the layout (specs/decisions, "Layers unseen, groups as systems")', () => {
+  it('group-split: a non-member between members in one layer is refused by the layout (specs/decisions, "Layers unseen, groups as systems")', () => {
     const withLayer = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
       { op: "node.add", id: "x", layer: "r", label: "X", last: true },
@@ -194,7 +194,7 @@ describe("group operations", () => {
       { op: "node.add", id: "z", layer: "r", label: "Z", last: true },
     ]).diagram;
     const e = fail(withLayer, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "z"] }]);
-    // No field of the operation is at fault: the facts say which box stands between which members.
+    // No field of the operation is at fault: the facts say which node stands between which members.
     expect(e[0]).toEqual({
       code: "group-split",
       index: 0,
@@ -209,7 +209,7 @@ describe("group operations", () => {
     ok(withLayer, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y"] }]);
   });
 
-  it("group-split: a box placed by steps between members is named, and may join or take a row", () => {
+  it("group-split: a node placed by steps between members is named, and may join or take a layer", () => {
     // c hangs right of y; swapping x and y puts c between the group's members.
     const withLayer = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
@@ -225,13 +225,13 @@ describe("group operations", () => {
       code: "group-split",
       facts: { node: "c", layer: "r", group: "g", between: ["y", "x"] },
     });
-    // Joining the group, or taking a place in the row beside it, after the swap, is a change grafical accepts.
+    // Joining the group, or taking a place in the layer beside it, after the swap, is a change grafical accepts.
     ok(withLayer, [swap, { op: "group.join", group: "g", nodes: ["c"] }]);
     ok(withLayer, [swap, { op: "node.move", id: "c", layer: "r", before: "y" }]);
     ok(withLayer, [swap, { op: "node.move", id: "c", layer: "r", after: "x" }]);
   });
 
-  it("group-split in nested groups names the innermost group around the box", () => {
+  it("group-split in nested groups names the innermost group around the node", () => {
     const withLayer = ok(empty, [
       { op: "layer.add", id: "r", label: "R" },
       { op: "node.add", id: "a", layer: "r", label: "A", last: true },

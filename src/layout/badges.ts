@@ -203,9 +203,9 @@ export function stepPlace(
 export interface BadgeRoom {
   /** Nodes, texts, marks and every other solid thing. */
   solid: Rect[];
-  /** Edges that are not edges, such as a labelled wall's divider. */
+  /** Lines that are not edges, such as a labelled wall's divider. */
   lines: Segment[];
-  /** Areas whose border is drawn as an edge: groups and bands. */
+  /** Areas whose border is drawn as a line: groups and bands. */
   borders: { id: string; rect: Rect }[];
   heads: (e: SceneEdge) => Heads;
   inside: (e: SceneEdge) => Inside;
@@ -301,7 +301,7 @@ export function settleBadges(edges: SceneEdge[], room: BadgeRoom): void {
     if (to === undefined) stuck.push(e);
     else put(e, b, to);
   }
-  // Two badges that leave each other no place alone, as on two lines between the same
+  // Two badges that leave each other no place alone, as on two edges between the same
   // neighbours, move together.
   for (const e of stuck) {
     const b = e.step;

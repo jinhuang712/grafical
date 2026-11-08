@@ -1,4 +1,4 @@
-// Line labels and the boxes around nodes: a group's or a lane's side is a line too, and no line's label lies across it.
+// Edge labels and the frames around nodes: a group's or a lane's side is a line too, and no edge's label lies across it.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -17,10 +17,10 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-describe("line labels and group sides", () => {
-  // Found on 2026-10-15 in a C4 container diagram: the labels of two lines that leave the
+describe("edge labels and group sides", () => {
+  // Found on 2026-10-15 in a C4 container diagram: the labels of two edges that leave the
   // system's group to the right lay across its side.
-  it("keep a label off the side of a group its line leaves", () => {
+  it("keep a label off the side of a group its edge leaves", () => {
     const file = join(import.meta.dirname, "../fixtures/big-bank.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
@@ -34,8 +34,8 @@ describe("line labels and group sides", () => {
     }
   });
 
-  // The label of a line between two column lanes sat on their shared side.
-  it("keep a label off the side of a column lane its line crosses", () => {
+  // The label of an edge between two column lanes sat on their shared side.
+  it("keep a label off the side of a column lane its edge crosses", () => {
     const s = layout(lanesColumns, m);
     expect(check(lanesColumns, s, m)).toEqual([]);
     const b = s.edges.find((e) => e.id === "orders->payments")?.label?.bbox;
@@ -49,8 +49,8 @@ describe("line labels and group sides", () => {
 });
 
 describe('a label no gutter holds (specs/decisions, "An edge never moves for its label")', () => {
-  // Until 2026-10-17 the middle line stepped out of the crowd with four bends to carry its label.
-  it("moves no line for it, and refuses it as label-blocked, naming the line across it", () => {
+  // Until 2026-10-17 the middle edge stepped out of the crowd with four bends to carry its label.
+  it("moves no edge for it, and refuses it as label-blocked, naming the edge across it", () => {
     const d = readDiagram(`grafical: 1
 title: five
 density: normal
@@ -69,7 +69,7 @@ edges:
     expect(
       check(d, s, m).map((x) => [x.code, x.owner, ...x.elements, x.facts.is, x.facts.gutters]),
     ).toEqual([["label-blocked", "agent", "a->b#4", "a->b#5", "edge", ["top/bottom"]]]);
-    // The engine never widens a box for its lines; the agent does (decided by the owner on
+    // The engine never widens a node for its edges; the agent does (decided by the owner on
     // 2026-10-17), and the refusal names node size among the commands that can change it.
     const [blocked] = check(d, s, m);
     if (blocked === undefined) throw new Error("no refusal");
@@ -81,10 +81,10 @@ edges:
     expect(check(wide, layout(wide, m), m)).toEqual([]);
   });
 
-  // Found by the fuzz test at seeds 1126, 1719 and 4951 of 5,000 on 2026-10-18: a line from a row lane
-  // to the row below is cut at the lane's border and keeps a 16 px stub, and the label, with no clear
+  // Found by the fuzz test at seeds 1126, 1719 and 4951 of 5,000 on 2026-10-18: an edge from a layer lane
+  // to the layer below is cut at the lane's border and keeps a 16 px stub, and the label, with no clear
   // place beside the stub or past its ends, lay across the border, an engine-owned text-crossing.
-  it("refuses a label no place beside a line cut at a lane holds, naming the lanes across it", () => {
+  it("refuses a label no place beside an edge cut at a lane holds, naming the lanes across it", () => {
     const d = readDiagram(`grafical: 1
 title: lanes
 density: normal
@@ -106,7 +106,7 @@ edges:
   - {id: shop->b, from: shop, to: b, label: picks}
 `) as Diagram;
     const found = check(d, layout(d, m), m);
-    // The block names the line, the lanes across its label and the gaps it tried, and the commands that can change
+    // The block names the edge, the lanes across its label and the gaps it tried, and the commands that can change
     // it, edge label among them (specs/decisions, "Refusals say what happened and which commands can change it").
     expect(found.map((x) => defectBlock(x, kindsOf(d)))).toEqual([
       {
@@ -128,8 +128,8 @@ edges:
     expect(check(r.diagram, layout(r.diagram, m), m)).toEqual([]);
   });
 
-  // Found by trying every fix a refusal suggested, on 2026-10-17: no larger box held this label.
-  it("where no larger box holds the label, it names the command that drops it, and grafical accepts that", () => {
+  // Found by trying every fix a refusal suggested, on 2026-10-17: no larger node held this label.
+  it("where no larger node holds the label, it names the command that drops it, and grafical accepts that", () => {
     const add: Op = { op: "edge.add", from: "n4", to: "n2", label: "a long label for this line" };
     const checked = (ops: Op[]) => {
       const r = applyOps(generate(35, m).diagram, ops);

@@ -2,7 +2,7 @@
 // gives each a layer, and places the labels the gutter carries. It sees only the
 // visits inside this gutter.
 //
-// The layers are built so that no two lines and no label touch (specs/decisions, "Defects owned by who can fix them"):
+// The layers are built so that no two edges and no label touch (specs/decisions, "Defects owned by who can fix them"):
 // 1. Two edges that would run on top of each other fix an order: the one that
 //    enters from the top ends above the one that enters from the bottom.
 // 2. Each label takes the best slot along its run that no edge crosses from top to
@@ -57,7 +57,7 @@ function inside(x: number, a: number, b: number): boolean {
   return x > a + EPS && x < b - EPS;
 }
 
-/** The node a label takes when its run lies on layer `row`. */
+/** The box a label takes when its run lies on layer `row`. */
 export function labelBox(
   lab: VisitLabel,
   mode: VisitLabel["mode"],

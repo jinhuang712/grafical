@@ -130,7 +130,7 @@ const inside = (p: Point, r: Rect) =>
 
 /**
  * The route cut where it first enters the node, walking from its start. The
- * route is orthogonal, so the cut is where one segment crosses the node's border.
+ * route is orthogonal, so the cut is where one run crosses the node's border.
  */
 function cutAtEntry(points: Point[], box: Rect): Point[] {
   for (let i = 1; i < points.length; i++) {

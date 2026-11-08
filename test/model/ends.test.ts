@@ -66,8 +66,8 @@ describe('edge ends at a container (specs/decisions, "Edges that end at containe
   });
 
   it("refuses a side meeting with a node between", () => {
-    // retry sits left of line_topics in the topics row, both in catalog-sync; an
-    // outsider placed first in that row has retry and line_topics between it and catalog-api.
+    // retry sits left of line_topics in the topics layer, both in catalog-sync; an
+    // outsider placed first in that layer has retry and line_topics between it and catalog-api.
     const d = ok(catalogSyncGrouped, [
       { op: "node.add", id: "probe", layer: "topics", label: "probe", first: true },
     ]);
@@ -86,7 +86,7 @@ describe('edge ends at a container (specs/decisions, "Edges that end at containe
     expect(r.changed).toContain("callers->catalog-api");
   });
 
-  it("stops the line at the group's box, and draws an ended layer as a band", () => {
+  it("stops the edge at the group's node, and draws an ended layer as a band", () => {
     const d = ok(catalogSyncGrouped, [...toGroup, ...toLayer]);
     const scene = layout(d, m);
     const frame = scene.groups?.find((g) => g.id === "catalog-api")?.rect;
@@ -102,7 +102,7 @@ describe('edge ends at a container (specs/decisions, "Edges that end at containe
   });
 });
 
-describe('a row with no box as one bar (specs/decisions, "A layer with no node as one bar")', () => {
+describe('a layer with no node as one bar (specs/decisions, "A layer with no node as one bar")', () => {
   const base = readDiagram(`grafical: 1
 title: bar
 density: normal
@@ -120,7 +120,7 @@ groups:
     { op: "edge.add", from: "gateway", to: "sys" },
   ];
 
-  it("accepts a row with no box as an end when the other end holds one", () => {
+  it("accepts a layer with no node as an end when the other end holds one", () => {
     const d = ok(base, into);
     expect(d.edges.map((e) => e.id)).toEqual([
       "rider->gateway",
@@ -129,7 +129,7 @@ groups:
     ]);
   });
 
-  it("refuses a line between two rows with no box", () => {
+  it("refuses an edge between two layers with no node", () => {
     const errors = fail(base, [
       { op: "layer.add", id: "bundle", label: "Bundle", after: "core" },
       { op: "edge.add", from: "gateway", to: "bundle" },
@@ -141,12 +141,12 @@ groups:
     });
   });
 
-  it("refuses a bar between the first and last rows of a group", () => {
+  it("refuses a bar between the first and last layers of a group", () => {
     const errors = fail(base, [
       { op: "layer.add", id: "mid", label: "Mid", after: "core" },
       { op: "edge.add", from: "rider", to: "mid" },
     ]);
-    // The group's box covers every row from its top row to its bottom one, and the record names both
+    // The group's node covers every layer from its top layer to its bottom one, and the record names both
     // (specs/decisions, "Refusals say what happened and which commands can change it").
     expect(errors[0]).toMatchObject({
       code: "bar-in-group",
@@ -154,7 +154,7 @@ groups:
     });
   });
 
-  it("refuses a line that passes a bar unless it may", () => {
+  it("refuses an edge that passes a bar unless it may", () => {
     const d = ok(base, into);
     const passing = fail(d, [{ op: "edge.add", from: "driver", to: "payments" }]);
     expect(passing[0]).toMatchObject({
@@ -166,14 +166,14 @@ groups:
     expect(allowed.edges.find((e) => e.id === "driver->payments")?.pass).toBe(true);
     const off = fail(allowed, [{ op: "edge.pass", id: "driver->payments", off: true }]);
     expect(off[0]?.code).toBe("bar-crossed");
-    // The first line to a row makes it a bar: a line that already passes it must say it may.
+    // The first edge to a layer makes it a bar: an edge that already passes it must say it may.
     const first = fail(ok(base, [{ op: "edge.add", from: "driver", to: "payments" }]), into);
     expect(first[0]).toMatchObject({ code: "bar-crossed", found: "driver->payments" });
     const later = ok(base, [{ op: "edge.add", from: "driver", to: "payments" }]);
     expect(ok(later, [...into, { op: "edge.pass", id: "driver->payments" }]).edges).toHaveLength(4);
   });
 
-  it("sets and clears a row's look, and keeps it in the file", () => {
+  it("sets and clears a layer's look, and keeps it in the file", () => {
     const d = ok(base, [...into, { op: "layer.look", id: "gateway", look: "band" }]);
     expect(d.layers[1]?.look).toBe("band");
     expect(writeDiagram(d)).toContain("look: band");
@@ -184,7 +184,7 @@ groups:
     );
   });
 
-  it("diffs a look and a line that may pass as the operations that made them", () => {
+  it("diffs a look and an edge that may pass as the operations that made them", () => {
     const a = ok(base, [...into, { op: "edge.add", from: "driver", to: "payments", pass: true }]);
     const b = ok(a, [{ op: "layer.look", id: "gateway", look: "band" }]);
     for (const [x, y] of [
@@ -200,7 +200,7 @@ groups:
   });
 
   // specs/decisions, "A layer with a look is drawn".
-  it("checks a row with no box and a look as a bar, though no line ends at it", () => {
+  it("checks a layer with no node and a look as a bar, though no edge ends at it", () => {
     const passing = ok(base, [{ op: "edge.add", from: "driver", to: "payments" }]);
     const crossed = fail(passing, [{ op: "layer.look", id: "gateway", look: "box" }]);
     expect(crossed[0]).toMatchObject({
@@ -216,7 +216,7 @@ groups:
     expect(fail(looked, [{ op: "edge.pass", id: "driver->payments", off: true }])[0]?.code).toBe(
       "bar-crossed",
     );
-    // A row with boxes is a band, which lines pass as any row.
+    // A layer with nodes is a band, which edges pass as any layer.
     expect(ok(passing, [{ op: "layer.look", id: "core", look: "band" }]).layers[2]?.look).toBe(
       "band",
     );
@@ -229,11 +229,11 @@ groups:
         code: "bar-in-group",
         field: "layers[3].look",
         found: "mid",
-        // No line ends at the bar: the record names the row, the group and the rows its box covers.
+        // No edge ends at the bar: the record names the layer, the group and the layers its frame covers.
         facts: { layer: "mid", group: "sys", top: "core", bottom: "stores" },
       }),
     ]);
-    // A box placed by steps above the first row adds a row the file does not hold.
+    // A node placed by steps above the first layer adds a layer the file does not hold.
     const above = fail(base, [
       { op: "node.add", id: "boss", label: "boss", from: "rider", up: 1 },
       { op: "layer.add", id: "mid", label: "Mid", after: "core" },
@@ -242,7 +242,7 @@ groups:
     expect(above[0]).toMatchObject({ code: "bar-in-group", field: "layers[3].look" });
   });
 
-  it("diffs a look on a row no line ends at, with the lines that pass it", () => {
+  it("diffs a look on a layer no edge ends at, with the edges that pass it", () => {
     const a = ok(base, [
       { op: "edge.add", from: "driver", to: "payments", pass: true },
       { op: "layer.look", id: "gateway", look: "band" },

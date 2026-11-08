@@ -39,7 +39,7 @@ const overflow = (d: Diagram) =>
   check(d, layout(d, m), m).filter((x) => x.code === "overflow").length;
 
 describe('auto size (specs/decisions, "Nodes sized to their text")', () => {
-  it("gives a node with no size a medium box, or a large one when its text needs it", () => {
+  it("gives a node with no size a medium node, or a large one when its text needs it", () => {
     expect(fits({ id: "a", label: LONG, kind: "service" }, "m", m)).toBe(false);
     expect(fits({ id: "a", label: LONG, kind: "service" }, "l", m)).toBe(true);
     expect(width(one("API"))).toBe(BOX.m.w);

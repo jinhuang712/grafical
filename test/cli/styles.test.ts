@@ -101,7 +101,7 @@ describe("styles", () => {
     expect(readFileSync(join(dir, "t.grafical"), "utf8")).not.toContain("@cache");
   });
 
-  it("lines may be round, and square again", () => {
+  it("edges may be round, and square again", () => {
     const g = ["-f", "dispatch.grafical.yaml"];
     copyFileSync(
       resolve(import.meta.dirname, "../fixtures/dispatch.grafical"),

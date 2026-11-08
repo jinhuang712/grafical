@@ -521,7 +521,7 @@ function makePlan(
     n.layer > 0 &&
     !(extra.closedAbove.get(n.layer) ?? []).some(([lo, hi]) => lo < n.x + n.w && hi > n.x);
   if (u.layer === v.layer) {
-    // A line of a layer out of one side and into the other passes through its layer.
+    // An edge of a layer out of one side and into the other passes through its layer.
     const through = edge.out !== edge.in && !sideways(edge.out) && !sideways(edge.in);
     if (side === undefined && through && edge.out !== undefined && edge.in !== undefined) {
       if (!topOpen(edge.out === "top" ? u : v)) return undefined;
@@ -599,7 +599,7 @@ function makePlan(
  * An edge between two nodes of one layer runs through the gutter below the layer, unless
  * fewer other edges meet the nodes between its ends on their tops than on their
  * bottoms: each of those edges crosses its run, so it then takes the gutter above. A
- * tie keeps it below. A line of the layer with both ends from one of its ends to the
+ * tie keeps it below. An edge of the layer with both ends from one of its ends to the
  * other is not counted: it runs inside the run, in either gutter. Its ports keep clear
  * of the band labels at the top of the layer, as every top port does, so an edge with an
  * end wholly under one stays below, as does an edge whose ends span a wall or a lane's
@@ -704,7 +704,7 @@ function portsOn(n: PNode): number {
 
 /**
  * Every edge meets its node side at a port of its own (specs/decisions, "Edges meet any side"), with two exceptions.
- * Unlabelled edges in one line style that leave one side leave as a bundle, one port
+ * Unlabelled edges in one edge style that leave one side leave as a bundle, one port
  * and one trunk that splits near their targets: three or more of them from any
  * side (specs/decisions, "Fan-outs of three bundle"), two or more from a side with more edges than slots. Of the rest, a
  * fan-in of unlabelled edges in one style into such a crowded side arrives through
@@ -915,7 +915,7 @@ function chooseGaps(
     // The edge goes on into the lower end's top side, past any band label there.
     const lower = forbidTop.get(Math.max(pl.u.layer, pl.v.layer)) ?? [];
     const taken = k === undefined ? undefined : chosen.get(k);
-    // A line stated to pass an object takes a corridor on that side of it.
+    // An edge stated to pass an object takes a corridor on that side of it.
     const via = pl.edge.via;
     const beyond = via === undefined ? undefined : spanOf(via.object, nodes, boxes);
     const onSide = ([lo, hi]: [number, number]): [number, number] =>
@@ -2250,7 +2250,7 @@ function buildVisits(plans: Plan[], gutters: Visit[][], moved: Map<string, Set<n
         label,
         row: -1,
       };
-      // The lines of a fan-in meet at its port, each on its own layer.
+      // The edges of a fan-in meet at its port, each on its own layer.
       if (pl.fanIn !== undefined && j === last) visit.bundle = pl.fanIn.id;
       list.push(visit);
       pl.visits[j] = visit;

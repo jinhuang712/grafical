@@ -1,4 +1,4 @@
-// The legend's words (specs/decisions, "A legend for widths and marks", "The legend says only what the agent named"): naming line
+// The legend's words (specs/decisions, "A legend for widths and marks", "The legend says only what the agent named"): naming edge
 // styles, widths and marks, through the operation and the file.
 
 import { describe, expect, it } from "vitest";
@@ -44,7 +44,7 @@ const weighted = ok(fx, [
   { op: "edge.weight", edges: ["pipelines->postgres"], weight: 3 },
 ]);
 
-describe('the legend names line widths (specs/decisions, "A legend for widths and marks")', () => {
+describe('the legend names edge widths (specs/decisions, "A legend for widths and marks")', () => {
   it("widths it does not name have no entry", () => {
     expect(entries(weighted).filter((x) => x.width !== undefined)).toEqual([]);
   });
@@ -140,7 +140,7 @@ describe('the legend names line widths (specs/decisions, "A legend for widths an
   });
 });
 
-/** A warning on two nodes of the work row, and a red P0 badge on the relay above them. */
+/** A warning on two nodes of the work layer, and a red P0 badge on the relay above them. */
 const marked = ok(fx, [
   { op: "node.mark", id: "pipelines", slot: "top-left", mark: "⚠️" },
   { op: "node.mark", id: "service", slot: "top-left", mark: "⚠️" },
@@ -156,7 +156,7 @@ describe('the legend names marks (specs/decisions, "A legend for widths and mark
       { op: "diagram.legend", mark: "P0", text: "paged 24/7" },
     ]);
     const marks = markEntries(d);
-    // Rows top to bottom: the relay's badge comes first.
+    // Layers top to bottom: the relay's badge comes first.
     expect(marks.map((x) => x.label.runs.map((r) => r.text).join(""))).toEqual([
       "paged 24/7",
       "needs an owner",
@@ -200,7 +200,7 @@ describe('the legend says only what the agent named (specs/decisions, "The legen
     expect(layout(weighted, m).legend).toEqual([]);
   });
 
-  it("a named line style has an entry, and without text it goes", () => {
+  it("a named edge style has an entry, and without text it goes", () => {
     const d = ok(fx, [{ op: "diagram.legend", style: "dashed", text: "event" }]);
     expect(styles(d)).toEqual(["dashed"]);
     const text = writeDiagram(d);

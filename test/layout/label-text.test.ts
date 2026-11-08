@@ -70,7 +70,7 @@ describe("label.align", () => {
   const edge = { op: "edge.add", from: "x", to: "y", label: "reads\nand writes" };
   const lefts = (runs: { x: number }[] = []) => runs.map((r) => r.x);
 
-  it("lines up a node's label and sublabel at one side of the box", () => {
+  it("lines up a node's label and sublabel at one side of the node", () => {
     const d = build([{ op: "node.sublabel", id: "y", text: "keeps" } as Op]);
     const plain = layout(d, m).nodes[1];
     const left = layout(go(d, { op: "label.align", id: "y", align: "left" }), m).nodes[1];
@@ -158,7 +158,7 @@ describe("label.style", () => {
     return r.diagram;
   };
 
-  it("gives a line's label the style's fill, border and color", () => {
+  it("gives an edge's label the style's fill, border and color", () => {
     const d = go(styled, { op: "label.style", id: "x->y", styles: ["hot"] });
     expect(layout(d, m).edges[0]?.labelLook).toMatchObject({
       fill: "#ffe0e0",
@@ -175,7 +175,7 @@ describe("label.style", () => {
     expect(go(d, { op: "style.remove", id: "hot" }).edges[0]?.labelStyle).toBeUndefined();
   });
 
-  it("refuses an unknown style and what has no line's label", () => {
+  it("refuses an unknown style and what has no edge's label", () => {
     const codes = (op: object) => {
       const r = applyOps(styled, [op as Op]);
       return "errors" in r ? r.errors[0]?.code : "written";

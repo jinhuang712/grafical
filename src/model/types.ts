@@ -224,7 +224,7 @@ export interface Layer {
 }
 
 /**
- * A swimlane: a labelled band that names who owns what (specs/decisions, "Lanes run one way"). Its members name
+ * A lane: a labelled band that names who owns what (specs/decisions, "Lanes run one way"). Its members name
  * it: layers, when lanes run as layers, or nodes, when lanes run as columns. All
  * lanes of a diagram run one way.
  */
@@ -323,7 +323,7 @@ export interface Edge {
   step?: number;
   /** The object it passes and on which side (specs/decisions, "An edge is steered by facts and never by coordinates"). */
   via?: EdgeVia;
-  /** true: a line with no bend, or the write is refused. */
+  /** true: an edge with no bend, or the write is refused. */
   straight?: boolean;
   /** true: the main flow, which takes its column first. */
   main?: boolean;
@@ -339,7 +339,7 @@ export interface Edge {
 export const STEP_NUMBER_MAX = 99;
 
 /**
- * The legend's words (specs/decisions, "A legend for widths and marks"): per line style; per line width, named by its level or, for
+ * The legend's words (specs/decisions, "A legend for widths and marks"): per edge style; per edge width, named by its level or, for
  * a width in pixels, by its number written as a string; and per mark, by its name.
  * What is not named has no entry (specs/decisions, "The legend says only what the agent named").
  */

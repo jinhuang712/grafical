@@ -192,7 +192,7 @@ export const NOTE = {
   /** Space between a card's side and its text, across and down. */
   padX: 8,
   padY: 6,
-  /** Space between a card and what it is about: the length of the dotted edge. */
+  /** Space between a card and what it is about: the length of the dotted line. */
   gaps: [16, 32],
   /** Least space between a card and any other node, edge or text. */
   clear: 8,
@@ -202,7 +202,7 @@ export const NOTE = {
   keyGap: 6,
 };
 
-/** Swimlanes (specs/decisions, "Lanes run one way"). */
+/** Lanes (specs/decisions, "Lanes run one way"). */
 export const LANE = {
   /** Space between a lane's side and the content in it, across. */
   padX: 20,

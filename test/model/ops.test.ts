@@ -109,7 +109,7 @@ describe("refusals that say what was meant", () => {
     expect(typo[0]?.facts?.likely).toContain("sublabel");
   });
 
-  it("a node given its row's id is offered a free id", () => {
+  it("a node given its layer's id is offered a free id", () => {
     const d = ok(empty, [{ op: "layer.add", id: "placed", label: "Placed" }]);
     const e = fail(d.diagram, [{ op: "node.add", id: "placed", layer: "placed", label: "Placed" }]);
     expect(e[0]?.code).toBe("duplicate-id");
@@ -251,7 +251,7 @@ describe("node.rename, node.move, node.remove", () => {
     expect(ids(r.diagram, "top")).toEqual(["b"]);
     expect(ids(r.diagram, "bottom")).toEqual(["a", "c"]);
   });
-  it('refuses a move into a row with boxes and no place (specs/decisions, "The agent states every order")', () => {
+  it('refuses a move into a layer with nodes and no place (specs/decisions, "The agent states every order")', () => {
     expect(fail(base, [{ op: "node.move", id: "a", layer: "bottom" }])[0]).toMatchObject({
       code: "missing-field",
       field: "place",
@@ -273,7 +273,7 @@ describe("node.rename, node.move, node.remove", () => {
     expect(fail(d, [{ op: "node.move", id: "a", layer: "bottom" }])[0]?.code).toBe(
       "align-same-layer",
     );
-    // The refusal names the other box of the alignment; clearing it lets the move go.
+    // The refusal names the other node of the alignment; clearing it lets the move go.
     const up: Op = { op: "node.move", id: "n", layer: "top", last: true };
     const down: Op = { op: "node.move", id: "a", layer: "bottom", last: true };
     expect(fail(d, [up])[0]?.facts?.node).toBe("a");

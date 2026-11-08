@@ -182,7 +182,7 @@ describe("write commands", () => {
       "--json",
     );
     expect(r.code).toBe(0);
-    // The new box has no lines yet: a warning, with no source (specs/decisions, "Every write prints every warning").
+    // The new node has no edges yet: a warning, with no source (specs/decisions, "Every write prints every warning").
     expect(r.out).toBe(
       `${JSON.stringify({
         ok: true,
@@ -321,7 +321,7 @@ describe("write commands", () => {
     const second = run("edge", "add", "e.grafical.yaml", "p", "q", "--label", "again");
     expect(second.out).toBe("ok changed=p->q#2\n");
     const rm = run("node", "remove", "e.grafical.yaml", "q");
-    // p is left with no lines.
+    // p is left with no edges.
     expect(rm.out).toBe(
       [
         "ok changed=q,p->q,p->q#2",
@@ -336,7 +336,7 @@ describe("write commands", () => {
     );
   });
 
-  it('edge number numbers a line, show prints it, and no --n clears it (specs/decisions, "Step badges ride the edge")', () => {
+  it('edge number numbers an edge, show prints it, and no --n clears it (specs/decisions, "Step badges ride the edge")', () => {
     run("new", "s.grafical.yaml", "--title", "S");
     run("layer", "add", "s.grafical.yaml", "a", "--label", "A");
     run("layer", "add", "s.grafical.yaml", "b", "--label", "B");

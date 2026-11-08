@@ -65,7 +65,7 @@ const copy = (extra: Partial<CopyOp> = {}, place: Partial<CopyOp> = { after: "zo
 });
 
 describe("group copy", () => {
-  it("copies the boxes, inner groups and the lines between them, each id with the suffix", () => {
+  it("copies the nodes, inner groups and the edges between them, each id with the suffix", () => {
     const { diagram: d, changed } = run(zone, [copy()]);
     expect(changed).toEqual([
       "zone-b",
@@ -92,7 +92,7 @@ describe("group copy", () => {
     });
     // An alignment inside the group points to the copy.
     expect(node(d, "db-b")).toMatchObject({ kind: "store", group: "subnet-b", align: "worker-b" });
-    // Lines to boxes outside the group stay with the original.
+    // Edges to nodes outside the group stay with the original.
     expect(edgeList(d).slice(zone.edges.length)).toEqual([
       "jobs-b web-b>worker-b async",
       "worker-b->db-b worker-b>db-b call",
@@ -102,7 +102,7 @@ describe("group copy", () => {
     expect(check(d, layout(d, m), m)).toEqual([]);
   });
 
-  it("puts each copied box in its original's row, after or before the group named", () => {
+  it("puts each copied node in its original's layer, after or before the group named", () => {
     const after = ok(zone, [copy()]);
     expect(order(after, "row-app")).toEqual(["web", "worker", "web-b", "worker-b"]);
     expect(order(after, "row-data")).toEqual(["db", "db-b", "audit"]);
@@ -112,7 +112,7 @@ describe("group copy", () => {
     expect(order(before, "row-data")).toEqual(["db-b", "db", "audit"]);
   });
 
-  it("copies the lines to everything outside the group only with outside", () => {
+  it("copies the edges to everything outside the group only with outside", () => {
     const d = ok(zone, [copy({ outside: true })]);
     expect(edgeList(d).slice(zone.edges.length)).toEqual([
       "lb->web-b lb>web-b call",
@@ -121,12 +121,12 @@ describe("group copy", () => {
       "worker-b->db-b#2 worker-b>db-b data",
       "db-b->audit db-b>audit call",
     ]);
-    // A line to the group itself goes to the copy.
+    // An edge to the group itself goes to the copy.
     const toGroup = ok(zone, [{ op: "edge.add", from: "lb", to: "zone" }, copy({ outside: true })]);
     expect(edgeList(toGroup)).toContain("lb->zone-b lb>zone-b call");
   });
 
-  it("steps a box placed by steps from the copy of the box it steps from", () => {
+  it("steps a node placed by steps from the copy of the node it steps from", () => {
     const d = ok(zone, [
       { op: "node.add", id: "cache", from: "db", down: 1, label: "Cache" },
       { op: "group.join", group: "subnet", nodes: ["cache"] },
@@ -162,7 +162,7 @@ describe("group copy refusals", () => {
       code: "unknown-group",
       field: "after",
     });
-    // The groups with a box in every row of the copy, but the ones inside it.
+    // The groups with a node in every layer of the copy, but the ones inside it.
     expect(fail(zone, [copy({}, {})])[0]).toMatchObject({
       code: "missing-field",
       field: "place",
@@ -192,7 +192,7 @@ describe("group copy refusals", () => {
     ]);
   });
 
-  it("refuses a group named for the place that misses a row of the copy", () => {
+  it("refuses a group named for the place that misses a layer of the copy", () => {
     const d = ok(zone, [{ op: "group.add", id: "front", label: "Front", nodes: ["lb", "audit"] }]);
     expect(fail(d, [copy({ after: "front" })])[0]).toMatchObject({
       code: "no-shared-layer",
@@ -202,7 +202,7 @@ describe("group copy refusals", () => {
     });
   });
 
-  it("refuses an alignment or a step to a box outside the group, naming the box", () => {
+  it("refuses an alignment or a step to a node outside the group, naming the node", () => {
     const aligned = ok(zone, [{ op: "node.align", id: "web", to: "lb" }]);
     expect(fail(aligned, [copy()])).toEqual([
       {
@@ -213,7 +213,7 @@ describe("group copy refusals", () => {
         facts: { node: "web" },
       },
     ]);
-    // A box under a, placed by steps from x beside it.
+    // A node under a, placed by steps from x beside it.
     const stepped = ok(null, [
       { op: "diagram.new", title: "Steps" },
       { op: "layer.add", id: "r1", label: "R1" },
@@ -247,7 +247,7 @@ describe("group copy refusals", () => {
     expect(node(ok(one, [copy()]), "worker-b")?.column).toBe("c1");
   });
 
-  it("keeps the lane of each box, and refuses a place that the lane order would move", () => {
+  it("keeps the lane of each node, and refuses a place that the lane order would move", () => {
     const d = ok(zone, [
       { op: "node.add", id: "t1", layer: "row-app", label: "T1", last: true },
       { op: "node.add", id: "t2", layer: "row-data", label: "T2", last: true },

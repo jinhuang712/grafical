@@ -1,4 +1,4 @@
-// What an edge states to steer its line (specs/decisions, "An edge is steered by facts and never by coordinates").
+// What an edge states to steer its edge (specs/decisions, "An edge is steered by facts and never by coordinates").
 
 import type { OpError } from "../errors.ts";
 import { everyNode } from "./steps.ts";

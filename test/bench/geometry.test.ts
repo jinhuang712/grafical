@@ -53,7 +53,7 @@ describe('the separate geometry check (GOALS.md, "Mechanical defects")', () => {
     ).toEqual(["edge-overlap"]);
   });
 
-  it("accepts what is drawn on purpose: ports at a box, a bundle, a fan-in, a container", () => {
+  it("accepts what is drawn on purpose: ports at a node, a bundle, a fan-in, a container", () => {
     const ports = `${box(100, 100)}\n${line("M150 20L150 100")}\n${line("M150 140L150 250")}`;
     expect(codes(svg(ports))).toEqual([]);
     const bundle = `${line("M50 10L50 100L100 100L100 200")}\n${line("M50 10L50 100L20 100L20 200")}`;
@@ -64,7 +64,7 @@ describe('the separate geometry check (GOALS.md, "Mechanical defects")', () => {
     expect(codes(svg(lanes))).toEqual([]);
   });
 
-  it("reads a diamond by its outline: lines may reach its slanted sides, not its middle", () => {
+  it("reads a diamond by its outline: edges may reach its slanted sides, not its middle", () => {
     const diamond = `<path d="M200 100L300 150L200 200L100 150Z" fill="#ffffff" stroke="#999999" stroke-width="1"/>`;
     // Into the top tip, and onto the slanted side away from the tip: drawn on purpose.
     expect(

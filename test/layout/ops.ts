@@ -1,5 +1,5 @@
 // The phase 1 operations, applied to a Diagram the way the command line will apply
-// them, for the stability tests. A node added or moved goes last in its row, a place
+// them, for the stability tests. A node added or moved goes last in its layer, a place
 // the agent states (specs/decisions, "The agent states every order").
 
 import type { Diagram, DiagramNode, Edge, LayerLook } from "../../src/model/types.ts";
@@ -71,7 +71,7 @@ export function removeEdge(d: Diagram, id: string): Applied {
   };
 }
 
-/** Gives a row a look, which draws it (specs/decisions, "A layer with a look is drawn"). It names no node and no edge. */
+/** Gives a layer a look, which draws it (specs/decisions, "A layer with a look is drawn"). It names no node and no edge. */
 export function lookLayer(d: Diagram, id: string, look: LayerLook): Applied {
   return {
     diagram: { ...d, layers: d.layers.map((l) => (l.id === id ? { ...l, look } : l)) },

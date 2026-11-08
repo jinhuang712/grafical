@@ -30,7 +30,7 @@ export function rectInside(inner: Rect, outer: Rect): boolean {
   );
 }
 
-/** True when the segment passes through the open interior of the rect (Liang-Barsky). */
+/** True when the run passes through the open interior of the rect (Liang-Barsky). */
 export function segmentCrossesRect(s: Segment, r: Rect): boolean {
   if (r.w <= 0 || r.h <= 0) return false;
   const dx = s.b.x - s.a.x;
@@ -66,7 +66,7 @@ export function segmentsOf(points: Point[]): Segment[] {
   return out;
 }
 
-/** The shared stretch of two collinear axis-aligned segments, or undefined. */
+/** The shared stretch of two collinear axis-aligned runs, or undefined. */
 export function collinearOverlap(s: Segment, t: Segment): Segment | undefined {
   const sh = Math.abs(s.a.y - s.b.y) < EPS;
   const th = Math.abs(t.a.y - t.b.y) < EPS;

@@ -24,7 +24,7 @@ function segmentsMerged(e: SceneEdge): Segment[] {
 const between = (v: number, a: number, b: number): boolean =>
   v > Math.min(a, b) + EPS && v < Math.max(a, b) - EPS;
 
-/** True when a horizontal and a vertical segment cross in the interior of both. */
+/** True when a horizontal and a vertical run cross in the interior of both. */
 function cross(h: Segment, v: Segment): boolean {
   return between(v.a.x, h.a.x, h.b.x) && between(h.a.y, v.a.y, v.b.y);
 }

@@ -1,5 +1,5 @@
-// Columns in the picture (specs/decisions, "Columns beside layers"): every box of a column left of every box of
-// the next, in every row, with nothing drawn.
+// Columns in the picture (specs/decisions, "Columns beside layers"): every node of a column left of every node of
+// the next, in every layer, with nothing drawn.
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { drawing } from "../../src/check/drawing.ts";
@@ -30,7 +30,7 @@ describe('columns in the picture (specs/decisions, "Columns beside layers")', ()
     expect(after.width).toBeLessThan(before.width);
     expect(after.bends).toBeLessThan(before.bends);
     expect(after.crossings).toBe(0);
-    // Every box of requests lies left of every box of processing, whatever their rows.
+    // Every node of requests lies left of every node of processing, whatever their layers.
     const x = (id: string) =>
       scene.nodes.find((nd) => nd.id === id)?.rect as { x: number; w: number };
     for (const a of ["web", "api", "cache"]) {
@@ -40,7 +40,7 @@ describe('columns in the picture (specs/decisions, "Columns beside layers")', ()
     expect(scene.walls).toBeUndefined();
   });
 
-  it('hold across rows that share no box (specs/decisions, "Columns hold across layers")', () => {
+  it('hold across layers that share no node (specs/decisions, "Columns hold across layers")', () => {
     const d: Diagram = {
       grafical: 1,
       title: "T",
@@ -55,7 +55,7 @@ describe('columns in the picture (specs/decisions, "Columns beside layers")', ()
     const scene = layout(d, m);
     const x = (id: string) =>
       scene.nodes.find((nd) => nd.id === id)?.rect as { x: number; w: number };
-    // A row's gap between them, as if they stood side by side in one row.
+    // A layer's gap between them, as if they stood side by side in one layer.
     expect(x("b").x - (x("a").x + x("a").w)).toBe(SPACING.normal.nodeGap);
     expect(check(d, scene, m)).toEqual([]);
   });

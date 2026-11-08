@@ -36,9 +36,9 @@ describe("problems", () => {
     }
   });
 
-  it("a bar in a group's rows names the commands that change the rows, the group or the box", () => {
-    // Round p1g: two agents could not tell from the record why a bar there was refused. A bar a line ends at can lose
-    // the line; one drawn for its look alone, the look.
+  it("a bar in a group's layers names the commands that change the layers, the group or the frame", () => {
+    // Round p1g: two agents could not tell from the record why a bar there was refused. A bar an edge ends at can lose
+    // the edge; one drawn for its look alone, the look.
     const bar = { layer: "mid", group: "sys", top: "core", bottom: "stores" };
     expect(nextOf("bar-in-group", { ...bar, edge: "rider->mid" })).toEqual([
       "group --leave",
@@ -54,8 +54,8 @@ describe("problems", () => {
     ]);
   });
 
-  // Found by review on 2026-10-18: a box moved by steps that keeps an alignment was refused with only node move.
-  it("a box moved by steps names the commands that take away its alignment, column or lane", () => {
+  // Found by review on 2026-10-18: a node moved by steps that keeps an alignment was refused with only node move.
+  it("a node moved by steps names the commands that take away its alignment, column or lane", () => {
     const read = (text: string) => {
       const d = readDiagram(text);
       if (Array.isArray(d)) throw new Error(JSON.stringify(d));
@@ -114,7 +114,7 @@ ${rows.replace(", lane: ops", "")}`);
   });
 
   // Found by review on 2026-10-18: an unknown weight named only diagram style, then edge weight for a legend's too.
-  it("an unknown weight names the commands that set the line's weight, or the legend's", () => {
+  it("an unknown weight names the commands that set the edge's weight, or the legend's", () => {
     expect(nextOf("unknown-weight", { edge: "a->b", allowed: ["thin"] })).toEqual([
       "diagram --style",
       "edge --weight",

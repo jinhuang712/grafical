@@ -29,7 +29,7 @@ interface Numbers {
   crossings: number;
   bends: number;
   length: number;
-  /** The longest line against the shortest way between its ends. */
+  /** The longest edge against the shortest way between its ends. */
   detour: number;
   defects: number;
 }

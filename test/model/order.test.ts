@@ -10,13 +10,13 @@ const layerOps: Op[] = [
 ];
 
 describe('order (specs/decisions, "The agent states every order")', () => {
-  it("takes the first box of an empty row without a place", () => {
+  it("takes the first node of an empty layer without a place", () => {
     const r = applyOps(empty, [...layerOps, { op: "node.add", id: "a", layer: "top", label: "A" }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     expect(r.diagram.layers[0]?.nodes.map((n) => n.id)).toEqual(["a"]);
   });
 
-  it("refuses a box added to a row with boxes and no place, naming what is there", () => {
+  it("refuses a node added to a layer with nodes and no place, naming what is there", () => {
     const r = applyOps(empty, [
       ...layerOps,
       { op: "node.add", id: "a", layer: "top", label: "A" },
@@ -35,7 +35,7 @@ describe('order (specs/decisions, "The agent states every order")', () => {
     });
   });
 
-  it("puts a box where the agent says, and nowhere else", () => {
+  it("puts a node where the agent says, and nowhere else", () => {
     const r = applyOps(empty, [
       ...layerOps,
       { op: "node.add", id: "a", layer: "top", label: "A" },
@@ -47,7 +47,7 @@ describe('order (specs/decisions, "The agent states every order")', () => {
     expect(r.diagram.layers[0]?.nodes.map((n) => n.id)).toEqual(["b", "a"]);
   });
 
-  it("refuses a move into a row with boxes and no place, and takes one into an empty row", () => {
+  it("refuses a move into a layer with nodes and no place, and takes one into an empty layer", () => {
     const base = applyOps(empty, [
       ...layerOps,
       { op: "node.add", id: "a", layer: "top", label: "A" },

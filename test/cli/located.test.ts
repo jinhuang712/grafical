@@ -136,7 +136,7 @@ describe("the batch line a refused write names", () => {
     ];
     const r3 = refuse(grocer, nm3);
     expect(r3.report.errors.map((e) => e.source)).toEqual([`${BATCH} line 3: ${nm3[2]?.slice(2)}`]);
-    // A label that fits only while the boxes size to their text.
+    // A label that fits only while the nodes size to their text.
     const lng = structuredClone(grocer);
     lng.layers[0]?.nodes.push({
       id: "lng",
@@ -215,7 +215,7 @@ describe("the batch line a refused write names", () => {
   });
 
   it("is no older than the facts its block prints", () => {
-    // Lines 2 and 4 give two new rows a look; line 5 takes the first one's away. The lines from the callers cross
+    // Lines 2 and 4 give two new layers a look; line 5 takes the first one's away. The edges from the callers cross
     // row-w1 from line 2 on, and row-w2, the bar the blocks name, only once row-w1 is no bar.
     const bc1 = [
       "- {op: layer.add, id: row-w1, label: Bus1, after: row-callers}",
@@ -229,7 +229,7 @@ describe("the batch line a refused write names", () => {
     expect(crossed.length).toBeGreaterThan(0);
     for (const e of crossed) {
       expect(e.facts?.layer).toBe("row-w2");
-      // After line 4 the lines cross row-w1 first, which is all that prefix can say: no line can be known.
+      // After line 4 the edges cross row-w1 first, which is all that prefix can say: no line can be known.
       expect(e.source).toBe(BATCH);
       expect(truth(grocer, ops, errorKey(e), false)).toBeUndefined();
     }

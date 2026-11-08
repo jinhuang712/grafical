@@ -89,14 +89,14 @@ const grow = (r: Rect, c: number): Rect => ({
   h: r.h + 2 * c,
 });
 
-/** Does the axis-parallel segment a-b pass through the inside of r? */
+/** Does the axis-parallel run a-b pass through the inside of r? */
 function hits(a: Point, b: Point, r: Rect): boolean {
   const lo = { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y) };
   const hi = { x: Math.max(a.x, b.x), y: Math.max(a.y, b.y) };
   return lo.x < r.x + r.w && hi.x > r.x && lo.y < r.y + r.h && hi.y > r.y;
 }
 
-/** Do two axis-parallel segments cross or touch? */
+/** Do two axis-parallel runs cross or touch? */
 function meets(a: Point, b: Point, c: Point, d: Point): boolean {
   const [ax0, ax1] = [Math.min(a.x, b.x), Math.max(a.x, b.x)];
   const [ay0, ay1] = [Math.min(a.y, b.y), Math.max(a.y, b.y)];
@@ -244,7 +244,7 @@ export function placeNotes(
     if (taken.some((t) => overlaps(t, wide))) return false;
     if (room.areas.some((a) => overlaps(a, spot.card) && !contains(a, spot.card))) return false;
     if (segs.some(([a, b]) => hits(a, b, wide))) return false;
-    // The dotted edge meets only its own target: no other node, text, card or edge.
+    // The dotted line meets only its own target: no other node, text, card or edge.
     const [p, q] = spot.link;
     if (room.nodes.some((n) => n.id !== on && hits(p, q, n.rect))) return false;
     if (room.solid.some((s) => hits(p, q, s)) || taken.some((t) => hits(p, q, t))) return false;

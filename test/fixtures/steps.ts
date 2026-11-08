@@ -1,6 +1,6 @@
 // Numbered steps (specs/decisions, "Step badges ride the edge"): one checkout request followed in order. Badges on labelled and
-// unlabelled lines, on lines up and down, on two lines between neighbours, on a
-// two-way line and on a line to a whole group, and one line left unnumbered.
+// unlabelled edges, on edges up and down, on two edges between neighbours, on a
+// two-way edge and on an edge to a whole group, and one edge left unnumbered.
 
 import type { Diagram, Edge } from "../../src/model/types.ts";
 import { e, n } from "./build.ts";

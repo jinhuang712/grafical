@@ -12,13 +12,13 @@ export interface RouteStats {
 interface Seg {
   id: number;
   vertical: boolean;
-  /** The fixed coordinate: x of a vertical segment, y of a horizontal one. */
+  /** The fixed coordinate: x of a vertical run, y of a horizontal one. */
   at: number;
   lo: number;
   hi: number;
 }
 
-/** Proper crossings between segments of different routes: each pair of edges that cross. */
+/** Proper crossings between runs of different routes: each pair of edges that cross. */
 export function routeStats(routes: Point[][]): RouteStats {
   const hs: Seg[] = [];
   const vs: Seg[] = [];

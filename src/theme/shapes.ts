@@ -45,7 +45,7 @@ export function lineRoom(kind: NodeKind, w: number, h: number, blockH: number): 
   return w - 2 * FRAME.textPad;
 }
 
-/** Does the text node `t` lie inside the room a node of this kind has for text (specs/decisions, "Defects owned by who can fix them")? */
+/** Does the text box `t` lie inside the room a node of this kind has for text (specs/decisions, "Defects owned by who can fix them")? */
 export function textInside(kind: NodeKind, r: Rect, t: Rect): boolean {
   const e = 1e-6;
   if (kind === "decision") {

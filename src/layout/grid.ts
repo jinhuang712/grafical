@@ -76,7 +76,7 @@ interface Cand {
   key: string;
 }
 
-/** What a stated line adds to a join's score, past any score it could earn. */
+/** What a stated edge adds to a join's score, past any score it could earn. */
 const FIRST = 1000;
 
 function cmp(a: string, b: string): number {
@@ -665,7 +665,7 @@ export function buildGrid(d: Diagram): Grid {
       else if (!list.includes(b)) list.push(b);
     }
   }
-  // A line stated straight or main takes its column before any other (specs/decisions, "An edge is steered by facts and never by coordinates").
+  // An edge stated straight or main takes its column before any other (specs/decisions, "An edge is steered by facts and never by coordinates").
   const first = new Set(
     d.edges
       .filter((e) => e.straight === true || e.main === true)

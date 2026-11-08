@@ -122,7 +122,7 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
     expect(layout(named, m).legend?.at(-1)).toMatchObject({ width: 4 });
   });
 
-  it("a heavier line grows its arrowhead by the same step, up to a limit", () => {
+  it("a heavier edge grows its arrowhead by the same step, up to a limit", () => {
     const thin = strokeLook(undefined, PAINT);
     const thick = strokeLook(PAINT.edge.main.strokeWidth, PAINT);
     const heavy = strokeLook(4, PAINT);

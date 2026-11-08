@@ -213,7 +213,7 @@ describe("label-collision", () => {
     expect(codes(d)).toEqual(["label-collision"]);
     expect(d[0]?.elements).toEqual(["a->b", "a"]);
   });
-  it("fails a label on another edge's segment", () => {
+  it("fails a label on another edge's run", () => {
     const a = e1();
     a.label = label(340, 150);
     const d = run(scene(nodes, [a, e2()]));
@@ -438,7 +438,7 @@ describe("text-crossing", () => {
         },
       ],
     });
-    // A line across a group's label is the agent's, title-blocked (test/layout/titles.test.ts).
+    // An edge across a group's label is the agent's, title-blocked (test/layout/titles.test.ts).
     expect(codes(through(groupLabel))).not.toContain("text-crossing");
     expect(codes(through(withEdge(down(), { note: box("note", 90, 150) })))).toEqual([
       "text-crossing",
@@ -471,8 +471,8 @@ describe("text-crossing", () => {
     ).toEqual([["c->d", "a->b"]]);
   });
 
-  // No line moves for a label no gutter of its path could hold (specs/decisions, "An edge never moves for its label").
-  it("refuses a label no gutter held as label-blocked, the agent's, naming the lines across it", () => {
+  // No edge moves for a label no gutter of its path could hold (specs/decisions, "An edge never moves for its label").
+  it("refuses a label no gutter held as label-blocked, the agent's, naming the edges across it", () => {
     const own = down();
     own.label = box("edge-label", 95, 140);
     own.blocked = ["top/bottom"];
@@ -487,7 +487,7 @@ describe("text-crossing", () => {
     expect(found[0]?.facts).toMatchObject({ is: "edge", gutters: ["top/bottom"] });
   });
 
-  it("fails a group's side across an edge's label, and passes a label inside the box", () => {
+  it("fails a group's side across an edge's label, and passes a label inside the frame", () => {
     const labelled = (x: number): Scene => {
       const e = down();
       e.label = box("edge-label", x, 140);
@@ -545,12 +545,12 @@ describe("group-intruder", () => {
     groups: [group(members)],
   });
 
-  it("passes when every node inside the box is a member", () => {
+  it("passes when every node inside the frame is a member", () => {
     const s = withGroup(["a", "c"]);
     expect(codes(run(s))).toEqual([]);
   });
 
-  it("fails a non-member inside the box, and names the group and the node", () => {
+  it("fails a non-member inside the frame, and names the group and the node", () => {
     const d = run(withGroup(["a"]));
     expect(codes(d)).toContain("group-intruder");
     const hit = d.filter((x) => x.code === "group-intruder");
@@ -558,7 +558,7 @@ describe("group-intruder", () => {
     expect(hit[0]?.owner).toBe("engine");
   });
 
-  it("passes a non-member that only touches the box", () => {
+  it("passes a non-member that only touches the frame", () => {
     const s: Scene = {
       ...scene([node("a", 40, 60), node("x", 220, 60)]),
       groups: [group(["a"])],

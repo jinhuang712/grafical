@@ -410,7 +410,7 @@ function follow(
 
 type SteerOp = EdgeViaOp | EdgeStraightOp | EdgeWithOp | EdgeBendOp | EdgeStretchOp;
 
-/** Sets what one edge states to steer its line, or gives it back to the engine. */
+/** Sets what one edge states to steer its edge, or gives it back to the engine. */
 function steer(e: Edge, op: SteerOp): void {
   if (op.op === "edge.via") {
     if (op.object === undefined || op.side === undefined) delete e.via;

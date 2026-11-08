@@ -1,4 +1,4 @@
-// Boxes beside every box they connect to (specs/decisions, "Who chose is punished"): the engine counts one it placed
+// Nodes beside every node they connect to (specs/decisions, "Who chose is punished"): the engine counts one it placed
 // as it counts a crossing, and one the agent placed by steps fails the write.
 
 import { beforeAll, describe, expect, it } from "vitest";
@@ -45,7 +45,7 @@ function diagram(store: DiagramNode, low: DiagramNode[] = []): Diagram {
 const asides = (d: Diagram) =>
   warningsOf(drawing(d, layout(d, m)), d).filter((w) => w.code === "node-aside");
 
-describe('a box beside every box it connects to (specs/decisions, "A node beside its neighbours is a warning")', () => {
+describe('a node beside every node it connects to (specs/decisions, "A node beside its neighbours is a warning")', () => {
   it("warns and never fails the write when the agent placed it there by steps", () => {
     const aside = diagram(makeNode("db", { kind: "store", from: "b", down: 1, right: 1 }));
     expect(asideNodes(layout(aside, m))).toEqual([{ node: "db", users: ["a", "b"] }]);
@@ -57,8 +57,8 @@ describe('a box beside every box it connects to (specs/decisions, "A node beside
     expect(asides(under)).toEqual([]);
   });
 
-  it("warns the same in a row, and counts like a crossing", () => {
-    // db last in a row where p and q sit under a and b: right of both of its users.
+  it("warns the same in a layer, and counts like a crossing", () => {
+    // db last in a layer where p and q sit under a and b: right of both of its users.
     const last = diagram(makeNode("db", { kind: "store" }), [makeNode("p"), makeNode("q")]);
     last.edges.push(
       { id: "a->p", from: "a", to: "p", kind: "call" },

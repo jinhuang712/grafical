@@ -1,4 +1,4 @@
-// Lines that end at a row: the row is drawn as a band across the content, so a line
+// Edges that end at a layer: the layer is drawn as a band across the content, so an edge
 // meets it straight past its other end, wherever that is clear.
 
 import { beforeAll, describe, expect, it } from "vitest";
@@ -28,10 +28,10 @@ function bends(points: Point[]): number {
   return n;
 }
 
-describe("lines that end at a band", () => {
+describe("edges that end at a band", () => {
   // Found on 2026-10-16, drawing the owner's dispatch diagram with the gateway as a band:
-  // the rider app's line turned toward the gateway's box inside the band before it met
-  // the band, and the band's line to the payments API left from the socket's box.
+  // the rider app's edge turned toward the gateway's node inside the band before it met
+  // the band, and the band's edge to the payments API left from the socket's box.
   it("meet the band straight past the other end", () => {
     const d = readDiagram(`grafical: 1
 title: band
@@ -57,7 +57,7 @@ edges:
   });
 });
 
-describe('a row with no box as one bar (specs/decisions, "A layer with no node as one bar")', () => {
+describe('a layer with no node as one bar (specs/decisions, "A layer with no node as one bar")', () => {
   const bar = (look = "") =>
     readDiagram(`grafical: 1
 title: bar
@@ -91,7 +91,7 @@ edges:
     expect(layout(bar(", look: band"), m).bands?.[0]?.box).toBeUndefined();
   });
 
-  it("meets each line straight past its other end, at the bar's top or bottom", () => {
+  it("meets each edge straight past its other end, at the bar's top or bottom", () => {
     const d = bar();
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
@@ -111,15 +111,15 @@ edges:
     }
   });
 
-  it("names the bar among the rows a line that may pass it passes", () => {
+  it("names the bar among the layers an edge that may pass it passes", () => {
     const d = bar();
     const edge = drawing(d, layout(d, m)).edges.find((l) => l.id === "driver->matcher");
     expect(edge?.passes).toEqual(["gateway"]);
   });
 
-  // Found on 2026-10-19, redrawing a microservices diagram: the bar's name took the first stretch no line
-  // ended at, and the line that passed the bar there went round the name with four bends.
-  it("seats its label clear of the lines that pass it, which run straight", () => {
+  // Found on 2026-10-19, redrawing a microservices diagram: the bar's name took the first stretch no edge
+  // ended at, and the edge that passed the bar there went round the name with four bends.
+  it("seats its label clear of the edges that pass it, which run straight", () => {
     const d = readDiagram(`grafical: 1
 title: bundle
 density: normal
@@ -142,7 +142,7 @@ edges:
     if (b === undefined || t === undefined) throw new Error("no label");
     for (const e of s.edges) {
       if (e.id !== "billing->bundle") expect(bends(e.points), e.id).toBe(0);
-      // Every line that meets or crosses the bar keeps 16 px from its label.
+      // Every edge that meets or crosses the bar keeps 16 px from its label.
       for (let i = 1; i < e.points.length; i++) {
         const p = e.points[i - 1] as Point;
         const q = e.points[i] as Point;
@@ -154,7 +154,7 @@ edges:
   });
 });
 
-describe('a row with a look (specs/decisions, "A layer with a look is drawn")', () => {
+describe('a layer with a look (specs/decisions, "A layer with a look is drawn")', () => {
   const layered = (core = "", bundle = "") =>
     readDiagram(`grafical: 1
 title: looks
@@ -170,7 +170,7 @@ edges:
   - {id: booking->trips, from: booking, to: trips, pass: true}
 `) as Diagram;
 
-  it("is drawn though no line ends at it, with its label; a row with none is not", () => {
+  it("is drawn though no edge ends at it, with its label; a layer with none is not", () => {
     expect(layout(layered(), m).bands).toBeUndefined();
     const d = layered(", look: band", ", look: box");
     const s = layout(d, m);
@@ -178,7 +178,7 @@ edges:
     expect(s.bands?.map((b) => b.id)).toEqual(["core", "bundle"]);
     const [core, bundle] = s.bands ?? [];
     if (core === undefined || bundle === undefined) throw new Error("no band");
-    // The band: around its boxes, its label in its head above them.
+    // The band: around its nodes, its label in its head above them.
     expect(core).not.toHaveProperty("bar");
     expect(core).not.toHaveProperty("box");
     expect(core.label?.runs.map((r) => r.text).join("")).toBe("Core services");
@@ -189,7 +189,7 @@ edges:
       expect((core.label?.bbox.y ?? 0) + (core.label?.bbox.h ?? 0)).toBeLessThan(r.y);
       expect(r.y + r.h).toBeLessThan(core.rect.y + core.rect.h);
     }
-    // The bar: one bar in a box's look, its label in it, passed by the line that may.
+    // The bar: one bar in a box's look, its label in it, passed by the edge that may.
     expect(bundle).toMatchObject({ bar: true, box: true });
     expect(bundle.rect.h).toBe(40);
     expect(bundle.label?.runs.map((r) => r.text).join("")).toBe("Event bundle");
@@ -197,7 +197,7 @@ edges:
     expect(edge?.passes).toEqual(["bundle"]);
   });
 
-  it("draws no name for a drawn row without a label, and the file keeps it so", () => {
+  it("draws no name for a drawn layer without a label, and the file keeps it so", () => {
     const d0 = layered(", look: band", ", look: box");
     const r = applyOps(d0, [
       { op: "layer.add", id: "spare", after: "bundle" },
@@ -213,7 +213,7 @@ edges:
     const spare = s.bands?.find((b) => b.id === "spare");
     expect(spare).toBeDefined();
     expect(spare).not.toHaveProperty("label");
-    // The row with a name still shows it.
+    // The layer with a name still shows it.
     expect(s.bands?.find((b) => b.id === "core")?.label).toBeDefined();
     // A bar without a label is drawn as a bar, with no name in it.
     const bare = readDiagram(
@@ -246,7 +246,7 @@ edges:
     expect(band(inLane("Stores"))?.label).toBeUndefined();
   });
 
-  it("draws both when they differ, and the file keeps the row's label", () => {
+  it("draws both when they differ, and the file keeps the layer's label", () => {
     expect(band(inLane("Data team"))?.label?.runs).toBeDefined();
     expect(writeDiagram(inLane("Stores"))).toContain("label: Stores");
   });

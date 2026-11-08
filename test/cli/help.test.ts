@@ -233,14 +233,14 @@ describe('guides (specs/decisions, "Help for the tool, guides for best practice"
 });
 
 describe('the counts in place of hints (specs/decisions, "Records over prose")', () => {
-  /** The photo-sharing diagram, where a line bends more than twice round the upload queue. */
+  /** The photo-sharing diagram, where an edge bends more than twice round the upload queue. */
   function photos(): string {
     writeFileSync(join(dir, "photos.grafical.yaml"), writeDiagram(edgeLooks));
     return "photos.grafical.yaml";
   }
 
-  it("check prints the counts, and a line bent more than twice as a warning, with no advice", () => {
-    // The line round the upload queue is a warning of what happened, with the commands that can change it, and no
+  it("check prints the counts, and an edge bent more than twice as a warning, with no advice", () => {
+    // The edge round the upload queue is a warning of what happened, with the commands that can change it, and no
     // source: the outcome line names what a write changed (specs/decisions, "Refusals say what happened and which commands
     // can change it").
     const bent = [

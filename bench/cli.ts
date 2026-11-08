@@ -14,7 +14,7 @@
 //   summary --round <name>                    write bench/results/<round>.md
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   mechanical defects: check every step's picture's geometry
-//   lines --round <name>                      measure each final diagram's lines, and the agent's tries (specs/decisions, "Records over prose")
+//   lines --round <name>                      measure each final diagram's edges, and the agent's tries (specs/decisions, "Records over prose")
 //   reflections --round <name>                every chain's reflection, as one Markdown document (specs/benchmark.md)
 //   diff <ref> [--seeds 2000] [--render <dir>]
 //                                             what the working tree's engine changes against <ref>, over saved drafts, fixtures and fuzz seeds; costs nothing

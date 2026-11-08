@@ -2,11 +2,11 @@
 // operation changes only the facts it names. The engine chooses columns, so
 // positions may shift to keep the picture tidy; the structure may not. After one
 // operation, for every node the operation does not name:
-// - it stays in its layer, and the picture draws it in that layer's row;
-// - it keeps its place in its layer's order, and the picture draws the row's
+// - it stays in its layer, and the picture draws it in that layer's layer;
+// - it keeps its place in its layer's order, and the picture draws the layer's
 //   nodes left to right in that order;
-// - it keeps its group, and the picture draws it inside that group's box and the
-//   boxes around it (specs/decisions, "Every layered diagram type"), and in no other;
+// - it keeps its group, and the picture draws it inside that group's frame and the
+//   frames around it (specs/decisions, "Every layered diagram type"), and in no other;
 // - it keeps its lane and its alignment (specs/decisions, "Lanes run one way", "Layout computed again on every change").
 // Movement is measured, not limited: how many nodes and routes moved, relative to
 // the centre line.
@@ -64,7 +64,7 @@ function facts(d: Diagram): Map<string, Facts> {
 /** The order of the given ids in a list, keeping only those ids. */
 const within = (list: string[], keep: Set<string>) => list.filter((id) => keep.has(id));
 
-/** Violations of the structure in one scene: rows, order across, and group boxes. */
+/** Violations of the structure in one scene: layers, order across, and group frames. */
 function drawn(s: Scene, d: Diagram): string[] {
   const out: string[] = [];
   const rect = new Map(s.nodes.map((n) => [n.id, n]));

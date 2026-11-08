@@ -1,4 +1,4 @@
-// Swimlanes (specs/decisions, "Lanes run one way"). A lane's members name it: layers, when lanes run as
+// Lanes (specs/decisions, "Lanes run one way"). A lane's members name it: layers, when lanes run as
 // layers, or nodes, when lanes run as columns. The way lanes run follows from which
 // members name them, so a diagram cannot hold both. Layer lanes span neighbouring
 // layers. Column lanes go left to right in list order and span the whole height;

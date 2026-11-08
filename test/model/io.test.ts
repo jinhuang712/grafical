@@ -55,7 +55,7 @@ describe("readDiagram and writeDiagram", () => {
       "grafical: 1\ntitle: T\nlayers:\n  - id: a\n    label: A\n    nodes:\n      - id: n\n        label: N\n",
     ) as Diagram;
     expect(d.density).toBe("normal");
-    // No size: the engine sizes the box to its text (specs/decisions, "Nodes sized to their text").
+    // No size: the engine sizes the node to its text (specs/decisions, "Nodes sized to their text").
     expect(d.layers[0]?.nodes[0]).toEqual({ id: "n", label: "N", kind: "service" });
     const out = writeDiagram(d);
     expect(out).not.toContain("size");
@@ -63,7 +63,7 @@ describe("readDiagram and writeDiagram", () => {
     expect(out).not.toContain("align");
   });
 
-  it("reads and writes a row without a label", () => {
+  it("reads and writes a layer without a label", () => {
     const text =
       "grafical: 1\ntitle: T\ndensity: normal\nlayers:\n  - id: a\n    look: band\n    nodes:\n      - id: n\n        label: N\n";
     const d = readDiagram(text) as Diagram;

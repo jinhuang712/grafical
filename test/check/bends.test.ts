@@ -1,5 +1,5 @@
-// Lines bent for no reason (specs/decisions, "Who chose is punished"): between boxes in neighbouring rows, when one
-// x would have served both ends, the line runs straight, and a bend is an engine defect.
+// Edges bent for no reason (specs/decisions, "Who chose is punished"): between nodes in neighbouring layers, when one
+// x would have served both ends, the edge runs straight, and a bend is an engine defect.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -58,7 +58,7 @@ const diagram: Diagram = {
   edges: [{ id: "a->b", from: "a", to: "b", kind: "call" }],
 };
 
-describe('lines bent for no reason (specs/decisions, "Who chose is punished")', () => {
+describe('edges bent for no reason (specs/decisions, "Who chose is punished")', () => {
   it("are an engine defect when one x would have served both ends", () => {
     const bent = makeEdge("a->b", "a", "b", [
       [150, 88],
@@ -75,7 +75,7 @@ describe('lines bent for no reason (specs/decisions, "Who chose is punished")', 
       [140, 200],
     ]);
     expect(check(diagram, scene([straight]), createStubMeasurer())).toEqual([]);
-    // A port outside the other box's side cannot meet it straight: no defect.
+    // A port outside the other node's side cannot meet it straight: no defect.
     const wide = makeEdge("a->b", "a", "b", [
       [52, 88],
       [52, 140],
@@ -85,8 +85,8 @@ describe('lines bent for no reason (specs/decisions, "Who chose is punished")', 
     expect(check(diagram, scene([wide]), createStubMeasurer())).toEqual([]);
   });
 
-  it("run straight between a busy box and the box under it", () => {
-    // The public brief's draft: catalog-sync has eight lines on its bottom side, two of
+  it("run straight between a busy node and the node under it", () => {
+    // The public brief's draft: catalog-sync has eight edges on its bottom side, two of
     // them to and from its retry topic right under it.
     const file = join(import.meta.dirname, "../fixtures/catalog-sync-help3.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
@@ -97,21 +97,21 @@ describe('lines bent for no reason (specs/decisions, "Who chose is punished")', 
     expect(check(d, s, m)).toEqual([]);
   });
 
-  // Found on 2026-10-15 in a two-zone cloud diagram: web-b's top side also takes the line from the load
-  // balancer, and a group label there keeps both ports right of the NAT gateway's port above. The line
+  // Found on 2026-10-15 in a two-zone cloud diagram: web-b's top side also takes the edge from the load
+  // balancer, and a group label there keeps both ports right of the NAT gateway's port above. The edge
   // up to the gateway takes the gateway's port along and runs straight. Since 2026-10-17 no label moves a
   // port, and the file states three subnets' labels at places the title-blocked refusal named clear.
-  it("run straight from a box whose side another line shares", () => {
+  it("run straight from a node whose side another edge shares", () => {
     const file = join(import.meta.dirname, "../fixtures/two-zones.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     expect(check(d, layout(d, m), m)).toEqual([]);
   });
 
-  // Found on 2026-10-18 in round p1g, in a draft of the public 50-component brief: the line from Kafka
-  // events up to the wave planner right above it bent twice. Another line from the events' top runs
+  // Found on 2026-10-18 in round p1g, in a draft of the public 50-component brief: the edge from Kafka
+  // events up to the wave planner right above it bent twice. Another edge from the events' top runs
   // across its gutter to the indexer, and crosses it where it bends as much as it would where it runs
   // straight, so the wave planner's port moves over the events' port.
-  it("run straight up past a line they cross either way", () => {
+  it("run straight up past an edge they cross either way", () => {
     const file = join(import.meta.dirname, "../fixtures/grocer.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     expect(check(d, layout(d, m), m)).toEqual([]);

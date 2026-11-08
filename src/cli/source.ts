@@ -6,7 +6,7 @@ import { isMap, isSeq, type Node, parseDocument } from "yaml";
 /** The source of a problem the file had before the command. */
 export const IN_FILE = "already in the file";
 
-/** An operation of a batch file: the edge it starts on, from 1, and its text as written, on one line. */
+/** An operation of a batch file: the line it starts on, from 1, and its text as written, on one line. */
 export interface Item {
   line: number;
   text: string;
@@ -28,14 +28,14 @@ export function commandLine(args: readonly string[]): string {
   return ["grafical", ...args.map(word)].join(" ");
 }
 
-/** The source of the operation at `index`: its batch's edge, or the command line. */
+/** The source of the operation at `index`: its batch's line, or the command line. */
 export function itemSource(origin: Origin, index: number): string {
   const item = origin.batch?.items[index];
   if (origin.batch === undefined || item === undefined) return origin.command;
   return `${origin.batch.file} line ${item.line}: ${item.text}`;
 }
 
-/** The source of a problem of a batch whose edge cannot be known: the batch file, with no edge, or the command line. */
+/** The source of a problem of a batch whose line cannot be known: the batch file, with no line, or the command line. */
 export function unlined(origin: Origin): string {
   return origin.batch?.file ?? origin.command;
 }

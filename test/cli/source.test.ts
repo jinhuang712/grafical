@@ -34,7 +34,7 @@ const sources = (out: string) =>
     .filter((l) => l.startsWith("source: "))
     .map((l) => l.slice("source: ".length));
 
-/** api and db in one row, under web. */
+/** api and db in one layer, under web. */
 const shop: Diagram = {
   grafical: 1,
   title: "Shop",
@@ -208,7 +208,7 @@ describe("source", () => {
       expect(r7.out).toMatch(/^defect: overflow$/m);
       // Whether the label is too long after lines 3 to 6 cannot be known, so no line can be named.
       expect(sources(r7.out)).toEqual(["b7.yaml"]);
-      // Lines 3 to 6 draw a bar under row-callers that lines pass, which line 7 takes away: the group splits from
+      // Lines 3 to 6 draw a bar under row-callers that edges pass, which line 7 takes away: the group splits from
       // line 2 on.
       writeFileSync(join(dir, "g11.grafical.yaml"), grocer());
       const b11 = [
@@ -283,7 +283,7 @@ describe("source", () => {
   });
 
   it("of a warning: none, in text or in --json, as the outcome line names what the write changed", () => {
-    // sync->geo bends three times and passes a row in this fixture, and other lines bend too
+    // sync->geo bends three times and passes a layer in this fixture, and other edges bend too
     // (specs/decisions, "Every write prints every warning").
     const f = "bent.grafical.yaml";
     writeFileSync(
@@ -372,7 +372,7 @@ describe("source", () => {
   });
 
   it("of an error already in the file gives --json no operation's index", () => {
-    // A box between two members of a group in one row splits it, which only a write finds.
+    // A node between two members of a group in one layer splits it, which only a write finds.
     const split = structuredClone(shop);
     const [api, db] = split.layers[1]?.nodes ?? [];
     if (api === undefined || db === undefined) throw new Error("row-b");

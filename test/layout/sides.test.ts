@@ -1,4 +1,4 @@
-// Side turns (specs/decisions, "Edges meet any side"): a line that leaves or enters a box by its side turns once.
+// Side turns (specs/decisions, "Edges meet any side"): an edge that leaves or enters a node by its side turns once.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -16,9 +16,9 @@ beforeAll(async () => {
 });
 
 describe("side turns", () => {
-  // Found by the owner on 2026-10-15 in a swimlane with a column per phase: each of these lines
-  // bent twice, because another line already turned through the gap beside its target.
-  it("share a gap of a row when their runs along the row keep apart", () => {
+  // Found by the owner on 2026-10-15 in a lane with a column per phase: each of these edges
+  // bent twice, because another edge already turned through the gap beside its target.
+  it("share a gap of a layer when their runs along the layer keep apart", () => {
     const file = join(import.meta.dirname, "../fixtures/order-lanes.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
@@ -26,14 +26,14 @@ describe("side turns", () => {
     const of = (id: string) => drawnEdges.find((l) => l.id === id);
     expect(of("ship->receive")).toMatchObject({ leaves: "top", enters: "left", bends: 1 });
     expect(of("pay->close")).toMatchObject({ enters: "left", bends: 1 });
-    // The lines already in those gaps keep their turns.
+    // The edges already in those gaps keep their turns.
     expect(of("backorder->order")).toMatchObject({ enters: "right", bends: 1 });
     expect(of("invoice->pay")).toMatchObject({ leaves: "right", bends: 1 });
     expect(check(d, s, m)).toEqual([]);
   });
 
-  // Found by the owner on 2026-10-15: the load balancer's line into zone B bent twice, because
-  // its turn would have started where the line into zone A turned, at the middle of its bottom.
+  // Found by the owner on 2026-10-15: the load balancer's edge into zone B bent twice, because
+  // its turn would have started where the edge into zone A turned, at the middle of its bottom.
   it("move along the source's side to keep clear of another turn from it", () => {
     const file = join(import.meta.dirname, "../fixtures/two-zones.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
@@ -45,7 +45,7 @@ describe("side turns", () => {
     expect(check(d, s, m)).toEqual([]);
   });
   // Found on 2026-10-16: "sends confirmations via" is wider than the 120 px a label between
-  // neighbours could take, so the line went round under the row with its label hanging off.
+  // neighbours could take, so the edge went round under the layer with its label hanging off.
   it("run straight between neighbours with a label up to thirty characters", () => {
     const d = readDiagram(`grafical: 1
 title: wide
@@ -60,8 +60,8 @@ edges:
     const edge = drawing(d, s).edges.find((l) => l.id === "api->mail");
     expect(edge).toMatchObject({ leaves: "right", enters: "left", bends: 0 });
   });
-  // Found by the owner on 2026-10-16 in a booking C4 diagram: the web app's line turned
-  // into the API's side, and the mobile app's line beside it bent twice into the API's top.
+  // Found by the owner on 2026-10-16 in a booking C4 diagram: the web app's edge turned
+  // into the API's side, and the mobile app's edge beside it bent twice into the API's top.
   it("enter one side together, the nearer above", () => {
     const d = readDiagram(`grafical: 1
 title: entries

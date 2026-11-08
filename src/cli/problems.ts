@@ -402,7 +402,7 @@ export interface Block {
   kind: Kind;
   code: Code;
   description: string;
-  /** What caused it: the command line, a batch's edge, or what was already in the file. */
+  /** What caused it: the command line, a batch's line, or what was already in the file. */
   source?: string;
   /** The operation's index in its batch, from 0: in --json only. */
   op?: number;
@@ -570,7 +570,7 @@ export function usageBlock(
   };
 }
 
-/** Something drawn poorly, as a warning block. It has no source: the outcome edge names what the write changed. */
+/** Something drawn poorly, as a warning block. It has no source: the outcome line names what the write changed. */
 export function warningBlock(w: Warning): Block {
   return {
     kind: "warning",

@@ -27,8 +27,8 @@ function crossings(s: Scene, a: string, b: string): number {
 
 describe("label slots", () => {
   // Found on 2026-10-16 in a saved agent draft: once "trip-matched" could no longer lie
-  // across the matching group's side, its clear slot above the line was charged for
-  // crossings counted with the label where it lay before, so it went below the line and
+  // across the matching group's side, its clear slot above the edge was charged for
+  // crossings counted with the label where it lay before, so it went below the edge and
   // pushed the events fan-out above it, across matcher->events.
   it("weigh a slot without the label's earlier place", () => {
     const file = join(import.meta.dirname, "../fixtures/dispatch.grafical");

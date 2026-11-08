@@ -3,7 +3,7 @@
 // between them. Node orders follow the data, the way an engineer would draw it.
 // Two of the phase 0 spike's alignments hold: CatalogApiService under promotions,
 // and the goods pipeline under its topic. The spike's third, the catalog-api
-// service under its HTTP entry, needs the Processing row to slide by another
+// service under its HTTP entry, needs the Processing layer to slide by another
 // amount than the goods pipeline does, so it cannot hold with them (specs/decisions, "Layout computed again on every change").
 
 import type { Diagram } from "../../src/model/types.ts";

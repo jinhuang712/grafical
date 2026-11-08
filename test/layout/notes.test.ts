@@ -55,10 +55,10 @@ describe('notes in the picture (specs/decisions, "Notes as callouts or footnotes
     const retry = byOn.get("retry");
     if (retry?.mark === undefined || retry.key === undefined) throw new Error("no footnote");
     expect(retry.as).toBe("footnote");
-    // Numbered in reading order: the retry topic sits above the line to MongoDB.
+    // Numbered in reading order: the retry topic sits above the edge to MongoDB.
     expect(byOn.get("service->mongo")?.number).toBe(2);
     expect(retry.number).toBe(1);
-    // The number sits on a corner of the box, and the list below the content.
+    // The number sits on a corner of the node, and the list below the content.
     const rect = scene.nodes.find((n) => n.id === "retry")?.rect as Rect;
     // Its digits just outside the box.
     const out = NOTE.badge - 2;
@@ -120,7 +120,7 @@ describe('notes in the picture (specs/decisions, "Notes as callouts or footnotes
     const across: string[] = [];
     for (let seed = 1; seed <= 40; seed++) {
       const d = generate(seed, m).diagram;
-      // Every note a footnote, and one more on each line.
+      // Every note a footnote, and one more on each edge.
       const notes = (d.notes ?? []).map((x) => ({ ...x, footnote: true as const }));
       const on = new Set(notes.map((x) => x.on));
       for (const e of d.edges)

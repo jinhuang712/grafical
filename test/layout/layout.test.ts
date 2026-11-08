@@ -90,7 +90,7 @@ describe("with the real measurer", () => {
   }
 });
 
-/** Points where lines of one fan-out leave in all four directions: a junction that reads as a crossing. */
+/** Points where edges of one fan-out leave in all four directions: a junction that reads as a crossing. */
 function crossLikeJunctions(edges: SceneEdge[]): string[] {
   const out: string[] = [];
   const bundles = new Map<string, SceneEdge[]>();
@@ -133,7 +133,7 @@ describe('groups inside groups (specs/decisions, "Every layered diagram type")',
   });
   const frame = (id: string) => scene.groups?.find((g) => g.id === id);
 
-  it("draws each inner box inside its outer one, a padding clear of each side", () => {
+  it("draws each inner frame inside its outer one, a padding clear of each side", () => {
     for (const [inner, outer] of [
       ["vpc", "region"],
       ["public", "vpc"],
@@ -154,7 +154,7 @@ describe('groups inside groups (specs/decisions, "Every layered diagram type")',
     ]);
   });
 
-  it("draws no box for an empty group inside another, and leaves the outer box as it was", async () => {
+  it("draws no frame for an empty group inside another, and leaves the outer frame as it was", async () => {
     const empty = {
       ...nested,
       groups: [...(nested.groups ?? []), { id: "zone", label: "zone b", in: "region" }],
@@ -179,8 +179,8 @@ describe('groups inside groups (specs/decisions, "Every layered diagram type")',
   });
 });
 
-describe("lines past a group they do not belong to", () => {
-  it("run outside its box, not in its margin or along its border", async () => {
+describe("edges past a group they do not belong to", () => {
+  it("run outside its frame, not in its margin or along its border", async () => {
     const d: Diagram = {
       grafical: 1,
       title: "Past a group",
@@ -252,7 +252,7 @@ describe('the target look (specs/decisions, "A target picture with measured rule
 
   it("lets an edge to a node wholly to one side leave from that side, with one bend", () => {
     // retry sits up and to the left of pipelines and geo down and to the left, with
-    // nothing between in the row; one of the two takes the left side.
+    // nothing between in the layer; one of the two takes the left side.
     const from = node("pipelines") as Rect;
     const mid = { x: from.x, y: from.y + from.h / 2 };
     const out = scene.edges.filter(
@@ -281,7 +281,7 @@ describe('the target look (specs/decisions, "A target picture with measured rule
     ).toBe("persist");
   });
 
-  it('bundles a fan-out of three or more unlabelled lines into one port and trunk (specs/decisions, "Fan-outs of three bundle")', () => {
+  it('bundles a fan-out of three or more unlabelled edges into one port and trunk (specs/decisions, "Fan-outs of three bundle")', () => {
     const crossings = edgeTrouble(catalogSyncGrouped, m).crossings;
     for (const from of ["pipelines", "service"]) {
       const out = scene.edges.filter(
@@ -294,7 +294,7 @@ describe('the target look (specs/decisions, "A target picture with measured rule
     }
   });
 
-  it('gives each line a port of its own when two leave a side with room (specs/decisions, "Edges meet any side")', () => {
+  it('gives each edge a port of its own when two leave a side with room (specs/decisions, "Edges meet any side")', () => {
     const two: Diagram = {
       grafical: 1,
       title: "Two",
@@ -319,7 +319,7 @@ describe('the target look (specs/decisions, "A target picture with measured rule
     expect(crossLikeJunctions(crowded.edges)).toEqual([]);
   });
 
-  it("draws each group as one box around its members, its label clear of lines", () => {
+  it("draws each group as one frame around its members, its label clear of edges", () => {
     expect(scene.groups?.map((g) => [g.id, g.members.length])).toEqual([
       ["catalog-sync", 5],
       ["catalog-api", 2],
@@ -336,7 +336,7 @@ describe('the target look (specs/decisions, "A target picture with measured rule
     }
   });
 
-  it("has a subtitle, a footnote and a legend of the two line styles it names", () => {
+  it("has a subtitle, a footnote and a legend of the two edge styles it names", () => {
     expect(scene.subtitle?.runs.length).toBeGreaterThan(0);
     expect(scene.note?.runs.length).toBeGreaterThan(0);
     // It names nothing, so it draws no legend (specs/decisions, "The legend says only what the agent named").
@@ -514,8 +514,8 @@ describe('stability (specs/decisions, "Layout computed again on every change")',
       expect(out).toEqual([]);
     });
 
-    // specs/decisions, "A layer with a look is drawn": the look draws that row and moves no box across, nor anything above it.
-    it(`${name}: give each layer a look, which draws only that row`, () => {
+    // specs/decisions, "A layer with a look is drawn": the look draws that layer and moves no node across, nor anything above it.
+    it(`${name}: give each layer a look, which draws only that layer`, () => {
       const before = layoutFramed(d, m);
       const across = (f: typeof before) =>
         f.scene.nodes.map((x) => `${x.id} ${Math.round((x.rect.x - f.centre) * 100) / 100}`);
@@ -620,7 +620,7 @@ describe("alignment", () => {
     expect(mechanical(defects(f.scene))).toEqual([]);
   });
 
-  it("two alignments in one row hold when the order allows both", () => {
+  it("two alignments in one layer hold when the order allows both", () => {
     const d: Diagram = {
       ...tiny,
       layers: tiny.layers.map((l) =>
@@ -641,7 +641,7 @@ describe("alignment", () => {
     expect(centre(f, "queue")).toBe(centre(f, "worker"));
   });
 
-  it("an alignment against the order of the rows is reported", () => {
+  it("an alignment against the order of the layers is reported", () => {
     // db comes before queue, but queue's target comes before db's.
     const d: Diagram = {
       ...tiny,
@@ -659,13 +659,13 @@ describe("alignment", () => {
     };
     const problems = validateAlignments(d);
     expect(problems.map((p) => `${p.code} ${p.node}`)).toEqual(["alignment-conflict queue"]);
-    // It names the boxes in the way: worker right of api, and db, aligned to worker, left of queue.
+    // It names the nodes in the way: worker right of api, and db, aligned to worker, left of queue.
     expect(problems[0]?.facts).toEqual({
       node: "queue",
       layer: expect.any(String),
       nodes: ["worker", "db"],
     });
-    // The first alignment in row order holds, and the layout still runs.
+    // The first alignment in layer order holds, and the layout still runs.
     const f = layoutFramed(d, m);
     expect(centre(f, "db")).toBe(centre(f, "worker"));
     expect(mechanical(defects(f.scene))).toEqual([]);
@@ -739,21 +739,21 @@ describe("groups", () => {
     ]);
   });
 
-  it("groups that swap sides between rows are reported", () => {
+  it("groups that swap sides between layers are reported", () => {
     const d = two([
       [n("a", "a", "service", "m", { group: "g" }), n("b", "b", "service", "m", { group: "h" })],
       [n("c", "c", "service", "m", { group: "h" }), n("d", "d", "service", "m", { group: "g" })],
     ]);
     expect(validateGroups(d).map((p) => `${p.code} ${p.group}`)).toEqual(["group-conflict h"]);
-    // The rows h's box covers, first and last, are named.
+    // The layers h's frame covers, first and last, are named.
     expect(validateGroups(d)[0]?.facts).toMatchObject({ group: "h", top: "l0", bottom: "l1" });
-    // The layout still runs, and boxes the group that holds.
+    // The layout still runs, and nodes the group that holds.
     const s = layout(d, m);
     expect(s.groups?.map((g) => g.id)).toEqual(["g"]);
     expect(groupIntruders(s)).toEqual([]);
   });
 
-  it("a node beside a group in one row stays out of its box in every row", () => {
+  it("a node beside a group in one layer stays out of its frame in every layer", () => {
     const d = two([
       [n("a", "a", "service", "m", { group: "g" }), n("x", "x", "service", "m")],
       [

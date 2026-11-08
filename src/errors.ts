@@ -79,7 +79,7 @@ export interface Facts {
   chars?: readonly string[];
   /** Pixels of one line that another shares. */
   shared?: number;
-  /** Pixels along which two lines run close side by side. */
+  /** Pixels along which two edges run close side by side. */
   over?: number;
   /** How often an edge bends, and the layers between the layers of its ends. */
   bends?: number;
@@ -258,7 +258,7 @@ export type UsageCode = (typeof USAGE_CODES)[number];
  * commands can change it", "Every write prints every warning"), in the order they print: an edge with more than two
  * bends (specs/decisions, "A bent edge is reported and never refused"), the places the counts passing, across, tight and crowded count
  * (specs/decisions, "Composition counts"), a node no edge reaches, an edge alike from every node of a group to one end (specs/decisions,
- * "An edge from every node of a group is a warning"), and two lines that cross.
+ * "An edge from every node of a group is a warning"), and two edges that cross.
  */
 export const WARNING_CODES = [
   "bent-edge",
@@ -274,7 +274,7 @@ export const WARNING_CODES = [
 export type WarningCode = (typeof WARNING_CODES)[number];
 
 /**
- * Something drawn poorly, which is written: its code and what is there. It has no source: the outcome edge names
+ * Something drawn poorly, which is written: its code and what is there. It has no source: the outcome line names
  * what the write changed (specs/decisions, "Every write prints every warning").
  */
 export interface Warning {
@@ -304,7 +304,7 @@ export interface OpError {
    * only when those before it found nothing, so a diagram refused by a later check has no error of an earlier one.
    */
   stage?: number;
-  /** What caused it, as the report prints it: the command line, a batch's edge, or what was in the file before. */
+  /** What caused it, as the report prints it: the command line, a batch's line, or what was in the file before. */
   source?: string;
 }
 

@@ -5,7 +5,7 @@
 // edges that run sideways between neighbours, and edges that pass a layer through
 // an empty column. Columns are
 // packed from the left, as close as that room allows, and the picture is centred
-// on one centre line. Every x here is relative to that edge.
+// on one centre line. Every x here is relative to that line.
 
 import { columnRanks } from "../model/columns.ts";
 import { magnifiedBetween } from "../model/gaps.ts";

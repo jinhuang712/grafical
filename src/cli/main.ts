@@ -147,7 +147,7 @@ function renderName(file: string): string {
 
 /**
  * Gives each command its help page (specs/decisions, "One entry page, help where it is used"): the one-line description
- * stays the summary in its parent's list, and the page's paragraph, its edge in a batch and its sections show on
+ * stays the summary in its parent's list, and the page's paragraph, its line in a batch and its sections show on
  * its own help.
  */
 function attachHelp(parent: Command, ops: Map<Command, OpName>, path: string[] = []): void {

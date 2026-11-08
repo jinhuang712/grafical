@@ -67,7 +67,7 @@ describe("layers", () => {
     ]);
     expect(d.layers.map((l) => l.id)).toEqual(["entry", "topics", "work", "deps", "sources"]);
     expect(d.layers[3]?.label).toBe("Outside");
-    // A row moved between a group's rows: the box spans it, and its nodes stay beside the box (specs/decisions, "Layers unseen, groups as systems").
+    // A layer moved between a group's layers: the node spans it, and its nodes stay beside the node (specs/decisions, "Layers unseen, groups as systems").
     const moved = ok(fx, [{ op: "layer.move", id: "deps", before: "work" }]);
     expect(check(moved, layout(moved, m), m)).toEqual([]);
     expect(fail(fx, [{ op: "layer.move", id: "deps" }])[0]?.code).toBe("missing-field");
@@ -227,7 +227,7 @@ describe("edges", () => {
     });
   });
 
-  it('step numbers a line as the agent states it, and no number clears it (specs/decisions, "Step badges ride the edge")', () => {
+  it('step numbers an edge as the agent states it, and no number clears it (specs/decisions, "Step badges ride the edge")', () => {
     const d = ok(fx, [
       { op: "edge.number", id: "callers->handlers", n: 1 },
       { op: "edge.number", id: "handlers->service", n: 2 },
@@ -235,10 +235,10 @@ describe("edges", () => {
     ]);
     roundTrips(d);
     expect(edge(d, "callers->handlers")?.step).toBe(1);
-    // Two lines may share a number, and nothing is renumbered.
+    // Two edges may share a number, and nothing is renumbered.
     expect(edge(d, "service->mongo")?.step).toBe(2);
     expect(writeDiagram(d)).toContain("step: 2");
-    // The number stays through the line's other edits.
+    // The number stays through the edge's other edits.
     const kept = ok(d, [
       { op: "edge.label", id: "callers->handlers", label: "GET" },
       { op: "edge.reverse", id: "callers->handlers" },
@@ -259,7 +259,7 @@ describe("edges", () => {
     expect(fail(fx, [{ op: "edge.number", id: "nope", n: 1 }])[0]?.code).toBe("unknown-edge");
   });
 
-  it("merging keeps two lines that differ only in their number", () => {
+  it("merging keeps two edges that differ only in their number", () => {
     const d = ok(fx, [
       { op: "edge.add", from: "geo", to: "mongo", id: "g1" },
       { op: "edge.add", from: "i18n", to: "mongo", id: "g2" },
@@ -310,7 +310,7 @@ describe("groups", () => {
     expect(fail(fx, [{ op: "group.order", id: "catalog-api" }])[0]?.code).toBe("missing-field");
   });
 
-  // A network with two zones, each a subnet per row holding one box: a zone has no box of its own.
+  // A network with two zones, each a subnet per layer holding one node: a zone has no node of its own.
   const layerIds = ["public", "app", "data"];
   const zone = (z: string): Op[] => [
     { op: "group.add", id: `az-${z}`, label: `Zone ${z}`, in: "vpc" },
@@ -333,13 +333,13 @@ describe("groups", () => {
     ...zone("b"),
   ]);
 
-  it("order moves the boxes of a group's inner groups too", () => {
+  it("order moves the nodes of a group's inner groups too", () => {
     const { diagram: d, changed } = run(zones, [{ op: "group.order", id: "az-b", before: "az-a" }]);
     expect(layerIds.map((r) => order(d, r))).toEqual(layerIds.map((r) => [`${r}-b`, `${r}-a`]));
     expect(changed).toEqual(["public-b", "app-b", "data-b"]);
   });
 
-  it("order moves a group's own boxes and its inner groups' as one block", () => {
+  it("order moves a group's own nodes and its inner groups' as one block", () => {
     // Zone A holds a bastion of its own beside its public subnet, after the network's own load balancer.
     const mixed = ok(zones, [
       { op: "node.add", id: "lb", layer: "public", label: "LB", first: true },

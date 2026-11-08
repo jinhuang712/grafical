@@ -89,7 +89,7 @@ export interface SceneBand {
   blocked?: true;
 }
 
-/** A swimlane (specs/decisions, "Lanes run one way"): its whole area, the header that holds its label, and the label. */
+/** A lane (specs/decisions, "Lanes run one way"): its whole area, the header that holds its label, and the label. */
 export interface SceneLane {
   id: string;
   /** What its styles set. */
@@ -132,7 +132,7 @@ export interface SceneBadge {
 
 /**
  * A note (specs/decisions, "Notes as callouts or footnotes"), as grafical drew it: a callout card beside its target, joined to it
- * by a dotted edge; or a footnote, a number on the target and its text in the list
+ * by a dotted line; or a footnote, a number on the target and its text in the list
  * at the bottom.
  */
 export interface SceneNote {

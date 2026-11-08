@@ -63,7 +63,7 @@ type:
     expect(at("type.title.weight")?.found).toBe("700");
   });
 
-  it('take curved or orthogonal lines, and nothing else (specs/decisions, "Edges meet any side")', () => {
+  it('take curved or orthogonal edges, and nothing else (specs/decisions, "Edges meet any side")', () => {
     const sheet = (shape: string) =>
       parseStylesheet(
         `grafical-style: 1\npaint:\n  edge: { shape: ${shape} }\n`,
@@ -79,7 +79,7 @@ type:
     expect(THEMES.default?.paint.edge.shape).toBe("orthogonal");
   });
 
-  it('tell nested boxes apart by alternating fills or by shades, and nothing else (specs/decisions, "Every layered diagram type")', () => {
+  it('tell nested frames apart by alternating fills or by shades, and nothing else (specs/decisions, "Every layered diagram type")', () => {
     const sheet = (nesting: string) =>
       parseStylesheet(
         `grafical-style: 1\npaint:\n  nesting: ${nesting}\n`,

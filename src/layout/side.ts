@@ -22,7 +22,7 @@ export interface SideSlot {
   right: string;
 }
 
-/** Least distance between two lines on one side, and between an edge and a corner. */
+/** Least distance between two edges on one side, and between an edge and a corner. */
 const PITCH = ROUTE.portPitch;
 const TIGHT = 8;
 
@@ -39,8 +39,8 @@ function cmp(a: string, b: string): number {
 }
 
 /**
- * The sideways edges and their edges. `labelW` gives the one-line width of an
- * edge's label, or undefined for none; `labelH` the height of its label's node;
+ * The sideways edges and their lines. `labelW` gives the one-line width of an
+ * edge's label, or undefined for none; `labelH` the height of its label's box;
  * `rides` whether its label may sit on its edge.
  */
 export function planSideways(

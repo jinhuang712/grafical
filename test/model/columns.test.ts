@@ -1,4 +1,4 @@
-// Columns (specs/decisions, "Columns beside layers"): a guide that boxes follow beside their rows.
+// Columns (specs/decisions, "Columns beside layers"): a guide that nodes follow beside their layers.
 
 import { describe, expect, it } from "vitest";
 import { showDiagram } from "../../src/cli/show.ts";
@@ -26,7 +26,7 @@ function fail(d: Diagram, ops: Op[]): OpError[] {
 const layerOf = (d: Diagram, id: string) =>
   d.layers.find((l) => l.id === id)?.nodes.map((x) => x.id);
 
-/** Two rows: web, api and a worker on top; a cache, the db and a queue below. */
+/** Two layers: web, api and a worker on top; a cache, the db and a queue below. */
 const base: Diagram = {
   grafical: 1,
   title: "T",
@@ -75,9 +75,9 @@ describe('columns (specs/decisions, "Columns beside layers")', () => {
     expect(shown).toContain('api "API" service size=m column=requests');
   });
 
-  it("keep every row in column order; a box in no column stays beside its left neighbour", () => {
+  it("keep every layer in column order; a node in no column stays beside its left neighbour", () => {
     // The worker joins the left column and moves first; api and the db, in no column, stay
-    // right after web and the cache, the boxes left of them.
+    // right after web and the cache, the nodes left of them.
     const d = ok(base, [
       { op: "column.add", id: "left", nodes: ["worker", "queue"] },
       { op: "column.add", id: "right", nodes: ["web", "cache"] },
@@ -103,7 +103,7 @@ describe('columns (specs/decisions, "Columns beside layers")', () => {
     expect(fail(d, [{ op: "column.add", id: "web" }])[0]).toMatchObject({ code: "duplicate-id" });
   });
 
-  it("leave and remove keep the boxes where they are", () => {
+  it("leave and remove keep the nodes where they are", () => {
     const d = ok(base, [{ op: "column.add", id: "jobs", nodes: ["worker", "queue"] }]).diagram;
     const left = ok(d, [{ op: "column.leave", members: ["queue"] }]).diagram;
     expect(left.layers[1]?.nodes.find((x) => x.id === "queue")?.column).toBeUndefined();

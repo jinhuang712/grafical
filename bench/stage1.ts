@@ -7,7 +7,7 @@
 //   intent  E3: the 10 loose prompts, grafical, Haiku, one run each; the owner accepts or rejects
 //   mvp     the MVP bar: the private reference brief, grafical, Haiku, 3 runs, kept outside the repo
 //   hints, nohints  phase 1d: five tasks with and without the engine's hints (specs/decisions, "Records over prose"),
-//           grafical, Haiku, 3 runs, measured by their lines, not by a person
+//           grafical, Haiku, 3 runs, measured by their edges, not by a person
 //   hints2  the same with `diagram improve` and the guide's step to run it
 //   hints3  the same with improve taking only safe hints
 //   hints4  the same with improve removed: the agent runs each hint itself
@@ -15,10 +15,10 @@
 //           the agent learning grafical from its help alone (specs/decisions, "The help as the reference"), Haiku, 3 runs
 //   brief   the public brief again, 6 runs, after the refusals learned to say how to fix
 //   help2   the help round again, after the refusals and the help said how to fix
-//   help3   again, after the kinds were named, rows took ids like row-users, and hints
-//           tried rows and hubs, safe ones first, each naming the lines it untangles
+//   help3   again, after the kinds were named, layers took ids like row-users, and hints
+//           tried layers and hubs, safe ones first, each naming the edges it untangles
 //   records again, after the output became key=value records with no hints (specs/decisions, "Records over prose"), and
-//           fan-outs bundled (specs/decisions, "Fan-outs of three bundle"), rows took one height and stores more room
+//           fan-outs bundled (specs/decisions, "Fan-outs of three bundle"), layers took one height and stores more room
 //
 // Every run gets the same prompt for every model: a prompt depends on the arm and
 // the task only (specs/benchmark.md).

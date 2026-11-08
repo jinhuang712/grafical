@@ -1,4 +1,4 @@
-// A line carries its label (specs/decisions, "An edge's label sits on its edge").
+// An edge carries its label (specs/decisions, "An edge's label sits on its edge").
 
 import { readFileSync } from "node:fs";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -27,7 +27,7 @@ function build(ops: Op[]): Diagram {
   return r.diagram;
 }
 
-/** Two nodes far apart, so that the line turns and its long run carries the label. */
+/** Two nodes far apart, so that the edge turns and its long run carries the label. */
 const turning = [
   node("x", "a"),
   node("pad", "a", { after: "x" }),
@@ -38,15 +38,15 @@ const turning = [
   { op: "edge.add", from: "x", to: "z", label: "goes" } as Op,
 ];
 
-describe("labels on lines", () => {
-  it("goes onto its line where the gutter saw no room but a run leaves its height clear", () => {
+describe("labels on edges", () => {
+  it("goes onto its edge where the gutter saw no room but a run leaves its height clear", () => {
     const d = readDiagram(readFileSync("test/fixtures/big-bank.grafical", "utf8")) as Diagram;
     const e = layout(d, m).edges.find((x) => x.id === "customer->spa");
     const box = e?.label?.bbox;
     expect((box?.x ?? 0) + (box?.w ?? 0) / 2).toBeCloseTo(e?.points[0]?.x ?? 0, 0);
   });
 
-  it("sits on the long run of a line that turns, with the run through its middle", () => {
+  it("sits on the long run of an edge that turns, with the run through its middle", () => {
     const e = layout(build(turning), m).edges[0];
     const box = e?.label?.bbox;
     const runs = (e?.points ?? []).slice(1).filter((p, i) => p.y === e?.points[i]?.y);
@@ -55,7 +55,7 @@ describe("labels on lines", () => {
     expect(Math.abs((box?.y ?? 0) + (box?.h ?? 0) / 2 - (runs[0]?.y ?? 0))).toBeLessThanOrEqual(1);
   });
 
-  it("sits at the middle of a straight line, up and down", () => {
+  it("sits at the middle of a straight edge, up and down", () => {
     const d = build([
       node("x", "a"),
       node("y", "b"),
@@ -68,7 +68,7 @@ describe("labels on lines", () => {
     expect(Math.abs((box?.y ?? 0) + (box?.h ?? 0) / 2 - mid)).toBeLessThanOrEqual(1);
   });
 
-  it("sits beside the line when the agent takes it off, and comes back", () => {
+  it("sits beside the edge when the agent takes it off, and comes back", () => {
     const off = build([...turning, { op: "edge.label-at", id: "x->z", seat: "beside" } as Op]);
     expect(off.edges[0]?.seat).toBe("beside");
     const e = layout(off, m).edges[0];
@@ -79,7 +79,7 @@ describe("labels on lines", () => {
     expect("errors" in r ? "refused" : r.diagram.edges[0]?.seat).toBeUndefined();
   });
 
-  it("refuses a seat on a line with no label, and clearing a label clears its seat", () => {
+  it("refuses a seat on an edge with no label, and clearing a label clears its seat", () => {
     const d = build([...turning, { op: "edge.label-at", id: "x->z", seat: "beside" } as Op]);
     const r = applyOps(d, [{ op: "edge.label", id: "x->z" } as Op]);
     expect("errors" in r ? "refused" : r.diagram.edges[0]?.seat).toBeUndefined();

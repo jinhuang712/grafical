@@ -68,12 +68,12 @@ describe("grouped diagrams", () => {
     run("node", "add", f, "a", "--layer", "r1", "--label", "A");
     run("node", "add", f, "b", "--layer", "r2", "--label", "B");
     run("node", "add", f, "c", "--layer", "r3", "--label", "C");
-    // The boxes have no lines: each write prints those warnings after its outcome.
+    // The nodes have no edges: each write prints those warnings after its outcome.
     expect(run("group", "add", f, "g", "--label", "G", "--nodes", "a,b").out).toMatch(
       /^ok changed=g,a,b\n\nwarning: lonely-node\n/,
     );
     expect(run("group", "join", f, "g", "c").code).toBe(0);
-    // Leaving the middle row: the box still spans it (specs/decisions, "Layers unseen, groups as systems").
+    // Leaving the middle layer: the node still spans it (specs/decisions, "Layers unseen, groups as systems").
     expect(run("group", "leave", f, "b").code).toBe(0);
     expect(run("group", "join", f, "g", "b").code).toBe(0);
     expect(run("group", "join", f, "zz", "a").out).toContain("unknown-group");
@@ -120,7 +120,7 @@ describe("grouped diagrams", () => {
     const w = run("apply", f, "big.yaml");
     expect(w.code).toBe(0);
     expect(w.out).toMatch(/^counts nodes=17 edges=0 crossings=0 bends=0 .*fullest=row:17 /m);
-    // No warning of too many boxes: only the facts, each box with no lines.
+    // No warning of too many nodes: only the facts, each node with no edges.
     expect(w.out.match(/^warning: .*$/gm)).toEqual(Array(17).fill("warning: lonely-node"));
     expect(w.out).not.toMatch(/hint|too many/);
     const c = run("check", f, "--json");
@@ -199,7 +199,7 @@ describe('groups inside groups on the command line (specs/decisions, "Every laye
     const wrong = run("group", "label-at", f, "vpc", "middle");
     expect(wrong.code).not.toBe(0);
     expect(wrong.err + wrong.out).toContain("bad-type");
-    // A line runs out of the vpc's last row where its long label would sit in the foot.
+    // An edge runs out of the vpc's last layer where its long label would sit in the foot.
     writeFileSync(join(dir, f), writeDiagram(longVpc));
     const before = read(f);
     const blocked = run("group", "label-at", f, "vpc", "0.5", "--side", "bottom");

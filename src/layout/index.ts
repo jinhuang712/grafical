@@ -448,7 +448,7 @@ function wrapItems(
 const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
-/** Does the axis-parallel segment a-b pass through the inside of r? */
+/** Does the axis-parallel run a-b pass through the inside of r? */
 function segmentHits(a: Point, b: Point, r: Rect): boolean {
   if (a.y === b.y) {
     return (
@@ -1159,7 +1159,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   );
   const centre = width / 2 - shift;
 
-  // The legend's first line is level with the title, and each further edge starts
+  // The legend's first line is level with the title, and each further line starts
   // at the same left edge below it (specs/decisions, "A legend for widths and marks").
   const legend: SceneLegendItem[] = [];
   const lh = lineBox("legend", m, T);
@@ -1792,7 +1792,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
         top = place.text;
       }
       if (lines.length > 1) {
-        // A wrapped label: its edges centred on each other, its ink node at its place.
+        // A wrapped label: its lines centred on each other, its ink box at its place.
         const lead = (labelMetrics.lineHeight - ink) / 2;
         const place = alignedIn(e.labelAlign, top.x, tw);
         edge.label = placeLines("edge-label", lines, place.x, top.y - lead, place.align, m, T);
@@ -1973,7 +1973,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
           edges: sceneEdges,
           solid: [
             ...texts,
-            // A note's dotted edge meets its edge, but keeps off the edge's badge.
+            // A note's dotted line meets its edge, but keeps off the edge's badge.
             ...sceneEdges.flatMap((e) =>
               e.step === undefined ? [] : [badgeRect({ ...e.step, r: e.step.r + STEP.clear })],
             ),

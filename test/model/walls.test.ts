@@ -54,12 +54,12 @@ describe('walls (specs/decisions, "Walls as space")', () => {
     );
   });
 
-  it("refuse a line from one side to the other unless the wall allows it", () => {
+  it("refuse an edge from one side to the other unless the wall allows it", () => {
     const { allow: _, ...closed } = net as Extract<Op, { op: "wall.add" }>;
     const errors = fail(fx, [closed]);
     expect(errors.map((e) => e.found)).toEqual(["upstream->relay", "callers->handlers"]);
     expect(errors[0]).toMatchObject({ code: "wall-crossed", facts: { wall: "net" } });
-    // By the line, by a node at one end, or by a group an end lies in.
+    // By the edge, by a node at one end, or by a group an end lies in.
     ok(fx, [{ ...closed, allow: ["upstream->relay", "callers->handlers"] }]);
     ok(fx, [{ ...closed, allow: ["catalog-sync", "callers"] }]);
   });
@@ -99,7 +99,7 @@ describe('walls (specs/decisions, "Walls as space")', () => {
     });
   });
 
-  it("refuse unknown ids, a node on both sides, and sides that share a row", () => {
+  it("refuse unknown ids, a node on both sides, and sides that share a layer", () => {
     expect(fail(fx, [{ ...net, between: ["upstrem"] } as Op])[0]).toMatchObject({
       code: "unknown-node",
       field: "between",
@@ -113,7 +113,7 @@ describe('walls (specs/decisions, "Walls as space")', () => {
       code: "wall-sides",
       facts: { nodes: ["relay"] },
     });
-    // Up and down: a node between the sides would stand in the wall, and a row the wall
+    // Up and down: a node between the sides would stand in the wall, and a layer the wall
     // spans with no node of either side has no place for it.
     const beside = (between: string[], and: string[]): Op => ({
       op: "wall.add",
@@ -141,7 +141,7 @@ describe('walls (specs/decisions, "Walls as space")', () => {
     const gone = ok(r.diagram, [{ op: "node.remove", id: "upstream" }]);
     expect(gone.diagram.walls).toBeUndefined();
     expect(gone.changed).toContain("net");
-    // A removed line leaves what the wall allows.
+    // A removed edge leaves what the wall allows.
     const allowed = ok(fx, [{ ...net, allow: ["upstream->relay", "handlers"] } as Op]).diagram;
     const cut = ok(allowed, [{ op: "edge.remove", id: "upstream->relay" }]).diagram;
     expect(cut.walls?.[0]?.allow).toEqual(["handlers"]);

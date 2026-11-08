@@ -13,7 +13,7 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-/** Two rows of two services whose lines cross. */
+/** Two layers of two services whose edges cross. */
 const crossed: Diagram = {
   grafical: 1,
   title: "Crossed",
@@ -33,7 +33,7 @@ const crossed: Diagram = {
   edges: [e("a1", "b2", "call"), e("a2", "b1", "call")],
 };
 
-/** A line from the top row to the bottom one, past the box in the middle row. */
+/** An edge from the top layer to the bottom one, past the node in the middle layer. */
 const skipping: Diagram = {
   grafical: 1,
   title: "Skipping",
@@ -51,7 +51,7 @@ const skipping: Diagram = {
 };
 
 describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
-  it("names each box's row, place and lines by side, and each line's sides and crossings", () => {
+  it("names each node's layer, place and edges by side, and each edge's sides and crossings", () => {
     const dr = drawing(crossed, layout(crossed, m));
     expect(dr.counts).toMatchObject({ nodes: 4, edges: 2, crossings: 1, busiest: { edges: 1 } });
     expect(dr.nodes.map((b) => `${b.id} ${b.layer} ${b.place}/${b.of}`)).toEqual([
@@ -70,10 +70,10 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     });
   });
 
-  it("counts the lines at a box, and names a row a line passes without meeting it", () => {
+  it("counts the edges at a node, and names a layer an edge passes without meeting it", () => {
     const dr = drawing(skipping, layout(skipping, m));
     expect(dr.counts.busiest).toEqual({ id: "a", edges: 3 });
-    // A drawn picture where a->z runs down through the middle row, between m1 and m2.
+    // A drawn picture where a->z runs down through the middle layer, between m1 and m2.
     const placed = (id: string, layer: string, x: number, y: number) => ({
       id,
       layer,
@@ -114,7 +114,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     expect(drawing(skipping, scene).counts.passing).toBe(1);
   });
 
-  it("gives each line its length against the shortest it could be, and the rows it skips", () => {
+  it("gives each edge its length against the shortest it could be, and the layers it skips", () => {
     const placed = (id: string, layer: string, x: number, y: number) => ({
       id,
       layer,
@@ -123,7 +123,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       rect: { x, y, w: 100, h: 50 },
       texts: [],
     });
-    // a sits above z, two rows apart, and its line goes round to the right of the middle row.
+    // a sits above z, two layers apart, and its edge goes round to the right of the middle layer.
     const scene = {
       ...layout(skipping, m),
       nodes: [
@@ -148,14 +148,14 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       ],
     };
     const dr = drawing(skipping, scene);
-    // 120 across, 200 down, 70 back; the boxes are 150 apart down and overlap across.
+    // 120 across, 200 down, 70 back; the nodes are 150 apart down and overlap across.
     expect(dr.edges[0]).toMatchObject({ length: 390, direct: 150, detour: 2.6, skip: 1 });
     expect(dr.nodes.find((b) => b.id === "a")).toMatchObject({ edges: 1, reach: 390 });
     expect(dr.nodes.find((b) => b.id === "m1")).toMatchObject({ edges: 0, reach: 0 });
     expect(dr.counts).toMatchObject({ length: 390, longest: { id: "a->z", length: 390 } });
   });
 
-  it('names the lines each line leaves or arrives with as one bundle (specs/decisions, "Fan-outs of three bundle")', () => {
+  it('names the edges each edge leaves or arrives with as one bundle (specs/decisions, "Fan-outs of three bundle")', () => {
     const fan = (label?: string): Diagram => ({
       grafical: 1,
       title: "Fan",
@@ -177,7 +177,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       "a->b2": ["a->b1", "a->b3"],
       "a->b3": ["a->b1", "a->b2"],
     });
-    // A labelled line leaves on its own, and two lines alone on a roomy side do not bundle.
+    // A labelled edge leaves on its own, and two edges alone on a roomy side do not bundle.
     expect(bundles(fan("reads"))).toEqual({ "a->b1": [], "a->b2": [], "a->b3": [] });
     expect(drawingText(drawing(crossed, layout(crossed, m)))).toContain("passes=- bundle=-");
   });
@@ -231,7 +231,7 @@ describe('composition counts (specs/decisions, "Composition counts")', () => {
   const node = (id: string, r: ReturnType<typeof rect>) => ({ id, layer: "r", rect: r });
   const never = () => false;
 
-  it("counts a line through a group that holds neither end, once", () => {
+  it("counts an edge through a group that holds neither end, once", () => {
     const s = scene({
       nodes: [
         node("a", rect(0, 0, 40, 40)),
@@ -266,7 +266,7 @@ describe('composition counts (specs/decisions, "Composition counts")', () => {
     expect(composition(s, never).across).toEqual([{ id: "through", groups: ["g"] }]);
   });
 
-  it("counts two lines closer than a track for over 100 px, but not one bundle or a wide gap", () => {
+  it("counts two edges closer than a track for over 100 px, but not one bundle or a wide gap", () => {
     const s = scene({
       edges: [
         edge("p", "a", "b", [

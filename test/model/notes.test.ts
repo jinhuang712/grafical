@@ -1,4 +1,4 @@
-// Notes (specs/decisions, "Notes as callouts or footnotes"): a short text about a node, a group or a line.
+// Notes (specs/decisions, "Notes as callouts or footnotes"): a short text about a node, a group or an edge.
 
 import { describe, expect, it } from "vitest";
 import { showDiagram } from "../../src/cli/show.ts";

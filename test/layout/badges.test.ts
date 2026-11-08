@@ -1,4 +1,4 @@
-// Step badges (specs/decisions, "Step badges ride the edge"): each sits on its own line, clear of everything else, its
+// Step badges (specs/decisions, "Step badges ride the edge"): each sits on its own edge, clear of everything else, its
 // text beside it; and the checker finds one that touches something.
 
 import { beforeAll, describe, expect, it } from "vitest";
@@ -25,7 +25,7 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-/** The diagram with every line numbered in its order. */
+/** The diagram with every edge numbered in its order. */
 const numbered = (d: Diagram): Diagram => ({
   ...d,
   edges: d.edges.map((e, i) => ({ ...e, step: Math.min(i + 1, 99) })),
@@ -47,7 +47,7 @@ const centre = (b: SceneBadge) => ({ x: b.x, y: b.y });
 
 describe('step badges (specs/decisions, "Step badges ride the edge")', () => {
   for (const [name, d] of Object.entries(FIXTURES)) {
-    it(`${name}, every line numbered: each badge on its line, its text beside it, nothing touched`, () => {
+    it(`${name}, every edge numbered: each badge on its edge, its text beside it, nothing touched`, () => {
       const facts = numbered(d);
       const scene = layout(facts, m);
       const drawn = scene.edges.filter((e): e is SceneEdge & { step: SceneBadge } => !!e.step);
@@ -56,7 +56,7 @@ describe('step badges (specs/decisions, "Step badges ride the edge")', () => {
         const fact = facts.edges.find((x) => x.id === e.id);
         expect(e.step.label.runs.map((r) => r.text).join("")).toBe(String(fact?.step));
         const on = Math.min(...segmentsOf(e.points).map((s) => toSegment(centre(e.step), s)));
-        // On its line, or on its way into a group, a row or a lane it ends at.
+        // On its edge, or on its way into a group, a layer or a lane it ends at.
         expect(on, e.id).toBeLessThan(STEP.r + STEP.arrowClear + 0.01);
         if (e.label) {
           expect(toRect(centre(e.step), e.label.bbox), e.id).toBeGreaterThanOrEqual(STEP.r);
@@ -66,12 +66,12 @@ describe('step badges (specs/decisions, "Step badges ride the edge")', () => {
     });
   }
 
-  it("draws no badge on a line with no number", () => {
+  it("draws no badge on an edge with no number", () => {
     const scene = layout(catalogSyncGrouped, m);
     expect(scene.edges.some((e) => e.step !== undefined)).toBe(false);
   });
 
-  it("finds a badge moved onto another line, a box and a label as step-collision, owned by the engine", () => {
+  it("finds a badge moved onto another edge, a node and a label as step-collision, owned by the engine", () => {
     const scene = layout(steps, m);
     const a = scene.edges.find((e) => e.id === "gateway->checkout") as SceneEdge;
     const b = scene.edges.find((e) => e.id === "checkout->payments") as SceneEdge;

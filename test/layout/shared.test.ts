@@ -9,7 +9,7 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-// Two systems side by side, each with two nodes in a row, and one store below
+// Two systems side by side, each with two nodes in a layer, and one store below
 // that both use: the shape of a write side and a read side coupled by a database.
 const ops: Op[] = [
   { op: "diagram.new", title: "Shared store" },

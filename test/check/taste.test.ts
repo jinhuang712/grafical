@@ -18,7 +18,7 @@ describe("crossings", () => {
   it("counts a plus-shaped crossing", () => {
     expect(countCrossings([h, v])).toBe(1);
   });
-  it("does not count a T-junction, a shared trunk or parallel lines", () => {
+  it("does not count a T-junction, a shared trunk or parallel edges", () => {
     const t = edge("t", "c", "d", [
       [100, 100],
       [100, 200],

@@ -1,5 +1,5 @@
 // Walls in the picture (specs/decisions, "Walls as space"): space where they run, a dashed divider when
-// labelled, and a line through one that it does not allow.
+// labelled, and an edge through one that it does not allow.
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { drawing, drawingText } from "../../src/check/drawing.ts";
@@ -36,26 +36,26 @@ const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
 describe('a wall across (specs/decisions, "Walls as space")', () => {
-  it("is space below the upper side's lowest row, as long as the sides' boxes", () => {
+  it("is space below the upper side's lowest layer, as long as the sides' nodes", () => {
     const before = layout(fx, m);
     const scene = layout(ok(fx, [net()]), m);
     const wall = scene.walls?.[0];
     expect(wall).toMatchObject({ id: "net", run: "across", rect: { h: WALL.space } });
     if (wall === undefined) throw new Error("no wall");
     const node = (s: typeof scene, id: string) => s.nodes.find((n) => n.id === id)?.rect as Rect;
-    // The row above keeps its place; the rows below move down by the wall's space.
+    // The layer above keeps its place; the layers below move down by the wall's space.
     expect(node(scene, "upstream").y).toBe(node(before, "upstream").y);
     expect(node(scene, "relay").y - node(before, "relay").y).toBeGreaterThanOrEqual(WALL.space);
     expect(wall.rect.y).toBeGreaterThanOrEqual(
       node(scene, "upstream").y + node(scene, "upstream").h,
     );
-    // Nothing is placed in it: no box, and no group's box or label.
+    // Nothing is placed in it: no node, and no group's frame or label.
     for (const n of scene.nodes) expect(overlaps(n.rect, wall.rect)).toBe(false);
     for (const g of scene.groups ?? []) {
       expect(overlaps(g.rect, wall.rect)).toBe(false);
       expect(overlaps(g.label.bbox, wall.rect)).toBe(false);
     }
-    // From the leftmost box of either side to the rightmost, and a reach past them.
+    // From the leftmost node of either side to the rightmost, and a reach past them.
     const groups = (scene.groups ?? []).filter(
       (g) => g.id === "catalog-sync" || g.id === "catalog-api",
     );
@@ -66,7 +66,7 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
     expect(wall.label).toBeUndefined();
   });
 
-  it("with a label draws a dashed divider through its middle, the label clear of lines", () => {
+  it("with a label draws a dashed divider through its middle, the label clear of edges", () => {
     const d = ok(fx, [net("private network")]);
     const scene = layout(d, m);
     const wall = scene.walls?.[0];
@@ -83,7 +83,7 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
 
   // Until 2026-10-17 such a label went across the picture past the wall's end, or left of
   // everything in a second layout (specs/decisions, "A wall's label stays along its wall").
-  it("refuses a label no place along the wall holds clear of the lines, and keeps it on the wall", () => {
+  it("refuses a label no place along the wall holds clear of the edges, and keeps it on the wall", () => {
     const d = ok(fx, [
       net("the private network that no request from outside may cross on its way to the catalog"),
     ]);
@@ -107,13 +107,13 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
     expect(check(bare, layout(bare, m), m)).toEqual([]);
   });
 
-  it("reports a line that passes through it, unless it allows the line", () => {
+  it("reports an edge that passes through it, unless it allows the edge", () => {
     const d = ok(fx, [
       net(),
       { op: "node.add", id: "ops", layer: "sources", label: "ops console", before: "callers" },
       { op: "edge.add", from: "ops", to: "geo" },
     ]);
-    // The line ends at neither side, so only the drawing finds it.
+    // The edge ends at neither side, so only the drawing finds it.
     const found = check(d, layout(d, m), m).filter((x) => x.code === "wall-crossed");
     expect(found).toEqual([
       {
@@ -127,7 +127,7 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
     expect(check(allowed, layout(allowed, m), m)).toEqual([]);
   });
 
-  it("up and down, is space between the columns of its sides, in the rows they span", () => {
+  it("up and down, is space between the columns of its sides, in the layers they span", () => {
     const d = ok(fx, [
       {
         op: "wall.add",
@@ -156,7 +156,7 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
     expect(check(d, scene, m)).toEqual([]);
   });
 
-  it("show --drawn names how long and thick it is, and the lines through it", () => {
+  it("show --drawn names how long and thick it is, and the edges through it", () => {
     const d = ok(fx, [net()]);
     const dr = drawing(d, layout(d, m));
     expect(dr.walls).toEqual([

@@ -90,7 +90,7 @@ describe("--with", () => {
 });
 
 describe("--straight and --main", () => {
-  it("refuses a line that has a bend", () => {
+  it("refuses an edge that has a bend", () => {
     const d = build(
       ...layered(["a", "b"], ["c", "d"]),
       { op: "edge.add", from: "a", to: "d" },
@@ -101,7 +101,7 @@ describe("--straight and --main", () => {
     expect(defects(d)).toContain("not-straight");
   });
 
-  it("gives the stated line its column first", () => {
+  it("gives the stated edge its column first", () => {
     const ops = [
       ...layered(["a"], ["b", "c", "d"]),
       { op: "edge.add", from: "a", to: "b" },
@@ -137,7 +137,7 @@ describe("--via", () => {
     }
   });
 
-  it("refuses an object no line comes level with", () => {
+  it("refuses an object no edge comes level with", () => {
     const d = build(
       ...layered(["a", "b"], ["c"], ["z"]),
       { op: "edge.add", from: "a", to: "c" },
@@ -157,7 +157,7 @@ describe("--via", () => {
 });
 
 describe("--bend and --stretch", () => {
-  it("slides a line's inner run, and refuses a line with none", () => {
+  it("slides an edge's inner run, and refuses an edge with none", () => {
     const ops = [...layered(["a", "x"], ["y", "b"]), { op: "edge.add", from: "a", to: "b" }];
     const plain = edge(build(...ops), "a->b").points;
     const d = build(...ops, { op: "edge.bend", id: "a->b", at: 0.75 });
@@ -172,7 +172,7 @@ describe("--bend and --stretch", () => {
     expect(defects(line)).toContain("bend-blocked");
   });
 
-  it("reaches a detour further, and refuses a line with none", () => {
+  it("reaches a detour further, and refuses an edge with none", () => {
     const ops = [
       ...layered(["a"], ["b"], ["c"]),
       { op: "edge.add", from: "a", to: "b" },

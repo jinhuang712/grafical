@@ -1,6 +1,6 @@
 // What the fuzz asserts: the defects the engine owns (specs/decisions, "Defects owned by who can fix them"). Overflow
 // and a missing glyph are the agent's to fix, with a shorter label or other text.
-// A line through text and a node inside a group it does not belong to are the
+// An edge through text and a node inside a group it does not belong to are the
 // engine's too (specs/decisions, "A target picture with measured rules" rule 8, specs/decisions, "Layers unseen, groups as systems"); until the checker on this branch finds them,
 // the layout's own geometry checks count them.
 

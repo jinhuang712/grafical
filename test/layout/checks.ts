@@ -27,7 +27,7 @@ export function inflate(r: Rect, d: number): Rect {
   return { x: r.x - d, y: r.y - d, w: r.w + 2 * d, h: r.h + 2 * d };
 }
 
-/** Does an axis-parallel segment pass through the open interior of a rectangle? */
+/** Does an axis-parallel run pass through the open interior of a rectangle? */
 export function segmentHitsRect(s: Seg, r: Rect): boolean {
   if (s.a.x === s.b.x) {
     const x = s.a.x;
@@ -43,12 +43,12 @@ export function segmentHitsRect(s: Seg, r: Rect): boolean {
   return Math.min(hi, r.x + r.w) - Math.max(lo, r.x) > 1e-9;
 }
 
-/** Edges that share a source node and a line style may run together as a bundle (specs/decisions, "Our own gap router"). */
+/** Edges that share a source node and an edge style may run together as a bundle (specs/decisions, "Our own gap router"). */
 export function sameBundle(a: SceneEdge, b: SceneEdge): boolean {
   return a.from === b.from && edgeStyle(a.kind) === edgeStyle(b.kind);
 }
 
-/** Unlabelled edges in one line style into one node may arrive through one port (specs/decisions, "A target picture with measured rules" rule 4). */
+/** Unlabelled edges in one edge style into one node may arrive through one port (specs/decisions, "A target picture with measured rules" rule 4). */
 export function sameFanIn(a: SceneEdge, b: SceneEdge): boolean {
   return (
     a.to === b.to &&
@@ -69,7 +69,7 @@ export interface Defects {
   labelCollisions: string[];
   /** Two unrelated edges drawn on top of each other. */
   edgeOverlap: string[];
-  /** Two parallel lines of different edges closer than 4 px along some stretch. */
+  /** Two parallel runs of different edges closer than 4 px along some stretch. */
   closeParallel: string[];
   /** Two route ends on one node side closer than 12 px. */
   closePorts: string[];
@@ -103,7 +103,7 @@ export function defects(s: Scene): Defects {
     }
   });
 
-  // Labels: clear of nodes, other text, other edges, and their own line. Rows
+  // Labels: clear of nodes, other text, other edges, and their own line. Layers
   // are not drawn (specs/decisions, "Layers unseen, groups as systems"), so their labels do not count.
   const texts = [
     { id: "title", box: s.title.bbox },
@@ -126,7 +126,7 @@ export function defects(s: Scene): Defects {
     }
     for (const o of s.edges) {
       const grow = o.id === e.id ? 1 : 2;
-      // A label on its own line sits across it on purpose, its patch breaking the line.
+      // A label on its own edge sits across it on purpose, its patch breaking the line.
       const centre = { x: box.x + box.w / 2, y: box.y + box.h / 2 };
       const through = (g: { a: Point; b: Point }) =>
         o.id === e.id &&
@@ -138,7 +138,7 @@ export function defects(s: Scene): Defects {
     }
   });
 
-  // Edge on edge, and lines that nearly touch.
+  // Edge on edge, and edges that nearly touch.
   const rects = new Map(s.nodes.map((n) => [n.id, n.rect]));
   const all = s.edges.flatMap((e) => segments(e.points).map((g) => ({ e, g })));
   for (let i = 0; i < all.length; i++) {
@@ -157,7 +157,7 @@ export function defects(s: Scene): Defects {
       const overlap = Math.min(p1, q1) - Math.max(p0, q0);
       if (overlap <= 1) continue;
       if (sameBundle(p.e, q.e)) continue;
-      // A fan-in's lines share the last stretch into their node, as the checker
+      // A fan-in's edges share the last stretch into their node, as the checker
       // allows for any stretch that ends at a shared node.
       if (d === 0 && sameFanIn(p.e, q.e)) {
         const r = rects.get(p.e.to);
@@ -251,12 +251,12 @@ export function mechanical(d: Defects): string[] {
 }
 
 /**
- * Lines that cross text (specs/decisions, "A target picture with measured rules" rule 8, specs/decisions, "Defects owned by who can fix them"): a segment through the box of a node's
+ * Edges that cross text (specs/decisions, "A target picture with measured rules" rule 8, specs/decisions, "Defects owned by who can fix them"): a run through the box of a node's
  * text, another edge's label, a group's label, the title, subtitle, footnote or a
  * legend label. Like the checker, a line may graze a text box by 2 px.
  */
 export function textCrossings(s: Scene): string[] {
-  // A group's label and a line's label no gutter could hold are the agent's: title-blocked and
+  // A group's label and an edge's label no gutter could hold are the agent's: title-blocked and
   // label-blocked (specs/decisions, "An edge never moves for its label").
   const texts: { id: string; box: Rect; owner?: string }[] = [
     { id: "title", box: s.title.bbox },
@@ -282,7 +282,7 @@ export function textCrossings(s: Scene): string[] {
   return out;
 }
 
-/** Nodes inside a group's box that are not its members (specs/decisions, "Layers unseen, groups as systems", "Defects owned by who can fix them"). */
+/** Nodes inside a group's frame that are not its members (specs/decisions, "Layers unseen, groups as systems", "Defects owned by who can fix them"). */
 export function groupIntruders(s: Scene): string[] {
   const out: string[] = [];
   for (const g of s.groups ?? []) {
@@ -300,13 +300,13 @@ export interface Taste {
   /** Pairs of edges that cross at least once. */
   crossings: number;
   bends: number;
-  /** Edges that are one straight segment, as a share of all edges. */
+  /** Edges that are one straight run, as a share of all edges. */
   straight: number;
   maxBends: number;
   /** Edges with more than 2 bends. */
   overBends: number;
   labelled: number;
-  /** Vertical segments that pass a row without either end in it, inside a node's x span. */
+  /** Vertical runs that pass a layer without either end in it, inside a node's x span. */
   corridorViolations: number;
 }
 

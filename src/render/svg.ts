@@ -657,7 +657,7 @@ export function renderSvg(scene: Scene): string {
     for (const m of n.marks ?? []) out.push(...markShape(m));
   }
 
-  // Notes (specs/decisions, "Notes as callouts or footnotes"): a card and its dotted edge, or a footnote's numbers; over the nodes,
+  // Notes (specs/decisions, "Notes as callouts or footnotes"): a card and its dotted line, or a footnote's numbers; over the nodes,
   // so that a number on a node's corner shows.
   const muted = P.text.groupLabelMuted;
   const circle = (b: SceneBadge) => [

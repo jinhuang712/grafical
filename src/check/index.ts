@@ -256,7 +256,7 @@ function checkSteps(scene: Scene, out: Found[]): void {
   for (const [i, item] of (scene.legend ?? []).entries()) {
     texts.push({ id: `legend-${i}`, is: "legend", rect: item.label.bbox });
   }
-  // Edges that are not edges: a labelled wall's divider and a callout's dotted edge.
+  // Lines that are not edges: a labelled wall's divider and a callout's dotted line.
   const others: { id: string; is: string; s: Segment }[] = [];
   for (const w of scene.walls ?? []) if (w.line) others.push({ id: w.id, is: "wall", s: w.line });
   for (const x of scene.notes ?? []) {
@@ -300,13 +300,13 @@ function checkSteps(scene: Scene, out: Found[]): void {
   }
 }
 
-/** An edge may graze a text node by this much before it counts as crossing it (specs/decisions, "A target picture with measured rules" rule 8). */
+/** An edge may graze a text box by this much before it counts as crossing it (specs/decisions, "A target picture with measured rules" rule 8). */
 export const TEXT_TOLERANCE = 2;
 
 /**
- * No edge segment crosses any text: node labels, other edges' labels, group
+ * No edge run crosses any text: node labels, other edges' labels, group
  * labels, subtitle, note, title or legend. An edge's own label is exempt,
- * because its segments run next to it by design.
+ * because its runs run next to it by design.
  */
 function checkTextCrossing(scene: Scene, out: Found[]): void {
   // Each text, with the element it belongs to and what that element is.
@@ -433,7 +433,7 @@ function checkLabelRoom(scene: Scene, out: Found[]): void {
       });
     }
   }
-  // A fact stated to steer a line that could not hold (specs/decisions, "An edge is steered by facts and never by coordinates").
+  // A fact stated to steer an edge that could not hold (specs/decisions, "An edge is steered by facts and never by coordinates").
   for (const e of scene.edges) {
     for (const code of e.refused ?? []) out.push({ code, elements: [e.id], facts: {} });
   }
@@ -547,8 +547,8 @@ function sharedEndpoints(a: SceneEdge, b: SceneEdge): string[] {
 }
 
 /**
- * The router draws a fan-out of unlabelled edges in one line style from one node as a
- * bundle: one trunk that branches (specs/decisions, "Our own gap router"). Its members share segments on purpose, and
+ * The router draws a fan-out of unlabelled edges in one edge style from one node as a
+ * bundle: one trunk that branches (specs/decisions, "Our own gap router"). Its members share runs on purpose, and
  * a reader loses nothing, since they carry no label and look the same.
  */
 function isBus(a: SceneEdge, b: SceneEdge): boolean {
@@ -592,7 +592,7 @@ function checkEdgeOverlap(scene: Scene, out: Found[]): void {
 /**
  * An edge between nodes in neighbouring layers, from the upper one's bottom into the lower
  * one's top, that bends although each of its ports lies within the other node's side:
- * one x would have served both ends (specs/decisions, "Who chose is punished"). The lines of a bundle share a port and bend
+ * one x would have served both ends (specs/decisions, "Who chose is punished"). The edges of a bundle share a port and bend
  * where they part, by design.
  */
 function checkNeedlessBend(scene: Scene, out: Found[]): void {

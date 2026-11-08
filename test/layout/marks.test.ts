@@ -1,5 +1,5 @@
 // Marks on nodes (specs/decisions, "Marks of any kind"): corner marks take no room, the left mark takes a
-// column of its box, and a mark that meets text is a defect.
+// column of its node, and a mark that meets text is a defect.
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
@@ -27,7 +27,7 @@ function marked(id: string, marks: NonNullable<DiagramNode["marks"]>): Diagram {
 }
 
 describe("marks in the layout", () => {
-  it("a corner mark moves nothing: boxes, texts and lines stay where they were", () => {
+  it("a corner mark moves nothing: nodes, texts and edges stay where they were", () => {
     const before = layout(tiny, m);
     const after = layout(
       marked("api", {
@@ -100,7 +100,7 @@ describe("marks in the layout", () => {
   });
 
   it("centres a picture on its corner at every size, so the corner stays covered", () => {
-    // Found on a real picture: a large warning sat mostly inside the box, over the label.
+    // Found on a real picture: a large warning sat mostly inside the node, over the label.
     for (const size of ["s", "m", "l"] as const) {
       const s = layout(
         marked("api", {
@@ -143,7 +143,7 @@ describe("marks in the layout", () => {
     );
   });
 
-  it("the left mark keeps the box and moves its text right by half its column", () => {
+  it("the left mark keeps the node and moves its text right by half its column", () => {
     const before = layout(tiny, m);
     const after = layout(marked("api", { left: "!" }), m);
     const was = before.nodes.find((n) => n.id === "api");
@@ -164,8 +164,8 @@ describe("marks in the checker", () => {
     expect(check(d, layout(d, m), m).filter((x) => x.code === "mark-covers")).toEqual([]);
   });
 
-  it("reports a corner mark that covers a two-line label in a small box", () => {
-    // The layout keeps corner marks clear of text in the boxes it draws, so the
+  it("reports a corner mark that covers a two-line label in a small node", () => {
+    // The layout keeps corner marks clear of text in the nodes it draws, so the
     // scene is changed by hand: the mark is moved onto the label.
     const d = marked("api", { "top-left": "⚠️" });
     const scene = layout(d, m);
@@ -216,7 +216,7 @@ describe("marks in the checker", () => {
     expect(check(d, layout(d, m), m).filter((x) => x.code === "mark-covers")).toEqual([]);
   });
 
-  it("names the commands that can change a covered label: a larger box, or another slot", () => {
+  it("names the commands that can change a covered label: a larger node, or another slot", () => {
     const d = marked("api", { "top-left": "⚠️" });
     const scene = layout(d, m);
     const api = scene.nodes.find((n) => n.id === "api");

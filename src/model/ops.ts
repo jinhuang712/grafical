@@ -193,7 +193,7 @@ export interface DiagramDensityOp {
   density: Density;
 }
 /**
- * The legend's words for one line style, edge width or mark. Absent text: no entry
+ * The legend's words for one edge style, edge width or mark. Absent text: no entry
  * (specs/decisions, "A legend for widths and marks", "The legend says only what the agent named").
  */
 export interface DiagramLegendOp {

@@ -46,7 +46,7 @@ describe("determinism", () => {
   }
 });
 
-describe('boxes inside boxes (specs/decisions, "Every layered diagram type")', () => {
+describe('frames inside frames (specs/decisions, "Every layered diagram type")', () => {
   it("fills them by depth: the group fill and the background in turn, or shades", () => {
     const scene = layout(nested, createStubMeasurer());
     const fills = (svg: string) =>
@@ -64,7 +64,7 @@ describe('boxes inside boxes (specs/decisions, "Every layered diagram type")', (
 });
 
 describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
-  /** Plain lines, which carry no arrowhead, alone on the tiny scene's canvas. */
+  /** Plain edges, which carry no arrowhead, alone on the tiny scene's canvas. */
   const drawEdges = (edges: SceneEdge[]): string => renderSvg({ ...tinyScene(), nodes: [], edges });
   const edge = (id: string, points: Point[]): SceneEdge => ({
     id,
@@ -74,7 +74,7 @@ describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
     points,
   });
 
-  it("hops the horizontal line over the vertical one where two lines cross", () => {
+  it("hops the horizontal edge over the vertical one where two edges cross", () => {
     const svg = drawEdges([
       edge("across", [
         { x: 20, y: 60 },
@@ -120,14 +120,14 @@ describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
     expect(renderSvg({ ...tinyScene(), nodes: [], edges: [zed], paint: curved })).toContain(
       'd="M20 20L20 40Q20 60 40 60L155 60Q180 60 180 85L180 110"',
     );
-    // A box inside the first corner leaves it the orthogonal style's radius.
+    // A node inside the first corner leaves it the orthogonal style's radius.
     const dotNode = { ...tinyScene().nodes[0], rect: { x: 26, y: 44, w: 10, h: 10 } } as SceneNode;
     expect(renderSvg({ ...tinyScene(), nodes: [dotNode], edges: [zed], paint: curved })).toContain(
       'd="M20 20L20 54Q20 60 26 60L155 60',
     );
   });
 
-  it("marks with a dot where a branch leaves the line it ran along, and nowhere else", () => {
+  it("marks with a dot where a branch leaves the edge it ran along, and nowhere else", () => {
     const svg = drawEdges([
       edge("long", [
         { x: 20, y: 30 },
@@ -238,7 +238,7 @@ describe("the target look", () => {
     );
   });
 
-  it("uses two line styles: solid for call and data, dashed for async", () => {
+  it("uses two edge styles: solid for call and data, dashed for async", () => {
     const dashes = new Set(svg.match(/stroke-dasharray="[^"]*"/g));
     expect([...dashes].sort()).toEqual(['stroke-dasharray="4 3"', 'stroke-dasharray="5 3"']);
     const s = mixedScene();
