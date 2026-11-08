@@ -8,7 +8,7 @@ The goals rated a whole picture only by the owner's score, and counts stood in f
 
 ## The choice
 
-A picture is judged by how a reader reads it, on twelve points. The owner's eye reads them to judge grafical, and an agent reads them for its own picture ("An agent checks its own picture against a list"). The points cover the truth of what it says, how fast it reads, how it is placed, how evenly it is drawn and what it leaves out. Counts can show a fault and never show a picture good.
+A picture is judged by how a reader reads it, on sixteen points. The owner's eye reads them to judge grafical, and an agent reads them for its own picture ("An agent checks its own picture against a list"). The points cover the truth of what it says, how fast it reads, how it is placed, how clean its edges are and what it leaves out. The checks of a route are among them, so one list judges the whole picture. Counts can show a fault and never show a picture good.
 
 The points bind the engine and the agent alike, since placement is the agent's and routing is the engine's.
 
@@ -20,11 +20,11 @@ The points bind the engine and the agent alike, since placement is the agent's a
   - A score says that a picture is worse and not why.
 - Rules for edges alone.
   - `ladder` and `pyramid` were decided by where the nodes sit.
-- The twelve points as guidelines of their own.
+- The points as guidelines of their own.
   - A guideline is never traded, and points such as even space and symmetry pull against each other.
 
 ## Consequences
 
 A change cannot prove itself by script, so each judgement costs the owner a look.
 
-The stance "What makes grafical good?" holds that no score settles a picture for everyone and that grafical does not supply the taste. The twelve points are no score, and two of them, symmetry and even space, lean toward taste. Only the owner changes that stance, and the question stays open.
+The stance "What makes grafical good?" holds that no score settles a picture for everyone and that grafical does not supply the taste. The points are no score, and two of them, symmetry and even space, lean toward taste. Only the owner changes that stance, and the question stays open.

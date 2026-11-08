@@ -12,8 +12,7 @@ A status is ✅ met, ❌ not met, or ⬜ not measured, always with the date of t
 Goals
 ├── Objectives
 │   ├── ⬜ O4: Copy a picture, better — an agent redraws someone's picture and it looks better
-│   ├── ⬜ O5: Routes the eye can follow — 13 checks read from the picture itself
-│   └── ⬜ O6: A picture reads at a glance — 12 points the owner reads from the picture
+│   └── ⬜ O6: A picture reads at a glance — 16 points the owner reads from the picture
 ├── Measures
 │   ├── ⬜ M1: Enough to say — what an agent wanted to state and no operation could
 │   ├── M2: Cache hit rate — 90.2% of input read from the cache on 2026-10-18
@@ -61,42 +60,9 @@ Given a picture someone else drew, an agent redraws it with grafical, shows the 
 
 **Status:** ⬜ not run.
 
-#### O5: Routes the eye can follow
-
-O5 holds the edges of a picture, and [O6: A picture reads at a glance](#o6-a-picture-reads-at-a-glance) holds the whole of it. A route is judged by looking at the picture against every check below, and counts only support what the eye finds. A picture with no crossings can still fail, as a `pyramid` render did on 2026-11-07. The checks are in the order the owner set on 2026-11-07, so an earlier one wins where two pull against each other.
-
-| # | Tier | Check | Read by | From |
-|---|---|---|---|---|
-| 1 | must | No mechanical defect | the geometry check | [R2: Mechanical defects](#r2-mechanical-defects) |
-| 2 | must | No edge the picture implies and the facts lack | open | proposed |
-| 3 | must | An end run of at least 16 px, 24 px at ease | not built | the owner's rule |
-| 4 | shape | The eye follows an edge end to end | the owner | standard 1 |
-| 5 | shape | No jog | the owner | the owner's rule |
-| 6 | shape | A pair of edges level at both ends | not built | the owner's rule |
-| 7 | shape | One form for edges of one sort | the owner | the owner's rule |
-| 8 | shape | A simple shape | the bend count and the owner | standard 3 |
-| 9 | better | Few and clean crossings | the crossing count and the owner | standard 4 |
-| 10 | better | No detour | the detour count | standard 2 |
-| 11 | better | A rhythm of parallel edges | the owner | standard 5 |
-| 12 | better | Edges land well | the owner | standard 6 |
-| 13 | better | What matters stands out | the owner | standard 7 |
-
-The standards are in `specs/decisions, "A good route is one the eye can follow"`, and the owner's rules are in `specs/decisions, "The router draws clean edges and the agent makes their room"`. One form for edges of one sort is the agent's to reach, as `specs/decisions, "Routing trouble that placement can fix is the agent's"` says.
-
-**Want:** A picture that is complete and clear at once.
-
-**Checks:**
-
-- [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn)
-- [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
-
-**Acceptance:** the owner looks at the first drafts of a round, where the agent placed the nodes, and finds each check met or names why it cannot be.
-
-**Status:** ⬜ not run. On 2026-11-07 the owner looked at `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid` only. The open points are in [What clean edges still leave open](TODO.md#p1discussion-what-clean-edges-still-leave-open).
-
 #### O6: A picture reads at a glance
 
-A good picture shows its structure before a reader follows any edge, and everything it implies is true. The owner reads the twelve points below from the picture, and no count stands in for that.
+A good picture shows its structure before a reader follows any edge, and everything it implies is true. The owner reads the sixteen points below from the picture, and counts only support what the eye finds: a `pyramid` render with no crossings failed on 2026-11-07.
 
 | # | Group | Point | Owed by | Good | Bad |
 |---|---|---|---|---|---|
@@ -109,9 +75,13 @@ A good picture shows its structure before a reader follows any edge, and everyth
 | 7 | placed well | Related things sit close | agent | a system's nodes together | long edges between close ideas |
 | 8 | placed well | It keeps symmetry and alignment | both | `pyramid` even left and right | one side entered by a top and the other by a side |
 | 9 | placed well | Space stays even | both | neither too wide nor crowded | 1208 px wide around empty cells |
-| 10 | drawn evenly | Like things look alike | engine | one fork at each node | sides that differ with no meaning |
-| 11 | drawn evenly | Edges have room | both | an end run of 24 px | an end run of 8 px |
-| 12 | cut | It holds what the reader needs | agent | details left out on purpose | every fact drawn |
+| 10 | clean edges | The eye follows an edge end to end | engine | an edge traced in one look | edges knotted in one gap on `ladder` |
+| 11 | clean edges | A simple shape with no jog | engine | a straight edge or one bend | a jog in a gap on `two-layers-skip` |
+| 12 | clean edges | Few and clean crossings | both | a square crossing | edges crowding through one crossing |
+| 13 | clean edges | No detour | engine | a length that suits the distance | 964 px round the picture's edge |
+| 14 | clean edges | Clean ends | engine | an end run of 24 px and an arrowhead at the middle | an end run of 8 px |
+| 15 | clean edges | Like edges look alike | both | one fork at each node | sides that differ with no meaning |
+| 16 | cut | It holds what the reader needs | agent | details left out on purpose | every fact drawn |
 
 The good and the bad picture of `pyramid` are [the hand drawing](evidence/pyramid-hand-drawing.png) and [the render](evidence/pyramid-render-2026-11-07.png).
 
@@ -121,11 +91,12 @@ The good and the bad picture of `pyramid` are [the hand drawing](evidence/pyrami
 
 - [F2: Layout](../features/F2-layout.md)
 - [F4: Look](../features/F4-look.md)
+- [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
 - [15. A picture is judged by how it reads](../DESIGNS.md#15-a-picture-is-judged-by-how-it-reads)
 
-**Acceptance:** the owner looks at the first drafts of a round and finds each point met or names why it cannot be.
+**Acceptance:** the owner looks at the first drafts of a round, where the agent placed the nodes, and finds each point met or names why it cannot be.
 
-**Status:** ⬜ not run. Five points came from four cases on 2026-11-07, and the owner accepted seven more proposed on 2026-11-08. Whether two of them fit the stance on taste is open in [A good picture and taste](TODO.md#p1discussion-a-good-picture-and-taste).
+**Status:** ⬜ not run. The points came from the routing cases on 2026-11-07 and 2026-11-08, and the checks of a route joined them on 2026-11-09. Whether symmetry and even space fit the stance on taste is open in [A good picture and taste](TODO.md#p1discussion-a-good-picture-and-taste), and what clean edges leave open is in [What clean edges still leave open](TODO.md#p1discussion-what-clean-edges-still-leave-open).
 
 ### Measures
 

@@ -78,7 +78,7 @@ An agent looks at its picture and checks it against a list before it stops.
 
 - **Commands:** [`guide`](../CLI.md#guide)
 
-- Composition lists the checks of a route and the points of a good picture, written for an agent.
+- Composition lists the points of a good picture, written for an agent.
 - The last step of the entry page's way of working tells an agent to look at the picture and check it against composition before it stops.
 
 - **Why:** [099. An agent checks its own picture against a list](../specs/decisions/099-an-agent-checks-its-own-picture-against-a-list.md)

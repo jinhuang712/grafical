@@ -748,7 +748,7 @@ The engine draws clean edges and labels for the places the agent gives. Drawing 
 **Exit criteria:**
 
 - **Objectives**
-  - [O5: Routes the eye can follow](GOALS.md#o5-routes-the-eye-can-follow)
+  - [O6: A picture reads at a glance](GOALS.md#o6-a-picture-reads-at-a-glance)
 - **Constraints**
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 - **Do not hold the release**
@@ -847,7 +847,6 @@ A round with the owner's approval of its cost first. The owner's budget for stag
 
 - **Objectives**
   - [O4: Copy a picture, better](GOALS.md#o4-copy-a-picture-better)
-  - [O5: Routes the eye can follow](GOALS.md#o5-routes-the-eye-can-follow)
   - [O6: A picture reads at a glance](GOALS.md#o6-a-picture-reads-at-a-glance)
 - **Comparisons**
   - [C1: Model gap](GOALS.md#c1-model-gap)

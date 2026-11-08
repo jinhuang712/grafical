@@ -34,7 +34,7 @@
 
 - description:
   - [PHILOSOPHY.md](../PHILOSOPHY.md) holds that no score settles a picture for everyone and that grafical does not supply the taste.
-  - Twelve points now say what a good picture is, and symmetry and even space lean toward taste.
+  - Sixteen points now say what a good picture is, and symmetry and even space lean toward taste.
   - Whether a small model can see these faults is not measured.
 - created: 2026-11-08
 - status: HALT

@@ -10,7 +10,7 @@ Decided: 2026-11-08
 
 - The owner's eye judges grafical, on the routing cases and the drafts of a round.
 - An agent judges its own picture, by looking at it and reading the records.
-- The checks of a route and the points of a picture go into `grafical guide composition`, written for an agent.
+- The points of a good picture go into `grafical guide composition`, written for an agent.
 - The steps of `grafical --help` end by telling the agent to look at the picture and check it against that guide before it stops.
 - grafical still judges nothing: it gives the list, and the agent decides.
 
