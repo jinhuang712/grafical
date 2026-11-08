@@ -25,7 +25,7 @@ How to work:
   1. grafical new <file> --title <text> --subtitle <text>
   2. Write the whole draft as one batch file, then
      grafical apply <file> batch.yaml. apply --help has a full example, and
-     each command's --help shows its edge in a batch.
+     each command's --help shows its line in a batch.
   3. grafical render <file> and look at the PNG, or read
      grafical show <file> --drawn.
   4. Improve one change at a time. grafical try <file> a.yaml b.yaml prints
@@ -113,8 +113,8 @@ one batch with every layer, node, group and edge.`,
 Batch file:
   A YAML list. Each item is {op: <noun>.<verb>, ...} with the command's
   arguments and options as fields, in camelCase. Operations apply in order; if
-  one fails, none apply, and the refusal's source gives its edge in the file.
-  Every command works in a batch: its --help shows its edge, such as
+  one fails, none apply, and the refusal's source gives its line in the file.
+  Every command works in a batch: its --help shows its line, such as
   grafical node add --help.
 
 Good to know:
@@ -130,7 +130,7 @@ Output:
   line before each; then, on apply, the counts:
     <kind>: <code>
     description: <what happened, one sentence per code>
-    source: <the command, its batch edge, its batch file, or "already in
+    source: <the command, its batch line, its batch file, or "already in
             the file">
     detail:
       <key>: <value>
@@ -138,8 +138,8 @@ Output:
   A detail key named for one thing (node, edge) holds one value; one named
   for several (nodes, edges, ends) holds a list, even of one, in --json too.
   kind is error (nothing could be applied), defect (it would draw wrong) or
-  warning (written, drawn poorly). A warning has no source edge: the
-  outcome edge names what changed. Every write, check and render prints
+  warning (written, drawn poorly). A warning has no source line: the
+  outcome line names what changed. Every write, check and render prints
   every warning the diagram has:
     bent-edge          a line of over 2 bends: edge, bends, skip (the layers
                        between its ends' layers)
@@ -243,7 +243,7 @@ Good to know:
   - Use it to compare arrangements you are weighing: a layer moved, two nodes
     swapped, a node slid along its layer. Decide which to keep, then apply it.
   - A batch it would refuse is refused as apply would refuse it; with several,
-    its outcome edge carries batch=<file>, its blocks follow, and the others
+    its outcome line carries batch=<file>, its blocks follow, and the others
     are still tried (exit 1).
 
 Example:
@@ -607,12 +607,12 @@ Example:
 no node should hold. A node, group or edge has one note; adding another replaces it.`,
     after: `
 How it is drawn:
-  - A card beside what it is about, joined to it by a short dotted edge.
+  - A card beside what it is about, joined to it by a short dotted line.
   - With --footnote, a small number on it, and the text in a numbered list
     at the bottom of the picture.
 
 Good to know:
-  - Keep it short: more than four edges at 160 px is an overflow.
+  - Keep it short: more than four lines at 160 px is an overflow.
   - A note goes when what it is about is removed.
   - show --drawn says how each note is drawn.
 
@@ -624,8 +624,8 @@ Example:
   "note remove": { about: "Remove the note of a node, a group or an edge." },
 
   "layer look": {
-    about: `Draw a layer, as a node or as a band, even when no edge ends at it. Without a
-look, a layer is drawn only when an edge ends at it: with no nodes as a node, with
+    about: `Draw a layer, as a box or as a band, even when no edge ends at it. Without a
+look, a layer is drawn only when an edge ends at it: with no nodes as a box, with
 nodes as a band. Without box or band, the look is taken away.`,
     after: `
 Good to know:
