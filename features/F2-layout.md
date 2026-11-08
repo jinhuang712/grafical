@@ -181,7 +181,7 @@ A node snaps to its cell, unless an agent takes it off with a fraction of a cell
 - The offset is measured from the grid and never from a node.
 - An offset that overlaps anything refuses the write.
 - No other node moves for it.
-- It waits for the router, which lays its tracks with no idea that a node sits in a gutter: [The router is not smart enough](../plan/TODO.md#p1discussion-the-router-is-not-smart-enough).
+- It waits for the router, which lays its tracks with no idea that a node sits in a gutter: [The space the router works in](../plan/TODO.md#p1discussion-the-space-the-router-works-in).
 
 - **Why:** [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md)
 
@@ -336,11 +336,12 @@ Edges meet the rules the owner set on 2026-11-07, so that the eye can follow the
 - An edge may leave one side and enter another across layers, such as out of the right of a node and into the left of another.
 - The run at each end of an edge is at least 16 px, and 24 px at ease.
 - Two edges that swap sides in one gap leave level, enter level and take no jog.
-- Edges of one sort take one form in a picture.
 - Where places leave a pair no clean route, one edge goes round the outside.
   - The write reports that the agent may move a node.
 
-- **Why:** [097. The router draws clean edges and the agent makes their room](../specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md)
+- **Why:**
+  - [097. The router draws clean edges and the agent makes their room](../specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md)
+  - [102. Routing trouble that placement can fix is the agent's](../specs/decisions/102-routing-trouble-that-placement-can-fix-is-the-agent-s.md)
 
 ## F2.8: Flow direction
 

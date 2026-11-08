@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current checkpoint:** [CP2: Richer pictures](#cp2-richer-pictures). First grafical draws, then it gains styles and features, then every kind of diagram runs as an experiment, and then it is released. The work now is how edges are routed, which waits on [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
+**Current checkpoint:** [CP2: Richer pictures](#cp2-richer-pictures). First grafical draws, then it gains styles and features, then every kind of diagram runs as an experiment, and then it is released. The work now is how edges are drawn: the agent rearranges a picture cheaply, as [Rearranging a picture is cheap](TODO.md#p1discussion-rearranging-a-picture-is-cheap) says, and the engine draws clean edges for the places given, as [Clean edges for the places given](TODO.md#p1task-clean-edges-for-the-places-given) says.
 
 ## Summary
 
@@ -592,7 +592,7 @@ Drawing reference diagrams with grafical's own commands showed where a picture s
 - ⬜ Badges off a lane's side: A step's badge keeps off a lane's side, and `step-collision` counts one that touches it.
 - ⬜ Return edges off a self-loop: The edges that leave and enter a node keep clear of its self-loop.
 - ✅ Routing cases: `pnpm bench routes` compares 29 small cases with a saved baseline.
-- ⬜ Clean edges: Edges meet the rules set on 2026-11-07, once a way is picked: [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
+- ⬜ Clean edges: Edges meet the rules set on 2026-11-07, built on the router as it is: [Clean edges for the places given](TODO.md#p1task-clean-edges-for-the-places-given).
 
 **Delivers:**
 
@@ -617,7 +617,7 @@ Nodes carry marks that stay clear of edges and colors of their own.
 - ⬜ Marks by name: A mark can be taken by name.
 - ✅ Node looks: A node takes colors of its own or a named look.
 - ⬜ Size multiples: A node takes multiples of its width and height.
-- ⬜ Offsets: A node sits a fraction of a cell off the grid, once the router allows it: [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
+- ⬜ Offsets: A node sits a fraction of a cell off the grid, once the router allows it: [The space the router works in](TODO.md#p1discussion-the-space-the-router-works-in).
 
 **Delivers:**
 

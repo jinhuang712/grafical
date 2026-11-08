@@ -103,6 +103,7 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [099. An agent checks its own picture against a list](099-an-agent-checks-its-own-picture-against-a-list.md) (2026-11-08)
 - [100. The MVP bar is a checkpoint's exit criteria](100-the-mvp-bar-is-a-checkpoint-s-exit-criteria.md) (2026-11-08)
 - [101. The CLI document lists flags in bullets](101-the-cli-document-lists-flags-in-bullets.md) (2026-11-08)
+- [102. Routing trouble that placement can fix is the agent's](102-routing-trouble-that-placement-can-fix-is-the-agent-s.md) (2026-11-08)
 
 ## Former IDs
 

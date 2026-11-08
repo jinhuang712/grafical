@@ -81,7 +81,7 @@ O5 holds the edges of a picture, and [O6: A picture reads at a glance](#o6-a-pic
 | 12 | better | Edges land well | the owner | standard 6 |
 | 13 | better | What matters stands out | the owner | standard 7 |
 
-The standards are in `specs/decisions, "A good route is one the eye can follow"`, and the owner's rules are in `specs/decisions, "The router draws clean edges and the agent makes their room"`.
+The standards are in `specs/decisions, "A good route is one the eye can follow"`, and the owner's rules are in `specs/decisions, "The router draws clean edges and the agent makes their room"`. One form for edges of one sort is the agent's to reach, as `specs/decisions, "Routing trouble that placement can fix is the agent's"` says.
 
 **Want:** A picture that is complete and clear at once.
 
@@ -92,7 +92,7 @@ The standards are in `specs/decisions, "A good route is one the eye can follow"`
 
 **Acceptance:** the owner looks at every case in `bench/routes/` and finds each check met or names why it cannot be.
 
-**Status:** ⬜ not run. On 2026-11-07 the owner looked at `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid` only. The open points are in [The router is not smart enough](TODO.md#p1discussion-the-router-is-not-smart-enough).
+**Status:** ⬜ not run. On 2026-11-07 the owner looked at `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid` only. The open points are in [Clean edges for the places given](TODO.md#p1task-clean-edges-for-the-places-given).
 
 #### O6: A picture reads at a glance
 

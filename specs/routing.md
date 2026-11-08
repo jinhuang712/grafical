@@ -155,7 +155,8 @@ An edge from a node to itself loops through the gutter below the node. Its two e
 The owner set rules for clean edges on 2026-11-07, and the router does not meet them yet:
 
 - It keeps 8 px from a node to a track, where an end run should be at least 16 px and 24 px at ease.
-- It routes each edge on its own, so it cannot keep one form for edges of one sort across a picture.
+- It never leaves one side and enters another across layers.
+- Two edges that swap sides in one gap take a jog.
 - It has no way round the outside for a pair with no clean route.
 
 ## Decisions
@@ -170,3 +171,4 @@ The owner set rules for clean edges on 2026-11-07, and the router does not meet 
 - [095. A good route is one the eye can follow](decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 - [096. An edge is steered by facts and never by coordinates](decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
 - [097. The router draws clean edges and the agent makes their room](decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md)
+- [102. Routing trouble that placement can fix is the agent's](decisions/102-routing-trouble-that-placement-can-fix-is-the-agent-s.md)

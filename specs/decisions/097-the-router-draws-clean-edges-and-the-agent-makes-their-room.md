@@ -12,7 +12,6 @@ A trial of a search router on the routing cases cut crossings, and its pictures 
 - The run at each end of an edge is at least 16 px, and 24 px is the comfortable length.
   - The rule is the same at both ends, with an arrowhead or without one.
 - Two edges that swap sides in one gap leave level, enter level and take no jog.
-- Edges of one sort take one form in a picture, such as out of the bottom and into the top.
 - A clean shape comes before few crossings, and few crossings come before no detour.
 - The router never widens a column gap for an edge.
   - The agent does it with `gap`, so that room stays the agent's habit.
@@ -44,6 +43,6 @@ A gap of 32 px holds one edge and no more, 44 px holds two, and the compact gap 
 
 The outside route takes three bends, one past the plain forms of "Unreadable is refused and costly is reported".
 
-One form across a picture asks the router to weigh edges together, where it now routes each on its own. On `pyramid` the owner found a real render with no crossings ugly, because its edges mixed sides, and took a hand drawing with one form, a fork from each bottom and nodes half a cell apart. That drawing waits for offsets, as "A node may sit off its cell by a fraction" says.
+One form for edges of one sort, such as out of the bottom and into the top, is the agent's to reach, as "102. Routing trouble that placement can fix is the agent's" says. On `pyramid` the owner found a real render with no crossings ugly, because its edges mixed sides, and took a hand drawing with one form, a fork from each bottom and nodes half a cell apart. That drawing waits for offsets, as "A node may sit off its cell by a fraction" says.
 
 These rules come from hand drawings of `pair-both-ways`, `two-layers-skip`, `ladder` and `pyramid`. None is built, and `gap` has not been tried on these gaps.

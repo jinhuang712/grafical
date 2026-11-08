@@ -41,33 +41,56 @@
 - next: the owner says whether the stance changes
 - related: [098. A picture is judged by how it reads](../specs/decisions/098-a-picture-is-judged-by-how-it-reads.md)
 
-### [P1][DISCUSSION] The router is not smart enough
+### [P1][DISCUSSION] Rearranging a picture is cheap
 
 - description:
-  - The owner holds that how edges are routed today is neither advanced nor smart.
-  - Three ways are open: a search over the open space · a pass that rips up the worst edges · more rules.
-  - A search is the only one of the three that lets a node sit in a gutter.
-  - A search risks speed · stability · about 3000 lines of rewrite.
-  - 29 cases in `bench/routes/` measure any of them, and small cases show edges tangled in one gutter more than paths that fail.
-  - The search trial stopped on 2026-11-07, and the owner settles the open points before another run.
+  - [102. Routing trouble that placement can fix is the agent's](../specs/decisions/102-routing-trouble-that-placement-can-fix-is-the-agent-s.md) makes placement the agent's way to fix a route.
+  - The 29 cases in `bench/routes/` are gone through one at a time, and the owner says whether each picture is right.
+  - `same-layer-pair` is a placement case, and the owner's picture puts C first with `node --move c --first`, with 0 crossings and 0 bends.
+  - `ladder` came clean in one column with no change to the router, so it is a placement case.
+  - A Haiku session spent its fixes on the order of a layer and could not state the whole order at once, as [What the first report run asks of the tool](#p2discussion-what-the-first-report-run-asks-of-the-tool) says.
+  - Open: what a move needs so that it costs one command and shows its effect before the write.
+  - Open: how the engine names the edges that cross.
+  - Open: whether the hand drawings in [plan/evidence](evidence/worst-four-cases.png) become the target pictures.
+- created: 2026-11-08
+- status: OPEN
+- next: go through the routing cases with the owner from `swapped-pair`
+- evidence: [ladder](evidence/ladder-options.png) · [two-layers-skip by a way round](evidence/two-layers-skip-outside.png)
+- related: [033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)
+
+### [P1][TASK] Clean edges for the places given
+
+- description:
+  - [102. Routing trouble that placement can fix is the agent's](../specs/decisions/102-routing-trouble-that-placement-can-fix-is-the-agent-s.md) leaves the engine to draw clean edges where the agent put the nodes.
+  - The rules are those of [097. The router draws clean edges and the agent makes their room](../specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md).
+  - A read of the code on 2026-11-08 found that each rule can be reached by extending this router.
+  - Left to build: the end runs · the level swap of two edges in one gap · a side to a side across layers · a way round the outside.
+  - A stated top in the first layer and a side `via` on a tight layer are refused by how the router is built.
+  - Placement widens a gap for an edge through an empty column, where 097 says the router never widens a gap.
   - Open: edges may share a run only if every start-to-end pair the run implies is a real edge, and whether false edges count as a hard number.
   - Open: what the engine does in a narrow gap where another route still reads.
   - Open: the least end run of a main edge, where 20 px was proposed.
-  - Open: labels, stability and the six edge facts on a search.
-  - Open: whether the hand drawings in [plan/evidence](evidence/worst-four-cases.png) become the target pictures.
-  - The six edge facts were tried on 18 of the 29 cases, and 11 are untried.
-  - `ladder` came clean in one column with no change to the router, so it is a placement case.
-  - On the cases `via` and `with` cleaned up what they could reach.
-  - A stated top in the first layer and a side `via` on a tight layer were refused by how the router is built.
-  - A spike of [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md) on 2026-11-07 drew offsets across with no defect, and offsets down ran edges through nodes.
 - created: 2026-11-07
 - updated: 2026-11-08
-- status: HALT
-- next: read the code to see whether this router can reach one form across a picture, then the owner picks a way
-- branch: wt-search-spike holds the stopped trial
-- evidence: [two-layers-skip by a way round](evidence/two-layers-skip-outside.png) · [two-layers-skip with jogs](evidence/two-layers-skip-jogs.png) · [end runs](evidence/end-runs.png) · [ladder](evidence/ladder-options.png) · [a false edge](evidence/false-line.png)
-- blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
+- status: OPEN
+- next: build the end runs, checked against the end runs drawing
+- evidence: [end runs](evidence/end-runs.png) · [two-layers-skip with jogs](evidence/two-layers-skip-jogs.png) · [a false edge](evidence/false-line.png)
 - related: [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
+
+### [P1][DISCUSSION] The space the router works in
+
+- description:
+  - The router sees nodes only in layers and runs only on the tracks of a gutter.
+  - Offsets down · lanes both ways · copying a picture that has no layers all ask for nodes and runs outside that frame.
+  - A router over the open space would reach them and would have to win back stability and speed.
+  - A search trial on 2026-11-07 cut crossings, and its pictures read worse.
+  - A spike of [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md) on 2026-11-07 drew offsets across with no defect, and offsets down ran edges through nodes.
+- created: 2026-11-08
+- status: HALT
+- next: wait until rearranging is built, then list what each planned capability still needs of the space
+- branch: wt-search-spike holds the stopped trial
+- blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
+- related: [005. Our own gap router](../specs/decisions/005-our-own-gap-router.md)
 
 ### [P2][DISCUSSION] What the first report run asks of the tool
 
@@ -110,7 +133,7 @@
   - An offset moves one node at a time, which is much work for a whole pyramid.
 - created: 2026-11-07
 - status: HALT
-- next: the owner says whether cases split into routing and placement
+- next: settle it as a placement case while going through the routing cases
 
 ### [P2][DISCUSSION] Seven edge labels sit off their edges
 
