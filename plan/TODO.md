@@ -163,17 +163,6 @@
 - next: the owner designs it
 - related: [059. Edges may be drawn square or round](../specs/decisions/059-edges-may-be-drawn-square-or-round.md)
 
-### [P2][DISCUSSION] The decisions name commands that went
-
-- description:
-  - The decisions took the words of [069. One name for each thing, and a name says what it is](../specs/decisions/069-one-name-for-each-thing-and-a-name-says-what-it-is.md) on 2026-11-08.
-  - Their commands kept the form of their day, such as `edge retarget` and `layer tidy` and `node add`.
-  - Some of those commands have no form today.
-- created: 2026-11-08
-- status: HALT
-- next: the owner says whether a decision keeps the commands of its day
-- found: the document pass of 2026-11-08
-
 ### [P2][DISCUSSION] Small points of the .grafical file
 
 - description:
@@ -242,12 +231,3 @@
 - status: OPEN
 - found: the document pass of 2026-11-08
 - next: add the word to the words a wrong command is read against
-
-### [P2][TASK] The changelog still names commands that went before any release
-
-- description:
-  - *Unreleased* in [CHANGELOG.md](../CHANGELOG.md) keeps forms such as `edge step` and `group title`, which no user ever met.
-  - It should read as what 0.1.0 holds.
-- created: 2026-11-08
-- status: HALT
-- next: rewrite it when the first release is cut
