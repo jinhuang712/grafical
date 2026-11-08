@@ -89,7 +89,6 @@
 - created: 2026-11-08
 - status: HALT
 - next: wait until rearranging is built, then list what each planned capability still needs of the space
-- branch: wt-search-spike holds the stopped trial
 - blocks: [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
 - related: [005. Our own gap router](../specs/decisions/005-our-own-gap-router.md)
 
