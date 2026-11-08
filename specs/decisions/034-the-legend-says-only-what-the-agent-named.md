@@ -8,10 +8,10 @@ Decided by the owner on 2026-10-15, after a field study that redrew ten publishe
 
 ## The choice
 
-- **An entry needs the agent's words.** An edge style or a width gets an entry only when `diagram legend` names it, as a mark already does ("A legend for widths and marks").
+- **An entry needs the agent's words.** An edge style or a width gets an entry only when `diagram --legend` names it, as a mark already does ("A legend for widths and marks").
   - A diagram that names nothing draws no legend.
 - **The agent sees what it left unnamed.** `show --drawn` prints a `legend` record for each style and width the picture draws, with `text=-` where the agent gave no words.
-  - A width's record also gives its `weight`, the word `diagram legend --weight` takes.
+  - A width's record also gives its `weight`, the word `diagram --legend --weight` takes.
   - Its pixels alone cannot name a `thick` edge.
 - **`--hide` is gone.** It left out an entry that had default words, and with none it did what naming nothing does.
   - Chosen by the owner the same day, over keeping it.

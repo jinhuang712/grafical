@@ -32,7 +32,7 @@ Decided by the owner on 2026-10-19. A diagram has no type by default and is draw
     - A node is in one group at most, so the space with no type cannot say it.
 - **Diagrams that need no space of their own.** Drawn on 2026-10-19 with today's commands, each in the end with no crossing:
   - Time in order only, with columns for the periods and lanes for the tracks.
-    - A roadmap by quarter: 13 nodes and 3 edges, after one `layer move`.
+    - A roadmap by quarter: 13 nodes and 3 edges, after one `layer --move`.
     - A git history by branch: 8 commits and 9 edges.
     - Two things were missing.
     - A column has no heading, so the quarters were nodes in a layer of their own.

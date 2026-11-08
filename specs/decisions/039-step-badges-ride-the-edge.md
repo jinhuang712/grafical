@@ -8,7 +8,7 @@ The owner chose numbered steps on 2026-10-15 as one of the first candidates for 
 
 ## The choice
 
-- **The number is the agent's fact.** A step is a whole number from 1 to 99 on an edge, stated with `edge step`.
+- **The number is the agent's fact.** A step is a whole number from 1 to 99 on an edge, stated with `edge --number`.
   - grafical draws it and never numbers, renumbers or checks the order.
   - Two edges may share a number for steps at the same time, and numbers may skip.
 - **The look is a ring on the edge** in the edge's colour, with the number inside.

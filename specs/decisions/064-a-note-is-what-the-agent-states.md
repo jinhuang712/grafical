@@ -10,7 +10,7 @@ A card with no room became a footnote the agent never asked for: 61% of the note
 
 - **A note** is a card or a footnote as the agent states, no longer a card the engine turns into a footnote ("Notes as callouts or footnotes").
   - A card with no room is refused.
-  - Built on 2026-10-17: `note add --footnote`.
+  - Built on 2026-10-17: `note --add --footnote`.
     - The file holds `footnote: true` on the note, and a batch takes `footnote`.
     - `show` prints `footnote`.
     - A note without it is a card.

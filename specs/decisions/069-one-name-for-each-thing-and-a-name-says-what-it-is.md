@@ -22,15 +22,15 @@ A thing has one name everywhere it appears. A name says what a thing is and not 
 
 A command that sets a field is named for the field:
 
-- `node label`
-- `node sublabel`
-- `node size`
-- `node mark`
-- `edge label`
-- `edge number`
-- `group label-at`
+- `node --label`
+- `node --sublabel`
+- `node --size`
+- `node --mark`
+- `edge --label`
+- `edge --number`
+- `group --label-at`
 
-The picture's closing text is `diagram caption`. A step is a placement only, and a number is what an edge carries.
+The picture's closing text is `diagram --caption`. A step is a placement only, and a number is what an edge carries.
 
 Built on 2026-11-06. Commands, operations, fields, refusals, records and comments use these names. A word stays where it means something else:
 

@@ -4,7 +4,7 @@ Decided: 2026-10-18
 
 ## The problem
 
-Decided by the owner on 2026-10-18, with "A layer with a look is drawn". A layer is unseen by default, and its name shows only when the layer is drawn, so a name is a thing a drawn layer may have, not a fact every layer owes. `layer add` takes `--label` or not; a file's layer without `label` reads and writes back without one.
+Decided by the owner on 2026-10-18, with "A layer with a look is drawn". A layer is unseen by default, and its name shows only when the layer is drawn, so a name is a thing a drawn layer may have, not a fact every layer owes. `layer --add` takes `--label` or not; a file's layer without `label` reads and writes back without one.
 
 ## The choice
 
@@ -12,7 +12,7 @@ Decided by the owner on 2026-10-18, with "A layer with a look is drawn". A layer
   - A bar is an empty bar.
   - A band has a head's padding but no text, so its nodes keep the room they had.
   - An edge meets either as it meets a named one.
-- **Nothing takes a label away.** No operation removes a layer's label; `layer rename` sets one.
+- **Nothing takes a label away.** No operation removes a layer's label; `layer --label` sets one.
   - A layer made without one keeps none until renamed.
 - **Where a missing label is read.**
   - The file reader and writer.

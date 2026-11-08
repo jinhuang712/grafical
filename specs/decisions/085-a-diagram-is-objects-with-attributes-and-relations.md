@@ -15,7 +15,7 @@ A diagram is objects with attributes and relations, and a place is a relation. T
 - YAML as it is.
   - A tree gives one relation a place above the others.
 - A model with no classes.
-  - `kind`, a named look and `group copy` are already classes in part.
+  - `kind`, a named look and `group --copy` are already classes in part.
 - Designing the model first and the form later.
   - The owner holds that each shapes the other.
 - Defaults in the file.

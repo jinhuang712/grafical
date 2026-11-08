@@ -4,14 +4,14 @@ Decided: 2026-10-15
 
 ## The problem
 
-Decided by the owner on 2026-10-15: the engine does not choose for the agent. Until then the engine made one choice of structure: the order of a layer, for a node added or moved into it without a position, and for the layers `layer tidy` and `diagram tidy` reordered. Both are gone.
+Decided by the owner on 2026-10-15: the engine does not choose for the agent. Until then the engine made one choice of structure: the order of a layer, for a node added or moved into it without a position.
 
 ## The choice
 
 - **A place is required.** A node added to a layer or moved into another layer says where it goes.
   - It goes first or last or before or after a node.
   - Without one it is refused.
-- **No tidying.** `layer tidy` and `diagram tidy` are removed.
+- **No tidying.** No command reorders a layer for the agent.
   - An agent that wants fewer crossings compares orders with `grafical try` and its counts ("Records over prose"), and keeps the one it prefers.
 - **No exception left.** Every order in the file is one the agent stated, so the rule that the engine never chooses for the agent holds without an exception.
 
@@ -23,7 +23,7 @@ The slot search was also the cause of the speed slip measured on 2026-10-15: it 
   - That is the engine choosing structure for the agent.
 - Putting a node with no place last.
   - A fixed rule would still choose the order, and the agent might never notice that it chose none.
-- Keeping `layer tidy` and `diagram tidy` because the agent asks for them.
+- A command that reorders a layer when the agent asks for it.
   - The agent would choose to reorder, but the engine would still choose the order.
 
 ## Consequences

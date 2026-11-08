@@ -28,7 +28,7 @@ grafical reports what happened and never teaches. A record gives the facts and t
 - **`likely` as a value only.** A word grafical does not know is answered with the word it most likely means, never with a command.
 - **No "When refused" in the help.** Decided by the owner later the same day: every command page's "When refused" section goes, `apply --help`'s too.
   - A help page says how to use a command, and a refusal explains itself through its block.
-  - A second hand-written copy of what the record says can go stale, as `edge add`'s did when it described a fix wrongly.
+  - A second hand-written copy of what the record says can go stale, as `edge --add`'s did when it described a fix wrongly.
   - It states a rule in words before the agent makes the mistake, against the stance that an agent learns grafical from the command line and not from rules in words.
 
 How the line is found was decided the same day, after two reviews: on a refused write only, grafical tries ever shorter prefixes of the batch back towards the file, within a fixed budget, so that the line is never wrong. Both of these stay within the limit of 400 ms a command: a `try` of 80 operations with 10 labels too long takes 0.33 to 0.37 s, and a refused 123-operation draft of a scale-50 brief 0.29 to 0.31 s. The first took 1.15 s when every line was searched for. Round p1g's title-blocked keeps its line, caused on line 5 of 8 in a diagram of 37 nodes and edges.
@@ -55,8 +55,8 @@ How the line is found was decided the same day, after two reviews: on a refused 
   - It would stay right, but it is still a copy of what the block says.
   - It is read before any mistake, as a rule in words.
 - Keeping the "When refused" sections hand-written, made correct for the blocks.
-  - A second copy goes stale, as `edge add`'s did.
+  - A second copy goes stale, as `edge --add`'s did.
 
 ## Consequences
 
-It replaces two earlier choices. In "Records over prose" (2026-10-13), a refusal was one record of `key=value` fields with no sentence; it is now a block with its code's one sentence, while the counts, `show --drawn` and `try` stay records. In "One entry page, help where it is used" (2026-10-17), "A refusal carries its own fix": the generated `fix` facts are gone, about 45 of them, and with them the search for the size of a node at which an edge's label fits, which laid the diagram out at each larger size ("An edge never moves for its label"). The agent still widens the node itself, and `next` names `node resize`.
+It replaces two earlier choices. In "Records over prose" (2026-10-13), a refusal was one record of `key=value` fields with no sentence; it is now a block with its code's one sentence, while the counts, `show --drawn` and `try` stay records. In "One entry page, help where it is used" (2026-10-17), "A refusal carries its own fix": the generated `fix` facts are gone, about 45 of them, and with them the search for the size of a node at which an edge's label fits, which laid the diagram out at each larger size ("An edge never moves for its label"). The agent still widens the node itself, and `next` names `node --size`.

@@ -22,11 +22,11 @@ Now a layer with no node may be an edge end when the edge's other end holds a no
     - The engine-owned `needless-bend` went from 334 to 332.
   - None of the 329 saved drafts changed.
 - **Edges meet it straight past their other ends.** The engine adds no node to the file or the picture.
-- **Edges that pass it say so.** An edge from a layer above the bar to a layer below it that does not end at it is refused as `bar-crossed` unless it says it may, with `edge add --pass` or `edge pass`.
+- **Edges that pass it say so.** An edge from a layer above the bar to a layer below it that does not end at it is refused as `bar-crossed` unless it says it may, with `edge --add --pass` or `edge --pass`.
   - The owner chose this on 2026-10-16 when asked why a passing edge never touched the bar.
   - A reader takes an edge drawn over a gateway for an edge through it, so the agent states each edge that goes past.
   - The flag is named for its records: `across` was already the count of edges through a stranger's group ("Composition counts").
-- **Its look is the agent's.** `layer look <row> box|band` draws it as a box or a band.
+- **Its look is the agent's.** `layer --look <layer> box|band` draws it as a box or a band.
   - A box is a service node's paint with a dark label: the bar is the gateway or the bus itself, not a container.
   - On 2026-10-16 the owner asked for both to be chosen through the command line, since looks are the agent's.
 - **What cannot hold is refused.** An edge between two layers with no node is refused as `bar-to-bar`: neither end says where the edge goes across.
