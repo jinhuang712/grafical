@@ -256,7 +256,7 @@ Example:
   },
 
   "layer add": {
-    about: "Add a row. A new row goes to the bottom unless --before or --after places it.",
+    about: "Add a layer. A new layer goes to the bottom unless --before or --after places it.",
     after: `
 Good to know:
   - Layers run top to bottom the way a request or a process moves.
@@ -272,7 +272,7 @@ See also: layer move, layer split, node add
 `,
   },
   "layer split": {
-    about: "Move the second half of a row, or the nodes from --from on, into a new row below.",
+    about: "Move the second half of a layer, or the nodes from --from on, into a new layer below.",
     after: `
 When to use:
   - A layer holds more nodes than read well side by side; the counts give
@@ -385,7 +385,7 @@ Example:
 `,
   },
   "node align": {
-    about: "Sit directly above or below a node in another row; without --to, stop.",
+    about: "Sit directly above or below a node in another layer; without --to, stop.",
   },
 
   "edge add": {
@@ -621,7 +621,7 @@ Example:
   grafical note add shop.grafical --on retry --text "replayed by hand" --footnote
 `,
   },
-  "note remove": { about: "Remove the note of a node, a group or a line." },
+  "note remove": { about: "Remove the note of a node, a group or an edge." },
 
   "layer look": {
     about: `Draw a layer, as a node or as a band, even when no edge ends at it. Without a
@@ -638,17 +638,17 @@ Good to know:
   },
   "edge pass": {
     about:
-      "Let a line pass the bars between its ends, rows with no boxes that lines end at or that have a look; --off takes it back.",
+      "Let an edge pass bars between its ends: layers with no nodes that edges end at or that have a look; --off takes it back.",
   },
 
   "wall allow": {
     about:
-      "Let lines through a wall: name a line, or a node or group to let every line that ends at it through; --off takes them back.",
+      "Let edges through a wall: name an edge, or a node or group to let every edge that ends at it through; --off takes them back.",
   },
 
   "diagram legend": {
     about:
-      "Name what a line style, a line width or a mark means in the legend; without --text, take its entry away.",
+      "Name what an edge style, an edge width or a mark means in the legend; without --text, take its entry away.",
     after: `
 The legend says only what you name. A diagram that names nothing has no
 legend. show --drawn prints a legend record for each edge style and width

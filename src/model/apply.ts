@@ -1897,7 +1897,7 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
             index: i,
             field: "id",
             found: op.id,
-            facts: { allowed: ["a row with a label"] },
+            facts: { allowed: ["a layer with a label"] },
           },
         ];
       }

@@ -512,7 +512,7 @@ export function build(): Command {
   json(
     wall
       .command("allow")
-      .description("let edges through a wall: by id, or every line of a node or group")
+      .description("let edges through a wall: by id, or every edge of a node or group")
       .argument("<file>")
       .argument("<id>")
       .argument("<allow...>", "edges, or nodes and groups whose edges, may cross")
@@ -798,7 +798,7 @@ export function build(): Command {
   json(
     edge
       .command("via")
-      .description("say which object a line passes and on which side; without one, the engine's")
+      .description("say which object an edge passes and on which side; without one, the engine's")
       .argument("<file>")
       .argument("<id>")
       .argument("[object]", "a node or a group")
@@ -808,7 +808,7 @@ export function build(): Command {
     await write(file, { ...raw, ...pick(opts, ["side"]) }, opts);
   });
   for (const [verb, about] of [
-    ["straight", "ask for a line with no bend, or the engine's way with --off"],
+    ["straight", "ask for an edge with no bend, or the engine's way with --off"],
     ["main", "mark the main flow, which takes its column first, or undo it with --off"],
   ] as const) {
     json(
@@ -825,7 +825,7 @@ export function build(): Command {
   json(
     edge
       .command("with")
-      .description("run a line along the trunk of an edge that shares an end; with none, its own")
+      .description("run an edge along the trunk of an edge that shares an end; with none, its own")
       .argument("<file>")
       .argument("<id>")
       .argument("[with]", "the edge whose trunk it runs along"),
@@ -839,7 +839,7 @@ export function build(): Command {
   json(
     edge
       .command("bend")
-      .description("say where a line's longest inner run sits; without --at, the engine's")
+      .description("say where an edge's longest inner run sits; without --at, the engine's")
       .argument("<file>")
       .argument("<id>")
       .option("--at <at>", "0.25, 0.5 or 0.75 of the way between its neighbours"),

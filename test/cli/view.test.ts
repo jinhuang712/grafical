@@ -153,7 +153,7 @@ describe("startViewer", () => {
       expect(first.stale).toBe(false);
       const history = (first as Frame & { history: ViewEvent[] }).history;
       expect(history.map((e) => e.kind)).toEqual(["open"]);
-      expect(history[0]?.lines[0]).toBe("live.grafical.yaml: 5 boxes, 5 arrows");
+      expect(history[0]?.lines[0]).toBe("live.grafical.yaml: 5 nodes, 5 edges");
 
       // An edit by another process, the way an agent makes it.
       expect(

@@ -93,8 +93,8 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "via-blocked": "An edge does not pass the stated object on the stated side.",
   "not-straight": "An edge stated straight has a bend.",
   "no-trunk": "An edge cannot run along the trunk it names.",
-  "bend-blocked": "A line has no inner run to slide, or the slide meets something.",
-  "stretch-blocked": "A line has no detour to reach further, or the reach meets something.",
+  "bend-blocked": "An edge has no inner run to slide, or the slide meets something.",
+  "stretch-blocked": "An edge has no detour to reach further, or the reach meets something.",
   "side-blocked":
     "No route leaves or enters by the stated side, and no edge takes another side unasked.",
   "label-blocked":

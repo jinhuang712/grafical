@@ -220,7 +220,7 @@ export async function startViewer(file: string, port = 0): Promise<Viewer> {
       const ops = diagram === undefined ? [] : diffDiagrams(diagram, d);
       frame.event =
         diagram === undefined
-          ? note("open", [`${basename(file)}: ${nodeCount(d)} boxes, ${d.edges.length} arrows`])
+          ? note("open", [`${basename(file)}: ${nodeCount(d)} nodes, ${d.edges.length} edges`])
           : note("change", ops.length > 0 ? ops.map(describeOp) : ["the stylesheet changed"]);
     }
     diagram = d;
