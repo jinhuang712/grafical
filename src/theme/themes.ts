@@ -183,7 +183,6 @@ const DASH = z
   .regex(/^\d+(\.\d+)?( \d+(\.\d+)?)*$/, { message: "a dash pattern like 4 3" });
 const SIZE = z.number().min(0).max(64);
 
-const SHAPE = z.enum(["orthogonal", "curved"]);
 const NESTING = z.enum(["alternate", "shade"]);
 
 // More weight levels: a name and a width. thin and thick are set by edge.strokeWidth and
@@ -200,11 +199,13 @@ const WEIGHTS = z.record(
 
 function partial(example: unknown, path: string[]): z.ZodType {
   if (path.join(".") === "edge.weights") return WEIGHTS;
-  if (path.join(".") === "edge.shape") return SHAPE;
   if (path.join(".") === "nesting") return NESTING;
   if (typeof example === "number") return SIZE;
   if (typeof example === "string") return example.startsWith("#") ? COLOR : DASH;
-  const entries = Object.entries(example as Record<string, unknown>);
+  // A diagram draws its edges round with `diagram --lines`, never a stylesheet (specs/decisions, "Edges may be drawn square or round").
+  const entries = Object.entries(example as Record<string, unknown>).filter(
+    ([k]) => !(path.join(".") === "edge" && k === "shape"),
+  );
   const shape: Record<string, z.ZodType> = {};
   for (const [k, v] of entries) shape[k] = partial(v, [...path, k]).optional();
   // Any node kind may take a dashed border; only async and optional edges have a dash pattern (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side").

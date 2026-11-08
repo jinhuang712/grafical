@@ -183,17 +183,6 @@
 - next: the owner says whether a decision keeps the commands of its day
 - found: the document pass of 2026-11-08
 
-### [P2][DISCUSSION] Two ways to draw round edges
-
-- description:
-  - [059. Edges may be drawn square or round](../specs/decisions/059-edges-may-be-drawn-square-or-round.md) says the shape moved from the stylesheet into the diagram file.
-  - The code still reads `paint.edge.shape: curved` from a stylesheet beside `diagram --lines round`, and [F2.7: How edges are drawn](../features/F2-layout.md#f27-how-edges-are-drawn) lists it.
-  - [14. One shortest way for each situation](../DESIGNS.md#14-one-shortest-way-for-each-situation) holds against two ways.
-- created: 2026-11-08
-- status: HALT
-- next: the owner says whether the stylesheet's value goes
-- found: the document pass of 2026-11-08
-
 ### [P2][DISCUSSION] Small points of the .grafical file
 
 - description:

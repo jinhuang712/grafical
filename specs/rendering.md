@@ -28,7 +28,7 @@ The writer adds the marks of a route as it draws it, so the routes, the checks a
   - Crossings under 10 px apart share one wider arc, and a crossing within 5 px of a run's end is drawn plain.
 - **Dots.** A dot marks every point where one edge starts or stops running along another.
   - Its radius is the edge's width plus 1.5 px.
-- **Curves.** With `paint.edge.shape: curved`, each corner is as round as half of each of its two runs.
+- **Curves.** With `diagram --lines round`, each corner is as round as half of each of its two runs.
   - The curve is checked at three points against nodes and labels and step badges and other edges.
   - It is halved while it comes within 4 px of one.
   - It is never less round than the theme's corner radius, or half of each run when that is smaller.

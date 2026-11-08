@@ -234,8 +234,6 @@ The agent says what connects. grafical draws every edge.
   - `node --size` is among the commands that can change it.
   - grafical never widens a node for its edges.
   - A step's number is refused the same way.
-- A stylesheet may draw the corners curved, with `paint.edge.shape: curved`.
-  - The routes stay the same.
 - grafical never widens a column gap for an edge: the agent does it with `gap --between`.
 
 - **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)

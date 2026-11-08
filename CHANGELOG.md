@@ -75,6 +75,7 @@ grafical has not been released; the first release will be 0.1.0.
 
 ### Lines
 
+- A stylesheet no longer draws edges round: `diagram --lines round` does, and a stylesheet that sets `paint.edge.shape` is refused as `bad-stylesheet`.
 - An edge runs at least 16 px from a node before it turns in a gutter, where it ran 12 px.
   - Bends and crossings stay the same over the saved drafts, and pictures get 1.0% taller.
   - An arrowhead that a label hid now shows.

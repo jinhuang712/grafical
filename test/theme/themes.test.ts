@@ -63,19 +63,12 @@ type:
     expect(at("type.title.weight")?.found).toBe("700");
   });
 
-  it('take curved or orthogonal edges, and nothing else (specs/decisions, "Edges meet any side")', () => {
-    const sheet = (shape: string) =>
-      parseStylesheet(
-        `grafical-style: 1\npaint:\n  edge: { shape: ${shape} }\n`,
-        "x.grafical-style.yaml",
-      );
-    expect((sheet("curved") as Theme).paint.edge.shape).toBe("curved");
-    expect((sheet("orthogonal") as Theme).paint.edge.shape).toBe("orthogonal");
-    expect((sheet("wavy") as OpError[])[0]).toMatchObject({
-      code: "bad-stylesheet",
-      field: "paint.edge.shape",
-      found: "wavy",
-    });
+  it('leave the shape of edges to the diagram (specs/decisions, "Edges may be drawn square or round")', () => {
+    const sheet = parseStylesheet(
+      "grafical-style: 1\npaint:\n  edge: { shape: curved }\n",
+      "x.grafical-style.yaml",
+    );
+    expect((sheet as OpError[])[0]).toMatchObject({ code: "bad-stylesheet" });
     expect(THEMES.default?.paint.edge.shape).toBe("orthogonal");
   });
 
