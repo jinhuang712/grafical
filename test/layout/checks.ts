@@ -48,7 +48,7 @@ export function sameBundle(a: SceneEdge, b: SceneEdge): boolean {
   return a.from === b.from && edgeStyle(a.kind) === edgeStyle(b.kind);
 }
 
-/** Unlabelled edges in one edge style into one node may arrive through one port (specs/decisions, "A target picture with measured rules" rule 4). */
+/** Unlabelled edges in one edge style into one node may arrive through one port. */
 export function sameFanIn(a: SceneEdge, b: SceneEdge): boolean {
   return (
     a.to === b.to &&
@@ -251,7 +251,7 @@ export function mechanical(d: Defects): string[] {
 }
 
 /**
- * Edges that cross text (specs/decisions, "A target picture with measured rules" rule 8, specs/decisions, "Defects owned by who can fix them"): a run through the box of a node's
+ * Edges that cross text (specs/decisions, "Defects owned by who can fix them"): a run through the box of a node's
  * text, another edge's label, a group's label, the title, subtitle, footnote or a
  * legend label. Like the checker, a line may graze a text box by 2 px.
  */
@@ -293,7 +293,7 @@ export function groupIntruders(s: Scene): string[] {
   return out;
 }
 
-/** The measured rules of specs/decisions, "A target picture with measured rules", as the checker measures them. */
+/** The measured rules of the target look, as the checker measures them. */
 export interface Taste {
   width: number;
   height: number;

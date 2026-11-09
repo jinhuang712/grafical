@@ -32,7 +32,6 @@ import {
   FORMAT_VERSION,
   GAP_MAGNIFICATIONS,
   type Group,
-  type GroupTitle,
   LABEL_ALIGNS,
   LABEL_PLACES,
   LAYER_LOOKS,
@@ -191,21 +190,12 @@ export const groupTitle = z.strictObject({
   place: z.enum(LABEL_PLACES),
 });
 
-/** A draft saved before fractions names its place: only the saved runs in bench/runs still do. */
-function savedTitle(v: unknown): unknown {
-  if (typeof v !== "string") return v;
-  const outside = v.startsWith("outside-");
-  const [first, end] = v.replace("outside-", "").split("-") as [GroupTitle["side"], string?];
-  const place = outside ? "outside" : "inside";
-  return { at: end === "left" ? 0 : end === "right" ? 1 : 0.5, side: first, place };
-}
-
 const groupSchema = z.strictObject({
   id: nodeId,
   label: text,
   sublabel: text.optional(),
   in: nodeId.optional(),
-  titleAt: z.preprocess(savedTitle, groupTitle.optional()),
+  titleAt: groupTitle.optional(),
   like: nodeId.optional(),
   style: styleNames,
 });
@@ -288,12 +278,10 @@ const edgeSchema = z.strictObject({
   seat: z.enum(["beside"]).optional(),
   out: z.enum(EDGE_SIDES).optional(),
   in: z.enum(EDGE_SIDES).optional(),
-  emphasis: z.boolean().optional(),
   weight: weightValue.optional(),
   step: stepNumber.optional(),
   via: z.strictObject({ object: nodeId, side: z.enum(VIA_SIDES) }).optional(),
   straight: z.boolean().optional(),
-  main: z.boolean().optional(),
   with: edgeId.optional(),
   bendAt: z.literal(EDGE_BENDS).optional(),
   stretch: z.literal(EDGE_STRETCHES).optional(),
@@ -402,9 +390,7 @@ function build(p: Parsed): Diagram {
     if (e.seat !== undefined) edge.seat = e.seat;
     if (e.out !== undefined) edge.out = e.out;
     if (e.in !== undefined) edge.in = e.in;
-    // A saved run's emphasis on an edge is the thick level (specs/decisions, "One shortest way for each situation").
     if (e.weight !== undefined) edge.weight = e.weight;
-    else if (e.emphasis === true) edge.weight = "thick";
     if (e.step !== undefined) edge.step = e.step;
     if (e.via !== undefined) edge.via = { ...e.via };
     if (e.straight === true) edge.straight = true;

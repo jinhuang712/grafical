@@ -248,7 +248,6 @@ The agent says what connects. grafical draws every edge.
   - [019. Edges meet any side](../specs/decisions/019-edges-meet-any-side.md)
   - [023. Fan-outs of three bundle](../specs/decisions/023-fan-outs-of-three-bundle.md)
   - [061. An edge never moves for its label](../specs/decisions/061-an-edge-never-moves-for-its-label.md)
-  - [051. A label sits on its straight vertical edge](../specs/decisions/051-a-label-sits-on-its-straight-vertical-edge.md)
   - [065. Unreadable is refused and costly is reported](../specs/decisions/065-unreadable-is-refused-and-costly-is-reported.md)
   - [095. A good route is one the eye can follow](../specs/decisions/095-a-good-route-is-one-the-eye-can-follow.md)
 

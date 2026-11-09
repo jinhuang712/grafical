@@ -18,8 +18,6 @@ grafical ships its own fonts, both under the SIL Open Font License, in Regular (
 
 The phase 0 text spike measured 160 labels at 12 and 14 px. Widths from `harfbuzzjs` matched the widths resvg draws within 0.0001 px. The spike code and its report were not kept; the numbers here are what remains.
 
-Before the first release, the font build must rewrite the subsets' name tables, which still say "Thin", and check the OFL reserved font name "Source".
-
 ## Not chosen
 
 - System fonts, because they differ between machines.

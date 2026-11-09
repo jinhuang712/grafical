@@ -15,7 +15,6 @@ Decided by the owner on 2026-10-15, after a field study that redrew ten publishe
   - Its pixels alone cannot name a `thick` edge.
 - **`--hide` is gone.** It left out an entry that had default words, and with none it did what naming nothing does.
   - Chosen by the owner the same day, over keeping it.
-  - A file that still says `false` is read as no words.
 - Built on 2026-10-15.
   - Eight fixtures lost their legend:
     - catalog-sync and its grouped version.

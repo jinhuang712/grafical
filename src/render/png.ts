@@ -1,5 +1,5 @@
 // SVG to PNG with resvg. Only the bundled fonts are loaded (DESIGNS.md, "The same file gives the same picture on any machine", specs/decisions, "Our own SVG writer").
-// Node only, because it reads the font files (specs/decisions, "TypeScript on Node").
+// Node only, because it reads the font files.
 
 import { Resvg } from "@resvg/resvg-js";
 import { FONT_FILES } from "../text/fonts.ts";

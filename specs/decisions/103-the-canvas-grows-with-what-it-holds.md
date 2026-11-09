@@ -17,7 +17,7 @@ Layout sizes the canvas to what it holds, and the steps that run after routing d
 - Steps after routing that keep the canvas they find.
   - A detour the agent asked for fails for room the picture could take.
 - A canvas at most 1024 px wide.
-  - It was a rule of one target picture, and "The target picture's rules are not reported" already stopped measuring it.
+  - It was a rule of one target picture.
 
 ## Consequences
 

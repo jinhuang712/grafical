@@ -27,7 +27,7 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
     - What depends on top in a dependency graph.
   - `grafical guide cloud` and a few other names find the guide for their kind.
   - The guides live in `src/cli/guides.ts`.
-- **One step points to a guide.** The entry page names `grafical guide` once, as there if wanted, and its last step points to `grafical guide composition` ("An agent checks its own picture against a list").
+- **One step points to a guide.** The entry page names `grafical guide` once, as there if wanted.
   - No command page names it, and a test holds that.
 
 ## Not chosen

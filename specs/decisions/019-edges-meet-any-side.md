@@ -12,9 +12,7 @@ Edges may meet a node on any side, and the router chooses the slot and every sid
 
 - **Types**, 2026-10-12: two types were added for an edge with no direction and for a call that happens only sometimes.
   - The agent can say what an edge means where the old types forced a wrong one.
-- **Per edge**, 2026-10-12: arrowheads at both ends and emphasis for the main path.
-  - A main path stands out only against thin edges.
-- **Curves**, 2026-10-12: a diagram may draw corners round while the routes stay the same orthogonal routes and a curve never enters a node.
+- **Per edge**, 2026-10-12: arrowheads at both ends.
 - **Side entry**, 2026-10-12: an edge between neighbouring layers may turn once into its target's side instead of bending twice through the gutter.
   - The owner asked for exactly this on the flowchart's loop ("should be entering from the right side instead of the bottom").
   - Over the fifteen saved no-hint drafts, bends fell from 16.47 to 15.60 per draft.

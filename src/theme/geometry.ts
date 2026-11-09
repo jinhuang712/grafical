@@ -1,7 +1,7 @@
 // Geometry tokens: node sizes per size step, spacing per density (specs/decisions, "Facts over coordinates", "Layout computed again on every change").
 // Owned by the layout. Every value is a multiple of 4, and every node width a
 // multiple of 8, so that node centres and edges stay on the 4 px grid.
-// The sizes follow the target picture (specs/decisions, "A target picture with measured rules"): 136 x 56 nodes, 32 px between
+// The sizes follow the target picture: 136 x 56 nodes, 32 px between
 // neighbours, 24 px of group padding.
 
 import type { Density, MarkShape, MarkSize, SizeStep } from "../model/types.ts";
@@ -268,7 +268,7 @@ export const ROUTE = {
   labelSpace: 24,
   /** Room a gutter adds on its side next to a layer that holds a store, past a cylinder's lid and base. */
   storeRoom: 8,
-  /** This many unlabelled edges of one kind on a crowded node side share a trunk (specs/decisions, "A target picture with measured rules" rule 4). */
+  /** This many unlabelled edges of one kind on a crowded node side share a trunk. */
   bundleMin: 2,
   /** This many unlabelled edges of one kind leaving one node side leave as one bundle, crowded or not (specs/decisions, "Fan-outs of three bundle"). */
   fanOut: 3,

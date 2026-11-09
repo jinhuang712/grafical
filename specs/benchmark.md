@@ -79,10 +79,6 @@ A report run is how a test picture gets made. One clean session draws one pictur
 
 `pnpm bench chain --arm <arm>` runs one chain and prints each step's cost. `pnpm bench stage1 --part <e1e2|opus|scale|intent|mvp>` runs one part of a round, `--dry-run` lists its chains and calls, and `--only <chain>` runs one chain to measure its cost first. `--round <name>` runs a part again into a new round, since a round's directory is never reused.
 
-## Former numbers
-
-Older results use names that are gone. E1 is a first draft, E2 the change script, E3 the loose prompts, E4 the scale briefs and E5 a run of grafical with one design decision changed. Until 2026-10-15 the checks had numbers. Benchmark 1 is "The picture turned in" and "Time", 2 "Iteration", 3 "Token use", 4 "Stability", 5 "Model gap", 6 "Operation errors", 7 "Mechanical defects", 8 "Scale", 9 "Faithfulness", 10 "Intent", 11 "Determinism" and "Speed", 12 "Cost", 13 "Cache hit rate" and 14 "Verifiability". Goal 1 is "The MVP bar".
-
 ## The routing cases
 
 `bench/routes/` holds the pictures that test the router, and `cases.yaml` says what each tests, which standard of a good route it tests and, where known, the fewest crossings its facts allow. `pnpm bench routes` lays them out and compares crossings, bends, length, the worst detour and defects with `baseline.yaml`, at no cost. `--write` saves a new baseline, and `--render <dir>` writes each picture so that the owner can look. Counts do not cover every standard, so a change to the router goes to the owner with its pictures. Each case is small enough to judge one thing, so whole pictures stay out and wait for an end-to-end round. A shape the owner finds bad becomes a case, and cases are only added.

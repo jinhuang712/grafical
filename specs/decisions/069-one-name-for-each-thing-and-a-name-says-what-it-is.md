@@ -50,4 +50,4 @@ Built on 2026-11-06. Commands, operations, fields, refusals, records and comment
 
 ## Consequences
 
-The file keeps `layers`, `nodes` and `edges`, so saved drafts stay readable, and it changes only for marks and emphasis. Every document and help page changes its words once. `box` stays only as a look a layer takes. A `column` no longer pairs with a row by name, and it keeps its name since an agent reads it at once.
+Every document and help page changes its words once. `box` stays only as a look a layer takes. A `column` no longer pairs with a row by name, and it keeps its name since an agent reads it at once.

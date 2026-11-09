@@ -30,4 +30,3 @@ Built on 2026-11-06:
 - A title takes a fraction and `top` or `bottom`, and stops short of the legend.
 - A layer's and a lane's label take a fraction along their head and no side, since the head stays where it is.
 - A column has no label yet, so it waits for "Column headings" on the owner's word.
-- A saved run in `bench/runs` that names a place still loads, through one rule in the schema.

@@ -154,5 +154,4 @@ The legend wraps onto more lines when it is wider than its room: the larger of i
 - [063. A wall's label stays along its wall](decisions/063-a-wall-s-label-stays-along-its-wall.md)
 - [064. A note is what the agent states](decisions/064-a-note-is-what-the-agent-states.md)
 - [065. Unreadable is refused and costly is reported](decisions/065-unreadable-is-refused-and-costly-is-reported.md)
-- [051. A label sits on its straight vertical edge](decisions/051-a-label-sits-on-its-straight-vertical-edge.md)
 - [076. A band in a lane of its name draws no label](decisions/076-a-band-in-a-lane-of-its-name-draws-no-label.md)

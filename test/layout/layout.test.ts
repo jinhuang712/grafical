@@ -221,7 +221,7 @@ describe("edges past a group they do not belong to", () => {
   });
 });
 
-describe('the target look (specs/decisions, "A target picture with measured rules")', () => {
+describe("the target look", () => {
   let scene: Scene;
   let m: Measurer;
   beforeAll(async () => {

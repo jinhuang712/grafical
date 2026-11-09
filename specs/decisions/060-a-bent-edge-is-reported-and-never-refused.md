@@ -16,8 +16,6 @@ An edge with more than two bends only costs a reader: the picture stays correct.
   - Single commands report them too.
   - Each gets a `bent-edge` warning, and the counts get `bent=`.
   - Not refused.
-  - Rule 2 of "A target picture with measured rules" said it already, but only `check --all` reported it.
-  - The agent never heard.
   - Built on 2026-10-16.
 
 ## Not chosen

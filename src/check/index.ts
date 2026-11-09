@@ -300,7 +300,7 @@ function checkSteps(scene: Scene, out: Found[]): void {
   }
 }
 
-/** An edge may graze a text box by this much before it counts as crossing it (specs/decisions, "A target picture with measured rules" rule 8). */
+/** An edge may graze a text box by this much before it counts as crossing it. */
 export const TEXT_TOLERANCE = 2;
 
 /**

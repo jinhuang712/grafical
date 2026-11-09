@@ -11,7 +11,7 @@
 //    columns. Then edges between layers join their two ends, best edge first,
 //    so that the edge becomes one straight vertical edge. An edge that skips layers
 //    also reserves its column in the layers it passes, so that it runs through empty
-//    space (specs/decisions, "A target picture with measured rules" rule 5). A join must keep every constraint satisfiable, must not
+//    space. A join must keep every constraint satisfiable, must not
 //    put two nodes of one layer in one column, and must not widen the grid.
 // 3. Packing: each class takes the leftmost column its constraints allow.
 // 4. Balance: each class then moves, within its room, toward the columns of the

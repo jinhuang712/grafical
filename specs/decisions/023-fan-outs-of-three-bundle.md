@@ -23,8 +23,6 @@ Decided on 2026-10-13, as the first feature of phase 1e. The owner called a stag
   - But their labels had no place on a shared trunk and were lost.
   - Crossings rose from 39 to 51.
   - A label on each branch near its target would be a separate decision.
-- **The target look ("A target picture with measured rules") changes with it:** each of its two services now sends one trunk to its three stores and services below, where it sent three edges.
-  - The owner sees the picture before and after.
 
 ## Not chosen
 

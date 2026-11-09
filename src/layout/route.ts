@@ -15,7 +15,7 @@
 // Everything here is across only, in x relative to the centre line. Gutter rows are
 // counted here; their heights and every y come later, in assembly.
 //
-// For the target look (specs/decisions, "A target picture with measured rules"): edges between neighbours run straight sideways
+// For the target look: edges between neighbours run straight sideways
 // (side.ts); every edge meets its node side at a port of its own, unless the side
 // has more edges than room, where unlabelled edges of one kind that leave it share
 // a trunk and those that arrive at it share a port (specs/decisions, "Edges meet any side"); a path that skips layers
@@ -857,8 +857,8 @@ function corridors(between: number[], gapsByLayer: Gap[][]): [number, number][] 
 /**
  * The gaps each path takes through the layers it crosses. A path that skips layers
  * takes one corridor: an x span that is free in every layer it passes, the one
- * closest to its way, so that it passes them all as one straight edge (specs/decisions, "A target picture with measured rules" rule
- * 5). Only when every corridor is full does it pick a gap per layer, each the one
+ * closest to its way, so that it passes them all as one straight edge.
+ * Only when every corridor is full does it pick a gap per layer, each the one
  * closest to its way. Edges choose in id order. The outer gaps are never full, so
  * every path finds one.
  */
@@ -909,7 +909,7 @@ function chooseGaps(
     const k = mateKey(pl);
     const team = (k === undefined ? undefined : mates.get(k)) ?? [pl];
     // A corridor that one end's ports can reach straight saves that end a jog:
-    // two bends at most instead of four (specs/decisions, "A target picture with measured rules" rule 2).
+    // two bends at most instead of four.
     const reach = (n: PNode, lo: number, hi: number) =>
       hi >= n.x + portInset(n.w) && lo <= n.x + n.w - portInset(n.w);
     // The edge goes on into the lower end's top side, past any band label there.

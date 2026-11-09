@@ -217,7 +217,7 @@ describe("label-collision", () => {
     const a = e1();
     a.label = label(340, 150);
     const d = run(scene(nodes, [a, e2()]));
-    // The same fault is also a text crossing: the label is text (specs/decisions, "A target picture with measured rules" rule 8).
+    // The same fault is also a text crossing: the label is text.
     expect(codes(d)).toEqual(["label-collision", "text-crossing"]);
     expect(d[0]?.elements).toEqual(["a->b", "c->d"]);
   });

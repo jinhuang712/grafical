@@ -4,7 +4,7 @@
 // no write may leave a defect the engine owns (specs/decisions, "Defects owned by who can fix them"), nor an edge through text or a
 // node inside a group it does not belong to.
 //
-// Since phase 1b nodes are 136 px wide (specs/decisions, "A target picture with measured rules"), so one of Haiku's sublabels no
+// Since phase 1b nodes are 136 px wide, so one of Haiku's sublabels no
 // longer fits on one line: that is an overflow, a defect the agent owns and would
 // fix with a shorter sublabel. Those are counted, not failed.
 //

@@ -12,21 +12,7 @@ After every operation, grafical lays out the whole diagram again from the facts,
 
 **One column grid for the whole diagram.** Every node sits in a column of one grid shared by all layers, chosen so that edges between layers run straight and every group's members stay together. Both judges of the second phase 1b round ranked the target first for exactly that placement (2026-10-11). This replaces the first version's layers, each centred and spread on its own: those made almost every edge between layers jog sideways, which the judges read as staircases. The choice of columns is deterministic, so the same facts always give the same picture.
 
-**Stability means the structure stays, not the pixels.** An operation never changes a fact it does not name. Positions are compared relative to the shared centre line: when the canvas widens, everything shifts by the same amount, and that is not movement. After an operation, only these may move:
-- the elements it names;
-- the other nodes in each layer whose contents changed, which re-spread sideways and keep their order.
-  - A layer's contents include its nodes' alignment facts;
-- a layer that has a node aligned to a node that moved, which slides sideways as one block;
-- a node placed by steps from a node that moved, which keeps its steps ("Steps from another node");
-- the layers below a layer or gutter that changed height, which shift down as one block;
-- edges that share a gap with a changed edge, but only inside the gaps they share;
-- ports on a node side that a changed edge uses;
-- the labels of routes that changed;
-- the routes of edges attached to anything that moved.
-
-"Changed" does not cascade: an edge that moved only because it shares a gap does not make its own neighbours movable. Otherwise a layer never moves sideways.
-
-The column grid does not keep this list. It is solved again from the facts after every change, so one operation can move nodes sideways in layers it did not touch: after about half of all single operations on the catalog-sync fixtures (bench/results/phase2.md). Remembering the last layout would break the promise that the same file gives the same picture on any machine. On 2026-10-12 the owner restated stability: an operation changes no fact it does not name (layer, order, group, lane, alignment), which the tests and `grafical diff` check, and sideways movement is measured, not gated. The stage 1 judges decide whether the movement hurts a reader; a column solver whose choices stay local to the change is the fix if it does.
+A change keeps every fact it does not name, and positions may shift ("A change keeps the structure and positions may shift").
 
 **Gutters grow in fixed steps.** When a gutter's tracks no longer fit, it grows to the next fixed height, and the layers below shift down. Most edge additions therefore change no gutter height. On the 500-diagram fuzz test, growing made 221 diagrams taller than a fixed gutter would, 23 of them by more than 20%. That is the price of never squeezing edges together.
 

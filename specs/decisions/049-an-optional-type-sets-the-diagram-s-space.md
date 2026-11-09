@@ -49,13 +49,6 @@ Decided by the owner on 2026-10-19. A diagram has no type by default and is draw
   - An operation of another space is refused, and so is a type that does not fit what the file already holds.
 - **What a type does not do.** It does not check a diagram against the conventions of its kind, and it adds no default words ("The legend says only what the agent named").
 - **Not built.** Each space needs a layout, checks and help of its own.
-- **Open.**
-  - How a type is given: when the file is made, or later while it is still empty.
-  - Whether diagrams that share the space with no type get a type, such as a flowchart or a C4 diagram.
-    - A type would only narrow their operations.
-  - Whether nodes with fields are a diagram type or a node type.
-  - Several spaces side by side in one picture with no edge between them, as views of one file would be.
-
 ## Not chosen
 
 - One space for every diagram, as since "Every layered diagram type".

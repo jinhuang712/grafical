@@ -1,4 +1,4 @@
-// Edges between neighbours in one layer run straight sideways (specs/decisions, "Our own gap router", "A target picture with measured rules"): from one
+// Edges between neighbours in one layer run straight sideways (specs/decisions, "Our own gap router"): from one
 // node's side to the other's, at the layer's middle. Which edges do, and where on the
 // side, depends only on the facts and the measured labels, so that placement can
 // leave room for the labels before anything is routed.

@@ -1,4 +1,4 @@
-// Layout entry point (specs/decisions, "Layers unseen, groups as systems", "Layout computed again on every change", "Our own gap router", "A target picture with measured rules"). The whole diagram is laid
+// Layout entry point (specs/decisions, "Layers unseen, groups as systems", "Layout computed again on every change", "Our own gap router"). The whole diagram is laid
 // out again from its facts on every call, in a fixed order:
 // 1. across: every node on a column of one grid shared by all layers, columns chosen
 //    so that edges run straight, then spaced for nodes, groups and labels
@@ -211,7 +211,7 @@ const cmpIds = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 /**
  * How bad the routes of a scene are, compared in order: crossings plus edges with
- * more than two bends (specs/decisions, "A target picture with measured rules" rule 2) plus nodes aside of what they connect to (specs/decisions, "Who chose is punished"), then
+ * more than two bends plus nodes aside of what they connect to (specs/decisions, "Who chose is punished"), then
  * crossings, then bends, then length.
  */
 function routeCost(scene: Scene): number[] {
@@ -237,7 +237,7 @@ export function arrangementCost(diagram: Diagram, m: Measurer): number[] {
   return routeCost(compute(diagram, m, false).scene);
 }
 
-/** What makes a diagram's edges hard to read (specs/decisions, "A target picture with measured rules" rules 2 and 3): pairs that cross, and edges over two bends. */
+/** What makes a diagram's edges hard to read: pairs that cross, and edges over two bends. */
 export interface EdgeTrouble {
   /** Every point where two routes cross, as the route cost counts them (specs/decisions, "Who chose is punished"). */
   points: number;
@@ -312,7 +312,7 @@ export function edgeTrouble(diagram: Diagram, m: Measurer): EdgeTrouble {
   return { points, crossings: pairs, bent };
 }
 
-/** The edges whose routes cross another route, or bend more than twice (specs/decisions, "A target picture with measured rules" rules 2 and 3). */
+/** The edges whose routes cross another route, or bend more than twice. */
 export function troubledEdges(diagram: Diagram, m: Measurer): Set<string> {
   const t = edgeTrouble(diagram, m);
   return new Set([...t.crossings.flat(), ...t.bent.map((b) => b.edge)]);

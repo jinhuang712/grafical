@@ -32,8 +32,6 @@ An edge's weight is a level or a width from 0.5 to 8 px. `thin` and `thick` are 
 
 The arrowhead grows with the width, from the thin edge's size to the main path's. An edge thinner than thin keeps the thin arrowhead.
 
-A saved run may still say `accent`, and the loader reads it as `emphasis`. No operation writes it.
-
 ## Decisions
 
 - [016. Themes and stylesheets](decisions/016-themes-and-stylesheets.md)
