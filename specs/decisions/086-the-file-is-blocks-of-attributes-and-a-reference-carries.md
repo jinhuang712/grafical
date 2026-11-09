@@ -22,7 +22,9 @@ An object is a block in braces with one attribute on each line, and it opens wit
   - One insert would touch two nodes, or one order would have many spellings.
 - Containers that list their members.
   - Two branches that add to one layer would conflict on one line.
+- An attribute with no colon after its name.
+  - It saves one character a line and reads less like the YAML an agent already knows.
 
 ## Consequences
 
-The file is long, and length is no concern. An `@` that names no object is refused. Whether a colon or a semicolon stays is small and open.
+The file is long, and length is no concern. An `@` that names no object is refused. A colon follows each attribute's name, and the owner kept it on 2026-11-09 before the release fixes the form.

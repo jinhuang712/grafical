@@ -408,10 +408,6 @@ The legend is a small diagram, and its attributes are open.
 
 A `.grafical` file with `<type>` and `<style>` blocks and no others is a library, and a diagram names it with `library`. It must sit inside the diagram's folder. It takes the place of the stylesheet.
 
-## Tuning it
-
-The form serves strictness, plain objects and a file that reads as what it holds, so a count of changed lines does not judge it alone. Its diffs are watched and it is tuned once it is built.
-
 ## Decisions
 
 - [085. A diagram is objects with attributes and relations](decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)

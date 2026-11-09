@@ -53,8 +53,7 @@ Roadmap
 │       ├── ✅ Design the model and its form
 │       ├── ✅ Build the model
 │       ├── ⬜ One library
-│       ├── ⬜ Tune the form
-│       ├── ⬜ Small points of the file
+│       ├── ✅ The colon after an attribute
 │       └── ✅ The README's pictures in the file form
 ├── 🟨 CP2: Drawing more — what a picture can hold
 │   ├── ✅ CP2.1: Containers — groups · lanes · walls · notes
@@ -120,7 +119,8 @@ Roadmap
 │   │   ├── ✅ Region labels
 │   │   ├── ✅ Label looks
 │   │   ├── 🟨 Label text
-│   │   └── ⬜ Looks for every label
+│   │   ├── ⬜ Looks for every label
+│   │   └── ⬜ Every look in a style
 │   ├── 🟨 CP3.4: Rearranging in one command — one move takes `same-layer-pair` from 3 crossings to 0
 │   │   ├── ⬜ What a move needs
 │   │   ├── 🟨 Move and plug
@@ -199,7 +199,8 @@ Roadmap
     │   ├── ⬜ Mind maps
     │   ├── ⬜ Pyramids
     │   ├── ⬜ Overlapping sets
-    │   └── ⬜ Entity-relationship and class diagrams
+    │   ├── ⬜ Entity-relationship and class diagrams
+    │   └── ⬜ A name for a diagram's type
     ├── ⬜ CP6.2: Import
     │   ├── ⬜ Mermaid files
     │   ├── ⬜ draw.io files
@@ -387,10 +388,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 - ✅ Design the model and its form: The owner designed them on 2026-11-06.
 - ✅ Build the model: grafical reads and writes the form · styles · types · `like`.
 - ⬜ One library: A `.grafical` file of types and styles holds the looks a diagram shares, and the stylesheet goes.
-- ⬜ Tune the form: Once it is built, the form is tuned against what its diffs show.
-- ⬜ Small points of the file: A diagram's optional type needs a name apart from a node's `type` · an attribute's colon may stay or go · `<style>` grows to every look grafical draws.
-  - Found on 2026-11-06, and each is settled when the file is built.
-  - Related: the spec "The .grafical file".
+- ✅ The colon after an attribute: The owner kept it on 2026-11-09, since only a change to what the file already holds must come before the release.
 - ✅ The README's pictures in the file form: Both pictures are drawn from `.grafical` files (2026-11-09).
 
 **Delivers:**
@@ -703,6 +701,7 @@ Every object and every label takes a look of its own.
 - ✅ Label looks: An edge's label marks a style for its background, border and color.
 - 🟨 Label text: An agent sets the breaks and alignment of the label of a node · an edge · a wall · a lane · a note, and the titles of regions stay one line.
 - ⬜ Looks for every label: The label of a node · a group · a lane marks a style as an edge's label does.
+- ⬜ Every look in a style: `<style>` holds fill · border · border-width · color · weight, and grows to every look grafical draws.
 
 **Delivers:**
 
@@ -1096,6 +1095,7 @@ Diagrams with a layout of their own.
 - ⬜ Pyramids: Layers of a whole.
 - ⬜ Overlapping sets: What two sets share.
 - ⬜ Entity-relationship and class diagrams: Tables and classes.
+- ⬜ A name for a diagram's type: A diagram's optional type and a node's `type` share a word, and the first needs a name of its own.
 
 **Delivers:**
 
