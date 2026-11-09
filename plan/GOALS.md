@@ -505,7 +505,7 @@ No fact changes that no operation named: a layer, an order, a group, a lane or a
 
 **How:** the stability tests apply single operations, and `grafical diff` compares each change step with the one before. Any unnamed fact change is a failure.
 
-**Status:** ✅ met on 2026-10-12. 0 unnamed changes in all 169 single operations of the tests and in every change step of the stage 1 round.
+**Status:** ✅ met on 2026-11-08: the stability tests passed. On 2026-10-12 there were 0 unnamed changes in all 169 single operations of the tests and in every change step of the stage 1 round.
 
 #### R2: Mechanical defects
 

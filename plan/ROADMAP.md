@@ -261,7 +261,6 @@ The smallest path from operations to a picture: an agent built the public brief 
 - [F3.1: Operations](../features/F3-editing.md#f31-operations)
 - [F3.2: Batches](../features/F3-editing.md#f32-batches)
 - [F3.4: IDs](../features/F3-editing.md#f34-ids)
-- [F6.1: The diagram file](../features/F6-output.md#f61-the-diagram-file)
 - [F6.2: Render](../features/F6-output.md#f62-render)
 - [F5.1: Show](../features/F5-checking.md#f51-show)
 - [F6.3: Live viewer](../features/F6-output.md#f63-live-viewer)
@@ -370,6 +369,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 
 **Delivers:**
 
+- [F6.1: The diagram file](../features/F6-output.md#f61-the-diagram-file)
 - [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
 
 **Exit criteria:**
@@ -492,7 +492,7 @@ Nodes carry marks that stay clear of edges, take multiples of their size and sit
 
 - [F1.1.6: Emphasis](../features/F1-elements.md#f116-emphasis)
 - [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
-- [F1.1.3.1: Size multiples](../features/F1-elements.md#f1131-size-multiples)
+- [F1.1.8: Size multiples](../features/F1-elements.md#f118-size-multiples)
 - [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
 - [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
 - [F2.5: Steps from another node](../features/F2-layout.md#f25-steps-from-another-node)
@@ -767,9 +767,9 @@ Three facts that steer an edge are built, and no picture has shown that any of t
 
 **Delivers:**
 
-- [F2.7.4.1: Straight edges](../features/F2-layout.md#f2741-straight-edges)
-- [F2.7.4.2: Bends](../features/F2-layout.md#f2742-bends)
-- [F2.7.4.3: Stretches](../features/F2-layout.md#f2743-stretches)
+- [F2.7.6: Straight edges](../features/F2-layout.md#f276-straight-edges)
+- [F2.7.7: Bends](../features/F2-layout.md#f277-bends)
+- [F2.7.8: Stretches](../features/F2-layout.md#f278-stretches)
 
 **Exit criteria:**
 

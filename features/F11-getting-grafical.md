@@ -12,6 +12,7 @@ How grafical reaches the agent that uses it.
 
 grafical installed from npm, so that it runs without a clone.
 
+- **Design:** [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
 **Stories:**
 

@@ -16,10 +16,10 @@ F2: Layout
 │   ├── F2.7.2: Edge shapes — square or round
 │   ├── F2.7.3: Labels on edges — an edge carries its label
 │   ├── F2.7.4: Steering an edge — where an edge passes and turns, as facts
-│   │   ├── F2.7.4.1: Straight edges — an edge with no bend
-│   │   ├── F2.7.4.2: Bends — where an edge turns
-│   │   └── F2.7.4.3: Stretches — how far a detour reaches
-│   └── F2.7.5: Clean edges — the rules set on 2026-11-07
+│   ├── F2.7.5: Clean edges — the rules set on 2026-11-07
+│   ├── F2.7.6: Straight edges — an edge with no bend
+│   ├── F2.7.7: Bends — where an edge turns
+│   └── F2.7.8: Stretches — how far a detour reaches
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
 
@@ -322,30 +322,6 @@ An agent steers an edge with facts and never with a coordinate. Every step here 
 
 - A strong model states where an edge passes, to tune a picture without a coordinate.
 
-#### F2.7.4.1: Straight edges
-
-`edge --straight` states an edge with no bend, and an edge that cannot run straight is refused as `not-straight`. No picture has shown it helps yet.
-
-- **Commands:** [`edge`](../CLI.md#edge)
-
-- It changes only which nodes share a column, so a node may shift sideways.
-
-#### F2.7.4.2: Bends
-
-`edge --bend` states where between its neighbours the longest inner run sits, and a bend that cannot hold is refused as `bend-blocked`. No picture has shown it helps yet.
-
-- **Commands:** [`edge`](../CLI.md#edge)
-
-- It needs an inner run whose neighbours lie on either side of it.
-
-#### F2.7.4.3: Stretches
-
-`edge --stretch` states how far a detour reaches, and a stretch that cannot hold is refused as `stretch-blocked`. No picture has shown it helps yet.
-
-- **Commands:** [`edge`](../CLI.md#edge)
-
-- It needs an inner run whose neighbours lie on the same side.
-
 ### F2.7.5: Clean edges
 
 Edges meet the rules the owner set on 2026-11-07, so that the eye can follow them.
@@ -359,6 +335,30 @@ Edges meet the rules the owner set on 2026-11-07, so that the eye can follow the
 - **Why:**
   - [097. The router draws clean edges and the agent makes their room](../specs/decisions/097-the-router-draws-clean-edges-and-the-agent-makes-their-room.md)
   - [102. Routing trouble that placement can fix is the agent's](../specs/decisions/102-routing-trouble-that-placement-can-fix-is-the-agent-s.md)
+
+### F2.7.6: Straight edges
+
+`edge --straight` states an edge with no bend, and an edge that cannot run straight is refused as `not-straight`. No picture has shown it helps yet.
+
+- **Commands:** [`edge`](../CLI.md#edge)
+
+- It changes only which nodes share a column, so a node may shift sideways.
+
+### F2.7.7: Bends
+
+`edge --bend` states where between its neighbours the longest inner run sits, and a bend that cannot hold is refused as `bend-blocked`. No picture has shown it helps yet.
+
+- **Commands:** [`edge`](../CLI.md#edge)
+
+- It needs an inner run whose neighbours lie on either side of it.
+
+### F2.7.8: Stretches
+
+`edge --stretch` states how far a detour reaches, and a stretch that cannot hold is refused as `stretch-blocked`. No picture has shown it helps yet.
+
+- **Commands:** [`edge`](../CLI.md#edge)
+
+- It needs an inner run whose neighbours lie on the same side.
 
 ## F2.8: Flow direction
 

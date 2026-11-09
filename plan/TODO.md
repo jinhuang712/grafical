@@ -240,3 +240,13 @@
 - status: OPEN
 - found: the report run of 2026-11-09
 - next: render that run's diagram again and time it
+
+### [P2][TASK] The README's pictures come from YAML files
+
+- description:
+  - The README says a diagram is one `.grafical` file.
+  - Its pictures are drawn from `docs/images/pipeline.grafical.yaml` and `docs/images/order-flow.grafical.yaml`.
+- created: 2026-11-09
+- status: OPEN
+- found: the document check of 2026-11-09
+- next: write both in the `.grafical` form and render the pictures again

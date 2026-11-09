@@ -33,6 +33,7 @@ A group drawn folded into one node in a view.
 
 Many diagrams that share one list of systems.
 
+- **Design:** [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
 
 **Stories:**
 

@@ -237,4 +237,9 @@ Two verbs stand above the nouns and take IDs. `move` changes where things sit, a
 - `move` replaces `node --move`, `layer --move` and `group --order`.
 - `plug` replaces `edge --ends`, and other objects may take it later.
 
+- **Design:** [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
 - **Why:** [094. `move` and `plug` stand above the nouns](../specs/decisions/094-move-and-plug-stand-above-the-nouns.md)
+
+**Stories:**
+
+- An agent moves several nodes in one command, to rearrange a picture in one step.

@@ -6,11 +6,11 @@ F1: Elements
 │   ├── F1.1.1: Types and shapes — a node's type sets its shape
 │   ├── F1.1.2: Labels and sublabels — a label and a quieter sublabel
 │   ├── F1.1.3: Sizes — sized to the text, or by a step
-│   │   └── F1.1.3.1: Size multiples — a multiple of a node's width or height
 │   ├── F1.1.4: Marks — up to five small marks on a node
 │   ├── F1.1.5: Marks by name — a mark from one bundled mark set
 │   ├── F1.1.6: Emphasis — at most two nodes stand out
-│   └── F1.1.7: Node looks — colors from the styles a node marks
+│   ├── F1.1.7: Node looks — colors from the styles a node marks
+│   └── F1.1.8: Size multiples — a multiple of a node's width or height
 ├── F1.2: Edges — what connects to what
 │   ├── F1.2.1: Types — an edge's type sets its style
 │   ├── F1.2.2: Arrowheads at both ends — two-way edges
@@ -121,17 +121,6 @@ A node is sized to its text, unless the agent gives it a size step.
   - Dots and diamonds keep their shapes.
 - `sizing: fixed` turns this off: a node without a size is always medium, and text that does not fit is refused.
 
-#### F1.1.3.1: Size multiples
-
-A node may take a multiple of its width, its height or both, such as 1.5.
-
-- **Commands:** [`node`](../CLI.md#node)
-
-- A taller node makes its layer taller.
-- A dot or a `choice` keeps its size and refuses a multiple.
-
-- **Why:** [080. A node's width and height may be magnified](../specs/decisions/080-a-node-s-width-and-height-may-be-magnified.md)
-
 ### F1.1.4: Marks
 
 A node can carry up to five marks, such as `⚠️` on a node that matters, or `P0` on a badge.
@@ -197,6 +186,17 @@ A node takes its colors from the styles it marks, so that a color says something
   - [057. A node may take a look of its own](../specs/decisions/057-a-node-may-take-a-look-of-its-own.md)
   - [089. A style may be as rich as it likes](../specs/decisions/089-a-style-may-be-as-rich-as-it-likes.md)
   - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
+
+### F1.1.8: Size multiples
+
+A node may take a multiple of its width, its height or both, such as 1.5.
+
+- **Commands:** [`node`](../CLI.md#node)
+
+- A taller node makes its layer taller.
+- A dot or a `choice` keeps its size and refuses a multiple.
+
+- **Why:** [080. A node's width and height may be magnified](../specs/decisions/080-a-node-s-width-and-height-may-be-magnified.md)
 
 ## F1.2: Edges
 
