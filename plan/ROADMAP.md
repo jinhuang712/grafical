@@ -107,7 +107,6 @@ Roadmap
 │   ├── 🟨 CP3.2: Steering an edge — side · passage · trunk · bend · stretch
 │   │   ├── ✅ Edge shapes
 │   │   ├── ✅ `--straight`
-│   │   ├── ✅ `--main`
 │   │   ├── ✅ `--with`
 │   │   ├── ✅ `--via`
 │   │   ├── ✅ `--bend`
@@ -630,7 +629,6 @@ A strong model steers an edge with facts and draws it square or round.
 
 - ✅ Edge shapes: A command draws edges square or round.
 - ✅ `--straight`: An edge with no bend is stated, and an edge that cannot run straight is refused.
-- ✅ `--main`: The main flow takes its straight run first, and other edges give way.
 - ✅ `--with`: An edge joins another's trunk, which draws a tree with one spine.
 - ✅ `--via`: An edge passes a stated object on a stated side.
 - ✅ `--bend`: An edge turns at a stated fraction of its longest run.

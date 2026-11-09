@@ -97,7 +97,6 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 - `--both <id>` with `--off`: arrowheads at both ends (on by default).
 - `--via <id> [object]` with `--side`: what it passes (the engine's by default).
 - `--straight <id>` with `--off`: no bend (on by default).
-- `--main <id>` with `--off`: the main flow (on by default).
 - `--with <id> [with]`: share a trunk (its own way by default).
 - `--bend <id>` with `--at`: where its longest inner run sits (the engine's by default).
 - `--stretch <id>` with `--magnified`: how far a detour reaches (the engine's by default).

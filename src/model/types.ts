@@ -325,8 +325,6 @@ export interface Edge {
   via?: EdgeVia;
   /** true: an edge with no bend, or the write is refused. */
   straight?: boolean;
-  /** true: the main flow, which takes its column first. */
-  main?: boolean;
   /** The edge whose trunk it runs along, which shares one of its ends. */
   with?: string;
   /** Where between its neighbours its longest inner run sits. */

@@ -411,7 +411,6 @@ function build(p: Parsed): Diagram {
     if (e.step !== undefined) edge.step = e.step;
     if (e.via !== undefined) edge.via = { ...e.via };
     if (e.straight === true) edge.straight = true;
-    if (e.main === true) edge.main = true;
     if (e.with !== undefined) edge.with = e.with;
     if (e.bendAt !== undefined) edge.bendAt = e.bendAt;
     if (e.stretch !== undefined) edge.stretch = e.stretch;

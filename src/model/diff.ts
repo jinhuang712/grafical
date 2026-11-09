@@ -668,9 +668,6 @@ export function diffDiagrams(before: Diagram | null, after: Diagram): Op[] {
     if (e.straight !== was.straight) {
       ops.push({ op: "edge.straight", id: e.id, ...(e.straight === true ? {} : { off: true }) });
     }
-    if (e.main !== was.main) {
-      ops.push({ op: "edge.main", id: e.id, ...(e.main === true ? {} : { off: true }) });
-    }
     if (e.with !== was.with) {
       ops.push({ op: "edge.with", id: e.id, ...(e.with === undefined ? {} : { with: e.with }) });
     }

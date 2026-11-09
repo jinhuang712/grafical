@@ -192,7 +192,6 @@ export function writeGrafical(d: Diagram): string {
         ["number", num(e.step)],
         ["via", e.via === undefined ? undefined : `${ref(e.via.object)} ${e.via.side}`],
         ["straight", flag(e.straight)],
-        ["main", flag(e.main)],
         ["with", opt(e.with)],
         ["bend-at", num(e.bendAt)],
         ["stretch", num(e.stretch)],
@@ -324,7 +323,6 @@ const ATTRS: Record<string, readonly string[]> = {
   edge: ["from", "to", "type", "out", "in", "weight", "both", "pass", "number"].concat([
     "via",
     "straight",
-    "main",
     "with",
     "bend-at",
     "stretch",
@@ -659,7 +657,6 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
         pass: "pass",
         number: "step",
         straight: "straight",
-        main: "main",
         with: "with",
         "bend-at": "bendAt",
         stretch: "stretch",

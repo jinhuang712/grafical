@@ -89,7 +89,7 @@ describe("--with", () => {
   });
 });
 
-describe("--straight and --main", () => {
+describe("--straight", () => {
   it("refuses an edge that has a bend", () => {
     const d = build(
       ...layered(["a", "b"], ["c", "d"]),
@@ -108,11 +108,11 @@ describe("--straight and --main", () => {
       { op: "edge.add", from: "a", to: "c" },
       { op: "edge.add", from: "a", to: "d" },
     ];
-    const off = build(...ops, { op: "edge.main", id: "a->d" });
-    const points = edge(off, "a->d").points;
+    const d = build(...ops, { op: "edge.straight", id: "a->d" });
+    const points = edge(d, "a->d").points;
     expect(points.at(0)?.x).toBe(points.at(-1)?.x);
     expect(points).toHaveLength(2);
-    expect(defects(build(...ops, { op: "edge.straight", id: "a->d" }))).toEqual([]);
+    expect(defects(d)).toEqual([]);
   });
 });
 
@@ -195,7 +195,6 @@ describe("the file", () => {
       { op: "edge.add", from: "a", to: "c" },
       { op: "edge.add", from: "a", to: "d" },
       { op: "edge.via", id: "a->d", object: "b", side: "left" },
-      { op: "edge.main", id: "a->c" },
       { op: "edge.straight", id: "a->c" },
       { op: "edge.with", id: "a->d", with: "a->c" },
       { op: "edge.bend", id: "a->d", at: 0.5 },

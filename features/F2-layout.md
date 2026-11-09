@@ -302,7 +302,6 @@ An agent steers an edge with facts and never with a coordinate. Every step here 
 |---|---|---|
 | `--via` | the node or group an edge passes and on which side | `via-blocked` |
 | `--straight` | an edge with no bend | `not-straight` |
-| `--main` | the main flow, whose ends take one column first | none |
 | `--with` | one trunk with an edge that shares an end | `no-trunk` |
 | `--bend` | where between its neighbours the longest inner run sits | `bend-blocked` |
 | `--stretch` | how far a detour reaches | `stretch-blocked` |
@@ -313,7 +312,7 @@ An agent steers an edge with facts and never with a coordinate. Every step here 
 - `--bend` needs an inner run whose neighbours lie on either side of it, and `--stretch` one whose neighbours lie on the same side.
 - An edge with a label or a step's number takes none of `--with` · `--bend` · `--stretch`, since the text would stay behind.
 - A step that meets a node or a label or comes within 12 px along another edge refuses the write.
-- `--main` and `--straight` change only which nodes share a column, so a node may shift sideways.
+- `--straight` changes only which nodes share a column, so a node may shift sideways.
 
 - **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
 - **How it works:** [Routing: facts that steer an edge](../specs/routing.md#facts-that-steer-an-edge)

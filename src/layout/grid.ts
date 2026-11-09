@@ -665,10 +665,10 @@ export function buildGrid(d: Diagram): Grid {
       else if (!list.includes(b)) list.push(b);
     }
   }
-  // An edge stated straight or main takes its column before any other (specs/decisions, "An edge is steered by facts and never by coordinates").
+  // An edge stated straight takes its column before any other (specs/decisions, "An edge is steered by facts and never by coordinates").
   const first = new Set(
     d.edges
-      .filter((e) => e.straight === true || e.main === true)
+      .filter((e) => e.straight === true)
       .flatMap((e) => [`${e.from}|${e.to}`, `${e.to}|${e.from}`]),
   );
   const joinable = pairs.filter(({ u, v }) => shared[u] === 0 && shared[v] === 0);

@@ -706,7 +706,7 @@ export function build(): Command {
   const edge = program
     .command("edge")
     .description(
-      "edges: add, reverse, label, side, label-at, weight, both, pass, number, via, straight, main, with, bend, stretch, type, style, like, remove",
+      "edges: add, reverse, label, side, label-at, weight, both, pass, number, via, straight, with, bend, stretch, type, style, like, remove",
     );
   json(
     edge
@@ -807,21 +807,16 @@ export function build(): Command {
     const raw = { op: "edge.via", id, ...(object === undefined ? {} : { object }) };
     await write(file, { ...raw, ...pick(opts, ["side"]) }, opts);
   });
-  for (const [verb, about] of [
-    ["straight", "ask for an edge with no bend, or the engine's way with --off"],
-    ["main", "mark the main flow, which takes its column first, or undo it with --off"],
-  ] as const) {
-    json(
-      edge
-        .command(verb)
-        .description(about)
-        .argument("<file>")
-        .argument("<id>")
-        .option("--off", "undo it"),
-    ).action(async (file: string, id: string, opts: Opts) => {
-      await write(file, { op: `edge.${verb}`, id, ...pick(opts, ["off"]) }, opts);
-    });
-  }
+  json(
+    edge
+      .command("straight")
+      .description("ask for an edge with no bend, or the engine's way with --off")
+      .argument("<file>")
+      .argument("<id>")
+      .option("--off", "undo it"),
+  ).action(async (file: string, id: string, opts: Opts) => {
+    await write(file, { op: "edge.straight", id, ...pick(opts, ["off"]) }, opts);
+  });
   json(
     edge
       .command("with")

@@ -106,17 +106,6 @@
 - updated: 2026-11-07
 - related: [The benchmark harness](../specs/benchmark.md)
 
-### [P2][ISSUE] `--main` can make a picture worse
-
-- description:
-  - On the `pyramid` case two `--main` edges moved A to the far right, and the picture read worse with the same crossings.
-  - On `tree` and `ladder` it changed nothing.
-  - It only raises a join's score, so the whole grid can solve differently.
-- created: 2026-11-07
-- status: OPEN
-- found: trying the facts on the routing cases
-- next: decide what `--main` should do past taking a column
-
 ### [P2][DISCUSSION] A parent that sits off the middle of its children
 
 - description:

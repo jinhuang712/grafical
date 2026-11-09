@@ -98,7 +98,6 @@ function edgeOut(e: Edge): Record<string, unknown> {
   if (e.step !== undefined) o.step = e.step;
   if (e.via !== undefined) o.via = { ...e.via };
   if (e.straight === true) o.straight = true;
-  if (e.main === true) o.main = true;
   if (e.with !== undefined) o.with = e.with;
   if (e.bendAt !== undefined) o.bendAt = e.bendAt;
   if (e.stretch !== undefined) o.stretch = e.stretch;

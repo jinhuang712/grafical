@@ -8,11 +8,10 @@ An agent that sees a bad edge can only change its ends, its sides and what lies 
 
 ## The choice
 
-An agent may say where an edge passes, what it goes with, what comes first, where along its way it turns and how far it reaches. It never gives a coordinate.
+An agent may say where an edge passes, what it goes with, where along its way it turns and how far it reaches. It never gives a coordinate.
 
 - `edge --via` says what an edge passes and on which side.
 - `edge --straight` asks for a straight edge and refuses the write when there is none.
-- `edge --main` marks the main flow, and other edges give way.
 - `edge --with` runs an edge with another along one trunk.
 - `edge --bend --at` turns an edge at 0.25, 0.5 or 0.75 of its way.
 - `edge --stretch --magnified` widens a detour by a multiple.

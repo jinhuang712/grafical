@@ -415,10 +415,9 @@ function steer(e: Edge, op: SteerOp): void {
   if (op.op === "edge.via") {
     if (op.object === undefined || op.side === undefined) delete e.via;
     else e.via = { object: op.object, side: op.side };
-  } else if (op.op === "edge.straight" || op.op === "edge.main") {
-    const field = op.op === "edge.main" ? "main" : "straight";
-    if (op.off === true) delete e[field];
-    else e[field] = true;
+  } else if (op.op === "edge.straight") {
+    if (op.off === true) delete e.straight;
+    else e.straight = true;
   } else if (op.op === "edge.with") {
     if (op.with === undefined) delete e.with;
     else e.with = op.with;
@@ -2246,7 +2245,6 @@ function editStep(s: State, op: Op, i: number): OpError[] | undefined {
     }
     case "edge.via":
     case "edge.straight":
-    case "edge.main":
     case "edge.with":
     case "edge.bend":
     case "edge.stretch": {

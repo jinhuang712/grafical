@@ -413,7 +413,7 @@ export interface EdgeViaOp {
   side?: ViaSide;
 }
 export interface EdgeStraightOp {
-  op: "edge.straight" | "edge.main";
+  op: "edge.straight";
   id: string;
   /** true: the engine's again. */
   off?: boolean;
@@ -970,11 +970,6 @@ export const edgeStraightSchema = z.strictObject({
   id: edgeId,
   off: z.boolean().optional(),
 });
-export const edgeMainSchema = z.strictObject({
-  op: z.literal("edge.main"),
-  id: edgeId,
-  off: z.boolean().optional(),
-});
 export const edgeWithSchema = z.strictObject({
   op: z.literal("edge.with"),
   id: edgeId,
@@ -1189,7 +1184,6 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeBothSchema,
   edgeViaSchema,
   edgeStraightSchema,
-  edgeMainSchema,
   edgeWithSchema,
   edgeBendSchema,
   edgeStretchSchema,
@@ -1281,7 +1275,6 @@ export const SCHEMAS: Record<OpName, z.ZodType> = {
   "edge.both": edgeBothSchema,
   "edge.via": edgeViaSchema,
   "edge.straight": edgeStraightSchema,
-  "edge.main": edgeMainSchema,
   "edge.with": edgeWithSchema,
   "edge.bend": edgeBendSchema,
   "edge.stretch": edgeStretchSchema,
