@@ -48,9 +48,9 @@ describe("diagram settings", () => {
     ]);
     expect(d).toMatchObject({ title: "New title", density: "compact" });
     expect(d.legend).toEqual({ dashed: "Kafka message" });
-    expect(writeDiagram(d)).toMatch(
-      /density: compact\nlegend:\n {2}dashed: Kafka message\nlayers:/,
-    );
+    const text = writeDiagram(d);
+    expect(text).toMatch(/density: compact\n}/);
+    expect(text).toContain('<legend> {\n  dashed: "Kafka message"\n}');
     roundTrips(d);
     const legend = layout(d, m).legend?.map((it) => it.label.runs.map((r) => r.text).join(""));
     expect(legend).toContain("Kafka message");
@@ -237,7 +237,7 @@ describe("edges", () => {
     expect(edge(d, "callers->handlers")?.step).toBe(1);
     // Two edges may share a number, and nothing is renumbered.
     expect(edge(d, "service->mongo")?.step).toBe(2);
-    expect(writeDiagram(d)).toContain("step: 2");
+    expect(writeDiagram(d)).toContain("number: 2");
     // The number stays through the edge's other edits.
     const kept = ok(d, [
       { op: "edge.label", id: "callers->handlers", label: "GET" },

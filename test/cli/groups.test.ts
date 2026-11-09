@@ -32,7 +32,7 @@ function helpExample() {
     .map((l) => l.slice(2));
   const line = (
     lines.find((l) => l.startsWith("grafical -f orders.grafical new")) as string
-  ).replace("-f orders.grafical new", "new orders.grafical.yaml");
+  ).replace("-f orders.grafical new", "new orders.grafical");
   const batch = `${lines.filter((l) => l.startsWith("- {op: ")).join("\n")}\n`;
   return { batch, line };
 }
@@ -45,22 +45,24 @@ describe("grouped diagrams", () => {
     const n = run(...args.slice(1));
     expect(n.code).toBe(0);
     writeFileSync(join(dir, "batch.yaml"), batch);
-    const r = run("apply", "orders.grafical.yaml", "batch.yaml");
+    const r = run("apply", "orders.grafical", "batch.yaml");
     expect(r.out).toMatch(/^ok changed=/);
     expect(r.code).toBe(0);
-    const text = read("orders.grafical.yaml");
-    expect(text).toContain("subtitle: Two services coupled");
-    expect(text).toMatch(/groups:\n {2}- id: order-desk\n {4}label: order-desk\n/);
-    const s = run("show", "orders.grafical.yaml");
+    const text = read("orders.grafical");
+    expect(text).toContain('subtitle: "Two services coupled');
+    expect(text).toMatch(
+      /<group> order-desk \{\n}\n[\s\S]*<label> order-desk-label \{\n {2}on: @order-desk\n {2}text: "order-desk"\n/,
+    );
+    const s = run("show", "orders.grafical");
     expect(s.out).toContain('subtitle "Two services coupled only by the shared orders database."');
     expect(s.out).toContain('group order-desk "order-desk": gateway, checkout');
     expect(s.out).toContain('group shipping "shipping": events, dispatcher');
     expect(s.out).toContain("group=shipping");
-    expect(run("check", "orders.grafical.yaml").code).toBe(0);
+    expect(run("check", "orders.grafical").code).toBe(0);
   });
 
   it("group and diagram commands change the file, and report errors", () => {
-    const f = "g.grafical.yaml";
+    const f = "g.grafical";
     run("new", f, "--title", "G", "--subtitle", "S", "--caption", "N");
     run("layer", "add", f, "r1", "--label", "R1");
     run("layer", "add", f, "r2", "--label", "R2");
@@ -90,11 +92,13 @@ describe("grouped diagrams", () => {
   });
 
   it("lane commands change the file, and a group joins a lane whole", () => {
-    const f = "orders.grafical.yaml";
+    const f = "orders.grafical";
     expect(
       run("lane", "add", f, "desk", "--label", "Desk team", "--members", "order-desk").code,
     ).toBe(0);
-    expect(read(f)).toMatch(/lanes:\n {2}- id: desk\n {4}label: Desk team\n/);
+    expect(read(f)).toMatch(
+      /<lane> desk \{[\s\S]*<label> desk-label \{\n {2}on: @desk\n {2}text: "Desk team"\n/,
+    );
     expect(run("lane", "label", f, "desk", "--label", "Order desk team").code).toBe(0);
     expect(run("show", f).out).toContain(
       'lane desk "Order desk team" (columns): gateway, checkout',
@@ -108,7 +112,7 @@ describe("grouped diagrams", () => {
   });
 
   it('apply and check report the counts, in text and JSON, with no threshold (specs/decisions, "Records over prose")', () => {
-    const f = "big.grafical.yaml";
+    const f = "big.grafical";
     run("new", f, "--title", "Big");
     const items = ["- op: layer.add\n  id: row\n  label: Row\n"];
     for (let i = 0; i < 17; i++) {
@@ -131,7 +135,7 @@ describe("grouped diagrams", () => {
   });
 
   it('group copy writes the copy, and prints its refusals as blocks (specs/decisions, "A group copy holds its inside")', () => {
-    const f = "copy.grafical.yaml";
+    const f = "copy.grafical";
     run("new", f, "--title", "Copy");
     writeFileSync(
       join(dir, "copy.yaml"),
@@ -155,7 +159,7 @@ describe("grouped diagrams", () => {
         "",
         "error: missing-field",
         "description: The operation lacks a field it needs, such as a node's place in a layer that has nodes.",
-        'source: grafical -f copy.grafical.yaml group --copy zone zone-b --label "Zone B" --suffix -b',
+        'source: grafical -f copy.grafical group --copy zone zone-b --label "Zone B" --suffix -b',
         "detail:",
         "  field: place",
         "  allowed: zone",
@@ -168,7 +172,7 @@ describe("grouped diagrams", () => {
     );
     expect(run("show", f).out).toContain('layer r2 "R2": web "Web" service group=zone | web-b');
     expect(run(...args, "--after", "zone").out).toContain(
-      'error: duplicate-id\ndescription: The id is taken.\nsource: grafical -f copy.grafical.yaml group --copy zone zone-b --label "Zone B" --suffix -b --after zone\ndetail:\n  field: into\n  found: zone-b\n',
+      'error: duplicate-id\ndescription: The id is taken.\nsource: grafical -f copy.grafical group --copy zone zone-b --label "Zone B" --suffix -b --after zone\ndetail:\n  field: into\n  found: zone-b\n',
     );
   });
 
@@ -189,7 +193,7 @@ const longVpc = {
 
 describe('groups inside groups on the command line (specs/decisions, "Every layered diagram type")', () => {
   it('group label-at and group label say where a label sits, and show prints it (specs/decisions, "The agent states where a group\'s label sits")', () => {
-    const f = "titled.grafical.yaml";
+    const f = "titled.grafical";
     writeFileSync(join(dir, f), writeDiagram(nested));
     expect(run("group", "label-at", f, "vpc", "1").code).toBe(0);
     expect(read(f)).toContain("side: top");
@@ -215,8 +219,8 @@ describe('groups inside groups on the command line (specs/decisions, "Every laye
   });
 
   it("adds, moves and removes a group inside another, and show names where each sits", () => {
-    writeFileSync(join(dir, "shop.grafical.yaml"), writeDiagram(nested));
-    const f = "shop.grafical.yaml";
+    writeFileSync(join(dir, "shop.grafical"), writeDiagram(nested));
+    const f = "shop.grafical";
     expect(run("group", "add", f, "zone", "--label", "zone b", "--in", "region").code).toBe(0);
     expect(run("show", f).out).toContain('group zone "zone b" in=region: (empty)');
     expect(run("group", "join", f, "zone", "backup").code).toBe(0);

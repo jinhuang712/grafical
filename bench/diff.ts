@@ -1,8 +1,7 @@
 // `pnpm bench diff <ref>`: what an engine change does to every picture we have.
-// Lays out three corpora with the engine at <ref> and with the working tree, and
+// Lays out two corpora with the engine at <ref> and with the working tree, and
 // prints key=value records (specs/decisions, "Records over prose"). No model calls, no cost.
-//   drafts    every saved agent draft: bench/runs/*/*/*.grafical.yaml in the main checkout
-//   fixtures  test/fixtures/*.grafical.yaml and the TypeScript fixtures of test/debug/check-fixtures.ts
+//   fixtures  test/fixtures/*.grafical and the TypeScript fixtures of test/debug/check-fixtures.ts
 //   fuzz      seeds 1..N of test/fuzz/gen.ts (--seeds <n>, default 2000)
 
 import { execFileSync } from "node:child_process";
@@ -33,7 +32,7 @@ import { steps } from "../test/fixtures/steps.ts";
 import { tiny } from "../test/fixtures/tiny.ts";
 import { generate } from "../test/fuzz/gen.ts";
 
-export const CORPORA = ["drafts", "fixtures", "fuzz"] as const;
+export const CORPORA = ["fixtures", "fuzz"] as const;
 export type Corpus = (typeof CORPORA)[number];
 
 /** One diagram to lay out: a file read by the engine under test, or a diagram built here. */
@@ -189,7 +188,7 @@ export function formatSummary(s: Summary): string[] {
   ];
 }
 
-/** The checkout that holds bench/runs: the main one, when this is a linked worktree. */
+/** The main checkout, whose node_modules the engine at <ref> borrows when this is a linked worktree. */
 export function mainCheckout(cwd: string): string {
   const common = execFileSync("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], {
     cwd,
@@ -198,42 +197,13 @@ export function mainCheckout(cwd: string): string {
   return dirname(common);
 }
 
-/** Every `*.grafical.yaml` directly inside bench/runs/<round>/<chain>/. */
-export function draftFiles(runs: string): string[] {
-  const out: string[] = [];
-  if (!existsSync(runs)) return out;
-  for (const round of readdirSync(runs).sort()) {
-    const top = join(runs, round);
-    for (const chain of readdirSync(top).sort()) {
-      const dir = join(top, chain);
-      let names: string[];
-      try {
-        names = readdirSync(dir);
-      } catch {
-        continue; // a file, not a chain
-      }
-      for (const f of names.sort()) if (/\.grafical(\.yaml)?$/.test(f)) out.push(join(dir, f));
-    }
-  }
-  return out;
-}
-
-async function corpusItems(
-  corpus: Corpus,
-  o: { cwd: string; runs: string; seeds: number },
-): Promise<Item[]> {
-  if (corpus === "drafts")
-    return draftFiles(o.runs).map((file) => ({
-      id: file.slice(o.runs.length + 1).replace(/\.grafical\.yaml$/, ""),
-      file,
-      render: true,
-    }));
+async function corpusItems(corpus: Corpus, o: { cwd: string; seeds: number }): Promise<Item[]> {
   if (corpus === "fixtures") {
     const dir = join(o.cwd, "test", "fixtures");
     const files = readdirSync(dir)
-      .filter((f) => /\.grafical(\.yaml)?$/.test(f))
+      .filter((f) => f.endsWith(".grafical"))
       .sort()
-      .map((f) => ({ id: f.replace(/\.grafical\.yaml$/, ""), file: join(dir, f), render: true }));
+      .map((f) => ({ id: f.replace(/\.grafical$/, ""), file: join(dir, f), render: true }));
     const built: [string, Diagram][] = [
       ["tiny", tiny],
       ["catalog-sync-grouped", catalogSyncGrouped],
@@ -292,7 +262,6 @@ export interface DiffOptions {
 /** Runs the whole comparison and returns the records to print. */
 export async function runDiff(o: DiffOptions): Promise<string[]> {
   const main = mainCheckout(o.cwd);
-  const runs = join(main, "bench", "runs");
   const tmp = mkdtempSync(join(tmpdir(), "grafical-diff-"));
   const old = join(tmp, "ref");
   const sha = execFileSync("git", ["rev-parse", "--short", `${o.ref}^{commit}`], {
@@ -306,7 +275,7 @@ export async function runDiff(o: DiffOptions): Promise<string[]> {
     const lines = [`diff ref=${o.ref} sha=${sha} seeds=${o.seeds}`];
     const render = o.renderDir ? resolve(o.renderDir) : undefined;
     for (const corpus of CORPORA) {
-      const items = await corpusItems(corpus, { cwd: o.cwd, runs, seeds: o.seeds });
+      const items = await corpusItems(corpus, { cwd: o.cwd, seeds: o.seeds });
       const svgs = (side: string) =>
         render && corpus !== "fuzz" ? join(tmp, `${corpus}-${side}`) : undefined;
       const before = measure(old, items, tmp, `${corpus}-before`, svgs("before"));

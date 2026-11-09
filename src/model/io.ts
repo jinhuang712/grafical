@@ -1,30 +1,22 @@
 // Reading and writing the diagram file (FEATURES.md, "The diagram file"; DESIGNS.md, "What grafical cannot fully read, it refuses").
 
-import { parseDocument, stringify } from "yaml";
 import type { OpError } from "../errors.ts";
 import { parseGrafical, writeGrafical } from "./grafical-format.ts";
 import { validateDiagram } from "./schema.ts";
-import { STEP_KEYS } from "./steps.ts";
-import {
-  type Diagram,
-  type DiagramNode,
-  EDGE_STYLES,
-  type Edge,
-  type Layer,
-  MARK_SLOTS,
-} from "./types.ts";
+import type { Diagram } from "./types.ts";
 
+/** A diagram from the text of a .grafical file, or the errors that refuse it. */
 export function readDiagram(text: string): Diagram | OpError[] {
-  if (text.startsWith("<diagram>")) {
-    const plain = parseGrafical(text);
-    return Array.isArray(plain) ? plain : validateDiagram(plain);
-  }
-  const doc = parseDocument(text, { uniqueKeys: true });
-  if (doc.errors.length > 0) return doc.errors.map((e) => yamlError(text, e));
-  return validateDiagram(doc.toJS());
+  const plain = parseGrafical(text);
+  return Array.isArray(plain) ? plain : validateDiagram(plain);
 }
 
-/** A YAML syntax error: the edge and column it is at, from 1, and the text of that edge. */
+/** The text of a .grafical file. */
+export function writeDiagram(d: Diagram): string {
+  return writeGrafical(d);
+}
+
+/** A YAML syntax error in a batch: the line and column it is at, from 1, and the text of that line. */
 export function yamlError(text: string, err: unknown): OpError {
   const at = (err as { linePos?: { line: number; col: number }[] } | null)?.linePos?.[0];
   const line = at?.line ?? 1;
@@ -34,154 +26,4 @@ export function yamlError(text: string, err: unknown): OpError {
     found: (text.split("\n")[line - 1] ?? "").trim(),
     facts: { line, ...(at !== undefined ? { column: at.col } : {}) },
   };
-}
-
-// Key order is fixed here. A field that holds its default is left out.
-function nodeOut(n: DiagramNode): Record<string, unknown> {
-  const o: Record<string, unknown> = { id: n.id, label: n.label, kind: n.kind };
-  if (n.sublabel !== undefined) o.sublabel = n.sublabel;
-  if (n.labelAlign !== undefined) o.labelAlign = n.labelAlign;
-  if (n.size !== undefined) o.size = n.size;
-  if (n.emphasis === true) o.emphasis = true;
-  if (n.align !== undefined) o.align = n.align;
-  if (n.group !== undefined) o.group = n.group;
-  if (n.lane !== undefined) o.lane = n.lane;
-  if (n.column !== undefined) o.column = n.column;
-  if (n.type !== undefined) o.type = n.type;
-  if (n.like !== undefined) o.like = n.like;
-  if (n.style !== undefined) o.style = n.style;
-  if (n.marks !== undefined && Object.keys(n.marks).length > 0) {
-    const marks: Record<string, unknown> = {};
-    for (const slot of MARK_SLOTS) {
-      const m = n.marks[slot];
-      if (m === undefined) continue;
-      if (typeof m === "string") marks[slot] = m;
-      else if ("file" in m) {
-        marks[slot] = { file: m.file, sha256: m.sha256, ...(m.size ? { size: m.size } : {}) };
-      } else {
-        // Keys sorted, so the same facts give the same bytes (DESIGNS.md, "The same file gives the same picture on any machine").
-        const o: Record<string, string> = {};
-        for (const k of ["bg", "border", "fg", "shape", "size", "text"] as const) {
-          if (m[k] !== undefined) o[k] = m[k];
-        }
-        marks[slot] = o;
-      }
-    }
-    o.marks = marks;
-  }
-  if (n.from !== undefined) o.from = n.from;
-  for (const k of STEP_KEYS) if (n[k] !== undefined) o[k] = n[k];
-  return o;
-}
-
-function layerOut(l: Layer): Record<string, unknown> {
-  const o: Record<string, unknown> = { id: l.id };
-  if (l.label !== undefined) o.label = l.label;
-  if (l.lane !== undefined) o.lane = l.lane;
-  if (l.look !== undefined) o.look = l.look;
-  if (l.labelAt !== undefined) o.labelAt = l.labelAt;
-  o.nodes = l.nodes.map(nodeOut);
-  return o;
-}
-
-function edgeOut(e: Edge): Record<string, unknown> {
-  const o: Record<string, unknown> = { id: e.id, from: e.from, to: e.to, kind: e.kind };
-  if (e.label !== undefined) o.label = e.label;
-  if (e.labelAlign !== undefined) o.labelAlign = e.labelAlign;
-  if (e.labelStyle !== undefined) o.labelStyle = e.labelStyle;
-  if (e.both === true) o.both = true;
-  if (e.pass === true) o.pass = true;
-  if (e.seat !== undefined) o.seat = e.seat;
-  if (e.out !== undefined) o.out = e.out;
-  if (e.in !== undefined) o.in = e.in;
-  if (e.weight !== undefined) o.weight = e.weight;
-  if (e.step !== undefined) o.step = e.step;
-  if (e.via !== undefined) o.via = { ...e.via };
-  if (e.straight === true) o.straight = true;
-  if (e.with !== undefined) o.with = e.with;
-  if (e.bendAt !== undefined) o.bendAt = e.bendAt;
-  if (e.stretch !== undefined) o.stretch = e.stretch;
-  if (e.type !== undefined) o.type = e.type;
-  if (e.like !== undefined) o.like = e.like;
-  if (e.style !== undefined) o.style = e.style;
-  return o;
-}
-
-/** The file's bytes: a .grafical file in its own form, and any other as YAML until it moves. */
-export function fileBytes(d: Diagram, path: string): string {
-  return path.endsWith(".grafical") ? writeGrafical(d) : writeDiagram(d);
-}
-
-export function writeDiagram(d: Diagram): string {
-  const out: Record<string, unknown> = { grafical: d.grafical, title: d.title };
-  if (d.subtitle !== undefined) out.subtitle = d.subtitle;
-  if (d.caption !== undefined) out.caption = d.caption;
-  out.density = d.density;
-  if (d.lines !== undefined) out.lines = d.lines;
-  if (d.titleAt !== undefined) out.titleAt = { ...d.titleAt };
-  if (d.sizing === "fixed") out.sizing = "fixed";
-  if (d.style !== undefined) out.style = d.style;
-  if (d.types !== undefined && d.types.length > 0) out.types = d.types;
-  if (d.styles !== undefined && d.styles.length > 0) out.styles = d.styles;
-  if (d.legend !== undefined && Object.keys(d.legend).length > 0) {
-    const legend: Record<string, unknown> = {};
-    for (const styleName of EDGE_STYLES) {
-      const text = d.legend[styleName];
-      if (text !== undefined) legend[styleName] = text;
-    }
-    // Sorted, so the same words give the same file whatever order they were set in.
-    for (const key of ["weights", "marks"] as const) {
-      const words = Object.entries(d.legend[key] ?? {}).sort(([a], [b]) => (a < b ? -1 : 1));
-      if (words.length > 0) legend[key] = Object.fromEntries(words);
-    }
-    out.legend = legend;
-  }
-  out.layers = d.layers.map(layerOut);
-  if (d.nodes !== undefined && d.nodes.length > 0) out.nodes = d.nodes.map(nodeOut);
-  if (d.groups !== undefined && d.groups.length > 0) {
-    out.groups = d.groups.map((g) => {
-      const o: Record<string, unknown> = { id: g.id, label: g.label };
-      if (g.sublabel !== undefined) o.sublabel = g.sublabel;
-      if (g.in !== undefined) o.in = g.in;
-      if (g.titleAt !== undefined) o.titleAt = { ...g.titleAt };
-      if (g.like !== undefined) o.like = g.like;
-      if (g.style !== undefined) o.style = g.style;
-      return o;
-    });
-  }
-  if (d.lanes !== undefined && d.lanes.length > 0) {
-    out.lanes = d.lanes.map((x) => ({
-      id: x.id,
-      label: x.label,
-      ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
-      ...(x.labelAt === undefined ? {} : { labelAt: x.labelAt }),
-      ...(x.like === undefined ? {} : { like: x.like }),
-      ...(x.style === undefined ? {} : { style: x.style }),
-    }));
-  }
-  if (d.columns !== undefined && d.columns.length > 0) {
-    out.columns = d.columns.map((x) => ({ id: x.id }));
-  }
-  if (d.gaps !== undefined && d.gaps.length > 0) {
-    out.gaps = d.gaps.map((x) => ({ between: x.between, magnified: x.magnified }));
-  }
-  if (d.walls !== undefined && d.walls.length > 0) {
-    out.walls = d.walls.map((x) => {
-      const o: Record<string, unknown> = { id: x.id, between: x.between, and: x.and };
-      if (x.allow !== undefined && x.allow.length > 0) o.allow = x.allow;
-      if (x.label !== undefined) o.label = x.label;
-      if (x.labelAlign !== undefined) o.labelAlign = x.labelAlign;
-      return o;
-    });
-  }
-  if (d.notes !== undefined && d.notes.length > 0) {
-    out.notes = d.notes.map((x) => ({
-      on: x.on,
-      text: x.text,
-      ...(x.footnote === true ? { footnote: true } : {}),
-      ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
-    }));
-  }
-  out.edges = d.edges.map(edgeOut);
-  return stringify(out, { lineWidth: 0, indent: 2, indentSeq: true, minContentWidth: 0 });
 }

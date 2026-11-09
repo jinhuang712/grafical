@@ -152,7 +152,7 @@ describe("a themed diagram", () => {
   it("round-trips its style and draws with the theme's paint", () => {
     const d = styled("dark");
     const text = writeDiagram(d);
-    expect(text).toMatch(/density: normal\nstyle: dark\nlayers:/);
+    expect(text).toMatch(/style: "dark"\n {2}density: normal\n}/);
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     const svg = renderSvg(layout(d, m));
     expect(svg).toContain(`fill="${THEMES.dark?.paint.background}"`);

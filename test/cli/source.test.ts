@@ -63,16 +63,16 @@ const LONG =
 
 describe("source", () => {
   it("of a single command is the command line as typed, quoted where a shell needs it", () => {
-    expect(commandLine(["node", "add", "d.grafical.yaml", "x", "--label", "order desk"])).toBe(
-      'grafical node add d.grafical.yaml x --label "order desk"',
+    expect(commandLine(["node", "add", "d.grafical", "x", "--label", "order desk"])).toBe(
+      'grafical node add d.grafical x --label "order desk"',
     );
-    expect(commandLine(["edge", "number", "d.grafical.yaml", "a->b", "--n", "2"])).toBe(
-      'grafical edge number d.grafical.yaml "a->b" --n 2',
+    expect(commandLine(["edge", "number", "d.grafical", "a->b", "--n", "2"])).toBe(
+      'grafical edge number d.grafical "a->b" --n 2',
     );
-    const f = fresh("one.grafical.yaml");
+    const f = fresh("one.grafical");
     const r = run("node", "add", f, "cache", "--layer", "row-b", "--label", "cache");
     expect(sources(r.out)).toEqual([
-      "grafical -f one.grafical.yaml node --add cache --layer row-b --label cache",
+      "grafical -f one.grafical node --add cache --layer row-b --label cache",
     ]);
   });
 
@@ -115,7 +115,7 @@ describe("source", () => {
       "",
     ].join("\n");
     expect(batchItems(dashes).map((x) => x.line)).toEqual([3, 7, 10, 13]);
-    const f = fresh("batch.grafical.yaml");
+    const f = fresh("batch.grafical");
     writeFileSync(
       join(dir, "dup.yaml"),
       "- op: node.add\n  id: x\n  layer: row-a\n  label: X\n  last: true\n- op: node.add\n  id: x\n  layer: row-a\n  label: X\n  last: true\n",
@@ -134,7 +134,7 @@ describe("source", () => {
   });
 
   it("of a problem of the whole diagram is the batch line after which it first appears", () => {
-    const f = fresh("whole.grafical.yaml");
+    const f = fresh("whole.grafical");
     writeFileSync(
       join(dir, "split.yaml"),
       [
@@ -154,7 +154,7 @@ describe("source", () => {
   });
 
   it("of a defect is the batch line after which it first appears and stays", () => {
-    const f = fresh("defect.grafical.yaml");
+    const f = fresh("defect.grafical");
     writeFileSync(
       join(dir, "long.yaml"),
       [
@@ -191,7 +191,7 @@ describe("source", () => {
       `- {op: node.add, id: ${id}, label: ${id}, layer: ${layerId}, last: true}`;
 
     it("names the batch file when a prefix after the last one without the problem is refused for another", () => {
-      writeFileSync(join(dir, "g7.grafical.yaml"), grocer());
+      writeFileSync(join(dir, "g7.grafical"), grocer());
       // Lines 3 to 6 split the group around picker-app, which line 7 joins to it: the label is too long from line 2 on.
       const b7 = [
         node("n1", "row-callers"),
@@ -204,13 +204,13 @@ describe("source", () => {
         node("n8", "row-edge"),
       ];
       writeFileSync(join(dir, "b7.yaml"), `${b7.join("\n")}\n`);
-      const r7 = run("apply", "g7.grafical.yaml", "b7.yaml");
+      const r7 = run("apply", "g7.grafical", "b7.yaml");
       expect(r7.out).toMatch(/^defect: overflow$/m);
       // Whether the label is too long after lines 3 to 6 cannot be known, so no line can be named.
       expect(sources(r7.out)).toEqual(["b7.yaml"]);
       // Lines 3 to 6 draw a bar under row-callers that edges pass, which line 7 takes away: the group splits from
       // line 2 on.
-      writeFileSync(join(dir, "g11.grafical.yaml"), grocer());
+      writeFileSync(join(dir, "g11.grafical"), grocer());
       const b11 = [
         "- {op: layer.add, id: row-wire, label: Bundle, after: row-callers}",
         "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
@@ -222,13 +222,13 @@ describe("source", () => {
         node("n8", "row-edge"),
       ];
       writeFileSync(join(dir, "b11.yaml"), `${b11.join("\n")}\n`);
-      const r11 = run("apply", "g11.grafical.yaml", "b11.yaml");
+      const r11 = run("apply", "g11.grafical", "b11.yaml");
       expect(r11.out).toMatch(/^error: group-split$/m);
       expect(sources(r11.out)).toEqual(["b11.yaml"]);
     });
 
     it("names the batch file with no line where no prefix can tell", () => {
-      writeFileSync(join(dir, "gx.grafical.yaml"), grocer());
+      writeFileSync(join(dir, "gx.grafical"), grocer());
       // Every prefix that holds the long label also splits the group, until the last line joins picker-app to it.
       const bx = [
         "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
@@ -236,7 +236,7 @@ describe("source", () => {
         "- {op: group.join, group: g, nodes: [picker-app]}",
       ];
       writeFileSync(join(dir, "bx.yaml"), `${bx.join("\n")}\n`);
-      const r = run("apply", "gx.grafical.yaml", "bx.yaml", "--json");
+      const r = run("apply", "gx.grafical", "bx.yaml", "--json");
       expect(JSON.parse(r.out).problems).toMatchObject([
         { kind: "defect", code: "overflow", source: "bx.yaml" },
       ]);
@@ -248,12 +248,12 @@ describe("source", () => {
       const long = nested.groups?.map((g) =>
         g.id === "vpc" ? { ...g, label: "virtual private cloud network" } : g,
       );
-      writeFileSync(join(dir, "tp.grafical.yaml"), writeDiagram({ ...nested, groups: long ?? [] }));
+      writeFileSync(join(dir, "tp.grafical"), writeDiagram({ ...nested, groups: long ?? [] }));
       writeFileSync(
         join(dir, "tp1.yaml"),
         "- {op: group.label-at, id: vpc, at: 0.5, side: bottom}\n- {op: group.label-at, id: vpc, at: 0.5, side: bottom, place: outside}\n",
       );
-      const r = run("apply", "tp.grafical.yaml", "tp1.yaml");
+      const r = run("apply", "tp.grafical", "tp1.yaml");
       expect(r.out).toMatch(/^defect: title-blocked$/m);
       expect(r.out).toMatch(/^ {2}place: 0.5 bottom outside$/m);
       expect(sources(r.out)).toEqual([
@@ -262,7 +262,7 @@ describe("source", () => {
     });
 
     it("gives each of many defects its line, or the batch file once the prefixes to try are spent", () => {
-      writeFileSync(join(dir, "gm.grafical.yaml"), grocer());
+      writeFileSync(join(dir, "gm.grafical"), grocer());
       const layerIds = ["row-callers", "row-edge", "row-api", "row-svc"];
       const lines = Array.from({ length: 40 }, (_, i) =>
         i % 4 === 3
@@ -270,7 +270,7 @@ describe("source", () => {
           : node(`n${i}`, layerIds[i % 4] as string),
       );
       writeFileSync(join(dir, "many.yaml"), `${lines.join("\n")}\n`);
-      const found = sources(run("apply", "gm.grafical.yaml", "many.yaml").out);
+      const found = sources(run("apply", "gm.grafical", "many.yaml").out);
       expect(found).toHaveLength(10);
       for (const s of found) {
         if (s === "many.yaml") continue;
@@ -285,7 +285,7 @@ describe("source", () => {
   it("of a warning: none, in text or in --json, as the outcome line names what the write changed", () => {
     // sync->geo bends three times and passes a layer in this fixture, and other edges bend too
     // (specs/decisions, "Every write prints every warning").
-    const f = "bent.grafical.yaml";
+    const f = "bent.grafical";
     writeFileSync(
       join(dir, f),
       readFileSync(join(import.meta.dirname, "../fixtures/catalog-sync-help3.grafical"), "utf8"),
@@ -309,7 +309,7 @@ describe("source", () => {
     const web = bad.layers[0]?.nodes[0];
     if (web === undefined) throw new Error("web");
     web.label = LONG;
-    const f = fresh("had.grafical.yaml", bad);
+    const f = fresh("had.grafical", bad);
     const before = readFileSync(join(dir, f), "utf8");
     const check = run("check", f);
     expect(check.code).toBe(1);
@@ -320,15 +320,15 @@ describe("source", () => {
     expect(new Set(sources(write.out))).toEqual(new Set(["already in the file"]));
     expect(readFileSync(join(dir, f), "utf8")).toBe(before);
     // A file that cannot be read is the command's.
-    expect(sources(run("show", "missing.grafical.yaml").out)).toEqual([
-      "grafical -f missing.grafical.yaml show",
+    expect(sources(run("show", "missing.grafical").out)).toEqual([
+      "grafical -f missing.grafical show",
     ]);
   });
 
   // Found by the second review on 2026-10-18: a stylesheet named on line 3 gave op 0, and a file or a batch that
   // cannot be read gave op 0 though no operation caused it.
   it("of a stylesheet an operation names gives that operation's index, and an error of the command none", () => {
-    const f = fresh("sty.grafical.yaml");
+    const f = fresh("sty.grafical");
     writeFileSync(
       join(dir, "sty.yaml"),
       "- {op: node.label, id: web, label: Web}\n- {op: node.label, id: api, label: API}\n- {op: diagram.style, style: missing.grafical}\n",
@@ -341,7 +341,7 @@ describe("source", () => {
         detail: { op: 2 },
       },
     ]);
-    const missing = JSON.parse(run("apply", "nope.grafical.yaml", "sty.yaml", "--json").out);
+    const missing = JSON.parse(run("apply", "nope.grafical", "sty.yaml", "--json").out);
     expect(missing.problems).toMatchObject([{ code: "file-not-found" }]);
     expect(missing.problems[0].detail.op).toBeUndefined();
     const unread = JSON.parse(run("apply", f, "nope.yaml", "--json").out);
@@ -351,7 +351,7 @@ describe("source", () => {
 
   // Found by the second review on 2026-10-18 (uw): a legend's weight that only a stylesheet had.
   it("of a weight the stylesheet a later line takes away is that line, which the legend's commands can change", () => {
-    const f = fresh("uw.grafical.yaml");
+    const f = fresh("uw.grafical");
     writeFileSync(
       join(dir, "w.grafical"),
       "<stylesheet> {\n  format: 1\n}\n\n<weight> critical {\n  width: 6.5\n}\n",
@@ -379,7 +379,7 @@ describe("source", () => {
     split.layers[1]?.nodes.push({ id: "cache", label: "cache", kind: "store", group: "g" });
     api.group = "g";
     split.groups = [{ id: "g", label: "g" }];
-    const f = fresh("split.grafical.yaml", split);
+    const f = fresh("split.grafical", split);
     writeFileSync(
       join(dir, "two.yaml"),
       "- {op: node.label, id: web, label: Web}\n- {op: diagram.title, text: T}\n",
@@ -404,7 +404,7 @@ describe("source", () => {
       join(dir, "own.yaml"),
       "- {op: node.label, id: web, label: Web}\n- {op: node.label, id: nope, label: X}\n",
     );
-    const own = JSON.parse(run("apply", fresh("own.grafical.yaml"), "own.yaml", "--json").out);
+    const own = JSON.parse(run("apply", fresh("own.grafical"), "own.yaml", "--json").out);
     expect(own.problems[0].detail.op).toBe(1);
   });
 });

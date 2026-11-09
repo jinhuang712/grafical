@@ -93,12 +93,11 @@ export function issuesToErrors(
       for (const key of keys) {
         const f = leaf ? key : fieldName([...path, key]);
         const value = getPath(raw, [...path, key]);
-        const renamed = leaf ? RENAMED[`${String(getPath(raw, ["op"]))}.${key}`] : undefined;
         const before = order
           .slice(0, order.indexOf(key))
           .reverse()
           .find((k) => !keys.includes(k));
-        if ((value === null || /\s/.test(key)) && renamed === undefined) {
+        if (value === null || /\s/.test(key)) {
           if (before !== undefined) cut.set(before, [...(cut.get(before) ?? []), key]);
           else out.push({ code: "unquoted-text", index, field: f, found: key });
           continue;
@@ -110,7 +109,7 @@ export function issuesToErrors(
           found: key,
           facts: {
             allowed: known,
-            likely: renamed !== undefined ? [renamed] : closest(key, known, 2),
+            likely: closest(key, known, 2),
           },
         });
       }
@@ -174,16 +173,6 @@ export function issuesToErrors(
         ...base,
         found: show(found),
         facts: { min: 1, max: STEP_NUMBER_MAX },
-      });
-    } else if (issue.code === "invalid_union" && path[0] === "legend") {
-      // A legend entry holds words. An old file's false is read as none, and not offered
-      // (specs/decisions, "The legend says only what the agent named").
-      out.push({
-        code: "bad-type",
-        index,
-        ...base,
-        found: show(found),
-        facts: { type: "string" },
       });
     } else if (issue.code === "invalid_union" || issue.message === "mark-too-long") {
       // A mark is a text or a file: a string that is refused is too long (specs/decisions, "Marks of any kind").
@@ -285,9 +274,6 @@ function guessedKind(
   if (guess === undefined) return { allowed: values };
   return { allowed: values, likely: typeof guess === "string" ? [guess] : guess };
 }
-
-/** Operation fields renamed for clarity, by `<op>.<old field>`, with their new name. */
-const RENAMED: Record<string, string> = { "diagram.legend.line": "style" };
 
 /**
  * A legend's style given as an edge kind, or with its wording: the legend names how edges

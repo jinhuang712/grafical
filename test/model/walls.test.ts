@@ -47,7 +47,7 @@ describe('walls (specs/decisions, "Walls as space")', () => {
       },
     ]);
     const text = writeDiagram(d);
-    expect(text).toContain("walls:");
+    expect(text).toContain("<wall> net {");
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     expect(showDiagram(d)).toContain(
       'wall net "private network" (across): between=upstream,callers and=catalog-sync,catalog-api allow=relay,handlers',

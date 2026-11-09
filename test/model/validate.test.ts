@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { parse } from "yaml";
 import type { OpError } from "../../src/errors.ts";
-import { readDiagram } from "../../src/model/index.ts";
+import { validateDiagram } from "../../src/model/index.ts";
 import { NODE_KINDS } from "../../src/model/types.ts";
 
 function errorsOf(text: string): OpError[] {
-  const r = readDiagram(text);
+  const r = validateDiagram(parse(text));
   if (!Array.isArray(r)) throw new Error("expected errors");
   return r;
 }
@@ -105,6 +106,6 @@ describe("file validation", () => {
       "      - id: a1\n        label: A\n      - id: b1\n        label: B\n",
       "edges:\n  - id: a1->b1#2\n    from: a1\n    to: b1\n",
     );
-    expect(Array.isArray(readDiagram(text))).toBe(false);
+    expect(Array.isArray(validateDiagram(parse(text)))).toBe(false);
   });
 });

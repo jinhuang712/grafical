@@ -87,7 +87,7 @@ describe('sizing fixed (specs/decisions, "Nodes sized to their text")', () => {
   it("is written after density, and auto clears it", () => {
     const d = ok(one("API"), [{ op: "diagram.sizing", mode: "fixed" }]);
     const text = writeDiagram(d);
-    expect(text).toMatch(/density: normal\nsizing: fixed\nlayers:/);
+    expect(text).toMatch(/density: normal\n {2}sizing: fixed\n}/);
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     const auto = ok(d, [{ op: "diagram.sizing", mode: "auto" }]);
     expect(writeDiagram(auto)).not.toContain("sizing");

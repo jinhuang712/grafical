@@ -525,13 +525,11 @@ export async function checkRound(round: string): Promise<Map<string, StepGeometr
     for (const step of readdirSync(steps).sort()) {
       const dir = join(steps, step);
       const own = readdirSync(dir)
-        .filter((f) => /\.grafical(\.yaml)?$/.test(f))
+        .filter((f) => f.endsWith(".grafical"))
         .sort();
       const file = join(
         dir,
-        ["diagram.grafical", "diagram.grafical.yaml"].find((f) => own.includes(f)) ??
-          own[0] ??
-          "diagram.grafical",
+        own.includes("diagram.grafical") ? "diagram.grafical" : (own[0] ?? "diagram.grafical"),
       );
       const drawn = join(dir, "diagram.svg");
       let result: StepGeometry;

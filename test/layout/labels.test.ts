@@ -51,18 +51,116 @@ describe("edge labels and group sides", () => {
 describe('a label no gutter holds (specs/decisions, "An edge never moves for its label")', () => {
   // Until 2026-10-17 the middle edge stepped out of the crowd with four bends to carry its label.
   it("moves no edge for it, and refuses it as label-blocked, naming the edge across it", () => {
-    const d = readDiagram(`grafical: 1
-title: five
-density: normal
-layers:
-  - {id: top, label: Top, nodes: [{id: a, label: Orders API}]}
-  - {id: bottom, label: Bottom, nodes: [{id: b, label: Orders DB, kind: store}]}
-edges:
-  - {id: a->b, from: a, to: b, label: writes orders}
-  - {id: a->b#2, from: a, to: b, label: reads stock}
-  - {id: a->b#3, from: a, to: b, label: locks rows}
-  - {id: a->b#4, from: a, to: b, label: audits changes}
-  - {id: a->b#5, from: a, to: b, label: retries failed}
+    const d = readDiagram(`<diagram> {
+  format: 1
+  title: "five"
+  density: normal
+}
+
+<layer> top {
+}
+
+<layer> bottom {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @top
+    @bottom
+}
+
+<order> top-order {
+  of: @top
+  axis: across
+  items:
+    @a
+}
+
+<order> bottom-order {
+  of: @bottom
+  axis: across
+  items:
+    @b
+}
+
+<node> a {
+  type: @service
+  text: "Orders API"
+  layer: @top
+}
+
+<node> b {
+  type: @store
+  text: "Orders DB"
+  layer: @bottom
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> a->b#2 {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> a->b#3 {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> a->b#4 {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> a->b#5 {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<label> top-label {
+  on: @top
+  text: "Top"
+}
+
+<label> bottom-label {
+  on: @bottom
+  text: "Bottom"
+}
+
+<label> a->b-label {
+  on: @a->b
+  text: "writes orders"
+}
+
+<label> a->b#2-label {
+  on: @a->b#2
+  text: "reads stock"
+}
+
+<label> a->b#3-label {
+  on: @a->b#3
+  text: "locks rows"
+}
+
+<label> a->b#4-label {
+  on: @a->b#4
+  text: "audits changes"
+}
+
+<label> a->b#5-label {
+  on: @a->b#5
+  text: "retries failed"
+}
 `) as Diagram;
     const s = layout(d, m);
     for (const e of s.edges) expect(e.points.length, e.id).toBe(2);
@@ -85,25 +183,152 @@ edges:
   // to the layer below is cut at the lane's border and keeps a 16 px stub, and the label, with no clear
   // place beside the stub or past its ends, lay across the border, an engine-owned text-crossing.
   it("refuses a label no place beside an edge cut at a lane holds, naming the lanes across it", () => {
-    const d = readDiagram(`grafical: 1
-title: lanes
-density: normal
-lanes:
-  - {id: shop, label: Shop}
-  - {id: depot, label: Depot}
-layers:
-  - {id: top, label: Top, lane: shop, nodes: [{id: a, label: Cart}, {id: c, label: Pay}, {id: e, label: Ship}]}
-  - {id: bottom, label: Bottom, lane: depot, nodes: [{id: b, label: Stock}]}
-edges:
-  - {id: a->b, from: a, to: b}
-  - {id: a->b#2, from: a, to: b}
-  - {id: a->b#3, from: a, to: b}
-  - {id: c->b, from: c, to: b}
-  - {id: c->b#2, from: c, to: b}
-  - {id: e->b, from: e, to: b}
-  - {id: e->b#2, from: e, to: b}
-  - {id: e->b#3, from: e, to: b}
-  - {id: shop->b, from: shop, to: b, label: picks}
+    const d = readDiagram(`<diagram> {
+  format: 1
+  title: "lanes"
+  density: normal
+}
+
+<layer> top {
+  lane: @shop
+}
+
+<layer> bottom {
+  lane: @depot
+}
+
+<lane> shop {
+}
+
+<lane> depot {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @top
+    @bottom
+}
+
+<order> top-order {
+  of: @top
+  axis: across
+  items:
+    @a
+    @c
+    @e
+}
+
+<order> bottom-order {
+  of: @bottom
+  axis: across
+  items:
+    @b
+}
+
+<node> a {
+  type: @service
+  text: "Cart"
+  layer: @top
+}
+
+<node> c {
+  type: @service
+  text: "Pay"
+  layer: @top
+}
+
+<node> e {
+  type: @service
+  text: "Ship"
+  layer: @top
+}
+
+<node> b {
+  type: @service
+  text: "Stock"
+  layer: @bottom
+}
+
+<edge> a->b {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> a->b#2 {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> a->b#3 {
+  from: @a
+  to: @b
+  type: @call
+}
+
+<edge> c->b {
+  from: @c
+  to: @b
+  type: @call
+}
+
+<edge> c->b#2 {
+  from: @c
+  to: @b
+  type: @call
+}
+
+<edge> e->b {
+  from: @e
+  to: @b
+  type: @call
+}
+
+<edge> e->b#2 {
+  from: @e
+  to: @b
+  type: @call
+}
+
+<edge> e->b#3 {
+  from: @e
+  to: @b
+  type: @call
+}
+
+<edge> shop->b {
+  from: @shop
+  to: @b
+  type: @call
+}
+
+<label> top-label {
+  on: @top
+  text: "Top"
+}
+
+<label> bottom-label {
+  on: @bottom
+  text: "Bottom"
+}
+
+<label> shop-label {
+  on: @shop
+  text: "Shop"
+}
+
+<label> depot-label {
+  on: @depot
+  text: "Depot"
+}
+
+<label> shop->b-label {
+  on: @shop->b
+  text: "picks"
+}
 `) as Diagram;
     const found = check(d, layout(d, m), m);
     // The block names the edge, the lanes across its label and the gaps it tried, and the commands that can change

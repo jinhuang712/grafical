@@ -17,18 +17,112 @@ describe("group label seats", () => {
   // software system" was wider than the room between the edges into the group's first
   // layer, so the traveller's edge into the web app was pushed to the frame's left edge.
   it("make room between two edges rather than push an edge off centre", () => {
-    const d = readDiagram(`grafical: 1
-title: seats
-density: normal
-layers:
-  - {id: people, label: People, nodes: [{id: traveller, label: Traveller, kind: actor}, {id: hotel, label: Hotel staff, kind: actor}]}
-  - {id: apps, label: Apps, nodes: [{id: web, label: Web app, group: app}, {id: mobile, label: Mobile app, group: app}, {id: portal, label: Partner portal, group: app}]}
-groups:
-  - {id: app, label: Booking app, sublabel: software system}
-edges:
-  - {id: traveller->web, from: traveller, to: web}
-  - {id: traveller->mobile, from: traveller, to: mobile}
-  - {id: hotel->portal, from: hotel, to: portal}
+    const d = readDiagram(`<diagram> {
+  format: 1
+  title: "seats"
+  density: normal
+}
+
+<layer> people {
+}
+
+<layer> apps {
+}
+
+<group> app {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @people
+    @apps
+}
+
+<order> people-order {
+  of: @people
+  axis: across
+  items:
+    @traveller
+    @hotel
+}
+
+<order> apps-order {
+  of: @apps
+  axis: across
+  items:
+    @web
+    @mobile
+    @portal
+}
+
+<node> traveller {
+  type: @actor
+  text: "Traveller"
+  layer: @people
+}
+
+<node> hotel {
+  type: @actor
+  text: "Hotel staff"
+  layer: @people
+}
+
+<node> web {
+  type: @service
+  text: "Web app"
+  layer: @apps
+  group: @app
+}
+
+<node> mobile {
+  type: @service
+  text: "Mobile app"
+  layer: @apps
+  group: @app
+}
+
+<node> portal {
+  type: @service
+  text: "Partner portal"
+  layer: @apps
+  group: @app
+}
+
+<edge> traveller->web {
+  from: @traveller
+  to: @web
+  type: @call
+}
+
+<edge> traveller->mobile {
+  from: @traveller
+  to: @mobile
+  type: @call
+}
+
+<edge> hotel->portal {
+  from: @hotel
+  to: @portal
+  type: @call
+}
+
+<label> people-label {
+  on: @people
+  text: "People"
+}
+
+<label> apps-label {
+  on: @apps
+  text: "Apps"
+}
+
+<label> app-label {
+  on: @app
+  text: "Booking app"
+  sublabel: "software system"
+}
 `) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);

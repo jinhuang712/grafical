@@ -22,7 +22,7 @@ import { tiny } from "../fixtures/tiny.ts";
 vi.setConfig({ testTimeout: 30_000 });
 
 /** Where the writes of these tests come from: a command line. */
-const here: Origin = { command: "grafical node label d.grafical.yaml api --label orders-svc" };
+const here: Origin = { command: "grafical node label d.grafical api --label orders-svc" };
 
 let m: Measurer;
 let dir: string;
@@ -139,13 +139,13 @@ describe("the list of changes and the window", () => {
 
 describe("startViewer", () => {
   it("serves the page and pushes a new picture when the file or its stylesheet changes", async () => {
-    const file = join(dir, "live.grafical.yaml");
+    const file = join(dir, "live.grafical");
     writeFileSync(file, writeDiagram(tiny));
     const viewer = await startViewer(file, 0);
     const stream = await frames(viewer.url);
     try {
       const page = await (await fetch(viewer.url)).text();
-      expect(page).toContain("<title>live.grafical.yaml · grafical</title>");
+      expect(page).toContain("<title>live.grafical · grafical</title>");
 
       const first = await stream.next();
       expect(first.svg).toContain("orders-api");
@@ -153,7 +153,7 @@ describe("startViewer", () => {
       expect(first.stale).toBe(false);
       const history = (first as Frame & { history: ViewEvent[] }).history;
       expect(history.map((e) => e.kind)).toEqual(["open"]);
-      expect(history[0]?.lines[0]).toBe("live.grafical.yaml: 5 nodes, 5 edges");
+      expect(history[0]?.lines[0]).toBe("live.grafical: 5 nodes, 5 edges");
 
       // An edit by another process, the way an agent makes it.
       expect(
@@ -199,7 +199,7 @@ describe("startViewer", () => {
   });
 
   it("opens before the file exists and draws it once it is written", async () => {
-    const file = join(dir, "later.grafical.yaml");
+    const file = join(dir, "later.grafical");
     const viewer = await startViewer(file, 0);
     const stream = await frames(viewer.url);
     try {
@@ -220,7 +220,7 @@ describe("startViewer", () => {
   });
 
   it("answers 404 for anything but the page, the events and the fonts", async () => {
-    const file = join(dir, "other.grafical.yaml");
+    const file = join(dir, "other.grafical");
     writeFileSync(file, writeDiagram(tiny));
     const viewer = await startViewer(file, 0);
     try {

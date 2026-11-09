@@ -828,7 +828,7 @@ function said(words: string | undefined): { text: string } | object {
   return words === undefined ? {} : { text: words };
 }
 
-/** How an edge is weighted: a weight wins over the old emphasis, and thin is no weight (specs/decisions, "Edge weights"). */
+/** How an edge is weighted: thin is no weight (specs/decisions, "Edge weights"). */
 function weightLook(e: Edge | undefined): string {
   if (e === undefined) return "thin";
   if (e.weight !== undefined) return e.weight === "thin" ? "thin" : `w:${e.weight}`;

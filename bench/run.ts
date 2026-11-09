@@ -303,24 +303,19 @@ export interface DefectSplit {
 
 /**
  * Reads the output of `grafical check <file> --all --json`: its problems of kind defect, each with its owner in its
- * detail, or, from a grafical before specs/decisions, "Refusals say what happened and which commands can change it", its
- * defects with their owner. null when it is not that report: an older CLI that has no `--all` prints nothing on
- * stdout, or defects with no `owner`.
+ * detail. null when it is not that report.
  */
 export function parseCheckAll(stdout: string): DefectSplit | null {
-  let j: {
-    defects?: { owner?: string }[];
-    problems?: { kind?: string; detail?: { owner?: string } }[];
-  };
+  let j: { problems?: { kind?: string; detail?: { owner?: string } }[] };
   try {
     j = JSON.parse(stdout);
   } catch {
     return null;
   }
-  const defects = Array.isArray(j.problems)
-    ? j.problems.filter((p) => p.kind === "defect").map((p) => ({ owner: p.detail?.owner }))
-    : j.defects;
-  if (!Array.isArray(defects)) return null;
+  if (!Array.isArray(j.problems)) return null;
+  const defects = j.problems
+    .filter((p) => p.kind === "defect")
+    .map((p) => ({ owner: p.detail?.owner }));
   if (defects.some((d) => d.owner !== "agent" && d.owner !== "engine")) return null;
   const engineDefects = defects.filter((d) => d.owner === "engine").length;
   return { engineDefects, agentDefects: defects.length - engineDefects };
@@ -408,16 +403,10 @@ export function runStep(o: {
   if (res.stderr) writeFileSync(join(stepDir, "stderr.txt"), res.stderr);
 
   // Keep what the agent made at this step; the next step overwrites diagram.png. An
-  // agent may name its grafical file as its help suggests, `<name>.grafical.yaml`.
+  // agent may name its grafical file as it likes, `<name>.grafical`.
   const hashes: Record<string, string> = { transcript: sha256(transcript) };
-  const named = readdirSync(o.dir).filter((f) => f.endsWith(".grafical.yaml"));
-  const kept = new Set([
-    "diagram.png",
-    "diagram.grafical.yaml",
-    "diagram.svg",
-    "diagram.mmd",
-    ...named,
-  ]);
+  const named = readdirSync(o.dir).filter((f) => f.endsWith(".grafical"));
+  const kept = new Set(["diagram.png", "diagram.svg", "diagram.mmd", ...named]);
   for (const f of kept) {
     const src = join(o.dir, f);
     if (existsSync(src)) {

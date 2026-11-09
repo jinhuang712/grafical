@@ -55,7 +55,7 @@ Roadmap
 │       ├── ✅ Stylesheets as .grafical files
 │       ├── ✅ The colon after an attribute
 │       ├── ✅ The README's pictures in the file form
-│       └── ⬜ No YAML diagram
+│       └── ✅ No YAML diagram
 ├── 🟨 CP2: Drawing more — what a picture can hold
 │   ├── ✅ CP2.1: Containers — groups · lanes · walls · notes
 │   │   ├── ✅ Edges that end at containers
@@ -391,7 +391,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 - ✅ Stylesheets as .grafical files: The built-in stylesheets are `.grafical` files that `grafical library` lists, a stylesheet of one's own starts from one, and no value of a look is written in the code (2026-11-09).
 - ✅ The colon after an attribute: The owner kept it on 2026-11-09, since only a change to what the file already holds must come before the release.
 - ✅ The README's pictures in the file form: Both pictures are drawn from `.grafical` files (2026-11-09).
-- ⬜ No YAML diagram: The saved drafts move to the file form, and grafical reads and writes no diagram as YAML.
+- ✅ No YAML diagram: grafical reads and writes a diagram only in the file form, every alias kept for old saved runs went, and `bench diff` lays out the fixtures and the fuzz seeds (2026-11-09).
 
 **Delivers:**
 

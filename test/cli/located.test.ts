@@ -38,7 +38,7 @@ const BATCH = "b.yaml";
 
 /** A batch of these lines refused on a diagram: its ops, the lines its items start on, and its report. */
 function refuse(base: Diagram, lines: readonly string[]) {
-  const read = batchOps(BATCH, `${lines.join("\n")}\n`, `grafical apply d.grafical.yaml ${BATCH}`);
+  const read = batchOps(BATCH, `${lines.join("\n")}\n`, `grafical apply d.grafical ${BATCH}`);
   if (isReport(read)) throw new Error(JSON.stringify(read.errors));
   const r = attempt(base, read.ops, read.origin, m);
   if (!isReport(r)) throw new Error(`accepted: ${lines.join(" ")}`);
@@ -277,11 +277,7 @@ describe("the batch line a refused write names", () => {
           batch.push(`- {op: diagram.title, text: T${i}}`);
         }
       }
-      const read = batchOps(
-        BATCH,
-        `${batch.join("\n")}\n`,
-        `grafical apply d.grafical.yaml ${BATCH}`,
-      );
+      const read = batchOps(BATCH, `${batch.join("\n")}\n`, `grafical apply d.grafical ${BATCH}`);
       if (isReport(read)) continue;
       const res = attempt(grocer, read.ops, read.origin, m);
       if (!isReport(res)) continue;

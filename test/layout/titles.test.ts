@@ -1,6 +1,7 @@
 // Where a group's label sits when the agent states it (specs/decisions, "The agent states where a group's label sits").
 
 import { beforeAll, describe, expect, it } from "vitest";
+import { parse } from "yaml";
 import { check } from "../../src/check/index.ts";
 import type { OpError } from "../../src/errors.ts";
 import { layout } from "../../src/layout/index.ts";
@@ -13,10 +14,14 @@ import {
   type Op,
   parseOps,
   readDiagram,
+  validateDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
+
+/** The plain object a file holds, checked as the schema checks it. */
+const fromYaml = (text: string) => validateDiagram(parse(text));
 
 /** The places tried for a blocked title, by the names the checks below read them by. */
 const P: Record<string, GroupTitle> = {
@@ -53,24 +58,182 @@ function fail(d: Diagram, ops: Op[]): OpError[] {
 }
 
 // The booking diagram where the owner found the seated label in a weird spot, on 2026-10-16.
-const booking = readDiagram(`grafical: 1
-title: Booking
-density: normal
-layers:
-  - {id: people, label: People, nodes: [{id: traveller, label: Traveller, kind: actor}, {id: hotel, label: Hotel staff, kind: actor}]}
-  - {id: apps, label: Apps, nodes: [{id: web, label: Web app, group: app}, {id: mobile, label: Mobile app, group: app}, {id: portal, label: Partner portal, group: app}]}
-  - {id: core, label: Core, nodes: [{id: api, label: Booking API, group: app}]}
-  - {id: data, label: Data, nodes: [{id: db, label: Bookings, kind: store, group: app}]}
-groups:
-  - {id: app, label: Booking app, sublabel: software system}
-edges:
-  - {id: traveller->web, from: traveller, to: web}
-  - {id: traveller->mobile, from: traveller, to: mobile}
-  - {id: hotel->portal, from: hotel, to: portal}
-  - {id: web->api, from: web, to: api}
-  - {id: mobile->api, from: mobile, to: api}
-  - {id: portal->api, from: portal, to: api}
-  - {id: api->db, from: api, to: db}
+const booking = readDiagram(`<diagram> {
+  format: 1
+  title: "Booking"
+  density: normal
+}
+
+<layer> people {
+}
+
+<layer> apps {
+}
+
+<layer> core {
+}
+
+<layer> data {
+}
+
+<group> app {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @people
+    @apps
+    @core
+    @data
+}
+
+<order> people-order {
+  of: @people
+  axis: across
+  items:
+    @traveller
+    @hotel
+}
+
+<order> apps-order {
+  of: @apps
+  axis: across
+  items:
+    @web
+    @mobile
+    @portal
+}
+
+<order> core-order {
+  of: @core
+  axis: across
+  items:
+    @api
+}
+
+<order> data-order {
+  of: @data
+  axis: across
+  items:
+    @db
+}
+
+<node> traveller {
+  type: @actor
+  text: "Traveller"
+  layer: @people
+}
+
+<node> hotel {
+  type: @actor
+  text: "Hotel staff"
+  layer: @people
+}
+
+<node> web {
+  type: @service
+  text: "Web app"
+  layer: @apps
+  group: @app
+}
+
+<node> mobile {
+  type: @service
+  text: "Mobile app"
+  layer: @apps
+  group: @app
+}
+
+<node> portal {
+  type: @service
+  text: "Partner portal"
+  layer: @apps
+  group: @app
+}
+
+<node> api {
+  type: @service
+  text: "Booking API"
+  layer: @core
+  group: @app
+}
+
+<node> db {
+  type: @store
+  text: "Bookings"
+  layer: @data
+  group: @app
+}
+
+<edge> traveller->web {
+  from: @traveller
+  to: @web
+  type: @call
+}
+
+<edge> traveller->mobile {
+  from: @traveller
+  to: @mobile
+  type: @call
+}
+
+<edge> hotel->portal {
+  from: @hotel
+  to: @portal
+  type: @call
+}
+
+<edge> web->api {
+  from: @web
+  to: @api
+  type: @call
+}
+
+<edge> mobile->api {
+  from: @mobile
+  to: @api
+  type: @call
+}
+
+<edge> portal->api {
+  from: @portal
+  to: @api
+  type: @call
+}
+
+<edge> api->db {
+  from: @api
+  to: @db
+  type: @call
+}
+
+<label> people-label {
+  on: @people
+  text: "People"
+}
+
+<label> apps-label {
+  on: @apps
+  text: "Apps"
+}
+
+<label> core-label {
+  on: @core
+  text: "Core"
+}
+
+<label> data-label {
+  on: @data
+  text: "Data"
+}
+
+<label> app-label {
+  on: @app
+  text: "Booking app"
+  sublabel: "software system"
+}
 `) as Diagram;
 
 describe("a diagram's title at a fraction", () => {
@@ -118,7 +281,7 @@ describe("a diagram's title at a fraction", () => {
 
 describe("a layer's and a lane's label along its head", () => {
   const layered = (labelAt?: number) =>
-    readDiagram(`grafical: 1
+    fromYaml(`grafical: 1
 title: Rows
 density: normal
 lanes:
@@ -164,7 +327,7 @@ describe("a group's stated label place", () => {
   it("is set, kept in the file, cleared and refused when unknown", () => {
     const d = ok(booking, [{ op: "group.label-at", id: "app", ...P["top-right"] }]);
     expect(d.groups?.[0]?.titleAt).toEqual(P["top-right"]);
-    expect(writeDiagram(d)).toContain("titleAt:");
+    expect(writeDiagram(d)).toContain("  at: 1\n  side: top\n  place: inside");
     expect(readDiagram(writeDiagram(d))).toEqual(d);
     expect(ok(d, [{ op: "group.label-at", id: "app" }]).groups?.[0]?.titleAt).toBeUndefined();
     expect(fail(d, [{ op: "group.label-at", id: "apq", ...P.top }])[0]?.code).toBe("unknown-group");
@@ -192,44 +355,355 @@ describe("a group's stated label place", () => {
   });
 
   // Edges leave the last layer by the bottom, through the foot the label sits in.
-  const below = readDiagram(`grafical: 1
-title: Booking
-density: normal
-layers:
-  - {id: people, label: People, nodes: [{id: traveller, label: Traveller, kind: actor}, {id: hotel, label: Hotel staff, kind: actor}]}
-  - {id: apps, label: Apps, nodes: [{id: web, label: Web app, group: app}, {id: mobile, label: Mobile app, group: app}, {id: portal, label: Partner portal, group: app}]}
-  - {id: core, label: Core, nodes: [{id: api, label: Booking API, group: app}]}
-  - {id: data, label: Data, nodes: [{id: cache, label: Cache, kind: store, group: app}, {id: db, label: Bookings, kind: store, group: app}]}
-  - {id: ext, label: External, nodes: [{id: backup, label: Backup vault, kind: external}, {id: audit, label: Audit log, kind: external}]}
-groups:
-  - {id: app, label: Booking app, sublabel: software system}
-edges:
-  - {id: traveller->web, from: traveller, to: web}
-  - {id: traveller->mobile, from: traveller, to: mobile}
-  - {id: hotel->portal, from: hotel, to: portal}
-  - {id: web->api, from: web, to: api}
-  - {id: mobile->api, from: mobile, to: api}
-  - {id: portal->api, from: portal, to: api}
-  - {id: api->db, from: api, to: db}
-  - {id: api->cache, from: api, to: cache}
-  - {id: cache->backup, from: cache, to: backup}
-  - {id: db->audit, from: db, to: audit}
+  const below = readDiagram(`<diagram> {
+  format: 1
+  title: "Booking"
+  density: normal
+}
+
+<layer> people {
+}
+
+<layer> apps {
+}
+
+<layer> core {
+}
+
+<layer> data {
+}
+
+<layer> ext {
+}
+
+<group> app {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @people
+    @apps
+    @core
+    @data
+    @ext
+}
+
+<order> people-order {
+  of: @people
+  axis: across
+  items:
+    @traveller
+    @hotel
+}
+
+<order> apps-order {
+  of: @apps
+  axis: across
+  items:
+    @web
+    @mobile
+    @portal
+}
+
+<order> core-order {
+  of: @core
+  axis: across
+  items:
+    @api
+}
+
+<order> data-order {
+  of: @data
+  axis: across
+  items:
+    @cache
+    @db
+}
+
+<order> ext-order {
+  of: @ext
+  axis: across
+  items:
+    @backup
+    @audit
+}
+
+<node> traveller {
+  type: @actor
+  text: "Traveller"
+  layer: @people
+}
+
+<node> hotel {
+  type: @actor
+  text: "Hotel staff"
+  layer: @people
+}
+
+<node> web {
+  type: @service
+  text: "Web app"
+  layer: @apps
+  group: @app
+}
+
+<node> mobile {
+  type: @service
+  text: "Mobile app"
+  layer: @apps
+  group: @app
+}
+
+<node> portal {
+  type: @service
+  text: "Partner portal"
+  layer: @apps
+  group: @app
+}
+
+<node> api {
+  type: @service
+  text: "Booking API"
+  layer: @core
+  group: @app
+}
+
+<node> cache {
+  type: @store
+  text: "Cache"
+  layer: @data
+  group: @app
+}
+
+<node> db {
+  type: @store
+  text: "Bookings"
+  layer: @data
+  group: @app
+}
+
+<node> backup {
+  type: @external
+  text: "Backup vault"
+  layer: @ext
+}
+
+<node> audit {
+  type: @external
+  text: "Audit log"
+  layer: @ext
+}
+
+<edge> traveller->web {
+  from: @traveller
+  to: @web
+  type: @call
+}
+
+<edge> traveller->mobile {
+  from: @traveller
+  to: @mobile
+  type: @call
+}
+
+<edge> hotel->portal {
+  from: @hotel
+  to: @portal
+  type: @call
+}
+
+<edge> web->api {
+  from: @web
+  to: @api
+  type: @call
+}
+
+<edge> mobile->api {
+  from: @mobile
+  to: @api
+  type: @call
+}
+
+<edge> portal->api {
+  from: @portal
+  to: @api
+  type: @call
+}
+
+<edge> api->db {
+  from: @api
+  to: @db
+  type: @call
+}
+
+<edge> api->cache {
+  from: @api
+  to: @cache
+  type: @call
+}
+
+<edge> cache->backup {
+  from: @cache
+  to: @backup
+  type: @call
+}
+
+<edge> db->audit {
+  from: @db
+  to: @audit
+  type: @call
+}
+
+<label> people-label {
+  on: @people
+  text: "People"
+}
+
+<label> apps-label {
+  on: @apps
+  text: "Apps"
+}
+
+<label> core-label {
+  on: @core
+  text: "Core"
+}
+
+<label> data-label {
+  on: @data
+  text: "Data"
+}
+
+<label> ext-label {
+  on: @ext
+  text: "External"
+}
+
+<label> app-label {
+  on: @app
+  text: "Booking app"
+  sublabel: "software system"
+}
 `) as Diagram;
 
   // Edges run into the group's one layer from both sides.
-  const oneLayer = readDiagram(`grafical: 1
-title: One row
-density: normal
-layers:
-  - {id: top, label: Top, nodes: [{id: user, label: User, kind: actor}]}
-  - {id: row, label: Row, nodes: [{id: gw, label: Gateway}, {id: api, label: Orders API, group: svc}, {id: db, label: Orders DB, kind: store, group: svc}, {id: pay, label: Payments}]}
-groups:
-  - {id: svc, label: Orders service}
-edges:
-  - {id: user->gw, from: user, to: gw}
-  - {id: gw->api, from: gw, to: api, label: routes}
-  - {id: api->db, from: api, to: db}
-  - {id: db->pay, from: db, to: pay}
+  const oneLayer = readDiagram(`<diagram> {
+  format: 1
+  title: "One row"
+  density: normal
+}
+
+<layer> top {
+}
+
+<layer> row {
+}
+
+<group> svc {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @top
+    @row
+}
+
+<order> top-order {
+  of: @top
+  axis: across
+  items:
+    @user
+}
+
+<order> row-order {
+  of: @row
+  axis: across
+  items:
+    @gw
+    @api
+    @db
+    @pay
+}
+
+<node> user {
+  type: @actor
+  text: "User"
+  layer: @top
+}
+
+<node> gw {
+  type: @service
+  text: "Gateway"
+  layer: @row
+}
+
+<node> api {
+  type: @service
+  text: "Orders API"
+  layer: @row
+  group: @svc
+}
+
+<node> db {
+  type: @store
+  text: "Orders DB"
+  layer: @row
+  group: @svc
+}
+
+<node> pay {
+  type: @service
+  text: "Payments"
+  layer: @row
+}
+
+<edge> user->gw {
+  from: @user
+  to: @gw
+  type: @call
+}
+
+<edge> gw->api {
+  from: @gw
+  to: @api
+  type: @call
+}
+
+<edge> api->db {
+  from: @api
+  to: @db
+  type: @call
+}
+
+<edge> db->pay {
+  from: @db
+  to: @pay
+  type: @call
+}
+
+<label> top-label {
+  on: @top
+  text: "Top"
+}
+
+<label> row-label {
+  on: @row
+  text: "Row"
+}
+
+<label> svc-label {
+  on: @svc
+  text: "Orders service"
+}
+
+<label> gw->api-label {
+  on: @gw->api
+  text: "routes"
+}
 `) as Diagram;
 
   for (const at of NAMES) {

@@ -48,14 +48,14 @@ describe("the words a caller types", () => {
   });
 
   it("draw a batch from standard input", () => {
-    expect(run(["-f", "a.grafical.yaml", "new", "--title", "T"]).code).toBe(0);
+    expect(run(["-f", "a.grafical", "new", "--title", "T"]).code).toBe(0);
     const batch =
       "- {op: layer.add, id: l, label: L}\n- {op: node.add, id: x, layer: l, label: X, type: store}\n";
-    expect(run(["-f", "a.grafical.yaml", "apply", "-"], batch).code).toBe(0);
+    expect(run(["-f", "a.grafical", "apply", "-"], batch).code).toBe(0);
     expect(
       run([
         "-f",
-        "a.grafical.yaml",
+        "a.grafical",
         "node",
         "--add",
         "y",
@@ -68,11 +68,11 @@ describe("the words a caller types", () => {
         "store",
       ]).code,
     ).toBe(0);
-    expect(run(["-f", "a.grafical.yaml", "show"]).out).toContain("y");
+    expect(run(["-f", "a.grafical", "show"]).out).toContain("y");
   });
 
   it("show gives one object and what refers to it", () => {
-    const f = ["-f", "b.grafical.yaml"];
+    const f = ["-f", "b.grafical"];
     expect(run([...f, "new", "--title", "T"]).code).toBe(0);
     run([...f, "layer", "--add", "l", "--label", "L"]);
     run([...f, "node", "--add", "x", "--layer", "l", "--label", "X"]);

@@ -35,7 +35,7 @@ describe('notes (specs/decisions, "Notes as callouts or footnotes")', () => {
       { on: "service->mongo", text: "Find only" },
     ]);
     const text = writeDiagram(r.diagram);
-    expect(text).toContain("notes:");
+    expect(text).toContain("<note> ");
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     expect(showDiagram(r.diagram)).toContain('note on=retry "retries 5 times, then the DLQ"');
   });
@@ -72,7 +72,7 @@ describe('notes (specs/decisions, "Notes as callouts or footnotes")', () => {
 
   it("a file's note must name a target, once", () => {
     const text = writeDiagram(ok(fx, [retry]).diagram);
-    expect(readDiagram(text.replace("on: retry", "on: nope"))).toMatchObject([
+    expect(readDiagram(text.replace("on: @retry", "on: @nope"))).toMatchObject([
       { code: "unknown-node", field: "notes[0].on" },
     ]);
   });

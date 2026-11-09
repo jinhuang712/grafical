@@ -27,7 +27,7 @@ beforeAll(async () => {
 /** What a batch of these items would be refused for, as the write path reports it; empty when it would be written. */
 function refused(d: Diagram, items: unknown[]): Block[] {
   const text = items.map((x) => `- ${JSON.stringify(x)}\n`).join("");
-  const read = batchOps("change.yaml", text, "grafical apply d.grafical.yaml change.yaml");
+  const read = batchOps("change.yaml", text, "grafical apply d.grafical change.yaml");
   if (isReport(read)) return blocks(read);
   const r = attempt(d, read.ops, read.origin, m);
   return isReport(r) ? blocks(r) : [];

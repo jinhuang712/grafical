@@ -2,6 +2,7 @@
 // sentence per code, and next names real commands only, in the order the help lists them.
 
 import { describe, expect, it } from "vitest";
+import { parse } from "yaml";
 import {
   CODES,
   DESCRIPTIONS,
@@ -11,7 +12,7 @@ import {
   nextOf,
 } from "../../src/cli/problems.ts";
 import { surfaceName } from "../../src/cli/surface.ts";
-import { applyOps, type Diagram, type Op, readDiagram } from "../../src/model/index.ts";
+import { applyOps, type Diagram, type Op, validateDiagram } from "../../src/model/index.ts";
 import { commandOrder } from "./commands.ts";
 
 /** Every list of commands NEXT holds, with the code and variant it is for. */
@@ -57,7 +58,7 @@ describe("problems", () => {
   // Found by review on 2026-10-18: a node moved by steps that keeps an alignment was refused with only node move.
   it("a node moved by steps names the commands that take away its alignment, column or lane", () => {
     const read = (text: string) => {
-      const d = readDiagram(text);
+      const d = validateDiagram(parse(text));
       if (Array.isArray(d)) throw new Error(JSON.stringify(d));
       return d;
     };

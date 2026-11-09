@@ -1373,7 +1373,7 @@ function addEdge(s: State, op: EdgeAddOp, i: number): OpError[] {
   return [];
 }
 
-/** A style that names no theme, or a stylesheet outside the diagram's folder (specs/decisions, "Themes and stylesheets"). */
+/** A style that names no built-in stylesheet and no .grafical file (specs/decisions, "Themes and stylesheets"). */
 export function badStyle(style: string, problem: ErrorCode, i: number, field = "style"): OpError {
   return {
     code: problem,

@@ -151,15 +151,11 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     call("g", "grafical apply --help"), // a success, but not an edit
     toolResult("g", PAGES.apply?.after ?? ""), // it quotes the failure lines, with placeholders
     call("1", "grafical node add d.yaml a --layer nope --label A --json"),
-    toolResult(
-      "1",
-      '{"ok":false,"errors":[{"code":"unknown-layer","index":0}],"defects":[]}',
-      true,
-    ),
+    toolResult("1", '{"ok":false,"problems":[{"kind":"error","code":"unknown-layer"}]}', true),
     call("2", "grafical node add d.yaml a --layer top --label A --json"), // retry, ok
-    toolResult("2", '{"ok":true,"changed":["a"],"errors":[],"defects":[]}'),
+    toolResult("2", '{"ok":true,"changed":["a"],"problems":[]}'),
     call("3", "grafical node add d.yaml b --layer top --label B"), // a defect, as plain text
-    toolResult("3", "Exit code 1\nfailed, file unchanged\ndefect overflow [b]: found x", true),
+    toolResult("3", "Exit code 1\nfailed changed=-\n\ndefect: overflow\ndetail:", true),
     call("4", 'grafical apply d.yaml b.yaml; echo "exit $?"'), // the harness said no
     toolResult("4", denied, true),
     call("5", "grafical node add d.yaml b --layer top --label B --size s"), // retry, ok
@@ -167,11 +163,7 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     call("6", "grafical edge add d.yaml a b && grafical render d.yaml"), // one call, two commands
     toolResult("6", "ok changed: a->b"),
     call("7", "grafical node add d.yaml c --layer top"), // an operation error, as plain text
-    toolResult(
-      "7",
-      "Exit code 1\nfailed, file unchanged\nerror op 0 missing-label: found none",
-      true,
-    ),
+    toolResult("7", "Exit code 1\nfailed changed=-\n\nerror: missing-field\ndetail:", true),
     call("8", "ls"), // not grafical
     toolResult("8", "d.yaml"),
   ];
@@ -234,7 +226,7 @@ describe("grafical calls: errors, defects, denials, successes", () => {
   it("keeps different diagrams apart", () => {
     const other = [
       call("a", "grafical node add a.yaml x --layer l --label X"),
-      toolResult("a", "Exit code 1\nfailed, file unchanged\nerror op 0 unknown-layer", true),
+      toolResult("a", "Exit code 1\nfailed changed=-\n\nerror: unknown-layer", true),
       call("b", "grafical node add b.yaml x --layer l --label X"),
       toolResult("b", "ok changed: x"),
     ];
@@ -246,12 +238,6 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     expect(classify('{"ok":true}', false)).toBe("success");
     expect(classify("ok changed: a", false)).toBe("success");
     expect(classify("ok changed=a", false)).toBe("success");
-    expect(classify("Exit code 1\nfailed changed=-\nerror op=0 code=unknown-node", true)).toBe(
-      "opError",
-    );
-    expect(classify("Exit code 1\nfailed changed=-\ndefect code=overflow owner=agent", true)).toBe(
-      "defect",
-    );
     // The blocks (specs/decisions, "Refusals say what happened and which commands can change it").
     expect(classify("Exit code 1\nfailed changed=-\n\nerror: unknown-node\ndetail:", true)).toBe(
       "opError",
@@ -270,7 +256,6 @@ describe("grafical calls: errors, defects, denials, successes", () => {
       "success",
     );
     // The help quotes the records with placeholders: they are not refusals.
-    expect(classify("error op=<index> code=<code>\ndefect code=<code>", false)).toBe("success");
     expect(classify("error: <code>\ndefect: <code>", false)).toBe("success");
     expect(classify("boom", true)).toBe("opError");
   });
@@ -334,22 +319,6 @@ describe("a real measured chain (fixtures)", () => {
     parseTranscript(
       readFileSync(join(import.meta.dirname, "fixtures", "measure", `${step}.jsonl`), "utf8"),
     );
-
-  it("e1: 65 tool calls, of which 64 ran grafical: 49 successes, 11 defects, 4 denials", () => {
-    const m = computeMetrics(load("e1"), { arm: "grafical", kind: "draft" });
-    expect(m.toolCallTotal).toBe(65);
-    expect(m.grafical).toMatchObject({
-      calls: 64,
-      successes: 49,
-      opErrors: 0,
-      defects: 11,
-      permissionDenials: 4,
-    });
-    // 45 of the successes changed the diagram; the other 4 are guide, new, show and check.
-    expect(m.grafical?.editSuccesses).toBe(45);
-    expect(m.grafical?.retries).toBe(3);
-    expect(m.offTool).toBe(0);
-  });
 
   it("sums per-step costs to the session total", () => {
     let previous: { costUsd: number; apiSeconds: number } | undefined;

@@ -17,7 +17,7 @@
 //   lines --round <name>                      measure each final diagram's edges, and the agent's tries (specs/decisions, "Records over prose")
 //   reflections --round <name>                every chain's reflection, as one Markdown document (specs/benchmark.md)
 //   diff <ref> [--seeds 2000] [--render <dir>]
-//                                             what the working tree's engine changes against <ref>, over saved drafts, fixtures and fuzz seeds; costs nothing
+//                                             what the working tree's engine changes against <ref>, over the fixtures and fuzz seeds; costs nothing
 //   routes [--write] [--render <dir>]         every routing case against its baseline; costs nothing
 //   speed                                     speed: time one operation and one command
 //   stage1 --part <e1e2|opus|scale|intent|mvp|hints|nohints|hints2|hints3|hints4|help|brief|help2|help3|records|reflect> --dry-run | --approved [--only <chain>] [--round <name>]

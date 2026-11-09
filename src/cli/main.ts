@@ -142,7 +142,7 @@ async function finish(
 }
 
 function renderName(file: string): string {
-  const base = basename(file).replace(/\.grafical\.ya?ml$|\.ya?ml$/, "");
+  const base = basename(file).replace(/\.grafical$/, "");
   return join(dirname(file), base);
 }
 

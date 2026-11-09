@@ -2,13 +2,23 @@
 // meets it straight past its other end, wherever that is clear.
 
 import { beforeAll, describe, expect, it } from "vitest";
+import { parse } from "yaml";
 import { drawing } from "../../src/check/drawing.ts";
 import { check } from "../../src/check/index.ts";
 import { layout } from "../../src/layout/index.ts";
-import { applyOps, type Diagram, readDiagram, writeDiagram } from "../../src/model/index.ts";
+import {
+  applyOps,
+  type Diagram,
+  readDiagram,
+  validateDiagram,
+  writeDiagram,
+} from "../../src/model/index.ts";
 import type { Point } from "../../src/scene.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
+
+/** The plain object a file holds, checked as the schema checks it. */
+const fromYaml = (text: string) => validateDiagram(parse(text));
 
 let m: Measurer;
 beforeAll(async () => {
@@ -33,7 +43,7 @@ describe("edges that end at a band", () => {
   // the rider app's edge turned toward the gateway's node inside the band before it met
   // the band, and the band's edge to the payments API left from the socket's box.
   it("meet the band straight past the other end", () => {
-    const d = readDiagram(`grafical: 1
+    const d = fromYaml(`grafical: 1
 title: band
 density: normal
 layers:
@@ -59,7 +69,7 @@ edges:
 
 describe('a layer with no node as one bar (specs/decisions, "A layer with no node as one bar")', () => {
   const bar = (look = "") =>
-    readDiagram(`grafical: 1
+    fromYaml(`grafical: 1
 title: bar
 density: normal
 layers:
@@ -120,7 +130,7 @@ edges:
   // Found on 2026-10-19, redrawing a microservices diagram: the bar's name took the first stretch no edge
   // ended at, and the edge that passed the bar there went round the name with four bends.
   it("seats its label clear of the edges that pass it, which run straight", () => {
-    const d = readDiagram(`grafical: 1
+    const d = fromYaml(`grafical: 1
 title: bundle
 density: normal
 layers:
@@ -156,7 +166,7 @@ edges:
 
 describe('a layer with a look (specs/decisions, "A layer with a look is drawn")', () => {
   const layered = (core = "", bundle = "") =>
-    readDiagram(`grafical: 1
+    fromYaml(`grafical: 1
 title: looks
 density: normal
 layers:
@@ -217,7 +227,10 @@ edges:
     expect(s.bands?.find((b) => b.id === "core")?.label).toBeDefined();
     // A bar without a label is drawn as a bar, with no name in it.
     const bare = readDiagram(
-      writeDiagram(d).replace("  - id: bundle\n    label: Event bundle\n", "  - id: bundle\n"),
+      writeDiagram(d).replace(
+        '<label> bundle-label {\n  on: @bundle\n  text: "Event bundle"\n}\n\n',
+        "",
+      ),
     ) as Diagram;
     const bs = layout(bare, m);
     const bundle = bs.bands?.find((b) => b.id === "bundle");
@@ -229,7 +242,7 @@ edges:
 
 describe('a band in a lane of its name (specs/decisions, "A band in a lane of its name draws no label")', () => {
   const inLane = (lane: string) =>
-    readDiagram(`grafical: 1
+    fromYaml(`grafical: 1
 title: lane
 density: normal
 layers:
@@ -248,6 +261,8 @@ edges:
 
   it("draws both when they differ, and the file keeps the layer's label", () => {
     expect(band(inLane("Data team"))?.label?.runs).toBeDefined();
-    expect(writeDiagram(inLane("Stores"))).toContain("label: Stores");
+    expect(writeDiagram(inLane("Stores"))).toContain(
+      '<label> stores-label {\n  on: @stores\n  text: "Stores"\n}',
+    );
   });
 });

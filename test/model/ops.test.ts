@@ -81,12 +81,6 @@ describe("refusals that say what was meant", () => {
     expect(odd[0]?.facts?.allowed).toEqual(NODE_KINDS);
   });
 
-  it("the legend's old field name line is refused with its new name", () => {
-    const e = parseOp({ op: "diagram.legend", line: "dashed", text: "event" }, 0) as OpError[];
-    const old = e.find((x) => x.code === "unknown-field");
-    expect(old?.facts?.likely).toEqual(["style"]);
-  });
-
   it("text cut at a comma names the field it was cut from and the whole text", () => {
     // YAML read sublabel: x, dedupe, last: true as three fields.
     const cut = parseOps([

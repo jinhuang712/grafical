@@ -148,7 +148,7 @@ The parts of `pnpm bench`:
 - `lines` measures a round's lines and how often the agent ran `grafical try`.
 - `reflections` prints the report each agent writes after its chain.
 - `summary` turns a round's runs into its results file in `bench/results/`.
-- `diff <ref>` lays out every saved draft and fixture and fuzz seed with the engine at `<ref>` and with the working tree.
+- `diff <ref>` lays out every fixture and fuzz seed with the engine at `<ref>` and with the working tree.
   - It prints key=value records of what changed: bends · crossings · sizes · defects.
   - `--seeds <n>` sets the number of fuzz seeds, 2000 by default.
   - `--render <dir>` writes the PNGs before and after.
@@ -166,7 +166,7 @@ A command added to `package.json` gets a row here in the same change.
 
 A change an agent meets is tried with `pnpm bench report`, since a picture drawn by hand in the working session shows no cost and no discomfort. Its report goes to the owner with its cost and its picture.
 
-When a picture looks bad, first draw the better picture with grafical's own commands as an agent would. Use rows, order, groups, alignment and what to cut. Only what the commands cannot reach is engine work. On 2026-10-16 the owner's composition took a dispatch draft from 21 crossings to 1, where a day of router fixes had moved the saved drafts by 3.
+When a picture looks bad, first draw the better picture with grafical's own commands as an agent would. Use rows, order, groups, alignment and what to cut. Only what the commands cannot reach is engine work. On 2026-10-16 the owner's composition took a dispatch draft from 21 crossings to 1, where a day of router fixes had moved the agents' drafts by 3.
 
 ## Definition of done
 
@@ -175,9 +175,8 @@ When a picture looks bad, first draw the better picture with grafical's own comm
 - A change to layout, routing or text measurement meets four more checks.
   - The stability and determinism tests pass.
   - Every changed PNG snapshot was reviewed on its own.
-  - The saved agent drafts and fuzz seeds were laid out before and after with `pnpm bench diff`.
+  - The fixtures and fuzz seeds were laid out before and after with `pnpm bench diff`.
   - The commit states how many changed and the change in bends, crossings and defects by code.
-- The saved drafts are in `bench/runs` in the main checkout only.
 - A fixture that stays the same shows that nothing broke and not that anything got better.
 - A document changes in the same change as the fact it holds.
 - The report states what changed with the command output that proves it.

@@ -76,7 +76,7 @@ export async function measureSpeed(): Promise<string[]> {
   const dir = mkdtempSync(join(tmpdir(), "grafical-speed-"));
   try {
     const d = picked[0] as Diagram;
-    const file = join(dir, "speed.grafical.yaml");
+    const file = join(dir, "speed.grafical");
     writeFileSync(file, writeDiagram(d));
     const node = d.layers.flatMap((l) => l.nodes)[0]?.id ?? "";
     const commands: [string, string[]][] = [

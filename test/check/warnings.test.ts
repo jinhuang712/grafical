@@ -47,28 +47,225 @@ const alone: Diagram = {
  * whose two nodes each get an edge from the hub, one of them labelled; and a third whose nodes each send the hub an
  * event and a call.
  */
-const members = readDiagram(`grafical: 1
-title: members
-density: normal
-layers:
-  - {id: top, label: Top, nodes: [{id: a, label: A, group: ctx}, {id: b, label: B, group: ctx}, {id: c, label: C, group: ctx}, {id: z, label: Z, group: outer}]}
-  - {id: mid, label: Mid, nodes: [{id: hub, label: Hub}]}
-  - {id: low, label: Low, nodes: [{id: p, label: P, group: tools}, {id: q, label: Q, group: tools}, {id: r, label: R, group: ev}, {id: s, label: S, group: ev}]}
-groups:
-  - {id: outer, label: Outer}
-  - {id: ctx, label: Context, in: outer}
-  - {id: tools, label: Tools}
-  - {id: ev, label: Events}
-edges:
-  - {id: a->hub, from: a, to: hub, kind: call}
-  - {id: b->hub, from: b, to: hub, kind: call}
-  - {id: c->hub, from: c, to: hub, kind: call}
-  - {id: hub->p, from: hub, to: p, kind: call}
-  - {id: hub->q, from: hub, to: q, kind: call, label: runs}
-  - {id: r->hub, from: r, to: hub, kind: async}
-  - {id: s->hub, from: s, to: hub, kind: async}
-  - {id: r->hub#2, from: r, to: hub, kind: call}
-  - {id: s->hub#2, from: s, to: hub, kind: call}
+const members = readDiagram(`<diagram> {
+  format: 1
+  title: "members"
+  density: normal
+}
+
+<layer> top {
+}
+
+<layer> mid {
+}
+
+<layer> low {
+}
+
+<group> outer {
+}
+
+<group> ctx {
+  in: @outer
+}
+
+<group> tools {
+}
+
+<group> ev {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @top
+    @mid
+    @low
+}
+
+<order> top-order {
+  of: @top
+  axis: across
+  items:
+    @a
+    @b
+    @c
+    @z
+}
+
+<order> mid-order {
+  of: @mid
+  axis: across
+  items:
+    @hub
+}
+
+<order> low-order {
+  of: @low
+  axis: across
+  items:
+    @p
+    @q
+    @r
+    @s
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @top
+  group: @ctx
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @top
+  group: @ctx
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @top
+  group: @ctx
+}
+
+<node> z {
+  type: @service
+  text: "Z"
+  layer: @top
+  group: @outer
+}
+
+<node> hub {
+  type: @service
+  text: "Hub"
+  layer: @mid
+}
+
+<node> p {
+  type: @service
+  text: "P"
+  layer: @low
+  group: @tools
+}
+
+<node> q {
+  type: @service
+  text: "Q"
+  layer: @low
+  group: @tools
+}
+
+<node> r {
+  type: @service
+  text: "R"
+  layer: @low
+  group: @ev
+}
+
+<node> s {
+  type: @service
+  text: "S"
+  layer: @low
+  group: @ev
+}
+
+<edge> a->hub {
+  from: @a
+  to: @hub
+  type: @call
+}
+
+<edge> b->hub {
+  from: @b
+  to: @hub
+  type: @call
+}
+
+<edge> c->hub {
+  from: @c
+  to: @hub
+  type: @call
+}
+
+<edge> hub->p {
+  from: @hub
+  to: @p
+  type: @call
+}
+
+<edge> hub->q {
+  from: @hub
+  to: @q
+  type: @call
+}
+
+<edge> r->hub {
+  from: @r
+  to: @hub
+  type: @async
+}
+
+<edge> s->hub {
+  from: @s
+  to: @hub
+  type: @async
+}
+
+<edge> r->hub#2 {
+  from: @r
+  to: @hub
+  type: @call
+}
+
+<edge> s->hub#2 {
+  from: @s
+  to: @hub
+  type: @call
+}
+
+<label> top-label {
+  on: @top
+  text: "Top"
+}
+
+<label> mid-label {
+  on: @mid
+  text: "Mid"
+}
+
+<label> low-label {
+  on: @low
+  text: "Low"
+}
+
+<label> outer-label {
+  on: @outer
+  text: "Outer"
+}
+
+<label> ctx-label {
+  on: @ctx
+  text: "Context"
+}
+
+<label> tools-label {
+  on: @tools
+  text: "Tools"
+}
+
+<label> ev-label {
+  on: @ev
+  text: "Events"
+}
+
+<label> hub->q-label {
+  on: @hub->q
+  text: "runs"
+}
 `);
 
 /** The facts each warning gives, by its code. */
@@ -140,22 +337,155 @@ describe('warnings (specs/decisions, "Every write prints every warning")', () =>
   it("leave out a node an edge reaches through its group, its layer or its lane", () => {
     // Every node but the last has no edge of its own: an edge ends at the group of b, at the layer of c and d, and at the
     // lane of e. Only f stands alone.
-    const d = readDiagram(`grafical: 1
-title: reached
-density: normal
-lanes:
-  - {id: ops, label: Ops}
-layers:
-  - {id: top, label: Top, nodes: [{id: a, label: A}, {id: b, label: B, group: g}]}
-  - {id: mid, label: Mid, nodes: [{id: c, label: C}, {id: d, label: D}]}
-  - {id: low, label: Low, lane: ops, nodes: [{id: e, label: E}]}
-  - {id: end, label: End, nodes: [{id: f, label: F}]}
-groups:
-  - {id: g, label: G}
-edges:
-  - {id: a->g, from: a, to: g}
-  - {id: a->mid, from: a, to: mid}
-  - {id: a->ops, from: a, to: ops}
+    const d = readDiagram(`<diagram> {
+  format: 1
+  title: "reached"
+  density: normal
+}
+
+<layer> top {
+}
+
+<layer> mid {
+}
+
+<layer> low {
+  lane: @ops
+}
+
+<layer> end {
+}
+
+<group> g {
+}
+
+<lane> ops {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @top
+    @mid
+    @low
+    @end
+}
+
+<order> top-order {
+  of: @top
+  axis: across
+  items:
+    @a
+    @b
+}
+
+<order> mid-order {
+  of: @mid
+  axis: across
+  items:
+    @c
+    @d
+}
+
+<order> low-order {
+  of: @low
+  axis: across
+  items:
+    @e
+}
+
+<order> end-order {
+  of: @end
+  axis: across
+  items:
+    @f
+}
+
+<node> a {
+  type: @service
+  text: "A"
+  layer: @top
+}
+
+<node> b {
+  type: @service
+  text: "B"
+  layer: @top
+  group: @g
+}
+
+<node> c {
+  type: @service
+  text: "C"
+  layer: @mid
+}
+
+<node> d {
+  type: @service
+  text: "D"
+  layer: @mid
+}
+
+<node> e {
+  type: @service
+  text: "E"
+  layer: @low
+}
+
+<node> f {
+  type: @service
+  text: "F"
+  layer: @end
+}
+
+<edge> a->g {
+  from: @a
+  to: @g
+  type: @call
+}
+
+<edge> a->mid {
+  from: @a
+  to: @mid
+  type: @call
+}
+
+<edge> a->ops {
+  from: @a
+  to: @ops
+  type: @call
+}
+
+<label> top-label {
+  on: @top
+  text: "Top"
+}
+
+<label> mid-label {
+  on: @mid
+  text: "Mid"
+}
+
+<label> low-label {
+  on: @low
+  text: "Low"
+}
+
+<label> end-label {
+  on: @end
+  text: "End"
+}
+
+<label> g-label {
+  on: @g
+  text: "G"
+}
+
+<label> ops-label {
+  on: @ops
+  text: "Ops"
+}
 `);
     if (Array.isArray(d)) throw new Error(JSON.stringify(d));
     const w = warningsOf(drawing(d, layout(d, m)), d).filter((x) => x.code === "lonely-node");

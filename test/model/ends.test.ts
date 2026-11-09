@@ -103,16 +103,116 @@ describe('edge ends at a container (specs/decisions, "Edges that end at containe
 });
 
 describe('a layer with no node as one bar (specs/decisions, "A layer with no node as one bar")', () => {
-  const base = readDiagram(`grafical: 1
-title: bar
-density: normal
-layers:
-  - {id: apps, label: Apps, nodes: [{id: rider, label: rider, kind: actor}, {id: driver, label: driver, kind: actor}]}
-  - {id: gateway, label: API gateway, nodes: []}
-  - {id: core, label: Core, nodes: [{id: booking, label: booking, kind: service, group: sys}, {id: payments, label: payments, kind: service}]}
-  - {id: stores, label: Stores, nodes: [{id: trips, label: trips, kind: store, group: sys}]}
-groups:
-  - {id: sys, label: booking}
+  const base = readDiagram(`<diagram> {
+  format: 1
+  title: "bar"
+  density: normal
+}
+
+<layer> apps {
+}
+
+<layer> gateway {
+}
+
+<layer> core {
+}
+
+<layer> stores {
+}
+
+<group> sys {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @apps
+    @gateway
+    @core
+    @stores
+}
+
+<order> apps-order {
+  of: @apps
+  axis: across
+  items:
+    @rider
+    @driver
+}
+
+<order> core-order {
+  of: @core
+  axis: across
+  items:
+    @booking
+    @payments
+}
+
+<order> stores-order {
+  of: @stores
+  axis: across
+  items:
+    @trips
+}
+
+<node> rider {
+  type: @actor
+  text: "rider"
+  layer: @apps
+}
+
+<node> driver {
+  type: @actor
+  text: "driver"
+  layer: @apps
+}
+
+<node> booking {
+  type: @service
+  text: "booking"
+  layer: @core
+  group: @sys
+}
+
+<node> payments {
+  type: @service
+  text: "payments"
+  layer: @core
+}
+
+<node> trips {
+  type: @store
+  text: "trips"
+  layer: @stores
+  group: @sys
+}
+
+<label> apps-label {
+  on: @apps
+  text: "Apps"
+}
+
+<label> gateway-label {
+  on: @gateway
+  text: "API gateway"
+}
+
+<label> core-label {
+  on: @core
+  text: "Core"
+}
+
+<label> stores-label {
+  on: @stores
+  text: "Stores"
+}
+
+<label> sys-label {
+  on: @sys
+  text: "booking"
+}
 `) as Diagram;
   const into: Op[] = [
     { op: "edge.add", from: "rider", to: "gateway" },

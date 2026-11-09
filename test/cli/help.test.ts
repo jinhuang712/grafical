@@ -170,7 +170,7 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
     // A misspelling near one command's name; a word near none.
     expect(wrong("nodee", "add", "--help")).toEqual(meant("nodee", "node"));
     expect(wrong("node", "ad", "-h")).toEqual(meant("ad", "add"));
-    expect(wrong("nodee", "add", "d.grafical.yaml", "x")).toEqual(meant("nodee", "node"));
+    expect(wrong("nodee", "add", "d.grafical", "x")).toEqual(meant("nodee", "node"));
     expect(wrong("bogus")).toEqual(meant("bogus"));
     expect(wrong("bogus", "--help")).toEqual(meant("bogus"));
     expect(wrong("node", "bogus")).toEqual(meant("bogus"));
@@ -245,8 +245,8 @@ describe('guides (specs/decisions, "Help for the tool, guides for best practice"
 describe('the counts in place of hints (specs/decisions, "Records over prose")', () => {
   /** The photo-sharing diagram, where an edge bends more than twice round the upload queue. */
   function photos(): string {
-    writeFileSync(join(dir, "photos.grafical.yaml"), writeDiagram(edgeLooks));
-    return "photos.grafical.yaml";
+    writeFileSync(join(dir, "photos.grafical"), writeDiagram(edgeLooks));
+    return "photos.grafical";
   }
 
   it("check prints the counts, and an edge bent more than twice as a warning, with no advice", () => {

@@ -8,6 +8,7 @@ import {
   type Op,
   parseOp,
   readDiagram,
+  validateDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
@@ -49,9 +50,11 @@ describe("file format", () => {
     expect(text.indexOf("subtitle:")).toBeGreaterThan(text.indexOf("title:"));
     expect(text.indexOf("caption:")).toBeGreaterThan(text.indexOf("subtitle:"));
     expect(text.indexOf("caption:")).toBeLessThan(text.indexOf("density:"));
-    expect(text.indexOf("groups:")).toBeGreaterThan(text.indexOf("layers:"));
-    expect(text.indexOf("groups:")).toBeLessThan(text.indexOf("edges:"));
-    expect(text).toMatch(/- id: a\n {8}label: A\n {8}kind: service\n {8}group: g\n/);
+    expect(text.indexOf("<group> g {")).toBeGreaterThan(text.indexOf("<layer> r1 {"));
+    expect(text.indexOf("<group> g {")).toBeLessThan(text.indexOf("<order> layers {"));
+    expect(text).toMatch(
+      /<node> a \{\n {2}type: @service\n {2}text: "A"\n {2}layer: @r1\n {2}group: @g\n/,
+    );
     const back = readDiagram(text);
     expect(back).toEqual(d);
     expect(writeDiagram(back as Diagram)).toBe(text);
@@ -74,7 +77,7 @@ describe("file format", () => {
 
   it('round-trips a group inside a group, with in after the label (specs/decisions, "Every layered diagram type")', () => {
     const text = writeDiagram(nested);
-    expect(text).toContain("  - id: vpc\n    label: shop network\n    in: region\n");
+    expect(text).toContain("<group> vpc {\n  in: @region\n}");
     expect(readDiagram(text)).toEqual(nested);
   });
 
@@ -112,8 +115,8 @@ describe("file format", () => {
   });
 
   it("rejects a group id that another element uses", () => {
-    const text = `${writeDiagram(base).replace("edges: []", "groups:\n  - id: a\n    label: X\nedges: []")}`;
-    const r = readDiagram(text) as OpError[];
+    const clash = { ...structuredClone(base), groups: [{ id: "a", label: "X" }] };
+    const r = validateDiagram(clash) as OpError[];
     expect(r.map((e) => e.code)).toContain("duplicate-id");
   });
 });

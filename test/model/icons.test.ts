@@ -180,7 +180,7 @@ describe('node.mark (specs/decisions, "Marks of any kind")', () => {
       { op: "node.mark", id: "x", slot: "top-right", mark: "🔥", size: "l" },
     ]) as Diagram;
     const text = writeDiagram(d);
-    expect(text).toMatch(/bg: "?#d1242f"?\n\s+border: "?#1f2328"?\n\s+size: s\n\s+text: P0/);
+    expect(text).toMatch(/bg: "#d1242f"\n\s+border: "#1f2328"\n\s+size: "s"\n\s+text: "P0"/);
     expect(readDiagram(text)).toEqual(d);
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     expect(run(diffDiagrams(base, d))).toEqual(d);
@@ -212,7 +212,7 @@ describe("marks in the file", () => {
 
   it("round-trips, with slots in a fixed order", () => {
     const text = writeDiagram(marked);
-    expect(text).toContain("marks:");
+    expect(text).toContain("<mark> x-top-left {");
     expect(text.indexOf("top-left")).toBeLessThan(text.indexOf("bottom-right"));
     expect(readDiagram(text)).toEqual(marked);
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
@@ -225,7 +225,7 @@ describe("marks in the file", () => {
   });
 
   it("refuses an unknown slot in the file", () => {
-    const text = writeDiagram(marked).replace("top-left", "middle");
+    const text = writeDiagram(marked).replace("slot: top-left", "slot: middle");
     const r = readDiagram(text);
     expect(Array.isArray(r) && r[0]?.code).toBe("unknown-field");
   });
@@ -244,7 +244,7 @@ describe("marks in the file", () => {
       { op: "node.mark", id: "x", slot: "top-right", mark: "P0", bg: "red" },
     ]) as Diagram;
     const text = writeDiagram(d);
-    expect(text).toMatch(/top-right:\n\s+bg: "?#d1242f"?\n\s+text: P0/);
+    expect(text).toMatch(/slot: top-right\n\s+bg: "#d1242f"\n\s+text: "P0"/);
     expect(readDiagram(text)).toEqual(d);
     expect(run(diffDiagrams(base, d))).toEqual(d);
   });

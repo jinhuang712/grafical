@@ -9,7 +9,7 @@ import { check } from "../check/index.ts";
 import type { Defect, ErrorCode, Facts, OpError, Warning } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { applyOps } from "../model/apply.ts";
-import { fileBytes, readDiagram, yamlError } from "../model/io.ts";
+import { readDiagram, writeDiagram, yamlError } from "../model/io.ts";
 import { type Op, parseOps } from "../model/ops.ts";
 import { everyNode } from "../model/steps.ts";
 import type { Diagram } from "../model/types.ts";
@@ -489,7 +489,7 @@ export async function runWrite(
 ): Promise<Report> {
   const p = await plan(file, ops, create, origin);
   if (isReport(p)) return p;
-  writeAtomic(file, fileBytes(p.next, file));
+  writeAtomic(file, writeDiagram(p.next));
   const dr = drawing(p.next, p.scene);
   return {
     ok: true,

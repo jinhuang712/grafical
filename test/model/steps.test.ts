@@ -68,14 +68,14 @@ describe('nodes placed by steps (specs/decisions, "Steps from another node")', (
     ]);
     expect(d.nodes?.map((x) => [x.id, x.from, x.down, x.right])).toEqual([["cache", "api", 1, 1]]);
     const text = writeDiagram(d);
-    expect(text).toContain("nodes:\n  - id: cache");
+    expect(text).toContain("<node> cache {");
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     // A node in no layer has no alignment, lane or column, and steps from a node that exists.
-    for (const extra of ["    align: web\n", "    lane: x\n", "    column: x\n"]) {
-      const bad = readDiagram(text.replace("    from: api\n", `    from: api\n${extra}`));
+    for (const extra of ["  align: @web\n", "  lane: @x\n", "  column: @x\n"]) {
+      const bad = readDiagram(text.replace("  from: @api\n", `  from: @api\n${extra}`));
       expect(Array.isArray(bad), extra).toBe(true);
     }
-    const lost = readDiagram(text.replace("    from: api\n", "    from: nope\n")) as OpError[];
+    const lost = readDiagram(text.replace("  from: @api\n", "  from: @nope\n")) as OpError[];
     expect(lost.map((x) => [x.code, x.field])).toEqual([["unknown-node", "nodes[0].from"]]);
     expect(showDiagram(d)).toContain('node cache "Cache" store from=api down=1 right=1');
   });

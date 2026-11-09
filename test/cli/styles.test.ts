@@ -102,10 +102,10 @@ describe("styles", () => {
   });
 
   it("edges may be round, and square again", () => {
-    const g = ["-f", "dispatch.grafical.yaml"];
+    const g = ["-f", "dispatch.grafical"];
     copyFileSync(
       resolve(import.meta.dirname, "../fixtures/dispatch.grafical"),
-      join(dir, "dispatch.grafical.yaml"),
+      join(dir, "dispatch.grafical"),
     );
     const go = (...args: string[]) => {
       const r = spawnSync("node", [MAIN, ...g, ...args], { cwd: dir, encoding: "utf8" });

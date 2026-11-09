@@ -12,6 +12,7 @@ import {
   type Op,
   parseOp,
   readDiagram,
+  validateDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
 import { createStubMeasurer } from "../../src/text/stub.ts";
@@ -90,16 +91,6 @@ describe('the legend names edge widths (specs/decisions, "A legend for widths an
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
   });
 
-  it("a width written 2.50 in a file is the edge's 2.5", () => {
-    for (const key of ["2.50", '"2.50"']) {
-      const text = writeDiagram(weighted).replace(
-        /\nlayers:/,
-        `\nlegend:\n  weights:\n    ${key}: copies\nlayers:`,
-      );
-      expect((readDiagram(text) as Diagram).legend?.weights).toEqual({ "2.5": "copies" });
-    }
-  });
-
   it("diff gives back the operations that name a width", () => {
     const after = ok(weighted, [{ op: "diagram.legend", weight: 3, text: "copies" }]);
     const ops = diffDiagrams(weighted, after);
@@ -122,11 +113,8 @@ describe('the legend names edge widths (specs/decisions, "A legend for widths an
         { code: "bad-value", field: "weight", facts: { allowed: ["thick", "heavy"], max: 8 } },
       ]);
     }
-    const file = writeDiagram(fx).replace(
-      /\nlayers:/,
-      "\nlegend:\n  weights:\n    thin: x\nlayers:",
-    );
-    expect(readDiagram(file)).toMatchObject([{ code: "bad-value", field: "legend.weights" }]);
+    const file = { ...structuredClone(fx), legend: { weights: { thin: "x" } } };
+    expect(validateDiagram(file)).toMatchObject([{ code: "bad-value", field: "legend.weights" }]);
   });
 
   it("an entry is named by exactly one of style, weight and mark", () => {
@@ -204,24 +192,17 @@ describe('the legend says only what the agent named (specs/decisions, "The legen
     const d = ok(fx, [{ op: "diagram.legend", style: "dashed", text: "event" }]);
     expect(styles(d)).toEqual(["dashed"]);
     const text = writeDiagram(d);
-    expect(text).toContain("dashed: event");
+    expect(text).toContain('dashed: "event"');
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     expect(diffDiagrams(fx, d)).toEqual([{ op: "diagram.legend", style: "dashed", text: "event" }]);
     const back = ok(d, [{ op: "diagram.legend", style: "dashed" }]);
     expect(writeDiagram(back)).toBe(writeDiagram(fx));
   });
 
-  it("hide is refused, and a file's false is read as no words", () => {
+  it("hide is refused", () => {
     expect(parseOp({ op: "diagram.legend", style: "solid", hide: true }, 0)).toMatchObject([
       { code: "unknown-field", field: "hide" },
     ]);
-    const file = writeDiagram(fx).replace(
-      /\nlayers:/,
-      "\nlegend:\n  dashed: false\n  weights:\n    thick: false\nlayers:",
-    );
-    const d = readDiagram(file) as Diagram;
-    expect(d.legend).toBeUndefined();
-    expect(writeDiagram(d)).toBe(writeDiagram(fx));
   });
 
   it("show --drawn lists each style and width the picture draws, and each named mark", () => {
@@ -245,8 +226,8 @@ describe('the legend says only what the agent named (specs/decisions, "The legen
   });
 
   it("a file's entry holds words", () => {
-    const file = writeDiagram(fx).replace(/\nlayers:/, "\nlegend:\n  plain: 5\nlayers:");
-    expect(readDiagram(file)).toEqual([
+    const file = { ...structuredClone(fx), legend: { plain: 5 } };
+    expect(validateDiagram(file)).toEqual([
       expect.objectContaining({
         code: "bad-type",
         field: "legend.plain",

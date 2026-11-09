@@ -47,13 +47,57 @@ describe("side turns", () => {
   // Found on 2026-10-16: "sends confirmations via" is wider than the 120 px a label between
   // neighbours could take, so the edge went round under the layer with its label hanging off.
   it("run straight between neighbours with a label up to thirty characters", () => {
-    const d = readDiagram(`grafical: 1
-title: wide
-density: normal
-layers:
-  - {id: core, label: Core, nodes: [{id: api, label: Booking API}, {id: mail, label: Email service, kind: external}]}
-edges:
-  - {id: api->mail, from: api, to: mail, label: sends confirmations via}
+    const d = readDiagram(`<diagram> {
+  format: 1
+  title: "wide"
+  density: normal
+}
+
+<layer> core {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @core
+}
+
+<order> core-order {
+  of: @core
+  axis: across
+  items:
+    @api
+    @mail
+}
+
+<node> api {
+  type: @service
+  text: "Booking API"
+  layer: @core
+}
+
+<node> mail {
+  type: @external
+  text: "Email service"
+  layer: @core
+}
+
+<edge> api->mail {
+  from: @api
+  to: @mail
+  type: @call
+}
+
+<label> core-label {
+  on: @core
+  text: "Core"
+}
+
+<label> api->mail-label {
+  on: @api->mail
+  text: "sends confirmations via"
+}
 `) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
@@ -63,16 +107,94 @@ edges:
   // Found by the owner on 2026-10-16 in a booking C4 diagram: the web app's edge turned
   // into the API's side, and the mobile app's edge beside it bent twice into the API's top.
   it("enter one side together, the nearer above", () => {
-    const d = readDiagram(`grafical: 1
-title: entries
-density: normal
-layers:
-  - {id: apps, label: Apps, nodes: [{id: web, label: Web app}, {id: mobile, label: Mobile app}, {id: portal, label: Partner portal}]}
-  - {id: core, label: Core, nodes: [{id: api, label: Booking API, align: portal}]}
-edges:
-  - {id: web->api, from: web, to: api}
-  - {id: mobile->api, from: mobile, to: api}
-  - {id: portal->api, from: portal, to: api}
+    const d = readDiagram(`<diagram> {
+  format: 1
+  title: "entries"
+  density: normal
+}
+
+<layer> apps {
+}
+
+<layer> core {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @apps
+    @core
+}
+
+<order> apps-order {
+  of: @apps
+  axis: across
+  items:
+    @web
+    @mobile
+    @portal
+}
+
+<order> core-order {
+  of: @core
+  axis: across
+  items:
+    @api
+}
+
+<node> web {
+  type: @service
+  text: "Web app"
+  layer: @apps
+}
+
+<node> mobile {
+  type: @service
+  text: "Mobile app"
+  layer: @apps
+}
+
+<node> portal {
+  type: @service
+  text: "Partner portal"
+  layer: @apps
+}
+
+<node> api {
+  type: @service
+  text: "Booking API"
+  layer: @core
+  align: @portal
+}
+
+<edge> web->api {
+  from: @web
+  to: @api
+  type: @call
+}
+
+<edge> mobile->api {
+  from: @mobile
+  to: @api
+  type: @call
+}
+
+<edge> portal->api {
+  from: @portal
+  to: @api
+  type: @call
+}
+
+<label> apps-label {
+  on: @apps
+  text: "Apps"
+}
+
+<label> core-label {
+  on: @core
+  text: "Core"
+}
 `) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);

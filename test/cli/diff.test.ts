@@ -36,7 +36,7 @@ function git(...args: string[]) {
 describe('grafical diff (specs/decisions, "Git as the history")', () => {
   it("reports changes since a revision as a batch that replays them", () => {
     git("init", "-q");
-    const f = "d.grafical.yaml";
+    const f = "d.grafical";
     run("new", f, "--title", "D");
     run("layer", "add", f, "row", "--label", "Row");
     run("node", "add", f, "a", "--layer", "row", "--label", "A");
@@ -63,22 +63,22 @@ describe('grafical diff (specs/decisions, "Git as the history")', () => {
       env,
       encoding: "utf8",
     }).stdout;
-    writeFileSync(join(dir, "old.grafical.yaml"), old);
-    expect(run("apply", "old.grafical.yaml", "batch.yaml").code).toBe(0);
-    expect(readFileSync(join(dir, "old.grafical.yaml"), "utf8")).toBe(
+    writeFileSync(join(dir, "old.grafical"), old);
+    expect(run("apply", "old.grafical", "batch.yaml").code).toBe(0);
+    expect(readFileSync(join(dir, "old.grafical"), "utf8")).toBe(
       readFileSync(join(dir, f), "utf8"),
     );
   });
 
   it("builds a file the revision does not have from nothing", () => {
-    run("new", "n.grafical.yaml", "--title", "New");
-    expect(run("diff", "n.grafical.yaml").out).toBe(
+    run("new", "n.grafical", "--title", "New");
+    expect(run("diff", "n.grafical").out).toBe(
       "- { op: diagram.new, title: New, density: normal }\n",
     );
   });
 
   it("refuses a revision that does not exist", () => {
-    const r = run("diff", "d.grafical.yaml", "nosuchrev");
+    const r = run("diff", "d.grafical", "nosuchrev");
     expect(r.code).toBe(1);
     expect(r.out).toContain("bad-revision");
   });

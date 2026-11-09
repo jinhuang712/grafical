@@ -43,7 +43,7 @@ export async function measureLines(round: string): Promise<LineMeasure[]> {
   for (const chain of readdirSync(dir).sort()) {
     const home = join(dir, chain);
     if (!existsSync(join(home, "steps"))) continue;
-    const file = readdirSync(home).find((f) => /\.grafical(\.yaml)?$/.test(f));
+    const file = readdirSync(home).find((f) => f.endsWith(".grafical"));
     if (file === undefined) continue;
     const d = loadDiagram(join(home, file));
     if (isReport(d)) continue;

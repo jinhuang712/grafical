@@ -27,9 +27,9 @@ beforeAll(() => {
     ),
   );
   for (const args of [
-    ["new", "d.grafical.yaml", "--title", "Marks"],
-    ["layer", "add", "d.grafical.yaml", "top", "--label", "Services"],
-    ["node", "add", "d.grafical.yaml", "billing", "--layer", "top", "--label", "Billing"],
+    ["new", "d.grafical", "--title", "Marks"],
+    ["layer", "add", "d.grafical", "top", "--label", "Services"],
+    ["node", "add", "d.grafical", "billing", "--layer", "top", "--label", "Billing"],
   ]) {
     run(...args);
   }
@@ -44,22 +44,14 @@ function run(...args: string[]) {
 }
 const read = (f: string) => readFileSync(join(dir, f), "utf8");
 const mark = (slot: string, value?: string) =>
-  run(
-    "node",
-    "mark",
-    "d.grafical.yaml",
-    "billing",
-    "--slot",
-    slot,
-    ...(value ? ["--mark", value] : []),
-  );
+  run("node", "mark", "d.grafical", "billing", "--slot", slot, ...(value ? ["--mark", value] : []));
 
 describe("grafical node mark", () => {
   it("puts an emoji in a corner and draws it as an image, not as text", () => {
     expect(mark("top-left", "⚠️").code).toBe(0);
-    expect(read("d.grafical.yaml")).toContain("top-left: ⚠️");
-    expect(run("show", "d.grafical.yaml").out).toContain('mark.top-left="⚠️"');
-    expect(run("render", "d.grafical.yaml", "--svg", "o.svg").code).toBe(0);
+    expect(read("d.grafical")).toMatch(/slot: top-left\n\s+text: "⚠️"/);
+    expect(run("show", "d.grafical").out).toContain('mark.top-left="⚠️"');
+    expect(run("render", "d.grafical", "--svg", "o.svg").code).toBe(0);
     const svg = read("o.svg");
     expect(svg).toContain("<image ");
     expect(svg).toContain("data:image/svg+xml;base64,");
@@ -69,16 +61,16 @@ describe("grafical node mark", () => {
   it("binds an SVG file with its hash, and a PNG file too", () => {
     expect(mark("top-right", "warn.svg").code).toBe(0);
     expect(mark("bottom-left", "dot.png").code).toBe(0);
-    const file = read("d.grafical.yaml");
-    expect(file).toMatch(/file: warn\.svg\n\s+sha256: [0-9a-f]{64}/);
-    expect(file).toMatch(/file: dot\.png\n\s+sha256: [0-9a-f]{64}/);
-    run("render", "d.grafical.yaml", "--svg", "o.svg");
+    const file = read("d.grafical");
+    expect(file).toMatch(/file: "warn\.svg"\n\s+hash: "[0-9a-f]{64}"/);
+    expect(file).toMatch(/file: "dot\.png"\n\s+hash: "[0-9a-f]{64}"/);
+    run("render", "d.grafical", "--svg", "o.svg");
     expect(read("o.svg")).toContain("data:image/png;base64,");
   });
 
   it('gives the same SVG bytes every time (DESIGNS.md, "The same file gives the same picture on any machine")', () => {
-    run("render", "d.grafical.yaml", "--svg", "a.svg");
-    run("render", "d.grafical.yaml", "--svg", "b.svg");
+    run("render", "d.grafical", "--svg", "a.svg");
+    run("render", "d.grafical", "--svg", "b.svg");
     expect(read("a.svg")).toBe(read("b.svg"));
   });
 
@@ -87,14 +79,14 @@ describe("grafical node mark", () => {
       join(dir, "warn.svg"),
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24"/></svg>',
     );
-    const r = run("show", "d.grafical.yaml");
+    const r = run("show", "d.grafical");
     expect(r.code).toBe(1);
     expect(r.out).toContain("error: mark-file-changed\n");
     expect(r.out).toContain("warn.svg");
     // Another slot's command does not get past it, but setting this slot again accepts the file.
     expect(mark("top-left", "!").code).toBe(1);
     expect(mark("top-right", "warn.svg").code).toBe(0);
-    expect(run("show", "d.grafical.yaml").code).toBe(0);
+    expect(run("show", "d.grafical").code).toBe(0);
   });
 
   it("refuses a missing file, an SVG with a script, and a file outside the folder", () => {
@@ -106,7 +98,7 @@ describe("grafical node mark", () => {
       join(dir, "ext.svg"),
       '<svg xmlns="http://www.w3.org/2000/svg"><image href="http://x/y.png"/></svg>',
     );
-    const fresh = "e.grafical.yaml";
+    const fresh = "e.grafical";
     for (const args of [
       ["new", fresh, "--title", "E"],
       ["layer", "add", fresh, "top", "--label", "L"],
@@ -124,7 +116,7 @@ describe("grafical node mark", () => {
   });
 
   it("refuses a text over 6 characters, and the left slot on a diamond", () => {
-    const fresh = "f.grafical.yaml";
+    const fresh = "f.grafical";
     for (const args of [
       ["new", fresh, "--title", "F"],
       ["layer", "add", fresh, "top", "--label", "L"],
@@ -141,7 +133,7 @@ describe("grafical node mark", () => {
   });
 
   it("draws a text mark on the background it is given, with text that reads on it", () => {
-    const f = "g.grafical.yaml";
+    const f = "g.grafical";
     for (const args of [
       ["new", f, "--title", "G"],
       ["layer", "add", f, "top", "--label", "L"],
@@ -172,7 +164,7 @@ describe("grafical node mark", () => {
   });
 
   it("draws the border, shape, text color and size a text mark is given", () => {
-    const f = "h.grafical.yaml";
+    const f = "h.grafical";
     for (const args of [
       ["new", f, "--title", "H"],
       ["layer", "add", f, "top", "--label", "L"],
@@ -202,7 +194,7 @@ describe("grafical node mark", () => {
   });
 
   it("refuses a style on an emoji, and a shape that does not exist", () => {
-    const f = "h.grafical.yaml";
+    const f = "h.grafical";
     expect(
       run("node", "mark", f, "n", "--slot", "left", "--mark", "⚠️", "--fg", "red").out,
     ).toContain("error: mark-style-on-picture\n");
@@ -216,6 +208,6 @@ describe("grafical node mark", () => {
 
   it("clears a slot without --mark", () => {
     expect(mark("top-left").code).toBe(0);
-    expect(read("d.grafical.yaml")).not.toContain("top-left");
+    expect(read("d.grafical")).not.toContain("top-left");
   });
 });

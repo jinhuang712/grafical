@@ -27,14 +27,14 @@ const read = (f: string) => readFileSync(join(dir, f), "utf8");
 
 // tiny: 3 layers, 5 nodes, 4 edges.
 const SINGLE: string[][] = [
-  ["new", "single.grafical.yaml", "--title", "Tiny"],
-  ["layer", "add", "single.grafical.yaml", "clients", "--label", "Clients"],
-  ["layer", "add", "single.grafical.yaml", "services", "--label", "Services"],
-  ["layer", "add", "single.grafical.yaml", "storage", "--label", "Storage"],
+  ["new", "single.grafical", "--title", "Tiny"],
+  ["layer", "add", "single.grafical", "clients", "--label", "Clients"],
+  ["layer", "add", "single.grafical", "services", "--label", "Services"],
+  ["layer", "add", "single.grafical", "storage", "--label", "Storage"],
   [
     "node",
     "add",
-    "single.grafical.yaml",
+    "single.grafical",
     "web",
     "--layer",
     "clients",
@@ -43,21 +43,11 @@ const SINGLE: string[][] = [
     "--type",
     "actor",
   ],
+  ["node", "add", "single.grafical", "api", "--layer", "services", "--label", "API", "--emphasis"],
   [
     "node",
     "add",
-    "single.grafical.yaml",
-    "api",
-    "--layer",
-    "services",
-    "--label",
-    "API",
-    "--emphasis",
-  ],
-  [
-    "node",
-    "add",
-    "single.grafical.yaml",
+    "single.grafical",
     "worker",
     "--layer",
     "services",
@@ -68,7 +58,7 @@ const SINGLE: string[][] = [
   [
     "node",
     "add",
-    "single.grafical.yaml",
+    "single.grafical",
     "db",
     "--layer",
     "storage",
@@ -80,7 +70,7 @@ const SINGLE: string[][] = [
   [
     "node",
     "add",
-    "single.grafical.yaml",
+    "single.grafical",
     "mq",
     "--layer",
     "storage",
@@ -90,10 +80,10 @@ const SINGLE: string[][] = [
     "queue",
     "--last",
   ],
-  ["edge", "add", "single.grafical.yaml", "web", "api", "--label", "call"],
-  ["edge", "add", "single.grafical.yaml", "api", "db", "--type", "data"],
-  ["edge", "add", "single.grafical.yaml", "api", "mq", "--type", "async"],
-  ["edge", "add", "single.grafical.yaml", "mq", "worker", "--type", "async"],
+  ["edge", "add", "single.grafical", "web", "api", "--label", "call"],
+  ["edge", "add", "single.grafical", "api", "db", "--type", "data"],
+  ["edge", "add", "single.grafical", "api", "mq", "--type", "async"],
+  ["edge", "add", "single.grafical", "mq", "worker", "--type", "async"],
 ];
 
 const BATCH = `- op: layer.add
@@ -155,24 +145,26 @@ describe("write commands", () => {
       const r = run(...args);
       expect(r.code, `${args.join(" ")}: ${r.out}${r.err}`).toBe(0);
     }
-    expect(run("new", "batch.grafical.yaml", "--title", "Tiny").code).toBe(0);
+    expect(run("new", "batch.grafical", "--title", "Tiny").code).toBe(0);
     writeFileSync(join(dir, "batch.yaml"), BATCH);
-    const r = run("apply", "batch.grafical.yaml", "batch.yaml");
+    const r = run("apply", "batch.grafical", "batch.yaml");
     expect(r.code, r.out + r.err).toBe(0);
     expect(r.out).toBe(
       "ok changed=clients,services,storage,web,api,worker,db,mq,web->api,api->db,api->mq,mq->worker\n" +
         "counts nodes=5 edges=4 crossings=0 bends=2 bent=0 length=256 width=368 height=376 fullest=services:2 busiest=api:3 longest=api->mq:120 passing=0 across=0 tight=0 crowded=0\n",
     );
-    const single = read("single.grafical.yaml");
-    expect(read("batch.grafical.yaml")).toBe(single);
-    expect(single.startsWith("grafical: 1\ntitle: Tiny\ndensity: normal\nlayers:\n")).toBe(true);
+    const single = read("single.grafical");
+    expect(read("batch.grafical")).toBe(single);
+    expect(
+      single.startsWith('<diagram> {\n  format: 1\n  title: "Tiny"\n  density: normal\n}\n'),
+    ).toBe(true);
   });
 
   it("reports changed ids as JSON on one line", () => {
     const r = run(
       "node",
       "add",
-      "single.grafical.yaml",
+      "single.grafical",
       "cache",
       "--layer",
       "storage",
@@ -199,13 +191,13 @@ describe("write commands", () => {
         ],
       })}\n`,
     );
-    const rm = run("node", "remove", "single.grafical.yaml", "cache", "--json");
+    const rm = run("node", "remove", "single.grafical", "cache", "--json");
     expect(JSON.parse(rm.out)).toEqual({ ok: true, changed: ["cache"], problems: [] });
   });
 
   it("leaves the file untouched and exits 1 when an operation fails", () => {
-    const before = read("single.grafical.yaml");
-    const r = run("node", "add", "single.grafical.yaml", "x", "--layer", "servces", "--label", "X");
+    const before = read("single.grafical");
+    const r = run("node", "add", "single.grafical", "x", "--layer", "servces", "--label", "X");
     expect(r.code).toBe(1);
     expect(r.out).toMatch(
       /^failed changed=-\n\nerror: unknown-layer\ndescription: No layer has the id\.\n/,
@@ -214,7 +206,7 @@ describe("write commands", () => {
       "detail:\n  field: layer\n  found: servces\n  near: services, storage, clients\n",
     );
     expect(r.out).toMatch(/\nnext: layer --add\n$/);
-    expect(read("single.grafical.yaml")).toBe(before);
+    expect(read("single.grafical")).toBe(before);
   });
 
   it("gives the error as JSON with the operation number", () => {
@@ -222,8 +214,8 @@ describe("write commands", () => {
       join(dir, "bad.yaml"),
       "- op: node.add\n  id: ok1\n  layer: storage\n  label: Ok\n  last: true\n- op: edge.add\n  from: api\n  to: nope\n",
     );
-    const before = read("single.grafical.yaml");
-    const r = run("apply", "single.grafical.yaml", "bad.yaml", "--json");
+    const before = read("single.grafical");
+    const r = run("apply", "single.grafical", "bad.yaml", "--json");
     expect(r.code).toBe(1);
     const j = JSON.parse(r.out);
     expect(j.ok).toBe(false);
@@ -235,7 +227,7 @@ describe("write commands", () => {
       detail: { op: 1, field: "to", found: "nope" },
       next: ["node --add"],
     });
-    expect(read("single.grafical.yaml")).toBe(before);
+    expect(read("single.grafical")).toBe(before);
   });
 
   it("rejects a malformed batch item before applying anything", () => {
@@ -243,7 +235,7 @@ describe("write commands", () => {
       join(dir, "bad2.yaml"),
       "- op: node.add\n  id: n\n  layer: storage\n  label: N\n  type: db\n  last: true\n",
     );
-    const r = run("apply", "single.grafical.yaml", "bad2.yaml");
+    const r = run("apply", "single.grafical", "bad2.yaml");
     expect(r.code).toBe(1);
     expect(r.out).toContain("error: unknown-type\n");
     expect(r.out).toContain("  field: type\n  found: db\n");
@@ -252,21 +244,21 @@ describe("write commands", () => {
   });
 
   it("refuses to overwrite with new, and a missing file is an error", () => {
-    expect(run("new", "single.grafical.yaml", "--title", "Again").code).toBe(1);
-    const r = run("show", "missing.grafical.yaml");
+    expect(run("new", "single.grafical", "--title", "Again").code).toBe(1);
+    const r = run("show", "missing.grafical");
     expect(r.code).toBe(1);
     expect(r.out).toContain("file-not-found");
   });
 
   it("exits 2 on usage errors", () => {
-    expect(run("node", "add", "single.grafical.yaml", "x").code).toBe(2);
+    expect(run("node", "add", "single.grafical", "x").code).toBe(2);
     expect(run("bogus").code).toBe(2);
-    expect(run("render", "single.grafical.yaml", "--scale", "9").code).toBe(2);
+    expect(run("render", "single.grafical", "--scale", "9").code).toBe(2);
     expect(run().code).toBe(2);
   });
 
   it("prints the parser's refusals as blocks", () => {
-    const opt = run("show", "single.grafical.yaml", "--bogus");
+    const opt = run("show", "single.grafical", "--bogus");
     expect(opt.code).toBe(2);
     expect(opt.err).toBe(
       [
@@ -274,7 +266,7 @@ describe("write commands", () => {
         "",
         "error: unknown-option",
         "description: The command has no option of the name.",
-        "source: grafical -f single.grafical.yaml show --bogus",
+        "source: grafical -f single.grafical show --bogus",
         "detail:",
         "  found: --bogus",
         "next: -",
@@ -284,9 +276,9 @@ describe("write commands", () => {
     expect(run("bogus").err).toContain("error: unknown-command\n");
     expect(run("show").err).toContain("error: missing-argument\n");
     expect(run("show").err).toContain("detail:\n  field: --file\n");
-    expect(run("new", "x.grafical.yaml").err).toContain("detail:\n  field: --title\n");
+    expect(run("new", "x.grafical").err).toContain("detail:\n  field: --title\n");
     // With --json a usage error is the same object as any refusal, on standard output.
-    const json = run("show", "single.grafical.yaml", "--bogus", "--json");
+    const json = run("show", "single.grafical", "--bogus", "--json");
     expect(json.code).toBe(2);
     expect(json.err).toBe("");
     expect(JSON.parse(json.out)).toEqual({
@@ -297,7 +289,7 @@ describe("write commands", () => {
           kind: "error",
           code: "unknown-option",
           description: "The command has no option of the name.",
-          source: "grafical -f single.grafical.yaml show --bogus --json",
+          source: "grafical -f single.grafical show --bogus --json",
           detail: { found: "--bogus" },
           next: [],
         },
@@ -307,20 +299,20 @@ describe("write commands", () => {
     // Past `--` the word is an argument and not the flag.
     expect(run("bogus", "--", "--json").err).toContain("error: unknown-command\n");
     // Extra arguments are what was found, beside the arguments the command takes.
-    const extra = run("node", "remove", "single.grafical.yaml", "api", "worker");
+    const extra = run("node", "remove", "single.grafical", "api", "worker");
     expect(extra.err).toContain("error: excess-arguments\n");
     expect(extra.err).toContain("detail:\n  found: worker\n  takes: <id>\n");
   });
 
   it("handles edge id suffixes and node remove cascading", () => {
-    run("new", "e.grafical.yaml", "--title", "E");
-    run("layer", "add", "e.grafical.yaml", "l", "--label", "L");
-    run("node", "add", "e.grafical.yaml", "p", "--layer", "l", "--label", "P");
-    run("node", "add", "e.grafical.yaml", "q", "--layer", "l", "--label", "Q", "--last");
-    run("edge", "add", "e.grafical.yaml", "p", "q");
-    const second = run("edge", "add", "e.grafical.yaml", "p", "q", "--label", "again");
+    run("new", "e.grafical", "--title", "E");
+    run("layer", "add", "e.grafical", "l", "--label", "L");
+    run("node", "add", "e.grafical", "p", "--layer", "l", "--label", "P");
+    run("node", "add", "e.grafical", "q", "--layer", "l", "--label", "Q", "--last");
+    run("edge", "add", "e.grafical", "p", "q");
+    const second = run("edge", "add", "e.grafical", "p", "q", "--label", "again");
     expect(second.out).toBe("ok changed=p->q#2\n");
-    const rm = run("node", "remove", "e.grafical.yaml", "q");
+    const rm = run("node", "remove", "e.grafical", "q");
     // p is left with no edges.
     expect(rm.out).toBe(
       [
@@ -337,31 +329,29 @@ describe("write commands", () => {
   });
 
   it('edge number numbers an edge, show prints it, and no --n clears it (specs/decisions, "Step badges ride the edge")', () => {
-    run("new", "s.grafical.yaml", "--title", "S");
-    run("layer", "add", "s.grafical.yaml", "a", "--label", "A");
-    run("layer", "add", "s.grafical.yaml", "b", "--label", "B");
-    run("node", "add", "s.grafical.yaml", "p", "--layer", "a", "--label", "P");
-    run("node", "add", "s.grafical.yaml", "q", "--layer", "b", "--label", "Q");
-    run("edge", "add", "s.grafical.yaml", "p", "q", "--label", "read");
-    expect(run("edge", "number", "s.grafical.yaml", "p->q", "--n", "3").out).toBe(
-      "ok changed=p->q\n",
-    );
-    expect(read("s.grafical.yaml")).toContain("step: 3");
-    expect(run("show", "s.grafical.yaml").out).toContain("p->q [step 3] read");
-    expect(run("show", "s.grafical.yaml", "--drawn").out).toMatch(/^edge id=p->q .* step=3$/m);
-    const bad = run("edge", "number", "s.grafical.yaml", "p->q", "--n", "0");
+    run("new", "s.grafical", "--title", "S");
+    run("layer", "add", "s.grafical", "a", "--label", "A");
+    run("layer", "add", "s.grafical", "b", "--label", "B");
+    run("node", "add", "s.grafical", "p", "--layer", "a", "--label", "P");
+    run("node", "add", "s.grafical", "q", "--layer", "b", "--label", "Q");
+    run("edge", "add", "s.grafical", "p", "q", "--label", "read");
+    expect(run("edge", "number", "s.grafical", "p->q", "--n", "3").out).toBe("ok changed=p->q\n");
+    expect(read("s.grafical")).toContain("number: 3");
+    expect(run("show", "s.grafical").out).toContain("p->q [step 3] read");
+    expect(run("show", "s.grafical", "--drawn").out).toMatch(/^edge id=p->q .* step=3$/m);
+    const bad = run("edge", "number", "s.grafical", "p->q", "--n", "0");
     expect(bad.code).toBe(1);
     expect(bad.out).toContain("error: bad-value\n");
     expect(bad.out).toContain("detail:\n  field: n\n  found: 0\n  min: 1\n  max: 99\n");
-    expect(run("edge", "number", "s.grafical.yaml", "p->q").out).toBe("ok changed=p->q\n");
-    expect(read("s.grafical.yaml")).not.toContain("step:");
-    expect(run("show", "s.grafical.yaml", "--drawn").out).not.toContain("step=");
+    expect(run("edge", "number", "s.grafical", "p->q").out).toBe("ok changed=p->q\n");
+    expect(read("s.grafical")).not.toContain("step:");
+    expect(run("show", "s.grafical", "--drawn").out).not.toContain("step=");
   });
 });
 
 describe("read commands", () => {
   it("show prints a compact view", () => {
-    const r = run("show", "single.grafical.yaml");
+    const r = run("show", "single.grafical");
     expect(r.code).toBe(0);
     expect(r.out).toBe(
       [
@@ -377,11 +367,11 @@ describe("read commands", () => {
         "",
       ].join("\n"),
     );
-    expect(r.out.length).toBeLessThan(read("single.grafical.yaml").length);
+    expect(r.out.length).toBeLessThan(read("single.grafical").length);
   });
 
   it("check reports no defects on a good file", () => {
-    const r = run("check", "single.grafical.yaml", "--json");
+    const r = run("check", "single.grafical", "--json");
     expect(r.code).toBe(0);
     const body = JSON.parse(r.out);
     expect(body).toMatchObject({ ok: true, changed: [], problems: [] });
@@ -389,7 +379,7 @@ describe("read commands", () => {
   });
 
   it("render writes the svg and the png beside the file", () => {
-    const r = run("render", "single.grafical.yaml");
+    const r = run("render", "single.grafical");
     expect(r.code, r.out + r.err).toBe(0);
     expect(existsSync(join(dir, "single.svg"))).toBe(true);
     const png = readFileSync(join(dir, "single.png"));
@@ -398,7 +388,7 @@ describe("read commands", () => {
   });
 
   it('show --drawn prints the drawing as facts and counts (specs/decisions, "Records over prose")', () => {
-    const r = run("show", "single.grafical.yaml", "--drawn");
+    const r = run("show", "single.grafical", "--drawn");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(/^counts nodes=\d+ edges=\d+ crossings=\d+/);
     expect(r.out).toMatch(/^node id=api layer=\S+ place=\d+ of=\d+/m);
@@ -408,36 +398,36 @@ describe("read commands", () => {
     expect(r.out).toMatch(
       /^gutter above=clients below=services edges=\d+ crossings=\d+ tight=\d+ crowded=\d+$/m,
     );
-    const json = JSON.parse(run("show", "single.grafical.yaml", "--drawn", "--json").out);
+    const json = JSON.parse(run("show", "single.grafical", "--drawn", "--json").out);
     expect(json.drawing.counts.nodes).toBeGreaterThan(0);
     expect(json.drawing.gutters).toHaveLength(2);
     expect(json.drawing.composition).toBeUndefined();
   });
 
   it('try reports the counts before and after a batch, and writes nothing (specs/decisions, "Records over prose")', () => {
-    const before = readFileSync(join(dir, "single.grafical.yaml"), "utf8");
+    const before = readFileSync(join(dir, "single.grafical"), "utf8");
     writeFileSync(join(dir, "try.yaml"), "- {op: node.label, id: api, label: API service}\n");
-    const r = run("try", "single.grafical.yaml", "try.yaml");
+    const r = run("try", "single.grafical", "try.yaml");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(
       /^ok changed=api written=no\nbefore nodes=\d+ edges=\d+ crossings=\d+.*\nafter nodes=\d+.*\ndelta nodes=0 edges=0 crossings=[-+]?\d+ /,
     );
-    expect(readFileSync(join(dir, "single.grafical.yaml"), "utf8")).toBe(before);
-    const json = JSON.parse(run("try", "single.grafical.yaml", "try.yaml", "--json").out);
+    expect(readFileSync(join(dir, "single.grafical"), "utf8")).toBe(before);
+    const json = JSON.parse(run("try", "single.grafical", "try.yaml", "--json").out);
     expect(json.after.nodes).toBe(json.before.nodes);
     expect(json.delta.length).toBe(json.after.length - json.before.length);
     writeFileSync(join(dir, "try-bad.yaml"), "- {op: node.label, id: nope, label: X}\n");
-    const bad = run("try", "single.grafical.yaml", "try-bad.yaml");
+    const bad = run("try", "single.grafical", "try-bad.yaml");
     expect(bad.code).toBe(1);
     expect(bad.out).toContain("unknown-node");
   });
 
   it("try with several batches prints one before and each batch's records keyed by its file", () => {
-    const before = readFileSync(join(dir, "single.grafical.yaml"), "utf8");
+    const before = readFileSync(join(dir, "single.grafical"), "utf8");
     writeFileSync(join(dir, "t1.yaml"), "- {op: node.label, id: api, label: One}\n");
     writeFileSync(join(dir, "t2.yaml"), "- {op: node.label, id: api, label: Two}\n");
     writeFileSync(join(dir, "t3.yaml"), "- {op: node.label, id: nope, label: X}\n");
-    const r = run("try", "single.grafical.yaml", "t1.yaml", "t3.yaml", "t2.yaml");
+    const r = run("try", "single.grafical", "t1.yaml", "t3.yaml", "t2.yaml");
     expect(r.code).toBe(1);
     const lines = r.out.trimEnd().split("\n");
     expect(lines.filter((l) => l.startsWith("before "))).toHaveLength(1);
@@ -453,12 +443,12 @@ describe("read commands", () => {
     const after = lines.indexOf("ok batch=t2.yaml changed=api written=no");
     expect(lines[after - 1]).toBe("");
     expect(lines[after - 2]).toBe("next: node --add");
-    const first = run("try", "single.grafical.yaml", "t3.yaml", "t1.yaml").out.split("\n");
+    const first = run("try", "single.grafical", "t3.yaml", "t1.yaml").out.split("\n");
     expect(first[0]).toMatch(/^before nodes=/);
     expect(first[1]).toBe("");
     expect(first[2]).toBe("failed batch=t3.yaml changed=-");
-    expect(readFileSync(join(dir, "single.grafical.yaml"), "utf8")).toBe(before);
-    const json = JSON.parse(run("try", "single.grafical.yaml", "t1.yaml", "t3.yaml", "--json").out);
+    expect(readFileSync(join(dir, "single.grafical"), "utf8")).toBe(before);
+    const json = JSON.parse(run("try", "single.grafical", "t1.yaml", "t3.yaml", "--json").out);
     expect(json.ok).toBe(false);
     expect(json.batches.map((b: { batch: string }) => b.batch)).toEqual(["t1.yaml", "t3.yaml"]);
     expect(json.batches[0].delta.nodes).toBe(0);
@@ -466,12 +456,12 @@ describe("read commands", () => {
   });
 
   it("render with one flag writes only that file", () => {
-    const r = run("render", "single.grafical.yaml", "--png", "only.png", "--scale", "1");
+    const r = run("render", "single.grafical", "--png", "only.png", "--scale", "1");
     expect(r.code).toBe(0);
     expect(existsSync(join(dir, "only.png"))).toBe(true);
     expect(r.out).toMatch(/^ok\nwrote file=only.png\ncounts nodes=/);
     // A flag with no path writes only that file, beside the diagram.
-    const beside = run("render", "single.grafical.yaml", "--png", "--scale", "1");
+    const beside = run("render", "single.grafical", "--png", "--scale", "1");
     expect(beside.code).toBe(0);
     expect(beside.out).toMatch(/^ok\nwrote file=single.png\ncounts nodes=/);
   });

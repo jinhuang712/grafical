@@ -288,18 +288,11 @@ describe("reflection", () => {
 
 describe("defect split from grafical check --all", () => {
   it("counts engine and agent defects", () => {
-    const out = JSON.stringify({
-      ok: false,
-      changed: [],
-      errors: [],
-      defects: [{ owner: "engine" }, { owner: "agent" }, { owner: "engine" }],
-    });
-    expect(parseCheckAll(out)).toEqual({ engineDefects: 2, agentDefects: 1 });
-    expect(parseCheckAll('{"ok":true,"defects":[]}')).toEqual({
+    expect(parseCheckAll('{"ok":true,"problems":[]}')).toEqual({
       engineDefects: 0,
       agentDefects: 0,
     });
-    // As blocks (specs/decisions, "Refusals say what happened and which commands can change it"); a warning is no defect.
+    // A warning is no defect (specs/decisions, "Refusals say what happened and which commands can change it").
     const blocks = JSON.stringify({
       ok: false,
       changed: [],

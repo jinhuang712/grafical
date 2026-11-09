@@ -67,8 +67,8 @@ describe('columns (specs/decisions, "Columns beside layers")', () => {
     ]);
     expect(r.diagram.columns).toEqual([{ id: "requests" }, { id: "jobs" }]);
     const text = writeDiagram(r.diagram);
-    expect(text).toContain("columns:");
-    expect(text).toContain("column: requests");
+    expect(text).toContain("<column> requests {");
+    expect(text).toContain("column: @requests");
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     const shown = showDiagram(r.diagram);
     expect(shown).toContain("column requests: web, api, cache");

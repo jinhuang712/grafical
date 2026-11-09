@@ -65,11 +65,8 @@ export const nodeId = z.string().regex(ID_RE, { message: ID_NODE });
 export const idSuffix = z.string().regex(/^[a-z0-9._-]+$/, { message: ID_SUFFIX });
 export const edgeId = z.string().regex(EDGE_ID_RE, { message: ID_EDGE });
 export const text = z.string().min(1);
-/**
- * A legend entry's words. false, which left an entry out while entries had default words, is read
- * as no words (specs/decisions, "The legend says only what the agent named").
- */
-const words = z.union([text, z.literal(false)]);
+/** A legend entry's words (specs/decisions, "The legend says only what the agent named"). */
+const words = text;
 
 /** The most characters a text mark may hold; a longer text belongs in the label (specs/decisions, "Marks of any kind"). */
 export const MARK_TEXT_MAX = 6;
@@ -446,7 +443,7 @@ function build(p: Parsed): Diagram {
       const text = p.legend[styleName];
       if (typeof text === "string") legend[styleName] = text;
     }
-    // YAML may write a width as 2.50 or "2.50"; the legend names it as the edge's number does.
+    // A width is named as the edge's number names it: 2.5 and not 2.50.
     const weights = Object.entries(p.legend.weights ?? {}).flatMap(([k, v]) =>
       typeof v === "string" ? [[WIDTH_KEY.test(k) ? String(Number(k)) : k, v] as const] : [],
     );
@@ -637,33 +634,6 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   return errors;
 }
 
-/** A run saved before the names settled says `accent` and `icons`: only bench/runs still does. */
-function savedNames(v: unknown): unknown {
-  if (typeof v !== "object" || v === null) return v;
-  const { accent, icons, ...rest } = v as Record<string, unknown>;
-  return {
-    ...rest,
-    ...(accent === undefined ? {} : { emphasis: accent }),
-    ...(icons === undefined ? {} : { marks: icons }),
-  };
-}
-
-function savedDiagram(raw: unknown): unknown {
-  if (typeof raw !== "object" || raw === null) return raw;
-  const d = raw as Record<string, unknown>;
-  const list = (v: unknown) => (Array.isArray(v) ? v.map(savedNames) : v);
-  const layers = !Array.isArray(d.layers)
-    ? d.layers
-    : d.layers.map((l: unknown) =>
-        typeof l === "object" && l !== null
-          ? { ...l, nodes: list((l as { nodes?: unknown }).nodes) }
-          : l,
-      );
-  const { note, ...rest } = d;
-  const caption = note === undefined ? {} : { caption: note };
-  return { ...rest, ...caption, layers, nodes: list(d.nodes), edges: list(d.edges) };
-}
-
 /** A gap names two regions that exist (specs/decisions, "The gap between two regions may be magnified"). */
 function checkGaps(d: Diagram, index: number): OpError[] {
   return (d.gaps ?? []).flatMap((g, i) =>
@@ -790,7 +760,7 @@ export function validateDiagram(raw: unknown): Diagram | OpError[] {
       },
     ];
   }
-  const parsed = diagramSchema.safeParse(savedDiagram(raw));
+  const parsed = diagramSchema.safeParse(raw);
   if (!parsed.success) return issuesToErrors(parsed.error.issues, raw, 0);
   const diagram = build(parsed.data);
   const errors = checkIntegrity(diagram);
