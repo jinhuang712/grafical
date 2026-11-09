@@ -8,7 +8,7 @@ The work comes in four groups of what grafical can do: draw at all · draw more 
 
 ```
 Roadmap
-├── 🟨 CP1: Drawing at all — what an agent needs to draw with grafical alone
+├── ✅ CP1: Drawing at all — what an agent needs to draw with grafical alone
 │   ├── ✅ CP1.1: The risky questions — the same pixels on macOS and Linux
 │   │   ├── ✅ Our own gap router
 │   │   ├── ✅ Text shaping
@@ -49,7 +49,7 @@ Roadmap
 │   │   ├── ✅ Verbs as flags
 │   │   ├── ✅ One way for each situation
 │   │   └── ✅ Batches from standard input
-│   └── 🟨 CP1.7: The file form — objects with types and styles
+│   └── ✅ CP1.7: The file form — objects with types and styles
 │       ├── ✅ Design the model and its form
 │       ├── ✅ Build the model
 │       ├── ✅ Stylesheets as .grafical files
@@ -224,7 +224,7 @@ Roadmap
 
 ## CP1: Drawing at all
 
-**Status:** 🟨
+**Status:** ✅ (2026-10-11 to 2026-11-09)
 
 What an agent needs to draw with grafical alone. Most of it was built before the goals were written down on 2026-10-15, so only some of its parts end on a goal.
 
@@ -380,7 +380,7 @@ Every command names its file the same way, a verb is a flag, each thing has one 
 
 ### CP1.7: The file form
 
-**Status:** 🟨 (since 2026-11-06)
+**Status:** ✅ (2026-11-06 to 2026-11-09)
 
 A diagram is objects with types and styles, in a form of its own, before the first release freezes the file.
 
@@ -401,11 +401,11 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 **Exit criteria:**
 
 - **Constraints**
-  - [R1: Stability](GOALS.md#r1-stability)
-  - [R3: Determinism](GOALS.md#r3-determinism)
-  - [R4: A sound file](GOALS.md#r4-a-sound-file)
+  - [R1: Stability](GOALS.md#r1-stability): ✅ 2026-11-09, the stability tests passed.
+  - [R3: Determinism](GOALS.md#r3-determinism): ✅ 2026-11-09, CI run 42601744905 drew the same pixels on macOS and Linux.
+  - [R4: A sound file](GOALS.md#r4-a-sound-file): ✅ 2026-11-09, the 9 tests of the file form passed.
 - **Do not hold the release**
-  - [M4: Diff size](GOALS.md#m4-diff-size)
+  - [M4: Diff size](GOALS.md#m4-diff-size): 17.3 changed lines a change step on 2026-11-06.
 
 ## CP2: Drawing more
 
