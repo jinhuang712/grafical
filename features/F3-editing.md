@@ -25,7 +25,7 @@ Every failure leaves the file as it was and says what happened, in the block des
 - **The picture draws poorly:** written, and reported as a warning ([F5.3: Warnings](F5-checking.md#f53-warnings)).
 - **A file cannot be read:** nothing is drawn from it.
   - A YAML syntax error gives its line.
-  - A missing stylesheet fails every command that reads the diagram ([F4.4: The stylesheet file](F4-look.md#f44-the-stylesheet-file)).
+  - A missing stylesheet fails every command that reads the diagram ([F4.4: A stylesheet of your own](F4-look.md#f44-a-stylesheet-of-your-own)).
   - A file written by a newer grafical is refused rather than guessed at ([F6.1: The diagram file](F6-output.md#f61-the-diagram-file)).
 - **A command line is wrong:** a usage error prints a block, and a command that does not exist is refused with the one it most likely means ([F7.1: Help](F7-help.md#f71-help)).
 

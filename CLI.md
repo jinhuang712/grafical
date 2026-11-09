@@ -4,7 +4,7 @@ Agents call grafical, and scripts read what it prints. A person calls `view` and
 
 Status: ✅ built · ⬜ planned
 
-A command is a noun and flags, and a verb is a flag that takes the ID. A call holds one verb. Every command but `guide` names its file with `-f`.
+A command is a noun and flags, and a verb is a flag that takes the ID. A call holds one verb. Every command but `library` and `guide` names its file with `-f`.
 
 ## Commands
 
@@ -19,7 +19,7 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 - `--caption <text>`: what the picture leaves out.
 - `--density <density>`: `compact` · `normal` · `airy` (`normal` by default).
 - `--sizing <sizing>`: `auto` · `fixed` (`auto` by default).
-- `--style <style>`: a theme or a stylesheet (`default` by default).
+- `--style <style>`: a built-in stylesheet or the path of a `.grafical` stylesheet (`default` by default).
 
 **Called by:** both
 
@@ -336,7 +336,7 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 - `--label-at [at]` with `--side`: where the title sits (the engine's by default).
 - `--density <density>`: `compact` · `normal` · `airy` (`normal` by default).
 - `--sizing <mode>`: `auto` · `fixed` (`auto` by default).
-- `--style [style]`: a theme or a stylesheet (`default` by default).
+- `--style [style]`: a built-in stylesheet or the path of a `.grafical` stylesheet (`default` by default).
 - `--lines <lines>`: `square` · `round` (`square` by default).
 - `--legend [style]` with `--weight` · `--mark` · `--text`: name a style, a width or a mark (takes the entry away by default).
 
@@ -461,6 +461,20 @@ The revision is `HEAD` by default.
 
 **Example:** `grafical -f arch.grafical view --no-open` prints the address on 127.0.0.1.
 
+### library
+
+**Status:** ✅
+
+`grafical library [word]`
+
+**Called by:** both
+
+**Prints:** one `stylesheet name=<name> about=<text>` record per built-in stylesheet on stdout, those whose name or look holds the word when one is given, or `stylesheet -` when none does.
+
+**Fails:** a usage error exits 2.
+
+**Example:** `grafical library dark` prints `stylesheet name=dark about="Light lines on a dark ground."`.
+
 ### guide
 
 **Status:** ✅
@@ -481,7 +495,7 @@ The revision is `HEAD` by default.
 - `--json`: print the answer as one JSON object (off by default).
 - `-h` · `--help`: print the page of a command (off by default).
 
-`--json` is on every command but `view` and `guide`.
+`--json` is on every command but `view`, `library` and `guide`.
 
 ## Exit codes
 

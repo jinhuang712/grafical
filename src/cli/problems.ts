@@ -44,7 +44,7 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "bad-reference": "A field names the thing the operation changes, or one it cannot be placed by.",
   "bad-revision": "git does not know the revision.",
   "bad-scale": "The scale is not a number within the limits.",
-  "bad-stylesheet": "The stylesheet holds a field or a value that a stylesheet does not take.",
+  "bad-stylesheet": "The stylesheet holds a block, an attribute or a value it does not take.",
   "bad-type": "A field holds a value of another type than the one it takes.",
   "bad-value": "A field holds a value that it does not take.",
   "bad-yaml": "The text is not valid YAML.",
@@ -137,7 +137,6 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "not-in-git": "The file is not in a git repository.",
   "not-in-layer": "A place names a node that is not in the layer.",
   "option-missing-argument": "An option was given without its value.",
-  "outside-folder": "The stylesheet lies outside the diagram's folder.",
   overflow: "A text takes more room than its node, header or card holds.",
   "passing-layer":
     "An edge runs through a layer between its ends, among the layer's nodes, without meeting one of them.",
@@ -310,7 +309,6 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "not-in-git": [],
   "not-in-layer": [],
   "option-missing-argument": [],
-  "outside-folder": [],
   overflow: {
     node: ["node label", "node size", "node sublabel"],
     lane: ["lane label"],

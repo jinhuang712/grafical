@@ -203,7 +203,6 @@ export const ERROR_CODES = [
   "not-allowed",
   "not-in-git",
   "not-in-layer",
-  "outside-folder",
   "same-layer",
   "self-alignment",
   "step-anchor",

@@ -176,13 +176,19 @@ describe("startViewer", () => {
       expect(broken.event?.kind).toBe("error");
 
       // A change to the stylesheet alone redraws the picture.
-      const sheet = join(dir, "house.grafical-style.yaml");
-      writeFileSync(sheet, 'grafical-style: 1\npaint:\n  background: "#fafafa"\n');
-      writeFileSync(file, writeDiagram({ ...tiny, style: "house.grafical-style.yaml" }));
+      const sheet = join(dir, "house.grafical");
+      writeFileSync(
+        sheet,
+        "<stylesheet> {\n  format: 1\n}\n\n<type> diagram {\n  fill: #fafafa\n}\n",
+      );
+      writeFileSync(file, writeDiagram({ ...tiny, style: "house.grafical" }));
       const styled = await stream.next();
       expect(styled.stale).toBe(false);
       expect(styled.svg).toContain("#fafafa");
-      writeFileSync(sheet, 'grafical-style: 1\npaint:\n  background: "#f0f0e8"\n');
+      writeFileSync(
+        sheet,
+        "<stylesheet> {\n  format: 1\n}\n\n<type> diagram {\n  fill: #f0f0e8\n}\n",
+      );
       const restyled = await stream.next();
       expect(restyled.svg).toContain("#f0f0e8");
       expect(restyled.event?.lines).toEqual(["the stylesheet changed"]);

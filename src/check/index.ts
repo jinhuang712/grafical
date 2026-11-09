@@ -19,9 +19,9 @@ import { isEmoji } from "../render/marks.ts";
 import type { PlacedText, Rect, Scene, SceneBadge, SceneEdge, SceneNode } from "../scene.ts";
 import type { Measurer } from "../text/types.ts";
 import { GROUP, NOTE, ROUTE, WALL } from "../theme/geometry.ts";
-import { edgeStyle, hasHead, PAINT, strokeLook } from "../theme/paint.ts";
+import { edgeStyle, hasHead, strokeLook } from "../theme/paint.ts";
 import { textInside } from "../theme/shapes.ts";
-import { themeOf } from "../theme/themes.ts";
+import { PAINT, themeOf } from "../theme/themes.ts";
 import {
   collinearOverlap,
   inset,

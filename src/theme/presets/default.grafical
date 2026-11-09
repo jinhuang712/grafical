@@ -1,0 +1,189 @@
+<stylesheet> {
+  format: 1
+  about: "Grey lines and quiet fills on white."
+}
+
+<type> diagram {
+  fill: #ffffff
+  muted: #6b727c
+}
+
+<type> title {
+  color: #1f2328
+  text-size: 18
+  text-weight: 600
+}
+
+<type> subtitle {
+  color: #6b727c
+  text-size: 12
+  text-weight: 400
+}
+
+<type> note {
+  color: #6b727c
+  text-size: 11
+  text-weight: 400
+}
+
+<type> legend {
+  color: #6b727c
+  text-size: 11
+  text-weight: 400
+}
+
+<type> group {
+  fill: #f5f6f8
+  border: #d5d9df
+  border-width: 1
+  radius: 8
+  color: #4b525c
+  nesting: alternate
+  text-size: 12
+  text-weight: 600
+  sublabel-size: 12
+  sublabel-weight: 400
+}
+
+<type> band {
+  fill: #fafbfc
+  border: #dfe3e8
+  border-width: 1
+  radius: 8
+  text-size: 12
+  text-weight: 600
+}
+
+<type> lane {
+  fill: #ffffff
+  border: #d5d9df
+  border-width: 1
+  radius: 0
+  head-fill: #f0f2f5
+  color: #4b525c
+  text-size: 12
+  text-weight: 600
+}
+
+<type> node {
+  radius: 6
+  border-width: 1
+  color: #1f2328
+  sublabel-color: #6b727c
+  text-size: 13
+  text-weight: 600
+  sublabel-size: 11
+  sublabel-weight: 400
+}
+
+<type> service {
+  fill: #ffffff
+  border: #b4bac3
+}
+
+<type> store {
+  fill: #f0f2f5
+  border: #b4bac3
+}
+
+<type> queue {
+  fill: #fbf6ec
+  border: #cdbf9f
+}
+
+<type> external {
+  fill: #ffffff
+  border: #9aa1ab
+  dash: "4 3"
+}
+
+<type> actor {
+  fill: #f8f9fa
+  border: #b4bac3
+}
+
+<type> state {
+  fill: #ffffff
+  border: #b4bac3
+  radius: 14
+}
+
+<type> terminal {
+  fill: #e9edf2
+  border: #9aa4b1
+}
+
+<type> decision {
+  fill: #ffffff
+  border: #b4bac3
+}
+
+<type> initial {
+  fill: #4b525c
+  border: #4b525c
+}
+
+<type> final {
+  fill: #ffffff
+  border: #4b525c
+}
+
+<type> choice {
+  fill: #e9edf2
+  border: #9aa4b1
+}
+
+<style> emphasis {
+  fill: #eef3fd
+  border: #2f5fc4
+  border-width: 1.5
+}
+
+<type> edge {
+  radius: 6
+  label-color: #4b525c
+  label-fill: #ffffff
+  label-pad-x: 3
+  label-pad-y: 1
+  label-radius: 2
+  text-size: 11
+  text-weight: 400
+}
+
+<type> call {
+  color: #6f7681
+}
+
+<type> async {
+  color: #6f7681
+  dash: "5 3"
+}
+
+<type> data {
+  color: #6f7681
+}
+
+<type> link {
+  color: #6f7681
+}
+
+<type> optional {
+  color: #6f7681
+  dash: "1.5 2.5"
+}
+
+<weight> thin {
+  width: 1.25
+  arrow-length: 7
+  arrow-width: 6
+}
+
+<weight> thick {
+  width: 2.5
+  arrow-length: 9
+  arrow-width: 8
+}
+
+<weight> heavy {
+  width: 4
+}

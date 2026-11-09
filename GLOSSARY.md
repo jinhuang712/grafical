@@ -85,9 +85,10 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 - **Batch:** many operations applied together, all or nothing.
 - **Diagram file:** `<name>.grafical`.
   - It holds facts and never a coordinate.
-- **Library:** a `.grafical` file of types and styles that a diagram names.
-  - Lost name: *stylesheet*.
-- **Theme:** a built-in look: `default`, `dark` or `print`.
+- **Stylesheet:** a `.grafical` file of `<type>`, `<style>` and `<weight>` blocks that sets every value of a diagram's look.
+  - A built-in one is `default`, `dark` or `print`, and one of the agent's starts from a built-in one.
+  - Lost name: *theme*, which the code still uses for the look a stylesheet gives.
+- **Library:** the built-in stylesheets, which `grafical library` lists and searches.
 - **Step:** a node is placed some steps from another node.
 - **Number:** what an edge carries as part of a process.
 

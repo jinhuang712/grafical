@@ -5,15 +5,15 @@ F4: Look
 ├── F4.1: Title, subtitle and footnote — the words around the picture
 ├── F4.2: Legend — a key for styles, widths and marks
 │   └── F4.2.1: A legend as a small diagram — entries, their layout and their samples
-├── F4.3: Themes and stylesheets — the whole look from one name
-├── F4.4: The stylesheet file — colors, widths and type sizes
+├── F4.3: Built-in stylesheets — the whole look from one name
+├── F4.4: A stylesheet of your own — colors, widths and type sizes
 ├── F4.5: Brand fonts — a team's own typeface
 ├── F4.6: Label text — breaks and alignment
 ├── F4.7: Region labels — where any region's label sits
 └── F4.8: Label looks — a label's background, border and color
 ```
 
-The words and the look of the picture as a whole: its title, its legend, and its theme or stylesheet.
+The words and the look of the picture as a whole: its title, its legend and its stylesheet.
 
 ## F4.1: Title, subtitle and footnote
 
@@ -64,41 +64,53 @@ A legend is a small diagram of its own, and a picture may have one or none. Its 
 
 - An agent lays out a key to the colors of its nodes, to let a reader decode them.
 
-## F4.3: Themes and stylesheets
+## F4.3: Built-in stylesheets
 
-A diagram takes its whole look from a built-in theme or from a stylesheet file it names.
+A diagram takes its whole look from a stylesheet. grafical ships three, and a diagram that names none takes `default`.
 
-- **Commands:** [`diagram`](../CLI.md#diagram)
+- **Commands:**
+  - [`diagram`](../CLI.md#diagram)
+  - [`library`](../CLI.md#library)
 
-- The built-in themes are `default`, `dark` (light edges on a dark ground) and `print` (greys with stronger edges).
-- A stylesheet `<name>.grafical-style.yaml` starts from a theme and overrides any of its values.
-  - Changing it changes every diagram that names it.
-- Without a style, the default theme applies.
+- `default` draws grey lines and quiet fills on white.
+- `dark` draws light lines on a dark ground.
+- `print` draws greys with stronger edges, for paper.
+- `grafical library` lists them, and `grafical library <word>` finds those whose name or look holds the word.
+- They come with grafical wherever it is installed.
 
 - **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
-- **How it works:** [The theme: themes and stylesheets](../specs/theme.md#themes-and-stylesheets)
-- **Why:** [016. Themes and stylesheets](../specs/decisions/016-themes-and-stylesheets.md)
+- **How it works:** [The theme: stylesheets](../specs/theme.md#stylesheets)
+- **Why:**
+  - [016. Themes and stylesheets](../specs/decisions/016-themes-and-stylesheets.md)
+  - [104. A stylesheet is a .grafical file, and the built-in ones form a library](../specs/decisions/104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md)
 
 **Stories:**
 
-- An agent picks a theme or a stylesheet, to restyle every diagram that names it.
+- An agent picks a built-in stylesheet, to give a diagram the look the user asks for in one word.
 
-## F4.4: The stylesheet file
+## F4.4: A stylesheet of your own
 
-A stylesheet, `<name>.grafical-style.yaml`, starts from a built-in theme and overrides any of its colors, edge widths, corner radii and type sizes.
+A stylesheet of one's own is a `.grafical` file that starts from a built-in one and says only what it changes: the colors of any type of node or edge, the frames, the texts, the type sizes and the edge widths. A diagram names it by its path, which may lie anywhere.
 
-- Every value not given comes from the theme it starts from.
+- **Commands:** [`diagram`](../CLI.md#diagram)
+
+- It opens with a `<stylesheet>` block, and `base` names the built-in one it starts from, `default` when left out.
+- `<type>` blocks set the look of the diagram, its texts, groups, bands, lanes, nodes and edges, and of each type of node and edge.
+- `<style> emphasis` sets how the nodes that stand out look.
+- `<weight>` blocks set `thin` and `thick` and add levels such as `critical`.
 - Larger type changes the layout, and text that no longer fits is refused as `overflow`.
-- An unknown key, a malformed colour or a weight the fonts lack is refused with the path of the value.
-- A missing stylesheet fails every command that reads the diagram with `style-not-found`, and a wrong one with `bad-stylesheet`.
+- An unknown block, an unknown attribute or a wrong value is refused as `bad-stylesheet` with its line.
+- Only a dashed type of edge takes a dash.
+- A stylesheet that is missing fails every command that reads the diagram with `style-not-found`.
+- `diagram style --help` lists every block and attribute with an example.
 
 - **Design:**
   - [10. What grafical cannot fully read, it refuses](../DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses)
   - [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:**
-  - [The theme: themes and stylesheets](../specs/theme.md#themes-and-stylesheets)
+  - [The theme: stylesheets](../specs/theme.md#stylesheets)
   - [The .grafical file](../specs/grafical-file.md)
-- **Why:** [016. Themes and stylesheets](../specs/decisions/016-themes-and-stylesheets.md)
+- **Why:** [104. A stylesheet is a .grafical file, and the built-in ones form a library](../specs/decisions/104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md)
 
 **Stories:**
 

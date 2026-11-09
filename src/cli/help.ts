@@ -667,6 +667,50 @@ Marks:
   },
   "diagram style": {
     about:
-      "Take the look from a theme or a stylesheet; without one, the default theme. Change it only when the user asks.",
+      "Take the look from a stylesheet; without one, the default. Change it only when the user asks.",
+    after: `
+grafical library lists the built-in stylesheets, and grafical library <word>
+finds those whose name or look holds the word.
+
+A stylesheet of your own is a <name>.grafical file inside the diagram's
+folder. It starts from a built-in one (default unless it names a base) and
+says only what it changes:
+
+  <stylesheet> {
+    format: 1
+    base: dark
+  }
+
+  <type> service {
+    fill: #1c2a3a
+    border: #4c8dff
+  }
+
+  <weight> critical {
+    width: 6
+  }
+
+Its blocks:
+  <type> diagram          fill · muted (quieter text)
+  <type> title, subtitle, note, legend
+                          color · text-size · text-weight
+  <type> group            fill · border · border-width · radius · color ·
+                          nesting · text-size · text-weight · sublabel-size ·
+                          sublabel-weight
+  <type> band, lane       fill · border · border-width · radius · text-size ·
+                          text-weight; a lane also head-fill · color
+  <type> node             radius · border-width · color · sublabel-color ·
+                          text-size · text-weight · sublabel-size ·
+                          sublabel-weight
+  <type> service and each other type of node
+                          fill · border · dash; state also radius
+  <style> emphasis        fill · border · border-width
+  <type> edge             radius · label-color · label-fill · label-pad-x ·
+                          label-pad-y · label-radius · text-size · text-weight
+  <type> call and each other type of edge
+                          color; async and optional also dash
+  <weight> thin, thick or a level of your own
+                          width; thin and thick also arrow-length · arrow-width
+`,
   },
 };

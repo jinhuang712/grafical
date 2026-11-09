@@ -33,6 +33,7 @@ import {
 import { block, record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
+import { THEMES } from "../theme/themes.ts";
 import { batchSection, opCommands } from "./batch.ts";
 import { atRevision, formatOps } from "./diff.ts";
 import { GUIDES, guideList, guideNamed } from "./guides.ts";
@@ -194,7 +195,7 @@ export function build(): Command {
       .option("--sizing <sizing>", "auto (default) or fixed: sizing of nodes without --size")
       .option(
         "--style <style>",
-        "a theme (default, dark, print) or a <name>.grafical-style.yaml beside the file",
+        "a built-in stylesheet (grafical library lists them) or a <name>.grafical stylesheet beside the file",
       )
       .option("--subtitle <text>", "one sentence under the title")
       .option("--caption <text>", "what the picture leaves out, at its foot"),
@@ -211,9 +212,12 @@ export function build(): Command {
   json(
     diagram
       .command("style")
-      .description("take the look from a theme or a stylesheet; without one, the default theme")
+      .description("take the look from a stylesheet; without one, the default")
       .argument("<file>")
-      .argument("[style]", "default, dark, print, or a <name>.grafical-style.yaml beside the file"),
+      .argument(
+        "[style]",
+        "a built-in stylesheet (grafical library lists them) or a <name>.grafical beside the file",
+      ),
   ).action(async (file: string, style: string | undefined, opts: Opts) => {
     const raw: Record<string, unknown> = { op: "diagram.style" };
     if (style !== undefined) raw.style = style;
@@ -1396,6 +1400,22 @@ export function build(): Command {
         );
       }
       process.stdout.write(`${guide.text}\n`);
+    });
+
+  program
+    .command("library")
+    .description(
+      "the built-in stylesheets a diagram may name, or those whose name or look holds a word",
+    )
+    .argument("[word]", "a word to search for")
+    .action((word: string | undefined) => {
+      const w = word?.toLowerCase();
+      const found = Object.values(THEMES).filter(
+        (t) => w === undefined || `${t.name} ${t.about ?? ""}`.toLowerCase().includes(w),
+      );
+      const q = (s: string) => (/[\s"=]/.test(s) ? JSON.stringify(s) : s);
+      const lines = found.map((t) => `stylesheet name=${q(t.name)} about=${q(t.about ?? "-")}`);
+      process.stdout.write(`${lines.length > 0 ? lines.join("\n") : "stylesheet -"}\n`);
     });
 
   for (const noun of [node, edge]) {

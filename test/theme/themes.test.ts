@@ -1,12 +1,13 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import { PAGES } from "../../src/cli/help.ts";
 import type { OpError } from "../../src/errors.ts";
 import { layout } from "../../src/layout/index.ts";
 import { applyOps, type Diagram, readDiagram, writeDiagram } from "../../src/model/index.ts";
 import { renderSvg } from "../../src/render/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
-import { PAINT } from "../../src/theme/paint.ts";
 import {
+  PAINT,
   parseStylesheet,
   provideStylesheet,
   styleProblem,
@@ -21,20 +22,27 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-const SHEET = `grafical-style: 1
-base: dark
-paint:
-  group: { fill: "#102030" }
-  edge:
-    kinds:
-      async: { dash: "2 2" }
-type:
-  title: { size: 24 }
+const SHEET = `<stylesheet> {
+  format: 1
+  base: dark
+}
+
+<type> group {
+  fill: #102030
+}
+
+<type> async {
+  dash: "2 2"
+}
+
+<type> title {
+  text-size: 24
+}
 `;
 
 describe('stylesheets (specs/decisions, "Themes and stylesheets")', () => {
   it("start from a base theme and override any value", () => {
-    const t = parseStylesheet(SHEET, "brand.grafical-style.yaml") as Theme;
+    const t = parseStylesheet(SHEET, "brand.grafical") as Theme;
     expect(Array.isArray(t)).toBe(false);
     expect(t.paint.group.fill).toBe("#102030");
     expect(t.paint.group.stroke).toBe(THEMES.dark?.paint.group.stroke);
@@ -43,45 +51,64 @@ describe('stylesheets (specs/decisions, "Themes and stylesheets")', () => {
     expect(t.type.title.weight).toBe(600);
   });
 
-  it("refuse unknown keys, bad colours and weights the fonts lack", () => {
+  it("start from default when they name no base", () => {
+    const t = parseStylesheet("<stylesheet> {\n  format: 1\n}\n", "x.grafical") as Theme;
+    expect(t.paint).toEqual(THEMES.default?.paint);
+  });
+
+  it("refuse unknown blocks and attributes, bad colours and weights the fonts lack", () => {
     const errors = parseStylesheet(
-      `grafical-style: 1
-paint:
-  group: { fill: red, shade: "#000000" }
-  edge: { kinds: { call: { dash: "3 3" } } }
-type:
-  title: { weight: 700 }
+      `<stylesheet> {
+  format: 1
+}
+
+<type> group {
+  fill: red
+  shade: #000000
+}
+
+<type> call {
+  dash: "3 3"
+}
+
+<type> title {
+  text-weight: 700
+}
+
+<type> widget {
+  fill: #000000
+}
 `,
-      "x.grafical-style.yaml",
+      "x.grafical",
     ) as OpError[];
     expect(Array.isArray(errors)).toBe(true);
     expect(errors.every((e) => e.code === "bad-stylesheet")).toBe(true);
     const at = (field: string) => errors.find((e) => e.field === field);
-    expect(at("paint.group.fill")?.found).toBe("red");
-    expect(at("paint.group")?.found).toContain("shade");
-    expect(at("paint.edge.kinds.call")).toBeDefined();
-    expect(at("type.title.weight")?.found).toBe("700");
+    expect(at("type group.fill")?.found).toBe("red");
+    expect(at("type group.shade")).toBeDefined();
+    expect(at("type call.dash")).toBeDefined();
+    expect(at("type title.text-weight")?.found).toBe("700");
+    expect(at("type widget")).toBeDefined();
   });
 
-  it('leave the shape of edges to the diagram (specs/decisions, "Edges may be drawn square or round")', () => {
-    const sheet = parseStylesheet(
-      "grafical-style: 1\npaint:\n  edge: { shape: curved }\n",
-      "x.grafical-style.yaml",
-    );
-    expect((sheet as OpError[])[0]).toMatchObject({ code: "bad-stylesheet" });
-    expect(THEMES.default?.paint.edge.shape).toBe("orthogonal");
+  it("refuse a base that is no built-in theme", () => {
+    const errors = parseStylesheet("<stylesheet> {\n  format: 1\n  base: neon\n}\n", "x.grafical");
+    expect((errors as OpError[])[0]).toMatchObject({
+      code: "bad-stylesheet",
+      field: "stylesheet.base",
+    });
   });
 
   it('tell nested frames apart by alternating fills or by shades, and nothing else (specs/decisions, "Every layered diagram type")', () => {
     const sheet = (nesting: string) =>
       parseStylesheet(
-        `grafical-style: 1\npaint:\n  nesting: ${nesting}\n`,
-        "x.grafical-style.yaml",
+        `<stylesheet> {\n  format: 1\n}\n\n<type> group {\n  nesting: ${nesting}\n}\n`,
+        "x.grafical",
       );
     expect((sheet("shade") as Theme).paint.nesting).toBe("shade");
     expect((sheet("stripes") as OpError[])[0]).toMatchObject({
       code: "bad-stylesheet",
-      field: "paint.nesting",
+      field: "type group.nesting",
       found: "stripes",
     });
     expect(THEMES.default?.paint.nesting).toBe("alternate");
@@ -89,10 +116,29 @@ type:
 
   it("a diagram names a built-in theme or a stylesheet beside it", () => {
     expect(styleProblem("dark")).toBeUndefined();
-    expect(styleProblem("brand.grafical-style.yaml")).toBeUndefined();
-    expect(styleProblem("styles/brand.grafical-style.yaml")).toBeUndefined();
+    expect(styleProblem("brand.grafical")).toBeUndefined();
+    expect(styleProblem("styles/brand.grafical")).toBeUndefined();
     expect(styleProblem("neon")).toBe("bad-value");
-    expect(styleProblem("../brand.grafical-style.yaml")).toBe("outside-folder");
+    expect(styleProblem("../looks/brand.grafical")).toBeUndefined();
+  });
+
+  it("the example in diagram style's help is a stylesheet", () => {
+    const after = PAGES["diagram style"]?.after ?? "";
+    const from = after.indexOf("  <stylesheet> {");
+    const to = after.indexOf("\nIts blocks:");
+    const text = after
+      .slice(from, to)
+      .split("\n")
+      .map((l) => l.slice(2))
+      .join("\n");
+    const t = parseStylesheet(text, "x.grafical") as Theme;
+    expect(Array.isArray(t)).toBe(false);
+    expect(t.paint.edge.weights.critical).toBe(6);
+  });
+
+  it("each built-in theme says what it looks like", () => {
+    expect(Object.keys(THEMES).sort()).toEqual(["dark", "default", "print"]);
+    expect(Object.values(THEMES).every((t) => (t.about ?? "").length > 0)).toBe(true);
   });
 });
 
@@ -114,12 +160,9 @@ describe("a themed diagram", () => {
   });
 
   it("lays out with the stylesheet's type sizes", () => {
-    provideStylesheet(
-      "brand.grafical-style.yaml",
-      parseStylesheet(SHEET, "brand.grafical-style.yaml") as Theme,
-    );
-    const d = styled("brand.grafical-style.yaml");
-    expect(themeOf(d).name).toBe("brand.grafical-style.yaml");
+    provideStylesheet("brand.grafical", parseStylesheet(SHEET, "brand.grafical") as Theme);
+    const d = styled("brand.grafical");
+    expect(themeOf(d).name).toBe("brand.grafical");
     const plain = layout(catalogSyncGrouped, m);
     const big = layout(d, m);
     expect(big.title.bbox.h).toBeGreaterThan(plain.title.bbox.h);

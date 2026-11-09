@@ -5,8 +5,7 @@
 import type { LabelAlign } from "../model/types.ts";
 import type { PlacedText, Rect, TextRole } from "../scene.ts";
 import type { Line, Measurer } from "../text/types.ts";
-import type { TypeRamp } from "../theme/themes.ts";
-import { TYPE_RAMP } from "../theme/type.ts";
+import { TYPE_RAMP, type TypeRamp } from "../theme/themes.ts";
 
 /** The height one line of a role takes in a stack of lines. */
 export function lineHeight(role: TextRole, m: Measurer, ramp: TypeRamp = TYPE_RAMP): number {

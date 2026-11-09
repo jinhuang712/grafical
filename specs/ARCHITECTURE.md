@@ -80,7 +80,7 @@ Folder: `src/text/`.
 
 ## The theme
 
-Holds the built-in themes, merges a stylesheet into them, and holds the fixed sizes and the outline of each type of node. How it works is in [the theme](theme.md).
+Reads the built-in stylesheets and a diagram's own stylesheet into the look, and holds the fixed sizes and the outline of each type of node. How it works is in [the theme](theme.md).
 
 Folder: `src/theme/`.
 

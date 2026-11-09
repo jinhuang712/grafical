@@ -42,7 +42,7 @@ A diagram becomes objects with attributes and relations, with types an agent can
 - **How it works:** [The .grafical file](../specs/grafical-file.md)
 - **Why:**
   - [085. A diagram is objects with attributes and relations](../specs/decisions/085-a-diagram-is-objects-with-attributes-and-relations.md)
-  - [104. Shared looks live in a library of types and styles](../specs/decisions/104-shared-looks-live-in-a-library-of-types-and-styles.md)
+  - [104. A stylesheet is a .grafical file, and the built-in ones form a library](../specs/decisions/104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md)
 
 ## F6.2: Render
 

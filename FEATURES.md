@@ -67,8 +67,8 @@ Features
 │   ├── ✅ F4.1: Title, subtitle and footnote — the words around the picture
 │   ├── 🚧 F4.2: Legend — a key for styles, widths and marks (the legend as a small diagram not built)
 │   │   └── ⬜ F4.2.1: A legend as a small diagram — entries, their layout and their samples
-│   ├── ✅ F4.3: Themes and stylesheets — the whole look from one name
-│   ├── ✅ F4.4: The stylesheet file — colors, widths and type sizes
+│   ├── ✅ F4.3: Built-in stylesheets — the whole look from one name
+│   ├── ✅ F4.4: A stylesheet of your own — colors, widths and type sizes
 │   ├── ⬜ F4.5: Brand fonts — a team's own typeface
 │   ├── 🚧 F4.6: Label text — breaks and alignment (titles of regions one line)
 │   ├── 🚧 F4.7: Region labels — where any region's label sits (a column has no label)
@@ -88,9 +88,9 @@ Features
 │   │   └── ✅ F5.3.9: Nodes aside — `node-aside`
 │   ├── ✅ F5.4: Check — defects, warnings and counts on demand
 │   └── ⬜ F5.5: Checks of an agent's own — rules a diagram sets itself
-├── 🚧 F6: Output — what a diagram leaves behind (a library of shared looks not built)
-│   ├── 🚧 F6.1: The diagram file — one file of facts (a library of shared looks not built)
-│   │   └── 🚧 F6.1.1: The object model — objects, types and styles in a file of their own form (a library of shared looks not built)
+├── ✅ F6: Output — what a diagram leaves behind
+│   ├── ✅ F6.1: The diagram file — one file of facts
+│   │   └── ✅ F6.1.1: The object model — objects, types and styles in a file of their own form
 │   ├── ✅ F6.2: Render — SVG and PNG, the same everywhere
 │   ├── ✅ F6.3: Live viewer — a window that redraws as the agent draws
 │   └── ✅ F6.4: Diff — a change as operations

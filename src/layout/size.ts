@@ -20,8 +20,7 @@ import type { Rect, SceneMark } from "../scene.ts";
 import type { Line, Measurer } from "../text/types.ts";
 import { FRAME, MARK, MARK_STEP, markTextSize } from "../theme/geometry.ts";
 import { isDot, lineRoom, nodeBox } from "../theme/shapes.ts";
-import { type TypeRamp, themeOf } from "../theme/themes.ts";
-import { TYPE_RAMP } from "../theme/type.ts";
+import { TYPE_RAMP, type TypeRamp, themeOf } from "../theme/themes.ts";
 import { lineHeight } from "./text.ts";
 
 /**

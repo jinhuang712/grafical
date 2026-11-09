@@ -55,7 +55,8 @@ export function inward(args: readonly string[]): string[] | Unread {
     words.splice(at, 2);
   }
   const [first, ...rest] = words;
-  if (first === undefined || isHelp(first) || first === "guide") return words;
+  if (first === undefined || isHelp(first) || first === "guide" || first === "library")
+    return words;
   if (NOUNS.includes(first)) {
     const [flag, ...after] = rest;
     if (flag === undefined || isHelp(flag)) return words;

@@ -200,6 +200,16 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
 });
 
 describe('guides (specs/decisions, "Help for the tool, guides for best practice")', () => {
+  it("library lists the built-in stylesheets and finds them by a word", () => {
+    const all = run("library");
+    expect(all.code).toBe(0);
+    expect(all.out.split("\n").filter((l) => l.startsWith("stylesheet ")).length).toBe(3);
+    expect(run("library", "dark").out).toBe(
+      'stylesheet name=dark about="Light lines on a dark ground."\n',
+    );
+    expect(run("library", "neon").out).toBe("stylesheet -\n");
+  });
+
   it("grafical guide lists every guide, and prints each whole, at 80 columns", () => {
     const list = run("guide");
     expect(list.code).toBe(0);

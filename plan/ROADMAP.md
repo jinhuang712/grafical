@@ -52,9 +52,10 @@ Roadmap
 │   └── 🟨 CP1.7: The file form — objects with types and styles
 │       ├── ✅ Design the model and its form
 │       ├── ✅ Build the model
-│       ├── ⬜ One library
+│       ├── ✅ Stylesheets as .grafical files
 │       ├── ✅ The colon after an attribute
-│       └── ✅ The README's pictures in the file form
+│       ├── ✅ The README's pictures in the file form
+│       └── ⬜ No YAML diagram
 ├── 🟨 CP2: Drawing more — what a picture can hold
 │   ├── ✅ CP2.1: Containers — groups · lanes · walls · notes
 │   │   ├── ✅ Edges that end at containers
@@ -381,15 +382,16 @@ Every command names its file the same way, a verb is a flag, each thing has one 
 
 **Status:** 🟨 (since 2026-11-06)
 
-A diagram is objects with types and styles, in a form of its own, before the first release freezes the file. Saved drafts stay in YAML and still load.
+A diagram is objects with types and styles, in a form of its own, before the first release freezes the file.
 
 **Tasks:**
 
 - ✅ Design the model and its form: The owner designed them on 2026-11-06.
 - ✅ Build the model: grafical reads and writes the form · styles · types · `like`.
-- ⬜ One library: A `.grafical` file of types and styles holds the looks a diagram shares, and the stylesheet goes.
+- ✅ Stylesheets as .grafical files: The built-in stylesheets are `.grafical` files that `grafical library` lists, a stylesheet of one's own starts from one, and no value of a look is written in the code (2026-11-09).
 - ✅ The colon after an attribute: The owner kept it on 2026-11-09, since only a change to what the file already holds must come before the release.
 - ✅ The README's pictures in the file form: Both pictures are drawn from `.grafical` files (2026-11-09).
+- ⬜ No YAML diagram: The saved drafts move to the file form, and grafical reads and writes no diagram as YAML.
 
 **Delivers:**
 
@@ -652,8 +654,8 @@ The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, a
 **Delivers:**
 
 - [F4.1: Title, subtitle and footnote](../features/F4-look.md#f41-title-subtitle-and-footnote)
-- [F4.3: Themes and stylesheets](../features/F4-look.md#f43-themes-and-stylesheets)
-- [F4.4: The stylesheet file](../features/F4-look.md#f44-the-stylesheet-file)
+- [F4.3: Built-in stylesheets](../features/F4-look.md#f43-built-in-stylesheets)
+- [F4.4: A stylesheet of your own](../features/F4-look.md#f44-a-stylesheet-of-your-own)
 
 **Exit criteria:** none, since it was built before the goals were written on 2026-10-15.
 

@@ -13,8 +13,9 @@ import {
 import { renderSvg } from "../../src/render/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
-import { edgeWidth, PAINT, strokeLook } from "../../src/theme/paint.ts";
+import { edgeWidth, strokeLook } from "../../src/theme/paint.ts";
 import {
+  PAINT,
   parseStylesheet,
   provideStylesheet,
   type Theme,
@@ -160,33 +161,37 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
 
 describe('weights in a stylesheet (specs/decisions, "Edge weights")', () => {
   const sheet = (body: string) =>
-    parseStylesheet(`grafical-style: 1\npaint:\n  edge:\n${body}`, "w.grafical-style.yaml");
+    parseStylesheet(`<stylesheet> {\n  format: 1\n}\n\n${body}`, "w.grafical");
 
   it("retunes heavy, adds levels, and keeps the presets", () => {
-    const t = sheet("    weights: { heavy: 5, critical: 6.5 }\n") as Theme;
+    const t = sheet(
+      "<weight> heavy {\n  width: 5\n}\n\n<weight> critical {\n  width: 6.5\n}\n",
+    ) as Theme;
     expect(t.paint.edge.weights).toEqual({ heavy: 5, critical: 6.5 });
     expect(edgeWidth({ weight: "critical" }, t.paint)).toBe(6.5);
     expect(edgeWidth({ weight: "thick" }, t.paint)).toBe(PAINT.edge.main.strokeWidth);
   });
 
-  it("sets thin and thick where they always were", () => {
-    const t = sheet("    strokeWidth: 1\n    main: { strokeWidth: 3 }\n") as Theme;
+  it("sets thin and thick and their arrowheads", () => {
+    const t = sheet(
+      "<weight> thin {\n  width: 1\n}\n\n<weight> thick {\n  width: 3\n  arrow-width: 10\n}\n",
+    ) as Theme;
     expect(edgeWidth({}, t.paint)).toBe(1);
     expect(edgeWidth({ weight: "thick" }, t.paint)).toBe(3);
+    expect(t.paint.edge.main.arrow.halfWidth).toBe(5);
   });
 
-  it("refuses thin and thick as names, bad names and widths out of range", () => {
+  it("refuses bad names and widths out of range", () => {
     const errors = (body: string) => sheet(body) as OpError[];
-    expect(errors("    weights: { thick: 3 }\n")[0]).toMatchObject({ code: "bad-stylesheet" });
-    expect(errors("    weights: { Big: 3 }\n")[0]).toMatchObject({ code: "bad-stylesheet" });
-    expect(errors("    weights: { big: 12 }\n")[0]).toMatchObject({ code: "bad-stylesheet" });
+    expect(errors("<weight> Big {\n  width: 3\n}\n")[0]).toMatchObject({ code: "bad-stylesheet" });
+    expect(errors("<weight> big {\n  width: 12\n}\n")[0]).toMatchObject({ code: "bad-stylesheet" });
   });
 
   it("a diagram may name a level its stylesheet adds", () => {
-    const t = sheet("    weights: { critical: 6.5 }\n") as Theme;
-    provideStylesheet("w.grafical-style.yaml", t);
+    const t = sheet("<weight> critical {\n  width: 6.5\n}\n") as Theme;
+    provideStylesheet("w.grafical", t);
     const styled = ok(fx, [
-      { op: "diagram.style", style: "w.grafical-style.yaml" },
+      { op: "diagram.style", style: "w.grafical" },
       { op: "edge.weight", edges: [EDGE], weight: "critical" },
     ]);
     expect(unknownWeights(styled)).toEqual([]);

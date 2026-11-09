@@ -331,13 +331,13 @@ describe("source", () => {
     const f = fresh("sty.grafical.yaml");
     writeFileSync(
       join(dir, "sty.yaml"),
-      "- {op: node.label, id: web, label: Web}\n- {op: node.label, id: api, label: API}\n- {op: diagram.style, style: missing.grafical-style.yaml}\n",
+      "- {op: node.label, id: web, label: Web}\n- {op: node.label, id: api, label: API}\n- {op: diagram.style, style: missing.grafical}\n",
     );
     const sty = JSON.parse(run("apply", f, "sty.yaml", "--json").out);
     expect(sty.problems).toMatchObject([
       {
         code: "style-not-found",
-        source: "sty.yaml line 3: {op: diagram.style, style: missing.grafical-style.yaml}",
+        source: "sty.yaml line 3: {op: diagram.style, style: missing.grafical}",
         detail: { op: 2 },
       },
     ]);
@@ -353,12 +353,12 @@ describe("source", () => {
   it("of a weight the stylesheet a later line takes away is that line, which the legend's commands can change", () => {
     const f = fresh("uw.grafical.yaml");
     writeFileSync(
-      join(dir, "w.grafical-style.yaml"),
-      "grafical-style: 1\npaint:\n  edge:\n    weights: { critical: 6.5 }\n",
+      join(dir, "w.grafical"),
+      "<stylesheet> {\n  format: 1\n}\n\n<weight> critical {\n  width: 6.5\n}\n",
     );
     writeFileSync(
       join(dir, "uw.yaml"),
-      "- {op: diagram.style, style: w.grafical-style.yaml}\n- {op: diagram.legend, weight: critical, text: Critical path}\n- {op: diagram.style, style: default}\n",
+      "- {op: diagram.style, style: w.grafical}\n- {op: diagram.legend, weight: critical, text: Critical path}\n- {op: diagram.style, style: default}\n",
     );
     const r = JSON.parse(run("apply", f, "uw.yaml", "--json").out);
     expect(r.problems).toMatchObject([

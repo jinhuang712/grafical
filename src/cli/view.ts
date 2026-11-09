@@ -20,6 +20,7 @@ import type { Rect, Scene } from "../scene.ts";
 import { FONT_FILES } from "../text/fonts.ts";
 import { createMeasurer } from "../text/index.ts";
 import type { FontFace } from "../text/types.ts";
+import { STYLESHEET_SUFFIX } from "../theme/themes.ts";
 import { formatReport, inspect, isReport, loadDiagram, type Report } from "./pipeline.ts";
 import { kindsOf } from "./problems.ts";
 
@@ -233,7 +234,7 @@ export async function startViewer(file: string, port = 0): Promise<Viewer> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const watcher = watch(dirname(file), (_event, name) => {
     const n = name === null ? "" : String(name);
-    if (n !== basename(file) && !n.endsWith(".grafical-style.yaml")) return;
+    if (n !== basename(file) && !n.endsWith(STYLESHEET_SUFFIX)) return;
     if (timer !== undefined) clearTimeout(timer);
     timer = setTimeout(() => {
       if (redraw()) for (const c of clients) send(c);

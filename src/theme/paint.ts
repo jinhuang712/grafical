@@ -1,6 +1,6 @@
 // Paint: every colour and stroke value of a theme, by role (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Themes and stylesheets").
 // The SVG writer reads roles from a scene's paint and never holds a hex code itself.
-// PAINT is the default theme's paint; themes.ts holds the others.
+// The values of each theme live in its stylesheet in presets/ (themes.ts).
 
 import type { EdgeKind, EdgeStyleName, NodeKind } from "../model/types.ts";
 
@@ -78,11 +78,6 @@ export interface Paint {
     weights: Record<string, number>;
     /** Radius of a rounded corner in a route. */
     cornerRadius: number;
-    /**
-     * orthogonal: corners rounded by cornerRadius. curved: each corner as round as
-     * its two stretches and the room around it allow; the route stays the same (specs/decisions, "Edges meet any side").
-     */
-    shape: "orthogonal" | "curved";
     /** The patch behind an edge label, so the label stays readable over edges. */
     labelBackground: { fill: string; padX: number; padY: number; radius: number };
   };
@@ -154,58 +149,3 @@ export const STYLE_KIND: Record<EdgeStyleName, EdgeKind> = {
 export function hasHead(kind: EdgeKind): boolean {
   return kind !== "link";
 }
-
-export const PAINT: Paint = {
-  background: "#ffffff",
-  text: {
-    title: "#1f2328",
-    subtitle: "#6b727c",
-    note: "#6b727c",
-    legend: "#6b727c",
-    groupLabel: "#4b525c",
-    groupLabelMuted: "#6b727c",
-    laneLabel: "#4b525c",
-    nodeLabel: "#1f2328",
-    nodeSublabel: "#6b727c",
-    edgeLabel: "#4b525c",
-  },
-  group: { fill: "#f5f6f8", stroke: "#d5d9df", strokeWidth: 1, radius: 8 },
-  nesting: "alternate",
-  band: { fill: "#fafbfc", stroke: "#dfe3e8", strokeWidth: 1, radius: 8 },
-  lane: { fill: "#ffffff", stroke: "#d5d9df", strokeWidth: 1, radius: 0, headFill: "#f0f2f5" },
-  node: {
-    radius: 6,
-    stateRadius: 14,
-    strokeWidth: 1,
-    kinds: {
-      service: { fill: "#ffffff", stroke: "#b4bac3" },
-      store: { fill: "#f0f2f5", stroke: "#b4bac3" },
-      queue: { fill: "#fbf6ec", stroke: "#cdbf9f" },
-      external: { fill: "#ffffff", stroke: "#9aa1ab", dash: "4 3" },
-      actor: { fill: "#f8f9fa", stroke: "#b4bac3" },
-      state: { fill: "#ffffff", stroke: "#b4bac3" },
-      terminal: { fill: "#e9edf2", stroke: "#9aa4b1" },
-      decision: { fill: "#ffffff", stroke: "#b4bac3" },
-      initial: { fill: "#4b525c", stroke: "#4b525c" },
-      final: { fill: "#ffffff", stroke: "#4b525c" },
-      choice: { fill: "#e9edf2", stroke: "#9aa4b1" },
-    },
-    emphasis: { fill: "#eef3fd", stroke: "#2f5fc4", strokeWidth: 1.5 },
-  },
-  edge: {
-    strokeWidth: 1.25,
-    kinds: {
-      call: { stroke: "#6f7681" },
-      async: { stroke: "#6f7681", dash: "5 3" },
-      data: { stroke: "#6f7681" },
-      link: { stroke: "#6f7681" },
-      optional: { stroke: "#6f7681", dash: "1.5 2.5" },
-    },
-    arrow: { length: 7, halfWidth: 3 },
-    main: { strokeWidth: 2.5, arrow: { length: 9, halfWidth: 4 } },
-    weights: { heavy: 4 },
-    cornerRadius: 6,
-    shape: "orthogonal",
-    labelBackground: { fill: "#ffffff", padX: 3, padY: 1, radius: 2 },
-  },
-};

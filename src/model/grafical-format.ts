@@ -284,7 +284,7 @@ export function writeGrafical(d: Diagram): string {
   return `${blocks.join("\n\n")}\n`;
 }
 
-interface Block {
+export interface Block {
   sort: string;
   id: string | undefined;
   line: number;
@@ -345,7 +345,7 @@ function bad(text: string, line: number): OpError {
   };
 }
 
-function parseBlocks(text: string): Block[] | OpError {
+export function parseBlocks(text: string): Block[] | OpError {
   const blocks: Block[] = [];
   const lines = text.split("\n");
   let at: Block | undefined;
@@ -385,7 +385,7 @@ function parseBlocks(text: string): Block[] | OpError {
 }
 
 /** A value as the plain object holds it: a reference's ID, text, a number or a word. */
-function value(v: string): unknown {
+export function value(v: string): unknown {
   if (v.startsWith("@")) return v.slice(1);
   if (v.startsWith('"')) return JSON.parse(v);
   if (v === "true") return true;

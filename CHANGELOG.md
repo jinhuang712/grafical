@@ -25,7 +25,8 @@ grafical has not been released; the first release will be 0.1.0, and it holds wh
 
 ### Looks
 
-- Three built-in themes, and any object may take colors of its own or a named style.
+- Three built-in stylesheets that `grafical library` lists, and a stylesheet of your own is a `.grafical` file that starts from one and changes any color, width or type size.
+- Any object may take colors of its own or a named style.
 - A legend names what each style, width and mark means.
 
 ### What the agent reads back

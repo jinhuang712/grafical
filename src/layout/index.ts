@@ -2019,9 +2019,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (note !== undefined) scene.note = note;
   scene.legend = legend;
   scene.groups = sceneGroups;
-  if (d.lines !== undefined) {
-    scene.paint = { ...theme.paint, edge: { ...theme.paint.edge, shape: "curved" } };
-  } else if (theme !== DEFAULT_THEME) scene.paint = theme.paint;
+  if (d.lines !== undefined) scene.lines = d.lines;
+  if (theme !== DEFAULT_THEME) scene.paint = theme.paint;
   if (sceneBands.length > 0) scene.bands = sceneBands;
   if (sceneLanes.length > 0) scene.lanes = sceneLanes;
   if (sceneWalls.length > 0) scene.walls = sceneWalls;
@@ -2074,6 +2073,7 @@ function roundScene(s: Scene): Scene {
     }),
   };
   if (s.paint !== undefined) out.paint = s.paint;
+  if (s.lines !== undefined) out.lines = s.lines;
   if (s.subtitle !== undefined) out.subtitle = roundText(s.subtitle);
   if (s.note !== undefined) out.note = roundText(s.note);
   if (s.legend !== undefined) {

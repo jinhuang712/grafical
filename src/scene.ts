@@ -221,6 +221,8 @@ export interface SceneEdge {
 export interface Scene {
   /** The paint of the diagram's theme (specs/decisions, "Themes and stylesheets"). Absent: the default theme. */
   paint?: Paint;
+  /** Round corners where room allows, from `diagram --lines round` (specs/decisions, "Edges may be drawn square or round"). Absent: square. */
+  lines?: "round";
   width: number;
   height: number;
   title: PlacedText;

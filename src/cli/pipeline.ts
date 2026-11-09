@@ -2,7 +2,7 @@
 // read, apply, lay out, check, and write only if nothing is wrong.
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, resolve } from "node:path";
 import { parse } from "yaml";
 import { type Counts, countsText, drawing, warningsOf } from "../check/drawing.ts";
 import { check } from "../check/index.ts";
@@ -162,7 +162,7 @@ export function loadStyles(
     sourceOf === undefined ? r : failure(r.errors.map((e) => ({ ...e, ...sourceOf(ref) })));
   for (const ref of refs) {
     if (styleProblem(ref) !== undefined) continue;
-    const path = join(dirname(file), ref);
+    const path = resolve(dirname(file), ref);
     if (!existsSync(path)) {
       return of(ref, fileError("style-not-found", path));
     }

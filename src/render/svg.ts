@@ -19,8 +19,9 @@ import type {
 } from "../scene.ts";
 import { FONT_FAMILY } from "../text/faces.ts";
 import { FRAME } from "../theme/geometry.ts";
-import { hasHead, PAINT, type Paint, STYLE_KIND, strokeLook } from "../theme/paint.ts";
+import { hasHead, type Paint, STYLE_KIND, strokeLook } from "../theme/paint.ts";
 import { meetOutline } from "../theme/shapes.ts";
+import { PAINT } from "../theme/themes.ts";
 import { markShape } from "./marks.ts";
 
 /** At most 2 decimals, no trailing zeros, never "-0". */
@@ -327,7 +328,7 @@ function roundedPath(pts: Point[], P: Paint, hops: Hop[] = [], room?: Room, id =
       { x: p.x + ((next.x - p.x) / outLen) * r, y: p.y + ((next.y - p.y) / outLen) * r },
     ];
     let r = Math.min(P.edge.cornerRadius, inLen / 2, outLen / 2);
-    if (P.edge.shape === "curved" && room !== undefined) {
+    if (room !== undefined) {
       let round = Math.min(inLen / 2, outLen / 2);
       while (round > r && !clearCorner(id, prev, p, next, ...ends(round), room)) round /= 2;
       if (round > r) r = round;
@@ -570,7 +571,7 @@ export function renderSvg(scene: Scene): string {
   const byId = new Map(scene.nodes.map((n) => [n.id, n]));
   const hops = hopsOf(scene.edges);
   const room: Room | undefined =
-    P.edge.shape === "curved"
+    scene.lines === "round"
       ? {
           boxes: [
             ...scene.nodes.map((n) => n.rect),

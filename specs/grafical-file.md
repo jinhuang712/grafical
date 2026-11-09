@@ -1,6 +1,6 @@
 # The .grafical file
 
-**Status:** built, except for `<check>`, `library`, the attributes of a node's size, a type's `weight`, `both` and `sublabel`, a style's `weight`, a layer's `style` and an edge's `color`, and tuned once its diffs show what to change.
+**Status:** built, except for `<check>`, the attributes of a node's size, a type's `weight`, `both` and `sublabel`, a style's `weight`, a layer's `style` and an edge's `color`.
 
 A `.grafical` file holds one diagram as objects with attributes and relations. grafical is its only writer, and a model reads it through `show`, so the file is shaped for people in a diff and for git. It sits between pseudocode, a structural language, a script, CSS, YAML, JSON and LaTeX, and it takes no control flow, variables or macros.
 
@@ -144,8 +144,7 @@ The root has no ID, and a file has exactly one.
 | `title` | text |
 | `subtitle` | text |
 | `caption` | text |
-| `theme` | `default`, `dark` or `print` |
-| `library` | text, a `.grafical` file of types and styles |
+| `style` | text, a built-in stylesheet or the path of a stylesheet |
 | `density` | `compact`, `normal` or `airy` |
 | `sizing` | `auto` or `fixed` |
 | `lines` | `square` or `round` |
@@ -404,9 +403,9 @@ The legend is a small diagram, and its attributes are open.
 }
 ```
 
-## Shared looks
+## Stylesheets
 
-A `.grafical` file with `<type>` and `<style>` blocks and no others is a library, and a diagram names it with `library`. It must sit inside the diagram's folder. It takes the place of the stylesheet.
+A stylesheet is a `.grafical` file that opens with a `<stylesheet>` block and holds `<type>`, `<style>` and `<weight>` blocks of looks and nothing else. A diagram names it with `style`, by a built-in name such as `dark` or by a path, which may lie anywhere. What each of its blocks takes is in the theme's spec.
 
 ## Decisions
 
@@ -417,4 +416,4 @@ A `.grafical` file with `<type>` and `<style>` blocks and no others is a library
 - [089. A style may be as rich as it likes](decisions/089-a-style-may-be-as-rich-as-it-likes.md)
 - [092. `like` follows an object's look and nothing else](decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
 - [096. An edge is steered by facts and never by coordinates](decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
-- [104. Shared looks live in a library of types and styles](decisions/104-shared-looks-live-in-a-library-of-types-and-styles.md)
+- [104. A stylesheet is a .grafical file, and the built-in ones form a library](decisions/104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md)

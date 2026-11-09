@@ -379,7 +379,7 @@ A group is a system, drawn as one frame around its members, which may sit in sev
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group.
   - Edges that end at the group go with it.
 - A group inside a group takes the canvas's fill, so the fills alternate by depth.
-  - A stylesheet may set `paint.nesting: shade` instead.
+  - A stylesheet may set `nesting: shade` on `<type> group` instead.
 
 ### F1.3.2: Copying a group
 

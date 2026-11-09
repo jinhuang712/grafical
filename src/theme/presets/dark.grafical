@@ -1,0 +1,134 @@
+<stylesheet> {
+  format: 1
+  base: default
+  about: "Light lines on a dark ground."
+}
+
+<type> diagram {
+  fill: #0f1419
+  muted: #8b949e
+}
+
+<type> title {
+  color: #e6e8eb
+}
+
+<type> subtitle {
+  color: #9aa3ad
+}
+
+<type> note {
+  color: #9aa3ad
+}
+
+<type> legend {
+  color: #9aa3ad
+}
+
+<type> group {
+  fill: #161b22
+  border: #30363d
+  color: #c5cad1
+}
+
+<type> band {
+  fill: #12171d
+  border: #2a3038
+}
+
+<type> lane {
+  fill: #0f1419
+  border: #30363d
+  head-fill: #161b22
+  color: #c5cad1
+}
+
+<type> node {
+  color: #e6e8eb
+  sublabel-color: #9aa3ad
+}
+
+<type> service {
+  fill: #1c2128
+  border: #444c56
+}
+
+<type> store {
+  fill: #1a2029
+  border: #444c56
+}
+
+<type> queue {
+  fill: #2a2416
+  border: #6b5a35
+}
+
+<type> external {
+  fill: #1c2128
+  border: #636e7b
+}
+
+<type> actor {
+  fill: #1f242b
+  border: #444c56
+}
+
+<type> state {
+  fill: #1c2128
+  border: #444c56
+}
+
+<type> terminal {
+  fill: #262d36
+  border: #636e7b
+}
+
+<type> decision {
+  fill: #1c2128
+  border: #444c56
+}
+
+<type> initial {
+  fill: #adbac7
+  border: #adbac7
+}
+
+<type> final {
+  fill: #1c2128
+  border: #adbac7
+}
+
+<type> choice {
+  fill: #262d36
+  border: #636e7b
+}
+
+<style> emphasis {
+  fill: #132a4f
+  border: #4c8dff
+}
+
+<type> edge {
+  label-color: #c5cad1
+  label-fill: #0f1419
+}
+
+<type> call {
+  color: #8b949e
+}
+
+<type> async {
+  color: #8b949e
+}
+
+<type> data {
+  color: #8b949e
+}
+
+<type> link {
+  color: #8b949e
+}
+
+<type> optional {
+  color: #8b949e
+}

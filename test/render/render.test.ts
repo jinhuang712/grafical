@@ -5,7 +5,7 @@ import { layout } from "../../src/layout/index.ts";
 import { renderPng, renderSvg } from "../../src/render/index.ts";
 import type { Point, SceneEdge, SceneNode } from "../../src/scene.ts";
 import { createStubMeasurer } from "../../src/text/stub.ts";
-import { PAINT } from "../../src/theme/paint.ts";
+import { PAINT } from "../../src/theme/themes.ts";
 import { nested } from "../fixtures/nested.ts";
 import { escapeScene, groupedScene, mixedScene, tinyScene } from "./scenes.ts";
 
@@ -109,7 +109,6 @@ describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
   });
 
   it('rounds a corner as far as its stretches allow in the curved style (specs/decisions, "Edges meet any side")', () => {
-    const curved = { ...PAINT, edge: { ...PAINT.edge, shape: "curved" as const } };
     const zed = edge("z", [
       { x: 20, y: 20 },
       { x: 20, y: 60 },
@@ -117,12 +116,12 @@ describe('crossings and joins (specs/decisions, "Edges meet any side")', () => {
       { x: 180, y: 110 },
     ]);
     // Half of the 40 px stretch down, then half of the 50 px stretch down.
-    expect(renderSvg({ ...tinyScene(), nodes: [], edges: [zed], paint: curved })).toContain(
+    expect(renderSvg({ ...tinyScene(), nodes: [], edges: [zed], lines: "round" })).toContain(
       'd="M20 20L20 40Q20 60 40 60L155 60Q180 60 180 85L180 110"',
     );
     // A node inside the first corner leaves it the orthogonal style's radius.
     const dotNode = { ...tinyScene().nodes[0], rect: { x: 26, y: 44, w: 10, h: 10 } } as SceneNode;
-    expect(renderSvg({ ...tinyScene(), nodes: [dotNode], edges: [zed], paint: curved })).toContain(
+    expect(renderSvg({ ...tinyScene(), nodes: [dotNode], edges: [zed], lines: "round" })).toContain(
       'd="M20 20L20 54Q20 60 26 60L155 60',
     );
   });
