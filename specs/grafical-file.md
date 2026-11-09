@@ -5,7 +5,7 @@
 A `.grafical` file holds one diagram as objects with attributes and relations. grafical is its only writer, and a model reads it through `show`, so the file is shaped for people in a diff and for git. It sits between pseudocode, a structural language, a script, CSS, YAML, JSON and LaTeX, and it takes no control flow, variables or macros.
 
 ```text
-<diagram>                      the root: title, theme, global looks
+<diagram>                      the root: title, global looks
   <type> <style> <check>       what things may look like and follow
   <layer> <group> <lane>
   <column> <wall>              the regions
@@ -265,7 +265,6 @@ A rule a diagram sets itself, marked by what follows it. It comes later, and its
 | `number` | a whole number |
 | `via` | a node or a group, then `left` or `right` |
 | `straight` | `true` |
-| `main` | `true` |
 | `with` | an edge |
 | `bend-at` | `0.25`, `0.5` or `0.75` |
 | `stretch` | `1.25`, `1.5` or `2` |

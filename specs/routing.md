@@ -138,7 +138,7 @@ An agent may steer an edge with facts, and each must hold or the write is refuse
 
 | Fact | When | What happens | Refused when |
 |---|---|---|---|
-| `straight`, `main` | the column grid | the two ends' join scores 1000 more, so it comes first | `straight`: the drawn edge has a bend |
+| `straight` | the column grid | the two ends' join scores 1000 more, so it comes first | `straight`: the drawn edge has a bend |
 | `via` | corridors | a corridor is cut to the stated side of the object | the edge, wherever it lies level with the object, is on the other side |
 | `with` | after routing | the edge follows the trunk to the first run that reaches its end square, and leaves it there | no run reaches, or the way is not clear |
 | `bend-at` | after routing | the longest inner run slides between its neighbours, to the fraction | none has neighbours on either side, or the way is not clear |
@@ -149,16 +149,6 @@ A way is clear when it meets no node but its ends and no label, stays 8 px insid
 ## Self-loops
 
 An edge from a node to itself loops through the gutter below the node. Its two ends sit about 48 px apart, either side of the node's centre, though the ports may move them. The loop runs at the gutter's third row of tracks.
-
-## What the router does not do yet
-
-The owner set rules for clean edges on 2026-11-07, and the router does not meet them yet:
-
-- It keeps 8 px from a node to a track in the gap beside it, where an end run should be at least 16 px and 24 px at ease.
-- It never leaves one side and enters another across layers.
-- Two edges that swap sides in one gap take a jog.
-- It has no way round the outside for a pair with no clean route.
-- A step after routing never grows the canvas, so a detour past it is refused.
 
 ## Decisions
 

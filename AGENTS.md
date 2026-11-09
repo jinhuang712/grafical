@@ -138,7 +138,7 @@ CI runs `pnpm fuzz` after `pnpm test` so that the other tests report first.
 
 The parts of `pnpm bench`:
 
-- The parts that run agents cost money: `baseline` · `chain` · `report` · `smoke` · `stage1` · `judge`.
+- The parts that run agents cost money: `baseline` · `chain` · `report` · `smoke` · `stage1`.
   - `report`, `smoke` and `stage1` need `--approved`.
 - `report` has one clean session draw one picture and write its report beside it.
 - `gallery` builds the owner's blind rating page of a round.

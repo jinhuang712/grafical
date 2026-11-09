@@ -103,7 +103,7 @@ A node placed by steps has no layer of its own. It lands in the cell its steps n
 
 A group is drawn as one frame around its members. Its frame spans every layer from its top member to its bottom one, and in each of those layers its members fill a block of neighbouring columns with no other node inside. The other nodes of those layers sit beside it. A layer inside the span that holds no member is split to the left and right of the frame.
 
-A group has 24 px of padding on its sides and bottom, and 24 px more for each level of nesting, up to three levels. A node outside a group keeps at least 16 px from its frame, and two group frames keep 24 px apart. Inner group frames alternate their fill with depth, the even ones on the canvas's color, unless a stylesheet sets `paint.nesting: shade`.
+A group has 24 px of padding on its sides and bottom, and 24 px more for each level of nesting, up to three levels. A node outside a group keeps at least 16 px from its frame, and two group frames keep 24 px apart. Inner group frames alternate their fill with depth, the even ones on the canvas's color.
 
 A group's title takes room by the place the agent states for it, and the engine adds room only for the title itself:
 

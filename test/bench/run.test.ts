@@ -350,7 +350,7 @@ describe("summary", () => {
       chain: `raw-haiku-r${i}`,
       record: rec(0.1 * i, 1000 * i, 0.5),
     }));
-    const table = buildTable(runs, new Map());
+    const table = buildTable(runs);
     expect(table.split("\n")).toHaveLength(3);
     expect(table).toContain("0.200 (0.100–0.300)");
     const net = buildNetTable(runs, [rec(0.05, 400, 0.6)]);
@@ -365,7 +365,7 @@ describe("summary", () => {
     });
     const runs = [step("e1", 0.03, false), step("e2-add-node", 0.005)];
     expect(buildChainTable(runs)).toContain("| grafical | haiku | 1 | 0.035 (0.035–0.035) |");
-    const table = buildTable(runs, new Map());
+    const table = buildTable(runs);
     expect(table).toContain("0/1"); // e1 finished without diagram.png
     expect(table).toContain("1/1");
   });

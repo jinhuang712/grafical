@@ -73,7 +73,7 @@ A report run is how a test picture gets made. One clean session draws one pictur
 
 ## The owner's ratings
 
-`pnpm bench gallery` puts each round's pictures on one page under blind letters, and the owner rates them and writes notes that are read back. Since 2026-11-05 the rating is out of 25 again, because the goals rest on it. No model judges a picture: Opus judges were retired on 2026-10-18, and `pnpm bench judge` remains in the code unused.
+`pnpm bench gallery` puts each round's pictures on one page under blind letters, and the owner rates them and writes notes that are read back. Since 2026-11-05 the rating is out of 25 again, because the goals rest on it. No model judges a picture.
 
 ## Running a part
 

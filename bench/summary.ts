@@ -2,7 +2,6 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { JudgedRow } from "./judge.ts";
 import { type BeforeWrite, stepTotal } from "./metrics.ts";
 import { loadChanges, REPO, RUNS, type StepRecord } from "./run.ts";
 
@@ -78,27 +77,6 @@ export function stat(values: number[], digits = 2): string {
   return `${f(mean)} (${f(Math.min(...values))}–${f(Math.max(...values))})`;
 }
 
-/** Judges' score of each picture, by `<chain>/<step>`: the sum of the judges' totals, out of 50. */
-export function scoresByItem(round: string): Map<string, number> {
-  const file = join(RUNS, round, "judging", "scores.json");
-  const out = new Map<string, number>();
-  if (!existsSync(file)) return out;
-  const rows = JSON.parse(readFileSync(file, "utf8")) as JudgedRow[];
-  const byItem = new Map<string, number[]>();
-  for (const r of rows) {
-    if (!r.verdict) continue;
-    byItem.set(r.item, [...(byItem.get(r.item) ?? []), r.verdict.total]);
-  }
-  for (const [item, totals] of byItem) {
-    if (totals.length >= 2)
-      out.set(
-        item,
-        totals.reduce((a, b) => a + b, 0),
-      );
-  }
-  return out;
-}
-
 /** Geometry defects in each picture, by `<chain>/<step>`, from `pnpm bench geometry` (GOALS.md, "Mechanical defects"). */
 export function geometryByItem(round: string): Map<string, number> {
   const out = new Map<string, number>();
@@ -130,11 +108,7 @@ function groupBy<T>(xs: T[], key: (x: T) => string): Map<string, T[]> {
   return m;
 }
 
-export function buildTable(
-  runs: Loaded[],
-  scores: Map<string, number>,
-  geometry: Map<string, number> = new Map(),
-): string {
+export function buildTable(runs: Loaded[], geometry: Map<string, number> = new Map()): string {
   const header = [
     "Step",
     "Arm",
@@ -159,7 +133,6 @@ export function buildTable(
     "Geometry",
     "Picture",
     "Regens",
-    "Score (/50)",
   ];
   const rows = [`| ${header.join(" | ")} |`, `|${header.map(() => "---").join("|")}|`];
   // A chain named `<task>.<arm>-...` drew its own task (E3, E4): its steps are cells of their own.
@@ -181,7 +154,6 @@ export function buildTable(
             1,
           )
         : "n/a";
-    const sc = group.flatMap((g) => scores.get(`${g.chain}/${g.record.step}`) ?? []);
     rows.push(
       `| ${[
         step,
@@ -247,7 +219,6 @@ export function buildTable(
           rs.map((r) => r.regenerations),
           1,
         ),
-        stat(sc, 1),
       ].join(" | ")} |`,
     );
   }
@@ -335,7 +306,7 @@ export function buildReport(round: string): string {
     "",
     "Each cell is `mean (min–max)` over its runs. Raw numbers include Claude Code's fixed overhead.",
     "",
-    buildTable(runs, scoresByItem(round), geometryByItem(round)),
+    buildTable(runs, geometryByItem(round)),
     "",
     "### Cost of a whole chain (sum of the steps)",
     "",

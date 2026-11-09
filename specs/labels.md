@@ -153,5 +153,6 @@ The legend wraps onto more lines when it is wider than its room: the larger of i
 - [062. A group's label moves no node and no edge](decisions/062-a-group-s-label-moves-no-node-and-no-edge.md)
 - [063. A wall's label stays along its wall](decisions/063-a-wall-s-label-stays-along-its-wall.md)
 - [064. A note is what the agent states](decisions/064-a-note-is-what-the-agent-states.md)
+- [066. An edge's label sits on its edge](decisions/066-an-edge-s-label-sits-on-its-edge.md)
 - [065. Unreadable is refused and costly is reported](decisions/065-unreadable-is-refused-and-costly-is-reported.md)
 - [076. A band in a lane of its name draws no label](decisions/076-a-band-in-a-lane-of-its-name-draws-no-label.md)

@@ -8,9 +8,6 @@
 //   chain --arm <arm> [--model haiku] [--run 1] [--round <name>]
 //                                             one draft and its change requests, to measure a
 //                                             cell's cost before the owner approves a round.
-//   judge --round <name> [--judges 2] [--private]
-//                                             score a round's pictures blind with Opus judges;
-//                                             --private: a round on the private brief
 //   summary --round <name>                    write bench/results/<round>.md
 //   gallery --round <name> [--title <text>]   blind pictures for the owner's rating page
 //   geometry --round <name>                   mechanical defects: check every step's picture's geometry
@@ -28,7 +25,6 @@ import { dirname, join } from "node:path";
 import { runDiff } from "./diff.ts";
 import { buildGallery, SITE } from "./gallery.ts";
 import { checkRound } from "./geometry.ts";
-import { runJudging } from "./judge.ts";
 import { formatLines, measureLines } from "./lines.ts";
 import { formatReportPlan, planReport, reportRound, reportTask, runReport } from "./report.ts";
 import { runRoutes } from "./routes.ts";
@@ -43,7 +39,7 @@ import {
 } from "./run.ts";
 import { formatPlan, planSmoke } from "./smoke.ts";
 import { measureSpeed } from "./speed.ts";
-import { formatPart, PARTS, type Part, PRIVATE, planPart } from "./stage1.ts";
+import { formatPart, PARTS, type Part, planPart } from "./stage1.ts";
 import { writeSummary } from "./summary.ts";
 
 function flag(args: string[], name: string): string | undefined {
@@ -139,14 +135,6 @@ function main(argv: string[]): void {
       console.log(`reflection: $${(reflectionUsd ?? 0).toFixed(4)}`);
       const total = recs.reduce((sum, r) => sum + r.costUsd, 0) + (reflectionUsd ?? 0);
       console.log(`total: $${total.toFixed(4)}`);
-      return;
-    }
-    case "judge": {
-      // --private: a round on the private reference brief, kept outside the repository.
-      const where = args.includes("--private")
-        ? { runs: join(PRIVATE, "runs"), brief: join(PRIVATE, "briefs", "reference.md") }
-        : undefined;
-      runJudging(round, Number(flag(args, "judges") ?? 2), where);
       return;
     }
     case "gallery": {
@@ -260,7 +248,7 @@ function main(argv: string[]): void {
     }
     default:
       console.error(
-        "usage: pnpm bench <baseline|smoke|chain|judge|gallery|geometry|lines|speed|stage1|summary> [options]",
+        "usage: pnpm bench <baseline|smoke|chain|gallery|geometry|lines|speed|stage1|summary> [options]",
       );
       process.exit(2);
   }
