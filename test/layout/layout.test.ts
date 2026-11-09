@@ -767,8 +767,13 @@ describe("groups", () => {
   });
 });
 
+// The median on 2026-11-09: 6.7 ms on the development machine, 21 ms on the macOS runner and 32 to 46 ms
+// on the Ubuntu runner. On Linux the bound only catches a layout that got many times slower; GOALS.md,
+// "T2: Speed" is measured by `pnpm bench speed`.
+const LAYOUT_MS = process.platform === "linux" ? 100 : 30;
+
 describe("speed", () => {
-  it("lays out 50 nodes and 70 edges in under 30 ms", () => {
+  it("lays out 50 nodes and 70 edges in under 30 ms, 100 ms on Linux", () => {
     expect(dense.layers.reduce((s, l) => s + l.nodes.length, 0)).toBe(50);
     expect(dense.edges).toHaveLength(70);
     for (let i = 0; i < 5; i++) layout(dense, m);
@@ -787,6 +792,6 @@ describe("speed", () => {
     console.log(
       `layout: dense median ${median.toFixed(2)} ms, worst ${worst.toFixed(2)} ms; catalog-sync ${small.toFixed(2)} ms`,
     );
-    expect(median).toBeLessThan(30);
+    expect(median).toBeLessThan(LAYOUT_MS);
   });
 });

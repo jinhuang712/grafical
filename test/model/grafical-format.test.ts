@@ -28,7 +28,8 @@ describe("the .grafical file", () => {
   it("holds random diagrams with nothing lost", async () => {
     const m = await createMeasurer();
     for (let seed = 1; seed <= 200; seed++) roundTrip(generate(seed, m).diagram);
-  }, 60_000);
+    // About 18 s on the development machine and 76 s on the Ubuntu runner.
+  }, 240_000);
 
   it("takes any text", () => {
     const d = readDiagram(readFileSync(join(FIXTURES, saved[0] as string), "utf8")) as Diagram;
