@@ -96,7 +96,7 @@ The good and the bad picture of `pyramid` are [the hand drawing](evidence/pyrami
 
 **Acceptance:** the owner looks at the first drafts of a round, where the agent placed the nodes, and finds each point met or names why it cannot be.
 
-**Status:** ⬜ not run. The points came from the routing cases on 2026-11-07 and 2026-11-08, and the checks of a route joined them on 2026-11-09. Whether symmetry and even space fit the stance on taste is open in [A good picture and taste](TODO.md#p1discussion-a-good-picture-and-taste), and what clean edges leave open is in [What clean edges still leave open](TODO.md#p1discussion-what-clean-edges-still-leave-open).
+**Status:** ⬜ not run. The points came from the routing cases on 2026-11-07 and 2026-11-08, and the checks of a route joined them on 2026-11-09. Whether symmetry and even space fit the stance on taste is open.
 
 ### Measures
 

@@ -183,7 +183,7 @@ A node snaps to its cell, unless an agent takes it off with a fraction of a cell
 - The offset is measured from the grid and never from a node.
 - An offset that overlaps anything refuses the write.
 - No other node moves for it.
-- It waits for the router, which lays its tracks with no idea that a node sits in a gutter: [The space the router works in](../plan/TODO.md#p1discussion-the-space-the-router-works-in).
+- It waits for the router, which lays its tracks with no idea that a node sits in a gutter.
 
 - **Why:** [093. A node may sit off its cell by a fraction](../specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md)
 

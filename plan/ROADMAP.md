@@ -53,7 +53,9 @@ Roadmap
 │       ├── ✅ Design the model and its form
 │       ├── ✅ Build the model
 │       ├── ⬜ One library
-│       └── ⬜ Tune the form
+│       ├── ⬜ Tune the form
+│       ├── ⬜ Small points of the file
+│       └── ⬜ The README's pictures in the file form
 ├── 🟨 CP2: Drawing more — what a picture can hold
 │   ├── ✅ CP2.1: Containers — groups · lanes · walls · notes
 │   │   ├── ✅ Edges that end at containers
@@ -80,6 +82,7 @@ Roadmap
 │   │   ├── ⬜ Corner marks checked
 │   │   ├── ⬜ Marks by name
 │   │   ├── ⬜ Size multiples
+│   │   ├── ⬜ The space the router works in
 │   │   └── ⬜ Offsets
 │   ├── ⬜ CP2.5: Deeper containers — five levels · lanes both ways · column headings
 │   │   ├── ⬜ Column headings
@@ -108,7 +111,8 @@ Roadmap
 │   │   ├── ✅ Edge shapes
 │   │   ├── ✅ `--with`
 │   │   ├── ✅ `--via`
-│   │   └── ⬜ The canvas grows for every route
+│   │   ├── ⬜ The canvas grows for every route
+│   │   └── ⬜ A curve end to end
 │   ├── 🟨 CP3.3: Looks — colors and labels of every object
 │   │   ├── ✅ Node looks
 │   │   ├── ✅ Edge looks
@@ -118,21 +122,30 @@ Roadmap
 │   │   ├── 🟨 Label text
 │   │   └── ⬜ Looks for every label
 │   ├── 🟨 CP3.4: Rearranging in one command — one move takes `same-layer-pair` from 3 crossings to 0
+│   │   ├── ⬜ What a move needs
 │   │   ├── 🟨 Move and plug
-│   │   └── ⬜ A layer's whole order
+│   │   ├── ⬜ A layer's whole order
+│   │   ├── ⬜ How freely an agent adjusts a picture
+│   │   ├── ⬜ A parent off the middle of its children
+│   │   └── ⬜ `edge --ends` names `plug`
 │   ├── ⬜ CP3.5: A check before stopping — the agent looks at its picture against a list
 │   │   └── ⬜ A check before stopping
 │   ├── 🟨 CP3.6: Clean edges and labels — the places given draw clean
-│       ├── ✅ Labels on straight edges
-│       ├── ✅ Choice diamonds
-│       ├── ✅ Footnote numbers
-│       ├── ✅ Routing cases
-│       ├── 🟨 Labels on edges
-│       ├── 🟨 Clean edges
-│       ├── ⬜ Labels in a crowded gutter
-│       ├── ⬜ A diamond's slanted edges
+│   │   ├── ✅ Labels on straight edges
+│   │   ├── ✅ Choice diamonds
+│   │   ├── ✅ Footnote numbers
+│   │   ├── ✅ Routing cases
+│   │   ├── 🟨 Labels on edges
+│   │   ├── 🟨 Clean edges
+│   │   ├── ⬜ What clean edges leave open
+│   │   ├── ⬜ Labels in a crowded gutter
+│   │   ├── ⬜ Seven labels off their edges
+│   │   ├── ⬜ A label on a short run
+│   │   ├── ⬜ A hidden arrowhead
+│   │   ├── ⬜ A diamond's slanted edges
 │   │   ├── ⬜ Badges off a lane's side
-│   │   └── ⬜ Return edges off a self-loop
+│   │   ├── ⬜ Return edges off a self-loop
+│   │   └── ⬜ Even ports
 │   └── ⬜ CP3.7: Steering proven — each fact shown to help on a picture that needs it
 │       ├── ⬜ `--straight`
 │       ├── ⬜ `--bend`
@@ -145,7 +158,10 @@ Roadmap
 │   │   ├── ✅ Fewer blocked labels
 │   │   ├── ⬜ Measure the rate in a round
 │   │   ├── ⬜ Find where Haiku's tokens go
-│   │   └── ⬜ Cut the cost of a first draft
+│   │   ├── ⬜ Cut the cost of a first draft
+│   │   ├── ⬜ What the first report run asked
+│   │   ├── ⬜ An edge ID in a shell
+│   │   └── ⬜ A render that hung
 │   ├── ⬜ CP4.3: Copying a picture — someone else's picture redrawn better
 │   │   ├── ⬜ Choose the reference pictures
 │   │   ├── ⬜ Hand an agent a picture
@@ -153,7 +169,8 @@ Roadmap
 │   ├── 🟨 CP4.4: The MVP bar — one round says whether grafical succeeds
 │   │   ├── ✅ Run Opus at xhigh effort
 │   │   ├── ⬜ Measure the context added
-│   │   └── ⬜ Private reference brief
+│   │   ├── ⬜ Private reference brief
+│   │   └── ⬜ Taste and the sixteen points
 │   ├── ⬜ CP4.5: Every kind of diagram — each kind in a round
 │   │   ├── ⬜ State machine
 │   │   ├── ⬜ Flowchart
@@ -194,8 +211,13 @@ Roadmap
     ├── ⬜ CP6.4: More combinations of operations
     │   ├── ⬜ Decide the form
     │   └── ⬜ Test the candidates
-    └── ⬜ CP6.5: Checks of an agent's own
-        └── ⬜ Rules a diagram sets itself
+    ├── ⬜ CP6.5: Checks of an agent's own
+    │   └── ⬜ Rules a diagram sets itself
+    ├── ⬜ CP6.6: Documents to their guides
+    │   └── ⬜ What the check of 2026-11-09 left
+    └── ⬜ CP6.7: Other outputs
+        ├── ⬜ An HTML export
+        └── ⬜ An SVG a model can tune
 ```
 
 ## CP1: Drawing at all
@@ -366,6 +388,13 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 - ✅ Build the model: grafical reads and writes the form · styles · types · `like`.
 - ⬜ One library: A `.grafical` file of types and styles holds the looks a diagram shares, and the stylesheet goes.
 - ⬜ Tune the form: Once it is built, the form is tuned against what its diffs show.
+- ⬜ Small points of the file: A diagram's optional type needs a name apart from a node's `type` · an attribute's colon may stay or go · `<style>` grows to every look grafical draws.
+  - Found on 2026-11-06, and each is settled when the file is built.
+  - Related: the spec "The .grafical file".
+- ⬜ The README's pictures in the file form: They are drawn from `.grafical.yaml` files while the README says a diagram is one `.grafical` file.
+  - The files are `docs/images/pipeline.grafical.yaml` and `docs/images/order-flow.grafical.yaml`.
+  - Found by the document check of 2026-11-09.
+  - Next: write both in the `.grafical` form and render the pictures again.
 
 **Delivers:**
 
@@ -486,7 +515,14 @@ Nodes carry marks that stay clear of edges, take multiples of their size and sit
 - ⬜ Corner marks checked: A corner mark is checked against nearby edges.
 - ⬜ Marks by name: A mark can be taken by name.
 - ⬜ Size multiples: A node takes multiples of its width and height.
-- ⬜ Offsets: A node sits a fraction of a cell off the grid, once the router allows it: [The space the router works in](TODO.md#p1discussion-the-space-the-router-works-in).
+- ⬜ The space the router works in: The router sees nodes only in layers and runs only on a gutter's tracks, and offsets down · lanes both ways · copied pictures ask for more.
+  - A router over the open space would reach them and would have to win back stability and speed.
+  - A search trial on 2026-11-07 cut crossings, and its pictures read worse.
+  - A spike of decision 093 "A node may sit off its cell by a fraction" on 2026-11-07 drew offsets across with no defect.
+  - In that spike offsets down ran edges through nodes.
+  - Next: once rearranging is built, list what each planned capability still needs of the space.
+  - Related: decision 005 "Our own gap router".
+- ⬜ Offsets: A node sits a fraction of a cell off the grid, once the router allows it.
 
 **Delivers:**
 
@@ -541,7 +577,12 @@ A legend is a small diagram, and it can explain what a picture's colors mean.
 **Tasks:**
 
 - ✅ The richer legend: The legend covers styles, widths and marks.
-- ⬜ Design the legend: The owner designs it: [The legend needs a design of its own](TODO.md#p1discussion-the-legend-needs-a-design-of-its-own).
+- ⬜ Design the legend: The owner designs it as a small diagram: what goes in it · how its entries run · how each sample is drawn.
+  - A picture may have one legend or none, and its entries may run across, down or in a grid.
+  - `diagram --legend` explains edge styles and widths and marks but not a node's fill.
+  - A key of small nodes such as "Works" and "Bug" and "Fixed" is drawn as a group of plain nodes.
+  - Every one of them gets `lonely-node`, six warnings for a picture that is right.
+  - Related: decision 057 "A node may take a look of its own".
 - ⬜ Build the legend: The design is built.
 
 **Delivers:**
@@ -633,6 +674,11 @@ A strong model steers an edge with facts and draws it square or round.
 - ✅ `--with`: An edge joins another's trunk, which draws a tree with one spine.
 - ✅ `--via`: An edge passes a stated object on a stated side.
 - ⬜ The canvas grows for every route: A step after routing grows the canvas as layout does.
+- ⬜ A curve end to end: A third edge shape with no straight run, and what happens when it meets what lies beside it.
+  - Edges are drawn square or round today.
+  - A curve through a route's points cuts corners and can meet what lies beside it.
+  - Next: the owner designs it.
+  - Related: decision 059 "Edges may be drawn square or round".
 
 **Delivers:**
 
@@ -679,12 +725,31 @@ Every object and every label takes a look of its own.
 
 **Status:** 🟨 (since 2026-11-07)
 
-The agent fixes a picture by placing nodes, so a move costs one command and shows its effect before the write. On `same-layer-pair` one move of C took crossings from 3 to 0. What a move needs is open in [Rearranging a picture is cheap](TODO.md#p1discussion-rearranging-a-picture-is-cheap).
+The agent fixes a picture by placing nodes, so a move costs one command and shows its effect before the write. On `same-layer-pair` one move of C took crossings from 3 to 0. What a move needs is not settled yet.
 
 **Tasks:**
 
+- ⬜ What a move needs: A move costs one command and shows its effect before the write.
+  - Placement alone took `same-layer-pair` · `swapped-pair` · `crowded-gutter` · `ladder` to no crossing with no change to the router.
+  - A Haiku session spent its fixes on the order of a layer and could not state the whole order at once.
+  - Swap · spacing · order take many nodes in one command and never pair by pair.
+  - Open: whether the hand drawings in `plan/evidence/worst-four-cases.png` become the target pictures.
+  - Evidence: `plan/evidence/ladder-options.png` · `plan/evidence/two-layers-skip-outside.png`.
+  - Related: decision 033 "The agent states every order".
 - 🟨 Move and plug: `plug` replaces `edge --ends`, and `move` is not built.
 - ⬜ A layer's whole order: One command states the order of every node in a layer.
+- ⬜ How freely an agent adjusts a picture: Where a node sits beside another · where notes and step badges sit.
+  - The owner takes this one dimension at a time, and each decided one is a decision.
+  - Next: the owner names the next dimension when a real picture shows a gap.
+  - Related: decision 055 "A weak model draws well and a stronger one superbly".
+- ⬜ A parent off the middle of its children: `tree` and `pyramid` read wrong because the grid packs nodes to the left.
+  - The cases draw well by their counts and read wrong.
+  - This is placement and not routing, so the cases may need a class and a number of their own.
+  - An offset moves one node at a time, which is much work for a whole pyramid.
+- ⬜ `edge --ends` names `plug`: The wrong command gets `plug` as its `likely`.
+  - `grafical edge --ends x` is refused as `unknown-command` with `found: ends` and no `likely`.
+  - Found by the document pass of 2026-11-08.
+  - Next: add the word to the words a wrong command is read against.
 
 **Delivers:**
 
@@ -720,7 +785,7 @@ An agent looks at its picture and checks it against the list in `grafical guide 
 
 **Status:** 🟨 (since 2026-10-30)
 
-The engine draws clean edges and labels for the places the agent gives. Drawing reference diagrams with grafical's own commands showed where a picture still looks wrong though no check fails, and the owner's notes on each round's pictures decide what comes next. The open points are in [What clean edges still leave open](TODO.md#p1discussion-what-clean-edges-still-leave-open).
+The engine draws clean edges and labels for the places the agent gives. Drawing reference diagrams with grafical's own commands showed where a picture still looks wrong though no check fails, and the owner's notes on each round's pictures decide what comes next.
 
 **Tasks:**
 
@@ -732,10 +797,39 @@ The engine draws clean edges and labels for the places the agent gives. Drawing 
 - 🟨 Clean edges: Edges meet the rules set on 2026-11-07, built on the router as it is.
   - ✅ An edge runs at least 16 px from a node to the first track of a gutter (2026-11-08).
   - ⬜ The end run beside a gap · the level swap · a side to a side across layers · a way round the outside.
-- ⬜ Labels in a crowded gutter: An attempt did not land and waits on the owner's choice: [Labels sit close to the edges beside them in a crowded gutter](TODO.md#p2discussion-labels-sit-close-to-the-edges-beside-them-in-a-crowded-gutter).
+- ⬜ What clean edges leave open: A shared run that implies a false edge · a narrow gap where another route reads · the least end run of a main edge.
+  - Placement widens a gap for an edge through an empty column, while decision 097 says the router never widens a gap.
+  - A stated top in the first layer and a side `via` on a tight layer are refused by how the router is built.
+  - Open: edges share a run only if every start-to-end pair it implies is a real edge, and whether false edges count as a hard number.
+  - Open: the least end run of a main edge, where 20 px was proposed.
+  - Evidence: `plan/evidence/end-runs.png` · `plan/evidence/two-layers-skip-jogs.png` · `plan/evidence/false-line.png`.
+  - Related: decision 095 "A good route is one the eye can follow".
+- ⬜ Labels in a crowded gutter: Labels sit 4 px from the next edge, and two attempts at 8 px made pictures larger or added crossings.
+  - Four labelled edges out of one node run side by side in one gutter, and the picture reads crowded though no warning fires.
+  - Asking for 8 px everywhere made 421 of 500 fuzz diagrams 5.5% taller and the dispatch fixture 2 crossings worse.
+  - Asking for 8 px only where a label finds room left the dispatch fixture 4 crossings worse.
+  - An empty layer between the two layers only lengthened the edges.
+  - Neither try was landed.
+  - Next: look again now that labels sit on their edges.
+  - Related: decision 066 "An edge's label sits on its edge".
+- ⬜ Seven labels off their edges: 7 of the 54 labels of the fixtures stay off their edges.
+  - F2.7.3 "Labels on edges" still lists edges that move apart for a label.
+  - Classifying the seven costs nothing and comes before any change to the router.
+- ⬜ A label on a short run: The `resync` label of the catalog-sync-grouped fixture takes most of its run.
+  - The edge shows only two short pieces past the label, and the owner finds it less natural than the others.
+  - A seat on a run keeps 8 px from each corner today.
+  - Next: try a larger clearance, and a label with a fill now that labels mark styles.
+- ⬜ A hidden arrowhead: The dashed edge at the far left of the dispatch fixture barely shows its arrowhead.
+  - The edge runs from `push-provider` up the picture's edge and turns into the left side of `rider-app` at the very end.
+  - The cause is not known.
+  - Next: render it with square edges to see whether the route hides the arrowhead.
 - ⬜ A diamond's slanted edges: An edge meets a diamond only at a corner, measured with `pnpm bench diff` before it lands.
 - ⬜ Badges off a lane's side: A step's badge keeps off a lane's side, and `step-collision` counts one that touches it.
 - ⬜ Return edges off a self-loop: The edges that leave and enter a node keep clear of its self-loop.
+- ⬜ Even ports: One port sits at the middle of a side and k ports at its k+1 even shares, and a try is parked on the branch `wt-centred-ports`.
+  - The owner saw arrowheads far from the middle of a side and several on one side spread unevenly, on the dispatch fixture.
+  - The code spreads ports evenly first and then pulls each toward the x its edge wants.
+  - The features say "spread evenly" today.
 
 **Delivers:**
 
@@ -822,6 +916,23 @@ The refusals of the private reference brief were mostly `title-blocked`. Haiku s
 - ⬜ Measure the rate in a round: Only a round shows whether Haiku's refused calls fall below 5%.
 - ⬜ Find where Haiku's tokens go: Split a first draft's fresh tokens by what spent them.
 - ⬜ Cut the cost of a first draft: Spend less on what that split shows.
+- ⬜ What the first report run asked: The two sessions of 2026-11-06 compared counts by hand · read a refusal as the fix · spent 782 s on a render of 0.24 s.
+  - A Haiku session on the catalog-sync brief spent its fixes on the order of a layer and could not state it whole.
+  - It compared the `counts` of two writes by hand to see whether crossings fell.
+  - It read `unquoted-text` as naming the field and not the fix.
+  - `render` writes the SVG beside the PNG though it asked for neither by name.
+  - The session took 782 s on a render of 0.24 s, and where that time went is not known.
+  - Its picture has 17 crossings, and it did not use `gap` · `label` · a stated side.
+  - A second run followed `diagram.grafical` and wrote `last: true` on every node.
+  - It did not see layer labels in its picture, since a layer is not drawn.
+  - `passing-layer` named the problem and gave it no move to make.
+  - It could not see the trade between width and crossings, though `try` shows it.
+  - The numbers of both runs are in `bench/results/report-2026-11-06.md`.
+- ⬜ An edge ID in a shell: An unquoted `->` in an edge ID made zsh write a stray file.
+  - The help's examples quote the ID, and the session did not.
+  - Next: decide whether an edge ID needs a form a shell leaves alone.
+- ⬜ A render that hung: An agent reported it once on 2026-11-09, and it was not reproduced.
+  - Next: render that run's diagram again and time it.
 
 **Exit criteria:**
 
@@ -866,6 +977,10 @@ A round with the owner's approval of its cost first. The owner's budget for stag
 - ✅ Run Opus at xhigh effort: A run of Opus at xhigh effort drawing directly, rated blind by the owner. (reported on 2026-11-05)
 - ⬜ Measure the context added: A scan of the transcripts for the context each diagram adds.
 - ⬜ Private reference brief: The round on the private reference brief.
+- ⬜ Taste and the sixteen points: The owner says whether symmetry and even space fit the stance on taste.
+  - PHILOSOPHY holds that no score settles a picture for everyone and that grafical does not supply the taste.
+  - Whether a small model can see these faults is not measured.
+  - Related: decision 098 "A picture is judged by how it reads".
 
 **Exit criteria:**
 
@@ -1066,5 +1181,41 @@ Rules a diagram sets itself, once a real need shows which ones.
 **Delivers:**
 
 - [F5.5: Checks of an agent's own](../features/F5-checking.md#f55-checks-of-an-agents-own)
+
+**Exit criteria:** none yet.
+
+### CP6.6: Documents to their guides
+
+**Status:** ⬜
+
+The check of the core documents on 2026-11-09 left points that are not settled. How each is done is not decided.
+
+**Tasks:**
+
+- ⬜ What the check of 2026-11-09 left:
+  - The goals' numbers have gaps.
+  - Guideline 14 repeats a stance of the philosophy word for word.
+  - Guidelines 5 and 6 name mechanisms.
+  - `plug` was built before what a move needs was settled.
+  - The feature files list flags that CLI.md holds.
+  - About 70 lines repeat "and" or "or".
+
+**Exit criteria:** none yet.
+
+### CP6.7: Other outputs
+
+**Status:** ⬜
+
+Outputs past SVG and PNG that the owner wants.
+
+**Tasks:**
+
+- ⬜ An HTML export: A diagram exported as HTML.
+  - The owner wants it.
+- ⬜ An SVG a model can tune: An exported SVG with IDs and groups that a model may tune by the pixel after grafical stops.
+  - `render --svg` writes no ID on any element and no group, so a model cannot tell one path from another.
+  - Its text names the font `Inter`, so another machine may draw it differently.
+  - A tuned SVG is lost at the next `render`, since the file stores no position.
+  - The philosophy says "Nobody places anything by the pixel", and only the owner can say how this sits with it.
 
 **Exit criteria:** none yet.
