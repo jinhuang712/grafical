@@ -16,6 +16,9 @@ F2: Layout
 │   ├── F2.7.2: Edge shapes — square or round
 │   ├── F2.7.3: Labels on edges — an edge carries its label
 │   ├── F2.7.4: Steering an edge — where an edge passes and turns, as facts
+│   │   ├── F2.7.4.1: Straight edges — an edge with no bend
+│   │   ├── F2.7.4.2: Bends — where an edge turns
+│   │   └── F2.7.4.3: Stretches — how far a detour reaches
 │   └── F2.7.5: Clean edges — the rules set on 2026-11-07
 └── F2.8: Flow direction — a diagram that reads left to right
 ```
@@ -301,18 +304,13 @@ An agent steers an edge with facts and never with a coordinate. Every step here 
 | Flag | What it states | Refused as |
 |---|---|---|
 | `--via` | the node or group an edge passes and on which side | `via-blocked` |
-| `--straight` | an edge with no bend | `not-straight` |
 | `--with` | one trunk with an edge that shares an end | `no-trunk` |
-| `--bend` | where between its neighbours the longest inner run sits | `bend-blocked` |
-| `--stretch` | how far a detour reaches | `stretch-blocked` |
 
 - A value goes back to the engine with the same flag and no value.
 - `--with` draws a tree with one spine: each child leaves the trunk square into its own side.
   - A side the agent stated holds, and with none the edge takes the first side that reaches the trunk.
-- `--bend` needs an inner run whose neighbours lie on either side of it, and `--stretch` one whose neighbours lie on the same side.
 - An edge with a label or a step's number takes none of `--with` · `--bend` · `--stretch`, since the text would stay behind.
 - A step that meets a node or a label or comes within 12 px along another edge refuses the write.
-- `--straight` changes only which nodes share a column, so a node may shift sideways.
 
 - **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
 - **How it works:** [Routing: facts that steer an edge](../specs/routing.md#facts-that-steer-an-edge)
@@ -323,6 +321,30 @@ An agent steers an edge with facts and never with a coordinate. Every step here 
 **Stories:**
 
 - A strong model states where an edge passes, to tune a picture without a coordinate.
+
+#### F2.7.4.1: Straight edges
+
+`edge --straight` states an edge with no bend, and an edge that cannot run straight is refused as `not-straight`. No picture has shown it helps yet.
+
+- **Commands:** [`edge`](../CLI.md#edge)
+
+- It changes only which nodes share a column, so a node may shift sideways.
+
+#### F2.7.4.2: Bends
+
+`edge --bend` states where between its neighbours the longest inner run sits, and a bend that cannot hold is refused as `bend-blocked`. No picture has shown it helps yet.
+
+- **Commands:** [`edge`](../CLI.md#edge)
+
+- It needs an inner run whose neighbours lie on either side of it.
+
+#### F2.7.4.3: Stretches
+
+`edge --stretch` states how far a detour reaches, and a stretch that cannot hold is refused as `stretch-blocked`. No picture has shown it helps yet.
+
+- **Commands:** [`edge`](../CLI.md#edge)
+
+- It needs an inner run whose neighbours lie on the same side.
 
 ### F2.7.5: Clean edges
 

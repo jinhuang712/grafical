@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current checkpoint:** [CP3: Drawing well](#cp3-drawing-well). The work now is [CP3.4: Rearranging in one command](#cp34-rearranging-in-one-command), and then [CP3.6: Clean edges and labels](#cp36-clean-edges-and-labels).
+**Current checkpoint:** [CP3: Drawing well](#cp3-drawing-well). The work now is [CP3.4: Rearranging in one command](#cp34-rearranging-in-one-command), then [CP3.6: Clean edges and labels](#cp36-clean-edges-and-labels) and then [CP3.7: Steering proven](#cp37-steering-proven).
 
 The work comes in four groups of what grafical can do: draw at all · draw more · draw well · draw the hardest pictures. A release follows once the MVP bar is met. Within a group the numbers are the order of the work.
 
@@ -104,13 +104,10 @@ Roadmap
 │   │   ├── ✅ Themes and stylesheets
 │   │   ├── ✅ Bundled fan-outs
 │   │   └── ✅ Room around stores
-│   ├── 🟨 CP3.2: Steering an edge — side · passage · trunk · bend · stretch
+│   ├── 🟨 CP3.2: Steering an edge — passage · trunk · shape
 │   │   ├── ✅ Edge shapes
-│   │   ├── ✅ `--straight`
 │   │   ├── ✅ `--with`
 │   │   ├── ✅ `--via`
-│   │   ├── ✅ `--bend`
-│   │   ├── ✅ `--stretch`
 │   │   └── ⬜ The canvas grows for every route
 │   ├── 🟨 CP3.3: Looks — colors and labels of every object
 │   │   ├── ✅ Node looks
@@ -125,7 +122,7 @@ Roadmap
 │   │   └── ⬜ A layer's whole order
 │   ├── ⬜ CP3.5: A check before stopping — the agent looks at its picture against a list
 │   │   └── ⬜ A check before stopping
-│   └── 🟨 CP3.6: Clean edges and labels — the places given draw clean
+│   ├── 🟨 CP3.6: Clean edges and labels — the places given draw clean
 │       ├── ✅ Labels on straight edges
 │       ├── ✅ Choice diamonds
 │       ├── ✅ Footnote numbers
@@ -134,8 +131,12 @@ Roadmap
 │       ├── 🟨 Clean edges
 │       ├── ⬜ Labels in a crowded gutter
 │       ├── ⬜ A diamond's slanted edges
-│       ├── ⬜ Badges off a lane's side
-│       └── ⬜ Return edges off a self-loop
+│   │   ├── ⬜ Badges off a lane's side
+│   │   └── ⬜ Return edges off a self-loop
+│   └── ⬜ CP3.7: Steering proven — each fact shown to help on a picture that needs it
+│       ├── ⬜ `--straight`
+│       ├── ⬜ `--bend`
+│       └── ⬜ `--stretch`
 ├── 🟨 CP4: The hardest pictures — every kind of diagram measured with a model
 │   ├── ✅ CP4.1: The stage 1 round — Haiku rated 24 of 25 on the public brief
 │   │   ├── ✅ The first round
@@ -593,6 +594,7 @@ A picture looks right. A test and a fixture accept each item, with no model run.
   - [CP3.4: Rearranging in one command](#cp34-rearranging-in-one-command) is met.
   - [CP3.5: A check before stopping](#cp35-a-check-before-stopping) is met.
   - [CP3.6: Clean edges and labels](#cp36-clean-edges-and-labels) is met.
+  - [CP3.7: Steering proven](#cp37-steering-proven) is met.
 
 ### CP3.1: The target look
 
@@ -628,11 +630,8 @@ A strong model steers an edge with facts and draws it square or round.
 **Tasks:**
 
 - ✅ Edge shapes: A command draws edges square or round.
-- ✅ `--straight`: An edge with no bend is stated, and an edge that cannot run straight is refused.
 - ✅ `--with`: An edge joins another's trunk, which draws a tree with one spine.
 - ✅ `--via`: An edge passes a stated object on a stated side.
-- ✅ `--bend`: An edge turns at a stated fraction of its longest run.
-- ✅ `--stretch`: A detour reaches a stated multiple of its default.
 - ⬜ The canvas grows for every route: A step after routing grows the canvas as layout does.
 
 **Delivers:**
@@ -753,6 +752,31 @@ The engine draws clean edges and labels for the places the agent gives. Drawing 
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 - **Do not hold the release**
   - [M5: Routing cases](GOALS.md#m5-routing-cases)
+
+### CP3.7: Steering proven
+
+**Status:** ⬜
+
+Three facts that steer an edge are built, and no picture has shown that any of them helps. The owner keeps them as needed, and each is tried on a picture that needs it once rearranging is built.
+
+**Tasks:**
+
+- ⬜ `--straight`: A picture where an edge with no bend reads better.
+- ⬜ `--bend`: A picture where a stated turn reads better.
+- ⬜ `--stretch`: A picture where a wider detour reads better.
+
+**Delivers:**
+
+- [F2.7.4.1: Straight edges](../features/F2-layout.md#f2741-straight-edges)
+- [F2.7.4.2: Bends](../features/F2-layout.md#f2742-bends)
+- [F2.7.4.3: Stretches](../features/F2-layout.md#f2743-stretches)
+
+**Exit criteria:**
+
+- **Objectives**
+  - [O6: A picture reads at a glance](GOALS.md#o6-a-picture-reads-at-a-glance)
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
 
 ## CP4: The hardest pictures
 

@@ -49,6 +49,9 @@ Features
 │   │   ├── ✅ F2.7.2: Edge shapes — square or round
 │   │   ├── 🚧 F2.7.3: Labels on edges — an edge carries its label (edges do not move apart for one)
 │   │   ├── 🚧 F2.7.4: Steering an edge — where an edge passes and turns, as facts (a detour cannot grow the canvas)
+│   │   │   ├── 🚧 F2.7.4.1: Straight edges — an edge with no bend (no picture shows it helps yet)
+│   │   │   ├── 🚧 F2.7.4.2: Bends — where an edge turns (no picture shows it helps yet)
+│   │   │   └── 🚧 F2.7.4.3: Stretches — how far a detour reaches (no picture shows it helps yet)
 │   │   └── 🚧 F2.7.5: Clean edges — the rules set on 2026-11-07 (only the end run in a gutter is built)
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)

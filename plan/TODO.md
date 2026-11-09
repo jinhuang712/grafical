@@ -220,3 +220,23 @@
 - status: OPEN
 - found: the document pass of 2026-11-08
 - next: add the word to the words a wrong command is read against
+
+### [P2][ISSUE] An unquoted `->` in an edge ID is a shell redirect
+
+- description:
+  - A Haiku session typed an edge ID with `->` unquoted, and zsh wrote a stray file.
+  - The help's examples quote the ID, and the session did not.
+- created: 2026-11-09
+- status: OPEN
+- found: the report run of 2026-11-09
+- next: decide whether an edge ID needs a form a shell leaves alone
+
+### [P2][ISSUE] A render hung once in an agent's run
+
+- description:
+  - The agent of the report run of 2026-11-09 reported that `render` hung once.
+  - It was not reproduced.
+- created: 2026-11-09
+- status: OPEN
+- found: the report run of 2026-11-09
+- next: render that run's diagram again and time it
