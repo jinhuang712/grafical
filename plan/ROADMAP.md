@@ -77,26 +77,17 @@ Roadmap
 │   │   ├── ✅ Edge weights
 │   │   ├── ✅ Step numbers
 │   │   └── ✅ Edge sides
-│   ├── 🟨 CP2.4: Nodes — marks · sizes · offsets
+│   ├── 🟨 CP2.4: Nodes — marks · sizes
 │   │   ├── ✅ Marks
 │   │   ├── ⬜ Corner marks checked
-│   │   ├── ⬜ Marks by name
-│   │   ├── ⬜ Size multiples
-│   │   ├── ⬜ The space the router works in
-│   │   └── ⬜ Offsets
-│   ├── ⬜ CP2.5: Deeper containers — five levels · lanes both ways · column headings
+│   │   └── ⬜ Size multiples
+│   ├── ⬜ CP2.5: Column headings and bars across groups
 │   │   ├── ⬜ Column headings
-│   │   ├── ⬜ Lanes both ways
-│   │   ├── ⬜ Deeper nesting
 │   │   └── ⬜ Bars across groups
-│   ├── 🟨 CP2.6: The legend — a small diagram that says what colors and widths mean
-│   │   ├── ✅ The richer legend
-│   │   ├── ⬜ Design the legend
-│   │   └── ⬜ Build the legend
-│   └── ⬜ CP2.7: Direction and views — left to right · several pictures of one file
-│       ├── ⬜ Flow direction
-│       ├── ⬜ Views of one file
-│       └── ⬜ Folded groups
+│   └── 🟨 CP2.6: The legend — a small diagram that says what colors and widths mean
+│       ├── ✅ The richer legend
+│       ├── ⬜ Design the legend
+│       └── ⬜ Build the legend
 ├── 🟨 CP3: Drawing well — a picture that looks right
 │   ├── ✅ CP3.1: The target look — the rules of a hand-drawn target
 │   │   ├── ✅ Layers not drawn
@@ -217,9 +208,20 @@ Roadmap
     │   └── ⬜ Rules a diagram sets itself
     ├── ⬜ CP6.6: Documents to their guides
     │   └── ⬜ What the check of 2026-11-09 left
-    └── ⬜ CP6.7: Other outputs
-        ├── ⬜ An HTML export
-        └── ⬜ An SVG a model can tune
+    ├── ⬜ CP6.7: Other outputs
+    │   ├── ⬜ An HTML export
+    │   └── ⬜ An SVG a model can tune
+    ├── ⬜ CP6.8: Direction and views
+    │   ├── ⬜ Flow direction
+    │   ├── ⬜ Views of one file
+    │   └── ⬜ Folded groups
+    ├── ⬜ CP6.9: More on nodes and containers
+    │   ├── ⬜ Marks by name
+    │   ├── ⬜ Lanes both ways
+    │   └── ⬜ Deeper nesting
+    └── ⬜ CP6.10: Off the grid
+        ├── ⬜ The space the router works in
+        └── ⬜ Offsets
 ```
 
 ## CP1: Drawing at all
@@ -420,9 +422,8 @@ What a picture can hold grows. A test and a fixture accept each item, with no mo
   - [CP2.2: Placement facts](#cp22-placement-facts) is met.
   - [CP2.3: Kinds of edge](#cp23-kinds-of-edge) is met.
   - [CP2.4: Nodes](#cp24-nodes) is met.
-  - [CP2.5: Deeper containers](#cp25-deeper-containers) is met.
+  - [CP2.5: Column headings and bars across groups](#cp25-column-headings-and-bars-across-groups) is met.
   - [CP2.6: The legend](#cp26-the-legend) is met.
-  - [CP2.7: Direction and views](#cp27-direction-and-views) is met.
 
 ### CP2.1: Containers
 
@@ -504,22 +505,13 @@ What an edge can say past joining two ends.
 
 **Status:** 🟨
 
-Nodes carry marks that stay clear of edges, take multiples of their size and sit a fraction of a cell off the grid.
+Nodes carry marks that stay clear of edges and take multiples of their size.
 
 **Tasks:**
 
 - ✅ Marks: A node carries small marks.
 - ⬜ Corner marks checked: A corner mark is checked against nearby edges.
-- ⬜ Marks by name: A mark can be taken by name.
 - ⬜ Size multiples: A node takes multiples of its width and height.
-- ⬜ The space the router works in: The router sees nodes only in layers and runs only on a gutter's tracks, and offsets down · lanes both ways · copied pictures ask for more.
-  - A router over the open space would reach them and would have to win back stability and speed.
-  - A search trial on 2026-11-07 cut crossings, and its pictures read worse.
-  - A spike of decision 093 "A node may sit off its cell by a fraction" on 2026-11-07 drew offsets across with no defect.
-  - In that spike offsets down ran edges through nodes.
-  - Next: once rearranging is built, list what each planned capability still needs of the space.
-  - Related: decision 005 "Our own gap router".
-- ⬜ Offsets: A node sits a fraction of a cell off the grid, once the router allows it.
 
 **Delivers:**
 
@@ -527,9 +519,6 @@ Nodes carry marks that stay clear of edges, take multiples of their size and sit
 - [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
 - [F1.1.8: Size multiples](../features/F1-elements.md#f118-size-multiples)
 - [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
-- [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
-- [F2.5: Steps from another node](../features/F2-layout.md#f25-steps-from-another-node)
-- [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
 
 **Exit criteria:**
 
@@ -537,17 +526,15 @@ Nodes carry marks that stay clear of edges, take multiples of their size and sit
   - [R1: Stability](GOALS.md#r1-stability)
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
-### CP2.5: Deeper containers
+### CP2.5: Column headings and bars across groups
 
 **Status:** ⬜
 
-Containers that cross and nest five deep, and columns that carry headings.
+Columns carry headings, and a bar crosses a group.
 
 **Tasks:**
 
 - ⬜ Column headings: A column carries a heading above its first layer.
-- ⬜ Lanes both ways: Lanes that run as layers and as columns in one diagram.
-- ⬜ Deeper nesting: Groups up to five levels, with the fuzz test holding at five levels.
 - ⬜ Bars across groups: A bar crosses a group's node and overlaps no node or label.
 
 **Delivers:**
@@ -555,8 +542,6 @@ Containers that cross and nest five deep, and columns that carry headings.
 - [F2.4: Columns](../features/F2-layout.md#f24-columns)
 - [F2.4.1: Column headings](../features/F2-layout.md#f241-column-headings)
 - [F4.7: Region labels](../features/F4-look.md#f47-region-labels)
-- [F1.3.5: Lanes both ways](../features/F1-elements.md#f135-lanes-both-ways)
-- [F1.3.3: Deeper nesting](../features/F1-elements.md#f133-deeper-nesting)
 - [F1.2.5: Ends at a group, a layer or a lane](../features/F1-elements.md#f125-ends-at-a-group-a-layer-or-a-lane)
 
 **Exit criteria:**
@@ -591,31 +576,6 @@ A legend is a small diagram, and it can explain what a picture's colors mean.
 
 - **Constraints**
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
-
-### CP2.7: Direction and views
-
-**Status:** ⬜
-
-Other ways to read one diagram, which build on the nesting of [CP2.5: Deeper containers](#cp25-deeper-containers).
-
-**Tasks:**
-
-- ⬜ Flow direction: A diagram that reads left to right.
-- ⬜ Views of one file: Several pictures of parts of one file.
-- ⬜ Folded groups: A group drawn folded into one node in a view.
-
-**Delivers:**
-
-- [F2.8: Flow direction](../features/F2-layout.md#f28-flow-direction)
-- [F10.1: Views of one file](../features/F10-many-views.md#f101-views-of-one-file)
-- [F10.2: Folded groups](../features/F10-many-views.md#f102-folded-groups)
-
-**Exit criteria:**
-
-- **Constraints**
-  - [R1: Stability](GOALS.md#r1-stability)
-  - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
-  - [R3: Determinism](GOALS.md#r3-determinism)
 
 ## CP3: Drawing well
 
@@ -1216,5 +1176,69 @@ Outputs past SVG and PNG that the owner wants.
   - Its text names the font `Inter`, so another machine may draw it differently.
   - A tuned SVG is lost at the next `render`, since the file stores no position.
   - The philosophy says "Nobody places anything by the pixel", and only the owner can say how this sits with it.
+
+**Exit criteria:** none yet.
+
+### CP6.8: Direction and views
+
+**Status:** ⬜
+
+Other ways to read one diagram, which build on the nesting of [CP6.9: More on nodes and containers](#cp69-more-on-nodes-and-containers).
+
+**Tasks:**
+
+- ⬜ Flow direction: A diagram that reads left to right.
+- ⬜ Views of one file: Several pictures of parts of one file.
+- ⬜ Folded groups: A group drawn folded into one node in a view.
+
+**Delivers:**
+
+- [F2.8: Flow direction](../features/F2-layout.md#f28-flow-direction)
+- [F10.1: Views of one file](../features/F10-many-views.md#f101-views-of-one-file)
+- [F10.2: Folded groups](../features/F10-many-views.md#f102-folded-groups)
+
+**Exit criteria:** none yet.
+
+### CP6.9: More on nodes and containers
+
+**Status:** ⬜
+
+Marks by name, lanes that run both ways and groups nested five deep, once a real picture needs them.
+
+**Tasks:**
+
+- ⬜ Marks by name: A mark can be taken by name.
+- ⬜ Lanes both ways: Lanes that run as layers and as columns in one diagram.
+- ⬜ Deeper nesting: Groups up to five levels, with the fuzz test holding at five levels.
+
+**Delivers:**
+
+- [F1.1.5: Marks by name](../features/F1-elements.md#f115-marks-by-name)
+- [F1.3.5: Lanes both ways](../features/F1-elements.md#f135-lanes-both-ways)
+- [F1.3.3: Deeper nesting](../features/F1-elements.md#f133-deeper-nesting)
+
+**Exit criteria:** none yet.
+
+### CP6.10: Off the grid
+
+**Status:** ⬜
+
+A node off its cell, which waits for a router that works outside the layers and the gutters.
+
+**Tasks:**
+
+- ⬜ The space the router works in: The router sees nodes only in layers and runs only on a gutter's tracks, and offsets down · lanes both ways · copied pictures ask for more.
+  - A router over the open space would reach them and would have to win back stability and speed.
+  - A search trial on 2026-11-07 cut crossings, and its pictures read worse.
+  - A spike of decision 093 "A node may sit off its cell by a fraction" on 2026-11-07 drew offsets across with no defect.
+  - In that spike offsets down ran edges through nodes.
+  - Next: once rearranging is built, list what each planned capability still needs of the space.
+  - Related: decision 005 "Our own gap router".
+- ⬜ Offsets: A node sits a fraction of a cell off the grid, once the router allows it.
+
+**Delivers:**
+
+- [F2.5: Steps from another node](../features/F2-layout.md#f25-steps-from-another-node)
+- [F2.5.1: Offsets](../features/F2-layout.md#f251-offsets)
 
 **Exit criteria:** none yet.
