@@ -55,7 +55,7 @@ Roadmap
 │       ├── ⬜ One library
 │       ├── ⬜ Tune the form
 │       ├── ⬜ Small points of the file
-│       └── ⬜ The README's pictures in the file form
+│       └── ✅ The README's pictures in the file form
 ├── 🟨 CP2: Drawing more — what a picture can hold
 │   ├── ✅ CP2.1: Containers — groups · lanes · walls · notes
 │   │   ├── ✅ Edges that end at containers
@@ -391,10 +391,7 @@ A diagram is objects with types and styles, in a form of its own, before the fir
 - ⬜ Small points of the file: A diagram's optional type needs a name apart from a node's `type` · an attribute's colon may stay or go · `<style>` grows to every look grafical draws.
   - Found on 2026-11-06, and each is settled when the file is built.
   - Related: the spec "The .grafical file".
-- ⬜ The README's pictures in the file form: They are drawn from `.grafical.yaml` files while the README says a diagram is one `.grafical` file.
-  - The files are `docs/images/pipeline.grafical.yaml` and `docs/images/order-flow.grafical.yaml`.
-  - Found by the document check of 2026-11-09.
-  - Next: write both in the `.grafical` form and render the pictures again.
+- ✅ The README's pictures in the file form: Both pictures are drawn from `.grafical` files (2026-11-09).
 
 **Delivers:**
 

@@ -1,0 +1,166 @@
+<diagram> {
+  format: 1
+  title: "How grafical works"
+  density: normal
+}
+
+<layer> callers {
+}
+
+<layer> engine {
+}
+
+<layer> outputs {
+}
+
+<group> grafical {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @callers
+    @engine
+    @outputs
+}
+
+<order> callers-order {
+  of: @callers
+  axis: across
+  items:
+    @agent
+}
+
+<order> engine-order {
+  of: @engine
+  axis: across
+  items:
+    @apply
+    @layout
+    @check
+}
+
+<order> outputs-order {
+  of: @outputs
+  axis: across
+  items:
+    @file
+    @picture
+}
+
+<node> agent {
+  type: @actor
+  text: "Coding agent"
+  layer: @callers
+}
+
+<node> apply {
+  type: @service
+  text: "Validate and apply"
+  layer: @engine
+  group: @grafical
+}
+
+<node> layout {
+  type: @service
+  text: "Lay out and route"
+  layer: @engine
+  group: @grafical
+}
+
+<node> check {
+  type: @service
+  text: "Check"
+  layer: @engine
+  group: @grafical
+}
+
+<node> file {
+  type: @store
+  text: "Diagram file"
+  sublabel: ".grafical, in git"
+  layer: @outputs
+}
+
+<node> picture {
+  type: @store
+  text: "SVG and PNG"
+  layer: @outputs
+}
+
+<edge> agent->apply {
+  from: @agent
+  to: @apply
+  type: @call
+}
+
+<edge> apply->file {
+  from: @apply
+  to: @file
+  type: @call
+}
+
+<edge> apply->layout {
+  from: @apply
+  to: @layout
+  type: @call
+}
+
+<edge> layout->check {
+  from: @layout
+  to: @check
+  type: @call
+}
+
+<edge> check->agent {
+  from: @check
+  to: @agent
+  type: @async
+}
+
+<edge> layout->picture {
+  from: @layout
+  to: @picture
+  type: @call
+}
+
+<label> callers-label {
+  on: @callers
+  text: "Callers"
+}
+
+<label> engine-label {
+  on: @engine
+  text: "Engine"
+}
+
+<label> outputs-label {
+  on: @outputs
+  text: "Outputs"
+}
+
+<label> grafical-label {
+  on: @grafical
+  text: "grafical"
+}
+
+<label> agent->apply-label {
+  on: @agent->apply
+  text: "operations"
+}
+
+<label> apply->file-label {
+  on: @apply->file
+  text: "writes"
+}
+
+<label> check->agent-label {
+  on: @check->agent
+  text: "facts and counts"
+}
+
+<label> layout->picture-label {
+  on: @layout->picture
+  text: "renders"
+}

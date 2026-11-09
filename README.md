@@ -9,7 +9,7 @@
 
 An agent states what a diagram says, one operation at a time: this node is in that layer, connected to that one, colored like this. grafical decides where everything goes and lays the picture out again after every change. **The agent never gives a coordinate**, so only what it named changes and the picture always looks finished.
 
-grafical drew the picture above itself, from [docs/images/pipeline.grafical.yaml](docs/images/pipeline.grafical.yaml).
+grafical drew the picture above itself, from [docs/images/pipeline.grafical](docs/images/pipeline.grafical).
 
 ## What it does
 

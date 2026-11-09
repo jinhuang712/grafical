@@ -1,0 +1,84 @@
+<diagram> {
+  format: 1
+  title: "Order flow"
+  density: normal
+}
+
+<layer> app {
+}
+
+<layer> data {
+}
+
+<order> layers {
+  of: @diagram
+  axis: down
+  items:
+    @app
+    @data
+}
+
+<order> app-order {
+  of: @app
+  axis: across
+  items:
+    @api
+}
+
+<order> data-order {
+  of: @data
+  axis: across
+  items:
+    @db
+    @cache
+}
+
+<node> api {
+  type: @service
+  text: "Order API"
+  layer: @app
+}
+
+<node> db {
+  type: @store
+  text: "Postgres"
+  layer: @data
+}
+
+<node> cache {
+  type: @store
+  text: "Redis"
+  layer: @data
+}
+
+<edge> api->db {
+  from: @api
+  to: @db
+  type: @call
+}
+
+<edge> api->cache {
+  from: @api
+  to: @cache
+  type: @call
+}
+
+<label> app-label {
+  on: @app
+  text: "App"
+}
+
+<label> data-label {
+  on: @data
+  text: "Data"
+}
+
+<label> api->db-label {
+  on: @api->db
+  text: "writes"
+}
+
+<label> api->cache-label {
+  on: @api->cache
+  text: "reads"
+}
