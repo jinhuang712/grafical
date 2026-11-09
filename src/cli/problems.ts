@@ -20,7 +20,6 @@ import {
 import { everyNode } from "../model/steps.ts";
 import type { Diagram } from "../model/types.ts";
 import type { Value } from "../records.ts";
-import { IN_FILE } from "./source.ts";
 import { surfaceName } from "./surface.ts";
 
 /** Every code a problem may carry. */
@@ -35,11 +34,11 @@ export const DESCRIPTIONS: Record<Code, string> = {
     "A node is aligned with a node in its own layer, and an alignment joins two layers.",
   "alignment-conflict":
     "A node's alignment cannot hold together with the other alignments and the order of the layers.",
-  "bad-batch": "The batch file holds something other than a list of operations.",
   "bad-file": "The diagram file holds something other than a diagram.",
   "bad-id": "An id holds a character that an id may not hold.",
+  "bad-line": "A line of the file is not in the form grafical reads.",
   "bad-mark": "A mark is neither a text nor a file.",
-  "bad-op": "An item of the batch is not an operation with an op field.",
+  "bad-op": "The operation has no op field.",
   "bad-port": "The port is not a whole number within the limits.",
   "bad-reference": "A field names the thing the operation changes, or one it cannot be placed by.",
   "bad-revision": "git does not know the revision.",
@@ -47,13 +46,11 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "bad-stylesheet": "The stylesheet holds a block, an attribute or a value it does not take.",
   "bad-type": "A field holds a value of another type than the one it takes.",
   "bad-value": "A field holds a value that it does not take.",
-  "bad-yaml": "The text is not valid YAML.",
   "bar-crossed": "An edge passes a layer with no nodes, drawn as a bar, without ending at it.",
   "bar-in-group":
     "A layer with no nodes, drawn as a bar, lies inside a group's border, which covers every layer from its top layer to its bottom one.",
   "bar-to-bar": "An edge joins two layers with no nodes, and a bar is met straight past a node.",
   "bent-edge": "An edge bends more than twice, mostly because it skips layers.",
-  "batch-unreadable": "The batch file cannot be read.",
   "both-on-link": "A link has no direction, so it takes no arrowheads.",
   "node-aside": "A node sits beside every node it connects to, so its edges reach across.",
   "column-lanes":
@@ -133,7 +130,7 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "no-folder": "The file's folder is not there.",
   "no-shared-layer": "The group given has no node in a layer of the group being placed.",
   "node-overlap": "Two nodes overlap.",
-  "not-allowed": "The operation cannot be in a batch.",
+  "not-allowed": "Only a new file can be made into a diagram.",
   "not-in-git": "The file is not in a git repository.",
   "not-in-layer": "A place names a node that is not in the layer.",
   "option-missing-argument": "An option was given without its value.",
@@ -168,8 +165,6 @@ export const DESCRIPTIONS: Record<Code, string> = {
   "unknown-option": "The command has no option of the name.",
   "unknown-wall": "No wall has the id.",
   "unknown-weight": "No edge weight has the name.",
-  "unquoted-text":
-    "A value holds a comma, a colon or a #, and YAML read it as more than one field.",
   "wall-crossed": "An edge runs through a wall that does not let it through.",
   "wall-sides": "A layer that the wall spans holds no node of a side, or a node between the sides.",
 };
@@ -185,9 +180,9 @@ type Next = readonly string[];
 export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "align-same-layer": ["node move", "node align"],
   "alignment-conflict": ["node move", "node align"],
-  "bad-batch": [],
   "bad-file": [],
   "bad-id": [],
+  "bad-line": [],
   "bad-mark": [],
   "bad-op": [],
   "bad-port": [],
@@ -197,7 +192,6 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   "bad-stylesheet": ["diagram style"],
   "bad-type": [],
   "bad-value": [],
-  "bad-yaml": [],
   "bar-crossed": ["layer move", "node move", "edge remove", "edge pass"],
   "bar-in-group": {
     edge: ["group leave", "layer move", "node move", "edge remove"],
@@ -205,7 +199,6 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
   },
   "bar-to-bar": ["edge remove", "plug"],
   "bent-edge": ["layer move", "node move", "node swap"],
-  "batch-unreadable": [],
   "both-on-link": ["edge type"],
   "node-aside": ["node move"],
   "column-lanes": ["lane remove", "column remove"],
@@ -348,7 +341,6 @@ export const NEXT: Record<Code, Next | Readonly<Record<string, Next>>> = {
     edge: ["diagram style", "edge weight"],
     legend: ["diagram style", "diagram legend"],
   },
-  "unquoted-text": [],
   "wall-crossed": ["wall allow", "node move", "edge remove"],
   "wall-sides": ["wall remove", "node move"],
 };
@@ -400,10 +392,8 @@ export interface Block {
   kind: Kind;
   code: Code;
   description: string;
-  /** What caused it: the command line, a batch's line, or what was already in the file. */
+  /** What caused it: the command line, or what was already in the file. */
   source?: string;
-  /** The operation's index in its batch, from 0: in --json only. */
-  op?: number;
   detail: Record<string, Value>;
   next: readonly string[];
 }
@@ -483,9 +473,6 @@ export function errorBlock(e: OpError): Block {
     code: e.code,
     description: DESCRIPTIONS[e.code],
     ...(e.source !== undefined ? { source: e.source } : {}),
-    // Only an error an operation caused has the operation's index: not one already in the file, nor one whose edge
-    // cannot be known.
-    ...(e.index >= 0 && e.source !== IN_FILE ? { op: e.index } : {}),
     detail: {
       ...(e.field !== undefined && e.field !== "" ? { field: e.field } : {}),
       ...(e.found !== "" ? { found: e.found } : {}),

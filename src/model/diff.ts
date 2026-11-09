@@ -1,5 +1,5 @@
 // The difference between two diagrams, as operations (specs/decisions, "Git as the history"). Applied to
-// `before` in one batch, the operations give `after`, file for file. Pure.
+// `before` together, the operations give `after`, file for file. Pure.
 //
 // The order makes every operation valid when it runs: edges that go, then nodes,
 // groups and lanes that go; layers, then nodes, in their new places; the layers

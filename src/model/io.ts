@@ -15,15 +15,3 @@ export function readDiagram(text: string): Diagram | OpError[] {
 export function writeDiagram(d: Diagram): string {
   return writeGrafical(d);
 }
-
-/** A YAML syntax error in a batch: the line and column it is at, from 1, and the text of that line. */
-export function yamlError(text: string, err: unknown): OpError {
-  const at = (err as { linePos?: { line: number; col: number }[] } | null)?.linePos?.[0];
-  const line = at?.line ?? 1;
-  return {
-    code: "bad-yaml",
-    index: 0,
-    found: (text.split("\n")[line - 1] ?? "").trim(),
-    facts: { line, ...(at !== undefined ? { column: at.col } : {}) },
-  };
-}

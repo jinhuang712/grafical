@@ -1105,7 +1105,7 @@ export const noteAlignSchema = z.strictObject({
   align: z.enum(LABEL_ALIGNS),
 });
 
-/** Parses one operation. A batch item is exactly this. */
+/** Parses one operation. */
 export const opSchema = z.discriminatedUnion("op", [
   diagramNewSchema,
   diagramSizingSchema,
@@ -1195,7 +1195,7 @@ export const opSchema = z.discriminatedUnion("op", [
   edgeRetargetSchema,
 ]);
 
-/** Each operation's schema, by name. Each command's edge in a batch is built from them (specs/decisions, "One entry page, help where it is used"). */
+/** Each operation's schema, by name. */
 export const SCHEMAS: Record<OpName, z.ZodType> = {
   "diagram.new": diagramNewSchema,
   "diagram.sizing": diagramSizingSchema,
@@ -1330,26 +1330,4 @@ export function parseOp(raw: unknown, index: number): Op | OpError[] {
     if (typeof v === "string") op[k] = v.replaceAll("\\n", "\n");
   }
   return op as unknown as Op;
-}
-
-/** Parses a batch: a list of operations. Reports every malformed item. */
-export function parseOps(raw: unknown): Op[] | OpError[] {
-  if (!Array.isArray(raw)) {
-    return [
-      {
-        code: "bad-batch",
-        index: 0,
-        found: show(raw),
-        facts: { type: "array" },
-      },
-    ];
-  }
-  const ops: Op[] = [];
-  const errors: OpError[] = [];
-  raw.forEach((item, i) => {
-    const r = parseOp(item, i);
-    if (Array.isArray(r)) errors.push(...r);
-    else ops.push(r);
-  });
-  return errors.length > 0 ? errors : ops;
 }

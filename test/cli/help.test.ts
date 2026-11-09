@@ -5,7 +5,7 @@ import { join } from "node:path";
 import type { Command } from "commander";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { z } from "zod";
-import { opCommands } from "../../src/cli/batch.ts";
+import { opCommands } from "../../src/cli/diff.ts";
 import { GUIDES } from "../../src/cli/guides.ts";
 import { PAGES } from "../../src/cli/help.ts";
 import { build, wrongCommand } from "../../src/cli/main.ts";
@@ -65,7 +65,7 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
       if (page?.about !== undefined)
         expect(words(r.out), path).toContain(words(surfaceText(page.about)));
       if (page?.after !== undefined) expect(r.out, path).toContain(surfaceText(page.after.trim()));
-      // Commands and batch items in an example may run long; the rest wraps at 80.
+      // Commands in an example may run long; the rest wraps at 80.
       const prose = r.out.split(/^Example/m)[0] ?? "";
       for (const line of prose.split("\n"))
         expect(line.length, `${path}: ${line}`).toBeLessThanOrEqual(80);
@@ -82,27 +82,9 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
     }
   });
 
-  it("every command of an operation shows its line in a batch, with the fields it needs", () => {
+  it("every operation runs as one command", () => {
     const commands = opCommands(build());
     expect([...commands.keys()].sort()).toEqual([...OP_NAMES].sort());
-    for (const [op, c] of commands) {
-      const text = page(c);
-      const section = text.split("In a batch:\n")[1]?.split("\n\n")[0] ?? "";
-      expect(section, op).toMatch(new RegExp(`^ {2}- \\{op: ${op.replace(".", "\\.")}[,}]`));
-      const needed = (SCHEMAS[op] as z.ZodObject).safeParse({ op }).error?.issues ?? [];
-      for (const issue of needed) {
-        const field = String(issue.path[0]);
-        expect(section, `${op} ${field}`).toContain(`${field}: `);
-      }
-      for (const line of section.split("\n"))
-        expect(line.length, `${op}: ${line}`).toBeLessThanOrEqual(80);
-    }
-  });
-
-  it("layer add needs no label: its batch line shows only the id", () => {
-    const c = opCommands(build()).get("layer.add");
-    if (c === undefined) throw new Error("no layer.add");
-    expect(page(c)).toContain("  - {op: layer.add, id: <id>}\n");
   });
 
   it("every command names its arguments and options as its operation's fields", () => {
@@ -110,7 +92,7 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
       const fields = Object.keys((SCHEMAS[op] as z.ZodObject).shape);
       for (const a of c.registeredArguments.filter((a) => a.name() !== "file"))
         expect(fields, `${op} <${a.name()}>`).toContain(a.name());
-      for (const o of c.options.filter((o) => o.attributeName() !== "json"))
+      for (const o of c.options.filter((o) => !["json", "try"].includes(o.attributeName())))
         expect(fields, `${op} ${o.long}`).toContain(o.attributeName());
     }
   });
@@ -122,8 +104,8 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
     for (const code of [...ERROR_CODES, ...DEFECT_CODES]) expect(src, code).toContain(`"${code}"`);
   });
 
-  it('names every warning in apply\'s Output (specs/decisions, "Every write prints every warning")', () => {
-    const output = PAGES.apply?.after?.split("Output:\n")[1]?.split("\n\n")[0] ?? "";
+  it('names every warning in check\'s Output (specs/decisions, "Every write prints every warning")', () => {
+    const output = PAGES.check?.after?.split("Output:\n")[1]?.split("\n\n")[0] ?? "";
     for (const code of WARNING_CODES)
       expect(output, code).toMatch(new RegExp(`^ {4}${code} `, "m"));
   });
@@ -300,7 +282,7 @@ describe("what the help shows is what a caller types", () => {
   });
 
   it("writes every example with its file first", () => {
-    for (const page of [...pages, "new", "apply", "try"]) {
+    for (const page of [...pages, "new", "check"]) {
       const out = run(...(page.split(" ") as [string]), "--help").out;
       expect(out, page).not.toMatch(/^\s+grafical \S+\.grafical/m);
       expect(out, page).not.toMatch(/^\s+grafical [a-z]+ --\S+ \S+\.grafical/m);

@@ -2,11 +2,10 @@
 // The grafical command line (DESIGNS.md, "The command line comes first, and the help is the agent's only reference"). Exit codes: 0 success, 1 an
 // operation error or a defect, 2 a usage error.
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
 import {
-  type Counts,
   countsText,
   delta,
   deltaText,
@@ -18,7 +17,7 @@ import type { Facts, UsageCode } from "../errors.ts";
 import { USAGE_CODES } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
-import type { Op, OpName } from "../model/ops.ts";
+import type { Op } from "../model/ops.ts";
 import { parseOp } from "../model/ops.ts";
 import { STEP_KEYS } from "../model/steps.ts";
 import { closest, editDistance } from "../model/suggest.ts";
@@ -34,23 +33,18 @@ import { block, record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
 import { THEMES } from "../theme/themes.ts";
-import { batchSection, opCommands } from "./batch.ts";
-import { atRevision, formatOps } from "./diff.ts";
+import { atRevision, commandLines, opCommands } from "./diff.ts";
 import { GUIDES, guideList, guideNamed } from "./guides.ts";
 import { PAGES, PROGRAM_ABOUT, PROGRAM_AFTER } from "./help.ts";
 import {
-  batchOps,
   blockBody,
   emit,
   failure,
-  fileError,
   fileErrors,
-  formatReport,
   inspect,
   isReport,
   loadDiagram,
   type Report,
-  reportBody,
   runWrite,
   tryWrite,
   writeAtomic,
@@ -127,18 +121,29 @@ async function write(file: string, raw: Record<string, unknown>, opts: Opts, cre
     say(failure(op), opts.json === true);
     return;
   }
-  await finish(file, [op], opts, asTyped(), create);
+  if (opts.try === true) {
+    await tryOne(file, op, opts.json === true);
+    return;
+  }
+  say(await runWrite(file, op, asTyped(), create), opts.json === true);
 }
 
-async function finish(
-  file: string,
-  ops: Op[],
-  opts: Opts,
-  origin: Origin,
-  create = false,
-  counts = false,
-) {
-  say(await runWrite(file, ops, origin, create, counts), opts.json === true);
+/**
+ * A command with --try (FEATURES.md, "Trying a change"): the counts of the drawing before and after it, and the change
+ * in each, with nothing written. A command it would refuse is refused as the write would refuse it.
+ */
+async function tryOne(file: string, op: Op, json: boolean) {
+  const r = await tryWrite(file, op, asTyped());
+  if (isReport(r)) {
+    say(r, json);
+  } else if (json) {
+    const body = { ok: true, changed: r.report.changed, before: r.before, after: r.after };
+    process.stdout.write(`${JSON.stringify({ ...body, delta: delta(r.before, r.after) })}\n`);
+  } else {
+    process.stdout.write(
+      `${record("ok", { changed: r.report.changed, written: "no" })}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n${deltaText(delta(r.before, r.after))}\n`,
+    );
+  }
 }
 
 function renderName(file: string): string {
@@ -148,20 +153,15 @@ function renderName(file: string): string {
 
 /**
  * Gives each command its help page (specs/decisions, "One entry page, help where it is used"): the one-line description
- * stays the summary in its parent's list, and the page's paragraph, its line in a batch and its sections show on
- * its own help.
+ * stays the summary in its parent's list, and the page's paragraph and its sections show on its own help.
  */
-function attachHelp(parent: Command, ops: Map<Command, OpName>, path: string[] = []): void {
+function attachHelp(parent: Command, path: string[] = []): void {
   for (const c of parent.commands) {
     const at = [...path, c.name()];
     const page = PAGES[at.join(" ")];
-    const op = ops.get(c);
     if (page?.about !== undefined) c.summary(c.description()).description(page.about);
-    const after = [op === undefined ? "" : `\n${batchSection(op, c)}\n`, page?.after ?? ""].join(
-      "",
-    );
-    if (after !== "") c.addHelpText("after", after.trimEnd());
-    attachHelp(c, ops, at);
+    if (page?.after !== undefined) c.addHelpText("after", page.after.trimEnd());
+    attachHelp(c, at);
   }
 }
 
@@ -578,8 +578,8 @@ export function build(): Command {
       .argument("<file>")
       .argument("<id>")
       .argument("<align>", "left, center or right"),
-  ).action(async (file: string, id: string, align: string) => {
-    await write(file, { op: "label.align", id, align }, {});
+  ).action(async (file: string, id: string, align: string, opts: Opts) => {
+    await write(file, { op: "label.align", id, align }, opts);
   });
   const note = program
     .command("note")
@@ -602,8 +602,8 @@ export function build(): Command {
       .argument("<file>")
       .argument("<on>", "the node, group or edge it is about")
       .argument("<align>", "left, center or right"),
-  ).action(async (file: string, on: string, align: string) => {
-    await write(file, { op: "note.align", on, align }, {});
+  ).action(async (file: string, on: string, align: string, opts: Opts) => {
+    await write(file, { op: "note.align", on, align }, opts);
   });
   json(
     note
@@ -766,8 +766,8 @@ export function build(): Command {
       .argument("<file>")
       .argument("<id>")
       .argument("<seat>", "on or beside"),
-  ).action(async (file: string, id: string, seat: string) => {
-    await write(file, { op: "edge.label-at", id, seat }, {});
+  ).action(async (file: string, id: string, seat: string, opts: Opts) => {
+    await write(file, { op: "edge.label-at", id, seat }, opts);
   });
   json(
     edge
@@ -1179,44 +1179,6 @@ export function build(): Command {
   });
   json(
     program
-      .command("apply")
-      .description("apply a batch of operations, all or none")
-      .argument("<file>")
-      .argument("<batch.yaml>", "a batch file, or - for standard input"),
-  ).action(async (file: string, batch: string, opts: Opts) => {
-    const read = readBatch(batch, opts);
-    // A batch is usually a draft or a large change: its report carries the counts (specs/decisions, "Records over prose").
-    if (read !== undefined) await finish(file, read.ops, opts, read.origin, false, true);
-  });
-
-  json(
-    program
-      .command("try")
-      .description("counts before and after, no write")
-      .argument("<file>")
-      .argument("<batch...>"),
-  ).action(async (file: string, batches: string[], opts: Opts) => {
-    if (batches.length === 1) {
-      const read = readBatch(batches[0] as string, opts);
-      if (read === undefined) return;
-      const r = await tryWrite(file, read.ops, read.origin);
-      if (isReport(r)) {
-        say(r, opts.json === true);
-      } else if (opts.json === true) {
-        const body = { ok: true, changed: r.report.changed, before: r.before, after: r.after };
-        process.stdout.write(`${JSON.stringify({ ...body, delta: delta(r.before, r.after) })}\n`);
-      } else {
-        process.stdout.write(
-          `${record("ok", { changed: r.report.changed, written: "no" })}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n${deltaText(delta(r.before, r.after))}\n`,
-        );
-      }
-      return;
-    }
-    process.exitCode = await tryMany(file, batches, opts.json === true);
-  });
-
-  json(
-    program
       .command("show")
       .description("print a compact view of a diagram, or one object and what refers to it")
       .argument("<file>")
@@ -1247,7 +1209,7 @@ export function build(): Command {
   json(
     program
       .command("diff")
-      .description("changes since a revision, as operations")
+      .description("changes since a revision, as command lines")
       .argument("<file>")
       .argument("[rev]", "a git revision", "HEAD"),
   ).action((file: string, rev: string, opts: Opts) => {
@@ -1261,11 +1223,11 @@ export function build(): Command {
       say(was, opts.json === true);
       return;
     }
-    const ops = diffDiagrams(was, now);
+    const lines = commandLines(diffDiagrams(was, now), file, program);
     if (opts.json === true) {
-      process.stdout.write(`${JSON.stringify({ ok: true, ops })}\n`);
+      process.stdout.write(`${JSON.stringify({ ok: true, commands: lines })}\n`);
     } else {
-      process.stdout.write(formatOps(ops));
+      process.stdout.write(lines.length > 0 ? `${lines.join("\n")}\n` : "# no changes\n");
     }
   });
 
@@ -1476,79 +1438,17 @@ export function build(): Command {
     await write(file, { op: "plug", id, ...pick(opts, ["from", "to"]) }, opts);
   });
 
-  attachHelp(program, new Map([...opCommands(program)].map(([op, c]) => [c, op])));
+  // Every command that writes may be tried first: with --try it writes nothing and prints the counts before and after.
+  for (const [op, c] of opCommands(program)) {
+    if (op !== "diagram.new")
+      c.option("--try", "print the counts before and after, and write nothing");
+  }
+  attachHelp(program);
   // A command's page is <command> --help, the one way to it: commander's own help command would be a second, which
   // takes one word and prints the entry page for a wrong one.
   for (const c of [program, ...program.commands]) c.helpCommand(false);
   learn(program.commands.flatMap((c) => c.commands.map((s) => `${c.name()} ${s.name()}`)));
   return program;
-}
-
-/** A batch file's operations and where each is in it, or the refusal to read it. */
-function readBatchOps(batch: string): { ops: Op[]; origin: Origin } | Report {
-  let text: string;
-  try {
-    // A batch of `-` comes from standard input (specs/decisions, "A batch may come from standard input").
-    text = readFileSync(batch === "-" ? 0 : batch, "utf8");
-  } catch {
-    return own(fileError("batch-unreadable", batch));
-  }
-  return batchOps(batch, text, commandLine(typed));
-}
-
-/** A batch file's operations, or nothing when it is refused, with the refusal printed. */
-function readBatch(batch: string, opts: Opts): { ops: Op[]; origin: Origin } | undefined {
-  const read = readBatchOps(batch);
-  if (isReport(read)) {
-    say(read, opts.json === true);
-    return undefined;
-  }
-  return read;
-}
-
-/**
- * Several batches tried against one file (FEATURES.md, "Trying a change"): the `before` counts once, then each
- * batch's `ok`, `after` and `delta` records keyed by `batch=<file>`; a refused batch prints its outcome with the
- * same key and then its blocks, and the rest are still tried. Exit 1 when any is refused.
- */
-async function tryMany(file: string, batches: string[], json: boolean): Promise<number> {
-  const out: string[] = [];
-  const results: Record<string, unknown>[] = [];
-  let before: Counts | undefined;
-  let code = 0;
-  for (const batch of batches) {
-    const read = readBatchOps(batch);
-    const r = isReport(read) ? read : await tryWrite(file, read.ops, read.origin);
-    if (isReport(r)) {
-      code = 1;
-      // The refusal as apply prints it, its outcome keyed by the batch.
-      const [, ...rest] = formatReport(own(r)).trimEnd().split("\n");
-      if (out.length > 0) out.push("");
-      out.push(record("failed", { batch, changed: [] }), ...rest, "");
-      results.push({ batch, ...reportBody(own(r)) });
-      continue;
-    }
-    before ??= r.before;
-    const d = delta(r.before, r.after);
-    out.push(
-      record("ok", { batch, changed: r.report.changed, written: "no" }),
-      countsText(r.after, "after").replace("after", `after batch=${batch}`),
-      deltaText(d).replace("delta", `delta batch=${batch}`),
-    );
-    results.push({ batch, ok: true, changed: r.report.changed, after: r.after, delta: d });
-  }
-  if (json) {
-    process.stdout.write(
-      `${JSON.stringify({ ok: code === 0, before: before ?? null, batches: results })}\n`,
-    );
-  } else {
-    if (before !== undefined) {
-      const refusedFirst = out[0]?.startsWith("failed ") === true;
-      out.unshift(countsText(before, "before"), ...(refusedFirst ? [""] : []));
-    }
-    process.stdout.write(`${out.join("\n").trimEnd()}\n`);
-  }
-  return code;
 }
 
 /** A command line grafical cannot read: exit 2, with its block in place of anything else. */

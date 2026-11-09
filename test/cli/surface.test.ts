@@ -44,14 +44,29 @@ describe("the words a caller types", () => {
   it("name a verb as it is typed", () => {
     expect(surfaceName("node move")).toBe("node --move");
     expect(surfaceName("edge reverse")).toBe("edge --reverse");
-    expect(surfaceName("apply")).toBe("apply");
+    expect(surfaceName("show")).toBe("show");
   });
 
-  it("draw a batch from standard input", () => {
+  it("draw one command at a time", () => {
     expect(run(["-f", "a.grafical", "new", "--title", "T"]).code).toBe(0);
-    const batch =
-      "- {op: layer.add, id: l, label: L}\n- {op: node.add, id: x, layer: l, label: X, type: store}\n";
-    expect(run(["-f", "a.grafical", "apply", "-"], batch).code).toBe(0);
+    expect(run(["-f", "a.grafical", "layer", "--add", "l", "--label", "L"]).code).toBe(0);
+    expect(
+      run([
+        "-f",
+        "a.grafical",
+        "node",
+        "--add",
+        "x",
+        "--layer",
+        "l",
+        "--label",
+        "X",
+        "--type",
+        "store",
+      ]).code,
+    ).toBe(0);
+    // A command that is no longer one is refused as one.
+    expect(run(["-f", "a.grafical", "apply", "-"], "").code).toBe(2);
     expect(
       run([
         "-f",

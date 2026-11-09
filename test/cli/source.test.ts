@@ -1,16 +1,14 @@
 // What caused a problem (specs/decisions, "Refusals say what happened and which commands can change it"): the command line
-// as typed, a batch's line and its operation as written, the batch line after which a problem of the whole diagram
-// first appears, or what was already in the file.
+// as typed, or what was already in the file.
 
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { batchItems, commandLine } from "../../src/cli/source.ts";
+import { commandLine } from "../../src/cli/source.ts";
 import { writeDiagram } from "../../src/model/io.ts";
 import type { Diagram } from "../../src/model/types.ts";
-import { nested } from "../fixtures/nested.ts";
 import { typed } from "./argv.ts";
 
 const MAIN = resolve(import.meta.dirname, "../../src/cli/main.ts");
@@ -76,210 +74,25 @@ describe("source", () => {
     ]);
   });
 
-  it("of a batch's operation is its line and its text as written, in flow form when written as a block", () => {
-    const text = [
-      "# a draft",
-      "- {op: layer.add, id: row-c, label: C}",
-      "- op: node.add",
-      "  id: x",
-      "  layer: row-c",
-      "  label: X",
-      "  nodes:",
-      "    - a",
-      "    - b",
-      "- [1, 2]",
-      "",
-    ].join("\n");
-    expect(batchItems(text)).toEqual([
-      { line: 2, text: "{op: layer.add, id: row-c, label: C}" },
-      { line: 3, text: "{op: node.add, id: x, layer: row-c, label: X, nodes: [a, b]}" },
-      { line: 10, text: "[1, 2]" },
-    ]);
-    expect(batchItems("op: node.add\n")).toEqual([]);
-    // Found by the second review on 2026-10-18 (ob1): a dash alone, or before a comment, is its item's line.
-    const dashes = [
-      "# a comment line",
-      "",
-      "- op: diagram.title      # first item, block style",
-      "  text: A",
-      "",
-      "# another comment",
-      "-",
-      "  op: diagram.title",
-      "  text: B",
-      "- # comment after dash",
-      "  op: diagram.title",
-      "  text: C",
-      "- {op: diagram.title,",
-      "   text: D}",
-      "",
-    ].join("\n");
-    expect(batchItems(dashes).map((x) => x.line)).toEqual([3, 7, 10, 13]);
-    const f = fresh("batch.grafical");
-    writeFileSync(
-      join(dir, "dup.yaml"),
-      "- op: node.add\n  id: x\n  layer: row-a\n  label: X\n  last: true\n- op: node.add\n  id: x\n  layer: row-a\n  label: X\n  last: true\n",
-    );
-    const r = run("apply", f, "dup.yaml");
-    expect(r.code).toBe(1);
-    expect(sources(r.out)).toEqual([
-      "dup.yaml line 6: {op: node.add, id: x, layer: row-a, label: X, last: true}",
-    ]);
-    // --json keeps the operation's index as well.
-    const j = JSON.parse(run("apply", f, "dup.yaml", "--json").out);
-    expect(j.problems[0]).toMatchObject({ source: sources(r.out)[0], detail: { op: 1 } });
-    // A line the YAML cannot read is its own source.
-    writeFileSync(join(dir, "broken.yaml"), "- {op: node.add, id: y\n- {op: layer.add}\n");
-    expect(sources(run("apply", f, "broken.yaml").out)[0]).toMatch(/^broken\.yaml line \d+: /);
-  });
-
-  it("of a problem of the whole diagram is the batch line after which it first appears", () => {
+  it("of a problem of the whole diagram the command makes is the command", () => {
     const f = fresh("whole.grafical");
-    writeFileSync(
-      join(dir, "split.yaml"),
-      [
-        "- {op: node.add, id: cache, layer: row-b, label: cache, after: api}",
-        "- {op: group.add, id: g, label: order desk, nodes: [api, db]}",
-        "- {op: node.add, id: z, layer: row-a, label: z, last: true}",
-        "",
-      ].join("\n"),
-    );
-    const r = run("apply", f, "split.yaml");
+    expect(
+      run("node", "add", f, "cache", "--layer", "row-b", "--label", "cache", "--after", "api").code,
+    ).toBe(0);
+    const r = run("group", "add", f, "g", "--label", "order desk", "--nodes", "api,db");
     expect(r.out).toContain("error: group-split\n");
     expect(sources(r.out)).toEqual([
-      "split.yaml line 2: {op: group.add, id: g, label: order desk, nodes: [api, db]}",
+      'grafical -f whole.grafical group --add g --label "order desk" --nodes api,db',
     ]);
-    // Its index is that operation's, not the batch's last.
-    expect(JSON.parse(run("apply", f, "split.yaml", "--json").out).problems[0].detail.op).toBe(1);
   });
 
-  it("of a defect is the batch line after which it first appears and stays", () => {
+  it("of a defect the command makes is the command", () => {
     const f = fresh("defect.grafical");
-    writeFileSync(
-      join(dir, "long.yaml"),
-      [
-        "- {op: node.add, id: x, layer: row-a, label: x, last: true}",
-        `- {op: node.label, id: x, label: ${LONG}}`,
-        "- {op: node.add, id: y, layer: row-a, label: y, last: true}",
-        "",
-      ].join("\n"),
-    );
-    const r = run("apply", f, "long.yaml");
+    const r = run("node", "label", f, "web", "--label", LONG);
     expect(r.out).toContain("defect: overflow\n");
     expect(new Set(sources(r.out))).toEqual(
-      new Set([`long.yaml line 2: {op: node.label, id: x, label: ${LONG}}`]),
+      new Set([`grafical -f defect.grafical node --label web --label "${LONG}"`]),
     );
-    // A defect the last line makes is found too.
-    writeFileSync(
-      join(dir, "last.yaml"),
-      `- {op: node.add, id: x, layer: row-a, label: x, last: true}\n- {op: node.label, id: x, label: ${LONG}}\n`,
-    );
-    expect(new Set(sources(run("apply", f, "last.yaml").out))).toEqual(
-      new Set([`last.yaml line 2: {op: node.label, id: x, label: ${LONG}}`]),
-    );
-  });
-
-  // Found by review on 2026-10-18: a prefix refused for another problem was read as one without the problem, and the
-  // source named a later line.
-  describe("never names a line that cannot be known", () => {
-    const grocer = () =>
-      readFileSync(join(import.meta.dirname, "../fixtures/grocer.grafical"), "utf8");
-    const WORD = "Antidisestablishmentarianism";
-    const big = (id: string, layerId: string) =>
-      `- {op: node.add, id: ${id}, label: "${WORD} ${WORD} ${WORD} ${WORD}", layer: ${layerId}, last: true, size: s}`;
-    const node = (id: string, layerId: string) =>
-      `- {op: node.add, id: ${id}, label: ${id}, layer: ${layerId}, last: true}`;
-
-    it("names the batch file when a prefix after the last one without the problem is refused for another", () => {
-      writeFileSync(join(dir, "g7.grafical"), grocer());
-      // Lines 3 to 6 split the group around picker-app, which line 7 joins to it: the label is too long from line 2 on.
-      const b7 = [
-        node("n1", "row-callers"),
-        big("big", "row-callers"),
-        "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
-        node("n4", "row-edge"),
-        node("n5", "row-edge"),
-        node("n6", "row-edge"),
-        "- {op: group.join, group: g, nodes: [picker-app]}",
-        node("n8", "row-edge"),
-      ];
-      writeFileSync(join(dir, "b7.yaml"), `${b7.join("\n")}\n`);
-      const r7 = run("apply", "g7.grafical", "b7.yaml");
-      expect(r7.out).toMatch(/^defect: overflow$/m);
-      // Whether the label is too long after lines 3 to 6 cannot be known, so no line can be named.
-      expect(sources(r7.out)).toEqual(["b7.yaml"]);
-      // Lines 3 to 6 draw a bar under row-callers that edges pass, which line 7 takes away: the group splits from
-      // line 2 on.
-      writeFileSync(join(dir, "g11.grafical"), grocer());
-      const b11 = [
-        "- {op: layer.add, id: row-wire, label: Bundle, after: row-callers}",
-        "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
-        "- {op: layer.look, id: row-wire, look: box}",
-        node("n4", "row-edge"),
-        node("n5", "row-edge"),
-        node("n6", "row-edge"),
-        "- {op: layer.look, id: row-wire}",
-        node("n8", "row-edge"),
-      ];
-      writeFileSync(join(dir, "b11.yaml"), `${b11.join("\n")}\n`);
-      const r11 = run("apply", "g11.grafical", "b11.yaml");
-      expect(r11.out).toMatch(/^error: group-split$/m);
-      expect(sources(r11.out)).toEqual(["b11.yaml"]);
-    });
-
-    it("names the batch file with no line where no prefix can tell", () => {
-      writeFileSync(join(dir, "gx.grafical"), grocer());
-      // Every prefix that holds the long label also splits the group, until the last line joins picker-app to it.
-      const bx = [
-        "- {op: group.add, id: g, label: G, nodes: [customers, courier-app]}",
-        big("big", "row-callers"),
-        "- {op: group.join, group: g, nodes: [picker-app]}",
-      ];
-      writeFileSync(join(dir, "bx.yaml"), `${bx.join("\n")}\n`);
-      const r = run("apply", "gx.grafical", "bx.yaml", "--json");
-      expect(JSON.parse(r.out).problems).toMatchObject([
-        { kind: "defect", code: "overflow", source: "bx.yaml" },
-      ]);
-    });
-
-    it("names the line that set what the block prints, such as a title's place", () => {
-      // Found by review on 2026-10-19: both lines put vpc's title where db->backup runs, and the block prints the
-      // place line 2 set, so line 1 would contradict it.
-      const long = nested.groups?.map((g) =>
-        g.id === "vpc" ? { ...g, label: "virtual private cloud network" } : g,
-      );
-      writeFileSync(join(dir, "tp.grafical"), writeDiagram({ ...nested, groups: long ?? [] }));
-      writeFileSync(
-        join(dir, "tp1.yaml"),
-        "- {op: group.label-at, id: vpc, at: 0.5, side: bottom}\n- {op: group.label-at, id: vpc, at: 0.5, side: bottom, place: outside}\n",
-      );
-      const r = run("apply", "tp.grafical", "tp1.yaml");
-      expect(r.out).toMatch(/^defect: title-blocked$/m);
-      expect(r.out).toMatch(/^ {2}place: 0.5 bottom outside$/m);
-      expect(sources(r.out)).toEqual([
-        "tp1.yaml line 2: {op: group.label-at, id: vpc, at: 0.5, side: bottom, place: outside}",
-      ]);
-    });
-
-    it("gives each of many defects its line, or the batch file once the prefixes to try are spent", () => {
-      writeFileSync(join(dir, "gm.grafical"), grocer());
-      const layerIds = ["row-callers", "row-edge", "row-api", "row-svc"];
-      const lines = Array.from({ length: 40 }, (_, i) =>
-        i % 4 === 3
-          ? big(`n${i}`, layerIds[i % 4] as string)
-          : node(`n${i}`, layerIds[i % 4] as string),
-      );
-      writeFileSync(join(dir, "many.yaml"), `${lines.join("\n")}\n`);
-      const found = sources(run("apply", "gm.grafical", "many.yaml").out);
-      expect(found).toHaveLength(10);
-      for (const s of found) {
-        if (s === "many.yaml") continue;
-        const n = Number(s.match(/^many\.yaml line (\d+): /)?.[1]);
-        expect(lines[n - 1], s).toContain(WORD);
-        expect(s).toBe(`many.yaml line ${n}: ${lines[n - 1]?.slice(2)}`);
-      }
-      expect(found.filter((s) => s !== "many.yaml").length).toBeGreaterThan(0);
-    });
   });
 
   it("of a warning: none, in text or in --json, as the outcome line names what the write changed", () => {
@@ -325,53 +138,42 @@ describe("source", () => {
     ]);
   });
 
-  // Found by the second review on 2026-10-18: a stylesheet named on line 3 gave op 0, and a file or a batch that
-  // cannot be read gave op 0 though no operation caused it.
-  it("of a stylesheet an operation names gives that operation's index, and an error of the command none", () => {
+  it("of a stylesheet the command names is the command, and of a file it cannot read too", () => {
     const f = fresh("sty.grafical");
-    writeFileSync(
-      join(dir, "sty.yaml"),
-      "- {op: node.label, id: web, label: Web}\n- {op: node.label, id: api, label: API}\n- {op: diagram.style, style: missing.grafical}\n",
-    );
-    const sty = JSON.parse(run("apply", f, "sty.yaml", "--json").out);
+    const sty = JSON.parse(run("diagram", "style", f, "missing.grafical", "--json").out);
     expect(sty.problems).toMatchObject([
       {
         code: "style-not-found",
-        source: "sty.yaml line 3: {op: diagram.style, style: missing.grafical}",
-        detail: { op: 2 },
+        source: "grafical -f sty.grafical diagram --style missing.grafical --json",
       },
     ]);
-    const missing = JSON.parse(run("apply", "nope.grafical", "sty.yaml", "--json").out);
+    const missing = JSON.parse(run("diagram", "style", "nope.grafical", "dark", "--json").out);
     expect(missing.problems).toMatchObject([{ code: "file-not-found" }]);
-    expect(missing.problems[0].detail.op).toBeUndefined();
-    const unread = JSON.parse(run("apply", f, "nope.yaml", "--json").out);
-    expect(unread.problems).toMatchObject([{ code: "batch-unreadable" }]);
-    expect(unread.problems[0].detail.op).toBeUndefined();
   });
 
   // Found by the second review on 2026-10-18 (uw): a legend's weight that only a stylesheet had.
-  it("of a weight the stylesheet a later line takes away is that line, which the legend's commands can change", () => {
+  it("of a weight the stylesheet a command takes away is that command, which the legend's commands can change", () => {
     const f = fresh("uw.grafical");
     writeFileSync(
       join(dir, "w.grafical"),
       "<stylesheet> {\n  format: 1\n}\n\n<weight> critical {\n  width: 6.5\n}\n",
     );
-    writeFileSync(
-      join(dir, "uw.yaml"),
-      "- {op: diagram.style, style: w.grafical}\n- {op: diagram.legend, weight: critical, text: Critical path}\n- {op: diagram.style, style: default}\n",
-    );
-    const r = JSON.parse(run("apply", f, "uw.yaml", "--json").out);
+    expect(run("diagram", "style", f, "w.grafical").code).toBe(0);
+    expect(
+      run("diagram", "legend", f, "--weight", "critical", "--text", "Critical path").code,
+    ).toBe(0);
+    const r = JSON.parse(run("diagram", "style", f, "default", "--json").out);
     expect(r.problems).toMatchObject([
       {
         code: "unknown-weight",
-        source: "uw.yaml line 3: {op: diagram.style, style: default}",
+        source: "grafical -f uw.grafical diagram --style default --json",
         detail: { field: "legend.weights", found: "critical" },
         next: ["diagram --style", "diagram --legend"],
       },
     ]);
   });
 
-  it("of an error already in the file gives --json no operation's index", () => {
+  it("of an error already in the file is the file's", () => {
     // A node between two members of a group in one layer splits it, which only a write finds.
     const split = structuredClone(shop);
     const [api, db] = split.layers[1]?.nodes ?? [];
@@ -380,15 +182,10 @@ describe("source", () => {
     api.group = "g";
     split.groups = [{ id: "g", label: "g" }];
     const f = fresh("split.grafical", split);
-    writeFileSync(
-      join(dir, "two.yaml"),
-      "- {op: node.label, id: web, label: Web}\n- {op: diagram.title, text: T}\n",
-    );
-    const r = JSON.parse(run("apply", f, "two.yaml", "--json").out);
+    const r = JSON.parse(run("node", "label", f, "web", "--label", "Web", "--json").out);
     expect(r.problems).toMatchObject([
       { kind: "error", code: "group-split", source: "already in the file" },
     ]);
-    expect(r.problems[0].detail.op).toBeUndefined();
     // check says what every write would say of the file, and draws nothing from it.
     const check = run("check", f, "--json");
     expect(check.code).toBe(1);
@@ -398,13 +195,5 @@ describe("source", () => {
     expect(report.problems).toMatchObject([
       { kind: "error", code: "group-split", source: "already in the file" },
     ]);
-    expect(report.problems[0].detail.op).toBeUndefined();
-    // An operation's own error keeps its index.
-    writeFileSync(
-      join(dir, "own.yaml"),
-      "- {op: node.label, id: web, label: Web}\n- {op: node.label, id: nope, label: X}\n",
-    );
-    const own = JSON.parse(run("apply", fresh("own.grafical"), "own.yaml", "--json").out);
-    expect(own.problems[0].detail.op).toBe(1);
   });
 });

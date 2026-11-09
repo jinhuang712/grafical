@@ -144,7 +144,7 @@ A good diagram:
   shown:".
 
 When the picture looks wrong, change the composition first, and compare
-the choices with grafical try:
+the choices with --try on the command that makes each:
 - Edges cross: another order of a layer, or another layer for a node.
 - An edge runs through a group it has nothing to do with (across): one of
   its ends in another layer, or the group's borders together.

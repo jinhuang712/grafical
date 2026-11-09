@@ -338,7 +338,7 @@ const ATTRS: Record<string, readonly string[]> = {
 /** An edge the form cannot read, as the refusal of a file. */
 function bad(text: string, line: number): OpError {
   return {
-    code: "bad-yaml",
+    code: "bad-line",
     index: 0,
     found: (text.split("\n")[line - 1] ?? "").trim(),
     facts: { line },

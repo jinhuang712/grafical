@@ -3,7 +3,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { layout } from "../../src/layout/index.ts";
 import { writeGrafical } from "../../src/model/grafical-format.ts";
-import { applyOps, type Diagram, type Op, parseOps, readDiagram } from "../../src/model/index.ts";
+import { applyOps, type Diagram, type Op, parseOp, readDiagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 
@@ -62,7 +62,7 @@ describe("gap.between", () => {
   });
 
   it("names the multiples it takes", () => {
-    const ops = parseOps([{ op: "gap.between", a: "a", b: "b", magnified: 3 }]);
+    const ops = parseOp({ op: "gap.between", a: "a", b: "b", magnified: 3 }, 0);
     expect(ops).toMatchObject([{ code: "bad-value", facts: { allowed: ["1.25", "1.5", "2"] } }]);
   });
 

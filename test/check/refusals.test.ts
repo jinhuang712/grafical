@@ -1,15 +1,14 @@
 // Every refusal says what happened, what caused it, and names only commands that exist (specs/decisions, "Refusals say
 // what happened and which commands can change it"). Random single changes to the saved fixtures and to fuzz
-// diagrams, of the kinds an agent makes, are refused, each as the second line of a batch whose first changes nothing;
-// each refusal, as the write path reports it, has its code's sentence, the change's line as its source, and in next
-// real commands, in the order the help lists them.
+// diagrams, of the kinds an agent makes, are refused, each as one command; each refusal, as the write path reports it,
+// has its code's sentence, the command as its source, and in next real commands, in the order the help lists them.
 
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { attempt, batchOps, blocks, isReport } from "../../src/cli/pipeline.ts";
+import { attempt, blocks, failure, isReport } from "../../src/cli/pipeline.ts";
 import { type Block, DESCRIPTIONS } from "../../src/cli/problems.ts";
-import { readDiagram } from "../../src/model/index.ts";
+import { parseOp, readDiagram } from "../../src/model/index.ts";
 import type { Op } from "../../src/model/ops.ts";
 import type { Diagram } from "../../src/model/types.ts";
 import { createMeasurer } from "../../src/text/index.ts";
@@ -24,12 +23,14 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-/** What a batch of these items would be refused for, as the write path reports it; empty when it would be written. */
-function refused(d: Diagram, items: unknown[]): Block[] {
-  const text = items.map((x) => `- ${JSON.stringify(x)}\n`).join("");
-  const read = batchOps("change.yaml", text, "grafical apply d.grafical change.yaml");
-  if (isReport(read)) return blocks(read);
-  const r = attempt(d, read.ops, read.origin, m);
+/** The command a change stands for, as the source of its problems. */
+const COMMAND = "grafical -f d.grafical <the change>";
+
+/** What a command of this change would be refused for, as the write path reports it; empty when it would be written. */
+function refused(d: Diagram, raw: unknown): Block[] {
+  const op = parseOp(raw, 0);
+  if (Array.isArray(op)) return blocks(failure(op.map((e) => ({ ...e, source: COMMAND }))));
+  const r = attempt(d, op, { command: COMMAND }, m);
   return isReport(r) ? blocks(r) : [];
 }
 
@@ -96,7 +97,7 @@ function diagrams(): [string, Diagram][] {
   ]);
   // A diagram that refuses a change of nothing is refused for itself, not for the change.
   return [...saved, ...(fuzz as [string, Diagram][])].filter(
-    ([, d]) => refused(d, [still(d)]).length === 0,
+    ([, d]) => refused(d, still(d)).length === 0,
   );
 }
 
@@ -112,13 +113,12 @@ describe("the refusals of random changes", () => {
     const codes = new Set<string>();
     for (const [name, d] of diagrams()) {
       for (const [k, op] of changes(d, name.length * 31 + k0(name), 20).entries()) {
-        for (const b of refused(d, [still(d), op])) {
+        for (const b of refused(d, op)) {
           codes.add(b.code);
           const at = `${name} change ${k} ${JSON.stringify(op)}: ${b.kind} ${b.code}`;
           if (b.description !== DESCRIPTIONS[b.code]) wrong.push(`${at}: description`);
-          // The first line changes nothing, so every problem is the change's.
-          if (b.source !== `change.yaml line 2: ${JSON.stringify(op)}`)
-            wrong.push(`${at}: source ${b.source}`);
+          // The diagram refuses no change of nothing, so every problem is the change's.
+          if (b.source !== COMMAND) wrong.push(`${at}: source ${b.source}`);
           const places = b.next.map((x) => order.indexOf(x));
           if (places.some((p) => p < 0)) wrong.push(`${at}: next ${b.next.join(", ")}`);
           if (places.some((p, i) => i > 0 && p < (places[i - 1] as number)))

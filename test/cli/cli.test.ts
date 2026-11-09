@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -86,75 +86,13 @@ const SINGLE: string[][] = [
   ["edge", "add", "single.grafical", "mq", "worker", "--type", "async"],
 ];
 
-const BATCH = `- op: layer.add
-  id: clients
-  label: Clients
-- op: layer.add
-  id: services
-  label: Services
-- op: layer.add
-  id: storage
-  label: Storage
-- op: node.add
-  id: web
-  layer: clients
-  label: Web
-  type: actor
-- op: node.add
-  id: api
-  layer: services
-  label: API
-  emphasis: true
-- op: node.add
-  id: worker
-  layer: services
-  label: Worker
-  last: true
-- op: node.add
-  id: db
-  layer: storage
-  label: DB
-  type: store
-- op: node.add
-  id: mq
-  layer: storage
-  label: MQ
-  type: queue
-  last: true
-- op: edge.add
-  from: web
-  to: api
-  label: call
-- op: edge.add
-  from: api
-  to: db
-  type: data
-- op: edge.add
-  from: api
-  to: mq
-  type: async
-- op: edge.add
-  from: mq
-  to: worker
-  type: async
-`;
-
 describe("write commands", () => {
-  it("builds tiny with single commands and with one apply, byte-identical", () => {
+  it("builds tiny with single commands", () => {
     for (const args of SINGLE) {
       const r = run(...args);
       expect(r.code, `${args.join(" ")}: ${r.out}${r.err}`).toBe(0);
     }
-    expect(run("new", "batch.grafical", "--title", "Tiny").code).toBe(0);
-    writeFileSync(join(dir, "batch.yaml"), BATCH);
-    const r = run("apply", "batch.grafical", "batch.yaml");
-    expect(r.code, r.out + r.err).toBe(0);
-    expect(r.out).toBe(
-      "ok changed=clients,services,storage,web,api,worker,db,mq,web->api,api->db,api->mq,mq->worker\n" +
-        "counts nodes=5 edges=4 crossings=0 bends=2 bent=0 length=256 width=368 height=376 fullest=services:2 busiest=api:3 longest=api->mq:120 passing=0 across=0 tight=0 crowded=0\n",
-    );
     const single = read("single.grafical");
-    expect(read("batch.grafical")).toBe(single);
     expect(
       single.startsWith('<diagram> {\n  format: 1\n  title: "Tiny"\n  density: normal\n}\n'),
     ).toBe(true);
@@ -209,13 +147,9 @@ describe("write commands", () => {
     expect(read("single.grafical")).toBe(before);
   });
 
-  it("gives the error as JSON with the operation number", () => {
-    writeFileSync(
-      join(dir, "bad.yaml"),
-      "- op: node.add\n  id: ok1\n  layer: storage\n  label: Ok\n  last: true\n- op: edge.add\n  from: api\n  to: nope\n",
-    );
+  it("gives the error as JSON", () => {
     const before = read("single.grafical");
-    const r = run("apply", "single.grafical", "bad.yaml", "--json");
+    const r = run("edge", "add", "single.grafical", "api", "nope", "--json");
     expect(r.code).toBe(1);
     const j = JSON.parse(r.out);
     expect(j.ok).toBe(false);
@@ -224,18 +158,27 @@ describe("write commands", () => {
       kind: "error",
       code: "unknown-node",
       description: "No node has the id.",
-      detail: { op: 1, field: "to", found: "nope" },
+      detail: { field: "to", found: "nope" },
       next: ["node --add"],
     });
+    expect(j.problems[0].detail.op).toBeUndefined();
     expect(read("single.grafical")).toBe(before);
   });
 
-  it("rejects a malformed batch item before applying anything", () => {
-    writeFileSync(
-      join(dir, "bad2.yaml"),
-      "- op: node.add\n  id: n\n  layer: storage\n  label: N\n  type: db\n  last: true\n",
+  it("refuses an unknown type, with the type it most likely means", () => {
+    const r = run(
+      "node",
+      "add",
+      "single.grafical",
+      "n",
+      "--layer",
+      "storage",
+      "--label",
+      "N",
+      "--type",
+      "db",
+      "--last",
     );
-    const r = run("apply", "single.grafical", "bad2.yaml");
     expect(r.code).toBe(1);
     expect(r.out).toContain("error: unknown-type\n");
     expect(r.out).toContain("  field: type\n  found: db\n");
@@ -404,55 +347,29 @@ describe("read commands", () => {
     expect(json.drawing.composition).toBeUndefined();
   });
 
-  it('try reports the counts before and after a batch, and writes nothing (specs/decisions, "Records over prose")', () => {
+  it('--try reports the counts before and after a command, and writes nothing (specs/decisions, "Records over prose")', () => {
     const before = readFileSync(join(dir, "single.grafical"), "utf8");
-    writeFileSync(join(dir, "try.yaml"), "- {op: node.label, id: api, label: API service}\n");
-    const r = run("try", "single.grafical", "try.yaml");
+    const r = run("node", "label", "single.grafical", "api", "--label", "API service", "--try");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(
       /^ok changed=api written=no\nbefore nodes=\d+ edges=\d+ crossings=\d+.*\nafter nodes=\d+.*\ndelta nodes=0 edges=0 crossings=[-+]?\d+ /,
     );
     expect(readFileSync(join(dir, "single.grafical"), "utf8")).toBe(before);
-    const json = JSON.parse(run("try", "single.grafical", "try.yaml", "--json").out);
+    const json = JSON.parse(
+      run("node", "label", "single.grafical", "api", "--label", "API service", "--try", "--json")
+        .out,
+    );
     expect(json.after.nodes).toBe(json.before.nodes);
     expect(json.delta.length).toBe(json.after.length - json.before.length);
-    writeFileSync(join(dir, "try-bad.yaml"), "- {op: node.label, id: nope, label: X}\n");
-    const bad = run("try", "single.grafical", "try-bad.yaml");
+    // A command it would refuse is refused as the write would refuse it.
+    const bad = run("node", "label", "single.grafical", "nope", "--label", "X", "--try");
     expect(bad.code).toBe(1);
     expect(bad.out).toContain("unknown-node");
-  });
-
-  it("try with several batches prints one before and each batch's records keyed by its file", () => {
-    const before = readFileSync(join(dir, "single.grafical"), "utf8");
-    writeFileSync(join(dir, "t1.yaml"), "- {op: node.label, id: api, label: One}\n");
-    writeFileSync(join(dir, "t2.yaml"), "- {op: node.label, id: api, label: Two}\n");
-    writeFileSync(join(dir, "t3.yaml"), "- {op: node.label, id: nope, label: X}\n");
-    const r = run("try", "single.grafical", "t1.yaml", "t3.yaml", "t2.yaml");
-    expect(r.code).toBe(1);
-    const lines = r.out.trimEnd().split("\n");
-    expect(lines.filter((l) => l.startsWith("before "))).toHaveLength(1);
-    expect(lines[0]).toMatch(/^before nodes=/);
-    expect(lines[1]).toBe("ok batch=t1.yaml changed=api written=no");
-    expect(lines[2]).toMatch(/^after batch=t1.yaml nodes=/);
-    expect(lines[3]).toMatch(/^delta batch=t1.yaml nodes=0 /);
-    // A refused batch prints its outcome keyed by the batch, then its blocks, between blank lines.
-    expect(lines[4]).toBe("");
-    expect(lines[5]).toBe("failed batch=t3.yaml changed=-");
-    expect(lines[6]).toBe("");
-    expect(lines[7]).toBe("error: unknown-node");
-    const after = lines.indexOf("ok batch=t2.yaml changed=api written=no");
-    expect(lines[after - 1]).toBe("");
-    expect(lines[after - 2]).toBe("next: node --add");
-    const first = run("try", "single.grafical", "t3.yaml", "t1.yaml").out.split("\n");
-    expect(first[0]).toMatch(/^before nodes=/);
-    expect(first[1]).toBe("");
-    expect(first[2]).toBe("failed batch=t3.yaml changed=-");
     expect(readFileSync(join(dir, "single.grafical"), "utf8")).toBe(before);
-    const json = JSON.parse(run("try", "single.grafical", "t1.yaml", "t3.yaml", "--json").out);
-    expect(json.ok).toBe(false);
-    expect(json.batches.map((b: { batch: string }) => b.batch)).toEqual(["t1.yaml", "t3.yaml"]);
-    expect(json.batches[0].delta.nodes).toBe(0);
-    expect(json.batches[1].ok).toBe(false);
+    // Every command that writes takes it, and new, which has no picture before it, does not.
+    expect(run("edge", "number", "single.grafical", "web->api", "--n", "1", "--try").code).toBe(0);
+    expect(run("new", "other.grafical", "--title", "X", "--try").code).toBe(2);
+    expect(existsSync(join(dir, "other.grafical"))).toBe(false);
   });
 
   it("render with one flag writes only that file", () => {
@@ -472,6 +389,6 @@ describe("read commands", () => {
     const b = run("--help");
     expect(a.code).toBe(0);
     expect(a.out).toBe(b.out);
-    expect(a.out + run("apply", "--help").out).toContain("grafical apply");
+    expect(a.out).toContain("--try");
   });
 });

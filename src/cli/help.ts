@@ -1,8 +1,8 @@
 // The help pages: how to use grafical (specs/decisions, "One entry page, help where it is used", "Help for the tool, guides
 // for best practice"). The entry page is read once, before a first draft: what grafical is, how to work, and every
 // way to draw, by the story each tells. A command's page is read when the command is used: commander's usage and
-// options, its line in a batch, then this file's sections, always in this order: When to use, Kinds, Good to know,
-// Common mistakes, Limits, Batch file, Output, See also, Example. A page shows the ones it has. How
+// options, then this file's sections, always in this order: When to use, Kinds, Good to know, Common mistakes,
+// Limits, Output, See also, Example. A page shows the ones it has. How
 // common kinds of diagram are usually drawn is not here but in the guides (guides.ts), which no page tells an agent
 // to read. Numbers are only the limits grafical enforces.
 
@@ -23,14 +23,13 @@ on a time scale, such as Gantt charts.`;
 export const PROGRAM_AFTER = `
 How to work:
   1. grafical new <file> --title <text> --subtitle <text>
-  2. Write the whole draft as one batch file, then
-     grafical apply <file> batch.yaml. apply --help has a full example, and
-     each command's --help shows its line in a batch.
+  2. Draw the draft one command at a time: layers, then nodes, then groups
+     and lanes, then edges. new --help shows a whole draft.
   3. grafical render <file> and look at the PNG, or read
      grafical show <file> --drawn.
-  4. Improve one change at a time. grafical try <file> a.yaml b.yaml prints
-     the counts before and after each, and writes nothing.
-  A refused change writes nothing; a block for each problem says what
+  4. Improve one change at a time. A command that writes takes --try, which
+     prints the counts before and after it and writes nothing.
+  A refused command writes nothing; a block for each problem says what
   happened, what caused it and which commands can change it. Never edit
   the file by hand.
 
@@ -58,26 +57,27 @@ Ways to draw, by the story each tells:
 How common kinds of diagram are usually drawn, if you want it: grafical guide.
 `;
 
-/** The example of `grafical apply --help`, which the tests build and check. */
-export const EXAMPLE_NEW = `grafical new orders.grafical --title "Order desk and shipping" --subtitle "Two services coupled only by the shared orders database."`;
-export const EXAMPLE_BATCH = `- {op: layer.add, id: row-callers, label: Callers}
-- {op: layer.add, id: row-entry, label: Entry}
-- {op: layer.add, id: row-core, label: Core}
-- {op: layer.add, id: row-store, label: Store}
-- {op: node.add, id: shoppers, layer: row-callers, label: Shoppers, sublabel: "web, mobile", type: actor}
-- {op: node.add, id: gateway, layer: row-entry, label: API gateway, sublabel: "REST, :8080"}
-- {op: node.add, id: checkout, layer: row-core, label: checkout, sublabel: "validate, price"}
-- {op: node.add, id: events, layer: row-core, label: order topics, sublabel: 3 broker topics, type: queue, last: true}
-- {op: node.add, id: dispatcher, layer: row-core, label: dispatcher, sublabel: one per carrier, last: true}
-- {op: node.add, id: orders-db, layer: row-store, label: Orders DB, sublabel: "orders, parcels", type: store, emphasis: true}
-- {op: group.add, id: order-desk, label: order-desk, nodes: [gateway, checkout]}
-- {op: group.add, id: shipping, label: shipping, nodes: [events, dispatcher]}
-- {op: edge.add, from: shoppers, to: gateway}
-- {op: edge.add, from: gateway, to: checkout}
-- {op: edge.add, from: checkout, to: events, label: publish, type: async}
-- {op: edge.add, from: events, to: dispatcher, type: async}
-- {op: edge.add, from: checkout, to: orders-db}
-- {op: edge.add, from: dispatcher, to: orders-db, label: persist}
+/** The example of `grafical new --help`: a whole draft, one command a line, which the tests build and check. */
+export const EXAMPLE_DRAFT = `grafical new orders.grafical --title "Order desk and shipping" --subtitle "Two services coupled only by the shared orders database."
+grafical layer add orders.grafical row-callers --label Callers
+grafical layer add orders.grafical row-entry --label Entry
+grafical layer add orders.grafical row-core --label Core
+grafical layer add orders.grafical row-store --label Store
+grafical node add orders.grafical shoppers --layer row-callers --label Shoppers --sublabel "web, mobile" --type actor
+grafical node add orders.grafical gateway --layer row-entry --label "API gateway" --sublabel "REST, :8080"
+grafical node add orders.grafical checkout --layer row-core --label checkout --sublabel "validate, price"
+grafical node add orders.grafical events --layer row-core --label "order topics" --sublabel "3 broker topics" --type queue --last
+grafical node add orders.grafical dispatcher --layer row-core --label dispatcher --sublabel "one per carrier" --last
+grafical node add orders.grafical orders-db --layer row-store --label "Orders DB" --sublabel "orders, parcels" --type store --emphasis
+grafical group add orders.grafical order-desk --label order-desk --nodes gateway,checkout
+grafical group add orders.grafical shipping --label shipping --nodes events,dispatcher
+grafical edge add orders.grafical shoppers gateway
+grafical edge add orders.grafical gateway checkout
+grafical edge add orders.grafical checkout events --label publish --type async
+grafical edge add orders.grafical events dispatcher --type async
+grafical edge add orders.grafical checkout orders-db
+grafical edge add orders.grafical dispatcher orders-db --label persist
+grafical render orders.grafical
 `;
 
 const indent = (text: string) =>
@@ -98,40 +98,79 @@ Good to know:
   - The title names the system or process. The subtitle says in one
     sentence what the diagram shows. The note is a footnote.
   - Leave --density, --sizing and --style out unless the user asks.
-  - Next, write the whole draft as one batch: grafical apply --help.
-
-Example:
-  grafical new shop.grafical --title "Shop checkout" \\
-    --subtitle "How an order reaches the warehouse."
-`,
-  },
-
-  apply: {
-    about: `Apply a YAML list of operations, all or nothing. This is the way to draft:
-one batch with every layer, node, group and edge.`,
-    after: `
-Batch file:
-  A YAML list. Each item is {op: <noun>.<verb>, ...} with the command's
-  arguments and options as fields, in camelCase. Operations apply in order; if
-  one fails, none apply, and the refusal's source gives its line in the file.
-  Every command works in a batch: its --help shows its line, such as
-  grafical node add --help.
-
-Good to know:
-  - Add layers first, then nodes, then groups and lanes, then edges.
-  - Quote text that holds a comma, a colon or a #: sublabel: "iOS, Android".
-  - from with down, up, left or right: a node in no layer, cells from a node.
+  - Next, draw the draft one command at a time: layers first, then nodes,
+    then groups and lanes, then edges.
   - An id is lowercase letters, digits, ".", "_" or "-", and unique across
     layers, nodes, groups, lanes and edges: a node cannot share its layer's id.
 
+Example: two systems around a shared store
+${indent(EXAMPLE_DRAFT)}`,
+  },
+
+  render: {
+    about:
+      "Write the picture as SVG and PNG beside the file; --svg or --png alone writes only that one.",
+    after: `
+Good to know:
+  - Look at the PNG after a draft, and after any change you are unsure of.
+  - Like check, it prints every warning and the counts.
+`,
+  },
+
+  show: {
+    about: `Print a compact view of the diagram: layers, nodes in order, groups, lanes and
+edges, in the words of the operations. Read it instead of the file.`,
+    after: `
+Good to know:
+  - --drawn prints how it is drawn, one record per line, as key=value:
+      counts ...                    as check prints them
+      node id= layer= place= of= width= height= edges= sides= reach=
+      group id= members= width= height=
+      edge id= from= to= leaves= enters= bends= length= direct= detour=
+           skip= crosses= passes= bundle=
+      gutter above= below= edges= crossings= tight= crowded=
+      wall id= run= length= space= edges=   edges: the edges through it
+      note on= as= number= lines=   as: callout or footnote
+      legend style= weight= width= mark= text=   each style and width the
+           picture draws, and each named mark; text=- has no entry
+    place counts from 1 at the layer's left, and of is how many nodes the
+    layer holds. sides counts a node's edges by side, as top:1,bottom:2, and
+    reach is their length together. direct is the shortest an edge between
+    its two ends could be, and detour its length over direct. skip counts
+    the layers between its ends' layers. passes names the layers it runs
+    through without meeting a node of. gutter is the space between two
+    neighbouring layers that hold nodes: the edges with a run in it, and the
+    crossings, tight pairs and crowded labels in it, counted as check's
+    counts are. Sizes and lengths are in pixels; - means none. Judge the
+    drawing from them, and change what you decide to change.
+  - bundle names the edges an edge leaves or arrives with as one: three or
+    more lines of one style and width from one side of a node, or two on a
+    side too crowded for a port each. A labelled edge is never bundled, so
+    a label keeps an edge on its own.
+`,
+  },
+
+  diff: {
+    about: `Print how the file differs from a git revision, HEAD by default, as one command
+line per change. Run in order on the revision's file, they give the file on disk.`,
+  },
+
+  view: {
+    about: `Open a live window that shows the diagram as it is now, redrawn within a moment
+of every change, with the changed parts marked. Ctrl-C stops it.`,
+  },
+
+  check: {
+    about: `Report the defects you can fix, every warning and the counts, without changing
+anything. --all adds the engine's own defects, which are its bugs.`,
+    after: `
 Output:
   ok changed=<ids> when the change is written, or failed changed=- when it
   is refused and nothing is written; then a block for each problem, a blank
-  line before each; then, on apply, the counts:
+  line before each; then, on check and render, the counts:
     <kind>: <code>
     description: <what happened, one sentence per code>
-    source: <the command, its batch line, its batch file, or "already in
-            the file">
+    source: <the command, or "already in the file">
     detail:
       <key>: <value>
     next: <the commands that can change it, or ->
@@ -165,93 +204,6 @@ Output:
     count the warnings of their kind. grafical show <file> --drawn prints a
     record per node and edge.
   Exit codes: 0 done, 1 refused, 2 a usage error.
-
-Example: two systems around a shared store
-  ${EXAMPLE_NEW}
-  Write batch.yaml:
-${indent(EXAMPLE_BATCH)}  grafical apply orders.grafical batch.yaml
-  grafical render orders.grafical
-`,
-  },
-
-  render: {
-    about:
-      "Write the picture as SVG and PNG beside the file; --svg or --png alone writes only that one.",
-    after: `
-Good to know:
-  - Look at the PNG after a draft, and after any change you are unsure of.
-  - Like apply and check, it prints every warning and the counts.
-`,
-  },
-
-  show: {
-    about: `Print a compact view of the diagram: layers, nodes in order, groups, lanes and
-edges, in the words of the operations. Read it instead of the file.`,
-    after: `
-Good to know:
-  - --drawn prints how it is drawn, one record per line, as key=value:
-      counts ...                    as apply prints them
-      node id= layer= place= of= width= height= edges= sides= reach=
-      group id= members= width= height=
-      edge id= from= to= leaves= enters= bends= length= direct= detour=
-           skip= crosses= passes= bundle=
-      gutter above= below= edges= crossings= tight= crowded=
-      wall id= run= length= space= edges=   edges: the edges through it
-      note on= as= number= lines=   as: callout or footnote
-      legend style= weight= width= mark= text=   each style and width the
-           picture draws, and each named mark; text=- has no entry
-    place counts from 1 at the layer's left, and of is how many nodes the
-    layer holds. sides counts a node's edges by side, as top:1,bottom:2, and
-    reach is their length together. direct is the shortest an edge between
-    its two ends could be, and detour its length over direct. skip counts
-    the layers between its ends' layers. passes names the layers it runs
-    through without meeting a node of. gutter is the space between two
-    neighbouring layers that hold nodes: the edges with a run in it, and the
-    crossings, tight pairs and crowded labels in it, counted as apply's
-    counts are. Sizes and lengths are in pixels; - means none. Judge the
-    drawing from them, and change what you decide to change.
-  - bundle names the edges an edge leaves or arrives with as one: three or
-    more lines of one style and width from one side of a node, or two on a
-    side too crowded for a port each. A labelled edge is never bundled, so
-    a label keeps an edge on its own.
-`,
-  },
-
-  diff: {
-    about: `Print how the file differs from a git revision, HEAD by default, as a batch of
-operations that apply replays on the revision's file.`,
-  },
-
-  view: {
-    about: `Open a live window that shows the diagram as it is now, redrawn within a moment
-of every change, with the changed parts marked. Ctrl-C stops it.`,
-  },
-
-  check: {
-    about: `Report the defects you can fix, every warning and the counts, without changing
-anything, as apply --help's Output says. --all adds the engine's own defects,
-which are its bugs.`,
-  },
-
-  try: {
-    about: `Apply a batch without writing it, and print the drawing's counts before and
-after it, as apply prints them, and the change in each. Nothing is written.
-Give several batches to compare them: one before, then each batch's records
-keyed batch=<file>.`,
-    after: `
-Good to know:
-  - Use it to compare arrangements you are weighing: a layer moved, two nodes
-    swapped, a node slid along its layer. Decide which to keep, then apply it.
-  - A batch it would refuse is refused as apply would refuse it; with several,
-    its outcome line carries batch=<file>, its blocks follow, and the others
-    are still tried (exit 1).
-
-Example:
-  grafical try shop.grafical move.yaml
-  ok changed=storefront written=no
-  before nodes=9 edges=10 crossings=1 bends=12 length=3140 ...
-  after nodes=9 edges=10 crossings=1 bends=8 length=2380 ...
-  delta nodes=0 edges=0 crossings=0 bends=-4 length=-760 ...
 `,
   },
 
@@ -303,7 +255,7 @@ Good to know:
   - Leave --size out: grafical sizes the node to its text. Shorten a long
     label rather than reaching for a large node.
   - The order of a layer decides most crossings. Compare two orders with
-    grafical try and keep the one with fewer.
+    --try and keep the one with fewer.
   - A step is one cell of grafical's grid: a layer down or up, a column left
     or right. A node placed by steps moves with the node it steps from, and
     the nodes of the layer it lands in stand aside. Past the first or last
@@ -314,7 +266,6 @@ Common mistakes:
     layers take ids like row-users.
   - Start and End of a process as initial and final: their labels vanish.
     Use terminal.
-  - In a batch file, a sublabel with a comma unquoted.
 
 Limits:
   - At most ${MAX_EMPHASIS} nodes carry --emphasis.
@@ -439,8 +390,8 @@ Good to know:
   - A numbered edge keeps its own way out of a node, as a labelled one does.
   - A number with no room on the edge's way is refused as label-blocked,
     as a label is.
-  - edge add takes no number: in a batch, add the edges, then
-    {op: edge.number, id: <edge>, n: <number>} for each.
+  - edge add takes no number: add the edges, then number each with
+    edge number.
 
 Limits:
   --n is a whole number from 1 to ${STEP_NUMBER_MAX}.
@@ -461,7 +412,6 @@ When to use:
 
 Common mistakes:
   - Listing a group as a member: nest it with --in instead.
-  - In a batch file, nodes is a list: nodes: [api, worker].
   - Adding a group before its nodes exist.
 
 Limits:
@@ -536,7 +486,6 @@ Good to know:
   - A group lies inside one lane. An edge may end at a lane.
 
 Common mistakes:
-  - members written as a, b instead of a list: members: [a, b].
   - Adding lanes before their nodes or layers exist.
 
 Limits:
@@ -633,7 +582,6 @@ Good to know:
     above its nodes, or in the bar of a layer with no nodes.
   - A layer with no nodes and a look is one bar, such as a gateway or a bundle.
     An edge that passes it is refused (bar-crossed) unless edge pass lets it.
-  - In a batch the look is a field: {op: layer.look, id: <id>, look: node}.
 `,
   },
   "edge pass": {

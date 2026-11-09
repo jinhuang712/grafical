@@ -21,7 +21,7 @@ export const NOUNS = [
 ];
 
 /** The commands of a file with no noun. */
-const FILE_COMMANDS = ["new", "plug", "apply", "try", "show", "diff", "check", "render", "view"];
+const FILE_COMMANDS = ["new", "plug", "show", "diff", "check", "render", "view"];
 
 /** A command's name as a caller writes it: `node move` is `node --move`, and one word stays one word. */
 export function surfaceName(name: string): string {
@@ -90,8 +90,7 @@ const USAGE_NOUN = new RegExp(
 );
 /** An example of a verb: `grafical node add a.grafical x`. */
 const EXAMPLE_VERB = new RegExp(`\\bgrafical (${NOUN_WORDS}) ([a-z-]+) (\\S+\\.grafical)\\b`, "g");
-const EXAMPLE_COMMAND =
-  /\bgrafical (new|plug|apply|try|show|diff|check|render|view) (\S+\.grafical)\b/g;
+const EXAMPLE_COMMAND = /\bgrafical (new|plug|show|diff|check|render|view) (\S+\.grafical)\b/g;
 
 /** Every verb a noun has, by its subcommand's name. */
 const known = new Map<string, Set<string>>();
@@ -114,7 +113,7 @@ export function surfaceText(text: string): string {
         `Usage: grafical -f <file> ${noun} --${verb}${more} [options]`,
     )
     .replace(
-      /^Usage: grafical (new|plug|apply|try|show|diff|check|render|view) \[options\] <file>(.*)$/gm,
+      /^Usage: grafical (new|plug|show|diff|check|render|view) \[options\] <file>(.*)$/gm,
       (_, command: string, more: string) => `Usage: grafical -f <file> ${command}${more} [options]`,
     )
     .replace(USAGE_NOUN, "Usage: grafical -f <file> $1 --<verb> [options]")
@@ -123,10 +122,7 @@ export function surfaceText(text: string): string {
       (_, verb: string, more: string) =>
         FILE_COMMANDS.includes(verb) ? `  ${verb}${more}` : `  --${verb}${more}`,
     )
-    .replace(
-      /\bgrafical (new|plug|apply|try|show|diff|check|render|view) <file>/g,
-      "grafical -f <file> $1",
-    )
+    .replace(/\bgrafical (new|plug|show|diff|check|render|view) <file>/g, "grafical -f <file> $1")
     .replace(EXAMPLE_VERB, "grafical -f $3 $1 $2")
     .replace(EXAMPLE_COMMAND, "grafical -f $2 $1")
     .replace(VERB_WORDS, (whole, noun: string, verb: string) =>

@@ -85,40 +85,16 @@ export function issuesToErrors(
     if (issue.code === "unrecognized_keys") {
       const keys = (issue as { keys: string[] }).keys;
       const known = knownKeys(raw, path);
-      const at = getPath(raw, path);
-      const order = at !== null && typeof at === "object" ? Object.keys(at) : [];
-      // YAML ends unquoted text at a comma, and each part after it becomes a key of its own, with no value: they
-      // belong to the field before them in the text, whose value is the text's first part.
-      const cut = new Map<string, string[]>();
       for (const key of keys) {
-        const f = leaf ? key : fieldName([...path, key]);
-        const value = getPath(raw, [...path, key]);
-        const before = order
-          .slice(0, order.indexOf(key))
-          .reverse()
-          .find((k) => !keys.includes(k));
-        if (value === null || /\s/.test(key)) {
-          if (before !== undefined) cut.set(before, [...(cut.get(before) ?? []), key]);
-          else out.push({ code: "unquoted-text", index, field: f, found: key });
-          continue;
-        }
         out.push({
           code: "unknown-field",
           index,
-          field: f,
+          field: leaf ? key : fieldName([...path, key]),
           found: key,
           facts: {
             allowed: known,
             likely: closest(key, known, 2),
           },
-        });
-      }
-      for (const [key, parts] of cut) {
-        out.push({
-          code: "unquoted-text",
-          index,
-          field: leaf ? key : fieldName([...path, key]),
-          found: [show(getPath(raw, [...path, key])), ...parts].join(", "),
         });
       }
     } else if (issue.code === "invalid_value") {

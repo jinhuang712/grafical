@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { check } from "../../src/check/index.ts";
 import { layout } from "../../src/layout/index.ts";
 import { writeGrafical } from "../../src/model/grafical-format.ts";
-import { applyOps, type Diagram, type Op, parseOps, readDiagram } from "../../src/model/index.ts";
+import { applyOps, type Diagram, type Op, parseOp, readDiagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 
@@ -46,8 +46,8 @@ describe("a stated break", () => {
   });
 
   it("reads a backslash and an n from a shell as a break", () => {
-    const ops = parseOps([{ op: "edge.add", from: "x", to: "y", label: "reads\\nwrites" }]);
-    expect(Array.isArray(ops) ? (ops[0] as { label?: string }).label : "").toBe("reads\nwrites");
+    const op = parseOp({ op: "edge.add", from: "x", to: "y", label: "reads\\nwrites" }, 0);
+    expect(Array.isArray(op) ? "" : (op as { label?: string }).label).toBe("reads\nwrites");
   });
 
   it("is not a missing glyph on a text that wraps", () => {

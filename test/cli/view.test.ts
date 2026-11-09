@@ -157,7 +157,7 @@ describe("startViewer", () => {
 
       // An edit by another process, the way an agent makes it.
       expect(
-        (await runWrite(file, [{ op: "node.label", id: "api", label: "orders-svc" }], here)).ok,
+        (await runWrite(file, { op: "node.label", id: "api", label: "orders-svc" }, here)).ok,
       ).toBe(true);
       const renamed = await stream.next();
       expect(renamed.svg).toContain("orders-svc");
@@ -207,7 +207,7 @@ describe("startViewer", () => {
       expect(waiting.svg).toBe("");
       expect(waiting.stale).toBe(true);
       expect(waiting.problems.join("\n")).toContain("file-not-found");
-      expect((await runWrite(file, [{ op: "diagram.new", title: "Later" }], here, true)).ok).toBe(
+      expect((await runWrite(file, { op: "diagram.new", title: "Later" }, here, true)).ok).toBe(
         true,
       );
       const drawn = await stream.next();

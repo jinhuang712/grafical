@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { OpError } from "../../src/errors.ts";
-import {
-  applyOps,
-  type Diagram,
-  type Op,
-  parseOp,
-  parseOps,
-  writeDiagram,
-} from "../../src/model/index.ts";
+import { applyOps, type Diagram, type Op, parseOp, writeDiagram } from "../../src/model/index.ts";
 import { NODE_KINDS } from "../../src/model/types.ts";
 
 const empty: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
@@ -81,25 +74,11 @@ describe("refusals that say what was meant", () => {
     expect(odd[0]?.facts?.allowed).toEqual(NODE_KINDS);
   });
 
-  it("text cut at a comma names the field it was cut from and the whole text", () => {
-    // YAML read sublabel: x, dedupe, last: true as three fields.
-    const cut = parseOps([
-      {
-        op: "node.add",
-        id: "a",
-        layer: "top",
-        label: "A",
-        sublabel: "x",
-        dedupe: null,
-        last: true,
-      },
-    ]) as OpError[];
-    expect(cut).toEqual([
-      { code: "unquoted-text", index: 0, field: "sublabel", found: "x, dedupe" },
-    ]);
-    const typo = parseOps([
+  it("an unknown field is offered the closest names", () => {
+    const typo = parseOp(
       { op: "node.add", id: "a", layer: "top", label: "A", sublable: "x" },
-    ]) as OpError[];
+      0,
+    ) as OpError[];
     expect(typo[0]?.facts?.likely).toContain("sublabel");
   });
 
@@ -332,7 +311,7 @@ describe("edge.add and edge.remove", () => {
   });
 });
 
-describe("batches", () => {
+describe("operations applied together", () => {
   it("is atomic: an error leaves the input untouched and names the operation index", () => {
     const before = writeDiagram(base);
     const r = applyOps(base, [
@@ -372,35 +351,28 @@ describe("batches", () => {
 });
 
 describe("parsing operations", () => {
-  it("parses a batch of items", () => {
-    const r = parseOps([
-      { op: "node.add", id: "n", layer: "l", label: "N", type: "store" },
-      { op: "edge.add", from: "a", to: "b" },
-    ]);
-    expect(r).toEqual([
-      { op: "node.add", id: "n", layer: "l", label: "N", type: "store" },
-      { op: "edge.add", from: "a", to: "b" },
-    ]);
+  it("parses an operation", () => {
+    const op = { op: "node.add", id: "n", layer: "l", label: "N", type: "store" };
+    expect(parseOp(op, 0)).toEqual(op);
   });
   it("reports an unknown op with the closest names", () => {
     const [e] = parseOp({ op: "node.ad", id: "n" }, 3) as OpError[];
     expect(e).toMatchObject({ code: "unknown-op", index: 3, found: "node.ad" });
     expect(e?.facts?.likely).toContain("node.add");
   });
-  it("reports bad values, missing and unknown fields with the item's index", () => {
-    const r = parseOps([
+  it("reports bad values, missing and unknown fields", () => {
+    const r = [
       { op: "diagram.density", density: "loose" },
       { op: "node.add", id: "n2", layer: "l" },
       { op: "node.remove", id: "n", extra: 1 },
-    ]) as OpError[];
+    ].flatMap((raw, i) => parseOp(raw, i) as OpError[]);
     expect(r.map((e) => [e.index, e.code, e.field])).toEqual([
       [0, "bad-value", "density"],
       [1, "missing-field", "label"],
       [2, "unknown-field", "extra"],
     ]);
   });
-  it("rejects a batch that is not a list, and coordinates", () => {
-    expect((parseOps({ op: "x" }) as OpError[])[0]?.code).toBe("bad-batch");
+  it("rejects coordinates", () => {
     const [e] = parseOp({ op: "node.add", id: "n", layer: "l", label: "N", x: 10 }, 0) as OpError[];
     expect(e?.code).toBe("unknown-field");
   });

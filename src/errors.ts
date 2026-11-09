@@ -72,7 +72,7 @@ export interface Facts {
   chain?: readonly string[];
   /** The arguments a command takes, as its usage names them. */
   takes?: readonly string[];
-  /** Where in the YAML text, from 1. */
+  /** Where in the text, from 1. */
   line?: number;
   column?: number;
   /** Characters no bundled font can draw. */
@@ -145,9 +145,9 @@ export const FACT_ORDER: readonly (keyof Facts)[] = [
 export const ERROR_CODES = [
   "align-same-layer",
   "alignment-conflict",
-  "bad-batch",
   "bad-file",
   "bad-id",
+  "bad-line",
   "bad-mark",
   "bad-op",
   "bad-reference",
@@ -155,11 +155,9 @@ export const ERROR_CODES = [
   "bad-stylesheet",
   "bad-type",
   "bad-value",
-  "bad-yaml",
   "bar-crossed",
   "bar-in-group",
   "bar-to-bar",
-  "batch-unreadable",
   "both-on-link",
   "column-lanes",
   "column-order",
@@ -226,7 +224,6 @@ export const ERROR_CODES = [
   "unknown-op",
   "unknown-wall",
   "unknown-weight",
-  "unquoted-text",
   "wall-crossed",
   "wall-sides",
 ] as const;
@@ -285,7 +282,7 @@ export interface Warning {
 export interface OpError {
   /** Stable, machine-readable, such as "unknown-node" or "bad-value". */
   code: ErrorCode;
-  /** Index of the operation in its batch, 0 for a single command; -1 when no operation can be named as its cause. */
+  /** 0 for the command's operation; -1 when no operation can be named as its cause. */
   index: number;
   /** The field at fault, such as "layer" or "kind". */
   field?: string;
@@ -293,9 +290,8 @@ export interface OpError {
   found: string;
   facts?: Facts;
   /**
-   * Found only once the whole batch is applied, in the diagram it makes, so that no one operation's index names
-   * it; the write path finds the operation after which it appears (specs/decisions, "Refusals say what happened and which
-   * commands can change it").
+   * Found in the whole diagram the operation makes, so that the write path asks whether the file already had it
+   * (specs/decisions, "Refusals say what happened and which commands can change it").
    */
   whole?: true;
   /**
@@ -303,7 +299,7 @@ export interface OpError {
    * only when those before it found nothing, so a diagram refused by a later check has no error of an earlier one.
    */
   stage?: number;
-  /** What caused it, as the report prints it: the command line, a batch's line, or what was in the file before. */
+  /** What caused it, as the report prints it: the command line, or what was in the file before. */
   source?: string;
 }
 

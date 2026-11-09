@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { applyOps, type Op } from "../../src/model/index.ts";
 import { writeDiagram } from "../../src/model/io.ts";
 import { nested } from "../fixtures/nested.ts";
 import { typed } from "./argv.ts";
@@ -24,30 +25,25 @@ function run(...args: string[]) {
 }
 const read = (f: string) => readFileSync(join(dir, f), "utf8");
 
-// The example is taken from `grafical apply --help` as printed, so the help cannot drift
-// from the tool.
-function helpExample() {
-  const lines = run("apply", "--help")
+// The example is taken from `grafical new --help` as printed, so the help cannot drift from the tool.
+function helpExample(): string[][] {
+  return run("new", "--help")
     .out.split("\n")
-    .map((l) => l.slice(2));
-  const line = (
-    lines.find((l) => l.startsWith("grafical -f orders.grafical new")) as string
-  ).replace("-f orders.grafical new", "new orders.grafical");
-  const batch = `${lines.filter((l) => l.startsWith("- {op: ")).join("\n")}\n`;
-  return { batch, line };
+    .map((l) => l.slice(2))
+    .filter((l) => l.startsWith("grafical -f orders.grafical "))
+    .map((l) => [...l.matchAll(/"([^"]*)"|(\S+)/g)].map((m) => m[1] ?? (m[2] as string)));
 }
 
 describe("grouped diagrams", () => {
-  it("builds the example of apply --help with new and one apply, and show lists the groups", () => {
-    const { batch, line } = helpExample();
-    // The example's new line, split into words that keep quoted text together.
-    const args = [...line.matchAll(/"([^"]*)"|(\S+)/g)].map((m) => m[1] ?? (m[2] as string));
-    const n = run(...args.slice(1));
-    expect(n.code).toBe(0);
-    writeFileSync(join(dir, "batch.yaml"), batch);
-    const r = run("apply", "orders.grafical", "batch.yaml");
-    expect(r.out).toMatch(/^ok changed=/);
-    expect(r.code).toBe(0);
+  it("builds the example of new --help one command at a time, and show lists the groups", () => {
+    const commands = helpExample();
+    expect(commands.length).toBeGreaterThan(10);
+    for (const words of commands) {
+      // The words after grafical, as a caller types them.
+      const r = spawnSync("node", [MAIN, ...words.slice(1)], { cwd: dir, encoding: "utf8" });
+      expect(r.status, `${words.join(" ")}: ${r.stdout}${r.stderr}`).toBe(0);
+      expect(r.stdout).toMatch(/^ok/);
+    }
     const text = read("orders.grafical");
     expect(text).toContain('subtitle: "Two services coupled');
     expect(text).toMatch(
@@ -111,17 +107,26 @@ describe("grouped diagrams", () => {
     expect(read(f)).not.toContain("lane");
   });
 
-  it('apply and check report the counts, in text and JSON, with no threshold (specs/decisions, "Records over prose")', () => {
+  it('check reports the counts, in text and JSON, with no threshold (specs/decisions, "Records over prose")', () => {
     const f = "big.grafical";
-    run("new", f, "--title", "Big");
-    const items = ["- op: layer.add\n  id: row\n  label: Row\n"];
+    const ops: Op[] = [
+      { op: "diagram.new", title: "Big" },
+      { op: "layer.add", id: "row", label: "Row" },
+    ];
     for (let i = 0; i < 17; i++) {
-      items.push(
-        `- op: node.add\n  id: n${i}\n  layer: row\n  label: N${i}\n  type: queue\n  last: true\n`,
-      );
+      ops.push({
+        op: "node.add",
+        id: `n${i}`,
+        layer: "row",
+        label: `N${i}`,
+        type: "queue",
+        last: true,
+      });
     }
-    writeFileSync(join(dir, "big.yaml"), items.join(""));
-    const w = run("apply", f, "big.yaml");
+    const big = applyOps(null, ops);
+    if ("errors" in big) throw new Error(JSON.stringify(big.errors));
+    writeFileSync(join(dir, f), writeDiagram(big.diagram));
+    const w = run("check", f);
     expect(w.code).toBe(0);
     expect(w.out).toMatch(/^counts nodes=17 edges=0 crossings=0 bends=0 .*fullest=row:17 /m);
     // No warning of too many nodes: only the facts, each node with no edges.
@@ -137,19 +142,15 @@ describe("grouped diagrams", () => {
   it('group copy writes the copy, and prints its refusals as blocks (specs/decisions, "A group copy holds its inside")', () => {
     const f = "copy.grafical";
     run("new", f, "--title", "Copy");
-    writeFileSync(
-      join(dir, "copy.yaml"),
-      [
-        "- {op: layer.add, id: r1, label: R1}",
-        "- {op: layer.add, id: r2, label: R2}",
-        "- {op: node.add, id: lb, layer: r1, label: LB}",
-        "- {op: node.add, id: web, layer: r2, label: Web}",
-        "- {op: group.add, id: zone, label: Zone A, nodes: [web]}",
-        "- {op: edge.add, from: lb, to: web}",
-        "",
-      ].join("\n"),
-    );
-    expect(run("apply", f, "copy.yaml").code).toBe(0);
+    for (const words of [
+      ["layer", "add", f, "r1", "--label", "R1"],
+      ["layer", "add", f, "r2", "--label", "R2"],
+      ["node", "add", f, "lb", "--layer", "r1", "--label", "LB"],
+      ["node", "add", f, "web", "--layer", "r2", "--label", "Web"],
+      ["group", "add", f, "zone", "--label", "Zone A", "--nodes", "web"],
+      ["edge", "add", f, "lb", "web"],
+    ])
+      expect(run(...words).code, words.join(" ")).toBe(0);
     const args = ["group", "copy", f, "zone", "zone-b", "--label", "Zone B", "--suffix", "-b"];
     const missing = run(...args);
     expect(missing.code).toBe(1);
@@ -177,7 +178,7 @@ describe("grouped diagrams", () => {
   });
 
   it("the help teaches the grouped style", () => {
-    const help = run("--help").out + run("apply", "--help").out + run("group", "add", "--help").out;
+    const help = run("--help").out + run("new", "--help").out + run("group", "add", "--help").out;
     for (const w of ["group --add", "subtitle", "sublabel"]) {
       expect(help).toContain(w);
     }

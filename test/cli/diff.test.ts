@@ -1,8 +1,21 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { commandLines } from "../../src/cli/diff.ts";
+import { build } from "../../src/cli/main.ts";
+import { inward } from "../../src/cli/surface.ts";
+import { diffDiagrams } from "../../src/model/diff.ts";
+import { readDiagram } from "../../src/model/io.ts";
+import type { Diagram } from "../../src/model/types.ts";
 import { typed } from "./argv.ts";
 
 const MAIN = resolve(import.meta.dirname, "../../src/cli/main.ts");
@@ -34,7 +47,7 @@ function git(...args: string[]) {
 }
 
 describe('grafical diff (specs/decisions, "Git as the history")', () => {
-  it("reports changes since a revision as a batch that replays them", () => {
+  it("reports changes since a revision as command lines that replay them", () => {
     git("init", "-q");
     const f = "d.grafical";
     run("new", f, "--title", "D");
@@ -42,29 +55,35 @@ describe('grafical diff (specs/decisions, "Git as the history")', () => {
     run("node", "add", f, "a", "--layer", "row", "--label", "A");
     git("add", f);
     git("commit", "-q", "-m", "first");
-    expect(run("diff", f).out).toBe("[] # no changes\n");
+    expect(run("diff", f).out).toBe("# no changes\n");
 
-    run("node", "label", f, "a", "--label", "Alpha");
-    run("node", "add", f, "b", "--layer", "row", "--label", "B", "--last");
+    run("node", "label", f, "a", "--label", "Alpha beta");
+    run("node", "add", f, "b", "--layer", "row", "--label", "B's", "--last");
+    run("edge", "add", f, "a", "b", "--label", "reads\\nwrites");
     const d = run("diff", f);
     expect(d.code).toBe(0);
     expect(d.out).toBe(
-      "- { op: node.add, id: b, layer: row, label: B, type: service, after: a }\n" +
-        "- { op: node.label, id: a, label: Alpha }\n",
+      [
+        "grafical -f d.grafical node --add b --layer row --label 'B'\\''s' --type service --after a",
+        "grafical -f d.grafical node --label a --label 'Alpha beta'",
+        "grafical -f d.grafical edge --add a b --label 'reads\\nwrites' --type call",
+        "",
+      ].join("\n"),
     );
     const json = JSON.parse(run("diff", f, "HEAD", "--json").out);
     expect(json.ok).toBe(true);
-    expect(json.ops).toHaveLength(2);
+    expect(json.commands).toEqual(d.out.trimEnd().split("\n"));
 
-    // The batch, applied to the revision's file, gives the file on disk.
-    writeFileSync(join(dir, "batch.yaml"), d.out);
+    // The lines, run in order by a shell on the revision's file, give the file on disk.
     const old = spawnSync("git", ["show", `HEAD:./${f}`], {
       cwd: dir,
       env,
       encoding: "utf8",
     }).stdout;
     writeFileSync(join(dir, "old.grafical"), old);
-    expect(run("apply", "old.grafical", "batch.yaml").code).toBe(0);
+    const script = d.out.replaceAll("grafical -f d.grafical ", `node ${MAIN} -f old.grafical `);
+    const sh = spawnSync("sh", ["-e", "-c", script], { cwd: dir, env, encoding: "utf8" });
+    expect(sh.status, sh.stdout + sh.stderr).toBe(0);
     expect(readFileSync(join(dir, "old.grafical"), "utf8")).toBe(
       readFileSync(join(dir, f), "utf8"),
     );
@@ -73,7 +92,7 @@ describe('grafical diff (specs/decisions, "Git as the history")', () => {
   it("builds a file the revision does not have from nothing", () => {
     run("new", "n.grafical", "--title", "New");
     expect(run("diff", "n.grafical").out).toBe(
-      "- { op: diagram.new, title: New, density: normal }\n",
+      "grafical -f n.grafical new --title New --density normal\n",
     );
   });
 
@@ -82,4 +101,71 @@ describe('grafical diff (specs/decisions, "Git as the history")', () => {
     expect(r.code).toBe(1);
     expect(r.out).toContain("bad-revision");
   });
+
+  it("builds every saved fixture from nothing, one command line at a time, byte for byte", async () => {
+    const fixtures = join(import.meta.dirname, "../fixtures");
+    const into = mkdtempSync(join(tmpdir(), "grafical-replay-"));
+    try {
+      // The marks the fixtures name sit beside them.
+      for (const f of readdirSync(fixtures))
+        if (!f.endsWith(".ts") && !f.endsWith(".grafical"))
+          copyFileSync(join(fixtures, f), join(into, f));
+      for (const name of readdirSync(fixtures).filter((f) => f.endsWith(".grafical"))) {
+        const text = readFileSync(join(fixtures, name), "utf8");
+        const file = join(into, name);
+        for (const line of commandLines(
+          diffDiagrams(null, readDiagram(text) as Diagram),
+          file,
+          build(),
+        )) {
+          const out = await inProcess(shellWords(line).slice(1));
+          expect(out.code, `${name}: ${line}\n${out.text}`).toBe(0);
+        }
+        expect(readFileSync(file, "utf8"), name).toBe(text);
+      }
+    } finally {
+      rmSync(into, { recursive: true, force: true });
+    }
+  });
 });
+
+/** A line's words as a POSIX shell reads them: single quotes, and words apart at spaces. */
+function shellWords(line: string): string[] {
+  const words: string[] = [];
+  let word: string | undefined;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i] as string;
+    if (c === " ") {
+      if (word !== undefined) words.push(word);
+      word = undefined;
+    } else if (c === "'") {
+      const end = line.indexOf("'", i + 1);
+      word = (word ?? "") + line.slice(i + 1, end);
+      i = end;
+    } else if (c === "\\") {
+      word = (word ?? "") + line[i + 1];
+      i++;
+    } else word = (word ?? "") + c;
+  }
+  if (word !== undefined) words.push(word);
+  return words;
+}
+
+/** A command run in this process: its exit code and what it printed. */
+async function inProcess(words: string[]): Promise<{ code: number; text: string }> {
+  let text = "";
+  const write = process.stdout.write;
+  process.stdout.write = ((s: string) => {
+    text += s;
+    return true;
+  }) as typeof process.stdout.write;
+  process.exitCode = 0;
+  try {
+    await build().parseAsync(inward(words) as string[], { from: "user" });
+  } finally {
+    process.stdout.write = write;
+  }
+  const code = Number(process.exitCode ?? 0);
+  process.exitCode = 0;
+  return { code, text };
+}

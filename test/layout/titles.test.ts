@@ -12,7 +12,7 @@ import {
   type Diagram,
   type GroupTitle,
   type Op,
-  parseOps,
+  parseOp,
   readDiagram,
   validateDiagram,
   writeDiagram,
@@ -844,7 +844,7 @@ describe("a group's stated label place", () => {
   });
 
   it("is refused past the ends of its side", () => {
-    const ops = parseOps([{ op: "group.label-at", id: "app", at: 1.5 }]);
+    const ops = parseOp({ op: "group.label-at", id: "app", at: 1.5 }, 0);
     expect(ops).toMatchObject([{ field: "at" }]);
   });
 

@@ -733,7 +733,7 @@ function laneStep(s: State, op: Extract<Op, { op: `lane.${string}` }>, i: number
 /**
  * wall.add, wall.allow, wall.relabel and wall.remove (specs/decisions, "Walls as space"). Ids that do not exist are refused here;
  * whether the sides lie above or beside each other, and which edges cross, is checked
- * once the whole batch is applied.
+ * once every operation is applied.
  */
 function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number): OpError[] {
   const d = s.d;
@@ -805,7 +805,7 @@ function wallStep(s: State, op: Extract<Op, { op: `wall.${string}` }>, i: number
 
 /**
  * column.add, column.join, column.leave and column.remove (specs/decisions, "Columns beside layers"). Members are nodes, or
- * groups that bring their nodes. Layers are put in column order once the batch is applied.
+ * groups that bring their nodes. Layers are put in column order once every operation is applied.
  */
 function columnStep(s: State, op: Extract<Op, { op: `column.${string}` }>, i: number): OpError[] {
   const d = s.d;
@@ -2552,7 +2552,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
   // Columns keep each layer in column order (specs/decisions, "Columns beside layers").
   touch(s, ...orderByColumns(s.d));
   const last = Math.max(0, ops.length - 1);
-  // What follows is found in the diagram the whole batch makes, by checks that run in turn: each stops the rest, and
+  // What follows is found in the diagram the operations make, by checks that run in turn: each stops the rest, and
   // its errors say which it was (`stage`), so that a diagram one check refuses is known to pass those before it.
   const whole = (errors: OpError[], stage: number): ApplyResult => ({
     errors: errors.map((e) => ({ ...e, whole: true, stage })),
@@ -2588,7 +2588,7 @@ export function applyOps(diagram: Diagram | null, ops: readonly Op[]): ApplyResu
   if (stepProblems.length > 0) {
     return whole(
       stepProblems.map((p) => {
-        // Two nodes in each other's way: the error names the one this batch moved.
+        // Two nodes in each other's way: the error names the one these operations moved.
         const other = typeof p.facts.node === "string" ? p.facts.node : undefined;
         const swap =
           p.code === "step-blocked" &&
