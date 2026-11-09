@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current checkpoint:** [CP3: Drawing well](#cp3-drawing-well). The work now is [CP3.4: Rearranging in one command](#cp34-rearranging-in-one-command), then [CP3.6: Clean edges and labels](#cp36-clean-edges-and-labels) and then [CP3.7: Steering proven](#cp37-steering-proven).
+**Current checkpoint:** [CP2: Drawing more](#cp2-drawing-more). The work now is [CP2.4: Nodes](#cp24-nodes), then [CP2.5: Regions](#cp25-regions) and then [CP2.6: The legend](#cp26-the-legend).
 
 The work comes in four groups of what grafical can do: draw at all · draw more · draw well · draw the hardest pictures. A release follows once the MVP bar is met. Within a group the numbers are the order of the work.
 
@@ -77,14 +77,14 @@ Roadmap
 │   │   ├── ✅ Edge weights
 │   │   ├── ✅ Step numbers
 │   │   └── ✅ Edge sides
-│   ├── 🟨 CP2.4: Nodes — marks · sizes
+│   ├── 🟨 CP2.4: Nodes — a node takes a multiple of its size and its marks stay clear of edges
 │   │   ├── ✅ Marks
-│   │   ├── ⬜ Corner marks checked
-│   │   └── ⬜ Size multiples
-│   ├── ⬜ CP2.5: Column headings and bars across groups
+│   │   ├── ⬜ Size multiples
+│   │   └── ⬜ Corner marks checked
+│   ├── ⬜ CP2.5: Regions — every region carries its label and a bar runs across a group
 │   │   ├── ⬜ Column headings
 │   │   └── ⬜ Bars across groups
-│   └── 🟨 CP2.6: The legend — a small diagram that says what colors and widths mean
+│   └── 🟨 CP2.6: The legend — a key the agent lays out as a small diagram
 │       ├── ✅ The richer legend
 │       ├── ⬜ Design the legend
 │       └── ⬜ Build the legend
@@ -422,7 +422,7 @@ What a picture can hold grows. A test and a fixture accept each item, with no mo
   - [CP2.2: Placement facts](#cp22-placement-facts) is met.
   - [CP2.3: Kinds of edge](#cp23-kinds-of-edge) is met.
   - [CP2.4: Nodes](#cp24-nodes) is met.
-  - [CP2.5: Column headings and bars across groups](#cp25-column-headings-and-bars-across-groups) is met.
+  - [CP2.5: Regions](#cp25-regions) is met.
   - [CP2.6: The legend](#cp26-the-legend) is met.
 
 ### CP2.1: Containers
@@ -505,13 +505,13 @@ What an edge can say past joining two ends.
 
 **Status:** 🟨
 
-Nodes carry marks that stay clear of edges and take multiples of their size.
+A node takes a multiple of its size, and its marks stay clear of the edges beside them.
 
 **Tasks:**
 
 - ✅ Marks: A node carries small marks.
-- ⬜ Corner marks checked: A corner mark is checked against nearby edges.
 - ⬜ Size multiples: A node takes multiples of its width and height.
+- ⬜ Corner marks checked: A corner mark is checked against nearby edges.
 
 **Delivers:**
 
@@ -526,11 +526,11 @@ Nodes carry marks that stay clear of edges and take multiples of their size.
   - [R1: Stability](GOALS.md#r1-stability)
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
-### CP2.5: Column headings and bars across groups
+### CP2.5: Regions
 
 **Status:** ⬜
 
-Columns carry headings, and a bar crosses a group.
+Every region carries its label, and a bar runs across a group. A column is the one region with no label yet.
 
 **Tasks:**
 
@@ -554,7 +554,7 @@ Columns carry headings, and a bar crosses a group.
 
 **Status:** 🟨
 
-A legend is a small diagram, and it can explain what a picture's colors mean.
+An agent lays out its legend as a small diagram, and it can explain what a picture's colors mean.
 
 **Tasks:**
 
