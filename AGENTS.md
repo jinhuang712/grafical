@@ -45,7 +45,8 @@ Then it scans `plan/TODO.md`.
 - [WHEN]  you are about to change a part: read its spec in `specs/` first.
 - [WHEN]  a decision is cited or its area changes: read it in `specs/decisions/`.
 - [WHEN]  the work needs the code: a subagent may read the code.
-- [WHEN]  you change a fact or a rule: search the documents for what it now contradicts.
+- [WHEN]  you change something: find every document that mentions it, read each in full and cut what went stale or serves nothing.
+  - The change grows as large as that takes.
 - [WHEN]  the owner says something a document contradicts: say so before you act.
 - [WHEN]  you find a contradiction: tell the owner and pick no side.
 - [WHEN]  you make a choice that closes a fork: write its decision at once.
