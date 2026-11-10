@@ -34,7 +34,6 @@ function fixture(name: string): Diagram {
 const alone: Diagram = {
   grafical: 1,
   title: "Alone",
-  density: "normal",
   layers: [
     { id: "top", label: "Top", nodes: [n("a", "A", "service", "m")] },
     { id: "low", label: "Low", nodes: [n("b", "B", "service", "m"), n("c", "C", "store", "m")] },
@@ -50,7 +49,6 @@ const alone: Diagram = {
 const members = readDiagram(`<diagram> {
   format: 1
   title: "members"
-  density: normal
 }
 
 <layer> top {
@@ -173,55 +171,55 @@ const members = readDiagram(`<diagram> {
   group: @ev
 }
 
-<edge> a->hub {
+<edge> a-hub {
   from: @a
   to: @hub
   type: @call
 }
 
-<edge> b->hub {
+<edge> b-hub {
   from: @b
   to: @hub
   type: @call
 }
 
-<edge> c->hub {
+<edge> c-hub {
   from: @c
   to: @hub
   type: @call
 }
 
-<edge> hub->p {
+<edge> hub-p {
   from: @hub
   to: @p
   type: @call
 }
 
-<edge> hub->q {
+<edge> hub-q {
   from: @hub
   to: @q
   type: @call
 }
 
-<edge> r->hub {
+<edge> r-hub {
   from: @r
   to: @hub
   type: @async
 }
 
-<edge> s->hub {
+<edge> s-hub {
   from: @s
   to: @hub
   type: @async
 }
 
-<edge> r->hub#2 {
+<edge> r-hub-2 {
   from: @r
   to: @hub
   type: @call
 }
 
-<edge> s->hub#2 {
+<edge> s-hub-2 {
   from: @s
   to: @hub
   type: @call
@@ -262,8 +260,8 @@ const members = readDiagram(`<diagram> {
   text: "Events"
 }
 
-<label> hub->q-label {
-  on: @hub->q
+<label> hub-q-label {
+  on: @hub-q
   text: "runs"
 }
 `);
@@ -340,7 +338,6 @@ describe('warnings (specs/decisions, "Every write prints every warning")', () =>
     const d = readDiagram(`<diagram> {
   format: 1
   title: "reached"
-  density: normal
 }
 
 <layer> top {
@@ -439,19 +436,19 @@ describe('warnings (specs/decisions, "Every write prints every warning")', () =>
   layer: @end
 }
 
-<edge> a->g {
+<edge> a-g {
   from: @a
   to: @g
   type: @call
 }
 
-<edge> a->mid {
+<edge> a-mid {
   from: @a
   to: @mid
   type: @call
 }
 
-<edge> a->ops {
+<edge> a-ops {
   from: @a
   to: @ops
   type: @call
@@ -507,9 +504,9 @@ describe('warnings (specs/decisions, "Every write prints every warning")', () =>
     // Context's nodes each call the hub, but Z in the group around it does not; the hub's edges into Tools differ
     // in label; each node of Events sends the hub both an event and a call, which are two edges alike apart.
     expect(w).toEqual([
-      { code: "edge-per-member", facts: { group: "ctx", edges: ["a->hub", "b->hub", "c->hub"] } },
-      { code: "edge-per-member", facts: { group: "ev", edges: ["r->hub", "s->hub"] } },
-      { code: "edge-per-member", facts: { group: "ev", edges: ["r->hub#2", "s->hub#2"] } },
+      { code: "edge-per-member", facts: { group: "ctx", edges: ["a-hub", "b-hub", "c-hub"] } },
+      { code: "edge-per-member", facts: { group: "ev", edges: ["r-hub", "s-hub"] } },
+      { code: "edge-per-member", facts: { group: "ev", edges: ["r-hub-2", "s-hub-2"] } },
     ]);
     // Once Z calls the hub too, the group around Context has the same edges, and only it is named.
     const all = { ...members, edges: [...members.edges, e("z", "hub", "call")] };
@@ -524,8 +521,8 @@ describe('warnings (specs/decisions, "Every write prints every warning")', () =>
     const d = fixture("dispatch");
     const w = warningsOf(drawing(d, layout(d, m)), d).filter((x) => x.code === "edge-across-group");
     expect(w.map((x) => `${x.facts.edge} ${x.facts.groups?.join(",")}`)).toEqual([
-      "events->notify-svc booking",
-      "events->payments-api matching",
+      "events-notify-svc booking",
+      "events-payments-api matching",
     ]);
   });
 });

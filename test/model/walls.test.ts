@@ -8,6 +8,7 @@ import {
   applyOps,
   type Diagram,
   type Op,
+  type OpOf,
   readDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
@@ -26,11 +27,11 @@ function fail(d: Diagram, ops: Op[]): OpError[] {
 
 /** Callers above, the two systems below; the only ways in are the relay and the handlers. */
 const net: Op = {
-  op: "wall.add",
-  id: "net",
-  between: ["upstream", "callers"],
-  and: ["catalog-sync", "catalog-api"],
-  allow: ["relay", "handlers"],
+  op: "wall.set",
+  ids: ["net"],
+  between: "upstream,callers",
+  and: "catalog-sync,catalog-api",
+  allow: "relay,handlers",
   label: "private network",
 };
 
@@ -55,71 +56,69 @@ describe('walls (specs/decisions, "Walls as space")', () => {
   });
 
   it("refuse an edge from one side to the other unless the wall allows it", () => {
-    const { allow: _, ...closed } = net as Extract<Op, { op: "wall.add" }>;
+    const { allow: _, ...closed } = net as OpOf<"wall.set">;
     const errors = fail(fx, [closed]);
-    expect(errors.map((e) => e.found)).toEqual(["upstream->relay", "callers->handlers"]);
+    expect(errors.map((e) => e.found)).toEqual(["upstream-relay", "callers-handlers"]);
     expect(errors[0]).toMatchObject({ code: "wall-crossed", facts: { wall: "net" } });
     // By the edge, by a node at one end, or by a group an end lies in.
-    ok(fx, [{ ...closed, allow: ["upstream->relay", "callers->handlers"] }]);
-    ok(fx, [{ ...closed, allow: ["catalog-sync", "callers"] }]);
+    ok(fx, [{ ...closed, allow: "upstream-relay,callers-handlers" }]);
+    ok(fx, [{ ...closed, allow: "catalog-sync,callers" }]);
   });
 
-  it("let more through, or less, with wall.allow", () => {
-    const d = ok(fx, [
-      { ...net, allow: ["relay"] } as Op,
-      { op: "wall.allow", id: "net", allow: ["handlers"] },
-    ]).diagram;
+  it("let more through, or less, with --allow", () => {
+    const d = ok(fx, [net]).diagram;
     expect(d.walls?.[0]?.allow).toEqual(["relay", "handlers"]);
-    expect(
-      fail(d, [{ op: "wall.allow", id: "net", allow: ["handlers"], off: true }])[0],
-    ).toMatchObject({
+    const more = ok(d, [{ op: "wall.set", ids: ["net"], allow: "handlers,catalog-sync,relay" }]);
+    // What it let through keeps its order, and what comes is added after it.
+    expect(more.diagram.walls?.[0]?.allow).toEqual(["relay", "handlers", "catalog-sync"]);
+    expect(fail(d, [{ op: "wall.set", ids: ["net"], allow: "relay" }])[0]).toMatchObject({
       code: "wall-crossed",
-      found: "callers->handlers",
+      found: "callers-handlers",
     });
-    expect(fail(d, [{ op: "wall.allow", id: "nte", allow: ["x"] }])[0]).toMatchObject({
+    expect(fail(d, [{ op: "wall.remove", ids: ["nte"] }])[0]).toMatchObject({
       code: "unknown-wall",
       facts: { near: ["net"] },
     });
   });
 
-  it("change or drop their label with wall.relabel, and diff replays it", () => {
+  it("change or drop their label with --label, and diff replays it", () => {
     const d = ok(fx, [net]).diagram;
-    const renamed = ok(d, [{ op: "wall.label", id: "net", label: "inside" }]);
+    const renamed = ok(d, [{ op: "wall.set", ids: ["net"], label: "inside" }]);
     expect(renamed.changed).toEqual(["net"]);
     expect(renamed.diagram.walls?.[0]?.label).toBe("inside");
     // Without a label the wall is space alone, as one added without one.
-    const bare = ok(d, [{ op: "wall.label", id: "net" }]).diagram;
+    const bare = ok(d, [{ op: "wall.set", ids: ["net"], label: "-" }]).diagram;
     expect(bare.walls?.[0]).not.toHaveProperty("label");
-    const { label: _label, ...plain } = net as Extract<Op, { op: "wall.add" }>;
+    const { label: _label, ...plain } = net as OpOf<"wall.set">;
     expect(writeDiagram(bare)).toBe(writeDiagram(ok(fx, [plain]).diagram));
     expect(writeDiagram(ok(d, diffDiagrams(d, bare)).diagram)).toBe(writeDiagram(bare));
-    expect(fail(d, [{ op: "wall.label", id: "nte" }])[0]).toMatchObject({
+    expect(fail(d, [{ op: "wall.remove", ids: ["nte"] }])[0]).toMatchObject({
       code: "unknown-wall",
       facts: { near: ["net"] },
     });
   });
 
   it("refuse unknown ids, a node on both sides, and sides that share a layer", () => {
-    expect(fail(fx, [{ ...net, between: ["upstrem"] } as Op])[0]).toMatchObject({
+    expect(fail(fx, [{ ...net, between: "upstrem" } as Op])[0]).toMatchObject({
       code: "unknown-node",
       field: "between",
       found: "upstrem",
     });
-    expect(fail(fx, [{ ...net, allow: ["nope->x"] } as Op])[0]).toMatchObject({
+    expect(fail(fx, [{ ...net, allow: "nope-x" } as Op])[0]).toMatchObject({
       code: "unknown-node",
       field: "allow",
     });
-    expect(fail(fx, [{ ...net, between: ["relay"] } as Op])[0]).toMatchObject({
+    expect(fail(fx, [{ ...net, between: "relay" } as Op])[0]).toMatchObject({
       code: "wall-sides",
       facts: { nodes: ["relay"] },
     });
     // Up and down: a node between the sides would stand in the wall, and a layer the wall
     // spans with no node of either side has no place for it.
     const beside = (between: string[], and: string[]): Op => ({
-      op: "wall.add",
-      id: "w",
-      between,
-      and,
+      op: "wall.set",
+      ids: ["w"],
+      between: between.join(","),
+      and: and.join(","),
     });
     expect(fail(fx, [beside(["catalog-sync"], ["catalog-api"])])[0]).toMatchObject({
       code: "wall-sides",
@@ -130,30 +129,30 @@ describe('walls (specs/decisions, "Walls as space")', () => {
       facts: { layer: "topics", nodes: [] },
     });
     expect(ok(fx, [beside(["upstream"], ["callers"])]).diagram.walls).toHaveLength(1);
-    expect(fail(fx, [{ ...net, id: "relay" } as Op])[0]).toMatchObject({ code: "duplicate-id" });
+    expect(fail(fx, [{ ...net, ids: ["relay"] } as Op])[0]).toMatchObject({ code: "duplicate-id" });
   });
 
   it("forget what is removed, and go when a side is left empty", () => {
     const d = ok(fx, [net]).diagram;
-    const r = ok(d, [{ op: "node.remove", id: "callers" }]);
+    const r = ok(d, [{ op: "node.remove", ids: ["callers"] }]);
     expect(r.diagram.walls?.[0]?.between).toEqual(["upstream"]);
     expect(r.changed).toContain("net");
-    const gone = ok(r.diagram, [{ op: "node.remove", id: "upstream" }]);
+    const gone = ok(r.diagram, [{ op: "node.remove", ids: ["upstream"] }]);
     expect(gone.diagram.walls).toBeUndefined();
     expect(gone.changed).toContain("net");
     // A removed edge leaves what the wall allows.
-    const allowed = ok(fx, [{ ...net, allow: ["upstream->relay", "handlers"] } as Op]).diagram;
-    const cut = ok(allowed, [{ op: "edge.remove", id: "upstream->relay" }]).diagram;
+    const allowed = ok(fx, [{ ...net, allow: "upstream-relay,handlers" } as Op]).diagram;
+    const cut = ok(allowed, [{ op: "edge.remove", ids: ["upstream-relay"] }]).diagram;
     expect(cut.walls?.[0]?.allow).toEqual(["handlers"]);
   });
 
   it("diff gives back the operations, and a changed wall comes back last", () => {
     const d = ok(fx, [net]).diagram;
     expect(diffDiagrams(fx, d)).toEqual([net]);
-    const changed = ok(d, [{ op: "node.remove", id: "callers" }]).diagram;
+    const changed = ok(d, [{ op: "node.remove", ids: ["callers"] }]).diagram;
     const ops = diffDiagrams(d, changed);
-    expect(ops[0]).toEqual({ op: "wall.remove", id: "net" });
-    expect(ops.at(-1)).toMatchObject({ op: "wall.add", id: "net", between: ["upstream"] });
+    expect(ops[0]).toEqual({ op: "wall.remove", ids: ["net"] });
+    expect(ops.at(-1)).toMatchObject({ op: "wall.set", ids: ["net"], between: "upstream" });
     expect(writeDiagram(ok(d, ops).diagram)).toBe(writeDiagram(changed));
     expect(writeDiagram(ok(fx, diffDiagrams(fx, changed)).diagram)).toBe(writeDiagram(changed));
   });

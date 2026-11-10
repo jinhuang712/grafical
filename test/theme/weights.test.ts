@@ -28,8 +28,8 @@ beforeAll(async () => {
   m = await createMeasurer();
 });
 
-const EDGE = "pipelines->mongo";
-const OTHER = "service->mongo";
+const EDGE = "pipelines-mongo";
+const OTHER = "service-mongo";
 
 function ok(d: Diagram, ops: Op[]): Diagram {
   const r = applyOps(d, ops);
@@ -47,8 +47,8 @@ const widthOf = (d: Diagram, id: string) => layout(d, m).edges.find((e) => e.id 
 describe('edge weights (specs/decisions, "Edge weights")', () => {
   it("a level or a width sets how thick an edge is drawn; thin is the default", () => {
     const d = ok(fx, [
-      { op: "edge.weight", edges: [EDGE], weight: "heavy" },
-      { op: "edge.weight", edges: [OTHER], weight: 3.5 },
+      { op: "edge.set", ids: [EDGE], weight: "heavy" },
+      { op: "edge.set", ids: [OTHER], weight: "3.5" },
     ]);
     expect(edge(d, EDGE)?.weight).toBe("heavy");
     expect(widthOf(d, EDGE)).toBe(4);
@@ -61,14 +61,16 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
   });
 
   it("without a weight, or at thin, the edge is thin again", () => {
-    const heavy = ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: "heavy" }]);
-    expect(edge(ok(heavy, [{ op: "edge.weight", edges: [EDGE] }]), EDGE)?.weight).toBeUndefined();
-    const thin = ok(heavy, [{ op: "edge.weight", edges: [EDGE], weight: "thin" }]);
+    const heavy = ok(fx, [{ op: "edge.set", ids: [EDGE], weight: "heavy" }]);
+    expect(
+      edge(ok(heavy, [{ op: "edge.set", ids: [EDGE], weight: "-" }]), EDGE)?.weight,
+    ).toBeUndefined();
+    const thin = ok(heavy, [{ op: "edge.set", ids: [EDGE], weight: "thin" }]);
     expect(writeDiagram(thin)).toBe(writeDiagram(fx));
   });
 
   it("refuses an unknown level, a width out of range and an unknown edge", () => {
-    expect(fail(fx, [{ op: "edge.weight", edges: [EDGE], weight: "huge" }])[0]).toMatchObject({
+    expect(fail(fx, [{ op: "edge.set", ids: [EDGE], weight: "huge" }])[0]).toMatchObject({
       code: "unknown-weight",
       field: "weight",
       found: "huge",
@@ -77,7 +79,7 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
     // The range is checked when an operation is parsed, as for every operation, and the
     // refusal names the levels and the limits.
     for (const weight of [20, 0.1, "Big"]) {
-      const parsed = parseOp({ op: "edge.weight", edges: [EDGE], weight }, 0);
+      const parsed = parseOp({ op: "edge.set", ids: [EDGE], weight: String(weight) }, 0);
       expect(parsed).toEqual([
         {
           code: "bad-value",
@@ -88,14 +90,15 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
         },
       ]);
     }
-    expect(Array.isArray(parseOp({ op: "edge.weight", edges: [EDGE], weight: 8 }, 0))).toBe(false);
-    const file = writeDiagram(ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: 3 }]));
+    expect(Array.isArray(parseOp({ op: "edge.set", ids: [EDGE], weight: "8" }, 0))).toBe(false);
+    const file = writeDiagram(ok(fx, [{ op: "edge.set", ids: [EDGE], weight: "3" }]));
     expect(readDiagram(file.replace("weight: 3", "weight: 12"))).toMatchObject([
       { code: "bad-value", found: "12", facts: { min: 0.5, max: 8 } },
     ]);
-    expect(fail(fx, [{ op: "edge.weight", edges: ["nope"] }])[0]).toMatchObject({
-      code: "unknown-edge",
-      field: "edges",
+    // An id no edge has makes an edge, which needs its ends.
+    expect(fail(fx, [{ op: "edge.set", ids: ["nope"], weight: "-" }])[0]).toMatchObject({
+      code: "missing-field",
+      field: "from",
     });
   });
 
@@ -106,9 +109,9 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
   });
 
   it("the legend names a width heavier than thin once the agent names it", () => {
-    const d = ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: "heavy" }]);
+    const d = ok(fx, [{ op: "edge.set", ids: [EDGE], weight: "heavy" }]);
     expect(layout(d, m).legend?.some((l) => l.width !== undefined)).toBe(false);
-    const named = ok(d, [{ op: "diagram.legend", weight: "heavy", text: "critical" }]);
+    const named = ok(d, [{ op: "legend.set", ids: ["weight:heavy"], text: "critical" }]);
     // Drawn at the width it stands for (specs/decisions, "A legend for widths and marks").
     expect(layout(named, m).legend?.at(-1)).toMatchObject({ width: 4 });
   });
@@ -126,18 +129,18 @@ describe('edge weights (specs/decisions, "Edge weights")', () => {
   });
 
   it("is drawn with that stroke width", () => {
-    const d = ok(fx, [{ op: "edge.weight", edges: [EDGE], weight: 6 }]);
+    const d = ok(fx, [{ op: "edge.set", ids: [EDGE], weight: "6" }]);
     expect(renderSvg(layout(d, m))).toContain('stroke-width="6"');
     expect(renderSvg(layout(fx, m))).not.toContain('stroke-width="6"');
   });
 
   it("the diff replays as weight operations", () => {
     const heavy = ok(fx, [
-      { op: "edge.weight", edges: [EDGE], weight: "heavy" },
-      { op: "edge.weight", edges: [OTHER], weight: "thick" },
+      { op: "edge.set", ids: [EDGE], weight: "heavy" },
+      { op: "edge.set", ids: [OTHER], weight: "thick" },
     ]);
     const ops = diffDiagrams(fx, heavy);
-    expect(ops).toContainEqual({ op: "edge.weight", edges: [EDGE], weight: "heavy" });
+    expect(ops).toContainEqual({ op: "edge.set", ids: [EDGE], weight: "heavy" });
     for (const [a, b] of [
       [fx, heavy],
       [heavy, fx],
@@ -181,14 +184,14 @@ describe('weights in a stylesheet (specs/decisions, "Edge weights")', () => {
     const t = sheet("<weight> critical {\n  width: 6.5\n}\n") as Theme;
     provideStylesheet("w.grafical", t);
     const styled = ok(fx, [
-      { op: "diagram.style", style: "w.grafical" },
-      { op: "edge.weight", edges: [EDGE], weight: "critical" },
+      { op: "diagram.set", stylesheet: "w.grafical" },
+      { op: "edge.set", ids: [EDGE], weight: "critical" },
     ]);
     expect(unknownWeights(styled)).toEqual([]);
     expect(widthOf(styled, EDGE)).toBe(6.5);
     // Back to the default theme, the level is gone.
     const plain = { ...styled };
-    delete plain.style;
+    delete plain.stylesheet;
     expect(unknownWeights(plain)[0]).toMatchObject({ code: "unknown-weight", found: "critical" });
   });
 });

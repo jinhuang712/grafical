@@ -14,7 +14,6 @@
 
 import { segmentCrossesRect, segmentsOf } from "../check/geometry.ts";
 import { orderByColumns } from "../model/columns.ts";
-import { gutterMagnified } from "../model/gaps.ts";
 import { laneRun, orderByLanes } from "../model/lanes.ts";
 import { withFollowedWeights } from "../model/like.ts";
 import { everyNode } from "../model/steps.ts";
@@ -47,19 +46,7 @@ import type {
   SceneWall,
 } from "../scene.ts";
 import type { Line, Measurer } from "../text/types.ts";
-import {
-  BAND,
-  BAR,
-  FRAME,
-  GROUP,
-  LANE,
-  MARK_STEP,
-  ROUTE,
-  SPACING,
-  type Spacing,
-  STEP,
-  WALL,
-} from "../theme/geometry.ts";
+import { BAND, BAR, FRAME, GROUP, LANE, MARK_STEP, ROUTE, STEP, WALL } from "../theme/geometry.ts";
 import { edgeStyle, edgeWidth, hasHead, type Paint, strokeLook } from "../theme/paint.ts";
 import { isDot, textTop } from "../theme/shapes.ts";
 import { DEFAULT_THEME, type TypeRamp, themeOf } from "../theme/themes.ts";
@@ -80,6 +67,7 @@ import {
 } from "./route.ts";
 import { planSideways } from "./side.ts";
 import { leftInset, markRects, markWidth, nodeLines, withSizes } from "./size.ts";
+import { layerMargins, markedLook, type Spacing, spacingOf } from "./space.ts";
 import { routeStats } from "./stats.ts";
 import { steerEdges } from "./steer.ts";
 import { placeSteps } from "./steps.ts";
@@ -137,7 +125,11 @@ interface Looking {
   type?: string;
 }
 
-/** What an object's styles set, a later one over an earlier one (specs/decisions, "A style may be as rich as it likes"). */
+/**
+ * What an object's look is: its type's, under what it follows, under the styles it marks, of which the one defined
+ * later wins (specs/decisions, "A style may be as rich as it likes", "Styles set spacing as CSS does, and a later
+ * style wins").
+ */
 function lookOf(
   d: Diagram,
   o: Looking | undefined,
@@ -159,10 +151,14 @@ function lookOf(
   // A followed look sits over the type and under the object's own styles (specs/decisions, "`like` follows an object's look and nothing else").
   const followed = among.find((x) => x.id === o?.like);
   if (followed !== undefined) Object.assign(look, lookOf(d, followed, among));
-  for (const name of o?.style ?? []) {
-    const { id: _id, ...values } = d.styles?.find((x) => x.id === name) ?? { id: "" };
-    Object.assign(look, values);
-  }
+  // Spacing is placement's: only the paint of a style is a look.
+  const { fill, border, borderWidth, color } = markedLook(d, o?.style);
+  Object.assign(look, {
+    ...(fill === undefined ? {} : { fill }),
+    ...(border === undefined ? {} : { border }),
+    ...(borderWidth === undefined ? {} : { borderWidth }),
+    ...(color === undefined ? {} : { color }),
+  });
   return Object.keys(look).length > 0 ? look : undefined;
 }
 
@@ -635,7 +631,10 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // Container ends route to a stand-in node and are cut at the container (specs/decisions, "Edges that end at containers").
   const ends = planEnds(sized);
   const d: Diagram = { ...sized, edges: ends.edges };
-  const sp = SPACING[d.density];
+  const sp = spacingOf(d);
+  // A layer's margins: its own, its nodes', its lane's and those of the groups that start or end in it (specs/decisions,
+  // "Styles set spacing as CSS does, and a later style wins").
+  const marginAt = layerMargins(d);
 
   const followable = everyNode(d);
   const labelStyle = T["edge-label"];
@@ -1125,8 +1124,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
 
   // The frame: title, subtitle and legend at the top, the footnote at the bottom.
   let title = withText
-    ? placeLine("title", d.title, sp.margin, sp.margin, m, T)
-    : empty("title", sp.margin, sp.margin);
+    ? placeLine("title", d.title, sp.margin.left, sp.margin.top, m, T)
+    : empty("title", sp.margin.left, sp.margin.top);
   const legendStyle = T.legend;
   // The legend draws only what the agent named (specs/decisions, "The legend says only what the agent named").
   const items = withText
@@ -1154,15 +1153,16 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const noteLines =
     withText && d.caption !== undefined && d.caption !== "" ? m.wrap(d.caption, T.note, textW) : [];
   const widest = (lines: { width: number }[]) => Math.max(0, ...lines.map((l) => l.width));
+  const sides = sp.margin.left + sp.margin.right;
   const width = ceil8(
     Math.max(
-      2 * sp.margin + 2 * half,
-      2 * sp.margin + title.bbox.w + (items.length > 0 ? FRAME.legendGap + legendW : 0),
-      2 * sp.margin + widest(subLines),
-      2 * sp.margin + widest(noteLines),
+      sides + 2 * half,
+      sides + title.bbox.w + (items.length > 0 ? FRAME.legendGap + legendW : 0),
+      sides + widest(subLines),
+      sides + widest(noteLines),
     ),
   );
-  const centre = width / 2 - shift;
+  const centre = (width + sp.margin.left - sp.margin.right) / 2 - shift;
 
   // The legend's first line is level with the title, and each further line starts
   // at the same left edge below it (specs/decisions, "A legend for widths and marks").
@@ -1174,7 +1174,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const legendPitch = lineH + FRAME.legendLineGap;
   legendRows.forEach((row, r) => {
     const mid = firstMid + r * legendPitch;
-    let x = width - sp.margin - legendW;
+    let x = width - sp.margin.right - legendW;
     for (const i of row.items) {
       const it = items[i];
       if (it === undefined) continue;
@@ -1199,23 +1199,23 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   // subtitle follows it (specs/decisions, "A region's label sits at a fraction of a side").
   const stated = d.titleAt;
   const along = stated?.at ?? 0;
-  const textRoom = width - 2 * sp.margin;
+  const textRoom = width - sides;
   const titleRoom = textRoom - (items.length > 0 ? FRAME.legendGap + legendW : 0);
   const titleLine = (y: number) =>
     withText
-      ? placeLine("title", d.title, sp.margin + along * (titleRoom - title.bbox.w), y, m, T)
-      : empty("title", sp.margin, y);
+      ? placeLine("title", d.title, sp.margin.left + along * (titleRoom - title.bbox.w), y, m, T)
+      : empty("title", sp.margin.left, y);
   const subtitleAt = (y: number) =>
     subLines.length > 0
-      ? placeLines("subtitle", subLines, sp.margin + along * textRoom, y, along, m, T)
+      ? placeLines("subtitle", subLines, sp.margin.left + along * textRoom, y, along, m, T)
       : undefined;
   const below = stated?.side === "bottom";
-  if (stated !== undefined && !below) title = titleLine(sp.margin);
+  if (stated !== undefined && !below) title = titleLine(sp.margin.top);
   let subtitle = below ? undefined : subtitleAt(titleBottom + FRAME.subtitleGap);
   const headBottom = below
     ? items.length > 0
       ? ceil4(legendBottom)
-      : sp.margin - FRAME.titleGap
+      : sp.margin.top - FRAME.titleGap
     : subtitle !== undefined
       ? subtitle.bbox.y + subtitle.bbox.h
       : titleBottom;
@@ -1292,43 +1292,47 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   /** A layer that holds a store: the gutters beside it keep more room from its cylinders. */
   const storeLayer = (i: number) => (layers[i]?.nodes ?? []).some((n) => n.node.kind === "store");
   layers.forEach((l, i) => {
+    // A margin adds to the row gap: the larger one above a gutter, and the larger one below it.
+    if (i === 0) y += marginAt(l.id).top;
     layerTops.push(y);
     y += l.layerH;
     const rows = routing.rows[i] ?? 0;
     const last = i === layers.length - 1;
+    const below = last ? 0 : marginAt(layers[i + 1]?.id ?? "").top;
     const pad =
-      padsAt(i) + (bandHead(i) ? BAND.pad : 0) + (rows > 0 && storeLayer(i) ? ROUTE.storeRoom : 0);
+      padsAt(i) +
+      (bandHead(i) ? BAND.pad : 0) +
+      (rows > 0 && storeLayer(i) ? ROUTE.storeRoom : 0) +
+      marginAt(l.id).bottom;
     const walls = wallsAt(i);
     // A gutter with no runs keeps its least height only when no wall gives it room.
-    const times = gutterMagnified(d, i);
     const tracks = ceil4(
-      times *
-        (rows === 0
-          ? last || walls > 0
-            ? 0
-            : (sp.gutterSteps[0] ?? 48)
-          : gutterHeight(rows, sp) + (storeLayer(i + 1) ? ROUTE.storeRoom : 0)),
+      rows === 0
+        ? last || walls > 0
+          ? 0
+          : (sp.gutterSteps[0] ?? 48)
+        : gutterHeight(rows, sp) + (storeLayer(i + 1) ? ROUTE.storeRoom : 0),
     );
     gutterTops.push(y);
     endPads.push(pad);
     if (!last && laneAt(i) !== laneAt(i + 1)) {
       // The border runs below the gutter's tracks and walls; heads below it take their full room.
-      y += pad + (rows === 0 && walls === 0 ? ceil4(times * LANE.pad) : tracks);
+      y += pad + (rows === 0 && walls === 0 ? LANE.pad : tracks);
       wallTops.set(i, y);
       y += walls * WALL.space;
       borders.set(i, y);
-      y += LANE.pad + headsAt(i + 1) + (bandHead(i + 1) ? bandHeadH(i + 1) : 0);
+      y += below + LANE.pad + headsAt(i + 1) + (bandHead(i + 1) ? bandHeadH(i + 1) : 0);
       return;
     }
     if (walls > 0) {
       // Nothing is placed in a wall: the heads below it take their full room (specs/decisions, "Walls as space").
       y += pad + tracks;
       wallTops.set(i, y);
-      y += walls * WALL.space + headRoom(i, 0);
+      y += walls * WALL.space + below + headRoom(i, 0);
       return;
     }
     const head = last ? 0 : headRoom(i, tracks);
-    y += pad + tracks + head;
+    y += pad + tracks + below + head;
   });
   if (colLanes.length > 0 || laneAt(layers.length - 1) !== undefined) y += LANE.pad;
   const lanesBottom = y;
@@ -1344,7 +1348,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   }
   const note =
     noteLines.length > 0
-      ? placeLines("note", noteLines, sp.margin, ceil4(y + FRAME.noteGap), "start", m, T)
+      ? placeLines("note", noteLines, sp.margin.left, ceil4(y + FRAME.noteGap), "start", m, T)
       : undefined;
   if (note !== undefined) bottom = note.bbox.y + note.bbox.h;
   if (below) {
@@ -1353,7 +1357,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     subtitle = subtitleAt(ceil4(bottom) + FRAME.subtitleGap);
     if (subtitle !== undefined) bottom = subtitle.bbox.y + subtitle.bbox.h;
   }
-  const height = ceil4(bottom + sp.margin);
+  const height = ceil4(bottom + sp.margin.bottom);
 
   const layerH = (i: number) => layers[i]?.layerH ?? 0;
   const nodeTop = (layer: number, h: number) => (layerTops[layer] ?? 0) + (layerH(layer) - h) / 2;
@@ -1373,8 +1377,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     const h = layerH(i);
     const lines =
       withText && l.label !== undefined ? m.wrap(l.label, layerLabelStyle, 2 * half) : [];
-    const label = placeLines("layer-label", lines, sp.margin, top, "start", m, T);
-    return { id: l.id, band: { x: sp.margin, y: top, w: width - 2 * sp.margin, h }, label };
+    const label = placeLines("layer-label", lines, sp.margin.left, top, "start", m, T);
+    return { id: l.id, band: { x: sp.margin.left, y: top, w: width - sides, h }, label };
   });
 
   const depthOf = (g: (typeof groups)[number]): number => {
@@ -1995,12 +1999,12 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
             ...sceneBands.map((x) => x.rect),
           ],
           bounds: {
-            x: sp.margin,
+            x: sp.margin.left,
             y: headBottom + FRAME.titleGap / 2,
-            w: width - 2 * sp.margin,
+            w: width - sides,
             h: lanesBottom - headBottom - FRAME.titleGap / 2,
           },
-          list: { x: sp.margin, y: listTop, w: textW },
+          list: { x: sp.margin.left, y: listTop, w: textW },
         },
         m,
         T,

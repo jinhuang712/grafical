@@ -40,9 +40,9 @@ function entries(d: Diagram) {
 
 /** Two thick edges, one heavy and one 3 pixels wide. */
 const weighted = ok(fx, [
-  { op: "edge.weight", edges: ["pipelines->mongo"], weight: "thick" },
-  { op: "edge.weight", edges: ["service->mongo"], weight: "heavy" },
-  { op: "edge.weight", edges: ["pipelines->postgres"], weight: 3 },
+  { op: "edge.set", ids: ["pipelines-mongo"], weight: "thick" },
+  { op: "edge.set", ids: ["service-mongo"], weight: "heavy" },
+  { op: "edge.set", ids: ["pipelines-postgres"], weight: "3" },
 ]);
 
 describe('the legend names edge widths (specs/decisions, "A legend for widths and marks")', () => {
@@ -52,8 +52,8 @@ describe('the legend names edge widths (specs/decisions, "A legend for widths an
 
   it("a named width has its own entry, and the entries go from the thinnest", () => {
     const d = ok(weighted, [
-      { op: "diagram.legend", weight: "heavy", text: "critical" },
-      { op: "diagram.legend", weight: 3, text: "writes" },
+      { op: "legend.set", ids: ["weight:heavy"], text: "critical" },
+      { op: "legend.set", ids: ["weight:3"], text: "writes" },
     ]);
     expect(entries(d).filter((x) => x.width !== undefined)).toEqual([
       { text: "writes", width: 3 },
@@ -63,27 +63,27 @@ describe('the legend names edge widths (specs/decisions, "A legend for widths an
   });
 
   it("a width named but not drawn has no entry until an edge has it", () => {
-    const d = ok(fx, [{ op: "diagram.legend", weight: "heavy", text: "critical" }]);
+    const d = ok(fx, [{ op: "legend.set", ids: ["weight:heavy"], text: "critical" }]);
     expect(entries(d).some((x) => x.width !== undefined)).toBe(false);
-    const drawn = ok(d, [{ op: "edge.weight", edges: ["service->mongo"], weight: "heavy" }]);
+    const drawn = ok(d, [{ op: "edge.set", ids: ["service-mongo"], weight: "heavy" }]);
     expect(entries(drawn).at(-1)).toEqual({ text: "critical", width: 4 });
   });
 
   it("without text, a width loses its entry", () => {
-    const named = ok(weighted, [{ op: "diagram.legend", weight: "thick", text: "writes" }]);
-    const back = ok(named, [{ op: "diagram.legend", weight: "thick" }]);
+    const named = ok(weighted, [{ op: "legend.set", ids: ["weight:thick"], text: "writes" }]);
+    const back = ok(named, [{ op: "legend.remove", ids: ["weight:thick"] }]);
     expect(back.legend).toBeUndefined();
     expect(writeDiagram(back)).toBe(writeDiagram(weighted));
   });
 
   it("the file keeps the names sorted, and reads them back", () => {
     const a = ok(weighted, [
-      { op: "diagram.legend", weight: "thick", text: "writes" },
-      { op: "diagram.legend", weight: 3, text: "copies" },
+      { op: "legend.set", ids: ["weight:thick"], text: "writes" },
+      { op: "legend.set", ids: ["weight:3"], text: "copies" },
     ]);
     const b = ok(weighted, [
-      { op: "diagram.legend", weight: 3, text: "copies" },
-      { op: "diagram.legend", weight: "thick", text: "writes" },
+      { op: "legend.set", ids: ["weight:3"], text: "copies" },
+      { op: "legend.set", ids: ["weight:thick"], text: "writes" },
     ]);
     const text = writeDiagram(a);
     expect(writeDiagram(b)).toBe(text);
@@ -92,47 +92,49 @@ describe('the legend names edge widths (specs/decisions, "A legend for widths an
   });
 
   it("diff gives back the operations that name a width", () => {
-    const after = ok(weighted, [{ op: "diagram.legend", weight: 3, text: "copies" }]);
+    const after = ok(weighted, [{ op: "legend.set", ids: ["weight:3"], text: "copies" }]);
     const ops = diffDiagrams(weighted, after);
-    expect(ops).toEqual([{ op: "diagram.legend", weight: 3, text: "copies" }]);
+    expect(ops).toEqual([{ op: "legend.set", ids: ["weight:3"], text: "copies" }]);
     expect(writeDiagram(ok(weighted, ops))).toBe(writeDiagram(after));
   });
 
   it("thin, a level the stylesheet lacks, and a width out of range are refused", () => {
-    expect(fail(fx, [{ op: "diagram.legend", weight: "thin", text: "x" }])[0]).toMatchObject({
+    expect(fail(fx, [{ op: "legend.set", ids: ["weight:thin"], text: "x" }])[0]).toMatchObject({
       code: "bad-value",
-      field: "weight",
+      field: "id",
       facts: { allowed: ["thick", "heavy"], min: 0.5, max: 8 },
     });
-    expect(fail(fx, [{ op: "diagram.legend", weight: "huge", text: "x" }])[0]).toMatchObject({
+    expect(fail(fx, [{ op: "legend.set", ids: ["weight:huge"], text: "x" }])[0]).toMatchObject({
       code: "unknown-weight",
       found: "huge",
     });
     for (const weight of [12, "Heavy"]) {
-      expect(parseOp({ op: "diagram.legend", weight, text: "x" }, 0)).toMatchObject([
-        { code: "bad-value", field: "weight", facts: { allowed: ["thick", "heavy"], max: 8 } },
+      expect(fail(fx, [{ op: "legend.set", ids: [`weight:${weight}`], text: "x" }])).toMatchObject([
+        { code: "bad-value", field: "id", facts: { allowed: ["thick", "heavy"], max: 8 } },
       ]);
     }
     const file = { ...structuredClone(fx), legend: { weights: { thin: "x" } } };
     expect(validateDiagram(file)).toMatchObject([{ code: "bad-value", field: "legend.weights" }]);
   });
 
-  it("an entry is named by exactly one of style, weight and mark", () => {
-    expect(fail(fx, [{ op: "diagram.legend", text: "x" }])[0]).toMatchObject({
-      code: "missing-field",
-      facts: { allowed: ["style", "weight", "mark"] },
-    });
-    expect(
-      fail(fx, [{ op: "diagram.legend", style: "solid", weight: "thick", text: "x" }])[0],
-    ).toMatchObject({ code: "conflicting-fields", field: "style,weight" });
+  it("an entry is named by its address: style:, weight: or mark:", () => {
+    const allowed = ["style:<style>", "weight:<level>", "mark:<text>"];
+    for (const id of ["solid", "color:red", "style:"]) {
+      expect(fail(fx, [{ op: "legend.set", ids: [id], text: "x" }])[0]).toMatchObject({
+        code: "bad-value",
+        field: "id",
+        found: id,
+        facts: { allowed },
+      });
+    }
   });
 });
 
 /** A warning on two nodes of the work layer, and a red P0 badge on the relay above them. */
 const marked = ok(fx, [
-  { op: "node.mark", id: "pipelines", slot: "top-left", mark: "⚠️" },
-  { op: "node.mark", id: "service", slot: "top-left", mark: "⚠️" },
-  { op: "node.mark", id: "relay", slot: "top-right", mark: "P0", bg: "red" },
+  { op: "mark.set", ids: ["pipelines:top-left"], text: "⚠️" },
+  { op: "mark.set", ids: ["service:top-left"], text: "⚠️" },
+  { op: "mark.set", ids: ["relay:top-right"], text: "P0", bg: "red" },
 ]);
 const markEntries = (d: Diagram) => (layout(d, m).legend ?? []).filter((x) => x.mark !== undefined);
 
@@ -140,8 +142,8 @@ describe('the legend names marks (specs/decisions, "A legend for widths and mark
   it("a mark is in the legend only once it is named, and once for each name", () => {
     expect(markEntries(marked)).toEqual([]);
     const d = ok(marked, [
-      { op: "diagram.legend", mark: "⚠️", text: "needs an owner" },
-      { op: "diagram.legend", mark: "P0", text: "paged 24/7" },
+      { op: "legend.set", ids: ["mark:⚠️"], text: "needs an owner" },
+      { op: "legend.set", ids: ["mark:P0"], text: "paged 24/7" },
     ]);
     const marks = markEntries(d);
     // Layers top to bottom: the relay's badge comes first.
@@ -158,23 +160,23 @@ describe('the legend names marks (specs/decisions, "A legend for widths and mark
   });
 
   it("the words stay in the file, and without text the mark leaves the legend", () => {
-    const d = ok(marked, [{ op: "diagram.legend", mark: "⚠️", text: "needs an owner" }]);
+    const d = ok(marked, [{ op: "legend.set", ids: ["mark:⚠️"], text: "needs an owner" }]);
     const text = writeDiagram(d);
     expect(text).toContain("marks:");
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     const ops = diffDiagrams(marked, d);
-    expect(ops).toEqual([{ op: "diagram.legend", mark: "⚠️", text: "needs an owner" }]);
-    const back = ok(d, [{ op: "diagram.legend", mark: "⚠️" }]);
+    expect(ops).toEqual([{ op: "legend.set", ids: ["mark:⚠️"], text: "needs an owner" }]);
+    const back = ok(d, [{ op: "legend.remove", ids: ["mark:⚠️"] }]);
     expect(writeDiagram(back)).toBe(writeDiagram(marked));
   });
 
   it("a name longer than any mark is refused", () => {
-    expect(fail(fx, [{ op: "diagram.legend", mark: "warning", text: "x" }])[0]).toMatchObject({
+    expect(fail(fx, [{ op: "legend.set", ids: ["mark:warning"], text: "x" }])[0]).toMatchObject({
       code: "mark-too-long",
-      field: "mark",
+      field: "id",
       facts: { max: 6 },
     });
-    expect(ok(fx, [{ op: "diagram.legend", mark: "marks/lock.svg", text: "x" }]).legend).toEqual({
+    expect(ok(fx, [{ op: "legend.set", ids: ["mark:marks/lock.svg"], text: "x" }]).legend).toEqual({
       marks: { "marks/lock.svg": "x" },
     });
   });
@@ -189,27 +191,29 @@ describe('the legend says only what the agent named (specs/decisions, "The legen
   });
 
   it("a named edge style has an entry, and without text it goes", () => {
-    const d = ok(fx, [{ op: "diagram.legend", style: "dashed", text: "event" }]);
+    const d = ok(fx, [{ op: "legend.set", ids: ["style:dashed"], text: "event" }]);
     expect(styles(d)).toEqual(["dashed"]);
     const text = writeDiagram(d);
     expect(text).toContain('dashed: "event"');
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
-    expect(diffDiagrams(fx, d)).toEqual([{ op: "diagram.legend", style: "dashed", text: "event" }]);
-    const back = ok(d, [{ op: "diagram.legend", style: "dashed" }]);
+    expect(diffDiagrams(fx, d)).toEqual([
+      { op: "legend.set", ids: ["style:dashed"], text: "event" },
+    ]);
+    const back = ok(d, [{ op: "legend.remove", ids: ["style:dashed"] }]);
     expect(writeDiagram(back)).toBe(writeDiagram(fx));
   });
 
   it("hide is refused", () => {
-    expect(parseOp({ op: "diagram.legend", style: "solid", hide: true }, 0)).toMatchObject([
+    expect(parseOp({ op: "legend.remove", ids: ["style:solid"], hide: true }, 0)).toMatchObject([
       { code: "unknown-field", field: "hide" },
     ]);
   });
 
   it("show --drawn lists each style and width the picture draws, and each named mark", () => {
     const d = ok(marked, [
-      { op: "edge.weight", edges: ["pipelines->mongo"], weight: "thick" },
-      { op: "diagram.legend", weight: "thick", text: "writes" },
-      { op: "diagram.legend", mark: "P0", text: "paged at night" },
+      { op: "edge.set", ids: ["pipelines-mongo"], weight: "thick" },
+      { op: "legend.set", ids: ["weight:thick"], text: "writes" },
+      { op: "legend.set", ids: ["mark:P0"], text: "paged at night" },
     ]);
     const dr = drawing(d, layout(d, m));
     const none = { weight: null, width: null, mark: null, text: null };

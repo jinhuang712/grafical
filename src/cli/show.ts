@@ -36,8 +36,7 @@ function nodeText(n: DiagramNode): string {
 }
 
 function edgeText(e: Edge): string {
-  const plain = e.id === `${e.from}->${e.to}`;
-  let s = plain ? e.id : `${e.id} (${e.from}->${e.to})`;
+  let s = `${e.id} (${e.from}->${e.to})`;
   if (e.kind !== "call") s += ` [${e.kind}]`;
   if (e.both === true) s += " [both ends]";
   if (e.pass === true) s += " [passes bars]";
@@ -52,9 +51,14 @@ function edgeText(e: Edge): string {
   return s;
 }
 
+/** The styles an object marks, in the order it marks them (specs/decisions, "Styles set spacing as CSS does, and a later style wins"). */
+const styled = (o: { style?: string[] }) =>
+  o.style === undefined ? "" : ` [style ${o.style.join(",")}]`;
+
 export function showDiagram(d: Diagram): string {
   const sizing = d.sizing === "fixed" ? " sizing=fixed" : "";
-  const lines = [`diagram ${JSON.stringify(d.title)} density=${d.density}${sizing}`];
+  const sheet = d.stylesheet === undefined ? "" : ` stylesheet=${d.stylesheet}`;
+  const lines = [`diagram ${JSON.stringify(d.title)}${sheet}${sizing}${styled(d)}`];
   if (d.subtitle !== undefined) lines.push(`subtitle ${JSON.stringify(d.subtitle)}`);
   if (d.caption !== undefined) lines.push(`caption ${JSON.stringify(d.caption)}`);
   for (const styleName of EDGE_STYLES) {
@@ -73,7 +77,7 @@ export function showDiagram(d: Diagram): string {
     const look = l.look === undefined ? "" : ` look=${l.look}`;
     const label = l.label === undefined ? "" : ` ${JSON.stringify(l.label)}`;
     const at = l.labelAt === undefined ? "" : ` label-at=${l.labelAt}`;
-    lines.push(`layer ${l.id}${label}${lane}${look}${at}: ${nodes}`);
+    lines.push(`layer ${l.id}${label}${lane}${look}${at}${styled(l)}: ${nodes}`);
   }
   if (d.layers.length === 0) lines.push("(no layers)");
   // Nodes in no layer, placed by steps from another node (specs/decisions, "Steps from another node").
@@ -107,7 +111,7 @@ export function showDiagram(d: Diagram): string {
     const members = d.layers.flatMap((l) =>
       l.nodes.filter((n) => n.column === c.id).map((n) => n.id),
     );
-    lines.push(`column ${c.id}: ${members.join(", ") || "(empty)"}`);
+    lines.push(`column ${c.id}${styled(c)}: ${members.join(", ") || "(empty)"}`);
   }
   for (const w of d.walls ?? []) {
     const label = w.label === undefined ? "" : ` ${JSON.stringify(w.label)}`;
@@ -116,9 +120,6 @@ export function showDiagram(d: Diagram): string {
     lines.push(
       `wall ${w.id}${label}${way === undefined ? "" : ` (${way})`}: between=${w.between.join(",")} and=${w.and.join(",")}${allow}`,
     );
-  }
-  for (const g of d.gaps ?? []) {
-    lines.push(`gap ${g.between.join(" ")} magnified=${g.magnified}`);
   }
   for (const x of d.notes ?? []) {
     lines.push(

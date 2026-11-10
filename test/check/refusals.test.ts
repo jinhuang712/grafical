@@ -8,8 +8,8 @@ import { join } from "node:path";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { attempt, blocks, failure, isReport } from "../../src/cli/pipeline.ts";
 import { type Block, DESCRIPTIONS } from "../../src/cli/problems.ts";
-import { parseOp, readDiagram } from "../../src/model/index.ts";
-import type { Op } from "../../src/model/ops.ts";
+import { readDiagram } from "../../src/model/index.ts";
+import { type Op, parseOp } from "../../src/model/ops.ts";
 import type { Diagram } from "../../src/model/types.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
@@ -50,30 +50,31 @@ function changes(d: Diagram, seed: number, count: number): Op[] {
     const a = pick(nodes);
     const b = pick(nodes.filter((x) => x !== a));
     const all = [
-      { op: "node.swap", a, b },
-      { op: "node.move", id: a, layer: pick(layerIds), before: b },
-      { op: "node.move", id: a, layer: pick(layerIds) },
-      { op: "node.move", id: a, from: b, [dir()]: 1 },
-      { op: "node.add", id: `new${i}`, label: "new box", from: a, [dir()]: 1 },
-      { op: "node.add", id: `new${i}`, label: "new box", layer: pick(layerIds) },
-      { op: "node.add", id: a, label: "new box", layer: pick(layerIds), last: true },
-      { op: "node.align", id: a, to: b },
-      { op: "node.type", id: a, type: "servise" },
-      { op: "diagram.density", density: "loose" },
-      { op: "edge.add", from: a, to: b, label: "a long label for this line" },
-      { op: "edge.add", from: a, to: `${b}x` },
-      { op: "group.add", id: `g${i}`, label: "group", nodes: [a, b] },
-      { op: "note.add", on: a, text: "a note that says something a reader needs to know here" },
-      { op: "wall.add", id: `w${i}`, between: [a], and: [b], label: "boundary" },
-      { op: "layer.remove", id: pick(layerIds) },
-      { op: "column.add", id: `c${i}`, nodes: [a] },
+      { op: "node.move", ids: [b, a], first: true },
+      { op: "node.move", ids: [a], layer: pick(layerIds), before: b },
+      { op: "node.move", ids: [a], layer: pick(layerIds) },
+      { op: "node.move", ids: [a], from: b, [dir()]: "1" },
+      { op: "node.set", ids: [`new${i}`], label: "new box", from: a, [dir()]: "1" },
+      { op: "node.set", ids: [`new${i}`], label: "new box", layer: pick(layerIds) },
+      { op: "node.set", ids: [a], layer: pick(layerIds), last: true },
+      { op: "group.set", ids: [a], label: "new box" },
+      { op: "node.set", ids: [a], align: b },
+      { op: "node.set", ids: [a], type: "servise" },
+      { op: "diagram.set", sizing: "loose" },
+      { op: "edge.set", ids: [`e${i}`], from: a, to: b, label: "a long label for this line" },
+      { op: "edge.set", ids: [`e${i}`], from: a, to: `${b}x` },
+      { op: "node.set", ids: [a, b], group: `g${i}` },
+      { op: "note.set", ids: [a], text: "a note that says something a reader needs to know here" },
+      { op: "wall.set", ids: [`w${i}`], between: a, and: b, label: "boundary" },
+      { op: "layer.remove", ids: [pick(layerIds)] },
+      { op: "node.set", ids: [a], column: `c${i}` },
       ...(groups.length > 0
         ? [
-            { op: "group.label-at", id: pick(groups), at: pick(PLACES) },
-            { op: "group.join", group: pick(groups), nodes: [a] },
+            { op: "label.set", ids: [pick(groups)], at: pick(PLACES) },
+            { op: "node.set", ids: [a], group: pick(groups) },
           ]
         : []),
-      ...(edges.length > 0 ? [{ op: "edge.number", id: pick(edges), n: 1 }] : []),
+      ...(edges.length > 0 ? [{ op: "edge.set", ids: [pick(edges)], number: "1" }] : []),
     ];
     out.push(pick(all) as unknown as Op);
   }
@@ -82,7 +83,7 @@ function changes(d: Diagram, seed: number, count: number): Op[] {
 
 /** An operation that changes nothing. */
 function still(d: Diagram): Op {
-  return { op: "diagram.title", text: d.title };
+  return { op: "diagram.set", title: d.title };
 }
 
 function diagrams(): [string, Diagram][] {

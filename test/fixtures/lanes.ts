@@ -13,7 +13,6 @@ function node(id: string, label: string, kind: NodeKind, lane?: string): Diagram
 export const lanesLayers: Diagram = {
   grafical: 1,
   title: "Checkout, by owner",
-  density: "normal",
   layers: [
     {
       id: "clients",
@@ -67,7 +66,6 @@ export const lanesLayers: Diagram = {
 export const lanesColumns: Diagram = {
   grafical: 1,
   title: "Checkout, by team",
-  density: "normal",
   layers: [
     {
       id: "entry",

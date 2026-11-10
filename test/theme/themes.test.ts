@@ -10,7 +10,7 @@ import {
   PAINT,
   parseStylesheet,
   provideStylesheet,
-  styleProblem,
+  stylesheetProblem,
   THEMES,
   type Theme,
   themeOf,
@@ -115,15 +115,15 @@ describe('stylesheets (specs/decisions, "Themes and stylesheets")', () => {
   });
 
   it("a diagram names a built-in theme or a stylesheet beside it", () => {
-    expect(styleProblem("dark")).toBeUndefined();
-    expect(styleProblem("brand.grafical")).toBeUndefined();
-    expect(styleProblem("styles/brand.grafical")).toBeUndefined();
-    expect(styleProblem("neon")).toBe("bad-value");
-    expect(styleProblem("../looks/brand.grafical")).toBeUndefined();
+    expect(stylesheetProblem("dark")).toBeUndefined();
+    expect(stylesheetProblem("brand.grafical")).toBeUndefined();
+    expect(stylesheetProblem("styles/brand.grafical")).toBeUndefined();
+    expect(stylesheetProblem("neon")).toBe("bad-value");
+    expect(stylesheetProblem("../looks/brand.grafical")).toBeUndefined();
   });
 
-  it("the example in diagram style's help is a stylesheet", () => {
-    const after = PAGES["diagram style"]?.after ?? "";
+  it("the example in library's help is a stylesheet", () => {
+    const after = PAGES.library?.after ?? "";
     const from = after.indexOf("  <stylesheet> {");
     const to = after.indexOf("\nIts blocks:");
     const text = after
@@ -144,7 +144,7 @@ describe('stylesheets (specs/decisions, "Themes and stylesheets")', () => {
 
 describe("a themed diagram", () => {
   const styled = (style: string): Diagram => {
-    const r = applyOps(catalogSyncGrouped, [{ op: "diagram.style", style }]);
+    const r = applyOps(catalogSyncGrouped, [{ op: "diagram.set", stylesheet: style }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     return r.diagram;
   };
@@ -152,7 +152,7 @@ describe("a themed diagram", () => {
   it("round-trips its style and draws with the theme's paint", () => {
     const d = styled("dark");
     const text = writeDiagram(d);
-    expect(text).toMatch(/style: "dark"\n {2}density: normal\n}/);
+    expect(text).toMatch(/stylesheet: "dark"\n}/);
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
     const svg = renderSvg(layout(d, m));
     expect(svg).toContain(`fill="${THEMES.dark?.paint.background}"`);
@@ -174,7 +174,7 @@ describe("a themed diagram", () => {
   });
 
   it("refuses a style that is neither a theme nor a stylesheet file", () => {
-    const r = applyOps(catalogSyncGrouped, [{ op: "diagram.style", style: "neon" }]);
+    const r = applyOps(catalogSyncGrouped, [{ op: "diagram.set", stylesheet: "neon" }]);
     expect("errors" in r && r.errors[0]?.code).toBe("bad-value");
   });
 });

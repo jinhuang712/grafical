@@ -4,12 +4,11 @@ import { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
 import { placeSteps } from "../layout/steps.ts";
 import { WEIGHT_LEVEL, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
-import { STYLESHEET_SUFFIX, styleProblem, THEMES } from "../theme/themes.ts";
+import { STYLESHEET_SUFFIX, stylesheetProblem, THEMES } from "../theme/themes.ts";
 import { checkColumns } from "./columns.ts";
 import { checkEnds } from "./ends.ts";
-import { regionKind } from "./gaps.ts";
 import { groupChain, MAX_GROUP_DEPTH } from "./groups.ts";
-import { ID_EDGE, ID_NODE, ID_SUFFIX, issuesToErrors, STEP_NUMBER, WEIGHT } from "./issues.ts";
+import { ID_NODE, ID_SUFFIX, issuesToErrors, STEP_NUMBER, WEIGHT } from "./issues.ts";
 import { checkLanes } from "./lanes.ts";
 import { likeProblems } from "./like.ts";
 import { noteTargets } from "./notes.ts";
@@ -17,10 +16,8 @@ import { steerProblems } from "./steer.ts";
 import { checkSteps, everyNode, MAX_STEPS, STEP_KEYS } from "./steps.ts";
 import { closest } from "./suggest.ts";
 import {
-  DEFAULT_DENSITY,
   DEFAULT_EDGE_KIND,
   DEFAULT_NODE_KIND,
-  DENSITIES,
   type Diagram,
   type DiagramNode,
   EDGE_BENDS,
@@ -30,7 +27,6 @@ import {
   EDGE_STYLES,
   type Edge,
   FORMAT_VERSION,
-  GAP_MAGNIFICATIONS,
   type Group,
   LABEL_ALIGNS,
   LABEL_PLACES,
@@ -56,13 +52,12 @@ import { checkWalls } from "./walls.ts";
 
 export const MAX_EMPHASIS = 2;
 
+/** The characters of every id, an edge's too. */
 const ID_RE = /^[a-z0-9][a-z0-9._-]*$/;
-const EDGE_ID_RE = /^[a-z0-9][a-z0-9._-]*(->[a-z0-9][a-z0-9._-]*)?(#[0-9]+)?$/;
 
 export const nodeId = z.string().regex(ID_RE, { message: ID_NODE });
 /** What a group copy appends to every id it makes (specs/decisions, "A group copy holds its inside"). */
 export const idSuffix = z.string().regex(/^[a-z0-9._-]+$/, { message: ID_SUFFIX });
-export const edgeId = z.string().regex(EDGE_ID_RE, { message: ID_EDGE });
 export const text = z.string().min(1);
 /** A legend entry's words (specs/decisions, "The legend says only what the agent named"). */
 const words = text;
@@ -147,6 +142,18 @@ export const lookFields = {
   color: z.string().regex(COLOR).optional(),
 };
 
+/** A margin or a gap: pixels on the 4 px grid, never negative (specs/decisions, "Styles set spacing as CSS does, and a later style wins"). */
+export const space = z.number().int().min(0).max(400).multipleOf(4);
+
+export const spaceFields = {
+  marginTop: space.optional(),
+  marginRight: space.optional(),
+  marginBottom: space.optional(),
+  marginLeft: space.optional(),
+  rowGap: space.optional(),
+  columnGap: space.optional(),
+};
+
 const styleNames = z.array(nodeId).min(1).optional();
 
 export const shapeField = z.enum(Object.keys(SHAPE_KINDS) as [Shape, ...Shape[]]).optional();
@@ -225,6 +232,7 @@ const layerSchema = z.strictObject({
   labelAt: z.number().min(0).max(1).optional(),
   lane: nodeId.optional(),
   look: z.enum(LAYER_LOOKS).optional(),
+  style: styleNames,
   nodes: z.array(nodeSchema).default([]),
 });
 
@@ -266,7 +274,7 @@ export const stepNumber = z
   .max(STEP_NUMBER_MAX, { message: STEP_NUMBER });
 
 const edgeSchema = z.strictObject({
-  id: edgeId,
+  id: nodeId,
   from: nodeId,
   to: nodeId,
   kind: z.enum(EDGE_KINDS).default(DEFAULT_EDGE_KIND),
@@ -282,11 +290,11 @@ const edgeSchema = z.strictObject({
   step: stepNumber.optional(),
   via: z.strictObject({ object: nodeId, side: z.enum(VIA_SIDES) }).optional(),
   straight: z.boolean().optional(),
-  with: edgeId.optional(),
+  with: nodeId.optional(),
   bendAt: z.literal(EDGE_BENDS).optional(),
   stretch: z.literal(EDGE_STRETCHES).optional(),
   type: nodeId.optional(),
-  like: edgeId.optional(),
+  like: nodeId.optional(),
   style: styleNames,
 });
 
@@ -295,15 +303,15 @@ export const diagramSchema = z.strictObject({
   title: text,
   subtitle: text.optional(),
   caption: text.optional(),
-  density: z.enum(DENSITIES).default(DEFAULT_DENSITY),
   lines: z.enum(["round"]).optional(),
   titleAt: z
     .strictObject({ at: z.number().min(0).max(1), side: z.enum(["top", "bottom"]) })
     .optional(),
   sizing: z.enum(SIZINGS).optional(),
-  style: text.optional(),
+  stylesheet: text.optional(),
+  style: styleNames,
   types: z.array(typeSchema).default([]),
-  styles: z.array(z.strictObject({ id: nodeId, ...lookFields })).default([]),
+  styles: z.array(z.strictObject({ id: nodeId, ...lookFields, ...spaceFields })).default([]),
   legend: z
     .strictObject({
       solid: words.optional(),
@@ -318,15 +326,7 @@ export const diagramSchema = z.strictObject({
   nodes: z.array(stepNodeSchema).default([]),
   groups: z.array(groupSchema).default([]),
   lanes: z.array(laneSchema).default([]),
-  columns: z.array(z.strictObject({ id: nodeId })).default([]),
-  gaps: z
-    .array(
-      z.strictObject({
-        between: z.tuple([nodeId, nodeId]),
-        magnified: z.literal(GAP_MAGNIFICATIONS),
-      }),
-    )
-    .default([]),
+  columns: z.array(z.strictObject({ id: nodeId, style: styleNames })).default([]),
   walls: z.array(wallSchema).default([]),
   notes: z
     .array(
@@ -378,6 +378,7 @@ function build(p: Parsed): Diagram {
     ...(l.lane === undefined ? {} : { lane: l.lane }),
     ...(l.look === undefined ? {} : { look: l.look }),
     ...(l.labelAt === undefined ? {} : { labelAt: l.labelAt }),
+    ...(l.style === undefined ? {} : { style: [...l.style] }),
     nodes: l.nodes.map(buildNode),
   }));
   const edges: Edge[] = p.edges.map((e) => {
@@ -402,11 +403,12 @@ function build(p: Parsed): Diagram {
     if (e.style !== undefined) edge.style = [...e.style];
     return edge;
   });
-  const d: Diagram = { grafical: p.grafical, title: p.title, density: p.density, layers, edges };
+  const d: Diagram = { grafical: p.grafical, title: p.title, layers, edges };
   if (p.sizing === "fixed") d.sizing = "fixed";
   if (p.lines !== undefined) d.lines = p.lines;
   if (p.titleAt !== undefined) d.titleAt = p.titleAt;
-  if (p.style !== undefined) d.style = p.style;
+  if (p.stylesheet !== undefined) d.stylesheet = p.stylesheet;
+  if (p.style !== undefined) d.style = [...p.style];
   if (p.types.length > 0) {
     d.types = p.types.map(
       (s) =>
@@ -463,9 +465,11 @@ function build(p: Parsed): Diagram {
       ...(x.style === undefined ? {} : { style: [...x.style] }),
     }));
   }
-  if (p.columns.length > 0) d.columns = p.columns.map((x) => ({ id: x.id }));
-  if (p.gaps.length > 0) {
-    d.gaps = p.gaps.map((x) => ({ between: [...x.between], magnified: x.magnified }));
+  if (p.columns.length > 0) {
+    d.columns = p.columns.map((x) => ({
+      id: x.id,
+      ...(x.style === undefined ? {} : { style: [...x.style] }),
+    }));
   }
   if (p.walls.length > 0) {
     d.walls = p.walls.map((x) => {
@@ -545,17 +549,16 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
   errors.push(...checkColumns(d, index));
   errors.push(...checkWalls(placed, index));
   errors.push(...checkNotes(d, index));
-  errors.push(...checkGaps(d, index));
   errors.push(...likeProblems(d, index));
   errors.push(...steerProblems(d, index));
-  if (d.style !== undefined) {
-    const problem = styleProblem(d.style);
+  if (d.stylesheet !== undefined) {
+    const problem = stylesheetProblem(d.stylesheet);
     if (problem !== undefined) {
       errors.push({
         code: problem,
         index,
-        field: "style",
-        found: d.style,
+        field: "stylesheet",
+        found: d.stylesheet,
         facts: { allowed: [...Object.keys(THEMES), `<name>${STYLESHEET_SUFFIX}`] },
       });
     }
@@ -618,21 +621,6 @@ export function checkIntegrity(d: Diagram, index = 0): OpError[] {
     });
   }
   return errors;
-}
-
-/** A gap names two regions that exist (specs/decisions, "The gap between two regions may be magnified"). */
-function checkGaps(d: Diagram, index: number): OpError[] {
-  return (d.gaps ?? []).flatMap((g, i) =>
-    g.between
-      .filter((id) => regionKind(d, id) === undefined)
-      .map((id) => ({
-        code: "not-neighbours" as const,
-        index,
-        field: `gaps[${i}].between`,
-        found: id,
-        facts: { between: g.between },
-      })),
-  );
 }
 
 /** Note rules (specs/decisions, "Notes as callouts or footnotes"): a note is about a node, a group or an edge that exists, one note each. */
@@ -730,7 +718,7 @@ export function validateDiagram(raw: unknown): Diagram | OpError[] {
         code: "bad-file",
         index: 0,
         found: show(raw),
-        facts: { allowed: ["grafical", "title", "density", "layers", "edges"] },
+        facts: { allowed: ["grafical", "title", "layers", "edges"] },
       },
     ];
   }

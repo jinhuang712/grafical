@@ -39,7 +39,6 @@ function diagramOf(scene: Scene): Diagram {
   return {
     grafical: 1,
     title: "T",
-    density: "normal",
     layers: [
       {
         id: "l",
@@ -72,7 +71,7 @@ describe("a clean scene", () => {
     const s = scene(
       [node("a", 40, 40), node("b", 40, 200), node("c", 240, 200)],
       [
-        edge("a->b", "a", "b", [
+        edge("a-b", "a", "b", [
           [100, 88],
           [100, 200],
         ]),
@@ -104,11 +103,7 @@ describe("overflow", () => {
     expect(d[0]).toMatchObject({ field: "label" });
     const [over] = d;
     if (over === undefined) throw new Error("no defect");
-    expect(defectBlock(over, new Map([["a", "node"]])).next).toEqual([
-      "node --label",
-      "node --size",
-      "node --sublabel",
-    ]);
+    expect(defectBlock(over, new Map([["a", "node"]])).next).toEqual(["node --set"]);
   });
 
   it("fails a label with 3 lines, and a sublabel with 2", () => {
@@ -163,39 +158,39 @@ describe("node-overlap", () => {
 describe("edge-through-node", () => {
   const nodes = [node("a", 40, 40), node("b", 40, 280), node("mid", 40, 140)];
   it("passes a route beside the node, and one that grazes a port", () => {
-    const e = edge("a->b", "a", "b", [
+    const e = edge("a-b", "a", "b", [
       [40, 88],
       [20, 88],
       [20, 304],
       [40, 304],
     ]);
     expect(codes(run(scene(nodes, [e])))).toEqual([]);
-    const graze = edge("a->b", "a", "b", [
+    const graze = edge("a-b", "a", "b", [
       [100, 88],
       [100, 140 + 3],
     ]);
     expect(codes(run(scene(nodes, [graze])))).toEqual([]);
   });
   it("fails a route straight through a third node", () => {
-    const e = edge("a->b", "a", "b", [
+    const e = edge("a-b", "a", "b", [
       [100, 88],
       [100, 280],
     ]);
     const d = run(scene(nodes, [e]));
     expect(codes(d)).toEqual(["edge-through-node"]);
-    expect(d[0]?.elements).toEqual(["a->b", "mid"]);
+    expect(d[0]?.elements).toEqual(["a-b", "mid"]);
   });
 });
 
 describe("label-collision", () => {
   const nodes = [node("a", 40, 40), node("b", 40, 240), node("c", 300, 40), node("d", 300, 240)];
   const e1 = (): SceneEdge =>
-    edge("a->b", "a", "b", [
+    edge("a-b", "a", "b", [
       [100, 88],
       [100, 240],
     ]);
   const e2 = (): SceneEdge =>
-    edge("c->d", "c", "d", [
+    edge("c-d", "c", "d", [
       [360, 88],
       [360, 240],
     ]);
@@ -211,7 +206,7 @@ describe("label-collision", () => {
     a.label = label(60, 60);
     const d = run(scene(nodes, [a, e2()]));
     expect(codes(d)).toEqual(["label-collision"]);
-    expect(d[0]?.elements).toEqual(["a->b", "a"]);
+    expect(d[0]?.elements).toEqual(["a-b", "a"]);
   });
   it("fails a label on another edge's run", () => {
     const a = e1();
@@ -219,7 +214,7 @@ describe("label-collision", () => {
     const d = run(scene(nodes, [a, e2()]));
     // The same fault is also a text crossing: the label is text.
     expect(codes(d)).toEqual(["label-collision", "text-crossing"]);
-    expect(d[0]?.elements).toEqual(["a->b", "c->d"]);
+    expect(d[0]?.elements).toEqual(["a-b", "c-d"]);
   });
   it("fails two labels that overlap", () => {
     const a = e1();
@@ -228,31 +223,31 @@ describe("label-collision", () => {
     b.label = label(190, 152);
     const d = run(scene(nodes, [a, b]));
     expect(codes(d)).toEqual(["label-collision"]);
-    expect(d[0]?.elements).toEqual(["a->b", "c->d"]);
+    expect(d[0]?.elements).toEqual(["a-b", "c-d"]);
   });
 });
 
 describe("edge-overlap", () => {
   const nodes = [node("a", 40, 40), node("b", 40, 240), node("c", 300, 40), node("d", 300, 240)];
   it("passes edges that cross, and edges that share an endpoint trunk", () => {
-    const x = edge("a->d", "a", "d", [
+    const x = edge("a-d", "a", "d", [
       [100, 88],
       [100, 160],
       [360, 160],
       [360, 240],
     ]);
-    const y = edge("c->b", "c", "b", [
+    const y = edge("c-b", "c", "b", [
       [360, 88],
       [360, 120],
       [80, 120],
       [80, 240],
     ]);
     expect(codes(run(scene(nodes, [x, y])))).toEqual([]);
-    const t1 = edge("a->b", "a", "b", [
+    const t1 = edge("a-b", "a", "b", [
       [100, 88],
       [100, 240],
     ]);
-    const t2 = edge("a->d", "a", "d", [
+    const t2 = edge("a-d", "a", "d", [
       [100, 88],
       [100, 160],
       [360, 160],
@@ -261,13 +256,13 @@ describe("edge-overlap", () => {
     expect(codes(run(scene(nodes, [t1, t2])))).toEqual([]);
   });
   it("fails two unrelated edges that run along one line", () => {
-    const x = edge("a->b", "a", "b", [
+    const x = edge("a-b", "a", "b", [
       [100, 88],
       [100, 150],
       [200, 150],
       [200, 240],
     ]);
-    const y = edge("c->d", "c", "d", [
+    const y = edge("c-d", "c", "d", [
       [360, 88],
       [360, 150],
       [150, 150],
@@ -279,13 +274,13 @@ describe("edge-overlap", () => {
   });
   it("passes a bundle: unlabelled edges of one kind from one node, sharing a trunk", () => {
     const withE = [...nodes, node("e", 172, 240)];
-    const toD = edge("a->d", "a", "d", [
+    const toD = edge("a-d", "a", "d", [
       [100, 88],
       [100, 150],
       [360, 150],
       [360, 240],
     ]);
-    const toE = edge("a->e", "a", "e", [
+    const toE = edge("a-e", "a", "e", [
       [100, 88],
       [100, 150],
       [260, 150],
@@ -296,13 +291,13 @@ describe("edge-overlap", () => {
     expect(codes(run(scene(withE, [toD, async])))).toEqual(["edge-overlap"]);
   });
   it("passes a shared stretch shorter than 8px", () => {
-    const x = edge("a->b", "a", "b", [
+    const x = edge("a-b", "a", "b", [
       [100, 88],
       [100, 150],
       [150, 150],
       [150, 240],
     ]);
-    const y = edge("c->d", "c", "d", [
+    const y = edge("c-d", "c", "d", [
       [360, 88],
       [360, 150],
       [143, 150],
@@ -324,7 +319,7 @@ describe("missing-glyph", () => {
     const s = scene(
       [node("a", 40, 40), node("b", 40, 200)],
       [
-        edge("a->b", "a", "b", [
+        edge("a-b", "a", "b", [
           [80, 88],
           [80, 200],
         ]),
@@ -344,14 +339,14 @@ describe("missing-glyph", () => {
     e.label = "☃";
     const found = check(d, s, withGlyphs);
     expect(found.map((f) => f.code)).toEqual(Array(5).fill("missing-glyph"));
-    expect(found.map((f) => f.elements[0])).toEqual(["a", "a", "a->b", "l", "title"]);
+    expect(found.map((f) => f.elements[0])).toEqual(["a", "a", "a-b", "l", "title"]);
     const kinds = kindsOf(d);
     expect(found.map((f) => defectBlock(f, kinds).next)).toEqual([
-      ["node --label", "node --sublabel", "node --mark"],
-      ["node --label", "node --sublabel", "node --mark"],
-      ["edge --label"],
-      ["layer --label"],
-      ["diagram --title"],
+      ["node --set", "mark --set"],
+      ["node --set", "mark --set"],
+      ["edge --set"],
+      ["layer --set"],
+      ["diagram --set"],
     ]);
   });
   it("fails a subtitle, note and group label with a missing glyph", () => {
@@ -364,9 +359,9 @@ describe("missing-glyph", () => {
     expect(found.map((f) => f.elements[0])).toEqual(["caption", "g", "subtitle"]);
     const kinds = kindsOf(d);
     expect(found.map((f) => defectBlock(f, kinds).next)).toEqual([
-      ["diagram --caption"],
-      ["group --label", "group --sublabel"],
-      ["diagram --subtitle"],
+      ["diagram --set"],
+      ["group --set"],
+      ["diagram --set"],
     ]);
   });
 });
@@ -393,7 +388,7 @@ describe("owner", () => {
 describe("text-crossing", () => {
   const nodes = [node("a", 40, 40), node("b", 40, 240)];
   const down = (x = 100): SceneEdge =>
-    edge("a->b", "a", "b", [
+    edge("a-b", "a", "b", [
       [x, 88],
       [x, 240],
     ]);
@@ -416,13 +411,13 @@ describe("text-crossing", () => {
     const d = run(withEdge(down(), { subtitle: cut }));
     expect(codes(d)).toEqual(["text-crossing"]);
     expect(d[0]?.owner).toBe("engine");
-    expect(d[0]?.elements).toEqual(["a->b", "subtitle"]);
+    expect(d[0]?.elements).toEqual(["a-b", "subtitle"]);
   });
 
   it("fails an edge through a node's text, the note and a legend label", () => {
     const through = (s: Scene): Defect[] => run(s);
     const nodeText = withEdge(
-      edge("a->b", "a", "b", [
+      edge("a-b", "a", "b", [
         [56, 60],
         [56, 240],
       ]),
@@ -452,14 +447,14 @@ describe("text-crossing", () => {
         },
       ],
     });
-    expect(through(legend).map((d) => d.elements.join("|"))).toEqual(["a->b|legend-0"]);
+    expect(through(legend).map((d) => d.elements.join("|"))).toEqual(["a-b|legend-0"]);
   });
 
   it("does not count an edge's own label, but does count another edge's", () => {
     const own = down();
     own.label = box("edge-label", 95, 140);
     expect(codes(run(withEdge(own)))).not.toContain("text-crossing");
-    const other = edge("c->d", "a", "b", [
+    const other = edge("c-d", "a", "b", [
       [110, 88],
       [110, 240],
     ]);
@@ -468,7 +463,7 @@ describe("text-crossing", () => {
       run(s)
         .filter((d) => d.code === "text-crossing")
         .map((d) => d.elements),
-    ).toEqual([["c->d", "a->b"]]);
+    ).toEqual([["c-d", "a-b"]]);
   });
 
   // No edge moves for a label no gutter of its path could hold (specs/decisions, "An edge never moves for its label").
@@ -476,13 +471,13 @@ describe("text-crossing", () => {
     const own = down();
     own.label = box("edge-label", 95, 140);
     own.blocked = ["top/bottom"];
-    const other = edge("c->d", "a", "b", [
+    const other = edge("c-d", "a", "b", [
       [110, 88],
       [110, 240],
     ]);
     const found = run(scene(nodes, [own, other]));
     expect(found.map((d) => [d.code, d.owner, ...d.elements])).toEqual([
-      ["label-blocked", "agent", "a->b", "c->d"],
+      ["label-blocked", "agent", "a-b", "c-d"],
     ]);
     expect(found[0]?.facts).toMatchObject({ is: "edge", gutters: ["top/bottom"] });
   });
@@ -503,7 +498,7 @@ describe("text-crossing", () => {
       });
     };
     expect(run(labelled(300)).map((d) => [d.code, ...d.elements])).toEqual([
-      ["text-crossing", "g", "a->b"],
+      ["text-crossing", "g", "a-b"],
     ]);
     expect(codes(run(labelled(200)))).toEqual([]);
   });
@@ -528,7 +523,7 @@ describe("text-crossing", () => {
       run(s)
         .filter((d) => d.code === "text-crossing")
         .map((d) => d.elements);
-    expect(crossings(labelled(300))).toEqual([["l", "a->b"]]);
+    expect(crossings(labelled(300))).toEqual([["l", "a-b"]]);
     expect(crossings(labelled(200))).toEqual([]);
   });
 });

@@ -1,10 +1,8 @@
 // The tests state a call by its parts, noun and verb and file; this puts them in the form a caller types.
 
-import { NOUNS, surfaceName } from "../../src/cli/surface.ts";
+import { FILE_COMMANDS, NOUNS, surfaceName } from "../../src/cli/surface.ts";
 
-const FILE_COMMANDS = ["new", "plug", "show", "diff", "check", "render", "view"];
-
-/** `node add a.yaml x` as `-f a.yaml node --add x`. */
+/** `node set a.grafical x` as `-f a.grafical node --set x`. */
 export function typed(args: readonly string[]): string[] {
   const [first, second, third, ...rest] = args;
   if (first === undefined) return [];

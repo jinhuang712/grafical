@@ -32,10 +32,10 @@ describe("file validation", () => {
     expect(e?.facts?.allowed).toEqual(["s", "m", "l"]);
   });
 
-  it("rejects an unknown density", () => {
-    const [e] = errorsOf(`${head}density: tight\n`);
-    expect(e).toMatchObject({ code: "bad-value", field: "density", found: "tight" });
-    expect(e?.facts?.allowed).toEqual(["compact", "normal", "airy"]);
+  it("rejects an unknown sizing", () => {
+    const [e] = errorsOf(`${head}sizing: tight\n`);
+    expect(e).toMatchObject({ code: "bad-value", field: "sizing", found: "tight" });
+    expect(e?.facts?.allowed).toEqual(["auto", "fixed"]);
   });
 
   it("rejects a bad id", () => {
@@ -104,7 +104,7 @@ describe("file validation", () => {
   it("allows edge ids with -> and a #n suffix", () => {
     const text = layers(
       "      - id: a1\n        label: A\n      - id: b1\n        label: B\n",
-      "edges:\n  - id: a1->b1#2\n    from: a1\n    to: b1\n",
+      "edges:\n  - id: a1-b1-2\n    from: a1\n    to: b1\n",
     );
     expect(Array.isArray(validateDiagram(parse(text)))).toBe(false);
   });

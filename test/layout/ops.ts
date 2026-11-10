@@ -103,8 +103,8 @@ export function randomEdges(d: Diagram, count: number, seed: number): Edge[] {
     const to = ids[Math.floor(next() * ids.length)];
     const kind = kinds[Math.floor(next() * kinds.length)] ?? "call";
     if (from === undefined || to === undefined) continue;
-    let id = `${from}->${to}`;
-    for (let k = 2; taken.has(id); k++) id = `${from}->${to}#${k}`;
+    let id = `${from}-${to}`;
+    for (let k = 2; taken.has(id); k++) id = `${from}-${to}-${k}`;
     taken.add(id);
     const edge: Edge = { id, from, to, kind };
     if (out.length % 2 === 0) edge.label = "new";

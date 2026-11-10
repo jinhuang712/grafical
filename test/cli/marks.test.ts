@@ -27,9 +27,9 @@ beforeAll(() => {
     ),
   );
   for (const args of [
-    ["new", "d.grafical", "--title", "Marks"],
-    ["layer", "add", "d.grafical", "top", "--label", "Services"],
-    ["node", "add", "d.grafical", "billing", "--layer", "top", "--label", "Billing"],
+    ["diagram", "set", "d.grafical", "--title", "Marks"],
+    ["layer", "set", "d.grafical", "top", "--label", "Services"],
+    ["node", "set", "d.grafical", "billing", "--layer", "top", "--label", "Billing"],
   ]) {
     run(...args);
   }
@@ -43,10 +43,14 @@ function run(...args: string[]) {
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 const read = (f: string) => readFileSync(join(dir, f), "utf8");
+/** --file for an .svg or .png, --text for the rest. */
+const as = (value: string) => (/\.(svg|png)$/.test(value) ? "--file" : "--text");
 const mark = (slot: string, value?: string) =>
-  run("node", "mark", "d.grafical", "billing", "--slot", slot, ...(value ? ["--mark", value] : []));
+  value === undefined
+    ? run("mark", "remove", "d.grafical", `billing:${slot}`)
+    : run("mark", "set", "d.grafical", `billing:${slot}`, as(value), value);
 
-describe("grafical node mark", () => {
+describe("grafical mark --set", () => {
   it("puts an emoji in a corner and draws it as an image, not as text", () => {
     expect(mark("top-left", "⚠️").code).toBe(0);
     expect(read("d.grafical")).toMatch(/slot: top-left\n\s+text: "⚠️"/);
@@ -100,13 +104,13 @@ describe("grafical node mark", () => {
     );
     const fresh = "e.grafical";
     for (const args of [
-      ["new", fresh, "--title", "E"],
-      ["layer", "add", fresh, "top", "--label", "L"],
-      ["node", "add", fresh, "n", "--layer", "top", "--label", "N"],
+      ["diagram", "set", fresh, "--title", "E"],
+      ["layer", "set", fresh, "top", "--label", "L"],
+      ["node", "set", fresh, "n", "--layer", "top", "--label", "N"],
     ]) {
       run(...args);
     }
-    const put = (v: string) => run("node", "mark", fresh, "n", "--slot", "top-left", "--mark", v);
+    const put = (v: string) => run("mark", "set", fresh, "n:top-left", as(v), v);
     expect(put("nope.svg").out).toContain("error: mark-file-not-found\n");
     expect(put("bad.svg").out).toContain("error: mark-file-unsafe\n");
     expect(put("ext.svg").out).toContain("error: mark-file-unsafe\n");
@@ -118,16 +122,16 @@ describe("grafical node mark", () => {
   it("refuses a text over 6 characters, and the left slot on a diamond", () => {
     const fresh = "f.grafical";
     for (const args of [
-      ["new", fresh, "--title", "F"],
-      ["layer", "add", fresh, "top", "--label", "L"],
-      ["node", "add", fresh, "q", "--layer", "top", "--label", "Q", "--type", "decision"],
+      ["diagram", "set", fresh, "--title", "F"],
+      ["layer", "set", fresh, "top", "--label", "L"],
+      ["node", "set", fresh, "q", "--layer", "top", "--label", "Q", "--type", "decision"],
     ]) {
       run(...args);
     }
-    expect(
-      run("node", "mark", fresh, "q", "--slot", "top-left", "--mark", "TOOLONG").out,
-    ).toContain("error: mark-too-long\n");
-    expect(run("node", "mark", fresh, "q", "--slot", "left", "--mark", "!").out).toContain(
+    expect(run("mark", "set", fresh, "q:top-left", "--text", "TOOLONG").out).toContain(
+      "error: mark-too-long\n",
+    );
+    expect(run("mark", "set", fresh, "q:left", "--text", "!").out).toContain(
       "allowed: top-left, top-right, bottom-left, bottom-right\n",
     );
   });
@@ -135,18 +139,14 @@ describe("grafical node mark", () => {
   it("draws a text mark on the background it is given, with text that reads on it", () => {
     const f = "g.grafical";
     for (const args of [
-      ["new", f, "--title", "G"],
-      ["layer", "add", f, "top", "--label", "L"],
-      ["node", "add", f, "n", "--layer", "top", "--label", "N"],
+      ["diagram", "set", f, "--title", "G"],
+      ["layer", "set", f, "top", "--label", "L"],
+      ["node", "set", f, "n", "--layer", "top", "--label", "N"],
     ]) {
       run(...args);
     }
-    expect(
-      run("node", "mark", f, "n", "--slot", "top-left", "--mark", "P0", "--bg", "red").code,
-    ).toBe(0);
-    expect(
-      run("node", "mark", f, "n", "--slot", "top-right", "--mark", "NEW", "--bg", "#f5c542").code,
-    ).toBe(0);
+    expect(run("mark", "set", f, "n:top-left", "--text", "P0", "--bg", "red").code).toBe(0);
+    expect(run("mark", "set", f, "n:top-right", "--text", "NEW", "--bg", "#f5c542").code).toBe(0);
     expect(run("show", f).out).toContain("mark.top-left.bg=#d1242f");
     run("render", f, "--svg", "g.svg");
     const svg = read("g.svg");
@@ -155,25 +155,29 @@ describe("grafical node mark", () => {
     // Light text on the red badge, dark text on the yellow one.
     expect(svg).toMatch(/fill="#ffffff"[^>]*>P0</);
     expect(svg).toMatch(/fill="#1f2328"[^>]*>NEW</);
-    expect(
-      run("node", "mark", f, "n", "--slot", "left", "--mark", "⚠️", "--bg", "red").out,
-    ).toContain("error: mark-style-on-picture\n");
-    expect(
-      run("node", "mark", f, "n", "--slot", "left", "--mark", "P1", "--bg", "pink").out,
-    ).toContain("allowed: red, amber, green, blue, purple, gray, dark, #rrggbb\n");
+    expect(run("mark", "set", f, "n:left", "--text", "⚠️", "--bg", "red").out).toContain(
+      "error: mark-style-on-picture\n",
+    );
+    expect(run("mark", "set", f, "n:left", "--text", "P1", "--bg", "pink").out).toContain(
+      "allowed: red, amber, green, blue, purple, gray, dark, #rrggbb\n",
+    );
+    // A mark set again keeps what it does not name: only its background changes.
+    expect(run("mark", "set", f, "n:top-left", "--bg", "blue").code).toBe(0);
+    expect(run("show", f).out).toContain("mark.top-left.bg=#0969da");
+    expect(run("show", f).out).toContain('mark.top-left="P0"');
   });
 
   it("draws the border, shape, text color and size a text mark is given", () => {
     const f = "h.grafical";
     for (const args of [
-      ["new", f, "--title", "H"],
-      ["layer", "add", f, "top", "--label", "L"],
-      ["node", "add", f, "n", "--layer", "top", "--label", "N", "--size", "l"],
+      ["diagram", "set", f, "--title", "H"],
+      ["layer", "set", f, "top", "--label", "L"],
+      ["node", "set", f, "n", "--layer", "top", "--label", "N", "--size", "l"],
     ]) {
       run(...args);
     }
-    const put = (slot: string, ...rest: string[]) =>
-      run("node", "mark", f, "n", "--slot", slot, "--mark", ...rest);
+    const put = (slot: string, text: string, ...rest: string[]) =>
+      run("mark", "set", f, `n:${slot}`, "--text", text, ...rest);
     expect(
       put("top-left", "P0", "--bg", "#fff3bf", "--border", "#bf8700", "--shape", "pill").code,
     ).toBe(0);
@@ -195,18 +199,18 @@ describe("grafical node mark", () => {
 
   it("refuses a style on an emoji, and a shape that does not exist", () => {
     const f = "h.grafical";
-    expect(
-      run("node", "mark", f, "n", "--slot", "left", "--mark", "⚠️", "--fg", "red").out,
-    ).toContain("error: mark-style-on-picture\n");
-    expect(
-      run("node", "mark", f, "n", "--slot", "left", "--mark", "P0", "--shape", "star").out,
-    ).toContain("allowed: square, rounded, pill\n");
-    expect(
-      run("node", "mark", f, "n", "--slot", "left", "--mark", "P0", "--size", "xl").out,
-    ).toContain("allowed: s, m, l\n");
+    expect(run("mark", "set", f, "n:left", "--text", "⚠️", "--fg", "red").out).toContain(
+      "error: mark-style-on-picture\n",
+    );
+    expect(run("mark", "set", f, "n:left", "--text", "P0", "--shape", "star").out).toContain(
+      "allowed: square, rounded, pill\n",
+    );
+    expect(run("mark", "set", f, "n:left", "--text", "P0", "--size", "xl").out).toContain(
+      "allowed: s, m, l\n",
+    );
   });
 
-  it("clears a slot without --mark", () => {
+  it("mark --remove clears a slot", () => {
     expect(mark("top-left").code).toBe(0);
     expect(read("d.grafical")).not.toContain("top-left");
   });

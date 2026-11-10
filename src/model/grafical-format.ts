@@ -62,8 +62,8 @@ export function writeGrafical(d: Diagram): string {
       ["title", quote(d.title)],
       ["subtitle", opt(d.subtitle, quote)],
       ["caption", opt(d.caption, quote)],
-      ["style", opt(d.style, quote)],
-      ["density", d.density],
+      ["stylesheet", opt(d.stylesheet, quote)],
+      ["style", marks(d.style)],
       ["lines", d.lines],
       ["title-at", d.titleAt === undefined ? undefined : String(d.titleAt.at)],
       ["title-side", d.titleAt?.side],
@@ -89,6 +89,12 @@ export function writeGrafical(d: Diagram): string {
         ["border", s.border],
         ["border-width", num(s.borderWidth)],
         ["color", s.color],
+        ["margin-top", num(s.marginTop)],
+        ["margin-right", num(s.marginRight)],
+        ["margin-bottom", num(s.marginBottom)],
+        ["margin-left", num(s.marginLeft)],
+        ["row-gap", num(s.rowGap)],
+        ["column-gap", num(s.columnGap)],
       ]),
     );
   }
@@ -97,6 +103,7 @@ export function writeGrafical(d: Diagram): string {
       block("layer", l.id, [
         ["lane", opt(l.lane)],
         ["look", l.look],
+        ["style", marks(l.style)],
       ]),
     );
   }
@@ -115,7 +122,7 @@ export function writeGrafical(d: Diagram): string {
         ["style", marks(l.style)],
       ]),
     );
-  for (const c of d.columns ?? []) blocks.push(block("column", c.id, []));
+  for (const c of d.columns ?? []) blocks.push(block("column", c.id, [["style", marks(c.style)]]));
   for (const w of d.walls ?? []) {
     blocks.push(
       block("wall", w.id, [
@@ -144,15 +151,6 @@ export function writeGrafical(d: Diagram): string {
       ]),
     );
   }
-  (d.gaps ?? []).forEach((g, i) => {
-    blocks.push(
-      block("gap", `gap-${i + 1}`, [
-        ["between", ref(g.between[0])],
-        ["and", ref(g.between[1])],
-        ["magnified", String(g.magnified)],
-      ]),
-    );
-  });
   const nodes = [
     ...d.layers.flatMap((l) => l.nodes.map((n) => ({ n, layer: l.id as string | undefined }))),
     ...(d.nodes ?? []).map((n) => ({ n, layer: undefined })),
@@ -295,20 +293,26 @@ export interface Block {
 
 /** The attributes each sort may hold: anything else is refused (DESIGNS.md, "What grafical cannot fully read, it refuses"). */
 const ATTRS: Record<string, readonly string[]> = {
-  diagram: ["format", "title", "subtitle", "caption", "style", "density", "lines"].concat([
+  diagram: ["format", "title", "subtitle", "caption", "stylesheet", "style", "lines"].concat([
     "title-at",
     "title-side",
     "sizing",
   ]),
   type: ["base", "shape", "fill", "border", "border-width", "color"],
-  style: ["fill", "border", "border-width", "color"],
-  layer: ["lane", "look"],
+  style: ["fill", "border", "border-width", "color"].concat([
+    "margin-top",
+    "margin-right",
+    "margin-bottom",
+    "margin-left",
+    "row-gap",
+    "column-gap",
+  ]),
+  layer: ["lane", "look", "style"],
   group: ["in", "like", "style"],
   lane: ["like", "style"],
-  column: [],
+  column: ["style"],
   wall: ["between", "and", "allow"],
   order: ["of", "axis", "items"],
-  gap: ["between", "and", "magnified"],
   node: [
     "type",
     "text",
@@ -447,7 +451,6 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     "column",
     "wall",
     "order",
-    "gap",
     "node",
     "edge",
     "label",
@@ -485,13 +488,13 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       title: "title",
       subtitle: "subtitle",
       caption: "caption",
-      style: "style",
-      density: "density",
+      stylesheet: "stylesheet",
       lines: "lines",
       sizing: "sizing",
     },
     out,
   );
+  styles(root, out);
 
   const labels = new Map(of("label").map((b) => [value(b.attrs.get("on") as string) as string, b]));
   const named = (id: string, o: Record<string, unknown>) => {
@@ -575,7 +578,10 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   out.layers = ids.map((id) => {
     const b = layerBlocks.get(id);
     const o: Record<string, unknown> = { id };
-    if (b !== undefined) take(b, { lane: "lane", look: "look" }, o);
+    if (b !== undefined) {
+      take(b, { lane: "lane", look: "look" }, o);
+      styles(b, o);
+    }
     named(id, o);
     along(id, o);
     o.nodes = (orders.get(id) ?? []).map((n) => {
@@ -624,7 +630,11 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     along(b.id as string, o);
     return o;
   });
-  out.columns = of("column").map((b) => ({ id: b.id }));
+  out.columns = of("column").map((b) => {
+    const o: Record<string, unknown> = { id: b.id };
+    styles(b, o);
+    return o;
+  });
   out.walls = of("wall").map((b) => {
     const o: Record<string, unknown> = {
       id: b.id,
@@ -636,10 +646,6 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     named(b.id as string, o);
     return o;
   });
-  out.gaps = of("gap").map((b) => ({
-    between: [value(b.attrs.get("between") as string), value(b.attrs.get("and") as string)],
-    magnified: value(b.attrs.get("magnified") as string),
-  }));
   out.notes = of("note").map((b) => {
     const o: Record<string, unknown> = {};
     take(b, { on: "on", text: "text", footnote: "footnote", align: "labelAlign" }, o);
@@ -698,7 +704,22 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   });
   out.styles = of("style").map((b) => {
     const o: Record<string, unknown> = { id: b.id };
-    take(b, { fill: "fill", border: "border", "border-width": "borderWidth", color: "color" }, o);
+    take(
+      b,
+      {
+        fill: "fill",
+        border: "border",
+        "border-width": "borderWidth",
+        color: "color",
+        "margin-top": "marginTop",
+        "margin-right": "marginRight",
+        "margin-bottom": "marginBottom",
+        "margin-left": "marginLeft",
+        "row-gap": "rowGap",
+        "column-gap": "columnGap",
+      },
+      o,
+    );
     return o;
   });
   const legend = of("legend")[0];

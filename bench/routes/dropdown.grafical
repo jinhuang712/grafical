@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "dropdown"
-  density: normal
 }
 
 <layer> r0 {
@@ -49,19 +48,19 @@
   down: 1
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call

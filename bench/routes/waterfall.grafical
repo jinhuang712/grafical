@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "waterfall"
-  density: normal
 }
 
 <layer> r0 {
@@ -59,25 +58,25 @@
   right: 1
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> b->c {
+<edge> b-c {
   from: @b
   to: @c
   type: @call
 }
 
-<edge> c->d {
+<edge> c-d {
   from: @c
   to: @d
   type: @call
 }
 
-<edge> d->e {
+<edge> d-e {
   from: @d
   to: @e
   type: @call

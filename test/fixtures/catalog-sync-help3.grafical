@@ -3,7 +3,6 @@
   title: "catalog-sync and catalog-api"
   subtitle: "Two Go services, coupled only by the shared MongoDB."
   caption: "Not shown: the full-load trigger (unknown), production database names, whether production runs a separate relay pod (unknown), and the full list of catalog-api callers."
-  density: normal
 }
 
 <layer> row-callers {
@@ -206,103 +205,103 @@
   emphasis: true
 }
 
-<edge> pub->upstream {
+<edge> pub-upstream {
   from: @pub
   to: @upstream
   type: @async
 }
 
-<edge> upstream->relay {
+<edge> upstream-relay {
   from: @upstream
   to: @relay
   type: @async
 }
 
-<edge> relay->goods-topics {
+<edge> relay-goods-topics {
   from: @relay
   to: @goods-topics
   type: @async
 }
 
-<edge> goods-topics->sync {
+<edge> goods-topics-sync {
   from: @goods-topics
   to: @sync
   type: @async
 }
 
-<edge> sync->retry-topic {
+<edge> sync-retry-topic {
   from: @sync
   to: @retry-topic
   type: @async
 }
 
-<edge> retry-topic->sync {
+<edge> retry-topic-sync {
   from: @retry-topic
   to: @sync
   type: @async
 }
 
-<edge> sync->mongo {
+<edge> sync-mongo {
   from: @sync
   to: @mongo
   type: @call
 }
 
-<edge> sync->pg {
+<edge> sync-pg {
   from: @sync
   to: @pg
   type: @call
 }
 
-<edge> sync->redis {
+<edge> sync-redis {
   from: @sync
   to: @redis
   type: @call
 }
 
-<edge> sync->geo {
+<edge> sync-geo {
   from: @sync
   to: @geo
   type: @call
 }
 
-<edge> sync->i18n {
+<edge> sync-i18n {
   from: @sync
   to: @i18n
   type: @call
 }
 
-<edge> sync->auth {
+<edge> sync-auth {
   from: @sync
   to: @auth
   type: @call
 }
 
-<edge> ops->sync {
+<edge> ops-sync {
   from: @ops
   to: @sync
   type: @call
 }
 
-<edge> readers->api {
+<edge> readers-api {
   from: @readers
   to: @api
   type: @call
 }
 
-<edge> api->mongo {
+<edge> api-mongo {
   from: @api
   to: @mongo
   type: @call
 }
 
-<edge> api->campaign {
+<edge> api-campaign {
   from: @api
   to: @campaign
   type: @call
 }
 
-<edge> api->i18n {
+<edge> api-i18n {
   from: @api
   to: @i18n
   type: @call
@@ -344,88 +343,88 @@
   sublabel: "Catalog team, Go"
 }
 
-<label> pub->upstream-label {
-  on: @pub->upstream
+<label> pub-upstream-label {
+  on: @pub-upstream
   text: "publish"
 }
 
-<label> upstream->relay-label {
-  on: @upstream->relay
+<label> upstream-relay-label {
+  on: @upstream-relay
   text: "consume"
 }
 
-<label> relay->goods-topics-label {
-  on: @relay->goods-topics
+<label> relay-goods-topics-label {
+  on: @relay-goods-topics
   text: "produce"
 }
 
-<label> goods-topics->sync-label {
-  on: @goods-topics->sync
+<label> goods-topics-sync-label {
+  on: @goods-topics-sync
   text: "consume"
 }
 
-<label> sync->retry-topic-label {
-  on: @sync->retry-topic
+<label> sync-retry-topic-label {
+  on: @sync-retry-topic
   text: "failed"
 }
 
-<label> retry-topic->sync-label {
-  on: @retry-topic->sync
+<label> retry-topic-sync-label {
+  on: @retry-topic-sync
   text: "retry"
 }
 
-<label> sync->mongo-label {
-  on: @sync->mongo
+<label> sync-mongo-label {
+  on: @sync-mongo
   text: "persist"
 }
 
-<label> sync->pg-label {
-  on: @sync->pg
+<label> sync-pg-label {
+  on: @sync-pg
   text: "read"
 }
 
-<label> sync->redis-label {
-  on: @sync->redis
+<label> sync-redis-label {
+  on: @sync-redis
   text: "cache"
 }
 
-<label> sync->geo-label {
-  on: @sync->geo
+<label> sync-geo-label {
+  on: @sync-geo
   text: "HTTP GET"
 }
 
-<label> sync->i18n-label {
-  on: @sync->i18n
+<label> sync-i18n-label {
+  on: @sync-i18n
   text: "HTTP GET"
 }
 
-<label> sync->auth-label {
-  on: @sync->auth
+<label> sync-auth-label {
+  on: @sync-auth
   text: "auth check"
 }
 
-<label> ops->sync-label {
-  on: @ops->sync
+<label> ops-sync-label {
+  on: @ops-sync
   text: "admin HTTP"
 }
 
-<label> readers->api-label {
-  on: @readers->api
+<label> readers-api-label {
+  on: @readers-api
   text: "read"
 }
 
-<label> api->mongo-label {
-  on: @api->mongo
+<label> api-mongo-label {
+  on: @api-mongo
   text: "read"
 }
 
-<label> api->campaign-label {
-  on: @api->campaign
+<label> api-campaign-label {
+  on: @api-campaign
   text: "tags"
 }
 
-<label> api->i18n-label {
-  on: @api->i18n
+<label> api-i18n-label {
+  on: @api-i18n
   text: "campaign text"
 }
 

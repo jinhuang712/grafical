@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "return-line"
-  density: normal
 }
 
 <layer> r0 {
@@ -61,19 +60,19 @@
   layer: @r2
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> b->c {
+<edge> b-c {
   from: @b
   to: @c
   type: @call
 }
 
-<edge> c->a {
+<edge> c-a {
   from: @c
   to: @a
   type: @call

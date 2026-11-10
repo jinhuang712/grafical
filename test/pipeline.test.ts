@@ -5,12 +5,11 @@ import { createStubMeasurer } from "../src/text/index.ts";
 const tiny: Diagram = {
   grafical: 1,
   title: "Tiny",
-  density: "normal",
   layers: [
     { id: "top", label: "Top", nodes: [{ id: "a", label: "A", kind: "service", size: "m" }] },
     { id: "bottom", label: "Bottom", nodes: [{ id: "b", label: "B", kind: "store", size: "m" }] },
   ],
-  edges: [{ id: "a->b", from: "a", to: "b", kind: "call" }],
+  edges: [{ id: "a-b", from: "a", to: "b", kind: "call" }],
 };
 
 describe("pipeline", () => {

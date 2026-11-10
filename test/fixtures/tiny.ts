@@ -6,7 +6,6 @@ import { e, n } from "./build.ts";
 export const tiny: Diagram = {
   grafical: 1,
   title: "Tiny",
-  density: "normal",
   layers: [
     { id: "callers", label: "Callers", nodes: [n("web", "web app", "actor", "m")] },
     {

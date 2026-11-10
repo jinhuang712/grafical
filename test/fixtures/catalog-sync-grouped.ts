@@ -13,7 +13,6 @@ export const catalogSyncGrouped: Diagram = {
   title: "catalog-sync and catalog-api",
   subtitle: "Two Go services coupled only by the shared MongoDB catalog database.",
   caption: "Not shown: the retry runner and its DLQ, full-load jobs, Redis and auth-svc.",
-  density: "normal",
   layers: [
     {
       id: "sources",

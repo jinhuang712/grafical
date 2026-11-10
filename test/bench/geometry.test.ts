@@ -85,7 +85,7 @@ describe('the separate geometry check (GOALS.md, "Mechanical defects")', () => {
       ["dense", dense],
       ["lanes-rows", lanesLayers],
       ["lanes-columns", lanesColumns],
-      ["dark", { ...catalogSyncGrouped, style: "dark" }],
+      ["dark", { ...catalogSyncGrouped, stylesheet: "dark" }],
       ["edge-looks", edgeLooks],
       ["flowchart", flowchart],
       ["state-machine", stateMachine],

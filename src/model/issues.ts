@@ -2,12 +2,11 @@
 
 import type { z } from "zod";
 import type { Facts, OpError } from "../errors.ts";
-import { edgeStyle, WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
+import { WEIGHT_MAX, WEIGHT_MIN } from "../theme/paint.ts";
 import { closest, editDistance } from "./suggest.ts";
-import { EDGE_KINDS, type EdgeKind, STEP_NUMBER_MAX } from "./types.ts";
+import { STEP_NUMBER_MAX } from "./types.ts";
 
 export const ID_NODE = "ID_NODE";
-export const ID_EDGE = "ID_EDGE";
 /** A group copy's suffix: the characters of an id, and it may start with any of them. */
 export const ID_SUFFIX = "ID_SUFFIX";
 /** An edge weight that is neither a level name nor a width within the limits (specs/decisions, "Edge weights"). */
@@ -15,20 +14,17 @@ export const WEIGHT = "WEIGHT";
 /** A step number that is not a whole number within the limits (specs/decisions, "Step badges ride the edge"). */
 export const STEP_NUMBER = "STEP_NUMBER";
 
-/** The characters an id may hold; an edge's id may also hold -> and #<n>. */
+/** The characters an id may hold. */
 const ID_CHARS = ["a-z", "0-9", ".", "_", "-"];
-const EDGE_ID_CHARS = [...ID_CHARS, "->", "#<n>"];
 
 /** The id an agent most likely meant: lowercase, with other characters as hyphens. A suffix keeps its hyphens at the ends. */
-function likelyId(v: unknown, edge: boolean, suffix = false): string[] {
+function likelyId(v: unknown, suffix = false): string[] {
   if (typeof v !== "string") return [];
-  const parts = edge ? v.split("->") : [v];
-  const id = parts
-    .map((p) => {
-      const lower = p.toLowerCase().replace(/[^a-z0-9._#-]+/g, "-");
-      return suffix ? lower.replace(/#/g, "-") : lower.replace(/^-+|-+$/g, "");
-    })
-    .join("->");
+  const lower = v
+    .toLowerCase()
+    .replace(/->/g, "-")
+    .replace(/[^a-z0-9._-]+/g, "-");
+  const id = suffix ? lower : lower.replace(/^-+|-+$/g, "");
   return id === "" || id === v ? [] : [id];
 }
 
@@ -71,6 +67,7 @@ export function issuesToErrors(
   raw: unknown,
   index: number,
   leaf = false,
+  known: Record<string, string[]> = OP_KEYS,
 ): OpError[] {
   const out: OpError[] = [];
   for (const issue of issues) {
@@ -84,7 +81,7 @@ export function issuesToErrors(
     const found = getPath(raw, path);
     if (issue.code === "unrecognized_keys") {
       const keys = (issue as { keys: string[] }).keys;
-      const known = knownKeys(raw, path);
+      const fields = knownKeys(raw, path, known);
       for (const key of keys) {
         out.push({
           code: "unknown-field",
@@ -92,19 +89,17 @@ export function issuesToErrors(
           field: leaf ? key : fieldName([...path, key]),
           found: key,
           facts: {
-            allowed: known,
-            likely: closest(key, known, 2),
+            allowed: fields,
+            likely: closest(key, fields, 2),
           },
         });
       }
     } else if (issue.code === "invalid_value") {
       const values = ((issue as { values?: unknown[] }).values ?? []).map(String);
       const facts =
-        field === "style" && leaf
-          ? legendStyle(found, values)
-          : field === "kind" || field?.endsWith(".kind")
-            ? guessedKind(raw, path, found, values)
-            : { allowed: values };
+        field === "kind" || field?.endsWith(".kind")
+          ? guessedKind(raw, path, found, values)
+          : { allowed: values };
       out.push({
         code: "bad-value",
         index,
@@ -112,32 +107,26 @@ export function issuesToErrors(
         found: show(found),
         facts: facts.likely === undefined ? { ...facts, ...nearValue(found, values) } : facts,
       });
-    } else if (
-      issue.message === ID_NODE ||
-      issue.message === ID_EDGE ||
-      issue.message === ID_SUFFIX
-    ) {
-      const edge = issue.message === ID_EDGE;
+    } else if (issue.message === ID_NODE || issue.message === ID_SUFFIX) {
       out.push({
         code: "bad-id",
         index,
         ...base,
         found: show(found),
         facts: {
-          allowed: edge ? EDGE_ID_CHARS : ID_CHARS,
-          likely: likelyId(found, edge, issue.message === ID_SUFFIX),
+          allowed: ID_CHARS,
+          likely: likelyId(found, issue.message === ID_SUFFIX),
         },
       });
     } else if (issue.message === WEIGHT) {
       // The stylesheet's own levels are checked once it is read; these are the built-in ones.
-      const legend = leaf && getPath(raw, ["op"]) === "diagram.legend";
       out.push({
         code: "bad-value",
         index,
         ...base,
         found: show(found),
         facts: {
-          allowed: legend ? ["thick", "heavy"] : ["thin", "thick", "heavy"],
+          allowed: ["thin", "thick", "heavy"],
           min: WEIGHT_MIN,
           max: WEIGHT_MAX,
         },
@@ -251,25 +240,18 @@ function guessedKind(
   return { allowed: values, likely: typeof guess === "string" ? [guess] : guess };
 }
 
-/**
- * A legend's style given as an edge kind, or with its wording: the legend names how edges
- * look, so say which look the kind is drawn in, or where the wording goes.
- */
-function legendStyle(found: unknown, values: string[]): Facts {
-  if (typeof found === "string" && (EDGE_KINDS as readonly string[]).includes(found)) {
-    return { allowed: values, likely: [edgeStyle(found as EdgeKind)] };
-  }
-  return { allowed: values };
-}
-
 // The set of known keys of the object at `path`, found by its shape.
-function knownKeys(raw: unknown, path: readonly PropertyKey[]): string[] {
+function knownKeys(
+  raw: unknown,
+  path: readonly PropertyKey[],
+  keys: Record<string, string[]>,
+): string[] {
   const last = path[path.length - 1];
   const parent = path[path.length - 2];
   const op = (raw as { op?: unknown } | null)?.op;
-  if (path.length === 0 && typeof op === "string") return OP_KEYS[op] ?? [];
+  if (path.length === 0 && typeof op === "string") return keys[op] ?? [];
   if (path.length === 0)
-    return ["grafical", "title", "subtitle", "note", "density", "layers", "groups", "edges"];
+    return ["grafical", "title", "subtitle", "note", "layers", "groups", "edges"];
   if (parent === "nodes")
     return ["id", "label", "kind", "sublabel", "size", "emphasis", "align", "group", "marks"];
   if (last === undefined || typeof last === "number") {
@@ -277,7 +259,7 @@ function knownKeys(raw: unknown, path: readonly PropertyKey[]): string[] {
     if (parent === "layers") return ["id", "label", "nodes"];
     if (parent === "edges") return ["id", "from", "to", "kind", "label"];
   }
-  return typeof op === "string" ? (OP_KEYS[op] ?? []) : [];
+  return typeof op === "string" ? (keys[op] ?? []) : [];
 }
 
 // Filled in by ops.ts, so that an unknown field in an operation lists the right fields.

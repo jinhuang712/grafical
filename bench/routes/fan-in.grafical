@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "fan-in"
-  density: normal
 }
 
 <layer> r0 {
@@ -65,25 +64,25 @@
   layer: @r1
 }
 
-<edge> a->e {
+<edge> a-e {
   from: @a
   to: @e
   type: @call
 }
 
-<edge> b->e {
+<edge> b-e {
   from: @b
   to: @e
   type: @call
 }
 
-<edge> c->e {
+<edge> c-e {
   from: @c
   to: @e
   type: @call
 }
 
-<edge> d->e {
+<edge> d-e {
   from: @d
   to: @e
   type: @call

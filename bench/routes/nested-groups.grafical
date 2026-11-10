@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "nested-groups"
-  density: normal
 }
 
 <layer> r0 {
@@ -103,37 +102,37 @@
   layer: @r3
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call
 }
 
-<edge> c->e {
+<edge> c-e {
   from: @c
   to: @e
   type: @call
 }
 
-<edge> e->f {
+<edge> e-f {
   from: @e
   to: @f
   type: @call
 }
 
-<edge> d->f {
+<edge> d-f {
   from: @d
   to: @f
   type: @call

@@ -27,14 +27,13 @@ function diagram(store: DiagramNode, low: DiagramNode[] = []): Diagram {
   const d: Diagram = {
     grafical: 1,
     title: "T",
-    density: "normal",
     layers: [
       { id: "top", label: "Top", nodes: [makeNode("a"), makeNode("b")] },
       { id: "low", label: "Low", nodes: low },
     ],
     edges: [
-      { id: "a->db", from: "a", to: "db", kind: "call" },
-      { id: "b->db", from: "b", to: "db", kind: "call" },
+      { id: "a-db", from: "a", to: "db", kind: "call" },
+      { id: "b-db", from: "b", to: "db", kind: "call" },
     ],
   };
   if (store.from !== undefined) d.nodes = [store];
@@ -61,8 +60,8 @@ describe('a node beside every node it connects to (specs/decisions, "A node besi
     // db last in a layer where p and q sit under a and b: right of both of its users.
     const last = diagram(makeNode("db", { kind: "store" }), [makeNode("p"), makeNode("q")]);
     last.edges.push(
-      { id: "a->p", from: "a", to: "p", kind: "call" },
-      { id: "b->q", from: "b", to: "q", kind: "call" },
+      { id: "a-p", from: "a", to: "p", kind: "call" },
+      { id: "b-q", from: "b", to: "q", kind: "call" },
     );
     const between: Diagram = structuredClone(last);
     (between.layers[1] as Layer).nodes = [

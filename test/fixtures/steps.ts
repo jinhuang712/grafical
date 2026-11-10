@@ -15,7 +15,6 @@ export const steps: Diagram = {
   grafical: 1,
   title: "Checkout request",
   subtitle: "One order, from the shopper's click to the saved order.",
-  density: "normal",
   layers: [
     { id: "row-users", label: "Users", nodes: [n("shopper", "shopper", "actor", "m")] },
     { id: "row-entry", label: "Entry", nodes: [n("gateway", "API gateway", "service", "m")] },

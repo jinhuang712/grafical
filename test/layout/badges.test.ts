@@ -73,8 +73,8 @@ describe('step badges (specs/decisions, "Step badges ride the edge")', () => {
 
   it("finds a badge moved onto another edge, a node and a label as step-collision, owned by the engine", () => {
     const scene = layout(steps, m);
-    const a = scene.edges.find((e) => e.id === "gateway->checkout") as SceneEdge;
-    const b = scene.edges.find((e) => e.id === "checkout->payments") as SceneEdge;
+    const a = scene.edges.find((e) => e.id === "gateway-checkout") as SceneEdge;
+    const b = scene.edges.find((e) => e.id === "checkout-payments") as SceneEdge;
     const checkoutNode = scene.nodes.find((n) => n.id === "checkout");
     if (a.step === undefined || b.label === undefined || checkoutNode === undefined)
       throw new Error("fixture");

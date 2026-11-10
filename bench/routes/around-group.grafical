@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "around-group"
-  density: normal
 }
 
 <layer> r0 {
@@ -73,19 +72,19 @@
   layer: @r2
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> b->c {
+<edge> b-c {
   from: @b
   to: @c
   type: @call

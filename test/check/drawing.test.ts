@@ -17,7 +17,6 @@ beforeAll(async () => {
 const crossed: Diagram = {
   grafical: 1,
   title: "Crossed",
-  density: "normal",
   layers: [
     {
       id: "top",
@@ -37,7 +36,6 @@ const crossed: Diagram = {
 const skipping: Diagram = {
   grafical: 1,
   title: "Skipping",
-  density: "normal",
   layers: [
     { id: "top", label: "Top", nodes: [n("a", "A", "service", "m")] },
     {
@@ -61,11 +59,11 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       "b2 bottom 2/2",
     ]);
     expect(dr.nodes.find((b) => b.id === "a1")?.sides).toEqual({ bottom: 1 });
-    const drawnEdge = dr.edges.find((l) => l.id === "a1->b2");
+    const drawnEdge = dr.edges.find((l) => l.id === "a1-b2");
     expect(drawnEdge).toMatchObject({
       leaves: "bottom",
       enters: "top",
-      crosses: ["a2->b1"],
+      crosses: ["a2-b1"],
       passes: [],
     });
   });
@@ -73,7 +71,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
   it("counts the edges at a node, and names a layer an edge passes without meeting it", () => {
     const dr = drawing(skipping, layout(skipping, m));
     expect(dr.counts.busiest).toEqual({ id: "a", edges: 3 });
-    // A drawn picture where a->z runs down through the middle layer, between m1 and m2.
+    // A drawn picture where a-z runs down through the middle layer, between m1 and m2.
     const placed = (id: string, layer: string, x: number, y: number) => ({
       id,
       layer,
@@ -92,7 +90,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       ],
       edges: [
         {
-          id: "a->z",
+          id: "a-z",
           from: "a",
           to: "z",
           kind: "call" as const,
@@ -134,7 +132,7 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
       ],
       edges: [
         {
-          id: "a->z",
+          id: "a-z",
           from: "a",
           to: "z",
           kind: "call" as const,
@@ -152,14 +150,13 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     expect(dr.edges[0]).toMatchObject({ length: 390, direct: 150, detour: 2.6, skip: 1 });
     expect(dr.nodes.find((b) => b.id === "a")).toMatchObject({ edges: 1, reach: 390 });
     expect(dr.nodes.find((b) => b.id === "m1")).toMatchObject({ edges: 0, reach: 0 });
-    expect(dr.counts).toMatchObject({ length: 390, longest: { id: "a->z", length: 390 } });
+    expect(dr.counts).toMatchObject({ length: 390, longest: { id: "a-z", length: 390 } });
   });
 
   it('names the edges each edge leaves or arrives with as one bundle (specs/decisions, "Fan-outs of three bundle")', () => {
     const fan = (label?: string): Diagram => ({
       grafical: 1,
       title: "Fan",
-      density: "normal",
       layers: [
         { id: "top", label: "Top", nodes: [n("a", "A", "service", "m")] },
         {
@@ -173,12 +170,12 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     const bundles = (d: Diagram) =>
       Object.fromEntries(drawing(d, layout(d, m)).edges.map((l) => [l.id, l.bundle]));
     expect(bundles(fan())).toEqual({
-      "a->b1": ["a->b2", "a->b3"],
-      "a->b2": ["a->b1", "a->b3"],
-      "a->b3": ["a->b1", "a->b2"],
+      "a-b1": ["a-b2", "a-b3"],
+      "a-b2": ["a-b1", "a-b3"],
+      "a-b3": ["a-b1", "a-b2"],
     });
     // A labelled edge leaves on its own, and two edges alone on a roomy side do not bundle.
-    expect(bundles(fan("reads"))).toEqual({ "a->b1": [], "a->b2": [], "a->b3": [] });
+    expect(bundles(fan("reads"))).toEqual({ "a-b1": [], "a-b2": [], "a-b3": [] });
     expect(drawingText(drawing(crossed, layout(crossed, m)))).toContain("passes=- bundle=-");
   });
 
@@ -240,7 +237,7 @@ describe('composition counts (specs/decisions, "Composition counts")', () => {
       ],
       groups: [{ id: "g", rect: rect(100, 100, 300, 120), members: ["m"] }],
       edges: [
-        edge("a->b", "a", "b", [
+        edge("a-b", "a", "b", [
           [20, 40],
           [20, 300],
         ]),
@@ -256,7 +253,7 @@ describe('composition counts (specs/decisions, "Composition counts")', () => {
           [220, 20],
           [220, 150],
         ]),
-        edge("m->b", "m", "b", [
+        edge("m-b", "m", "b", [
           [220, 190],
           [220, 320],
           [20, 320],

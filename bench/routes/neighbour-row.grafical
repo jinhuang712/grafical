@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "neighbour-row"
-  density: normal
 }
 
 <layer> r0 {
@@ -48,31 +47,31 @@
   layer: @r0
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> b->c {
+<edge> b-c {
   from: @b
   to: @c
   type: @call
 }
 
-<edge> c->d {
+<edge> c-d {
   from: @c
   to: @d
   type: @call
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call

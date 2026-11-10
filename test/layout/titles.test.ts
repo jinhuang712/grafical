@@ -23,6 +23,12 @@ import type { Measurer } from "../../src/text/types.ts";
 /** The plain object a file holds, checked as the schema checks it. */
 const fromYaml = (text: string) => validateDiagram(parse(text));
 
+/** Where a group's label sits, as `label --set` says it. */
+const groupLabel = (id: string, given: GroupTitle | undefined): Op => {
+  const t = given as GroupTitle;
+  return { op: "label.set", ids: [id], at: String(t.at), side: t.side, place: t.place };
+};
+
 /** The places tried for a blocked title, by the names the checks below read them by. */
 const P: Record<string, GroupTitle> = {
   "top-left": { at: 0, side: "top", place: "inside" },
@@ -61,7 +67,6 @@ function fail(d: Diagram, ops: Op[]): OpError[] {
 const booking = readDiagram(`<diagram> {
   format: 1
   title: "Booking"
-  density: normal
 }
 
 <layer> people {
@@ -167,43 +172,43 @@ const booking = readDiagram(`<diagram> {
   group: @app
 }
 
-<edge> traveller->web {
+<edge> traveller-web {
   from: @traveller
   to: @web
   type: @call
 }
 
-<edge> traveller->mobile {
+<edge> traveller-mobile {
   from: @traveller
   to: @mobile
   type: @call
 }
 
-<edge> hotel->portal {
+<edge> hotel-portal {
   from: @hotel
   to: @portal
   type: @call
 }
 
-<edge> web->api {
+<edge> web-api {
   from: @web
   to: @api
   type: @call
 }
 
-<edge> mobile->api {
+<edge> mobile-api {
   from: @mobile
   to: @api
   type: @call
 }
 
-<edge> portal->api {
+<edge> portal-api {
   from: @portal
   to: @api
   type: @call
 }
 
-<edge> api->db {
+<edge> api-db {
   from: @api
   to: @db
   type: @call
@@ -242,22 +247,22 @@ describe("a diagram's title at a fraction", () => {
 
   it("sits across the picture, its own point meeting the width's, and a subtitle follows", () => {
     const d = go([
-      { op: "diagram.subtitle", text: "Who books what" },
-      { op: "diagram.label-at", at: 0.5 },
+      { op: "diagram.set", subtitle: "Who books what" },
+      { op: "diagram.set", titleAt: "0.5" },
     ]);
     const s = layout(d, m);
     expect(s.title.bbox.x + s.title.bbox.w / 2).toBeCloseTo(s.width / 2, 0);
     const sub = s.subtitle?.bbox;
     expect((sub?.x ?? 0) + (sub?.w ?? 0) / 2).toBeCloseTo(s.width / 2, 0);
-    expect(title(go([{ op: "diagram.label-at", at: 1 }])).x).toBeGreaterThan(s.title.bbox.x);
+    expect(title(go([{ op: "diagram.set", titleAt: "1" }])).x).toBeGreaterThan(s.title.bbox.x);
   });
 
   it("moves to the foot with its subtitle, and the content takes the head's room", () => {
-    const top = layout(go([{ op: "diagram.subtitle", text: "Who books what" }]), m);
+    const top = layout(go([{ op: "diagram.set", subtitle: "Who books what" }]), m);
     const low = layout(
       go([
-        { op: "diagram.subtitle", text: "Who books what" },
-        { op: "diagram.label-at", at: 0, side: "bottom" },
+        { op: "diagram.set", subtitle: "Who books what" },
+        { op: "diagram.set", titleAt: "0", titleSide: "bottom" },
       ]),
       m,
     );
@@ -270,10 +275,12 @@ describe("a diagram's title at a fraction", () => {
   });
 
   it("clears with no fraction, diffs as its operation and survives a .grafical file", () => {
-    const d = go([{ op: "diagram.label-at", at: 0.5, side: "bottom" }]);
-    expect(ok(d, [{ op: "diagram.label-at" } as Op])).toEqual(booking);
-    expect(diffDiagrams(booking, d)).toEqual([{ op: "diagram.label-at", at: 0.5, side: "bottom" }]);
-    expect(diffDiagrams(d, booking)).toEqual([{ op: "diagram.label-at" }]);
+    const d = go([{ op: "diagram.set", titleAt: "0.5", titleSide: "bottom" }]);
+    expect(ok(d, [{ op: "diagram.set", titleAt: "-" } as Op])).toEqual(booking);
+    expect(diffDiagrams(booking, d)).toEqual([
+      { op: "diagram.set", titleAt: "0.5", titleSide: "bottom" },
+    ]);
+    expect(diffDiagrams(d, booking)).toEqual([{ op: "diagram.set", titleAt: "-" }]);
     const back = readDiagram(writeGrafical(d));
     expect(Array.isArray(back) ? undefined : back.titleAt).toEqual(d.titleAt);
   });
@@ -283,33 +290,32 @@ describe("a layer's and a lane's label along its head", () => {
   const layered = (labelAt?: number) =>
     fromYaml(`grafical: 1
 title: Rows
-density: normal
 lanes:
   - {id: l, label: Lane${labelAt === undefined ? "" : `, labelAt: ${labelAt}`}}
 layers:
   - {id: a, label: Front, lane: l${labelAt === undefined ? "" : `, labelAt: ${labelAt}`}, look: band, nodes: [{id: x, label: X}, {id: y, label: Y}]}
   - {id: b, label: Back, lane: l, look: band, nodes: [{id: z, label: Z}]}
 edges:
-  - {id: x->z, from: x, to: z}
+  - {id: x-z, from: x, to: z}
 `) as Diagram;
   const band = (d: Diagram) => layout(d, m).bands?.find((b) => b.id === "a")?.label?.bbox;
   const lane = (d: Diagram) => layout(d, m).lanes?.find((x) => x.id === "l")?.label.bbox;
 
   it("moves a layer's label along its head", () => {
-    const start = ok(layered(), [{ op: "layer.label-at", id: "a", at: 0 } as Op]);
-    const end = ok(layered(), [{ op: "layer.label-at", id: "a", at: 1 } as Op]);
+    const start = ok(layered(), [{ op: "label.set", ids: ["a"], at: "0" } as Op]);
+    const end = ok(layered(), [{ op: "label.set", ids: ["a"], at: "1" } as Op]);
     expect(band(end)?.x).toBeGreaterThan(band(start)?.x ?? 0);
   });
 
   it("moves a layer lane's label down its head", () => {
-    const end = ok(layered(), [{ op: "lane.label-at", id: "l", at: 1 } as Op]);
+    const end = ok(layered(), [{ op: "label.set", ids: ["l"], at: "1" } as Op]);
     expect(lane(end)?.y).toBeGreaterThan(lane(layered())?.y ?? 0);
-    expect(ok(end, [{ op: "lane.label-at", id: "l" } as Op])).toEqual(layered());
+    expect(ok(end, [{ op: "label.set", ids: ["l"], at: "-" } as Op])).toEqual(layered());
   });
 
   it("refuses a layer with no label", () => {
-    const d = ok(layered(), [{ op: "layer.add", id: "c" } as Op]);
-    expect(fail(d, [{ op: "layer.label-at", id: "c", at: 0 } as Op])[0]?.code).toBe("bad-value");
+    const d = ok(layered(), [{ op: "layer.set", ids: ["c"] } as Op]);
+    expect(fail(d, [{ op: "label.set", ids: ["c"], at: "0" } as Op])[0]?.code).toBe("bad-value");
   });
 
   it("survives a .grafical file and diffs as its operation", () => {
@@ -317,20 +323,26 @@ edges:
     const back = readDiagram(writeGrafical(d));
     expect(back).toEqual(d);
     expect(diffDiagrams(layered(), d)).toEqual([
-      { op: "layer.label-at", id: "a", at: 0.5 },
-      { op: "lane.label-at", id: "l", at: 0.5 },
+      { op: "label.set", ids: ["a"], at: "0.5" },
+      { op: "label.set", ids: ["l"], at: "0.5" },
     ]);
   });
 });
 
 describe("a group's stated label place", () => {
   it("is set, kept in the file, cleared and refused when unknown", () => {
-    const d = ok(booking, [{ op: "group.label-at", id: "app", ...P["top-right"] }]);
+    const d = ok(booking, [groupLabel("app", P["top-right"])]);
     expect(d.groups?.[0]?.titleAt).toEqual(P["top-right"]);
     expect(writeDiagram(d)).toContain("  at: 1\n  side: top\n  place: inside");
     expect(readDiagram(writeDiagram(d))).toEqual(d);
-    expect(ok(d, [{ op: "group.label-at", id: "app" }]).groups?.[0]?.titleAt).toBeUndefined();
-    expect(fail(d, [{ op: "group.label-at", id: "apq", ...P.top }])[0]?.code).toBe("unknown-group");
+    expect(
+      ok(d, [{ op: "label.set", ids: ["app"], at: "-" }]).groups?.[0]?.titleAt,
+    ).toBeUndefined();
+    // Only a group's label takes a side and a place.
+    expect(fail(d, [groupLabel("apq", P.top)])[0]).toMatchObject({
+      code: "bad-value",
+      field: "side",
+    });
     const wrong = readDiagram(writeDiagram(d).replace("side: top", "side: middle"));
     expect(wrong).toMatchObject([
       {
@@ -342,7 +354,7 @@ describe("a group's stated label place", () => {
   });
 
   it("diffs as the operation that set it, and a copy keeps it", () => {
-    const a = ok(booking, [{ op: "group.label-at", id: "app", ...P.top }]);
+    const a = ok(booking, [groupLabel("app", P.top)]);
     for (const [x, y] of [
       [booking, a],
       [a, booking],
@@ -351,14 +363,13 @@ describe("a group's stated label place", () => {
       if ("errors" in r) throw new Error(JSON.stringify(r.errors));
       expect(writeDiagram(r.diagram)).toBe(writeDiagram(y));
     }
-    expect(diffDiagrams(booking, a)).toEqual([{ op: "group.label-at", id: "app", ...P.top }]);
+    expect(diffDiagrams(booking, a)).toEqual([groupLabel("app", P.top)]);
   });
 
   // Edges leave the last layer by the bottom, through the foot the label sits in.
   const below = readDiagram(`<diagram> {
   format: 1
   title: "Booking"
-  density: normal
 }
 
 <layer> people {
@@ -496,61 +507,61 @@ describe("a group's stated label place", () => {
   layer: @ext
 }
 
-<edge> traveller->web {
+<edge> traveller-web {
   from: @traveller
   to: @web
   type: @call
 }
 
-<edge> traveller->mobile {
+<edge> traveller-mobile {
   from: @traveller
   to: @mobile
   type: @call
 }
 
-<edge> hotel->portal {
+<edge> hotel-portal {
   from: @hotel
   to: @portal
   type: @call
 }
 
-<edge> web->api {
+<edge> web-api {
   from: @web
   to: @api
   type: @call
 }
 
-<edge> mobile->api {
+<edge> mobile-api {
   from: @mobile
   to: @api
   type: @call
 }
 
-<edge> portal->api {
+<edge> portal-api {
   from: @portal
   to: @api
   type: @call
 }
 
-<edge> api->db {
+<edge> api-db {
   from: @api
   to: @db
   type: @call
 }
 
-<edge> api->cache {
+<edge> api-cache {
   from: @api
   to: @cache
   type: @call
 }
 
-<edge> cache->backup {
+<edge> cache-backup {
   from: @cache
   to: @backup
   type: @call
 }
 
-<edge> db->audit {
+<edge> db-audit {
   from: @db
   to: @audit
   type: @call
@@ -592,7 +603,6 @@ describe("a group's stated label place", () => {
   const oneLayer = readDiagram(`<diagram> {
   format: 1
   title: "One row"
-  density: normal
 }
 
 <layer> top {
@@ -661,25 +671,25 @@ describe("a group's stated label place", () => {
   layer: @row
 }
 
-<edge> user->gw {
+<edge> user-gw {
   from: @user
   to: @gw
   type: @call
 }
 
-<edge> gw->api {
+<edge> gw-api {
   from: @gw
   to: @api
   type: @call
 }
 
-<edge> api->db {
+<edge> api-db {
   from: @api
   to: @db
   type: @call
 }
 
-<edge> db->pay {
+<edge> db-pay {
   from: @db
   to: @pay
   type: @call
@@ -700,15 +710,15 @@ describe("a group's stated label place", () => {
   text: "Orders service"
 }
 
-<label> gw->api-label {
-  on: @gw->api
+<label> gw-api-label {
+  on: @gw-api
   text: "routes"
 }
 `) as Diagram;
 
   for (const at of NAMES) {
     it(`sits exactly at ${at}`, () => {
-      const d = ok(below, [{ op: "group.label-at", id: "app", ...P[at] }]);
+      const d = ok(below, [groupLabel("app", P[at])]);
       const s = layout(d, m);
       const g = s.groups?.find((x) => x.id === "app");
       const web = s.nodes.find((n) => n.id === "web")?.rect;
@@ -754,7 +764,7 @@ describe("a group's stated label place", () => {
       [below, "app"],
       [oneLayer, "svc"],
     ] as const) {
-      const at = (place: string) => layout(ok(d0, [{ op: "group.label-at", id, ...P[place] }]), m);
+      const at = (place: string) => layout(ok(d0, [groupLabel(id, P[place])]), m);
       const across = (place: string) => {
         const s = at(place);
         return {
@@ -777,13 +787,13 @@ describe("a group's stated label place", () => {
 
   it("refuses a place an edge crosses, and names the places clear of every edge", () => {
     for (const [d0, id, at, edge] of [
-      [booking, "app", "top", "traveller->mobile"],
-      [booking, "app", "top-left", "traveller->web"],
-      [below, "app", "bottom-right", "db->audit"],
-      [oneLayer, "svc", "left", "gw->api"],
-      [oneLayer, "svc", "outside-right", "db->pay"],
+      [booking, "app", "top", "traveller-mobile"],
+      [booking, "app", "top-left", "traveller-web"],
+      [below, "app", "bottom-right", "db-audit"],
+      [oneLayer, "svc", "left", "gw-api"],
+      [oneLayer, "svc", "outside-right", "db-pay"],
     ] as const) {
-      const d = ok(d0, [{ op: "group.label-at", id, ...P[at] }]);
+      const d = ok(d0, [groupLabel(id, P[at])]);
       const found = check(d, layout(d, m), m).filter((x) => x.owner === "agent");
       expect(
         found.map((x) => [x.code, x.elements, x.facts.place]),
@@ -792,7 +802,7 @@ describe("a group's stated label place", () => {
       const clear = found[0]?.facts.clear ?? [];
       expect(clear.length, at).toBeGreaterThan(0);
       for (const place of NAMES) {
-        const e = ok(d0, [{ op: "group.label-at", id, ...P[place] }]);
+        const e = ok(d0, [groupLabel(id, P[place])]);
         const blocked = check(e, layout(e, m), m).some((x) => x.code === "title-blocked");
         expect(blocked, place).toBe(!clear.includes(words(place)));
       }
@@ -808,14 +818,14 @@ describe("a group's stated label place", () => {
       [oneLayer, "svc", "top"],
       [oneLayer, "svc", "outside-bottom"],
     ] as const) {
-      const d = ok(d0, [{ op: "group.label-at", id, ...P[at] }]);
+      const d = ok(d0, [groupLabel(id, P[at])]);
       expect(check(d, layout(d, m), m), at).toEqual([]);
     }
   });
 
   it("outside a side, leaves no empty space past the other side", () => {
     for (const at of ["outside-left", "outside-right"]) {
-      const s = layout(ok(below, [{ op: "group.label-at", id: "app", ...P[at] }]), m);
+      const s = layout(ok(below, [groupLabel("app", P[at])]), m);
       const g = s.groups?.find((x) => x.id === "app");
       if (g === undefined) throw new Error("no group");
       const t = g.label.bbox;
@@ -830,7 +840,7 @@ describe("a group's stated label place", () => {
   it("sits at a fraction of its side, its own point meeting the side's", () => {
     const place = (at: number, side: GroupTitle["side"]) =>
       layout(
-        ok(below, [{ op: "group.label-at", id: "app", at, side, place: "inside" }]),
+        ok(below, [{ op: "label.set", ids: ["app"], at: String(at), side: side, place: "inside" }]),
         m,
       ).groups?.find((g) => g.id === "app");
     const first = place(0, "top");
@@ -844,13 +854,13 @@ describe("a group's stated label place", () => {
   });
 
   it("is refused past the ends of its side", () => {
-    const ops = parseOp({ op: "group.label-at", id: "app", at: 1.5 }, 0);
+    const ops = parseOp({ op: "label.set", ids: ["app"], at: "1.5" }, 0);
     expect(ops).toMatchObject([{ field: "at" }]);
   });
 
   it("leaves a picture without one as it was", () => {
-    const d = ok(booking, [{ op: "group.label-at", id: "app", ...P.top }]);
-    const back = ok(d, [{ op: "group.label-at", id: "app" }]);
+    const d = ok(booking, [groupLabel("app", P.top)]);
+    const back = ok(d, [{ op: "label.set", ids: ["app"], at: "-" }]);
     expect(layout(back, m)).toEqual(layout(booking, m));
   });
 });

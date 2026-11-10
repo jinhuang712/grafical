@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "group-to-group"
-  density: normal
 }
 
 <layer> r0 {
@@ -68,25 +67,25 @@
   group: @g2
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call
 }
 
-<edge> b->c {
+<edge> b-c {
   from: @b
   to: @c
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call

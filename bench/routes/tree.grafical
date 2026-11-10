@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "tree"
-  density: normal
 }
 
 <layer> r0 {
@@ -89,37 +88,37 @@
   layer: @r2
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call
 }
 
-<edge> b->e {
+<edge> b-e {
   from: @b
   to: @e
   type: @call
 }
 
-<edge> c->f {
+<edge> c-f {
   from: @c
   to: @f
   type: @call
 }
 
-<edge> c->g {
+<edge> c-g {
   from: @c
   to: @g
   type: @call

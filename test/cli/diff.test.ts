@@ -50,23 +50,23 @@ describe('grafical diff (specs/decisions, "Git as the history")', () => {
   it("reports changes since a revision as command lines that replay them", () => {
     git("init", "-q");
     const f = "d.grafical";
-    run("new", f, "--title", "D");
-    run("layer", "add", f, "row", "--label", "Row");
-    run("node", "add", f, "a", "--layer", "row", "--label", "A");
+    run("diagram", "set", f, "--title", "D");
+    run("layer", "set", f, "row", "--label", "Row");
+    run("node", "set", f, "a", "--layer", "row", "--label", "A");
     git("add", f);
     git("commit", "-q", "-m", "first");
     expect(run("diff", f).out).toBe("# no changes\n");
 
-    run("node", "label", f, "a", "--label", "Alpha beta");
-    run("node", "add", f, "b", "--layer", "row", "--label", "B's", "--last");
-    run("edge", "add", f, "a", "b", "--label", "reads\\nwrites");
+    run("node", "set", f, "a", "--label", "Alpha beta");
+    run("node", "set", f, "b", "--layer", "row", "--label", "B's", "--last");
+    run("edge", "set", f, "a-b", "--from", "a", "--to", "b", "--label", "reads\\nwrites");
     const d = run("diff", f);
     expect(d.code).toBe(0);
     expect(d.out).toBe(
       [
-        "grafical -f d.grafical node --add b --layer row --label 'B'\\''s' --type service --after a",
-        "grafical -f d.grafical node --label a --label 'Alpha beta'",
-        "grafical -f d.grafical edge --add a b --label 'reads\\nwrites' --type call",
+        "grafical -f d.grafical node --set b --label 'B'\\''s' --type service --layer row --after a",
+        "grafical -f d.grafical node --set a --label 'Alpha beta'",
+        "grafical -f d.grafical edge --set a-b --from a --to b --label 'reads\\nwrites' --type call",
         "",
       ].join("\n"),
     );
@@ -90,9 +90,9 @@ describe('grafical diff (specs/decisions, "Git as the history")', () => {
   });
 
   it("builds a file the revision does not have from nothing", () => {
-    run("new", "n.grafical", "--title", "New");
+    run("diagram", "set", "n.grafical", "--title", "New");
     expect(run("diff", "n.grafical").out).toBe(
-      "grafical -f n.grafical new --title New --density normal\n",
+      "grafical -f n.grafical diagram --set --title New\n",
     );
   });
 

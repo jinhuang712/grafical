@@ -8,7 +8,6 @@ import { e, n } from "./build.ts";
 export const edgeLooks: Diagram = {
   grafical: 1,
   title: "Photo sharing",
-  density: "normal",
   layers: [
     { id: "callers", label: "Callers", nodes: [n("web", "web app", "actor", "m")] },
     { id: "entry", label: "Entry", nodes: [n("api", "photo-api", "service", "m")] },

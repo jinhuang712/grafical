@@ -7,7 +7,6 @@ import { e, n } from "./build.ts";
 export const flowchart: Diagram = {
   grafical: 1,
   title: "Refund request",
-  density: "normal",
   layers: [
     { id: "begin", label: "Begin", nodes: [n("start", "Start", "terminal", "m")] },
     { id: "intake", label: "Intake", nodes: [n("form", "Read the request", "service", "m")] },

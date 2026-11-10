@@ -2,7 +2,6 @@
   format: 1
   title: "Pet clinic bookings"
   subtitle: "Rows drawn only where they say something: the gateway, the booking services and the event bus."
-  density: normal
 }
 
 <layer> row-people {
@@ -96,39 +95,39 @@
   layer: @row-data
 }
 
-<edge> owners->row-gateway {
+<edge> owners-row-gateway {
   from: @owners
   to: @row-gateway
   type: @call
 }
 
-<edge> desk->row-gateway {
+<edge> desk-row-gateway {
   from: @desk
   to: @row-gateway
   type: @call
 }
 
-<edge> row-gateway->booking {
+<edge> row-gateway-booking {
   from: @row-gateway
   to: @booking
   type: @call
 }
 
-<edge> booking->visits-db {
+<edge> booking-visits-db {
   from: @booking
   to: @visits-db
   type: @data
   pass: true
 }
 
-<edge> reminders->sms {
+<edge> reminders-sms {
   from: @reminders
   to: @sms
   type: @call
   pass: true
 }
 
-<edge> booking->reminders {
+<edge> booking-reminders {
   from: @booking
   to: @reminders
   type: @async
@@ -159,7 +158,7 @@
   text: "Data"
 }
 
-<label> booking->reminders-label {
-  on: @booking->reminders
+<label> booking-reminders-label {
+  on: @booking-reminders
   text: "visit booked"
 }

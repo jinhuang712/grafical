@@ -14,13 +14,13 @@ beforeAll(async () => {
 });
 
 const node = (id: string, layer: string, more: object = {}): Op =>
-  ({ op: "node.add", id, layer, label: id, ...more }) as Op;
+  ({ op: "node.set", ids: [id], layer, label: id, ...more }) as Op;
 
 function build(ops: Op[]): Diagram {
   const r = applyOps(null, [
-    { op: "diagram.new", title: "t" },
-    { op: "layer.add", id: "a" },
-    { op: "layer.add", id: "b" },
+    { op: "diagram.set", title: "t" },
+    { op: "layer.set", ids: ["a"] },
+    { op: "layer.set", ids: ["b"] },
     ...ops,
   ] as Op[]);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
@@ -35,13 +35,13 @@ const turning = [
   node("left", "b"),
   node("y", "b", { after: "left" }),
   node("z", "b", { after: "y" }),
-  { op: "edge.add", from: "x", to: "z", label: "goes" } as Op,
+  { op: "edge.set", ids: ["x-z"], from: "x", to: "z", label: "goes" } as Op,
 ];
 
 describe("labels on edges", () => {
   it("goes onto its edge where the gutter saw no room but a run leaves its height clear", () => {
     const d = readDiagram(readFileSync("test/fixtures/big-bank.grafical", "utf8")) as Diagram;
-    const e = layout(d, m).edges.find((x) => x.id === "customer->spa");
+    const e = layout(d, m).edges.find((x) => x.id === "customer-spa");
     const box = e?.label?.bbox;
     expect((box?.x ?? 0) + (box?.w ?? 0) / 2).toBeCloseTo(e?.points[0]?.x ?? 0, 0);
   });
@@ -59,7 +59,7 @@ describe("labels on edges", () => {
     const d = build([
       node("x", "a"),
       node("y", "b"),
-      { op: "edge.add", from: "x", to: "y", label: "goes" } as Op,
+      { op: "edge.set", ids: ["x-y"], from: "x", to: "y", label: "goes" } as Op,
     ]);
     const e = layout(d, m).edges[0];
     const [a, b] = [e?.points[0], e?.points[1]];
@@ -69,28 +69,28 @@ describe("labels on edges", () => {
   });
 
   it("sits beside the edge when the agent takes it off, and comes back", () => {
-    const off = build([...turning, { op: "edge.label-at", id: "x->z", seat: "beside" } as Op]);
+    const off = build([...turning, { op: "label.set", ids: ["x-z"], seat: "beside" } as Op]);
     expect(off.edges[0]?.seat).toBe("beside");
     const e = layout(off, m).edges[0];
     const y = e?.points.slice(1).find((p, i) => p.y === e?.points[i]?.y)?.y ?? 0;
     const box = e?.label?.bbox;
     expect((box?.y ?? 0) + (box?.h ?? 0)).toBeLessThanOrEqual(y);
-    const r = applyOps(off, [{ op: "edge.label-at", id: "x->z", seat: "on" } as Op]);
+    const r = applyOps(off, [{ op: "label.set", ids: ["x-z"], seat: "on" } as Op]);
     expect("errors" in r ? "refused" : r.diagram.edges[0]?.seat).toBeUndefined();
   });
 
   it("refuses a seat on an edge with no label, and clearing a label clears its seat", () => {
-    const d = build([...turning, { op: "edge.label-at", id: "x->z", seat: "beside" } as Op]);
-    const r = applyOps(d, [{ op: "edge.label", id: "x->z" } as Op]);
+    const d = build([...turning, { op: "label.set", ids: ["x-z"], seat: "beside" } as Op]);
+    const r = applyOps(d, [{ op: "edge.set", ids: ["x-z"], label: "-" } as Op]);
     expect("errors" in r ? "refused" : r.diagram.edges[0]?.seat).toBeUndefined();
     const again = applyOps("errors" in r ? d : r.diagram, [
-      { op: "edge.label-at", id: "x->z", seat: "beside" } as Op,
+      { op: "label.set", ids: ["x-z"], seat: "beside" } as Op,
     ]);
     expect("errors" in again).toBe(true);
   });
 
   it("keeps the seat in the file", () => {
-    const d = build([...turning, { op: "edge.label-at", id: "x->z", seat: "beside" } as Op]);
+    const d = build([...turning, { op: "label.set", ids: ["x-z"], seat: "beside" } as Op]);
     const text = writeGrafical(d);
     expect(text).toMatch(/seat:? beside/);
     const back = readDiagram(text);

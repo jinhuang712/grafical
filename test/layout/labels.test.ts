@@ -27,7 +27,7 @@ describe("edge labels and group sides", () => {
     expect(check(d, s, m)).toEqual([]);
     const g = s.groups?.find((x) => x.id === "ibs")?.rect;
     if (g === undefined) throw new Error("ibs");
-    for (const id of ["mobile->api", "api->mainframe"]) {
+    for (const id of ["mobile-api", "api-mainframe"]) {
       const b = s.edges.find((e) => e.id === id)?.label?.bbox;
       if (b === undefined) throw new Error(id);
       expect(b.x + b.w <= g.x + g.w || b.x >= g.x + g.w, id).toBe(true);
@@ -38,8 +38,8 @@ describe("edge labels and group sides", () => {
   it("keep a label off the side of a column lane its edge crosses", () => {
     const s = layout(lanesColumns, m);
     expect(check(lanesColumns, s, m)).toEqual([]);
-    const b = s.edges.find((e) => e.id === "orders->payments")?.label?.bbox;
-    if (b === undefined) throw new Error("orders->payments");
+    const b = s.edges.find((e) => e.id === "orders-payments")?.label?.bbox;
+    if (b === undefined) throw new Error("orders-payments");
     for (const l of s.lanes ?? []) {
       for (const x of [l.rect.x, l.rect.x + l.rect.w]) {
         expect(x <= b.x || x >= b.x + b.w, l.id).toBe(true);
@@ -54,7 +54,6 @@ describe('a label no gutter holds (specs/decisions, "An edge never moves for its
     const d = readDiagram(`<diagram> {
   format: 1
   title: "five"
-  density: normal
 }
 
 <layer> top {
@@ -97,31 +96,31 @@ describe('a label no gutter holds (specs/decisions, "An edge never moves for its
   layer: @bottom
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->b#2 {
+<edge> a-b-2 {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->b#3 {
+<edge> a-b-3 {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->b#4 {
+<edge> a-b-4 {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->b#5 {
+<edge> a-b-5 {
   from: @a
   to: @b
   type: @call
@@ -137,28 +136,28 @@ describe('a label no gutter holds (specs/decisions, "An edge never moves for its
   text: "Bottom"
 }
 
-<label> a->b-label {
-  on: @a->b
+<label> a-b-label {
+  on: @a-b
   text: "writes orders"
 }
 
-<label> a->b#2-label {
-  on: @a->b#2
+<label> a-b-2-label {
+  on: @a-b-2
   text: "reads stock"
 }
 
-<label> a->b#3-label {
-  on: @a->b#3
+<label> a-b-3-label {
+  on: @a-b-3
   text: "locks rows"
 }
 
-<label> a->b#4-label {
-  on: @a->b#4
+<label> a-b-4-label {
+  on: @a-b-4
   text: "audits changes"
 }
 
-<label> a->b#5-label {
-  on: @a->b#5
+<label> a-b-5-label {
+  on: @a-b-5
   text: "retries failed"
 }
 `) as Diagram;
@@ -166,12 +165,12 @@ describe('a label no gutter holds (specs/decisions, "An edge never moves for its
     for (const e of s.edges) expect(e.points.length, e.id).toBe(2);
     expect(
       check(d, s, m).map((x) => [x.code, x.owner, ...x.elements, x.facts.is, x.facts.gutters]),
-    ).toEqual([["label-blocked", "agent", "a->b#4", "a->b#5", "edge", ["top/bottom"]]]);
+    ).toEqual([["label-blocked", "agent", "a-b-4", "a-b-5", "edge", ["top/bottom"]]]);
     // The engine never widens a node for its edges; the agent does (decided by the owner on
-    // 2026-10-17), and the refusal names node size among the commands that can change it.
+    // 2026-10-17), and the refusal names node --set, which sets its size, among the commands that can change it.
     const [blocked] = check(d, s, m);
     if (blocked === undefined) throw new Error("no refusal");
-    expect(defectBlock(blocked, kindsOf(d)).next).toContain("node --size");
+    expect(defectBlock(blocked, kindsOf(d)).next).toContain("node --set");
     const wide = structuredClone(d);
     const a = wide.layers[0]?.nodes[0];
     if (a === undefined) throw new Error("a");
@@ -186,7 +185,6 @@ describe('a label no gutter holds (specs/decisions, "An edge never moves for its
     const d = readDiagram(`<diagram> {
   format: 1
   title: "lanes"
-  density: normal
 }
 
 <layer> top {
@@ -251,55 +249,55 @@ describe('a label no gutter holds (specs/decisions, "An edge never moves for its
   layer: @bottom
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->b#2 {
+<edge> a-b-2 {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->b#3 {
+<edge> a-b-3 {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> c->b {
+<edge> c-b {
   from: @c
   to: @b
   type: @call
 }
 
-<edge> c->b#2 {
+<edge> c-b-2 {
   from: @c
   to: @b
   type: @call
 }
 
-<edge> e->b {
+<edge> e-b {
   from: @e
   to: @b
   type: @call
 }
 
-<edge> e->b#2 {
+<edge> e-b-2 {
   from: @e
   to: @b
   type: @call
 }
 
-<edge> e->b#3 {
+<edge> e-b-3 {
   from: @e
   to: @b
   type: @call
 }
 
-<edge> shop->b {
+<edge> shop-b {
   from: @shop
   to: @b
   type: @call
@@ -325,8 +323,8 @@ describe('a label no gutter holds (specs/decisions, "An edge never moves for its
   text: "Depot"
 }
 
-<label> shop->b-label {
-  on: @shop->b
+<label> shop-b-label {
+  on: @shop-b
   text: "picks"
 }
 `) as Diagram;
@@ -341,33 +339,40 @@ describe('a label no gutter holds (specs/decisions, "An edge never moves for its
         detail: {
           owner: "agent",
           is: "edge",
-          edge: "shop->b",
+          edge: "shop-b",
           lanes: ["shop", "depot"],
           gutters: ["top/bottom"],
         },
-        next: ["layer --move", "node --size", "node --move", "edge --label", "edge --number"],
+        next: ["layer --move", "node --set", "node --move", "edge --set"],
       },
     ]);
-    const r = applyOps(d, [{ op: "edge.label", id: "shop->b" }]);
+    const r = applyOps(d, [{ op: "edge.set", ids: ["shop-b"], label: "-" }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     expect(check(r.diagram, layout(r.diagram, m), m)).toEqual([]);
   });
 
   // Found by trying every fix a refusal suggested, on 2026-10-17: no larger node held this label.
   it("where no larger node holds the label, it names the command that drops it, and grafical accepts that", () => {
-    const add: Op = { op: "edge.add", from: "n4", to: "n2", label: "a long label for this line" };
+    // A second edge from n4 to n2: the seed has one.
+    const add: Op = {
+      op: "edge.set",
+      ids: ["n4-n2-2"],
+      from: "n4",
+      to: "n2",
+      label: "a long label for this line",
+    };
     const checked = (ops: Op[]) => {
       const r = applyOps(generate(35, m).diagram, ops);
       if ("errors" in r) throw new Error(JSON.stringify(r.errors));
       return check(r.diagram, layout(r.diagram, m), m);
     };
     const found = checked([add]).filter((x) => x.code === "label-blocked");
-    expect(found.map((x) => x.elements[0])).toEqual(["n4->n2"]);
+    expect(found.map((x) => x.elements[0])).toEqual(["n4-n2"]);
     const r = applyOps(generate(35, m).diagram, [add]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     expect(found.map((x) => defectBlock(x, kindsOf(r.diagram)).next)).toEqual([
-      ["layer --move", "node --size", "node --move", "edge --label", "edge --number"],
+      ["layer --move", "node --set", "node --move", "edge --set"],
     ]);
-    expect(checked([add, { op: "edge.label", id: "n4->n2" }])).toEqual([]);
+    expect(checked([add, { op: "edge.set", ids: ["n4-n2"], label: "-" }])).toEqual([]);
   });
 });

@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "two-layers-skip"
-  density: normal
 }
 
 <layer> r0 {
@@ -106,37 +105,37 @@
   layer: @r3
 }
 
-<edge> a->h {
+<edge> a-h {
   from: @a
   to: @h
   type: @call
 }
 
-<edge> b->g {
+<edge> b-g {
   from: @b
   to: @g
   type: @call
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> c->e {
+<edge> c-e {
   from: @c
   to: @e
   type: @call
 }
 
-<edge> e->g {
+<edge> e-g {
   from: @e
   to: @g
   type: @call
 }
 
-<edge> d->f {
+<edge> d-f {
   from: @d
   to: @f
   type: @call

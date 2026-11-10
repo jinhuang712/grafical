@@ -8,7 +8,7 @@ import { layout } from "../../src/layout/index.ts";
 import { applyOps, type Diagram } from "../../src/model/index.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
-import { SPACING } from "../../src/theme/geometry.ts";
+import { THEMES } from "../../src/theme/themes.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 
 let m: Measurer;
@@ -19,8 +19,10 @@ beforeAll(async () => {
 describe('columns in the picture (specs/decisions, "Columns beside layers")', () => {
   it("photo sharing: requests left, processing right, narrower and with a bend less", () => {
     const r = applyOps(edgeLooks, [
-      { op: "column.add", id: "requests", nodes: ["web", "api", "cache"] },
-      { op: "column.add", id: "processing", nodes: ["uploads", "thumbs"] },
+      { op: "column.set", ids: ["requests"] },
+      { op: "node.set", ids: ["web", "api", "cache"], column: "requests" },
+      { op: "column.set", ids: ["processing"] },
+      { op: "node.set", ids: ["uploads", "thumbs"], column: "processing" },
     ]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     const d: Diagram = r.diagram;
@@ -44,7 +46,6 @@ describe('columns in the picture (specs/decisions, "Columns beside layers")', ()
     const d: Diagram = {
       grafical: 1,
       title: "T",
-      density: "normal",
       layers: [
         { id: "r1", label: "R1", nodes: [{ id: "a", label: "A", kind: "service", column: "c1" }] },
         { id: "r2", label: "R2", nodes: [{ id: "b", label: "B", kind: "service", column: "c2" }] },
@@ -56,7 +57,7 @@ describe('columns in the picture (specs/decisions, "Columns beside layers")', ()
     const x = (id: string) =>
       scene.nodes.find((nd) => nd.id === id)?.rect as { x: number; w: number };
     // A layer's gap between them, as if they stood side by side in one layer.
-    expect(x("b").x - (x("a").x + x("a").w)).toBe(SPACING.normal.nodeGap);
+    expect(x("b").x - (x("a").x + x("a").w)).toBe(THEMES.default?.space.columnGap);
     expect(check(d, scene, m)).toEqual([]);
   });
 });

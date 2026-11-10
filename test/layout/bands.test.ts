@@ -45,21 +45,20 @@ describe("edges that end at a band", () => {
   it("meet the band straight past the other end", () => {
     const d = fromYaml(`grafical: 1
 title: band
-density: normal
 layers:
   - {id: apps, label: Apps, nodes: [${node("rider", "actor")}, ${node("ops", "actor")}, ${node("driver", "actor")}]}
   - {id: gateway, label: Gateway, nodes: [${node("socket")}]}
   - {id: core, label: Core, nodes: [${node("booking")}, ${node("matcher")}, ${node("payments")}]}
 edges:
-  - {id: rider->gateway, from: rider, to: gateway}
-  - {id: driver->socket, from: driver, to: socket}
-  - {id: gateway->booking, from: gateway, to: booking}
-  - {id: gateway->payments, from: gateway, to: payments}
-  - {id: matcher->socket, from: matcher, to: socket}
+  - {id: rider-gateway, from: rider, to: gateway}
+  - {id: driver-socket, from: driver, to: socket}
+  - {id: gateway-booking, from: gateway, to: booking}
+  - {id: gateway-payments, from: gateway, to: payments}
+  - {id: matcher-socket, from: matcher, to: socket}
 `) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-    for (const id of ["rider->gateway", "gateway->booking", "gateway->payments"]) {
+    for (const id of ["rider-gateway", "gateway-booking", "gateway-payments"]) {
       const e = s.edges.find((x) => x.id === id);
       if (e === undefined) throw new Error(id);
       expect(bends(e.points), id).toBe(0);
@@ -71,17 +70,16 @@ describe('a layer with no node as one bar (specs/decisions, "A layer with no nod
   const bar = (look = "") =>
     fromYaml(`grafical: 1
 title: bar
-density: normal
 layers:
   - {id: apps, label: Apps, nodes: [${node("rider", "actor")}, ${node("driver", "actor")}]}
   - {id: gateway, label: API gateway${look}, nodes: []}
   - {id: core, label: Core, nodes: [${node("booking")}, ${node("matcher")}, ${node("payments")}]}
 edges:
-  - {id: rider->gateway, from: rider, to: gateway}
-  - {id: driver->gateway, from: driver, to: gateway}
-  - {id: gateway->booking, from: gateway, to: booking}
-  - {id: gateway->payments, from: gateway, to: payments}
-  - {id: driver->matcher, from: driver, to: matcher, pass: true}
+  - {id: rider-gateway, from: rider, to: gateway}
+  - {id: driver-gateway, from: driver, to: gateway}
+  - {id: gateway-booking, from: gateway, to: booking}
+  - {id: gateway-payments, from: gateway, to: payments}
+  - {id: driver-matcher, from: driver, to: matcher, pass: true}
 `) as Diagram;
 
   it("draws one bar 40 px high across the content, in a box's look, its label in it", () => {
@@ -108,10 +106,10 @@ edges:
     const r = s.bands?.[0]?.rect;
     if (r === undefined) throw new Error("no bar");
     for (const [id, y] of [
-      ["rider->gateway", r.y],
-      ["driver->gateway", r.y],
-      ["gateway->booking", r.y + r.h],
-      ["gateway->payments", r.y + r.h],
+      ["rider-gateway", r.y],
+      ["driver-gateway", r.y],
+      ["gateway-booking", r.y + r.h],
+      ["gateway-payments", r.y + r.h],
     ] as const) {
       const e = s.edges.find((x) => x.id === id);
       if (e === undefined) throw new Error(id);
@@ -123,7 +121,7 @@ edges:
 
   it("names the bar among the layers an edge that may pass it passes", () => {
     const d = bar();
-    const edge = drawing(d, layout(d, m)).edges.find((l) => l.id === "driver->matcher");
+    const edge = drawing(d, layout(d, m)).edges.find((l) => l.id === "driver-matcher");
     expect(edge?.passes).toEqual(["gateway"]);
   });
 
@@ -132,7 +130,6 @@ edges:
   it("seats its label clear of the edges that pass it, which run straight", () => {
     const d = fromYaml(`grafical: 1
 title: bundle
-density: normal
 layers:
   - {id: services, nodes: [${node("orders")}, ${node("billing")}, ${node("shipping")}]}
   - {id: bundle, label: Message-oriented middleware, nodes: []}
@@ -141,9 +138,9 @@ layers:
       - {id: orders-db, label: orders-db, kind: store, align: orders}
       - {id: shipping-db, label: shipping-db, kind: store, align: shipping}
 edges:
-  - {id: billing->bundle, from: billing, to: bundle}
-  - {id: orders->orders-db, from: orders, to: orders-db, pass: true}
-  - {id: shipping->shipping-db, from: shipping, to: shipping-db, pass: true}
+  - {id: billing-bundle, from: billing, to: bundle}
+  - {id: orders-orders-db, from: orders, to: orders-db, pass: true}
+  - {id: shipping-shipping-db, from: shipping, to: shipping-db, pass: true}
 `) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
@@ -151,7 +148,7 @@ edges:
     const t = b?.label?.bbox;
     if (b === undefined || t === undefined) throw new Error("no label");
     for (const e of s.edges) {
-      if (e.id !== "billing->bundle") expect(bends(e.points), e.id).toBe(0);
+      if (e.id !== "billing-bundle") expect(bends(e.points), e.id).toBe(0);
       // Every edge that meets or crosses the bar keeps 16 px from its label.
       for (let i = 1; i < e.points.length; i++) {
         const p = e.points[i - 1] as Point;
@@ -168,16 +165,15 @@ describe('a layer with a look (specs/decisions, "A layer with a look is drawn")'
   const layered = (core = "", bundle = "") =>
     fromYaml(`grafical: 1
 title: looks
-density: normal
 layers:
   - {id: apps, label: Apps, nodes: [${node("rider", "actor")}, ${node("driver", "actor")}]}
   - {id: core, label: Core services${core}, nodes: [${node("booking")}, ${node("payments")}]}
   - {id: bundle, label: Event bundle${bundle}, nodes: []}
   - {id: stores, label: Stores, nodes: [${node("trips", "store")}]}
 edges:
-  - {id: rider->booking, from: rider, to: booking}
-  - {id: driver->payments, from: driver, to: payments}
-  - {id: booking->trips, from: booking, to: trips, pass: true}
+  - {id: rider-booking, from: rider, to: booking}
+  - {id: driver-payments, from: driver, to: payments}
+  - {id: booking-trips, from: booking, to: trips, pass: true}
 `) as Diagram;
 
   it("is drawn though no edge ends at it, with its label; a layer with none is not", () => {
@@ -203,16 +199,16 @@ edges:
     expect(bundle).toMatchObject({ bar: true, box: true });
     expect(bundle.rect.h).toBe(40);
     expect(bundle.label?.runs.map((r) => r.text).join("")).toBe("Event bundle");
-    const edge = drawing(d, s).edges.find((l) => l.id === "booking->trips");
+    const edge = drawing(d, s).edges.find((l) => l.id === "booking-trips");
     expect(edge?.passes).toEqual(["bundle"]);
   });
 
   it("draws no name for a drawn layer without a label, and the file keeps it so", () => {
     const d0 = layered(", look: band", ", look: box");
     const r = applyOps(d0, [
-      { op: "layer.add", id: "spare", after: "bundle" },
-      { op: "layer.look", id: "spare", look: "band" },
-      { op: "node.add", id: "cache", layer: "spare", label: "cache", first: true },
+      { op: "layer.set", ids: ["spare"], after: "bundle" },
+      { op: "layer.set", ids: ["spare"], look: "band" },
+      { op: "node.set", ids: ["cache"], layer: "spare", label: "cache", first: true },
     ]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     const d = r.diagram;
@@ -244,7 +240,6 @@ describe('a band in a lane of its name (specs/decisions, "A band in a lane of it
   const inLane = (lane: string) =>
     fromYaml(`grafical: 1
 title: lane
-density: normal
 layers:
   - {id: top, label: Top, nodes: [${node("a")}]}
   - {id: stores, label: Stores, lane: l, nodes: [${node("db", "store")}]}

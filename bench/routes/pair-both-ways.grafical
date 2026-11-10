@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "pair-both-ways"
-  density: normal
 }
 
 <layer> r0 {
@@ -58,31 +57,31 @@
   layer: @r1
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> c->a {
+<edge> c-a {
   from: @c
   to: @a
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call
 }
 
-<edge> d->b {
+<edge> d-b {
   from: @d
   to: @b
   type: @call
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call

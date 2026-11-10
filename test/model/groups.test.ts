@@ -14,7 +14,7 @@ import {
 import { createMeasurer } from "../../src/text/index.ts";
 import { nested } from "../fixtures/nested.ts";
 
-const empty: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
+const empty: Diagram = { grafical: 1, title: "T", layers: [], edges: [] };
 
 function ok(d: Diagram | null, ops: Op[]) {
   const r = applyOps(d, ops);
@@ -28,12 +28,12 @@ function fail(d: Diagram | null, ops: Op[]): OpError[] {
 }
 
 const base: Diagram = ok(empty, [
-  { op: "layer.add", id: "r1", label: "R1" },
-  { op: "layer.add", id: "r2", label: "R2" },
-  { op: "layer.add", id: "r3", label: "R3" },
-  { op: "node.add", id: "a", layer: "r1", label: "A" },
-  { op: "node.add", id: "b", layer: "r2", label: "B" },
-  { op: "node.add", id: "c", layer: "r3", label: "C" },
+  { op: "layer.set", ids: ["r1"], label: "R1" },
+  { op: "layer.set", ids: ["r2"], label: "R2" },
+  { op: "layer.set", ids: ["r3"], label: "R3" },
+  { op: "node.set", ids: ["a"], layer: "r1", label: "A" },
+  { op: "node.set", ids: ["b"], layer: "r2", label: "B" },
+  { op: "node.set", ids: ["c"], layer: "r3", label: "C" },
 ]).diagram;
 
 const groupOf = (d: Diagram, id: string) =>
@@ -42,14 +42,14 @@ const groupOf = (d: Diagram, id: string) =>
 describe("file format", () => {
   it("round-trips subtitle, note, groups and node group in a fixed key order", () => {
     const d = ok(base, [
-      { op: "diagram.subtitle", text: "One sentence." },
-      { op: "diagram.caption", text: "Not shown: x." },
-      { op: "group.add", id: "g", label: "G", nodes: ["a", "b"] },
+      { op: "diagram.set", subtitle: "One sentence." },
+      { op: "diagram.set", caption: "Not shown: x." },
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["a", "b"], group: "g" },
     ]).diagram;
     const text = writeDiagram(d);
     expect(text.indexOf("subtitle:")).toBeGreaterThan(text.indexOf("title:"));
     expect(text.indexOf("caption:")).toBeGreaterThan(text.indexOf("subtitle:"));
-    expect(text.indexOf("caption:")).toBeLessThan(text.indexOf("density:"));
     expect(text.indexOf("<group> g {")).toBeGreaterThan(text.indexOf("<layer> r1 {"));
     expect(text.indexOf("<group> g {")).toBeLessThan(text.indexOf("<order> layers {"));
     expect(text).toMatch(
@@ -109,7 +109,8 @@ describe("file format", () => {
 
   it("keeps the sublabel a group is added with", () => {
     const d = ok(base, [
-      { op: "group.add", id: "g", label: "G", sublabel: "write side", nodes: ["a"] },
+      { op: "group.set", ids: ["g"], label: "G", sublabel: "write side" },
+      { op: "node.set", ids: ["a"], group: "g" },
     ]);
     expect(d.diagram.groups?.[0]?.sublabel).toBe("write side");
   });
@@ -122,10 +123,11 @@ describe("file format", () => {
 });
 
 describe("group operations", () => {
-  it("group.add with nodes, and without", () => {
+  it("group --set, with nodes that join it, and without", () => {
     const r = ok(base, [
-      { op: "group.add", id: "g", label: "G", nodes: ["a", "b"] },
-      { op: "group.add", id: "empty", label: "Empty" },
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["a", "b"], group: "g" },
+      { op: "group.set", ids: ["empty"], label: "Empty" },
     ]);
     expect(r.diagram.groups).toEqual([
       { id: "g", label: "G" },
@@ -136,44 +138,56 @@ describe("group operations", () => {
     expect(base.groups).toBeUndefined();
   });
 
-  it("group.add refuses a taken id and an unknown node", () => {
-    expect(fail(base, [{ op: "group.add", id: "a", label: "G" }])[0]?.code).toBe("duplicate-id");
-    const e = fail(base, [{ op: "group.add", id: "g", label: "G", nodes: ["zz"] }]);
-    expect(e[0]).toMatchObject({ code: "unknown-node", field: "nodes" });
+  it("group --set refuses a taken id, and a node joins only once made", () => {
+    expect(fail(base, [{ op: "group.set", ids: ["a"], label: "G" }])[0]?.code).toBe("duplicate-id");
+    const e = fail(base, [
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["zz"], group: "g" },
+    ]);
+    // An id no node has makes a node, which needs a label.
+    expect(e[0]).toMatchObject({ code: "missing-field", field: "label" });
   });
 
-  it("group.join moves a node between groups, group.leave frees it", () => {
+  it("node --set --group moves a node between groups, and - frees it", () => {
     const d1 = ok(base, [
-      { op: "group.add", id: "g", label: "G", nodes: ["a"] },
-      { op: "group.add", id: "h", label: "H" },
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["a"], group: "g" },
+      { op: "group.set", ids: ["h"], label: "H" },
     ]).diagram;
-    const d2 = ok(d1, [{ op: "group.join", group: "h", nodes: ["a", "b"] }]).diagram;
+    const d2 = ok(d1, [{ op: "node.set", ids: ["a", "b"], group: "h" }]).diagram;
     expect(groupOf(d2, "a")).toBe("h");
     expect(groupOf(d2, "b")).toBe("h");
-    const d3 = ok(d2, [{ op: "group.leave", nodes: ["a", "c"] }]);
+    const d3 = ok(d2, [{ op: "node.set", ids: ["a", "c"], group: "-" }]);
     expect(groupOf(d3.diagram, "a")).toBeUndefined();
     expect(d3.changed).toEqual(["a"]);
-    expect(fail(d1, [{ op: "group.join", group: "x", nodes: ["a"] }])[0]).toMatchObject({
+    expect(fail(d1, [{ op: "node.set", ids: ["a"], group: "x" }])[0]).toMatchObject({
       code: "unknown-group",
       field: "group",
     });
-    expect(fail(d1, [{ op: "group.leave", nodes: ["zz"] }])[0]?.code).toBe("unknown-node");
+    expect(fail(d1, [{ op: "node.set", ids: ["zz"], group: "-" }])[0]?.code).toBe("missing-field");
   });
 
-  it("group.rename and group.remove keep the members", () => {
-    const d1 = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a", "b"] }]).diagram;
-    const d2 = ok(d1, [{ op: "group.label", id: "g", label: "New" }]).diagram;
+  it("a new label and group --remove keep the members", () => {
+    const d1 = ok(base, [
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["a", "b"], group: "g" },
+    ]).diagram;
+    const d2 = ok(d1, [{ op: "group.set", ids: ["g"], label: "New" }]).diagram;
     expect(d2.groups?.[0]?.label).toBe("New");
-    const d3 = ok(d2, [{ op: "group.remove", id: "g" }]);
+    const d3 = ok(d2, [{ op: "group.remove", ids: ["g"] }]);
     expect(d3.diagram.groups).toBeUndefined();
     expect(groupOf(d3.diagram, "a")).toBeUndefined();
     expect(d3.changed).toEqual(["g", "a", "b"]);
-    expect(fail(d1, [{ op: "group.remove", id: "zz" }])[0]?.code).toBe("unknown-group");
-    expect(fail(d1, [{ op: "group.label", id: "zz", label: "x" }])[0]?.code).toBe("unknown-group");
+    expect(fail(d1, [{ op: "group.remove", ids: ["zz"] }])[0]?.code).toBe("unknown-group");
+    const made = ok(d1, [{ op: "group.set", ids: ["zz"], label: "x" }]).diagram;
+    expect(made.groups?.map((g) => g.id)).toEqual(["g", "zz"]);
   });
 
   it("a group's frame spans a layer it has no member in, and that layer's nodes sit beside it (specs/decisions, \"Layers unseen, groups as systems\")", async () => {
-    const d = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a", "c"] }]).diagram;
+    const d = ok(base, [
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["a", "c"], group: "g" },
+    ]).diagram;
     const real = await createMeasurer();
     const s = layout(d, real);
     const frame = s.groups?.find((x) => x.id === "g")?.rect;
@@ -185,22 +199,27 @@ describe("group operations", () => {
     expect(b.x >= frame.x + frame.w || b.x + b.w <= frame.x).toBe(true);
     expect(check(d, s, real)).toEqual([]);
     // A member may leave the middle layer too.
-    const d2 = ok(d, [{ op: "group.join", group: "g", nodes: ["b"] }]).diagram;
-    expect(groupOf(ok(d2, [{ op: "group.leave", nodes: ["b"] }]).diagram, "b")).toBeUndefined();
+    const d2 = ok(d, [{ op: "node.set", ids: ["b"], group: "g" }]).diagram;
+    expect(
+      groupOf(ok(d2, [{ op: "node.set", ids: ["b"], group: "-" }]).diagram, "b"),
+    ).toBeUndefined();
   });
 
   it('group-split: a non-member between members in one layer is refused by the layout (specs/decisions, "Layers unseen, groups as systems")', () => {
     const withLayer = ok(empty, [
-      { op: "layer.add", id: "r", label: "R" },
-      { op: "node.add", id: "x", layer: "r", label: "X", last: true },
-      { op: "node.add", id: "y", layer: "r", label: "Y", last: true },
-      { op: "node.add", id: "z", layer: "r", label: "Z", last: true },
+      { op: "layer.set", ids: ["r"], label: "R" },
+      { op: "node.set", ids: ["x"], layer: "r", label: "X", last: true },
+      { op: "node.set", ids: ["y"], layer: "r", label: "Y", last: true },
+      { op: "node.set", ids: ["z"], layer: "r", label: "Z", last: true },
     ]).diagram;
-    const e = fail(withLayer, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "z"] }]);
+    const e = fail(withLayer, [
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["x", "z"], group: "g" },
+    ]);
     // No field of the operation is at fault: the facts say which node stands between which members.
     expect(e[0]).toEqual({
       code: "group-split",
-      index: 0,
+      index: 1,
       found: "",
       facts: { node: "y", layer: "r", group: "g", between: ["x", "z"] },
       whole: true,
@@ -208,76 +227,82 @@ describe("group operations", () => {
       stage: 3,
     });
     // Joining the node in between, or grouping neighbours, is fine.
-    ok(withLayer, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y", "z"] }]);
-    ok(withLayer, [{ op: "group.add", id: "g", label: "G", nodes: ["x", "y"] }]);
+    ok(withLayer, [
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["x", "y", "z"], group: "g" },
+    ]);
+    ok(withLayer, [
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["x", "y"], group: "g" },
+    ]);
   });
 
   it("group-split: a node placed by steps between members is named, and may join or take a layer", () => {
     // c hangs right of y; swapping x and y puts c between the group's members.
     const withLayer = ok(empty, [
-      { op: "layer.add", id: "r", label: "R" },
-      { op: "node.add", id: "x", layer: "r", label: "X", last: true },
-      { op: "node.add", id: "y", layer: "r", label: "Y", last: true },
-      { op: "node.add", id: "z", layer: "r", label: "Z", last: true },
-      { op: "node.add", id: "c", label: "C", from: "y", right: 1 },
-      { op: "group.add", id: "g", label: "G", nodes: ["x", "y"] },
+      { op: "layer.set", ids: ["r"], label: "R" },
+      { op: "node.set", ids: ["x"], layer: "r", label: "X", last: true },
+      { op: "node.set", ids: ["y"], layer: "r", label: "Y", last: true },
+      { op: "node.set", ids: ["z"], layer: "r", label: "Z", last: true },
+      { op: "node.set", ids: ["c"], label: "C", from: "y", right: "1" },
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["x", "y"], group: "g" },
     ]).diagram;
-    const swap: Op = { op: "node.swap", a: "x", b: "y" };
+    const swap: Op = { op: "node.move", ids: ["x"], layer: "r", after: "y" };
     const e = fail(withLayer, [swap]);
     expect(e[0]).toMatchObject({
       code: "group-split",
       facts: { node: "c", layer: "r", group: "g", between: ["y", "x"] },
     });
-    // Joining the group, or taking a place in the layer beside it, after the swap, is a change grafical accepts.
-    ok(withLayer, [swap, { op: "group.join", group: "g", nodes: ["c"] }]);
-    ok(withLayer, [swap, { op: "node.move", id: "c", layer: "r", before: "y" }]);
-    ok(withLayer, [swap, { op: "node.move", id: "c", layer: "r", after: "x" }]);
+    // Joining the group, or taking a place in the layer beside it, before the swap, is a change grafical accepts.
+    ok(withLayer, [{ op: "node.set", ids: ["c"], group: "g" }, swap]);
+    ok(withLayer, [{ op: "node.move", ids: ["c"], layer: "r", first: true }, swap]);
+    ok(withLayer, [{ op: "node.move", ids: ["c"], layer: "r", last: true }, swap]);
   });
 
   it("group-split in nested groups names the innermost group around the node", () => {
     const withLayer = ok(empty, [
-      { op: "layer.add", id: "r", label: "R" },
-      { op: "node.add", id: "a", layer: "r", label: "A", last: true },
-      { op: "node.add", id: "b", layer: "r", label: "B", last: true },
-      { op: "node.add", id: "x", layer: "r", label: "X", last: true },
-      { op: "node.add", id: "d", layer: "r", label: "D", last: true },
-      { op: "group.add", id: "outer", label: "Outer", nodes: ["a"] },
+      { op: "layer.set", ids: ["r"], label: "R" },
+      { op: "node.set", ids: ["a"], layer: "r", label: "A", last: true },
+      { op: "node.set", ids: ["b"], layer: "r", label: "B", last: true },
+      { op: "node.set", ids: ["x"], layer: "r", label: "X", last: true },
+      { op: "node.set", ids: ["d"], layer: "r", label: "D", last: true },
+      { op: "group.set", ids: ["outer"], label: "Outer" },
+      { op: "node.set", ids: ["a"], group: "outer" },
     ]).diagram;
-    const inner: Op = {
-      op: "group.add",
-      id: "inner",
-      label: "Inner",
-      nodes: ["b", "d"],
-      in: "outer",
-    };
-    const e = fail(withLayer, [inner]);
+    const made: Op = { op: "group.set", ids: ["inner"], label: "Inner", in: "outer" };
+    const inner: Op[] = [made, { op: "node.set", ids: ["b", "d"], group: "inner" }];
+    const e = fail(withLayer, inner);
     // Joining the outer group alone, or a place between a and b, would leave x inside the inner one.
     expect(e[0]).toMatchObject({
       code: "group-split",
       facts: { node: "x", layer: "r", group: "inner", between: ["b", "d"] },
     });
-    ok(withLayer, [inner, { op: "group.join", group: "inner", nodes: ["x"] }]);
-    ok(withLayer, [inner, { op: "node.move", id: "x", layer: "r", before: "a" }]);
-    ok(withLayer, [inner, { op: "node.move", id: "x", layer: "r", after: "d" }]);
+    ok(withLayer, [made, { op: "node.set", ids: ["b", "x", "d"], group: "inner" }]);
+    ok(withLayer, [{ op: "node.move", ids: ["x"], layer: "r", before: "a" }, ...inner]);
+    ok(withLayer, [{ op: "node.move", ids: ["x"], layer: "r", after: "d" }, ...inner]);
   });
 
   it("node.remove keeps the group, even empty", () => {
-    const d1 = ok(base, [{ op: "group.add", id: "g", label: "G", nodes: ["a"] }]).diagram;
-    const d2 = ok(d1, [{ op: "node.remove", id: "a" }]).diagram;
+    const d1 = ok(base, [
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["a"], group: "g" },
+    ]).diagram;
+    const d2 = ok(d1, [{ op: "node.remove", ids: ["a"] }]).diagram;
     expect(d2.groups).toEqual([{ id: "g", label: "G" }]);
   });
 
-  it("parses operation items, and reports an empty node list", () => {
-    expect(parseOp({ op: "group.join", group: "g", nodes: ["a"] }, 0)).toEqual({
-      op: "group.join",
+  it("parses operation items, and reports an empty id list", () => {
+    expect(parseOp({ op: "node.set", ids: ["a"], group: "g" }, 0)).toEqual({
+      op: "node.set",
+      ids: ["a"],
       group: "g",
-      nodes: ["a"],
     });
-    expect((parseOp({ op: "group.leave", nodes: [] }, 0) as OpError[])[0]?.code).toBe(
+    expect((parseOp({ op: "node.set", ids: [], group: "-" }, 0) as OpError[])[0]?.code).toBe(
       "empty-value",
     );
     expect(
-      (parseOp({ op: "group.add", id: "g", label: "x", lable: "x" }, 0) as OpError[])[0]?.code,
+      (parseOp({ op: "group.set", ids: ["g"], label: "x", lable: "x" }, 0) as OpError[])[0]?.code,
     ).toBe("unknown-field");
   });
 });
@@ -288,74 +313,79 @@ describe('groups inside groups (specs/decisions, "Every layered diagram type")',
     d.layers.flatMap((l) => l.nodes).find((n) => n.id === id)?.group;
 
   it("adds a group inside another, and refuses a fourth level or a missing parent", () => {
-    const d = ok(nested, [{ op: "group.add", id: "zone", label: "zone b", in: "region" }]).diagram;
+    const d = ok(nested, [
+      { op: "group.set", ids: ["zone"], label: "zone b", in: "region" },
+    ]).diagram;
     expect(parentOf(d, "zone")).toBe("region");
     expect(
-      fail(nested, [{ op: "group.add", id: "rack", label: "rack", in: "private" }])[0]?.code,
+      fail(nested, [{ op: "group.set", ids: ["rack"], label: "rack", in: "private" }])[0]?.code,
     ).toBe("group-too-deep");
     expect(
-      fail(nested, [{ op: "group.add", id: "rack", label: "rack", in: "nope" }])[0],
+      fail(nested, [{ op: "group.set", ids: ["rack"], label: "rack", in: "nope" }])[0],
     ).toMatchObject({
       code: "unknown-group",
       field: "in",
     });
   });
 
-  it("moves a group, with everything in it, by join and leave", () => {
-    const joined = ok(nested, [{ op: "group.join", group: "region", nodes: ["public"] }]).diagram;
+  it("moves a group, with everything in it, by --in", () => {
+    const joined = ok(nested, [{ op: "group.set", ids: ["public"], in: "region" }]).diagram;
     expect(parentOf(joined, "public")).toBe("region");
     expect(groupOfNode(joined, "lb")).toBe("public");
-    const left = ok(nested, [{ op: "group.leave", nodes: ["public"] }]).diagram;
+    const left = ok(nested, [{ op: "group.set", ids: ["public"], in: "-" }]).diagram;
     expect(parentOf(left, "public")).toBeUndefined();
-    const up = ok(nested, [{ op: "group.leave", nodes: ["public"], up: true }]).diagram;
+    const up = ok(nested, [{ op: "group.set", ids: ["public"], in: "region" }]).diagram;
     expect(parentOf(up, "public")).toBe("region");
-    expect(fail(nested, [{ op: "group.join", group: "public", nodes: ["vpc"] }])[0]?.code).toBe(
+    expect(fail(nested, [{ op: "group.set", ids: ["vpc"], in: "public" }])[0]?.code).toBe(
       "group-cycle",
     );
     const zone = ok(nested, [
-      { op: "group.add", id: "zone", label: "zone b", in: "region" },
+      { op: "group.set", ids: ["zone"], label: "zone b", in: "region" },
     ]).diagram;
-    expect(fail(zone, [{ op: "group.join", group: "zone", nodes: ["vpc"] }])[0]?.code).toBe(
+    expect(fail(zone, [{ op: "group.set", ids: ["vpc"], in: "zone" }])[0]?.code).toBe(
       "group-too-deep",
     );
   });
 
-  it("takes a node out of every group, or one level out with up", () => {
+  it("takes a node out of every group, or one level out into the group around", () => {
     expect(
-      groupOfNode(ok(nested, [{ op: "group.leave", nodes: ["api"] }]).diagram, "api"),
+      groupOfNode(ok(nested, [{ op: "node.set", ids: ["api"], group: "-" }]).diagram, "api"),
     ).toBeUndefined();
     expect(
-      groupOfNode(ok(nested, [{ op: "group.leave", nodes: ["api"], up: true }]).diagram, "api"),
+      groupOfNode(ok(nested, [{ op: "node.set", ids: ["api"], group: "vpc" }]).diagram, "api"),
     ).toBe("vpc");
   });
 
   it("moves a removed group's nodes and inner groups into the group around it, or out of every group", () => {
-    const d = ok(nested, [{ op: "group.remove", id: "vpc" }]).diagram;
+    const d = ok(nested, [{ op: "group.remove", ids: ["vpc"] }]).diagram;
     expect(parentOf(d, "public")).toBe("region");
     expect(parentOf(d, "private")).toBe("region");
-    const p = ok(nested, [{ op: "group.remove", id: "private" }]).diagram;
+    const p = ok(nested, [{ op: "group.remove", ids: ["private"] }]).diagram;
     expect(groupOfNode(p, "api")).toBe("vpc");
-    const out = ok(nested, [{ op: "group.remove", id: "private", out: true }]).diagram;
+    const out = ok(nested, [{ op: "group.remove", ids: ["private"], out: true }]).diagram;
     expect(groupOfNode(out, "api")).toBeUndefined();
-    const all = ok(nested, [{ op: "group.remove", id: "vpc", out: true }]).diagram;
+    const all = ok(nested, [{ op: "group.remove", ids: ["vpc"], out: true }]).diagram;
     expect(parentOf(all, "public")).toBeUndefined();
   });
 });
 
-describe("diagram.subtitle and diagram.note", () => {
+describe("the diagram's subtitle and caption", () => {
   it("set, replace and clear", () => {
-    const d1 = ok(base, [{ op: "diagram.subtitle", text: "Hello." }]).diagram;
+    const d1 = ok(base, [{ op: "diagram.set", subtitle: "Hello." }]).diagram;
     expect(d1.subtitle).toBe("Hello.");
-    const d2 = ok(d1, [{ op: "diagram.caption", text: "Not shown: x." }]).diagram;
+    const d2 = ok(d1, [{ op: "diagram.set", caption: "Not shown: x." }]).diagram;
     expect(d2.caption).toBe("Not shown: x.");
-    const d3 = ok(d2, [{ op: "diagram.subtitle" }, { op: "diagram.caption" }]).diagram;
+    const d3 = ok(d2, [
+      { op: "diagram.set", subtitle: "-" },
+      { op: "diagram.set", caption: "-" },
+    ]).diagram;
     expect(d3.subtitle).toBeUndefined();
     expect(d3.caption).toBeUndefined();
     expect(writeDiagram(d3)).toBe(writeDiagram(base));
   });
 
-  it("diagram.new takes them", () => {
-    const d = ok(null, [{ op: "diagram.new", title: "T", subtitle: "S", caption: "N" }]).diagram;
+  it("diagram --set takes them as it makes the file", () => {
+    const d = ok(null, [{ op: "diagram.set", title: "T", subtitle: "S", caption: "N" }]).diagram;
     expect(d).toMatchObject({ subtitle: "S", caption: "N" });
   });
 });

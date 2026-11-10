@@ -48,7 +48,7 @@ describe("changedParts", () => {
   });
 
   it("marks a renamed node and nothing else", () => {
-    const after = layout(edited(tiny, { op: "node.label", id: "api", label: "orders-svc" }), m);
+    const after = layout(edited(tiny, { op: "node.set", ids: ["api"], label: "orders-svc" }), m);
     const api = after.nodes.find((n) => n.id === "api");
     expect(changedParts(layout(tiny, m), after)).toEqual([api?.rect]);
   });
@@ -56,7 +56,13 @@ describe("changedParts", () => {
   it("marks a new node but not the nodes it pushed aside", () => {
     const before = layout(tiny, m);
     const after = layout(
-      edited(tiny, { op: "node.add", id: "cache", layer: "services", label: "cache", first: true }),
+      edited(tiny, {
+        op: "node.set",
+        ids: ["cache"],
+        layer: "services",
+        label: "cache",
+        first: true,
+      }),
       m,
     );
     const moved = after.nodes.filter((n) => {
@@ -69,7 +75,10 @@ describe("changedParts", () => {
   });
 
   it("marks a new edge with a box around its route", () => {
-    const after = layout(edited(tiny, { op: "edge.add", from: "web", to: "worker" }), m);
+    const after = layout(
+      edited(tiny, { op: "edge.set", ids: ["web-worker"], from: "web", to: "worker" }),
+      m,
+    );
     const marks = changedParts(layout(tiny, m), after);
     const route = after.edges.find((e) => e.from === "web" && e.to === "worker")?.points ?? [];
     expect(marks).toHaveLength(1);
@@ -104,26 +113,33 @@ async function frames(url: string) {
 }
 
 describe("the list of changes and the window", () => {
-  it("describes operations in a few words", () => {
+  it("describes each change as the command that makes it", () => {
     expect(
       describeOp({
-        op: "node.add",
-        id: "search",
+        op: "node.set",
+        ids: ["search"],
         layer: "services",
         label: "search-api",
-        type: "service",
         after: "bff",
       }),
-    ).toBe('node add search "search-api" in services');
+    ).toBe("node --set search --layer services --label search-api --after bff");
     expect(
-      describeOp({ op: "edge.add", from: "bff", to: "search", label: "query", type: "call" }),
-    ).toBe('edge add bff → search "query"');
-    expect(describeOp({ op: "lane.join", lane: "webteam", members: ["search"] })).toBe(
-      "lane join webteam search",
+      describeOp({
+        op: "edge.set",
+        ids: ["bff-search"],
+        from: "bff",
+        to: "search",
+        label: "a query",
+      }),
+    ).toBe('edge --set bff-search --from bff --to search --label "a query"');
+    expect(describeOp({ op: "layer.set", ids: ["web", "data"], lane: "webteam" })).toBe(
+      "layer --set web,data --lane webteam",
     );
-    expect(describeOp({ op: "diagram.style", style: "dark" })).toBe("diagram style dark");
-    expect(describeOp({ op: "node.emphasis", id: "payments", off: true })).toBe(
-      "node emphasis payments off",
+    expect(describeOp({ op: "diagram.set", stylesheet: "dark" })).toBe(
+      "diagram --set --stylesheet dark",
+    );
+    expect(describeOp({ op: "group.remove", ids: ["g"], out: true })).toBe(
+      "group --remove g --out",
     );
   });
 
@@ -157,14 +173,14 @@ describe("startViewer", () => {
 
       // An edit by another process, the way an agent makes it.
       expect(
-        (await runWrite(file, { op: "node.label", id: "api", label: "orders-svc" }, here)).ok,
+        (await runWrite(file, { op: "node.set", ids: ["api"], label: "orders-svc" }, here)).ok,
       ).toBe(true);
       const renamed = await stream.next();
       expect(renamed.svg).toContain("orders-svc");
       expect(renamed.changed).toHaveLength(1);
       expect(renamed.event).toMatchObject({
         kind: "change",
-        lines: ['node label api "orders-svc"'],
+        lines: ["node --set api --label orders-svc"],
       });
 
       // A broken file keeps the last good picture and says why.
@@ -181,7 +197,7 @@ describe("startViewer", () => {
         sheet,
         "<stylesheet> {\n  format: 1\n}\n\n<type> diagram {\n  fill: #fafafa\n}\n",
       );
-      writeFileSync(file, writeDiagram({ ...tiny, style: "house.grafical" }));
+      writeFileSync(file, writeDiagram({ ...tiny, stylesheet: "house.grafical" }));
       const styled = await stream.next();
       expect(styled.stale).toBe(false);
       expect(styled.svg).toContain("#fafafa");
@@ -207,7 +223,7 @@ describe("startViewer", () => {
       expect(waiting.svg).toBe("");
       expect(waiting.stale).toBe(true);
       expect(waiting.problems.join("\n")).toContain("file-not-found");
-      expect((await runWrite(file, { op: "diagram.new", title: "Later" }, here, true)).ok).toBe(
+      expect((await runWrite(file, { op: "diagram.set", title: "Later" }, here, true)).ok).toBe(
         true,
       );
       const drawn = await stream.next();

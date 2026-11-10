@@ -20,7 +20,6 @@ describe("group label seats", () => {
     const d = readDiagram(`<diagram> {
   format: 1
   title: "seats"
-  density: normal
 }
 
 <layer> people {
@@ -90,19 +89,19 @@ describe("group label seats", () => {
   group: @app
 }
 
-<edge> traveller->web {
+<edge> traveller-web {
   from: @traveller
   to: @web
   type: @call
 }
 
-<edge> traveller->mobile {
+<edge> traveller-mobile {
   from: @traveller
   to: @mobile
   type: @call
 }
 
-<edge> hotel->portal {
+<edge> hotel-portal {
   from: @hotel
   to: @portal
   type: @call
@@ -127,8 +126,8 @@ describe("group label seats", () => {
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
     for (const [id, to] of [
-      ["traveller->web", "web"],
-      ["hotel->portal", "portal"],
+      ["traveller-web", "web"],
+      ["hotel-portal", "portal"],
     ]) {
       const e = s.edges.find((x) => x.id === id);
       const r = s.nodes.find((n) => n.id === to)?.rect;

@@ -28,7 +28,7 @@ describe("Haiku's catalog-sync build", () => {
     const problems: string[] = [];
     const agent = new Set<string>();
     const placed = (op: Op): Op =>
-      op.op === "node.add" &&
+      op.op === "node.set" &&
       op.from === undefined &&
       op.first === undefined &&
       op.last === undefined &&

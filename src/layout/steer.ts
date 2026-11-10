@@ -22,7 +22,7 @@ interface World {
 }
 
 const EPS = 0.01;
-/** How far apart two runs of one axis stay, one track pitch of the tightest density. */
+/** How far apart two runs of one axis stay, one track pitch. */
 const CLEAR = 12;
 const flat = (a: Point, b: Point) => Math.abs(a.y - b.y) < EPS;
 const round4 = (n: number) => Math.round(n / 4) * 4;

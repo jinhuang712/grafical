@@ -2,7 +2,6 @@
   format: 1
   title: "Highly available web app"
   subtitle: "Two availability zones; the database fails over to the standby."
-  density: normal
 }
 
 <layer> row-users {
@@ -186,67 +185,67 @@
   group: @data-b
 }
 
-<edge> users->dns {
+<edge> users-dns {
   from: @users
   to: @dns
   type: @call
 }
 
-<edge> users->cdn {
+<edge> users-cdn {
   from: @users
   to: @cdn
   type: @call
 }
 
-<edge> cdn->s3 {
+<edge> cdn-s3 {
   from: @cdn
   to: @s3
   type: @call
 }
 
-<edge> cdn->alb {
+<edge> cdn-alb {
   from: @cdn
   to: @alb
   type: @call
 }
 
-<edge> alb->web-a {
+<edge> alb-web-a {
   from: @alb
   to: @web-a
   type: @call
 }
 
-<edge> alb->web-b {
+<edge> alb-web-b {
   from: @alb
   to: @web-b
   type: @call
 }
 
-<edge> web-a->rds-a {
+<edge> web-a-rds-a {
   from: @web-a
   to: @rds-a
   type: @call
 }
 
-<edge> web-b->rds-a {
+<edge> web-b-rds-a {
   from: @web-b
   to: @rds-a
   type: @call
 }
 
-<edge> rds-a->rds-b {
+<edge> rds-a-rds-b {
   from: @rds-a
   to: @rds-b
   type: @call
 }
 
-<edge> web-a->nat-a {
+<edge> web-a-nat-a {
   from: @web-a
   to: @nat-a
   type: @optional
 }
 
-<edge> web-b->nat-b {
+<edge> web-b-nat-b {
   from: @web-b
   to: @nat-b
   type: @optional
@@ -332,17 +331,17 @@
   text: "Private subnet"
 }
 
-<label> rds-a->rds-b-label {
-  on: @rds-a->rds-b
+<label> rds-a-rds-b-label {
+  on: @rds-a-rds-b
   text: "sync replication"
 }
 
-<label> web-a->nat-a-label {
-  on: @web-a->nat-a
+<label> web-a-nat-a-label {
+  on: @web-a-nat-a
   text: "outbound"
 }
 
-<label> web-b->nat-b-label {
-  on: @web-b->nat-b
+<label> web-b-nat-b-label {
+  on: @web-b-nat-b
   text: "outbound"
 }

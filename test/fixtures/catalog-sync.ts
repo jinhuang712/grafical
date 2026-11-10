@@ -12,7 +12,6 @@ import { e, n } from "./build.ts";
 export const catalogSync: Diagram = {
   grafical: 1,
   title: "catalog-sync and catalog-api",
-  density: "normal",
   layers: [
     {
       id: "upstream",

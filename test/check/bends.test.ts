@@ -50,17 +50,16 @@ const scene = (edges: SceneEdge[]): Scene => ({
 const diagram: Diagram = {
   grafical: 1,
   title: "T",
-  density: "normal",
   layers: [
     { id: "top", label: "Top", nodes: [{ id: "a", label: "a", kind: "service", size: "m" }] },
     { id: "low", label: "Low", nodes: [{ id: "b", label: "b", kind: "service", size: "m" }] },
   ],
-  edges: [{ id: "a->b", from: "a", to: "b", kind: "call" }],
+  edges: [{ id: "a-b", from: "a", to: "b", kind: "call" }],
 };
 
 describe('edges bent for no reason (specs/decisions, "Who chose is punished")', () => {
   it("are an engine defect when one x would have served both ends", () => {
-    const bent = makeEdge("a->b", "a", "b", [
+    const bent = makeEdge("a-b", "a", "b", [
       [150, 88],
       [150, 140],
       [130, 140],
@@ -68,15 +67,15 @@ describe('edges bent for no reason (specs/decisions, "Who chose is punished")', 
     ]);
     const found = check(diagram, scene([bent]), createStubMeasurer());
     expect(found.map((d) => [d.code, d.owner, d.elements])).toEqual([
-      ["needless-bend", "engine", ["a->b"]],
+      ["needless-bend", "engine", ["a-b"]],
     ]);
-    const straight = makeEdge("a->b", "a", "b", [
+    const straight = makeEdge("a-b", "a", "b", [
       [140, 88],
       [140, 200],
     ]);
     expect(check(diagram, scene([straight]), createStubMeasurer())).toEqual([]);
     // A port outside the other node's side cannot meet it straight: no defect.
-    const wide = makeEdge("a->b", "a", "b", [
+    const wide = makeEdge("a-b", "a", "b", [
       [52, 88],
       [52, 140],
       [80, 140],
@@ -91,7 +90,7 @@ describe('edges bent for no reason (specs/decisions, "Who chose is punished")', 
     const file = join(import.meta.dirname, "../fixtures/catalog-sync-help3.grafical");
     const d = readDiagram(readFileSync(file, "utf8")) as Diagram;
     const s = layout(d, m);
-    for (const id of ["sync->retry-topic", "retry-topic->sync"]) {
+    for (const id of ["sync-retry-topic", "retry-topic-sync"]) {
       expect(s.edges.find((e) => e.id === id)?.points.length, id).toBe(2);
     }
     expect(check(d, s, m)).toEqual([]);

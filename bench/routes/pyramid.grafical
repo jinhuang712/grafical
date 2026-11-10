@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "pyramid"
-  density: normal
 }
 
 <layer> r0 {
@@ -120,73 +119,73 @@
   layer: @r3
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call
 }
 
-<edge> b->e {
+<edge> b-e {
   from: @b
   to: @e
   type: @call
 }
 
-<edge> c->e {
+<edge> c-e {
   from: @c
   to: @e
   type: @call
 }
 
-<edge> c->f {
+<edge> c-f {
   from: @c
   to: @f
   type: @call
 }
 
-<edge> d->g {
+<edge> d-g {
   from: @d
   to: @g
   type: @call
 }
 
-<edge> d->h {
+<edge> d-h {
   from: @d
   to: @h
   type: @call
 }
 
-<edge> e->h {
+<edge> e-h {
   from: @e
   to: @h
   type: @call
 }
 
-<edge> e->i {
+<edge> e-i {
   from: @e
   to: @i
   type: @call
 }
 
-<edge> f->i {
+<edge> f-i {
   from: @f
   to: @i
   type: @call
 }
 
-<edge> f->j {
+<edge> f-j {
   from: @f
   to: @j
   type: @call

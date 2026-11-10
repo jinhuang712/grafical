@@ -54,28 +54,22 @@ export interface ViewEvent {
  */
 export function describeOp(op: Op): string {
   const o = op as unknown as Record<string, unknown>;
-  const words = [String(o.op).replace(".", " ")];
-  for (const key of ["id", "group", "lane"]) if (typeof o[key] === "string") words.push(o[key]);
-  if (o.from !== undefined || o.to !== undefined) words.push(`${o.from ?? "…"} → ${o.to ?? "…"}`);
-  for (const key of ["label", "text", "sublabel"]) {
-    if (typeof o[key] === "string") words.push(JSON.stringify(o[key]));
+  const [noun, verb] = String(o.op).split(".");
+  const words = [noun as string, `--${verb}`];
+  const say = (v: unknown) => {
+    const text = Array.isArray(v) ? v.join(",") : String(v);
+    return /^[^\s"]+$/.test(text) ? text : JSON.stringify(text);
+  };
+  for (const [key, v] of Object.entries(o)) {
+    // The command line reads a mark file's hash itself.
+    if (key === "op" || key === "sha256" || v === undefined || v === false) continue;
+    if (key === "ids" || key === "id") {
+      words.push(say(v));
+      continue;
+    }
+    const flag = `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+    words.push(v === true ? flag : `${flag} ${say(v)}`);
   }
-  if (typeof o.layer === "string") words.push(`in ${o.layer}`);
-  for (const key of ["nodes", "members", "edges"]) {
-    if (Array.isArray(o[key])) words.push((o[key] as string[]).join(", "));
-  }
-  const verb = String(o.op).split(".")[1];
-  for (const key of ["kind", "size", "style", "density", "mode", "line", "into"]) {
-    // A new node or edge of the default kind says nothing about its kind.
-    const plain =
-      key === "kind" &&
-      ((o.op === "node.add" && o[key] === "service") || (o.op === "edge.add" && o[key] === "call"));
-    if (o[key] === undefined || plain) continue;
-    // `diagram style dark`, not `diagram style style dark`.
-    words.push(key === verb ? String(o[key]) : `${key} ${String(o[key])}`);
-  }
-  if (o.both === true) words.push("both ends");
-  if (o.off === true) words.push("off");
   return words.join(" ");
 }
 

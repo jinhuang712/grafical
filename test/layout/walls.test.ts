@@ -24,11 +24,11 @@ function ok(d: Diagram, ops: Op[]): Diagram {
 }
 
 const net = (label?: string): Op => ({
-  op: "wall.add",
-  id: "net",
-  between: ["upstream", "callers"],
-  and: ["catalog-sync", "catalog-api"],
-  allow: ["relay", "handlers"],
+  op: "wall.set",
+  ids: ["net"],
+  between: "upstream,callers",
+  and: "catalog-sync,catalog-api",
+  allow: "relay,handlers",
   ...(label === undefined ? {} : { label }),
 });
 
@@ -98,20 +98,20 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
       {
         code: "label-blocked",
         owner: "agent",
-        elements: ["net", "upstream->relay"],
+        elements: ["net", "upstream-relay"],
         facts: { is: "wall" },
       },
     ]);
     // Dropping the label is a change grafical accepts, and the wall stays as space.
-    const bare = ok(d, [{ op: "wall.label", id: "net" }]);
+    const bare = ok(d, [{ op: "wall.set", ids: ["net"], label: "-" }]);
     expect(check(bare, layout(bare, m), m)).toEqual([]);
   });
 
   it("reports an edge that passes through it, unless it allows the edge", () => {
     const d = ok(fx, [
       net(),
-      { op: "node.add", id: "ops", layer: "sources", label: "ops console", before: "callers" },
-      { op: "edge.add", from: "ops", to: "geo" },
+      { op: "node.set", ids: ["ops"], layer: "sources", label: "ops console", before: "callers" },
+      { op: "edge.set", ids: ["ops-geo"], from: "ops", to: "geo" },
     ]);
     // The edge ends at neither side, so only the drawing finds it.
     const found = check(d, layout(d, m), m).filter((x) => x.code === "wall-crossed");
@@ -119,22 +119,22 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
       {
         code: "wall-crossed",
         owner: "agent",
-        elements: ["ops->geo", "net"],
+        elements: ["ops-geo", "net"],
         facts: {},
       },
     ]);
-    const allowed = ok(d, [{ op: "wall.allow", id: "net", allow: ["ops"] }]);
+    const allowed = ok(d, [{ op: "wall.set", ids: ["net"], allow: "relay,handlers,ops" }]);
     expect(check(allowed, layout(allowed, m), m)).toEqual([]);
   });
 
   it("up and down, is space between the columns of its sides, in the layers they span", () => {
     const d = ok(fx, [
       {
-        op: "wall.add",
-        id: "split",
-        between: ["catalog-sync"],
-        and: ["catalog-api", "mongo"],
-        allow: ["mongo"],
+        op: "wall.set",
+        ids: ["split"],
+        between: "catalog-sync",
+        and: "catalog-api,mongo",
+        allow: "mongo",
         label: "team boundary",
       },
     ]);
@@ -164,11 +164,11 @@ describe('a wall across (specs/decisions, "Walls as space")', () => {
         id: "net",
         run: "across",
         space: WALL.space,
-        edges: ["callers->handlers", "upstream->relay"],
+        edges: ["callers-handlers", "upstream-relay"],
       }),
     ]);
     expect(drawingText(dr)).toMatch(
-      /\nwall id=net run=across length=\d+ space=48 edges=callers->handlers,upstream->relay\n/,
+      /\nwall id=net run=across length=\d+ space=48 edges=callers-handlers,upstream-relay\n/,
     );
   });
 });

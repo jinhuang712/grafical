@@ -2,7 +2,6 @@
   format: 1
   title: "Order fulfilment"
   subtitle: "Who does what, from order to payment."
-  density: normal
 }
 
 <layer> r-cust {
@@ -160,55 +159,55 @@
   column: @c7
 }
 
-<edge> order->check {
+<edge> order-check {
   from: @order
   to: @check
   type: @call
 }
 
-<edge> check->pick {
+<edge> check-pick {
   from: @check
   to: @pick
   type: @call
 }
 
-<edge> check->backorder {
+<edge> check-backorder {
   from: @check
   to: @backorder
   type: @call
 }
 
-<edge> backorder->order {
+<edge> backorder-order {
   from: @backorder
   to: @order
   type: @optional
 }
 
-<edge> pick->ship {
+<edge> pick-ship {
   from: @pick
   to: @ship
   type: @call
 }
 
-<edge> ship->invoice {
+<edge> ship-invoice {
   from: @ship
   to: @invoice
   type: @call
 }
 
-<edge> ship->receive {
+<edge> ship-receive {
   from: @ship
   to: @receive
   type: @call
 }
 
-<edge> invoice->pay {
+<edge> invoice-pay {
   from: @invoice
   to: @pay
   type: @call
 }
 
-<edge> pay->close {
+<edge> pay-close {
   from: @pay
   to: @close
   type: @call
@@ -254,17 +253,17 @@
   text: "Finance"
 }
 
-<label> check->pick-label {
-  on: @check->pick
+<label> check-pick-label {
+  on: @check-pick
   text: "in stock"
 }
 
-<label> check->backorder-label {
-  on: @check->backorder
+<label> check-backorder-label {
+  on: @check-backorder
   text: "out of stock"
 }
 
-<label> backorder->order-label {
-  on: @backorder->order
+<label> backorder-order-label {
+  on: @backorder-order
   text: "reorder later"
 }

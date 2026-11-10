@@ -20,7 +20,6 @@ import { applyOps } from "../../src/model/index.ts";
 import { checkLanes, laneRun, orderByLanes } from "../../src/model/lanes.ts";
 import { checkIntegrity } from "../../src/model/schema.ts";
 import {
-  DENSITIES,
   type Diagram,
   type DiagramNode,
   EDGE_KINDS,
@@ -87,11 +86,13 @@ export function generate(seed: number, m: Measurer): Generated {
 
   const ops: Op[] = [];
   let rejected = 0;
-  const density = chance(0.6) ? "normal" : pick(DENSITIES);
+  // A diagram's spacing: the stylesheet's, or a built-in style that makes it tighter or roomier (specs/decisions,
+  // "Styles set spacing as CSS does, and a later style wins").
+  const spacing = chance(0.6) ? "normal" : pick(["compact", "normal", "airy"] as const);
   let d: Diagram = {
     grafical: 1,
     title: `fuzz ${seed}`,
-    density,
+    ...(spacing === "normal" ? {} : { style: [spacing] }),
     layers: [],
     edges: [],
   };
@@ -108,7 +109,7 @@ export function generate(seed: number, m: Measurer): Generated {
 
   const layerCount = int(3, 7);
   for (let i = 0; i < layerCount; i++) {
-    const op: Op = { op: "layer.add", id: `l${i}`, label: `Layer ${i} ${text(2, 10)}` };
+    const op: Op = { op: "layer.set", ids: [`l${i}`], label: `Layer ${i} ${text(2, 10)}` };
     if (i > 0 && chance(0.2)) op.before = `l${int(0, i - 1)}`;
     apply(op);
   }
@@ -121,16 +122,16 @@ export function generate(seed: number, m: Measurer): Generated {
     const id = `n${i}`;
     const layer = `l${int(0, layerCount - 1)}`;
     const op: Op = {
-      op: "node.add",
-      id,
-      layer,
+      op: "node.set",
+      ids: [id],
+      layer: layer,
       label: chance(0.15) ? text(2, 6) : `${pick(["svc", "db", "queue", "job", "api"])}-${i}`,
       type: pick(FIRST_NODE_KINDS),
       size: pick(SIZE_STEPS),
     };
     if (chance(0.3)) op.sublabel = chance(0.5) ? `:${7000 + i}` : text(2, 8);
     if (emphases < 2 && chance(0.05)) {
-      op.emphasis = true;
+      op.emphasis = "on";
       emphases++;
     }
     const inLayer = ids.filter((x) => layerOf.get(x) === layer);
@@ -155,7 +156,7 @@ export function generate(seed: number, m: Measurer): Generated {
   }
 
   const edgeCount = chance(0.05) ? 0 : int(1, 80);
-  // Layers by their place in the picture, which layer.add --before may have changed.
+  // Layers by their place in the picture, which layer.set --before may have changed.
   const order = d.layers.map((l) => l.id);
   const layerIdx = (id: string) => order.indexOf(layerOf.get(id) ?? "");
   const inLayer = (l: number) => ids.filter((x) => layerIdx(x) === l);
@@ -184,7 +185,10 @@ export function generate(seed: number, m: Measurer): Generated {
   }
 
   function addEdge(from: string, to: string) {
-    const op: Op = { op: "edge.add", from, to, type: pick(FIRST_EDGE_KINDS) };
+    // Its ends' id, or that id with the first number no edge has, as an agent names a second edge.
+    let id = `${from}-${to}`;
+    for (let n = 2; d.edges.some((e) => e.id === id); n++) id = `${from}-${to}-${n}`;
+    const op: Op = { op: "edge.set", ids: [id], from, to, type: pick(FIRST_EDGE_KINDS) };
     if (chance(0.5)) op.label = text(2, 20);
     apply(op);
   }
@@ -196,14 +200,14 @@ export function generate(seed: number, m: Measurer): Generated {
     const kind = r();
     const live = d.layers.flatMap((l) => l.nodes.map((n) => n.id));
     if (kind < 0.4 && live.length > 0) {
-      const op: Op = { op: "node.move", id: pick(live), layer: pick(order) };
+      const op: Op = { op: "node.move", ids: [pick(live)], layer: pick(order) };
       if (chance(0.5)) op.first = true;
       else op.last = true;
       apply(op);
     } else if (kind < 0.6 && live.length > 5) {
-      apply({ op: "node.remove", id: pick(live) });
+      apply({ op: "node.remove", ids: [pick(live)] });
     } else if (d.edges.length > 0) {
-      apply({ op: "edge.remove", id: pick(d.edges).id });
+      apply({ op: "edge.remove", ids: [pick(d.edges).id] });
     }
   }
 

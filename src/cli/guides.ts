@@ -52,7 +52,7 @@ person or a caller. Edges are calls, reads and writes.
     text: `Infrastructure: where things run, in the cloud or in a deployment
 
 - Groups inside groups, outermost first: region, network, subnet; or
-  environment, cluster, host. group add --in nests one in another.
+  environment, cluster, host. group set --in nests one in another.
 - Users and the way in on top, data at the bottom.
 - Runtime and count go in the sublabel ("3 pods", "t3.large").
 - A second zone or region is a group copy of the first.

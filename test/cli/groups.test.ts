@@ -27,7 +27,7 @@ const read = (f: string) => readFileSync(join(dir, f), "utf8");
 
 // The example is taken from `grafical new --help` as printed, so the help cannot drift from the tool.
 function helpExample(): string[][] {
-  return run("new", "--help")
+  return run("diagram", "set", "--help")
     .out.split("\n")
     .map((l) => l.slice(2))
     .filter((l) => l.startsWith("grafical -f orders.grafical "))
@@ -59,50 +59,50 @@ describe("grouped diagrams", () => {
 
   it("group and diagram commands change the file, and report errors", () => {
     const f = "g.grafical";
-    run("new", f, "--title", "G", "--subtitle", "S", "--caption", "N");
-    run("layer", "add", f, "r1", "--label", "R1");
-    run("layer", "add", f, "r2", "--label", "R2");
-    run("layer", "add", f, "r3", "--label", "R3");
-    run("node", "add", f, "a", "--layer", "r1", "--label", "A");
-    run("node", "add", f, "b", "--layer", "r2", "--label", "B");
-    run("node", "add", f, "c", "--layer", "r3", "--label", "C");
+    run("diagram", "set", f, "--title", "G", "--subtitle", "S", "--caption", "N");
+    run("layer", "set", f, "r1", "--label", "R1");
+    run("layer", "set", f, "r2", "--label", "R2");
+    run("layer", "set", f, "r3", "--label", "R3");
+    run("node", "set", f, "a", "--layer", "r1", "--label", "A");
+    run("node", "set", f, "b", "--layer", "r2", "--label", "B");
+    run("node", "set", f, "c", "--layer", "r3", "--label", "C");
     // The nodes have no edges: each write prints those warnings after its outcome.
-    expect(run("group", "add", f, "g", "--label", "G", "--nodes", "a,b").out).toMatch(
-      /^ok changed=g,a,b\n\nwarning: lonely-node\n/,
+    expect(run("group", "set", f, "g", "--label", "G").out).toMatch(
+      /^ok changed=g\n\nwarning: lonely-node\n/,
     );
-    expect(run("group", "join", f, "g", "c").code).toBe(0);
+    expect(run("node", "set", f, "a,b", "--group", "g").out).toMatch(/^ok changed=a,b\n/);
+    expect(run("node", "set", f, "c", "--group", "g").code).toBe(0);
     // Leaving the middle layer: the node still spans it (specs/decisions, "Layers unseen, groups as systems").
-    expect(run("group", "leave", f, "b").code).toBe(0);
-    expect(run("group", "join", f, "g", "b").code).toBe(0);
-    expect(run("group", "join", f, "zz", "a").out).toContain("unknown-group");
-    expect(run("group", "label", f, "g", "--label", "Renamed").code).toBe(0);
+    expect(run("node", "set", f, "b", "--group", "-").code).toBe(0);
+    expect(run("node", "set", f, "b", "--group", "g").code).toBe(0);
+    expect(run("node", "set", f, "a", "--group", "zz").out).toContain("unknown-group");
+    expect(run("group", "set", f, "g", "--label", "Renamed").code).toBe(0);
     expect(run("group", "remove", f, "g").out).toMatch(/^ok changed=g,a,b,c\n/);
     expect(read(f)).not.toContain("group");
-    expect(run("diagram", "subtitle", f).code).toBe(0);
-    expect(run("diagram", "caption", f, "--text", "Not shown: y.").code).toBe(0);
+    expect(run("diagram", "set", f, "--subtitle", "-").code).toBe(0);
+    expect(run("diagram", "set", f, "--caption", "Not shown: y.").code).toBe(0);
     const t = read(f);
     expect(t).not.toContain("subtitle");
     expect(t).toContain('caption: "Not shown: y."');
-    expect(run("diagram", "caption", f).code).toBe(0);
+    expect(run("diagram", "set", f, "--caption", "-").code).toBe(0);
     expect(read(f)).not.toContain("note");
   });
 
   it("lane commands change the file, and a group joins a lane whole", () => {
     const f = "orders.grafical";
-    expect(
-      run("lane", "add", f, "desk", "--label", "Desk team", "--members", "order-desk").code,
-    ).toBe(0);
+    expect(run("lane", "set", f, "desk", "--label", "Desk team").code).toBe(0);
+    expect(run("node", "set", f, "gateway,checkout", "--lane", "desk").code).toBe(0);
     expect(read(f)).toMatch(
       /<lane> desk \{[\s\S]*<label> desk-label \{\n {2}on: @desk\n {2}text: "Desk team"\n/,
     );
-    expect(run("lane", "label", f, "desk", "--label", "Order desk team").code).toBe(0);
+    expect(run("lane", "set", f, "desk", "--label", "Order desk team").code).toBe(0);
     expect(run("show", f).out).toContain(
       'lane desk "Order desk team" (columns): gateway, checkout',
     );
-    const mixed = run("lane", "join", f, "desk", "row-store");
+    const mixed = run("layer", "set", f, "row-store", "--lane", "desk");
     expect(mixed.code).toBe(1);
     expect(mixed.out).toContain("lane-mixed");
-    expect(run("lane", "leave", f, "order-desk").code).toBe(0);
+    expect(run("node", "set", f, "gateway,checkout", "--lane", "-").code).toBe(0);
     expect(run("lane", "remove", f, "desk").out).toMatch(/^ok changed=desk\n/);
     expect(read(f)).not.toContain("lane");
   });
@@ -110,13 +110,13 @@ describe("grouped diagrams", () => {
   it('check reports the counts, in text and JSON, with no threshold (specs/decisions, "Records over prose")', () => {
     const f = "big.grafical";
     const ops: Op[] = [
-      { op: "diagram.new", title: "Big" },
-      { op: "layer.add", id: "row", label: "Row" },
+      { op: "diagram.set", title: "Big" },
+      { op: "layer.set", ids: ["row"], label: "Row" },
     ];
     for (let i = 0; i < 17; i++) {
       ops.push({
-        op: "node.add",
-        id: `n${i}`,
+        op: "node.set",
+        ids: [`n${i}`],
         layer: "row",
         label: `N${i}`,
         type: "queue",
@@ -141,14 +141,15 @@ describe("grouped diagrams", () => {
 
   it('group copy writes the copy, and prints its refusals as blocks (specs/decisions, "A group copy holds its inside")', () => {
     const f = "copy.grafical";
-    run("new", f, "--title", "Copy");
+    run("diagram", "set", f, "--title", "Copy");
     for (const words of [
-      ["layer", "add", f, "r1", "--label", "R1"],
-      ["layer", "add", f, "r2", "--label", "R2"],
-      ["node", "add", f, "lb", "--layer", "r1", "--label", "LB"],
-      ["node", "add", f, "web", "--layer", "r2", "--label", "Web"],
-      ["group", "add", f, "zone", "--label", "Zone A", "--nodes", "web"],
-      ["edge", "add", f, "lb", "web"],
+      ["layer", "set", f, "r1", "--label", "R1"],
+      ["layer", "set", f, "r2", "--label", "R2"],
+      ["node", "set", f, "lb", "--layer", "r1", "--label", "LB"],
+      ["node", "set", f, "web", "--layer", "r2", "--label", "Web"],
+      ["group", "set", f, "zone", "--label", "Zone A"],
+      ["node", "set", f, "web", "--group", "zone"],
+      ["edge", "set", f, "lb-web", "--from", "lb", "--to", "web"],
     ])
       expect(run(...words).code, words.join(" ")).toBe(0);
     const args = ["group", "copy", f, "zone", "zone-b", "--label", "Zone B", "--suffix", "-b"];
@@ -169,7 +170,7 @@ describe("grouped diagrams", () => {
       ].join("\n"),
     );
     expect(run(...args, "--after", "zone", "--outside").out).toBe(
-      "ok changed=zone-b,web-b,lb->web-b\n",
+      "ok changed=zone-b,web-b,lb-web-b\n",
     );
     expect(run("show", f).out).toContain('layer r2 "R2": web "Web" service group=zone | web-b');
     expect(run(...args, "--after", "zone").out).toContain(
@@ -178,8 +179,9 @@ describe("grouped diagrams", () => {
   });
 
   it("the help teaches the grouped style", () => {
-    const help = run("--help").out + run("new", "--help").out + run("group", "add", "--help").out;
-    for (const w of ["group --add", "subtitle", "sublabel"]) {
+    const help =
+      run("--help").out + run("diagram", "set", "--help").out + run("group", "set", "--help").out;
+    for (const w of ["group --set", "subtitle", "sublabel"]) {
       expect(help).toContain(w);
     }
   });
@@ -193,45 +195,45 @@ const longVpc = {
 };
 
 describe('groups inside groups on the command line (specs/decisions, "Every layered diagram type")', () => {
-  it('group label-at and group label say where a label sits, and show prints it (specs/decisions, "The agent states where a group\'s label sits")', () => {
+  it("label set says where a group's label sits, and show prints it (specs/decisions, \"The agent states where a group's label sits\")", () => {
     const f = "titled.grafical";
     writeFileSync(join(dir, f), writeDiagram(nested));
-    expect(run("group", "label-at", f, "vpc", "1").code).toBe(0);
+    expect(run("label", "set", f, "vpc", "--at", "1").code).toBe(0);
     expect(read(f)).toContain("side: top");
     expect(run("show", f).out).toContain("title=1,top,inside");
-    expect(run("group", "label-at", f, "vpc").code).toBe(0);
+    expect(run("label", "set", f, "vpc", "--at", "-").code).toBe(0);
     expect(read(f)).not.toContain("titleAt");
-    const wrong = run("group", "label-at", f, "vpc", "middle");
+    const wrong = run("label", "set", f, "vpc", "--at", "middle");
     expect(wrong.code).not.toBe(0);
     expect(wrong.err + wrong.out).toContain("bad-type");
     // An edge runs out of the vpc's last layer where its long label would sit in the foot.
     writeFileSync(join(dir, f), writeDiagram(longVpc));
     const before = read(f);
-    const blocked = run("group", "label-at", f, "vpc", "0.5", "--side", "bottom");
+    const blocked = run("label", "set", f, "vpc", "--at", "0.5", "--side", "bottom");
     expect(blocked.code).not.toBe(0);
     expect(blocked.out).toContain(
       "defect: title-blocked\ndescription: An edge runs where the group's title sits, and no edge moves for a title.\n",
     );
     expect(blocked.out).toContain(
-      "detail:\n  owner: agent\n  group: vpc\n  edge: db->backup\n  place: 0.5 bottom inside\n  clear: 0.5 top inside, ",
+      "detail:\n  owner: agent\n  group: vpc\n  edge: db-backup\n  place: 0.5 bottom inside\n  clear: 0.5 top inside, ",
     );
-    expect(blocked.out).toMatch(/\nnext: group --label-at, node --move, edge --remove\n$/);
+    expect(blocked.out).toMatch(/\nnext: node --move, edge --remove, label --set\n$/);
     expect(read(f)).toBe(before);
   });
 
   it("adds, moves and removes a group inside another, and show names where each sits", () => {
     writeFileSync(join(dir, "shop.grafical"), writeDiagram(nested));
     const f = "shop.grafical";
-    expect(run("group", "add", f, "zone", "--label", "zone b", "--in", "region").code).toBe(0);
+    expect(run("group", "set", f, "zone", "--label", "zone b", "--in", "region").code).toBe(0);
     expect(run("show", f).out).toContain('group zone "zone b" in=region: (empty)');
-    expect(run("group", "join", f, "zone", "backup").code).toBe(0);
-    expect(run("group", "leave", f, "public", "--up").code).toBe(0);
+    expect(run("node", "set", f, "backup", "--group", "zone").code).toBe(0);
+    expect(run("group", "set", f, "public", "--in", "region").code).toBe(0);
     expect(run("show", f).out).toContain('group public "public subnet" in=region: lb, servers');
     expect(run("group", "remove", f, "private", "--out").code).toBe(0);
     expect(read(f)).not.toContain("group: private");
-    const deep = run("group", "add", f, "rack", "--label", "rack", "--in", "zone");
+    const deep = run("group", "set", f, "rack", "--label", "rack", "--in", "zone");
     expect(deep.code).toBe(0);
-    const tooDeep = run("group", "add", f, "shelf", "--label", "shelf", "--in", "rack");
+    const tooDeep = run("group", "set", f, "shelf", "--label", "shelf", "--in", "rack");
     expect(tooDeep.code).not.toBe(0);
     expect(tooDeep.err + tooDeep.out).toContain("group-too-deep");
   });

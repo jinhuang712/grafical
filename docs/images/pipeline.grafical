@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "How grafical works"
-  density: normal
 }
 
 <layer> callers {
@@ -89,37 +88,37 @@
   layer: @outputs
 }
 
-<edge> agent->apply {
+<edge> agent-apply {
   from: @agent
   to: @apply
   type: @call
 }
 
-<edge> apply->file {
+<edge> apply-file {
   from: @apply
   to: @file
   type: @call
 }
 
-<edge> apply->layout {
+<edge> apply-layout {
   from: @apply
   to: @layout
   type: @call
 }
 
-<edge> layout->check {
+<edge> layout-check {
   from: @layout
   to: @check
   type: @call
 }
 
-<edge> check->agent {
+<edge> check-agent {
   from: @check
   to: @agent
   type: @async
 }
 
-<edge> layout->picture {
+<edge> layout-picture {
   from: @layout
   to: @picture
   type: @call
@@ -145,22 +144,22 @@
   text: "grafical"
 }
 
-<label> agent->apply-label {
-  on: @agent->apply
+<label> agent-apply-label {
+  on: @agent-apply
   text: "operations"
 }
 
-<label> apply->file-label {
-  on: @apply->file
+<label> apply-file-label {
+  on: @apply-file
   text: "writes"
 }
 
-<label> check->agent-label {
-  on: @check->agent
+<label> check-agent-label {
+  on: @check-agent
   text: "facts and counts"
 }
 
-<label> layout->picture-label {
-  on: @layout->picture
+<label> layout-picture-label {
+  on: @layout-picture
   text: "renders"
 }

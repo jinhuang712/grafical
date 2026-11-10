@@ -8,7 +8,6 @@ import { e, n } from "./build.ts";
 export const edgeCases: Diagram = {
   grafical: 1,
   title: "Edge cases",
-  density: "normal",
   layers: [
     {
       id: "a",
@@ -29,7 +28,7 @@ export const edgeCases: Diagram = {
   edges: [
     e("b2", "b2", "call", "retry"),
     e("a1", "b1", "call", "read"),
-    { ...e("a1", "b1", "data", "write"), id: "a1->b1#2" },
+    { ...e("a1", "b1", "data", "write"), id: "a1-b1-2" },
     e("a1", "b2", "call", "ask"),
     e("b2", "a1", "async", "answer"),
     e("b1", "b2", "call"),

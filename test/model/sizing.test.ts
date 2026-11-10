@@ -6,6 +6,7 @@ import {
   applyOps,
   type Diagram,
   type Op,
+  type OpOf,
   readDiagram,
   writeDiagram,
 } from "../../src/model/index.ts";
@@ -19,7 +20,7 @@ beforeAll(async () => {
 });
 
 const LONG = "upstream catalog projection worker pool";
-const empty: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
+const empty: Diagram = { grafical: 1, title: "T", layers: [], edges: [] };
 
 function ok(d: Diagram, ops: Op[]): Diagram {
   const r = applyOps(d, ops);
@@ -27,10 +28,10 @@ function ok(d: Diagram, ops: Op[]): Diagram {
   return r.diagram;
 }
 
-function one(label: string, extra: Partial<Extract<Op, { op: "node.add" }>> = {}): Diagram {
+function one(label: string, extra: Partial<OpOf<"node.set">> = {}): Diagram {
   return ok(empty, [
-    { op: "layer.add", id: "r", label: "R" },
-    { op: "node.add", id: "a", layer: "r", label, ...extra },
+    { op: "layer.set", ids: ["r"], label: "R" },
+    { op: "node.set", ids: ["a"], layer: "r", label, ...extra },
   ]);
 }
 
@@ -56,15 +57,15 @@ describe('auto size (specs/decisions, "Nodes sized to their text")', () => {
   it("stores no size for an auto node, so a rename can shrink it again", () => {
     const d = one(LONG);
     expect(writeDiagram(d)).not.toContain("size:");
-    const short = ok(d, [{ op: "node.label", id: "a", label: "API" }]);
+    const short = ok(d, [{ op: "node.set", ids: ["a"], label: "API" }]);
     expect(width(short)).toBe(BOX.m.w);
   });
 
   it("node.resize sets a size, and without one hands it back to the engine", () => {
-    const d = ok(one(LONG), [{ op: "node.size", id: "a", size: "s" }]);
+    const d = ok(one(LONG), [{ op: "node.set", ids: ["a"], size: "s" }]);
     expect(d.layers[0]?.nodes[0]?.size).toBe("s");
     expect(writeDiagram(d)).toContain("size: s");
-    const back = ok(d, [{ op: "node.size", id: "a" }]);
+    const back = ok(d, [{ op: "node.set", ids: ["a"], size: "-" }]);
     expect(back.layers[0]?.nodes[0]?.size).toBeUndefined();
     expect(width(back)).toBe(BOX.l.w);
   });
@@ -78,23 +79,23 @@ describe('auto size (specs/decisions, "Nodes sized to their text")', () => {
 
 describe('sizing fixed (specs/decisions, "Nodes sized to their text")', () => {
   it("makes nodes with no size medium, as before, so that long text overflows", () => {
-    const d = ok(one(LONG), [{ op: "diagram.sizing", mode: "fixed" }]);
+    const d = ok(one(LONG), [{ op: "diagram.set", sizing: "fixed" }]);
     expect(width(d)).toBe(BOX.m.w);
     const found = check(d, layout(d, m), m).filter((x) => x.code === "overflow");
     expect(found.map((x) => x.elements)).toContainEqual(["a"]);
   });
 
-  it("is written after density, and auto clears it", () => {
-    const d = ok(one("API"), [{ op: "diagram.sizing", mode: "fixed" }]);
+  it("is written last in the diagram's block, and auto clears it", () => {
+    const d = ok(one("API"), [{ op: "diagram.set", sizing: "fixed" }]);
     const text = writeDiagram(d);
-    expect(text).toMatch(/density: normal\n {2}sizing: fixed\n}/);
+    expect(text).toMatch(/title: "[^"]*"\n {2}sizing: fixed\n}/);
     expect(writeDiagram(readDiagram(text) as Diagram)).toBe(text);
-    const auto = ok(d, [{ op: "diagram.sizing", mode: "auto" }]);
+    const auto = ok(d, [{ op: "diagram.set", sizing: "auto" }]);
     expect(writeDiagram(auto)).not.toContain("sizing");
   });
 
-  it("diagram.new takes it", () => {
-    const r = applyOps(null, [{ op: "diagram.new", title: "T", sizing: "fixed" }]);
+  it("diagram --set takes it as it makes the file", () => {
+    const r = applyOps(null, [{ op: "diagram.set", title: "T", sizing: "fixed" }]);
     if ("errors" in r) throw new Error(JSON.stringify(r.errors));
     expect(r.diagram.sizing).toBe("fixed");
   });

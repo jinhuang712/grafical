@@ -11,7 +11,6 @@ import {
 const FILE = `<diagram> {
   format: 1
   title: "Catalog sync"
-  density: normal
 }
 
 <layer> ingest {
@@ -65,13 +64,13 @@ const FILE = `<diagram> {
   align: @kafka
 }
 
-<edge> relay->kafka {
+<edge> relay-kafka {
   from: @relay
   to: @kafka
   type: @async
 }
 
-<edge> kafka->db {
+<edge> kafka-db {
   from: @kafka
   to: @db
   type: @call
@@ -87,8 +86,8 @@ const FILE = `<diagram> {
   text: "Store"
 }
 
-<label> relay->kafka-label {
-  on: @relay->kafka
+<label> relay-kafka-label {
+  on: @relay-kafka
   text: "produce"
 }
 `;
@@ -112,7 +111,6 @@ describe("readDiagram and writeDiagram", () => {
         "grafical: 1\ntitle: T\nlayers:\n  - id: a\n    label: A\n    nodes:\n      - id: n\n        label: N\n",
       ),
     ) as Diagram;
-    expect(d.density).toBe("normal");
     // No size: the engine sizes the node to its text (specs/decisions, "Nodes sized to their text").
     expect(d.layers[0]?.nodes[0]).toEqual({ id: "n", label: "N", kind: "service" });
     const out = writeDiagram(d);
@@ -123,7 +121,7 @@ describe("readDiagram and writeDiagram", () => {
 
   it("reads and writes a layer without a label", () => {
     const text =
-      "grafical: 1\ntitle: T\ndensity: normal\nlayers:\n  - id: a\n    look: band\n    nodes:\n      - id: n\n        label: N\n";
+      "grafical: 1\ntitle: T\nlayers:\n  - id: a\n    look: band\n    nodes:\n      - id: n\n        label: N\n";
     const d = validateDiagram(parse(text)) as Diagram;
     expect(d.layers[0]).not.toHaveProperty("label");
     const out = writeDiagram(d);
@@ -152,9 +150,9 @@ describe("readDiagram and writeDiagram", () => {
   });
 
   it("writes an empty diagram", () => {
-    const d: Diagram = { grafical: 1, title: "T", density: "normal", layers: [], edges: [] };
+    const d: Diagram = { grafical: 1, title: "T", layers: [], edges: [] };
     const text = writeDiagram(d);
-    expect(text).toBe('<diagram> {\n  format: 1\n  title: "T"\n  density: normal\n}\n');
+    expect(text).toBe('<diagram> {\n  format: 1\n  title: "T"\n}\n');
     expect(readDiagram(text)).toEqual(d);
   });
 

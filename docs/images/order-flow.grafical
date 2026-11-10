@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "Order flow"
-  density: normal
 }
 
 <layer> app {
@@ -51,13 +50,13 @@
   layer: @data
 }
 
-<edge> api->db {
+<edge> api-db {
   from: @api
   to: @db
   type: @call
 }
 
-<edge> api->cache {
+<edge> api-cache {
   from: @api
   to: @cache
   type: @call
@@ -73,12 +72,12 @@
   text: "Data"
 }
 
-<label> api->db-label {
-  on: @api->db
+<label> api-db-label {
+  on: @api-db
   text: "writes"
 }
 
-<label> api->cache-label {
-  on: @api->cache
+<label> api-cache-label {
+  on: @api-cache
   text: "reads"
 }

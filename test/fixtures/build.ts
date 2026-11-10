@@ -2,9 +2,9 @@
 
 import type { DiagramNode, Edge, EdgeKind, NodeKind, SizeStep } from "../../src/model/types.ts";
 
-/** An edge with the default id `<from>-><to>` (DESIGNS.md, "Operations are the only way a diagram changes"). */
+/** An edge with the id `<from>-<to>`, as the fixtures name their edges. */
 export function e(from: string, to: string, kind: EdgeKind, label?: string): Edge {
-  const edge: Edge = { id: `${from}->${to}`, from, to, kind };
+  const edge: Edge = { id: `${from}-${to}`, from, to, kind };
   if (label !== undefined) edge.label = label;
   return edge;
 }

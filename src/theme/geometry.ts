@@ -1,10 +1,11 @@
-// Geometry tokens: node sizes per size step, spacing per density (specs/decisions, "Facts over coordinates", "Layout computed again on every change").
+// Geometry tokens: node sizes per size step and the steps a gutter grows by (specs/decisions, "Facts over coordinates", "Layout computed again on every change").
+// How far apart things sit is the stylesheet's and the styles' (specs/decisions, "Styles set spacing as CSS does, and a later style wins").
 // Owned by the layout. Every value is a multiple of 4, and every node width a
 // multiple of 8, so that node centres and edges stay on the 4 px grid.
 // The sizes follow the target picture: 136 x 56 nodes, 32 px between
 // neighbours, 24 px of group padding.
 
-import type { Density, MarkShape, MarkSize, SizeStep } from "../model/types.ts";
+import type { MarkShape, MarkSize, SizeStep } from "../model/types.ts";
 
 export const BOX: Record<SizeStep, { w: number; h: number }> = {
   s: { w: 112, h: 48 },
@@ -60,37 +61,15 @@ export const DIAMOND: Record<SizeStep, { w: number; h: number }> = {
   l: { w: 232, h: 96 },
 };
 
-export interface Spacing {
-  /** Least horizontal space between neighbouring nodes in a layer. */
-  nodeGap: number;
-  /** Gutter heights between two layers, smallest first. A gutter takes the smallest step its tracks fit in. */
-  gutterSteps: number[];
-  /** Vertical distance between neighbouring tracks in a gutter. */
-  trackPitch: number;
-  /** Margin around the whole diagram. */
-  margin: number;
-}
+/**
+ * How a gutter grows past the row gap for the tracks it holds (specs/decisions, "Styles set spacing as CSS does, and a
+ * later style wins"): it takes the smallest step its tracks fit in, each step the row gap plus one of these, and past
+ * the last by the last increment.
+ */
+export const GUTTER_STEPS = [0, 16, 32, 56, 88] as const;
 
-export const SPACING: Record<Density, Spacing> = {
-  compact: {
-    nodeGap: 24,
-    gutterSteps: [32, 48, 64, 88, 120],
-    trackPitch: 12,
-    margin: 24,
-  },
-  normal: {
-    nodeGap: 32,
-    gutterSteps: [40, 56, 72, 96, 128],
-    trackPitch: 12,
-    margin: 32,
-  },
-  airy: {
-    nodeGap: 48,
-    gutterSteps: [56, 80, 104, 136, 168],
-    trackPitch: 16,
-    margin: 40,
-  },
-};
+/** Vertical distance between neighbouring tracks in a gutter. */
+export const TRACK_PITCH = 12;
 
 /** The frame around the nodes: title, subtitle, legend and footnote. */
 export const FRAME = {

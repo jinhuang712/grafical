@@ -10,13 +10,23 @@ import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { OpError } from "../errors.ts";
 import { closest } from "../model/suggest.ts";
-import type { Diagram } from "../model/types.ts";
+import type { Diagram, Style } from "../model/types.ts";
 import type { TextRole } from "../scene.ts";
 import type { TextStyle } from "../text/types.ts";
 import { edgeWidth, type Paint, WEIGHT_LEVEL } from "./paint.ts";
 import { readSheet, type Sheet, themeFrom } from "./stylesheet.ts";
 
 export type TypeRamp = Record<TextRole, TextStyle>;
+
+/** The diagram's spacing the stylesheet gives, in pixels (specs/decisions, "Styles set spacing as CSS does, and a later style wins"). */
+export interface Space {
+  marginTop: number;
+  marginRight: number;
+  marginBottom: number;
+  marginLeft: number;
+  rowGap: number;
+  columnGap: number;
+}
 
 export interface Theme {
   /** A built-in theme's name, or the stylesheet path as the diagram names it. */
@@ -25,6 +35,9 @@ export interface Theme {
   about?: string;
   paint: Paint;
   type: TypeRamp;
+  space: Space;
+  /** The styles the stylesheet names, in their order: they come before the diagram's own. */
+  styles: Style[];
 }
 
 export const STYLESHEET_SUFFIX = ".grafical";
@@ -47,12 +60,14 @@ function presets(): Record<string, Theme> {
     if (done !== undefined) return done;
     const s = sheets.get(name) as Sheet;
     const base = s.base === undefined ? undefined : build(s.base);
-    const t = themeFrom(s, base) as Theme;
+    const t = themeFrom(s, base);
     out[name] = {
       name,
       ...(s.about === undefined ? {} : { about: s.about }),
-      paint: t.paint,
-      type: t.type,
+      paint: t.paint as Paint,
+      type: t.type as TypeRamp,
+      space: t.space as Space,
+      styles: t.styles,
     };
     return out[name];
   };
@@ -68,7 +83,7 @@ export const PAINT: Paint = DEFAULT_THEME.paint;
 export const TYPE_RAMP: TypeRamp = DEFAULT_THEME.type;
 
 /** Why a diagram may not name this style, as an error code: undefined for a built-in stylesheet or a path to one, which may lie anywhere. */
-export function styleProblem(style: string): "bad-value" | undefined {
+export function stylesheetProblem(style: string): "bad-value" | undefined {
   if (style in THEMES) return undefined;
   return style.endsWith(STYLESHEET_SUFFIX) ? undefined : "bad-value";
 }
@@ -81,15 +96,58 @@ export function provideStylesheet(ref: string, theme: Theme): void {
 }
 
 /** The theme a diagram names, or the default. A stylesheet must have been provided. */
-export function themeOf(d: { style?: string }): Theme {
-  if (d.style === undefined) return DEFAULT_THEME;
-  return THEMES[d.style] ?? provided.get(d.style) ?? DEFAULT_THEME;
+export function themeOf(d: { stylesheet?: string }): Theme {
+  if (d.stylesheet === undefined) return DEFAULT_THEME;
+  return THEMES[d.stylesheet] ?? provided.get(d.stylesheet) ?? DEFAULT_THEME;
 }
 
-/** The styles a diagram and its operations name that are stylesheet files. */
+/** The stylesheets a diagram and its operations name that are files. */
 export function stylesheetRefs(d: Diagram | null, named: (string | undefined)[]): string[] {
-  const all = [d?.style, ...named].filter((s): s is string => s !== undefined && !(s in THEMES));
+  const all = [d?.stylesheet, ...named].filter(
+    (s): s is string => s !== undefined && !(s in THEMES),
+  );
   return [...new Set(all)];
+}
+
+/**
+ * Every style a diagram may mark, in the order that decides between them: the stylesheet's, then the diagram's own
+ * (specs/decisions, "Styles set spacing as CSS does, and a later style wins"). A style of the diagram with a
+ * stylesheet style's name adds to it, as a second rule for one name does in CSS.
+ */
+export function stylesOf(d: { stylesheet?: string; styles?: Style[] }): Style[] {
+  return [...themeOf(d).styles, ...(d.styles ?? [])];
+}
+
+/**
+ * An error for each style an object marks that neither the diagram nor its stylesheet names. Run after the
+ * stylesheet is provided, because the file is read before its stylesheet.
+ */
+export function unknownStyles(d: Diagram, index = 0): OpError[] {
+  const known = new Set(stylesOf(d).map((s) => s.id));
+  const errors: OpError[] = [];
+  const marking: { style?: string[]; labelStyle?: string[] }[] = [
+    d.style === undefined ? {} : { style: d.style },
+    ...d.layers,
+    ...d.layers.flatMap((l) => l.nodes),
+    ...(d.nodes ?? []),
+    ...d.edges,
+    ...(d.groups ?? []),
+    ...(d.lanes ?? []),
+    ...(d.columns ?? []),
+  ];
+  for (const o of marking) {
+    for (const name of [...(o.style ?? []), ...(o.labelStyle ?? [])]) {
+      if (known.has(name)) continue;
+      errors.push({
+        code: "unknown-style",
+        index,
+        field: "style",
+        found: name,
+        facts: { near: closest(name, [...known]), allowed: [...known] },
+      });
+    }
+  }
+  return errors;
 }
 
 /** A stylesheet's text as a theme named `ref`, or an error for each block or value at fault. Its base is default unless it names a built-in one. */
@@ -108,8 +166,14 @@ export function parseStylesheet(text: string, ref: string): Theme | OpError[] {
       },
     ];
   }
-  const t = themeFrom(s, base) as Theme;
-  return { name: ref, paint: t.paint, type: t.type };
+  const t = themeFrom(s, base);
+  return {
+    name: ref,
+    paint: t.paint as Paint,
+    type: t.type as TypeRamp,
+    space: t.space as Space,
+    styles: t.styles,
+  };
 }
 
 /**

@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "snake"
-  density: normal
 }
 
 <layer> r0 {
@@ -103,49 +102,49 @@
   layer: @r2
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> b->c {
+<edge> b-c {
   from: @b
   to: @c
   type: @call
 }
 
-<edge> c->d {
+<edge> c-d {
   from: @c
   to: @d
   type: @call
 }
 
-<edge> d->e {
+<edge> d-e {
   from: @d
   to: @e
   type: @call
 }
 
-<edge> e->f {
+<edge> e-f {
   from: @e
   to: @f
   type: @call
 }
 
-<edge> f->g {
+<edge> f-g {
   from: @f
   to: @g
   type: @call
 }
 
-<edge> g->h {
+<edge> g-h {
   from: @g
   to: @h
   type: @call
 }
 
-<edge> h->i {
+<edge> h-i {
   from: @h
   to: @i
   type: @call

@@ -27,13 +27,13 @@ const read = (f: string) => readFileSync(join(dir, f), "utf8");
 
 // tiny: 3 layers, 5 nodes, 4 edges.
 const SINGLE: string[][] = [
-  ["new", "single.grafical", "--title", "Tiny"],
-  ["layer", "add", "single.grafical", "clients", "--label", "Clients"],
-  ["layer", "add", "single.grafical", "services", "--label", "Services"],
-  ["layer", "add", "single.grafical", "storage", "--label", "Storage"],
+  ["diagram", "set", "single.grafical", "--title", "Tiny"],
+  ["layer", "set", "single.grafical", "clients", "--label", "Clients"],
+  ["layer", "set", "single.grafical", "services", "--label", "Services"],
+  ["layer", "set", "single.grafical", "storage", "--label", "Storage"],
   [
     "node",
-    "add",
+    "set",
     "single.grafical",
     "web",
     "--layer",
@@ -43,10 +43,21 @@ const SINGLE: string[][] = [
     "--type",
     "actor",
   ],
-  ["node", "add", "single.grafical", "api", "--layer", "services", "--label", "API", "--emphasis"],
   [
     "node",
-    "add",
+    "set",
+    "single.grafical",
+    "api",
+    "--layer",
+    "services",
+    "--label",
+    "API",
+    "--emphasis",
+    "on",
+  ],
+  [
+    "node",
+    "set",
     "single.grafical",
     "worker",
     "--layer",
@@ -57,7 +68,7 @@ const SINGLE: string[][] = [
   ],
   [
     "node",
-    "add",
+    "set",
     "single.grafical",
     "db",
     "--layer",
@@ -69,7 +80,7 @@ const SINGLE: string[][] = [
   ],
   [
     "node",
-    "add",
+    "set",
     "single.grafical",
     "mq",
     "--layer",
@@ -80,10 +91,21 @@ const SINGLE: string[][] = [
     "queue",
     "--last",
   ],
-  ["edge", "add", "single.grafical", "web", "api", "--label", "call"],
-  ["edge", "add", "single.grafical", "api", "db", "--type", "data"],
-  ["edge", "add", "single.grafical", "api", "mq", "--type", "async"],
-  ["edge", "add", "single.grafical", "mq", "worker", "--type", "async"],
+  ["edge", "set", "single.grafical", "web-api", "--from", "web", "--to", "api", "--label", "call"],
+  ["edge", "set", "single.grafical", "api-db", "--from", "api", "--to", "db", "--type", "data"],
+  ["edge", "set", "single.grafical", "api-mq", "--from", "api", "--to", "mq", "--type", "async"],
+  [
+    "edge",
+    "set",
+    "single.grafical",
+    "mq-worker",
+    "--from",
+    "mq",
+    "--to",
+    "worker",
+    "--type",
+    "async",
+  ],
 ];
 
 describe("write commands", () => {
@@ -93,15 +115,13 @@ describe("write commands", () => {
       expect(r.code, `${args.join(" ")}: ${r.out}${r.err}`).toBe(0);
     }
     const single = read("single.grafical");
-    expect(
-      single.startsWith('<diagram> {\n  format: 1\n  title: "Tiny"\n  density: normal\n}\n'),
-    ).toBe(true);
+    expect(single.startsWith('<diagram> {\n  format: 1\n  title: "Tiny"\n}\n')).toBe(true);
   });
 
   it("reports changed ids as JSON on one line", () => {
     const r = run(
       "node",
-      "add",
+      "set",
       "single.grafical",
       "cache",
       "--layer",
@@ -124,7 +144,7 @@ describe("write commands", () => {
             description:
               "No edge reaches a node: none of its own, and none to its group, layer or lane.",
             detail: { node: "cache" },
-            next: ["node --remove", "edge --add"],
+            next: ["node --remove", "edge --set"],
           },
         ],
       })}\n`,
@@ -135,7 +155,7 @@ describe("write commands", () => {
 
   it("leaves the file untouched and exits 1 when an operation fails", () => {
     const before = read("single.grafical");
-    const r = run("node", "add", "single.grafical", "x", "--layer", "servces", "--label", "X");
+    const r = run("node", "set", "single.grafical", "x", "--layer", "servces", "--label", "X");
     expect(r.code).toBe(1);
     expect(r.out).toMatch(
       /^failed changed=-\n\nerror: unknown-layer\ndescription: No layer has the id\.\n/,
@@ -143,13 +163,23 @@ describe("write commands", () => {
     expect(r.out).toContain(
       "detail:\n  field: layer\n  found: servces\n  near: services, storage, clients\n",
     );
-    expect(r.out).toMatch(/\nnext: layer --add\n$/);
+    expect(r.out).toMatch(/\nnext: layer --set\n$/);
     expect(read("single.grafical")).toBe(before);
   });
 
   it("gives the error as JSON", () => {
     const before = read("single.grafical");
-    const r = run("edge", "add", "single.grafical", "api", "nope", "--json");
+    const r = run(
+      "edge",
+      "set",
+      "single.grafical",
+      "api-nope",
+      "--from",
+      "api",
+      "--to",
+      "nope",
+      "--json",
+    );
     expect(r.code).toBe(1);
     const j = JSON.parse(r.out);
     expect(j.ok).toBe(false);
@@ -159,7 +189,7 @@ describe("write commands", () => {
       code: "unknown-node",
       description: "No node has the id.",
       detail: { field: "to", found: "nope" },
-      next: ["node --add"],
+      next: ["node --set"],
     });
     expect(j.problems[0].detail.op).toBeUndefined();
     expect(read("single.grafical")).toBe(before);
@@ -168,7 +198,7 @@ describe("write commands", () => {
   it("refuses an unknown type, with the type it most likely means", () => {
     const r = run(
       "node",
-      "add",
+      "set",
       "single.grafical",
       "n",
       "--layer",
@@ -186,15 +216,16 @@ describe("write commands", () => {
     expect(r.out).toContain("  allowed: service, store, queue, external, actor,");
   });
 
-  it("refuses to overwrite with new, and a missing file is an error", () => {
-    expect(run("new", "single.grafical", "--title", "Again").code).toBe(1);
+  it("makes a file only with a title, and a missing file is an error", () => {
+    expect(run("diagram", "set", "untitled.grafical", "--subtitle", "S").code).toBe(1);
+    expect(existsSync(join(dir, "untitled.grafical"))).toBe(false);
     const r = run("show", "missing.grafical");
     expect(r.code).toBe(1);
     expect(r.out).toContain("file-not-found");
   });
 
   it("exits 2 on usage errors", () => {
-    expect(run("node", "add", "single.grafical", "x").code).toBe(2);
+    expect(run("node", "set", "single.grafical").code).toBe(2);
     expect(run("bogus").code).toBe(2);
     expect(run("render", "single.grafical", "--scale", "9").code).toBe(2);
     expect(run().code).toBe(2);
@@ -219,7 +250,7 @@ describe("write commands", () => {
     expect(run("bogus").err).toContain("error: unknown-command\n");
     expect(run("show").err).toContain("error: missing-argument\n");
     expect(run("show").err).toContain("detail:\n  field: --file\n");
-    expect(run("new", "x.grafical").err).toContain("detail:\n  field: --title\n");
+    expect(run("diagram", "set", "x.grafical").out).toContain("detail:\n  field: title\n");
     // With --json a usage error is the same object as any refusal, on standard output.
     const json = run("show", "single.grafical", "--bogus", "--json");
     expect(json.code).toBe(2);
@@ -244,49 +275,64 @@ describe("write commands", () => {
     // Extra arguments are what was found, beside the arguments the command takes.
     const extra = run("node", "remove", "single.grafical", "api", "worker");
     expect(extra.err).toContain("error: excess-arguments\n");
-    expect(extra.err).toContain("detail:\n  found: worker\n  takes: <id>\n");
+    expect(extra.err).toContain("detail:\n  found: worker\n  takes: <ids>\n");
   });
 
-  it("handles edge id suffixes and node remove cascading", () => {
-    run("new", "e.grafical", "--title", "E");
-    run("layer", "add", "e.grafical", "l", "--label", "L");
-    run("node", "add", "e.grafical", "p", "--layer", "l", "--label", "P");
-    run("node", "add", "e.grafical", "q", "--layer", "l", "--label", "Q", "--last");
-    run("edge", "add", "e.grafical", "p", "q");
-    const second = run("edge", "add", "e.grafical", "p", "q", "--label", "again");
-    expect(second.out).toBe("ok changed=p->q#2\n");
+  it("sets an edge again with no change, and node remove takes its edges", () => {
+    run("diagram", "set", "e.grafical", "--title", "E");
+    run("layer", "set", "e.grafical", "l", "--label", "L");
+    run("node", "set", "e.grafical", "p", "--layer", "l", "--label", "P");
+    run("node", "set", "e.grafical", "q", "--layer", "l", "--label", "Q", "--last");
+    expect(run("edge", "set", "e.grafical", "p-q", "--from", "p", "--to", "q").out).toBe(
+      "ok changed=p-q\n",
+    );
+    // Run twice, a command changes nothing (specs/decisions, "One command is one write, and running it twice changes nothing").
+    expect(run("edge", "set", "e.grafical", "p-q", "--from", "p", "--to", "q").out).toBe("ok\n");
+    const second = run(
+      "edge",
+      "set",
+      "e.grafical",
+      "p-q2",
+      "--from",
+      "p",
+      "--to",
+      "q",
+      "--label",
+      "again",
+    );
+    expect(second.out).toBe("ok changed=p-q2\n");
     const rm = run("node", "remove", "e.grafical", "q");
     // p is left with no edges.
     expect(rm.out).toBe(
       [
-        "ok changed=q,p->q,p->q#2",
+        "ok changed=q,p-q,p-q2",
         "",
         "warning: lonely-node",
         "description: No edge reaches a node: none of its own, and none to its group, layer or lane.",
         "detail:",
         "  node: p",
-        "next: node --remove, edge --add",
+        "next: node --remove, edge --set",
         "",
       ].join("\n"),
     );
   });
 
   it('edge number numbers an edge, show prints it, and no --n clears it (specs/decisions, "Step badges ride the edge")', () => {
-    run("new", "s.grafical", "--title", "S");
-    run("layer", "add", "s.grafical", "a", "--label", "A");
-    run("layer", "add", "s.grafical", "b", "--label", "B");
-    run("node", "add", "s.grafical", "p", "--layer", "a", "--label", "P");
-    run("node", "add", "s.grafical", "q", "--layer", "b", "--label", "Q");
-    run("edge", "add", "s.grafical", "p", "q", "--label", "read");
-    expect(run("edge", "number", "s.grafical", "p->q", "--n", "3").out).toBe("ok changed=p->q\n");
+    run("diagram", "set", "s.grafical", "--title", "S");
+    run("layer", "set", "s.grafical", "a", "--label", "A");
+    run("layer", "set", "s.grafical", "b", "--label", "B");
+    run("node", "set", "s.grafical", "p", "--layer", "a", "--label", "P");
+    run("node", "set", "s.grafical", "q", "--layer", "b", "--label", "Q");
+    run("edge", "set", "s.grafical", "p-q", "--from", "p", "--to", "q", "--label", "read");
+    expect(run("edge", "set", "s.grafical", "p-q", "--number", "3").out).toBe("ok changed=p-q\n");
     expect(read("s.grafical")).toContain("number: 3");
-    expect(run("show", "s.grafical").out).toContain("p->q [step 3] read");
-    expect(run("show", "s.grafical", "--drawn").out).toMatch(/^edge id=p->q .* step=3$/m);
-    const bad = run("edge", "number", "s.grafical", "p->q", "--n", "0");
+    expect(run("show", "s.grafical").out).toContain("p-q (p->q) [step 3] read");
+    expect(run("show", "s.grafical", "--drawn").out).toMatch(/^edge id=p-q .* step=3$/m);
+    const bad = run("edge", "set", "s.grafical", "p-q", "--number", "0");
     expect(bad.code).toBe(1);
     expect(bad.out).toContain("error: bad-value\n");
-    expect(bad.out).toContain("detail:\n  field: n\n  found: 0\n  min: 1\n  max: 99\n");
-    expect(run("edge", "number", "s.grafical", "p->q").out).toBe("ok changed=p->q\n");
+    expect(bad.out).toContain("detail:\n  field: number\n  found: 0\n  min: 1\n  max: 99\n");
+    expect(run("edge", "set", "s.grafical", "p-q", "--number", "-").out).toBe("ok changed=p-q\n");
     expect(read("s.grafical")).not.toContain("step:");
     expect(run("show", "s.grafical", "--drawn").out).not.toContain("step=");
   });
@@ -298,15 +344,15 @@ describe("read commands", () => {
     expect(r.code).toBe(0);
     expect(r.out).toBe(
       [
-        'diagram "Tiny" density=normal',
+        'diagram "Tiny"',
         'layer clients "Clients": web "Web" actor',
         'layer services "Services": api "API" service emphasis | worker "Worker" service',
         'layer storage "Storage": db "DB" store | mq "MQ" queue',
         "edges:",
-        "web->api call",
-        "api->db [data]",
-        "api->mq [async]",
-        "mq->worker [async]",
+        "web-api (web->api) call",
+        "api-db (api->db) [data]",
+        "api-mq (api->mq) [async]",
+        "mq-worker (mq->worker) [async]",
         "",
       ].join("\n"),
     );
@@ -336,7 +382,7 @@ describe("read commands", () => {
     expect(r.out).toMatch(/^counts nodes=\d+ edges=\d+ crossings=\d+/);
     expect(r.out).toMatch(/^node id=api layer=\S+ place=\d+ of=\d+/m);
     expect(r.out).toMatch(
-      /^edge id=api->db from=api to=db leaves=\w+ enters=\w+ bends=\d+ length=\d+/m,
+      /^edge id=api-db from=api to=db leaves=\w+ enters=\w+ bends=\d+ length=\d+/m,
     );
     expect(r.out).toMatch(
       /^gutter above=clients below=services edges=\d+ crossings=\d+ tight=\d+ crowded=\d+$/m,
@@ -349,26 +395,35 @@ describe("read commands", () => {
 
   it('--try reports the counts before and after a command, and writes nothing (specs/decisions, "Records over prose")', () => {
     const before = readFileSync(join(dir, "single.grafical"), "utf8");
-    const r = run("node", "label", "single.grafical", "api", "--label", "API service", "--try");
+    const r = run("node", "set", "single.grafical", "api", "--label", "API service", "--try");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(
       /^ok changed=api written=no\nbefore nodes=\d+ edges=\d+ crossings=\d+.*\nafter nodes=\d+.*\ndelta nodes=0 edges=0 crossings=[-+]?\d+ /,
     );
     expect(readFileSync(join(dir, "single.grafical"), "utf8")).toBe(before);
     const json = JSON.parse(
-      run("node", "label", "single.grafical", "api", "--label", "API service", "--try", "--json")
-        .out,
+      run("node", "set", "single.grafical", "api", "--label", "API service", "--try", "--json").out,
     );
     expect(json.after.nodes).toBe(json.before.nodes);
     expect(json.delta.length).toBe(json.after.length - json.before.length);
     // A command it would refuse is refused as the write would refuse it.
-    const bad = run("node", "label", "single.grafical", "nope", "--label", "X", "--try");
+    const bad = run(
+      "node",
+      "set",
+      "single.grafical",
+      "nope",
+      "--layer",
+      "servces",
+      "--label",
+      "X",
+      "--try",
+    );
     expect(bad.code).toBe(1);
-    expect(bad.out).toContain("unknown-node");
+    expect(bad.out).toContain("unknown-layer");
     expect(readFileSync(join(dir, "single.grafical"), "utf8")).toBe(before);
-    // Every command that writes takes it, and new, which has no picture before it, does not.
-    expect(run("edge", "number", "single.grafical", "web->api", "--n", "1", "--try").code).toBe(0);
-    expect(run("new", "other.grafical", "--title", "X", "--try").code).toBe(2);
+    // Every command that writes takes it; a file it would make has no picture before it, and is refused.
+    expect(run("edge", "set", "single.grafical", "web-api", "--number", "1", "--try").code).toBe(0);
+    expect(run("diagram", "set", "other.grafical", "--title", "X", "--try").code).toBe(1);
     expect(existsSync(join(dir, "other.grafical"))).toBe(false);
   });
 

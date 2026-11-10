@@ -115,7 +115,7 @@ export function mixedScene(): Scene {
     ],
     edges: [
       {
-        id: "web->gw",
+        id: "web-gw",
         from: "web",
         to: "gw",
         kind: "call",
@@ -125,7 +125,7 @@ export function mixedScene(): Scene {
         ],
       },
       {
-        id: "gw->sync",
+        id: "gw-sync",
         from: "gw",
         to: "sync",
         kind: "call",
@@ -143,7 +143,7 @@ export function mixedScene(): Scene {
         }),
       },
       {
-        id: "sync->q",
+        id: "sync-q",
         from: "sync",
         to: "q",
         kind: "async",
@@ -153,7 +153,7 @@ export function mixedScene(): Scene {
         ],
       },
       {
-        id: "sync->db",
+        id: "sync-db",
         from: "sync",
         to: "db",
         kind: "data",

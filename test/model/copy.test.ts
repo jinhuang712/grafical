@@ -33,24 +33,26 @@ const edgeList = (d: Diagram) => d.edges.map((e) => `${e.id} ${e.from}>${e.to} $
 
 // A region with one zone: a web server in the zone, and a worker and its store in a subnet inside it.
 const zone = ok(null, [
-  { op: "diagram.new", title: "Zones" },
-  { op: "layer.add", id: "row-edge", label: "Edge" },
-  { op: "layer.add", id: "row-app", label: "App" },
-  { op: "layer.add", id: "row-data", label: "Data" },
-  { op: "node.add", id: "lb", layer: "row-edge", label: "Load balancer" },
-  { op: "node.add", id: "web", layer: "row-app", label: "Web" },
-  { op: "node.add", id: "worker", layer: "row-app", label: "Worker", last: true },
-  { op: "node.add", id: "db", layer: "row-data", label: "DB", type: "store" },
-  { op: "node.add", id: "audit", layer: "row-data", label: "Audit", type: "store", last: true },
-  { op: "group.add", id: "region", label: "Region" },
-  { op: "group.add", id: "zone", label: "Zone A", sublabel: "1a", in: "region", nodes: ["web"] },
-  { op: "group.add", id: "subnet", label: "Subnet", in: "zone", nodes: ["worker", "db"] },
-  { op: "node.align", id: "db", to: "worker" },
-  { op: "edge.add", from: "lb", to: "web" },
-  { op: "edge.add", from: "web", to: "worker", id: "jobs", type: "async" },
-  { op: "edge.add", from: "worker", to: "db", label: "writes" },
-  { op: "edge.add", from: "worker", to: "db", type: "data" },
-  { op: "edge.add", from: "db", to: "audit" },
+  { op: "diagram.set", title: "Zones" },
+  { op: "layer.set", ids: ["row-edge"], label: "Edge" },
+  { op: "layer.set", ids: ["row-app"], label: "App" },
+  { op: "layer.set", ids: ["row-data"], label: "Data" },
+  { op: "node.set", ids: ["lb"], layer: "row-edge", label: "Load balancer" },
+  { op: "node.set", ids: ["web"], layer: "row-app", label: "Web" },
+  { op: "node.set", ids: ["worker"], layer: "row-app", label: "Worker", last: true },
+  { op: "node.set", ids: ["db"], layer: "row-data", label: "DB", type: "store" },
+  { op: "node.set", ids: ["audit"], layer: "row-data", label: "Audit", type: "store", last: true },
+  { op: "group.set", ids: ["region"], label: "Region" },
+  { op: "group.set", ids: ["zone"], label: "Zone A", sublabel: "1a", in: "region" },
+  { op: "node.set", ids: ["web"], group: "zone" },
+  { op: "group.set", ids: ["subnet"], label: "Subnet", in: "zone" },
+  { op: "node.set", ids: ["worker", "db"], group: "subnet" },
+  { op: "node.set", ids: ["db"], align: "worker" },
+  { op: "edge.set", ids: ["lb-web"], from: "lb", to: "web" },
+  { op: "edge.set", ids: ["jobs"], from: "web", to: "worker", type: "async" },
+  { op: "edge.set", ids: ["worker-db"], from: "worker", to: "db", label: "writes" },
+  { op: "edge.set", ids: ["stores"], from: "worker", to: "db", type: "data" },
+  { op: "edge.set", ids: ["db-audit"], from: "db", to: "audit" },
 ]);
 
 type CopyOp = Extract<Op, { op: "group.copy" }>;
@@ -74,8 +76,8 @@ describe("group copy", () => {
       "worker-b",
       "db-b",
       "jobs-b",
-      "worker-b->db-b",
-      "worker-b->db-b#2",
+      "worker-db-b",
+      "stores-b",
     ]);
     expect(d.groups).toContainEqual({
       id: "zone-b",
@@ -95,10 +97,10 @@ describe("group copy", () => {
     // Edges to nodes outside the group stay with the original.
     expect(edgeList(d).slice(zone.edges.length)).toEqual([
       "jobs-b web-b>worker-b async",
-      "worker-b->db-b worker-b>db-b call",
-      "worker-b->db-b#2 worker-b>db-b data",
+      "worker-db-b worker-b>db-b call",
+      "stores-b worker-b>db-b data",
     ]);
-    expect(d.edges.find((e) => e.id === "worker-b->db-b")?.label).toBe("writes");
+    expect(d.edges.find((e) => e.id === "worker-db-b")?.label).toBe("writes");
     expect(check(d, layout(d, m), m)).toEqual([]);
   });
 
@@ -115,21 +117,24 @@ describe("group copy", () => {
   it("copies the edges to everything outside the group only with outside", () => {
     const d = ok(zone, [copy({ outside: true })]);
     expect(edgeList(d).slice(zone.edges.length)).toEqual([
-      "lb->web-b lb>web-b call",
+      "lb-web-b lb>web-b call",
       "jobs-b web-b>worker-b async",
-      "worker-b->db-b worker-b>db-b call",
-      "worker-b->db-b#2 worker-b>db-b data",
-      "db-b->audit db-b>audit call",
+      "worker-db-b worker-b>db-b call",
+      "stores-b worker-b>db-b data",
+      "db-audit-b db-b>audit call",
     ]);
     // An edge to the group itself goes to the copy.
-    const toGroup = ok(zone, [{ op: "edge.add", from: "lb", to: "zone" }, copy({ outside: true })]);
-    expect(edgeList(toGroup)).toContain("lb->zone-b lb>zone-b call");
+    const toGroup = ok(zone, [
+      { op: "edge.set", ids: ["lb-zone"], from: "lb", to: "zone" },
+      copy({ outside: true }),
+    ]);
+    expect(edgeList(toGroup)).toContain("lb-zone-b lb>zone-b call");
   });
 
   it("steps a node placed by steps from the copy of the node it steps from", () => {
     const d = ok(zone, [
-      { op: "node.add", id: "cache", from: "db", down: 1, label: "Cache" },
-      { op: "group.join", group: "subnet", nodes: ["cache"] },
+      { op: "node.set", ids: ["cache"], from: "db", down: "1", label: "Cache" },
+      { op: "node.set", ids: ["cache"], group: "subnet" },
       copy(),
     ]);
     expect(node(d, "cache-b")).toMatchObject({ from: "db-b", down: 1, group: "subnet-b" });
@@ -138,14 +143,20 @@ describe("group copy", () => {
   it("is shown by diff as the operations that build it", () => {
     const d = ok(zone, [copy({ outside: true })]);
     const ops = diffDiagrams(zone, d);
-    expect(ops).toContainEqual({ op: "group.add", id: "zone-b", label: "Zone B", sublabel: "1a" });
-    expect(ops).toContainEqual({ op: "group.join", group: "region", nodes: ["zone-b"] });
-    expect(ops.filter((o) => o.op === "node.add").map((o) => (o as { id: string }).id)).toEqual([
-      "web-b",
-      "worker-b",
-      "db-b",
-    ]);
-    expect(ops.filter((o) => o.op === "edge.add")).toHaveLength(5);
+    expect(ops).toContainEqual({
+      op: "group.set",
+      ids: ["zone-b"],
+      label: "Zone B",
+      sublabel: "1a",
+    });
+    expect(ops).toContainEqual({ op: "group.set", ids: ["zone-b"], in: "region" });
+    const made = (o: Op) => "label" in o || "from" in o;
+    expect(
+      ops
+        .filter((o) => o.op === "node.set" && made(o))
+        .flatMap((o) => (o as { ids: string[] }).ids),
+    ).toEqual(["web-b", "worker-b", "db-b"]);
+    expect(ops.filter((o) => o.op === "edge.set" && "from" in o)).toHaveLength(5);
     const replayed = run(zone, ops).diagram;
     expect(writeDiagram(replayed)).toBe(writeDiagram(d));
   });
@@ -179,7 +190,7 @@ describe("group copy refusals", () => {
       facts: { is: "node" },
     });
     const taken = ok(zone, [
-      { op: "node.add", id: "web-b", layer: "row-edge", label: "Old", last: true },
+      { op: "node.set", ids: ["web-b"], layer: "row-edge", label: "Old", last: true },
     ]);
     expect(fail(taken, [copy()])).toEqual([
       {
@@ -193,7 +204,10 @@ describe("group copy refusals", () => {
   });
 
   it("refuses a group named for the place that misses a layer of the copy", () => {
-    const d = ok(zone, [{ op: "group.add", id: "front", label: "Front", nodes: ["lb", "audit"] }]);
+    const d = ok(zone, [
+      { op: "group.set", ids: ["front"], label: "Front" },
+      { op: "node.set", ids: ["lb", "audit"], group: "front" },
+    ]);
     expect(fail(d, [copy({ after: "front" })])[0]).toMatchObject({
       code: "no-shared-layer",
       field: "after",
@@ -203,7 +217,7 @@ describe("group copy refusals", () => {
   });
 
   it("refuses an alignment or a step to a node outside the group, naming the node", () => {
-    const aligned = ok(zone, [{ op: "node.align", id: "web", to: "lb" }]);
+    const aligned = ok(zone, [{ op: "node.set", ids: ["web"], align: "lb" }]);
     expect(fail(aligned, [copy()])).toEqual([
       {
         code: "copy-conflict",
@@ -215,12 +229,13 @@ describe("group copy refusals", () => {
     ]);
     // A node under a, placed by steps from x beside it.
     const stepped = ok(null, [
-      { op: "diagram.new", title: "Steps" },
-      { op: "layer.add", id: "r1", label: "R1" },
-      { op: "node.add", id: "x", layer: "r1", label: "X" },
-      { op: "node.add", id: "a", layer: "r1", label: "A", last: true },
-      { op: "node.add", id: "s", from: "x", right: 1, down: 1, label: "S" },
-      { op: "group.add", id: "g", label: "G", nodes: ["a", "s"] },
+      { op: "diagram.set", title: "Steps" },
+      { op: "layer.set", ids: ["r1"], label: "R1" },
+      { op: "node.set", ids: ["x"], layer: "r1", label: "X" },
+      { op: "node.set", ids: ["a"], layer: "r1", label: "A", last: true },
+      { op: "node.set", ids: ["s"], from: "x", right: "1", down: "1", label: "S" },
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["a", "s"], group: "g" },
     ]);
     const op: Op = { op: "group.copy", id: "g", into: "h", label: "H", suffix: "-2", after: "g" };
     expect(fail(stepped, [op])).toEqual([
@@ -236,24 +251,32 @@ describe("group copy refusals", () => {
 
   it("refuses a place that the column order would move", () => {
     const d = ok(zone, [
-      { op: "column.add", id: "c1", nodes: ["web"] },
-      { op: "column.add", id: "c2", nodes: ["worker"] },
+      { op: "column.set", ids: ["c1"] },
+      { op: "node.set", ids: ["web"], column: "c1" },
+      { op: "column.set", ids: ["c2"] },
+      { op: "node.set", ids: ["worker"], column: "c2" },
     ]);
     expect(fail(d, [copy()])).toEqual([
       { code: "copy-conflict", index: 0, field: "column", found: "c1", facts: { node: "web" } },
     ]);
     // In one column, the copy sits beside its original and keeps the column.
-    const one = ok(zone, [{ op: "column.add", id: "c1", nodes: ["web", "worker", "db"] }]);
+    const one = ok(zone, [
+      { op: "column.set", ids: ["c1"] },
+      { op: "node.set", ids: ["web", "worker", "db"], column: "c1" },
+    ]);
     expect(node(ok(one, [copy()]), "worker-b")?.column).toBe("c1");
   });
 
   it("keeps the lane of each node, and refuses a place that the lane order would move", () => {
     const d = ok(zone, [
-      { op: "node.add", id: "t1", layer: "row-app", label: "T1", last: true },
-      { op: "node.add", id: "t2", layer: "row-data", label: "T2", last: true },
-      { op: "group.add", id: "tail", label: "Tail", nodes: ["t1", "t2"] },
-      { op: "lane.add", id: "ops", label: "Ops", members: ["zone"] },
-      { op: "lane.add", id: "team", label: "Team", members: ["tail", "audit"] },
+      { op: "node.set", ids: ["t1"], layer: "row-app", label: "T1", last: true },
+      { op: "node.set", ids: ["t2"], layer: "row-data", label: "T2", last: true },
+      { op: "group.set", ids: ["tail"], label: "Tail" },
+      { op: "node.set", ids: ["t1", "t2"], group: "tail" },
+      { op: "lane.set", ids: ["ops"], label: "Ops" },
+      { op: "node.set", ids: ["web", "worker", "db"], lane: "ops" },
+      { op: "lane.set", ids: ["team"], label: "Team" },
+      { op: "node.set", ids: ["t1", "t2", "audit"], lane: "team" },
     ]);
     const copied = ok(d, [copy()]);
     expect(order(copied, "row-app")).toEqual(["web", "worker", "web-b", "worker-b", "t1"]);

@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "long-return"
-  density: normal
 }
 
 <layer> r0 {
@@ -95,37 +94,37 @@
   layer: @r4
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> b->c {
+<edge> b-c {
   from: @b
   to: @c
   type: @call
 }
 
-<edge> c->d {
+<edge> c-d {
   from: @c
   to: @d
   type: @call
 }
 
-<edge> d->e {
+<edge> d-e {
   from: @d
   to: @e
   type: @call
 }
 
-<edge> e->a {
+<edge> e-a {
   from: @e
   to: @a
   type: @call
 }
 
-<edge> d->b {
+<edge> d-b {
   from: @d
   to: @b
   type: @call

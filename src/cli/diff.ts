@@ -47,12 +47,10 @@ export function atRevision(file: string, rev: string): Diagram | null | Report {
   return d;
 }
 
-/** The command each operation runs as: `noun verb` for most, `new` for diagram.new and `plug` for plug. */
+/** The command each operation runs as: `noun.verb` is `noun --verb`. */
 export function opCommands(program: Command): Map<OpName, Command> {
   const out = new Map<OpName, Command>();
   for (const c of program.commands) {
-    if (c.name() === "new") out.set("diagram.new", c);
-    if (c.name() === "plug") out.set("plug", c);
     for (const s of c.commands) {
       const name = `${c.name()}.${s.name()}`;
       if ((OP_NAMES as string[]).includes(name)) out.set(name as OpName, s);

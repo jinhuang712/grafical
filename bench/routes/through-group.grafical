@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "through-group"
-  density: normal
 }
 
 <layer> r0 {
@@ -80,19 +79,19 @@
   layer: @r2
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call
 }
 
-<edge> a->e {
+<edge> a-e {
   from: @a
   to: @e
   type: @call
 }
 
-<edge> b->e {
+<edge> b-e {
   from: @b
   to: @e
   type: @call

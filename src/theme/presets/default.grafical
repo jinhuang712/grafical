@@ -6,6 +6,12 @@
 <type> diagram {
   fill: #ffffff
   muted: #6b727c
+  margin-top: 32
+  margin-right: 32
+  margin-bottom: 32
+  margin-left: 32
+  row-gap: 40
+  column-gap: 32
 }
 
 <type> title {
@@ -186,4 +192,22 @@
 
 <weight> heavy {
   width: 4
+}
+
+<style> compact {
+  margin-top: 24
+  margin-right: 24
+  margin-bottom: 24
+  margin-left: 24
+  row-gap: 32
+  column-gap: 24
+}
+
+<style> airy {
+  margin-top: 40
+  margin-right: 40
+  margin-bottom: 40
+  margin-left: 40
+  row-gap: 56
+  column-gap: 48
 }

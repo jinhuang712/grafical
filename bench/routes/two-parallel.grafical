@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "two-parallel"
-  density: normal
 }
 
 <layer> r0 {
@@ -44,7 +43,7 @@
   layer: @r1
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call

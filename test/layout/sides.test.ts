@@ -24,11 +24,11 @@ describe("side turns", () => {
     const s = layout(d, m);
     const drawnEdges = drawing(d, s).edges;
     const of = (id: string) => drawnEdges.find((l) => l.id === id);
-    expect(of("ship->receive")).toMatchObject({ leaves: "top", enters: "left", bends: 1 });
-    expect(of("pay->close")).toMatchObject({ enters: "left", bends: 1 });
+    expect(of("ship-receive")).toMatchObject({ leaves: "top", enters: "left", bends: 1 });
+    expect(of("pay-close")).toMatchObject({ enters: "left", bends: 1 });
     // The edges already in those gaps keep their turns.
-    expect(of("backorder->order")).toMatchObject({ enters: "right", bends: 1 });
-    expect(of("invoice->pay")).toMatchObject({ leaves: "right", bends: 1 });
+    expect(of("backorder-order")).toMatchObject({ enters: "right", bends: 1 });
+    expect(of("invoice-pay")).toMatchObject({ leaves: "right", bends: 1 });
     expect(check(d, s, m)).toEqual([]);
   });
 
@@ -40,8 +40,8 @@ describe("side turns", () => {
     const s = layout(d, m);
     const drawnEdges = drawing(d, s).edges;
     const of = (id: string) => drawnEdges.find((l) => l.id === id);
-    expect(of("alb->web-a")).toMatchObject({ leaves: "bottom", enters: "right", bends: 1 });
-    expect(of("alb->web-b")).toMatchObject({ leaves: "bottom", enters: "left", bends: 1 });
+    expect(of("alb-web-a")).toMatchObject({ leaves: "bottom", enters: "right", bends: 1 });
+    expect(of("alb-web-b")).toMatchObject({ leaves: "bottom", enters: "left", bends: 1 });
     expect(check(d, s, m)).toEqual([]);
   });
   // Found on 2026-10-16: "sends confirmations via" is wider than the 120 px a label between
@@ -50,7 +50,6 @@ describe("side turns", () => {
     const d = readDiagram(`<diagram> {
   format: 1
   title: "wide"
-  density: normal
 }
 
 <layer> core {
@@ -83,7 +82,7 @@ describe("side turns", () => {
   layer: @core
 }
 
-<edge> api->mail {
+<edge> api-mail {
   from: @api
   to: @mail
   type: @call
@@ -94,14 +93,14 @@ describe("side turns", () => {
   text: "Core"
 }
 
-<label> api->mail-label {
-  on: @api->mail
+<label> api-mail-label {
+  on: @api-mail
   text: "sends confirmations via"
 }
 `) as Diagram;
     const s = layout(d, m);
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
-    const edge = drawing(d, s).edges.find((l) => l.id === "api->mail");
+    const edge = drawing(d, s).edges.find((l) => l.id === "api-mail");
     expect(edge).toMatchObject({ leaves: "right", enters: "left", bends: 0 });
   });
   // Found by the owner on 2026-10-16 in a booking C4 diagram: the web app's edge turned
@@ -110,7 +109,6 @@ describe("side turns", () => {
     const d = readDiagram(`<diagram> {
   format: 1
   title: "entries"
-  density: normal
 }
 
 <layer> apps {
@@ -168,19 +166,19 @@ describe("side turns", () => {
   align: @portal
 }
 
-<edge> web->api {
+<edge> web-api {
   from: @web
   to: @api
   type: @call
 }
 
-<edge> mobile->api {
+<edge> mobile-api {
   from: @mobile
   to: @api
   type: @call
 }
 
-<edge> portal->api {
+<edge> portal-api {
   from: @portal
   to: @api
   type: @call
@@ -200,9 +198,9 @@ describe("side turns", () => {
     expect(check(d, s, m).filter((x) => x.owner === "engine")).toEqual([]);
     const drawnEdges = drawing(d, s).edges;
     const of = (id: string) => drawnEdges.find((l) => l.id === id);
-    expect(of("web->api")).toMatchObject({ enters: "left", bends: 1, crosses: [] });
-    expect(of("mobile->api")).toMatchObject({ enters: "left", bends: 1, crosses: [] });
+    expect(of("web-api")).toMatchObject({ enters: "left", bends: 1, crosses: [] });
+    expect(of("mobile-api")).toMatchObject({ enters: "left", bends: 1, crosses: [] });
     const end = (id: string) => s.edges.find((e) => e.id === id)?.points.at(-1)?.y ?? 0;
-    expect(end("mobile->api")).toBeLessThan(end("web->api"));
+    expect(end("mobile-api")).toBeLessThan(end("web-api"));
   });
 });

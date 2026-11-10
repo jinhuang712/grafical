@@ -3,7 +3,6 @@
   title: "dispatch"
   subtitle: "How a trip request reaches a driver and is paid, across the booking, matching and payments systems."
   caption: "Not shown: ops console admin paths, auth token flow details, retries."
-  density: normal
 }
 
 <layer> callers {
@@ -281,181 +280,181 @@
   layer: @outside
 }
 
-<edge> rider-app->edge-gateway {
+<edge> rider-app-edge-gateway {
   from: @rider-app
   to: @edge-gateway
   type: @call
 }
 
-<edge> driver-app->edge-gateway {
+<edge> driver-app-edge-gateway {
   from: @driver-app
   to: @edge-gateway
   type: @call
 }
 
-<edge> ops-console->edge-gateway {
+<edge> ops-console-edge-gateway {
   from: @ops-console
   to: @edge-gateway
   type: @call
 }
 
-<edge> driver-app->driver-socket {
+<edge> driver-app-driver-socket {
   from: @driver-app
   to: @driver-socket
   type: @call
 }
 
-<edge> edge-gateway->auth-svc {
+<edge> edge-gateway-auth-svc {
   from: @edge-gateway
   to: @auth-svc
   type: @call
 }
 
-<edge> edge-gateway->booking-api {
+<edge> edge-gateway-booking-api {
   from: @edge-gateway
   to: @booking-api
   type: @call
 }
 
-<edge> edge-gateway->payments-api {
+<edge> edge-gateway-payments-api {
   from: @edge-gateway
   to: @payments-api
   type: @call
 }
 
-<edge> auth-svc->auth-redis {
+<edge> auth-svc-auth-redis {
   from: @auth-svc
   to: @auth-redis
   type: @call
 }
 
-<edge> booking-api->trips-db {
+<edge> booking-api-trips-db {
   from: @booking-api
   to: @trips-db
   type: @call
 }
 
-<edge> booking-api->fare-estimator {
+<edge> booking-api-fare-estimator {
   from: @booking-api
   to: @fare-estimator
   type: @call
 }
 
-<edge> fare-estimator->zones-db {
+<edge> fare-estimator-zones-db {
   from: @fare-estimator
   to: @zones-db
   type: @call
 }
 
-<edge> fare-estimator->surge-cache {
+<edge> fare-estimator-surge-cache {
   from: @fare-estimator
   to: @surge-cache
   type: @call
 }
 
-<edge> booking-api->events {
+<edge> booking-api-events {
   from: @booking-api
   to: @events
   type: @async
 }
 
-<edge> driver-socket->events {
+<edge> driver-socket-events {
   from: @driver-socket
   to: @events
   type: @async
 }
 
-<edge> events->location-ingest {
+<edge> events-location-ingest {
   from: @events
   to: @location-ingest
   type: @async
 }
 
-<edge> location-ingest->geo-index {
+<edge> location-ingest-geo-index {
   from: @location-ingest
   to: @geo-index
   type: @call
 }
 
-<edge> events->matcher {
+<edge> events-matcher {
   from: @events
   to: @matcher
   type: @async
 }
 
-<edge> matcher->geo-index {
+<edge> matcher-geo-index {
   from: @matcher
   to: @geo-index
   type: @call
 }
 
-<edge> matcher->driver-socket {
+<edge> matcher-driver-socket {
   from: @matcher
   to: @driver-socket
   type: @call
 }
 
-<edge> matcher->events {
+<edge> matcher-events {
   from: @matcher
   to: @events
   type: @async
 }
 
-<edge> surge-calculator->surge-cache {
+<edge> surge-calculator-surge-cache {
   from: @surge-calculator
   to: @surge-cache
   type: @call
 }
 
-<edge> events->payments-api {
+<edge> events-payments-api {
   from: @events
   to: @payments-api
   type: @async
 }
 
-<edge> events->notify-svc {
+<edge> events-notify-svc {
   from: @events
   to: @notify-svc
   type: @async
 }
 
-<edge> payments-api->ledger-db {
+<edge> payments-api-ledger-db {
   from: @payments-api
   to: @ledger-db
   type: @call
 }
 
-<edge> payments-api->card-processor {
+<edge> payments-api-card-processor {
   from: @payments-api
   to: @card-processor
   type: @call
 }
 
-<edge> payout-batch->ledger-db {
+<edge> payout-batch-ledger-db {
   from: @payout-batch
   to: @ledger-db
   type: @call
 }
 
-<edge> payout-batch->bank-transfers {
+<edge> payout-batch-bank-transfers {
   from: @payout-batch
   to: @bank-transfers
   type: @call
 }
 
-<edge> notify-svc->push-provider {
+<edge> notify-svc-push-provider {
   from: @notify-svc
   to: @push-provider
   type: @call
 }
 
-<edge> push-provider->rider-app {
+<edge> push-provider-rider-app {
   from: @push-provider
   to: @rider-app
   type: @async
 }
 
-<edge> push-provider->driver-app {
+<edge> push-provider-driver-app {
   from: @push-provider
   to: @driver-app
   type: @async
@@ -506,37 +505,37 @@
   text: "payments"
 }
 
-<label> driver-app->driver-socket-label {
-  on: @driver-app->driver-socket
+<label> driver-app-driver-socket-label {
+  on: @driver-app-driver-socket
   text: "WebSocket"
 }
 
-<label> edge-gateway->auth-svc-label {
-  on: @edge-gateway->auth-svc
+<label> edge-gateway-auth-svc-label {
+  on: @edge-gateway-auth-svc
   text: "check tokens"
 }
 
-<label> auth-svc->auth-redis-label {
-  on: @auth-svc->auth-redis
+<label> auth-svc-auth-redis-label {
+  on: @auth-svc-auth-redis
   text: "sessions"
 }
 
-<label> booking-api->events-label {
-  on: @booking-api->events
+<label> booking-api-events-label {
+  on: @booking-api-events
   text: "trip-requested, trip-cancelled"
 }
 
-<label> driver-socket->events-label {
-  on: @driver-socket->events
+<label> driver-socket-events-label {
+  on: @driver-socket-events
   text: "locations"
 }
 
-<label> matcher->driver-socket-label {
-  on: @matcher->driver-socket
+<label> matcher-driver-socket-label {
+  on: @matcher-driver-socket
   text: "offer trip"
 }
 
-<label> matcher->events-label {
-  on: @matcher->events
+<label> matcher-events-label {
+  on: @matcher-events
   text: "trip-matched"
 }

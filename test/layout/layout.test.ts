@@ -184,7 +184,6 @@ describe("edges past a group they do not belong to", () => {
     const d: Diagram = {
       grafical: 1,
       title: "Past a group",
-      density: "normal",
       layers: [
         { id: "top", label: "Top", nodes: [n("callers", "callers", "actor", "m")] },
         {
@@ -206,7 +205,7 @@ describe("edges past a group they do not belong to", () => {
     };
     const scene = layout(d, await createMeasurer());
     const frame = scene.groups?.[0]?.rect as Rect;
-    const routePts = scene.edges.find((x) => x.id === "callers->db")?.points ?? [];
+    const routePts = scene.edges.find((x) => x.id === "callers-db")?.points ?? [];
     const down = routePts.flatMap((p, i) => {
       const q = routePts[i + 1];
       return q !== undefined &&
@@ -245,7 +244,7 @@ describe("the target look", () => {
     const centres = new Set(scene.nodes.map((x) => x.rect.x + x.rect.w / 2));
     expect(centres.size).toBe(5);
     // The chain from the upstream topics to the replicas is one straight line.
-    for (const id of ["upstream->relay", "relay->line_topics", "line_topics->pipelines"]) {
+    for (const id of ["upstream-relay", "relay-line_topics", "line_topics-pipelines"]) {
       expect(edge(id).points).toHaveLength(2);
     }
   });
@@ -269,13 +268,13 @@ describe("the target look", () => {
   });
 
   it("runs edges between neighbours straight sideways, with their labels", () => {
-    for (const id of ["pipelines->mongo", "service->mongo", "retry->line_topics"]) {
+    for (const id of ["pipelines-mongo", "service-mongo", "retry-line_topics"]) {
       const pts = edge(id).points;
       expect(pts).toHaveLength(2);
       expect(pts[0]?.y).toBe(pts[1]?.y);
     }
     expect(
-      edge("pipelines->mongo")
+      edge("pipelines-mongo")
         .label?.runs.map((r) => r.text)
         .join(""),
     ).toBe("persist");
@@ -298,7 +297,6 @@ describe("the target look", () => {
     const two: Diagram = {
       grafical: 1,
       title: "Two",
-      density: "normal",
       layers: [
         { id: "top", label: "Top", nodes: [n("a", "A service", "service", "m")] },
         { id: "low", label: "Low", nodes: [n("b", "B", "store", "m"), n("c", "C", "store", "m")] },
@@ -357,7 +355,6 @@ describe("edge cases", () => {
   const base: Diagram = {
     grafical: 1,
     title: "Edge cases",
-    density: "normal",
     layers: [
       {
         id: "a",
@@ -381,7 +378,7 @@ describe("edge cases", () => {
     ["a self-loop", [e("b2", "b2", "call", "retry")]],
     [
       "two edges between one pair",
-      [e("a1", "b1", "call", "read"), { ...e("a1", "b1", "data", "write"), id: "a1->b1#2" }],
+      [e("a1", "b1", "call", "read"), { ...e("a1", "b1", "data", "write"), id: "a1-b1-2" }],
     ],
     [
       "edges both ways between one pair",
@@ -717,7 +714,6 @@ describe("groups", () => {
   const two = (layerList: DiagramNode[][]): Diagram => ({
     grafical: 1,
     title: "G",
-    density: "normal",
     layers: layerList.map((nodes, i) => ({ id: `l${i}`, label: `L${i}`, nodes })),
     groups: [
       { id: "g", label: "system g" },

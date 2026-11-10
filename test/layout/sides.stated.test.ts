@@ -14,27 +14,33 @@ beforeAll(async () => {
 });
 
 const node = (id: string, layer: string, more: object = {}): Op =>
-  ({ op: "node.add", id, layer, label: id, ...more }) as Op;
+  ({ op: "node.set", ids: [id], layer, label: id, ...more }) as Op;
 
 function build(ops: Op[]): Diagram {
   const r = applyOps(null, [
-    { op: "diagram.new", title: "t" },
-    { op: "layer.add", id: "a" },
-    { op: "layer.add", id: "b" },
+    { op: "diagram.set", title: "t" },
+    { op: "layer.set", ids: ["a"] },
+    { op: "layer.set", ids: ["b"] },
     ...ops,
   ] as Op[]);
   if ("errors" in r) throw new Error(JSON.stringify(r.errors));
   return r.diagram;
 }
 
-const side = (id: string, sides: object): Op => ({ op: "edge.side", id, ...sides }) as Op;
+/** An edge's sides; none given gives both back to the engine. */
+const side = (id: string, sides: object): Op =>
+  ({
+    op: "edge.set",
+    ids: [id],
+    ...(Object.keys(sides).length === 0 ? { out: "-", in: "-" } : sides),
+  }) as Op;
 const layerOps = [node("x", "b"), node("y", "b", { after: "x" }), node("t", "a")];
-const edgeOp = { op: "edge.add", from: "x", to: "y" } as Op;
+const edgeOp = { op: "edge.set", ids: ["x-y"], from: "x", to: "y" } as Op;
 
 describe("stated sides", () => {
   it("takes an edge between neighbours round below or above", () => {
     const by = (s: object) =>
-      layout(build([...layerOps, edgeOp, side("x->y", s)]), m).edges[0]?.points;
+      layout(build([...layerOps, edgeOp, side("x-y", s)]), m).edges[0]?.points;
     const low = by({ out: "bottom", in: "bottom" }) ?? [];
     const high = by({ out: "top", in: "top" }) ?? [];
     const straight = layout(build([...layerOps, edgeOp]), m).edges[0]?.points ?? [];
@@ -48,30 +54,30 @@ describe("stated sides", () => {
       node("x", "a"),
       node("q", "b"),
       node("z", "b", { after: "q" }),
-      { op: "edge.add", from: "x", to: "q" } as Op,
-      { op: "edge.add", from: "x", to: "z" } as Op,
-      side("x->z", { out: "right" }),
+      { op: "edge.set", ids: ["x-q"], from: "x", to: "q" } as Op,
+      { op: "edge.set", ids: ["x-z"], from: "x", to: "z" } as Op,
+      side("x-z", { out: "right" }),
     ]);
     const s = layout(d, m);
     expect(check(d, s, m).filter((p) => p.code === "side-blocked")).toEqual([]);
-    const [a, b] = s.edges.find((e) => e.id === "x->z")?.points ?? [];
+    const [a, b] = s.edges.find((e) => e.id === "x-z")?.points ?? [];
     expect(a?.y).toBe(b?.y);
   });
 
   describe("away from the other end", () => {
     const three = [
-      { op: "layer.add", id: "c" } as Op,
+      { op: "layer.set", ids: ["c"] } as Op,
       node("t", "a"),
       node("x", "b"),
       node("y", "c"),
-      { op: "edge.add", from: "x", to: "y" } as Op,
+      { op: "edge.set", ids: ["x-y"], from: "x", to: "y" } as Op,
     ];
     const drawn = (sides: object) => {
-      const d = build([...three, side("x->y", sides)]);
+      const d = build([...three, side("x-y", sides)]);
       const s = layout(d, m);
       const blocked = check(d, s, m).filter((p) => p.code === "side-blocked");
       expect(blocked, JSON.stringify(sides)).toEqual([]);
-      const e = s.edges.find((x) => x.id === "x->y");
+      const e = s.edges.find((x) => x.id === "x-y");
       const rect = (id: string) => s.nodes.find((n) => n.id === id)?.rect;
       return { points: e?.points ?? [], x: rect("x"), y: rect("y") };
     };
@@ -100,7 +106,7 @@ describe("stated sides", () => {
     });
 
     it("passes through its layer from one side of a neighbour to the other", () => {
-      const d = build([...layerOps, edgeOp, side("x->y", { out: "top", in: "bottom" })]);
+      const d = build([...layerOps, edgeOp, side("x-y", { out: "top", in: "bottom" })]);
       const s = layout(d, m);
       expect(check(d, s, m).filter((p) => p.code === "side-blocked")).toEqual([]);
       const ys = s.edges[0]?.points.map((p) => p.y) ?? [];
@@ -114,8 +120,8 @@ describe("stated sides", () => {
     const d = build([
       node("x", "a"),
       node("y", "b"),
-      { op: "edge.add", from: "x", to: "y" } as Op,
-      side("x->y", { out: "top" }),
+      { op: "edge.set", ids: ["x-y"], from: "x", to: "y" } as Op,
+      side("x-y", { out: "top" }),
     ]);
     const found = check(d, layout(d, m), m).filter((p) => p.code === "side-blocked");
     expect(found).toHaveLength(1);
@@ -126,11 +132,11 @@ describe("stated sides", () => {
     let d = build([
       ...layerOps,
       edgeOp,
-      side("x->y", { out: "bottom" }),
-      side("x->y", { in: "bottom" }),
+      side("x-y", { out: "bottom" }),
+      side("x-y", { in: "bottom" }),
     ]);
     expect(d.edges[0]).toMatchObject({ out: "bottom", in: "bottom" });
-    const r = applyOps(d, [side("x->y", {})]);
+    const r = applyOps(d, [side("x-y", {})]);
     if ("errors" in r) throw new Error("refused");
     d = r.diagram;
     expect(d.edges[0]?.out).toBeUndefined();
@@ -138,7 +144,7 @@ describe("stated sides", () => {
   });
 
   it("keeps the sides in the file", () => {
-    const d = build([...layerOps, edgeOp, side("x->y", { out: "bottom", in: "bottom" })]);
+    const d = build([...layerOps, edgeOp, side("x-y", { out: "bottom", in: "bottom" })]);
     const back = readDiagram(writeGrafical(d));
     expect(Array.isArray(back) ? undefined : back.edges[0]).toMatchObject({
       out: "bottom",

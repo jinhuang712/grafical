@@ -129,10 +129,11 @@ export function markSlotKey(node: string, slot: MarkSlot): string {
   return `${node}:${slot}`;
 }
 
-/** The slots the operations set or clear. */
+/** The slots the operations set or clear: a mark's address is its node and its slot. */
 export function settingSlots(ops: Op[]): Set<string> {
   const out = new Set<string>();
-  for (const op of ops) if (op.op === "node.mark") out.add(markSlotKey(op.id, op.slot));
+  for (const op of ops)
+    if (op.op === "mark.set" || op.op === "mark.remove") for (const id of op.ids) out.add(id);
   return out;
 }
 
@@ -144,8 +145,10 @@ export function bindMarkOps(file: string, ops: Op[]): { ops: Op[]; errors: OpErr
   const folder = dirname(file);
   const errors: OpError[] = [];
   const bound = ops.map((op, i) => {
-    if (op.op !== "node.mark" || op.mark === undefined) return op;
-    const { sha256, error } = prepare(folder, op.mark, i);
+    if (op.op !== "mark.set") return op;
+    const mark = op.file ?? op.text;
+    if (mark === undefined) return op;
+    const { sha256, error } = prepare(folder, mark, i);
     if (error !== undefined) {
       errors.push(error);
       return op;

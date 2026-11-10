@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "flow-branch"
-  density: normal
 }
 
 <layer> r0 {
@@ -85,37 +84,37 @@
   layer: @r3
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> b->c {
+<edge> b-c {
   from: @b
   to: @c
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call
 }
 
-<edge> c->e {
+<edge> c-e {
   from: @c
   to: @e
   type: @call
 }
 
-<edge> d->e {
+<edge> d-e {
   from: @d
   to: @e
   type: @call
 }
 
-<edge> d->b {
+<edge> d-b {
   from: @d
   to: @b
   type: @call

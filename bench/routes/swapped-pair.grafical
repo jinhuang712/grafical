@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "swapped-pair"
-  density: normal
 }
 
 <layer> r0 {
@@ -58,13 +57,13 @@
   layer: @r1
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call
 }
 
-<edge> b->c {
+<edge> b-c {
   from: @b
   to: @c
   type: @call

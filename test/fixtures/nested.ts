@@ -9,7 +9,6 @@ export const nested: Diagram = {
   grafical: 1,
   title: "Shop deployment",
   subtitle: "One region; the web tier in a public subnet, everything else private.",
-  density: "normal",
   layers: [
     {
       id: "edge",

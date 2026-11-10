@@ -24,38 +24,38 @@ const run = (args: string[], input?: string) => {
 
 describe("the words a caller types", () => {
   it("take the file from -f and the verb from the first flag after the noun", () => {
-    expect(inward(["-f", "a", "edge", "--weight", "x", "--weight", "2"])).toEqual([
+    expect(inward(["-f", "a", "edge", "--set", "x", "--weight", "2"])).toEqual([
       "edge",
-      "weight",
+      "set",
       "a",
       "x",
       "--weight",
       "2",
     ]);
-    expect(inward(["--file", "a", "node", "--label", "x"])).toEqual(["node", "label", "a", "x"]);
+    expect(inward(["--file", "a", "node", "--remove", "x"])).toEqual(["node", "remove", "a", "x"]);
     expect(inward(["-f", "a", "show", "--drawn"])).toEqual(["show", "a", "--drawn"]);
   });
 
   it("refuse a call with no file and a noun with no verb", () => {
-    expect(inward(["node", "--add", "x"])).toEqual({ field: "--file" });
+    expect(inward(["node", "--set", "x"])).toEqual({ field: "--file" });
     expect(inward(["-f", "a", "node", "x"])).toEqual({ field: "verb", found: "x" });
   });
 
   it("name a verb as it is typed", () => {
     expect(surfaceName("node move")).toBe("node --move");
-    expect(surfaceName("edge reverse")).toBe("edge --reverse");
+    expect(surfaceName("edge set")).toBe("edge --set");
     expect(surfaceName("show")).toBe("show");
   });
 
   it("draw one command at a time", () => {
-    expect(run(["-f", "a.grafical", "new", "--title", "T"]).code).toBe(0);
-    expect(run(["-f", "a.grafical", "layer", "--add", "l", "--label", "L"]).code).toBe(0);
+    expect(run(["-f", "a.grafical", "diagram", "--set", "--title", "T"]).code).toBe(0);
+    expect(run(["-f", "a.grafical", "layer", "--set", "l", "--label", "L"]).code).toBe(0);
     expect(
       run([
         "-f",
         "a.grafical",
         "node",
-        "--add",
+        "--set",
         "x",
         "--layer",
         "l",
@@ -67,12 +67,16 @@ describe("the words a caller types", () => {
     ).toBe(0);
     // A command that is no longer one is refused as one.
     expect(run(["-f", "a.grafical", "apply", "-"], "").code).toBe(2);
+    expect(run(["-f", "a.grafical", "new", "--title", "T"]).code).toBe(2);
+    expect(
+      run(["-f", "a.grafical", "node", "--add", "z", "--layer", "l", "--label", "Z"]).code,
+    ).toBe(2);
     expect(
       run([
         "-f",
         "a.grafical",
         "node",
-        "--add",
+        "--set",
         "y",
         "--layer",
         "l",
@@ -88,15 +92,15 @@ describe("the words a caller types", () => {
 
   it("show gives one object and what refers to it", () => {
     const f = ["-f", "b.grafical"];
-    expect(run([...f, "new", "--title", "T"]).code).toBe(0);
-    run([...f, "layer", "--add", "l", "--label", "L"]);
-    run([...f, "node", "--add", "x", "--layer", "l", "--label", "X"]);
-    run([...f, "node", "--add", "y", "--layer", "l", "--last", "--label", "Y"]);
-    run([...f, "edge", "--add", "x", "y"]);
+    expect(run([...f, "diagram", "--set", "--title", "T"]).code).toBe(0);
+    run([...f, "layer", "--set", "l", "--label", "L"]);
+    run([...f, "node", "--set", "x", "--layer", "l", "--label", "X"]);
+    run([...f, "node", "--set", "y", "--layer", "l", "--last", "--label", "Y"]);
+    run([...f, "edge", "--set", "x-y", "--from", "x", "--to", "y"]);
     const out = run([...f, "show", "x"]).out;
     expect(out).toContain("node x\n");
     expect(out).toContain('label: "X"');
-    expect(out).toContain("used by:\n  edge x->y\n");
+    expect(out).toContain("used by:\n  edge x-y\n");
     expect(run([...f, "show", "nope"]).code).toBe(2);
   });
 });

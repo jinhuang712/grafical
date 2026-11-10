@@ -7,7 +7,6 @@ import { e, n } from "./build.ts";
 export const stateMachine: Diagram = {
   grafical: 1,
   title: "Order states",
-  density: "normal",
   layers: [
     { id: "begin", label: "Begin", nodes: [n("start", "start", "initial", "m")] },
     { id: "new", label: "New", nodes: [n("placed", "Placed", "state", "m")] },

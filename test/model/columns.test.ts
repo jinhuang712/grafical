@@ -30,7 +30,6 @@ const layerOf = (d: Diagram, id: string) =>
 const base: Diagram = {
   grafical: 1,
   title: "T",
-  density: "normal",
   layers: [
     {
       id: "top",
@@ -62,8 +61,10 @@ const base: Diagram = {
 describe('columns (specs/decisions, "Columns beside layers")', () => {
   it("are kept in the file, read back, and shown", () => {
     const r = ok(base, [
-      { op: "column.add", id: "requests", nodes: ["web", "api", "cache"] },
-      { op: "column.add", id: "jobs", nodes: ["worker", "queue"] },
+      { op: "column.set", ids: ["requests"] },
+      { op: "node.set", ids: ["web", "api", "cache"], column: "requests" },
+      { op: "column.set", ids: ["jobs"] },
+      { op: "node.set", ids: ["worker", "queue"], column: "jobs" },
     ]);
     expect(r.diagram.columns).toEqual([{ id: "requests" }, { id: "jobs" }]);
     const text = writeDiagram(r.diagram);
@@ -79,8 +80,10 @@ describe('columns (specs/decisions, "Columns beside layers")', () => {
     // The worker joins the left column and moves first; api and the db, in no column, stay
     // right after web and the cache, the nodes left of them.
     const d = ok(base, [
-      { op: "column.add", id: "left", nodes: ["worker", "queue"] },
-      { op: "column.add", id: "right", nodes: ["web", "cache"] },
+      { op: "column.set", ids: ["left"] },
+      { op: "node.set", ids: ["worker", "queue"], column: "left" },
+      { op: "column.set", ids: ["right"] },
+      { op: "node.set", ids: ["web", "cache"], column: "right" },
     ]).diagram;
     expect(layerOf(d, "top")).toEqual(["worker", "web", "api"]);
     expect(layerOf(d, "low")).toEqual(["queue", "cache", "db"]);
@@ -88,26 +91,31 @@ describe('columns (specs/decisions, "Columns beside layers")', () => {
 
   it("go where they are put, and refuse an unknown column or a taken id", () => {
     const d = ok(base, [
-      { op: "column.add", id: "b" },
-      { op: "column.add", id: "a", before: "b" },
-      { op: "column.add", id: "c", after: "a" },
+      { op: "column.set", ids: ["b"] },
+      { op: "column.set", ids: ["a"], before: "b" },
+      { op: "column.set", ids: ["c"], after: "a" },
     ]).diagram;
     expect(d.columns?.map((c) => c.id)).toEqual(["a", "c", "b"]);
-    expect(fail(d, [{ op: "column.add", id: "x", after: "zz" }])[0]).toMatchObject({
+    expect(fail(d, [{ op: "column.set", ids: ["x"], after: "zz" }])[0]).toMatchObject({
       code: "unknown-column",
     });
-    expect(fail(d, [{ op: "column.join", column: "bb", members: ["web"] }])[0]).toMatchObject({
+    expect(fail(d, [{ op: "node.set", ids: ["web"], column: "bb" }])[0]).toMatchObject({
       code: "unknown-column",
       facts: { near: expect.arrayContaining(["b"]) },
     });
-    expect(fail(d, [{ op: "column.add", id: "web" }])[0]).toMatchObject({ code: "duplicate-id" });
+    expect(fail(d, [{ op: "column.set", ids: ["web"] }])[0]).toMatchObject({
+      code: "duplicate-id",
+    });
   });
 
   it("leave and remove keep the nodes where they are", () => {
-    const d = ok(base, [{ op: "column.add", id: "jobs", nodes: ["worker", "queue"] }]).diagram;
-    const left = ok(d, [{ op: "column.leave", members: ["queue"] }]).diagram;
+    const d = ok(base, [
+      { op: "column.set", ids: ["jobs"] },
+      { op: "node.set", ids: ["worker", "queue"], column: "jobs" },
+    ]).diagram;
+    const left = ok(d, [{ op: "node.set", ids: ["queue"], column: "-" }]).diagram;
     expect(left.layers[1]?.nodes.find((x) => x.id === "queue")?.column).toBeUndefined();
-    const gone = ok(d, [{ op: "column.remove", id: "jobs" }]).diagram;
+    const gone = ok(d, [{ op: "column.remove", ids: ["jobs"] }]).diagram;
     expect(gone.columns).toBeUndefined();
     expect(gone.layers.flatMap((l) => l.nodes).some((x) => x.column !== undefined)).toBe(false);
     expect(layerOf(gone, "top")).toEqual(layerOf(d, "top"));
@@ -117,25 +125,37 @@ describe('columns (specs/decisions, "Columns beside layers")', () => {
     // A group of api and db: the cache, left of the db, must stay left of the group's
     // block, so it cannot follow a column right of api's.
     const grouped = ok(base, [
-      { op: "group.add", id: "g", label: "G", nodes: ["api", "db"] },
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["api", "db"], group: "g" },
     ]).diagram;
     expect(
       fail(grouped, [
-        { op: "column.add", id: "first", nodes: ["api"] },
-        { op: "column.add", id: "second", nodes: ["cache"] },
+        { op: "column.set", ids: ["first"] },
+        { op: "node.set", ids: ["api"], column: "first" },
+        { op: "column.set", ids: ["second"] },
+        { op: "node.set", ids: ["cache"], column: "second" },
       ])[0],
     ).toMatchObject({ code: "column-order", facts: { nodes: ["api", "cache"] } });
-    const laned = ok(base, [{ op: "lane.add", id: "l", label: "L", members: ["web"] }]).diagram;
-    expect(fail(laned, [{ op: "column.add", id: "c" }])[0]).toMatchObject({ code: "column-lanes" });
+    const laned = ok(base, [
+      { op: "lane.set", ids: ["l"], label: "L" },
+      { op: "node.set", ids: ["web"], lane: "l" },
+    ]).diagram;
+    expect(fail(laned, [{ op: "column.set", ids: ["c"] }])[0]).toMatchObject({
+      code: "column-lanes",
+    });
   });
 
   it("diff gives back the operations", () => {
-    const d = ok(base, [{ op: "column.add", id: "jobs", nodes: ["worker", "queue"] }]).diagram;
+    const d = ok(base, [
+      { op: "column.set", ids: ["jobs"] },
+      { op: "node.set", ids: ["worker", "queue"], column: "jobs" },
+    ]).diagram;
     const ops = diffDiagrams(base, d);
     expect(writeDiagram(ok(base, ops).diagram)).toBe(writeDiagram(d));
     const changed = ok(d, [
-      { op: "column.add", id: "requests", before: "jobs", nodes: ["web"] },
-      { op: "column.leave", members: ["queue"] },
+      { op: "column.set", ids: ["requests"], before: "jobs" },
+      { op: "node.set", ids: ["web"], column: "requests" },
+      { op: "node.set", ids: ["queue"], column: "-" },
     ]).diagram;
     expect(writeDiagram(ok(d, diffDiagrams(d, changed)).diagram)).toBe(writeDiagram(changed));
   });

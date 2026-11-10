@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "star"
-  density: normal
 }
 
 <layer> r0 {
@@ -89,37 +88,37 @@
   layer: @r2
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call
 }
 
-<edge> c->d {
+<edge> c-d {
   from: @c
   to: @d
   type: @call
 }
 
-<edge> d->e {
+<edge> d-e {
   from: @d
   to: @e
   type: @call
 }
 
-<edge> d->f {
+<edge> d-f {
   from: @d
   to: @f
   type: @call
 }
 
-<edge> d->g {
+<edge> d-g {
   from: @d
   to: @g
   type: @call

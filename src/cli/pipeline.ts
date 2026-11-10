@@ -18,8 +18,9 @@ import type { Measurer } from "../text/types.ts";
 import {
   parseStylesheet,
   provideStylesheet,
-  styleProblem,
+  stylesheetProblem,
   stylesheetRefs,
+  unknownStyles,
   unknownWeights,
 } from "../theme/themes.ts";
 import { bindMarkOps, loadMarks, settingSlots } from "./marks.ts";
@@ -142,7 +143,10 @@ export function loadDiagram(file: string, setting: Set<string> = new Set()): Dia
   if (styles !== undefined) return inFile(styles.errors);
   // The file is read before its stylesheet, so a weight level is checked here (specs/decisions, "Edge weights").
   const weights = unknownWeights(d);
-  return weights.length > 0 ? inFile(weights) : d;
+  if (weights.length > 0) return inFile(weights);
+  // A style the diagram marks may be its stylesheet's (specs/decisions, "Styles set spacing as CSS does, and a later style wins").
+  const styles2 = unknownStyles(d);
+  return styles2.length > 0 ? inFile(styles2) : d;
 }
 
 /**
@@ -159,7 +163,7 @@ export function loadStyles(
   const of = (ref: string, r: Report) =>
     sourceOf === undefined ? r : failure(r.errors.map((e) => ({ ...e, ...sourceOf(ref) })));
   for (const ref of refs) {
-    if (styleProblem(ref) !== undefined) continue;
+    if (stylesheetProblem(ref) !== undefined) continue;
     const path = resolve(dirname(file), ref);
     if (!existsSync(path)) {
       return of(ref, fileError("style-not-found", path));
@@ -318,7 +322,7 @@ function inFile(
 
 /**
  * Applies an operation to the file's diagram in memory and checks the result, writing
- * nothing. With `create`, there is no file yet: the operation is diagram.new,
+ * nothing. With `create`, there is no file yet: the operation is diagram.set,
  * and an existing file is refused. A refusal's problems carry their sources, from `origin`.
  */
 async function plan(
@@ -338,7 +342,7 @@ async function plan(
     if (isReport(loaded)) return failure(sourced(loaded.errors, command));
     base = loaded;
   }
-  const named = op.op === "diagram.style" || op.op === "diagram.new" ? op.style : undefined;
+  const named = op.op === "diagram.set" && op.stylesheet !== "-" ? op.stylesheet : undefined;
   // A stylesheet the operation names is the command's; the others are the file's.
   const styles = loadStyles(file, stylesheetRefs(base, [named]), (ref) =>
     ref === named ? { source: origin.command, index: 0 } : { source: IN_FILE, index: -1 },

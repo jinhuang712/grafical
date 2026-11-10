@@ -25,10 +25,10 @@ function ok(d: Diagram, ops: Op[]): Diagram {
   return r.diagram;
 }
 const note = (on: string, text = "retries 5 times, then the DLQ", footnote = false): Op => ({
-  op: "note.add",
-  on,
+  op: "note.set",
+  ids: [on],
   text,
-  ...(footnote ? { footnote: true } : {}),
+  ...(footnote ? { footnote: "on" } : {}),
 });
 const overlaps = (a: Rect, b: Rect) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -49,14 +49,14 @@ describe('notes in the picture (specs/decisions, "Notes as callouts or footnotes
 
   it("a footnote is a number on its target, its text at the bottom", () => {
     const before = layout(fx, m);
-    const d = ok(fx, [note("retry", undefined, true), note("service->mongo", undefined, true)]);
+    const d = ok(fx, [note("retry", undefined, true), note("service-mongo", undefined, true)]);
     const scene = layout(d, m);
     const byOn = new Map((scene.notes ?? []).map((x) => [x.on, x]));
     const retry = byOn.get("retry");
     if (retry?.mark === undefined || retry.key === undefined) throw new Error("no footnote");
     expect(retry.as).toBe("footnote");
     // Numbered in reading order: the retry topic sits above the edge to MongoDB.
-    expect(byOn.get("service->mongo")?.number).toBe(2);
+    expect(byOn.get("service-mongo")?.number).toBe(2);
     expect(retry.number).toBe(1);
     // The number sits on a corner of the node, and the list below the content.
     const rect = scene.nodes.find((n) => n.id === "retry")?.rect as Rect;
@@ -89,7 +89,7 @@ describe('notes in the picture (specs/decisions, "Notes as callouts or footnotes
     if (blocked === undefined) throw new Error("no refusal");
     expect(defectBlock(blocked, kindsOf(d))).toMatchObject({
       detail: { owner: "agent", is: "note", note: "retry" },
-      next: ["note --add", "note --remove", "node --move"],
+      next: ["node --move", "note --set", "note --remove"],
     });
     const foot = ok(d, [note("retry", "retries 5 times, then the DLQ", true)]);
     expect(check(foot, layout(foot, m), m)).toEqual([]);

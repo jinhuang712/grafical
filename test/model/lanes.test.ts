@@ -34,22 +34,29 @@ const lane = (s: Scene, id: string) => s.lanes?.find((x) => x.id === id);
 
 /** Four layers: web, gateway, two services, two stores. */
 const base: Op[] = [
-  { op: "diagram.new", title: "Shop" },
-  { op: "layer.add", id: "clients", label: "Clients" },
-  { op: "layer.add", id: "edge", label: "Edge" },
-  { op: "layer.add", id: "services", label: "Services" },
-  { op: "layer.add", id: "data", label: "Data" },
-  { op: "node.add", id: "web", layer: "clients", label: "web shop", type: "actor", last: true },
-  { op: "node.add", id: "gateway", layer: "edge", label: "gateway", last: true },
-  { op: "node.add", id: "orders", layer: "services", label: "orders-api", last: true },
-  { op: "node.add", id: "payments", layer: "services", label: "payments-api", last: true },
-  { op: "node.add", id: "ordersdb", layer: "data", label: "orders db", type: "store", last: true },
-  { op: "node.add", id: "ledger", layer: "data", label: "ledger", type: "store", last: true },
-  { op: "edge.add", from: "web", to: "gateway" },
-  { op: "edge.add", from: "gateway", to: "orders" },
-  { op: "edge.add", from: "orders", to: "payments", label: "charge" },
-  { op: "edge.add", from: "orders", to: "ordersdb", type: "data" },
-  { op: "edge.add", from: "payments", to: "ledger", type: "data" },
+  { op: "diagram.set", title: "Shop" },
+  { op: "layer.set", ids: ["clients"], label: "Clients" },
+  { op: "layer.set", ids: ["edge"], label: "Edge" },
+  { op: "layer.set", ids: ["services"], label: "Services" },
+  { op: "layer.set", ids: ["data"], label: "Data" },
+  { op: "node.set", ids: ["web"], layer: "clients", label: "web shop", type: "actor", last: true },
+  { op: "node.set", ids: ["gateway"], layer: "edge", label: "gateway", last: true },
+  { op: "node.set", ids: ["orders"], layer: "services", label: "orders-api", last: true },
+  { op: "node.set", ids: ["payments"], layer: "services", label: "payments-api", last: true },
+  {
+    op: "node.set",
+    ids: ["ordersdb"],
+    layer: "data",
+    label: "orders db",
+    type: "store",
+    last: true,
+  },
+  { op: "node.set", ids: ["ledger"], layer: "data", label: "ledger", type: "store", last: true },
+  { op: "edge.set", ids: ["web-gateway"], from: "web", to: "gateway" },
+  { op: "edge.set", ids: ["gateway-orders"], from: "gateway", to: "orders" },
+  { op: "edge.set", ids: ["orders-payments"], from: "orders", to: "payments", label: "charge" },
+  { op: "edge.set", ids: ["orders-ordersdb"], from: "orders", to: "ordersdb", type: "data" },
+  { op: "edge.set", ids: ["payments-ledger"], from: "payments", to: "ledger", type: "data" },
 ];
 let shop: Diagram;
 beforeAll(() => {
@@ -59,8 +66,10 @@ beforeAll(() => {
 describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
   it("runs as layers when layers join, and the file keeps it", () => {
     const { diagram: d } = ok(shop, [
-      { op: "lane.add", id: "customer", label: "Customer", members: ["clients"] },
-      { op: "lane.add", id: "platform", label: "Platform team", members: ["edge", "services"] },
+      { op: "lane.set", ids: ["customer"], label: "Customer" },
+      { op: "layer.set", ids: ["clients"], lane: "customer" },
+      { op: "lane.set", ids: ["platform"], label: "Platform team" },
+      { op: "layer.set", ids: ["edge", "services"], lane: "platform" },
     ]);
     expect(d.layers.map((l) => l.lane)).toEqual(["customer", "platform", "platform", undefined]);
     const back = readDiagram(writeDiagram(d));
@@ -70,8 +79,10 @@ describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
 
   it("runs as columns when nodes join, and keeps each layer in lane order", () => {
     const { diagram: d, changed } = ok(shop, [
-      { op: "lane.add", id: "pay", label: "Payments team", members: ["payments", "ledger"] },
-      { op: "lane.add", id: "ord", label: "Orders team", members: ["orders", "ordersdb"] },
+      { op: "lane.set", ids: ["pay"], label: "Payments team" },
+      { op: "node.set", ids: ["payments", "ledger"], lane: "pay" },
+      { op: "lane.set", ids: ["ord"], label: "Orders team" },
+      { op: "node.set", ids: ["orders", "ordersdb"], lane: "ord" },
     ]);
     // Lanes go left to right in list order: payments now comes first in its layers.
     expect(d.layers[2]?.nodes.map((n) => n.id)).toEqual(["payments", "orders"]);
@@ -82,90 +93,110 @@ describe('lanes in the model (specs/decisions, "Lanes run one way")', () => {
 
   it("refuses lanes that run both ways", () => {
     const { diagram: byLayers } = ok(shop, [
-      { op: "lane.add", id: "platform", label: "Platform", members: ["edge"] },
+      { op: "lane.set", ids: ["platform"], label: "Platform" },
+      { op: "layer.set", ids: ["edge"], lane: "platform" },
     ]);
-    const e1 = fail(byLayers, [{ op: "lane.join", lane: "platform", members: ["orders"] }]);
+    const e1 = fail(byLayers, [{ op: "node.set", ids: ["orders"], lane: "platform" }]);
     // The node's layer is what the lane could take instead.
     expect(e1[0]).toMatchObject({ code: "lane-mixed", facts: { is: "node", layer: "services" } });
     const { diagram: cols } = ok(shop, [
-      { op: "lane.add", id: "ord", label: "Orders", members: ["orders"] },
+      { op: "lane.set", ids: ["ord"], label: "Orders" },
+      { op: "node.set", ids: ["orders"], lane: "ord" },
     ]);
-    const e2 = fail(cols, [{ op: "lane.join", lane: "ord", members: ["data"] }]);
+    const e2 = fail(cols, [{ op: "layer.set", ids: ["data"], lane: "ord" }]);
     expect(e2[0]).toMatchObject({ code: "lane-mixed" });
   });
 
   it("refuses a layer lane with a gap, and joins a layer added inside one", () => {
     const gap = fail(shop, [
-      { op: "lane.add", id: "platform", label: "Platform", members: ["edge", "data"] },
+      { op: "lane.set", ids: ["platform"], label: "Platform" },
+      { op: "layer.set", ids: ["edge", "data"], lane: "platform" },
     ]);
     expect(gap[0]).toMatchObject({ code: "lane-gap", facts: { layer: "services" } });
     const { diagram: d } = ok(shop, [
-      { op: "lane.add", id: "platform", label: "Platform", members: ["edge", "services"] },
-      { op: "layer.add", id: "mesh", label: "Mesh", after: "edge" },
-      { op: "node.add", id: "sidecar", layer: "mesh", label: "sidecar" },
+      { op: "lane.set", ids: ["platform"], label: "Platform" },
+      { op: "layer.set", ids: ["edge", "services"], lane: "platform" },
+      { op: "layer.set", ids: ["mesh"], label: "Mesh", after: "edge" },
+      { op: "node.set", ids: ["sidecar"], layer: "mesh", label: "sidecar" },
     ]);
     expect(d.layers.find((l) => l.id === "mesh")?.lane).toBe("platform");
   });
 
-  it("keeps a group inside one lane, and a group joins with all its members", () => {
+  it("keeps a group inside one lane, and its members join together", () => {
     const grouped = ok(shop, [
-      { op: "group.add", id: "core", label: "core", nodes: ["orders", "payments"] },
+      { op: "group.set", ids: ["core"], label: "core" },
+      { op: "node.set", ids: ["orders", "payments"], group: "core" },
     ]).diagram;
     const split = fail(grouped, [
-      { op: "lane.add", id: "a", label: "A", members: ["orders"] },
-      { op: "lane.add", id: "b", label: "B", members: ["payments"] },
+      { op: "lane.set", ids: ["a"], label: "A" },
+      { op: "node.set", ids: ["orders"], lane: "a" },
     ]);
-    // It names the group's first node in another lane than its first node's, and that lane.
+    // It names the group's first node in another lane than its first node's, and that lane: here none yet.
     expect(split.find((e) => e.code === "group-across-lanes")?.facts).toEqual({
       node: "payments",
-      lane: "b",
-      lanes: ["a", "b"],
+      lane: "none",
+      lanes: ["a", "none"],
     });
     const { diagram: d } = ok(grouped, [
-      { op: "lane.add", id: "a", label: "A", members: ["core"] },
+      { op: "lane.set", ids: ["a"], label: "A" },
+      { op: "node.set", ids: ["orders", "payments"], lane: "a" },
     ]);
     const lanes = d.layers.flatMap((l) => l.nodes).filter((n) => n.lane === "a");
     expect(lanes.map((n) => n.id)).toEqual(["orders", "payments"]);
   });
 
   it("names unknown lanes and members, and lane ids clash with every other id", () => {
-    const e1 = fail(shop, [{ op: "lane.join", lane: "plaform", members: ["edge"] }]);
+    const e1 = fail(shop, [{ op: "layer.set", ids: ["edge"], lane: "plaform" }]);
     expect(e1[0]).toMatchObject({ code: "unknown-lane", field: "lane" });
-    const e2 = fail(shop, [{ op: "lane.add", id: "x", label: "X", members: ["gatway"] }]);
-    expect(e2[0]).toMatchObject({ code: "unknown-node", field: "members" });
-    expect(e2[0]?.facts?.near).toContain("gateway");
-    const e3 = fail(shop, [{ op: "lane.add", id: "orders", label: "X" }]);
+    // A node --set with an id no node has makes one, which needs a label.
+    const e2 = fail(shop, [
+      { op: "lane.set", ids: ["x"], label: "X" },
+      { op: "node.set", ids: ["gatway"], lane: "x" },
+    ]);
+    expect(e2[0]).toMatchObject({ code: "missing-field", field: "label" });
+    const e3 = fail(shop, [{ op: "lane.set", ids: ["orders"], label: "X" }]);
     expect(e3[0]).toMatchObject({ code: "duplicate-id" });
   });
 
   it("removes a lane with the edges that end at it, and its members stay", () => {
     const { diagram: d } = ok(shop, [
-      { op: "lane.add", id: "pay", label: "Payments", members: ["payments", "ledger"] },
-      { op: "edge.add", from: "gateway", to: "pay", label: "refunds" },
+      { op: "lane.set", ids: ["pay"], label: "Payments" },
+      { op: "node.set", ids: ["payments", "ledger"], lane: "pay" },
+      { op: "edge.set", ids: ["gateway-pay"], from: "gateway", to: "pay", label: "refunds" },
     ]);
-    const { diagram: after, changed } = ok(d, [{ op: "lane.remove", id: "pay" }]);
+    const { diagram: after, changed } = ok(d, [{ op: "lane.remove", ids: ["pay"] }]);
     expect(after.lanes).toBeUndefined();
     expect(after.edges.some((e) => e.to === "pay")).toBe(false);
     expect(after.layers.flatMap((l) => l.nodes).some((n) => n.lane !== undefined)).toBe(false);
-    expect(changed).toEqual(expect.arrayContaining(["pay", "gateway->pay", "payments", "ledger"]));
+    expect(changed).toEqual(expect.arrayContaining(["pay", "gateway-pay", "payments", "ledger"]));
   });
 
   it("refuses an edge from a lane to its own member, between two lanes, and across a column lane", () => {
     const { diagram: d } = ok(shop, [
-      { op: "lane.add", id: "pay", label: "Payments", members: ["payments", "ledger"] },
-      { op: "lane.add", id: "ord", label: "Orders", members: ["orders", "ordersdb"] },
+      { op: "lane.set", ids: ["pay"], label: "Payments" },
+      { op: "node.set", ids: ["payments", "ledger"], lane: "pay" },
+      { op: "lane.set", ids: ["ord"], label: "Orders" },
+      { op: "node.set", ids: ["orders", "ordersdb"], lane: "ord" },
     ]);
-    expect(fail(d, [{ op: "edge.add", from: "payments", to: "pay" }])[0]?.code).toBe("edge-inside");
-    expect(fail(d, [{ op: "edge.add", from: "ord", to: "pay" }])[0]?.code).toBe("lane-to-lane");
-    expect(fail(d, [{ op: "edge.add", from: "clients", to: "pay" }])[0]?.code).toBe("edge-inside");
+    expect(
+      fail(d, [{ op: "edge.set", ids: ["payments-pay"], from: "payments", to: "pay" }])[0]?.code,
+    ).toBe("edge-inside");
+    expect(fail(d, [{ op: "edge.set", ids: ["ord-pay"], from: "ord", to: "pay" }])[0]?.code).toBe(
+      "lane-to-lane",
+    );
+    expect(
+      fail(d, [{ op: "edge.set", ids: ["clients-pay"], from: "clients", to: "pay" }])[0]?.code,
+    ).toBe("edge-inside");
   });
 });
 
 describe('lanes in the picture (specs/decisions, "Lanes run one way")', () => {
   it("draws layer lanes as bands with a header on the left, around their layers only", () => {
     const { diagram: d } = ok(shop, [
-      { op: "lane.add", id: "customer", label: "Customer", members: ["clients"] },
-      { op: "lane.add", id: "platform", label: "Platform team", members: ["edge", "services"] },
+      { op: "lane.set", ids: ["customer"], label: "Customer" },
+      { op: "layer.set", ids: ["clients"], lane: "customer" },
+      { op: "lane.set", ids: ["platform"], label: "Platform team" },
+      { op: "layer.set", ids: ["edge", "services"], lane: "platform" },
     ]);
     const s = layout(d, m);
     expect(check(d, s, m)).toEqual([]);
@@ -187,8 +218,10 @@ describe('lanes in the picture (specs/decisions, "Lanes run one way")', () => {
 
   it("draws column lanes side by side, in list order, with free nodes outside", () => {
     const { diagram: d } = ok(shop, [
-      { op: "lane.add", id: "ord", label: "Orders team", members: ["orders", "ordersdb"] },
-      { op: "lane.add", id: "pay", label: "Payments team", members: ["payments", "ledger"] },
+      { op: "lane.set", ids: ["ord"], label: "Orders team" },
+      { op: "node.set", ids: ["orders", "ordersdb"], lane: "ord" },
+      { op: "lane.set", ids: ["pay"], label: "Payments team" },
+      { op: "node.set", ids: ["payments", "ledger"], lane: "pay" },
     ]);
     const s = layout(d, m);
     expect(check(d, s, m)).toEqual([]);
@@ -207,13 +240,20 @@ describe('lanes in the picture (specs/decisions, "Lanes run one way")', () => {
 
   it("ends an edge to a lane at the lane's border", () => {
     const { diagram: d } = ok(shop, [
-      { op: "lane.add", id: "platform", label: "Platform team", members: ["services", "data"] },
-      { op: "edge.remove", id: "gateway->orders" },
-      { op: "edge.add", from: "gateway", to: "platform", label: "routes" },
+      { op: "lane.set", ids: ["platform"], label: "Platform team" },
+      { op: "layer.set", ids: ["services", "data"], lane: "platform" },
+      { op: "edge.remove", ids: ["gateway-orders"] },
+      {
+        op: "edge.set",
+        ids: ["gateway-platform"],
+        from: "gateway",
+        to: "platform",
+        label: "routes",
+      },
     ]);
     const s = layout(d, m);
     expect(check(d, s, m)).toEqual([]);
-    const e = s.edges.find((x) => x.id === "gateway->platform");
+    const e = s.edges.find((x) => x.id === "gateway-platform");
     const tip = e?.points[e.points.length - 1];
     expect(tip?.y).toBe(lane(s, "platform")?.rect.y);
     expect(e?.label).toBeDefined();

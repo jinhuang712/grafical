@@ -195,7 +195,6 @@ describe("marks in the checker", () => {
     const d: Diagram = {
       grafical: 1,
       title: "R",
-      density: "normal",
       layers: [
         {
           id: "row",
@@ -227,7 +226,7 @@ describe("marks in the checker", () => {
     if (defect === undefined) throw new Error("no defect");
     expect(defectBlock(defect, kindsOf(d))).toMatchObject({
       detail: { owner: "agent", field: "mark", found: "top-left", is: "label", node: "api" },
-      next: ["node --size", "node --mark"],
+      next: ["node --set", "mark --set"],
     });
   });
 

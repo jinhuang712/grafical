@@ -4,15 +4,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Command } from "commander";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { z } from "zod";
 import { opCommands } from "../../src/cli/diff.ts";
 import { GUIDES } from "../../src/cli/guides.ts";
 import { PAGES } from "../../src/cli/help.ts";
 import { build, wrongCommand } from "../../src/cli/main.ts";
-import { surfaceText } from "../../src/cli/surface.ts";
+import { FILE_COMMANDS, NOUNS, surfaceText } from "../../src/cli/surface.ts";
 import { DEFECT_CODES, ERROR_CODES, WARNING_CODES } from "../../src/errors.ts";
 import { writeDiagram } from "../../src/model/io.ts";
-import { OP_NAMES, SCHEMAS } from "../../src/model/ops.ts";
+import { OP_KEYS } from "../../src/model/issues.ts";
+import { OP_NAMES } from "../../src/model/ops.ts";
 import { EDGE_KINDS, NODE_KINDS } from "../../src/model/types.ts";
 import { edgeLooks } from "../fixtures/edge-looks.ts";
 import { typed } from "./argv.ts";
@@ -63,12 +63,47 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
       const words = (s: string) => s.replace(/\s+/g, " ");
       const page = PAGES[path];
       if (page?.about !== undefined)
-        expect(words(r.out), path).toContain(words(surfaceText(page.about)));
+        expect(words(r.out), path).toContain(words(surfaceText(words(page.about))));
       if (page?.after !== undefined) expect(r.out, path).toContain(surfaceText(page.after.trim()));
       // Commands in an example may run long; the rest wraps at 80.
       const prose = r.out.split(/^Example/m)[0] ?? "";
       for (const line of prose.split("\n"))
         expect(line.length, `${path}: ${line}`).toBeLessThanOrEqual(80);
+      // The paragraph is wrapped as full as each line holds: no word waits for a line the one before had room for.
+      const lines = (r.out.split(/^(?:Arguments|Options|Commands):/m)[0] ?? "")
+        .split("\n")
+        .slice(1);
+      for (const [k, line] of lines.entries()) {
+        const next = lines[k + 1] ?? "";
+        if (line === "" || next === "" || /^\s/.test(next)) continue;
+        const word = next.split(" ")[0] ?? "";
+        expect(line.length + 1 + word.length, `${path}: ${line} / ${word}`).toBeGreaterThan(80);
+      }
+    }
+  });
+
+  it("the entry page names every command as the command line takes it", () => {
+    const entry = run("--help").out;
+    const said = entry.replace(/\s+/g, " ");
+    const verbs = new Map<string, Set<string>>();
+    for (const name of OP_NAMES) {
+      const [noun, verb] = name.split(".") as [string, string];
+      verbs.set(noun, new Set([...(verbs.get(noun) ?? []), verb]));
+    }
+    // A noun and its verb as two words is a command it never takes, even across a line's end.
+    for (const [noun, all] of verbs) {
+      for (const verb of all)
+        expect(said, `${noun} ${verb}`).not.toMatch(new RegExp(`\\b${noun} ${verb}\\b`));
+    }
+    // A command that reads a file names it first, with -f, and then a command that exists.
+    for (const m of said.matchAll(/\bgrafical (\S+)( \S+)?( \S+)?( \S+)?/g)) {
+      const [, first, , command, verb] = m.map((x) => x?.trim());
+      if (first !== "-f") {
+        expect([...NOUNS, ...FILE_COMMANDS], m[0]).not.toContain(first);
+        continue;
+      }
+      if (FILE_COMMANDS.includes(command ?? "")) continue;
+      expect(verbs.get(command ?? "")?.has((verb ?? "").replace(/^--/, "")), m[0]).toBe(true);
     }
   });
 
@@ -89,7 +124,7 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
 
   it("every command names its arguments and options as its operation's fields", () => {
     for (const [op, c] of opCommands(build())) {
-      const fields = Object.keys((SCHEMAS[op] as z.ZodObject).shape);
+      const fields = OP_KEYS[op] ?? [];
       for (const a of c.registeredArguments.filter((a) => a.name() !== "file"))
         expect(fields, `${op} <${a.name()}>`).toContain(a.name());
       for (const o of c.options.filter((o) => !["json", "try"].includes(o.attributeName())))
@@ -111,9 +146,9 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
   });
 
   it("lists every kind of node and edge", () => {
-    const nodes = run("node", "add", "--help").out;
+    const nodes = run("node", "set", "--help").out;
     for (const k of NODE_KINDS) expect(nodes).toMatch(new RegExp(`^ {2}${k} `, "m"));
-    const edges = run("edge", "add", "--help").out;
+    const edges = run("edge", "set", "--help").out;
     for (const k of EDGE_KINDS) expect(edges).toMatch(new RegExp(`^ {2}${k} `, "m"));
   });
 
@@ -141,28 +176,28 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
       likely: likely === undefined ? undefined : [likely],
     });
     // The ways an agent asked for a page in a real run, 2026-10-18.
-    expect(wrong("help", "apply")).toEqual(meant("help", "--help"));
+    expect(wrong("help", "node")).toEqual(meant("help", "--help"));
     expect(wrong("help")).toEqual(meant("help", "--help"));
-    expect(wrong("help", "node", "add")).toEqual(meant("help", "--help"));
-    expect(wrong("help", "node add")).toEqual(meant("help", "--help"));
-    expect(wrong("node", "help", "add")).toEqual(meant("help", "--help"));
-    expect(wrong("diagram", "help", "legend")).toEqual(meant("help", "--help"));
-    expect(wrong("node add", "--help")).toEqual(meant("node add", "node --add"));
-    expect(wrong("node.add", "--help")).toEqual(meant("node.add", "node --add"));
+    expect(wrong("help", "node", "set")).toEqual(meant("help", "--help"));
+    expect(wrong("help", "node set")).toEqual(meant("help", "--help"));
+    expect(wrong("node", "help", "set")).toEqual(meant("help", "--help"));
+    expect(wrong("diagram", "help", "set")).toEqual(meant("help", "--help"));
+    expect(wrong("node set", "--help")).toEqual(meant("node set", "node --set"));
+    expect(wrong("node.set", "--help")).toEqual(meant("node.set", "node --set"));
     // A misspelling near one command's name; a word near none.
-    expect(wrong("nodee", "add", "--help")).toEqual(meant("nodee", "node"));
-    expect(wrong("node", "ad", "-h")).toEqual(meant("ad", "add"));
-    expect(wrong("nodee", "add", "d.grafical", "x")).toEqual(meant("nodee", "node"));
+    expect(wrong("nodee", "set", "--help")).toEqual(meant("nodee", "node"));
+    expect(wrong("node", "se", "-h")).toEqual(meant("se", "set"));
+    expect(wrong("nodee", "set", "d.grafical", "x")).toEqual(meant("nodee", "node"));
     expect(wrong("bogus")).toEqual(meant("bogus"));
     expect(wrong("bogus", "--help")).toEqual(meant("bogus"));
     expect(wrong("node", "bogus")).toEqual(meant("bogus"));
     // Commands it has, and the words a command takes, are commander's to read.
-    expect(wrong("node", "add", "--help")).toBeUndefined();
+    expect(wrong("node", "set", "--help")).toBeUndefined();
     expect(wrong("node", "--help")).toBeUndefined();
-    expect(wrong("diagram", "legend", "help")).toBeUndefined();
+    expect(wrong("note", "set", "help")).toBeUndefined();
     expect(wrong()).toBeUndefined();
     // The command line prints the block alone, in place of the entry page, as a usage error.
-    expect(run("node add", "--help")).toEqual({
+    expect(run("node set", "--help")).toEqual({
       code: 2,
       out: "",
       err: [
@@ -170,10 +205,10 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
         "",
         "error: unknown-command",
         "description: No command has the name.",
-        'source: grafical "node add" --help',
+        'source: grafical "node set" --help',
         "detail:",
-        "  found: node add",
-        "  likely: node --add",
+        "  found: node set",
+        "  likely: node --set",
         "next: -",
         "",
       ].join("\n"),
@@ -239,24 +274,24 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
       "warning: bent-edge",
       "description: An edge bends more than twice, mostly because it skips layers.",
       "detail:",
-      "  edge: api->photos",
+      "  edge: api-photos",
       "  bends: 4",
       "  skip: 1",
-      "next: layer --move, node --move, node --swap",
+      "next: layer --move, node --move",
     ].join("\n");
     const out = run("check", photos()).out;
     expect(out.startsWith(`ok\n\n${bent}\n\ncounts nodes=`)).toBe(true);
     expect(out).toMatch(/^counts nodes=\d+ edges=\d+ crossings=\d+ bends=\d+ bent=1 /m);
     expect(out).not.toMatch(/^(hint|lines):/m);
-    // Every write reports it too, a single command as a batch (specs/decisions, "A bent edge is reported and never refused").
-    expect(run("diagram", "subtitle", photos(), "--text", "Uploads").out).toBe(
+    // Every write reports it too (specs/decisions, "A bent edge is reported and never refused").
+    expect(run("diagram", "set", photos(), "--subtitle", "Uploads").out).toBe(
       `ok changed=subtitle\n\n${bent}\n`,
     );
     expect(run("diagram", "improve", photos()).code).toBe(2);
     const json = JSON.parse(run("check", photos(), "--json").out);
     expect(json.counts.edges).toBe(edgeLooks.edges.length);
     expect(json.problems).toMatchObject([
-      { kind: "warning", code: "bent-edge", detail: { edge: "api->photos", bends: 4, skip: 1 } },
+      { kind: "warning", code: "bent-edge", detail: { edge: "api-photos", bends: 4, skip: 1 } },
     ]);
     expect(json.problems[0].source).toBeUndefined();
     expect(json.hints).toBeUndefined();
@@ -265,13 +300,7 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
 });
 
 describe("what the help shows is what a caller types", () => {
-  const pages = [
-    "node --add",
-    "group --label-at",
-    "label --align",
-    "gap --between",
-    "note --align",
-  ];
+  const pages = ["node --set", "edge --set", "label --set", "mark --set", "note --set"];
 
   it("gives every verb a usage line with its file first", () => {
     for (const page of pages) {
@@ -282,7 +311,7 @@ describe("what the help shows is what a caller types", () => {
   });
 
   it("writes every example with its file first", () => {
-    for (const page of [...pages, "new", "check"]) {
+    for (const page of [...pages, "diagram --set", "check"]) {
       const out = run(...(page.split(" ") as [string]), "--help").out;
       expect(out, page).not.toMatch(/^\s+grafical \S+\.grafical/m);
       expect(out, page).not.toMatch(/^\s+grafical [a-z]+ --\S+ \S+\.grafical/m);
@@ -291,7 +320,7 @@ describe("what the help shows is what a caller types", () => {
   });
 
   it("names the verb a caller meant in the old form", () => {
-    const r = spawnSync("node", [MAIN, "node", "add", "--help"], { cwd: dir, encoding: "utf8" });
-    expect(r.stdout + r.stderr).toContain("likely: node --add");
+    const r = spawnSync("node", [MAIN, "node", "set", "--help"], { cwd: dir, encoding: "utf8" });
+    expect(r.stdout + r.stderr).toContain("likely: node --set");
   });
 });

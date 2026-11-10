@@ -2,7 +2,6 @@
   format: 1
   title: "Internet Banking System"
   subtitle: "Container diagram (C4 level 2), after Simon Brown's Big Bank plc example."
-  density: normal
 }
 
 <layer> row-people {
@@ -123,61 +122,61 @@
   layer: @row-data
 }
 
-<edge> customer->webapp {
+<edge> customer-webapp {
   from: @customer
   to: @webapp
   type: @call
 }
 
-<edge> customer->spa {
+<edge> customer-spa {
   from: @customer
   to: @spa
   type: @call
 }
 
-<edge> customer->mobile {
+<edge> customer-mobile {
   from: @customer
   to: @mobile
   type: @call
 }
 
-<edge> webapp->spa {
+<edge> webapp-spa {
   from: @webapp
   to: @spa
   type: @call
 }
 
-<edge> spa->api {
+<edge> spa-api {
   from: @spa
   to: @api
   type: @call
 }
 
-<edge> mobile->api {
+<edge> mobile-api {
   from: @mobile
   to: @api
   type: @call
 }
 
-<edge> api->db {
+<edge> api-db {
   from: @api
   to: @db
   type: @call
 }
 
-<edge> api->mainframe {
+<edge> api-mainframe {
   from: @api
   to: @mainframe
   type: @call
 }
 
-<edge> api->email {
+<edge> api-email {
   from: @api
   to: @email
   type: @call
 }
 
-<edge> email->customer {
+<edge> email-customer {
   from: @email
   to: @customer
   type: @call
@@ -212,52 +211,52 @@
   place: inside
 }
 
-<label> customer->webapp-label {
-  on: @customer->webapp
+<label> customer-webapp-label {
+  on: @customer-webapp
   text: "visits bigbank.com/ib"
 }
 
-<label> customer->spa-label {
-  on: @customer->spa
+<label> customer-spa-label {
+  on: @customer-spa
   text: "views balances, pays"
 }
 
-<label> customer->mobile-label {
-  on: @customer->mobile
+<label> customer-mobile-label {
+  on: @customer-mobile
   text: "views balances, pays"
 }
 
-<label> webapp->spa-label {
-  on: @webapp->spa
+<label> webapp-spa-label {
+  on: @webapp-spa
   text: "delivers"
 }
 
-<label> spa->api-label {
-  on: @spa->api
+<label> spa-api-label {
+  on: @spa-api
   text: "API calls, JSON/HTTPS"
 }
 
-<label> mobile->api-label {
-  on: @mobile->api
+<label> mobile-api-label {
+  on: @mobile-api
   text: "API calls, JSON/HTTPS"
 }
 
-<label> api->db-label {
-  on: @api->db
+<label> api-db-label {
+  on: @api-db
   text: "reads, writes (JDBC)"
 }
 
-<label> api->mainframe-label {
-  on: @api->mainframe
+<label> api-mainframe-label {
+  on: @api-mainframe
   text: "API calls, XML/HTTPS"
 }
 
-<label> api->email-label {
-  on: @api->email
+<label> api-email-label {
+  on: @api-email
   text: "sends e-mail, SMTP"
 }
 
-<label> email->customer-label {
-  on: @email->customer
+<label> email-customer-label {
+  on: @email-customer
   text: "sends e-mails"
 }

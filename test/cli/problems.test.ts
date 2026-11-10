@@ -41,16 +41,16 @@ describe("problems", () => {
     // Round p1g: two agents could not tell from the record why a bar there was refused. A bar an edge ends at can lose
     // the edge; one drawn for its look alone, the look.
     const bar = { layer: "mid", group: "sys", top: "core", bottom: "stores" };
-    expect(nextOf("bar-in-group", { ...bar, edge: "rider->mid" })).toEqual([
-      "group --leave",
+    expect(nextOf("bar-in-group", { ...bar, edge: "rider-mid" })).toEqual([
       "layer --move",
+      "node --set",
       "node --move",
       "edge --remove",
     ]);
     expect(nextOf("bar-in-group", bar)).toEqual([
-      "group --leave",
-      "layer --look",
+      "layer --set",
       "layer --move",
+      "node --set",
       "node --move",
     ]);
   });
@@ -69,13 +69,11 @@ edges: []
 `;
     const laned = read(`grafical: 1
 title: stepped
-density: normal
 lanes:
   - {id: ops, label: Ops}
 ${rows.replace(", column: left", "")}`);
     const columned = read(`grafical: 1
 title: stepped
-density: normal
 columns:
   - {id: left}
 ${rows.replace(", lane: ops", "")}`);
@@ -86,13 +84,13 @@ ${rows.replace(", lane: ops", "")}`);
         .filter((e) => e.code === "conflicting-position")
         .map((e) => `${e.field}: ${errorBlock(e).next.join(", ")}`);
     };
-    expect(next(laned, { op: "node.move", id: "db", from: "api", down: 1 } as Op)).toEqual([
-      "from,align: node --move, node --align",
-      "from,lane: lane --leave, node --move",
+    expect(next(laned, { op: "node.move", ids: ["db"], from: "api", down: "1" } as Op)).toEqual([
+      "from,align: node --set, node --move",
+      "from,lane: node --set, node --move",
     ]);
-    expect(next(columned, { op: "node.move", id: "cache", from: "web", down: 1 } as Op)).toEqual([
-      "from,column: column --leave, node --move",
-    ]);
+    expect(
+      next(columned, { op: "node.move", ids: ["cache"], from: "web", down: "1" } as Op),
+    ).toEqual(["from,column: node --set, node --move"]);
   });
 
   // Found by review on 2026-10-18: a defect's ids were lists even of one, an error's and a warning's not.
@@ -116,17 +114,17 @@ ${rows.replace(", lane: ops", "")}`);
 
   // Found by review on 2026-10-18: an unknown weight named only diagram style, then edge weight for a legend's too.
   it("an unknown weight names the commands that set the edge's weight, or the legend's", () => {
-    expect(nextOf("unknown-weight", { edge: "a->b", allowed: ["thin"] })).toEqual([
-      "diagram --style",
-      "edge --weight",
+    expect(nextOf("unknown-weight", { edge: "a-b", allowed: ["thin"] })).toEqual([
+      "diagram --set",
+      "edge --set",
     ]);
-    expect(nextOf("unknown-weight", { edges: ["a->b"], allowed: ["thin"] })).toEqual([
-      "diagram --style",
-      "edge --weight",
+    expect(nextOf("unknown-weight", { edges: ["a-b"], allowed: ["thin"] })).toEqual([
+      "diagram --set",
+      "edge --set",
     ]);
     expect(nextOf("unknown-weight", { allowed: ["thin"] }, "legend.weights")).toEqual([
-      "diagram --style",
-      "diagram --legend",
+      "diagram --set",
+      "legend --set",
     ]);
   });
 

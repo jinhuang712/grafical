@@ -40,21 +40,19 @@ const roundTrips = (d: Diagram) => {
 };
 
 describe("diagram settings", () => {
-  it("title, density and legend wording, round-tripped", () => {
+  it("title and legend wording, round-tripped", () => {
     const d = ok(fx, [
-      { op: "diagram.title", text: "New title" },
-      { op: "diagram.density", density: "compact" },
-      { op: "diagram.legend", style: "dashed", text: "Kafka message" },
+      { op: "diagram.set", title: "New title" },
+      { op: "legend.set", ids: ["style:dashed"], text: "Kafka message" },
     ]);
-    expect(d).toMatchObject({ title: "New title", density: "compact" });
+    expect(d).toMatchObject({ title: "New title" });
     expect(d.legend).toEqual({ dashed: "Kafka message" });
     const text = writeDiagram(d);
-    expect(text).toMatch(/density: compact\n}/);
     expect(text).toContain('<legend> {\n  dashed: "Kafka message"\n}');
     roundTrips(d);
     const legend = layout(d, m).legend?.map((it) => it.label.runs.map((r) => r.text).join(""));
     expect(legend).toContain("Kafka message");
-    const cleared = ok(d, [{ op: "diagram.legend", style: "dashed" }]);
+    const cleared = ok(d, [{ op: "legend.remove", ids: ["style:dashed"] }]);
     expect(cleared.legend).toBeUndefined();
   });
 });
@@ -62,34 +60,34 @@ describe("diagram settings", () => {
 describe("layers", () => {
   it("rename, move", () => {
     const d = ok(fx, [
-      { op: "layer.label", id: "deps", label: "Outside" },
-      { op: "layer.move", id: "sources", after: "deps" },
+      { op: "layer.set", ids: ["deps"], label: "Outside" },
+      { op: "layer.move", ids: ["sources"], after: "deps" },
     ]);
     expect(d.layers.map((l) => l.id)).toEqual(["entry", "topics", "work", "deps", "sources"]);
     expect(d.layers[3]?.label).toBe("Outside");
     // A layer moved between a group's layers: the node spans it, and its nodes stay beside the node (specs/decisions, "Layers unseen, groups as systems").
-    const moved = ok(fx, [{ op: "layer.move", id: "deps", before: "work" }]);
+    const moved = ok(fx, [{ op: "layer.move", ids: ["deps"], before: "work" }]);
     expect(check(moved, layout(moved, m), m)).toEqual([]);
-    expect(fail(fx, [{ op: "layer.move", id: "deps" }])[0]?.code).toBe("missing-field");
-    expect(fail(fx, [{ op: "layer.move", id: "deps", before: "nope" }])[0]?.code).toBe(
+    expect(fail(fx, [{ op: "layer.move", ids: ["deps"] }])[0]?.code).toBe("missing-field");
+    expect(fail(fx, [{ op: "layer.move", ids: ["deps"], before: "nope" }])[0]?.code).toBe(
       "unknown-layer",
     );
   });
 
   it("remove takes only an empty layer, and its edges go with it", () => {
-    expect(fail(fx, [{ op: "layer.remove", id: "deps" }])[0]?.code).toBe("layer-not-empty");
+    expect(fail(fx, [{ op: "layer.remove", ids: ["deps"] }])[0]?.code).toBe("layer-not-empty");
     const d = ok(fx, [
-      { op: "layer.add", id: "spare", label: "Spare" },
-      { op: "node.add", id: "x", layer: "spare", label: "x" },
-      { op: "edge.add", from: "pipelines", to: "spare" },
+      { op: "layer.set", ids: ["spare"], label: "Spare" },
+      { op: "node.set", ids: ["x"], layer: "spare", label: "x" },
+      { op: "edge.set", ids: ["pipelines-spare"], from: "pipelines", to: "spare" },
     ]);
     const gone = run(d, [
-      { op: "node.remove", id: "x" },
-      { op: "layer.remove", id: "spare" },
+      { op: "node.remove", ids: ["x"] },
+      { op: "layer.remove", ids: ["spare"] },
     ]);
     expect(gone.diagram.layers.some((l) => l.id === "spare")).toBe(false);
     expect(gone.diagram.edges.some((e) => e.to === "spare")).toBe(false);
-    expect(gone.changed).toContain("pipelines->spare");
+    expect(gone.changed).toContain("pipelines-spare");
   });
 
   it("split moves the second half, or from a node on, into a new layer below", () => {
@@ -117,31 +115,22 @@ describe("layers", () => {
 describe("nodes", () => {
   it("describe, kind, emphasize and align", () => {
     const d = ok(fx, [
-      { op: "node.sublabel", id: "geo", text: "regions" },
-      { op: "node.sublabel", id: "i18n" },
-      { op: "node.type", id: "geo", type: "service" },
-      { op: "node.emphasis", id: "mongo", off: true },
-      { op: "node.emphasis", id: "geo" },
-      { op: "node.align", id: "geo", to: "admin" },
+      { op: "node.set", ids: ["geo"], sublabel: "regions" },
+      { op: "node.set", ids: ["i18n"], sublabel: "-" },
+      { op: "node.set", ids: ["geo"], type: "service" },
+      { op: "node.set", ids: ["mongo"], emphasis: "off" },
+      { op: "node.set", ids: ["geo"], emphasis: "on" },
+      { op: "node.set", ids: ["geo"], align: "admin" },
     ]);
     expect(node(d, "geo")).toMatchObject({ sublabel: "regions", kind: "service", emphasis: true });
     expect(node(d, "geo")?.align).toBe("admin");
     expect(node(d, "i18n")?.sublabel).toBeUndefined();
     expect(node(d, "mongo")?.emphasis).toBeUndefined();
-    const cleared = ok(d, [{ op: "node.align", id: "geo" }]);
+    const cleared = ok(d, [{ op: "node.set", ids: ["geo"], align: "-" }]);
     expect(node(cleared, "geo")?.align).toBeUndefined();
-    expect(fail(fx, [{ op: "node.align", id: "geo", to: "i18n" }])[0]?.code).toBe(
+    expect(fail(fx, [{ op: "node.set", ids: ["geo"], align: "i18n" }])[0]?.code).toBe(
       "align-same-layer",
     );
-  });
-
-  it("swap trades places, in one layer or across two", () => {
-    const one = ok(fx, [{ op: "node.swap", a: "geo", b: "campaign" }]);
-    expect(order(one, "deps")).toEqual(["campaign", "postgres", "i18n", "inventory", "geo"]);
-    const two = ok(fx, [{ op: "node.swap", a: "geo", b: "upstream" }]);
-    expect(order(two, "sources")?.[0]).toBe("geo");
-    expect(order(two, "deps")?.[0]).toBe("upstream");
-    expect(fail(fx, [{ op: "node.swap", a: "geo", b: "geo" }])[0]?.code).toBe("bad-reference");
   });
 
   it("merge keeps every edge of the merged nodes, once, and reports them", () => {
@@ -153,7 +142,7 @@ describe("nodes", () => {
     const into = d.edges.filter((e) => e.to === "deps-svc").map((e) => e.from);
     // pipelines called both: one edge now. service called i18n: kept.
     expect(into.sort()).toEqual(["pipelines", "service"]);
-    expect(r.changed).toContain("pipelines->i18n");
+    expect(r.changed).toContain("pipelines-i18n");
     expect(node(d, "deps-svc")?.kind).toBe("external");
     // An id of a merged node may be reused.
     const reuse = ok(fx, [{ op: "node.merge", nodes: ["geo", "i18n"], id: "geo", label: "G" }]);
@@ -167,19 +156,19 @@ describe("nodes", () => {
 describe("edges", () => {
   it("relabel, kind, reverse and retarget keep the id", () => {
     const d = ok(fx, [
-      { op: "edge.label", id: "pipelines->mongo", label: "write" },
-      { op: "edge.label", id: "service->mongo" },
-      { op: "edge.type", id: "pipelines->geo", type: "data" },
-      { op: "edge.reverse", id: "retry->line_topics" },
-      { op: "plug", id: "callers->handlers", to: "catalog-api" },
+      { op: "edge.set", ids: ["pipelines-mongo"], label: "write" },
+      { op: "edge.set", ids: ["service-mongo"], label: "-" },
+      { op: "edge.set", ids: ["pipelines-geo"], type: "data" },
+      { op: "edge.set", ids: ["retry-line_topics"], from: "line_topics", to: "retry" },
+      { op: "edge.set", ids: ["callers-handlers"], to: "catalog-api" },
     ]);
-    expect(edge(d, "pipelines->mongo")?.label).toBe("write");
-    expect(edge(d, "service->mongo")?.label).toBeUndefined();
-    expect(edge(d, "pipelines->geo")?.kind).toBe("data");
-    expect(edge(d, "retry->line_topics")).toMatchObject({ from: "line_topics", to: "retry" });
-    expect(edge(d, "callers->handlers")).toMatchObject({ from: "callers", to: "catalog-api" });
-    expect(fail(fx, [{ op: "plug", id: "callers->handlers" }])[0]?.code).toBe("missing-field");
-    expect(fail(fx, [{ op: "plug", id: "callers->handlers", to: "nope" }])[0]).toMatchObject({
+    expect(edge(d, "pipelines-mongo")?.label).toBe("write");
+    expect(edge(d, "service-mongo")?.label).toBeUndefined();
+    expect(edge(d, "pipelines-geo")?.kind).toBe("data");
+    expect(edge(d, "retry-line_topics")).toMatchObject({ from: "line_topics", to: "retry" });
+    expect(edge(d, "callers-handlers")).toMatchObject({ from: "callers", to: "catalog-api" });
+    expect(run(fx, [{ op: "edge.set", ids: ["callers-handlers"] }]).changed).toEqual([]);
+    expect(fail(fx, [{ op: "edge.set", ids: ["callers-handlers"], to: "nope" }])[0]).toMatchObject({
       code: "unknown-node",
       field: "to",
     });
@@ -187,16 +176,16 @@ describe("edges", () => {
 
   it('the thick weight draws the main path, and the legend names it once the agent does (specs/decisions, "Edges meet any side")', () => {
     const d = ok(fx, [
-      { op: "edge.weight", edges: ["pipelines->mongo", "service->mongo"], weight: "thick" },
+      { op: "edge.set", ids: ["pipelines-mongo", "service-mongo"], weight: "thick" },
     ]);
     roundTrips(d);
     const scene = layout(d, m);
     expect(scene.edges.filter((e) => e.width === 2.5).map((e) => e.id)).toEqual([
-      "pipelines->mongo",
-      "service->mongo",
+      "pipelines-mongo",
+      "service-mongo",
     ]);
     expect(scene.legend).toEqual([]);
-    const named = ok(d, [{ op: "diagram.legend", weight: "thick", text: "main path" }]);
+    const named = ok(d, [{ op: "legend.set", ids: ["weight:thick"], text: "main path" }]);
     expect(layout(named, m).legend?.at(-1)).toMatchObject({
       width: 2.5,
       label: { runs: [{ text: "main path" }] },
@@ -205,23 +194,34 @@ describe("edges", () => {
 
   it('both draws arrowheads at both ends, and a link takes none (specs/decisions, "Edges meet any side")', () => {
     const d = ok(fx, [
-      { op: "edge.both", id: "pipelines->mongo" },
-      { op: "edge.add", from: "handlers", to: "geo", both: true },
+      { op: "edge.set", ids: ["pipelines-mongo"], both: "on" },
+      { op: "edge.set", ids: ["handlers-geo"], from: "handlers", to: "geo", both: "on" },
     ]);
     roundTrips(d);
-    expect(edge(d, "pipelines->mongo")?.both).toBe(true);
-    expect(edge(d, "handlers->geo")?.both).toBe(true);
+    expect(edge(d, "pipelines-mongo")?.both).toBe(true);
+    expect(edge(d, "handlers-geo")?.both).toBe(true);
     expect(writeDiagram(d)).toContain("both: true");
     const scene = layout(d, m);
-    expect(scene.edges.find((e) => e.id === "pipelines->mongo")?.both).toBe(true);
-    const off = ok(d, [{ op: "edge.both", id: "pipelines->mongo", off: true }]);
-    expect(edge(off, "pipelines->mongo")?.both).toBeUndefined();
-    const link = ok(fx, [{ op: "edge.type", id: "pipelines->mongo", type: "link" }]);
-    expect(fail(link, [{ op: "edge.both", id: "pipelines->mongo" }])[0]?.code).toBe("both-on-link");
+    expect(scene.edges.find((e) => e.id === "pipelines-mongo")?.both).toBe(true);
+    const off = ok(d, [{ op: "edge.set", ids: ["pipelines-mongo"], both: "off" }]);
+    expect(edge(off, "pipelines-mongo")?.both).toBeUndefined();
+    const link = ok(fx, [{ op: "edge.set", ids: ["pipelines-mongo"], type: "link" }]);
+    expect(fail(link, [{ op: "edge.set", ids: ["pipelines-mongo"], both: "on" }])[0]?.code).toBe(
+      "both-on-link",
+    );
     expect(
-      fail(fx, [{ op: "edge.add", from: "handlers", to: "geo", type: "link", both: true }])[0],
+      fail(fx, [
+        {
+          op: "edge.set",
+          ids: ["handlers-geo"],
+          from: "handlers",
+          to: "geo",
+          type: "link",
+          both: "on",
+        },
+      ])[0],
     ).toMatchObject({ code: "both-on-link", field: "both" });
-    expect(fail(d, [{ op: "edge.type", id: "handlers->geo", type: "link" }])[0]).toMatchObject({
+    expect(fail(d, [{ op: "edge.set", ids: ["handlers-geo"], type: "link" }])[0]).toMatchObject({
       code: "both-on-link",
       field: "type",
     });
@@ -229,42 +229,46 @@ describe("edges", () => {
 
   it('step numbers an edge as the agent states it, and no number clears it (specs/decisions, "Step badges ride the edge")', () => {
     const d = ok(fx, [
-      { op: "edge.number", id: "callers->handlers", n: 1 },
-      { op: "edge.number", id: "handlers->service", n: 2 },
-      { op: "edge.number", id: "service->mongo", n: 2 },
+      { op: "edge.set", ids: ["callers-handlers"], number: "1" },
+      { op: "edge.set", ids: ["handlers-service"], number: "2" },
+      { op: "edge.set", ids: ["service-mongo"], number: "2" },
     ]);
     roundTrips(d);
-    expect(edge(d, "callers->handlers")?.step).toBe(1);
+    expect(edge(d, "callers-handlers")?.step).toBe(1);
     // Two edges may share a number, and nothing is renumbered.
-    expect(edge(d, "service->mongo")?.step).toBe(2);
+    expect(edge(d, "service-mongo")?.step).toBe(2);
     expect(writeDiagram(d)).toContain("number: 2");
-    // The number stays through the edge's other edits.
+    // The number stays through the edge's other changes.
     const kept = ok(d, [
-      { op: "edge.label", id: "callers->handlers", label: "GET" },
-      { op: "edge.reverse", id: "callers->handlers" },
-      { op: "edge.type", id: "callers->handlers", type: "async" },
+      { op: "edge.set", ids: ["callers-handlers"], label: "GET" },
+      { op: "edge.set", ids: ["callers-handlers"], from: "handlers", to: "callers" },
+      { op: "edge.set", ids: ["callers-handlers"], type: "async" },
     ]);
-    expect(edge(kept, "callers->handlers")?.step).toBe(1);
-    const off = ok(d, [{ op: "edge.number", id: "service->mongo" }]);
-    expect(edge(off, "service->mongo")?.step).toBeUndefined();
+    expect(edge(kept, "callers-handlers")?.step).toBe(1);
+    const off = ok(d, [{ op: "edge.set", ids: ["service-mongo"], number: "-" }]);
+    expect(edge(off, "service-mongo")?.step).toBeUndefined();
     for (const n of [0, 100, 1.5]) {
       expect(
-        (parseOp({ op: "edge.number", id: "service->mongo", n }, 0) as OpError[])[0],
+        (parseOp({ op: "edge.set", ids: ["service-mongo"], number: String(n) }, 0) as OpError[])[0],
       ).toMatchObject({
         code: "bad-value",
-        field: "n",
+        field: "number",
         facts: { min: 1, max: 99 },
       });
     }
-    expect(fail(fx, [{ op: "edge.number", id: "nope", n: 1 }])[0]?.code).toBe("unknown-edge");
+    // An id no edge has makes an edge, which needs its ends.
+    expect(fail(fx, [{ op: "edge.set", ids: ["nope"], number: "1" }])[0]).toMatchObject({
+      code: "missing-field",
+      field: "from",
+    });
   });
 
   it("merging keeps two edges that differ only in their number", () => {
     const d = ok(fx, [
-      { op: "edge.add", from: "geo", to: "mongo", id: "g1" },
-      { op: "edge.add", from: "i18n", to: "mongo", id: "g2" },
-      { op: "edge.number", id: "g1", n: 4 },
-      { op: "edge.number", id: "g2", n: 5 },
+      { op: "edge.set", ids: ["g1"], from: "geo", to: "mongo" },
+      { op: "edge.set", ids: ["g2"], from: "i18n", to: "mongo" },
+      { op: "edge.set", ids: ["g1"], number: "4" },
+      { op: "edge.set", ids: ["g2"], number: "5" },
       { op: "node.merge", nodes: ["geo", "i18n"], id: "deps-svc", label: "geo, i18n" },
     ]);
     expect(
@@ -277,8 +281,8 @@ describe("dots", () => {
   it('a start and an end keep their label in the file, and draw none (specs/decisions, "Every layered diagram type")', () => {
     const d = ok(fx, [
       {
-        op: "node.add",
-        id: "begin",
+        op: "node.set",
+        ids: ["begin"],
         layer: "topics",
         label: "begin",
         type: "initial",
@@ -296,7 +300,7 @@ describe("dots", () => {
 
 describe("groups", () => {
   it("describe adds a quieter second label, drawn after the label", () => {
-    const d = ok(fx, [{ op: "group.sublabel", id: "catalog-sync", text: "write side" }]);
+    const d = ok(fx, [{ op: "group.set", ids: ["catalog-sync"], sublabel: "write side" }]);
     roundTrips(d);
     const g = layout(d, m).groups?.find((x) => x.id === "catalog-sync");
     expect(g?.sublabel?.runs.map((r) => r.text).join("")).toBe("write side");
@@ -304,37 +308,34 @@ describe("groups", () => {
   });
 
   it("order puts a group's members before another group's, in every shared layer", () => {
-    const d = ok(fx, [{ op: "group.order", id: "catalog-api", before: "catalog-sync" }]);
+    const d = ok(fx, [{ op: "group.move", ids: ["catalog-api"], before: "catalog-sync" }]);
     const topics = order(d, "topics") ?? [];
     expect(topics.indexOf("handlers")).toBeLessThan(topics.indexOf("retry"));
-    expect(fail(fx, [{ op: "group.order", id: "catalog-api" }])[0]?.code).toBe("missing-field");
+    expect(fail(fx, [{ op: "group.move", ids: ["catalog-api"] }])[0]?.code).toBe("missing-field");
   });
 
   // A network with two zones, each a subnet per layer holding one node: a zone has no node of its own.
   const layerIds = ["public", "app", "data"];
   const zone = (z: string): Op[] => [
-    { op: "group.add", id: `az-${z}`, label: `Zone ${z}`, in: "vpc" },
+    { op: "group.set", ids: [`az-${z}`], label: `Zone ${z}`, in: "vpc" },
     ...layerIds.flatMap((r): Op[] => [
-      { op: "node.add", id: `${r}-${z}`, layer: r, label: `${r} ${z}`, last: true },
-      {
-        op: "group.add",
-        id: `${r}-net-${z}`,
-        label: "Subnet",
-        in: `az-${z}`,
-        nodes: [`${r}-${z}`],
-      },
+      { op: "node.set", ids: [`${r}-${z}`], layer: r, label: `${r} ${z}`, last: true },
+      { op: "group.set", ids: [`${r}-net-${z}`], label: "Subnet", in: `az-${z}` },
+      { op: "node.set", ids: [`${r}-${z}`], group: `${r}-net-${z}` },
     ]),
   ];
   const zones = ok(null, [
-    { op: "diagram.new", title: "Zones" },
-    ...layerIds.map((r): Op => ({ op: "layer.add", id: r, label: r })),
-    { op: "group.add", id: "vpc", label: "VPC" },
+    { op: "diagram.set", title: "Zones" },
+    ...layerIds.map((r): Op => ({ op: "layer.set", ids: [r], label: r })),
+    { op: "group.set", ids: ["vpc"], label: "VPC" },
     ...zone("a"),
     ...zone("b"),
   ]);
 
   it("order moves the nodes of a group's inner groups too", () => {
-    const { diagram: d, changed } = run(zones, [{ op: "group.order", id: "az-b", before: "az-a" }]);
+    const { diagram: d, changed } = run(zones, [
+      { op: "group.move", ids: ["az-b"], before: "az-a" },
+    ]);
     expect(layerIds.map((r) => order(d, r))).toEqual(layerIds.map((r) => [`${r}-b`, `${r}-a`]));
     expect(changed).toEqual(["public-b", "app-b", "data-b"]);
   });
@@ -342,16 +343,21 @@ describe("groups", () => {
   it("order moves a group's own nodes and its inner groups' as one block", () => {
     // Zone A holds a bastion of its own beside its public subnet, after the network's own load balancer.
     const mixed = ok(zones, [
-      { op: "node.add", id: "lb", layer: "public", label: "LB", first: true },
-      { op: "group.join", group: "vpc", nodes: ["lb"] },
-      { op: "node.add", id: "bastion", layer: "public", label: "Bastion", after: "lb" },
-      { op: "group.join", group: "az-a", nodes: ["bastion"] },
+      { op: "node.set", ids: ["lb"], layer: "public", label: "LB", first: true, group: "vpc" },
+      {
+        op: "node.set",
+        ids: ["bastion"],
+        layer: "public",
+        label: "Bastion",
+        after: "lb",
+        group: "az-a",
+      },
     ]);
     expect(order(mixed, "public")).toEqual(["lb", "bastion", "public-a", "public-b"]);
-    const moved = ok(mixed, [{ op: "group.order", id: "az-a", after: "az-b" }]);
+    const moved = ok(mixed, [{ op: "group.move", ids: ["az-a"], after: "az-b" }]);
     expect(order(moved, "public")).toEqual(["lb", "public-b", "bastion", "public-a"]);
     expect(order(moved, "app")).toEqual(["app-b", "app-a"]);
-    const before = ok(mixed, [{ op: "group.order", id: "az-b", before: "az-a" }]);
+    const before = ok(mixed, [{ op: "group.move", ids: ["az-b"], before: "az-a" }]);
     expect(order(before, "public")).toEqual(["lb", "public-b", "bastion", "public-a"]);
   });
 
@@ -361,7 +367,7 @@ describe("groups", () => {
       ["az-a", "app-net-a"],
       ["app-net-a", "vpc"],
     ] as const) {
-      expect(fail(zones, [{ op: "group.order", id, before }])).toEqual([
+      expect(fail(zones, [{ op: "group.move", ids: [id], before: before }])).toEqual([
         { code: "bad-reference", index: 0, field: "before", found: before, facts: { group: id } },
       ]);
     }
@@ -371,27 +377,24 @@ describe("groups", () => {
 describe("parsing", () => {
   it("every new operation parses from its fields", () => {
     const items = [
-      { op: "diagram.title", text: "T" },
-      { op: "diagram.density", density: "airy" },
-      { op: "diagram.legend", style: "solid", text: "HTTP" },
-      { op: "layer.label", id: "a", label: "A" },
-      { op: "layer.move", id: "a", last: true },
-      { op: "layer.remove", id: "a" },
+      { op: "diagram.set", title: "T" },
+      { op: "legend.set", ids: ["style:solid"], text: "HTTP" },
+      { op: "layer.set", ids: ["a"], label: "A" },
+      { op: "layer.move", ids: ["a"], last: true },
+      { op: "layer.remove", ids: ["a"] },
       { op: "layer.split", id: "a", into: "b", label: "B" },
-      { op: "node.sublabel", id: "a", text: "t" },
-      { op: "node.type", id: "a", type: "store" },
-      { op: "node.emphasis", id: "a", off: true },
-      { op: "node.align", id: "a", to: "b" },
-      { op: "node.swap", a: "a", b: "b" },
+      { op: "node.set", ids: ["a"], sublabel: "t" },
+      { op: "node.set", ids: ["a"], type: "store" },
+      { op: "node.set", ids: ["a"], emphasis: "off" },
+      { op: "node.set", ids: ["a"], align: "b" },
       { op: "node.merge", nodes: ["a", "b"], id: "c", label: "C" },
-      { op: "edge.label", id: "a->b", label: "x" },
-      { op: "edge.type", id: "a->b", type: "async" },
-      { op: "edge.both", id: "a->b", off: true },
-      { op: "edge.weight", edges: ["a->b"], weight: "thick" },
-      { op: "edge.reverse", id: "a->b" },
-      { op: "plug", id: "a->b", to: "c" },
-      { op: "group.sublabel", id: "g", text: "t" },
-      { op: "group.order", id: "g", after: "h" },
+      { op: "edge.set", ids: ["a-b"], label: "x" },
+      { op: "edge.set", ids: ["a-b"], type: "async" },
+      { op: "edge.set", ids: ["a-b"], both: "off" },
+      { op: "edge.set", ids: ["a-b"], weight: "thick" },
+      { op: "edge.set", ids: ["a-b"], to: "c" },
+      { op: "group.set", ids: ["g"], sublabel: "t" },
+      { op: "group.move", ids: ["g"], after: "h" },
       {
         op: "group.copy",
         id: "g",
@@ -406,8 +409,6 @@ describe("parsing", () => {
       const parsed = parseOp(item, k);
       expect(Array.isArray(parsed), JSON.stringify(item)).toBe(false);
     }
-    expect((parseOp({ op: "diagram.legend", style: "wavy" }, 0) as OpError[])[0]?.code).toBe(
-      "bad-value",
-    );
+    expect(fail(fx, [{ op: "legend.remove", ids: ["style:wavy"] }])[0]?.code).toBe("bad-value");
   });
 });

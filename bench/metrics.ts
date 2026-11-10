@@ -24,7 +24,7 @@ export interface GraficalStats {
   calls: number;
   /** Calls that grafical accepted. */
   successes: number;
-  /** Successes that changed the diagram: layer, node, edge or apply (not help, new, show, check or render). */
+  /** Successes that changed the diagram: any command but help, show, check, render and the other reads. */
   editSuccesses: number;
   /** Calls that grafical refused with an operation error (or a non-zero exit with no report). */
   opErrors: number;
@@ -336,9 +336,9 @@ export function offToolCount(events: Event[], own = "grafical"): number {
 const SOURCE_EXT = /\.(svg|html?|dot|gv|mmd|puml|py|js|mjs|ts)$/i;
 
 /**
- * Change requests answered by redrawing the whole diagram. For grafical, a
- * `grafical new` in a change step. For the raw and Mermaid arms, a heuristic: a
- * Write of a diagram source file in a change step (an Edit alone is a patch).
+ * Change requests answered by redrawing the whole diagram. For grafical, a change step that removes the diagram
+ * file, to make it again with `diagram --set`. For the raw and Mermaid arms, a heuristic: a Write of a diagram
+ * source file in a change step (an Edit alone is a patch).
  */
 export function regenerations(
   events: Event[],
@@ -352,7 +352,7 @@ export function regenerations(
       (t) =>
         t.name === "Bash" &&
         typeof t.input.command === "string" &&
-        graficalCommands(t.input.command).includes("new"),
+        /(^|[;&|\n]\s*)rm\s+(-\S+\s+)*\S*\.grafical\b/.test(t.input.command),
     );
     return news.length > 0 ? 1 : 0;
   }

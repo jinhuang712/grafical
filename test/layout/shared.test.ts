@@ -12,18 +12,20 @@ beforeAll(async () => {
 // Two systems side by side, each with two nodes in a layer, and one store below
 // that both use: the shape of a write side and a read side coupled by a database.
 const ops: Op[] = [
-  { op: "diagram.new", title: "Shared store" },
-  { op: "layer.add", id: "core", label: "Core" },
-  { op: "layer.add", id: "store", label: "Store" },
-  { op: "node.add", id: "a1", layer: "core", label: "a1", last: true },
-  { op: "node.add", id: "a2", layer: "core", label: "a2", last: true },
-  { op: "node.add", id: "b1", layer: "core", label: "b1", last: true },
-  { op: "node.add", id: "b2", layer: "core", label: "b2", last: true },
-  { op: "node.add", id: "db", layer: "store", label: "db", type: "store" },
-  { op: "group.add", id: "write", label: "write side", nodes: ["a1", "a2"] },
-  { op: "group.add", id: "read", label: "read side", nodes: ["b1", "b2"] },
-  { op: "edge.add", from: "a1", to: "db", label: "persist" },
-  { op: "edge.add", from: "b2", to: "db", label: "read" },
+  { op: "diagram.set", title: "Shared store" },
+  { op: "layer.set", ids: ["core"], label: "Core" },
+  { op: "layer.set", ids: ["store"], label: "Store" },
+  { op: "node.set", ids: ["a1"], layer: "core", label: "a1", last: true },
+  { op: "node.set", ids: ["a2"], layer: "core", label: "a2", last: true },
+  { op: "node.set", ids: ["b1"], layer: "core", label: "b1", last: true },
+  { op: "node.set", ids: ["b2"], layer: "core", label: "b2", last: true },
+  { op: "node.set", ids: ["db"], layer: "store", label: "db", type: "store" },
+  { op: "group.set", ids: ["write"], label: "write side" },
+  { op: "node.set", ids: ["a1", "a2"], group: "write" },
+  { op: "group.set", ids: ["read"], label: "read side" },
+  { op: "node.set", ids: ["b1", "b2"], group: "read" },
+  { op: "edge.set", ids: ["a1-db"], from: "a1", to: "db", label: "persist" },
+  { op: "edge.set", ids: ["b2-db"], from: "b2", to: "db", label: "read" },
 ];
 
 describe('a node that two groups use (specs/decisions, "Layout computed again on every change")', () => {

@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "labels-in-gutter"
-  density: normal
 }
 
 <layer> r0 {
@@ -65,46 +64,46 @@
   layer: @r1
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call
 }
 
-<edge> b->e {
+<edge> b-e {
   from: @b
   to: @e
   type: @call
 }
 
-<label> a->c-label {
-  on: @a->c
+<label> a-c-label {
+  on: @a-c
   text: "orders"
 }
 
-<label> a->d-label {
-  on: @a->d
+<label> a-d-label {
+  on: @a-d
   text: "payments"
 }
 
-<label> b->d-label {
-  on: @b->d
+<label> b-d-label {
+  on: @b-d
   text: "refunds"
 }
 
-<label> b->e-label {
-  on: @b->e
+<label> b-e-label {
+  on: @b-e
   text: "stock"
 }

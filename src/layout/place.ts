@@ -8,17 +8,17 @@
 // on one centre line. Every x here is relative to that line.
 
 import { columnRanks } from "../model/columns.ts";
-import { magnifiedBetween } from "../model/gaps.ts";
 import { groupChain } from "../model/groups.ts";
 import { laneRanks, laneRun } from "../model/lanes.ts";
 import { DEFAULT_SIZE, type Diagram, type DiagramNode, type GroupTitle } from "../model/types.ts";
 import { wallRun, wallSplit } from "../model/walls.ts";
-import { BOX, GROUP, LANE, ROUTE, SPACING, WALL } from "../theme/geometry.ts";
+import { BOX, GROUP, LANE, ROUTE, WALL } from "../theme/geometry.ts";
 import { nodeBox } from "../theme/shapes.ts";
 import type { AlignmentProblem } from "./align.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import type { SideSlot } from "./side.ts";
 import { layerHeights } from "./size.ts";
+import { marginOf, NO_MARGIN, nodeMargins, spacingOf, widest } from "./space.ts";
 
 export interface PNode {
   id: string;
@@ -112,7 +112,7 @@ const NO_TEXT: PlaceText = {
 const ceil4 = (x: number) => Math.ceil(x / 4 - 1e-9) * 4;
 
 export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
-  const sp = SPACING[d.density];
+  const sp = spacingOf(d);
   const grid = buildGrid(d);
   const heights = layerHeights(d);
   const nodes = new Map<string, PNode>();
@@ -255,6 +255,17 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   };
   /** Whether a group's label sits beside its layers rather than above or below them. */
   const besideLayers = (g: string) => atSide({ titleAt: titleOf(g) });
+  // A node's margin widens its whole column in every layer (specs/decisions, "Styles set spacing as CSS does, and a
+  // later style wins"): each grid column keeps the largest left and right margin of the nodes in it.
+  const marginOfNode = nodeMargins(d);
+  const colMargin = new Map<number, typeof NO_MARGIN>();
+  for (const n of nodes.values()) {
+    colMargin.set(n.col, widest(colMargin.get(n.col) ?? NO_MARGIN, marginOfNode(n.node)));
+  }
+  const left = (c: number) => colMargin.get(c)?.left ?? 0;
+  const right = (c: number) => colMargin.get(c)?.right ?? 0;
+  const groupStyles = new Map((d.groups ?? []).map((g) => [g.id, g.style]));
+  const groupMargin = (g: string) => marginOf(d, groupStyles.get(g));
   // No node moves for a group's label: an edge across it refuses the write (specs/decisions, "A group's label moves no node and no edge").
   const groups = solve().groups;
 
@@ -269,7 +280,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       for (let k = 1; k < l.nodes.length; k++) {
         const a = l.nodes[k - 1] as PNode;
         const b = l.nodes[k] as PNode;
-        add(a.col, b.col, a.w / 2 + sp.nodeGap + b.w / 2);
+        add(a.col, b.col, a.w / 2 + right(a.col) + sp.columnGap + left(b.col) + b.w / 2);
       }
     }
     // A node placed by steps (specs/decisions, "Steps from another node"): each step across keeps a medium node and a gap, so
@@ -278,7 +289,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       const from = n.node.from === undefined ? undefined : nodes.get(n.node.from);
       if (from === undefined) continue;
       for (let c = Math.min(from.col, n.col); c < Math.max(from.col, n.col); c++) {
-        add(c, c + 1, BOX.m.w + sp.nodeGap);
+        add(c, c + 1, BOX.m.w + right(c) + sp.columnGap + left(c + 1));
       }
     }
     // A label above or below the layers takes the node's width; one beside them its height.
@@ -332,7 +343,9 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     };
     /** The space between what lies left and right of a gap: two nodes, or a node and a node. */
     const room = (x: string | undefined, y: string | undefined): number =>
-      x !== undefined && y !== undefined ? GROUP.gap * magnifiedBetween(d, x, y) : GROUP.clear;
+      (x !== undefined && y !== undefined ? GROUP.gap : GROUP.clear) +
+      (x === undefined ? 0 : groupMargin(x).right) +
+      (y === undefined ? 0 : groupMargin(y).left);
     // Every node beside a group's members in a layer keeps clear of its node, and so
     // does every other group's border.
     for (const l of layers) {
@@ -382,8 +395,7 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     for (let k = 1; k < columnOrder.length; k++) {
       for (const a of columnOrder[k - 1] as PNode[]) {
         for (const b of columnOrder[k] as PNode[]) {
-          const times = magnifiedBetween(d, a.node.column as string, b.node.column as string);
-          add(a.col, b.col, a.w / 2 + sp.nodeGap * times + b.w / 2);
+          add(a.col, b.col, a.w / 2 + right(a.col) + sp.columnGap + left(b.col) + b.w / 2);
         }
       }
     }

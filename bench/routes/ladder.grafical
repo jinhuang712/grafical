@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "ladder"
-  density: normal
 }
 
 <layer> r0 {
@@ -82,43 +81,43 @@
   layer: @r2
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> c->e {
+<edge> c-e {
   from: @c
   to: @e
   type: @call
 }
 
-<edge> b->d {
+<edge> b-d {
   from: @b
   to: @d
   type: @call
 }
 
-<edge> d->f {
+<edge> d-f {
   from: @d
   to: @f
   type: @call
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call
 }
 
-<edge> c->f {
+<edge> c-f {
   from: @c
   to: @f
   type: @call
 }
 
-<edge> e->b {
+<edge> e-b {
   from: @e
   to: @b
   type: @call

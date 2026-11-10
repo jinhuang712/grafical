@@ -13,7 +13,6 @@ const HASH = "a".repeat(64);
 const base: Diagram = {
   grafical: 1,
   title: "T",
-  density: "normal",
   layers: [
     {
       id: "l",
@@ -33,50 +32,50 @@ function run(ops: Op[], from: Diagram = base) {
   return r.diagram;
 }
 
-describe('node.mark (specs/decisions, "Marks of any kind")', () => {
+describe('mark --set (specs/decisions, "Marks of any kind")', () => {
   it("sets a text or emoji mark in a slot, and one slot holds one mark", () => {
     const d = run([
-      { op: "node.mark", id: "x", slot: "top-left", mark: "⚠️" },
-      { op: "node.mark", id: "x", slot: "top-left", mark: "P0" },
-      { op: "node.mark", id: "x", slot: "left", mark: "!" },
+      { op: "mark.set", ids: ["x:top-left"], text: "⚠️" },
+      { op: "mark.set", ids: ["x:top-left"], text: "P0" },
+      { op: "mark.set", ids: ["x:left"], text: "!" },
     ]) as Diagram;
     expect(d.layers[0]?.nodes[0]?.marks).toEqual({ "top-left": "P0", left: "!" });
   });
 
   it("keeps a file mark with its hash", () => {
     const d = run([
-      { op: "node.mark", id: "x", slot: "top-right", mark: "warn.svg", sha256: HASH },
+      { op: "mark.set", ids: ["x:top-right"], file: "warn.svg", sha256: HASH },
     ]) as Diagram;
     expect(d.layers[0]?.nodes[0]?.marks?.["top-right"]).toEqual({ file: "warn.svg", sha256: HASH });
   });
 
   it("clears a slot, and drops the empty mapping", () => {
     const d = run([
-      { op: "node.mark", id: "x", slot: "top-left", mark: "⚠️" },
-      { op: "node.mark", id: "x", slot: "top-left" },
+      { op: "mark.set", ids: ["x:top-left"], text: "⚠️" },
+      { op: "mark.remove", ids: ["x:top-left"] },
     ]) as Diagram;
     expect(d.layers[0]?.nodes[0]?.marks).toBeUndefined();
   });
 
   it("refuses a text over 6 characters, and says the limit", () => {
-    const e = run([{ op: "node.mark", id: "x", slot: "top-left", mark: "TOOLONG" }]);
-    expect(e).toMatchObject([{ code: "mark-too-long", field: "mark", facts: { max: 6 } }]);
+    const e = run([{ op: "mark.set", ids: ["x:top-left"], text: "TOOLONG" }]);
+    expect(e).toMatchObject([{ code: "mark-too-long", field: "text", facts: { max: 6 } }]);
   });
 
   it("counts an emoji as one character", () => {
-    const d = run([{ op: "node.mark", id: "x", slot: "top-left", mark: "👨‍👩‍👧" }]);
+    const d = run([{ op: "mark.set", ids: ["x:top-left"], text: "👨‍👩‍👧" }]);
     expect(Array.isArray(d)).toBe(false);
   });
 
   it("refuses a file whose hash the command line did not fill in", () => {
-    const e = run([{ op: "node.mark", id: "x", slot: "top-left", mark: "warn.svg" }]);
+    const e = run([{ op: "mark.set", ids: ["x:top-left"], text: "warn.svg" }]);
     expect(e).toMatchObject([{ code: "mark-file-unread" }]);
   });
 
   it("gives a text mark a background by name or by hex, and keeps the hex", () => {
     const d = run([
-      { op: "node.mark", id: "x", slot: "top-left", mark: "P0", bg: "red" },
-      { op: "node.mark", id: "x", slot: "top-right", mark: "NEW", bg: "#F5C542" },
+      { op: "mark.set", ids: ["x:top-left"], text: "P0", bg: "red" },
+      { op: "mark.set", ids: ["x:top-right"], text: "NEW", bg: "#F5C542" },
     ]) as Diagram;
     expect(d.layers[0]?.nodes[0]?.marks).toEqual({
       "top-left": { text: "P0", bg: "#d1242f" },
@@ -85,7 +84,7 @@ describe('node.mark (specs/decisions, "Marks of any kind")', () => {
   });
 
   it("refuses a background that is no color, and lists the names", () => {
-    const e = run([{ op: "node.mark", id: "x", slot: "top-left", mark: "P0", bg: "pink" }]);
+    const e = run([{ op: "mark.set", ids: ["x:top-left"], text: "P0", bg: "pink" }]);
     expect(e).toMatchObject([
       {
         code: "bad-value",
@@ -96,29 +95,33 @@ describe('node.mark (specs/decisions, "Marks of any kind")', () => {
   });
 
   it("refuses a background on an emoji or on a file", () => {
+    expect(run([{ op: "mark.set", ids: ["x:top-left"], text: "⚠️", bg: "red" }])).toMatchObject([
+      { code: "mark-style-on-picture", field: "bg" },
+    ]);
     expect(
-      run([{ op: "node.mark", id: "x", slot: "top-left", mark: "⚠️", bg: "red" }]),
-    ).toMatchObject([{ code: "mark-style-on-picture", field: "bg" }]);
-    expect(
-      run([{ op: "node.mark", id: "x", slot: "top-left", mark: "a.svg", sha256: HASH, bg: "red" }]),
+      run([{ op: "mark.set", ids: ["x:top-left"], file: "a.svg", sha256: HASH, bg: "red" }]),
     ).toMatchObject([{ code: "mark-style-on-picture", field: "bg" }]);
   });
 
-  it("setting the slot again without a background drops it", () => {
+  it("setting the slot again keeps its background, and --bg - drops it", () => {
     const d = run([
-      { op: "node.mark", id: "x", slot: "top-left", mark: "P0", bg: "red" },
-      { op: "node.mark", id: "x", slot: "top-left", mark: "P0" },
+      { op: "mark.set", ids: ["x:top-left"], text: "P0", bg: "red" },
+      { op: "mark.set", ids: ["x:top-left"], text: "P1" },
     ]) as Diagram;
-    expect(d.layers[0]?.nodes[0]?.marks).toEqual({ "top-left": "P0" });
+    expect(d.layers[0]?.nodes[0]?.marks).toEqual({ "top-left": { text: "P1", bg: "#d1242f" } });
+    const plain = run([
+      { op: "mark.set", ids: ["x:top-left"], text: "P0", bg: "red" },
+      { op: "mark.set", ids: ["x:top-left"], bg: "-" },
+    ]) as Diagram;
+    expect(plain.layers[0]?.nodes[0]?.marks).toEqual({ "top-left": "P0" });
   });
 
   it("sets the text color, border, shape and size of a text mark, keeping only what is not default", () => {
     const d = run([
       {
-        op: "node.mark",
-        id: "x",
-        slot: "top-left",
-        mark: "P0",
+        op: "mark.set",
+        ids: ["x:top-left"],
+        text: "P0",
         bg: "red",
         fg: "#FFFFFF",
         border: "dark",
@@ -126,7 +129,7 @@ describe('node.mark (specs/decisions, "Marks of any kind")', () => {
         size: "l",
       },
       // The defaults are left out of the file.
-      { op: "node.mark", id: "x", slot: "top-right", mark: "v2", shape: "rounded", size: "m" },
+      { op: "mark.set", ids: ["x:top-right"], text: "v2", shape: "rounded", size: "m" },
     ]) as Diagram;
     expect(d.layers[0]?.nodes[0]?.marks).toEqual({
       "top-left": {
@@ -143,8 +146,8 @@ describe('node.mark (specs/decisions, "Marks of any kind")', () => {
 
   it("gives a picture a size, and refuses every other style on it, naming the field", () => {
     const d = run([
-      { op: "node.mark", id: "x", slot: "top-left", mark: "⚠️", size: "l" },
-      { op: "node.mark", id: "x", slot: "top-right", mark: "a.svg", sha256: HASH, size: "s" },
+      { op: "mark.set", ids: ["x:top-left"], text: "⚠️", size: "l" },
+      { op: "mark.set", ids: ["x:top-right"], file: "a.svg", sha256: HASH, size: "s" },
     ]) as Diagram;
     expect(d.layers[0]?.nodes[0]?.marks).toEqual({
       "top-left": { text: "⚠️", size: "l" },
@@ -152,7 +155,7 @@ describe('node.mark (specs/decisions, "Marks of any kind")', () => {
     });
     for (const f of ["bg", "fg", "border", "shape"] as const) {
       const v = f === "shape" ? "pill" : "red";
-      expect(run([{ op: "node.mark", id: "x", slot: "left", mark: "⚠️", [f]: v }])).toMatchObject([
+      expect(run([{ op: "mark.set", ids: ["x:left"], text: "⚠️", [f]: v }])).toMatchObject([
         { code: "mark-style-on-picture", field: f, facts: { allowed: ["size"] } },
       ]);
     }
@@ -160,24 +163,16 @@ describe('node.mark (specs/decisions, "Marks of any kind")', () => {
 
   it("refuses a text or border color that is no color, naming the field", () => {
     for (const f of ["fg", "border"] as const) {
-      expect(
-        run([{ op: "node.mark", id: "x", slot: "top-left", mark: "P0", [f]: "pink" }]),
-      ).toMatchObject([{ code: "bad-value", field: f }]);
+      expect(run([{ op: "mark.set", ids: ["x:top-left"], text: "P0", [f]: "pink" }])).toMatchObject(
+        [{ code: "bad-value", field: f }],
+      );
     }
   });
 
   it("round-trips a styled mark and a sized picture, with keys sorted, and diff rebuilds them", () => {
     const d = run([
-      {
-        op: "node.mark",
-        id: "x",
-        slot: "top-left",
-        mark: "P0",
-        bg: "red",
-        border: "dark",
-        size: "s",
-      },
-      { op: "node.mark", id: "x", slot: "top-right", mark: "🔥", size: "l" },
+      { op: "mark.set", ids: ["x:top-left"], text: "P0", bg: "red", border: "dark", size: "s" },
+      { op: "mark.set", ids: ["x:top-right"], text: "🔥", size: "l" },
     ]) as Diagram;
     const text = writeDiagram(d);
     expect(text).toMatch(/bg: "#d1242f"\n\s+border: "#1f2328"\n\s+size: "s"\n\s+text: "P0"/);
@@ -187,18 +182,18 @@ describe('node.mark (specs/decisions, "Marks of any kind")', () => {
   });
 
   it("refuses the left slot on a diamond, and names the slots that remain", () => {
-    const e = run([{ op: "node.mark", id: "q", slot: "left", mark: "!" }]);
+    const e = run([{ op: "mark.set", ids: ["q:left"], text: "!" }]);
     expect(e).toMatchObject([
       {
         code: "bad-value",
-        field: "slot",
+        field: "id",
         facts: { allowed: ["top-left", "top-right", "bottom-left", "bottom-right"] },
       },
     ]);
   });
 
   it("refuses an unknown node and an unknown slot", () => {
-    expect(run([{ op: "node.mark", id: "nope", slot: "left", mark: "!" }])).toMatchObject([
+    expect(run([{ op: "mark.set", ids: ["nope:left"], text: "!" }])).toMatchObject([
       { code: "unknown-node" },
     ]);
   });
@@ -206,8 +201,8 @@ describe('node.mark (specs/decisions, "Marks of any kind")', () => {
 
 describe("marks in the file", () => {
   const marked = run([
-    { op: "node.mark", id: "x", slot: "top-left", mark: "⚠️" },
-    { op: "node.mark", id: "x", slot: "bottom-right", mark: "a.png", sha256: HASH },
+    { op: "mark.set", ids: ["x:top-left"], text: "⚠️" },
+    { op: "mark.set", ids: ["x:bottom-right"], file: "a.png", sha256: HASH },
   ]) as Diagram;
 
   it("round-trips, with slots in a fixed order", () => {
@@ -233,16 +228,14 @@ describe("marks in the file", () => {
   it("is reported by diff as operations that rebuild it", () => {
     const ops = diffDiagrams(base, marked);
     expect(ops).toEqual([
-      { op: "node.mark", id: "x", slot: "top-left", mark: "⚠️" },
-      { op: "node.mark", id: "x", slot: "bottom-right", mark: "a.png", sha256: HASH },
+      { op: "mark.set", ids: ["x:top-left"], text: "⚠️" },
+      { op: "mark.set", ids: ["x:bottom-right"], file: "a.png", sha256: HASH },
     ]);
     expect(run(ops)).toEqual(marked);
   });
 
   it("round-trips a text mark with a background, and diff rebuilds it", () => {
-    const d = run([
-      { op: "node.mark", id: "x", slot: "top-right", mark: "P0", bg: "red" },
-    ]) as Diagram;
+    const d = run([{ op: "mark.set", ids: ["x:top-right"], text: "P0", bg: "red" }]) as Diagram;
     const text = writeDiagram(d);
     expect(text).toMatch(/slot: top-right\n\s+bg: "#d1242f"\n\s+text: "P0"/);
     expect(readDiagram(text)).toEqual(d);
@@ -250,9 +243,7 @@ describe("marks in the file", () => {
   });
 
   it("refuses a background that is not #rrggbb in the file", () => {
-    const d = run([
-      { op: "node.mark", id: "x", slot: "top-right", mark: "P0", bg: "red" },
-    ]) as Diagram;
+    const d = run([{ op: "mark.set", ids: ["x:top-right"], text: "P0", bg: "red" }]) as Diagram;
     const r = readDiagram(writeDiagram(d).replace("#d1242f", "red"));
     expect(Array.isArray(r) && r[0]?.code).toBeDefined();
   });

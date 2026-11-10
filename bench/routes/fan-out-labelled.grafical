@@ -1,7 +1,6 @@
 <diagram> {
   format: 1
   title: "fan-out-labelled"
-  density: normal
 }
 
 <layer> r0 {
@@ -58,35 +57,35 @@
   layer: @r1
 }
 
-<edge> a->b {
+<edge> a-b {
   from: @a
   to: @b
   type: @call
 }
 
-<edge> a->c {
+<edge> a-c {
   from: @a
   to: @c
   type: @call
 }
 
-<edge> a->d {
+<edge> a-d {
   from: @a
   to: @d
   type: @call
 }
 
-<label> a->b-label {
-  on: @a->b
+<label> a-b-label {
+  on: @a-b
   text: "reads"
 }
 
-<label> a->c-label {
-  on: @a->c
+<label> a-c-label {
+  on: @a-c
   text: "writes"
 }
 
-<label> a->d-label {
-  on: @a->d
+<label> a-d-label {
+  on: @a-d
   text: "notifies"
 }

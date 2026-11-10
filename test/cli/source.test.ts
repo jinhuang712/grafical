@@ -36,7 +36,6 @@ const sources = (out: string) =>
 const shop: Diagram = {
   grafical: 1,
   title: "Shop",
-  density: "normal",
   layers: [
     { id: "row-a", label: "A", nodes: [{ id: "web", label: "web", kind: "service" }] },
     {
@@ -61,57 +60,69 @@ const LONG =
 
 describe("source", () => {
   it("of a single command is the command line as typed, quoted where a shell needs it", () => {
-    expect(commandLine(["node", "add", "d.grafical", "x", "--label", "order desk"])).toBe(
-      'grafical node add d.grafical x --label "order desk"',
+    expect(commandLine(["node", "--set", "x", "--label", "order desk"])).toBe(
+      'grafical node --set x --label "order desk"',
     );
-    expect(commandLine(["edge", "number", "d.grafical", "a->b", "--n", "2"])).toBe(
-      'grafical edge number d.grafical "a->b" --n 2',
+    expect(commandLine(["edge", "--set", "a-b", "--label", "it's"])).toBe(
+      `grafical edge --set a-b --label "it's"`,
     );
     const f = fresh("one.grafical");
-    const r = run("node", "add", f, "cache", "--layer", "row-b", "--label", "cache");
+    const r = run("node", "set", f, "cache", "--layer", "row-b", "--label", "cache");
     expect(sources(r.out)).toEqual([
-      "grafical -f one.grafical node --add cache --layer row-b --label cache",
+      "grafical -f one.grafical node --set cache --layer row-b --label cache",
     ]);
   });
 
   it("of a problem of the whole diagram the command makes is the command", () => {
     const f = fresh("whole.grafical");
     expect(
-      run("node", "add", f, "cache", "--layer", "row-b", "--label", "cache", "--after", "api").code,
+      run("node", "set", f, "cache", "--layer", "row-b", "--label", "cache", "--after", "api").code,
     ).toBe(0);
-    const r = run("group", "add", f, "g", "--label", "order desk", "--nodes", "api,db");
+    expect(run("group", "set", f, "g", "--label", "order desk").code).toBe(0);
+    const r = run("node", "set", f, "api,db", "--group", "g");
     expect(r.out).toContain("error: group-split\n");
-    expect(sources(r.out)).toEqual([
-      'grafical -f whole.grafical group --add g --label "order desk" --nodes api,db',
-    ]);
+    expect(sources(r.out)).toEqual(["grafical -f whole.grafical node --set api,db --group g"]);
   });
 
   it("of a defect the command makes is the command", () => {
     const f = fresh("defect.grafical");
-    const r = run("node", "label", f, "web", "--label", LONG);
+    const r = run("node", "set", f, "web", "--label", LONG);
     expect(r.out).toContain("defect: overflow\n");
     expect(new Set(sources(r.out))).toEqual(
-      new Set([`grafical -f defect.grafical node --label web --label "${LONG}"`]),
+      new Set([`grafical -f defect.grafical node --set web --label "${LONG}"`]),
     );
   });
 
   it("of a warning: none, in text or in --json, as the outcome line names what the write changed", () => {
-    // sync->geo bends three times and passes a layer in this fixture, and other edges bend too
+    // sync-geo bends three times and passes a layer in this fixture, and other edges bend too
     // (specs/decisions, "Every write prints every warning").
     const f = "bent.grafical";
     writeFileSync(
       join(dir, f),
       readFileSync(join(import.meta.dirname, "../fixtures/catalog-sync-help3.grafical"), "utf8"),
     );
-    expect(run("edge", "remove", f, "sync->geo").code).toBe(0);
-    const add = run("edge", "add", f, "sync", "geo", "--label", "HTTP GET");
+    expect(run("edge", "remove", f, "sync-geo").code).toBe(0);
+    const add = run(
+      "edge",
+      "set",
+      f,
+      "sync-geo",
+      "--from",
+      "sync",
+      "--to",
+      "geo",
+      "--label",
+      "HTTP GET",
+    );
     expect(add.code).toBe(0);
-    expect(add.out).toMatch(/^ok changed=sync->geo\n/);
+    expect(add.out).toMatch(/^ok changed=sync-geo\n/);
     const warned = add.out.split("\n\n").filter((b) => b.startsWith("warning: "));
-    expect(warned.some((b) => b.includes("  edge: sync->geo\n"))).toBe(true);
+    expect(warned.some((b) => b.includes("  edge: sync-geo\n"))).toBe(true);
     for (const b of warned) expect(b).not.toMatch(/^source:/m);
-    run("edge", "remove", f, "sync->geo");
-    const json = JSON.parse(run("edge", "add", f, "sync", "geo", "--json").out);
+    run("edge", "remove", f, "sync-geo");
+    const json = JSON.parse(
+      run("edge", "set", f, "sync-geo", "--from", "sync", "--to", "geo", "--json").out,
+    );
     const warnings = json.problems.filter((x: { kind: string }) => x.kind === "warning");
     expect(warnings.length).toBeGreaterThan(0);
     for (const w of warnings) expect(w.source).toBeUndefined();
@@ -128,7 +139,7 @@ describe("source", () => {
     expect(check.code).toBe(1);
     expect(new Set(sources(check.out))).toEqual(new Set(["already in the file"]));
     // A write that does not touch it is refused for it, and names it as the file's.
-    const write = run("diagram", "subtitle", f, "--text", "Orders");
+    const write = run("diagram", "set", f, "--subtitle", "Orders");
     expect(write.code).toBe(1);
     expect(new Set(sources(write.out))).toEqual(new Set(["already in the file"]));
     expect(readFileSync(join(dir, f), "utf8")).toBe(before);
@@ -140,14 +151,18 @@ describe("source", () => {
 
   it("of a stylesheet the command names is the command, and of a file it cannot read too", () => {
     const f = fresh("sty.grafical");
-    const sty = JSON.parse(run("diagram", "style", f, "missing.grafical", "--json").out);
+    const sty = JSON.parse(
+      run("diagram", "set", f, "--stylesheet", "missing.grafical", "--json").out,
+    );
     expect(sty.problems).toMatchObject([
       {
         code: "style-not-found",
-        source: "grafical -f sty.grafical diagram --style missing.grafical --json",
+        source: "grafical -f sty.grafical diagram --set --stylesheet missing.grafical --json",
       },
     ]);
-    const missing = JSON.parse(run("diagram", "style", "nope.grafical", "dark", "--json").out);
+    const missing = JSON.parse(
+      run("node", "set", "nope.grafical", "x", "--label", "X", "--json").out,
+    );
     expect(missing.problems).toMatchObject([{ code: "file-not-found" }]);
   });
 
@@ -158,17 +173,15 @@ describe("source", () => {
       join(dir, "w.grafical"),
       "<stylesheet> {\n  format: 1\n}\n\n<weight> critical {\n  width: 6.5\n}\n",
     );
-    expect(run("diagram", "style", f, "w.grafical").code).toBe(0);
-    expect(
-      run("diagram", "legend", f, "--weight", "critical", "--text", "Critical path").code,
-    ).toBe(0);
-    const r = JSON.parse(run("diagram", "style", f, "default", "--json").out);
+    expect(run("diagram", "set", f, "--stylesheet", "w.grafical").code).toBe(0);
+    expect(run("legend", "set", f, "weight:critical", "--text", "Critical path").code).toBe(0);
+    const r = JSON.parse(run("diagram", "set", f, "--stylesheet", "default", "--json").out);
     expect(r.problems).toMatchObject([
       {
         code: "unknown-weight",
-        source: "grafical -f uw.grafical diagram --style default --json",
+        source: "grafical -f uw.grafical diagram --set --stylesheet default --json",
         detail: { field: "legend.weights", found: "critical" },
-        next: ["diagram --style", "diagram --legend"],
+        next: ["diagram --set", "legend --set"],
       },
     ]);
   });
@@ -182,7 +195,7 @@ describe("source", () => {
     api.group = "g";
     split.groups = [{ id: "g", label: "g" }];
     const f = fresh("split.grafical", split);
-    const r = JSON.parse(run("node", "label", f, "web", "--label", "Web", "--json").out);
+    const r = JSON.parse(run("node", "set", f, "web", "--label", "Web", "--json").out);
     expect(r.problems).toMatchObject([
       { kind: "error", code: "group-split", source: "already in the file" },
     ]);

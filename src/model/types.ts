@@ -24,9 +24,6 @@ export type EdgeKind = (typeof EDGE_KINDS)[number];
 export const SIZE_STEPS = ["s", "m", "l"] as const;
 export type SizeStep = (typeof SIZE_STEPS)[number];
 
-export const DENSITIES = ["compact", "normal", "airy"] as const;
-export type Density = (typeof DENSITIES)[number];
-
 /**
  * The edge styles an edge is drawn in (DESIGNS.md, "Looks are free, while shape and dash follow the type", specs/decisions, "Edges meet any side"): call and data are solid, async dashed,
  * optional dotted, and a link is a plain edge with no arrowhead. The legend names each.
@@ -219,6 +216,8 @@ export interface Layer {
   lane?: string;
   /** How the layer is drawn; a layer with a look is drawn though no edge ends at it. Absent: the layer is drawn only once an edge ends at it, a node with no node in it and a band with nodes (specs/decisions, "A layer with no node as one bar", "A layer with a look is drawn"). */
   look?: LayerLook;
+  /** The styles it marks (specs/decisions, "Styles set spacing as CSS does, and a later style wins"). */
+  style?: string[];
   /** Ordered: list order is the order within the layer. */
   nodes: DiagramNode[];
 }
@@ -231,16 +230,8 @@ export interface Layer {
 /** A column (specs/decisions, "Columns beside layers"): a guide that its nodes follow, left of the next column's in every layer. */
 export interface Column {
   id: string;
-}
-
-/** How much a gap may be magnified (specs/decisions, "The gap between two regions may be magnified"). */
-export const GAP_MAGNIFICATIONS = [1.25, 1.5, 2] as const;
-export type GapMagnified = (typeof GAP_MAGNIFICATIONS)[number];
-
-/** A wider gap between two neighbouring regions of one kind: layers, groups or columns. */
-export interface Gap {
-  between: [string, string];
-  magnified: GapMagnified;
+  /** The styles it marks (specs/decisions, "Styles set spacing as CSS does, and a later style wins"). */
+  style?: string[];
 }
 
 /** How a text's edges edge up (specs/decisions, "An agent sets a label's breaks and its alignment"). */
@@ -351,14 +342,37 @@ export function weightKey(w: string | number): string {
   return typeof w === "number" ? String(w) : w;
 }
 
-/** A named look that objects mark (specs/decisions, "A style may be as rich as it likes"). */
+/**
+ * A named look that objects mark (specs/decisions, "A style may be as rich as it likes", "Styles set spacing as CSS
+ * does, and a later style wins"). Spacing is in pixels on the 4 px grid. An attribute that does not apply to the
+ * object marking it is left out, as in CSS.
+ */
 export interface Style {
   id: string;
   fill?: string;
   border?: string;
   borderWidth?: number;
   color?: string;
+  marginTop?: number;
+  marginRight?: number;
+  marginBottom?: number;
+  marginLeft?: number;
+  /** The diagram's space between two layers. */
+  rowGap?: number;
+  /** The diagram's space between two neighbouring nodes of a layer. */
+  columnGap?: number;
 }
+
+/** A style's spacing attributes, as the file and the command line write them. */
+export const SPACING_KEYS = [
+  "marginTop",
+  "marginRight",
+  "marginBottom",
+  "marginLeft",
+  "rowGap",
+  "columnGap",
+] as const;
+export type SpacingKey = (typeof SPACING_KEYS)[number];
 
 /** The shapes a type may choose (specs/decisions, "A type may choose its shape"), with the kind that draws each. */
 export const SHAPE_KINDS = {
@@ -412,15 +426,16 @@ export interface Diagram {
   subtitle?: string;
   /** A footnote, such as "Not shown: …" (specs/decisions, "Curation stays with the agent"). */
   caption?: string;
-  density: Density;
   /** How edges are drawn. Absent: square corners, or the stylesheet's (specs/decisions, "Edges may be drawn square or round"). */
   lines?: "round";
   /** Where the title sits (specs/decisions, "A region's label sits at a fraction of a side"). Absent: top left. */
   titleAt?: DiagramTitle;
   /** "fixed": a node with no size is a medium node, whatever its text. Absent: auto (specs/decisions, "Nodes sized to their text"). */
   sizing?: "fixed";
-  /** A built-in theme's name, or a stylesheet's path relative to the file (specs/decisions, "Themes and stylesheets"). Absent: the default theme. */
-  style?: string;
+  /** A built-in stylesheet's name, or a stylesheet's path relative to the file (specs/decisions, "Themes and stylesheets"). Absent: the default. */
+  stylesheet?: string;
+  /** The styles the diagram marks, such as its spacing (specs/decisions, "Styles set spacing as CSS does, and a later style wins"). */
+  style?: string[];
   /** Types an agent defined, in creation order. Absent: none. */
   types?: TypeDef[];
   /** Named looks, in creation order. Absent: none. */
@@ -437,8 +452,6 @@ export interface Diagram {
   lanes?: Lane[];
   /** Columns, left to right (specs/decisions, "Columns beside layers"). */
   columns?: Column[];
-  /** Gaps the agent magnified. */
-  gaps?: Gap[];
   /** Empty space between two sides, in creation order (specs/decisions, "Walls as space"). */
   walls?: Wall[];
   /** One note at most per node, group or edge, in creation order (specs/decisions, "Notes as callouts or footnotes"). */
@@ -450,4 +463,3 @@ export interface Diagram {
 export const DEFAULT_NODE_KIND: NodeKind = "service";
 export const DEFAULT_EDGE_KIND: EdgeKind = "call";
 export const DEFAULT_SIZE: SizeStep = "m";
-export const DEFAULT_DENSITY: Density = "normal";

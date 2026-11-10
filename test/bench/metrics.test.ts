@@ -161,7 +161,7 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     call("5", "grafical -f d.grafical node --add b --layer top --label B --size s"), // retry, ok
     toolResult("5", "ok changed: b"),
     call("6", "grafical -f d.grafical edge --add a b && grafical -f d.grafical render"), // one call, two commands
-    toolResult("6", "ok changed: a->b"),
+    toolResult("6", "ok changed: a-b"),
     call("7", "grafical -f d.grafical node --add c --layer top"), // an operation error, as plain text
     toolResult("7", "Exit code 1\nfailed changed=-\n\nerror: missing-field\ndetail:", true),
     call("8", "ls"), // not grafical
@@ -195,7 +195,7 @@ describe("grafical calls: errors, defects, denials, successes", () => {
       toolResult("e", "failed changed=-\n\nerror: unknown-command\n", true),
       call("f", "grafical -f d.grafical layer --add top --try"),
       toolResult("f", "ok changed=top written=no"),
-      call("f2", "grafical -f d.grafical new --title T"),
+      call("f2", "grafical -f d.grafical diagram --set --title T"),
       toolResult("f2", "ok"),
       call("g", "grafical node --help"),
       toolResult("g", "Usage: grafical -f <file> node"),
@@ -398,15 +398,15 @@ describe("regenerations", () => {
     ).toBe(0);
   });
 
-  it("counts a grafical new in a change step", () => {
+  it("counts a change step that removes the diagram file to make it again", () => {
     expect(
-      computeMetrics([bash("grafical -f d.grafical new --title T")], {
+      computeMetrics([bash("rm d.grafical && grafical -f d.grafical diagram --set --title T")], {
         arm: "grafical",
         kind: "change",
       }).regenerations,
     ).toBe(1);
     expect(
-      computeMetrics([bash("grafical -f d.grafical node --label a --label B")], {
+      computeMetrics([bash("grafical -f d.grafical node --set a --label B")], {
         arm: "grafical",
         kind: "change",
       }).regenerations,
