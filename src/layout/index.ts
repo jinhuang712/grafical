@@ -70,6 +70,7 @@ import { leftInset, markRects, markWidth, nodeLines, withSizes } from "./size.ts
 import {
   layerMargins,
   layerSides,
+  marginOf,
   markedLook,
   NO_MARGIN,
   regionMargins,
@@ -1076,33 +1077,66 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   }
   if (Number.isFinite(routing.minX)) see(routing.minX - 16);
   if (Number.isFinite(routing.maxX)) see(routing.maxX + 16);
-  // A layer's left and right margins keep its content, frames included, that far from the canvas side, or from the lane
-  // header when lanes run as layers (specs/decisions, "Every attribute of a style may be set on the object itself").
+  // A margin is room outside an object's own box, added to what parts it from its neighbour on that side, and the canvas
+  // side is a neighbour (specs/decisions, "Every attribute of a style may be set on the object itself"): a node outside
+  // every group, an outermost group's frame, a column's strip and a layer's content each keep their left and right
+  // margins from it, or from the lane header when lanes run as layers. Inside a frame the frame is the neighbour, and
+  // above and below the layers' margins already reach the canvas.
   const sideOf = layerSides(d);
+  const region = regionMargins(d);
   const outerFrame = new Map(
     groups
       .filter((g) => g.parent === undefined)
       .flatMap((g) => g.members.map((id) => [id, g] as const)),
   );
-  let indentLeft = Number.POSITIVE_INFINITY;
-  let indentRight = Number.NEGATIVE_INFINITY;
-  for (const l of layers) {
-    const side = sideOf(l.id);
-    if (side.left === 0 && side.right === 0) continue;
-    for (const n of l.nodes) {
-      const g = outerFrame.get(n.id);
-      const [x0, x1] = g === undefined ? [n.x, n.x + n.w] : reach(g);
-      if (side.left > 0) indentLeft = Math.min(indentLeft, x0 - side.left);
-      if (side.right > 0) indentRight = Math.max(indentRight, x1 + side.right);
-    }
+  let reachLeft = Number.POSITIVE_INFINITY;
+  let reachRight = Number.NEGATIVE_INFINITY;
+  const keep = (x0: number, x1: number, room: { left: number; right: number }) => {
+    if (room.left > 0) reachLeft = Math.min(reachLeft, x0 - room.left);
+    if (room.right > 0) reachRight = Math.max(reachRight, x1 + room.right);
+  };
+  /** Where a node and the frame around it, if any, reach across. */
+  const across = (n: PNode): [number, number] => {
+    const g = outerFrame.get(n.id);
+    return g === undefined ? [n.x, n.x + n.w] : reach(g);
+  };
+  for (const n of nodes.values()) {
+    if (!outerFrame.has(n.id)) keep(n.x, n.x + n.w, marginOf(d, n.node));
   }
-  see(indentLeft);
-  see(indentRight);
-  const indented = Number.isFinite(indentLeft) || Number.isFinite(indentRight);
+  for (const g of groups) {
+    if (g.parent !== undefined) continue;
+    const [x0, x1] = reach(g);
+    keep(
+      x0,
+      x1,
+      marginOf(
+        d,
+        d.groups?.find((x) => x.id === g.id),
+      ),
+    );
+  }
+  for (const c of d.columns ?? []) {
+    const strip = [...nodes.values()].filter((n) => n.node.column === c.id);
+    if (strip.length === 0) continue;
+    keep(
+      Math.min(...strip.map((n) => n.x)),
+      Math.max(...strip.map((n) => n.x + n.w)),
+      region(c.id),
+    );
+  }
+  for (const l of layers) {
+    if (l.nodes.length === 0) continue;
+    const spans = l.nodes.map(across);
+    keep(Math.min(...spans.map((x) => x[0])), Math.max(...spans.map((x) => x[1])), sideOf(l.id));
+  }
+  const [lowBefore, highBefore] = [low, high];
+  see(reachLeft);
+  see(reachRight);
+  // Room a margin takes at one side is not mirrored at the other.
+  const indented = low < lowBefore || high > highBefore;
   // A lane's margins are room outside its band (specs/decisions, "Every attribute of a style may be set on the object
   // itself"). Layer lanes share their left and right sides, and column lanes their top and bottom, so the widest margin
   // of those lanes on such a side keeps all of them from what lies past it.
-  const region = regionMargins(d);
 
   // Lanes (specs/decisions, "Lanes run one way"). Layer lanes share one header column, left of everything the layers
   // hold, edges included. Column lanes have a header on top, as wide as the lane.
@@ -1133,8 +1167,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     let right = bandLayers.size > 0 ? contentRight + BAND.padX : contentRight;
     if (Number.isFinite(routing.minX)) left = Math.min(left, routing.minX);
     if (Number.isFinite(routing.maxX)) right = Math.max(right, routing.maxX);
-    left = Math.min(left, indentLeft);
-    right = Math.max(right, indentRight);
+    left = Math.min(left, reachLeft);
+    right = Math.max(right, reachRight);
     laneLeft = left - LANE.padX - headW;
     laneRight = right + LANE.padX;
     see(laneLeft);

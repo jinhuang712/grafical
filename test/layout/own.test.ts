@@ -201,6 +201,36 @@ describe("a margin is room outside the object's own box", () => {
     expect(gap(edge, "x", "w")).toBe(gap(three, "x", "w"));
   });
 
+  it("keeps its room from the canvas side, which is a neighbour too", () => {
+    const left = (d: Diagram, id: string) => {
+      const g = scene(d).groups?.find((x) => x.id === id);
+      return g?.rect.x ?? node(d, id).rect.x;
+    };
+    const canvas = scene(three).width;
+    // A group at the left edge.
+    const framed = go(
+      three,
+      { op: "group.set", ids: ["g"], label: "G" },
+      { op: "node.set", ids: ["x", "y"], group: "g" },
+    );
+    const roomy = go(framed, { op: "group.set", ids: ["g"], marginLeft: "32" });
+    expect(left(roomy, "g")).toBe(left(framed, "g") + 32);
+    expect(scene(roomy).width).toBe(scene(framed).width + 32);
+    // A node outside every group, and a column's strip, at the left edge.
+    const nodeRoom = go(three, { op: "node.set", ids: ["x"], marginLeft: "32" });
+    expect(left(nodeRoom, "x")).toBe(left(three, "x") + 32);
+    expect(scene(nodeRoom).width).toBe(canvas + 32);
+    const strip = go(
+      three,
+      { op: "column.set", ids: ["p"], marginLeft: "32" },
+      { op: "node.set", ids: ["x", "y"], column: "p" },
+    );
+    expect(left(strip, "x")).toBe(left(three, "x") + 32);
+    // One that is not at the edge keeps its room from its neighbour, and the canvas stays as it was.
+    const inner = go(three, { op: "node.set", ids: ["w"], marginLeft: "16" });
+    expect(left(inner, "x")).toBe(left(three, "x"));
+  });
+
   it("a column's: above its first layer as a group's, and between its strip and the next, never between its own nodes", () => {
     const top = go(
       three,
