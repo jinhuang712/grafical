@@ -76,7 +76,7 @@ Roadmap
 │   ├── 🟨 CP2.4: Commands and styles — one command is one write and styles set spacing
 │   │   ├── ✅ One command is one write
 │   │   ├── ⬜ A `diff` that replays
-│   │   ├── ⬜ A typo that makes an object
+│   │   ├── ✅ A typo that makes an object
 │   │   ├── ✅ `--set` on every noun
 │   │   ├── ✅ Answers that say what happened
 │   │   └── ✅ Styles set spacing
@@ -511,9 +511,8 @@ One command is one write, every noun makes or changes an object with `--set`, an
   - 9 of the 120 replays of the diff test fail on the way: a lane with a gap · a broken alignment · a group split midway · lanes out of order.
   - The test fails if that count grows, and every saved fixture replays to the same bytes.
   - Next: decide whether `diff` orders its lines so that each one draws.
-- ⬜ A typo that makes an object: `--set` on a mistyped ID makes a new object.
-  - `layer --set typo --look box` makes a layer, and `node --set gatway --lane x` is refused only for its missing label with no `likely`.
-  - Next: decide whether a new ID near an existing one is named as `likely`.
+- ✅ A typo that makes an object: `--set` on a mistyped ID still makes a new object, and the answer now says `MADE` where the agent meant a change (2026-11-10).
+  - Refusing a new ID near an existing one was not chosen, since it guesses what the agent meant.
 - ✅ `--set` on every noun: Every noun takes `--set` · `--move` · `--remove`, and the model's operations are the commands (2026-11-10).
 - ✅ Answers that say what happened: Every answer starts with a keyword and gives its records in tagged sections, and a write names what it made, changed and removed and only the warnings it brought or cleared (2026-11-10).
   - A write now lays out the diagram as it was before, and one operation at 50 nodes takes up to 87.3 ms against the 50 ms of T2: Speed.
