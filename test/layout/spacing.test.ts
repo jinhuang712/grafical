@@ -119,7 +119,7 @@ describe("a margin", () => {
     expect(gapAcross(d, "x", "w") - gapAcross(base, "x", "w")).toBe(24);
   });
 
-  it("of a column widens it in every layer", () => {
+  it("of a column parts its strip from the column beside it", () => {
     const base = go(
       layered,
       { op: "column.set", ids: ["p"] },

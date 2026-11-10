@@ -659,6 +659,10 @@ Good to know:
     style move changes the order.
   - An option that does not apply to what marks the style is left out, as
     --row-gap on a node.
+  - An object may set these options on itself too, and they beat its styles.
+  - A margin is room outside the object's own box on that side: a lane's or a
+    column's parts it from what lies beside it, a layer's left and right keep
+    its content from the canvas side, and none reaches what lies inside.
   - A node's margin widens its whole column, in every layer.
   - The stylesheet gives every value a style does not say: diagram set
     --stylesheet names it, and grafical library lists the built-in ones.

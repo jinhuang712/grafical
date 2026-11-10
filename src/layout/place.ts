@@ -18,7 +18,15 @@ import type { AlignmentProblem } from "./align.ts";
 import { buildGrid, type GroupProblem } from "./grid.ts";
 import type { SideSlot } from "./side.ts";
 import { layerHeights } from "./size.ts";
-import { marginOf, NO_MARGIN, nodeMargins, spacingOf, widest } from "./space.ts";
+import {
+  layerSides,
+  marginOf,
+  NO_MARGIN,
+  nodeMargins,
+  regionMargins,
+  spacingOf,
+  widest,
+} from "./space.ts";
 
 export interface PNode {
   id: string;
@@ -259,9 +267,34 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   // later style wins"): each grid column keeps the largest left and right margin of the nodes in it.
   const marginOfNode = nodeMargins(d);
   const colMargin = new Map<number, typeof NO_MARGIN>();
-  for (const n of nodes.values()) {
-    colMargin.set(n.col, widest(colMargin.get(n.col) ?? NO_MARGIN, marginOfNode(n.node)));
+  const widen = (col: number, m: typeof NO_MARGIN) =>
+    colMargin.set(col, widest(colMargin.get(col) ?? NO_MARGIN, m));
+  for (const n of nodes.values()) widen(n.col, marginOfNode(n.node));
+  // A layer's left and right margins are room outside its content (specs/decisions, "Every attribute of a style may be
+  // set on the object itself"): its first node's column takes the left one and its last node's the right one, as a
+  // node's own margin does; the layout keeps them from the canvas side too.
+  const sideOf = layerSides(d);
+  for (const l of layers) {
+    const m = sideOf(l.id);
+    const first = l.nodes[0];
+    const last = l.nodes[l.nodes.length - 1];
+    if (first !== undefined && m.left > 0) widen(first.col, { ...NO_MARGIN, left: m.left });
+    if (last !== undefined && m.right > 0) widen(last.col, { ...NO_MARGIN, right: m.right });
   }
+  // A column's and a lane's margins are room outside its strip or its band: they part it from the column, the lane or
+  // the content beside it, and reach no member.
+  const region = regionMargins(d);
+  const byLane = ranks.size > 0;
+  const apart = (a: PNode, b: PNode): number => {
+    let room = 0;
+    if (a.node.column !== b.node.column) {
+      room += region(a.node.column).right + region(b.node.column).left;
+    }
+    if (byLane && a.node.lane !== b.node.lane) {
+      room += region(a.node.lane).right + region(b.node.lane).left;
+    }
+    return room;
+  };
   const left = (c: number) => colMargin.get(c)?.left ?? 0;
   const right = (c: number) => colMargin.get(c)?.right ?? 0;
   const groupById = new Map((d.groups ?? []).map((g) => [g.id, g]));
@@ -280,7 +313,11 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
       for (let k = 1; k < l.nodes.length; k++) {
         const a = l.nodes[k - 1] as PNode;
         const b = l.nodes[k] as PNode;
-        add(a.col, b.col, a.w / 2 + right(a.col) + sp.columnGap + left(b.col) + b.w / 2);
+        add(
+          a.col,
+          b.col,
+          a.w / 2 + right(a.col) + sp.columnGap + apart(a, b) + left(b.col) + b.w / 2,
+        );
       }
     }
     // A node placed by steps (specs/decisions, "Steps from another node"): each step across keeps a medium node and a gap, so
@@ -395,7 +432,11 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     for (let k = 1; k < columnOrder.length; k++) {
       for (const a of columnOrder[k - 1] as PNode[]) {
         for (const b of columnOrder[k] as PNode[]) {
-          add(a.col, b.col, a.w / 2 + right(a.col) + sp.columnGap + left(b.col) + b.w / 2);
+          add(
+            a.col,
+            b.col,
+            a.w / 2 + right(a.col) + sp.columnGap + apart(a, b) + left(b.col) + b.w / 2,
+          );
         }
       }
     }
@@ -404,8 +445,9 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
     for (let k = 1; k < laneOrder.length; k++) {
       for (const a of laneOrder[k - 1] as PNode[]) {
         for (const b of laneOrder[k] as PNode[]) {
+          const room = 2 * LANE.padX + apart(a, b);
           for (const r of rightTerms(a, b))
-            for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + 2 * LANE.padX + s.d);
+            for (const s of leftTerms(b, a)) add(r.col, s.col, r.d + room + s.d);
         }
       }
     }
@@ -696,14 +738,18 @@ function laneSides(
     if (right && !left) return b.lo - LANE.padX;
     return (a.hi + b.lo) / 2;
   };
+  // Two lanes with a margin between them each keep their own side, with the room between their bands (specs/decisions,
+  // "Every attribute of a style may be set on the object itself").
+  const region = regionMargins(d);
+  const parted = (k: number) => region(ids[k]).right + region(ids[k + 1]).left > 0;
   return inLanes.map((b, k) => {
     const lane = lanes[ranks.get((b[0] as PNode).id) as number] as { id: string; label: string };
     const { lo, hi } = spans[k] as { lo: number; hi: number };
     return {
       id: lane.id,
       label: lane.label,
-      x0: k === 0 ? lo - LANE.padX : between(k - 1),
-      x1: k === inLanes.length - 1 ? hi + LANE.padX : between(k),
+      x0: k === 0 || parted(k - 1) ? lo - LANE.padX : between(k - 1),
+      x1: k === inLanes.length - 1 || parted(k) ? hi + LANE.padX : between(k),
     };
   });
 }

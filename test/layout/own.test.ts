@@ -7,6 +7,7 @@ import { layout } from "../../src/layout/index.ts";
 import { diffDiagrams } from "../../src/model/diff.ts";
 import { writeGrafical } from "../../src/model/grafical-format.ts";
 import { applyOps, type Diagram, type Op, parseOp, readDiagram } from "../../src/model/index.ts";
+import { renderSvg } from "../../src/render/svg.ts";
 import { createMeasurer } from "../../src/text/index.ts";
 import type { Measurer } from "../../src/text/types.ts";
 
@@ -90,11 +91,44 @@ describe("a look an object holds itself", () => {
     expect(errors[0]?.code).toBe("bad-value");
   });
 
-  it("is a field only where it is drawn: a node takes no color of its own", () => {
-    const r = parseOp({ op: "node.set", ids: ["x"], color: "#000000" }, 0);
-    expect(Array.isArray(r)).toBe(true);
+  it("is a field only where it means something: an edge has no inside, a layer no look", () => {
+    expect(Array.isArray(parseOp({ op: "edge.set", ids: ["x-y"], fill: "#000000" }, 0))).toBe(true);
+    expect(Array.isArray(parseOp({ op: "layer.set", ids: ["a"], color: "#000000" }, 0))).toBe(true);
     const bad = parseOp({ op: "node.set", ids: ["x"], marginTop: "6" }, 0);
     expect(Array.isArray(bad) && bad[0]?.field).toBe("margin-top");
+  });
+
+  it("means one thing on every object: fill, border and width the inside and outline, color the ink", () => {
+    const svg = (d: Diagram) => renderSvg(scene(d));
+    const own = go(
+      BASE,
+      { op: "lane.set", ids: ["team"], label: "Team" },
+      { op: "node.set", ids: ["x", "w"], lane: "team" },
+      { op: "node.set", ids: ["x"], sublabel: "port", color: "#aa0000" },
+      { op: "group.set", ids: ["g"], borderWidth: "3", color: "#00aa00" },
+      { op: "lane.set", ids: ["team"], border: "#0000aa", borderWidth: "2", color: "#aa00aa" },
+    );
+    const text = svg(own);
+    // A node's ink is its label and its sublabel alike.
+    expect(text.match(/fill="#aa0000"/g)?.length).toBe(2);
+    expect(text).toContain('stroke-width="3"');
+    expect(text).toMatch(/fill="#00aa00"/);
+    expect(text).toContain('stroke="#0000aa" stroke-width="2"');
+    expect(text).toMatch(/fill="#aa00aa"/);
+    // A style marked on them draws the same.
+    const styled = go(
+      BASE,
+      { op: "lane.set", ids: ["team"], label: "Team" },
+      { op: "node.set", ids: ["x", "w"], lane: "team" },
+      { op: "node.set", ids: ["x"], sublabel: "port" },
+      { op: "style.set", ids: ["ink"], color: "#aa0000" },
+      { op: "style.set", ids: ["frame"], borderWidth: "3", color: "#00aa00" },
+      { op: "style.set", ids: ["band"], border: "#0000aa", borderWidth: "2", color: "#aa00aa" },
+      { op: "node.set", ids: ["x"], style: "ink" },
+      { op: "group.set", ids: ["g"], style: "frame" },
+      { op: "lane.set", ids: ["team"], style: "band" },
+    );
+    expect(svg(styled)).toBe(text);
   });
 });
 
@@ -140,6 +174,92 @@ describe("a margin an object holds itself", () => {
   });
 });
 
+describe("a margin is room outside the object's own box", () => {
+  const gap = (d: Diagram, a: string, b: string) =>
+    node(d, b).rect.x - (node(d, a).rect.x + node(d, a).rect.w);
+  const down = (d: Diagram, a: string, b: string) =>
+    node(d, b).rect.y - (node(d, a).rect.y + node(d, a).rect.h);
+  const three = go(
+    null,
+    { op: "diagram.set", title: "t" },
+    { op: "layer.set", ids: ["a", "b", "c"] },
+    { op: "node.set", ids: ["x"], layer: "a", label: "x" },
+    { op: "node.set", ids: ["w"], layer: "a", label: "w", after: "x" },
+    { op: "node.set", ids: ["y"], layer: "b", label: "y" },
+    { op: "node.set", ids: ["z"], layer: "c", label: "z" },
+    { op: "edge.set", ids: ["x-y"], from: "x", to: "y" },
+    { op: "edge.set", ids: ["w-z"], from: "w", to: "z" },
+  );
+
+  it("a layer's left side: its first node's column moves, or the canvas side keeps the room", () => {
+    // z sits under w, so its column has x to its left in layer a: the column moves.
+    const pushed = go(three, { op: "layer.set", ids: ["c"], marginLeft: "40" });
+    expect(gap(pushed, "x", "w")).toBe(gap(three, "x", "w") + 40);
+    // y sits in the leftmost column: the canvas side keeps the room instead.
+    const edge = go(three, { op: "layer.set", ids: ["b"], marginLeft: "48" });
+    expect(node(edge, "y").rect.x - node(three, "y").rect.x).toBeGreaterThanOrEqual(48);
+    expect(gap(edge, "x", "w")).toBe(gap(three, "x", "w"));
+  });
+
+  it("a column's: above its first layer as a group's, and between its strip and the next, never between its own nodes", () => {
+    const top = go(
+      three,
+      { op: "column.set", ids: ["p"], marginTop: "24" },
+      { op: "node.set", ids: ["y"], column: "p" },
+    );
+    expect(down(top, "x", "y")).toBe(down(three, "x", "y") + 24);
+    const strip = go(
+      three,
+      { op: "column.set", ids: ["p", "q"] },
+      { op: "node.set", ids: ["x", "w"], column: "p" },
+      { op: "column.set", ids: ["p"], marginLeft: "40", marginRight: "40" },
+    );
+    expect(gap(strip, "x", "w")).toBe(gap(three, "x", "w"));
+    const next = go(
+      three,
+      { op: "column.set", ids: ["p", "q"] },
+      { op: "node.set", ids: ["x"], column: "p" },
+      { op: "node.set", ids: ["w"], column: "q" },
+      { op: "column.set", ids: ["p"], marginRight: "16" },
+    );
+    expect(gap(next, "x", "w")).toBe(gap(three, "x", "w") + 16);
+  });
+
+  it("a lane's that runs as layers: outside its band, never between its own layers", () => {
+    const lanes = go(
+      three,
+      { op: "lane.set", ids: ["one"], label: "One" },
+      { op: "lane.set", ids: ["two"], label: "Two" },
+      { op: "layer.set", ids: ["a", "b"], lane: "one" },
+      { op: "layer.set", ids: ["c"], lane: "two" },
+    );
+    const roomy = go(lanes, { op: "lane.set", ids: ["one"], marginBottom: "24", marginTop: "16" });
+    expect(down(roomy, "x", "y")).toBe(down(lanes, "x", "y"));
+    expect(down(roomy, "y", "z")).toBe(down(lanes, "y", "z") + 24);
+    const band = (d: Diagram, id: string) => scene(d).lanes?.find((x) => x.id === id)?.rect;
+    const one = band(roomy, "one");
+    const two = band(roomy, "two");
+    expect((two?.y ?? 0) - ((one?.y ?? 0) + (one?.h ?? 0))).toBe(24);
+    expect((one?.y ?? 0) - (band(lanes, "one")?.y ?? 0)).toBe(16);
+  });
+
+  it("a lane's that runs as a column: between its band and the next, which no longer share a side", () => {
+    const lanes = go(
+      three,
+      { op: "lane.set", ids: ["p"], label: "P" },
+      { op: "lane.set", ids: ["q"], label: "Q" },
+      { op: "node.set", ids: ["x", "y"], lane: "p" },
+      { op: "node.set", ids: ["w", "z"], lane: "q" },
+    );
+    const parted = go(lanes, { op: "lane.set", ids: ["q"], marginLeft: "16" });
+    const band = (d: Diagram, id: string) => scene(d).lanes?.find((x) => x.id === id)?.rect;
+    const p = band(parted, "p");
+    const q = band(parted, "q");
+    expect((q?.x ?? 0) - ((p?.x ?? 0) + (p?.w ?? 0))).toBe(16);
+    expect(gap(parted, "x", "w")).toBeGreaterThan(gap(lanes, "x", "w"));
+  });
+});
+
 describe("the file", () => {
   const full = go(
     BASE,
@@ -169,7 +289,7 @@ describe("the file", () => {
 
   it("refuses an attribute the sort does not hold", () => {
     const text = writeGrafical(full);
-    const colored = text.replace("  fill: #ffeeee\n", "  color: #ffeeee\n");
+    const colored = text.replace("  color: #0969da\n", "  fill: #0969da\n");
     const r = readDiagram(colored);
     expect(Array.isArray(r) && r[0]?.code).toBe("unknown-field");
     const groupLabel = text.replace('  text: "G"\n', '  text: "G"\n  fill: #ffffff\n');

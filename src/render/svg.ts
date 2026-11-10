@@ -484,15 +484,21 @@ function groupFill(g: SceneGroup, P: Paint): string {
 function groupShapes(g: SceneGroup, P: Paint): string[] {
   const p = P.group;
   const out = [
-    `<rect ${rectAttrs(g.rect)} rx="${num(p.radius)}" fill="${g.look?.fill ?? groupFill(g, P)}" stroke="${g.look?.border ?? p.stroke}" stroke-width="${num(p.strokeWidth)}"/>`,
+    `<rect ${rectAttrs(g.rect)} rx="${num(p.radius)}" fill="${g.look?.fill ?? groupFill(g, P)}" stroke="${g.look?.border ?? p.stroke}" stroke-width="${num(g.look?.borderWidth ?? p.strokeWidth)}"/>`,
   ];
+  // A group's ink, where it has one, is every text of its title (specs/decisions, "Every attribute of a style may be
+  // set on the object itself"); the quieter parts stay quieter by their face.
+  const ink = g.look?.color;
   for (const r of g.label.runs) {
     const light = FONT_FAMILY[r.face].weight < 600;
     out.push(
-      ...texts({ ...g.label, runs: [r] }, light ? P.text.groupLabelMuted : P.text.groupLabel),
+      ...texts(
+        { ...g.label, runs: [r] },
+        ink ?? (light ? P.text.groupLabelMuted : P.text.groupLabel),
+      ),
     );
   }
-  if (g.sublabel) out.push(...texts(g.sublabel, P.text.groupLabelMuted));
+  if (g.sublabel) out.push(...texts(g.sublabel, ink ?? P.text.groupLabelMuted));
   return out;
 }
 
@@ -523,12 +529,12 @@ export function renderSvg(scene: Scene): string {
 
   // Lanes lie behind everything else (specs/decisions, "Lanes run one way"); lanes side by side share a border.
   const lp = P.lane;
-  const lane = `stroke="${lp.stroke}" stroke-width="${num(lp.strokeWidth)}"`;
   for (const x of lanes) {
+    const lane = `stroke="${x.look?.border ?? lp.stroke}" stroke-width="${num(x.look?.borderWidth ?? lp.strokeWidth)}"`;
     out.push(
       `<rect ${rectAttrs(x.rect)} rx="${num(lp.radius)}" fill="${x.look?.fill ?? lp.fill}" ${lane}/>`,
       `<rect ${rectAttrs(x.head)} rx="${num(lp.radius)}" fill="${lp.headFill}" ${lane}/>`,
-      ...texts(x.label, P.text.laneLabel),
+      ...texts(x.label, x.look?.color ?? P.text.laneLabel),
     );
   }
   const bp = P.band;
@@ -652,8 +658,12 @@ export function renderSvg(scene: Scene): string {
 
   for (const n of scene.nodes) {
     out.push(...nodeShape(n, P));
+    // A node's ink, where it has one, is its label and its sublabel alike (specs/decisions, "Every attribute of a
+    // style may be set on the object itself"), so that a dark fill can take light text; the sublabel stays quieter by
+    // its smaller and lighter face.
     for (const t of n.texts) {
-      out.push(...texts(t, t.role === "node-sublabel" ? P.text.nodeSublabel : P.text.nodeLabel));
+      const quiet = t.role === "node-sublabel";
+      out.push(...texts(t, n.look?.color ?? (quiet ? P.text.nodeSublabel : P.text.nodeLabel)));
     }
     for (const m of n.marks ?? []) out.push(...markShape(m));
   }

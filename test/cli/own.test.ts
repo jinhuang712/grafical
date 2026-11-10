@@ -55,10 +55,10 @@ describe("a style's attributes on the object itself", () => {
   });
 
   it("refuse what a noun does not draw as a usage error, and a value style --set refuses", () => {
-    const color = run("node", "--set", "x", "--color", "#000000");
-    expect(color.code).toBe(2);
-    expect(color.out).toContain("unknown-option");
-    expect(run("layer", "--set", "l", "--margin-left", "8").code).toBe(2);
+    const fill = run("layer", "--set", "l", "--fill", "#000000");
+    expect(fill.code).toBe(2);
+    expect(fill.out).toContain("unknown-option");
+    expect(run("label", "--set", "x", "--margin-left", "8").code).toBe(2);
     const odd = run("node", "--set", "x", "--margin-top", "6");
     expect(odd.code).toBe(1);
     expect(odd.out).toContain("field: margin-top");

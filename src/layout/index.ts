@@ -67,7 +67,16 @@ import {
 } from "./route.ts";
 import { planSideways } from "./side.ts";
 import { leftInset, markRects, markWidth, nodeLines, withSizes } from "./size.ts";
-import { layerMargins, markedLook, type Spacing, spacingOf } from "./space.ts";
+import {
+  layerMargins,
+  layerSides,
+  markedLook,
+  NO_MARGIN,
+  regionMargins,
+  type Spacing,
+  spacingOf,
+  widest as widestMargin,
+} from "./space.ts";
 import { routeStats } from "./stats.ts";
 import { steerEdges } from "./steer.ts";
 import { placeSteps } from "./steps.ts";
@@ -1067,6 +1076,33 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   }
   if (Number.isFinite(routing.minX)) see(routing.minX - 16);
   if (Number.isFinite(routing.maxX)) see(routing.maxX + 16);
+  // A layer's left and right margins keep its content, frames included, that far from the canvas side, or from the lane
+  // header when lanes run as layers (specs/decisions, "Every attribute of a style may be set on the object itself").
+  const sideOf = layerSides(d);
+  const outerFrame = new Map(
+    groups
+      .filter((g) => g.parent === undefined)
+      .flatMap((g) => g.members.map((id) => [id, g] as const)),
+  );
+  let indentLeft = Number.POSITIVE_INFINITY;
+  let indentRight = Number.NEGATIVE_INFINITY;
+  for (const l of layers) {
+    const side = sideOf(l.id);
+    if (side.left === 0 && side.right === 0) continue;
+    for (const n of l.nodes) {
+      const g = outerFrame.get(n.id);
+      const [x0, x1] = g === undefined ? [n.x, n.x + n.w] : reach(g);
+      if (side.left > 0) indentLeft = Math.min(indentLeft, x0 - side.left);
+      if (side.right > 0) indentRight = Math.max(indentRight, x1 + side.right);
+    }
+  }
+  see(indentLeft);
+  see(indentRight);
+  const indented = Number.isFinite(indentLeft) || Number.isFinite(indentRight);
+  // A lane's margins are room outside its band (specs/decisions, "Every attribute of a style may be set on the object
+  // itself"). Layer lanes share their left and right sides, and column lanes their top and bottom, so the widest margin
+  // of those lanes on such a side keeps all of them from what lies past it.
+  const region = regionMargins(d);
 
   // Lanes (specs/decisions, "Lanes run one way"). Layer lanes share one header column, left of everything the layers
   // hold, edges included. Column lanes have a header on top, as wide as the lane.
@@ -1097,10 +1133,17 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     let right = bandLayers.size > 0 ? contentRight + BAND.padX : contentRight;
     if (Number.isFinite(routing.minX)) left = Math.min(left, routing.minX);
     if (Number.isFinite(routing.maxX)) right = Math.max(right, routing.maxX);
+    left = Math.min(left, indentLeft);
+    right = Math.max(right, indentRight);
     laneLeft = left - LANE.padX - headW;
     laneRight = right + LANE.padX;
     see(laneLeft);
     see(laneRight);
+  }
+  const layerLaneRoom = layerLanes.reduce((m, x) => widestMargin(m, region(x.id)), NO_MARGIN);
+  if (layerLanes.length > 0) {
+    see(laneLeft - layerLaneRoom.left);
+    see(laneRight + layerLaneRoom.right);
   }
   const laneAt = (i: number) => layerLanes.find((x) => x.first <= i && i <= x.last)?.id;
   const colLines = colLanes.map((l) =>
@@ -1110,16 +1153,28 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     colLanes.length === 0
       ? 0
       : ceil4(2 * LANE.labelTop + Math.max(1, ...colLines.map((ls) => ls.length)) * laneLh);
+  let colLaneSides = false;
   for (const l of colLanes) {
     see(l.x0);
     see(l.x1);
+    // A column lane's left and right margins keep its band from the canvas side too.
+    const room = region(l.id);
+    see(l.x0 - room.left);
+    see(l.x1 + room.right);
+    if (room.left > 0 || room.right > 0) colLaneSides = true;
   }
   // Layer lanes hold everything across, header included, and a group's label outside its
   // left or right side reaches out on one side only: the picture centres on what it holds,
   // not on the centre line, so that the header's or label's width is not mirrored as empty space.
-  const [lo, hi] = layerLanes.length > 0 ? [laneLeft, laneRight] : [low, high];
+  const [lo, hi] =
+    layerLanes.length > 0
+      ? [laneLeft - layerLaneRoom.left, laneRight + layerLaneRoom.right]
+      : [low, high];
   const offCentre =
-    layerLanes.length > 0 || groups.some((g) => outsideOf(g, "left") || outsideOf(g, "right"));
+    layerLanes.length > 0 ||
+    indented ||
+    colLaneSides ||
+    groups.some((g) => outsideOf(g, "left") || outsideOf(g, "right"));
   const shift = offCentre ? Math.round((lo + hi) / 8) * 4 : 0;
   if (offCentre) half = Math.max(shift - lo, hi - shift);
   half = ceil4(Math.max(half, 80));
@@ -1284,6 +1339,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   const gutterTops: number[] = [];
   const endPads: number[] = [];
   let y = ceil4(headBottom + FRAME.titleGap);
+  const colLaneRoom = colLanes.reduce((m, x) => widestMargin(m, region(x.id)), NO_MARGIN);
+  y += colLanes.length > 0 ? colLaneRoom.top : region(laneAt(0)).top;
   const lanesTop = y;
   if (colLanes.length > 0) y += headH + LANE.pad;
   if (laneAt(0) !== undefined) y += LANE.pad;
@@ -1291,6 +1348,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   if (bandHead(0)) y += bandHeadH(0);
   /** Where a layer lane's border crosses gutter i, between two layers in different lanes. */
   const borders = new Map<number, number>();
+  /** Where the lane below gutter i starts, past the margins of the lanes on either side of its border. */
+  const laneTops = new Map<number, number>();
   /** A layer that holds a store: the gutters beside it keep more room from its cylinders. */
   const storeLayer = (i: number) => (layers[i]?.nodes ?? []).some((n) => n.node.kind === "store");
   layers.forEach((l, i) => {
@@ -1323,6 +1382,8 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
       wallTops.set(i, y);
       y += walls * WALL.space;
       borders.set(i, y);
+      y += region(laneAt(i)).bottom + region(laneAt(i + 1)).top;
+      laneTops.set(i, y);
       y += below + LANE.pad + headsAt(i + 1) + (bandHead(i + 1) ? bandHeadH(i + 1) : 0);
       return;
     }
@@ -1338,6 +1399,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
   });
   if (colLanes.length > 0 || laneAt(layers.length - 1) !== undefined) y += LANE.pad;
   const lanesBottom = y;
+  y += colLanes.length > 0 ? colLaneRoom.bottom : region(laneAt(layers.length - 1)).bottom;
   let bottom = y;
   // Footnotes (specs/decisions, "Notes as callouts or footnotes") are listed below the content, above the footnote of specs/decisions, "Curation stays with the agent".
   const listTop = ceil4(y + FRAME.noteGap);
@@ -1510,7 +1572,7 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     return placeLines("lane-label", lines, at.x, y + LANE.labelTop + down, at.align, m, T);
   };
   for (const x of layerLanes) {
-    const y0 = x.first === 0 ? lanesTop : (borders.get(x.first - 1) ?? 0);
+    const y0 = x.first === 0 ? lanesTop : (laneTops.get(x.first - 1) ?? 0);
     const y1 = x.last === layers.length - 1 ? lanesBottom : (borders.get(x.last) ?? 0);
     const rect: Rect = { x: centre + laneLeft, y: y0, w: laneRight - laneLeft, h: y1 - y0 };
     const lx = rect.x + LANE.labelInset;

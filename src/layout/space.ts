@@ -85,54 +85,73 @@ export function spacingOf(d: Diagram): Spacing {
 }
 
 /**
- * A layer's margins above and below, by its id: the largest of its own, its nodes', its lane's when lanes run as
- * layers, and those of the groups whose first layer it is (above) or whose last layer it is (below).
+ * A layer's margins above and below, by its id: the largest of its own, its nodes', and those of the groups and the
+ * columns whose first layer it is (above) or whose last layer it is (below). A margin is room outside an object's own
+ * box (specs/decisions, "Every attribute of a style may be set on the object itself"), so a lane's is not here: it
+ * lies outside the lane's band, which the layout places.
  */
 export function layerMargins(d: Diagram): (layer: string) => Margin {
   const at = new Map<string, Margin>();
-  const lanes = new Map((d.lanes ?? []).map((l) => [l.id, l]));
   const groupOf = new Map<string, string | undefined>();
   for (const g of d.groups ?? []) groupOf.set(g.id, g.in);
   const groups = new Map((d.groups ?? []).map((g) => [g.id, g]));
-  // The first and last layer each group's members span, its own and its inner groups'.
+  const columns = new Map((d.columns ?? []).map((c) => [c.id, c]));
+  // The first and last layer each group's members span, its own and its inner groups', and each column's.
   const span = new Map<string, { top: number; bottom: number }>();
+  const columnSpan = new Map<string, { top: number; bottom: number }>();
+  const stretch = (m: Map<string, { top: number; bottom: number }>, id: string, i: number) => {
+    const s = m.get(id);
+    m.set(id, s === undefined ? { top: i, bottom: i } : { top: s.top, bottom: i });
+  };
   d.layers.forEach((l, i) => {
     for (const n of l.nodes) {
-      for (let g = n.group; g !== undefined; g = groupOf.get(g)) {
-        const s = span.get(g);
-        span.set(g, s === undefined ? { top: i, bottom: i } : { top: s.top, bottom: i });
-      }
+      for (let g = n.group; g !== undefined; g = groupOf.get(g)) stretch(span, g, i);
+      if (n.column !== undefined) stretch(columnSpan, n.column, i);
     }
   });
   d.layers.forEach((l, i) => {
     let m = marginOf(d, l);
     for (const n of l.nodes) m = widest(m, marginOf(d, n));
-    if (l.lane !== undefined) m = widest(m, marginOf(d, lanes.get(l.lane)));
-    const top = (g: string) => ({ ...NO_MARGIN, top: marginOf(d, groups.get(g)).top });
-    const bottom = (g: string) => ({ ...NO_MARGIN, bottom: marginOf(d, groups.get(g)).bottom });
-    for (const [g, s] of span) {
-      if (s.top === i) m = widest(m, top(g));
-      if (s.bottom === i) m = widest(m, bottom(g));
-    }
+    const ends = (
+      spans: Map<string, { top: number; bottom: number }>,
+      of: (id: string) => Spaced | undefined,
+    ) => {
+      for (const [id, s] of spans) {
+        if (s.top === i) m = widest(m, { ...NO_MARGIN, top: marginOf(d, of(id)).top });
+        if (s.bottom === i) m = widest(m, { ...NO_MARGIN, bottom: marginOf(d, of(id)).bottom });
+      }
+    };
+    ends(span, (g) => groups.get(g));
+    ends(columnSpan, (c) => columns.get(c));
     at.set(l.id, m);
   });
-  return (layer) => at.get(layer) ?? NO_MARGIN;
+  return (layer) => {
+    const m = at.get(layer) ?? NO_MARGIN;
+    return { ...NO_MARGIN, top: m.top, bottom: m.bottom };
+  };
 }
 
 /**
- * A node's margins left and right: the largest of its own, its column's and its lane's when lanes run as columns
- * (specs/decisions, "Styles set spacing as CSS does, and a later style wins"). A node's margin widens its whole
- * column in every layer, which placement does.
+ * A node's margins left and right, its own (specs/decisions, "Styles set spacing as CSS does, and a later style
+ * wins"). A node's margin widens its whole column in every layer, which placement does.
  */
-export function nodeMargins(
-  d: Diagram,
-): (node: Spaced & { column?: string; lane?: string }) => Margin {
-  const columns = new Map((d.columns ?? []).map((c) => [c.id, c]));
-  const lanes = new Map((d.lanes ?? []).map((l) => [l.id, l]));
-  return (n) => {
-    let m = marginOf(d, n);
-    if (n.column !== undefined) m = widest(m, marginOf(d, columns.get(n.column)));
-    if (n.lane !== undefined) m = widest(m, marginOf(d, lanes.get(n.lane)));
-    return m;
+export function nodeMargins(d: Diagram): (node: Spaced) => Margin {
+  return (n) => marginOf(d, n);
+}
+
+/** Each column's and each lane's margins, by id: room outside its strip or its band. */
+export function regionMargins(d: Diagram): (id: string | undefined) => Margin {
+  const at = new Map<string, Margin>();
+  for (const c of d.columns ?? []) at.set(c.id, marginOf(d, c));
+  for (const l of d.lanes ?? []) at.set(l.id, marginOf(d, l));
+  return (id) => (id === undefined ? NO_MARGIN : (at.get(id) ?? NO_MARGIN));
+}
+
+/** A layer's margins left and right, by its id: room between its content and the canvas side, or the lane header. */
+export function layerSides(d: Diagram): (layer: string) => Margin {
+  const at = new Map(d.layers.map((l) => [l.id, marginOf(d, l)] as const));
+  return (layer) => {
+    const m = at.get(layer) ?? NO_MARGIN;
+    return { ...NO_MARGIN, left: m.left, right: m.right };
   };
 }

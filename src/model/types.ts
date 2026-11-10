@@ -436,19 +436,47 @@ export const STYLE_KEYS = [
 export type StyleKey = (typeof STYLE_KEYS)[number];
 
 /**
- * The attributes of a style each sort also holds itself, over the styles it marks (specs/decisions, "Every attribute of
- * a style may be set on the object itself"): those a style it marks draws, in the order of the `<style>` table. A
- * layer's margins count above and below it and a column's beside it. `label` is an edge's label, which holds its own
- * under the edge's `labelLook`.
+ * The attributes of a style each sort also holds itself, over the styles it marks, in the order of the `<style>`
+ * table (specs/decisions, "Every attribute of a style may be set on the object itself"). Each means one thing on every
+ * sort it fits: `fill`, `border` and `border-width` the inside and the outline, `color` the ink (the text, or an
+ * edge's line), and a margin the room outside the object's own box on that side. `label` is an edge's label, which
+ * holds its own under the edge's `labelLook`.
  */
 export const OWN_KEYS = {
   diagram: ["marginTop", "marginRight", "marginBottom", "marginLeft", "rowGap", "columnGap"],
-  layer: ["marginTop", "marginBottom"],
-  node: ["fill", "border", "borderWidth", "marginTop", "marginRight", "marginBottom", "marginLeft"],
+  layer: ["marginTop", "marginRight", "marginBottom", "marginLeft"],
+  node: [
+    "fill",
+    "border",
+    "borderWidth",
+    "color",
+    "marginTop",
+    "marginRight",
+    "marginBottom",
+    "marginLeft",
+  ],
   edge: ["color"],
-  group: ["fill", "border", "marginTop", "marginRight", "marginBottom", "marginLeft"],
-  lane: ["fill", "marginTop", "marginRight", "marginBottom", "marginLeft"],
-  column: ["marginRight", "marginLeft"],
+  group: [
+    "fill",
+    "border",
+    "borderWidth",
+    "color",
+    "marginTop",
+    "marginRight",
+    "marginBottom",
+    "marginLeft",
+  ],
+  lane: [
+    "fill",
+    "border",
+    "borderWidth",
+    "color",
+    "marginTop",
+    "marginRight",
+    "marginBottom",
+    "marginLeft",
+  ],
+  column: ["marginTop", "marginRight", "marginBottom", "marginLeft"],
   label: ["fill", "border", "borderWidth", "color"],
 } as const satisfies Record<string, readonly StyleKey[]>;
 export type OwnSort = keyof typeof OWN_KEYS;
