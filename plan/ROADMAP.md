@@ -548,7 +548,7 @@ A node takes a multiple of its size, any object holds the attributes of a style 
   - A lane's and a column's margins now give room outside their own box instead of reaching their members, and every region takes all four sides.
   - 18 fixtures and 300 fuzz seeds laid out as before.
   - Related: decision 109 "Every attribute of a style may be set on the object itself" · decision 111 "An attribute means the same on every object it fits".
-- ⬜ Size multiples: `width` · `height` take 0.75 · 1.25 · 1.5 · 2 on a node, a style or a region, and only the node named grows.
+- ⬜ Size multiples: `width` · `height` take 0.75 · 1.25 · 1.5 · 2 on a node or in a style, and only the node named grows.
   - Next: build it, and show the owner each shape in a picture before its rule is written down.
   - Related: decision 080 "A node's width and height take a multiple of its size".
 - ⬜ Corner marks checked: A corner mark is checked against nearby edges.

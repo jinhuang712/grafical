@@ -2,13 +2,6 @@
 
 ## ongoing
 
-### [P1][DISCUSSION] Whether a region's size multiple reaches its nodes
-
-- description: Decision 080 lets a multiple set on a region reach every node in it, while decision 111 says an attribute means the same on every object and no margin reaches what lies inside its object. A region's `width` would then mean the width of its nodes and not its own.
-- created: 2026-11-10
-- blocks: CP2.5 "Size multiples"
-- related: [080. A node's width and height take a multiple of its size](../specs/decisions/080-a-node-s-width-and-height-take-a-multiple-of-its-size.md) · [111. An attribute means the same on every object it fits](../specs/decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)
-
 ### [P2][DISCUSSION] Whether `show` gives each value's source
 
 - description: Decision 089 and the file spec say `show` gives each value's source, and the code never did. `show <id>` lists the object's own values and the styles it marks.

@@ -60,7 +60,7 @@ A node is a part of the system: a service, a store, a queue, a person or a step.
 - An agent says what a node is, to get the shape a reader expects.
 - An agent names a node and adds a port or a topic, to say more without another node.
 - An agent leaves sizes to grafical or picks a step, to keep text inside its node.
-- An agent makes one node or a whole region a little wider or taller, to tune a picture without a pixel.
+- An agent makes one node or many a little wider or taller, to tune a picture without a pixel.
 - An agent marks a node that matters, to draw the reader's eye to it.
 - An agent names a mark, to avoid finding a file for every node.
 - An agent picks the one or two nodes to read first, to give the picture a start.
@@ -206,13 +206,13 @@ A node may be wider or taller than its size by a multiple, such as 1.5, to tune 
 
 - `--width` and `--height` each take 0.75, 1.25, 1.5 or 2 times the size the node would otherwise have.
   - Any other value is refused with the four it may take.
-- A multiple is set on a node, in a style, or on a region: the diagram · a layer · a group · a lane · a column.
-  - A region's multiple reaches every node in it.
-  - A node's own value or its styles' wins, and otherwise the largest of its regions'.
+- A multiple is set on a node or in a style it marks.
+  - Many nodes take one from a list of IDs, such as `node --set a,b,c --height 1.5`, or from one style.
+  - A region takes none, since its size follows what it holds.
 - Only that node grows.
   - A taller node makes its layer taller, and the other nodes keep their height and sit centred.
   - A wider node widens its column in every layer.
-- A dot or a `choice` refuses a multiple set on it, and keeps its size under one from a style or a region.
+- A dot or a `choice` refuses a multiple set on it, and keeps its size under one from a style.
 - Text that no longer fits is refused as `overflow`.
 
 - **Why:**

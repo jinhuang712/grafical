@@ -166,7 +166,7 @@ The root has no ID, and a file has exactly one.
 
 ### `<style>`
 
-A style holds any look grafical can draw, the room around what marks it and a node's size, and says nothing of who uses it. An object names it with `style`, and where two styles say the same thing the one defined later in the file wins. A margin or a gap is in pixels, a multiple of 4, and an attribute that does not fit what marks it is left out. A size marked by a region reaches every node in it.
+A style holds any look grafical can draw, the room around what marks it and a node's size, and says nothing of who uses it. An object names it with `style`, and where two styles say the same thing the one defined later in the file wins. A margin or a gap is in pixels, a multiple of 4, and an attribute that does not fit what marks it is left out, such as a size on a region.
 
 | Attribute | Value |
 |---|---|

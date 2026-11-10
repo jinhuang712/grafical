@@ -33,7 +33,7 @@ A node's size step gives its size. A node with no step is medium when its text f
 
 A dot is 24 px across and a `choice` diamond 28 px, whatever the step.
 
-A node's `width` and `height` may each take 0.75, 1.25, 1.5 or 2 times that size, rounded up to 8 px across and 4 px down. The node's own value or its styles' wins, and otherwise the largest that a region it lies in marks. A dot and a `choice` keep their size.
+A node's `width` and `height` may each take 0.75, 1.25, 1.5 or 2 times that size, rounded up to 8 px across and 4 px down, from the node itself or a style it marks. A region takes none, since its size follows what it holds. A dot and a `choice` keep their size.
 
 Every plain node in a layer without a height multiple is drawn as tall as the tallest of them, so their tops line up. Dots, diamonds and a node with a height multiple keep their own height. A layer is as tall as its tallest shape, and a shorter shape is centred in it. A layer with no node is 56 px high, unless it is drawn as a bar.
 
