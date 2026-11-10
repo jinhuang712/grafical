@@ -167,7 +167,12 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
       ...(after.subtitle === undefined ? {} : { subtitle: after.subtitle }),
       ...(after.caption === undefined ? {} : { caption: after.caption }),
     };
+    // Only what the first command makes: every other fact is said by a command of its own.
     const empty: Diagram = { ...after, layers: [], edges: [] };
+    delete empty.types;
+    delete empty.styles;
+    delete empty.lines;
+    delete empty.titleAt;
     delete empty.nodes;
     delete empty.groups;
     delete empty.lanes;

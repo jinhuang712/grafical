@@ -134,6 +134,18 @@ describe('diff as operations (specs/decisions, "Git as the history")', () => {
     replays(null, nested);
   });
 
+  it("builds a diagram's types, styles, edge shape and title place from nothing", () => {
+    const looked = edited(catalogSyncGrouped, [
+      { op: "type.set", ids: ["db"], base: "store", fill: "#eeeeff" },
+      { op: "style.set", ids: ["hot"], border: "#cc0000" },
+      { op: "style.set", ids: ["roomy"], marginLeft: "16" },
+      { op: "diagram.set", lines: "round", titleAt: "0.5", titleSide: "top" },
+    ]);
+    const ops = diffDiagrams(null, looked);
+    expect(ops.filter((o) => o.op === "type.set" || o.op === "style.set")).toHaveLength(3);
+    replays(null, looked);
+  });
+
   // A diff between two random diagrams can pass through a diagram a write refuses, such as a lane with a gap or an
   // alignment its layers' order breaks, or lanes and columns can order a layer before a later command places a node in
   // it. Such pairs are counted, and the count may only fall.
