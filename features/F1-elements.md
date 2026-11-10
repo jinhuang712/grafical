@@ -39,6 +39,7 @@ A node is a part of the system: a service, a store, a queue, a person or a step.
   - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
   - [9. The same file gives the same picture on any machine](../DESIGNS.md#9-the-same-file-gives-the-same-picture-on-any-machine)
   - [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
+  - [16. A simple diagram needs no setting](../DESIGNS.md#16-a-simple-diagram-needs-no-setting)
 - **How it works:**
   - [The theme: fixed sizes and outlines](../specs/theme.md#fixed-sizes-and-outlines)
   - [Placement: sizes](../specs/placement.md#sizes)

@@ -84,7 +84,9 @@ A diagram takes its whole look from a stylesheet. grafical ships three, and a di
   - `red` · `amber` · `green` · `blue` · `purple` · `gray` color a node, a group, a lane, an edge or a label.
   - Each stylesheet draws a hue in colors that read on its own ground, so `dark` keeps it readable.
 
-- **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
+- **Design:**
+  - [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
+  - [16. A simple diagram needs no setting](../DESIGNS.md#16-a-simple-diagram-needs-no-setting)
 - **How it works:** [The theme: stylesheets](../specs/theme.md#stylesheets)
 - **Why:**
   - [016. Themes and stylesheets](../specs/decisions/016-themes-and-stylesheets.md)

@@ -205,7 +205,9 @@ How far apart things sit comes from margins and gaps, set on an object or in the
 - The default stylesheet gives `row-gap` 40 · `column-gap` 32 · a margin of 32 round the diagram, and every other margin 0.
   - Its styles `compact` and `airy` make a whole diagram tighter or roomier.
 
-- **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
+- **Design:**
+  - [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
+  - [16. A simple diagram needs no setting](../DESIGNS.md#16-a-simple-diagram-needs-no-setting)
 - **How it works:** [Placement: layers down the page](../specs/placement.md#layers-down-the-page)
 - **Why:**
   - [106. Styles set spacing as CSS does, and a later style wins](../specs/decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)

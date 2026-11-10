@@ -2,7 +2,7 @@
 
 An agent's operations go in, a checked diagram file and a picture come out, and facts and counts go back. This is the shape between: the commitments every design change must meet. Why grafical sees diagrams this way is in [PHILOSOPHY.md](PHILOSOPHY.md). How its parts fit is in [ARCHITECTURE.md](specs/ARCHITECTURE.md).
 
-grafical is designed around 15 guidelines:
+grafical is designed around 16 guidelines:
 
 1. **Operations are the only way a diagram changes:** every change is a named and checked operation
 2. **Places are facts, never coordinates:** a place is a layer or an order or a column and never a position
@@ -19,6 +19,7 @@ grafical is designed around 15 guidelines:
 13. **Every search the engine runs has a cap:** no step searches without a bound
 14. **One shortest way for each situation:** a form that only repeats another is removed
 15. **A picture is judged by how it reads:** a reader sees the structure first, and a count never proves a picture good
+16. **A simple diagram needs no setting:** every attribute has a good default, and the common changes come ready-made
 
 ## 1. Operations are the only way a diagram changes
 
@@ -238,5 +239,18 @@ A reader sees the structure of a picture before following any edge, so a design 
 - **How it works:**
   - [Placement](specs/placement.md)
   - [Routing](specs/routing.md)
+
+## 16. A simple diagram needs no setting
+
+Every attribute has a default that draws a simple diagram well, so an agent that states only layers, nodes and edges gets a picture it can keep. The common changes come as built-in styles, such as `compact` and `red`, so that the agent names a change and never makes up a value. Cost: every new attribute must come with its default and say whether its common use needs a style, and the built-in stylesheets grow and must stay readable on every ground.
+
+**Ask:** Does a simple diagram draw well with this left unset, and does its common use come ready-made?
+
+- **Stance:** [Why are good diagrams rare?](PHILOSOPHY.md#why-are-good-diagrams-rare)
+- **Decisions:**
+  - [014. Nodes sized to their text](specs/decisions/014-nodes-sized-to-their-text.md)
+  - [106. Styles set spacing as CSS does, and a later style wins](specs/decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
+  - [110. Built-in styles name colors by hue, and each stylesheet draws them its own way](specs/decisions/110-built-in-styles-name-colors-by-hue-and-each-stylesheet-draws-them-its-own-way.md)
+- **How it works:** [The theme](specs/theme.md)
 
 Every other decision, such as how a layer without a node is drawn, is in [specs/decisions](specs/decisions/README.md).
