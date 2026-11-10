@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current checkpoint:** [CP2: Drawing more](#cp2-drawing-more). The work now is [CP2.4: Commands and styles](#cp24-commands-and-styles), then [CP2.5: Nodes](#cp25-nodes), [CP2.6: Regions](#cp26-regions) and [CP2.7: The legend](#cp27-the-legend).
+**Current checkpoint:** [CP2: Drawing more](#cp2-drawing-more). The work now is [CP2.5: Nodes](#cp25-nodes), then [CP2.6: Regions](#cp26-regions) and [CP2.7: The legend](#cp27-the-legend).
 
 The work comes in four groups of what grafical can do: draw at all · draw more · draw well · draw the hardest pictures. A release follows once the MVP bar is met. Within a group the numbers are the order of the work.
 
@@ -73,9 +73,9 @@ Roadmap
 │   │   ├── ✅ Edge weights
 │   │   ├── ✅ Step numbers
 │   │   └── ✅ Edge sides
-│   ├── 🟨 CP2.4: Commands and styles — one command is one write and styles set spacing
+│   ├── ✅ CP2.4: Commands and styles — one command is one write and styles set spacing
 │   │   ├── ✅ One command is one write
-│   │   ├── ⬜ A `diff` that replays
+│   │   ├── ✅ A `diff` that replays
 │   │   ├── ✅ A typo that makes an object
 │   │   ├── ✅ `--set` on every noun
 │   │   ├── ✅ Answers that say what happened
@@ -499,18 +499,17 @@ What an edge can say past joining two ends.
 
 ### CP2.4: Commands and styles
 
-**Status:** 🟨 (since 2026-11-10)
+**Status:** ✅ (2026-11-10)
 
 One command is one write, every noun makes or changes an object with `--set`, and styles set spacing as CSS does.
 
 **Tasks:**
 
 - ✅ One command is one write: `apply` · batch files · `try` went, every write takes `--try` and `diff` prints command lines (2026-11-10).
-- ⬜ A `diff` that replays: Run one at a time, some lines of a `diff` pass through a state that is refused, though each whole diagram draws.
-  - From an empty file, 21 of the first 100 fuzz diagrams were refused partway on 2026-11-10: `label-blocked` 9 · `wall-crossed` 6 · `title-blocked` 5 · `overflow` 1.
-  - 9 of the 120 replays of the diff test fail on the way: a lane with a gap · a broken alignment · a group split midway · lanes out of order.
-  - The test fails if that count grows, and every saved fixture replays to the same bytes.
-  - Next: decide whether `diff` orders its lines so that each one draws.
+- ✅ A `diff` that replays: `diff` orders its lines so that each leaves a diagram the model accepts, and only a picture in between that would draw wrong refuses one, which the owner holds as expected (2026-11-10).
+  - Of 90 fuzz diagrams replayed from an empty file, 7 are refused partway against 12 before: `title-blocked` 5 · `label-blocked` 2.
+  - At the model level 0 of the diff test's 120 replays fail against 9, and 7 of 900 where a node placed by steps moves with the column grid.
+  - A fuzz test keeps the list of refused seeds, which may only shrink.
 - ✅ A typo that makes an object: `--set` on a mistyped ID still makes a new object, and the answer now says `MADE` where the agent meant a change (2026-11-10).
   - Refusing a new ID near an existing one was not chosen, since it guesses what the agent meant.
 - ✅ `--set` on every noun: Every noun takes `--set` · `--move` · `--remove`, and the model's operations are the commands (2026-11-10).
@@ -531,8 +530,8 @@ One command is one write, every noun makes or changes an object with `--set`, an
 **Exit criteria:**
 
 - **Constraints**
-  - [R1: Stability](GOALS.md#r1-stability)
-  - [R4: A sound file](GOALS.md#r4-a-sound-file)
+  - [R1: Stability](GOALS.md#r1-stability): ✅ 2026-11-10, the stability tests passed.
+  - [R4: A sound file](GOALS.md#r4-a-sound-file): ✅ 2026-11-10, the tests of the file form passed.
 
 ### CP2.5: Nodes
 

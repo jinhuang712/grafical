@@ -91,7 +91,7 @@ A window that shows the diagram as it is now, while an agent draws it.
 
 ## F6.4: Diff
 
-`diff` reports how the file differs from a git revision, `HEAD` by default, as one command line per change. A shell that runs them in order on the revision's file gives the file on disk. Outside git it fails with `not-in-git`.
+`diff` reports how the file differs from a git revision, `HEAD` by default, as one command line per change. A shell that runs them in order on the revision's file gives the file on disk, unless a picture in between would draw wrong and its line is refused. Outside git it fails with `not-in-git`.
 
 - **Commands:** [`diff`](../CLI.md#diff)
 

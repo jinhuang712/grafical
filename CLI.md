@@ -420,7 +420,7 @@ The revision is `HEAD` by default.
 
 **Called by:** both
 
-**Prints:** one command line per change on stdout, or `# no changes`, and a shell that runs them in order on the revision's file gives the file on disk.
+**Prints:** one command line per change on stdout, or `# no changes`. A shell that runs them in order on the revision's file gives the file on disk, unless a picture in between would draw wrong and its line is refused.
 
 **Fails:** a file outside git is `not-in-git` and exits 1.
 

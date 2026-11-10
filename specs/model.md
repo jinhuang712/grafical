@@ -73,18 +73,24 @@ The copy is refused rather than changed, so that what it makes is always what th
 
 ## The difference between two diagrams
 
-`grafical diff` turns the difference between a git revision of the file and the file on disk into operations, so that a reviewer reads a diagram change in the same words the agent wrote it. It reads the revision with `git show`, and a revision that has no such file counts as an empty one, so the lines start with `diagram --set`. It prints one command line per operation, and a shell that runs them on the revision's file gives the file on disk.
+`grafical diff` turns the difference between a git revision of the file and the file on disk into operations, so that a reviewer reads a diagram change in the same words the agent wrote it. It reads the revision with `git show`, and a revision that has no such file counts as an empty one, so the lines start with `diagram --set`. It prints one command line per operation. A shell that runs them in order on the revision's file gives the file on disk, unless a picture in between would draw wrong: that line is refused as any write is, and the owner holds that as expected.
 
-The operations come in an order in which each one is valid when it runs:
+The operations come in an order chosen so that each one leaves a diagram the model accepts, as far as an order can:
 
 ```text
-diagram settings
-→ edges that go, then nodes, groups and lanes that go
+the diagram's settings, types and styles, and the styles of what stays
+→ edges that go
+→ alignments of nodes that wait, then nodes, groups and lanes that go
+→ members leave lanes, columns and groups where staying would block a move
 → layers, then nodes, in their new places
 → layers that go, now empty
 → the nodes' own facts
-→ groups and lanes, and who is in them
-→ edges that come
+→ groups, lanes and columns, and who joins them
+→ alignments
+→ edges that come, each made as it ends up
+→ their labels and numbers, once every edge is drawn
+→ walls and notes
+→ who follows whose look, and the types and styles that went
 ```
 
 An alignment that a move would break is cleared before the move and set again after it. The order of layers, and of the nodes in a layer, is compared as the longest sequence the two share, so that only the nodes that truly moved get a move. Groups, lanes and edges keep the order they were made in, and an operation can only add one at the end. So the ones a new order puts out of step are removed and added again, and only the longest start that keeps its order stays.
