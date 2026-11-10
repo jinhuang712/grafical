@@ -38,12 +38,6 @@ function replays(a: Diagram | null, b: Diagram): void {
   expect(writeDiagram(r.diagram)).toBe(writeDiagram(b));
 }
 
-/** Whether the diff of a and b, run one command at a time, gives b. */
-function replaysOneByOne(a: Diagram | null, b: Diagram): boolean {
-  const r = applyOps(a, diffDiagrams(a, b));
-  return !("errors" in r) && writeDiagram(r.diagram) === writeDiagram(b);
-}
-
 describe('diff as operations (specs/decisions, "Git as the history")', () => {
   it("reports nothing for the same diagram", () => {
     expect(diffDiagrams(catalogSyncGrouped, structuredClone(catalogSyncGrouped))).toEqual([]);
@@ -146,28 +140,20 @@ describe('diff as operations (specs/decisions, "Git as the history")', () => {
     replays(null, looked);
   });
 
-  // A diff between two random diagrams can pass through a diagram a write refuses, such as a lane with a gap or an
-  // alignment its layers' order breaks, or lanes and columns can order a layer before a later command places a node in
-  // it. Such pairs are counted, and the count may only fall.
+  // Each line of a diff is a write of its own, and every one leaves a diagram a write accepts (specs/decisions, "One
+  // command is one write, and running it twice changes nothing").
   it(
     "replays to the same file, between any two diagrams and from nothing",
     () => {
-      let gaps = 0;
       for (let seed = 1; seed <= 40; seed++) {
         const a = generate(seed, m).diagram;
         const b = generate(seed + 5000, m).diagram;
-        for (const [x, y] of [
-          [a, b],
-          [b, a],
-          [null, b],
-        ] as const) {
-          if (!replaysOneByOne(x, y)) gaps++;
-        }
+        replays(a, b);
+        replays(b, a);
         replays(null, b);
       }
-      expect(gaps).toBeLessThanOrEqual(9);
     },
-    // Each seed generates two diagrams and runs four diffs one command at a time, each a write of its own.
+    // Each seed generates two diagrams and runs three diffs one command at a time, each a write of its own.
     40 * 5_000,
   );
 });

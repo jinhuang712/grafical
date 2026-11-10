@@ -1,14 +1,16 @@
 // The difference between two diagrams, as operations (specs/decisions, "Git as the history", "One command is one
-// write, and running it twice changes nothing"). Applied to `before` one after another, the operations give `after`,
-// file for file. Each fact that changed is said as the command that makes it. Pure.
+// write, and running it twice changes nothing"). Applied to `before` one after another, each a write of its own, the
+// operations give `after`, file for file. Each is placed so that it leaves a diagram the model accepts where an order
+// can; a picture in between may still draw wrong, and that write refuses it, as the owner expects. Each fact that
+// changed is said as the command that makes it. Pure.
 //
-// The order makes every operation valid when it runs: edges that go, then nodes,
-// groups and lanes that go; layers, then nodes, in their new places; the layers
-// that go, now empty; the nodes' own facts; groups and lanes, and who is in them;
-// last the edges that come. An alignment that a move would break is cleared
-// before the move and set again after it. Groups, lanes and edges keep creation
-// order in the file, and an operation can only append one, so the ones that the
-// new order puts out of step are removed and added again.
+// The order keeps every step valid and drawn as close to the end as it can be: the diagram's settings, types and
+// styles, and the styles of what stays; edges that go; alignments of nodes that wait, then nodes, groups and lanes
+// that go; members leave lanes, columns and groups where staying would block a move; layers, then nodes, in their new
+// places; layers that go; the nodes' own facts; groups, lanes and columns, and who joins them; alignments; the edges
+// that come, each made as it ends up, and their labels and numbers once every edge is drawn; walls and notes; last who
+// follows whose look and the types and styles that went. Groups, lanes and edges keep creation order in the file, and
+// an operation can only append one, so the ones that the new order puts out of step are removed and added again.
 
 import { type Op, RESET } from "./ops.ts";
 import { everyNode, STEP_KEYS } from "./steps.ts";
@@ -95,18 +97,36 @@ function stepFlags(n: DiagramNode): Partial<Record<(typeof STEP_KEYS)[number], s
 const sameSteps = (x: DiagramNode, y: DiagramNode) =>
   x.from === y.from && STEP_KEYS.every((k) => x[k] === y[k]);
 
-function edgeAdd(e: Edge): Op {
+/**
+ * The command that makes an edge as it ends up, so that the picture after it is drawn as the last one will be: its
+ * type, sides, steering, weight and styles. Its label and number wait until every edge is made, since a gutter grows
+ * with the edges in it and an earlier text may find no room yet; `with` waits when the trunk it joins is not made yet.
+ */
+function edgeAdd(e: Edge, trunkMade: boolean): Op {
+  const weighted = e.weight !== undefined && e.weight !== "thin";
   return {
     op: "edge.set",
     ids: [e.id],
     from: e.from,
     to: e.to,
-    type: e.kind,
-    ...(e.label === undefined ? {} : { label: e.label }),
+    type: e.type ?? e.kind,
     ...(e.both === true ? { both: "on" } : {}),
     ...(e.pass === true ? { pass: "on" } : {}),
+    ...(e.out === undefined ? {} : { out: e.out }),
+    ...(e.in === undefined ? {} : { in: e.in }),
+    ...(e.via === undefined ? {} : { via: `${e.via.object}:${e.via.side}` }),
+    ...(e.straight === true ? { straight: "on" } : {}),
+    ...(e.with === undefined || !trunkMade ? {} : { with: e.with }),
+    ...(e.bendAt === undefined ? {} : { bendAt: String(e.bendAt) }),
+    ...(e.stretch === undefined ? {} : { stretch: String(e.stretch) }),
+    ...(weighted ? { weight: String(e.weight) } : {}),
+    ...(e.style === undefined || e.style.length === 0 ? {} : { style: e.style.join(",") }),
   };
 }
+
+/** A style list as `--style` takes it, when there is one. */
+const styleFlag = (style: readonly string[] | undefined) =>
+  style === undefined || style.length === 0 ? {} : { style: style.join(",") };
 
 /** What a type or a style held that it no longer does is reset, since `set` keeps what it does not name. */
 function resets(
@@ -340,6 +360,41 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
     ops.push({ op: "style.move", ids: [id], after: prev });
   }
 
+  // The styles the diagram and what stays mark come next, before anything is placed, so that every later step is laid
+  // out with the spacing and looks of the end (specs/decisions, "Styles set spacing as CSS does, and a later style
+  // wins"). What is made later marks its styles as it is made.
+  const same = (x?: readonly string[], y?: readonly string[]) =>
+    JSON.stringify(x ?? []) === JSON.stringify(y ?? []);
+  type Noun = "node" | "edge" | "group" | "lane" | "layer" | "column";
+  const said = (noun: Noun, id: string, flags: Record<string, string>) =>
+    ({ op: `${noun}.set`, ids: [id], ...flags }) as Op;
+  if (!same(b.style, a.style)) ops.push({ op: "diagram.set", style: joined(a.style) });
+  const marksKept = <T extends { id: string; style?: string[] }>(
+    noun: Noun,
+    was: readonly T[],
+    now: readonly T[],
+    kept: (id: string) => boolean,
+  ) => {
+    for (const x of now) {
+      if (!kept(x.id)) continue;
+      const old = was.find((y) => y.id === x.id);
+      if (!same(old?.style, x.style)) ops.push(said(noun, x.id, { style: joined(x.style) }));
+    }
+  };
+  const bLayerIds = new Set(b.layers.map((l) => l.id));
+  marksKept("layer", b.layers, a.layers, (id) => bLayerIds.has(id));
+  marksKept("node", everyNode(b), everyNode(a), (id) => bN.has(id));
+  marksKept("group", b.groups ?? [], a.groups ?? [], (id) => keptGroups.has(id));
+  marksKept("lane", b.lanes ?? [], a.lanes ?? [], (id) => keptLanes.has(id));
+  marksKept("column", b.columns ?? [], a.columns ?? [], (id) => keptColumns.has(id));
+  marksKept("edge", b.edges, a.edges, (id) => keptEdges.has(id));
+  for (const e of a.edges) {
+    if (!keptEdges.has(e.id)) continue;
+    const was = bEdges.get(e.id)?.labelStyle;
+    if (!same(was, e.labelStyle))
+      ops.push({ op: "label.set", ids: [e.id], style: joined(e.labelStyle) });
+  }
+
   // 2. Edges that go.
   for (const e of b.edges) if (!keptEdges.has(e.id)) ops.push({ op: "edge.remove", ids: [e.id] });
 
@@ -356,11 +411,32 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
     }),
     aSteps.map((n) => n.id),
   );
+  // An alignment to or from a node that is about to wait goes first: the node's place in its layer would not hold it.
+  const cleared = new Set<string>();
+  const waits = (x: string) => bSteps.includes(x) && !keptSteps.has(x);
+  for (const id of aN.keys()) {
+    const was = bN.get(id)?.node.align;
+    if (was === undefined || !aN.has(was) || (!waits(id) && !waits(was))) continue;
+    ops.push({ op: "node.set", ids: [id], align: RESET });
+    cleared.add(id);
+  }
   for (const id of bSteps) {
     if (keptSteps.has(id)) continue;
     // A layer no node of which sits above or below the node.
-    const row = b.layers.find((l) => !l.nodes.some((n) => n.align === id)) ?? b.layers[0];
-    if (row !== undefined) ops.push({ op: "node.move", ids: [id], layer: row.id, last: true });
+    // It waits beside a member of its own group where there is one, so that it splits no group, and never in a layer
+    // with no node, which it would turn from a bar into a band.
+    const group = bN.get(id)?.node.group;
+    const rows = b.layers.filter((l) => l.nodes.length > 0 && !l.nodes.some((n) => n.align === id));
+    const mate = (l: (typeof rows)[number]) =>
+      [...l.nodes].reverse().find((n) => group !== undefined && n.group === group);
+    const row = rows.find((l) => mate(l) !== undefined) ?? rows[0] ?? b.layers[0];
+    const beside = row === undefined ? undefined : mate(row);
+    if (row !== undefined)
+      ops.push(
+        beside === undefined
+          ? { op: "node.move", ids: [id], layer: row.id, last: true }
+          : { op: "node.move", ids: [id], layer: row.id, after: beside.id },
+      );
   }
 
   // 3. Nodes, groups and lanes that go. Their edges went above.
@@ -371,19 +447,18 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
         ? { op: "group.remove", ids: [g] }
         : { op: "group.remove", ids: [g], out: true },
     );
-  for (const x of goneLanes) ops.push({ op: "lane.remove", ids: [x] });
   for (const c of goneColumns) ops.push({ op: "column.remove", ids: [c] });
 
-  // Alignments a move would break are cleared now and set again in step 7.
+  // Alignments a move would break are cleared now and set again once every node has its place.
   const movesLayer = (id: string) => {
     const was = bN.get(id);
     const is = aN.get(id);
     return was !== undefined && is !== undefined && was.layer !== is.layer;
   };
-  const cleared = new Set<string>();
   for (const [id, is] of aN) {
     const was = bN.get(id)?.node.align;
     if (was === undefined || !aN.has(was)) continue;
+    if (cleared.has(id)) continue;
     if (was !== is.node.align || movesLayer(id) || movesLayer(was)) {
       ops.push({ op: "node.set", ids: [id], align: RESET });
       cleared.add(id);
@@ -400,6 +475,84 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
     order.filter((id) => aLayerIds.includes(id)),
     aLayerIds.filter((id) => order.includes(id)),
   );
+  // Lanes and columns order the layers on every write, and a lane of layers must stay whole. So when who is in them
+  // changes, or a layer moves while layers lie in lanes, every member leaves them before anything moves, and all join
+  // again in step 8: no move runs under the memberships of before.
+  let lanesLeft = false;
+  let columnsLeft = false;
+  const laneKept = (x: string | undefined) => (x !== undefined && keptLanes.has(x) ? x : undefined);
+  const laneNow = (id: string) => (lanesLeft ? undefined : laneKept(bN.get(id)?.node.lane));
+  const columnNow = (id: string) => {
+    const c = bN.get(id)?.node.column;
+    return !columnsLeft && c !== undefined && keptColumns.has(c) ? c : undefined;
+  };
+  // A node that leaves its group leaves it now, before anything moves, when that leaves no gap among those who stay:
+  // moved first, it could stand between members of the group it is about to leave.
+  const groupLeft = new Set<string>();
+  const groupNow = (id: string) => {
+    const g = bN.get(id)?.node.group;
+    return !groupLeft.has(id) && g !== undefined && keptGroups.has(g) ? g : undefined;
+  };
+  {
+    const parent = new Map((b.groups ?? []).map((g) => [g.id, g.in]));
+    const within = (g: string | undefined, top: string): boolean =>
+      g !== undefined && (g === top || within(parent.get(g), top));
+    const leavers = new Set(
+      [...aN]
+        .filter(
+          ([id, { node }]) =>
+            groupNow(id) !== undefined && node.group !== groupNow(id) && bN.get(id)?.layer !== "",
+        )
+        .map(([id]) => id),
+    );
+    for (let changed = true; changed; ) {
+      changed = false;
+      for (const l of b.layers) {
+        const ids = l.nodes.map((n) => n.id).filter((id) => aN.has(id));
+        for (const top of keptGroups) {
+          const inside = ids.map((id) => within(groupNow(id), top));
+          const stays = ids.map((id, k) => inside[k] === true && !leavers.has(id));
+          const first = stays.indexOf(true);
+          const last = stays.lastIndexOf(true);
+          for (let k = first + 1; k < last; k++) {
+            const id = ids[k] as string;
+            if (inside[k] && leavers.has(id)) {
+              leavers.delete(id);
+              changed = true;
+            }
+          }
+        }
+      }
+    }
+    if (leavers.size > 0) {
+      ops.push({ op: "node.set", ids: [...leavers], group: RESET });
+      for (const id of leavers) groupLeft.add(id);
+    }
+  }
+  {
+    const layersMove = a.layers.some((l) => order.includes(l.id) && !stay.has(l.id));
+    const layered = b.layers.filter((l) => laneKept(laneOfLayer.get(l.id)) !== undefined);
+    // Removed nodes went in step 3.
+    const laned = [...bN.keys()].filter((id) => aN.has(id) && laneNow(id) !== undefined);
+    const lanesChange =
+      [...aN].some(([id, { node }]) => node.lane !== laneNow(id)) ||
+      a.layers.some((l) => l.lane !== laneKept(laneOfLayer.get(l.id))) ||
+      (layersMove && layered.length > 0);
+    if (lanesChange && layered.length + laned.length > 0) {
+      if (layered.length > 0)
+        ops.push({ op: "layer.set", ids: layered.map((l) => l.id), lane: RESET });
+      if (laned.length > 0) ops.push({ op: "node.set", ids: laned, lane: RESET });
+      lanesLeft = true;
+    }
+    if (lanesChange) for (const id of laneOfLayer.keys()) laneOfLayer.set(id, undefined);
+    // A lane that goes goes once its members have left: removed first, its members would take new places.
+    for (const x of goneLanes) ops.push({ op: "lane.remove", ids: [x] });
+    const columned = [...bN.keys()].filter((id) => aN.has(id) && columnNow(id) !== undefined);
+    if ([...aN].some(([id, { node }]) => node.column !== columnNow(id)) && columned.length > 0) {
+      ops.push({ op: "node.set", ids: columned, column: RESET });
+      columnsLeft = true;
+    }
+  }
   a.layers.forEach((l, k) => {
     const prev = aLayerIds[k - 1];
     const known = order.includes(l.id);
@@ -416,6 +569,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
         op: "layer.set",
         ids: [l.id],
         ...(l.label === undefined ? {} : { label: l.label }),
+        ...styleFlag(l.style),
         ...(prev !== undefined
           ? { after: prev }
           : order.length > 0
@@ -460,9 +614,10 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
           label: n.label,
           layer: l.id,
           ...place,
-          type: n.kind,
+          type: n.type ?? n.kind,
           ...(n.sublabel === undefined ? {} : { sublabel: n.sublabel }),
           ...(n.size === undefined ? {} : { size: n.size }),
+          ...styleFlag(n.style),
         });
       } else if (!still.has(n.id)) {
         ops.push({
@@ -506,9 +661,10 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
         label: n.label,
         from,
         ...stepFlags(n),
-        type: n.kind,
+        type: n.type ?? n.kind,
         ...(n.sublabel === undefined ? {} : { sublabel: n.sublabel }),
         ...(n.size === undefined ? {} : { size: n.size }),
+        ...styleFlag(n.style),
       });
     } else ops.push({ op: "node.move", ids: [n.id], from, ...stepFlags(n) });
   }
@@ -538,7 +694,8 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
       if (n.label !== was.label) ops.push({ op: "node.set", ids: [id], label: n.label });
       if (n.sublabel !== was.sublabel)
         ops.push({ op: "node.set", ids: [id], sublabel: str(n.sublabel) });
-      if (n.kind !== was.kind) ops.push({ op: "node.set", ids: [id], type: n.kind });
+      if (n.kind !== was.kind || n.type !== was.type)
+        ops.push({ op: "node.set", ids: [id], type: n.type ?? n.kind });
       if (n.size !== was.size) ops.push({ op: "node.set", ids: [id], size: str(n.size) });
       if (was.emphasis === true && n.emphasis !== true)
         ops.push({ op: "node.set", ids: [id], emphasis: "off" });
@@ -556,7 +713,6 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
       was?.align !== undefined && !cleared.has(id) && aN.has(was.align) ? was.align : undefined;
     if (n.align !== now) ons.push({ op: "node.set", ids: [id], align: str(n.align) });
   }
-  ops.push(...ons);
 
   // 8. Groups and lanes, then who is in them: everyone leaves first, so that lanes
   // can change the way they run.
@@ -579,6 +735,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
         ids: [g.id],
         label: g.label,
         ...(g.sublabel === undefined ? {} : { sublabel: g.sublabel }),
+        ...styleFlag(g.style),
       });
       if (g.titleAt !== undefined) ops.push(titleAt());
       continue;
@@ -590,22 +747,10 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
   }
   for (const x of aLanes) {
     const was = keptLanes.has(x.id) ? bLanes.get(x.id) : undefined;
-    if (was === undefined || x.label !== was.label)
-      ops.push({ op: "lane.set", ids: [x.id], label: x.label });
+    if (was === undefined)
+      ops.push({ op: "lane.set", ids: [x.id], label: x.label, ...styleFlag(x.style) });
+    else if (x.label !== was.label) ops.push({ op: "lane.set", ids: [x.id], label: x.label });
   }
-  const groupNow = (id: string) => {
-    const g = bN.get(id)?.node.group;
-    return g !== undefined && keptGroups.has(g) ? g : undefined;
-  };
-  const laneNow = (id: string) => {
-    const x = bN.get(id)?.node.lane;
-    return x !== undefined && keptLanes.has(x) ? x : undefined;
-  };
-  for (const c of aColumns) if (!keptColumns.has(c)) ops.push({ op: "column.set", ids: [c] });
-  const columnNow = (id: string) => {
-    const c = bN.get(id)?.node.column;
-    return c !== undefined && keptColumns.has(c) ? c : undefined;
-  };
   const columnLeave: string[] = [];
   const columnJoin = new Map<string, string[]>();
   const groupLeave: string[] = [];
@@ -664,21 +809,53 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
   };
   if (groupLeave.length > 0) inGroup(groupLeave, RESET);
   if (laneLeave.length > 0) inLane(laneLeave, RESET);
+  // A column is made once the lanes that ran as columns are left: a diagram has one or the other.
+  for (const c of a.columns ?? [])
+    if (!keptColumns.has(c.id)) ops.push({ op: "column.set", ids: [c.id], ...styleFlag(c.style) });
   if (columnLeave.length > 0) ops.push({ op: "node.set", ids: columnLeave, column: RESET });
   for (const c of aColumns) {
     const members = columnJoin.get(c);
     if (members !== undefined) ops.push({ op: "node.set", ids: members, column: c });
   }
-  for (const g of aGroups) {
-    const nodes = groupJoin.get(g.id);
-    if (nodes !== undefined) inGroup(nodes, g.id);
+  // A group takes its new members after those leaving it for another group have joined theirs, so that no one stands
+  // among its members on the way.
+  {
+    const current = (id: string) =>
+      isGroup(id) ? (keptGroups.has(id) ? bGroups.get(id)?.in : undefined) : groupNow(id);
+    const pending = aGroups.map((g) => g.id).filter((g) => groupJoin.has(g));
+    while (pending.length > 0) {
+      const ready =
+        pending.find(
+          (t) =>
+            !pending.some((u) => u !== t && (groupJoin.get(u) ?? []).some((x) => current(x) === t)),
+        ) ?? (pending[0] as string);
+      pending.splice(pending.indexOf(ready), 1);
+      inGroup(groupJoin.get(ready) as string[], ready);
+    }
   }
   for (const x of aLanes) {
     const members = laneJoin.get(x.id);
     if (members !== undefined) inLane(members, x.id);
   }
 
-  // 9. Edges that come, and the facts of the edges that stay. The weights come last.
+  // Alignments and the first nodes to stand out, once memberships have put every layer in its order: a lane or a
+  // column orders a layer on every write, so an alignment set earlier may not hold yet.
+  ops.push(...ons);
+  // Where a layer's or a lane's label sits along its head, and how labels line up, before the edges come.
+  for (const x of [...a.layers, ...(a.lanes ?? [])]) {
+    const was = [...b.layers, ...(b.lanes ?? [])].find((y) => y.id === x.id)?.labelAt;
+    if (was !== x.labelAt) ops.push({ op: "label.set", ids: [x.id], at: str(x.labelAt) });
+  }
+  const aligns = <T extends { id: string; labelAlign?: LabelAlign }>(was: T[], now: T[]) => {
+    for (const x of now) {
+      if (was.find((y) => y.id === x.id)?.labelAlign === x.labelAlign) continue;
+      ops.push({ op: "label.set", ids: [x.id], align: x.labelAlign ?? "center" });
+    }
+  };
+  aligns(everyNode(b), everyNode(a));
+  aligns(b.lanes ?? [], a.lanes ?? []);
+
+  // 9. Edges that come, each made as it ends up, and the facts of the edges that stay. Their weights come last.
   const weightOff: string[] = [];
   const weighted = new Map<string | number, string[]>();
   const set = (id: string, flags: Record<string, string>): Op => ({
@@ -686,17 +863,33 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
     ids: [id],
     ...flags,
   });
+  const made = new Set([...keptEdges]);
+  const trunks: Op[] = [];
+  const texts: Op[] = [];
   for (const e of a.edges) {
     const was = keptEdges.has(e.id) ? bEdges.get(e.id) : undefined;
+    if (was === undefined) {
+      const trunkMade = e.with === undefined || made.has(e.with);
+      ops.push(edgeAdd(e, trunkMade));
+      if (!trunkMade) trunks.push(set(e.id, { with: e.with as string }));
+      if (e.label !== undefined || e.step !== undefined) {
+        texts.push(
+          set(e.id, {
+            ...(e.label === undefined ? {} : { label: e.label }),
+            ...(e.step === undefined ? {} : { number: String(e.step) }),
+          }),
+        );
+        if (e.seat !== undefined) texts.push({ op: "label.set", ids: [e.id], seat: e.seat });
+        if (e.labelStyle !== undefined && e.labelStyle.length > 0)
+          texts.push({ op: "label.set", ids: [e.id], style: e.labelStyle.join(",") });
+      }
+      made.add(e.id);
+      continue;
+    }
     if (weightLook(e) !== weightLook(was)) {
       if (e.weight !== undefined && e.weight !== "thin") {
         weighted.set(e.weight, [...(weighted.get(e.weight) ?? []), e.id]);
       } else weightOff.push(e.id);
-    }
-    if (was === undefined) {
-      ops.push(edgeAdd(e));
-      if (e.step !== undefined) ops.push(set(e.id, { number: String(e.step) }));
-      continue;
     }
     if (e.from !== was.from || e.to !== was.to) {
       ops.push(
@@ -709,7 +902,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
     if (e.label !== was.label) ops.push(set(e.id, { label: str(e.label) }));
     // Both ends off before a kind turns into a link, and on only after it leaves one.
     if (e.both !== true && was.both === true) ops.push(set(e.id, { both: "off" }));
-    if (e.kind !== was.kind) ops.push(set(e.id, { type: e.kind }));
+    if (e.kind !== was.kind || e.type !== was.type) ops.push(set(e.id, { type: e.type ?? e.kind }));
     if (e.both === true && was.both !== true) ops.push(set(e.id, { both: "on" }));
     if (e.out !== was.out || e.in !== was.in) {
       // A side taken away resets both, and what stays is stated again.
@@ -739,10 +932,13 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
     if (e.pass !== was.pass) ops.push(set(e.id, { pass: onOff(e.pass) }));
     if (e.step !== was.step) ops.push(set(e.id, { number: str(e.step) }));
   }
+  ops.push(...trunks);
+  ops.push(...texts);
   if (weightOff.length > 0) ops.push({ op: "edge.set", ids: weightOff, weight: RESET });
   for (const [weight, edges] of weighted) {
     ops.push({ op: "edge.set", ids: edges, weight: String(weight) });
   }
+  aligns(b.edges, a.edges);
   for (const w of a.walls ?? []) {
     if (keptWalls.has(w.id)) continue;
     ops.push({
@@ -754,6 +950,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
       ...(w.label === undefined ? {} : { label: w.label }),
     });
   }
+  aligns(b.walls ?? [], a.walls ?? []);
   for (const x of a.notes ?? []) {
     if (keptNotes.has(x.on)) continue;
     ops.push({
@@ -771,33 +968,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
       ops.push({ op: "note.set", ids: [x.on], align: x.labelAlign ?? "left" });
     }
   }
-  // 10. Who marks which style, then the styles that went.
-  const same = (x?: string[], y?: string[]) => JSON.stringify(x ?? []) === JSON.stringify(y ?? []);
-  type Noun = "node" | "edge" | "group" | "lane" | "layer" | "column";
-  const said = (noun: Noun, id: string, flags: Record<string, string>) =>
-    ({ op: `${noun}.set`, ids: [id], ...flags }) as Op;
-  const marks = <T extends { id: string; style?: string[] }>(
-    noun: Noun,
-    was: readonly T[],
-    now: readonly T[],
-  ) => {
-    for (const x of now) {
-      const old = was.find((y) => y.id === x.id);
-      if (!same(old?.style, x.style)) ops.push(said(noun, x.id, { style: joined(x.style) }));
-    }
-  };
-  for (const e of a.edges) {
-    const was = b.edges.find((y) => y.id === e.id)?.labelStyle;
-    if (!same(was, e.labelStyle))
-      ops.push({ op: "label.set", ids: [e.id], style: joined(e.labelStyle) });
-  }
-  marks("node", everyNode(b), everyNode(a));
-  marks("edge", b.edges, a.edges);
-  marks("group", b.groups ?? [], a.groups ?? []);
-  marks("lane", b.lanes ?? [], a.lanes ?? []);
-  marks("layer", b.layers, a.layers);
-  marks("column", b.columns ?? [], a.columns ?? []);
-  if (!same(b.style, a.style)) ops.push({ op: "diagram.set", style: joined(a.style) });
+  // 10. Who follows whose look, then the types and styles that went.
   const follows = <T extends { id: string; like?: string }>(
     noun: Noun,
     was: readonly T[],
@@ -815,33 +986,6 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
   follows("edge", b.edges, a.edges);
   follows("group", b.groups ?? [], a.groups ?? []);
   follows("lane", b.lanes ?? [], a.lanes ?? []);
-  const types = <T extends { id: string; type?: string }>(
-    noun: Noun,
-    was: readonly T[],
-    now: readonly T[],
-  ) => {
-    for (const x of now) {
-      const old = was.find((y) => y.id === x.id);
-      if (old?.type !== x.type) ops.push(said(noun, x.id, { type: str(x.type) }));
-    }
-  };
-  // Where a layer's or a lane's label sits along its head.
-  for (const x of [...a.layers, ...(a.lanes ?? [])]) {
-    const was = [...b.layers, ...(b.lanes ?? [])].find((y) => y.id === x.id)?.labelAt;
-    if (was !== x.labelAt) ops.push({ op: "label.set", ids: [x.id], at: str(x.labelAt) });
-  }
-  const aligns = <T extends { id: string; labelAlign?: LabelAlign }>(was: T[], now: T[]) => {
-    for (const x of now) {
-      if (was.find((y) => y.id === x.id)?.labelAlign === x.labelAlign) continue;
-      ops.push({ op: "label.set", ids: [x.id], align: x.labelAlign ?? "center" });
-    }
-  };
-  aligns(everyNode(b), everyNode(a));
-  aligns(b.edges, a.edges);
-  aligns(b.lanes ?? [], a.lanes ?? []);
-  aligns(b.walls ?? [], a.walls ?? []);
-  types("node", everyNode(b), everyNode(a));
-  types("edge", b.edges, a.edges);
   const keptTypes = new Set((a.types ?? []).map((x) => x.id));
   for (const x of b.types ?? [])
     if (!keptTypes.has(x.id)) ops.push({ op: "type.remove", ids: [x.id] });
