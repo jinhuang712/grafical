@@ -33,8 +33,9 @@ grafical has not been released; the first release will be 0.1.0, and it holds wh
 
 ### What the agent reads back
 
-- Every reply is records a script can read, and a refused write says what happened and which commands can change it.
-- Every write prints every warning, such as crossings and crowded labels.
+- Every answer starts with one keyword such as `WRITTEN` or `REFUSED`, and its records follow in sections in tags.
+- A refused write says what happened and which commands can change it.
+- A write says what it made, changed and removed, and the warnings it brought or cleared, such as crossings and crowded labels.
 - `show` prints the diagram as facts, `diff` prints a change as command lines a shell replays, and `check --all` reports defects and counts.
 
 ### Output

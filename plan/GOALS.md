@@ -32,7 +32,7 @@ Goals
 │   └── ✅ C7: Beats the strongest model alone — Haiku with grafical against Opus at xhigh effort
 ├── Thresholds
 │   ├── ❌ T1: Operation errors — at most 5% of operations refused
-│   └── ✅ T2: Speed — 50 ms an operation, 400 ms a command
+│   └── ❌ T2: Speed — 50 ms an operation, 400 ms a command
 └── Constraints
     ├── ✅ R1: Stability — no fact changes that no operation named
     ├── ✅ R2: Mechanical defects — no overflow, overlap, edge through a node or label collision
@@ -476,7 +476,7 @@ At most 50 ms in process to apply, lay out and check one operation at 50 nodes, 
 
 **How:** `pnpm bench speed`, on random diagrams of about 50 nodes.
 
-**Status:** ✅ met on 2026-11-05. One operation took a median of 10.2 ms and at most 32.8 ms. Commands took 207 to 219 ms, and a render 420 ms.
+**Status:** ❌ not met on 2026-11-10. One operation took a median of 19.8 ms and at most 87.3 ms, since a write lays out the diagram as it was before to tell new warnings from old. A command took 206 to 211 ms, and a render 394 ms.
 
 ### Constraints
 

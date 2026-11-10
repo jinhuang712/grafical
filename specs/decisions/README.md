@@ -47,7 +47,6 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [045. A layer with a look is drawn](045-a-layer-with-a-look-is-drawn.md) (2026-10-18)
 - [046. A layer's label is optional](046-a-layer-s-label-is-optional.md) (2026-10-18)
 - [047. Refusals say what happened and which commands can change it](047-refusals-say-what-happened-and-which-commands-can-change-it.md) (2026-10-18)
-- [048. Every write prints every warning](048-every-write-prints-every-warning.md) (2026-10-18)
 - [049. An optional type sets the diagram's space](049-an-optional-type-sets-the-diagram-s-space.md) (2026-10-19)
 - [050. An edge from every node of a group is a warning](050-an-edge-from-every-node-of-a-group-is-a-warning.md) (2026-10-19)
 - [052. A choice is a small diamond](052-a-choice-is-a-small-diamond.md) (2026-10-30)
@@ -101,3 +100,4 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [105. One command is one write, and running it twice changes nothing](105-one-command-is-one-write-and-running-it-twice-changes-nothing.md) (2026-11-10)
 - [106. Styles set spacing as CSS does, and a later style wins](106-styles-set-spacing-as-css-does-and-a-later-style-wins.md) (2026-11-10)
 - [107. Every noun is changed by `--set`, `--move` and `--remove`](107-every-noun-is-changed-by-set-move-and-remove.md) (2026-11-10)
+- [108. An answer says what happened, and a write reports only what it changed](108-an-answer-says-what-happened-and-a-write-reports-only-what-it-changed.md) (2026-11-10)

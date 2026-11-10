@@ -42,12 +42,12 @@ Every change to a diagram is one named operation, run as a command. The diagram 
   - `--set` changes only the attributes it names, and run twice it changes nothing.
   - One flag sets one attribute, and `-` gives it back its default.
 - One command is one write, and a shell chains many commands in one call.
-- Every write reports the IDs it changed, then one block for each problem.
+- Every write answers `WRITTEN` · `UNCHANGED` · `REFUSED` and names each object it made, changed or removed, then one block for each problem.
   - A block says what the write is refused for, or what the picture draws poorly ([F3.4: Refusals](#f34-refusals) and [F5.3: Warnings](F5-checking.md#f53-warnings)).
   - A refused write changes nothing.
 - Every command takes `--json`, which prints the same report as JSON.
 - The parser refuses an unknown option, a missing argument and an unknown command.
-  - Its refusals print `failed changed=-` and a block on standard error, such as `error: unknown-option` with `found: --bogus`.
+  - Its refusals answer `REFUSED` on standard error with a block, such as `ERROR unknown-option` with `found: --bogus`.
   - With `--json` they print the same object as any refusal on standard output.
 
 - **Stance:** [What does a change do?](../PHILOSOPHY.md#what-does-a-change-do)
@@ -76,7 +76,8 @@ See what a command would do before making it.
 Every command that writes takes `--try`. It runs the command without writing, and prints the drawing's counts before and after it and a `delta` record of the change in each. The agent decides what to try, and grafical measures.
 
 - A command that the write would refuse is refused the same way.
-- With `--json` it prints `{ok, changed, before, after, delta}`.
+- It answers `TRIED` with the `<changes>` the write would make.
+- With `--json` it gives `{outcome, changes, before, after, delta}`.
 
 - **Design:**
   - [3. The engine never chooses for the agent](../DESIGNS.md#3-the-engine-never-chooses-for-the-agent)
@@ -114,29 +115,30 @@ The caller names every layer, group, lane, column, wall, node and edge, and a na
 A wrong operation is refused at once, and nothing is written. Each problem is a block: what happened, what caused it, the facts, and the commands that can change it, by name ([047. Refusals say what happened and which commands can change it](../specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md)).
 
 ```text
-failed changed=-
-
-error: unknown-type
-description: No type has the name, or it is a type of another sort of object.
-source: grafical -f arch.grafical node --set db --layer storage --label DB --type database
-detail:
-  field: type
-  found: database
-  likely: store
-  near: -
-  allowed: service, store, queue, external, actor, state, terminal, decision, initial, final, choice
-next: type --set
+REFUSED
+<problems>
+  ERROR unknown-type
+    description: No type has the name, or it is a type of another sort of object.
+    source: grafical -f arch.grafical node --set db --layer storage --label DB --type database
+    detail:
+      field: type
+      found: database
+      likely: store
+      near: -
+      allowed: service, store, queue, external, actor, state, terminal, decision, initial, final, choice
+    next: type --set
+</problems>
 ```
 
 - The kind is one of three:
-  - `error`: the operation could not be read or applied.
-  - `defect`: the picture would draw wrong.
-  - `warning`: the picture is written but drawn poorly.
+  - `ERROR`: the operation could not be read or applied.
+  - `DEFECT`: the picture would draw wrong.
+  - `WARNING`: the picture is written but drawn poorly.
 - The description is one fixed sentence per code, which says what happened and never what to do.
 - The source is one of two:
   - The command line as typed.
   - `already in the file`, for a problem the file had before the command.
-- A warning has no source.
+- A warning's source is the command that brought it, or `already in the file` in `check` and `render`.
 - The detail gives the facts, one per line:
   - `near`: the closest IDs.
   - `likely`: the value it most likely meant.

@@ -52,10 +52,12 @@ The agent's view of a diagram, in place of reading the file.
 
 ## F5.2: Counts
 
-After `check` and `render`, grafical prints the drawing's counts as one record:
+After `check` and `render`, grafical prints the drawing's counts as one record in a `<counts>` section:
 
 ```text
-counts nodes=3 edges=2 crossings=0 bends=1 bent=0 length=224 width=368 height=280 fullest=data:2 busiest=api:2 longest=api-cache:176 passing=0 across=0 tight=0 crowded=0
+<counts>
+  nodes=3 edges=2 crossings=0 bends=1 bent=0 length=224 width=368 height=280 fullest=data:2 busiest=api:2 longest=api-cache:176 passing=0 across=0 tight=0 crowded=0
+</counts>
 ```
 
 They are facts, with no threshold and no advice: what they mean is the agent's to judge.
@@ -82,30 +84,38 @@ Five counts say how the picture is drawn, and each place they count is also a wa
 
 ## F5.3: Warnings
 
-Every write prints a warning block for each thing the picture draws poorly, and never refuses for one.
+A write prints a warning block for each thing the picture now draws poorly that it did not before, and never refuses for one.
 
 - `check` and `render` print them too.
 - The warnings come before the counts.
 - All of them print every time, since every change lays the whole diagram out again.
 
-A warning has no source: the outcome line names what the write changed, and a warning names the ids it is about ([048. Every write prints every warning](../specs/decisions/048-every-write-prints-every-warning.md)):
+A warning's source is the command that brought it, and `check` prints every warning with `already in the file` as its source ([108. An answer says what happened, and a write reports only what it changed](../specs/decisions/108-an-answer-says-what-happened-and-a-write-reports-only-what-it-changed.md)):
 
 ```text
-ok changed=sync-geo
-
-warning: bent-edge
-description: An edge bends more than twice, mostly because it skips layers.
-detail:
-  edge: sync-geo
-  bends: 3
-  skip: 1
-next: layer --move, node --move
+WRITTEN
+<changes>
+  CHANGED node=geo fields=place
+</changes>
+<warnings>
+  new=1 cleared=0 total=1
+</warnings>
+<problems>
+  WARNING bent-edge
+    description: An edge bends more than twice, mostly because it skips layers.
+    source: grafical -f arch.grafical node --move geo --layer bottom --first
+    detail:
+      edge: sync-geo
+      bends: 3
+      skip: 1
+    next: layer --move, node --move
+</problems>
 ```
 
 - **Design:** [6. Every write is checked, and each defect has an owner](../DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)
 - **How it works:** [The checker](../specs/checks.md)
 - **Why:**
-  - [048. Every write prints every warning](../specs/decisions/048-every-write-prints-every-warning.md)
+  - [108. An answer says what happened, and a write reports only what it changed](../specs/decisions/108-an-answer-says-what-happened-and-a-write-reports-only-what-it-changed.md)
   - [050. An edge from every node of a group is a warning](../specs/decisions/050-an-edge-from-every-node-of-a-group-is-a-warning.md)
 
 **Stories:**

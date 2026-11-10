@@ -6,7 +6,7 @@ The checker looks at a laid-out picture and says what is wrong with it, without 
 laid-out picture
   ├── defects ──┬── owned by the agent ──> the write is refused
   │             └── owned by the engine ──> written, shown only by check --all
-  ├── warnings ──> printed after every write, check and render, never refused
+  ├── warnings ──> a write prints those it brings, check and render print all, never refused
   └── counts ────> the counts record, and the gutter records of show --drawn
 ```
 
@@ -67,7 +67,7 @@ No refusal writes the change for the agent. A block names the commands that can 
 
 ## Warnings
 
-A warning names something the picture draws poorly. Every write prints every warning the diagram has, not only those the command caused, and so do `check` and `render`, since every write lays the whole diagram out again. A warning never refuses anything. It has no source, because the outcome line already names what the write changed. Each prints as its own block, in this order:
+A warning names something the picture draws poorly, and it never refuses anything. A write lays out the diagram as it was before and as it is after, and prints only the warnings it brought, with the command as their source. It counts the warnings it cleared and names each one. `check` and `render` print every warning, with `already in the file` as the source. Each prints as its own block, in this order:
 
 | Code | `next` |
 |---|---|

@@ -21,7 +21,7 @@ Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in pr
   - The nodes in a layer and the edges passing a layer.
 - **The help is documentation, not output about a diagram:** its principles and examples stay.
 - **The form is records**, added on 2026-10-13 after the owner turned down phrases such as "most lines at a box 10 (sync)".
-  - Each record is one line: a word that names it, then `key=value` fields in the logfmt style.
+  - Each record is one line of `key=value` fields in the logfmt style, inside a section of the answer ("An answer says what happened, and a write reports only what it changed").
   - The fields are the JSON's, under the same names.
 - **How long the edges are**, added the same day.
   - The owner had found a node with one edge put in the top layer while its partner sat four layers down.

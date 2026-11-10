@@ -8,7 +8,7 @@ Decided by the owner on 2026-10-19, looking at a picture an agent drew of a codi
 
 ## The choice
 
-- **`warning: edge-per-member`** is printed after `lonely-node` and names a group each of whose nodes has an edge alike to one end outside it, or from it.
+- **`WARNING edge-per-member`** is printed after `lonely-node` and names a group each of whose nodes has an edge alike to one end outside it, or from it.
 - **A fact, not a change.** Whether the parts' edges say something that one edge to the group would not is the agent's to judge ("Curation stays with the agent").
   - Edges that differ in label are not counted, so that the warning names only edges that one edge could replace with nothing lost.
 - **Measured** on the 329 saved drafts: 8 drafts get one block each.

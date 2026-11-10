@@ -41,11 +41,11 @@ Each `--set` below lists its flags, and those a new object needs are marked as r
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical diagram --set --title "Order flow"` prints `ok` and writes the file.
+**Example:** `grafical -f arch.grafical diagram --set --title "Order flow"` prints `WRITTEN` and `MADE diagram`.
 
 ### layer
 
@@ -65,11 +65,11 @@ Each `--set` below lists its flags, and those a new object needs are marked as r
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical layer --set app,data` prints `ok changed=app,data`.
+**Example:** `grafical -f arch.grafical layer --set app,data` prints `WRITTEN` with `MADE layer=app` and `MADE layer=data`.
 
 ### node
 
@@ -99,11 +99,11 @@ Each `--set` below lists its flags, and those a new object needs are marked as r
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical node --set api --label "Order API" --layer app` prints `ok changed=api`.
+**Example:** `grafical -f arch.grafical node --set api --label "Order API" --layer app` prints `WRITTEN` and `MADE node=api`.
 
 ### edge
 
@@ -131,11 +131,11 @@ Each `--set` below lists its flags, and those a new object needs are marked as r
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical edge --set api-db --from api --to db --label writes` prints `ok changed=api-db`.
+**Example:** `grafical -f arch.grafical edge --set api-db --from api --to db --label writes` prints `WRITTEN` and `MADE edge=api-db`.
 
 ### group
 
@@ -157,11 +157,11 @@ A node joins a group with `node --set --group`.
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical group --set pay --label Payments` prints `ok changed=pay`.
+**Example:** `grafical -f arch.grafical group --set pay --label Payments` prints `WRITTEN` and `MADE group=pay`.
 
 ### lane
 
@@ -179,11 +179,11 @@ A layer or a node lies in a lane with `layer --set --lane` or `node --set --lane
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical lane --set team --label Team` prints `ok changed=team`.
+**Example:** `grafical -f arch.grafical lane --set team --label Team` prints `WRITTEN` and `MADE lane=team`.
 
 ### column
 
@@ -203,11 +203,11 @@ A node follows a column with `node --set --column`.
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical column --set left` prints `ok changed=left`.
+**Example:** `grafical -f arch.grafical column --set left` prints `WRITTEN` and `MADE column=left`.
 
 ### wall
 
@@ -223,11 +223,11 @@ A node follows a column with `node --set --column`.
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical wall --set w --between web --and db` prints `ok changed=w`.
+**Example:** `grafical -f arch.grafical wall --set w --between web --and db` prints `WRITTEN` and `MADE wall=w`.
 
 ### note
 
@@ -245,11 +245,11 @@ A note is named by the node, edge or group it is about.
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical note --set api --text "Retries twice"` prints `ok changed=api`.
+**Example:** `grafical -f arch.grafical note --set api --text "Retries twice"` prints `WRITTEN` and `MADE note=api`.
 
 ### label
 
@@ -268,11 +268,11 @@ A label is named by its owner, and its text is the owner's `--label`.
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical label --set api --align left` prints `ok changed=api`.
+**Example:** `grafical -f arch.grafical label --set api --align left` prints `WRITTEN` and `CHANGED label=api fields=align`.
 
 ### mark
 
@@ -293,11 +293,11 @@ A mark is named by its node and slot, such as `api:top-left`.
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical mark --set api:top-left --text 🔥` prints `ok changed=api`.
+**Example:** `grafical -f arch.grafical mark --set api:top-left --text 🔥` prints `WRITTEN` and `MADE mark=api:top-left`.
 
 ### legend
 
@@ -312,11 +312,11 @@ An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`,
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical legend --set style:dashed --text Async` prints `ok changed=legend`.
+**Example:** `grafical -f arch.grafical legend --set style:dashed --text Async` prints `WRITTEN` and `MADE legend=style:dashed`.
 
 ### type
 
@@ -332,11 +332,11 @@ An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`,
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical type --set db --base store --fill "#eeeeff"` prints `ok changed=db`.
+**Example:** `grafical -f arch.grafical type --set db --base store --fill "#eeeeff"` prints `WRITTEN` and `MADE type=db`.
 
 ### style
 
@@ -354,11 +354,11 @@ An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`,
 
 **Called by:** both
 
-**Prints:** the outcome and one block per problem on stdout.
+**Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical style --set roomy --margin-left 16 --margin-right 16` prints `ok changed=roomy`.
+**Example:** `grafical -f arch.grafical style --set roomy --margin-left 16 --margin-right 16` prints `WRITTEN` and `MADE style=roomy`.
 
 ### show
 
@@ -370,7 +370,7 @@ An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`,
 
 **Called by:** both
 
-**Prints:** the diagram in the words of the operations on stdout, or records with `--drawn`.
+**Prints:** `OK` and a `<diagram>` section in the words of the operations on stdout, an `<object>` section for one ID, or a `<drawing>` section of records with `--drawn`.
 
 **Fails:** a usage error exits 2, and a file that cannot be read exits 1.
 
@@ -386,11 +386,11 @@ An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`,
 
 **Called by:** both
 
-**Prints:** the outcome, one block per problem and the counts on stdout.
+**Prints:** `OK`, or `REFUSED` when it finds an error or a defect, then `<counts>` and every problem in `<problems>` on stdout.
 
 **Fails:** a file every write would refuse exits 1, and an engine-owned defect exits 1 under `--all`.
 
-**Example:** `grafical -f arch.grafical check` prints `ok` and the counts.
+**Example:** `grafical -f arch.grafical check` prints `OK` and a `<counts>` section.
 
 ### render
 
@@ -404,11 +404,11 @@ An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`,
 
 **Called by:** both
 
-**Prints:** `ok`, one `wrote file=<f>` record per file, the warnings and the counts on stdout.
+**Prints:** `OK`, then `<files>` with one path per file, `<counts>` and every warning in `<problems>` on stdout.
 
-**Fails:** a usage error exits 2, and a file that cannot be read exits 1.
+**Fails:** a usage error exits 2, and a file that cannot be read or that holds a defect the agent owns is `REFUSED`, exits 1 and writes no file.
 
-**Example:** `grafical -f arch.grafical render --png arch.png` prints `wrote file=arch.png`.
+**Example:** `grafical -f arch.grafical render --png arch.png` prints `OK` and `arch.png` in its `<files>` section.
 
 ### diff
 
@@ -437,7 +437,7 @@ The revision is `HEAD` by default.
 
 **Called by:** a person
 
-**Prints:** the address on stdout, and it runs until Ctrl-C.
+**Prints:** `OK` and an `<address>` section on stdout, and it runs until Ctrl-C.
 
 **Fails:** a usage error exits 2.
 
@@ -451,7 +451,7 @@ The revision is `HEAD` by default.
 
 **Called by:** both
 
-**Prints:** one `stylesheet name=<name> about=<text>` record per built-in stylesheet on stdout, those whose name or look holds the word when one is given, or `stylesheet -` when none does.
+**Prints:** `OK` and a `<stylesheets>` section on stdout, with one `stylesheet name=<name> about=<text>` record per built-in stylesheet, those whose name or look holds the word when one is given, or `stylesheet -` when none does.
 
 **Fails:** a usage error exits 2.
 
@@ -475,7 +475,7 @@ The revision is `HEAD` by default.
 
 - `-f` · `--file <file>`: the diagram file, ahead of the command, and it is required.
 - `--json`: print the answer as one JSON object (off by default).
-- `--try`: print `ok changed=<ids> written=no` and the `before` · `after` · `delta` counts without writing (off by default).
+- `--try`: answer `TRIED` with the `<changes>` it would make and the `<before>` · `<after>` · `<delta>` counts, and write nothing (off by default).
   - Every command that writes takes it.
 - `-h` · `--help`: print the page of a command (off by default).
 
@@ -484,61 +484,88 @@ The revision is `HEAD` by default.
 ## Exit codes
 
 - 0: it succeeded, with warnings or without.
-- 1: a write was refused or a file could not be read.
+- 1: `REFUSED`, since a write, a check or a render was refused or a file could not be read.
 - 2: a usage error.
 
 Engine-owned defects exit 1 under `check --all` only.
 
 ## Output formats
 
-A command prints in this order:
+Every answer but the help, `guide` and `diff` is one keyword alone on its first line, then sections in this order, each in tags and left out when empty:
 
 ```text
-ok changed=<ids>          or  ok  (nothing changed)  or  failed changed=-
-<records the command adds, such as render's  wrote file=<f>>
-
-<kind>: <code>            one block per problem, a blank line before each
-description: <the code's one sentence>
-source: <what caused it>
-detail:
-  <key>: <value>
-next: <command names>
-
-counts nodes=... edges=... ...   check and render only
+WRITTEN · UNCHANGED · TRIED · REFUSED · OK
+<changes>                  MADE · CHANGED fields= · REMOVED, and by= for a consequence
+<warnings>                 new= cleared= total=, then a CLEARED line for each warning gone
+<before> <after> <delta>   --try only
+<files>                    render only
+<counts>                   check and render only
+<diagram> <object> <drawing> <stylesheets> <address>   what a command that reads prints
+<problems>                 one block per problem
 ```
 
-A usage error prints the same outcome and block on stderr, or on stdout with `--json`.
+A section's content is indented two spaces, and each level inside it two more. A write lists only the warnings it brought, while `check` and `render` list every warning. A usage error prints its answer on stderr. `diff` prints plain command lines that a shell replays.
 
-**JSON:** the same answer is `{ok, changed, problems, counts}`, with each problem as `{kind, code, description, source, detail, next}`.
+```text
+WRITTEN
+<changes>
+  REMOVED node=db
+  REMOVED edge=api-db by=node:db
+</changes>
+<warnings>
+  new=1 cleared=0 total=1
+</warnings>
+<problems>
+  WARNING lonely-node
+    description: No edge reaches a node: none of its own, and none to its group, layer or lane.
+    source: grafical -f arch.grafical node --remove db
+    detail:
+      node: api
+    next: node --remove, edge --set
+</problems>
+```
 
-- A usage error gives the same object without counts.
-- `render` adds `files`.
-- `show` gives `{ok, diagram}`.
-- `show --drawn` gives `{ok, drawing}`.
-- `diff` gives `{ok, commands}`.
-- `--try` gives `{ok, changed, before, after, delta}`.
+**Keywords:**
 
-**Records:** a record is one line: a word that names it, then `key=value` fields in the logfmt style.
+| Keyword | Means |
+|---|---|
+| `WRITTEN` | the file was written |
+| `UNCHANGED` | what the command asks already holds |
+| `TRIED` | `--try` measured the command |
+| `REFUSED` | nothing was written, and `<problems>` says why |
+| `OK` | a command that only reads succeeded |
+| `MADE` · `CHANGED` · `REMOVED` | what happened to one object |
+| `CLEARED` | a warning the write took away |
+| `ERROR` · `DEFECT` · `WARNING` | the kind of a problem |
 
-- A record with no fields is its name alone, such as `ok`.
+**JSON:** `--json` gives the same answer as one object, with a key for each section that applies: `outcome` · `changes` · `warnings` · `before` · `after` · `delta` · `files` · `counts` · `problems`, and the section a read prints.
+
+- `changes` is `[{action, sort, id, fields, by}]`.
+- `warnings` is `{new, cleared, total}`.
+- Each problem is `{kind, code, description, source, detail, next}`.
+- Keywords keep their capitals, such as `"outcome": "WRITTEN"`.
+- `diff` gives `{outcome, commands}`.
+
+**Records:** a record is one line of `key=value` fields in the logfmt style, after its keyword where it has one.
+
 - A value that holds a space, a quote or `=` is quoted as JSON.
 - A list is comma separated, and `-` stands for none.
 - A count by name is `name:n`.
 - The keys are the JSON's fields under the same names.
 
-`show --drawn` prints `counts`, then one record for each `node`, `group`, `wall`, `note`, `edge`, `gutter` and `legend` entry. An `edge` record gives `id`, `from`, `to`, `leaves`, `enters`, `bends`, `length`, `direct`, `detour`, `skip`, `crosses`, `passes`, `bundle`, and `step` when the edge has one.
+`show --drawn` prints in its `<drawing>` section `counts`, then one record for each `node`, `group`, `wall`, `note`, `edge`, `gutter` and `legend` entry. An `edge` record gives `id`, `from`, `to`, `leaves`, `enters`, `bends`, `length`, `direct`, `detour`, `skip`, `crosses`, `passes`, `bundle`, and `step` when the edge has one.
 
-**Blocks:** a problem is an `error`, which could not be read or applied, a `defect`, which would draw wrong, or a `warning`, which is drawn poorly.
+**Blocks:** a problem is an `ERROR`, which could not be read or applied, a `DEFECT`, which would draw wrong, or a `WARNING`, which is drawn poorly.
 
-- `<kind>: <code>` names the kind of problem.
+- `<KIND> <code>` names the kind of problem.
 - `description:` is the code's one fixed sentence, and it says what happened and never what to do.
-- `source:` says what caused it, and a warning has none.
+- `source:` says what caused it.
 - `detail:` holds the facts one per line, or `detail: -` when there are none.
 - `next:` names the commands that can change it in the order the help lists them, or `-`.
 
 The detail starts with `field` and `found`, or `owner` for a defect, and the other facts follow in one fixed order. An empty value or list prints `-`, and a fact that is absent is left out. A key for several things holds a list even of one: `likely`, `near`, `edges`, `ends`, `nodes`, `layers`, `groups`, `lanes`, `between`, `across`, `chain`, `clear`, `gutters`, `allowed`, `takes` and `chars`.
 
-**Source:** the source is the command line as typed, or `already in the file`.
+**Source:** the source is the command line as typed, or `already in the file`. A warning a write brought takes the command, and every warning `check` and `render` print takes `already in the file`.
 
 ## Environment
 

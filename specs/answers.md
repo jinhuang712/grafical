@@ -1,10 +1,10 @@
 # How grafical answers
 
-The reader of grafical's answers is an agent, and often a script around it. So everything grafical prints about a diagram is a record a script can read: an outcome, a block for each problem, and facts and counts. The only sentences are each code's fixed description, and the help, which is documentation. The answer says what happened and which commands can change it, and leaves the change to the agent. The command line builds every answer, from the records the other parts return. It lives in `src/cli/`.
+The reader of grafical's answers is an agent, and often a script around it. So everything grafical prints about a diagram is a record a script can read: an outcome keyword, sections of records in tags, and a block for each problem. The only sentences are each code's fixed description, and the help, which is documentation. The answer says what happened and which commands can change it, and leaves the change to the agent. The command line builds every answer, from the records the other parts return. It lives in `src/cli/`.
 
 ## What it prints
 
-Every command builds its answer from the same parts: the outcome, a block per problem, then the records the command adds. The descriptions live in one table in `src/cli/problems.ts`, and a test holds each code to one sentence of at most 140 characters. A code that is both an error and a defect has one sentence. A code with several cases has a list of commands for each, such as `label-blocked` for an edge or a wall or a note, and a test holds every name to a real command.
+Every command builds its answer from the same parts in one order: the outcome keyword, the objects a write made, changed or removed, the warnings it brought and cleared, the records the command adds, and a block per problem. The answer is built in `src/cli/answer.ts`, and `--json` is drawn from the same answer. The descriptions live in one table in `src/cli/problems.ts`, and a test holds each code to one sentence of at most 140 characters. A code that is both an error and a defect has one sentence. A code with several cases has a list of commands for each, such as `label-blocked` for an edge or a wall or a note, and a test holds every name to a real command.
 
 No block writes the change for the agent: there is no fix, and `next` names commands without ids or values. The detail carries what the agent needs to find the change itself, such as the first and last layers a group's frame covers.
 
@@ -17,11 +17,11 @@ The source takes one of two forms:
 - The command line as typed, quoted as a shell would need it.
 - `already in the file` for a problem the file had before the command.
 
-A refused write checks the file once for all its problems. A problem the file already had is `already in the file`, and any other is the command's. A file refused for another problem cannot tell, since a whole diagram's checks stop at the first that fails and a refused diagram is not laid out. Its problem is then the command's, unless a later check refused the file after the one that finds this problem passed. A write that succeeds checks nothing more.
+A refused write checks the file once for all its problems. A problem the file already had is `already in the file`, and any other is the command's. A file refused for another problem cannot tell, since a whole diagram's checks stop at the first that fails and a refused diagram is not laid out. Its problem is then the command's, unless a later check refused the file after the one that finds this problem passed. A write that succeeds lays out the diagram as it was before, to tell the warnings it brought from those the file had.
 
 ## Trying a change
 
-`--try` on a command that writes runs the path of the write but does not write the file. It prints `ok changed=... written=no`, then `before`, `after` and `delta` records of the counts. A command the write would refuse is refused the same way.
+`--try` on a command that writes runs the path of the write but does not write the file. It answers `TRIED` with the `<changes>` the write would make, then `<before>`, `<after>` and `<delta>` sections of the counts. A command the write would refuse is refused the same way.
 
 ## The help and the guides
 
@@ -38,5 +38,5 @@ The guides say how common kinds of diagram are usually drawn: architecture, C4, 
 - [043. Help for the tool, guides for best practice](decisions/043-help-for-the-tool-guides-for-best-practice.md)
 - [044. One way to a page, and a wrong command names the right one](decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
 - [047. Refusals say what happened and which commands can change it](decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md)
-- [048. Every write prints every warning](decisions/048-every-write-prints-every-warning.md)
+- [108. An answer says what happened, and a write reports only what it changed](decisions/108-an-answer-says-what-happened-and-a-write-reports-only-what-it-changed.md)
 - [105. One command is one write, and running it twice changes nothing](decisions/105-one-command-is-one-write-and-running-it-twice-changes-nothing.md)

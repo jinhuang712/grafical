@@ -112,6 +112,8 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 
 ## What grafical answers
 
+- **Answer:** what a command prints: its outcome, then sections of records in tags.
+- **Outcome:** the keyword an answer starts with: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED` · `OK`.
 - **Refusal:** an operation that grafical will not apply.
   - Nothing is written, and the answer says what happened and which commands can change it.
 - **Defect:** a problem that would draw wrong.

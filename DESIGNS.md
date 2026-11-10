@@ -102,14 +102,14 @@ Edges run orthogonally through the gaps between layers and nodes. The engine pic
 
 ## 6. Every write is checked, and each defect has an owner
 
-A defect the agent can fix fails the write and changes nothing. A defect only the engine can avoid is an engine bug: the write goes ahead, and only `grafical check --all` reports it. What the picture draws poorly is a warning, printed on every write. Cost: an engine bug can reach a picture without the agent knowing, so a fuzz test must keep looking for them.
+A defect the agent can fix fails the write and changes nothing. A defect only the engine can avoid is an engine bug: the write goes ahead, and only `grafical check --all` reports it. What the picture draws poorly is a warning, which a write reports when it brings or clears one. Cost: an engine bug can reach a picture without the agent knowing, so a fuzz test must keep looking for them.
 
 **Ask:** Who can fix this defect, the agent or the engine, and does the write say so?
 
 - **Stance:** [Who owns what?](PHILOSOPHY.md#who-owns-what)
 - **Decisions:**
   - [008. Defects owned by who can fix them](specs/decisions/008-defects-owned-by-who-can-fix-them.md)
-  - [048. Every write prints every warning](specs/decisions/048-every-write-prints-every-warning.md)
+  - [108. An answer says what happened, and a write reports only what it changed](specs/decisions/108-an-answer-says-what-happened-and-a-write-reports-only-what-it-changed.md)
   - [036. Composition counts](specs/decisions/036-composition-counts.md)
 - **How it works:** [The checker](specs/checks.md)
 

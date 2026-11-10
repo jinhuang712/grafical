@@ -10,9 +10,9 @@ Decided by the owner on 2026-10-18, after round p1g (`bench/results/p1g-stage1.m
 
 grafical reports what happened and never teaches. A record gives the facts and the names of the commands that can change them, never a command line with ids or values filled in.
 
-- **One block per problem**, after the outcome and before the counts.
+- **One block per problem**, in the answer's `<problems>` section ("An answer says what happened, and a write reports only what it changed").
   - It holds its kind and code and its description and its source and its detail and its next.
-- **Three kinds.** An `error` could not be read or applied; a `defect` would draw wrong ("Defects owned by who can fix them"); a `warning` is written and says what draws poorly ("Every write prints every warning").
+- **Three kinds.** An `ERROR` could not be read or applied; a `DEFECT` would draw wrong ("Defects owned by who can fix them"); a `WARNING` is written and says what draws poorly.
 - **A description per code.** One fixed sentence for each code says what happened and not what to do, and it is never made for the case at hand.
 - **The source** says what caused the problem: the command, or `already in the file`, never a guess.
 - **The detail** gives one fact per line, under the names the facts had.

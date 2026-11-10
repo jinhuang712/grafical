@@ -35,7 +35,7 @@ Roadmap
 │   │   ├── ✅ Records
 │   │   ├── ✅ Every order stated
 │   │   ├── ✅ Blocks that name the way out
-│   │   ├── ✅ Every warning on every write
+│   │   ├── ✅ Warnings on every write
 │   │   ├── ✅ One entry page of help
 │   │   └── ✅ A wrong command names the right one
 │   ├── ✅ CP1.5: Speed — 50 ms an operation
@@ -78,6 +78,7 @@ Roadmap
 │   │   ├── ⬜ A `diff` that replays
 │   │   ├── ⬜ A typo that makes an object
 │   │   ├── ✅ `--set` on every noun
+│   │   ├── ✅ Answers that say what happened
 │   │   └── ✅ Styles set spacing
 │   ├── 🟨 CP2.5: Nodes — a node takes a multiple of its size and its marks stay clear of edges
 │   │   ├── ✅ Marks
@@ -329,7 +330,7 @@ Every reply is records or a block that names the commands that can change it.
 - ✅ Records: Records replace prose in every reply.
 - ✅ Every order stated: The agent states every order and the engine picks no slot.
 - ✅ Blocks that name the way out: Each problem's block says what happened and what caused it and which commands can change it.
-- ✅ Every warning on every write: Every write prints every warning.
+- ✅ Warnings on every write: A write reports the warnings it brings and clears.
 - ✅ One entry page of help: One page opens the help.
 - ✅ A wrong command names the right one: A wrong command prints the right one.
 
@@ -514,6 +515,9 @@ One command is one write, every noun makes or changes an object with `--set`, an
   - `layer --set typo --look box` makes a layer, and `node --set gatway --lane x` is refused only for its missing label with no `likely`.
   - Next: decide whether a new ID near an existing one is named as `likely`.
 - ✅ `--set` on every noun: Every noun takes `--set` · `--move` · `--remove`, and the model's operations are the commands (2026-11-10).
+- ✅ Answers that say what happened: Every answer starts with a keyword and gives its records in tagged sections, and a write names what it made, changed and removed and only the warnings it brought or cleared (2026-11-10).
+  - A write now lays out the diagram as it was before, and one operation at 50 nodes takes up to 87.3 ms against the 50 ms of T2: Speed.
+  - Related: decision 108 "An answer says what happened, and a write reports only what it changed".
 - ✅ Styles set spacing: a margin on each side · `row-gap` · `column-gap` · `--style` in four forms · `--stylesheet`, and density and `gap` went (2026-11-10).
   - The default stylesheet and `compact` draw every fixture and fuzz seed as before, and `airy` draws 243 of 2000 seeds shorter.
 
