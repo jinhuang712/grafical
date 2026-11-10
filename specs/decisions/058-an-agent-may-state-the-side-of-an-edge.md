@@ -22,6 +22,6 @@ An agent may state the side an edge leaves by, the side it enters by, or both. A
 
 ## Consequences
 
-Built on 2026-11-06 as `edge --side`, refused as `side-blocked`. An edge that leaves away from the other end, such as out of the top of an edge going down, goes round its own node, built the same day. No saved draft or fixture changed, since none states a side.
+Built on 2026-11-06 and stated today with `edge --set --out` or `--in`, refused as `side-blocked`. An edge that leaves away from the other end, such as out of the top of an edge going down, goes round its own node, built the same day. No saved draft or fixture changed, since none states a side.
 
 A stated side can force more bends or crossings, and those are reported as usual. The router gains edges it may not turn to another side, and how much that costs is not measured.

@@ -39,10 +39,13 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 
 - **Type:** says what a node or an edge is, and decides how it is drawn.
   - Lost name: *kind*.
-- **Style:** a named look that an object marks.
+- **Style:** a named look and spacing that an object marks.
+  - Where two styles say the same thing, the one defined later in the file wins.
 - **Like:** one object follows the look of another of its sort.
 - **Region:** a diagram · a group · a layer · a lane · a column.
-- **Magnified:** how many times its default a size or a gap is, such as 1.5.
+- **Margin:** the room a style gives one side of an object, in pixels.
+  - On the command line: `--margin-top` · `--margin-right` · `--margin-bottom` · `--margin-left`.
+- **Magnified:** how many times its default a size is, such as 1.5.
   - Lost names: *times*, *multiple* as a flag.
 - **Knot:** the point where a bundle splits.
 - **Mark:** a small image on a node: an emoji or a short text or a file.
@@ -61,7 +64,9 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 Checked against `src/layout/` and `src/render/` on 2026-11-04.
 
 - **Gutter:** the space between two neighbouring layers, where edges run across.
+  - It is at least the diagram's `row-gap` high.
 - **Gap:** the space between two neighbouring nodes of one layer.
+  - It is at least the diagram's `column-gap` wide.
 - **Run:** one straight horizontal or vertical piece of an edge.
   - Lost names: *stretch* and *segment* and *part*.
 - **End run:** the run at either end of an edge, from its node to its first bend.
@@ -80,12 +85,13 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 
 ## Operations and files
 
-- **Operation:** a named change to a diagram, such as `node.add`.
+- **Operation:** a named change to a diagram, such as `node.set`.
   - The only way a diagram changes.
 - **Diagram file:** `<name>.grafical`.
   - It holds facts and never a coordinate.
 - **Stylesheet:** a `.grafical` file of `<type>`, `<style>` and `<weight>` blocks that sets every value of a diagram's look.
   - A built-in one is `default`, `dark` or `print`, and one of the agent's starts from a built-in one.
+  - A diagram names it with `--stylesheet`.
   - Lost name: *theme*, which the code still uses for the look a stylesheet gives.
 - **Library:** the built-in stylesheets, which `grafical library` lists and searches.
 - **Step:** a node is placed some steps from another node.

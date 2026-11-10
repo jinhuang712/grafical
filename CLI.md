@@ -4,341 +4,40 @@ Agents call grafical, and scripts read what it prints. A person calls `view` and
 
 Status: ✅ built · ⬜ planned
 
-A command is a noun and flags, and a verb is a flag that takes the ID. A call holds one verb. Every command but `library` and `guide` names its file with `-f`.
+A command is a noun and flags, and a verb is a flag that takes the IDs. A call holds one verb. Every command but `library` and `guide` names its file with `-f`.
+
+Every noun takes `--set`, and the nouns with a place or a removal take `--move` and `--remove`:
+
+- `--set <ids>` makes each object whose ID is new and changes only what the flags name on the others.
+  - The same command run twice changes nothing the second time.
+  - A new object takes its place from the same flags `--move` takes.
+  - A place given to an object that exists must already hold, or it is refused as `placed-elsewhere`.
+- `--move <ids>` places the objects in the order given.
+- `--remove <ids>` removes them.
+- `<ids>` is a comma-separated list, and every flag applies to each object.
+- `-` gives a flag's attribute back its default, and a switch takes `on` or `off`.
+- `--style <styles>` marks styles in four forms: `a,b` marks exactly these · `+a` adds one · `-a` takes one away · `-` clears them.
+
+Each `--set` below lists its flags, and those a new object needs are marked as required.
 
 ## Commands
-
-### new
-
-**Status:** ✅
-
-`grafical -f <file> new --title <text>`
-
-- `--title <text>`: the title, and it is required.
-- `--subtitle <text>`: one sentence under the title.
-- `--caption <text>`: what the picture leaves out.
-- `--density <density>`: `compact` · `normal` · `airy` (`normal` by default).
-- `--sizing <sizing>`: `auto` · `fixed` (`auto` by default).
-- `--style <style>`: a built-in stylesheet or the path of a `.grafical` stylesheet (`default` by default).
-
-**Called by:** both
-
-**Prints:** the outcome on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical new --title "Order flow"` prints `ok` and writes the file.
-
-### layer
-
-**Status:** ✅
-
-`grafical -f <file> layer --<verb> <id>`
-
-- `--add <id>` with `--label` · `--before` · `--after`: add a layer (at the bottom by default).
-- `--label <id>` with `--label`: change its label, and it is required.
-- `--look <id> [box|band]`: draw it (clears the look by default).
-- `--label-at <id> [at]`: where its label sits along its head (the engine's by default).
-- `--move <id>` with `--first` · `--last` · `--before` · `--after`: move it, and it is required.
-- `--split <id> <into>` with `--label` · `--from`: move part of it into a new layer (the second half by default).
-- `--remove <id>`: remove an empty layer.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical layer --add app --label App` prints `ok changed=app`.
-
-### node
-
-**Status:** ✅
-
-`grafical -f <file> node --<verb> <id>`
-
-- `--add <id>` with `--layer` · `--label` · `--type` · `--sublabel` · `--size` · `--first` · `--last` · `--before` · `--after` · `--align` · `--emphasis`: add a node to a layer (`service` by default).
-- `--add <id>` with `--from` · `--down` · `--up` · `--left` · `--right`: add a node by steps from another.
-- `--move <id>` with `--layer` · `--first` · `--last` · `--before` · `--after` · `--from` · `--down` · `--up` · `--left` · `--right`: move a node.
-- `--label <id>` with `--label`: change its label, and it is required.
-- `--sublabel <id>` with `--text`: set its sublabel (clears it by default).
-- `--size <id>` with `--size`: `s` · `m` · `l` (sized to its text by default).
-- `--emphasis <id>` with `--off`: make it stand out (on by default).
-- `--mark <id>` with `--slot` · `--mark` · `--bg` · `--fg` · `--border` · `--shape` · `--size`: put a mark in a slot (clears the slot by default).
-- `--align <id>` with `--to`: sit above or below a node (clears it by default).
-- `--swap <a> <b>`: trade places.
-- `--merge <id>` with `--nodes` · `--label` · `--sublabel` · `--type`: replace nodes with one.
-- `--type <id> [type]`: give it a type (its built-in type by default).
-- `--style <id> [styles...]`: mark styles (clears them by default).
-- `--like <id> [like]`: follow another's look (lets go by default).
-- `--remove <id>`: remove it and its edges.
-
-**Status of its planned flags:** ⬜ `--size` with `--width` · `--height` · `--magnified`, and ⬜ `--mark` with a `<set>:<name>` value.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical node --add api --label "Order API" --layer app` prints `ok changed=api`.
-
-### edge
-
-**Status:** ✅
-
-`grafical -f <file> edge --<verb> <id>`
-
-- `--add <from> <to>` with `--id` · `--label` · `--type` · `--both` · `--pass`: connect two ends (ID `<from>-><to>` by default).
-- `--label <id>` with `--label`: set its label (clears it by default).
-- `--label-at <id> <seat>`: `on` · `beside` (`on` by default).
-- `--side <id>` with `--out` · `--in`: the side it leaves or enters by (the engine's by default).
-- `--weight <edges...>` with `--weight`: a level or a width (`thin` by default).
-- `--both <id>` with `--off`: arrowheads at both ends (on by default).
-- `--via <id> [object]` with `--side`: what it passes (the engine's by default).
-- `--straight <id>` with `--off`: no bend (on by default).
-- `--with <id> [with]`: share a trunk (its own way by default).
-- `--bend <id>` with `--at`: where its longest inner run sits (the engine's by default).
-- `--stretch <id>` with `--magnified`: how far a detour reaches (the engine's by default).
-- `--pass <id>` with `--off`: pass the bars between its ends (on by default).
-- `--number <id>` with `--n`: a step number (clears it by default).
-- `--reverse <id>`: swap its direction.
-- `--type <id> [type]`: give it a type (its built-in type by default).
-- `--style <id> [styles...]`: mark styles (clears them by default).
-- `--like <id> [like]`: follow another's look (lets go by default).
-- `--remove <id>`: remove it.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical edge --add api db --label writes` prints `ok changed=api->db`.
-
-### plug
-
-**Status:** ✅
-
-`grafical -f <file> plug <id>`
-
-- `--from <end>`: a new start (stays by default).
-- `--to <end>`: a new end (stays by default).
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical plug api->db --to cache` prints `ok changed=api->db`.
-
-### move
-
-**Status:** ⬜
-
-`grafical -f <file> move <id...>`
-
-- `--layer <layer>`: the layer (stays by default).
-- `--first` · `--last` · `--before <id>` · `--after <id>`: the place, and it is required.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical move db --first` prints `ok changed=db`.
-
-### group
-
-**Status:** ✅
-
-`grafical -f <file> group --<verb> <id>`
-
-- `--add <id>` with `--label` · `--sublabel` · `--nodes` · `--in`: add a group.
-- `--join <group> <nodes...>`: put members in.
-- `--leave <nodes...>` with `--up`: take members out (every group by default).
-- `--label <id>` with `--label`: change its label, and it is required.
-- `--sublabel <id>` with `--text`: set its sublabel (clears it by default).
-- `--label-at <id> [at]` with `--side` · `--place`: where its label sits (the engine's by default).
-- `--order <id>` with `--before` · `--after`: place it beside a group, and it is required.
-- `--copy <id> <into>` with `--label` · `--suffix` · `--before` · `--after` · `--outside`: copy it.
-- `--style <id> [styles...]`: mark styles (clears them by default).
-- `--like <id> [like]`: follow another's look (lets go by default).
-- `--remove <id>` with `--out`: remove it and keep its members (into the group around it by default).
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical group --add pay --label Payments --nodes api` prints `ok changed=pay,api`.
-
-### lane
-
-**Status:** ✅
-
-`grafical -f <file> lane --<verb> <id>`
-
-- `--add <id>` with `--label` · `--members`: add a lane.
-- `--join <lane> <members...>`: put members in.
-- `--leave <members...>`: take members out.
-- `--label <id>` with `--label`: change its label, and it is required.
-- `--label-at <id> [at]`: where its label sits along its head (the engine's by default).
-- `--style <id> [styles...]`: mark styles (clears them by default).
-- `--like <id> [like]`: follow another's look (lets go by default).
-- `--remove <id>`: remove it and keep its members.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical lane --add team --label Team --members app` prints `ok changed=team,app`.
-
-### column
-
-**Status:** ✅
-
-`grafical -f <file> column --<verb> <id>`
-
-- `--add <id>` with `--nodes` · `--before` · `--after`: add a column (last by default).
-- `--join <column> <members...>`: put members in.
-- `--leave <members...>`: take members out.
-- `--remove <id>`: remove it and keep its nodes.
-
-**Status of its planned flags:** ⬜ `--add` with `--label`, and ⬜ `--label <id>` with `--label`.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical column --add left --nodes api,db` prints `ok changed=left,api,db`.
-
-### wall
-
-**Status:** ✅
-
-`grafical -f <file> wall --<verb> <id>`
-
-- `--add <id>` with `--between` · `--and` · `--allow` · `--label`: add a wall.
-- `--allow <id> <allow...>` with `--off`: let edges through (on by default).
-- `--label <id>` with `--label`: set the words on its divider (space alone by default).
-- `--remove <id>`: remove it.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical wall --add w --between web --and db` prints `ok changed=w`.
-
-### note
-
-**Status:** ✅
-
-`grafical -f <file> note --<verb>`
-
-- `--add` with `--on` · `--text` · `--footnote`: add a note (a card by default).
-- `--align <on> <align>`: `left` · `center` · `right` (`left` by default).
-- `--remove` with `--on`: remove a note.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical note --add --on api --text "Retries twice"` prints `ok changed=api`.
-
-### label
-
-**Status:** ✅
-
-`grafical -f <file> label --<verb> <id>`
-
-- `--style <id> [styles...]`: mark styles on an edge's label (clears them by default).
-- `--align <id> <align>`: `left` · `center` · `right` (`center` by default).
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical label --align api left` prints `ok changed=api`.
-
-### gap
-
-**Status:** ✅
-
-`grafical -f <file> gap --between <a> <b>`
-
-- `--magnified <n>`: `1.25` · `1.5` · `2` (back to the default gap by default).
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical gap --between app data --magnified 1.5` prints `ok changed=app,data`.
-
-### type
-
-**Status:** ✅
-
-`grafical -f <file> type --<verb> <id>`
-
-- `--add <id>` with `--base` · `--shape` · `--fill` · `--border` · `--border-width` · `--color`: define or change a type.
-- `--remove <id>`: remove it.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical type --add db --base store --fill #eef` prints `ok changed=db`.
-
-### style
-
-**Status:** ✅
-
-`grafical -f <file> style --<verb> <id>`
-
-- `--add <id>` with `--fill` · `--border` · `--border-width` · `--color`: name or change a look.
-- `--remove <id>`: remove it and every mark of it.
-
-**Called by:** both
-
-**Prints:** the outcome and one block per problem on stdout.
-
-**Fails:** a usage error exits 2, and a refused write exits 1.
-
-**Example:** `grafical -f arch.grafical style --add danger --border #c00` prints `ok changed=danger`.
 
 ### diagram
 
 **Status:** ✅
 
-`grafical -f <file> diagram --<verb>`
+`grafical -f <file> diagram --set`
 
-- `--title` with `--text`: change the title, and it is required.
-- `--subtitle` with `--text`: set the subtitle (clears it by default).
-- `--caption` with `--text`: set the caption (clears it by default).
-- `--label-at [at]` with `--side`: where the title sits (the engine's by default).
-- `--density <density>`: `compact` · `normal` · `airy` (`normal` by default).
-- `--sizing <mode>`: `auto` · `fixed` (`auto` by default).
-- `--style [style]`: a built-in stylesheet or the path of a `.grafical` stylesheet (`default` by default).
-- `--lines <lines>`: `square` · `round` (`square` by default).
-- `--legend [style]` with `--weight` · `--mark` · `--text`: name a style, a width or a mark (takes the entry away by default).
+- `--set` makes the file when it is missing and changes the whole diagram.
+  - `--title <text>`: the title, required for a new file.
+  - `--subtitle <text>`: one sentence under the title.
+  - `--caption <text>`: what the picture leaves out, at its foot.
+  - `--stylesheet <name>`: a built-in stylesheet or a `<name>.grafical` beside the file (`default` by default).
+  - `--style <styles>`: the styles the diagram marks, such as `compact` or `airy`.
+  - `--sizing <mode>`: `auto` · `fixed` (`auto` by default).
+  - `--lines <lines>`: `square` · `round` (`square` by default).
+  - `--title-at <at>`: where the title sits across, from 0 to 1 (the engine's by default).
+  - `--title-side <side>`: `top` · `bottom`.
 
 **Called by:** both
 
@@ -346,7 +45,320 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 **Fails:** a usage error exits 2, and a refused write exits 1.
 
-**Example:** `grafical -f arch.grafical diagram --density airy` prints `ok changed=density`.
+**Example:** `grafical -f arch.grafical diagram --set --title "Order flow"` prints `ok` and writes the file.
+
+### layer
+
+**Status:** ✅
+
+`grafical -f <file> layer --<verb> <ids>`
+
+- `--set <ids>`: make layers, or change them.
+  - `--label <text>`: its name, drawn only when the layer is drawn.
+  - `--look <look>`: `box` · `band`, drawn though no edge ends at it (not drawn by default).
+  - `--lane <lane>`: the lane it lies in, when lanes run as layers.
+  - `--style <styles>`: the styles it marks.
+  - `--first` · `--last` · `--before <layer>` · `--after <layer>`: the place of a new layer (last by default).
+- `--move <ids>` with `--first` · `--last` · `--before` · `--after`: move layers.
+- `--split <id> <into>` with `--label` · `--from`: move part of a layer into a new layer below it (the second half by default).
+- `--remove <ids>`: remove empty layers.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical layer --set app,data` prints `ok changed=app,data`.
+
+### node
+
+**Status:** ✅
+
+`grafical -f <file> node --<verb> <ids>`
+
+- `--set <ids>`: make nodes, or change them.
+  - `--label <text>`: the name, required for a new node.
+  - `--sublabel <text>`: a second, smaller line.
+  - `--type <type>`: a built-in type or one of the diagram's own (`service` by default).
+  - `--size <size>`: `s` · `m` · `l` (sized to its text by default).
+  - `--emphasis <on|off>`: make it stand out, at most two nodes.
+  - `--align <node>`: sit directly above or below that node.
+  - `--group <group>`: the group it is in.
+  - `--lane <lane>`: the lane it lies in, when lanes run as columns.
+  - `--column <column>`: the column it follows.
+  - `--style <styles>`: the styles it marks.
+  - `--like <node>`: follow another node's look.
+  - `--layer <layer>` with `--first` · `--last` · `--before <node>` · `--after <node>`: the place of a new node in a layer.
+  - `--from <node>` with `--down` · `--up` · `--left` · `--right <n>`: the place of a new node by steps from another, from 1 to 10.
+- `--move <ids>` with the same place flags: move nodes, in the order given.
+- `--merge <id>` with `--nodes` · `--label` · `--sublabel` · `--type`: replace nodes with one where the first one was.
+- `--remove <ids>`: remove nodes and their edges.
+
+**Status of its planned flags:** ⬜ `--set` with `--width` · `--height` · `--magnified`.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical node --set api --label "Order API" --layer app` prints `ok changed=api`.
+
+### edge
+
+**Status:** ✅
+
+`grafical -f <file> edge --<verb> <ids>`
+
+- `--set <ids>`: make edges, or change them.
+  - `--from <end>` · `--to <end>`: a node, a group, a layer or a lane, both required for a new edge.
+  - `--label <text>`: the words on it.
+  - `--type <type>`: a built-in type or one of the diagram's own (`call` by default).
+  - `--weight <weight>`: a level such as `thick` or a width from 0.5 to 8 (`thin` by default).
+  - `--both <on|off>`: arrowheads at both ends.
+  - `--pass <on|off>`: may pass the bars between its ends.
+  - `--out <side>` · `--in <side>`: the side it leaves or enters by (the engine's by default).
+  - `--via <object:side>`: pass a node or a group on its left or right, such as `db:left`.
+  - `--straight <on|off>`: no bend, or the write is refused.
+  - `--with <edge>`: run along that edge's trunk.
+  - `--bend-at <at>`: `0.25` · `0.5` · `0.75`, where its longest inner run sits.
+  - `--stretch <n>`: `1.25` · `1.5` · `2`, how far a detour reaches.
+  - `--number <n>`: a step number from 1 to 99.
+  - `--style <styles>`: the styles it marks.
+  - `--like <edge>`: follow another edge's look.
+- `--remove <ids>`: remove edges.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical edge --set api-db --from api --to db --label writes` prints `ok changed=api-db`.
+
+### group
+
+**Status:** ✅
+
+`grafical -f <file> group --<verb> <ids>`
+
+- `--set <ids>`: make groups, or change them.
+  - `--label <text>`: the name, required for a new group.
+  - `--sublabel <text>`: a second, quieter part of the label.
+  - `--in <group>`: the group it sits inside.
+  - `--style <styles>`: the styles it marks.
+  - `--like <group>`: follow another group's look.
+- `--move <ids>` with `--before` · `--after`: place groups beside a group.
+- `--copy <id> <into>` with `--label` · `--suffix` · `--before` · `--after` · `--outside`: copy a group with everything inside it.
+- `--remove <ids>` with `--out`: remove groups and keep their members (in the group around them by default).
+
+A node joins a group with `node --set --group`.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical group --set pay --label Payments` prints `ok changed=pay`.
+
+### lane
+
+**Status:** ✅
+
+`grafical -f <file> lane --<verb> <ids>`
+
+- `--set <ids>`: make lanes, or change them.
+  - `--label <text>`: who owns what lies in it, required for a new lane.
+  - `--style <styles>`: the styles it marks.
+  - `--like <lane>`: follow another lane's look.
+- `--remove <ids>`: remove lanes and keep what lies in them.
+
+A layer or a node lies in a lane with `layer --set --lane` or `node --set --lane`.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical lane --set team --label Team` prints `ok changed=team`.
+
+### column
+
+**Status:** ✅
+
+`grafical -f <file> column --<verb> <ids>`
+
+- `--set <ids>`: make columns, or change them.
+  - `--style <styles>`: the styles it marks.
+  - `--first` · `--last` · `--before <column>` · `--after <column>`: the place of a new column (last by default).
+- `--move <ids>` with `--first` · `--last` · `--before` · `--after`: move columns.
+- `--remove <ids>`: remove columns and keep their nodes.
+
+A node follows a column with `node --set --column`.
+
+**Status of its planned flags:** ⬜ `--set` with `--label`.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical column --set left` prints `ok changed=left`.
+
+### wall
+
+**Status:** ✅
+
+`grafical -f <file> wall --<verb> <ids>`
+
+- `--set <ids>`: make walls, or change them.
+  - `--between <ids>` · `--and <ids>`: the nodes and groups of each side, both required for a new wall.
+  - `--allow <ids>`: the edges, nodes and groups it lets through, as the whole list.
+  - `--label <text>`: the words on its divider (space alone by default).
+- `--remove <ids>`: remove walls.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical wall --set w --between web --and db` prints `ok changed=w`.
+
+### note
+
+**Status:** ✅
+
+`grafical -f <file> note --<verb> <ids>`
+
+A note is named by the node, edge or group it is about.
+
+- `--set <ids>`: put notes on objects, or change them.
+  - `--text <text>`: a sentence or two, required for a new note.
+  - `--footnote <on|off>`: a number on its object and the text at the bottom (a card by default).
+  - `--align <align>`: `left` · `center` · `right`, for a card (`left` by default).
+- `--remove <ids>`: remove notes.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical note --set api --text "Retries twice"` prints `ok changed=api`.
+
+### label
+
+**Status:** ✅
+
+`grafical -f <file> label --set <ids>`
+
+A label is named by its owner, and its text is the owner's `--label`.
+
+- `--set <ids>`: change how labels look and where they sit.
+  - `--style <styles>`: the styles an edge's label marks.
+  - `--align <align>`: `left` · `center` · `right` (`center` by default).
+  - `--at <at>`: where a group's, a layer's or a lane's label sits along its side, from 0 to 1 (the engine's by default).
+  - `--side <side>` · `--place <place>`: a group's label on `top` · `bottom` · `left` · `right`, `inside` · `outside`.
+  - `--seat <seat>`: `on` · `beside`, for an edge's label (`on` by default).
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical label --set api --align left` prints `ok changed=api`.
+
+### mark
+
+**Status:** ✅
+
+`grafical -f <file> mark --<verb> <ids>`
+
+A mark is named by its node and slot, such as `api:top-left`.
+
+- `--set <ids>`: put marks on nodes, or change them.
+  - `--text <text>` · `--file <file>`: an emoji or a short text, or an `.svg` or `.png` beside the diagram, one of them required for a new mark.
+  - `--bg <color>` · `--fg <color>` · `--border <color>`: a text mark's colors.
+  - `--shape <shape>`: `square` · `rounded` · `pill` (`rounded` by default).
+  - `--size <size>`: `s` · `m` · `l` (`m` by default).
+- `--remove <ids>`: take marks off.
+
+**Status of its planned flags:** ⬜ `--set` with a `<set>:<name>` mark.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical mark --set api:top-left --text 🔥` prints `ok changed=api`.
+
+### legend
+
+**Status:** ✅
+
+`grafical -f <file> legend --<verb> <ids>`
+
+An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`, `weight:<level>` or `mark:<text>`.
+
+- `--set <ids>` with `--text`: say what a line, a width or a mark means, and the text is required.
+- `--remove <ids>`: take entries away.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical legend --set style:dashed --text Async` prints `ok changed=legend`.
+
+### type
+
+**Status:** ✅
+
+`grafical -f <file> type --<verb> <ids>`
+
+- `--set <ids>`: make types of the diagram's own, or change them, and a change reaches every object of the type.
+  - `--base <base>`: the type it starts from, required for a new type.
+  - `--shape <shape>`: `box` · `round` · `pill` · `cylinder` · `diamond` · `small-diamond` · `dot` · `ring`.
+  - `--fill <color>` · `--border <color>` · `--border-width <n>` · `--color <color>`: its look (its base's by default).
+- `--remove <ids>`: remove types.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical type --set db --base store --fill "#eeeeff"` prints `ok changed=db`.
+
+### style
+
+**Status:** ✅
+
+`grafical -f <file> style --<verb> <ids>`
+
+- `--set <ids>`: make named looks, or change them.
+  - `--fill <color>` · `--border <color>` · `--color <color>`: its colors.
+  - `--border-width <n>`: from 0.5 to 8.
+  - `--margin-top` · `--margin-right` · `--margin-bottom` · `--margin-left <px>`: room on each side, a multiple of 4.
+  - `--row-gap <px>` · `--column-gap <px>`: the room between layers and between the nodes of a layer, for the diagram.
+- `--move <ids>` with `--before` · `--after`: reorder styles, since the later one wins.
+- `--remove <ids>`: remove styles and every mark of them.
+
+**Called by:** both
+
+**Prints:** the outcome and one block per problem on stdout.
+
+**Fails:** a usage error exits 2, and a refused write exits 1.
+
+**Example:** `grafical -f arch.grafical style --set roomy --margin-left 16 --margin-right 16` prints `ok changed=roomy`.
 
 ### show
 
@@ -412,7 +424,7 @@ The revision is `HEAD` by default.
 
 **Fails:** a file outside git is `not-in-git` and exits 1.
 
-**Example:** `grafical -f arch.grafical diff HEAD~1` prints `grafical -f arch.grafical edge --add api cache --label reads`.
+**Example:** `grafical -f arch.grafical diff HEAD~1` prints `grafical -f arch.grafical edge --set api-cache --from api --to cache --label reads --type call`.
 
 ### view
 
@@ -464,7 +476,7 @@ The revision is `HEAD` by default.
 - `-f` · `--file <file>`: the diagram file, ahead of the command, and it is required.
 - `--json`: print the answer as one JSON object (off by default).
 - `--try`: print `ok changed=<ids> written=no` and the `before` · `after` · `delta` counts without writing (off by default).
-  - Every command that writes takes it but `new`.
+  - Every command that writes takes it.
 - `-h` · `--help`: print the page of a command (off by default).
 
 `--json` is on every command but `view`, `library` and `guide`.

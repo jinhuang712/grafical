@@ -62,7 +62,7 @@ A node outside every group that two or more groups use, such as a store that a w
 
 Then each column gets its x: the largest of all the minimum distances that apply to it, from node widths, gaps, groups, lanes and walls. The grid is centred on a multiple of 4 px.
 
-Two neighbours in a layer keep the density's node gap between them. A gap that a labelled edge crosses is as wide as the label plus 40 px when the label sits on the edge, and plus 24 px when it sits above or below. Two numbered edges between the same neighbours widen it to 60 px plus their arrowheads, so that both badges fit side by side.
+Two neighbours in a layer keep the diagram's `column-gap` between them, plus the margins on the sides that face each other. A node's left and right margins widen its column in every layer. A gap that a labelled edge crosses is as wide as the label plus 40 px when the label sits on the edge, and plus 24 px when it sits above or below. Two numbered edges between the same neighbours widen it to 60 px plus their arrowheads, so that both badges fit side by side.
 
 ## Alignment
 
@@ -70,7 +70,7 @@ An aligned node joins its target's column, so it sits directly above or below it
 
 ## Columns
 
-A column is a fact the agent states beside layers, and nothing is drawn for it. It is an order that holds in every layer: every node of a column lies left of every node of the next column, with at least a node gap between them. Every write puts each layer in column order. A node in no column takes the rank of the node left of it, or comes first when nothing is left of it. An order that another fact contradicts is refused as `column-order`.
+A column is a fact the agent states beside layers, and nothing is drawn for it. It is an order that holds in every layer: every node of a column lies left of every node of the next column, with at least the `column-gap` between them. Every write puts each layer in column order. A node in no column takes the rank of the node left of it, or comes first when nothing is left of it. An order that another fact contradicts is refused as `column-order`.
 
 ## Lanes
 
@@ -93,7 +93,7 @@ A node placed by steps has no layer of its own. It lands in the cell its steps n
 - Past the first or last layer, the node lands in a layer grafical adds.
   - `show --drawn` names that layer `-`.
   - An added layer on the way stays empty and is 56 px high, a medium node's height.
-- Each step across keeps the two nodes' centres at least a medium node and a node gap apart, so two steps never look like one.
+- Each step across keeps the two nodes' centres at least a medium node and the `column-gap` apart, so two steps never look like one.
 - The node joins its layer by column.
   - On a tie, a node with steps to the left goes before.
   - The other nodes of the layer keep their order.
@@ -142,21 +142,22 @@ for each layer:
 bottom margin
 ```
 
-An edge's label counts as a track. A gutter takes the smallest of its density's fixed heights that holds its tracks: at least `(tracks + 1) × pitch`. Past the last height it grows in steps of 32 px. A gutter with no tracks takes the first height, and the last layer has none.
+An edge's label counts as a track. A gutter takes the smallest of its fixed heights that holds its tracks: at least `(tracks + 1) × 12` px. The heights are the diagram's `row-gap` plus 0 · 16 · 32 · 56 · 88 px, and past the last one a gutter grows in steps of 32 px. A gutter with no tracks takes the first height, and the last layer has none.
 
-| Density | Gutter heights (px) | Track pitch | Node gap | Margin |
-|---|---|---|---|---|
-| `compact` | 32 · 48 · 64 · 88 · 120 | 12 | 24 | 24 |
-| `normal` | 40 · 56 · 72 · 96 · 128 | 12 | 32 | 32 |
-| `airy` | 56 · 80 · 104 · 136 · 168 | 16 | 48 | 40 |
+Margins add to the room between layers. A layer's top margin is the largest among its own, its nodes', its lane's and those of the groups whose first layer it is, and its bottom margin the same for the groups whose last layer it is. The gutter below a layer grows by the layer's bottom margin and the next layer's top margin.
 
-Density changes nothing else.
+- A column's margins reach its nodes, and a lane's its layers or nodes.
+- A group's margins widen the room beside it.
+- The diagram's four margins are the canvas's.
+- A margin counts only from a style the object marks itself, never through `like`.
 
-An agent may magnify the gap between two neighbouring regions by 1.25, 1.5 or 2, and the result rounds up to 4 px.
+The default stylesheet gives these, and its styles `compact` and `airy` change them for a whole diagram:
 
-- Two layers magnify the gutter between them, tracks and all.
-- Two groups stacked magnify the gutter between their layers, and two side by side the space between their nodes.
-- Two columns magnify the node gap between them.
+| Style | `row-gap` | `column-gap` | The diagram's margins |
+|---|---|---|---|
+| none | 40 | 32 | 32 |
+| `compact` | 32 | 24 | 24 |
+| `airy` | 56 | 48 | 40 |
 
 The canvas is as wide as the widest of its nodes, groups, bands, lanes, side labels and routes, plus its margins. It is never narrower than its title with the legend, its subtitle or its note. Both sides are rounded up to multiples of 8 px across and 4 px down.
 
@@ -175,4 +176,4 @@ The stability tests in `test/layout/stability.ts` apply single operations and as
 - [031. Steps from another node](decisions/031-steps-from-another-node.md)
 - [035. Columns hold across layers](decisions/035-columns-hold-across-layers.md)
 - [072. A change keeps the structure and positions may shift](decisions/072-a-change-keeps-the-structure-and-positions-may-shift.md)
-- [079. The gap between two regions may be magnified](decisions/079-the-gap-between-two-regions-may-be-magnified.md)
+- [106. Styles set spacing as CSS does, and a later style wins](decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)

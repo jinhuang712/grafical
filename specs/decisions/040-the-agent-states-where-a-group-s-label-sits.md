@@ -12,7 +12,7 @@ Decided by the owner on 2026-10-16. In a booking C4 diagram the label "Booking a
   - Until 2026-10-17 it seated the label where the edges into the first layer kept their nodes' centres, and moved two of those nodes apart when no seat did; the owner first chose to keep that.
   - Under "A group's label moves no node and no edge" nothing moves for it.
   - A label with no clear seat refuses the write as `title-blocked`, as a stated one does.
-- **Stated and exactly there, and nothing moves for it.** `group --label-at` states the place and the label sits exactly there.
+- **Stated and exactly there, and nothing moves for it.** `label --set` on a group states the place and the label sits exactly there.
   - The engine adds only the label's own room, and moves no node and no edge for it.
   - An edge that comes near it refuses the write as `title-blocked`, an agent defect ("Defects owned by who can fix them").
   - The owner chose this on 2026-10-16 after seeing the places drawn.

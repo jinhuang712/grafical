@@ -13,7 +13,7 @@ grafical drew the picture above itself, from [docs/images/pipeline.grafical](doc
 
 ## What it does
 
-- 🪜 **Small steps:** every change is one operation, such as `node --add` or `edge --add`.
+- 🪜 **Small steps:** every change is one command, such as `node --set` or `edge --set`.
   - A change keeps every fact it does not name.
   - `--try` shows what a change would do and writes nothing.
 - ⚙️ **The engine does the dirty work:** it sizes and places and spaces every node.
@@ -40,20 +40,19 @@ git clone https://github.com/jinhuang712/grafical.git && cd grafical && pnpm ins
 An agent's prompt only has to say to draw with `grafical`. Here is what an agent does to draw a service and its database:
 
 ```sh
-grafical -f arch.grafical new --title "Order flow"
-grafical -f arch.grafical layer --add app --label App
-grafical -f arch.grafical layer --add data --label Data
-grafical -f arch.grafical node --add api --label "Order API" --type service --layer app
-grafical -f arch.grafical node --add db --label Postgres --type store --layer data
-grafical -f arch.grafical edge --add api db --label writes
+grafical -f arch.grafical diagram --set --title "Order flow"
+grafical -f arch.grafical layer --set app,data
+grafical -f arch.grafical node --set api --label "Order API" --type service --layer app
+grafical -f arch.grafical node --set db --label Postgres --type store --layer data
+grafical -f arch.grafical edge --set api-db --from api --to db --label writes
 grafical -f arch.grafical render --png arch.png
 ```
 
 Adding a cache later is two more steps, and the API and Postgres keep their layers and their order:
 
 ```sh
-grafical -f arch.grafical node --add cache --label Redis --type store --layer data --after db
-grafical -f arch.grafical edge --add api cache --label reads
+grafical -f arch.grafical node --set cache --label Redis --type store --layer data --after db
+grafical -f arch.grafical edge --set api-cache --from api --to cache --label reads
 ```
 
 | Before | After |

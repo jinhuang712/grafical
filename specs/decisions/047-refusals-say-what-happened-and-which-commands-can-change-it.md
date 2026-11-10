@@ -26,7 +26,7 @@ grafical reports what happened and never teaches. A record gives the facts and t
 - **`likely` as a value only.** A word grafical does not know is answered with the word it most likely means, never with a command.
 - **No "When refused" in the help.** Decided by the owner later the same day: every command page's "When refused" section goes.
   - A help page says how to use a command, and a refusal explains itself through its block.
-  - A second hand-written copy of what the record says can go stale, as `edge --add`'s did when it described a fix wrongly.
+  - A second hand-written copy of what the record says can go stale, as the edge command's did when it described a fix wrongly.
   - It states a rule in words before the agent makes the mistake, against the stance that an agent learns grafical from the command line and not from rules in words.
 
 ## Not chosen
@@ -44,7 +44,7 @@ grafical reports what happened and never teaches. A record gives the facts and t
   - It would stay right, but it is still a copy of what the block says.
   - It is read before any mistake, as a rule in words.
 - Keeping the "When refused" sections hand-written, made correct for the blocks.
-  - A second copy goes stale, as `edge --add`'s did.
+  - A second copy goes stale, as the edge command's did.
 
 ## Consequences
 

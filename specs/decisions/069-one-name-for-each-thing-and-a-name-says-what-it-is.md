@@ -20,23 +20,22 @@ A thing has one name everywhere it appears. A name says what a thing is and not 
 | edges that leave as one | `bundle` | bus |
 | where a bundle splits | `knot` | dot |
 
-A command that sets a field is named for the field:
+A flag that sets a field is named for the field:
 
-- `node --label`
-- `node --sublabel`
-- `node --size`
-- `node --mark`
-- `edge --label`
-- `edge --number`
-- `group --label-at`
+- `node --set --label`
+- `node --set --sublabel`
+- `node --set --size`
+- `edge --set --label`
+- `edge --set --number`
+- `label --set --at`
 
-The picture's closing text is `diagram --caption`. A step is a placement only, and a number is what an edge carries.
+The picture's closing text is `diagram --set --caption`. A step is a placement only, and a number is what an edge carries.
 
 Built on 2026-11-06. Commands, operations, fields, refusals, records and comments use these names. A word stays where it means something else:
 
 - A `row` of a gutter is a track's place in it, and a `line` of text is a line.
 - A `Box` in the layout is a rectangle a label or a group takes.
-- `diagram --lines` sets how edges are drawn, and the owner may yet name it.
+- `diagram --set --lines` sets how edges are drawn, and the owner may yet name it.
 
 ## Not chosen
 

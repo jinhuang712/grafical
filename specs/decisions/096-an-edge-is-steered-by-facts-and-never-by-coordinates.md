@@ -10,11 +10,11 @@ An agent that sees a bad edge can only change its ends, its sides and what lies 
 
 An agent may say where an edge passes, what it goes with, where along its way it turns and how far it reaches. It never gives a coordinate.
 
-- `edge --via` says what an edge passes and on which side.
-- `edge --straight` asks for a straight edge and refuses the write when there is none.
-- `edge --with` runs an edge with another along one trunk.
-- `edge --bend --at` turns an edge at 0.25, 0.5 or 0.75 of its way.
-- `edge --stretch --magnified` widens a detour by a multiple.
+- `edge --set --via` says what an edge passes and on which side.
+- `edge --set --straight on` asks for a straight edge and refuses the write when there is none.
+- `edge --set --with` runs an edge with another along one trunk.
+- `edge --set --bend-at` turns an edge at 0.25, 0.5 or 0.75 of its way.
+- `edge --set --stretch` widens a detour by a multiple.
 
 A step that overlaps anything refuses the write, as an offset does.
 

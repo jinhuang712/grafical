@@ -62,12 +62,11 @@ Roadmap
 │   │   ├── ✅ Notes
 │   │   ├── ✅ Copying a group
 │   │   └── ✅ Bar names clear of edges
-│   ├── ✅ CP2.2: Placement facts — alignment · columns · steps · gaps
+│   ├── ✅ CP2.2: Placement facts — alignment · columns · steps
 │   │   ├── ✅ Equal heights in a layer
 │   │   ├── ✅ Columns
 │   │   ├── ✅ Steps from another node
-│   │   ├── ✅ Optional layer labels
-│   │   └── ✅ Region gaps
+│   │   └── ✅ Optional layer labels
 │   ├── ✅ CP2.3: Kinds of edge — any side · weights · step numbers
 │   │   ├── ✅ Edges on any side
 │   │   ├── ✅ Hops and dots
@@ -77,8 +76,9 @@ Roadmap
 │   ├── 🟨 CP2.4: Commands and styles — one command is one write and styles set spacing
 │   │   ├── ✅ One command is one write
 │   │   ├── ⬜ A `diff` that replays
-│   │   ├── ⬜ `--set` on every noun
-│   │   └── ⬜ Styles set spacing
+│   │   ├── ⬜ A typo that makes an object
+│   │   ├── ✅ `--set` on every noun
+│   │   └── ✅ Styles set spacing
 │   ├── 🟨 CP2.5: Nodes — a node takes a multiple of its size and its marks stay clear of edges
 │   │   ├── ✅ Marks
 │   │   ├── ⬜ Size multiples
@@ -117,11 +117,10 @@ Roadmap
 │   │   └── ⬜ Every look in a style
 │   ├── 🟨 CP3.4: Rearranging in one command — one move takes `same-layer-pair` from 3 crossings to 0
 │   │   ├── ⬜ What a move needs
-│   │   ├── 🟨 Move and plug
-│   │   ├── ⬜ A layer's whole order
+│   │   ├── ✅ Moving
+│   │   ├── ✅ A layer's whole order
 │   │   ├── ⬜ How freely an agent adjusts a picture
-│   │   ├── ⬜ A parent off the middle of its children
-│   │   └── ⬜ `edge --ends` names `plug`
+│   │   └── ⬜ A parent off the middle of its children
 │   ├── ⬜ CP3.5: A check before stopping — the agent looks at its picture against a list
 │   │   └── ⬜ A check before stopping
 │   ├── 🟨 CP3.6: Clean edges and labels — the places given draw clean
@@ -154,7 +153,7 @@ Roadmap
 │   │   ├── ⬜ Find where Haiku's tokens go
 │   │   ├── ⬜ Cut the cost of a first draft
 │   │   ├── ⬜ What the first report run asked
-│   │   ├── ⬜ An edge ID in a shell
+│   │   ├── ✅ An edge ID in a shell
 │   │   └── ⬜ A render that hung
 │   ├── ⬜ CP4.3: Copying a picture — someone else's picture redrawn better
 │   │   ├── ⬜ Choose the reference pictures
@@ -462,13 +461,10 @@ Places beside a layer and an order.
 - ✅ Columns: Columns are a placement fact.
 - ✅ Steps from another node: A node sits some cells from another.
 - ✅ Optional layer labels: A layer needs no label and a layer with a look is drawn.
-- ✅ Region gaps: The gap between two neighbouring regions may be magnified.
 
 **Delivers:**
 
 - [F2.3: Alignment](../features/F2-layout.md#f23-alignment)
-- [F2.6: Spacing](../features/F2-layout.md#f26-spacing)
-- [F2.6.1: Region gaps](../features/F2-layout.md#f261-region-gaps)
 
 **Exit criteria:**
 
@@ -509,13 +505,17 @@ One command is one write, every noun makes or changes an object with `--set`, an
 **Tasks:**
 
 - ✅ One command is one write: `apply` · batch files · `try` went, every write takes `--try` and `diff` prints command lines (2026-11-10).
-- ⬜ A `diff` that replays: Replayed one command at a time, the `diff` of 21 of the first 100 fuzz diagrams is refused partway, though each whole diagram draws.
-  - The codes: `label-blocked` 9 · `wall-crossed` 6 · `title-blocked` 5 · `overflow` 1.
-  - All 7 saved fixtures replay to the same bytes.
+- ⬜ A `diff` that replays: Run one at a time, some lines of a `diff` pass through a state that is refused, though each whole diagram draws.
+  - From an empty file, 21 of the first 100 fuzz diagrams were refused partway on 2026-11-10: `label-blocked` 9 · `wall-crossed` 6 · `title-blocked` 5 · `overflow` 1.
+  - 9 of the 120 replays of the diff test fail on the way: a lane with a gap · a broken alignment · a group split midway · lanes out of order.
+  - The test fails if that count grows, and every saved fixture replays to the same bytes.
   - Next: decide whether `diff` orders its lines so that each one draws.
-- ⬜ `--set` on every noun: `--set` makes an object or changes only the attributes it names, and a command run twice changes nothing.
-- ⬜ Styles set spacing: a margin on each side · `row-gap` · `column-gap` · `--style` in four forms · `--stylesheet`, and density and `gap` go.
-  - Related: decision 106 "Styles set spacing as CSS does, and a later style wins".
+- ⬜ A typo that makes an object: `--set` on a mistyped ID makes a new object.
+  - `layer --set typo --look box` makes a layer, and `node --set gatway --lane x` is refused only for its missing label with no `likely`.
+  - Next: decide whether a new ID near an existing one is named as `likely`.
+- ✅ `--set` on every noun: Every noun takes `--set` · `--move` · `--remove`, and the model's operations are the commands (2026-11-10).
+- ✅ Styles set spacing: a margin on each side · `row-gap` · `column-gap` · `--style` in four forms · `--stylesheet`, and density and `gap` went (2026-11-10).
+  - The default stylesheet and `compact` draw every fixture and fuzz seed as before, and `airy` draws 243 of 2000 seeds shorter.
 
 **Delivers:**
 
@@ -523,6 +523,7 @@ One command is one write, every noun makes or changes an object with `--set`, an
 - [F3.2: Trying a change](../features/F3-editing.md#f32-trying-a-change)
 - [F6.4: Diff](../features/F6-output.md#f64-diff)
 - [F2.6: Spacing](../features/F2-layout.md#f26-spacing)
+- [F3.7: Moving](../features/F3-editing.md#f37-moving)
 
 **Exit criteria:**
 
@@ -590,7 +591,7 @@ An agent lays out its legend as a small diagram, and it can explain what a pictu
 - ✅ The richer legend: The legend covers styles, widths and marks.
 - ⬜ Design the legend: The owner designs it as a small diagram: what goes in it · how its entries run · how each sample is drawn.
   - A picture may have one legend or none, and its entries may run across, down or in a grid.
-  - `diagram --legend` explains edge styles and widths and marks but not a node's fill.
+  - `legend --set` explains line styles and widths and marks but not a node's fill.
   - A key of small nodes such as "Works" and "Bug" and "Fixed" is drawn as a group of plain nodes.
   - Every one of them gets `lonely-node`, six warnings for a picture that is right.
   - Related: decision 057 "A node may take a look of its own".
@@ -642,7 +643,7 @@ The engine was rebuilt toward a hand-drawn target that judges scored 57 of 60, a
 
 **Delivers:**
 
-- [F4.1: Title, subtitle and footnote](../features/F4-look.md#f41-title-subtitle-and-footnote)
+- [F4.1: Title, subtitle and caption](../features/F4-look.md#f41-title-subtitle-and-caption)
 - [F4.3: Built-in stylesheets](../features/F4-look.md#f43-built-in-stylesheets)
 - [F4.4: A stylesheet of your own](../features/F4-look.md#f44-a-stylesheet-of-your-own)
 
@@ -723,8 +724,8 @@ The agent fixes a picture by placing nodes, so a move costs one command and show
   - Open: whether the hand drawings in `plan/evidence/worst-four-cases.png` become the target pictures.
   - Evidence: `plan/evidence/ladder-options.png` · `plan/evidence/two-layers-skip-outside.png`.
   - Related: decision 033 "The agent states every order".
-- 🟨 Move and plug: `plug` replaces `edge --ends`, and `move` is not built.
-- ⬜ A layer's whole order: One command states the order of every node in a layer.
+- ✅ Moving: Every noun with a place takes `--move`, and `edge --set` sets an edge's ends (2026-11-10).
+- ✅ A layer's whole order: `node --move` with every node of a layer states its order (2026-11-10).
 - ⬜ How freely an agent adjusts a picture: Where a node sits beside another · where notes and step badges sit.
   - The owner takes this one dimension at a time, and each decided one is a decision.
   - Next: the owner names the next dimension when a real picture shows a gap.
@@ -733,15 +734,11 @@ The agent fixes a picture by placing nodes, so a move costs one command and show
   - The cases draw well by their counts and read wrong.
   - This is placement and not routing, so the cases may need a class and a number of their own.
   - An offset moves one node at a time, which is much work for a whole pyramid.
-- ⬜ `edge --ends` names `plug`: The wrong command gets `plug` as its `likely`.
-  - `grafical edge --ends x` is refused as `unknown-command` with `found: ends` and no `likely`.
-  - Found by the document pass of 2026-11-08.
-  - Next: add the word to the words a wrong command is read against.
 
 **Delivers:**
 
-- [F3.7: Move and plug](../features/F3-editing.md#f37-move-and-plug)
-- [F3.5: Merging and swapping](../features/F3-editing.md#f35-merging-and-swapping)
+- [F3.7: Moving](../features/F3-editing.md#f37-moving)
+- [F3.5: Merging](../features/F3-editing.md#f35-merging)
 
 **Exit criteria:**
 
@@ -909,15 +906,14 @@ The refusals of the private reference brief were mostly `title-blocked`. Haiku s
   - It read `unquoted-text` as naming the field and not the fix.
   - `render` writes the SVG beside the PNG though it asked for neither by name.
   - The session took 782 s on a render of 0.24 s, and where that time went is not known.
-  - Its picture has 17 crossings, and it did not use `gap` · `label` · a stated side.
+  - Its picture has 17 crossings, and it did not widen a gap, place a label or state a side.
   - A second run followed `diagram.grafical` and wrote `last: true` on every node.
   - It did not see layer labels in its picture, since a layer is not drawn.
   - `passing-layer` named the problem and gave it no move to make.
   - It could not see the trade between width and crossings, though `--try` shows it.
   - The numbers of both runs are in `bench/results/report-2026-11-06.md`.
-- ⬜ An edge ID in a shell: An unquoted `->` in an edge ID made zsh write a stray file.
-  - The help's examples quote the ID, and the session did not.
-  - Next: decide whether an edge ID needs a form a shell leaves alone.
+- ✅ An edge ID in a shell: An edge's ID follows the rule of every other ID, so no `->` reaches a shell (2026-11-10).
+  - An unquoted `->` in an edge ID had made zsh write a stray file.
 - ⬜ A render that hung: An agent reported it once on 2026-11-09, and it was not reproduced.
   - Next: render that run's diagram again and time it.
 
@@ -1184,7 +1180,6 @@ The check of the core documents on 2026-11-09 left points that are not settled. 
   - The goals' numbers have gaps.
   - Guideline 14 repeats a stance of the philosophy word for word.
   - Guidelines 5 and 6 name mechanisms.
-  - `plug` was built before what a move needs was settled.
   - The feature files list flags that CLI.md holds.
   - About 70 lines repeat "and" or "or".
 

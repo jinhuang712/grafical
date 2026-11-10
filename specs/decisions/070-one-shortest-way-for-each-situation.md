@@ -8,16 +8,14 @@ An edge could be drawn thick with `edge emphasize` or with `edge weight`, and an
 
 ## The choice
 
-In one situation there is one shortest way. Stating a fact when an element is made and changing it later are two situations, so `edge --add --both` and `edge --both` both stay. An edge is drawn thick with `edge --weight`. Emphasis is for nodes only.
+In one situation there is one shortest way. Making an element and changing it later share `--set`, which takes the same flags either way ("Every noun is changed by `--set`, `--move` and `--remove`"). An edge is drawn thick with `edge --set --weight`. Emphasis is for nodes only.
 
 ## Not chosen
 
-- Dropping every option of `add`.
+- Making an element bare and setting its attributes after.
   - Each element would take two steps to make, which is no longer the shortest way.
 - Keeping a short form beside the long one.
   - The agent would still have to choose.
-- Dropping `edge --reverse` for `plug`.
-  - Reversing is shorter with its own command, so it is the shortest way for that situation.
 
 ## Consequences
 

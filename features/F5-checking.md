@@ -55,7 +55,7 @@ The agent's view of a diagram, in place of reading the file.
 After `check` and `render`, grafical prints the drawing's counts as one record:
 
 ```text
-counts nodes=3 edges=2 crossings=0 bends=1 bent=0 length=224 width=368 height=280 fullest=data:2 busiest=api:2 longest=api->cache:176 passing=0 across=0 tight=0 crowded=0
+counts nodes=3 edges=2 crossings=0 bends=1 bent=0 length=224 width=368 height=280 fullest=data:2 busiest=api:2 longest=api-cache:176 passing=0 across=0 tight=0 crowded=0
 ```
 
 They are facts, with no threshold and no advice: what they mean is the agent's to judge.
@@ -91,15 +91,15 @@ Every write prints a warning block for each thing the picture draws poorly, and 
 A warning has no source: the outcome line names what the write changed, and a warning names the ids it is about ([048. Every write prints every warning](../specs/decisions/048-every-write-prints-every-warning.md)):
 
 ```text
-ok changed=sync->geo
+ok changed=sync-geo
 
 warning: bent-edge
 description: An edge bends more than twice, mostly because it skips layers.
 detail:
-  edge: sync->geo
+  edge: sync-geo
   bends: 3
   skip: 1
-next: layer --move, node --move, node --swap
+next: layer --move, node --move
 ```
 
 - **Design:** [6. Every write is checked, and each defect has an owner](../DESIGNS.md#6-every-write-is-checked-and-each-defect-has-an-owner)

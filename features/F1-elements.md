@@ -125,7 +125,7 @@ A node is sized to its text, unless the agent gives it a size step.
 
 A node can carry up to five marks, such as `⚠️` on a node that matters, or `P0` on a badge.
 
-- **Commands:** [`node`](../CLI.md#node)
+- **Commands:** [`mark`](../CLI.md#mark)
 
 - A node has five slots of one mark each: `top-left` and `top-right` and `bottom-left` and `bottom-right` and `left`.
   - A diamond and a dot have corner slots only.
@@ -139,7 +139,7 @@ A node can carry up to five marks, such as `⚠️` on a node that matters, or `
 - A corner mark sits centred on its corner and moves nothing else.
   - The `left` mark takes a column inside the node, and the text gives up that width.
 - A mark file that changes or goes missing fails the load (`mark-file-changed`, `mark-file-not-found`).
-  - Setting the slot again accepts the file as it is.
+  - `mark --set` on the slot again accepts the file as it is.
   - An SVG with a script or an event handler or an outside reference is refused as `mark-file-unsafe`.
   - A path outside the diagram's folder is refused as `mark-file-outside`.
 - An emoji with no image is refused as `mark-not-drawn`.
@@ -151,7 +151,7 @@ A corner mark is not yet checked against the edges that leave the node near its 
 
 A mark taken by name from one mark set that grafical bundles, so that an agent need not find a file for every node.
 
-- **Commands:** [`node`](../CLI.md#node)
+- **Commands:** [`mark`](../CLI.md#mark)
 
 - The set is a permissively licensed one, such as Lucide (ISC) or Tabler (MIT).
   - A cloud vendor's own marks stay files the agent brings.
@@ -172,14 +172,14 @@ A node takes its colors from the styles it marks, so that a color says something
   - [`node`](../CLI.md#node)
 
 - A color is `#` and hex digits.
-- A node may mark several styles, and a later one overrides an earlier one.
-- `node --style` with no styles clears them.
+- A node may mark several styles, and where two say the same thing the one defined later in the file wins.
+- `node --set --style -` clears them, `+a` adds one and `-a` takes one away.
 - A style the diagram lacks is refused as `unknown-style`.
 - The shape stays the type's.
-- `node --like` follows another node's look and changes with it.
+- `node --set --like` follows another node's look and changes with it.
   - It takes no shape and no place.
   - A style the node marks overrides what it follows, and what it follows overrides its type.
-  - With no node it lets go, and it lets go when the node it follows goes.
+  - `--like -` lets go, and so does the node it follows going.
   - A follower may be followed, and a circle is refused as `like-cycle`.
 
 - **Why:**
@@ -240,11 +240,9 @@ An edge's type says what it means and decides its style.
 | `optional` | dotted, with an arrowhead | a call that happens only sometimes |
 | `link` | plain, with no arrowhead | related, with no direction |
 
-- **Commands:**
-  - [`edge`](../CLI.md#edge)
-  - [`plug`](../CLI.md#plug)
+- **Commands:** [`edge`](../CLI.md#edge)
 
-- `plug` moves one or both ends and keeps the edge's ID, type and label.
+- `edge --set --from` or `--to` on an edge that exists moves that end and keeps the edge's ID, type and label.
 
 ### F1.2.2: Arrowheads at both ends
 
@@ -291,7 +289,7 @@ One arrow can point at a whole system instead of each of its parts.
 - A layer with no node may be an end too, when the other end holds a node: a gateway or a message bus that every request passes.
   - It is drawn as one 40 px bar across the content with its label at the left ([038. A layer with no node as one bar](../specs/decisions/038-a-layer-with-no-node-as-one-bar.md)).
   - Each edge meets it straight past its other end.
-- An edge that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge --add --pass`, or `edge --pass <id> [--off]` for an edge already drawn.
+- An edge that passes a bar without ending at it is refused (`bar-crossed`) unless it may: `edge --set --pass on`.
   - It then names the bar in `passes`.
   - A layer with no node and a look is a bar too, though no edge ends at it ([F2.2: Layers and order](F2-layout.md#f22-layers-and-order)).
 - An end may not lie inside the other (`edge-inside`).
@@ -311,7 +309,7 @@ An edge takes its color from the styles it marks, so that a color says something
 
 - The arrowhead takes the color too.
 - A dash stays the type's.
-- `edge --like` follows another edge's look and its weight, by the same rules as `node --like`.
+- `edge --set --like` follows another edge's look and its weight, by the same rules as a node's.
   - A weight the edge states stays its own.
 
 - **Why:**
@@ -364,18 +362,19 @@ A group is a system, drawn as one frame around its members, which may sit in sev
   - The other nodes of those layers sit beside the frame, and nothing else lies inside it.
 - Groups nest, up to three levels (`group-too-deep`).
   - A group inside itself is refused as `group-cycle`.
-- `join` moves a node out of its previous group, and also moves a whole group into another.
-  - `leave` takes members out of every group, or with `--up` one level out.
-- `group --label-at` says where the group's label sits, as [F4.7: Region labels](F4-look.md#f47-region-labels) says.
+- `node --set --group` puts a node in a group and takes it out of its previous one.
+  - `group --set --in` puts a whole group in another.
+  - `--group -` takes a node out of every group.
+- `label --set` on the group says where its label sits, as [F4.7: Region labels](F4-look.md#f47-region-labels) says.
   - A label inside the bottom side sits in a foot below the last layer.
   - The foot takes the head's room, and the head keeps only its padding.
   - It sits exactly there and takes only its own room: no node and no edge moves for it.
   - An edge that comes near it refuses the write as `title-blocked`, naming the edges and the places where none would.
   - Without a place the engine seats the label at the leftmost spot of the head that no edge comes near.
   - Where an edge comes near every spot, the write is refused as `title-blocked` too ([040. The agent states where a group's label sits](../specs/decisions/040-the-agent-states-where-a-group-s-label-sits.md)).
-- `group --order` puts a group's nodes before or after another group's as one block in every layer the two share.
+- `group --move` puts a group's nodes before or after another group's as one block in every layer the two share.
   - The nodes of its inner groups move with it.
-  - A group ordered beside itself or beside a group around or inside it is refused as `bad-reference`.
+  - A group moved beside itself or beside a group around or inside it is refused as `bad-reference`.
 - `remove` keeps the members: they move into the group around it, or with `--out` out of every group.
   - Edges that end at the group go with it.
 - A group inside a group takes the canvas's fill, so the fills alternate by depth.
@@ -389,12 +388,11 @@ A second zone, region or shard in one operation.
 
 - The copy holds the group's inner groups, its nodes and the edges between them.
   - It sits in the group the original sits in.
-  - Every id it makes ends in the suffix except `<into>`.
-  - An edge id `<from>-><to>` follows its copied ends.
+  - Every id it makes is its original's with the suffix, except `<into>`.
 - `--outside` also copies the edges between the group and everything outside it, their inside end moved to the copy.
 - Each copied node sits in its original's layer.
   - It keeps its original's label and type and size and marks and lane and column.
-  - `--before` or `--after` puts the copy before or after a group in every layer of the copy as `group --order` does ([033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)).
+  - `--before` or `--after` puts the copy before or after a group in every layer of the copy as `group --move` does ([033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)).
   - A group with no node in one of those layers is refused as `no-shared-layer`.
 - An alignment or steps to a node outside the group are refused as `copy-conflict` ([037. A group copy holds its inside](../specs/decisions/037-a-group-copy-holds-its-inside.md)).
   - So is a lane or a column that would move the copy from its place.
@@ -411,9 +409,8 @@ A lane is a labelled band that says who owns what. A diagram's lanes all run one
 
 - **Commands:** [`lane`](../CLI.md#lane)
 
-- Layers as members make lanes that run as layers, with the label on the left.
-  - Nodes as members make lanes that run as columns, with the label on top.
-  - A group stands for its layers or nodes.
+- `layer --set --lane` puts layers in a lane, and the lanes run as layers with the label on the left.
+  - `node --set --lane` puts nodes in one, and the lanes run as columns with the label on top.
   - Both in one diagram is refused as `lane-mixed`.
 - A layer lane's layers must be neighbours (`lane-gap`), and a layer added between two layers of a lane joins it.
 - Column lanes go left to right in creation order, and every layer keeps that order.
@@ -437,7 +434,7 @@ Empty space between two parts of a picture, which edges cross only where the wal
   - Otherwise it is refused as `wall-sides`, and so is a node on both sides.
 - A wall is only as long as its two sides need.
 - An edge from one side to the other is refused as `wall-crossed`.
-  - `allow` lets it cross by naming the edge or a node or group at one of its ends, such as a gateway.
+  - `--allow` lets it cross by naming the edge or a node or group at one of its ends, such as a gateway.
   - Any other edge drawn through the wall is a defect with the same code.
 - Without a label, a wall is invisible: only its space shows.
   - With a label, it draws a dashed divider through its middle.
@@ -452,11 +449,11 @@ A short text attached to a node, an edge or a group, to keep detail out of extra
 - **Commands:** [`note`](../CLI.md#note)
 
 - A note is a card beside its target, joined by a dotted line.
-  - With `--footnote` it is a small number on the target, with the text in a numbered list at the bottom.
+  - With `--footnote on` it is a small number on the target, with the text in a numbered list at the bottom.
   - The file holds a footnote as `footnote: true`.
   - A card with no place beside its target clear of every node, edge and text is refused as `label-blocked` ([064. A note is what the agent states](../specs/decisions/064-a-note-is-what-the-agent-states.md)).
   - The agent then shortens it or makes it a footnote.
-- A target has one note, and adding another replaces it.
+- A target has one note, and `note --set` changes it.
   - A note goes with its target.
 - A note of more than four lines of text is an `overflow`.
 
@@ -468,7 +465,7 @@ A group or a lane takes its colors from the styles it marks, so that color tells
   - [`group`](../CLI.md#group)
   - [`lane`](../CLI.md#lane)
 
-- `--like` follows another of its sort, by the same rules as `node --like`.
+- `--like` follows another of its sort, by the same rules as a node's.
 
 - **Why:**
   - [083. A group or a lane may take a look of its own](../specs/decisions/083-a-group-or-a-lane-may-take-a-look-of-its-own.md)

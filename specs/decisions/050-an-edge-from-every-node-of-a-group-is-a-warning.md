@@ -4,7 +4,7 @@ Decided: 2026-10-19
 
 ## The problem
 
-Decided by the owner on 2026-10-19, looking at a picture an agent drew of a coding agent's loop: the four nodes of its task context each sent an edge to the session node, four edges bundled into one side where one edge from the group would do ("Edges that end at containers"). `edge --add --help` already says that one edge to a group replaces an edge to each of its parts, but nothing told the agent that it had drawn the parts.
+Decided by the owner on 2026-10-19, looking at a picture an agent drew of a coding agent's loop: the four nodes of its task context each sent an edge to the session node, four edges bundled into one side where one edge from the group would do ("Edges that end at containers"). The edge command's help already said that one edge to a group replaces an edge to each of its parts, but nothing told the agent that it had drawn the parts.
 
 ## The choice
 

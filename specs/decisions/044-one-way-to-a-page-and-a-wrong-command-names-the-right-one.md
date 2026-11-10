@@ -10,7 +10,7 @@ Decided by the owner on 2026-10-18, after one Haiku run (a subagent with grafica
   - It reads one word, so `grafical help "node add"` printed the entry page.
   - grafical exited 2 after each page it printed, as if refused.
 - With `--help`, a command name grafical does not have printed the entry page and exited 0.
-  - Examples were `grafical "node add" --help` and `grafical node.add --help`.
+  - Examples were `grafical "node set" --help` and `grafical node.set --help`.
   - Nothing said the name was wrong.
 
 ## The choice
@@ -19,10 +19,10 @@ So:
 - **`--help` is the one way to a page.** The program and its groups have no `help` command, and no page lists one.
 - **A wrong command is refused with the one it most likely means.** `grafical help node` is refused as `unknown-command` and exits 2.
   - These are read the same way:
-    - Two names in one word, such as `"node add"` or `node.add`.
+    - Two names in one word, such as `"node set"` or `node.set`.
     - `help` before or inside a group, such as `grafical node help add`.
     - A misspelling near one name such as `nodee`, with at most a third of its letters wrong or one.
-  - `likely` is the word meant: `--help` for `help`, the command's name for the rest, such as `node --add`.
+  - `likely` is the word meant: `--help` for `help`, the command's name for the rest, such as `node --set`.
   - A word near no command has no `likely`, with `--help` or without.
   - The record replaces the page commander would print.
 

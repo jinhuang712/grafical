@@ -2,7 +2,7 @@
 
 ```
 F4: Look
-├── F4.1: Title, subtitle and footnote — the words around the picture
+├── F4.1: Title, subtitle and caption — the words around the picture
 ├── F4.2: Legend — a key for styles, widths and marks
 │   └── F4.2.1: A legend as a small diagram — entries, their layout and their samples
 ├── F4.3: Built-in stylesheets — the whole look from one name
@@ -15,15 +15,15 @@ F4: Look
 
 The words and the look of the picture as a whole: its title, its legend and its stylesheet.
 
-## F4.1: Title, subtitle and footnote
+## F4.1: Title, subtitle and caption
 
 The title names the picture, and two more texts tell a reader what they see.
 
 - **Commands:** [`diagram`](../CLI.md#diagram)
 
 - The subtitle is one sentence under the title.
-- The footnote says what the diagram leaves out, such as "Not shown: Redis name cache".
-- Without `--text` the subtitle or the footnote is cleared.
+- The caption says what the diagram leaves out, such as "Not shown: Redis name cache".
+- `--subtitle -` or `--caption -` clears it.
 
 - **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:** [Placement: layers down the page](../specs/placement.md#layers-down-the-page)
@@ -34,13 +34,14 @@ The title names the picture, and two more texts tell a reader what they see.
 
 ## F4.2: Legend
 
-A key in the top right that says, in the agent's words, what the picture's styles, widths and marks mean.
+A key in the top right that says, in the agent's words, what the picture's line styles, widths and marks mean.
 
-- **Commands:** [`diagram`](../CLI.md#diagram)
+- **Commands:** [`legend`](../CLI.md#legend)
 
-- An edge style or an edge width other than `thin` or a mark has an entry only when the diagram names it.
+- A line style or an edge width other than `thin` or a mark has an entry only when the diagram names it.
+  - An entry is named `style:<line>` · `weight:<level>` · `mark:<text>`.
   - A diagram that names nothing draws no legend.
-- Without `--text`, the words are taken away with their entry.
+- `legend --remove` takes an entry away.
 - `show --drawn` prints a `legend` record for each edge style and width the picture draws, and for each named mark.
   - `weight` is what `--weight` takes, and `text=-` marks a style or width with no entry.
 - Marks with the same name share one entry.
@@ -75,6 +76,7 @@ A diagram takes its whole look from a stylesheet. grafical ships three, and a di
 - `default` draws grey lines and quiet fills on white.
 - `dark` draws light lines on a dark ground.
 - `print` draws greys with stronger edges, for paper.
+- `diagram --set --stylesheet <name>` names one.
 - `grafical library` lists them, and `grafical library <word>` finds those whose name or look holds the word.
 - They come with grafical wherever it is installed.
 
@@ -92,17 +94,21 @@ A diagram takes its whole look from a stylesheet. grafical ships three, and a di
 
 A stylesheet of one's own is a `.grafical` file that starts from a built-in one and says only what it changes: the colors of any type of node or edge, the frames, the texts, the type sizes and the edge widths. A diagram names it by its path, which may lie anywhere.
 
-- **Commands:** [`diagram`](../CLI.md#diagram)
+- **Commands:**
+  - [`diagram`](../CLI.md#diagram)
+  - [`library`](../CLI.md#library)
 
 - It opens with a `<stylesheet>` block, and `base` names the built-in one it starts from, `default` when left out.
 - `<type>` blocks set the look of the diagram, its texts, groups, bands, lanes, nodes and edges, and of each type of node and edge.
+  - `<type> diagram` also holds the diagram's margins · `row-gap` · `column-gap`.
 - `<style> emphasis` sets how the nodes that stand out look.
+- A `<style>` of its own is a look a diagram may mark, and it comes before the diagram's own styles.
 - `<weight>` blocks set `thin` and `thick` and add levels such as `critical`.
 - Larger type changes the layout, and text that no longer fits is refused as `overflow`.
 - An unknown block, an unknown attribute or a wrong value is refused as `bad-stylesheet` with its line.
 - Only a dashed type of edge takes a dash.
 - A stylesheet that is missing fails every command that reads the diagram with `style-not-found`.
-- `diagram style --help` lists every block and attribute with an example.
+- `library --help` lists every block and attribute with an example.
 
 - **Design:**
   - [10. What grafical cannot fully read, it refuses](../DESIGNS.md#10-what-grafical-cannot-fully-read-it-refuses)
@@ -140,10 +146,10 @@ An agent may set where a text breaks and how its lines line up. A text the agent
 - A break is a real line break or `\n`, and grafical keeps it.
 - These are one line: a diagram's title · the label of a group · a layer · a wall.
   - A break in one is refused as `missing-glyph`.
-- `label --align` takes the ID of one of these: a node · an edge · a wall · a lane.
+- `label --set --align` takes the ID of one of these: a node · an edge · a wall · a lane.
 - In a node left and right mean the sides of the room for its text, and its sublabel follows its label.
 - On an edge, it lines up the lines of a label of two or more lines.
-- `note --align` names a note by what it is about, since a note has no ID of its own.
+- `note --set --align` names a note by what it is about, since a note has no ID of its own.
 - A note starts left aligned, and a footnote cannot be aligned.
 - A label that no longer fits is refused as before.
 
@@ -160,11 +166,10 @@ An agent may set where a text breaks and how its lines line up. A text the agent
 A diagram, a group, a layer, a lane and a column are all regions, and each places its label the same way.
 
 - **Commands:**
-  - [`group`](../CLI.md#group)
+  - [`label`](../CLI.md#label)
   - [`diagram`](../CLI.md#diagram)
-  - [`layer`](../CLI.md#layer)
-  - [`lane`](../CLI.md#lane)
 
+- `label --set` places the label of a group · a layer · a lane, and `diagram --set --title-at` places the title.
 - A fraction runs from 0 to 1 along the side: 0 at its start, 0.5 at its middle and 1 at its end.
 - The label's own point at that fraction meets the side's, so it never runs past the side.
 - A subtitle or a sublabel follows its label.
@@ -190,7 +195,7 @@ A label may mark styles, as any object does.
 
 - **Commands:** [`label`](../CLI.md#label)
 
-- `--style` takes the ID of an edge with a label, and names styles as other objects do.
+- `label --set --style` takes the ID of an edge with a label, and names styles as other objects do.
 - Only an edge's label has a patch of its own, and any other label takes the style of its object.
 - The label's patch takes the style's `fill` and `border`.
 - The label's text takes the style's `color`.

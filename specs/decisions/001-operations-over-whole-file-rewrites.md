@@ -8,7 +8,7 @@ An agent that changes a diagram by writing the whole file again changes parts no
 
 ## The choice
 
-Every change is a named operation: `node.add`, `edge.add`, `node.label`, `layer.move`. grafical applies it to the diagram file. Agents never write the file directly. grafical validates the file on every load, and refuses a file that fails with the same errors an operation would get.
+Every change is a named operation: `node.set`, `edge.set`, `node.move`, `layer.remove`. grafical applies it to the diagram file. Agents never write the file directly. grafical validates the file on every load, and refuses a file that fails with the same errors an operation would get.
 
 ## Not chosen
 

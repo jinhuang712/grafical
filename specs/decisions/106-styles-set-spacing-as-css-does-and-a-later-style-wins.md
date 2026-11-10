@@ -34,4 +34,4 @@ A density set all spacing in three levels, a gap took a multiple only between tw
 
 - A team's spacing lives in its stylesheet, and one diagram's in a style it marks.
 - A margin on a node widens its column in every layer.
-- Once built, it replaces "The gap between two regions may be magnified" and the order rule of "A style may be as rich as it likes".
+- The gap multiples chosen on 2026-11-06 go, and "A style may be as rich as it likes" orders styles by the file.

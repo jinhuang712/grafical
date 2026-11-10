@@ -8,7 +8,7 @@ Decided by the owner on 2026-10-14. The phase planned notes: a short text that k
 
 ## The choice
 
-A card keeps clear of every node, edge, text and other card, and stays inside the picture. Nothing is moved to make room for it, so a note never breaks stability ("Layout computed again on every change"). The agent states a footnote with `note --add --footnote`, and a card with no room refuses the write as `label-blocked`. Each footnote entry starts with its target's name, so that a reader finds it even where no clear place for the number was found: the fuzz test found such edges among dense random ones. Footnotes are numbered in reading order of their targets.
+A card keeps clear of every node, edge, text and other card, and stays inside the picture. Nothing is moved to make room for it, so a note never breaks stability ("Layout computed again on every change"). The agent states a footnote with `note --set --footnote on`, and a card with no room refuses the write as `label-blocked`. Each footnote entry starts with its target's name, so that a reader finds it even where no clear place for the number was found: the fuzz test found such edges among dense random ones. Footnotes are numbered in reading order of their targets.
 
 ## Not chosen
 

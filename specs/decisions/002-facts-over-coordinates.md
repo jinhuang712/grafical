@@ -10,7 +10,7 @@ An agent must say where every node goes, but coordinates are the work models get
 
 An operation says which layer, which position in the layer, which group, what to align with, and what to connect. No operation takes an x, a y, a width or a bend point.
 
-A node's place is its layer, its order within the layer, its group, an optional alignment with a node in another layer, or whole steps from another node. Its size is a size step, and the node has that step's fixed width and height. The diagram's spacing is a density. The theme maps each value to pixels.
+A node's place is its layer, its order within the layer, its group, an optional alignment with a node in another layer, or whole steps from another node. Its size is a size step, and the node has that step's fixed width and height. Spacing comes from styles ("Styles set spacing as CSS does, and a later style wins"). The theme maps each value to pixels.
 
 ## Not chosen
 

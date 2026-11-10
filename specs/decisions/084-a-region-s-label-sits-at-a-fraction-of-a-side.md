@@ -26,7 +26,7 @@ A fraction is a position, which is an exception to places as facts. It holds onl
 Built on 2026-11-06:
 
 - The 12 named places went on the owner's word, since each repeats a fraction, a side and a place.
-- The flags are `--side` and `--place`, as on the `<label>` block and on `edge --side`.
+- The flags are `--side` and `--place`, as on the `<label>` block.
 - A title takes a fraction and `top` or `bottom`, and stops short of the legend.
 - A layer's and a lane's label take a fraction along their head and no side, since the head stays where it is.
 - A column has no label yet, so it waits for "Column headings" on the owner's word.

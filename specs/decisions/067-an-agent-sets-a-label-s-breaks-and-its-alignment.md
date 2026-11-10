@@ -24,6 +24,6 @@ A stated break can make a label taller than the engine would, and a label that n
 Built on 2026-11-06, with less than the choice says:
 
 - A title and the label of a group, a layer or a wall stay one line, since their room is made for one line.
-- `label --align` reaches a node, an edge, a wall and a lane, and a region's label waits for "A region's label sits at a fraction of a side".
-- A note has no ID, so the owner chose a second command, `note --align`, which names a note by what it is about.
+- `label --set --align` reaches a node, an edge, a wall and a lane, and a region's label waits for "A region's label sits at a fraction of a side".
+- A note has no ID, so `note --set --align` names a note by what it is about.
 - A lane keeps a stated `center`, since its default depends on how it runs.

@@ -1,6 +1,6 @@
 # The .grafical file
 
-**Status:** built, except for `<check>`, the attributes of a node's size, a type's `weight`, `both` and `sublabel`, a style's `weight`, a layer's `style` and an edge's `color`.
+**Status:** built, except for `<check>`, the attributes of a node's size, a type's `weight`, `both` and `sublabel`, a style's `weight` and an edge's `color`.
 
 A `.grafical` file holds one diagram as objects with attributes and relations. grafical is its only writer, and a model reads it through `show`, so the file is shaped for people in a diff and for git. It sits between pseudocode, a structural language, a script, CSS, YAML, JSON and LaTeX, and it takes no control flow, variables or macros.
 
@@ -10,7 +10,6 @@ A `.grafical` file holds one diagram as objects with attributes and relations. g
   <layer> <group> <lane>
   <column> <wall>              the regions
   <order>                      the order inside a region
-  <gap>                        a wider gap between two regions
   <node> <edge>                the parts and what connects them
   <label> <mark> <note>        what sits on them
   <legend>                     the key
@@ -119,10 +118,10 @@ The shapes:
 ## Where a look comes from
 
 ```text
-an object  >  a style  >  like  >  a type  >  the theme
+an object  >  its styles  >  like  >  a type  >  the stylesheet
 ```
 
-The most specific wins, and `show` gives each value's source.
+The most specific wins, and `show` gives each value's source. Among an object's styles the one defined later in the file wins, and a stylesheet's styles come before the diagram's.
 
 An object with `like` takes the look of another of its sort and changes with it. It takes no members, no place and no shape. A follower may be followed, and a cycle is refused.
 
@@ -144,12 +143,12 @@ The root has no ID, and a file has exactly one.
 | `title` | text |
 | `subtitle` | text |
 | `caption` | text |
-| `style` | text, a built-in stylesheet or the path of a stylesheet |
-| `density` | `compact`, `normal` or `airy` |
-| `sizing` | `auto` or `fixed` |
+| `stylesheet` | text, a built-in stylesheet or the path of a stylesheet |
+| `style` | styles |
 | `lines` | `square` or `round` |
 | `title-at` | a fraction from 0 to 1 |
 | `title-side` | `top` or `bottom` |
+| `sizing` | `auto` or `fixed` |
 
 ### `<type>`
 
@@ -167,7 +166,7 @@ The root has no ID, and a file has exactly one.
 
 ### `<style>`
 
-A style holds any look grafical can draw and says nothing of who uses it. An object names it with `style`, and a later name overrides an earlier one.
+A style holds any look grafical can draw and the room around what marks it, and says nothing of who uses it. An object names it with `style`, and where two styles say the same thing the one defined later in the file wins. A margin or a gap is in pixels, a multiple of 4, and an attribute that does not fit what marks it is left out.
 
 | Attribute | Value |
 |---|---|
@@ -176,6 +175,8 @@ A style holds any look grafical can draw and says nothing of who uses it. An obj
 | `border-width` | a number |
 | `color` | a color |
 | `weight` | a level or a number |
+| `margin-top` `margin-right` `margin-bottom` `margin-left` | pixels |
+| `row-gap` `column-gap` | pixels, for the diagram |
 
 ### `<check>`
 
@@ -219,14 +220,6 @@ A rule a diagram sets itself, marked by what follows it. It comes later, and its
 | `of` | a region, or `@diagram` for its layers |
 | `axis` | `across` or `down` |
 | `items` | references, one on each line |
-
-### `<gap>`
-
-| Attribute | Value |
-|---|---|
-| `between` | a layer, a group or a column |
-| `and` | its neighbour of one kind |
-| `magnified` | `1.25`, `1.5` or `2` |
 
 ### `<node>`
 
@@ -321,7 +314,6 @@ The legend is a small diagram, and its attributes are open.
 <diagram> {
   format: 1
   title: "Checkout"
-  density: normal
 }
 
 <type> db {
@@ -404,7 +396,7 @@ The legend is a small diagram, and its attributes are open.
 
 ## Stylesheets
 
-A stylesheet is a `.grafical` file that opens with a `<stylesheet>` block and holds `<type>`, `<style>` and `<weight>` blocks of looks and nothing else. A diagram names it with `style`, by a built-in name such as `dark` or by a path, which may lie anywhere. What each of its blocks takes is in the theme's spec.
+A stylesheet is a `.grafical` file that opens with a `<stylesheet>` block and holds `<type>`, `<style>` and `<weight>` blocks of looks and nothing else. A diagram names it with `stylesheet`, by a built-in name such as `dark` or by a path, which may lie anywhere. Its own `<style>` blocks are styles a diagram may mark, and they come before the diagram's. What each of its blocks takes is in the theme's spec.
 
 ## Decisions
 
@@ -413,6 +405,7 @@ A stylesheet is a `.grafical` file that opens with a `<stylesheet>` block and ho
 - [087. A type holds attributes](decisions/087-a-type-holds-attributes.md)
 - [088. A type may choose its shape](decisions/088-a-type-may-choose-its-shape.md)
 - [089. A style may be as rich as it likes](decisions/089-a-style-may-be-as-rich-as-it-likes.md)
+- [106. Styles set spacing as CSS does, and a later style wins](decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
 - [092. `like` follows an object's look and nothing else](decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
 - [096. An edge is steered by facts and never by coordinates](decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
 - [104. A stylesheet is a .grafical file, and the built-in ones form a library](decisions/104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md)

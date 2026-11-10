@@ -19,6 +19,6 @@ A `<label>` may mark styles as any object does. Its patch takes the style's `fil
 
 ## Consequences
 
-Built on 2026-11-06 for an edge's label, the one label with a patch of its own, as `label --style`.
+Built on 2026-11-06 for an edge's label, the one label with a patch of its own, and stated today as `label --set --style`.
 
 A label with a fill reads as a small tag, which may also suit a short run where an edge shows little past its label. That is not tried yet. A label beside its edge gains a patch that shows, so its clearance may need a look when it is built.

@@ -14,7 +14,7 @@ A trial of a search router on the routing cases cut crossings, and its pictures 
 - Two edges that swap sides in one gap leave level, enter level and take no jog.
 - A clean shape comes before few crossings, and few crossings come before no detour.
 - The router never widens a column gap for an edge.
-  - The agent does it with `gap`, so that room stays the agent's habit.
+  - The agent does it with a style's margin or the diagram's `column-gap`, so that room stays the agent's habit.
 - Where places leave a pair no clean route, one edge goes round the outside.
   - The write goes through and reports that the agent may move a node.
 

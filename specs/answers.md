@@ -8,7 +8,7 @@ Every command builds its answer from the same parts: the outcome, a block per pr
 
 No block writes the change for the agent: there is no fix, and `next` names commands without ids or values. The detail carries what the agent needs to find the change itself, such as the first and last layers a group's frame covers.
 
-A word grafical does not know is answered with the word it most likely means, as a value. `grafical help node` gives `found: help` and `likely: --help`. `grafical "node add" --help` and `grafical node.add --help` give `likely: node --add`, and `grafical nodee add --help` gives `found: nodee` and `likely: node`. A word is near a name when at most a third of its letters differ, or one.
+A word grafical does not know is answered with the word it most likely means, as a value. `grafical help node` gives `found: help` and `likely: --help`. `grafical "node set" --help` and `grafical node.set --help` give `likely: node --set`, and `grafical nodee set --help` gives `found: nodee` and `likely: node`. A word is near a name when at most a third of its letters differ, or one.
 
 ## Where a problem comes from
 

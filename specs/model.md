@@ -59,7 +59,7 @@ Nothing in the model reorders a layer on its own. Only lanes and columns move no
 
 `group --copy` builds a second zone, region or shard from the original in one operation. The copy holds the group's inner groups at every level, its nodes, and the edges whose two ends are both inside. With `--outside` it also holds every edge with one end inside, and that end moves to the copy.
 
-Every id in the copy follows one rule. The copy is the id the agent names. Every inner group and node gets its original's id with the suffix. An edge whose id is the default `<from>-><to>` gets the default id of its copied ends, so that `diff` shows a plain `edge.add`. Any other edge id gets the suffix. A number that tells two edges between one pair apart, such as `#2`, stays at the end.
+Every id in the copy follows one rule. The copy is the id the agent names. Every inner group, node and edge gets its original's id with the suffix.
 
 The copied group keeps the original's sublabel, its title's place and the group it sits in. Each copied node keeps everything its original has, and its group, alignment and steps point to the copies where they pointed inside. Each copied node joins its original's layer, before the first or after the last node of the group named as the place. Nodes placed by steps are copied too, while notes and walls are not.
 
@@ -73,7 +73,7 @@ The copy is refused rather than changed, so that what it makes is always what th
 
 ## The difference between two diagrams
 
-`grafical diff` turns the difference between a git revision of the file and the file on disk into operations, so that a reviewer reads a diagram change in the same words the agent wrote it. It reads the revision with `git show`, and a revision that has no such file counts as an empty one, so the lines start with `new`. It prints one command line per operation, and a shell that runs them on the revision's file gives the file on disk.
+`grafical diff` turns the difference between a git revision of the file and the file on disk into operations, so that a reviewer reads a diagram change in the same words the agent wrote it. It reads the revision with `git show`, and a revision that has no such file counts as an empty one, so the lines start with `diagram --set`. It prints one command line per operation, and a shell that runs them on the revision's file gives the file on disk.
 
 The operations come in an order in which each one is valid when it runs:
 
@@ -96,3 +96,4 @@ An alignment that a move would break is cleared before the move and set again af
 - [033. The agent states every order](decisions/033-the-agent-states-every-order.md)
 - [037. A group copy holds its inside](decisions/037-a-group-copy-holds-its-inside.md)
 - [105. One command is one write, and running it twice changes nothing](decisions/105-one-command-is-one-write-and-running-it-twice-changes-nothing.md)
+- [107. Every noun is changed by `--set`, `--move` and `--remove`](decisions/107-every-noun-is-changed-by-set-move-and-remove.md)

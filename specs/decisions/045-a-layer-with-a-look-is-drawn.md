@@ -8,16 +8,16 @@ Decided by the owner on 2026-10-18. In round p1g (bench/results/p1g-stage1.md), 
 
 ## The choice
 
-- **When a layer is drawn.** When an edge ends at it as before, or when the agent gives it a look with `layer --look <layer> box|band`.
+- **When a layer is drawn.** When an edge ends at it as before, or when the agent gives it a look with `layer --set <layer> --look box|band`.
   - A layer with neither is not drawn, so a diagram with no look draws as it did byte for byte.
 - **How it is drawn.** As a layer an edge ends at ("A layer with no node as one bar"):
   - One with nodes as a band around them, with its name in the band's head.
   - One with no nodes as one bar, with its name in it.
   - The look chooses a box's paint or the band's.
 - **A bar for its look alone.** A layer with no nodes and a look is a bar like one an edge ends at, and is checked as one.
-  - An edge that passes it is refused as `bar-crossed` unless `edge --pass` lets it, since "A layer with no node as one bar" refused a gateway drawn under edges that run over it without saying so.
+  - An edge that passes it is refused as `bar-crossed` unless `edge --set --pass on` lets it, since "A layer with no node as one bar" refused a gateway drawn under edges that run over it without saying so.
   - A bar between the first and last layers of a group is refused as `bar-in-group` on the layer's look.
-  - `layer --look` takes the look away and is among the commands that can change it ("Refusals say what happened and which commands can change it").
+  - `layer --set --look -` takes the look away and is among the commands that can change it ("Refusals say what happened and which commands can change it").
 - **Measured.** None of the 329 saved drafts and none of the 17 fixtures sets a look, and none changed.
   - Neither did any of the 2,000 fuzz seeds.
   - The fuzz test now gives a layer with nodes a look in two seeds of ten.

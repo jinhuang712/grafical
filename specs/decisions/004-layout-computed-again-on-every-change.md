@@ -30,7 +30,7 @@ A change keeps every fact it does not name, and positions may shift ("A change k
 - Gutters that grow by any amount, because nearly every edge addition would then move the layers below.
 - A "gutter full" defect.
   - Its fix costs the agent a round and moves more than growing would.
-  - The fix is a larger density, fewer edges or a split layer.
+  - The fix is a wider gap from a style, fewer edges or a split layer.
 - An aligned node that slides alone within its layer's spacing, as phase 1 first built it.
   - None of the three alignments in the public brief could hold that way.
 

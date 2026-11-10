@@ -8,7 +8,7 @@ The diagram file sat between a command and its arguments, as in `grafical edge a
 
 ## The choice
 
-A command names its file with `-f` or `--file` before the command, as in `grafical -f a.grafical edge --add x y`. The flag is required, and the same holds for `new`.
+A command names its file with `-f` or `--file` before the command, as in `grafical -f a.grafical edge --set x-y --from x --to y`. The flag is required, and the same holds for `diagram --set`, which makes the file.
 
 ## Not chosen
 

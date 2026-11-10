@@ -9,8 +9,7 @@ F2: Layout
 │   └── F2.4.1: Column headings — a label above a column
 ├── F2.5: Steps from another node — a node some cells from another
 │   └── F2.5.1: Offsets — a node a fraction of a cell off the grid
-├── F2.6: Spacing — compact, normal or airy
-│   └── F2.6.1: Region gaps — more room between two regions
+├── F2.6: Spacing — margins and gaps from styles
 ├── F2.7: How edges are drawn — grafical routes every edge
 │   ├── F2.7.1: Edge sides — the side an edge leaves or enters by
 │   ├── F2.7.2: Edge shapes — square or round
@@ -55,7 +54,7 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
   - [`layer`](../CLI.md#layer)
   - [`node`](../CLI.md#node)
 
-- A new layer goes to the bottom unless `--before` or `--after` places it.
+- A new layer goes to the bottom unless `--first`, `--before` or `--after` places it.
 - A node added to a layer or moved into another layer says where it goes: `--first` or `--last` or `--before` or `--after`.
   - Without one it is refused as `missing-field`, with the layer and the nodes in it.
   - Only the first node of an empty layer needs none ([033. The agent states every order](../specs/decisions/033-the-agent-states-every-order.md)).
@@ -66,15 +65,15 @@ A node sits in a layer, in an order. A layer only places, and is not drawn unles
 - `layer --split` moves the second half of a layer into a new layer below it.
   - With `--from <node>` it moves the nodes from that node on.
 - A layer can be removed only when it is empty, and the edges that end at it go with it.
-- `layer --look` draws a layer and its label even when no edge ends at it.
+- `layer --set --look` draws a layer and its label even when no edge ends at it.
   - `box` draws it with a node's paint and a dark label.
   - `band` draws it with the band's light fill and grey label.
   - Without a look, a layer is drawn only when an edge ends at it.
   - Then a layer with no node is drawn as a bar and a layer with nodes as a band.
   - A layer with no node and a look is a bar and is checked as one ([045. A layer with a look is drawn](../specs/decisions/045-a-layer-with-a-look-is-drawn.md)).
-  - An edge that passes it needs `--pass` (`bar-crossed`).
+  - An edge that passes it needs `--pass on` (`bar-crossed`).
   - It may not lie between the first and last layers of a group (`bar-in-group`).
-  - Taking the look away with `layer --look` clears `bar-in-group`.
+  - Taking the look away with `layer --set --look -` clears `bar-in-group`.
 
 - **Stance:** [What may the agent set?](../PHILOSOPHY.md#what-may-the-agent-set)
 - **Design:**
@@ -118,8 +117,8 @@ A second placement fact beside layers. Nothing is drawn: a column is a guide.
 
 - Every node of a column sits left of every node of the next column in all layers.
   - At least a layer's gap lies between them.
-  - Columns go left to right in the order they were added, unless placed `--before` or `--after` another.
-- A group as a member brings its nodes.
+  - Columns go left to right in the order they were made, unless `--first`, `--before` or `--after` places them.
+- `node --set --column` puts a node in a column.
   - A node in no column keeps its place beside the node left of it.
 - An order that another fact contradicts is refused as `column-order`, naming two nodes whose order cannot hold.
 - A diagram has columns or lanes that run as columns, not both (`column-lanes`).
@@ -189,35 +188,29 @@ A node snaps to its cell, unless an agent takes it off with a fraction of a cell
 
 ## F2.6: Spacing
 
-A diagram's spacing is compact, normal or airy, and it changes nothing else.
+How far apart things sit comes from styles, as margins and gaps do in CSS. It changes no fact.
 
-- **Commands:** [`diagram`](../CLI.md#diagram)
+- **Commands:**
+  - [`style`](../CLI.md#style)
+  - [`diagram`](../CLI.md#diagram)
 
-- **Design:** [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
+- A style holds a margin for each side, and the diagram's style also holds `row-gap` and `column-gap`.
+  - Each is in pixels, a multiple of 4 and never below 0.
+  - A margin counts on a node · a group · a layer · a lane · a column · the diagram.
+- Two neighbours in a layer sit `column-gap` apart, plus the margins that face each other.
+  - A node's left and right margins widen its column in every layer.
+- Two layers sit `row-gap` apart, plus the largest bottom margin above and the largest top margin below.
+  - A gutter still grows in fixed steps for the edges it holds.
+- The default stylesheet gives `row-gap` 40 · `column-gap` 32 · a margin of 32 round the diagram, and every other margin 0.
+  - Its styles `compact` and `airy` make a whole diagram tighter or roomier.
+
+- **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 - **How it works:** [Placement: layers down the page](../specs/placement.md#layers-down-the-page)
-- **Why:** [004. Layout computed again on every change](../specs/decisions/004-layout-computed-again-on-every-change.md)
+- **Why:** [106. Styles set spacing as CSS does, and a later style wins](../specs/decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
 
 **Stories:**
 
-- An agent picks a density, to trade size for air.
-
-### F2.6.1: Region gaps
-
-The gap between two neighbouring regions may be magnified, by a multiple of its default. A region is a layer, a group or a column, and both must be of one kind.
-
-- **Commands:** [`gap`](../CLI.md#gap)
-
-- A multiple may be 1.25, 1.5 or 2.
-- It follows the density, so a multiple of a compact gap stays narrower than one of an airy gap.
-- Two regions that are not neighbours of one kind are refused as `not-neighbours`.
-- Two groups are neighbours when a node of one stands next to a node of the other in a layer, or when one ends in the layer above the other's first.
-- A gap whose regions stop being neighbours stays stated and does nothing, and a gap goes when its region goes.
-
-- **Why:** [079. The gap between two regions may be magnified](../specs/decisions/079-the-gap-between-two-regions-may-be-magnified.md)
-
-**Stories:**
-
-- An agent opens the gap between two layers, to settle one crowded place.
+- An agent gives one crowded place more room, to settle it without spreading the whole picture.
 
 ## F2.7: How edges are drawn
 
@@ -237,7 +230,7 @@ The agent says what connects. grafical draws every edge.
   - `node --size` is among the commands that can change it.
   - grafical never widens a node for its edges.
   - A step's number is refused the same way.
-- grafical never widens a column gap for an edge: the agent does it with `gap --between`.
+- grafical never widens the room between columns for an edge: the agent does it with a style's margin or the diagram's `column-gap`.
 
 - **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
 - **How it works:**
@@ -284,12 +277,14 @@ All the edges of a diagram share one shape, and the routes stay the same.
 
 An edge carries its label, and the edge passes through it. An agent may take one label off its edge.
 
-- **Commands:** [`edge`](../CLI.md#edge)
+- **Commands:**
+  - [`edge`](../CLI.md#edge)
+  - [`label`](../CLI.md#label)
 
 - A label sits on its edge by default, on an edge that turns too.
 - A label on a vertical run sits at the run's middle, or the nearest clear place to it.
-- `beside` puts the label next to its edge.
-- `edge --label-at` on an edge with no label is refused as `bad-value`, and clearing a label clears its seat.
+- `label --set --seat beside` puts the label next to its edge.
+- A seat on an edge with no label is refused as `bad-value`, and clearing a label clears its seat.
 - Edges do not yet move apart for a label, past wrapping it.
 
 - **Why:** [066. An edge's label sits on its edge](../specs/decisions/066-an-edge-s-label-sits-on-its-edge.md)
@@ -305,10 +300,10 @@ An agent steers an edge with facts and never with a coordinate. Every step here 
 | `--via` | the node or group an edge passes and on which side | `via-blocked` |
 | `--with` | one trunk with an edge that shares an end | `no-trunk` |
 
-- A value goes back to the engine with the same flag and no value.
+- `-` gives a value back to the engine.
 - `--with` draws a tree with one spine: each child leaves the trunk square into its own side.
   - A side the agent stated holds, and with none the edge takes the first side that reaches the trunk.
-- An edge with a label or a step's number takes none of `--with` · `--bend` · `--stretch`, since the text would stay behind.
+- An edge with a label or a step's number takes none of `--with` · `--bend-at` · `--stretch`, since the text would stay behind.
 - A step that meets a node or a label or comes within 12 px along another edge refuses the write.
 
 - **Design:** [5. The engine routes every edge, in plain forms](../DESIGNS.md#5-the-engine-routes-every-edge-in-plain-forms)
@@ -337,7 +332,7 @@ Edges meet the rules the owner set on 2026-11-07, so that the eye can follow the
 
 ### F2.7.6: Straight edges
 
-`edge --straight` states an edge with no bend, and an edge that cannot run straight is refused as `not-straight`. No picture has shown it helps yet.
+`edge --set --straight on` states an edge with no bend, and an edge that cannot run straight is refused as `not-straight`. No picture has shown it helps yet.
 
 - **Commands:** [`edge`](../CLI.md#edge)
 
@@ -345,7 +340,7 @@ Edges meet the rules the owner set on 2026-11-07, so that the eye can follow the
 
 ### F2.7.7: Bends
 
-`edge --bend` states where between its neighbours the longest inner run sits, and a bend that cannot hold is refused as `bend-blocked`. No picture has shown it helps yet.
+`edge --set --bend-at` states where between its neighbours the longest inner run sits, and a bend that cannot hold is refused as `bend-blocked`. No picture has shown it helps yet.
 
 - **Commands:** [`edge`](../CLI.md#edge)
 
@@ -353,7 +348,7 @@ Edges meet the rules the owner set on 2026-11-07, so that the eye can follow the
 
 ### F2.7.8: Stretches
 
-`edge --stretch` states how far a detour reaches, and a stretch that cannot hold is refused as `stretch-blocked`. No picture has shown it helps yet.
+`edge --set --stretch` states how far a detour reaches, and a stretch that cannot hold is refused as `stretch-blocked`. No picture has shown it helps yet.
 
 - **Commands:** [`edge`](../CLI.md#edge)
 

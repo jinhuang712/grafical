@@ -8,7 +8,7 @@ An agent wants one look on objects of many sorts. A style that picks its own obj
 
 ## The choice
 
-A `<style>` holds every look grafical can draw and says nothing of who uses it. An object that wants it names it with `style`. It may name several, and a later one overrides an earlier one. An object beats a style, a style beats a type, and a type beats the theme. `show` gives each value's source.
+A `<style>` holds every look grafical can draw and says nothing of who uses it. An object that wants it names it with `style`. It may name several, and where two say the same thing the one defined later in the file wins ("Styles set spacing as CSS does, and a later style wins"). An object beats its styles, its styles beat what it follows with `like`, that beats its type, and the type beats the stylesheet. `show` gives each value's source.
 
 ## Not chosen
 

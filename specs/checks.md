@@ -49,17 +49,17 @@ Where drawing would hide something a reader needs, the write is refused as a def
 - An edge's label or a step's badge that no gutter on its way holds clear of the other edges is `label-blocked`.
   - The refusal names the edge, and the edges across the label as `across`.
   - It also names the borders the label crosses and the gutters it tried, each `<layer above>/<layer below>`.
-  - Its `next` is `layer --move` and `node --size` and `node --move` and `edge --label` and `edge --number`.
+  - Its `next` is `layer --move` · `node --set` · `node --move` · `edge --set`.
 - A wall's label with no clear place along its wall is `label-blocked` with `is: wall`.
   - It names the wall and the edges and nodes in the way.
-  - Its `next` is `wall --label` and `node --move`.
+  - Its `next` is `node --move` · `wall --set`.
 - A note's card with no clear place beside its target is `label-blocked` with `is: note`.
   - It names the target and the edges and nodes in the way.
-  - Its `next` is `note --add`, `note --remove` and `node --move`.
+  - Its `next` is `node --move` · `note --set` · `note --remove`.
 - A group's label that an edge comes near is `title-blocked`, naming the group and the edges.
   - It also lists as `clear` the other places where no edge would come near, each found by laying the diagram out again.
   - Checking whether the file already had the problem leaves `clear` out, since each place takes a layout.
-  - Its `next` is `group --label-at`, `node --move` and `edge --remove`.
+  - Its `next` is `node --move` · `edge --remove` · `label --set`.
 
 Where drawing only costs, the picture is drawn and every write reports it. An edge with more than two bends is the one such case today: it is a `bent-edge` warning and counts in `bent`.
 
@@ -71,15 +71,15 @@ A warning names something the picture draws poorly. Every write prints every war
 
 | Code | `next` |
 |---|---|
-| `bent-edge` | `layer --move` · `node --move` · `node --swap` |
-| `passing-layer` | `layer --move` · `node --move` · `node --swap` |
-| `edge-across-group` | `group --order` · `node --move` · `node --swap` |
-| `tight-edges` | `layer --move` · `node --move` · `node --swap` |
-| `crowded-label` | `node --move` · `node --swap` · `edge --label` |
-| `lonely-node` | `node --remove` · `edge --add` |
+| `bent-edge` | `layer --move` · `node --move` |
+| `passing-layer` | `layer --move` · `node --move` |
+| `edge-across-group` | `node --move` · `group --move` |
+| `tight-edges` | `layer --move` · `node --move` |
+| `crowded-label` | `node --move` · `edge --set` |
+| `lonely-node` | `node --remove` · `edge --set` |
 | `node-aside` | `node --move` |
-| `edge-per-member` | `edge --add` · `edge --remove` |
-| `crossing` | `group --order` · `layer --move` · `node --move` · `node --swap` |
+| `edge-per-member` | `edge --set` · `edge --remove` |
+| `crossing` | `layer --move` · `node --move` · `group --move` |
 
 An edge that ends at a group, a layer or a lane reaches every node in it, so none of those nodes is a `lonely-node`.
 

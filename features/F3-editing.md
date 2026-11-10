@@ -6,9 +6,9 @@ F3: Editing
 ├── F3.2: Trying a change — see counts before writing
 ├── F3.3: IDs — the caller names every element
 ├── F3.4: Refusals — a wrong operation is refused with facts
-├── F3.5: Merging and swapping — merge, swap and remove nodes
+├── F3.5: Merging — several nodes become one
 ├── F3.6: More combinations of operations — one operation for a common edit
-└── F3.7: Move and plug — one verb to move things and one to change connections
+└── F3.7: Moving — objects placed in a stated order
 ```
 
 An agent changes a diagram only through named operations, and grafical checks each one before it writes anything. The agent sends one command at a time, can try a change before making it, and names every element itself. When something is wrong, the write is refused, the file stays as it was, and the refusal says what happened and which commands can change it.
@@ -33,11 +33,14 @@ Every failure leaves the file as it was and says what happened, in the block des
 Every change to a diagram is one named operation, run as a command. The diagram file is `<name>.grafical` by convention.
 
 - **Commands:**
-  - [`new`](../CLI.md#new)
+  - [`diagram`](../CLI.md#diagram)
   - [`node`](../CLI.md#node)
 
-- On the command line an operation is `grafical -f <file> <noun> --<verb> …`.
+- On the command line an operation is `grafical -f <file> <noun> --<verb> <ids> …`.
   - Every other value is a flag, such as `--label`.
+- Every noun takes `--set` to make or change an object and `--remove` to remove it, and a noun with a place takes `--move`.
+  - `--set` changes only the attributes it names, and run twice it changes nothing.
+  - One flag sets one attribute, and `-` gives it back its default.
 - One command is one write, and a shell chains many commands in one call.
 - Every write reports the IDs it changed, then one block for each problem.
   - A block says what the write is refused for, or what the picture draws poorly ([F3.4: Refusals](#f34-refusals) and [F5.3: Warnings](F5-checking.md#f53-warnings)).
@@ -58,6 +61,7 @@ Every change to a diagram is one named operation, run as a command. The diagram 
   - [069. One name for each thing, and a name says what it is](../specs/decisions/069-one-name-for-each-thing-and-a-name-says-what-it-is.md)
   - [082. A command's verb is a flag](../specs/decisions/082-a-command-s-verb-is-a-flag.md)
   - [105. One command is one write, and running it twice changes nothing](../specs/decisions/105-one-command-is-one-write-and-running-it-twice-changes-nothing.md)
+  - [107. Every noun is changed by `--set`, `--move` and `--remove`](../specs/decisions/107-every-noun-is-changed-by-set-move-and-remove.md)
 
 **Stories:**
 
@@ -69,7 +73,7 @@ See what a command would do before making it.
 
 - **Commands:** [Global flags](../CLI.md#global-flags)
 
-Every command that writes takes `--try`, except `new`. It runs the command without writing, and prints the drawing's counts before and after it and a `delta` record of the change in each. The agent decides what to try, and grafical measures.
+Every command that writes takes `--try`. It runs the command without writing, and prints the drawing's counts before and after it and a `delta` record of the change in each. The agent decides what to try, and grafical measures.
 
 - A command that the write would refuse is refused the same way.
 - With `--json` it prints `{ok, changed, before, after, delta}`.
@@ -92,9 +96,10 @@ Every command that writes takes `--try`, except `new`. It runs the command witho
 The caller names every layer, group, lane, column, wall, node and edge, and a name never changes while the element exists.
 
 - A rename changes the label, never the ID.
-- An edge's ID defaults to `<from>-><to>`, with a suffix when the same pair is connected twice.
-  - A reversed edge keeps its ID.
-- A taken ID is refused, with a free one suggested.
+- An edge's ID is the agent's too, such as `api-db`, and follows the rule of every other ID.
+  - An edge whose ends change keeps its ID.
+- `--set` on an ID that exists changes that object.
+  - An ID another sort of object holds is refused as `duplicate-id`.
 
 - **Design:** [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
 - **How it works:** [The model](../specs/model.md)
@@ -113,14 +118,14 @@ failed changed=-
 
 error: unknown-type
 description: No type has the name, or it is a type of another sort of object.
-source: grafical -f arch.grafical node --add db --layer storage --label DB --type database
+source: grafical -f arch.grafical node --set db --layer storage --label DB --type database
 detail:
   field: type
   found: database
   likely: store
   near: -
   allowed: service, store, queue, external, actor, state, terminal, decision, initial, final, choice
-next: type --add
+next: type --set
 ```
 
 - The kind is one of three:
@@ -152,18 +157,17 @@ next: type --add
 
 - An agent that asks for something wrong gets what happened and which commands can change it, to fix it alone.
 
-## F3.5: Merging and swapping
+## F3.5: Merging
 
-Three operations change which nodes a diagram has or where two of them sit.
+Several nodes become one, and a node goes with its edges.
 
 - **Commands:** [`node`](../CLI.md#node)
 
-- `merge` replaces nodes with one new node where the first one was.
+- `node --merge` replaces nodes with one new node where the first one was.
   - It keeps each of their edges once and drops the edges between them.
   - It may reuse a merged node's ID.
   - Nodes aligned to a merged node lose the alignment.
-- `swap` trades the places of two nodes: their layer and place.
-- `remove` takes the node's edges with it and reports their IDs.
+- `node --remove` takes the node's edges with it and reports their IDs.
   - A node that others are placed by steps from stays while they are (`step-anchor`).
 
 - **Design:**
@@ -174,7 +178,7 @@ Three operations change which nodes a diagram has or where two of them sit.
 
 **Stories:**
 
-- An agent merges nodes or swaps two, to change the picture without redrawing it.
+- An agent merges nodes, to change the picture without redrawing it.
 
 ## F3.6: More combinations of operations
 
@@ -186,23 +190,24 @@ One operation for a common edit or a common shape, such as "put a cache between 
 
 - An agent makes a common edit in one operation, to spend fewer steps.
 
-## F3.7: Move and plug
+## F3.7: Moving
 
-Two verbs stand above the nouns and take IDs. `move` changes where things sit, and `plug` changes what an edge connects.
+`--move` places objects in the order it names them, so one command states a whole layer's order.
 
 - **Commands:**
-  - [`move`](../CLI.md#move)
-  - [`plug`](../CLI.md#plug)
+  - [`node`](../CLI.md#node)
+  - [`layer`](../CLI.md#layer)
+  - [`group`](../CLI.md#group)
+  - [`column`](../CLI.md#column)
 
-- `move` takes nodes · layers · groups, and later lanes and columns.
-  - Several objects keep their order among themselves.
+- Nodes · layers · groups · columns · styles take `--move`.
+  - Several objects keep the order given among themselves.
   - One that cannot move refuses them all.
-  - An option that does not fit an object is refused.
-- `move` replaces `node --move`, `layer --move` and `group --order`.
-- `plug` replaces `edge --ends`, and other objects may take it later.
+- Swapping two nodes is moving each to the other's place.
+- `edge --set --from` or `--to` changes what an edge connects.
 
 - **Design:** [1. Operations are the only way a diagram changes](../DESIGNS.md#1-operations-are-the-only-way-a-diagram-changes)
-- **Why:** [094. `move` and `plug` stand above the nouns](../specs/decisions/094-move-and-plug-stand-above-the-nouns.md)
+- **Why:** [107. Every noun is changed by `--set`, `--move` and `--remove`](../specs/decisions/107-every-noun-is-changed-by-set-move-and-remove.md)
 
 **Stories:**
 

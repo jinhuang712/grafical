@@ -42,8 +42,7 @@ Features
 │   │   └── ⬜ F2.4.1: Column headings — a label above a column
 │   ├── 🚧 F2.5: Steps from another node — a node some cells from another (offsets not built)
 │   │   └── ⬜ F2.5.1: Offsets — a node a fraction of a cell off the grid
-│   ├── ✅ F2.6: Spacing — compact, normal or airy
-│   │   └── ✅ F2.6.1: Region gaps — more room between two regions
+│   ├── ✅ F2.6: Spacing — margins and gaps from styles
 │   ├── 🚧 F2.7: How edges are drawn — grafical routes every edge (edges do not move apart for labels, and most rules for clean edges are not built)
 │   │   ├── ✅ F2.7.1: Edge sides — the side an edge leaves or enters by
 │   │   ├── ✅ F2.7.2: Edge shapes — square or round
@@ -59,11 +58,11 @@ Features
 │   ├── ✅ F3.2: Trying a change — see counts before writing
 │   ├── ✅ F3.3: IDs — the caller names every element
 │   ├── ✅ F3.4: Refusals — a wrong operation is refused with facts
-│   ├── ✅ F3.5: Merging and swapping — merge, swap and remove nodes
+│   ├── ✅ F3.5: Merging — several nodes become one
 │   ├── ⬜ F3.6: More combinations of operations — one operation for a common edit
-│   └── 🚧 F3.7: Move and plug — one verb to move things and one to change connections (`move` not built)
+│   └── ✅ F3.7: Moving — objects placed in a stated order
 ├── 🚧 F4: Look — how the picture looks (the legend as a small diagram and brand fonts not built)
-│   ├── ✅ F4.1: Title, subtitle and footnote — the words around the picture
+│   ├── ✅ F4.1: Title, subtitle and caption — the words around the picture
 │   ├── 🚧 F4.2: Legend — a key for styles, widths and marks (the legend as a small diagram not built)
 │   │   └── ⬜ F4.2.1: A legend as a small diagram — entries, their layout and their samples
 │   ├── ✅ F4.3: Built-in stylesheets — the whole look from one name

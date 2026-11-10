@@ -22,7 +22,7 @@ grafical is designed around 15 guidelines:
 
 ## 1. Operations are the only way a diagram changes
 
-Every change is a named operation, such as `node.add`, applied to a diagram file that nobody edits by hand. One command is one operation and writes on its own, and the caller picks every ID, which never changes. Cost: every new ability needs an operation, a chain of commands that stops halfway leaves the changes it made, and the agent must invent unique names.
+Every change is a named operation, such as `node.set`, applied to a diagram file that nobody edits by hand. One command is one operation and writes on its own, and the caller picks every ID, which never changes. Cost: every new ability needs an operation, a chain of commands that stops halfway leaves the changes it made, and the agent must invent unique names.
 
 **Ask:** Does this change go through a named operation that is checked before anything is written?
 
@@ -35,9 +35,9 @@ Every change is a named operation, such as `node.add`, applied to a diagram file
 
 ## 2. Places are facts, never coordinates
 
-A node's place is its layer, its order in the layer, its group, its column, an alignment, a number of steps from another node, or a fraction of a cell off its cell. How far apart things sit is the engine's, and an agent may ask for a multiple of it between two regions. Cost: an agent moves one node only by a stated fraction of the grid, and every new need for placement becomes a new fact.
+A node's place is its layer, its order in the layer, its group, its column, an alignment, a number of steps from another node, or a fraction of a cell off its cell. How far apart things sit comes from the styles an object marks, as margins and gaps in pixels on the 4 px grid, and never as a position. Cost: an agent moves one node only by a stated fraction of the grid, and every new need for placement becomes a new fact.
 
-**Ask:** Does this ask the agent for a position, a size in pixels or a bend point?
+**Ask:** Does this ask the agent for a position, a node's size in pixels or a bend point?
 
 - **Stance:** [What may the agent set?](PHILOSOPHY.md#what-may-the-agent-set)
 - **Decisions:**
@@ -45,7 +45,7 @@ A node's place is its layer, its order in the layer, its group, its column, an a
   - [003. Layers unseen, groups as systems](specs/decisions/003-layers-unseen-groups-as-systems.md)
   - [027. Columns beside layers](specs/decisions/027-columns-beside-layers.md)
   - [031. Steps from another node](specs/decisions/031-steps-from-another-node.md)
-  - [079. The gap between two regions may be magnified](specs/decisions/079-the-gap-between-two-regions-may-be-magnified.md)
+  - [106. Styles set spacing as CSS does, and a later style wins](specs/decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
   - [093. A node may sit off its cell by a fraction](specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md)
 - **How it works:** [Placement](specs/placement.md)
 
@@ -164,7 +164,7 @@ A file of a newer format, a field the schema does not know, a mark file that cha
 
 ## 11. Looks are free, while shape and dash follow the type
 
-Any object may take any color, a mark may be any emoji, text or file, and an edge may take any width from 0.5 to 8 px. A look comes from the object, then the styles it marks, then the object it follows with `like`, then its type, then the theme. A node's shape and an edge's dash come from its type, so that a reader can trust them. Cost: two diagrams can look different, the legend has to say what a color, a width or a mark means, and a look a team shares lives in a second file.
+Any object may take any color, a mark may be any emoji, text or file, and an edge may take any width from 0.5 to 8 px. A look comes from the object, then the styles it marks with the later one in the file winning, then the object it follows with `like`, then its type, then the stylesheet. A node's shape and an edge's dash come from its type, so that a reader can trust them. Cost: two diagrams can look different, the legend has to say what a color, a width or a mark means, and a look a team shares lives in a second file.
 
 **Ask:** Is this a look the agent may choose freely, or a place that must stay a fact?
 
@@ -192,6 +192,7 @@ Every operation is a command, every command takes `--json`, and every write repo
   - [021. The help as the reference](specs/decisions/021-the-help-as-the-reference.md)
   - [042. One entry page, help where it is used](specs/decisions/042-one-entry-page-help-where-it-is-used.md)
   - [043. Help for the tool, guides for best practice](specs/decisions/043-help-for-the-tool-guides-for-best-practice.md)
+  - [107. Every noun is changed by `--set`, `--move` and `--remove`](specs/decisions/107-every-noun-is-changed-by-set-move-and-remove.md)
 - **How it works:**
   - [Architecture](specs/ARCHITECTURE.md)
   - [How grafical answers](specs/answers.md)
@@ -208,7 +209,7 @@ Every write lays out, routes and checks the whole diagram again ([4. A change ke
 
 ## 14. One shortest way for each situation
 
-In one situation an agent has one shortest way to do a thing. Stating a fact while making an element and changing it later are two situations, and each keeps its own way. Cost: a convenient short form goes when it repeats another, and every new command must name the situation it serves.
+In one situation an agent has one shortest way to do a thing. Making an element and changing it later share `--set`, so one form states a fact either way. Cost: a convenient short form goes when it repeats another, and every new command must name the situation it serves.
 
 **Ask:** Is there already a way to do this in the same situation, and which of the two is shorter?
 

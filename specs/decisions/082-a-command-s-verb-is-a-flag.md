@@ -8,7 +8,7 @@ A command ran three levels deep, as in `grafical edge look <file> <id> --color <
 
 ## The choice
 
-A command is a noun and flags: `grafical -f <file> edge --look <id> --color <color>`. A verb is a flag that takes the ID, and the other flags are its values. A call holds one verb. Only `move` and `plug` stand above the nouns.
+A command is a noun and flags: `grafical -f <file> edge --set <id> --label <text>`. A verb is a flag that takes the ID, and the other flags are its values. A call holds one verb ("Every noun is changed by `--set`, `--move` and `--remove`").
 
 ## Not chosen
 
