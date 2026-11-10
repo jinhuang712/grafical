@@ -101,3 +101,4 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [102. Routing trouble that placement can fix is the agent's](102-routing-trouble-that-placement-can-fix-is-the-agent-s.md) (2026-11-08)
 - [103. The canvas grows with what it holds](103-the-canvas-grows-with-what-it-holds.md) (2026-11-09)
 - [104. A stylesheet is a .grafical file, and the built-in ones form a library](104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md) (2026-11-09)
+- [106. Styles set spacing as CSS does, and a later style wins](106-styles-set-spacing-as-css-does-and-a-later-style-wins.md) (2026-11-10)
