@@ -267,7 +267,7 @@ describe("group operations", () => {
     expect(d2.groups).toEqual([{ id: "g", label: "G" }]);
   });
 
-  it("parses batch items, and reports an empty node list", () => {
+  it("parses operation items, and reports an empty node list", () => {
     expect(parseOp({ op: "group.join", group: "g", nodes: ["a"] }, 0)).toEqual({
       op: "group.join",
       group: "g",

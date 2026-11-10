@@ -369,7 +369,7 @@ describe("groups", () => {
 });
 
 describe("parsing", () => {
-  it("every new operation parses from a batch item", () => {
+  it("every new operation parses from its fields", () => {
     const items = [
       { op: "diagram.title", text: "T" },
       { op: "diagram.density", density: "airy" },

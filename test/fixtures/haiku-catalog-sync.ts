@@ -1,6 +1,6 @@
 // The operations Haiku sent while it built the public brief
 // bench/briefs/catalog-sync.md through the command line, in order, in the phase 1
-// smoke test. Its batch file, show and check are left out: they change nothing.
+// smoke test. Its show and check calls are left out: they change nothing.
 // Five of these writes failed then on defects that no operation could fix: two
 // edge overlaps between opposite edges in one gutter, and a label that later
 // edges crossed.
