@@ -98,9 +98,9 @@ describe("the words a caller types", () => {
     run([...f, "node", "--set", "y", "--layer", "l", "--last", "--label", "Y"]);
     run([...f, "edge", "--set", "x-y", "--from", "x", "--to", "y"]);
     const out = run([...f, "show", "x"]).out;
-    expect(out).toContain("node x\n");
+    expect(out).toMatch(/^OK\n<object>\n {2}node x\n/);
     expect(out).toContain('label: "X"');
-    expect(out).toContain("used by:\n  edge x-y\n");
+    expect(out).toContain("  used by:\n    edge x-y\n");
     expect(run([...f, "show", "nope"]).code).toBe(2);
   });
 });

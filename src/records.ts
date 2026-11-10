@@ -1,8 +1,8 @@
 // What grafical prints, as records (specs/decisions, "Records over prose"): one line each, a word that names
 // the record, then key=value fields, in the logfmt style. The fields are the JSON's,
 // under the same names, so the text and --json say the same thing in the same words. A problem
-// prints as a block of edges instead (specs/decisions, "Refusals say what happened and which commands
-// can change it").
+// prints as a block instead (specs/decisions, "Refusals say what happened and which commands
+// can change it"), and an answer puts its parts in sections, each in a tag.
 
 /** A field's value: none is "-", a list is comma separated, a count by name is "name:n". */
 export type Value =
@@ -38,10 +38,17 @@ function quote(s: string, special: RegExp): string {
   return special.test(s) ? JSON.stringify(s) : s;
 }
 
+/** Fields as key=value, in the order given, with no name before them. */
+export function fields(f: { readonly [k: string]: Value }): string {
+  return Object.entries(f)
+    .map(([k, v]) => `${k}=${text(v)}`)
+    .join(" ");
+}
+
 /** One record: its name, then each field as key=value, in the order given. */
-export function record(name: string, fields: { readonly [k: string]: Value }): string {
-  const parts = Object.entries(fields).map(([k, v]) => `${k}=${text(v)}`);
-  return parts.length === 0 ? name : `${name} ${parts.join(" ")}`;
+export function record(name: string, f: { readonly [k: string]: Value }): string {
+  const parts = fields(f);
+  return parts === "" ? name : `${name} ${parts}`;
 }
 
 /** A value in a block's detail: as it reads, on one line; a list comma separated; none is "-". */
@@ -61,8 +68,9 @@ export function oneLine(s: string): string {
 }
 
 /**
- * One problem as a block of edges (specs/decisions, "Refusals say what happened and which commands can change it"): its
- * kind and code, its code's sentence, its source, its facts one per line, and the commands that can change it.
+ * One problem as a block (specs/decisions, "Refusals say what happened and which commands can change it"): its kind in
+ * capitals and its code, then indented under them its code's sentence, its source, its facts one per line, and the
+ * commands that can change it. The lines come back unindented as a whole, for the section that holds them.
  */
 export function block(b: {
   kind: string;
@@ -71,12 +79,17 @@ export function block(b: {
   source?: string;
   detail: { readonly [k: string]: Value };
   next: readonly string[];
-}): string {
-  const lines = [`${b.kind}: ${b.code}`, `description: ${b.description}`];
-  if (b.source !== undefined) lines.push(`source: ${oneLine(b.source)}`);
+}): string[] {
+  const lines = [`${b.kind.toUpperCase()} ${b.code}`, `  description: ${b.description}`];
+  if (b.source !== undefined) lines.push(`  source: ${oneLine(b.source)}`);
   const facts = Object.entries(b.detail).filter(([, v]) => v !== undefined);
-  if (facts.length === 0) lines.push("detail: -");
-  else lines.push("detail:", ...facts.map(([k, v]) => `  ${k}: ${plain(v)}`));
-  lines.push(`next: ${b.next.length === 0 ? "-" : b.next.join(", ")}`);
-  return lines.join("\n");
+  if (facts.length === 0) lines.push("  detail: -");
+  else lines.push("  detail:", ...facts.map(([k, v]) => `    ${k}: ${plain(v)}`));
+  lines.push(`  next: ${b.next.length === 0 ? "-" : b.next.join(", ")}`);
+  return lines;
+}
+
+/** A section of an answer: its name in a tag, then each line two spaces in, then the closing tag. */
+export function section(name: string, lines: readonly string[]): string[] {
+  return [`<${name}>`, ...lines.map((l) => (l === "" ? "" : `  ${l}`)), `</${name}>`];
 }

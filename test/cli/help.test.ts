@@ -139,7 +139,7 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
     for (const code of [...ERROR_CODES, ...DEFECT_CODES]) expect(src, code).toContain(`"${code}"`);
   });
 
-  it('names every warning in check\'s Output (specs/decisions, "Every write prints every warning")', () => {
+  it('names every warning in check\'s Output (specs/decisions, "An answer says what happened, and a write reports only what it changed")', () => {
     const output = PAGES.check?.after?.split("Output:\n")[1]?.split("\n\n")[0] ?? "";
     for (const code of WARNING_CODES)
       expect(output, code).toMatch(new RegExp(`^ {4}${code} `, "m"));
@@ -201,15 +201,16 @@ describe('help pages (specs/decisions, "One entry page, help where it is used")'
       code: 2,
       out: "",
       err: [
-        "failed changed=-",
-        "",
-        "error: unknown-command",
-        "description: No command has the name.",
-        'source: grafical "node set" --help',
-        "detail:",
-        "  found: node set",
-        "  likely: node --set",
-        "next: -",
+        "REFUSED",
+        "<problems>",
+        "  ERROR unknown-command",
+        "    description: No command has the name.",
+        '    source: grafical "node set" --help',
+        "    detail:",
+        "      found: node set",
+        "      likely: node --set",
+        "    next: -",
+        "</problems>",
         "",
       ].join("\n"),
     });
@@ -220,11 +221,12 @@ describe('guides (specs/decisions, "Help for the tool, guides for best practice"
   it("library lists the built-in stylesheets and finds them by a word", () => {
     const all = run("library");
     expect(all.code).toBe(0);
-    expect(all.out.split("\n").filter((l) => l.startsWith("stylesheet ")).length).toBe(3);
+    expect(all.out.split("\n").filter((l) => l.startsWith("  stylesheet ")).length).toBe(3);
     expect(run("library", "dark").out).toBe(
-      'stylesheet name=dark about="Light lines on a dark ground."\n',
+      'OK\n<stylesheets>\n  stylesheet name=dark about="Light lines on a dark ground."\n</stylesheets>\n',
     );
-    expect(run("library", "neon").out).toBe("stylesheet -\n");
+    // A section with nothing in it is left out.
+    expect(run("library", "neon").out).toBe("OK\n");
   });
 
   it("grafical guide lists every guide, and prints each whole, at 80 columns", () => {
@@ -244,8 +246,8 @@ describe('guides (specs/decisions, "Help for the tool, guides for best practice"
     expect(run("guide", "cloud").out).toBe(`${GUIDES.infrastructure?.text}\n`);
     const r = run("guide", "flowchat");
     expect(r.code).toBe(2);
-    expect(r.err).toContain("error: unknown-guide\n");
-    expect(r.err).toContain("detail:\n  found: flowchat\n  likely: flowchart, ");
+    expect(r.err).toContain("  ERROR unknown-guide\n");
+    expect(r.err).toContain("    detail:\n      found: flowchat\n      likely: flowchart, ");
   });
 
   it("names only kinds and guides that exist", () => {
@@ -267,33 +269,36 @@ describe('the counts in place of hints (specs/decisions, "Records over prose")',
   }
 
   it("check prints the counts, and an edge bent more than twice as a warning, with no advice", () => {
-    // The edge round the upload queue is a warning of what happened, with the commands that can change it, and no
-    // source: the outcome line names what a write changed (specs/decisions, "Refusals say what happened and which commands
-    // can change it").
+    // The edge round the upload queue is a warning of what happened, with the commands that can change it, and the file
+    // as its source (specs/decisions, "An answer says what happened, and a write reports only what it changed").
     const bent = [
-      "warning: bent-edge",
-      "description: An edge bends more than twice, mostly because it skips layers.",
-      "detail:",
-      "  edge: api-photos",
-      "  bends: 4",
-      "  skip: 1",
-      "next: layer --move, node --move",
+      "  WARNING bent-edge",
+      "    description: An edge bends more than twice, mostly because it skips layers.",
+      "    source: already in the file",
+      "    detail:",
+      "      edge: api-photos",
+      "      bends: 4",
+      "      skip: 1",
+      "    next: layer --move, node --move",
     ].join("\n");
     const out = run("check", photos()).out;
-    expect(out.startsWith(`ok\n\n${bent}\n\ncounts nodes=`)).toBe(true);
-    expect(out).toMatch(/^counts nodes=\d+ edges=\d+ crossings=\d+ bends=\d+ bent=1 /m);
+    expect(out).toMatch(
+      /^OK\n<counts>\n {2}nodes=\d+ edges=\d+ crossings=\d+ bends=\d+ bent=1 .*\n<\/counts>\n<problems>\n/,
+    );
+    expect(out).toContain(`<problems>\n${bent}\n</problems>\n`);
     expect(out).not.toMatch(/^(hint|lines):/m);
-    // Every write reports it too (specs/decisions, "A bent edge is reported and never refused").
+    // A write that leaves it as it is says only that it is still there (specs/decisions, "A bent edge is reported and
+    // never refused").
     expect(run("diagram", "set", photos(), "--subtitle", "Uploads").out).toBe(
-      `ok changed=subtitle\n\n${bent}\n`,
+      "WRITTEN\n<changes>\n  CHANGED diagram fields=subtitle\n</changes>\n<warnings>\n  new=0 cleared=0 total=1\n</warnings>\n",
     );
     expect(run("diagram", "improve", photos()).code).toBe(2);
     const json = JSON.parse(run("check", photos(), "--json").out);
     expect(json.counts.edges).toBe(edgeLooks.edges.length);
     expect(json.problems).toMatchObject([
-      { kind: "warning", code: "bent-edge", detail: { edge: "api-photos", bends: 4, skip: 1 } },
+      { kind: "WARNING", code: "bent-edge", detail: { edge: "api-photos", bends: 4, skip: 1 } },
     ]);
-    expect(json.problems[0].source).toBeUndefined();
+    expect(json.problems[0].source).toBe("already in the file");
     expect(json.hints).toBeUndefined();
     expect(json.bent).toBeUndefined();
   });

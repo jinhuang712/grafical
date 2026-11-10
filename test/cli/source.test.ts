@@ -25,10 +25,11 @@ function run(...args: string[]) {
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 
-/** The source lines of a report. */
+/** The source lines of an answer. */
 const sources = (out: string) =>
   out
     .split("\n")
+    .map((l) => l.trim())
     .filter((l) => l.startsWith("source: "))
     .map((l) => l.slice("source: ".length));
 
@@ -80,22 +81,22 @@ describe("source", () => {
     ).toBe(0);
     expect(run("group", "set", f, "g", "--label", "order desk").code).toBe(0);
     const r = run("node", "set", f, "api,db", "--group", "g");
-    expect(r.out).toContain("error: group-split\n");
+    expect(r.out).toContain("  ERROR group-split\n");
     expect(sources(r.out)).toEqual(["grafical -f whole.grafical node --set api,db --group g"]);
   });
 
   it("of a defect the command makes is the command", () => {
     const f = fresh("defect.grafical");
     const r = run("node", "set", f, "web", "--label", LONG);
-    expect(r.out).toContain("defect: overflow\n");
+    expect(r.out).toContain("  DEFECT overflow\n");
     expect(new Set(sources(r.out))).toEqual(
       new Set([`grafical -f defect.grafical node --set web --label "${LONG}"`]),
     );
   });
 
-  it("of a warning: none, in text or in --json, as the outcome line names what the write changed", () => {
-    // sync-geo bends three times and passes a layer in this fixture, and other edges bend too
-    // (specs/decisions, "Every write prints every warning").
+  it("of a warning a write brings is the command, in text and in --json", () => {
+    // sync-geo bends three times and passes a layer in this fixture, and other edges bend too: a write prints only the
+    // warnings it brought (specs/decisions, "An answer says what happened, and a write reports only what it changed").
     const f = "bent.grafical";
     writeFileSync(
       join(dir, f),
@@ -115,17 +116,28 @@ describe("source", () => {
       "HTTP GET",
     );
     expect(add.code).toBe(0);
-    expect(add.out).toMatch(/^ok changed=sync-geo\n/);
-    const warned = add.out.split("\n\n").filter((b) => b.startsWith("warning: "));
-    expect(warned.some((b) => b.includes("  edge: sync-geo\n"))).toBe(true);
-    for (const b of warned) expect(b).not.toMatch(/^source:/m);
+    expect(add.out).toMatch(
+      /^WRITTEN\n<changes>\n {2}MADE edge=sync-geo\n<\/changes>\n<warnings>\n/,
+    );
+    const command =
+      'grafical -f bent.grafical edge --set sync-geo --from sync --to geo --label "HTTP GET"';
+    const warned = add.out.split("\n\n").filter((b) => b.includes("WARNING "));
+    expect(warned.some((b) => b.includes("      edge: sync-geo\n"))).toBe(true);
+    expect(new Set(sources(add.out))).toEqual(new Set([command]));
+    // The warnings of the other edges were there before the write, so it does not print them.
+    const all = run("check", f).out;
+    expect(sources(all).length).toBeGreaterThan(sources(add.out).length);
     run("edge", "remove", f, "sync-geo");
     const json = JSON.parse(
       run("edge", "set", f, "sync-geo", "--from", "sync", "--to", "geo", "--json").out,
     );
-    const warnings = json.problems.filter((x: { kind: string }) => x.kind === "warning");
+    const warnings = json.problems.filter((x: { kind: string }) => x.kind === "WARNING");
+    expect(warnings.length).toBe(json.warnings.new);
     expect(warnings.length).toBeGreaterThan(0);
-    for (const w of warnings) expect(w.source).toBeUndefined();
+    for (const w of warnings)
+      expect(w.source).toBe(
+        "grafical -f bent.grafical edge --set sync-geo --from sync --to geo --json",
+      );
   });
 
   it("of what the file had before the command is already in the file", () => {
@@ -197,16 +209,16 @@ describe("source", () => {
     const f = fresh("split.grafical", split);
     const r = JSON.parse(run("node", "set", f, "web", "--label", "Web", "--json").out);
     expect(r.problems).toMatchObject([
-      { kind: "error", code: "group-split", source: "already in the file" },
+      { kind: "ERROR", code: "group-split", source: "already in the file" },
     ]);
     // check says what every write would say of the file, and draws nothing from it.
     const check = run("check", f, "--json");
     expect(check.code).toBe(1);
     const report = JSON.parse(check.out);
-    expect(report.ok).toBe(false);
+    expect(report.outcome).toBe("REFUSED");
     expect(report.counts).toBeUndefined();
     expect(report.problems).toMatchObject([
-      { kind: "error", code: "group-split", source: "already in the file" },
+      { kind: "ERROR", code: "group-split", source: "already in the file" },
     ]);
   });
 });

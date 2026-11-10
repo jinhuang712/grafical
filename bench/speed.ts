@@ -1,5 +1,6 @@
 // GOALS.md, "Speed": the time in process to apply, lay out and check
-// one operation on diagrams of about 50 nodes, as a write does it, and the wall time of one command.
+// one operation on diagrams of about 50 nodes, as a write does it with what it answers, and the wall time of one
+// command.
 // Diagrams come from the fuzz generator's fixed seeds, so every run measures the
 // same ones. Costs nothing: no agent runs.
 
@@ -9,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { drawing, warningsOf } from "../src/check/drawing.ts";
 import { check } from "../src/check/index.ts";
+import { changesOf, warningMoves } from "../src/cli/answer.ts";
 import { layout } from "../src/layout/index.ts";
 import { applyOps } from "../src/model/apply.ts";
 import type { Diagram } from "../src/model/index.ts";
@@ -66,8 +68,11 @@ export async function measureSpeed(): Promise<string[]> {
         if ("errors" in r) break;
         const s = layout(r.diagram, m);
         check(r.diagram, s, m);
-        // A write prints every warning of the diagram it makes (specs/decisions, "Every write prints every warning").
-        warningsOf(drawing(r.diagram, s), r.diagram);
+        // A write says what it changed and how the warnings moved, so the diagram before it is laid out too
+        // (specs/decisions, "An answer says what happened, and a write reports only what it changed").
+        const after = warningsOf(drawing(r.diagram, s), r.diagram);
+        warningMoves(warningsOf(drawing(d, layout(d, m)), d), after);
+        changesOf(d, r.diagram, ops[0] as Op);
         ms.push(performance.now() - t0);
       }
       if (ms.length === 0) continue;
@@ -88,16 +93,17 @@ export async function measureSpeed(): Promise<string[]> {
     const file = join(dir, "speed.grafical");
     writeFileSync(file, writeDiagram(d));
     const node = d.layers.flatMap((l) => l.nodes)[0]?.id ?? "";
-    const commands: [string, string[]][] = [
-      ["node rename", ["-f", file, "node", "--set", node, "--label", "renamed"]],
-      ["check", ["-f", file, "check"]],
-      ["render", ["-f", file, "render", "--png", join(dir, "speed.png")]],
+    // Each rename gives a new label, so that every run writes: one that changes nothing writes nothing.
+    const commands: [string, (k: number) => string[]][] = [
+      ["node rename", (k) => ["-f", file, "node", "--set", node, "--label", `renamed ${k}`]],
+      ["check", () => ["-f", file, "check"]],
+      ["render", () => ["-f", file, "render", "--png", join(dir, "speed.png")]],
     ];
     for (const [name, args] of commands) {
       const ms: number[] = [];
       for (let k = 0; k < 5; k++) {
         const t0 = performance.now();
-        spawnSync("node", [MAIN, ...args], { encoding: "utf8" });
+        spawnSync("node", [MAIN, ...args(k)], { encoding: "utf8" });
         ms.push(performance.now() - t0);
       }
       const target = name === "render" ? "below 2 s" : "≤ 400 ms";

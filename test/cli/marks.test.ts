@@ -85,7 +85,7 @@ describe("grafical mark --set", () => {
     );
     const r = run("show", "d.grafical");
     expect(r.code).toBe(1);
-    expect(r.out).toContain("error: mark-file-changed\n");
+    expect(r.out).toContain("  ERROR mark-file-changed\n");
     expect(r.out).toContain("warn.svg");
     // Another slot's command does not get past it, but setting this slot again accepts the file.
     expect(mark("top-left", "!").code).toBe(1);
@@ -111,11 +111,11 @@ describe("grafical mark --set", () => {
       run(...args);
     }
     const put = (v: string) => run("mark", "set", fresh, "n:top-left", as(v), v);
-    expect(put("nope.svg").out).toContain("error: mark-file-not-found\n");
-    expect(put("bad.svg").out).toContain("error: mark-file-unsafe\n");
-    expect(put("ext.svg").out).toContain("error: mark-file-unsafe\n");
-    expect(put("../warn.svg").out).toContain("error: mark-file-outside\n");
-    expect(put("/etc/x.svg").out).toContain("error: mark-file-outside\n");
+    expect(put("nope.svg").out).toContain("  ERROR mark-file-not-found\n");
+    expect(put("bad.svg").out).toContain("  ERROR mark-file-unsafe\n");
+    expect(put("ext.svg").out).toContain("  ERROR mark-file-unsafe\n");
+    expect(put("../warn.svg").out).toContain("  ERROR mark-file-outside\n");
+    expect(put("/etc/x.svg").out).toContain("  ERROR mark-file-outside\n");
     expect(read(fresh)).not.toContain("marks");
   });
 
@@ -129,7 +129,7 @@ describe("grafical mark --set", () => {
       run(...args);
     }
     expect(run("mark", "set", fresh, "q:top-left", "--text", "TOOLONG").out).toContain(
-      "error: mark-too-long\n",
+      "  ERROR mark-too-long\n",
     );
     expect(run("mark", "set", fresh, "q:left", "--text", "!").out).toContain(
       "allowed: top-left, top-right, bottom-left, bottom-right\n",
@@ -156,7 +156,7 @@ describe("grafical mark --set", () => {
     expect(svg).toMatch(/fill="#ffffff"[^>]*>P0</);
     expect(svg).toMatch(/fill="#1f2328"[^>]*>NEW</);
     expect(run("mark", "set", f, "n:left", "--text", "⚠️", "--bg", "red").out).toContain(
-      "error: mark-style-on-picture\n",
+      "  ERROR mark-style-on-picture\n",
     );
     expect(run("mark", "set", f, "n:left", "--text", "P1", "--bg", "pink").out).toContain(
       "allowed: red, amber, green, blue, purple, gray, dark, #rrggbb\n",
@@ -200,7 +200,7 @@ describe("grafical mark --set", () => {
   it("refuses a style on an emoji, and a shape that does not exist", () => {
     const f = "h.grafical";
     expect(run("mark", "set", f, "n:left", "--text", "⚠️", "--fg", "red").out).toContain(
-      "error: mark-style-on-picture\n",
+      "  ERROR mark-style-on-picture\n",
     );
     expect(run("mark", "set", f, "n:left", "--text", "P0", "--shape", "star").out).toContain(
       "allowed: square, rounded, pill\n",

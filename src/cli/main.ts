@@ -5,38 +5,31 @@
 import { existsSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { Command, CommanderError } from "commander";
-import {
-  countsText,
-  delta,
-  deltaText,
-  drawing,
-  drawingText,
-  warningsOf,
-} from "../check/drawing.ts";
+import { drawing, drawingText, warningsOf } from "../check/drawing.ts";
 import type { Facts, UsageCode } from "../errors.ts";
 import { USAGE_CODES } from "../errors.ts";
 import { layout } from "../layout/index.ts";
 import { diffDiagrams } from "../model/diff.ts";
-import type { Op } from "../model/ops.ts";
 import { parseOp } from "../model/ops.ts";
 import { closest, editDistance } from "../model/suggest.ts";
-import { block, record } from "../records.ts";
+import { record } from "../records.ts";
 import { renderPng, renderSvg } from "../render/index.ts";
 import { createMeasurer } from "../text/index.ts";
 import { THEMES } from "../theme/themes.ts";
+import { type Answer, answerJson, answerText, exitOf } from "./answer.ts";
 import { atRevision, commandLines, opCommands } from "./diff.ts";
 import { GUIDES, guideList, guideNamed } from "./guides.ts";
 import { PAGES, PROGRAM_ABOUT, PROGRAM_AFTER } from "./help.ts";
 import { addNouns } from "./nouns.ts";
 import {
-  blockBody,
-  emit,
+  blocks,
   failure,
   fileErrors,
   inspect,
   isReport,
   loadDiagram,
   type Report,
+  refused,
   runWrite,
   tryWrite,
   writeAtomic,
@@ -55,51 +48,44 @@ let typed: readonly string[] = process.argv.slice(2);
 /** A single command's origin: the command line as typed. */
 const asTyped = (): Origin => ({ command: commandLine(typed) });
 
-/** The report, each problem with a source: the command line where nothing else caused it. */
-function own(r: Report): Report {
+/** The answer, each problem with a source: the command line where nothing else caused it. */
+function own(a: Answer): Answer {
+  if (a.problems === undefined) return a;
   const command = commandLine(typed);
   return {
-    ...r,
-    errors: r.errors.map((e) => (e.source !== undefined ? e : { ...e, source: command })),
-    defects: r.defects.map((d) => (d.source !== undefined ? d : { ...d, source: command })),
+    ...a,
+    problems: a.problems.map((b) => (b.source !== undefined ? b : { ...b, source: command })),
   };
 }
 
-/** Prints the report, its problems with their sources, and sets the exit code. */
-function say(r: Report, json: boolean, extra?: Record<string, unknown>, head?: string[]) {
-  process.exitCode = emit(own(r), json, extra, head);
+/** Prints the answer, as text or as JSON, and sets the exit code. */
+function say(a: Answer, json: boolean) {
+  const mine = own(a);
+  process.stdout.write(json ? `${JSON.stringify(answerJson(mine))}\n` : answerText(mine));
+  process.exitCode = exitOf(mine);
 }
 
-/** Runs an operation built from flags through the shared write path. */
-async function write(file: string, raw: Record<string, unknown>, opts: Opts, create = false) {
-  const op = parseOp(raw, 0);
-  if (Array.isArray(op)) {
-    say(failure(op), opts.json === true);
-    return;
-  }
-  if (opts.try === true) {
-    await tryOne(file, op, opts.json === true);
-    return;
-  }
-  say(await runWrite(file, op, asTyped(), create), opts.json === true);
+/** A read's refusal: the file cannot be had or read. */
+function sayRefused(r: Report, json: boolean) {
+  say(refused(r), json);
 }
 
 /**
- * A command with --try (FEATURES.md, "Trying a change"): the counts of the drawing before and after it, and the change
- * in each, with nothing written. A command it would refuse is refused as the write would refuse it.
+ * Runs an operation built from flags through the shared write path. With --try (FEATURES.md, "Trying a change") it
+ * writes nothing, and a command it would refuse is refused as the write would refuse it.
  */
-async function tryOne(file: string, op: Op, json: boolean) {
-  const r = await tryWrite(file, op, asTyped());
-  if (isReport(r)) {
-    say(r, json);
-  } else if (json) {
-    const body = { ok: true, changed: r.report.changed, before: r.before, after: r.after };
-    process.stdout.write(`${JSON.stringify({ ...body, delta: delta(r.before, r.after) })}\n`);
-  } else {
-    process.stdout.write(
-      `${record("ok", { changed: r.report.changed, written: "no" })}\n${countsText(r.before, "before")}\n${countsText(r.after, "after")}\n${deltaText(delta(r.before, r.after))}\n`,
-    );
+async function write(file: string, raw: Record<string, unknown>, opts: Opts, create = false) {
+  const json = opts.json === true;
+  const op = parseOp(raw, 0);
+  if (Array.isArray(op)) {
+    sayRefused(failure(op), json);
+    return;
   }
+  if (opts.try === true) {
+    say(await tryWrite(file, op, asTyped()), json);
+    return;
+  }
+  say(await runWrite(file, op, asTyped(), create), json);
 }
 
 function renderName(file: string): string {
@@ -156,24 +142,28 @@ export function build(): Command {
       .argument("[id]", "an object: its facts and what refers to it")
       .option("--drawn", "how it is drawn: each node, edge and group, as facts and counts"),
   ).action(async (file: string, id: string | undefined, opts: Opts) => {
+    const json = opts.json === true;
     const d = loadDiagram(file);
+    const lines = (text: string) => text.replace(/\n$/, "").split("\n");
     if (isReport(d)) {
-      say(d, opts.json === true);
+      sayRefused(d, json);
     } else if (id !== undefined) {
       const text = showObject(d, id);
       if (text === undefined) throw usage("unknown-command", { found: id });
-      process.stdout.write(text);
+      say({ outcome: "OK", body: { name: "object", lines: lines(text), json: lines(text) } }, json);
     } else if (opts.drawn === true) {
       const dr = drawing(d, layout(d, await createMeasurer()));
-      process.stdout.write(
-        opts.json === true
-          ? `${JSON.stringify({ ok: true, drawing: dr }, (k, v) => (k === "composition" ? undefined : v))}\n`
-          : drawingText(dr),
+      // The composition is what the warnings are read from, not a fact of the drawing.
+      const data = JSON.parse(JSON.stringify(dr, (k, v) => (k === "composition" ? undefined : v)));
+      say(
+        { outcome: "OK", body: { name: "drawing", lines: lines(drawingText(dr)), json: data } },
+        json,
       );
-    } else if (opts.json === true) {
-      process.stdout.write(`${JSON.stringify({ ok: true, diagram: d })}\n`);
     } else {
-      process.stdout.write(showDiagram(d));
+      say(
+        { outcome: "OK", body: { name: "diagram", lines: lines(showDiagram(d)), json: d } },
+        json,
+      );
     }
   });
 
@@ -186,17 +176,17 @@ export function build(): Command {
   ).action((file: string, rev: string, opts: Opts) => {
     const now = loadDiagram(file);
     if (isReport(now)) {
-      say(now, opts.json === true);
+      sayRefused(now, opts.json === true);
       return;
     }
     const was = atRevision(file, rev);
     if (was !== null && isReport(was)) {
-      say(was, opts.json === true);
+      sayRefused(was, opts.json === true);
       return;
     }
     const lines = commandLines(diffDiagrams(was, now), file, program);
     if (opts.json === true) {
-      process.stdout.write(`${JSON.stringify({ ok: true, commands: lines })}\n`);
+      process.stdout.write(`${JSON.stringify({ outcome: "OK", commands: lines })}\n`);
     } else {
       process.stdout.write(lines.length > 0 ? `${lines.join("\n")}\n` : "# no changes\n");
     }
@@ -209,30 +199,31 @@ export function build(): Command {
       .argument("<file>")
       .option("--all", "also report engine-owned defects, which are engine bugs"),
   ).action(async (file: string, opts: Opts) => {
+    const json = opts.json === true;
     const d = loadDiagram(file);
     if (isReport(d)) {
-      say(d, opts.json === true);
+      sayRefused(d, json);
       return;
     }
-    const refused = fileErrors(d);
-    if (refused !== undefined) {
-      say(refused, opts.json === true);
+    const wrong = fileErrors(d);
+    if (wrong !== undefined) {
+      sayRefused(wrong, json);
       return;
     }
     const m = await createMeasurer();
     const defects = inspect(d, m, opts.all === true);
     const dr = drawing(d, layout(d, m));
+    // A file with a defect is refused, as every write to it would be; its warnings and counts are still said.
+    const report: Report = {
+      ok: defects.length === 0,
+      errors: [],
+      defects,
+      warnings: warningsOf(dr, d),
+      kinds: kindsOf(d),
+    };
     say(
-      {
-        ok: defects.length === 0,
-        changed: [],
-        errors: [],
-        defects,
-        warnings: warningsOf(dr, d),
-        counts: dr.counts,
-        kinds: kindsOf(d),
-      },
-      opts.json === true,
+      { outcome: report.ok ? "OK" : "REFUSED", counts: dr.counts, problems: blocks(report) },
+      json,
     );
   });
 
@@ -249,14 +240,20 @@ export function build(): Command {
     if (!Number.isFinite(scale) || scale < 1 || scale > 4) {
       throw usage("bad-scale", { field: "--scale", found: String(opts.scale) }, { min: 1, max: 4 });
     }
+    const json = opts.json === true;
     const d = loadDiagram(file);
     if (isReport(d)) {
-      say(d, opts.json === true);
+      sayRefused(d, json);
       return;
     }
     const m = await createMeasurer();
     const scene = layout(d, m);
     const defects = inspect(d, m);
+    // A picture that would draw wrong is not drawn: a refused render writes nothing.
+    if (defects.length > 0) {
+      sayRefused({ ok: false, errors: [], defects, kinds: kindsOf(d) }, json);
+      return;
+    }
     const both = opts.svg === undefined && opts.png === undefined;
     const files: string[] = [];
     const svg = renderSvg(scene);
@@ -271,17 +268,8 @@ export function build(): Command {
       files.push(out);
     }
     const dr = drawing(d, scene);
-    const report = {
-      ok: defects.length === 0,
-      changed: [],
-      errors: [],
-      defects,
-      warnings: warningsOf(dr, d),
-      counts: dr.counts,
-      kinds: kindsOf(d),
-    };
-    const wrote = files.map((f) => record("wrote", { file: f }));
-    say(report, opts.json === true, { files }, wrote);
+    const report: Report = { ok: true, errors: [], defects: [], warnings: warningsOf(dr, d) };
+    say({ outcome: "OK", files, counts: dr.counts, problems: blocks(report) }, json);
   });
 
   program
@@ -304,7 +292,10 @@ export function build(): Command {
         throw usage("no-folder", { field: "file", found: dirname(file) });
       }
       const viewer = await startViewer(file, port);
-      process.stdout.write(`${record("viewing", { file, url: viewer.url, stop: "ctrl-c" })}\n`);
+      say(
+        { outcome: "OK", body: { name: "address", lines: [viewer.url], json: viewer.url } },
+        false,
+      );
       if (opts.open !== false) openWindow(viewer.url, windowSize(viewer.size()));
       await new Promise<void>((resolve) => {
         process.once("SIGINT", resolve);
@@ -346,9 +337,9 @@ export function build(): Command {
       const found = Object.values(THEMES).filter(
         (t) => w === undefined || `${t.name} ${t.about ?? ""}`.toLowerCase().includes(w),
       );
-      const q = (s: string) => (/[\s"=]/.test(s) ? JSON.stringify(s) : s);
-      const lines = found.map((t) => `stylesheet name=${q(t.name)} about=${q(t.about ?? "-")}`);
-      process.stdout.write(`${lines.length > 0 ? lines.join("\n") : "stylesheet -"}\n`);
+      const lines = found.map((t) => record("stylesheet", { name: t.name, about: t.about ?? "-" }));
+      const data = found.map((t) => ({ name: t.name, about: t.about ?? "-" }));
+      say({ outcome: "OK", body: { name: "stylesheets", lines, json: data } }, false);
     });
 
   // Every command that writes may be tried first: with --try it writes nothing and prints the counts before and after.
@@ -378,19 +369,16 @@ function usage(code: UsageCode, given: { field?: string; found?: string }, facts
   return new UsageError(usageBlock(code, given, facts));
 }
 
-/** A usage error as grafical prints it: failed, then its block (specs/decisions, "Refusals say what happened and which commands can change it"). */
-function usageText(b: Block): string {
-  return `${record("failed", { changed: [] })}\n\n${block(b)}\n`;
-}
-
-/** Prints a usage error: with --json the object of any refusal on standard output, else its text on standard error. */
+/**
+ * Prints a usage error as any refusal is said (specs/decisions, "Refusals say what happened and which commands can
+ * change it"): with --json its object on standard output, else its text on standard error.
+ */
 function sayUsage(b: Block, words: readonly string[]) {
   const end = words.indexOf("--");
   const json = (end < 0 ? words : words.slice(0, end)).includes("--json");
-  if (json) {
-    const body = { ok: false, changed: [], problems: [blockBody(b)] };
-    process.stdout.write(`${JSON.stringify(body)}\n`);
-  } else process.stderr.write(usageText(b));
+  const answer: Answer = { outcome: "REFUSED", problems: [b] };
+  if (json) process.stdout.write(`${JSON.stringify(answerJson(answer))}\n`);
+  else process.stderr.write(answerText(answer));
 }
 
 /** The arguments a command takes, as its usage names them: <file>, [at], <nodes...>. */

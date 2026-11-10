@@ -173,21 +173,32 @@ of every change, with the changed parts marked. Ctrl-C stops it.`,
 anything. --all adds the engine's own defects, which are its bugs.`,
     after: `
 Output:
-  ok changed=<ids> when the change is written, or failed changed=- when it
-  is refused and nothing is written; then a block for each problem, a blank
-  line before each; then, on check and render, the counts:
-    <kind>: <code>
-    description: <what happened, one sentence per code>
-    source: <the command, or "already in the file">
-    detail:
-      <key>: <value>
-    next: <the commands that can change it, or ->
+  The first line says what happened: WRITTEN, the file changed; UNCHANGED,
+  it already said so; TRIED, --try wrote nothing; REFUSED, nothing written;
+  OK, a read answered. Then sections, each in a tag, left out when empty:
+    <changes>   each object a write touched, one a line:
+                  MADE <sort>=<id>
+                  CHANGED <sort>=<id> fields=<the flags whose value changed>
+                  REMOVED <sort>=<id>
+                by=<sort>:<id> ends a change the command did not name, for
+                the object it named that caused it; place is a new order
+    <warnings>  new= cleared= total=, then CLEARED <code> <facts> for each
+                warning the write took away
+    <before> <after> <delta>   the counts, on --try
+    <files>     what render wrote
+    <counts>    the counts, on check and render
+    <problems>  a block for each problem, a blank line between them:
+                  ERROR|DEFECT|WARNING <code>
+                    description: <what happened, one sentence per code>
+                    source: <the command, or "already in the file">
+                    detail:
+                      <key>: <value>
+                    next: <the commands that can change it, or ->
   A detail key named for one thing (node, edge) holds one value; one named
   for several (nodes, edges, ends) holds a list, even of one, in --json too.
-  kind is error (nothing could be applied), defect (it would draw wrong) or
-  warning (written, drawn poorly). A warning has no source line: the
-  outcome line names what changed. Every write, check and render prints
-  every warning the diagram has:
+  ERROR: nothing could be applied; DEFECT: it would draw wrong; WARNING:
+  written, drawn poorly. A write prints only the warnings it brought; check
+  and render print every warning the file has:
     bent-edge          a line of over 2 bends: edge, bends, skip (the layers
                        between its ends' layers)
     passing-layer      an edge through layers it does not connect: edge, layers

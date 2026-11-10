@@ -450,7 +450,7 @@ const PLURAL: Readonly<Record<string, keyof Facts>> = {
 };
 
 /** The facts in their order, as a block's detail. */
-function ordered(facts: Facts, typed: Record<string, string[]> = {}): Record<string, Value> {
+export function ordered(facts: Facts, typed: Record<string, string[]> = {}): Record<string, Value> {
   // A key for one thing takes one id; several of one kind go under the key for several.
   const ids: Record<string, string[]> = {};
   for (const [k, list] of Object.entries(typed)) {
@@ -562,12 +562,16 @@ export function usageBlock(
   };
 }
 
-/** Something drawn poorly, as a warning block. It has no source: the outcome line names what the write changed. */
-export function warningBlock(w: Warning): Block {
+/**
+ * Something drawn poorly, as a warning block, with its source: the command that a write's new warning came from, or
+ * the file for a warning that `check` and `render` find.
+ */
+export function warningBlock(w: Warning, source: string): Block {
   return {
     kind: "warning",
     code: w.code,
     description: DESCRIPTIONS[w.code],
+    source,
     detail: ordered(w.facts),
     next: nextOf(w.code, w.facts),
   };

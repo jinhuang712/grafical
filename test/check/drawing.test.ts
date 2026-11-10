@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { composition } from "../../src/check/composition.ts";
-import { delta, deltaText, drawing, drawingText } from "../../src/check/drawing.ts";
+import { delta, drawing, drawingText } from "../../src/check/drawing.ts";
+import { answerText } from "../../src/cli/answer.ts";
 import { layout } from "../../src/layout/index.ts";
 import type { Diagram } from "../../src/model/index.ts";
 import type { Scene } from "../../src/scene.ts";
@@ -179,14 +180,14 @@ describe('the drawing as facts (specs/decisions, "Records over prose")', () => {
     expect(drawingText(drawing(crossed, layout(crossed, m)))).toContain("passes=- bundle=-");
   });
 
-  it("gives a change's delta for each number among the counts, a rise signed with +", () => {
+  it("gives a change's delta for each number among the counts, a rise signed with + in the answer", () => {
     const before = drawing(crossed, layout(crossed, m)).counts;
     const after = { ...before, crossings: 0, bends: before.bends + 2, length: before.length - 40 };
     const d = delta(before, after);
     expect(d).toMatchObject({ nodes: 0, crossings: -1, bends: 2, length: -40 });
     expect(Object.keys(d)).not.toContain("busiest");
-    expect(deltaText(d)).toMatch(
-      /^delta nodes=0 edges=0 crossings=-1 bends=\+2 bent=0 length=-40 /,
+    expect(answerText({ outcome: "TRIED", delta: d })).toMatch(
+      /^TRIED\n<delta>\n {2}nodes=0 edges=0 crossings=-1 bends=\+2 bent=0 length=-40 /,
     );
   });
 

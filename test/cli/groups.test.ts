@@ -42,7 +42,8 @@ describe("grouped diagrams", () => {
       // The words after grafical, as a caller types them.
       const r = spawnSync("node", [MAIN, ...words.slice(1)], { cwd: dir, encoding: "utf8" });
       expect(r.status, `${words.join(" ")}: ${r.stdout}${r.stderr}`).toBe(0);
-      expect(r.stdout).toMatch(/^ok/);
+      // A write, or the render that ends the example.
+      expect(r.stdout).toMatch(/^(WRITTEN|OK)\n/);
     }
     const text = read("orders.grafical");
     expect(text).toContain('subtitle: "Two services coupled');
@@ -66,18 +67,23 @@ describe("grouped diagrams", () => {
     run("node", "set", f, "a", "--layer", "r1", "--label", "A");
     run("node", "set", f, "b", "--layer", "r2", "--label", "B");
     run("node", "set", f, "c", "--layer", "r3", "--label", "C");
-    // The nodes have no edges: each write prints those warnings after its outcome.
-    expect(run("group", "set", f, "g", "--label", "G").out).toMatch(
-      /^ok changed=g\n\nwarning: lonely-node\n/,
+    // The nodes have no edges: the warnings were there before, so a write that keeps them prints only their number.
+    expect(run("group", "set", f, "g", "--label", "G").out).toBe(
+      "WRITTEN\n<changes>\n  MADE group=g\n</changes>\n<warnings>\n  new=0 cleared=0 total=3\n</warnings>\n",
     );
-    expect(run("node", "set", f, "a,b", "--group", "g").out).toMatch(/^ok changed=a,b\n/);
+    expect(run("node", "set", f, "a,b", "--group", "g").out).toMatch(
+      /^WRITTEN\n<changes>\n {2}CHANGED node=a fields=group\n {2}CHANGED node=b fields=group\n<\/changes>\n/,
+    );
     expect(run("node", "set", f, "c", "--group", "g").code).toBe(0);
     // Leaving the middle layer: the node still spans it (specs/decisions, "Layers unseen, groups as systems").
     expect(run("node", "set", f, "b", "--group", "-").code).toBe(0);
     expect(run("node", "set", f, "b", "--group", "g").code).toBe(0);
     expect(run("node", "set", f, "a", "--group", "zz").out).toContain("unknown-group");
     expect(run("group", "set", f, "g", "--label", "Renamed").code).toBe(0);
-    expect(run("group", "remove", f, "g").out).toMatch(/^ok changed=g,a,b,c\n/);
+    // Its members leave with it, which the group the command names caused.
+    expect(run("group", "remove", f, "g").out).toMatch(
+      /^WRITTEN\n<changes>\n {2}REMOVED group=g\n {2}CHANGED node=a fields=group by=group:g\n {2}CHANGED node=b fields=group by=group:g\n {2}CHANGED node=c fields=group by=group:g\n<\/changes>\n/,
+    );
     expect(read(f)).not.toContain("group");
     expect(run("diagram", "set", f, "--subtitle", "-").code).toBe(0);
     expect(run("diagram", "set", f, "--caption", "Not shown: y.").code).toBe(0);
@@ -103,7 +109,9 @@ describe("grouped diagrams", () => {
     expect(mixed.code).toBe(1);
     expect(mixed.out).toContain("lane-mixed");
     expect(run("node", "set", f, "gateway,checkout", "--lane", "-").code).toBe(0);
-    expect(run("lane", "remove", f, "desk").out).toMatch(/^ok changed=desk\n/);
+    expect(run("lane", "remove", f, "desk").out).toMatch(
+      /^WRITTEN\n<changes>\n {2}REMOVED lane=desk\n<\/changes>\n/,
+    );
     expect(read(f)).not.toContain("lane");
   });
 
@@ -128,14 +136,16 @@ describe("grouped diagrams", () => {
     writeFileSync(join(dir, f), writeDiagram(big.diagram));
     const w = run("check", f);
     expect(w.code).toBe(0);
-    expect(w.out).toMatch(/^counts nodes=17 edges=0 crossings=0 bends=0 .*fullest=row:17 /m);
+    expect(w.out).toMatch(
+      /^OK\n<counts>\n {2}nodes=17 edges=0 crossings=0 bends=0 .*fullest=row:17 .*\n<\/counts>\n/,
+    );
     // No warning of too many nodes: only the facts, each node with no edges.
-    expect(w.out.match(/^warning: .*$/gm)).toEqual(Array(17).fill("warning: lonely-node"));
+    expect(w.out.match(/^ {2}WARNING .*$/gm)).toEqual(Array(17).fill("  WARNING lonely-node"));
     expect(w.out).not.toMatch(/hint|too many/);
     const c = run("check", f, "--json");
     expect(c.code).toBe(0);
     const body = JSON.parse(c.out);
-    expect(body.ok).toBe(true);
+    expect(body.outcome).toBe("OK");
     expect(body.counts.nodes).toBe(17);
   });
 
@@ -157,24 +167,37 @@ describe("grouped diagrams", () => {
     expect(missing.code).toBe(1);
     expect(missing.out).toBe(
       [
-        "failed changed=-",
-        "",
-        "error: missing-field",
-        "description: The operation lacks a field it needs, such as a node's place in a layer that has nodes.",
-        'source: grafical -f copy.grafical group --copy zone zone-b --label "Zone B" --suffix -b',
-        "detail:",
-        "  field: place",
-        "  allowed: zone",
-        "next: -",
+        "REFUSED",
+        "<problems>",
+        "  ERROR missing-field",
+        "    description: The operation lacks a field it needs, such as a node's place in a layer that has nodes.",
+        '    source: grafical -f copy.grafical group --copy zone zone-b --label "Zone B" --suffix -b',
+        "    detail:",
+        "      field: place",
+        "      allowed: zone",
+        "    next: -",
+        "</problems>",
         "",
       ].join("\n"),
     );
+    // The copy and what it holds, which the command made through the copy it names.
     expect(run(...args, "--after", "zone", "--outside").out).toBe(
-      "ok changed=zone-b,web-b,lb-web-b\n",
+      [
+        "WRITTEN",
+        "<changes>",
+        "  MADE group=zone-b",
+        "  MADE node=web-b by=group:zone-b",
+        "  MADE edge=lb-web-b by=group:zone-b",
+        "</changes>",
+        "<warnings>",
+        "  new=0 cleared=0 total=0",
+        "</warnings>",
+        "",
+      ].join("\n"),
     );
     expect(run("show", f).out).toContain('layer r2 "R2": web "Web" service group=zone | web-b');
     expect(run(...args, "--after", "zone").out).toContain(
-      'error: duplicate-id\ndescription: The id is taken.\nsource: grafical -f copy.grafical group --copy zone zone-b --label "Zone B" --suffix -b --after zone\ndetail:\n  field: into\n  found: zone-b\n',
+      '  ERROR duplicate-id\n    description: The id is taken.\n    source: grafical -f copy.grafical group --copy zone zone-b --label "Zone B" --suffix -b --after zone\n    detail:\n      field: into\n      found: zone-b\n',
     );
   });
 
@@ -212,12 +235,14 @@ describe('groups inside groups on the command line (specs/decisions, "Every laye
     const blocked = run("label", "set", f, "vpc", "--at", "0.5", "--side", "bottom");
     expect(blocked.code).not.toBe(0);
     expect(blocked.out).toContain(
-      "defect: title-blocked\ndescription: An edge runs where the group's title sits, and no edge moves for a title.\n",
+      "  DEFECT title-blocked\n    description: An edge runs where the group's title sits, and no edge moves for a title.\n",
     );
     expect(blocked.out).toContain(
-      "detail:\n  owner: agent\n  group: vpc\n  edge: db-backup\n  place: 0.5 bottom inside\n  clear: 0.5 top inside, ",
+      "    detail:\n      owner: agent\n      group: vpc\n      edge: db-backup\n      place: 0.5 bottom inside\n      clear: 0.5 top inside, ",
     );
-    expect(blocked.out).toMatch(/\nnext: node --move, edge --remove, label --set\n$/);
+    expect(blocked.out).toMatch(
+      /\n {4}next: node --move, edge --remove, label --set\n<\/problems>\n$/,
+    );
     expect(read(f)).toBe(before);
   });
 

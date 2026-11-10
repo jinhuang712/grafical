@@ -288,27 +288,33 @@ describe("reflection", () => {
 
 describe("defect split from grafical check --all", () => {
   it("counts engine and agent defects", () => {
-    expect(parseCheckAll('{"ok":true,"problems":[]}')).toEqual({
+    // An answer with no problems leaves the section out (specs/decisions, "An answer says what happened, and a write
+    // reports only what it changed").
+    expect(parseCheckAll('{"outcome":"OK","counts":{"nodes":1}}')).toEqual({
       engineDefects: 0,
       agentDefects: 0,
     });
     // A warning is no defect (specs/decisions, "Refusals say what happened and which commands can change it").
     const blocks = JSON.stringify({
-      ok: false,
-      changed: [],
+      outcome: "REFUSED",
       problems: [
-        { kind: "defect", code: "edge-overlap", detail: { owner: "engine" } },
-        { kind: "defect", code: "overflow", detail: { owner: "agent" } },
-        { kind: "warning", code: "bent-edge", detail: { edge: "a-b" } },
+        { kind: "DEFECT", code: "edge-overlap", detail: { owner: "engine" } },
+        { kind: "DEFECT", code: "overflow", detail: { owner: "agent" } },
+        { kind: "WARNING", code: "bent-edge", detail: { edge: "a-b" } },
       ],
     });
     expect(parseCheckAll(blocks)).toEqual({ engineDefects: 1, agentDefects: 1 });
   });
 
-  it("is null when the CLI has no --all yet: no output, or defects with no owner", () => {
+  it("is null when the output is no answer: none, one with no outcome, text, or a defect with no owner", () => {
     expect(parseCheckAll("")).toBeNull();
-    expect(parseCheckAll('{"ok":false,"defects":[{"code":"x"}]}')).toBeNull();
-    expect(parseCheckAll("error: unknown option '--all'")).toBeNull();
+    expect(
+      parseCheckAll('{"problems":[{"kind":"DEFECT","detail":{"owner":"engine"}}]}'),
+    ).toBeNull();
+    expect(parseCheckAll("REFUSED\n<problems>")).toBeNull();
+    expect(
+      parseCheckAll('{"outcome":"REFUSED","problems":[{"kind":"DEFECT","code":"x"}]}'),
+    ).toBeNull();
   });
 });
 

@@ -216,10 +216,10 @@ export type Outcome = "success" | "opError" | "defect" | "denied";
 
 /**
  * How one grafical call ended. The harness's refusal comes first: its text starts with
- * "Permission to use". Then grafical's own report, as JSON or as plain text: the blocks
- * `error: <code>` and `defect: <code>` (specs/decisions, "Refusals say what happened and which commands can change it").
- * A warning is a success. A failure with none of these is an operation error. The help quotes these lines with
- * placeholders, so a line counts only with a real code.
+ * "Permission to use". Then grafical's own answer, as JSON or as plain text: the blocks `ERROR <code>` and
+ * `DEFECT <code>` (specs/decisions, "An answer says what happened, and a write reports only what it changed"). A warning
+ * is a success. A refusal with neither is an operation error. The help quotes these lines with placeholders, so a line
+ * counts only with a real code.
  */
 export function classify(text: string, isError: boolean): Outcome {
   if (text.trimStart().startsWith("Permission to use")) return "denied";
@@ -230,17 +230,17 @@ export function classify(text: string, isError: boolean): Outcome {
       const kinds = Array.isArray(j.problems)
         ? j.problems.map((p: { kind?: string }) => p.kind)
         : [];
-      if (kinds.includes("error")) return "opError";
-      if (kinds.includes("defect")) return "defect";
-      if (j.ok === false) return "opError";
-      if (j.ok === true) return "success";
+      if (kinds.includes("ERROR")) return "opError";
+      if (kinds.includes("DEFECT")) return "defect";
+      if (j.outcome === "REFUSED") return "opError";
+      if (typeof j.outcome === "string") return "success";
     } catch {
       // Not JSON (the agent did not pass --json): read the plain lines.
     }
   }
-  if (/^error: [a-z]/m.test(text)) return "opError";
-  if (/^defect: [a-z]/m.test(text)) return "defect";
-  if (/^failed changed=/m.test(text)) return "opError";
+  if (/^\s*ERROR [a-z]/m.test(text)) return "opError";
+  if (/^\s*DEFECT [a-z]/m.test(text)) return "defect";
+  if (/^REFUSED$/m.test(text)) return "opError";
   return isError ? "opError" : "success";
 }
 

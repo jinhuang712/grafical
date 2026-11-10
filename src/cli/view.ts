@@ -21,8 +21,16 @@ import { FONT_FILES } from "../text/fonts.ts";
 import { createMeasurer } from "../text/index.ts";
 import type { FontFace } from "../text/types.ts";
 import { STYLESHEET_SUFFIX } from "../theme/themes.ts";
-import { formatReport, inspect, isReport, loadDiagram, type Report } from "./pipeline.ts";
+import { answerText } from "./answer.ts";
+import { blocks, inspect, isReport, loadDiagram, type Report, refused } from "./pipeline.ts";
 import { kindsOf } from "./problems.ts";
+
+/** An answer's lines as the window lists them: without its word and without the blank lines between blocks. */
+const shown = (text: string) =>
+  text
+    .split("\n")
+    .slice(1)
+    .filter((l) => l.trim() !== "");
 
 /** What the page shows: the picture, what changed, and the problems. */
 export interface Frame {
@@ -157,50 +165,41 @@ export async function startViewer(file: string, port = 0): Promise<Viewer> {
     const before = frame;
     const d = loadDiagram(file);
     if (isReport(d)) {
-      // The report's edges, without the blank ones between its blocks.
-      const problems = formatReport(d)
-        .split("\n")
-        .filter((l) => l !== "");
+      const problems = shown(answerText(refused(d)));
       frame = { ...frame, changed: [], problems, stale: true };
       const fresh = !same(before, frame);
       if (fresh) {
         const missing = problems.some((l) => l.includes("file-not-found"));
+        // The first problem's code and its sentence.
+        const first = problems.slice(1, 3).map((l) => l.trim());
         frame.event = note(
           missing ? "open" : "error",
-          missing ? [`waiting for ${basename(file)}`] : problems.slice(1, 3),
+          missing ? [`waiting for ${basename(file)}`] : first,
         );
       }
       return fresh;
     }
     let next: Scene;
     let report: Report;
+    let counts: ReturnType<typeof drawing>["counts"];
     try {
       next = layout(d, m);
-      report = {
-        ok: true,
-        changed: [],
-        errors: [],
-        defects: inspect(d, m),
-        counts: drawing(d, next).counts,
-        kinds: kindsOf(d),
-      };
+      report = { ok: true, errors: [], defects: inspect(d, m), kinds: kindsOf(d) };
+      counts = drawing(d, next).counts;
     } catch (err) {
       // An engine bug must not stop the window: it keeps the last good picture.
       const message = err instanceof Error ? err.message : String(err);
       frame = {
         ...frame,
         changed: [],
-        problems: [`error: cannot draw the file: ${message}`],
+        problems: [`ERROR cannot draw the file: ${message}`],
         stale: true,
       };
       const fresh = !same(before, frame);
       if (fresh) frame.event = note("error", [`cannot draw the file: ${message}`]);
       return fresh;
     }
-    const lines = formatReport(report)
-      .split("\n")
-      .filter((l) => l !== "")
-      .slice(1);
+    const lines = shown(answerText({ outcome: "OK", counts, problems: blocks(report) }));
     frame = {
       svg: renderSvg(next),
       width: next.width,

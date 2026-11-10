@@ -173,8 +173,8 @@ describe("startViewer", () => {
 
       // An edit by another process, the way an agent makes it.
       expect(
-        (await runWrite(file, { op: "node.set", ids: ["api"], label: "orders-svc" }, here)).ok,
-      ).toBe(true);
+        (await runWrite(file, { op: "node.set", ids: ["api"], label: "orders-svc" }, here)).outcome,
+      ).toBe("WRITTEN");
       const renamed = await stream.next();
       expect(renamed.svg).toContain("orders-svc");
       expect(renamed.changed).toHaveLength(1);
@@ -188,7 +188,7 @@ describe("startViewer", () => {
       const broken = await stream.next();
       expect(broken.stale).toBe(true);
       expect(broken.svg).toBe(renamed.svg);
-      expect(broken.problems.join("\n")).toMatch(/error/);
+      expect(broken.problems.join("\n")).toMatch(/ERROR/);
       expect(broken.event?.kind).toBe("error");
 
       // A change to the stylesheet alone redraws the picture.
@@ -223,9 +223,9 @@ describe("startViewer", () => {
       expect(waiting.svg).toBe("");
       expect(waiting.stale).toBe(true);
       expect(waiting.problems.join("\n")).toContain("file-not-found");
-      expect((await runWrite(file, { op: "diagram.set", title: "Later" }, here, true)).ok).toBe(
-        true,
-      );
+      expect(
+        (await runWrite(file, { op: "diagram.set", title: "Later" }, here, true)).outcome,
+      ).toBe("WRITTEN");
       const drawn = await stream.next();
       expect(drawn.stale).toBe(false);
       expect(drawn.svg).toContain("Later");

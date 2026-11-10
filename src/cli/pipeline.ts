@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { type Counts, countsText, drawing, warningsOf } from "../check/drawing.ts";
+import { delta, drawing, warningsOf } from "../check/drawing.ts";
 import { check } from "../check/index.ts";
 import type { Defect, ErrorCode, Facts, OpError, Warning } from "../errors.ts";
 import { layout } from "../layout/index.ts";
@@ -11,7 +11,6 @@ import { applyOps } from "../model/apply.ts";
 import { readDiagram, writeDiagram } from "../model/io.ts";
 import type { Op } from "../model/ops.ts";
 import type { Diagram } from "../model/types.ts";
-import { block, record } from "../records.ts";
 import type { Scene } from "../scene.ts";
 import { createMeasurer } from "../text/index.ts";
 import type { Measurer } from "../text/types.ts";
@@ -23,91 +22,39 @@ import {
   unknownStyles,
   unknownWeights,
 } from "../theme/themes.ts";
+import { type Answer, changesOf, warningMoves } from "./answer.ts";
 import { bindMarkOps, loadMarks, settingSlots } from "./marks.ts";
 import { type Block, defectBlock, errorBlock, kindsOf, warningBlock } from "./problems.ts";
 import { IN_FILE, type Origin } from "./source.ts";
 
+/** What is wrong: the errors and defects that refuse a command, and the warnings a read reports. */
 export interface Report {
   ok: boolean;
-  changed: string[];
   errors: OpError[];
   defects: Defect[];
-  /** The drawing's counts (specs/decisions, "Records over prose"): on check and render, when nothing was refused. */
-  counts?: Counts;
-  /** What the drawing draws poorly: on every write, check and render (specs/decisions, "Every write prints every warning"). */
+  /** What the drawing draws poorly, found in the file as it is: on check and render. */
   warnings?: Warning[];
   /** What each id of the diagram the defects are found in names, so that their detail names each by its kind. */
   kinds?: ReadonlyMap<string, string>;
 }
 
-/** The report's problems as blocks: its errors, then its defects, then its warnings. */
+/** The report's problems as blocks: its errors, then its defects, then its warnings, which the file has. */
 export function blocks(r: Report): Block[] {
   const kinds = r.kinds ?? new Map<string, string>();
   return [
     ...r.errors.map(errorBlock),
     ...r.defects.map((d) => defectBlock(d, kinds)),
-    ...(r.warnings ?? []).map(warningBlock),
+    ...(r.warnings ?? []).map((w) => warningBlock(w, IN_FILE)),
   ];
 }
 
-/**
- * The report as text (specs/decisions, "Refusals say what happened and which commands can change it"): ok with the ids it
- * changed, or failed, and the records of `head`; then a block for each problem, a blank line before each; then the
- * records of the drawing. A refused change writes nothing.
- */
-export function formatReport(r: Report, head: string[] = []): string {
-  const out = [
-    r.ok
-      ? r.changed.length > 0
-        ? record("ok", { changed: r.changed })
-        : "ok"
-      : record("failed", { changed: [] }),
-    ...head,
-  ];
-  const problems = blocks(r);
-  for (const b of problems) out.push("", block(b));
-  if (r.counts !== undefined) out.push(...(problems.length > 0 ? [""] : []), countsText(r.counts));
-  return `${out.join("\n")}\n`;
-}
-
-/** A block as --json gives it: its parts. */
-export function blockBody(b: Block): Record<string, unknown> {
-  return {
-    kind: b.kind,
-    code: b.code,
-    description: b.description,
-    ...(b.source !== undefined ? { source: b.source } : {}),
-    detail: b.detail,
-    next: b.next,
-  };
-}
-
-/** The report as the JSON object `--json` prints. */
-export function reportBody(report: Report): Record<string, unknown> {
-  return {
-    ok: report.ok,
-    changed: report.changed,
-    problems: blocks(report).map(blockBody),
-    ...(report.counts !== undefined ? { counts: report.counts } : {}),
-  };
-}
-
-export function emit(
-  report: Report,
-  json: boolean,
-  extra: Record<string, unknown> = {},
-  head: string[] = [],
-): number {
-  if (json) {
-    process.stdout.write(`${JSON.stringify({ ...reportBody(report), ...extra })}\n`);
-  } else {
-    process.stdout.write(formatReport(report, head));
-  }
-  return report.ok ? 0 : 1;
+/** A refused command's answer: refused, and a block for each problem. Nothing is written. */
+export function refused(r: Report): Answer {
+  return { outcome: "REFUSED", problems: blocks(r) };
 }
 
 export function failure(errors: OpError[]): Report {
-  return { ok: false, changed: [], errors, defects: [] };
+  return { ok: false, errors, defects: [] };
 }
 
 /** A file that cannot be had, which no operation causes: its error has no operation's index. */
@@ -201,11 +148,10 @@ export function inspect(d: Diagram, m: Measurer, all = false): Defect[] {
   return all ? defects : defects.filter((x) => x.owner === "agent");
 }
 
-/** A change grafical would accept: the diagram before and after it, and what it changed. */
+/** A change grafical would accept: the diagram before and after it, and the picture after it. */
 interface Planned {
   base: Diagram | null;
   next: Diagram;
-  changed: string[];
   m: Measurer;
   scene: Scene;
 }
@@ -366,7 +312,7 @@ export function attempt(
   op: Op,
   origin: Origin,
   m: Measurer,
-): Report | { next: Diagram; changed: string[]; scene: Scene } {
+): Report | { next: Diagram; scene: Scene } {
   const result = applyOps(base, [op]);
   const weights = "errors" in result ? [] : unknownWeights(result.diagram);
   if ("errors" in result || weights.length > 0) {
@@ -392,7 +338,6 @@ export function attempt(
     const was = inFile(base, m);
     return {
       ok: false,
-      changed: [],
       errors: [],
       defects: defects.map((d) => ({
         ...d,
@@ -401,44 +346,55 @@ export function attempt(
       kinds: kindsOf(result.diagram),
     };
   }
-  return { next: result.diagram, changed: result.changed, scene };
+  return { next: result.diagram, scene };
 }
 
-/** Applies an operation to the file's diagram and writes it, or refuses and writes nothing. */
+/**
+ * Applies an operation to the file's diagram and writes it, or refuses and writes nothing
+ * (specs/decisions, "An answer says what happened, and a write reports only what it changed"). It answers what it did
+ * to each object, found by comparing the diagram before and after, and how the warnings moved: the ones it brought,
+ * with the command as their source, and the ones it cleared. A file it would leave byte for byte as it is stays
+ * unwritten.
+ */
 export async function runWrite(
   file: string,
   op: Op,
   origin: Origin,
   create = false,
-): Promise<Report> {
+): Promise<Answer> {
   const p = await plan(file, op, create, origin);
-  if (isReport(p)) return p;
-  writeAtomic(file, writeDiagram(p.next));
-  const dr = drawing(p.next, p.scene);
+  if (isReport(p)) return refused(p);
+  const text = writeDiagram(p.next);
+  if (p.base !== null && readFileSync(file, "utf8") === text) return { outcome: "UNCHANGED" };
+  writeAtomic(file, text);
+  const after = warningsOf(drawing(p.next, p.scene), p.next);
+  // The file's own warnings, which the diagram before the write is laid out for.
+  const before = p.base === null ? [] : warningsOf(drawing(p.base, layout(p.base, p.m)), p.base);
+  const { added, moves } = warningMoves(before, after);
   return {
-    ok: true,
-    changed: p.changed,
-    errors: [],
-    defects: [],
-    warnings: warningsOf(dr, p.next),
+    outcome: "WRITTEN",
+    changes: changesOf(p.base, p.next, op),
+    warnings: moves,
+    problems: added.map((w) => warningBlock(w, origin.command)),
   };
 }
 
 /**
- * What a command would do, with --try (specs/decisions, "Records over prose"): the counts of the drawing before and
- * after it, with nothing written. The agent decides what to try; grafical measures.
+ * What a command would do, with --try (specs/decisions, "Records over prose"): what it would do to each object, and
+ * the counts of the drawing before and after it, with nothing written. The agent decides what to try; grafical
+ * measures.
  */
-export async function tryWrite(
-  file: string,
-  op: Op,
-  origin: Origin,
-): Promise<Report | { report: Report; before: Counts; after: Counts }> {
+export async function tryWrite(file: string, op: Op, origin: Origin): Promise<Answer> {
   const p = await plan(file, op, false, origin);
-  if (isReport(p)) return p;
+  if (isReport(p)) return refused(p);
   const base = p.base as Diagram;
+  const before = drawing(base, layout(base, p.m)).counts;
+  const after = drawing(p.next, p.scene).counts;
   return {
-    report: { ok: true, changed: p.changed, errors: [], defects: [] },
-    before: drawing(base, layout(base, p.m)).counts,
-    after: drawing(p.next, p.scene).counts,
+    outcome: "TRIED",
+    changes: changesOf(base, p.next, op),
+    before,
+    after,
+    delta: delta(before, after),
   };
 }

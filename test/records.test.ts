@@ -6,7 +6,7 @@ describe('records (specs/decisions, "Records over prose")', () => {
     expect(record("line", { id: "a-b", bends: 2, crosses: ["x", "y"] })).toBe(
       "line id=a-b bends=2 crosses=x,y",
     );
-    expect(record("ok", {})).toBe("ok");
+    expect(record("UNCHANGED", {})).toBe("UNCHANGED");
   });
 
   it("prints none, an empty list and an empty count as -", () => {

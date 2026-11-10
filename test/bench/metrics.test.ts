@@ -150,20 +150,30 @@ describe("grafical calls: errors, defects, denials, successes", () => {
   const events = [
     call("g", "grafical -f d.grafical check --help"), // a success, but not an edit
     toolResult("g", PAGES.check?.after ?? ""), // it quotes the failure lines, with placeholders
-    call("1", "grafical -f d.grafical node --add a --layer nope --label A --json"),
-    toolResult("1", '{"ok":false,"problems":[{"kind":"error","code":"unknown-layer"}]}', true),
-    call("2", "grafical -f d.grafical node --add a --layer top --label A --json"), // retry, ok
-    toolResult("2", '{"ok":true,"changed":["a"],"problems":[]}'),
-    call("3", "grafical -f d.grafical node --add b --layer top --label B"), // a defect, as plain text
-    toolResult("3", "Exit code 1\nfailed changed=-\n\ndefect: overflow\ndetail:", true),
-    call("4", 'grafical -f d.grafical node --add b --layer top --label B; echo "exit $?"'), // the harness said no
+    call("1", "grafical -f d.grafical node --set a --layer nope --label A --json"),
+    toolResult(
+      "1",
+      '{"outcome":"REFUSED","problems":[{"kind":"ERROR","code":"unknown-layer"}]}',
+      true,
+    ),
+    call("2", "grafical -f d.grafical node --set a --layer top --label A --json"), // retry, ok
+    toolResult(
+      "2",
+      '{"outcome":"WRITTEN","changes":[{"action":"MADE","sort":"node","id":"a"}],"warnings":{"new":0,"cleared":[],"total":0}}',
+    ),
+    call("3", "grafical -f d.grafical node --set b --layer top --label B"), // a defect, as plain text
+    toolResult("3", "Exit code 1\nREFUSED\n<problems>\n  DEFECT overflow\n    detail:", true),
+    call("4", 'grafical -f d.grafical node --set b --layer top --label B; echo "exit $?"'), // the harness said no
     toolResult("4", denied, true),
-    call("5", "grafical -f d.grafical node --add b --layer top --label B --size s"), // retry, ok
-    toolResult("5", "ok changed: b"),
-    call("6", "grafical -f d.grafical edge --add a b && grafical -f d.grafical render"), // one call, two commands
-    toolResult("6", "ok changed: a-b"),
-    call("7", "grafical -f d.grafical node --add c --layer top"), // an operation error, as plain text
-    toolResult("7", "Exit code 1\nfailed changed=-\n\nerror: missing-field\ndetail:", true),
+    call("5", "grafical -f d.grafical node --set b --layer top --label B --size s"), // retry, ok
+    toolResult("5", "WRITTEN\n<changes>\n  MADE node=b\n</changes>"),
+    call(
+      "6",
+      "grafical -f d.grafical edge --set a-b --from a --to b && grafical -f d.grafical render",
+    ), // one call, two commands
+    toolResult("6", "WRITTEN\n<changes>\n  MADE edge=a-b\n</changes>"),
+    call("7", "grafical -f d.grafical node --set c --layer top"), // an operation error, as plain text
+    toolResult("7", "Exit code 1\nREFUSED\n<problems>\n  ERROR missing-field\n    detail:", true),
     call("8", "ls"), // not grafical
     toolResult("8", "d.grafical"),
   ];
@@ -185,18 +195,18 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     const read = [
       call("a", "grafical --help"),
       toolResult("a", "Usage: grafical [options] [command]"),
-      call("b", 'grafical "node add" --help'),
-      toolResult("b", "failed changed=-\n\nerror: unknown-command\n", true),
-      call("c", "grafical node --add --help && grafical edge --add --help | head -20"),
-      toolResult("c", "Usage: grafical -f <file> node --add"),
+      call("b", 'grafical "node set" --help'),
+      toolResult("b", "REFUSED\n<problems>\n  ERROR unknown-command\n", true),
+      call("c", "grafical node --set --help && grafical edge --set --help | head -20"),
+      toolResult("c", "Usage: grafical -f <file> node --set"),
       call("d", "grafical guide flowchart; grafical -f d.grafical show"),
-      toolResult("d", "ok"),
-      call("e", "grafical -f d.grafical nodee --add a"),
-      toolResult("e", "failed changed=-\n\nerror: unknown-command\n", true),
-      call("f", "grafical -f d.grafical layer --add top --try"),
-      toolResult("f", "ok changed=top written=no"),
+      toolResult("d", "OK\n<diagram>"),
+      call("e", "grafical -f d.grafical nodee --set a"),
+      toolResult("e", "REFUSED\n<problems>\n  ERROR unknown-command\n", true),
+      call("f", "grafical -f d.grafical layer --set top --try"),
+      toolResult("f", "TRIED\n<changes>\n  MADE layer=top\n</changes>"),
       call("f2", "grafical -f d.grafical diagram --set --title T"),
-      toolResult("f2", "ok"),
+      toolResult("f2", "WRITTEN\n<changes>\n  MADE diagram\n</changes>"),
       call("g", "grafical node --help"),
       toolResult("g", "Usage: grafical -f <file> node"),
       call("h", "grafical guide composition"),
@@ -207,10 +217,10 @@ describe("grafical calls: errors, defects, denials, successes", () => {
 
   it("counts a refused write as the first write", () => {
     const read = [
-      call("a", "grafical -f d.grafical node --add a --layer nope --label A"),
-      toolResult("a", "failed changed=-\n\nerror: unknown-row\n", true),
-      call("b", "grafical node --add --help"),
-      toolResult("b", "Usage: grafical -f <file> node --add"),
+      call("a", "grafical -f d.grafical node --set a --layer nope --label A"),
+      toolResult("a", "REFUSED\n<problems>\n  ERROR unknown-layer\n", true),
+      call("b", "grafical node --set --help"),
+      toolResult("b", "Usage: grafical -f <file> node --set"),
     ];
     expect(graficalStats(read).beforeWrite).toEqual({ help: 0, guides: 0, unknownCommands: 0 });
   });
@@ -227,38 +237,44 @@ describe("grafical calls: errors, defects, denials, successes", () => {
 
   it("keeps different diagrams apart", () => {
     const other = [
-      call("a", "grafical -f a.grafical node --add x --layer l --label X"),
-      toolResult("a", "Exit code 1\nfailed changed=-\n\nerror: unknown-layer", true),
-      call("b", "grafical -f b.grafical node --add x --layer l --label X"),
-      toolResult("b", "ok changed: x"),
+      call("a", "grafical -f a.grafical node --set x --layer l --label X"),
+      toolResult("a", "Exit code 1\nREFUSED\n<problems>\n  ERROR unknown-layer", true),
+      call("b", "grafical -f b.grafical node --set x --layer l --label X"),
+      toolResult("b", "WRITTEN\n<changes>\n  MADE node=x\n</changes>"),
     ];
     expect(graficalStats(other).retries).toBe(0);
   });
 
   it("classifies a result", () => {
     expect(classify(denied, true)).toBe("denied");
-    expect(classify('{"ok":true}', false)).toBe("success");
-    expect(classify("ok changed: a", false)).toBe("success");
-    expect(classify("ok changed=a", false)).toBe("success");
-    // The blocks (specs/decisions, "Refusals say what happened and which commands can change it").
-    expect(classify("Exit code 1\nfailed changed=-\n\nerror: unknown-node\ndetail:", true)).toBe(
+    expect(classify('{"outcome":"WRITTEN"}', false)).toBe("success");
+    expect(classify('{"outcome":"UNCHANGED"}', false)).toBe("success");
+    expect(classify("WRITTEN\n<changes>\n  MADE node=a\n</changes>", false)).toBe("success");
+    expect(classify("UNCHANGED", false)).toBe("success");
+    // The blocks (specs/decisions, "An answer says what happened, and a write reports only what it changed").
+    expect(classify("Exit code 1\nREFUSED\n<problems>\n  ERROR unknown-node\n", true)).toBe(
       "opError",
     );
-    expect(classify("Exit code 1\nfailed changed=-\n\ndefect: overflow\ndetail:", true)).toBe(
-      "defect",
-    );
-    expect(classify("ok changed=a\n\nwarning: bent-edge\nnext: node move", false)).toBe("success");
-    expect(classify('{"ok":false,"problems":[{"kind":"error","code":"unknown-node"}]}', true)).toBe(
-      "opError",
-    );
-    expect(classify('{"ok":false,"problems":[{"kind":"defect","code":"overflow"}]}', true)).toBe(
-      "defect",
-    );
-    expect(classify('{"ok":true,"problems":[{"kind":"warning","code":"bent-edge"}]}', false)).toBe(
+    expect(classify("Exit code 1\nREFUSED\n<problems>\n  DEFECT overflow\n", true)).toBe("defect");
+    expect(
+      classify(
+        "WRITTEN\n<problems>\n  WARNING bent-edge\n    next: node --move\n</problems>",
+        false,
+      ),
+    ).toBe("success");
+    expect(
+      classify('{"outcome":"REFUSED","problems":[{"kind":"ERROR","code":"unknown-node"}]}', true),
+    ).toBe("opError");
+    expect(
+      classify('{"outcome":"REFUSED","problems":[{"kind":"DEFECT","code":"overflow"}]}', true),
+    ).toBe("defect");
+    expect(
+      classify('{"outcome":"WRITTEN","problems":[{"kind":"WARNING","code":"bent-edge"}]}', false),
+    ).toBe("success");
+    // The help quotes the blocks with placeholders: they are not refusals.
+    expect(classify("ERROR|DEFECT|WARNING <code>\nERROR: nothing could be applied", false)).toBe(
       "success",
     );
-    // The help quotes the records with placeholders: they are not refusals.
-    expect(classify("error: <code>\ndefect: <code>", false)).toBe("success");
     expect(classify("boom", true)).toBe("opError");
   });
 

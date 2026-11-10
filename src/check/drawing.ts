@@ -493,9 +493,9 @@ export function warningsOf(dr: Drawing, facts: Diagram): Warning[] {
   ];
 }
 
-/** The counts as one record, named by what they count: counts, before or after. */
-export function countsText(c: Counts, name = "counts"): string {
-  return record(name, { ...c });
+/** The counts as one record, named counts. */
+function countsText(c: Counts): string {
+  return record("counts", { ...c });
 }
 
 /** What a change does to the counts: after less before, for each number among them. */
@@ -506,14 +506,6 @@ export function delta(before: Counts, after: Counts): Record<string, number> {
     if (typeof v === "number" && typeof was === "number") out[k] = v - was;
   }
   return out;
-}
-
-/** The delta as one record, a rise signed with +. */
-export function deltaText(d: Record<string, number>): string {
-  return record(
-    "delta",
-    Object.fromEntries(Object.entries(d).map(([k, n]) => [k, n > 0 ? `+${n}` : String(n)])),
-  );
 }
 
 /** The whole drawing as records: the counts, then each node, group and edge, then the legend. */

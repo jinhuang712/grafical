@@ -19,7 +19,8 @@
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { formatReport, isReport, loadDiagram } from "../src/cli/pipeline.ts";
+import { answerText } from "../src/cli/answer.ts";
+import { isReport, loadDiagram, refused } from "../src/cli/pipeline.ts";
 import { layout } from "../src/layout/index.ts";
 import { renderSvg } from "../src/render/index.ts";
 import { createMeasurer } from "../src/text/index.ts";
@@ -536,7 +537,7 @@ export async function checkRound(round: string): Promise<Map<string, StepGeometr
       if (existsSync(file)) {
         const d = loadDiagram(file);
         result = isReport(d)
-          ? { source: "grafical", defects: [], error: formatReport(d).trim() }
+          ? { source: "grafical", defects: [], error: answerText(refused(d)).trim() }
           : { source: "grafical", defects: checkSvg(renderSvg(layout(d, m)), m) };
       } else if (existsSync(drawn)) {
         result = { source: "svg", defects: checkSvg(readFileSync(drawn, "utf8"), m) };

@@ -302,19 +302,19 @@ export interface DefectSplit {
 }
 
 /**
- * Reads the output of `grafical check <file> --all --json`: its problems of kind defect, each with its owner in its
- * detail. null when it is not that report.
+ * Reads the output of `grafical check <file> --all --json`: its problems of kind DEFECT, each with its owner in its
+ * detail. An answer with no problems has none. null when it is not that answer.
  */
 export function parseCheckAll(stdout: string): DefectSplit | null {
-  let j: { problems?: { kind?: string; detail?: { owner?: string } }[] };
+  let j: { outcome?: string; problems?: { kind?: string; detail?: { owner?: string } }[] };
   try {
     j = JSON.parse(stdout);
   } catch {
     return null;
   }
-  if (!Array.isArray(j.problems)) return null;
-  const defects = j.problems
-    .filter((p) => p.kind === "defect")
+  if (typeof j.outcome !== "string") return null;
+  const defects = (j.problems ?? [])
+    .filter((p) => p.kind === "DEFECT")
     .map((p) => ({ owner: p.detail?.owner }));
   if (defects.some((d) => d.owner !== "agent" && d.owner !== "engine")) return null;
   const engineDefects = defects.filter((d) => d.owner === "engine").length;

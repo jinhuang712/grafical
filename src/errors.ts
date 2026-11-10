@@ -251,7 +251,8 @@ export type UsageCode = (typeof USAGE_CODES)[number];
 
 /**
  * The codes of a warning: written, exit 0, and drawn poorly (specs/decisions, "Refusals say what happened and which
- * commands can change it", "Every write prints every warning"), in the order they print: an edge with more than two
+ * commands can change it", "An answer says what happened, and a write reports only what it changed"), in the order they
+ * print: an edge with more than two
  * bends (specs/decisions, "A bent edge is reported and never refused"), the places the counts passing, across, tight and crowded count
  * (specs/decisions, "Composition counts"), a node no edge reaches, an edge alike from every node of a group to one end (specs/decisions,
  * "An edge from every node of a group is a warning"), and two edges that cross.
@@ -270,8 +271,9 @@ export const WARNING_CODES = [
 export type WarningCode = (typeof WARNING_CODES)[number];
 
 /**
- * Something drawn poorly, which is written: its code and what is there. It has no source: the outcome line names
- * what the write changed (specs/decisions, "Every write prints every warning").
+ * Something drawn poorly, which is written: its code and what is there. Its identity is its code and its facts, so
+ * that a write reports only the warnings it brought and those it cleared
+ * (specs/decisions, "An answer says what happened, and a write reports only what it changed").
  */
 export interface Warning {
   code: WarningCode;

@@ -118,7 +118,7 @@ describe("write commands", () => {
     expect(single.startsWith('<diagram> {\n  format: 1\n  title: "Tiny"\n}\n')).toBe(true);
   });
 
-  it("reports changed ids as JSON on one line", () => {
+  it("says what a write did as JSON on one line", () => {
     const r = run(
       "node",
       "set",
@@ -132,17 +132,21 @@ describe("write commands", () => {
       "--json",
     );
     expect(r.code).toBe(0);
-    // The new node has no edges yet: a warning, with no source (specs/decisions, "Every write prints every warning").
+    // The new node has no edges yet: a warning the write brought, from the command (specs/decisions, "An answer says
+    // what happened, and a write reports only what it changed").
     expect(r.out).toBe(
       `${JSON.stringify({
-        ok: true,
-        changed: ["cache"],
+        outcome: "WRITTEN",
+        changes: [{ action: "MADE", sort: "node", id: "cache" }],
+        warnings: { new: 1, cleared: [], total: 1 },
         problems: [
           {
-            kind: "warning",
+            kind: "WARNING",
             code: "lonely-node",
             description:
               "No edge reaches a node: none of its own, and none to its group, layer or lane.",
+            source:
+              "grafical -f single.grafical node --set cache --layer storage --label Cache --last --json",
             detail: { node: "cache" },
             next: ["node --remove", "edge --set"],
           },
@@ -150,20 +154,33 @@ describe("write commands", () => {
       })}\n`,
     );
     const rm = run("node", "remove", "single.grafical", "cache", "--json");
-    expect(JSON.parse(rm.out)).toEqual({ ok: true, changed: ["cache"], problems: [] });
+    expect(JSON.parse(rm.out)).toEqual({
+      outcome: "WRITTEN",
+      changes: [{ action: "REMOVED", sort: "node", id: "cache" }],
+      warnings: { new: 0, cleared: [{ code: "lonely-node", node: "cache" }], total: 0 },
+    });
   });
 
   it("leaves the file untouched and exits 1 when an operation fails", () => {
     const before = read("single.grafical");
     const r = run("node", "set", "single.grafical", "x", "--layer", "servces", "--label", "X");
     expect(r.code).toBe(1);
-    expect(r.out).toMatch(
-      /^failed changed=-\n\nerror: unknown-layer\ndescription: No layer has the id\.\n/,
+    expect(r.out).toBe(
+      [
+        "REFUSED",
+        "<problems>",
+        "  ERROR unknown-layer",
+        "    description: No layer has the id.",
+        "    source: grafical -f single.grafical node --set x --layer servces --label X",
+        "    detail:",
+        "      field: layer",
+        "      found: servces",
+        "      near: services, storage, clients",
+        "    next: layer --set",
+        "</problems>",
+        "",
+      ].join("\n"),
     );
-    expect(r.out).toContain(
-      "detail:\n  field: layer\n  found: servces\n  near: services, storage, clients\n",
-    );
-    expect(r.out).toMatch(/\nnext: layer --set\n$/);
     expect(read("single.grafical")).toBe(before);
   });
 
@@ -182,10 +199,10 @@ describe("write commands", () => {
     );
     expect(r.code).toBe(1);
     const j = JSON.parse(r.out);
-    expect(j.ok).toBe(false);
-    expect(j.changed).toEqual([]);
+    expect(j.outcome).toBe("REFUSED");
+    expect(j.changes).toBeUndefined();
     expect(j.problems[0]).toMatchObject({
-      kind: "error",
+      kind: "ERROR",
       code: "unknown-node",
       description: "No node has the id.",
       detail: { field: "to", found: "nope" },
@@ -210,10 +227,10 @@ describe("write commands", () => {
       "--last",
     );
     expect(r.code).toBe(1);
-    expect(r.out).toContain("error: unknown-type\n");
-    expect(r.out).toContain("  field: type\n  found: db\n");
-    expect(r.out).toContain("  likely: store\n");
-    expect(r.out).toContain("  allowed: service, store, queue, external, actor,");
+    expect(r.out).toContain("  ERROR unknown-type\n");
+    expect(r.out).toContain("      field: type\n      found: db\n");
+    expect(r.out).toContain("      likely: store\n");
+    expect(r.out).toContain("      allowed: service, store, queue, external, actor,");
   });
 
   it("makes a file only with a title, and a missing file is an error", () => {
@@ -236,31 +253,31 @@ describe("write commands", () => {
     expect(opt.code).toBe(2);
     expect(opt.err).toBe(
       [
-        "failed changed=-",
-        "",
-        "error: unknown-option",
-        "description: The command has no option of the name.",
-        "source: grafical -f single.grafical show --bogus",
-        "detail:",
-        "  found: --bogus",
-        "next: -",
+        "REFUSED",
+        "<problems>",
+        "  ERROR unknown-option",
+        "    description: The command has no option of the name.",
+        "    source: grafical -f single.grafical show --bogus",
+        "    detail:",
+        "      found: --bogus",
+        "    next: -",
+        "</problems>",
         "",
       ].join("\n"),
     );
-    expect(run("bogus").err).toContain("error: unknown-command\n");
-    expect(run("show").err).toContain("error: missing-argument\n");
-    expect(run("show").err).toContain("detail:\n  field: --file\n");
-    expect(run("diagram", "set", "x.grafical").out).toContain("detail:\n  field: title\n");
+    expect(run("bogus").err).toContain("  ERROR unknown-command\n");
+    expect(run("show").err).toContain("  ERROR missing-argument\n");
+    expect(run("show").err).toContain("    detail:\n      field: --file\n");
+    expect(run("diagram", "set", "x.grafical").out).toContain("    detail:\n      field: title\n");
     // With --json a usage error is the same object as any refusal, on standard output.
     const json = run("show", "single.grafical", "--bogus", "--json");
     expect(json.code).toBe(2);
     expect(json.err).toBe("");
     expect(JSON.parse(json.out)).toEqual({
-      ok: false,
-      changed: [],
+      outcome: "REFUSED",
       problems: [
         {
-          kind: "error",
+          kind: "ERROR",
           code: "unknown-option",
           description: "The command has no option of the name.",
           source: "grafical -f single.grafical show --bogus --json",
@@ -271,11 +288,11 @@ describe("write commands", () => {
     });
     expect(JSON.parse(run("bogus", "--json").out).problems[0].code).toBe("unknown-command");
     // Past `--` the word is an argument and not the flag.
-    expect(run("bogus", "--", "--json").err).toContain("error: unknown-command\n");
+    expect(run("bogus", "--", "--json").err).toContain("  ERROR unknown-command\n");
     // Extra arguments are what was found, beside the arguments the command takes.
     const extra = run("node", "remove", "single.grafical", "api", "worker");
-    expect(extra.err).toContain("error: excess-arguments\n");
-    expect(extra.err).toContain("detail:\n  found: worker\n  takes: <ids>\n");
+    expect(extra.err).toContain("  ERROR excess-arguments\n");
+    expect(extra.err).toContain("    detail:\n      found: worker\n      takes: <ids>\n");
   });
 
   it("sets an edge again with no change, and node remove takes its edges", () => {
@@ -284,10 +301,23 @@ describe("write commands", () => {
     run("node", "set", "e.grafical", "p", "--layer", "l", "--label", "P");
     run("node", "set", "e.grafical", "q", "--layer", "l", "--label", "Q", "--last");
     expect(run("edge", "set", "e.grafical", "p-q", "--from", "p", "--to", "q").out).toBe(
-      "ok changed=p-q\n",
+      [
+        "WRITTEN",
+        "<changes>",
+        "  MADE edge=p-q",
+        "</changes>",
+        "<warnings>",
+        "  new=0 cleared=2 total=0",
+        "  CLEARED lonely-node node=p",
+        "  CLEARED lonely-node node=q",
+        "</warnings>",
+        "",
+      ].join("\n"),
     );
     // Run twice, a command changes nothing (specs/decisions, "One command is one write, and running it twice changes nothing").
-    expect(run("edge", "set", "e.grafical", "p-q", "--from", "p", "--to", "q").out).toBe("ok\n");
+    expect(run("edge", "set", "e.grafical", "p-q", "--from", "p", "--to", "q").out).toBe(
+      "UNCHANGED\n",
+    );
     const second = run(
       "edge",
       "set",
@@ -300,18 +330,28 @@ describe("write commands", () => {
       "--label",
       "again",
     );
-    expect(second.out).toBe("ok changed=p-q2\n");
+    expect(second.out).toMatch(/^WRITTEN\n<changes>\n {2}MADE edge=p-q2\n<\/changes>\n/);
     const rm = run("node", "remove", "e.grafical", "q");
-    // p is left with no edges.
+    // The edges go with q, and p is left with none: a warning this command brought.
     expect(rm.out).toBe(
       [
-        "ok changed=q,p-q,p-q2",
-        "",
-        "warning: lonely-node",
-        "description: No edge reaches a node: none of its own, and none to its group, layer or lane.",
-        "detail:",
-        "  node: p",
-        "next: node --remove, edge --set",
+        "WRITTEN",
+        "<changes>",
+        "  REMOVED node=q",
+        "  REMOVED edge=p-q by=node:q",
+        "  REMOVED edge=p-q2 by=node:q",
+        "</changes>",
+        "<warnings>",
+        "  new=1 cleared=0 total=1",
+        "</warnings>",
+        "<problems>",
+        "  WARNING lonely-node",
+        "    description: No edge reaches a node: none of its own, and none to its group, layer or lane.",
+        "    source: grafical -f e.grafical node --remove q",
+        "    detail:",
+        "      node: p",
+        "    next: node --remove, edge --set",
+        "</problems>",
         "",
       ].join("\n"),
     );
@@ -324,15 +364,22 @@ describe("write commands", () => {
     run("node", "set", "s.grafical", "p", "--layer", "a", "--label", "P");
     run("node", "set", "s.grafical", "q", "--layer", "b", "--label", "Q");
     run("edge", "set", "s.grafical", "p-q", "--from", "p", "--to", "q", "--label", "read");
-    expect(run("edge", "set", "s.grafical", "p-q", "--number", "3").out).toBe("ok changed=p-q\n");
+    const numbered = "WRITTEN\n<changes>\n  CHANGED edge=p-q fields=number\n</changes>\n";
+    expect(run("edge", "set", "s.grafical", "p-q", "--number", "3").out).toMatch(
+      new RegExp(`^${numbered}`),
+    );
     expect(read("s.grafical")).toContain("number: 3");
-    expect(run("show", "s.grafical").out).toContain("p-q (p->q) [step 3] read");
-    expect(run("show", "s.grafical", "--drawn").out).toMatch(/^edge id=p-q .* step=3$/m);
+    expect(run("show", "s.grafical").out).toContain("  p-q (p->q) [step 3] read");
+    expect(run("show", "s.grafical", "--drawn").out).toMatch(/^ {2}edge id=p-q .* step=3$/m);
     const bad = run("edge", "set", "s.grafical", "p-q", "--number", "0");
     expect(bad.code).toBe(1);
-    expect(bad.out).toContain("error: bad-value\n");
-    expect(bad.out).toContain("detail:\n  field: number\n  found: 0\n  min: 1\n  max: 99\n");
-    expect(run("edge", "set", "s.grafical", "p-q", "--number", "-").out).toBe("ok changed=p-q\n");
+    expect(bad.out).toContain("  ERROR bad-value\n");
+    expect(bad.out).toContain(
+      "    detail:\n      field: number\n      found: 0\n      min: 1\n      max: 99\n",
+    );
+    expect(run("edge", "set", "s.grafical", "p-q", "--number", "-").out).toMatch(
+      new RegExp(`^${numbered}`),
+    );
     expect(read("s.grafical")).not.toContain("step:");
     expect(run("show", "s.grafical", "--drawn").out).not.toContain("step=");
   });
@@ -344,15 +391,18 @@ describe("read commands", () => {
     expect(r.code).toBe(0);
     expect(r.out).toBe(
       [
-        'diagram "Tiny"',
-        'layer clients "Clients": web "Web" actor',
-        'layer services "Services": api "API" service emphasis | worker "Worker" service',
-        'layer storage "Storage": db "DB" store | mq "MQ" queue',
-        "edges:",
-        "web-api (web->api) call",
-        "api-db (api->db) [data]",
-        "api-mq (api->mq) [async]",
-        "mq-worker (mq->worker) [async]",
+        "OK",
+        "<diagram>",
+        '  diagram "Tiny"',
+        '  layer clients "Clients": web "Web" actor',
+        '  layer services "Services": api "API" service emphasis | worker "Worker" service',
+        '  layer storage "Storage": db "DB" store | mq "MQ" queue',
+        "  edges:",
+        "  web-api (web->api) call",
+        "  api-db (api->db) [data]",
+        "  api-mq (api->mq) [async]",
+        "  mq-worker (mq->worker) [async]",
+        "</diagram>",
         "",
       ].join("\n"),
     );
@@ -363,7 +413,8 @@ describe("read commands", () => {
     const r = run("check", "single.grafical", "--json");
     expect(r.code).toBe(0);
     const body = JSON.parse(r.out);
-    expect(body).toMatchObject({ ok: true, changed: [], problems: [] });
+    expect(body.outcome).toBe("OK");
+    expect(body.problems).toBeUndefined();
     expect(body.counts.crossings).toBe(0);
   });
 
@@ -379,14 +430,15 @@ describe("read commands", () => {
   it('show --drawn prints the drawing as facts and counts (specs/decisions, "Records over prose")', () => {
     const r = run("show", "single.grafical", "--drawn");
     expect(r.code).toBe(0);
-    expect(r.out).toMatch(/^counts nodes=\d+ edges=\d+ crossings=\d+/);
-    expect(r.out).toMatch(/^node id=api layer=\S+ place=\d+ of=\d+/m);
+    expect(r.out).toMatch(/^OK\n<drawing>\n {2}counts nodes=\d+ edges=\d+ crossings=\d+/);
+    expect(r.out).toMatch(/^ {2}node id=api layer=\S+ place=\d+ of=\d+/m);
     expect(r.out).toMatch(
-      /^edge id=api-db from=api to=db leaves=\w+ enters=\w+ bends=\d+ length=\d+/m,
+      /^ {2}edge id=api-db from=api to=db leaves=\w+ enters=\w+ bends=\d+ length=\d+/m,
     );
     expect(r.out).toMatch(
-      /^gutter above=clients below=services edges=\d+ crossings=\d+ tight=\d+ crowded=\d+$/m,
+      /^ {2}gutter above=clients below=services edges=\d+ crossings=\d+ tight=\d+ crowded=\d+$/m,
     );
+    expect(r.out).toMatch(/<\/drawing>\n$/);
     const json = JSON.parse(run("show", "single.grafical", "--drawn", "--json").out);
     expect(json.drawing.counts.nodes).toBeGreaterThan(0);
     expect(json.drawing.gutters).toHaveLength(2);
@@ -398,7 +450,7 @@ describe("read commands", () => {
     const r = run("node", "set", "single.grafical", "api", "--label", "API service", "--try");
     expect(r.code).toBe(0);
     expect(r.out).toMatch(
-      /^ok changed=api written=no\nbefore nodes=\d+ edges=\d+ crossings=\d+.*\nafter nodes=\d+.*\ndelta nodes=0 edges=0 crossings=[-+]?\d+ /,
+      /^TRIED\n<changes>\n {2}CHANGED node=api fields=label\n<\/changes>\n<before>\n {2}nodes=\d+ edges=\d+ crossings=\d+.*\n<\/before>\n<after>\n {2}nodes=\d+.*\n<\/after>\n<delta>\n {2}nodes=0 edges=0 crossings=[-+]?\d+ .*\n<\/delta>\n$/,
     );
     expect(readFileSync(join(dir, "single.grafical"), "utf8")).toBe(before);
     const json = JSON.parse(
@@ -431,11 +483,11 @@ describe("read commands", () => {
     const r = run("render", "single.grafical", "--png", "only.png", "--scale", "1");
     expect(r.code).toBe(0);
     expect(existsSync(join(dir, "only.png"))).toBe(true);
-    expect(r.out).toMatch(/^ok\nwrote file=only.png\ncounts nodes=/);
+    expect(r.out).toMatch(/^OK\n<files>\n {2}only.png\n<\/files>\n<counts>\n {2}nodes=/);
     // A flag with no path writes only that file, beside the diagram.
     const beside = run("render", "single.grafical", "--png", "--scale", "1");
     expect(beside.code).toBe(0);
-    expect(beside.out).toMatch(/^ok\nwrote file=single.png\ncounts nodes=/);
+    expect(beside.out).toMatch(/^OK\n<files>\n {2}single.png\n<\/files>\n<counts>\n {2}nodes=/);
   });
 
   // No size limit while the help's correctness comes first (specs/decisions, "One entry page, help where it is used").

@@ -71,7 +71,7 @@ describe('grafical diff (specs/decisions, "Git as the history")', () => {
       ].join("\n"),
     );
     const json = JSON.parse(run("diff", f, "HEAD", "--json").out);
-    expect(json.ok).toBe(true);
+    expect(json.outcome).toBe("OK");
     expect(json.commands).toEqual(d.out.trimEnd().split("\n"));
 
     // The lines, run in order by a shell on the revision's file, give the file on disk.
