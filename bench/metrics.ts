@@ -178,15 +178,16 @@ function graficalCommands(command: string): string[] {
 function diagramOf(command: string): string {
   for (const part of command.split(/&&|\|\||;|\n/)) {
     if (!/^\s*grafical\s/.test(part)) continue;
-    const m = /(\S+\.(?:ya?ml|grafical))(?:\s|$)/.exec(part);
+    const m = /(\S+\.grafical)(?:\s|$)/.exec(part);
     if (m) return (m[1] as string).replace(/^["']|["']$/g, "");
   }
   return "?";
 }
 
-const EDIT_COMMANDS = new Set(["layer", "node", "edge", "apply"]);
 /** The grafical commands that change no file. */
-const READ_COMMANDS = new Set(["show", "check", "render", "view", "diff", "try", "guide"]);
+const READ_COMMANDS = new Set(["show", "check", "render", "view", "diff", "guide", "library"]);
+/** A part that only reads: its help, or a write tried with --try (FEATURES.md, "Trying a change"). */
+const READS_ONLY = /\s(--help|-h|--try)(\s|$)/;
 
 /** What a step read before its first write (specs/decisions, "One entry page, help where it is used"). */
 function beforeWrite(events: Event[]): BeforeWrite {
@@ -204,7 +205,8 @@ function beforeWrite(events: Event[]): BeforeWrite {
       const word = /^\s*grafical\s+(?:(?:-f|--file)\s+\S+\s+)?([\w-]+)/.exec(part)?.[1];
       if (/\s(--help|-h)(\s|$)/.test(part)) seen.help++;
       else if (word === "guide") seen.guides++;
-      else if (!unknown && word !== undefined && !READ_COMMANDS.has(word)) return seen;
+      else if (!unknown && word !== undefined && !READ_COMMANDS.has(word) && !READS_ONLY.test(part))
+        return seen;
     }
   }
   return seen;
@@ -254,9 +256,8 @@ export function graficalStats(events: Event[]): GraficalStats {
     calls.push({
       outcome: classify(r.text, r.isError),
       diagram: diagramOf(t.input.command),
-      // Reading a command's help changes nothing.
-      edit:
-        subcommands.some((c) => EDIT_COMMANDS.has(c)) && !/\s(--help|-h)\b/.test(t.input.command),
+      // Reading a command's help or trying a write changes nothing.
+      edit: subcommands.some((c) => !READ_COMMANDS.has(c)) && !READS_ONLY.test(t.input.command),
     });
   }
   const count = (o: Outcome) => calls.filter((c) => c.outcome === o).length;
@@ -308,7 +309,7 @@ const COORDINATES = /<svg|viewBox|\b(?:x|y|cx|cy|x1|x2|y1|y2|width|height)\s*=\s
  * a .svg or .png, runs a drawing program, runs an interpreter on something that
  * names a picture or a drawing library, or writes coordinates. A part that starts
  * with the arm's tool is never counted, so `grafical render --png` is fine. An
- * interpreter that edits a batch file draws nothing, and is not counted.
+ * interpreter that only edits a file draws nothing, and is not counted.
  */
 export function offToolCommand(command: string, own = "grafical"): boolean {
   for (const part of command.split(/&&|\|\||;|\n/)) {

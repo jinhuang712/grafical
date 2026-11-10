@@ -148,24 +148,24 @@ describe("grafical calls: errors, defects, denials, successes", () => {
     "Permission to use Bash has been denied because Claude Code is running in don't ask mode.";
 
   const events = [
-    call("g", "grafical apply --help"), // a success, but not an edit
-    toolResult("g", PAGES.apply?.after ?? ""), // it quotes the failure lines, with placeholders
-    call("1", "grafical node add d.yaml a --layer nope --label A --json"),
+    call("g", "grafical -f d.grafical check --help"), // a success, but not an edit
+    toolResult("g", PAGES.check?.after ?? ""), // it quotes the failure lines, with placeholders
+    call("1", "grafical -f d.grafical node --add a --layer nope --label A --json"),
     toolResult("1", '{"ok":false,"problems":[{"kind":"error","code":"unknown-layer"}]}', true),
-    call("2", "grafical node add d.yaml a --layer top --label A --json"), // retry, ok
+    call("2", "grafical -f d.grafical node --add a --layer top --label A --json"), // retry, ok
     toolResult("2", '{"ok":true,"changed":["a"],"problems":[]}'),
-    call("3", "grafical node add d.yaml b --layer top --label B"), // a defect, as plain text
+    call("3", "grafical -f d.grafical node --add b --layer top --label B"), // a defect, as plain text
     toolResult("3", "Exit code 1\nfailed changed=-\n\ndefect: overflow\ndetail:", true),
-    call("4", 'grafical apply d.yaml b.yaml; echo "exit $?"'), // the harness said no
+    call("4", 'grafical -f d.grafical node --add b --layer top --label B; echo "exit $?"'), // the harness said no
     toolResult("4", denied, true),
-    call("5", "grafical node add d.yaml b --layer top --label B --size s"), // retry, ok
+    call("5", "grafical -f d.grafical node --add b --layer top --label B --size s"), // retry, ok
     toolResult("5", "ok changed: b"),
-    call("6", "grafical edge add d.yaml a b && grafical render d.yaml"), // one call, two commands
+    call("6", "grafical -f d.grafical edge --add a b && grafical -f d.grafical render"), // one call, two commands
     toolResult("6", "ok changed: a->b"),
-    call("7", "grafical node add d.yaml c --layer top"), // an operation error, as plain text
+    call("7", "grafical -f d.grafical node --add c --layer top"), // an operation error, as plain text
     toolResult("7", "Exit code 1\nfailed changed=-\n\nerror: missing-field\ndetail:", true),
     call("8", "ls"), // not grafical
-    toolResult("8", "d.yaml"),
+    toolResult("8", "d.grafical"),
   ];
 
   it("counts per call, in four separate groups", () => {
@@ -187,16 +187,18 @@ describe("grafical calls: errors, defects, denials, successes", () => {
       toolResult("a", "Usage: grafical [options] [command]"),
       call("b", 'grafical "node add" --help'),
       toolResult("b", "failed changed=-\n\nerror: unknown-command\n", true),
-      call("c", "grafical node add --help && grafical edge add --help | head -20"),
-      toolResult("c", "Usage: grafical node add"),
-      call("d", "grafical guide flowchart; grafical show d.yaml"),
+      call("c", "grafical node --add --help && grafical edge --add --help | head -20"),
+      toolResult("c", "Usage: grafical -f <file> node --add"),
+      call("d", "grafical guide flowchart; grafical -f d.grafical show"),
       toolResult("d", "ok"),
-      call("e", "grafical nodee add d.yaml a"),
+      call("e", "grafical -f d.grafical nodee --add a"),
       toolResult("e", "failed changed=-\n\nerror: unknown-command\n", true),
-      call("f", "grafical new d.yaml --title T"),
-      toolResult("f", "ok changed=d"),
-      call("g", "grafical apply --help"),
-      toolResult("g", "Usage: grafical apply"),
+      call("f", "grafical -f d.grafical layer --add top --try"),
+      toolResult("f", "ok changed=top written=no"),
+      call("f2", "grafical -f d.grafical new --title T"),
+      toolResult("f2", "ok"),
+      call("g", "grafical node --help"),
+      toolResult("g", "Usage: grafical -f <file> node"),
       call("h", "grafical guide composition"),
       toolResult("h", "Composition"),
     ];
@@ -205,10 +207,10 @@ describe("grafical calls: errors, defects, denials, successes", () => {
 
   it("counts a refused write as the first write", () => {
     const read = [
-      call("a", "grafical node add d.yaml a --layer nope --label A"),
+      call("a", "grafical -f d.grafical node --add a --layer nope --label A"),
       toolResult("a", "failed changed=-\n\nerror: unknown-row\n", true),
-      call("b", "grafical node add --help"),
-      toolResult("b", "Usage: grafical node add"),
+      call("b", "grafical node --add --help"),
+      toolResult("b", "Usage: grafical -f <file> node --add"),
     ];
     expect(graficalStats(read).beforeWrite).toEqual({ help: 0, guides: 0, unknownCommands: 0 });
   });
@@ -225,9 +227,9 @@ describe("grafical calls: errors, defects, denials, successes", () => {
 
   it("keeps different diagrams apart", () => {
     const other = [
-      call("a", "grafical node add a.yaml x --layer l --label X"),
+      call("a", "grafical -f a.grafical node --add x --layer l --label X"),
       toolResult("a", "Exit code 1\nfailed changed=-\n\nerror: unknown-layer", true),
-      call("b", "grafical node add b.yaml x --layer l --label X"),
+      call("b", "grafical -f b.grafical node --add x --layer l --label X"),
       toolResult("b", "ok changed: x"),
     ];
     expect(graficalStats(other).retries).toBe(0);
@@ -268,9 +270,11 @@ describe("grafical calls: errors, defects, denials, successes", () => {
 
 describe("off-tool drawing (hypothesis H4)", () => {
   it("never counts a grafical call", () => {
-    expect(offToolCommand("grafical render d.yaml --png diagram.png")).toBe(false);
+    expect(offToolCommand("grafical -f d.grafical render --png diagram.png")).toBe(false);
     expect(
-      offToolCommand("grafical node add d.yaml a --layer l --label A && grafical check d.yaml"),
+      offToolCommand(
+        "grafical -f d.grafical node --add a --layer l --label A && grafical -f d.grafical check",
+      ),
     ).toBe(false);
   });
 
@@ -283,11 +287,11 @@ describe("off-tool drawing (hypothesis H4)", () => {
     expect(offToolCommand('echo \'<rect x="10" y="20"/>\'')).toBe(true);
   });
 
-  it("leaves reading, plain shell and an interpreter that edits a batch file alone", () => {
+  it("leaves reading, plain shell and an interpreter that edits a file alone", () => {
     expect(offToolCommand("cat brief.md; ls; echo done")).toBe(false);
-    expect(offToolCommand("cat > /tmp/batch.yaml <<'EOF'")).toBe(false);
-    expect(offToolCommand("python3 -c 'import yaml; fix(\"batch.yaml\")'")).toBe(false);
-    expect(offToolCommand("cat d.yaml | node -e 'x'")).toBe(false);
+    expect(offToolCommand("cat > /tmp/notes.md <<'EOF'")).toBe(false);
+    expect(offToolCommand("python3 -c 'import json; fix(\"notes.json\")'")).toBe(false);
+    expect(offToolCommand("cat d.grafical | node -e 'x'")).toBe(false);
   });
 
   it("allows the Mermaid arm its own tool, and nothing else", () => {
@@ -299,7 +303,7 @@ describe("off-tool drawing (hypothesis H4)", () => {
   it("counts per step, in the grafical and Mermaid arms only", () => {
     const events = [
       assistant("a", { in: 1, cw: 1, cr: 1, out: 1 }, [
-        toolUse("1", "Bash", { command: "grafical render d.yaml" }),
+        toolUse("1", "Bash", { command: "grafical -f d.grafical render" }),
         toolUse("2", "Bash", { command: "python3 -c 'print(1)'" }),
         toolUse("3", "Bash", { command: "cat > a.svg <<'EOF'" }),
       ]),
@@ -396,11 +400,13 @@ describe("regenerations", () => {
 
   it("counts a grafical new in a change step", () => {
     expect(
-      computeMetrics([bash("grafical new d.yaml --title T")], { arm: "grafical", kind: "change" })
-        .regenerations,
+      computeMetrics([bash("grafical -f d.grafical new --title T")], {
+        arm: "grafical",
+        kind: "change",
+      }).regenerations,
     ).toBe(1);
     expect(
-      computeMetrics([bash("grafical node label d.yaml a --label B")], {
+      computeMetrics([bash("grafical -f d.grafical node --label a --label B")], {
         arm: "grafical",
         kind: "change",
       }).regenerations,

@@ -1,5 +1,5 @@
 // A round's edges, measured, not judged: for each chain's final diagram its route cost
-// (specs/decisions, "Who chose is punished"), and how often the agent measured a change with `grafical try` (specs/decisions, "Records over prose").
+// (specs/decisions, "Who chose is punished"), and how often the agent measured a change with `--try` (specs/decisions, "Records over prose").
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -17,11 +17,11 @@ export interface LineMeasure {
   crossings: number;
   bends: number;
   troubled: number;
-  /** Calls of `grafical try` in the run. */
+  /** Calls with `--try` in the run. */
   tries: number;
 }
 
-/** How many times the agent ran `grafical try` in a run. */
+/** How many times the agent tried a command with `--try` in a run. */
 function tryUse(transcript: string): number {
   let n = 0;
   for (const line of readFileSync(transcript, "utf8").split("\n")) {
@@ -30,7 +30,7 @@ function tryUse(transcript: string): number {
     if (!Array.isArray(content)) continue;
     for (const c of content as Record<string, unknown>[]) {
       const cmd = String((c.input as Record<string, unknown> | undefined)?.command ?? "");
-      if (c.type === "tool_use" && /(^|[;&|\n]\s*)grafical try\b/.test(cmd)) n++;
+      if (c.type === "tool_use" && /(^|[;&|\n]\s*)grafical\s[^;&|\n]*\s--try\b/.test(cmd)) n++;
     }
   }
   return n;

@@ -57,7 +57,7 @@ const PROMPTS = join(REPO, "bench", "prompts");
 
 /**
  * The tools each arm may use: the same for both, so the comparison is fair. A narrower Bash
- * made don't-ask mode refuse `grafical apply f.yaml b.yaml; echo $?`, and the agent fell back
+ * made don't-ask mode refuse a chain such as `grafical … ; echo $?`, and the agent fell back
  * to one command per call. The grafical arm's prompt says to draw only with grafical, and the
  * `offTool` metric audits that it did (hypothesis H4).
  */
