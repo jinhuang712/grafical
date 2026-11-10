@@ -134,7 +134,7 @@ const iconsSchema = z.strictObject({
 
 const COLOR = /^#[0-9a-fA-F]{3,8}$/;
 
-/** A style's values (specs/decisions, "A style may be as rich as it likes"). */
+/** A style's values (specs/decisions, "An object names the styles it uses"). */
 export const lookFields = {
   fill: z.string().regex(COLOR).optional(),
   border: z.string().regex(COLOR).optional(),

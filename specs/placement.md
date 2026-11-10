@@ -31,7 +31,11 @@ A node's size step gives its size. A node with no step is medium when its text f
 | Node | 112 × 48 | 136 × 56 | 184 × 72 |
 | Decision diamond | 136 × 64 | 184 × 80 | 232 × 96 |
 
-A dot is 24 px across and a `choice` diamond 28 px, whatever the step. Every plain node in a layer is drawn as tall as the layer's tallest plain node, so their tops line up, while dots and diamonds keep their shapes. A layer is as tall as its tallest shape, and a shorter shape is centred in it. A layer with no node is 56 px high, unless it is drawn as a bar.
+A dot is 24 px across and a `choice` diamond 28 px, whatever the step.
+
+A node's `width` and `height` may each take 0.75, 1.25, 1.5 or 2 times that size, rounded up to 8 px across and 4 px down. The node's own value or its styles' wins, and otherwise the largest that a region it lies in marks. A dot and a `choice` keep their size.
+
+Every plain node in a layer without a height multiple is drawn as tall as the tallest of them, so their tops line up. Dots, diamonds and a node with a height multiple keep their own height. A layer is as tall as its tallest shape, and a shorter shape is centred in it. A layer with no node is 56 px high, unless it is drawn as a bar.
 
 ## The column grid
 
@@ -149,7 +153,7 @@ Margins add to the room between layers. A layer's top margin is the largest amon
 - A column's margins reach its nodes, and a lane's its layers or nodes.
 - A group's margins widen the room beside it.
 - The diagram's four margins are the canvas's.
-- A margin counts only from a style the object marks itself, never through `like`.
+- A margin counts only from the object itself or a style it marks, never through `like`.
 
 The default stylesheet gives these, and its styles `compact` and `airy` change them for a whole diagram:
 
@@ -176,4 +180,5 @@ The stability tests in `test/layout/stability.ts` apply single operations and as
 - [031. Steps from another node](decisions/031-steps-from-another-node.md)
 - [035. Columns hold across layers](decisions/035-columns-hold-across-layers.md)
 - [072. A change keeps the structure and positions may shift](decisions/072-a-change-keeps-the-structure-and-positions-may-shift.md)
+- [080. A node's width and height take a multiple of its size](decisions/080-a-node-s-width-and-height-take-a-multiple-of-its-size.md)
 - [106. Styles set spacing as CSS does, and a later style wins](decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)

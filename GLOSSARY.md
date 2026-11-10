@@ -39,14 +39,13 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
 
 - **Type:** says what a node or an edge is, and decides how it is drawn.
   - Lost name: *kind*.
-- **Style:** a named look and spacing that an object marks.
+- **Style:** a named set of looks, spacing and sizes that an object marks.
   - Where two styles say the same thing, the one defined later in the file wins.
+  - Each of its attributes may also be set on the object itself, which beats its styles.
 - **Like:** one object follows the look of another of its sort.
 - **Region:** a diagram · a group · a layer · a lane · a column.
-- **Margin:** the room a style gives one side of an object, in pixels.
+- **Margin:** the room an object or a style gives one side of the object, in pixels.
   - On the command line: `--margin-top` · `--margin-right` · `--margin-bottom` · `--margin-left`.
-- **Magnified:** how many times its default a size is, such as 1.5.
-  - Lost names: *times*, *multiple* as a flag.
 - **Knot:** the point where a bundle splits.
 - **Mark:** a small image on a node: an emoji or a short text or a file.
   - At most five, one in each slot.

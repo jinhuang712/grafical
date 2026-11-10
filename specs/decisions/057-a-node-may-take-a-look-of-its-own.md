@@ -8,15 +8,13 @@ A node's colors came with its type, and the type also sets its shape. On 2026-10
 
 ## The choice
 
-A node takes its colors from the styles it marks. The shape stays the type's.
+A node takes its colors from itself or from the styles it marks ("Every attribute of a style may be set on the object itself"). The shape stays the type's.
 
 ## Not chosen
 
-- Colors set on the node itself.
-  - A team could not change one look in one place.
 - More types.
   - A type says what a node is and not how it looks.
 
 ## Consequences
 
-Colors a style sets stay when the theme changes, so a dark theme may leave them wrong. A dark fill can hide the theme's dark text, and grafical does not judge that. A third value for the text may follow if pictures show the need.
+Colors a node or a style sets stay when the theme changes, so a dark theme may leave them wrong. A dark fill can hide the theme's dark text, and grafical does not judge that. A third value for the text may follow if pictures show the need.

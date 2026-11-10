@@ -9,7 +9,7 @@ F2: Layout
 │   └── F2.4.1: Column headings — a label above a column
 ├── F2.5: Steps from another node — a node some cells from another
 │   └── F2.5.1: Offsets — a node a fraction of a cell off the grid
-├── F2.6: Spacing — margins and gaps from styles
+├── F2.6: Spacing — margins and gaps set on an object or in its styles
 ├── F2.7: How edges are drawn — grafical routes every edge
 │   ├── F2.7.1: Edge sides — the side an edge leaves or enters by
 │   ├── F2.7.2: Edge shapes — square or round
@@ -188,7 +188,7 @@ A node snaps to its cell, unless an agent takes it off with a fraction of a cell
 
 ## F2.6: Spacing
 
-How far apart things sit comes from styles, as margins and gaps do in CSS. It changes no fact.
+How far apart things sit comes from margins and gaps, set on an object or in the styles it marks, as in CSS. It changes no fact.
 
 - **Commands:**
   - [`style`](../CLI.md#style)
@@ -197,6 +197,7 @@ How far apart things sit comes from styles, as margins and gaps do in CSS. It ch
 - A style holds a margin for each side, and the diagram's style also holds `row-gap` and `column-gap`.
   - Each is in pixels, a multiple of 4 and never below 0.
   - A margin counts on a node · a group · a layer · a lane · a column · the diagram.
+- `--margin-top` and the other margins set on an object itself beat the styles it marks, and so do `--row-gap` and `--column-gap` on the diagram.
 - Two neighbours in a layer sit `column-gap` apart, plus the margins that face each other.
   - A node's left and right margins widen its column in every layer.
 - Two layers sit `row-gap` apart, plus the largest bottom margin above and the largest top margin below.
@@ -206,7 +207,9 @@ How far apart things sit comes from styles, as margins and gaps do in CSS. It ch
 
 - **Design:** [2. Places are facts, never coordinates](../DESIGNS.md#2-places-are-facts-never-coordinates)
 - **How it works:** [Placement: layers down the page](../specs/placement.md#layers-down-the-page)
-- **Why:** [106. Styles set spacing as CSS does, and a later style wins](../specs/decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
+- **Why:**
+  - [106. Styles set spacing as CSS does, and a later style wins](../specs/decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
+  - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
 
 **Stories:**
 

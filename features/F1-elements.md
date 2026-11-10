@@ -9,7 +9,7 @@ F1: Elements
 │   ├── F1.1.4: Marks — up to five small marks on a node
 │   ├── F1.1.5: Marks by name — a mark from one bundled mark set
 │   ├── F1.1.6: Emphasis — at most two nodes stand out
-│   ├── F1.1.7: Node looks — colors from the styles a node marks
+│   ├── F1.1.7: Node looks — colors set on a node or in its styles
 │   └── F1.1.8: Size multiples — a multiple of a node's width or height
 ├── F1.2: Edges — what connects to what
 │   ├── F1.2.1: Types — an edge's type sets its style
@@ -17,7 +17,7 @@ F1: Elements
 │   ├── F1.2.3: Weight — thicker edges for what matters more
 │   ├── F1.2.4: Numbered steps — a number on an edge
 │   ├── F1.2.5: Ends at a group, a layer or a lane — one arrow to a whole system
-│   └── F1.2.6: Edge looks — a color from the styles an edge marks
+│   └── F1.2.6: Edge looks — a color set on an edge or in its styles
 └── F1.3: Containers — what gathers nodes
     ├── F1.3.1: Groups — a system drawn as one frame
     ├── F1.3.2: Copying a group — a second zone in one operation
@@ -26,7 +26,7 @@ F1: Elements
     ├── F1.3.5: Lanes both ways — a grid of lanes and phases
     ├── F1.3.6: Walls — space that edges cross only where allowed
     ├── F1.3.7: Notes — a short text on a node, an edge or a group
-    └── F1.3.8: Container looks — colors from the styles a group or a lane marks
+    └── F1.3.8: Container looks — colors set on a group or a lane or in its styles
 ```
 
 What a diagram is made of. A node is a part of the system, an edge says that two things connect and how, and a container gathers nodes into systems, lanes and parts that edges keep apart. The agent says what each one is, and grafical gives it its shape.
@@ -59,6 +59,7 @@ A node is a part of the system: a service, a store, a queue, a person or a step.
 - An agent says what a node is, to get the shape a reader expects.
 - An agent names a node and adds a port or a topic, to say more without another node.
 - An agent leaves sizes to grafical or picks a step, to keep text inside its node.
+- An agent makes one node or a whole region a little wider or taller, to tune a picture without a pixel.
 - An agent marks a node that matters, to draw the reader's eye to it.
 - An agent names a mark, to avoid finding a file for every node.
 - An agent picks the one or two nodes to read first, to give the picture a start.
@@ -119,7 +120,9 @@ A node is sized to its text, unless the agent gives it a size step.
   - A rename that shortens the label shrinks it again.
 - Every node in a layer is drawn as tall as the layer's tallest, so their tops line up.
   - Dots and diamonds keep their shapes.
+  - A node with a height multiple keeps its own height, and the others are centred beside it ([F1.1.8: Size multiples](#f118-size-multiples)).
 - `sizing: fixed` turns this off: a node without a size is always medium, and text that does not fit is refused.
+- A size step may come from a style the node marks, as any attribute of a style may.
 
 ### F1.1.4: Marks
 
@@ -165,13 +168,15 @@ At most two nodes stand out, as what a reader should see first.
 
 ### F1.1.7: Node looks
 
-A node takes its colors from the styles it marks, so that a color says something without changing the shape.
+A node takes its colors from itself or from the styles it marks, so that a color says something without changing the shape.
 
 - **Commands:**
   - [`style`](../CLI.md#style)
   - [`node`](../CLI.md#node)
 
 - A color is `#` and hex digits.
+- `node --set --fill` · `--border` · `--border-width` · `--color` set a look on the node itself, and it beats every style the node marks.
+  - `-` gives it back to the styles.
 - A node may mark several styles, and where two say the same thing the one defined later in the file wins.
 - `node --set --style -` clears them, `+a` adds one and `-a` takes one away.
 - A style the diagram lacks is refused as `unknown-style`.
@@ -184,19 +189,32 @@ A node takes its colors from the styles it marks, so that a color says something
 
 - **Why:**
   - [057. A node may take a look of its own](../specs/decisions/057-a-node-may-take-a-look-of-its-own.md)
-  - [089. A style may be as rich as it likes](../specs/decisions/089-a-style-may-be-as-rich-as-it-likes.md)
+  - [089. An object names the styles it uses](../specs/decisions/089-an-object-names-the-styles-it-uses.md)
   - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
+  - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
 
 ### F1.1.8: Size multiples
 
-A node may take a multiple of its width, its height or both, such as 1.5.
+A node may be wider or taller than its size by a multiple, such as 1.5, to tune one node or many.
 
-- **Commands:** [`node`](../CLI.md#node)
+- **Commands:**
+  - [`node`](../CLI.md#node)
+  - [`style`](../CLI.md#style)
 
-- A taller node makes its layer taller.
-- A dot or a `choice` keeps its size and refuses a multiple.
+- `--width` and `--height` each take 0.75, 1.25, 1.5 or 2 times the size the node would otherwise have.
+  - Any other value is refused with the four it may take.
+- A multiple is set on a node, in a style, or on a region: the diagram · a layer · a group · a lane · a column.
+  - A region's multiple reaches every node in it.
+  - A node's own value or its styles' wins, and otherwise the largest of its regions'.
+- Only that node grows.
+  - A taller node makes its layer taller, and the other nodes keep their height and sit centred.
+  - A wider node widens its column in every layer.
+- A dot or a `choice` refuses a multiple set on it, and keeps its size under one from a style or a region.
+- Text that no longer fits is refused as `overflow`.
 
-- **Why:** [080. A node's width and height may be magnified](../specs/decisions/080-a-node-s-width-and-height-may-be-magnified.md)
+- **Why:**
+  - [080. A node's width and height take a multiple of its size](../specs/decisions/080-a-node-s-width-and-height-take-a-multiple-of-its-size.md)
+  - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
 
 ## F1.2: Edges
 
@@ -301,12 +319,13 @@ One arrow can point at a whole system instead of each of its parts.
 
 ### F1.2.6: Edge looks
 
-An edge takes its color from the styles it marks, so that a color says something about one path.
+An edge takes its color from itself or from the styles it marks, so that a color says something about one path.
 
 - **Commands:**
   - [`style`](../CLI.md#style)
   - [`edge`](../CLI.md#edge)
 
+- `edge --set --color` sets it on the edge itself, and it beats every style the edge marks.
 - The arrowhead takes the color too.
 - A dash stays the type's.
 - `edge --set --like` follows another edge's look and its weight, by the same rules as a node's.
@@ -315,6 +334,7 @@ An edge takes its color from the styles it marks, so that a color says something
 - **Why:**
   - [081. An edge may take a color of its own](../specs/decisions/081-an-edge-may-take-a-color-of-its-own.md)
   - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
+  - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
 
 ## F1.3: Containers
 
@@ -459,14 +479,16 @@ A short text attached to a node, an edge or a group, to keep detail out of extra
 
 ### F1.3.8: Container looks
 
-A group or a lane takes its colors from the styles it marks, so that color tells one system from another.
+A group or a lane takes its colors from itself or from the styles it marks, so that color tells one system from another.
 
 - **Commands:**
   - [`group`](../CLI.md#group)
   - [`lane`](../CLI.md#lane)
 
+- `--fill` · `--border` · `--border-width` set a look on the group or the lane itself, and it beats every style it marks.
 - `--like` follows another of its sort, by the same rules as a node's.
 
 - **Why:**
   - [083. A group or a lane may take a look of its own](../specs/decisions/083-a-group-or-a-lane-may-take-a-look-of-its-own.md)
   - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
+  - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)

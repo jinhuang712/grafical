@@ -8,7 +8,7 @@ An edge's color came from the theme, so a failure path could only be drawn thick
 
 ## The choice
 
-An edge takes its color from the styles it marks, as a node does. A dash still follows the type, since it says what the edge means.
+An edge takes its color from itself or from the styles it marks, as a node does. A dash still follows the type, since it says what the edge means.
 
 ## Not chosen
 

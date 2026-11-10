@@ -1,4 +1,4 @@
-// Styles an object marks (specs/decisions, "A style may be as rich as it likes", "Styles set spacing as CSS does,
+// Styles an object marks (specs/decisions, "An object names the styles it uses", "Styles set spacing as CSS does,
 // and a later style wins").
 
 import { spawnSync } from "node:child_process";

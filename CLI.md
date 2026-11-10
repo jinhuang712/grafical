@@ -17,6 +17,7 @@ Every noun takes `--set`, and the nouns with a place or a removal take `--move` 
 - `<ids>` is a comma-separated list, and every flag applies to each object.
 - `-` gives a flag's attribute back its default, and a switch takes `on` or `off`.
 - `--style <styles>` marks styles in four forms: `a,b` marks exactly these · `+a` adds one · `-a` takes one away · `-` clears them.
+- ⬜ Every flag of `style --set` is also a flag of `--set` on each noun it fits, such as `node --set api --fill "#fdd"`, and a value set on the object beats its styles.
 
 Each `--set` below lists its flags, and those a new object needs are marked as required.
 
@@ -94,8 +95,6 @@ Each `--set` below lists its flags, and those a new object needs are marked as r
 - `--move <ids>` with the same place flags: move nodes, in the order given.
 - `--merge <id>` with `--nodes` · `--label` · `--sublabel` · `--type`: replace nodes with one where the first one was.
 - `--remove <ids>`: remove nodes and their edges.
-
-**Status of its planned flags:** ⬜ `--set` with `--width` · `--height` · `--magnified`.
 
 **Called by:** both
 
@@ -351,6 +350,8 @@ An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`,
   - `--row-gap <px>` · `--column-gap <px>`: the room between layers and between the nodes of a layer, for the diagram.
 - `--move <ids>` with `--before` · `--after`: reorder styles, since the later one wins.
 - `--remove <ids>`: remove styles and every mark of them.
+
+**Status of its planned flags:** ⬜ `--set` with `--size` · `--width` · `--height`, the last two 0.75 · 1.25 · 1.5 · 2 times a node's size.
 
 **Called by:** both
 

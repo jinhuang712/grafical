@@ -35,7 +35,7 @@ Every change is a named operation, such as `node.set`, applied to a diagram file
 
 ## 2. Places are facts, never coordinates
 
-A node's place is its layer, its order in the layer, its group, its column, an alignment, a number of steps from another node, or a fraction of a cell off its cell. How far apart things sit comes from the styles an object marks, as margins and gaps in pixels on the 4 px grid, and never as a position. Cost: an agent moves one node only by a stated fraction of the grid, and every new need for placement becomes a new fact.
+A node's place is its layer, its order in the layer, its group, its column, an alignment, a number of steps from another node, or a fraction of a cell off its cell. How far apart things sit comes from margins and gaps in pixels on the 4 px grid, set on an object or in the styles it marks, and never as a position. A node's size is a step or a multiple of it. Cost: an agent moves one node only by a stated fraction of the grid, and every new need for placement becomes a new fact.
 
 **Ask:** Does this ask the agent for a position, a node's size in pixels or a bend point?
 
@@ -46,6 +46,7 @@ A node's place is its layer, its order in the layer, its group, its column, an a
   - [027. Columns beside layers](specs/decisions/027-columns-beside-layers.md)
   - [031. Steps from another node](specs/decisions/031-steps-from-another-node.md)
   - [106. Styles set spacing as CSS does, and a later style wins](specs/decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
+  - [080. A node's width and height take a multiple of its size](specs/decisions/080-a-node-s-width-and-height-take-a-multiple-of-its-size.md)
   - [093. A node may sit off its cell by a fraction](specs/decisions/093-a-node-may-sit-off-its-cell-by-a-fraction.md)
 - **How it works:** [Placement](specs/placement.md)
 
@@ -177,6 +178,7 @@ Any object may take any color, a mark may be any emoji, text or file, and an edg
   - [034. The legend says only what the agent named](specs/decisions/034-the-legend-says-only-what-the-agent-named.md)
   - [091. A label may mark a style](specs/decisions/091-a-label-may-mark-a-style.md)
   - [092. `like` follows an object's look and nothing else](specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
+  - [109. Every attribute of a style may be set on the object itself](specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
 - **How it works:**
   - [The theme](specs/theme.md)
   - [The renderer](specs/rendering.md)
@@ -209,7 +211,7 @@ Every write lays out, routes and checks the whole diagram again ([4. A change ke
 
 ## 14. One shortest way for each situation
 
-In one situation an agent has one shortest way to do a thing. Making an element and changing it later share `--set`, so one form states a fact either way. Cost: a convenient short form goes when it repeats another, and every new command must name the situation it serves.
+In one situation an agent has one shortest way to do a thing. Making an element and changing it later share `--set`, so one form states a fact either way. A value set on one object and a style marked on many are each the shortest in their own situation. Cost: a convenient short form goes when it repeats another, and every new command must name the situation it serves.
 
 **Ask:** Is there already a way to do this in the same situation, and which of the two is shorter?
 
@@ -217,6 +219,7 @@ In one situation an agent has one shortest way to do a thing. Making an element 
 - **Decisions:**
   - [070. One shortest way for each situation](specs/decisions/070-one-shortest-way-for-each-situation.md)
   - [044. One way to a page, and a wrong command names the right one](specs/decisions/044-one-way-to-a-page-and-a-wrong-command-names-the-right-one.md)
+  - [109. Every attribute of a style may be set on the object itself](specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
 - **How it works:** [Architecture](specs/ARCHITECTURE.md)
 
 ## 15. A picture is judged by how it reads

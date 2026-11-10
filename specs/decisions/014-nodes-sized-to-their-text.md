@@ -10,7 +10,7 @@ An agent should not size nodes in pixels, yet every label must fit its node.
 
 A node given no size is fitted to its text. The fit test is the checker's overflow rule ("Defects owned by who can fix them"), so such a node overflows only when its text does not fit the largest size either. The file stores no size for it, so the size is recomputed from the text on every layout ("Layout computed again on every change"): a rename that shortens the label shrinks the node again.
 
-Since 2026-10-13 (phase 1e), every node of a layer is drawn as tall as the layer's tallest node, its width its own, so that the tops of a layer line up: five of six judge verdicts on the private reference brief named one node taller than its neighbours. Dots and diamonds keep their shapes, and the size a node is fitted to does not change. A self-loop now runs two gutter layers below its node, since the node reaches the bottom of its layer.
+Since 2026-10-13 (phase 1e), every node of a layer is drawn as tall as the layer's tallest node, its width its own, so that the tops of a layer line up: five of six judge verdicts on the private reference brief named one node taller than its neighbours. Dots and diamonds keep their shapes, and the size a node is fitted to does not change. A node with a height multiple keeps its own height, and the others stay at theirs ("A node's width and height take a multiple of its size"). A self-loop now runs two gutter layers below its node, since the node reaches the bottom of its layer.
 
 A diagram can turn fitting off. The switch is a diagram fact in the file, because the file alone decides the picture.
 

@@ -80,8 +80,9 @@ Roadmap
 │   │   ├── ✅ `--set` on every noun
 │   │   ├── ✅ Answers that say what happened
 │   │   └── ✅ Styles set spacing
-│   ├── 🟨 CP2.5: Nodes — a node takes a multiple of its size and its marks stay clear of edges
+│   ├── 🟨 CP2.5: Nodes — a node takes a multiple of its size, an object holds a style's attributes and marks stay clear of edges
 │   │   ├── ✅ Marks
+│   │   ├── ⬜ Attributes on the object
 │   │   ├── ⬜ Size multiples
 │   │   └── ⬜ Corner marks checked
 │   ├── ⬜ CP2.6: Regions — every region carries its label and a bar runs across a group
@@ -537,12 +538,16 @@ One command is one write, every noun makes or changes an object with `--set`, an
 
 **Status:** 🟨
 
-A node takes a multiple of its size, and its marks stay clear of the edges beside them.
+A node takes a multiple of its size, any object holds the attributes of a style itself, and a node's marks stay clear of the edges beside them.
 
 **Tasks:**
 
 - ✅ Marks: A node carries small marks.
-- ⬜ Size multiples: A node takes multiples of its width and height.
+- ⬜ Attributes on the object: Every attribute of a style is set on an object it fits with a flag of its name, and beats the object's styles.
+  - Related: decision 109 "Every attribute of a style may be set on the object itself".
+- ⬜ Size multiples: `width` · `height` take 0.75 · 1.25 · 1.5 · 2 on a node, a style or a region, and only the node named grows.
+  - Next: build it, and show the owner each shape in a picture before its rule is written down.
+  - Related: decision 080 "A node's width and height take a multiple of its size".
 - ⬜ Corner marks checked: A corner mark is checked against nearby edges.
 
 **Delivers:**
@@ -551,6 +556,11 @@ A node takes a multiple of its size, and its marks stay clear of the edges besid
 - [F1.1.3: Sizes](../features/F1-elements.md#f113-sizes)
 - [F1.1.8: Size multiples](../features/F1-elements.md#f118-size-multiples)
 - [F1.1.4: Marks](../features/F1-elements.md#f114-marks)
+- [F1.1.7: Node looks](../features/F1-elements.md#f117-node-looks)
+- [F1.2.6: Edge looks](../features/F1-elements.md#f126-edge-looks)
+- [F1.3.8: Container looks](../features/F1-elements.md#f138-container-looks)
+- [F2.6: Spacing](../features/F2-layout.md#f26-spacing)
+- [F4.8: Label looks](../features/F4-look.md#f48-label-looks)
 
 **Exit criteria:**
 
@@ -688,9 +698,9 @@ Every object and every label takes a look of its own.
 
 **Tasks:**
 
-- ✅ Node looks: A node takes colors of its own or a named look.
-- ✅ Edge looks: An edge takes a color of its own or a named look.
-- ✅ Container looks: A group or a lane takes colors of its own or a named look.
+- ✅ Node looks: A node takes its colors from the styles it marks.
+- ✅ Edge looks: An edge takes its color from the styles it marks.
+- ✅ Container looks: A group or a lane takes its colors from the styles it marks.
 - ✅ Region labels: The label of a diagram · a group · a layer · a lane sits at a fraction, and a column's waits for Column headings.
 - ✅ Label looks: An edge's label marks a style for its background, border and color.
 - 🟨 Label text: An agent sets the breaks and alignment of the label of a node · an edge · a wall · a lane · a note, and the titles of regions stay one line.

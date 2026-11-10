@@ -8,7 +8,7 @@ Every group drew alike and every lane drew alike, so color could not tell one sy
 
 ## The choice
 
-A group or a lane takes its fill and border from the styles it marks, as a node does ("A node may take a look of its own").
+A group or a lane takes its fill and border from itself or from the styles it marks, as a node does ("A node may take a look of its own").
 
 ## Not chosen
 

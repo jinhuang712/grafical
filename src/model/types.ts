@@ -343,7 +343,7 @@ export function weightKey(w: string | number): string {
 }
 
 /**
- * A named look that objects mark (specs/decisions, "A style may be as rich as it likes", "Styles set spacing as CSS
+ * A named look that objects mark (specs/decisions, "An object names the styles it uses", "Styles set spacing as CSS
  * does, and a later style wins"). Spacing is in pixels on the 4 px grid. An attribute that does not apply to the
  * object marking it is left out, as in CSS.
  */

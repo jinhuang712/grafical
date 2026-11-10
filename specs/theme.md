@@ -22,7 +22,7 @@ The layout reads its type sizes from the result, so a stylesheet with larger typ
 
 ## Fixed sizes and outlines
 
-The sizes of nodes by size step, the steps a gutter grows by, the 12 px between tracks and the distances the router keeps are constants of the theme, and no stylesheet changes them. Spacing comes from the stylesheet and the styles a diagram marks. The node sizes and the spacing are multiples of 4 px, and the widths of plain nodes, decision diamonds and dots multiples of 8, so that their centres and sides stay on the 4 px grid.
+The sizes of nodes by size step, the steps a gutter grows by, the 12 px between tracks and the distances the router keeps are constants of the theme, and no stylesheet changes them. Spacing comes from the stylesheet, the styles an object marks and the object itself. The node sizes and the spacing are multiples of 4 px, and the widths of plain nodes, decision diamonds and dots multiples of 8, so that their centres and sides stay on the 4 px grid.
 
 A node's type decides the outline drawn inside its node: how much room its text has, where the text sits, and where an edge that ends at its side meets the outline. A dot or a small diamond has one size, and its label is not drawn.
 
