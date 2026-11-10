@@ -137,20 +137,25 @@ describe('diff as operations (specs/decisions, "Git as the history")', () => {
   // A diff between two random diagrams can pass through a diagram a write refuses, such as a lane with a gap or an
   // alignment its layers' order breaks, or lanes and columns can order a layer before a later command places a node in
   // it. Such pairs are counted, and the count may only fall.
-  it("replays to the same file, between any two diagrams and from nothing", () => {
-    let gaps = 0;
-    for (let seed = 1; seed <= 40; seed++) {
-      const a = generate(seed, m).diagram;
-      const b = generate(seed + 5000, m).diagram;
-      for (const [x, y] of [
-        [a, b],
-        [b, a],
-        [null, b],
-      ] as const) {
-        if (!replaysOneByOne(x, y)) gaps++;
+  it(
+    "replays to the same file, between any two diagrams and from nothing",
+    () => {
+      let gaps = 0;
+      for (let seed = 1; seed <= 40; seed++) {
+        const a = generate(seed, m).diagram;
+        const b = generate(seed + 5000, m).diagram;
+        for (const [x, y] of [
+          [a, b],
+          [b, a],
+          [null, b],
+        ] as const) {
+          if (!replaysOneByOne(x, y)) gaps++;
+        }
+        replays(null, b);
       }
-      replays(null, b);
-    }
-    expect(gaps).toBeLessThanOrEqual(9);
-  });
+      expect(gaps).toBeLessThanOrEqual(9);
+    },
+    // Each seed generates two diagrams and runs four diffs one command at a time, each a write of its own.
+    40 * 5_000,
+  );
 });
