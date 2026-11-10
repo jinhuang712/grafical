@@ -41,6 +41,7 @@ Then it scans `plan/TODO.md`.
 - [YES]   scan the open items, the roadmap and the goals to see where things stand.
 - [NO]    give a document to a subagent to read or write.
 - [NO]    check the goals for a small change.
+- [NO]    keep an old form for compatibility before the first release, in code or in documents.
 - [WHEN]  you are about to change something: read the document that owns it first.
 - [WHEN]  you are about to change a part: read its spec in `specs/` first.
 - [WHEN]  a decision is cited or its area changes: read it in `specs/decisions/`.
