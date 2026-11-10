@@ -61,11 +61,11 @@ Features
 │   ├── ✅ F3.5: Merging — several nodes become one
 │   ├── ⬜ F3.6: More combinations of operations — one operation for a common edit
 │   └── ✅ F3.7: Moving — objects placed in a stated order
-├── 🚧 F4: Look — how the picture looks (the legend as a small diagram and brand fonts not built)
+├── 🚧 F4: Look — how the picture looks (the legend as a small diagram, brand fonts and the styles of a hue not built)
 │   ├── ✅ F4.1: Title, subtitle and caption — the words around the picture
 │   ├── 🚧 F4.2: Legend — a key for styles, widths and marks (the legend as a small diagram not built)
 │   │   └── ⬜ F4.2.1: A legend as a small diagram — entries, their layout and their samples
-│   ├── ✅ F4.3: Built-in stylesheets — the whole look from one name
+│   ├── 🚧 F4.3: Built-in stylesheets — the whole look from one name (the styles of a hue not built)
 │   ├── ✅ F4.4: A stylesheet of your own — colors, widths and type sizes
 │   ├── ⬜ F4.5: Brand fonts — a team's own typeface
 │   ├── 🚧 F4.6: Label text — breaks and alignment (titles of regions one line)

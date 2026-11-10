@@ -79,16 +79,22 @@ A diagram takes its whole look from a stylesheet. grafical ships three, and a di
 - `diagram --set --stylesheet <name>` names one.
 - `grafical library` lists them, and `grafical library <word>` finds those whose name or look holds the word.
 - They come with grafical wherever it is installed.
+- Each holds ready styles, so a simple diagram needs no value of its own:
+  - `compact` · `airy` make the whole diagram tighter or roomier.
+  - `red` · `amber` · `green` · `blue` · `purple` · `gray` color a node, a group, a lane, an edge or a label.
+  - Each stylesheet draws a hue in colors that read on its own ground, so `dark` keeps it readable.
 
 - **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **How it works:** [The theme: stylesheets](../specs/theme.md#stylesheets)
 - **Why:**
   - [016. Themes and stylesheets](../specs/decisions/016-themes-and-stylesheets.md)
   - [104. A stylesheet is a .grafical file, and the built-in ones form a library](../specs/decisions/104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md)
+  - [110. Built-in styles name colors by hue, and each stylesheet draws them its own way](../specs/decisions/110-built-in-styles-name-colors-by-hue-and-each-stylesheet-draws-them-its-own-way.md)
 
 **Stories:**
 
 - An agent picks a built-in stylesheet, to give a diagram the look the user asks for in one word.
+- An agent marks a node `red`, to show a status without choosing a color value.
 
 ## F4.4: A stylesheet of your own
 

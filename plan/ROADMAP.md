@@ -116,7 +116,8 @@ Roadmap
 │   │   ├── ✅ Label looks
 │   │   ├── 🟨 Label text
 │   │   ├── ⬜ Looks for every label
-│   │   └── ⬜ Every look in a style
+│   │   ├── ⬜ Every look in a style
+│   │   └── ⬜ Colors by hue
 │   ├── 🟨 CP3.4: Rearranging in one command — one move takes `same-layer-pair` from 3 crossings to 0
 │   │   ├── ⬜ What a move needs
 │   │   ├── ✅ Moving
@@ -706,6 +707,9 @@ Every object and every label takes a look of its own.
 - 🟨 Label text: An agent sets the breaks and alignment of the label of a node · an edge · a wall · a lane · a note, and the titles of regions stay one line.
 - ⬜ Looks for every label: The label of a node · a group · a lane marks a style as an edge's label does.
 - ⬜ Every look in a style: `<style>` holds fill · border · border-width · color · weight, and grows to every look grafical draws.
+- ⬜ Colors by hue: Every built-in stylesheet holds `red` · `amber` · `green` · `blue` · `purple` · `gray`, each drawn to read on its own ground.
+  - Next: show the owner each hue on each built-in stylesheet in a picture before its values are kept.
+  - Related: decision 110 "Built-in styles name colors by hue, and each stylesheet draws them its own way".
 
 **Delivers:**
 
@@ -714,6 +718,7 @@ Every object and every label takes a look of its own.
 - [F1.3.8: Container looks](../features/F1-elements.md#f138-container-looks)
 - [F4.6: Label text](../features/F4-look.md#f46-label-text)
 - [F4.8: Label looks](../features/F4-look.md#f48-label-looks)
+- [F4.3: Built-in stylesheets](../features/F4-look.md#f43-built-in-stylesheets)
 
 **Exit criteria:**
 

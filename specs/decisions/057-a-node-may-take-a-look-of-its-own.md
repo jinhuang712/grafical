@@ -17,4 +17,4 @@ A node takes its colors from itself or from the styles it marks ("Every attribut
 
 ## Consequences
 
-Colors a node or a style sets stay when the theme changes, so a dark theme may leave them wrong. A dark fill can hide the theme's dark text, and grafical does not judge that. A third value for the text may follow if pictures show the need.
+A color written as a hex value stays when the stylesheet changes, so `dark` may leave it wrong, while a built-in style of a hue follows the stylesheet ("Built-in styles name colors by hue, and each stylesheet draws them its own way"). A dark fill can hide the theme's dark text, and grafical does not judge that. A third value for the text may follow if pictures show the need.

@@ -353,6 +353,8 @@ An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`,
 
 **Status of its planned flags:** ⬜ `--set` with `--size` · `--width` · `--height`, the last two 0.75 · 1.25 · 1.5 · 2 times a node's size.
 
+Every built-in stylesheet holds the styles `compact` · `airy`, and ⬜ `red` · `amber` · `green` · `blue` · `purple` · `gray`.
+
 **Called by:** both
 
 **Prints:** the answer on stdout: `WRITTEN` · `UNCHANGED` · `TRIED` · `REFUSED`, then its sections.

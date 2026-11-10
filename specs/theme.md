@@ -16,7 +16,7 @@ fixed sizes and node outlines ──> layout, checker, renderer
 
 A stylesheet is a `.grafical` file. It opens with one `<stylesheet>` block that holds `format`, an optional `base` and, for a built-in one, `about`. Each block after it sets values of the look: `<type>` blocks for the diagram, the title and other texts, groups, bands, lanes, nodes and each type of node, edges and each type of edge, `<style> emphasis` and other `<style>` blocks a diagram may mark, and `<weight>` blocks for `thin`, `thick` and any other level. `<type> diagram` also holds the diagram's four margins, `row-gap` and `column-gap`. A table in `src/theme/stylesheet.ts` maps each attribute to the value it sets, and nothing else is accepted: an unknown block, an unknown attribute or a wrong value is refused as `bad-stylesheet`.
 
-The built-in stylesheets live in `src/theme/presets/` and ship with the package. `default` says every value and no value of a look is written in the code. Its styles `compact` and `airy` make a diagram tighter or roomier, and a stylesheet's styles come before the diagram's own. `dark` and `print` name `default` as their base and say what differs. A stylesheet of the agent's starts from `default`, or from the built-in one it names, and says only what it changes.
+The built-in stylesheets live in `src/theme/presets/` and ship with the package. `default` says every value and no value of a look is written in the code. Its styles `compact` and `airy` make a diagram tighter or roomier, its styles `red` · `amber` · `green` · `blue` · `purple` · `gray` color an object by hue, and a stylesheet's styles come before the diagram's own. `dark` and `print` draw each hue in colors that read on their own ground. `dark` and `print` name `default` as their base and say what differs. A stylesheet of the agent's starts from `default`, or from the built-in one it names, and says only what it changes.
 
 The layout reads its type sizes from the result, so a stylesheet with larger type changes the layout as well as the colors.
 
@@ -38,3 +38,4 @@ The arrowhead grows with the width, from the thin edge's size to the main path's
 - [104. A stylesheet is a .grafical file, and the built-in ones form a library](decisions/104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md)
 - [026. Edge weights](decisions/026-edge-weights.md)
 - [106. Styles set spacing as CSS does, and a later style wins](decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
+- [110. Built-in styles name colors by hue, and each stylesheet draws them its own way](decisions/110-built-in-styles-name-colors-by-hue-and-each-stylesheet-draws-them-its-own-way.md)
