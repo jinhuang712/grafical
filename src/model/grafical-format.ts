@@ -9,6 +9,8 @@ import {
   type GroupTitle,
   MARK_SLOTS,
   type Mark,
+  OWN_KEYS,
+  type OwnSort,
   SHAPE_KINDS,
   type Shape,
 } from "./types.ts";
@@ -37,6 +39,18 @@ const flag = (v: boolean | undefined) => (v === true ? "true" : undefined);
 const num = (v: number | undefined) => (v === undefined ? undefined : String(v));
 const marks = (v: string[] | undefined) => (v === undefined ? undefined : v.map(ref).join(" "));
 
+/** A field as the file names it: borderWidth is border-width. */
+const kebab = (k: string) => k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+
+/**
+ * What an object holds of a style's attributes itself, in the order of the `<style>` table (specs/decisions, "Every
+ * attribute of a style may be set on the object itself"). It comes right before the object's `like` and `style`.
+ */
+function own(sort: OwnSort, o: object | undefined): Attr[] {
+  const v = (o ?? {}) as Record<string, unknown>;
+  return OWN_KEYS[sort].map((k): Attr => [kebab(k), v[k] === undefined ? undefined : String(v[k])]);
+}
+
 function markAttrs(m: Mark): Attr[] {
   if (typeof m === "string") return [["text", quote(m)]];
   if ("file" in m) {
@@ -63,6 +77,7 @@ export function writeGrafical(d: Diagram): string {
       ["subtitle", opt(d.subtitle, quote)],
       ["caption", opt(d.caption, quote)],
       ["stylesheet", opt(d.stylesheet, quote)],
+      ...own("diagram", d),
       ["style", marks(d.style)],
       ["lines", d.lines],
       ["title-at", d.titleAt === undefined ? undefined : String(d.titleAt.at)],
@@ -103,6 +118,7 @@ export function writeGrafical(d: Diagram): string {
       block("layer", l.id, [
         ["lane", opt(l.lane)],
         ["look", l.look],
+        ...own("layer", l),
         ["style", marks(l.style)],
       ]),
     );
@@ -111,18 +127,17 @@ export function writeGrafical(d: Diagram): string {
     blocks.push(
       block("group", g.id, [
         ["in", opt(g.in)],
+        ...own("group", g),
         ["like", opt(g.like)],
         ["style", marks(g.style)],
       ]),
     );
   for (const l of d.lanes ?? [])
     blocks.push(
-      block("lane", l.id, [
-        ["like", opt(l.like)],
-        ["style", marks(l.style)],
-      ]),
+      block("lane", l.id, [...own("lane", l), ["like", opt(l.like)], ["style", marks(l.style)]]),
     );
-  for (const c of d.columns ?? []) blocks.push(block("column", c.id, [["style", marks(c.style)]]));
+  for (const c of d.columns ?? [])
+    blocks.push(block("column", c.id, [...own("column", c), ["style", marks(c.style)]]));
   for (const w of d.walls ?? []) {
     blocks.push(
       block("wall", w.id, [
@@ -171,6 +186,7 @@ export function writeGrafical(d: Diagram): string {
         ...STEP_KEYS.map((k): Attr => [k, num(n[k])]),
         ["size", n.size],
         ["emphasis", flag(n.emphasis)],
+        ...own("node", n),
         ["like", opt(n.like)],
         ["style", marks(n.style)],
       ]),
@@ -193,6 +209,7 @@ export function writeGrafical(d: Diagram): string {
         ["with", opt(e.with)],
         ["bend-at", num(e.bendAt)],
         ["stretch", num(e.stretch)],
+        ...own("edge", e),
         ["like", opt(e.like)],
         ["style", marks(e.style)],
       ]),
@@ -208,6 +225,7 @@ export function writeGrafical(d: Diagram): string {
     align?: string,
     along?: number,
     style?: string[],
+    look?: object,
   ) =>
     block("label", `${id}-label`, [
       ["on", ref(on)],
@@ -221,6 +239,7 @@ export function writeGrafical(d: Diagram): string {
       ["place", title?.place],
       ["seat", seat],
       ["align", align],
+      ...own("label", look),
       ["style", marks(style)],
     ]);
   for (const l of d.layers) {
@@ -242,7 +261,20 @@ export function writeGrafical(d: Diagram): string {
   for (const e of d.edges) {
     if (e.label !== undefined) {
       const none = undefined;
-      blocks.push(label(e.id, e.id, e.label, none, none, e.seat, e.labelAlign, none, e.labelStyle));
+      blocks.push(
+        label(
+          e.id,
+          e.id,
+          e.label,
+          none,
+          none,
+          e.seat,
+          e.labelAlign,
+          none,
+          e.labelStyle,
+          e.labelLook,
+        ),
+      );
     }
   }
   for (const { n } of nodes) {
@@ -291,12 +323,16 @@ export interface Block {
   at: Map<string, number>;
 }
 
+/** The file's names of what a sort holds of a style's attributes itself. */
+const ownAttrs = (sort: OwnSort): string[] => OWN_KEYS[sort].map(kebab);
+
 /** The attributes each sort may hold: anything else is refused (DESIGNS.md, "What grafical cannot fully read, it refuses"). */
 const ATTRS: Record<string, readonly string[]> = {
   diagram: ["format", "title", "subtitle", "caption", "stylesheet", "style", "lines"].concat([
     "title-at",
     "title-side",
     "sizing",
+    ...ownAttrs("diagram"),
   ]),
   type: ["base", "shape", "fill", "border", "border-width", "color"],
   style: ["fill", "border", "border-width", "color"].concat([
@@ -307,10 +343,10 @@ const ATTRS: Record<string, readonly string[]> = {
     "row-gap",
     "column-gap",
   ]),
-  layer: ["lane", "look", "style"],
-  group: ["in", "like", "style"],
-  lane: ["like", "style"],
-  column: ["style"],
+  layer: ["lane", "look", "style", ...ownAttrs("layer")],
+  group: ["in", "like", "style", ...ownAttrs("group")],
+  lane: ["like", "style", ...ownAttrs("lane")],
+  column: ["style", ...ownAttrs("column")],
   wall: ["between", "and", "allow"],
   order: ["of", "axis", "items"],
   node: [
@@ -323,7 +359,7 @@ const ATTRS: Record<string, readonly string[]> = {
     "lane",
     "column",
     "align",
-  ].concat(["from", ...STEP_KEYS, "size", "emphasis", "like", "style"]),
+  ].concat(["from", ...STEP_KEYS, "size", "emphasis", "like", "style", ...ownAttrs("node")]),
   edge: ["from", "to", "type", "out", "in", "weight", "both", "pass", "number"].concat([
     "via",
     "straight",
@@ -332,8 +368,11 @@ const ATTRS: Record<string, readonly string[]> = {
     "stretch",
     "like",
     "style",
+    ...ownAttrs("edge"),
   ]),
-  label: ["on", "text", "sublabel", "at", "side", "place", "seat", "align", "style"],
+  label: ["on", "text", "sublabel", "at", "side", "place", "seat", "align", "style"].concat(
+    ownAttrs("label"),
+  ),
   mark: ["on", "slot", "file", "hash", "bg", "border", "fg", "shape", "size", "text"],
   note: ["on", "text", "align", "footnote"],
   legend: [...EDGE_STYLES, "weights", "marks"],
@@ -436,6 +475,11 @@ function take(b: Block, map: Record<string, string>, o: Record<string, unknown>)
   }
 }
 
+/** What a block holds of a style's attributes itself, as the model names them. */
+function takeOwn(b: Block, sort: OwnSort, o: Record<string, unknown>): void {
+  take(b, Object.fromEntries(OWN_KEYS[sort].map((k) => [kebab(k), k])), o);
+}
+
 /** The file's objects as the plain object of a diagram, for validateDiagram to check. */
 export function parseGrafical(text: string): Record<string, unknown> | OpError[] {
   const blocks = parseBlocks(text);
@@ -466,6 +510,18 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       return [{ code: "unknown-field", index: 0, field: b.sort, found: name, facts: { line } }];
     }
   }
+  // Only an edge's label holds a look of its own (specs/decisions, "A label may mark a style").
+  const edgeIds = new Set(of("edge").map((b) => b.id));
+  for (const b of of("label")) {
+    const on = b.attrs.get("on");
+    if (typeof on !== "string" || edgeIds.has(value(on) as string)) continue;
+    for (const name of ownAttrs("label")) {
+      const line = b.at.get(name);
+      if (line !== undefined) {
+        return [{ code: "unknown-field", index: 0, field: "label", found: name, facts: { line } }];
+      }
+    }
+  }
   const second = of("diagram")[1];
   if (second !== undefined) return [bad(text, second.line)];
   // A label or a mark that names nothing would be dropped (DESIGNS.md, "What grafical cannot fully read, it refuses").
@@ -494,6 +550,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     },
     out,
   );
+  takeOwn(root, "diagram", out);
   styles(root, out);
 
   const labels = new Map(of("label").map((b) => [value(b.attrs.get("on") as string) as string, b]));
@@ -559,6 +616,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       },
       o,
     );
+    takeOwn(b, "node", o);
     typed(b, types, o);
     styles(b, o);
     const onNode = marksOn.get(b.id as string);
@@ -580,6 +638,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
     const o: Record<string, unknown> = { id };
     if (b !== undefined) {
       take(b, { lane: "lane", look: "look" }, o);
+      takeOwn(b, "layer", o);
       styles(b, o);
     }
     named(id, o);
@@ -610,6 +669,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   out.groups = of("group").map((b) => {
     const o: Record<string, unknown> = { id: b.id };
     take(b, { in: "in", like: "like" }, o);
+    takeOwn(b, "group", o);
     styles(b, o);
     named(b.id as string, o);
     const title = labels.get(b.id as string)?.attrs;
@@ -625,6 +685,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   out.lanes = of("lane").map((b) => {
     const o: Record<string, unknown> = { id: b.id };
     take(b, { like: "like" }, o);
+    takeOwn(b, "lane", o);
     styles(b, o);
     named(b.id as string, o);
     along(b.id as string, o);
@@ -632,6 +693,7 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
   });
   out.columns = of("column").map((b) => {
     const o: Record<string, unknown> = { id: b.id };
+    takeOwn(b, "column", o);
     styles(b, o);
     return o;
   });
@@ -677,9 +739,16 @@ export function parseGrafical(text: string): Record<string, unknown> | OpError[]
       const [object, side] = via.split(" ");
       o.via = { object: value(object as string), side };
     }
+    takeOwn(b, "edge", o);
     typed(b, types, o);
     styles(b, o);
     named(b.id as string, o);
+    const tag = labels.get(b.id as string);
+    if (tag !== undefined) {
+      const look: Record<string, unknown> = {};
+      takeOwn(tag, "label", look);
+      if (Object.keys(look).length > 0) o.labelLook = look;
+    }
     const seat = labels.get(b.id as string)?.attrs.get("seat");
     if (seat !== undefined) o.seat = seat;
     const look = labels.get(b.id as string)?.attrs.get("style");

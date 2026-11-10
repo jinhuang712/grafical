@@ -1,6 +1,7 @@
 // How far apart things sit (specs/decisions, "Styles set spacing as CSS does, and a later style wins"): the
 // stylesheet's diagram type gives the row gap, the column gap and the diagram's margin, the styles the diagram marks
-// change them, and the styles any region or node marks give it a margin of its own. Pure.
+// change them, and the styles any region or node marks give it a margin of its own. What an object holds itself beats
+// the styles it marks (specs/decisions, "Every attribute of a style may be set on the object itself"). Pure.
 
 import type { Diagram, Look } from "../model/types.ts";
 import { GUTTER_STEPS, TRACK_PITCH } from "../theme/geometry.ts";
@@ -38,14 +39,20 @@ export function markedLook(d: Diagram, names: readonly string[] | undefined): Lo
   return look;
 }
 
-/** The margin the styles an object marks give it; none where they give none. */
-export function marginOf(d: Diagram, names: readonly string[] | undefined): Margin {
-  const l = markedLook(d, names);
+/** What gives an object its margins: the styles it marks, and what it holds itself, never what it follows. */
+export type Spaced = { style?: readonly string[] } & Pick<
+  Look,
+  "marginTop" | "marginRight" | "marginBottom" | "marginLeft"
+>;
+
+/** The margin an object holds itself, or else the styles it marks give it; none where neither gives one. */
+export function marginOf(d: Diagram, o: Spaced | undefined): Margin {
+  const l = markedLook(d, o?.style);
   return {
-    top: l.marginTop ?? 0,
-    right: l.marginRight ?? 0,
-    bottom: l.marginBottom ?? 0,
-    left: l.marginLeft ?? 0,
+    top: o?.marginTop ?? l.marginTop ?? 0,
+    right: o?.marginRight ?? l.marginRight ?? 0,
+    bottom: o?.marginBottom ?? l.marginBottom ?? 0,
+    left: o?.marginLeft ?? l.marginLeft ?? 0,
   };
 }
 
@@ -59,20 +66,20 @@ export function widest(a: Margin, b: Margin): Margin {
   };
 }
 
-/** The diagram's spacing: its stylesheet's, under the styles the diagram marks. */
+/** The diagram's spacing: its stylesheet's, under the styles the diagram marks, under what it holds itself. */
 export function spacingOf(d: Diagram): Spacing {
   const t = themeOf(d).space;
-  const own = markedLook(d, d.style);
-  const rowGap = own.rowGap ?? t.rowGap;
+  const marked = markedLook(d, d.style);
+  const rowGap = d.rowGap ?? marked.rowGap ?? t.rowGap;
   return {
-    columnGap: own.columnGap ?? t.columnGap,
+    columnGap: d.columnGap ?? marked.columnGap ?? t.columnGap,
     gutterSteps: GUTTER_STEPS.map((s) => rowGap + s),
     trackPitch: TRACK_PITCH,
     margin: {
-      top: own.marginTop ?? t.marginTop,
-      right: own.marginRight ?? t.marginRight,
-      bottom: own.marginBottom ?? t.marginBottom,
-      left: own.marginLeft ?? t.marginLeft,
+      top: d.marginTop ?? marked.marginTop ?? t.marginTop,
+      right: d.marginRight ?? marked.marginRight ?? t.marginRight,
+      bottom: d.marginBottom ?? marked.marginBottom ?? t.marginBottom,
+      left: d.marginLeft ?? marked.marginLeft ?? t.marginLeft,
     },
   };
 }
@@ -83,10 +90,10 @@ export function spacingOf(d: Diagram): Spacing {
  */
 export function layerMargins(d: Diagram): (layer: string) => Margin {
   const at = new Map<string, Margin>();
-  const lanes = new Map((d.lanes ?? []).map((l) => [l.id, l.style]));
+  const lanes = new Map((d.lanes ?? []).map((l) => [l.id, l]));
   const groupOf = new Map<string, string | undefined>();
   for (const g of d.groups ?? []) groupOf.set(g.id, g.in);
-  const groupStyle = new Map((d.groups ?? []).map((g) => [g.id, g.style]));
+  const groups = new Map((d.groups ?? []).map((g) => [g.id, g]));
   // The first and last layer each group's members span, its own and its inner groups'.
   const span = new Map<string, { top: number; bottom: number }>();
   d.layers.forEach((l, i) => {
@@ -98,11 +105,11 @@ export function layerMargins(d: Diagram): (layer: string) => Margin {
     }
   });
   d.layers.forEach((l, i) => {
-    let m = marginOf(d, l.style);
-    for (const n of l.nodes) m = widest(m, marginOf(d, n.style));
+    let m = marginOf(d, l);
+    for (const n of l.nodes) m = widest(m, marginOf(d, n));
     if (l.lane !== undefined) m = widest(m, marginOf(d, lanes.get(l.lane)));
-    const top = (g: string) => ({ ...NO_MARGIN, top: marginOf(d, groupStyle.get(g)).top });
-    const bottom = (g: string) => ({ ...NO_MARGIN, bottom: marginOf(d, groupStyle.get(g)).bottom });
+    const top = (g: string) => ({ ...NO_MARGIN, top: marginOf(d, groups.get(g)).top });
+    const bottom = (g: string) => ({ ...NO_MARGIN, bottom: marginOf(d, groups.get(g)).bottom });
     for (const [g, s] of span) {
       if (s.top === i) m = widest(m, top(g));
       if (s.bottom === i) m = widest(m, bottom(g));
@@ -119,11 +126,11 @@ export function layerMargins(d: Diagram): (layer: string) => Margin {
  */
 export function nodeMargins(
   d: Diagram,
-): (node: { style?: string[]; column?: string; lane?: string }) => Margin {
-  const columns = new Map((d.columns ?? []).map((c) => [c.id, c.style]));
-  const lanes = new Map((d.lanes ?? []).map((l) => [l.id, l.style]));
+): (node: Spaced & { column?: string; lane?: string }) => Margin {
+  const columns = new Map((d.columns ?? []).map((c) => [c.id, c]));
+  const lanes = new Map((d.lanes ?? []).map((l) => [l.id, l]));
   return (n) => {
-    let m = marginOf(d, n.style);
+    let m = marginOf(d, n);
     if (n.column !== undefined) m = widest(m, marginOf(d, columns.get(n.column)));
     if (n.lane !== undefined) m = widest(m, marginOf(d, lanes.get(n.lane)));
     return m;

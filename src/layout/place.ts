@@ -264,8 +264,8 @@ export function placeAcross(d: Diagram, text: PlaceText = NO_TEXT): Placement {
   }
   const left = (c: number) => colMargin.get(c)?.left ?? 0;
   const right = (c: number) => colMargin.get(c)?.right ?? 0;
-  const groupStyles = new Map((d.groups ?? []).map((g) => [g.id, g.style]));
-  const groupMargin = (g: string) => marginOf(d, groupStyles.get(g));
+  const groupById = new Map((d.groups ?? []).map((g) => [g.id, g]));
+  const groupMargin = (g: string) => marginOf(d, groupById.get(g));
   // No node moves for a group's label: an edge across it refuses the write (specs/decisions, "A group's label moves no node and no edge").
   const groups = solve().groups;
 

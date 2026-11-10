@@ -24,6 +24,8 @@ import {
   type Lane,
   MARK_SLOTS,
   type Mark,
+  OWN_KEYS,
+  type OwnSort,
   type Wall,
 } from "./types.ts";
 
@@ -121,7 +123,20 @@ function edgeAdd(e: Edge, trunkMade: boolean): Op {
     ...(e.stretch === undefined ? {} : { stretch: String(e.stretch) }),
     ...(weighted ? { weight: String(e.weight) } : {}),
     ...(e.style === undefined || e.style.length === 0 ? {} : { style: e.style.join(",") }),
+    ...ownFlags("edge", undefined, e),
   };
+}
+
+/**
+ * The flags of what an object holds of a style's attributes itself and did not hold so before, a reset for each it
+ * held and no longer does (specs/decisions, "Every attribute of a style may be set on the object itself").
+ */
+function ownFlags(sort: OwnSort, was: object | undefined, now: object | undefined) {
+  const a = (was ?? {}) as Record<string, unknown>;
+  const b = (now ?? {}) as Record<string, unknown>;
+  const out: Record<string, string> = {};
+  for (const k of OWN_KEYS[sort]) if (a[k] !== b[k]) out[k] = str(b[k]);
+  return out;
 }
 
 /** A style list as `--style` takes it, when there is one. */
@@ -201,6 +216,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
     delete empty.notes;
     delete empty.legend;
     delete empty.style;
+    for (const k of OWN_KEYS.diagram) delete empty[k];
     return [created, ...diffOps(empty, after)];
   }
   const b = before;
@@ -369,6 +385,8 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
   const said = (noun: Noun, id: string, flags: Record<string, string>) =>
     ({ op: `${noun}.set`, ids: [id], ...flags }) as Op;
   if (!same(b.style, a.style)) ops.push({ op: "diagram.set", style: joined(a.style) });
+  const diagramOwn = ownFlags("diagram", b, a);
+  if (Object.keys(diagramOwn).length > 0) ops.push({ op: "diagram.set", ...diagramOwn });
   const marksKept = <T extends { id: string; style?: string[] }>(
     noun: Noun,
     was: readonly T[],
@@ -379,6 +397,8 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
       if (!kept(x.id)) continue;
       const old = was.find((y) => y.id === x.id);
       if (!same(old?.style, x.style)) ops.push(said(noun, x.id, { style: joined(x.style) }));
+      const flags = ownFlags(noun, old, x);
+      if (Object.keys(flags).length > 0) ops.push(said(noun, x.id, flags));
     }
   };
   const bLayerIds = new Set(b.layers.map((l) => l.id));
@@ -570,6 +590,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
         ids: [l.id],
         ...(l.label === undefined ? {} : { label: l.label }),
         ...styleFlag(l.style),
+        ...ownFlags("layer", undefined, l),
         ...(prev !== undefined
           ? { after: prev }
           : order.length > 0
@@ -618,6 +639,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
           ...(n.sublabel === undefined ? {} : { sublabel: n.sublabel }),
           ...(n.size === undefined ? {} : { size: n.size }),
           ...styleFlag(n.style),
+          ...ownFlags("node", undefined, n),
         });
       } else if (!still.has(n.id)) {
         ops.push({
@@ -665,6 +687,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
         ...(n.sublabel === undefined ? {} : { sublabel: n.sublabel }),
         ...(n.size === undefined ? {} : { size: n.size }),
         ...styleFlag(n.style),
+        ...ownFlags("node", undefined, n),
       });
     } else ops.push({ op: "node.move", ids: [n.id], from, ...stepFlags(n) });
   }
@@ -736,6 +759,7 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
         label: g.label,
         ...(g.sublabel === undefined ? {} : { sublabel: g.sublabel }),
         ...styleFlag(g.style),
+        ...ownFlags("group", undefined, g),
       });
       if (g.titleAt !== undefined) ops.push(titleAt());
       continue;
@@ -748,7 +772,13 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
   for (const x of aLanes) {
     const was = keptLanes.has(x.id) ? bLanes.get(x.id) : undefined;
     if (was === undefined)
-      ops.push({ op: "lane.set", ids: [x.id], label: x.label, ...styleFlag(x.style) });
+      ops.push({
+        op: "lane.set",
+        ids: [x.id],
+        label: x.label,
+        ...styleFlag(x.style),
+        ...ownFlags("lane", undefined, x),
+      });
     else if (x.label !== was.label) ops.push({ op: "lane.set", ids: [x.id], label: x.label });
   }
   const columnLeave: string[] = [];
@@ -811,7 +841,13 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
   if (laneLeave.length > 0) inLane(laneLeave, RESET);
   // A column is made once the lanes that ran as columns are left: a diagram has one or the other.
   for (const c of a.columns ?? [])
-    if (!keptColumns.has(c.id)) ops.push({ op: "column.set", ids: [c.id], ...styleFlag(c.style) });
+    if (!keptColumns.has(c.id))
+      ops.push({
+        op: "column.set",
+        ids: [c.id],
+        ...styleFlag(c.style),
+        ...ownFlags("column", undefined, c),
+      });
   if (columnLeave.length > 0) ops.push({ op: "node.set", ids: columnLeave, column: RESET });
   for (const c of aColumns) {
     const members = columnJoin.get(c);
@@ -882,6 +918,9 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
         if (e.seat !== undefined) texts.push({ op: "label.set", ids: [e.id], seat: e.seat });
         if (e.labelStyle !== undefined && e.labelStyle.length > 0)
           texts.push({ op: "label.set", ids: [e.id], style: e.labelStyle.join(",") });
+        const look = ownFlags("label", undefined, e.labelLook);
+        if (e.label !== undefined && Object.keys(look).length > 0)
+          texts.push({ op: "label.set", ids: [e.id], ...look });
       }
       made.add(e.id);
       continue;
@@ -900,6 +939,15 @@ function diffOps(before: Diagram | null, after: Diagram): Op[] {
       );
     }
     if (e.label !== was.label) ops.push(set(e.id, { label: str(e.label) }));
+    // A label's own look goes with its label, so only a label that stays or comes says it.
+    if (e.label !== undefined) {
+      const look = ownFlags(
+        "label",
+        was.label === undefined ? undefined : was.labelLook,
+        e.labelLook,
+      );
+      if (Object.keys(look).length > 0) ops.push({ op: "label.set", ids: [e.id], ...look });
+    }
     // Both ends off before a kind turns into a link, and on only after it leaves one.
     if (e.both !== true && was.both === true) ops.push(set(e.id, { both: "off" }));
     if (e.kind !== was.kind || e.type !== was.type) ops.push(set(e.id, { type: e.type ?? e.kind }));

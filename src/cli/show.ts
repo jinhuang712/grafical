@@ -11,8 +11,22 @@ import {
   MARK_SLOTS,
   markStyle,
   markText,
+  OWN_KEYS,
+  type OwnSort,
 } from "../model/types.ts";
 import { wallRun } from "../model/walls.ts";
+
+/** A field as the command line names it: borderWidth is border-width. */
+const kebab = (k: string) => k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+
+/** What an object holds of a style's attributes itself, each as its flag and its value (specs/decisions, "Every attribute of a style may be set on the object itself"). */
+function owned(sort: OwnSort, o: object | undefined, as = (k: string, v: unknown) => ` ${k}=${v}`) {
+  const v = (o ?? {}) as Record<string, unknown>;
+  return OWN_KEYS[sort]
+    .filter((k) => v[k] !== undefined)
+    .map((k) => as(kebab(k), v[k]))
+    .join("");
+}
 
 function nodeText(n: DiagramNode): string {
   let s = `${n.id} ${JSON.stringify(n.label)} ${n.kind}`;
@@ -26,6 +40,7 @@ function nodeText(n: DiagramNode): string {
   if (n.labelAlign !== undefined) s += ` [label ${n.labelAlign}]`;
   if (n.from !== undefined) s += ` from=${n.from}`;
   for (const k of STEP_KEYS) if (n[k] !== undefined) s += ` ${k}=${n[k]}`;
+  s += owned("node", n);
   for (const slot of MARK_SLOTS) {
     const m = n.marks?.[slot];
     if (m === undefined) continue;
@@ -43,10 +58,12 @@ function edgeText(e: Edge): string {
   if (e.seat !== undefined) s += " [label beside]";
   if (e.labelAlign !== undefined) s += ` [label ${e.labelAlign}]`;
   if (e.labelStyle !== undefined) s += ` [label style ${e.labelStyle.join(",")}]`;
+  s += owned("label", e.labelLook, (k, v) => ` [label ${k} ${v}]`);
   if (e.out !== undefined) s += ` [out ${e.out}]`;
   if (e.in !== undefined) s += ` [in ${e.in}]`;
   if (e.weight !== undefined) s += ` [weight ${e.weight}]`;
   if (e.step !== undefined) s += ` [step ${e.step}]`;
+  s += owned("edge", e, (k, v) => ` [${k} ${v}]`);
   if (e.label !== undefined) s += ` ${e.label.includes("\n") ? JSON.stringify(e.label) : e.label}`;
   return s;
 }
@@ -58,7 +75,9 @@ const styled = (o: { style?: string[] }) =>
 export function showDiagram(d: Diagram): string {
   const sizing = d.sizing === "fixed" ? " sizing=fixed" : "";
   const sheet = d.stylesheet === undefined ? "" : ` stylesheet=${d.stylesheet}`;
-  const lines = [`diagram ${JSON.stringify(d.title)}${sheet}${sizing}${styled(d)}`];
+  const lines = [
+    `diagram ${JSON.stringify(d.title)}${sheet}${sizing}${owned("diagram", d)}${styled(d)}`,
+  ];
   if (d.subtitle !== undefined) lines.push(`subtitle ${JSON.stringify(d.subtitle)}`);
   if (d.caption !== undefined) lines.push(`caption ${JSON.stringify(d.caption)}`);
   for (const styleName of EDGE_STYLES) {
@@ -77,7 +96,9 @@ export function showDiagram(d: Diagram): string {
     const look = l.look === undefined ? "" : ` look=${l.look}`;
     const label = l.label === undefined ? "" : ` ${JSON.stringify(l.label)}`;
     const at = l.labelAt === undefined ? "" : ` label-at=${l.labelAt}`;
-    lines.push(`layer ${l.id}${label}${lane}${look}${at}${styled(l)}: ${nodes}`);
+    lines.push(
+      `layer ${l.id}${label}${lane}${look}${at}${owned("layer", l)}${styled(l)}: ${nodes}`,
+    );
   }
   if (d.layers.length === 0) lines.push("(no layers)");
   // Nodes in no layer, placed by steps from another node (specs/decisions, "Steps from another node").
@@ -92,7 +113,7 @@ export function showDiagram(d: Diagram): string {
     const t = g.titleAt;
     const title = t === undefined ? "" : ` title=${t.at},${t.side},${t.place}`;
     lines.push(
-      `group ${g.id} ${JSON.stringify(g.label)}${sub}${where}${title}: ${[...members, ...inner].join(", ") || "(empty)"}`,
+      `group ${g.id} ${JSON.stringify(g.label)}${sub}${where}${title}${owned("group", g)}: ${[...members, ...inner].join(", ") || "(empty)"}`,
     );
   }
   const run = laneRun(d);
@@ -104,14 +125,16 @@ export function showDiagram(d: Diagram): string {
     const way = run === undefined ? "" : ` (${run})`;
     const at = x.labelAt === undefined ? "" : ` label-at=${x.labelAt}`;
     lines.push(
-      `lane ${x.id} ${JSON.stringify(x.label)}${way}${at}: ${members.join(", ") || "(empty)"}`,
+      `lane ${x.id} ${JSON.stringify(x.label)}${way}${at}${owned("lane", x)}: ${members.join(", ") || "(empty)"}`,
     );
   }
   for (const c of d.columns ?? []) {
     const members = d.layers.flatMap((l) =>
       l.nodes.filter((n) => n.column === c.id).map((n) => n.id),
     );
-    lines.push(`column ${c.id}${styled(c)}: ${members.join(", ") || "(empty)"}`);
+    lines.push(
+      `column ${c.id}${owned("column", c)}${styled(c)}: ${members.join(", ") || "(empty)"}`,
+    );
   }
   for (const w of d.walls ?? []) {
     const label = w.label === undefined ? "" : ` ${JSON.stringify(w.label)}`;

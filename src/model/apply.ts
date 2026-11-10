@@ -77,6 +77,8 @@ import {
   NODE_KINDS,
   type NodeKind,
   type Note,
+  OWN_KEYS,
+  type OwnSort,
   SHAPE_KINDS,
   type SizeStep,
   type ViaSide,
@@ -538,6 +540,26 @@ function styleOf(s: State, o: { style?: string[] }, id: string, raw: string, i: 
   touch(s, id);
   return [];
 }
+
+/**
+ * What an object holds of a style's attributes itself, over the styles it marks; `-` gives one back to them
+ * (specs/decisions, "Every attribute of a style may be set on the object itself").
+ */
+function ownOf(s: State, sort: OwnSort, o: object, id: string, op: object): void {
+  const given = op as Record<string, unknown>;
+  const to = o as Record<string, unknown>;
+  for (const k of OWN_KEYS[sort]) {
+    const v = given[k];
+    if (typeof v !== "string") continue;
+    if (v === RESET) delete to[k];
+    else to[k] = NUMBERS.has(k) ? Number(v) : v;
+    touch(s, id);
+  }
+}
+
+/** Whether an operation names any of a style's attributes a sort holds itself. */
+const namesOwn = (sort: OwnSort, op: object) =>
+  OWN_KEYS[sort].some((k) => (op as Record<string, unknown>)[k] !== undefined);
 
 const isStyleErrors = (x: string[] | undefined | OpError[]): x is OpError[] =>
   Array.isArray(x) && x.length > 0 && typeof x[0] !== "string";
@@ -2133,6 +2155,7 @@ function diagramSet(s: State, op: OpOf<"diagram.set">, i: number, made = false):
     else d.style = styles;
     touch(s, "style");
   }
+  ownOf(s, "diagram", d, "style", op);
   if (op.lines !== undefined) {
     if (op.lines === "round") d.lines = "round";
     else delete d.lines;
@@ -2195,6 +2218,7 @@ const layerSet: Run<"layer.set"> = (s, op, i) => {
       const errors = styleOf(s, layer, id, op.style, i);
       if (errors.length > 0) return errors;
     }
+    ownOf(s, "layer", layer, id, op);
   }
   return [];
 };
@@ -2258,6 +2282,7 @@ const nodeSet: Run<"node.set"> = (s, op, i) => {
       const errors = styleOf(s, node, id, op.style, i);
       if (errors.length > 0) return errors;
     }
+    ownOf(s, "node", node, id, op);
     if (op.like !== undefined) {
       const errors = follow(s, id, op.like, everyNode(d), (x) => unknownNode(d, x, i, "like"), i);
       if (errors.length > 0) return errors;
@@ -2360,6 +2385,7 @@ const edgeSet: Run<"edge.set"> = (s, op, i) => {
     const e = d.edges.find((x) => x.id === id) as Edge;
     const errors = steering(s, e, op, i);
     if (errors.length > 0) return errors;
+    ownOf(s, "edge", e, id, op);
   }
   return [];
 };
@@ -2385,6 +2411,7 @@ function edgeFacts(s: State, e: Edge, op: OpOf<"edge.set">, i: number): OpError[
       delete e.seat;
       delete e.labelAlign;
       delete e.labelStyle;
+      delete e.labelLook;
     } else e.label = op.label;
     touch(s, e.id);
   }
@@ -2518,6 +2545,7 @@ const groupSet: Run<"group.set"> = (s, op, i) => {
       const errors = styleOf(s, group, id, op.style, i);
       if (errors.length > 0) return errors;
     }
+    ownOf(s, "group", group, id, op);
     if (op.like !== undefined) {
       const errors = follow(
         s,
@@ -2552,6 +2580,7 @@ const laneSet: Run<"lane.set"> = (s, op, i) => {
       const errors = styleOf(s, now, id, op.style, i);
       if (errors.length > 0) return errors;
     }
+    ownOf(s, "lane", now, id, op);
     if (op.like !== undefined) {
       const errors = follow(s, id, op.like, d.lanes ?? [], (x) => unknownLane(d, x, i, "like"), i);
       if (errors.length > 0) return errors;
@@ -2571,11 +2600,12 @@ const columnSet: Run<"column.set"> = (s, op, i) => {
     } else if (placed(op) && !holds(s, (x) => moveColumn(x, id, where, i))) {
       return [elsewhere(id, "column", i)];
     }
+    const column = d.columns?.find((x) => x.id === id) as NonNullable<Diagram["columns"]>[number];
     if (op.style !== undefined) {
-      const column = d.columns?.find((x) => x.id === id) as NonNullable<Diagram["columns"]>[number];
       const errors = styleOf(s, column, id, op.style, i);
       if (errors.length > 0) return errors;
     }
+    ownOf(s, "column", column, id, op);
   }
   return [];
 };
@@ -2680,6 +2710,16 @@ const labelSet: Run<"label.set"> = (s, op, i) => {
       if (styles === undefined) delete edge.labelStyle;
       else edge.labelStyle = styles;
       touch(s, id);
+    }
+    if (namesOwn("label", op)) {
+      // What an edge's label holds itself, over the styles it marks.
+      if (edge === undefined || !labelled(edge)) {
+        return [badValue("id", id, ["an edge with a label"], i)];
+      }
+      const look = { ...edge.labelLook };
+      ownOf(s, "label", look, id, op);
+      if (Object.keys(look).length > 0) edge.labelLook = look;
+      else delete edge.labelLook;
     }
     if (op.align !== undefined) {
       // How a text's lines line up (specs/decisions, "An agent sets a label's breaks and its alignment"). A lane's

@@ -29,8 +29,11 @@ import {
   LAYER_LOOKS,
   MARK_SHAPES,
   MARK_SIZES,
+  OWN_KEYS,
+  type OwnSort,
   SIZE_STEPS,
   SIZINGS,
+  type StyleKey,
 } from "./types.ts";
 
 /** The words that reset an attribute. */
@@ -65,6 +68,29 @@ const STYLE = words(nodeId, { marks: true });
 const STEP = words(steps, { number: true });
 const resettable = (check: z.ZodType, number = false) => words(check, { reset: true, number });
 const LIKE_NODE = resettable(nodeId);
+
+/** A style's attributes as flags, checked as the file's are; `-` takes one away. */
+const STYLE_WORDS: Record<StyleKey, Words> = {
+  fill: resettable(lookFields.fill),
+  border: resettable(lookFields.border),
+  borderWidth: resettable(lookFields.borderWidth, true),
+  color: resettable(lookFields.color),
+  marginTop: resettable(space, true),
+  marginRight: resettable(space, true),
+  marginBottom: resettable(space, true),
+  marginLeft: resettable(space, true),
+  rowGap: resettable(space, true),
+  columnGap: resettable(space, true),
+};
+
+/**
+ * The flags of a style's attributes that a sort holds itself (specs/decisions, "Every attribute of a style may be set
+ * on the object itself"); `-` gives one back to its styles.
+ */
+const own = <S extends OwnSort>(sort: S) =>
+  Object.fromEntries(OWN_KEYS[sort].map((k) => [k, STYLE_WORDS[k]])) as {
+    [K in (typeof OWN_KEYS)[S][number]]: Words;
+  };
 
 /** A place among an object's kind: first, last, or before or after one of them. */
 const PLACE = { first: z.boolean(), last: z.boolean(), before: ID, after: ID };
@@ -108,12 +134,14 @@ const SPECS = {
     lines: resettable(z.enum(["square", "round"])),
     titleAt: resettable(z.number().min(0).max(1), true),
     titleSide: resettable(z.enum(["top", "bottom"])),
+    ...own("diagram"),
   }),
   "layer.set": many(ID, {
     label: resettable(text),
     look: resettable(z.enum(LAYER_LOOKS)),
     lane: resettable(nodeId),
     style: STYLE,
+    ...own("layer"),
     ...PLACE,
   }),
   "layer.move": many(ID, PLACE),
@@ -131,6 +159,7 @@ const SPECS = {
     column: resettable(nodeId),
     style: STYLE,
     like: LIKE_NODE,
+    ...own("node"),
     layer: ID,
     ...PLACE,
     ...STEPS,
@@ -159,6 +188,7 @@ const SPECS = {
     number: resettable(stepNumber, true),
     style: STYLE,
     like: resettable(nodeId),
+    ...own("edge"),
   }),
   "edge.remove": many(ID, {}),
   "group.set": many(ID, {
@@ -167,6 +197,7 @@ const SPECS = {
     in: resettable(nodeId),
     style: STYLE,
     like: LIKE_NODE,
+    ...own("group"),
   }),
   "group.move": many(ID, { before: ID, after: ID }),
   "group.copy": one(
@@ -182,9 +213,9 @@ const SPECS = {
     ["id", "into", "label", "suffix"],
   ),
   "group.remove": many(ID, { out: z.boolean() }),
-  "lane.set": many(ID, { label: TEXT, style: STYLE, like: LIKE_NODE }),
+  "lane.set": many(ID, { label: TEXT, style: STYLE, like: LIKE_NODE, ...own("lane") }),
   "lane.remove": many(ID, {}),
-  "column.set": many(ID, { style: STYLE, ...PLACE }),
+  "column.set": many(ID, { style: STYLE, ...own("column"), ...PLACE }),
   "column.move": many(ID, PLACE),
   "column.remove": many(ID, {}),
   "wall.set": many(ID, {
@@ -207,6 +238,7 @@ const SPECS = {
     side: resettable(z.enum(EDGE_SIDES)),
     place: resettable(z.enum(LABEL_PLACES)),
     seat: resettable(z.enum(["on", "beside"])),
+    ...own("label"),
   }),
   "mark.set": many(TEXT, {
     text: TEXT,
@@ -231,18 +263,7 @@ const SPECS = {
     color: resettable(lookFields.color),
   }),
   "type.remove": many(ID, {}),
-  "style.set": many(ID, {
-    fill: resettable(lookFields.fill),
-    border: resettable(lookFields.border),
-    borderWidth: resettable(lookFields.borderWidth, true),
-    color: resettable(lookFields.color),
-    marginTop: resettable(space, true),
-    marginRight: resettable(space, true),
-    marginBottom: resettable(space, true),
-    marginLeft: resettable(space, true),
-    rowGap: resettable(space, true),
-    columnGap: resettable(space, true),
-  }),
+  "style.set": many(ID, STYLE_WORDS),
   "style.move": many(ID, { before: ID, after: ID }),
   "style.remove": many(ID, {}),
 };

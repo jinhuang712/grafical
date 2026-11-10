@@ -117,8 +117,8 @@ export function validateGroups(diagram: Diagram): GroupProblem[] {
   return buildGrid(placeSteps(diagram).d).groupProblems;
 }
 
-/** What an object's look is made from. */
-interface Looking {
+/** What an object's look is made from: what it holds itself, the styles it marks, what it follows and its type. */
+interface Looking extends Pick<Look, "fill" | "border" | "borderWidth" | "color"> {
   id: string;
   like?: string;
   style?: string[];
@@ -127,8 +127,8 @@ interface Looking {
 
 /**
  * What an object's look is: its type's, under what it follows, under the styles it marks, of which the one defined
- * later wins (specs/decisions, "An object names the styles it uses", "Styles set spacing as CSS does, and a later
- * style wins").
+ * later wins, under what it holds itself (specs/decisions, "An object names the styles it uses", "Styles set spacing
+ * as CSS does, and a later style wins", "Every attribute of a style may be set on the object itself").
  */
 function lookOf(
   d: Diagram,
@@ -152,13 +152,15 @@ function lookOf(
   const followed = among.find((x) => x.id === o?.like);
   if (followed !== undefined) Object.assign(look, lookOf(d, followed, among));
   // Spacing is placement's: only the paint of a style is a look.
-  const { fill, border, borderWidth, color } = markedLook(d, o?.style);
-  Object.assign(look, {
-    ...(fill === undefined ? {} : { fill }),
-    ...(border === undefined ? {} : { border }),
-    ...(borderWidth === undefined ? {} : { borderWidth }),
-    ...(color === undefined ? {} : { color }),
-  });
+  for (const from of [markedLook(d, o?.style), o ?? {}]) {
+    const { fill, border, borderWidth, color } = from;
+    Object.assign(look, {
+      ...(fill === undefined ? {} : { fill }),
+      ...(border === undefined ? {} : { border }),
+      ...(borderWidth === undefined ? {} : { borderWidth }),
+      ...(color === undefined ? {} : { color }),
+    });
+  }
   return Object.keys(look).length > 0 ? look : undefined;
 }
 
@@ -1733,7 +1735,13 @@ function compute(facts: Diagram, m: Measurer, withText: boolean): { scene: Scene
     if (edgeLook !== undefined) edge.look = edgeLook;
     const labelLook = lookOf(
       d,
-      e.labelStyle === undefined ? undefined : { id: e.id, style: e.labelStyle },
+      e.labelStyle === undefined && e.labelLook === undefined
+        ? undefined
+        : {
+            id: e.id,
+            ...e.labelLook,
+            ...(e.labelStyle === undefined ? {} : { style: e.labelStyle }),
+          },
     );
     if (labelLook !== undefined) edge.labelLook = labelLook;
     if (e.both === true) edge.both = true;

@@ -153,7 +153,7 @@ export function markName(m: Mark): string {
   return markText(m) ?? (m as { file: string }).file;
 }
 
-export interface DiagramNode {
+export interface DiagramNode extends Own<"node"> {
   id: string;
   label: string;
   /** Absent: centred. */
@@ -191,7 +191,7 @@ export interface DiagramNode {
 }
 
 /** A system drawn as one node around its member nodes, which may sit in several layers (specs/decisions, "Layers unseen, groups as systems"). */
-export interface Group {
+export interface Group extends Own<"group"> {
   id: string;
   label: string;
   /** A second, quieter part of the label, such as "write side". */
@@ -206,7 +206,7 @@ export interface Group {
   style?: string[];
 }
 
-export interface Layer {
+export interface Layer extends Own<"layer"> {
   id: string;
   /** Where its label sits, from 0 to 1 along its head (specs/decisions, "A region's label sits at a fraction of a side"). */
   labelAt?: number;
@@ -228,7 +228,7 @@ export interface Layer {
  * lanes of a diagram run one way.
  */
 /** A column (specs/decisions, "Columns beside layers"): a guide that its nodes follow, left of the next column's in every layer. */
-export interface Column {
+export interface Column extends Own<"column"> {
   id: string;
   /** The styles it marks (specs/decisions, "Styles set spacing as CSS does, and a later style wins"). */
   style?: string[];
@@ -238,7 +238,7 @@ export interface Column {
 export const LABEL_ALIGNS = ["left", "center", "right"] as const;
 export type LabelAlign = (typeof LABEL_ALIGNS)[number];
 
-export interface Lane {
+export interface Lane extends Own<"lane"> {
   id: string;
   label: string;
   /** Where its label sits, from 0 to 1 along its head (specs/decisions, "A region's label sits at a fraction of a side"). */
@@ -282,7 +282,7 @@ export interface Note {
   labelAlign?: LabelAlign;
 }
 
-export interface Edge {
+export interface Edge extends Own<"edge"> {
   id: string;
   from: string;
   to: string;
@@ -290,6 +290,8 @@ export interface Edge {
   label?: string;
   /** The styles its label marks (specs/decisions, "A label may mark a style"). */
   labelStyle?: string[];
+  /** The look its label holds itself, over the styles it marks (specs/decisions, "Every attribute of a style may be set on the object itself"). */
+  labelLook?: Own<"label">;
   /** Absent: centred. */
   labelAlign?: LabelAlign;
   /** true: an arrowhead at both ends. A link has none (specs/decisions, "Edges meet any side"). */
@@ -418,7 +420,43 @@ export type EdgeSide = (typeof EDGE_SIDES)[number];
 /** What a style sets. */
 export type Look = Omit<Style, "id">;
 
-export interface Diagram {
+/** A style's attributes, in the order of the file's `<style>` table. */
+export const STYLE_KEYS = [
+  "fill",
+  "border",
+  "borderWidth",
+  "color",
+  "marginTop",
+  "marginRight",
+  "marginBottom",
+  "marginLeft",
+  "rowGap",
+  "columnGap",
+] as const;
+export type StyleKey = (typeof STYLE_KEYS)[number];
+
+/**
+ * The attributes of a style each sort also holds itself, over the styles it marks (specs/decisions, "Every attribute of
+ * a style may be set on the object itself"): those a style it marks draws, in the order of the `<style>` table. A
+ * layer's margins count above and below it and a column's beside it. `label` is an edge's label, which holds its own
+ * under the edge's `labelLook`.
+ */
+export const OWN_KEYS = {
+  diagram: ["marginTop", "marginRight", "marginBottom", "marginLeft", "rowGap", "columnGap"],
+  layer: ["marginTop", "marginBottom"],
+  node: ["fill", "border", "borderWidth", "marginTop", "marginRight", "marginBottom", "marginLeft"],
+  edge: ["color"],
+  group: ["fill", "border", "marginTop", "marginRight", "marginBottom", "marginLeft"],
+  lane: ["fill", "marginTop", "marginRight", "marginBottom", "marginLeft"],
+  column: ["marginRight", "marginLeft"],
+  label: ["fill", "border", "borderWidth", "color"],
+} as const satisfies Record<string, readonly StyleKey[]>;
+export type OwnSort = keyof typeof OWN_KEYS;
+
+/** What an object of a sort holds of a style's attributes itself. */
+export type Own<S extends OwnSort> = Pick<Look, (typeof OWN_KEYS)[S][number]>;
+
+export interface Diagram extends Own<"diagram"> {
   /** The format version (DESIGNS.md, "What grafical cannot fully read, it refuses"). */
   grafical: number;
   title: string;

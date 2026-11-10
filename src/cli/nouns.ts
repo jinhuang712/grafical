@@ -3,8 +3,9 @@
 // --remove, and some have --move and a verb of their own. One flag sets one attribute, named as the file's.
 
 import { existsSync } from "node:fs";
-import type { Command } from "commander";
+import { type Command, Option } from "commander";
 import type { OpName } from "../model/ops.ts";
+import { OWN_KEYS, type OwnSort } from "../model/types.ts";
 
 type Opts = Record<string, unknown>;
 type Write = (
@@ -52,6 +53,8 @@ interface Verb {
   flags: Flag[];
   /** Options the call cannot leave out. */
   required?: Flag[];
+  /** The sort whose style attributes it also takes as flags of their own (specs/decisions, "Every attribute of a style may be set on the object itself"). */
+  own?: OwnSort;
 }
 
 const IDS = (what: string): [string, string] => ["<ids>", what];
@@ -60,6 +63,7 @@ const VERBS: Verb[] = [
   {
     noun: "diagram",
     verb: "set",
+    own: "diagram",
     about: "make the file, or change the whole diagram",
     args: [],
     flags: [
@@ -80,6 +84,7 @@ const VERBS: Verb[] = [
   {
     noun: "layer",
     verb: "set",
+    own: "layer",
     about: "make layers, or change them",
     args: [IDS("the layers, comma-separated")],
     flags: [
@@ -120,6 +125,7 @@ const VERBS: Verb[] = [
   {
     noun: "node",
     verb: "set",
+    own: "node",
     about: "make nodes, or change them",
     args: [IDS("the nodes, comma-separated")],
     flags: [
@@ -174,6 +180,7 @@ const VERBS: Verb[] = [
   {
     noun: "edge",
     verb: "set",
+    own: "edge",
     about: "make edges, or change them",
     args: [IDS("the edges, comma-separated, such as api-db")],
     flags: [
@@ -209,6 +216,7 @@ const VERBS: Verb[] = [
   {
     noun: "group",
     verb: "set",
+    own: "group",
     about: "make groups, or change them; nodes join one with node --set --group",
     args: [IDS("the groups, comma-separated")],
     flags: [
@@ -257,6 +265,7 @@ const VERBS: Verb[] = [
   {
     noun: "lane",
     verb: "set",
+    own: "lane",
     about: "make lanes, or change them; layers or nodes lie in one with --lane",
     args: [IDS("the lanes, comma-separated")],
     flags: [["--label <text>", "who owns what lies in it"], STYLE, like("lane")],
@@ -271,6 +280,7 @@ const VERBS: Verb[] = [
   {
     noun: "column",
     verb: "set",
+    own: "column",
     about: "make columns, or change them; nodes follow one with node --set --column",
     args: [IDS("the columns, comma-separated")],
     flags: [STYLE, ...place("column", "of the columns, for a new one (last by default)")],
@@ -329,6 +339,7 @@ const VERBS: Verb[] = [
   {
     noun: "label",
     verb: "set",
+    own: "label",
     about: "change how a label looks and where it sits; its text is its owner's --label",
     args: [IDS("whose labels: nodes, edges, groups, layers, lanes or walls, comma-separated")],
     flags: [
@@ -457,6 +468,43 @@ const NOUN_ABOUT: Record<string, string> = {
   style: "named looks that objects mark, and spacing",
 };
 
+/** A field as its flag: borderWidth is --border-width. */
+const kebab = (k: string) => `--${k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+
+/** What each style attribute's flag takes. */
+const OWN_VALUE: Record<string, string> = {
+  fill: "<color>",
+  border: "<color>",
+  borderWidth: "<n>",
+  color: "<color>",
+};
+
+/** The width the help wraps at. */
+const HELP_WIDTH = 80;
+
+/**
+ * The one line of a page that names the style flags a noun takes, each as `style --set` takes it and over the styles
+ * its object marks; they are left out of the options so that the page stays short.
+ */
+function ownLine(sort: OwnSort): string {
+  const head =
+    sort === "label"
+      ? "Style flags of an edge's label, as style --set takes them, over its styles:"
+      : "Style flags, as style --set takes them, over its styles:";
+  const words = [...head.split(" "), ...OWN_KEYS[sort].map(kebab)];
+  const lines: string[] = [];
+  let line = "";
+  for (const w of words) {
+    const next = line === "" ? w : `${line} ${w}`;
+    if (next.length > HELP_WIDTH && line !== "") {
+      lines.push(line);
+      line = `  ${w}`;
+    } else line = next;
+  }
+  lines.push(line);
+  return lines.join("\n");
+}
+
 const camel = (flag: string) =>
   flag
     .replace(/^--/, "")
@@ -477,7 +525,12 @@ export function addNouns(program: Command, write: Write, json: (c: Command) => C
     for (const [name, what] of v.args) c.argument(name, what);
     for (const [flag, what] of v.flags) c.option(flag, what);
     for (const [flag, what] of v.required ?? []) c.requiredOption(flag, what);
-    const fields = [...v.flags, ...(v.required ?? [])].map(([flag]) => camel(flag));
+    const own = v.own === undefined ? [] : OWN_KEYS[v.own];
+    for (const k of own) {
+      c.addOption(new Option(`${kebab(k)} ${OWN_VALUE[k] ?? "<px>"}`).hideHelp());
+    }
+    if (v.own !== undefined) c.addHelpText("after", `\n${ownLine(v.own)}`);
+    const fields = [...v.flags, ...(v.required ?? [])].map(([flag]) => camel(flag)).concat(own);
     const op = `${v.noun}.${v.verb}` as OpName;
     json(c).action(async (file: string, ...rest: unknown[]) => {
       const opts = rest[v.args.length] as Opts;

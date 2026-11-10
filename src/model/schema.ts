@@ -38,6 +38,8 @@ import {
   MARK_SLOTS,
   type Mark,
   NODE_KINDS,
+  OWN_KEYS,
+  type OwnSort,
   SHAPE_KINDS,
   type Shape,
   SIZE_STEPS,
@@ -154,6 +156,25 @@ export const spaceFields = {
   columnGap: space.optional(),
 };
 
+/** Every attribute of a style, checked as `style --set` checks it. */
+export const styleFields = { ...lookFields, ...spaceFields };
+
+/** The schema of what a sort holds of a style's attributes itself (specs/decisions, "Every attribute of a style may be set on the object itself"). */
+export function ownFields<S extends OwnSort>(
+  sort: S,
+): { [K in (typeof OWN_KEYS)[S][number]]: (typeof styleFields)[K] } {
+  return Object.fromEntries(OWN_KEYS[sort].map((k) => [k, styleFields[k]])) as {
+    [K in (typeof OWN_KEYS)[S][number]]: (typeof styleFields)[K];
+  };
+}
+
+/** Copies what an object holds of a style's attributes itself, in the table's order. */
+function copyOwn(sort: OwnSort, from: object, to: object): void {
+  const src = from as Record<string, unknown>;
+  const dst = to as Record<string, unknown>;
+  for (const k of OWN_KEYS[sort]) if (src[k] !== undefined) dst[k] = src[k];
+}
+
 const styleNames = z.array(nodeId).min(1).optional();
 
 export const shapeField = z.enum(Object.keys(SHAPE_KINDS) as [Shape, ...Shape[]]).optional();
@@ -173,6 +194,7 @@ const nodeSchema = z.strictObject({
   lane: nodeId.optional(),
   column: nodeId.optional(),
   type: nodeId.optional(),
+  ...ownFields("node"),
   like: nodeId.optional(),
   style: styleNames,
   marks: iconsSchema.optional(),
@@ -203,6 +225,7 @@ const groupSchema = z.strictObject({
   sublabel: text.optional(),
   in: nodeId.optional(),
   titleAt: groupTitle.optional(),
+  ...ownFields("group"),
   like: nodeId.optional(),
   style: styleNames,
 });
@@ -212,6 +235,7 @@ const laneSchema = z.strictObject({
   label: text,
   labelAt: z.number().min(0).max(1).optional(),
   labelAlign: z.enum(LABEL_ALIGNS).optional(),
+  ...ownFields("lane"),
   like: nodeId.optional(),
   style: styleNames,
 });
@@ -232,6 +256,7 @@ const layerSchema = z.strictObject({
   labelAt: z.number().min(0).max(1).optional(),
   lane: nodeId.optional(),
   look: z.enum(LAYER_LOOKS).optional(),
+  ...ownFields("layer"),
   style: styleNames,
   nodes: z.array(nodeSchema).default([]),
 });
@@ -281,6 +306,7 @@ const edgeSchema = z.strictObject({
   label: text.optional(),
   labelAlign: z.enum(LABEL_ALIGNS).optional(),
   labelStyle: styleNames,
+  labelLook: z.strictObject(ownFields("label")).optional(),
   both: z.boolean().optional(),
   pass: z.boolean().optional(),
   seat: z.enum(["beside"]).optional(),
@@ -294,6 +320,7 @@ const edgeSchema = z.strictObject({
   bendAt: z.literal(EDGE_BENDS).optional(),
   stretch: z.literal(EDGE_STRETCHES).optional(),
   type: nodeId.optional(),
+  ...ownFields("edge"),
   like: nodeId.optional(),
   style: styleNames,
 });
@@ -309,6 +336,7 @@ export const diagramSchema = z.strictObject({
     .optional(),
   sizing: z.enum(SIZINGS).optional(),
   stylesheet: text.optional(),
+  ...ownFields("diagram"),
   style: styleNames,
   types: z.array(typeSchema).default([]),
   styles: z.array(z.strictObject({ id: nodeId, ...lookFields, ...spaceFields })).default([]),
@@ -326,7 +354,9 @@ export const diagramSchema = z.strictObject({
   nodes: z.array(stepNodeSchema).default([]),
   groups: z.array(groupSchema).default([]),
   lanes: z.array(laneSchema).default([]),
-  columns: z.array(z.strictObject({ id: nodeId, style: styleNames })).default([]),
+  columns: z
+    .array(z.strictObject({ id: nodeId, ...ownFields("column"), style: styleNames }))
+    .default([]),
   walls: z.array(wallSchema).default([]),
   notes: z
     .array(
@@ -362,6 +392,7 @@ function buildNode(n: Parsed["layers"][number]["nodes"][number] | Parsed["nodes"
     if (Object.keys(marks).length > 0) node.marks = marks;
   }
   if (n.type !== undefined) node.type = n.type;
+  copyOwn("node", n, node);
   if (n.like !== undefined) node.like = n.like;
   if (n.style !== undefined) node.style = [...n.style];
   if ("from" in n) {
@@ -372,20 +403,30 @@ function buildNode(n: Parsed["layers"][number]["nodes"][number] | Parsed["nodes"
 }
 
 function build(p: Parsed): Diagram {
-  const layers: Layer[] = p.layers.map((l) => ({
-    id: l.id,
-    ...(l.label === undefined ? {} : { label: l.label }),
-    ...(l.lane === undefined ? {} : { lane: l.lane }),
-    ...(l.look === undefined ? {} : { look: l.look }),
-    ...(l.labelAt === undefined ? {} : { labelAt: l.labelAt }),
-    ...(l.style === undefined ? {} : { style: [...l.style] }),
-    nodes: l.nodes.map(buildNode),
-  }));
+  const layers: Layer[] = p.layers.map((l) => {
+    const layer: Layer = {
+      id: l.id,
+      ...(l.label === undefined ? {} : { label: l.label }),
+      ...(l.lane === undefined ? {} : { lane: l.lane }),
+      ...(l.look === undefined ? {} : { look: l.look }),
+      ...(l.labelAt === undefined ? {} : { labelAt: l.labelAt }),
+      nodes: [],
+    };
+    copyOwn("layer", l, layer);
+    if (l.style !== undefined) layer.style = [...l.style];
+    layer.nodes = l.nodes.map(buildNode);
+    return layer;
+  });
   const edges: Edge[] = p.edges.map((e) => {
     const edge: Edge = { id: e.id, from: e.from, to: e.to, kind: e.kind };
     if (e.label !== undefined) edge.label = e.label;
     if (e.labelAlign !== undefined) edge.labelAlign = e.labelAlign;
     if (e.labelStyle !== undefined) edge.labelStyle = [...e.labelStyle];
+    if (e.labelLook !== undefined) {
+      const look = {};
+      copyOwn("label", e.labelLook, look);
+      if (Object.keys(look).length > 0) edge.labelLook = look;
+    }
     if (e.both === true) edge.both = true;
     if (e.pass === true) edge.pass = true;
     if (e.seat !== undefined) edge.seat = e.seat;
@@ -399,6 +440,7 @@ function build(p: Parsed): Diagram {
     if (e.bendAt !== undefined) edge.bendAt = e.bendAt;
     if (e.stretch !== undefined) edge.stretch = e.stretch;
     if (e.type !== undefined) edge.type = e.type;
+    copyOwn("edge", e, edge);
     if (e.like !== undefined) edge.like = e.like;
     if (e.style !== undefined) edge.style = [...e.style];
     return edge;
@@ -408,6 +450,7 @@ function build(p: Parsed): Diagram {
   if (p.lines !== undefined) d.lines = p.lines;
   if (p.titleAt !== undefined) d.titleAt = p.titleAt;
   if (p.stylesheet !== undefined) d.stylesheet = p.stylesheet;
+  copyOwn("diagram", p, d);
   if (p.style !== undefined) d.style = [...p.style];
   if (p.types.length > 0) {
     d.types = p.types.map(
@@ -449,6 +492,7 @@ function build(p: Parsed): Diagram {
       if (g.sublabel !== undefined) group.sublabel = g.sublabel;
       if (g.in !== undefined) group.in = g.in;
       if (g.titleAt !== undefined) group.titleAt = g.titleAt;
+      copyOwn("group", g, group);
       if (g.like !== undefined) group.like = g.like;
       if (g.style !== undefined) group.style = [...g.style];
       return group;
@@ -456,20 +500,26 @@ function build(p: Parsed): Diagram {
   }
   if (p.nodes.length > 0) d.nodes = p.nodes.map(buildNode);
   if (p.lanes.length > 0) {
-    d.lanes = p.lanes.map((x) => ({
-      id: x.id,
-      label: x.label,
-      ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
-      ...(x.labelAt === undefined ? {} : { labelAt: x.labelAt }),
-      ...(x.like === undefined ? {} : { like: x.like }),
-      ...(x.style === undefined ? {} : { style: [...x.style] }),
-    }));
+    d.lanes = p.lanes.map((x) => {
+      const lane: NonNullable<Diagram["lanes"]>[number] = {
+        id: x.id,
+        label: x.label,
+        ...(x.labelAlign === undefined ? {} : { labelAlign: x.labelAlign }),
+        ...(x.labelAt === undefined ? {} : { labelAt: x.labelAt }),
+      };
+      copyOwn("lane", x, lane);
+      if (x.like !== undefined) lane.like = x.like;
+      if (x.style !== undefined) lane.style = [...x.style];
+      return lane;
+    });
   }
   if (p.columns.length > 0) {
-    d.columns = p.columns.map((x) => ({
-      id: x.id,
-      ...(x.style === undefined ? {} : { style: [...x.style] }),
-    }));
+    d.columns = p.columns.map((x) => {
+      const column: NonNullable<Diagram["columns"]>[number] = { id: x.id };
+      copyOwn("column", x, column);
+      if (x.style !== undefined) column.style = [...x.style];
+      return column;
+    });
   }
   if (p.walls.length > 0) {
     d.walls = p.walls.map((x) => {
