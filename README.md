@@ -14,8 +14,8 @@ grafical drew the picture above itself, from [docs/images/pipeline.grafical](doc
 ## What it does
 
 - 🪜 **Small steps:** every change is one operation, such as `node --add` or `edge --add`.
-  - A batch applies many operations, all or nothing.
   - A change keeps every fact it does not name.
+  - `--try` shows what a change would do and writes nothing.
 - ⚙️ **The engine does the dirty work:** it sizes and places and spaces every node.
   - It routes every edge and checks every write for defects.
   - A mistake is refused at once, with the facts to fix it.
@@ -73,7 +73,7 @@ grafical -f arch.grafical view
 Every write runs the same parts, and only the agent's operations go in:
 
 ```text
-agent ──command or batch──> command line ──records──> agent
+agent ──────command───────> command line ──records──> agent
                               │    └──writes──> diagram file (.grafical, in git)
                               │ operations
                               ▼

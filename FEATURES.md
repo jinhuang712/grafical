@@ -56,13 +56,12 @@ Features
 │   └── ⬜ F2.8: Flow direction — a diagram that reads left to right
 ├── 🚧 F3: Editing — how a diagram changes (more combinations not built)
 │   ├── ✅ F3.1: Operations — one named command per change
-│   ├── ✅ F3.2: Batches — many operations, all or nothing
-│   ├── ✅ F3.3: Trying a change — see counts before writing
-│   ├── ✅ F3.4: IDs — the caller names every element
-│   ├── ✅ F3.5: Refusals — a wrong operation is refused with facts
-│   ├── ✅ F3.6: Merging and swapping — merge, swap and remove nodes
-│   ├── ⬜ F3.7: More combinations of operations — one operation for a common edit
-│   └── 🚧 F3.8: Move and plug — one verb to move things and one to change connections (`move` not built)
+│   ├── ✅ F3.2: Trying a change — see counts before writing
+│   ├── ✅ F3.3: IDs — the caller names every element
+│   ├── ✅ F3.4: Refusals — a wrong operation is refused with facts
+│   ├── ✅ F3.5: Merging and swapping — merge, swap and remove nodes
+│   ├── ⬜ F3.6: More combinations of operations — one operation for a common edit
+│   └── 🚧 F3.7: Move and plug — one verb to move things and one to change connections (`move` not built)
 ├── 🚧 F4: Look — how the picture looks (the legend as a small diagram and brand fonts not built)
 │   ├── ✅ F4.1: Title, subtitle and footnote — the words around the picture
 │   ├── 🚧 F4.2: Legend — a key for styles, widths and marks (the legend as a small diagram not built)
@@ -93,7 +92,7 @@ Features
 │   │   └── ✅ F6.1.1: The object model — objects, types and styles in a file of their own form
 │   ├── ✅ F6.2: Render — SVG and PNG, the same everywhere
 │   ├── ✅ F6.3: Live viewer — a window that redraws as the agent draws
-│   └── ✅ F6.4: Diff — a change as operations
+│   └── ✅ F6.4: Diff — a change as command lines
 ├── 🚧 F7: Help — how an agent learns grafical (the check before stopping not built)
 │   ├── ✅ F7.1: Help — the agent's whole reference
 │   └── 🚧 F7.2: Guides — how common diagrams are usually drawn (the check before stopping not built)
@@ -141,7 +140,7 @@ Features
 - **A declared diagram type that checks its conventions:** grafical would be judging content ([049. An optional type sets the diagram's space](specs/decisions/049-an-optional-type-sets-the-diagram-s-space.md)).
 - **Real-time collaboration or accounts or a hosted service:** git already shares the file and keeps its history ([009. Git as the history](specs/decisions/009-git-as-the-history.md)).
 - **The same facts always giving the same picture whatever order they arrived in:** the file fixes the picture ([024. Same file exact, same facts mostly](specs/decisions/024-same-file-exact-same-facts-mostly.md)).
-- **A layer reordered by the engine to tidy it:** the engine does not choose an order, and the agent compares orders with `grafical try` ([033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)).
+- **A layer reordered by the engine to tidy it:** the engine does not choose an order, and the agent compares orders with `--try` ([033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)).
 - **Docking to an edge or placement such as "beside" and "between":** columns and steps cover them, and a second way to say one thing is one more choice.
 - **Zones and section titles:** walls and groups cover them.
 - **Ports and end labels and tags:** they add choices with little gain for architecture diagrams, and a sublabel holds a port.

@@ -4,7 +4,7 @@ Decided: 2026-10-17
 
 ## The problem
 
-Decided by the owner on 2026-10-17. The owner asked whether agents draw layers and groups because the help suggests nothing else ("only these commands? then I'll draw it like this"), and forbade putting all the help and the guides in one place. The help read before a draft had 60 characters left of its budget (11,940 of 12,000), and `apply --help` listed 15 of the 60 batch operations, so the reflect round's first agent found `group.label-at`'s field only from a refusal. A first restructure the same day, a map with guides and references, was withdrawn before it was committed (Rejected, below): the owner found it flat, and asked how an agent reads help and why a refusal's code should need looking up.
+Decided by the owner on 2026-10-17. The owner asked whether agents draw layers and groups because the help suggests nothing else ("only these commands? then I'll draw it like this"), and forbade putting all the help and the guides in one place. The help read before a draft had 60 characters left of its budget (11,940 of 12,000), and one page listed 15 of the 60 operations, so the reflect round's first agent found `group.label-at`'s field only from a refusal. A first restructure the same day, a map with guides and references, was withdrawn before it was committed (Rejected, below): the owner found it flat, and asked how an agent reads help and why a refusal's code should need looking up.
 
 ## The choice
 
@@ -24,9 +24,8 @@ So:
   - Every way to draw, one line each by the story it tells.
   - It says what grafical does not draw.
 - **A command's page** is read when the command is used and holds:
-  - Its usage and options and its line in a batch.
+  - Its usage and options.
   - Its own sections.
-  - A command's line in a batch is built from its operation's schema, so `apply --help` lists no operations: every page shows its own.
 - **Arguments named as fields.** A command's arguments are named as its operation's fields: `[at]` and `<nodes...>` and `<members...>` and `<edges...>` and `<allow...>`.
   - They were `[place]` and `<member...>` and `<id...>` and `<pass...>`.
   - A command's page is then also its operation's, and a test holds every argument and option to a field.
@@ -35,7 +34,7 @@ So:
 - **No size limit for now.** The owner suspended the help's size limits the same day: first the help and grafical's refusals must be right, then it is decided whether a page needs a limit.
   - The budget of "The help as the reference" and its test are suspended with them.
     - The budget was 12,000 characters for the help read before a first draft.
-  - That day the entry page, `new --help` and `apply --help` took 11,280 characters together where they had taken 11,940.
+  - That day the help read before a first draft took 11,280 characters where it had taken 11,940.
 
 ## Not chosen
 

@@ -14,7 +14,7 @@ Since 2026-10-13 (phase 1e), every node of a layer is drawn as tall as the layer
 
 A diagram can turn fitting off. The switch is a diagram fact in the file, because the file alone decides the picture.
 
-This was added on 2026-10-11. In the three phase 1b drafts, text overflow was the most common reason grafical refused Haiku's first batch, which it refused in 46% of draft calls (first reported as 66%, which counted every read of the guide as a refusal). The fix it suggested was to remove the node and add it again larger.
+This was added on 2026-10-11. In the three phase 1b drafts, text overflow was the most common reason grafical refused Haiku's first draft, which it refused in 46% of draft calls (first reported as 66%, which counted every read of the guide as a refusal). The fix it suggested was to remove the node and add it again larger.
 
 ## Not chosen
 

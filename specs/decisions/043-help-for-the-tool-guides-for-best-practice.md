@@ -10,7 +10,7 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
 
 - **The help** (`grafical --help` and each command's `--help`) holds:
   - How to work, and every way to draw by the story it tells.
-  - Each command's options and its line in a batch.
+  - Each command's options.
   - The facts of what it draws, such as that types initial and final draw no label.
   - Its limits.
   - It does not say how a kind of diagram is drawn.
@@ -19,7 +19,7 @@ Decided by the owner on 2026-10-17, the same day as "One entry page, help where 
   - Composition, for any kind: what makes a diagram good and what to change when a picture looks wrong.
   - They took these from the help:
     - The entry page's kinds of diagram and "A good diagram".
-    - The command pages' sections by kind of diagram, and `try`'s "What to try".
+    - The command pages' sections by kind of diagram, and the help's "What to try".
     - The advice on naming nodes and on how much to emphasize.
   - They also took three rules the morning's restructure had lost:
     - A layer per step in a flowchart.

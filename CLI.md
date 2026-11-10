@@ -348,36 +348,6 @@ A command is a noun and flags, and a verb is a flag that takes the ID. A call ho
 
 **Example:** `grafical -f arch.grafical diagram --density airy` prints `ok changed=density`.
 
-### apply
-
-**Status:** ✅
-
-`grafical -f <file> apply <batch.yaml>`
-
-A batch named `-` comes from standard input.
-
-**Called by:** both
-
-**Prints:** the outcome, one block per problem and the counts on stdout.
-
-**Fails:** a usage error exits 2, and a refused batch exits 1 and writes nothing.
-
-**Example:** `grafical -f arch.grafical apply batch.yaml` prints `ok changed=cache` and the counts.
-
-### try
-
-**Status:** ✅
-
-`grafical -f <file> try <batch...>`
-
-**Called by:** both
-
-**Prints:** `before`, `after` and `delta` records on stdout, and writes nothing.
-
-**Fails:** a usage error exits 2, and any refused batch exits 1 while the others are still tried.
-
-**Example:** `grafical -f arch.grafical try a.yaml b.yaml` prints one `before`, then the records of each batch keyed by `batch=<file>`.
-
 ### show
 
 **Status:** ✅
@@ -438,11 +408,11 @@ The revision is `HEAD` by default.
 
 **Called by:** both
 
-**Prints:** a batch of operations on stdout, which `apply` replays on the revision's file.
+**Prints:** one command line per change on stdout, or `# no changes`, and a shell that runs them in order on the revision's file gives the file on disk.
 
 **Fails:** a file outside git is `not-in-git` and exits 1.
 
-**Example:** `grafical -f arch.grafical diff HEAD~1` prints one operation per line.
+**Example:** `grafical -f arch.grafical diff HEAD~1` prints `grafical -f arch.grafical edge --add api cache --label reads`.
 
 ### view
 
@@ -493,6 +463,8 @@ The revision is `HEAD` by default.
 
 - `-f` · `--file <file>`: the diagram file, ahead of the command, and it is required.
 - `--json`: print the answer as one JSON object (off by default).
+- `--try`: print `ok changed=<ids> written=no` and the `before` · `after` · `delta` counts without writing (off by default).
+  - Every command that writes takes it but `new`.
 - `-h` · `--help`: print the page of a command (off by default).
 
 `--json` is on every command but `view`, `library` and `guide`.
@@ -520,7 +492,7 @@ detail:
   <key>: <value>
 next: <command names>
 
-counts nodes=... edges=... ...   apply, check and render only
+counts nodes=... edges=... ...   check and render only
 ```
 
 A usage error prints the same outcome and block on stderr, or on stdout with `--json`.
@@ -531,8 +503,8 @@ A usage error prints the same outcome and block on stderr, or on stdout with `--
 - `render` adds `files`.
 - `show` gives `{ok, diagram}`.
 - `show --drawn` gives `{ok, drawing}`.
-- `diff` gives `{ok, ops}`.
-- `try` gives its before, after and delta.
+- `diff` gives `{ok, commands}`.
+- `--try` gives `{ok, changed, before, after, delta}`.
 
 **Records:** a record is one line: a word that names it, then `key=value` fields in the logfmt style.
 
@@ -554,14 +526,7 @@ A usage error prints the same outcome and block on stderr, or on stdout with `--
 
 The detail starts with `field` and `found`, or `owner` for a defect, and the other facts follow in one fixed order. An empty value or list prints `-`, and a fact that is absent is left out. A key for several things holds a list even of one: `likely`, `near`, `edges`, `ends`, `nodes`, `layers`, `groups`, `lanes`, `between`, `across`, `chain`, `clear`, `gutters`, `allowed`, `takes` and `chars`.
 
-**Source:** the source takes one of four forms:
-
-- The command line as typed.
-- `<batch file> line <n>: <the operation as written>`.
-- `already in the file`.
-- The batch file alone where the line cannot be known.
-
-With `--json`, a problem an operation caused carries the operation's index as `detail.op`.
+**Source:** the source is the command line as typed, or `already in the file`.
 
 ## Environment
 

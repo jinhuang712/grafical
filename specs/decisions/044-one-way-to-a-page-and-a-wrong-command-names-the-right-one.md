@@ -17,7 +17,7 @@ Decided by the owner on 2026-10-18, after one Haiku run (a subagent with grafica
 
 So:
 - **`--help` is the one way to a page.** The program and its groups have no `help` command, and no page lists one.
-- **A wrong command is refused with the one it most likely means.** `grafical help apply` is refused as `unknown-command` and exits 2.
+- **A wrong command is refused with the one it most likely means.** `grafical help node` is refused as `unknown-command` and exits 2.
   - These are read the same way:
     - Two names in one word, such as `"node add"` or `node.add`.
     - `help` before or inside a group, such as `grafical node help add`.
@@ -35,4 +35,4 @@ So:
 
 ## Consequences
 
-The refusal is a block, and `likely` is a value, not a command line: `grafical help apply` gives `found: help` and `likely: --help`.
+The refusal is a block, and `likely` is a value, not a command line: `grafical help node` gives `found: help` and `likely: --help`.

@@ -22,7 +22,7 @@ grafical is designed around 15 guidelines:
 
 ## 1. Operations are the only way a diagram changes
 
-Every change is a named operation, such as `node.add`, applied to a diagram file that nobody edits by hand. A batch applies all or nothing, and the caller picks every ID, which never changes. Cost: every new ability needs an operation, one bad operation sends a batch of forty back, and the agent must invent unique names.
+Every change is a named operation, such as `node.add`, applied to a diagram file that nobody edits by hand. One command is one operation and writes on its own, and the caller picks every ID, which never changes. Cost: every new ability needs an operation, a chain of commands that stops halfway leaves the changes it made, and the agent must invent unique names.
 
 **Ask:** Does this change go through a named operation that is checked before anything is written?
 
@@ -30,6 +30,7 @@ Every change is a named operation, such as `node.add`, applied to a diagram file
 - **Decisions:**
   - [001. Operations over whole-file rewrites](specs/decisions/001-operations-over-whole-file-rewrites.md)
   - [009. Git as the history](specs/decisions/009-git-as-the-history.md)
+  - [105. One command is one write, and running it twice changes nothing](specs/decisions/105-one-command-is-one-write-and-running-it-twice-changes-nothing.md)
 - **How it works:** [The model](specs/model.md)
 
 ## 2. Places are facts, never coordinates
@@ -182,7 +183,7 @@ Any object may take any color, a mark may be any emoji, text or file, and an edg
 
 ## 12. The command line comes first, and the help is the agent's only reference
 
-Every operation is a command, every command takes `--json`, and every write reports what it changed, so that the agent need not read the diagram again. An agent learns grafical from `grafical --help` and each command's help, and reads a diagram through `show`, never the file. An MCP server may wrap the same operations later. Cost: each command is a process start, which a batch spreads over many operations.
+Every operation is a command, every command takes `--json`, and every write reports what it changed, so that the agent need not read the diagram again. An agent learns grafical from `grafical --help` and each command's help, and reads a diagram through `show`, never the file. An MCP server may wrap the same operations later. Cost: every command pays for a process start of its own.
 
 **Ask:** Can an agent do this, and learn how, from the command line and its help alone?
 
@@ -197,17 +198,13 @@ Every operation is a command, every command takes `--json`, and every write repo
 
 ## 13. Every search the engine runs has a cap
 
-Every write lays out, routes and checks the whole diagram again ([4. A change keeps every fact it does not name](#4-a-change-keeps-every-fact-it-does-not-name)), so no step may search without a bound. Each search, such as trying the prefixes of a refused batch, stops at a fixed limit. Cost: a search that could find a better answer stops at its cap.
+Every write lays out, routes and checks the whole diagram again ([4. A change keeps every fact it does not name](#4-a-change-keeps-every-fact-it-does-not-name)), so no step may search without a bound. Each search, such as the three sweeps that straighten edges on the column grid, stops at a fixed limit. Cost: a search that could find a better answer stops at its cap.
 
 **Ask:** Does any step here search without a cap, or grow faster than the diagram?
 
 - **Stance:** [Why are good diagrams rare?](PHILOSOPHY.md#why-are-good-diagrams-rare)
-- **Decisions:**
-  - [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)
-  - [047. Refusals say what happened and which commands can change it](specs/decisions/047-refusals-say-what-happened-and-which-commands-can-change-it.md)
-- **How it works:**
-  - [How grafical answers](specs/answers.md)
-  - [Placement](specs/placement.md)
+- **Decisions:** [033. The agent states every order](specs/decisions/033-the-agent-states-every-order.md)
+- **How it works:** [Placement](specs/placement.md)
 
 ## 14. One shortest way for each situation
 

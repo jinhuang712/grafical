@@ -15,7 +15,7 @@ Decided by the owner on 2026-10-12: C4 context and container diagrams, cloud and
   - Layout, the checker and the renderer share it.
   - A diamond holds text only in its middle: a padded block of width tw and height th fits when tw/w + th/h <= 1, so its node per size step is larger than a plain node's.
   - A dot is one size whatever its size step.
-  - A size on a dot is ignored rather than refused, so that a batch that sizes every node still applies.
+  - A size on a dot is ignored rather than refused, so that a script that sizes every node still runs.
 - **Nested groups.** A group may sit inside another up to three levels deep, as a region holds a network that holds hosts.
   - This reverses part of "Layers unseen, groups as systems".
   - A group's members are its own nodes and its inner groups' nodes, for every rule that asks who is in it.

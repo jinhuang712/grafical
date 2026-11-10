@@ -1,9 +1,9 @@
 # Architecture
 
-grafical takes operations from a coding agent, one command or one batch at a time, and keeps a `.grafical` file that holds the facts they state. After every write it lays the diagram out again from those facts, checks it, and answers with records: what changed, any refusal with what happened and the commands that can change it, and counts of how the picture is drawn. `render` turns the same file into SVG and PNG.
+grafical takes operations from a coding agent, one command at a time, and keeps a `.grafical` file that holds the facts they state. After every write it lays the diagram out again from those facts, checks it, and answers with records: what changed, any refusal with what happened and the commands that can change it, and counts of how the picture is drawn. `render` turns the same file into SVG and PNG.
 
 ```text
-agent ──command or batch──> command line ──records──> agent
+agent ──────command───────> command line ──records──> agent
                               │    └──writes──> diagram file (.grafical, in git)
                               │ operations
                               ▼
@@ -19,12 +19,12 @@ agent ──command or batch──> command line ──records──> agent
 ## How a write moves through the parts
 
 ```text
-command line   reads the command or batch, and the file
-model          applies the operations to a copy and checks the whole diagram
+command line   reads the command and the file
+model          applies the operation to a copy and checks the whole diagram
 layout         placement, routing and text placement take turns (below)
 checker        finds defects, warnings and counts in the laid-out picture
 command line   writes the file, unless a defect the agent owns refuses it
-command line   prints the outcome, a block per problem, and the counts
+command line   prints the outcome and a block per problem
 ```
 
 The three parts of the layout take turns, because each needs what the one before it decided:
@@ -44,7 +44,7 @@ The text measurer gives every part the size of its text. The theme gives the lay
 
 ## The command line
 
-Reads a command or a batch, runs the write through the parts, and prints the answer as records. It also holds the help, the guides, the refusal texts, the live viewer, `show`, `diff` and `try`, and reads the files of marks and stylesheets. How it answers is in [how grafical answers](answers.md).
+Reads a command, runs the write through the parts, and prints the answer as records. It also holds the help, the guides, the refusal texts, the live viewer, `show`, `diff` and `--try`, and reads the files of marks and stylesheets. How it answers is in [how grafical answers](answers.md).
 
 Folder: `src/cli/`.
 

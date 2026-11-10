@@ -98,5 +98,5 @@ Coding agents first, and the engineers who ask them for diagrams.
 
 - **The vocabulary grows until it is as hard as coordinates:** walls and notes and columns were already added, so each new fact stays only if it measurably helps.
 - **Routing through the gaps is not enough for dense diagrams:** the edges were the main complaint of the first full benchmark round, so the agent fixes a bad route by placing nodes and a geometry check counts every defect.
-- **Many small operations cost more round trips than one rewrite:** a batch applies many operations in one call, and the round trips are measured in time and cost.
+- **Many small operations cost more round trips than one rewrite:** a shell chains many commands in one call, and the round trips are measured in time and cost.
 - **A small model draws what the diagram says badly even when the picture is tidy:** the help teaches choosing what to draw, and the owner reviews each round's pictures.

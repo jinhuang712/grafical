@@ -52,7 +52,7 @@ The agent's view of a diagram, in place of reading the file.
 
 ## F5.2: Counts
 
-After `apply`, `check` and `render`, grafical prints the drawing's counts as one record:
+After `check` and `render`, grafical prints the drawing's counts as one record:
 
 ```text
 counts nodes=3 edges=2 crossings=0 bends=1 bent=0 length=224 width=368 height=280 fullest=data:2 busiest=api:2 longest=api->cache:176 passing=0 across=0 tight=0 crowded=0
@@ -84,7 +84,7 @@ Five counts say how the picture is drawn, and each place they count is also a wa
 
 Every write prints a warning block for each thing the picture draws poorly, and never refuses for one.
 
-- Single commands print them too, and so do `check` and `render`.
+- `check` and `render` print them too.
 - The warnings come before the counts.
 - All of them print every time, since every change lays the whole diagram out again.
 

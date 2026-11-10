@@ -18,7 +18,7 @@ Two verbs stand at the top of the command line and take IDs: `move <id>` changes
   - One act takes three names, and a group still has no whole move.
 - `move` on an edge.
   - An edge has no place of its own, and changing its ends is a change of connection.
-- A batch for several moves.
+- A chain of `move` commands for several moves.
   - It takes a line for each object, and the agent works out their order itself.
 - `edge --plug` under its noun.
   - The owner wants the two verbs side by side, and an edge may not stay the only thing that plugs.

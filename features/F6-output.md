@@ -6,10 +6,10 @@ F6: Output
 │   └── F6.1.1: The object model — objects, types and styles in a file of their own form
 ├── F6.2: Render — SVG and PNG, the same everywhere
 ├── F6.3: Live viewer — a window that redraws as the agent draws
-└── F6.4: Diff — a change as operations
+└── F6.4: Diff — a change as command lines
 ```
 
-What a diagram leaves behind: one file in git, the pictures drawn from it, a window that shows them, and a change read as operations.
+What a diagram leaves behind: one file in git, the pictures drawn from it, a window that shows them, and a change read as command lines.
 
 ## F6.1: The diagram file
 
@@ -91,7 +91,7 @@ A window that shows the diagram as it is now, while an agent draws it.
 
 ## F6.4: Diff
 
-`diff` reports how the file differs from a git revision, `HEAD` by default, as a batch of operations that `apply` replays on the revision's file. Outside git it fails with `not-in-git`.
+`diff` reports how the file differs from a git revision, `HEAD` by default, as one command line per change. A shell that runs them in order on the revision's file gives the file on disk. Outside git it fails with `not-in-git`.
 
 - **Commands:** [`diff`](../CLI.md#diff)
 

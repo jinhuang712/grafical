@@ -8,7 +8,7 @@ Some defects only the agent can fix and others only the engine can avoid. A writ
 
 ## The choice
 
-After each operation or batch, grafical lays out the diagram and checks it. Each defect has an owner: whoever can fix it.
+After each operation, grafical lays out the diagram and checks it. Each defect has an owner: whoever can fix it.
 
 - **The agent owns** a defect that a fact it stated caused, such as text too long for its node.
   - The write fails and changes nothing.

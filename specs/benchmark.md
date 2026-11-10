@@ -20,7 +20,7 @@ brief ──> first draft ──> change 1 ──> ... ──> change 8 ──> 
 
 The runner is headless Claude Code: `claude -p --output-format stream-json --verbose --safe-mode --model <model> --max-budget-usd 1`. `--safe-mode` turns off the host's own customizations, so every run sees the same setup. A first draft starts a session and each change request resumes it.
 
-Each chain gets a new, empty working directory that holds only the brief and, for the grafical arm, a `grafical` command. Every arm gets the same tools: Bash, Read, Write and Edit. A first measuring run had allowed the grafical arm only `grafical *` commands, and Claude Code then blocked `grafical apply …; echo`, so the agent fell back to one command per call. The prompt alone now tells the arm to draw with grafical, and the `offTool` metric counts any Bash command that draws another way.
+Each chain gets a new, empty working directory that holds only the brief and, for the grafical arm, a `grafical` command. Every arm gets the same tools: Bash, Read, Write and Edit. A first measuring run had allowed the grafical arm only `grafical *` commands, and Claude Code then blocked a chain such as `grafical … ; echo`, so the agent fell back to one command per call. The prompt alone now tells the arm to draw with grafical, and the `offTool` metric counts any Bash command that draws another way.
 
 A run's prompt depends on its arm and step only, never on the model, so Haiku and Opus get it word for word. A test pins this.
 
@@ -77,7 +77,7 @@ A report run is how a test picture gets made. One clean session draws one pictur
 
 ## Running a part
 
-`pnpm bench chain --arm <arm>` runs one chain and prints each step's cost. `pnpm bench stage1 --part <e1e2|opus|scale|intent|mvp>` runs one part of a round, `--dry-run` lists its chains and calls, and `--only <chain>` runs one chain to measure its cost first. `--round <name>` runs a part again into a new round, since a round's directory is never reused.
+`pnpm bench chain --arm <arm>` runs one chain and prints each step's cost. `pnpm bench stage1 --part <part>` runs one part of a round, `--dry-run` lists its chains and calls, and `--only <chain>` runs one chain to measure its cost first. `--round <name>` runs a part again into a new round, since a round's directory is never reused.
 
 ## The routing cases
 

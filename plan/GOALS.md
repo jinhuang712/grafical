@@ -174,7 +174,7 @@ How much a change touches in the `.grafical` file. It is measured in every round
 
 - [F6.1.1: The object model](../features/F6-output.md#f611-the-object-model)
 
-**How:** the change steps of a round, written in each form and compared with `git diff`.
+**How:** the change steps of a round, written as `.grafical` files and compared with `git diff`.
 
 **Formula:**
 
@@ -182,13 +182,7 @@ How much a change touches in the `.grafical` file. It is measured in every round
 M4 = mean changed lines, and mean changed characters, per change step
 ```
 
-**Last value:** on 2026-11-06, over the 24 change steps of round `p1g`:
-
-| Form | Changed lines | Changed characters | File lines |
-|---|---|---|---|
-| `.grafical` | 17.3 | 231 | 417 |
-| YAML with one element on each line | 2.9 | 217 | 57 |
-| YAML as it is | 8.7 | 173 | 180 |
+**Last value:** 17.3 changed lines and 231 changed characters a change step in a file of 417 lines, over the 24 change steps of round `p1g` on 2026-11-06.
 
 #### M5: Routing cases
 
@@ -223,7 +217,6 @@ A change request is done right, quickly and cheaply.
 **Checks:**
 
 - [F3.1: Operations](../features/F3-editing.md#f31-operations)
-- [F3.2: Batches](../features/F3-editing.md#f32-batches)
 - [4. A change keeps every fact it does not name](../DESIGNS.md#4-a-change-keeps-every-fact-it-does-not-name)
 
 **Problem set:** the public brief: a draft and 8 change requests, 3 runs per arm.
@@ -335,7 +328,6 @@ A diagram takes less wall time than the same model takes drawing directly.
 
 **Checks:**
 
-- [F3.2: Batches](../features/F3-editing.md#f32-batches)
 - [F7.1: Help](../features/F7-help.md#f71-help)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
@@ -360,7 +352,6 @@ A diagram costs fewer fresh tokens than the same model uses drawing directly.
 
 **Checks:**
 
-- [F3.2: Batches](../features/F3-editing.md#f32-batches)
 - [F7.1: Help](../features/F7-help.md#f71-help)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
@@ -411,7 +402,6 @@ A diagram costs less money than the same model pays drawing directly.
 
 **Checks:**
 
-- [F3.2: Batches](../features/F3-editing.md#f32-batches)
 - [F7.1: Help](../features/F7-help.md#f71-help)
 - [12. The command line comes first, and the help is the agent's only reference](../DESIGNS.md#12-the-command-line-comes-first-and-the-help-is-the-agents-only-reference)
 
@@ -462,7 +452,7 @@ At most 5% of operations are refused, each recovered within 1 retry.
 
 **Checks:**
 
-- [F3.5: Refusals](../features/F3-editing.md#f35-refusals)
+- [F3.4: Refusals](../features/F3-editing.md#f34-refusals)
 - [7. A refusal gives the facts, and the agent writes the fix](../DESIGNS.md#7-a-refusal-gives-the-facts-and-the-agent-writes-the-fix)
 
 **Limit:** 5%; above 20% is the kill threshold.

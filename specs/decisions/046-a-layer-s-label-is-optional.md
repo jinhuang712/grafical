@@ -16,7 +16,7 @@ Decided by the owner on 2026-10-18, with "A layer with a look is drawn". A layer
   - A layer made without one keeps none until renamed.
 - **Where a missing label is read.**
   - The file reader and writer.
-  - The batch line: `layer.add` shows only `id`.
+  - `diff`'s line: `layer --add` shows only the ID.
   - `show`, the layout and the picture.
   - The checks that place text.
   - A layer with no label has no text for them to place.

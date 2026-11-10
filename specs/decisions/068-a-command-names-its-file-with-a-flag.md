@@ -4,17 +4,16 @@ Decided: 2026-11-06
 
 ## The problem
 
-The diagram file sat between a command and its arguments, as in `grafical edge add a.grafical.yaml x y`. The owner found that it reads badly. Nothing had chosen that place: it was only a habit.
+The diagram file sat between a command and its arguments, as in `grafical edge add a.grafical x y`. The owner found that it reads badly. Nothing had chosen that place: it was only a habit.
 
 ## The choice
 
-A command names its file with `-f` or `--file` before the command, as in `grafical -f a.grafical edge --add x y`. The flag is required, and the same holds for `new` and `apply`.
+A command names its file with `-f` or `--file` before the command, as in `grafical -f a.grafical edge --add x y`. The flag is required, and the same holds for `new`.
 
 ## Not chosen
 
 - A file that grafical remembers.
   - It needs a hidden state on disk, and a line could go into the wrong diagram with no error.
-  - `apply` already names the file once for many operations.
 - Keeping the file after the command.
   - It costs nothing in tokens, but the owner finds that it reads badly.
 - `--load`.

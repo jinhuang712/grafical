@@ -1,18 +1,18 @@
 # The model
 
-The model holds the facts of a diagram and is the only part that changes them. An agent never edits the file: it sends operations, and the model turns them into a new diagram, or refuses them and changes nothing. It also checks that every diagram it makes can be laid out, and it can say how two diagrams differ as operations. It never computes a position, which is the layout's work. It lives in `src/model/`.
+The model holds the facts of a diagram and is the only part that changes them. An agent never edits the file: it sends an operation, and the model turns it into a new diagram, or refuses it and changes nothing. It also checks that every diagram it makes can be laid out, and it can say how two diagrams differ as operations. It never computes a position, which is the layout's work. It lives in `src/model/`.
 
-## A write, from operations to file
+## A write, from operation to file
 
-Every write takes the same path, and a single command is a batch of one operation:
+Every write takes the same path:
 
 ```text
-command or batch file
-  │  parse: each item becomes an operation, or is refused with its line
+command line
+  │  parse: the flags become one operation, or are refused
   ▼
 load the file ── refused if its form, schema, marks, stylesheet or weights fail
   ▼
-apply the operations, in order, to a copy ── the first error stops the batch
+apply the operation to a copy
   ▼
 put each layer in lane order, then in column order
   ▼
@@ -25,11 +25,11 @@ write the file: a temporary file, then a rename
 
 Loading reads a `.grafical` file in its own form, and nothing else, and validates it against the schema. It then reads the files of the marks, the stylesheet the diagram names and the weight levels that stylesheet knows. A file that fails any of these is refused as a whole, with `already in the file` as its source, so that grafical never draws from a file it read only in part. A file that cannot be found or read is refused with the command as its source.
 
-The operations work on a copy of the loaded diagram, so a refused write leaves nothing changed. Each operation runs against the diagram the operations before it made, and either returns errors or changes the copy. After each one, walls forget the nodes, groups and edges it removed, a wall left with an empty side goes, and notes go with their targets. When every operation has run, each layer is put in lane order and then in column order. That waits until the end because lanes and columns are facts that several operations of one batch may change.
+The operation works on a copy of the loaded diagram, so a refused write leaves nothing changed. It either returns errors or changes the copy. After it, walls forget the nodes, groups and edges it removed, a wall left with an empty side goes, and notes go with their targets. Then each layer is put in lane order and then in column order.
 
 ## Checks of the whole diagram
 
-An operation can only check what it touches. Some problems can only be seen in the diagram a whole batch makes, such as a group that a later operation split. Four checks look for them in turn, and the first that finds one stops the rest:
+An operation can only check what it touches. Some problems can only be seen in the whole diagram, such as a node that a move puts inside a group it is not in. Four checks look for them in turn, and the first that finds one stops the rest:
 
 1. Integrity: the rules a schema cannot state.
    - Every id is unique and every edge's ends exist.
@@ -40,9 +40,9 @@ An operation can only check what it touches. Some problems can only be seen in t
 3. Groups: every group can be boxed without a node inside it that is not a member.
 4. Steps: no node placed by steps lands on a cell that another fact keeps.
 
-On the write path a fifth check follows them: every weight an edge names is a level the stylesheet knows. Each error from these checks carries the number of the check that found it. A diagram refused by a later check has passed the earlier ones, and the search for the operation that caused a problem relies on that.
+On the write path a fifth check follows them: every weight an edge names is a level the stylesheet knows. Each error from these checks carries the number of the check that found it. A diagram refused by a later check has passed the earlier ones, and telling whether the file already had a problem relies on that.
 
-The new diagram then goes to the layout and the checker. A defect the agent owns refuses the write. Otherwise the file is written to a temporary file beside it and renamed over it, so that a reader never sees half a file. `grafical try` takes the same path without the last step.
+The new diagram then goes to the layout and the checker. A defect the agent owns refuses the write. Otherwise the file is written to a temporary file beside it and renamed over it, so that a reader never sees half a file. `--try` takes the same path without the last step.
 
 ## The order of a layer
 
@@ -73,7 +73,7 @@ The copy is refused rather than changed, so that what it makes is always what th
 
 ## The difference between two diagrams
 
-`grafical diff` turns the difference between a git revision of the file and the file on disk into operations, so that a reviewer reads a diagram change in the same words the agent wrote it. It reads the revision with `git show`, and a revision that has no such file counts as an empty one, so the batch starts with `diagram.new`. The result is a batch, one operation per line, that `apply` replays on the revision's file to give the file on disk.
+`grafical diff` turns the difference between a git revision of the file and the file on disk into operations, so that a reviewer reads a diagram change in the same words the agent wrote it. It reads the revision with `git show`, and a revision that has no such file counts as an empty one, so the lines start with `new`. It prints one command line per operation, and a shell that runs them on the revision's file gives the file on disk.
 
 The operations come in an order in which each one is valid when it runs:
 
@@ -95,3 +95,4 @@ An alignment that a move would break is cleared before the move and set again af
 - [009. Git as the history](decisions/009-git-as-the-history.md)
 - [033. The agent states every order](decisions/033-the-agent-states-every-order.md)
 - [037. A group copy holds its inside](decisions/037-a-group-copy-holds-its-inside.md)
+- [105. One command is one write, and running it twice changes nothing](decisions/105-one-command-is-one-write-and-running-it-twice-changes-nothing.md)

@@ -19,4 +19,4 @@ A command is a noun and flags: `grafical -f <file> edge --look <id> --color <col
 
 ## Consequences
 
-The help of a noun holds every verb on one page. A flag that needs a verb beside it must say so, and a value flag without its verb is refused. The operations in a batch and in `diff` stay `noun.verb`.
+The help of a noun holds every verb on one page. A flag that needs a verb beside it must say so, and a value flag without its verb is refused. `diff` prints its lines in the same form.

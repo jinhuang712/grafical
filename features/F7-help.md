@@ -20,13 +20,13 @@ The entry page and one page per command hold everything an agent needs to use gr
 - `--help` says what grafical is and what it does not draw.
 - It says how to work and lists every way to draw, one line each by the story it tells.
   - Examples: a node beside a node and one path in order and two parts kept apart.
-- Each command's help adds its options and its line in a batch and when to use it and what it draws and common mistakes and limits and an example.
-- A command's arguments are named as its batch fields.
+- Each command's help adds its options and when to use it and what it draws and common mistakes and limits and an example.
+- A command's arguments and options are named as its operation's fields.
 - No page says what a refusal means, since the refusal's block says it.
 - The help does not say how a kind of diagram is drawn, since the guides do.
 - `--help` is the one way to a page, and there is no `grafical help <command>`.
 - A command grafical does not have is refused with the word it most likely means.
-  - `grafical help apply` gives `error: unknown-command` with `found: help` and `likely: --help`.
+  - `grafical help node` gives `error: unknown-command` with `found: help` and `likely: --help`.
   - `grafical node.add --help` gives `found: node.add` and `likely: node --add`.
 
 - **Stance:** [How does an agent learn grafical?](../PHILOSOPHY.md#how-does-an-agent-learn-grafical)

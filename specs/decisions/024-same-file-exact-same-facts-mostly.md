@@ -4,7 +4,7 @@ Decided: 2026-10-13
 
 ## The problem
 
-Decided on 2026-10-13 by the owner, asked whether two agents that state the same facts must get the same picture: "mostly. but the intermediate grafical.yaml always outputs the exact same diagram."
+Decided on 2026-10-13 by the owner, asked whether two agents that state the same facts must get the same picture. The answer was "mostly", while the same file always gives the exact same diagram.
 
 ## The choice
 
@@ -17,7 +17,7 @@ Decided on 2026-10-13 by the owner, asked whether two agents that state the same
 
 - Canonical placement, the same facts always giving the same picture.
   - Every edit could then move nodes the agent did not touch, against the stability "Layout computed again on every change" promises.
-- Canonical placement within one batch, with later edits kept stable.
+- Canonical placement within one draft, with later edits kept stable.
   - It was the recommendation, but "mostly" asks for no new rule.
 
 ## Consequences

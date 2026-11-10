@@ -58,7 +58,7 @@ Where drawing would hide something a reader needs, the write is refused as a def
   - Its `next` is `note --add`, `note --remove` and `node --move`.
 - A group's label that an edge comes near is `title-blocked`, naming the group and the edges.
   - It also lists as `clear` the other places where no edge would come near, each found by laying the diagram out again.
-  - The search for a problem's source leaves `clear` out, since it lays out many prefixes of a batch.
+  - Checking whether the file already had the problem leaves `clear` out, since each place takes a layout.
   - Its `next` is `group --label-at`, `node --move` and `edge --remove`.
 
 Where drawing only costs, the picture is drawn and every write reports it. An edge with more than two bends is the one such case today: it is a `bent-edge` warning and counts in `bent`.

@@ -146,7 +146,7 @@ The parts of `pnpm bench`:
 - `geometry` checks every picture of a round for mechanical defects.
 - `routes` lays out every routing case in `bench/routes/` and compares it with its saved baseline.
 - `speed` times one operation and one command.
-- `lines` measures a round's lines and how often the agent ran `grafical try`.
+- `lines` measures a round's lines and how often the agent tried a command with `--try`.
 - `reflections` prints the report each agent writes after its chain.
 - `summary` turns a round's runs into its results file in `bench/results/`.
 - `diff <ref>` lays out every fixture and fuzz seed with the engine at `<ref>` and with the working tree.

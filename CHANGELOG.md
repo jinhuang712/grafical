@@ -9,8 +9,8 @@ grafical has not been released; the first release will be 0.1.0, and it holds wh
 ### The command line
 
 - Every command reads `grafical -f <file> <noun> --<verb>`, as in `grafical -f a.grafical edge --add a b`.
-- `apply` runs a batch of operations all or nothing, from a file or from standard input.
-- `try` shows the counts a batch would give before anything is written.
+- One command is one write, and a shell chains many commands in one call.
+- `--try` on a command that writes shows the counts it would give, and writes nothing.
 - `--help` on every command is the whole reference, and a wrong command names the right one.
 
 ### Drawing
@@ -33,7 +33,7 @@ grafical has not been released; the first release will be 0.1.0, and it holds wh
 
 - Every reply is records a script can read, and a refused write says what happened and which commands can change it.
 - Every write prints every warning, such as crossings and crowded labels.
-- `show` prints the diagram as facts, `diff` prints a change as operations, and `check --all` reports defects and counts.
+- `show` prints the diagram as facts, `diff` prints a change as command lines a shell replays, and `check --all` reports defects and counts.
 
 ### Output
 

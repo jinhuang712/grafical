@@ -82,7 +82,6 @@ Checked against `src/layout/` and `src/render/` on 2026-11-04.
 
 - **Operation:** a named change to a diagram, such as `node.add`.
   - The only way a diagram changes.
-- **Batch:** many operations applied together, all or nothing.
 - **Diagram file:** `<name>.grafical`.
   - It holds facts and never a coordinate.
 - **Stylesheet:** a `.grafical` file of `<type>`, `<style>` and `<weight>` blocks that sets every value of a diagram's look.

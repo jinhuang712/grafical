@@ -12,7 +12,7 @@ Decided by the owner on 2026-10-15: the engine does not choose for the agent. Un
   - It goes first or last or before or after a node.
   - Without one it is refused.
 - **No tidying.** No command reorders a layer for the agent.
-  - An agent that wants fewer crossings compares orders with `grafical try` and its counts ("Records over prose"), and keeps the one it prefers.
+  - An agent that wants fewer crossings compares orders with `--try` and its counts ("Records over prose"), and keeps the one it prefers.
 - **No exception left.** Every order in the file is one the agent stated, so the rule that the engine never chooses for the agent holds without an exception.
 
 The slot search was also the cause of the speed slip measured on 2026-10-15: it laid the whole diagram out once for every slot of the layer, and adding a node without a position took up to 189.7 ms at 50 nodes.
@@ -28,4 +28,4 @@ The slot search was also the cause of the speed slip measured on 2026-10-15: it 
 
 ## Consequences
 
-Cost: Haiku's drafts may cross more. Ordering the nodes of a batch together had cut the crossings of its three phase 1b drafts from 8, 7 and 6 to 0, 2 and 1. Not yet measured with the agent stating every order.
+Cost: Haiku's drafts may cross more. Ordering the nodes of a draft together had cut the crossings of its three phase 1b drafts from 8, 7 and 6 to 0, 2 and 1. Not yet measured with the agent stating every order.

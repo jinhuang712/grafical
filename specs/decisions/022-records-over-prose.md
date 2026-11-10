@@ -11,7 +11,7 @@ Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in pr
 - **What the diagram is:** `show` as now, with layers and nodes in order and groups and lanes and edges.
 - **How it is drawn:** a discrete report of each node, each edge and the totals.
   - The agent judges the drawing from it without opening the picture.
-- **What a change would do:** `grafical try` measures a batch without writing it.
+- **What a change would do:** `--try` measures a command without writing it.
   - The agent decides what to try; grafical measures.
   - It replaces hints, which chose the moves themselves.
   - On 2026-10-12 the engine searched for rearrangements and printed the best as commands.
@@ -28,7 +28,7 @@ Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in pr
   - The edge ran 964 px round the right edge, and nothing in the output said so.
   - Each edge now gives its length, the shortest it could be and the layers it skips.
   - Each node and the totals give the length of their edges together.
-  - On that draft: `length=964 direct=480 detour=2.01 skip=3`, and `grafical try` with the node moved down to its partner's layer prints `delta ... bends=-4 length=-1380`.
+  - On that draft: `length=964 direct=480 detour=2.01 skip=3`, and `--try` on moving the node down to its partner's layer prints `delta ... bends=-4 length=-1380`.
 - **Which edges are bundled**, added on 2026-10-14 after dogfooding.
   - An agent saw three edges leave a node as one trunk and could not tell from the output which edges those were.
   - It could not tell either that a label would keep an edge on its own.
@@ -49,4 +49,4 @@ Decided on 2026-10-13 by the owner. grafical had begun to judge and advise in pr
 
 ## Consequences
 
-Counts, `show --drawn` and `try` are records. A refusal, a defect and a warning are blocks with one fixed sentence per code.
+Counts, `show --drawn` and `--try` are records. A refusal, a defect and a warning are blocks with one fixed sentence per code.

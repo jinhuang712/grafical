@@ -68,7 +68,6 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [068. A command names its file with a flag](068-a-command-names-its-file-with-a-flag.md) (2026-11-06)
 - [069. One name for each thing, and a name says what it is](069-one-name-for-each-thing-and-a-name-says-what-it-is.md) (2026-11-06)
 - [070. One shortest way for each situation](070-one-shortest-way-for-each-situation.md) (2026-11-06)
-- [071. A batch may come from standard input](071-a-batch-may-come-from-standard-input.md) (2026-11-06)
 - [072. A change keeps the structure and positions may shift](072-a-change-keeps-the-structure-and-positions-may-shift.md) (2026-11-06)
 - [074. Safety and licenses are no design guidelines](074-safety-and-licenses-are-no-design-guidelines.md) (2026-11-06)
 - [075. A node beside its neighbours is a warning](075-a-node-beside-its-neighbours-is-a-warning.md) (2026-11-06)
@@ -101,4 +100,5 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [102. Routing trouble that placement can fix is the agent's](102-routing-trouble-that-placement-can-fix-is-the-agent-s.md) (2026-11-08)
 - [103. The canvas grows with what it holds](103-the-canvas-grows-with-what-it-holds.md) (2026-11-09)
 - [104. A stylesheet is a .grafical file, and the built-in ones form a library](104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md) (2026-11-09)
+- [105. One command is one write, and running it twice changes nothing](105-one-command-is-one-write-and-running-it-twice-changes-nothing.md) (2026-11-10)
 - [106. Styles set spacing as CSS does, and a later style wins](106-styles-set-spacing-as-css-does-and-a-later-style-wins.md) (2026-11-10)

@@ -1,6 +1,6 @@
 # Roadmap
 
-**Current checkpoint:** [CP2: Drawing more](#cp2-drawing-more). The work now is [CP2.4: Nodes](#cp24-nodes), then [CP2.5: Regions](#cp25-regions) and then [CP2.6: The legend](#cp26-the-legend).
+**Current checkpoint:** [CP2: Drawing more](#cp2-drawing-more). The work now is [CP2.4: Commands and styles](#cp24-commands-and-styles), then [CP2.5: Nodes](#cp25-nodes), [CP2.6: Regions](#cp26-regions) and [CP2.7: The legend](#cp27-the-legend).
 
 The work comes in four groups of what grafical can do: draw at all · draw more · draw well · draw the hardest pictures. A release follows once the MVP bar is met. Within a group the numbers are the order of the work.
 
@@ -18,11 +18,9 @@ Roadmap
 │   │   └── ✅ Package, tests and CI
 │   ├── ✅ CP1.2: The loop — a few commands draw a service and its database
 │   │   ├── ✅ First operations
-│   │   ├── ✅ First batches
 │   │   ├── ✅ First render
 │   │   ├── ✅ The public brief
 │   │   ├── ✅ The full operation set
-│   │   ├── ✅ `apply`
 │   │   ├── ✅ `show`
 │   │   ├── ✅ The live viewer
 │   │   ├── ✅ New edge types
@@ -30,7 +28,7 @@ Roadmap
 │   ├── ✅ CP1.3: Stability — a new node leaves every other fact as it was
 │   │   ├── ✅ `diff`
 │   │   ├── ✅ The stability rule
-│   │   └── ✅ `try`
+│   │   └── ✅ `--try`
 │   ├── ✅ CP1.4: Replies an agent can act on — records and refusals that name the way out
 │   │   ├── ✅ The help
 │   │   ├── ✅ Help in place of `grafical guide`
@@ -47,8 +45,7 @@ Roadmap
 │   │   ├── ✅ The file flag
 │   │   ├── ✅ One name for each thing
 │   │   ├── ✅ Verbs as flags
-│   │   ├── ✅ One way for each situation
-│   │   └── ✅ Batches from standard input
+│   │   └── ✅ One way for each situation
 │   └── ✅ CP1.7: The file form — objects with types and styles
 │       ├── ✅ Design the model and its form
 │       ├── ✅ Build the model
@@ -77,14 +74,19 @@ Roadmap
 │   │   ├── ✅ Edge weights
 │   │   ├── ✅ Step numbers
 │   │   └── ✅ Edge sides
-│   ├── 🟨 CP2.4: Nodes — a node takes a multiple of its size and its marks stay clear of edges
+│   ├── 🟨 CP2.4: Commands and styles — one command is one write and styles set spacing
+│   │   ├── ✅ One command is one write
+│   │   ├── ⬜ A `diff` that replays
+│   │   ├── ⬜ `--set` on every noun
+│   │   └── ⬜ Styles set spacing
+│   ├── 🟨 CP2.5: Nodes — a node takes a multiple of its size and its marks stay clear of edges
 │   │   ├── ✅ Marks
 │   │   ├── ⬜ Size multiples
 │   │   └── ⬜ Corner marks checked
-│   ├── ⬜ CP2.5: Regions — every region carries its label and a bar runs across a group
+│   ├── ⬜ CP2.6: Regions — every region carries its label and a bar runs across a group
 │   │   ├── ⬜ Column headings
 │   │   └── ⬜ Bars across groups
-│   └── 🟨 CP2.6: The legend — a key the agent lays out as a small diagram
+│   └── 🟨 CP2.7: The legend — a key the agent lays out as a small diagram
 │       ├── ✅ The richer legend
 │       ├── ⬜ Design the legend
 │       └── ⬜ Build the legend
@@ -270,11 +272,9 @@ The smallest path from operations to a picture: an agent built the public brief 
 **Tasks:**
 
 - ✅ First operations: Named operations write one diagram file.
-- ✅ First batches: Many operations apply in one call.
 - ✅ First render: A diagram file gives a picture.
 - ✅ The public brief: An agent built the public brief with operations alone, with no defect.
 - ✅ The full operation set: Every editing operation of stage 1 exists.
-- ✅ `apply`: A batch applies from one call.
 - ✅ `show`: The diagram prints as facts.
 - ✅ The live viewer: A window redraws on every change.
 - ✅ New edge types: Edges gained new types.
@@ -285,8 +285,7 @@ The smallest path from operations to a picture: an agent built the public brief 
 - [F2.1: Placing every node](../features/F2-layout.md#f21-placing-every-node)
 - [F2.2: Layers and order](../features/F2-layout.md#f22-layers-and-order)
 - [F3.1: Operations](../features/F3-editing.md#f31-operations)
-- [F3.2: Batches](../features/F3-editing.md#f32-batches)
-- [F3.4: IDs](../features/F3-editing.md#f34-ids)
+- [F3.3: IDs](../features/F3-editing.md#f33-ids)
 - [F6.2: Render](../features/F6-output.md#f62-render)
 - [F5.1: Show](../features/F5-checking.md#f51-show)
 - [F6.3: Live viewer](../features/F6-output.md#f63-live-viewer)
@@ -300,18 +299,18 @@ The smallest path from operations to a picture: an agent built the public brief 
 
 **Status:** ✅ (2026-10-12 to 2026-10-14)
 
-The stability rule enforced by tests, a change printed as operations, and a change tried before it is written (`bench/results/phase2.md`).
+The stability rule enforced by tests, a change printed as command lines, and a change tried before it is written (`bench/results/phase2.md`).
 
 **Tasks:**
 
-- ✅ `diff`: A change prints as operations.
+- ✅ `diff`: A change prints as command lines.
 - ✅ The stability rule: Tests enforce the stability rule.
-- ✅ `try`: A change can be tried before it is written.
+- ✅ `--try`: A change can be tried before it is written.
 
 **Delivers:**
 
 - [F6.4: Diff](../features/F6-output.md#f64-diff)
-- [F3.3: Trying a change](../features/F3-editing.md#f33-trying-a-change)
+- [F3.2: Trying a change](../features/F3-editing.md#f32-trying-a-change)
 
 **Exit criteria:**
 
@@ -337,7 +336,7 @@ Every reply is records or a block that names the commands that can change it.
 
 **Delivers:**
 
-- [F3.5: Refusals](../features/F3-editing.md#f35-refusals)
+- [F3.4: Refusals](../features/F3-editing.md#f34-refusals)
 - [F5.2: Counts](../features/F5-checking.md#f52-counts)
 - [F5.3: Warnings](../features/F5-checking.md#f53-warnings)
 - [F5.4: Check](../features/F5-checking.md#f54-check)
@@ -373,7 +372,6 @@ Every command names its file the same way, a verb is a flag, each thing has one 
 - ✅ One name for each thing: Every surface uses one name, and the code does except where a word means something else.
 - ✅ Verbs as flags: A command is a noun and flags, and the planned commands in the features follow.
 - ✅ One way for each situation: `edge --emphasize` went, and the commands were checked for other repeats.
-- ✅ Batches from standard input: `apply` reads a batch named `-` from standard input.
 
 **Exit criteria:**
 
@@ -421,9 +419,10 @@ What a picture can hold grows. A test and a fixture accept each item, with no mo
   - [CP2.1: Containers](#cp21-containers) is met.
   - [CP2.2: Placement facts](#cp22-placement-facts) is met.
   - [CP2.3: Kinds of edge](#cp23-kinds-of-edge) is met.
-  - [CP2.4: Nodes](#cp24-nodes) is met.
-  - [CP2.5: Regions](#cp25-regions) is met.
-  - [CP2.6: The legend](#cp26-the-legend) is met.
+  - [CP2.4: Commands and styles](#cp24-commands-and-styles) is met.
+  - [CP2.5: Nodes](#cp25-nodes) is met.
+  - [CP2.6: Regions](#cp26-regions) is met.
+  - [CP2.7: The legend](#cp27-the-legend) is met.
 
 ### CP2.1: Containers
 
@@ -501,7 +500,37 @@ What an edge can say past joining two ends.
 - **Constraints**
   - [R1: Stability](GOALS.md#r1-stability): ✅ 2026-11-08, the stability tests passed.
 
-### CP2.4: Nodes
+### CP2.4: Commands and styles
+
+**Status:** 🟨 (since 2026-11-10)
+
+One command is one write, every noun makes or changes an object with `--set`, and styles set spacing as CSS does.
+
+**Tasks:**
+
+- ✅ One command is one write: `apply` · batch files · `try` went, every write takes `--try` and `diff` prints command lines (2026-11-10).
+- ⬜ A `diff` that replays: Replayed one command at a time, the `diff` of 21 of the first 100 fuzz diagrams is refused partway, though each whole diagram draws.
+  - The codes: `label-blocked` 9 · `wall-crossed` 6 · `title-blocked` 5 · `overflow` 1.
+  - All 7 saved fixtures replay to the same bytes.
+  - Next: decide whether `diff` orders its lines so that each one draws.
+- ⬜ `--set` on every noun: `--set` makes an object or changes only the attributes it names, and a command run twice changes nothing.
+- ⬜ Styles set spacing: a margin on each side · `row-gap` · `column-gap` · `--style` in four forms · `--stylesheet`, and density and `gap` go.
+  - Related: decision 106 "Styles set spacing as CSS does, and a later style wins".
+
+**Delivers:**
+
+- [F3.1: Operations](../features/F3-editing.md#f31-operations)
+- [F3.2: Trying a change](../features/F3-editing.md#f32-trying-a-change)
+- [F6.4: Diff](../features/F6-output.md#f64-diff)
+- [F2.6: Spacing](../features/F2-layout.md#f26-spacing)
+
+**Exit criteria:**
+
+- **Constraints**
+  - [R1: Stability](GOALS.md#r1-stability)
+  - [R4: A sound file](GOALS.md#r4-a-sound-file)
+
+### CP2.5: Nodes
 
 **Status:** 🟨
 
@@ -526,7 +555,7 @@ A node takes a multiple of its size, and its marks stay clear of the edges besid
   - [R1: Stability](GOALS.md#r1-stability)
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
-### CP2.5: Regions
+### CP2.6: Regions
 
 **Status:** ⬜
 
@@ -550,7 +579,7 @@ Every region carries its label, and a bar runs across a group. A column is the o
   - [R1: Stability](GOALS.md#r1-stability)
   - [R2: Mechanical defects](GOALS.md#r2-mechanical-defects)
 
-### CP2.6: The legend
+### CP2.7: The legend
 
 **Status:** 🟨
 
@@ -711,8 +740,8 @@ The agent fixes a picture by placing nodes, so a move costs one command and show
 
 **Delivers:**
 
-- [F3.8: Move and plug](../features/F3-editing.md#f38-move-and-plug)
-- [F3.6: Merging and swapping](../features/F3-editing.md#f36-merging-and-swapping)
+- [F3.7: Move and plug](../features/F3-editing.md#f37-move-and-plug)
+- [F3.5: Merging and swapping](../features/F3-editing.md#f35-merging-and-swapping)
 
 **Exit criteria:**
 
@@ -884,7 +913,7 @@ The refusals of the private reference brief were mostly `title-blocked`. Haiku s
   - A second run followed `diagram.grafical` and wrote `last: true` on every node.
   - It did not see layer labels in its picture, since a layer is not drawn.
   - `passing-layer` named the problem and gave it no move to make.
-  - It could not see the trade between width and crossings, though `try` shows it.
+  - It could not see the trade between width and crossings, though `--try` shows it.
   - The numbers of both runs are in `bench/results/report-2026-11-06.md`.
 - ⬜ An edge ID in a shell: An unquoted `->` in an edge ID made zsh write a stray file.
   - The help's examples quote the ID, and the session did not.
@@ -1123,7 +1152,7 @@ The form is not decided with the owner yet, such as one operation for a common e
 
 **Delivers:**
 
-- [F3.7: More combinations of operations](../features/F3-editing.md#f37-more-combinations-of-operations)
+- [F3.6: More combinations of operations](../features/F3-editing.md#f36-more-combinations-of-operations)
 
 **Exit criteria:** none yet.
 
