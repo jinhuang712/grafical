@@ -148,10 +148,13 @@ bottom margin
 
 An edge's label counts as a track. A gutter takes the smallest of its fixed heights that holds its tracks: at least `(tracks + 1) × 12` px. The heights are the diagram's `row-gap` plus 0 · 16 · 32 · 56 · 88 px, and past the last one a gutter grows in steps of 32 px. A gutter with no tracks takes the first height, and the last layer has none.
 
-Margins add to the room between layers. A layer's top margin is the largest among its own, its nodes', its lane's and those of the groups whose first layer it is, and its bottom margin the same for the groups whose last layer it is. The gutter below a layer grows by the layer's bottom margin and the next layer's top margin.
+A margin is room outside an object's own box on that side, added to what separates it from its neighbour there, and no margin reaches what lies inside its object. Down the page, a layer's top margin is the largest among its own, its nodes' and those of the groups, lanes and columns whose first layer it is, and its bottom margin the same for those whose last layer it is. The gutter below a layer grows by the layer's bottom margin and the next layer's top margin.
 
-- A column's margins reach its nodes, and a lane's its layers or nodes.
-- A group's margins widen the room beside it.
+- Across, the left and right margins of a node, a group, a lane and a column add to the room beside their box, and a layer's add beside its first and last node, so each widens its columns in every layer.
+- The side of the canvas is a neighbour, and so is the header of lanes that run as layers.
+  - A node outside every group, an outermost group, a column's strip and a layer's content keep their left and right margins from it, beyond the diagram's own.
+  - Content already further in has that room already.
+- Lanes that run as layers share their left and right sides, and lanes that run as columns their top and bottom, so on those sides the widest margin among them holds for all.
 - The diagram's four margins are the canvas's.
 - A margin counts only from the object itself or a style it marks, never through `like`.
 
@@ -182,3 +185,4 @@ The stability tests in `test/layout/stability.ts` apply single operations and as
 - [072. A change keeps the structure and positions may shift](decisions/072-a-change-keeps-the-structure-and-positions-may-shift.md)
 - [080. A node's width and height take a multiple of its size](decisions/080-a-node-s-width-and-height-take-a-multiple-of-its-size.md)
 - [106. Styles set spacing as CSS does, and a later style wins](decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
+- [111. An attribute means the same on every object it fits](decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)

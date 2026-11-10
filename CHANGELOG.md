@@ -28,7 +28,9 @@ grafical has not been released; the first release will be 0.1.0, and it holds wh
 
 - Three built-in stylesheets that `grafical library` lists, and a stylesheet of your own is a `.grafical` file that starts from one and changes any color, width or type size.
 - Any object may mark named styles, and where two say the same thing the later one in the file wins.
-- A style sets margins on each side, and the diagram's style sets the room between layers and between nodes, as CSS does.
+- An object may also set any attribute of a style itself, such as `node --set api --fill "#fdd"`, and its own value beats its styles.
+- A color, a border or a margin means the same on every object: `color` is the text of a box and the line of an edge.
+- A margin is room outside an object's own box on any side, and the diagram sets the room between layers and between nodes, as CSS does.
 - A legend names what each line style, width and mark means.
 
 ### What the agent reads back

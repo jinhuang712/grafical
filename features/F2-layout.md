@@ -188,7 +188,7 @@ A node snaps to its cell, unless an agent takes it off with a fraction of a cell
 
 ## F2.6: Spacing
 
-How far apart things sit comes from margins and gaps, set on an object or in the styles it marks, as in CSS. It changes no fact.
+How far apart things sit comes from margins and gaps, set on an object or in the styles it marks, as in CSS. A margin is room outside an object's own box on that side. It changes no fact.
 
 - **Commands:**
   - [`style`](../CLI.md#style)
@@ -196,10 +196,13 @@ How far apart things sit comes from margins and gaps, set on an object or in the
 
 - A style holds a margin for each side, and the diagram's style also holds `row-gap` and `column-gap`.
   - Each is in pixels, a multiple of 4 and never below 0.
-  - A margin counts on a node · a group · a layer · a lane · a column · the diagram.
+  - A margin counts on all four sides of a node · a group · a layer · a lane · a column · the diagram.
+  - It never reaches what lies inside its object.
 - `--margin-top` and the other margins set on an object itself beat the styles it marks, and so do `--row-gap` and `--column-gap` on the diagram.
 - Two neighbours in a layer sit `column-gap` apart, plus the margins that face each other.
-  - A node's left and right margins widen its column in every layer.
+  - A node's left and right margins widen its column in every layer, and so do a layer's beside its first and last node.
+  - So a layer cannot yet be indented alone.
+- At the side of the canvas, a left or right margin keeps that room from the edge beyond the diagram's own.
 - Two layers sit `row-gap` apart, plus the largest bottom margin above and the largest top margin below.
   - A gutter still grows in fixed steps for the edges it holds.
 - The default stylesheet gives `row-gap` 40 · `column-gap` 32 · a margin of 32 round the diagram, and every other margin 0.
@@ -212,6 +215,7 @@ How far apart things sit comes from margins and gaps, set on an object or in the
 - **Why:**
   - [106. Styles set spacing as CSS does, and a later style wins](../specs/decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
   - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
+  - [111. An attribute means the same on every object it fits](../specs/decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)
 
 **Stories:**
 

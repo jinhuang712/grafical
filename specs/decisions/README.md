@@ -103,3 +103,4 @@ The forks grafical took: what was chosen, what was not, and why. One decision is
 - [108. An answer says what happened, and a write reports only what it changed](108-an-answer-says-what-happened-and-a-write-reports-only-what-it-changed.md) (2026-11-10)
 - [109. Every attribute of a style may be set on the object itself](109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md) (2026-11-10)
 - [110. Built-in styles name colors by hue, and each stylesheet draws them its own way](110-built-in-styles-name-colors-by-hue-and-each-stylesheet-draws-them-its-own-way.md) (2026-11-10)
+- [111. An attribute means the same on every object it fits](111-an-attribute-means-the-same-on-every-object-it-fits.md) (2026-11-10)

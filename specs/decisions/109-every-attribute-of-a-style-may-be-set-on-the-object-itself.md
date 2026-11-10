@@ -8,7 +8,7 @@ A look, the room around an object and a node's size came only from the styles an
 
 ## The choice
 
-- Every attribute a style holds may also be set on an object it fits, with a flag of the same name, such as `node --set api --fill "#fdd"`.
+- Every attribute a style holds may also be set on an object it fits, with a flag of the same name, such as `node --set api --fill "#fdd"` ("An attribute means the same on every object it fits").
 - An object's own value beats its styles, its styles beat what it follows with `like`, that beats its type, and the type beats the stylesheet.
 - `-` gives the attribute back to the styles.
 - Each way serves its own situation:

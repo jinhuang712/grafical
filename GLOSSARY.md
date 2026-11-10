@@ -44,7 +44,7 @@ The words grafical uses, one name for each thing. Each entry gives the meaning, 
   - Each of its attributes may also be set on the object itself, which beats its styles.
 - **Like:** one object follows the look of another of its sort.
 - **Region:** a diagram · a group · a layer · a lane · a column.
-- **Margin:** the room an object or a style gives one side of the object, in pixels.
+- **Margin:** room outside an object's own box on one side, in pixels, set on the object or in a style it marks.
   - On the command line: `--margin-top` · `--margin-right` · `--margin-bottom` · `--margin-left`.
 - **Knot:** the point where a bundle splits.
 - **Mark:** a small image on a node: an emoji or a short text or a file.

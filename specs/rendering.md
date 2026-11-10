@@ -36,7 +36,7 @@ The writer adds the marks of a route as it draws it, so the routes, the checks a
 
 ## Styles
 
-What an object's styles set goes over what its type sets: a fill and a border on a node, a group or a lane, and a color on an edge and its arrowhead.
+What an object sets itself goes over what its styles set, and that goes over what its type sets. A fill, a border and its width are drawn on a node, a group, a lane and an edge's label. A color is the text of a node with its sublabel, of a group's title with its sublabel, of a lane's label and of an edge's label, and an edge's line with its arrowhead. A step's badge keeps the color of its edge's type.
 
 ## Marks
 
@@ -67,3 +67,4 @@ The command line reads a mark's file and gives its bytes to the renderer. It rea
 - [006. Bundled fonts](decisions/006-bundled-fonts.md)
 - [007. Our own SVG writer](decisions/007-our-own-svg-writer.md)
 - [025. Marks of any kind](decisions/025-marks-of-any-kind.md)
+- [111. An attribute means the same on every object it fits](decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)

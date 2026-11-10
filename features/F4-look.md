@@ -208,12 +208,13 @@ A label may mark styles, as any object does.
 - The label's patch takes the style's `fill` and `border`.
 - The label's text takes the style's `color`.
 - Without `--style`, the label marks no style and its patch takes the color behind it.
-- `label --set --fill` · `--border` · `--color` set a look on the label itself, and it beats every style the label marks.
+- `label --set --fill` · `--border` · `--border-width` · `--color` set a look on the label itself, and it beats every style the label marks.
 
 - **Design:** [11. Looks are free, while shape and dash follow the type](../DESIGNS.md#11-looks-are-free-while-shape-and-dash-follow-the-type)
 - **Why:**
   - [091. A label may mark a style](../specs/decisions/091-a-label-may-mark-a-style.md)
   - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
+  - [111. An attribute means the same on every object it fits](../specs/decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)
 
 **Stories:**
 

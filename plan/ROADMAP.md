@@ -82,7 +82,7 @@ Roadmap
 │   │   └── ✅ Styles set spacing
 │   ├── 🟨 CP2.5: Nodes — a node takes a multiple of its size, an object holds a style's attributes and marks stay clear of edges
 │   │   ├── ✅ Marks
-│   │   ├── ⬜ Attributes on the object
+│   │   ├── ✅ Attributes on the object
 │   │   ├── ⬜ Size multiples
 │   │   └── ⬜ Corner marks checked
 │   ├── ⬜ CP2.6: Regions — every region carries its label and a bar runs across a group
@@ -544,8 +544,10 @@ A node takes a multiple of its size, any object holds the attributes of a style 
 **Tasks:**
 
 - ✅ Marks: A node carries small marks.
-- ⬜ Attributes on the object: Every attribute of a style is set on an object it fits with a flag of its name, and beats the object's styles.
-  - Related: decision 109 "Every attribute of a style may be set on the object itself".
+- ✅ Attributes on the object: Every attribute of a style is set on an object it fits with a flag of its name, beats the object's styles and means the same on every object (2026-11-10).
+  - A lane's and a column's margins now give room outside their own box instead of reaching their members, and every region takes all four sides.
+  - 18 fixtures and 300 fuzz seeds laid out as before.
+  - Related: decision 109 "Every attribute of a style may be set on the object itself" · decision 111 "An attribute means the same on every object it fits".
 - ⬜ Size multiples: `width` · `height` take 0.75 · 1.25 · 1.5 · 2 on a node, a style or a region, and only the node named grows.
   - Next: build it, and show the owner each shape in a picture before its rule is written down.
   - Related: decision 080 "A node's width and height take a multiple of its size".

@@ -1,6 +1,6 @@
 # The .grafical file
 
-**Status:** built, except for `<check>`, a node's `width` and `height`, a type's `weight`, `both` and `sublabel`, a style's `weight`, `size`, `width` and `height`, and a style's attributes set on an object.
+**Status:** built, except for `<check>`, a node's `width` and `height`, a type's `weight`, `both` and `sublabel`, and a style's `weight`, `size`, `width` and `height`.
 
 A `.grafical` file holds one diagram as objects with attributes and relations. grafical is its only writer, and a model reads it through `show`, so the file is shaped for people in a diff and for git. It sits between pseudocode, a structural language, a script, CSS, YAML, JSON and LaTeX, and it takes no control flow, variables or macros.
 
@@ -121,7 +121,7 @@ The shapes:
 an object  >  its styles  >  like  >  a type  >  the stylesheet
 ```
 
-The most specific wins, and `show` gives each value's source. An object may hold any attribute of `<style>` that fits it, and its own value beats its styles. Among an object's styles the one defined later in the file wins, and a stylesheet's styles come before the diagram's.
+The most specific wins, and `show` gives each value's source. An object may hold any attribute of `<style>` that fits it, and its own value beats its styles. It writes them in the order of the `<style>` table, right before its `like`, or before its `style` when it has no `like`, and an edge's label writes them in its `<label>` block. An attribute that does not fit the sort is refused as unknown. Among an object's styles the one defined later in the file wins, and a stylesheet's styles come before the diagram's.
 
 An object with `like` takes the look of another of its sort and changes with it. It takes no members, no place and no shape. A follower may be followed, and a cycle is refused.
 
@@ -254,7 +254,6 @@ A rule a diagram sets itself, marked by what follows it. It comes later, and its
 | `out` | `top`, `bottom`, `left` or `right` |
 | `in` | `top`, `bottom`, `left` or `right` |
 | `weight` | a level or a number |
-| `color` | a color |
 | `both` | `true` |
 | `pass` | `true` |
 | `number` | a whole number |
@@ -409,6 +408,7 @@ A stylesheet is a `.grafical` file that opens with a `<stylesheet>` block and ho
 - [089. An object names the styles it uses](decisions/089-an-object-names-the-styles-it-uses.md)
 - [106. Styles set spacing as CSS does, and a later style wins](decisions/106-styles-set-spacing-as-css-does-and-a-later-style-wins.md)
 - [109. Every attribute of a style may be set on the object itself](decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
+- [111. An attribute means the same on every object it fits](decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)
 - [092. `like` follows an object's look and nothing else](decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
 - [096. An edge is steered by facts and never by coordinates](decisions/096-an-edge-is-steered-by-facts-and-never-by-coordinates.md)
 - [104. A stylesheet is a .grafical file, and the built-in ones form a library](decisions/104-a-stylesheet-is-a-grafical-file-and-the-built-in-ones-form-a-library.md)

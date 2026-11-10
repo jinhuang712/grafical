@@ -17,7 +17,12 @@ Every noun takes `--set`, and the nouns with a place or a removal take `--move` 
 - `<ids>` is a comma-separated list, and every flag applies to each object.
 - `-` gives a flag's attribute back its default, and a switch takes `on` or `off`.
 - `--style <styles>` marks styles in four forms: `a,b` marks exactly these · `+a` adds one · `-a` takes one away · `-` clears them.
-- ⬜ Every flag of `style --set` is also a flag of `--set` on each noun it fits, such as `node --set api --fill "#fdd"`, and a value set on the object beats its styles.
+- Every flag of `style --set` is also a flag of `--set` on each noun it fits, such as `node --set api --fill "#fdd"`, and a value set on the object beats its styles:
+  - `node` · `group` · `lane` · `label`: `--fill` · `--border` · `--border-width` · `--color`.
+  - `edge`: `--color`.
+  - `node` · `group` · `lane` · `layer` · `column` · `diagram`: `--margin-top` · `--margin-right` · `--margin-bottom` · `--margin-left`.
+  - `diagram`: `--row-gap` · `--column-gap`.
+  - A label takes them only when it is an edge's label.
 
 Each `--set` below lists its flags, and those a new object needs are marked as required.
 
@@ -344,9 +349,10 @@ An entry is named `style:<line>` for `solid` · `dashed` · `dotted` · `plain`,
 `grafical -f <file> style --<verb> <ids>`
 
 - `--set <ids>`: make named looks, or change them.
-  - `--fill <color>` · `--border <color>` · `--color <color>`: its colors.
+  - `--fill <color>` · `--border <color>`: the inside and the outline of a node, a group, a lane or an edge's label.
   - `--border-width <n>`: from 0.5 to 8.
-  - `--margin-top` · `--margin-right` · `--margin-bottom` · `--margin-left <px>`: room on each side, a multiple of 4.
+  - `--color <color>`: the text of a node, a group, a lane or an edge's label, or an edge's line.
+  - `--margin-top` · `--margin-right` · `--margin-bottom` · `--margin-left <px>`: room outside the object's box on each side, a multiple of 4.
   - `--row-gap <px>` · `--column-gap <px>`: the room between layers and between the nodes of a layer, for the diagram.
 - `--move <ids>` with `--before` · `--after`: reorder styles, since the later one wins.
 - `--remove <ids>`: remove styles and every mark of them.

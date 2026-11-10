@@ -180,6 +180,7 @@ Any object may take any color, a mark may be any emoji, text or file, and an edg
   - [091. A label may mark a style](specs/decisions/091-a-label-may-mark-a-style.md)
   - [092. `like` follows an object's look and nothing else](specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
   - [109. Every attribute of a style may be set on the object itself](specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
+  - [111. An attribute means the same on every object it fits](specs/decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)
 - **How it works:**
   - [The theme](specs/theme.md)
   - [The renderer](specs/rendering.md)

@@ -177,6 +177,7 @@ A node takes its colors from itself or from the styles it marks, so that a color
 
 - A color is `#` and hex digits.
 - `node --set --fill` · `--border` · `--border-width` · `--color` set a look on the node itself, and it beats every style the node marks.
+  - `--color` is the color of its label, and its sublabel follows it.
   - `-` gives it back to the styles.
 - A node may mark several styles, and where two say the same thing the one defined later in the file wins.
 - `node --set --style -` clears them, `+a` adds one and `-a` takes one away.
@@ -193,6 +194,7 @@ A node takes its colors from itself or from the styles it marks, so that a color
   - [089. An object names the styles it uses](../specs/decisions/089-an-object-names-the-styles-it-uses.md)
   - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
   - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
+  - [111. An attribute means the same on every object it fits](../specs/decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)
 
 ### F1.1.8: Size multiples
 
@@ -336,6 +338,7 @@ An edge takes its color from itself or from the styles it marks, so that a color
   - [081. An edge may take a color of its own](../specs/decisions/081-an-edge-may-take-a-color-of-its-own.md)
   - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
   - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
+  - [111. An attribute means the same on every object it fits](../specs/decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)
 
 ## F1.3: Containers
 
@@ -486,10 +489,12 @@ A group or a lane takes its colors from itself or from the styles it marks, so t
   - [`group`](../CLI.md#group)
   - [`lane`](../CLI.md#lane)
 
-- `--fill` · `--border` · `--border-width` set a look on the group or the lane itself, and it beats every style it marks.
+- `--fill` · `--border` · `--border-width` · `--color` set a look on the group or the lane itself, and it beats every style it marks.
+  - `--color` is the color of its label, and a group's sublabel follows it.
 - `--like` follows another of its sort, by the same rules as a node's.
 
 - **Why:**
   - [083. A group or a lane may take a look of its own](../specs/decisions/083-a-group-or-a-lane-may-take-a-look-of-its-own.md)
   - [092. `like` follows an object's look and nothing else](../specs/decisions/092-like-follows-an-object-s-look-and-nothing-else.md)
   - [109. Every attribute of a style may be set on the object itself](../specs/decisions/109-every-attribute-of-a-style-may-be-set-on-the-object-itself.md)
+  - [111. An attribute means the same on every object it fits](../specs/decisions/111-an-attribute-means-the-same-on-every-object-it-fits.md)
